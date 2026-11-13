@@ -12,7 +12,7 @@ const user={id:'offline-user'};
 const empty={data:[],error:null};
 const q=new Proxy({}, {get(_t,k){
  if(k==='then')return resolve=>Promise.resolve(mode==='error'?{data:null,error:{message:'offline failure'}}:empty).then(resolve);
- if(k==='single')return async()=>({data:{id:'mock-task',title:'Offline-Aufgabe',status:'open',priority:2,reminder_days:3,archived_at:null},error:null});
+ if(k==='single')return async()=>mode==='form-error'?{data:null,error:{message:'synthetic insert failure'}}:{data:{id:'mock-task',title:'Offline-Aufgabe',status:'open',priority:2,reminder_days:3,archived_at:null},error:null};
  return ()=>q;
 }});
 window.supabase={createClient:()=>({
@@ -23,7 +23,7 @@ window.confirm=()=>true;
 window.addEventListener('load',()=>{
  setTimeout(()=>{
   const content=document.getElementById('content'),login=document.getElementById('login'),status=document.getElementById('status');
-  if(mode==='form'){
+  if(mode==='form-error'){
    const form=document.getElementById('form');
    document.getElementById('title').value='Offline-Aufgabe';
    form.requestSubmit();
@@ -64,7 +64,7 @@ def main():
  threading.Thread(target=server.serve_forever,daemon=True).start()
  failures=[]
  try:
-  for page,mode in [('gift-tasks','guest'),('gift-tasks','empty'),('gift-tasks','error'),('gift-tasks','form'),('gift-analytics','guest'),('gift-analytics','empty'),('gift-analytics','error')]:
+  for page,mode in [('gift-tasks','guest'),('gift-tasks','empty'),('gift-tasks','error'),('gift-tasks','form-error'),('gift-analytics','guest'),('gift-analytics','empty'),('gift-analytics','error')]:
    url=f'http://127.0.0.1:{server.server_port}/tools/wishes/{page}.html?mode={mode}'
    cmd=[chrome,'--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--disable-background-networking','--disable-extensions','--no-first-run','--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1','--virtual-time-budget=2500','--dump-dom',url]
    p=subprocess.run(cmd,capture_output=True,text=True,timeout=40)
@@ -74,7 +74,7 @@ def main():
     (mode=='guest' and data.get('loginVisible') and not data.get('contentVisible')) or
     (mode=='empty' and data.get('contentVisible') and (data.get('emptyTasks') if page=='gift-tasks' else data.get('emptyInsights'))) or
     (mode=='error' and not data.get('contentVisible') and ('geladen' in data.get('status','') or 'laden' in data.get('status',''))) or
-    (mode=='form' and data.get('contentVisible') and 'gespeichert' in data.get('formStatus',''))
+    (mode=='form-error' and data.get('contentVisible') and data.get('formStatus')=='Aufgabe konnte nicht gespeichert werden.')
    )
    print(('PASS' if ok else 'FAIL')+f' {page} {mode} '+json.dumps(data,ensure_ascii=False),flush=True)
    if not ok:failures.append((page,mode))
