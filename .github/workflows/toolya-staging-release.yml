@@ -1,0 +1,23 @@
+name: Toolya staging release smoke
+on:
+  push:
+    branches: [migration/english-paths-clean]
+    paths:
+      - 'scripts/staging-release-smoke.mjs'
+      - '.github/workflows/toolya-staging-release.yml'
+  workflow_dispatch:
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      TOOLYA_STAGING_PUBLISHABLE_KEY: sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run isolated staging smoke test
+        run: node scripts/staging-release-smoke.mjs
