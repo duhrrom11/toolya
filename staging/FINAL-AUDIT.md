@@ -121,3 +121,19 @@ Added isolated tests (only scripts and CI workflow changed):
 No application code, main branch, production Supabase, merge, DNS or deployment modified.
 
 - CI run `43475311677` encountered Chromium timeout in the first multi-process two-origin harness and a separate headless page-smoke failure under concurrent runs. The two-origin harness was rewritten as a single-process cross-origin iframe test in commit `4879b46`; CI outcome pending. Do not interpret the timeout as a proven application regression.
+
+## Confirmed final CI outcome for origin isolation (2026-11-13)
+
+**Verified green** GitHub Actions run [43475839897](https://github.com/duhrrom11/toolya/actions/runs/43475839897), commit `5aed79fb65828772239eeee6a91e4aec17de85f4`. All workflow steps completed successfully, including static route/dependency audit, JS syntax, 32-page local smoke, offline mocks, navigation, visible UI filters, isolated crypto backup and redirect checks, two-origin Chromium check, and offline pending-store isolation.
+
+**Exact logged outcomes:**
+- `test_backup_isolated.cjs`: **10/10 PASS**, including persistent write-failure warning, wrong password, tampering, invalid JSON, excluded keys, rollback on one-shot quota failure and static signup redirect.
+- `test_two_origins.py`: **3/3 PASS**: two different localhost origins, source synthetic storage retained, destination initially empty, only two explicitly allowlisted synthetic keys transferred; auth token, wishlist extras and cloud pending fixture remain absent from destination.
+- `test_cloud_pending_isolated.cjs`: **5/5 PASS**: matching owner can inspect offline pending data, mismatched owner and signed-out state cannot claim it, no fabricated queue, and no network calls or inspection writes.
+- **Total newly relevant assertions: 18/18 PASS.**
+
+**Previous failed runs are not hidden:** `43475311677` and `43475397596` failed during earlier Chromium testing, with a timeout in the original multi-process harness and intermittent smoke failures under overlapping runs. The single-process cross-origin iframe version is verified green in the latest completed run. These failures did not establish an application regression; no application code was changed.
+
+**Remaining boundaries:** The cross-origin test performs an explicit synthetic allowlist transfer, not the actual encrypted file export/import UI across two browser origins. It does not validate IndexedDB, production domain cookies, Supabase auth redirects, live cloud flush, recovery keys or pending-write reconciliation. Persistent storage corruption can still make rollback impossible. Accordingly, **release remains NO-GO** until separate acceptance gates are met.
+
+This update changes documentation only; no application code, production Supabase settings/data, merge or deployment.
