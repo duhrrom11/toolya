@@ -22,3 +22,32 @@ Status: **BLOCKED / not configured**. This file contains no secrets.
 
 ## Stop conditions
 Never merge `main` or deploy until verified. Never touch `duhrrom11/Helferlein` or its Supabase instance.
+
+
+## Approved configuration blueprint (domain verification reported by account owner)
+
+| Supabase Authentication → Emails → SMTP Settings | Value |
+| --- | --- |
+| Enable custom SMTP | **Leave OFF until real credentials and sender are available** |
+| Sender name | `Toolya` |
+| Sender email | Exact existing Brevo-authorized sender under `toolya.app` (do not assume `noreply@` exists) |
+| Host | `smtp-relay.brevo.com` |
+| Port | `587` (STARTTLS) |
+| Username | **Exact SMTP login displayed by Brevo** (can differ from account email) |
+| Password | **Dedicated Brevo SMTP key**, never account password or API key |
+| Minimum interval per user | Keep Supabase default, typically 60 seconds |
+
+Official references:
+- https://developers.brevo.com/docs/supabase-smtp-integration
+- https://help.brevo.com/hc/de/articles/7924908994450-Transaktions-E-Mails-mit-Brevo-SMTP-senden
+
+### Secret handling
+Generate a dedicated SMTP key named `toolya-supabase-auth` in Brevo (Settings → SMTP & API → SMTP). Enter the key **directly into Toolya Supabase's SMTP password field**, never into chat, GitHub, CI variables, static assets or a SQL statement. Do not log, echo, screenshot or commit the key. If the key is exposed, revoke and replace it.
+
+### Completion gate
+1. Verify SMTP relay is enabled in Brevo and exact sending address is authorized.
+2. Enter the blueprint into **only** `https://supabase.com/dashboard/project/yheogmeaosuigyaxkwth/auth/smtp`, then save and verify configuration (never reveal password).
+3. Send a controlled confirmation email to an authorized mailbox, verify delivery and `toolya.app` redirect, test sign-in and password reset.
+4. Re-run browser CI, verify DNS/HTTPS, and record evidence before GO decision.
+
+No live SMTP changes were made as of this preparation; credentials and sender are not available to the assistant.
