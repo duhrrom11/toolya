@@ -1,6 +1,6 @@
 {
-  "name": "Alltagshelferlein Hub",
-  "short_name": "Helferlein",
+  "name": "Toolya",
+  "short_name": "Toolya",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f3f4f6",
