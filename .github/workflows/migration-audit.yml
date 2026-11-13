@@ -62,6 +62,9 @@ jobs:
       - name: Isolated two-origin browser storage checks
         if: always()
         run: python3 scripts/test_two_origins.py
+      - name: Actual encrypted backup transfer between isolated localhost origins
+        if: always()
+        run: python3 scripts/test_encrypted_two_origins.py
       - name: Offline cloud pending owner isolation checks
         if: always()
         run: node scripts/test_cloud_pending_isolated.cjs
