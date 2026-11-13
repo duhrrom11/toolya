@@ -55,3 +55,9 @@ Only rename directories and HTML files, and repair the references necessary to p
 - Run 43470446025: 11/11 actual navigation changes passed (homepage -> tools, wishlist index -> dashboard/planner/notifications/home, dashboard -> reservations, planner -> occasions, occasions -> wishlist index). Static route and JS syntax checks and both 32-page browser suites also passed.
 - Confirmed tools/wishes/gift-tasks.html and tools/wishes/gift-analytics.html are absent from both staged output and original Helferlein tools/wishlist and tools/amazon-wishlist on main; known pre-existing missing destinations, not migration-created.
 - Browser interaction coverage remains intentionally limited to safe anchor navigation; no authenticated workflows, mutation controls or production APIs exercised. No application source, design, default branch or deployed site changed.
+
+## Read-only UI control smoke tests (2026-11-13)
+- Added scripts/smoke_ui.py to exercise 11 selected non-submitting controls in localhost-only headless Chrome, with remote network disabled and mocked external APIs. Coverage: homepage settings and category filter, wishlist checkpoint details, dashboard priority filter, discover search/sort/saved-only, moving search/tag/sort.
+- GitHub Actions run 43470828521: 11/11 control event checks passed; existing static audit, JS syntax checks, 32-page smoke tests, mock dependency tests, and 11 real anchor navigation checks also passed.
+- Important scope: these checks confirm control presence, event dispatch and immediate state change; they do NOT validate all downstream filter results, accessibility behavior, authentication, database workflows, or persistence. Tests may modify disposable local browser state only.
+- No website source, visible text, design, default branch, deployment or production Supabase changed.
