@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full">
+<head>
+    <!-- Fail closed before legacy scripts can paint account-owned local data. -->
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>
+      try {
+        if (localStorage.getItem('helferlein_cloud_owner_zaehlerstaende-erfassen')) {
+          document.documentElement.classList.add('helferlein-account-check');
+        }
+      } catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zählerstände erfassen: Strom, Gas & Wasser | Helferlein</title>
+    <meta name="description" content="Strom-, Wasser- und Gaszählerstände online erfassen: Verbrauch auswerten, Kosten vergleichen und Zählerstände für Strom, Wasser und Gas dokumentieren.">
+    <link rel="canonical" href="https://toolya.app/tools/meters/index.html">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF für PDF-Report -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="../../assets/helferlein-b3.css">
+    <link rel="stylesheet" href="../../assets/helferlein-b3-zaehler.css">
+    <script>
+      window.HELFERLEIN_B3 = {
+        key:'zaehler',
+        name:'Zählerstände erfassen',
+        panels:[
+          {id:'alarm',name:'Ablese-Erinnerung',size:'l',locked:true},
+          {id:'stats',name:'Verbrauchsstatistiken',size:'l'},
+          {id:'tariffs',name:'Tarife & Abschläge',size:'l'},
+          {id:'create',name:'Zählerstand erfassen',size:'l',locked:true},
+          {id:'chart',name:'Monatsvergleich',size:'l'},
+          {id:'forecast',name:'Jahresprognose',size:'l'},
+          {id:'history',name:'Ableseverlauf',size:'l'},
+          {id:'faq',name:'Anleitung & Energiespartipps',size:'m'}
+        ],
+        navigation:[
+          ['⚡','Übersicht','#main-content'],
+          ['📊','Statistiken','#b3-stats'],
+          ['✍️','Ablesung erfassen','#b3-create'],
+          ['💶','Tarife','#b3-tariffs'],
+          ['📈','Prognose','#prognosisCard'],
+          ['📋','Verlauf','#b3-history']
+        ],
+        extra:[
+          {label:'📅 Ablese-Erinnerung (Kalender)',handler:'downloadIcsCalendar'},
+          {label:'💡 Energiespar-Tipps',handler:'openEnergyTipsModal'},
+          {label:'💬 Verbrauch teilen',handler:'copyShareText'},
+          {label:'📋 Übergabebericht (PDF)',handler:'exportHandoverPDF'},
+          {label:'📄 Zählerbericht (PDF)',handler:'exportPDF'}
+        ],
+        helpId:'accordionContent',
+        helpToggle:'toggleAccordion'
+      };
+    </script>
+    <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css?v=20261112-3">
+    <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
+<script defer src="../../assets/helferlein-dialogs.js"></script>
+<link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script></head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
+
+    <!-- Header -->
+    <header class="b3-header"><div class="b3-header-inner">
+  <a class="b3-brand" href="../../index.html" aria-label="Helferlein Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</a>
+  <span class="b3-tool-icon" aria-hidden="true">⚡</span>
+  <div class="b3-tool-title"><h1>Zählerstände erfassen: Strom, Gas & Wasser</h1>
+    <p>Verbrauch erfassen, Kosten auswerten und Ablesetermine im Blick behalten</p></div>
+  <button type="button" id="settingsBtn" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()">⚙</button>
+</div></header>
+
+    <!-- Main Content -->
+    <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-6xl space-y-6">
+                
+        <!-- Monatlicher Ablese-Alarm & Badge -->
+        <div id="readingAlarmBanner" class="hidden bg-amber-600 text-white p-4 rounded-2xl shadow-md flex justify-between items-center" data-b3-panel="alarm">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">🔔</span>
+                <div>
+                    <h4 class="font-bold text-sm">Ablese-Erinnerung (Über 30 Tage vergangen!)</h4>
+                    <p class="text-xs opacity-95">Erfasse jetzt deine aktuellen Zählerstände für genaue Tageskosten und Prognosen.</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="downloadIcsCalendar()" class="bg-amber-800 hover:bg-amber-900 text-white px-3 py-1.5 rounded-xl text-xs font-bold">📅 Kalender</button>
+                <button onclick="dismissReadingAlarm()" class="bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold">Später</button>
+            </div>
+        </div>
+
+        <!-- 📖 AUSKLAPPBARE ANLEITUNG & FAQ -->
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden" data-b3-panel="faq" id="b3-faq">
+            <button onclick="toggleAccordion()" class="w-full p-4 bg-sky-50 hover:bg-sky-100 flex justify-between items-center text-sky-900 font-bold text-sm transition-colors">
+                <span class="flex items-center gap-2">📖 Ausklappbare Anleitung: Richtig ablesen & Energie sparen</span>
+                <span id="accordionIcon" class="text-lg">▼</span>
+            </button>
+            <div id="accordionContent" class="hidden p-6 space-y-4 text-xs text-gray-700 border-t">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-4 bg-sky-50/50 rounded-xl border border-sky-100 space-y-2">
+                        <h4 class="font-bold text-sky-900 text-sm">⚡ Strom (HT / NT)</h4>
+                        <p>Notiere die Ziffern vor dem Komma. Bei HT/NT-Zählern beide Register getrennt erfassen.</p>
+                        <a href="https://www.amazon.de/s?k=stromzähler+wlan+smart+steckdose&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2">🛒 Strom-Messgeräte auf Amazon</a>
+                    </div>
+                    <div class="p-4 bg-blue-50/50 rounded-xl border border-blue-100 space-y-2">
+                        <h4 class="font-bold text-blue-900 text-sm">💧 Wasser</h4>
+                        <p>Die großen Ziffern zeigen volle m³, die roten Zeiger Liter.</p>
+                        <a href="https://www.amazon.de/s?k=wasserzähler+aufsatz+digital&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2">🛒 Wasserzubehör auf Amazon</a>
+                    </div>
+                    <div class="p-4 bg-orange-50/50 rounded-xl border border-orange-100 space-y-2">
+                        <h4 class="font-bold text-orange-900 text-sm">♨️ Gas</h4>
+                        <p>Ziffern vor dem Komma in m³. Umrechnung in kWh erfolgt automatisch über den Brennwert.</p>
+                        <a href="https://www.amazon.de/s?k=gasmesser+detektor+smart&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2">🛒 Gas-Detektoren auf Amazon</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Statistiken -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4" data-b3-panel="stats" id="b3-stats">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-sky-50 text-sky-700 rounded-xl font-bold">📊</div>
+                <div><p class="text-xs text-gray-500">Erfasste Ablesungen</p><h3 id="statTotalReadings" class="text-lg font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">⚡</div>
+                <div><p class="text-xs text-gray-500">Stromzähler aktiv</p><h3 id="statStrom" class="text-lg font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">💧</div>
+                <div><p class="text-xs text-gray-500">Wasserzähler aktiv</p><h3 id="statWasser" class="text-lg font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-orange-50 text-orange-600 rounded-xl font-bold">♨️</div>
+                <div><p class="text-xs text-gray-500">Gaszähler aktiv</p><h3 id="statGas" class="text-lg font-bold">0</h3></div>
+            </div>
+        </div>
+
+        <!-- Tarife & Abschläge -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="tariffs" id="b3-tariffs">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-bold">⚙️ Tarife, HT/NT, Abschläge & Gas-Brennwert</h2>
+                <button onclick="saveTarifs()" class="px-4 py-2 bg-sky-700 hover:bg-sky-800 text-white rounded-xl text-xs font-bold shadow-sm">Tarife speichern</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="p-4 bg-sky-50 rounded-xl border border-sky-100 space-y-2">
+                    <h3 class="font-bold text-sm text-sky-900">⚡ Strom (HT / NT)</h3>
+                    <div><label for="tariffStromPriceHT" class="block text-[11px] text-gray-600">HT-Preis (€ / kWh):</label><input type="number" step="0.001" id="tariffStromPriceHT" placeholder="0.38" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label for="tariffStromPriceNT" class="block text-[11px] text-gray-600">NT-Preis (€ / kWh):</label><input type="number" step="0.001" id="tariffStromPriceNT" placeholder="0.28" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label for="tariffStromAbschlag" class="block text-[11px] text-gray-600">Monatlicher Abschlag (€):</label><input type="number" id="tariffStromAbschlag" placeholder="80" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                </div>
+                <div class="p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-2">
+                    <h3 class="font-bold text-sm text-blue-900">💧 Wasser</h3>
+                    <div><label for="tariffWasserPrice" class="block text-[11px] text-gray-600">Arbeitspreis (€ / m³):</label><input type="number" step="0.001" id="tariffWasserPrice" placeholder="4.50" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label for="tariffWasserAbschlag" class="block text-[11px] text-gray-600">Monatlicher Abschlag (€):</label><input type="number" id="tariffWasserAbschlag" placeholder="30" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                </div>
+                <div class="p-4 bg-orange-50 rounded-xl border border-orange-100 space-y-2">
+                    <h3 class="font-bold text-sm text-orange-900">♨️ Gas</h3>
+                    <div><label for="tariffGasPrice" class="block text-[11px] text-gray-600">Arbeitspreis (€ / kWh):</label><input type="number" step="0.001" id="tariffGasPrice" placeholder="0.12" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label for="tariffGasAbschlag" class="block text-[11px] text-gray-600">Monatlicher Abschlag (€):</label><input type="number" id="tariffGasAbschlag" placeholder="100" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label for="tariffGasCalib" class="block text-[11px] text-gray-600">Brennwertfaktor (kWh/m³):</label><input type="number" step="0.01" id="tariffGasCalib" placeholder="11.2" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Erfassung: Neuer Zählerstand -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="create" id="b3-create">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-bold">✍️ Neuen Zählerstand erfassen</h2>
+                <a href="https://www.amazon.de/s?k=energiekostenmessgerät+stromzähler&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded-xl transition-colors">🛒 Strom-Messgeräte auf Amazon</a>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                    <label for="meterType" class="block text-xs font-semibold text-gray-600 mb-1">Zähler-Typ:</label>
+                    <select id="meterType" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="toggleTarifSelect()">
+                        <option value="Strom">⚡ Strom (HT / Einzeltarif)</option>
+                        <option value="Strom-NT">🌙 Strom (NT / Nachttarif)</option>
+                        <option value="Kaltwasser">💧 Kaltwasser (m³)</option>
+                        <option value="Warmwasser">🔥 Warmwasser (m³)</option>
+                        <option value="Gas">♨️ Gas (m³)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="meterName" class="block text-xs font-semibold text-gray-600 mb-1">Zählername / Nummer:</label>
+                    <input type="text" id="meterName" placeholder="z.B. Hauptzähler #12345" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label for="meterLocation" class="block text-xs font-semibold text-gray-600 mb-1">Standort / Bereich:</label>
+                    <select id="meterLocation" class="w-full p-3 border rounded-xl text-sm bg-white">
+                        <option value="Hauptwohnung">🏠 Hauptwohnung / Keller</option>
+                        <option value="Garage">🚗 Garage / Carport</option>
+                        <option value="Garten">🌱 Garten / Außenbereich</option>
+                        <option value="Einliegerwohnung">🔑 Einliegerwohnung / Vermietung</option>
+                        <option value="Wärmepumpe">🌡️ Wärmepumpe / Heizung</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="meterDate" class="block text-xs font-semibold text-gray-600 mb-1">Ablesedatum:</label>
+                    <input type="date" id="meterDate" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                    <label for="meterValue" class="block text-xs font-semibold text-gray-600 mb-1">Zählerstand:</label>
+                    <input type="number" step="0.001" id="meterValue" placeholder="z.B. 45230.5" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label for="meterPhotoInput" class="block text-xs font-semibold text-gray-600 mb-1">Zählerfoto-Nachweis:</label>
+                    <input type="file" id="meterPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700">
+                </div>
+                <div>
+                    <label for="meterNote" class="block text-xs font-semibold text-gray-600 mb-1">Notiz / Bemerkung:</label>
+                    <input type="text" id="meterNote" placeholder="z.B. Nach Jahresabrechnung" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+            </div>
+
+            <!-- Zählerwechsel Haken -->
+            <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center space-x-3">
+                <input type="checkbox" id="meterExchangeCheck" class="w-4 h-4 text-amber-600 rounded">
+                <label for="meterExchangeCheck" class="text-xs font-semibold text-amber-900 cursor-pointer">
+                    🔄 Neuer Zähler / Zählerwechsel (Startstand bei 0 für korrekte Differenz)
+                </label>
+            </div>
+
+            <button onclick="saveReading()" class="w-full bg-sky-700 hover:bg-sky-800 text-white font-medium py-3 rounded-xl text-sm shadow-sm transition-colors">Zählerstand speichern</button>
+        </div>
+
+        <!-- Visualisierter Monatsvergleich (Chart) -->
+        <div id="chartCard" class="bg-white p-6 rounded-2xl shadow-sm border space-y-3 hidden" data-b3-panel="chart">
+            <h3 class="font-bold text-lg">📊 Ablesungen pro Monat</h3>
+            <div id="chartContainer" class="space-y-2 pt-2">
+                <!-- Dynamisch gefüllt -->
+            </div>
+        </div>
+
+        <!-- Jahres-Prognose & Tageskosten -->
+        <div id="prognosisCard" class="bg-white p-6 rounded-2xl shadow-sm border space-y-3 hidden" data-b3-panel="forecast">
+            <h3 class="font-bold text-lg">📈 Jahres-Prognose, Tageskosten & Vorjahr</h3>
+            <div id="prognosisContent" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Dynamisch gefüllt -->
+            </div>
+        </div>
+
+        <!-- Verlauf & Historie -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="history" id="b3-history">
+            <div class="flex justify-between items-center flex-wrap gap-2">
+                <h3 class="font-bold text-lg">📋 Zählerstände & Verlauf</h3>
+                <div class="flex gap-2">
+                    <label class="helferlein-field" for="filterType"><span class="helferlein-field-label">Verlauf nach Zählertyp filtern</span><select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verlauf nach Zählertyp filtern">
+                        <option value="All">Alle Zähler anzeigen</option>
+                        <option value="Strom">⚡ Strom (HT)</option>
+                        <option value="Strom-NT">🌙 Strom (NT)</option>
+                        <option value="Kaltwasser">💧 Kaltwasser</option>
+                        <option value="Warmwasser">🔥 Warmwasser</option>
+                        <option value="Gas">♨️ Gas</option>
+                    </select></label>
+                </div>
+            </div>
+            <div id="readingsList" class="space-y-3">
+                <p class="text-sm text-gray-400 text-center py-4">Noch keine Zählerstände erfasst.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL: Foto-Lupe -->
+    <div id="photoModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50" onclick="closePhotoModal()">
+        <div class="bg-white p-4 rounded-2xl max-w-lg w-full space-y-3 shadow-2xl text-center" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center"><h3 class="font-bold text-sm text-sky-900">🔍 Zählerfoto-Inspektion</h3><button onclick="closePhotoModal()" class="text-gray-400 font-bold">✕</button></div>
+            <img id="modalZoomImg" src="" class="w-full max-h-[70vh] object-contain rounded-xl border">
+            <button onclick="closePhotoModal()" class="w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Energiespar-Tipps & Affiliate Gadgets -->
+    <div id="energyTipsModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeEnergyTipsModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-2xl w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg text-amber-900">💡 Clevere Energiespar-Tipps & Top-Gadgets</h3>
+                <button onclick="closeEnergyTipsModal()" class="text-gray-400 font-bold">✕</button>
+            </div>
+            <p class="text-xs text-gray-600">Reduziere deine Jahres-Nachzahlung effektiv mit diesen praxiserprobten Spar-Tipps und passenden Amazon-Empfehlungen:</p>
+            
+            <div class="space-y-3 text-xs">
+                <div class="p-3 bg-sky-50 border border-sky-200 rounded-xl space-y-1.5">
+                    <h4 class="font-bold text-sky-900">1. Standby-Verbrauch eliminieren</h4>
+                    <p class="text-gray-700">Fernseher und Konsolen im Standby verbrauchen unnötig Strom. Master-Slave-Leisten schalten automatisch ab.</p>
+                    <a href="https://www.amazon.de/s?k=steckdosenleiste+mit+schalter+standby&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="inline-block mt-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">🛒 Steckdosenleisten auf Amazon</a>
+                </div>
+
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1.5">
+                    <h4 class="font-bold text-amber-900">2. LED-Beleuchtung konsequent umstellen</h4>
+                    <p class="text-gray-700">Der Wechsel auf hochwertige LEDs spart bis zu 85 % Beleuchtungsstrom.</p>
+                    <a href="https://www.amazon.de/s?k=led+lampen+set+e27+e14&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="inline-block mt-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">🛒 LED-Leuchtmittel auf Amazon</a>
+                </div>
+
+                <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-1.5">
+                    <h4 class="font-bold text-blue-900">3. Heizkörperthermostate smart steuern</h4>
+                    <p class="text-gray-700">Smarte Thermostate senken die Heizkosten im Schnitt um 10 bis 15 %.</p>
+                    <a href="https://www.amazon.de/s?k=smarte+heizkörperthermostate&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="inline-block mt-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">🛒 Smarte Thermostate auf Amazon</a>
+                </div>
+
+                <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1.5">
+                    <h4 class="font-bold text-emerald-900">4. Infrarot-Thermometer für Kältebrücken</h4>
+                    <p class="text-gray-700">Spüre Wärmeverluste an Fenstern und Wänden auf, um gezielt abzudichten.</p>
+                    <a href="https://www.amazon.de/s?k=infrarot+thermometer+waermebild&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="inline-block mt-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">🛒 Infrarot-Thermometer auf Amazon</a>
+                </div>
+            </div>
+
+            <button onclick="closeEnergyTipsModal()" class="w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Einstellungs-Modal mit Supabase Auth -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors space-y-5">
+            <div class="flex justify-between items-center border-b border-gray-200 pb-3">
+                <h3 class="text-lg font-bold text-gray-900">
+                    ⚙️ Einstellungen und Konto
+                </h3>
+                <button type="button" id="closeSettingsBtn" onclick="closeSettings()" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">
+                    &times;
+                </button>
+            </div>
+
+            <!-- CLOUD-KONTO -->
+            <div>
+                <h3 class="font-bold text-sm text-gray-800 mb-2">☁️ Mein Konto</h3>
+                <div class="space-y-3">
+                    <div id="userInfo" class="text-xs font-semibold mb-2" aria-live="polite">Nicht angemeldet</div>
+                    <div id="cloudStatus" class="text-xs bg-gray-100 rounded-lg p-3 text-gray-700">
+                        Nicht angemeldet
+                    </div>
+
+                    <label class="helferlein-field" for="loginEmail"><span class="helferlein-field-label">E-Mail</span><input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
+                    <label class="helferlein-field" for="loginPassword"><span class="helferlein-field-label">Passwort</span><input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="registerUser()" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold">
+                            👤 Registrieren
+                        </button>
+                        <button type="button" onclick="loginUser()" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-semibold">
+                            🔑 Anmelden
+                        </button>
+                        <button type="button" onclick="logoutUser()" class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-semibold">
+                            🚪 Abmelden
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DATENSICHERUNG -->
+            <div class="border-t border-gray-200 pt-4">
+                <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Daten sichern und wiederherstellen</label>
+                <div class="flex gap-2">
+                    <button type="button" onclick="exportBackup()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Sicherung</button>
+                    <label class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">
+                        📤 Restore <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
+                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) { console.warn('Online-Sicherung nicht geladen'); return; }
+        if (window.helferleinCloudBridge) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client: window.supabaseClient,
+          tool: 'zaehlerstaende-erfassen',
+          localKey: 'energie_tracker_pro_v8',
+          collection: 'readings',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        // A page restored from the back/forward cache must not keep a disposed
+        // bridge: reload it to re-establish auth guards and synchronization.
+        window.addEventListener('pageshow', event => {
+          if (event.persisted) window.location.reload();
+        });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
+    <!-- Skript Logik -->
+    <script>
+        // Supabase Konfiguration (exakt von der Hauptseite übernommen)
+        const SUPABASE_URL = "https://avapuibsidubuzxjtyld.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC";
+
+        window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("✅ Supabase verbunden");
+
+        async function registerUser() {
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPassword").value;
+
+            if (!email || !password) {
+                alert("Bitte E-Mail und Passwort eingeben.");
+                return;
+            }
+
+            const { error } = await window.supabaseClient.auth.signUp({ email, password });
+            if (error) {
+                alert(error.message);
+                return;
+            }
+
+            alert("Registrierung erfolgreich.");
+            updateUserDisplay();
+            closeSettings();
+        }
+
+        async function loginUser() {
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPassword").value;
+
+            if (!email || !password) {
+                alert("Bitte E-Mail und Passwort eingeben.");
+                return;
+            }
+
+            const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) {
+                alert(error.message);
+                return;
+            }
+
+            updateUserDisplay();
+            closeSettings();
+        }
+
+        async function logoutUser() {
+            await window.supabaseClient.auth.signOut();
+            updateUserDisplay();
+        }
+
+        async function updateUserDisplay() {
+            const { data } = await window.supabaseClient.auth.getUser();
+            const user = data?.user;
+
+            const headerInfo = document.getElementById("userInfo");
+            const cloudStatus = document.getElementById("cloudStatus");
+
+            if (user) {
+                if (headerInfo) headerInfo.textContent = "👤 " + user.email;
+                if (cloudStatus) cloudStatus.textContent = "✅ Angemeldet – " + (user.email || "Benutzer");
+            } else {
+                if (headerInfo) headerInfo.textContent = "Nicht angemeldet";
+                if (cloudStatus) cloudStatus.textContent = "Nicht angemeldet";
+            }
+        }
+
+        function openSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('meterDate').valueAsDate = new Date();
+            loadTarifs();
+            renderApp();
+            checkReadingAlarm();
+            try { updateUserDisplay(); } catch(e){}
+        });
+
+        // Auth State Listener
+        supabaseClient.auth.onAuthStateChange(async () => {
+            updateUserDisplay();
+        });
+
+        function toggleAccordion() {
+            const content = document.getElementById('accordionContent');
+            const icon = document.getElementById('accordionIcon');
+            content.classList.toggle('hidden');
+            icon.innerText = content.classList.contains('hidden') ? '▼' : '▲';
+        }
+
+        function checkReadingAlarm() {
+            const data = getData();
+            if (data.readings.length === 0) return;
+            const lastReading = new Date(data.readings[0].date);
+            const today = new Date();
+            const diffDays = (today - lastReading) / (1000 * 60 * 60 * 24);
+            const banner = document.getElementById('readingAlarmBanner');
+
+            if (diffDays > 30) {
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
+        function dismissReadingAlarm() {
+            document.getElementById('readingAlarmBanner').classList.add('hidden');
+        }
+
+        function downloadIcsCalendar() {
+            let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Zaehler Tracker Pro//DE\nBEGIN:VEVENT\nSUMMARY:⚡ Zählerstände ablesen\nDESCRIPTION:Monatlicher Stichtag zur Erfassung von Strom, Wasser und Gas.\nRRULE:FREQ=MONTHLY;BYDAY=-1SU\nEND:VEVENT\nEND:VCALENDAR";
+            let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a'); a.href = url;
+            a.download = 'zaehler-ablesen-erinnerung.ics';
+            a.click();
+        }
+
+        function getData() {
+            try {
+                if (!window.localStorage) throw new Error('Lokaler Speicher nicht verfügbar');
+                const stored = JSON.parse(localStorage.getItem('energie_tracker_pro_v8'));
+                if (!stored || !Array.isArray(stored.readings)) return { readings: [], tarifs: {} };
+                if (stored.readings.some(item => !item || typeof item !== 'object' || Array.isArray(item))) { console.warn('Ungültige Zählerdatensätze'); return { readings: [], tarifs: {} }; }
+                return {
+                    ...stored,
+                    readings: stored.readings.slice(),
+                    tarifs: stored.tarifs && typeof stored.tarifs === 'object' && !Array.isArray(stored.tarifs)
+                        ? { ...stored.tarifs } : {}
+                };
+            } catch(e) {
+                console.error('Zählerdaten konnten nicht geladen werden:', e);
+                return { readings: [], tarifs: {} };
+            }
+        }
+
+        function saveData(data, allowCorruptOverwrite = false) {
+            try {
+                if (!data || typeof data !== 'object' || Array.isArray(data) || !Array.isArray(data.readings)) throw new Error('Ungültige Zählerdaten');
+                if (localStorage.getItem('helferlein_cloud_owner_zaehlerstaende-erfassen') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                    alert('Lokale Speicherung ist während eines Kontowechsels oder einer Cloud-Datenübernahme gesperrt. Bitte zuerst das ursprüngliche Konto anmelden.');
+                    return false;
+                }
+                if (data.readings.some(item => !item || typeof item !== 'object' || Array.isArray(item))) throw new Error('Ungültige Zählereinträge');
+                // Keep the original bytes available if stored readings cannot be parsed.
+                const existing = localStorage.getItem('energie_tracker_pro_v8');
+                if (existing !== null) {
+                    let parsed;
+                    try { parsed = JSON.parse(existing); } catch (_) { parsed = null; }
+                    if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.readings)) {
+                        if (!allowCorruptOverwrite) {
+                            alert('Vorhandene Zählerdaten sind beschädigt. Speichern zum Schutz der Originaldaten blockiert.');
+                            return false;
+                        }
+                        if (!confirm('Die vorhandenen Zählerdaten sind beschädigt. Durch Wiederherstellen des geprüften Backups werden sie endgültig überschrieben. Fortfahren?')) return false;
+                    }
+                }
+                const serialized = JSON.stringify(data);
+                if (!serialized) throw new Error('Zählerdaten nicht serialisierbar');
+                localStorage.setItem('energie_tracker_pro_v8', serialized);
+                if (window.helferleinCloudBridge) {
+                    void window.helferleinCloudBridge.changed(data).catch(error => console.error('Cloud-Übernahme ausstehend:', error));
+                }
+                return true;
+            } catch (error) {
+                console.error('Zählerstände konnten nicht gespeichert werden:', error);
+                alert('Speichern fehlgeschlagen. Bitte Browser-Speicherplatz prüfen; die Eingaben nicht verwerfen.');
+                return false;
+            }
+        }
+
+        function loadTarifs() {
+            let data = getData();
+            if (data.tarifs) {
+                if (data.tarifs.Strom) {
+                    document.getElementById('tariffStromPriceHT').value = data.tarifs.Strom.priceHT ?? '';
+                    document.getElementById('tariffStromPriceNT').value = data.tarifs.Strom.priceNT ?? '';
+                    document.getElementById('tariffStromAbschlag').value = data.tarifs.Strom.abschlag ?? '';
+                }
+                if (data.tarifs.Wasser) {
+                    document.getElementById('tariffWasserPrice').value = data.tarifs.Wasser.price ?? '';
+                    document.getElementById('tariffWasserAbschlag').value = data.tarifs.Wasser.abschlag ?? '';
+                }
+                if (data.tarifs.Gas) {
+                    document.getElementById('tariffGasPrice').value = data.tarifs.Gas.price ?? '';
+                    document.getElementById('tariffGasAbschlag').value = data.tarifs.Gas.abschlag ?? '';
+                    document.getElementById('tariffGasCalib').value = data.tarifs.Gas.calib ?? '11.2';
+                }
+            }
+        }
+
+        function saveTarifs() {
+            const readAmount = (id, fallback = 0) => {
+                const raw = document.getElementById(id).value.trim();
+                const value = raw === '' ? fallback : Number(raw);
+                if (!Number.isFinite(value) || value < 0) throw new Error('Ungültiger Tarifwert');
+                return value;
+            };
+            let tarifs;
+            try {
+                tarifs = {
+                    Strom: { priceHT: readAmount('tariffStromPriceHT'), priceNT: readAmount('tariffStromPriceNT'), abschlag: readAmount('tariffStromAbschlag') },
+                    Wasser: { price: readAmount('tariffWasserPrice'), abschlag: readAmount('tariffWasserAbschlag') },
+                    Gas: { price: readAmount('tariffGasPrice'), abschlag: readAmount('tariffGasAbschlag'), calib: readAmount('tariffGasCalib', 11.2) }
+                };
+                if (tarifs.Gas.calib <= 0) throw new Error('Ungültiger Gasfaktor');
+            } catch (error) {
+                return alert('Bitte gültige, nichtnegative Tarife und einen positiven Gasfaktor eingeben.');
+            }
+            let data = getData();
+            data.tarifs = tarifs;
+            if (!saveData(data)) return;
+            alert("Gespeichert");
+            renderApp();
+        }
+
+        function saveReading() {
+            const type = document.getElementById('meterType').value;
+            const name = document.getElementById('meterName').value.trim() || type + " Zähler";
+            const location = document.getElementById('meterLocation').value;
+            const date = document.getElementById('meterDate').value;
+            const rawValue = document.getElementById('meterValue').value.trim();
+            const value = rawValue === '' ? NaN : Number(rawValue);
+            const note = document.getElementById('meterNote').value.trim();
+            const isExchange = document.getElementById('meterExchangeCheck').checked;
+            const photoInput = document.getElementById('meterPhotoInput');
+
+            const parsedDate = new Date(date);
+            const validDate = /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+                Number.isFinite(parsedDate.getTime()) && parsedDate.toISOString().slice(0, 10) === date;
+            if (!validDate || !Number.isFinite(value) || value < 0) {
+                return alert("Bitte gültiges Ablesedatum und Zählerstand eingeben!");
+            }
+
+            let data = getData();
+            let sameTypeReadings = data.readings.filter(r => {
+                if (!r || typeof r !== 'object' || Array.isArray(r) ||
+                    r.type !== type || r.name !== name || typeof r.date !== 'string' || r.date >= date ||
+                    !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return false;
+                const previousDate = new Date(r.date);
+                return Number.isFinite(previousDate.getTime()) && previousDate.toISOString().slice(0, 10) === r.date &&
+                    r.value !== '' && Number.isFinite(Number(r.value)) && Number(r.value) >= 0;
+            }).sort((a,b) => new Date(b.date) - new Date(a.date));
+            if (sameTypeReadings.length > 0 && !isExchange) {
+                let last = sameTypeReadings[0];
+                let daysBetween = (new Date(date) - new Date(last.date)) / (1000 * 60 * 60 * 24);
+                let diffVal = value - last.value;
+                if (daysBetween > 0 && diffVal > 0) {
+                    let dailyRate = diffVal / daysBetween;
+                    let prevDiffs = sameTypeReadings.length > 1 ? (sameTypeReadings[0].value - sameTypeReadings[sameTypeReadings.length-1].value) : diffVal;
+                    let prevDays = sameTypeReadings.length > 1 ? (new Date(sameTypeReadings[0].date) - new Date(sameTypeReadings[sameTypeReadings.length-1].date)) / (1000 * 60 * 60 * 24) : daysBetween;
+                    let avgDaily = prevDays > 0 ? prevDiffs / prevDays : dailyRate;
+
+                    if (dailyRate > avgDaily * 1.5 && avgDaily > 0) {
+                        if (!confirm(`⚠️ Achtung: Der Verbrauch seit der letzten Ablesung ist ungewöhnlich hoch (+50% über Schnitt)! Trotzdem speichern?`)) {
+                            return;
+                        }
+                    }
+                }
+            }
+
+            if (photoInput.files && photoInput.files[0]) {
+                compressImage(photoInput.files[0], (compressedPhoto) => {
+                    storeReadingRecord(type, name, location, date, value, note, isExchange, compressedPhoto);
+                });
+            } else {
+                storeReadingRecord(type, name, location, date, value, note, isExchange, "");
+            }
+        }
+
+        function compressImage(file, callback) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 600;
+                    const MAX_HEIGHT = 600;
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > height) {
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    } else {
+                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    try {
+                        const ctx = canvas.getContext('2d');
+                        if (!ctx) throw new Error('Canvas nicht verfügbar');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        callback(canvas.toDataURL('image/jpeg', 0.8));
+                    } catch (error) {
+                        console.error('Zählerfoto konnte nicht verarbeitet werden:', error);
+                        alert('Das Zählerfoto konnte nicht verarbeitet werden. Bitte ein anderes Bild auswählen.');
+                    }
+                };
+                img.onerror = () => alert('Das Zählerfoto konnte nicht geöffnet werden.');
+                img.src = e.target.result;
+            };
+            reader.onerror = () => alert('Das Zählerfoto konnte nicht gelesen werden.');
+            reader.readAsDataURL(file);
+        }
+
+        function storeReadingRecord(type, name, location, date, value, note, isExchange, photo) {
+            let data = getData();
+            const existingIds = new Set(data.readings.filter(item => item && typeof item === 'object').map(item => item.id));
+            let newId = Date.now() * 1000 + Math.floor(Math.random() * 1000);
+            while (existingIds.has(newId)) newId++;
+            data.readings.push({
+                id: newId,
+                type,
+                name,
+                location,
+                date,
+                value,
+                note,
+                isExchange,
+                photo
+            });
+
+            data.readings.sort((a, b) => {
+                const aTime = a && typeof a === 'object' ? new Date(a.date).getTime() : NaN;
+                const bTime = b && typeof b === 'object' ? new Date(b.date).getTime() : NaN;
+                return (Number.isFinite(bTime) ? bTime : -Infinity) -
+                    (Number.isFinite(aTime) ? aTime : -Infinity);
+            });
+            if (!saveData(data)) return;
+
+            document.getElementById('meterValue').value = "";
+            document.getElementById('meterNote').value = "";
+            document.getElementById('meterExchangeCheck').checked = false;
+            document.getElementById('meterPhotoInput').value = "";
+            document.getElementById('meterDate').valueAsDate = new Date();
+
+            renderApp();
+        }
+
+        function deleteReading(id) {
+            if (!confirm("⚠️ Diesen Zählerstand wirklich löschen?")) return;
+            let data = getData();
+            data.readings = data.readings.filter(item => !item || typeof item !== 'object' || item.id !== id);
+            if (saveData(data)) renderApp();
+        }
+
+        function openPhotoModal(url) {
+            document.getElementById('modalZoomImg').src = url;
+            document.getElementById('photoModal').classList.remove('hidden');
+        }
+        function closePhotoModal() { document.getElementById('photoModal').classList.add('hidden'); }
+
+        function openEnergyTipsModal() { document.getElementById('energyTipsModal').classList.remove('hidden'); }
+        function closeEnergyTipsModal() { document.getElementById('energyTipsModal').classList.add('hidden'); }
+
+        function copyShareText() {
+            let data = getData();
+            const validReadings = data.readings.filter(r => {
+                if (!r || typeof r !== 'object' || Array.isArray(r) ||
+                    typeof r.type !== 'string' || !r.type.trim() ||
+                    typeof r.name !== 'string' || !r.name.trim() ||
+                    typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return false;
+                const date = new Date(r.date);
+                return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === r.date &&
+                    r.value !== '' && r.value !== null && r.value !== undefined &&
+                    Number.isFinite(Number(r.value)) && Number(r.value) >= 0;
+            });
+            if (validReadings.length === 0) return alert("Keine Zählerstände zum Teilen vorhanden.");
+            let text = "⚡ Zählerstände-Übersicht:\n";
+            let latest = {};
+            // Pick the newest reading per distinct meter, regardless of insertion order.
+            validReadings.forEach(r => {
+                const key = JSON.stringify([r.type, r.name]);
+                if (!latest[key] || r.date > latest[key].date) latest[key] = r;
+            });
+            for (const r of Object.values(latest)) {
+                let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
+                text += `- ${r.type} (${r.name}): ${r.value} ${unit} (vom ${r.date})\n`;
+            }
+            if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+                prompt('Zwischenablage nicht verfügbar. Text manuell kopieren:', text);
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                alert("📋 Zählerstände in die Zwischenablage kopiert! Du kannst sie jetzt direkt in WhatsApp oder E-Mail einfügen.");
+            }).catch(() => {
+                prompt('Zwischenablage nicht verfügbar. Text manuell kopieren:', text);
+            });
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
+        }
+
+        function renderApp() {
+            let data = getData();
+            const filter = document.getElementById('filterType').value;
+            const container = document.getElementById('readingsList');
+
+            const validReadings = data.readings.filter(r => r && typeof r === 'object' && !Array.isArray(r) && typeof r.type === 'string');
+            let filtered = validReadings;
+            if (filter !== 'All') {
+                filtered = validReadings.filter(r => r.type === filter);
+            }
+
+            document.getElementById('statTotalReadings').innerText = validReadings.length;
+            document.getElementById('statStrom').innerText = validReadings.filter(r => r.type.includes('Strom')).length;
+            document.getElementById('statWasser').innerText = validReadings.filter(r => r.type.toLowerCase().includes('wasser')).length;
+            document.getElementById('statGas').innerText = validReadings.filter(r => r.type === 'Gas').length;
+
+            const displayData = { ...data, readings: validReadings };
+            renderPrognosis(displayData);
+            renderChart(displayData);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Einträge gefunden.</p>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map((r) => {
+                let sameMeterReadings = validReadings
+                    .filter(item => item.type === r.type && item.name === r.name && new Date(item.date) < new Date(r.date))
+                    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                let diffText = "";
+                if (sameMeterReadings.length > 0) {
+                    let prev = sameMeterReadings[0];
+                    let diff = 0;
+                    if (r.isExchange) {
+                        diff = r.value;
+                        diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel (Start: ${escapeHtml(r.value)})</span>`;
+                    } else {
+                        const currentValue = Number(r.value);
+                        const previousValue = Number(prev.value);
+                        diff = Number.isFinite(currentValue) && Number.isFinite(previousValue)
+                            ? (currentValue - previousValue).toFixed(2) : null;
+                        let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
+                        if (diff !== null) {
+                            let badgeColor = diff >= 0 ? 'bg-sky-100 text-sky-800' : 'bg-red-100 text-red-800';
+                            diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${escapeHtml(prev.date)})</span>`;
+                        }
+                    }
+                } else if (r.isExchange) {
+                    diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel Start</span>`;
+                }
+
+                let icon = '📊';
+                if (r.type.includes('Strom')) icon = '⚡';
+                if (r.type.toLowerCase().includes('wasser')) icon = '💧';
+                if (r.type === 'Gas') icon = '♨️';
+
+                let unitLabel = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
+                return `
+                    <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <div class="flex items-center space-x-3">
+                            ${typeof r.photo === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(r.photo) ? `<img src="${escapeHtml(r.photo)}" onclick="openPhotoModal(this.src)" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer hover:opacity-80 transition-opacity" title="Foto vergrößern">` : `<div class="w-12 h-12 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center font-bold text-lg">${icon}</div>`}
+                            <div>
+                                <div class="flex items-center space-x-2 flex-wrap gap-1">
+                                    <span class="text-xs font-bold text-gray-800">${escapeHtml(r.name)}</span>
+                                    <span class="text-xs text-sky-700 font-semibold">(${escapeHtml(r.type)} - ${escapeHtml(r.location || 'Haupt')})</span>
+                                    ${diffText}
+                                </div>
+                                <p class="text-xs text-gray-600 mt-1">
+                                    Stand: <strong class="text-gray-900">${escapeHtml(r.value)} ${unitLabel}</strong> | Datum: ${escapeHtml(r.date)}
+                                    ${r.note ? ' | Notiz: ' + escapeHtml(r.note) : ''}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 self-end md:self-center">
+                            ${typeof r.id === 'number' && Number.isSafeInteger(r.id) ? `<button onclick="deleteReading(${r.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕ Löschen</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderChart(data) {
+            const card = document.getElementById('chartCard');
+            const container = document.getElementById('chartContainer');
+            
+            let monthly = {};
+            data.readings.forEach(r => {
+                if (!r || typeof r !== 'object' || Array.isArray(r) ||
+                    typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date) ||
+                    r.value === '' || r.value === null || r.value === undefined ||
+                    !Number.isFinite(Number(r.value)) || Number(r.value) < 0) return;
+                const parsedDate = new Date(r.date);
+                if (!Number.isFinite(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== r.date) return;
+                const monthKey = r.date.substring(0, 7);
+                if (!monthly[monthKey]) monthly[monthKey] = 0;
+                monthly[monthKey] += 1;
+            });
+
+            let keys = Object.keys(monthly).sort();
+            if (keys.length < 2) {
+                card.classList.add('hidden');
+                return;
+            }
+
+            card.classList.remove('hidden');
+            let maxVal = Math.max(...Object.values(monthly)) || 1;
+
+            container.innerHTML = keys.map(k => {
+                let val = monthly[k];
+                let percent = Math.min(100, Math.max(10, (val / maxVal) * 100));
+                return `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px] font-semibold text-gray-600">
+                            <span>Monat: ${k}</span>
+                            <span>Ablesungen: ${val}</span>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                            <div class="bg-sky-600 h-3 rounded-full transition-all duration-500" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderPrognosis(data) {
+            const card = document.getElementById('prognosisCard');
+            const content = document.getElementById('prognosisContent');
+            
+            let types = ['Strom', 'Kaltwasser', 'Gas'];
+            let html = "";
+            let hasData = false;
+
+            types.forEach(t => {
+                const matching = data.readings.filter(r => {
+                    if (!r || typeof r !== 'object' || r.type !== t || typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return false;
+                    const date = new Date(r.date);
+                    return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === r.date &&
+                        Number.isFinite(Number(r.value)) && r.value !== '' && Number(r.value) >= 0;
+                }).sort((a,b) => new Date(b.date) - new Date(a.date));
+                const latestMeterName = matching[0]?.name;
+                let list = matching.filter(r => r.name === latestMeterName)
+                    .sort((a,b) => new Date(a.date) - new Date(b.date));
+
+                if (list.length >= 2) {
+                    let totalValidVal = 0;
+                    let validDays = 0;
+
+                    for (let i = 1; i < list.length; i++) {
+                        const days = (new Date(list[i].date) - new Date(list[i-1].date)) / (1000 * 60 * 60 * 24);
+                        const currentValue = Number(list[i].value);
+                        const previousValue = Number(list[i-1].value);
+                        if (days > 0 && !list[i].isExchange && currentValue >= previousValue) {
+                            totalValidVal += currentValue - previousValue;
+                            validDays += days;
+                        }
+                    }
+
+                    if (validDays > 0 && totalValidVal >= 0) {
+                        hasData = true;
+                        let daily = totalValidVal / validDays;
+                        let yearlyEst = (daily * 365).toFixed(1);
+                        let tarifKey = t === 'Kaltwasser' ? 'Wasser' : t;
+                        
+                        const tarif = data.tarifs?.[tarifKey];
+                        const rawPrice = t === 'Strom' ? tarif?.priceHT : tarif?.price;
+                        const hasPrice = rawPrice !== undefined && rawPrice !== null && rawPrice !== '' &&
+                            Number.isFinite(Number(rawPrice)) && Number(rawPrice) >= 0;
+                        const rawAbschlag = tarif?.abschlag;
+                        const hasAbschlag = rawAbschlag !== undefined && rawAbschlag !== null && rawAbschlag !== '' &&
+                            Number.isFinite(Number(rawAbschlag)) && Number(rawAbschlag) >= 0;
+                        const yearlyCost = hasPrice ? Number(yearlyEst) * Number(rawPrice) : null;
+                        const yearlyAbschlag = hasAbschlag ? Number(rawAbschlag) * 12 : null;
+                        const unit = t === 'Strom' || t === 'Gas' ? 'kWh' : 'm³';
+
+                        html += `
+                            <div class="p-4 bg-gray-50 border rounded-xl space-y-1.5">
+                                <h4 class="font-bold text-sm">${t} Prognose & Live-Kosten</h4>
+                                <p class="text-xs">Hochrechnung / Jahr: <strong>${yearlyEst} ${unit}</strong></p>
+                                ${yearlyCost === null
+                                    ? '<p class="text-xs text-amber-700">Kostenprognose nicht verfügbar: gültigen Tarifpreis hinterlegen.</p>'
+                                    : `<p class="text-xs">Tages-Schnitt: <strong class="text-sky-700">${(yearlyCost / 365).toFixed(2)} € / Tag</strong></p>
+                                       <p class="text-xs">Kosten: <strong>${yearlyCost.toFixed(2)} €</strong>${yearlyAbschlag === null ? ' (Abschlag nicht hinterlegt)' : ` (Bezahlt: ${yearlyAbschlag.toFixed(2)} €)`}</p>
+                                       ${yearlyAbschlag === null ? '' : `<p class="text-xs font-bold ${yearlyCost > yearlyAbschlag ? 'text-red-600' : 'text-emerald-600'}">
+                                           ${yearlyCost > yearlyAbschlag ? '⚠️ Nachzahlung: ca. ' + (yearlyCost - yearlyAbschlag).toFixed(2) + ' €' : '🎉 Guthaben: ca. ' + (yearlyAbschlag - yearlyCost).toFixed(2) + ' €'}
+                                       </p>`}
+                                       <p class="text-xs bg-white p-2 rounded-lg border font-semibold text-sky-900">
+                                           💡 Neuer Abschlag: <span class="text-sky-700 text-sm">${(Math.ceil((yearlyCost / 12) / 10) * 10).toFixed(0)} € / Monat</span>
+                                       </p>`}
+                            </div>
+                        `;
+                    }
+                }
+            });
+
+            if (hasData) {
+                card.classList.remove('hidden');
+                content.innerHTML = html;
+            } else {
+                card.classList.add('hidden');
+            }
+        }
+
+        function exportHandoverPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const data = getData();
+
+            doc.setFontSize(18);
+            doc.text("Wohnungs- & Zählerübergabe-Protokoll", 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
+            doc.text("Dieses Dokument dient als formeller Nachweis der aktuellen Zählerstände.", 14, 34);
+
+            let y = 48;
+            data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string').forEach((r, idx) => {
+                const unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
+                const lines = [
+                    ...doc.splitTextToSize(`${idx + 1}. [${r.type}] ${r.name} (${r.location || 'Haupt'})`, 180),
+                    ...doc.splitTextToSize(`Ablesedatum: ${r.date} | Zählerstand: ${r.value} ${unit}`, 180),
+                    ...(r.note ? doc.splitTextToSize(`Bemerkung: ${r.note}`, 180) : [])
+                ];
+                lines.forEach(line => {
+                    if (y > 270) { doc.addPage(); y = 20; }
+                    doc.text(line, 14, y);
+                    y += 6;
+                });
+                y += 8;
+            });
+
+            if (y + 24 > 280) { doc.addPage(); y = 20; }
+            y += 10;
+            doc.text("___________________________", 14, y);
+            doc.text("Unterschrift Übergeber / Mieter", 14, y + 6);
+
+            doc.text("___________________________", 120, y);
+            doc.text("Unterschrift Übernehmer / Vermieter", 120, y + 6);
+
+            doc.save(`zaehler-uebergabeprotokoll-${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+
+        function exportBackup() {
+            const data = getData();
+            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+            const a = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            a.href = url;
+            a.download = `energie-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                event.target.value = '';
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !Array.isArray(parsed.readings) ||
+                        !parsed.readings.every(item => {
+                            if (!item || typeof item.type !== 'string' || !item.type.trim() ||
+                                typeof item.name !== 'string' || !item.name.trim() ||
+                                typeof item.date !== 'string' || !Number.isFinite(item.value) || item.value < 0 ||
+                                !/^\d{4}-\d{2}-\d{2}$/.test(item.date)) return false;
+                            const date = new Date(item.date);
+                            return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === item.date;
+                        }) ||
+                        (parsed.tarifs !== undefined && (!parsed.tarifs ||
+                            typeof parsed.tarifs !== 'object' || Array.isArray(parsed.tarifs)))) {
+                        throw new Error('Ungültiges Zählerstände-Backup');
+                    }
+                    if (!confirm('Backup importieren? Vorhandene Zählerstände und Tarife werden ersetzt.')) return;
+                    if (!saveData({ ...parsed, tarifs: parsed.tarifs || {} }, true)) return;
+                    loadTarifs();
+                    renderApp();
+                    alert("Backup erfolgreich importiert!");
+                } catch(err) {
+                    alert("Fehler beim Importieren der Datei.");
+                }
+            };
+            reader.onerror = () => {
+                event.target.value = '';
+                alert('Backup-Datei konnte nicht gelesen werden.');
+            };
+            reader.readAsText(file);
+        }
+
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const data = getData();
+
+            doc.setFontSize(16);
+            doc.text("Zählerstands-Bericht & Prognose", 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
+
+            const readings = data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string');
+            doc.text(`Erfasste Ablesungen: ${readings.length}`, 14, 34);
+            let y = 44;
+            if (!readings.length) {
+                doc.text("Keine Zählerstände erfasst.", 14, y);
+            }
+            readings.forEach((r) => {
+                const unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
+                const line = `${r.date} | ${r.type} (${r.name} - ${r.location || 'Haupt'}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`;
+                const lines = doc.splitTextToSize(line, 180);
+                lines.forEach(textLine => {
+                    if (y > 275) { doc.addPage(); y = 20; }
+                    doc.text(textLine, 14, y);
+                    y += 6;
+                });
+                y += 2;
+            });
+
+            doc.save(`zaehlerstaende-${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+    </script>
+</body>
+</html>

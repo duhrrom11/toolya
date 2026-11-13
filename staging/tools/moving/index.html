@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>
+      try { if (localStorage.getItem('helferlein_cloud_owner_umzugskisten-inventar')) document.documentElement.classList.add('helferlein-account-check'); }
+      catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Umzugskisten-App & Inventarliste | Helferlein</title>
+    <meta name="description" content="Umzugskisten online organisieren: Inventarliste erstellen, Kisten per QR-Code beschriften und Gegenstände in Keller, Garage oder Lager schnell finden.">
+    <link rel="canonical" href="https://toolya.app/tools/moving/index.html">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- qrcode.js für QR-Code Erstellung -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- html5-qrcode für den Live-Kamera-Scanner -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <!-- jsPDF für den PDF-Report & QR-Etiketten-Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="../../assets/helferlein-b3.css">
+    <link rel="stylesheet" href="../../assets/helferlein-b3-umzugskisten.css">
+    <script>
+      window.HELFERLEIN_B3 = {
+        key:'umzugskisten',
+        name:'Umzugskisten & Inventarliste',
+        panels:[
+          {id:'stats',name:'Inventar-Statistiken',size:'l'},
+          {id:'values',name:'Werte nach Standort & Kategorie',size:'m'},
+          {id:'create',name:'Standort & Kisten erfassen',size:'l'},
+          {id:'inventory',name:'Inventar durchsuchen',size:'l'}
+        ],
+        navigation:[
+          ['📦','Übersicht','#main-content'],
+          ['📊','Statistiken','#b3-stats'],
+          ['➕','Kiste erfassen','#b3-create'],
+          ['🗄️','Inventar','#b3-inventory']
+        ],
+        extra:[
+          {label:'🔍 QR- & Barcode-Scanner',handler:'openScannerModal'},
+          {label:'📄 Inventar als PDF',handler:'exportInventoryPDF'},
+          {label:'🖨️ QR-Etiketten als PDF',handler:'exportQrLabelsPDF'},
+          {label:'💾 Sicherung herunterladen',handler:'exportBackup'},
+          {label:'📂 Daten importieren',handler:'openSettings'}
+        ],
+        helpId:'helpBox',
+        helpToggle:'toggleHelp'
+      };
+    </script>
+    <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
+        const client = window.supabaseClient;
+        if (!client || window.helferleinCloudBridge) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client, tool: 'umzugskisten-inventar', localKey: 'mini_homebox_pro', collection: 'boxes',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css?v=20261112-3">
+    <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
+<script defer src="../../assets/helferlein-dialogs.js"></script>
+<link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script></head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
+
+    <!-- Header mit ausklappbarer Anleitung -->
+    <header class="b3-header">
+  <div class="b3-header-inner">
+    <a class="b3-brand" href="../../index.html" aria-label="Helferlein Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</a>
+    <span class="b3-tool-icon" aria-hidden="true">📦</span>
+    <div class="b3-tool-title">
+      <h1>Umzugskisten-App & Inventarliste</h1>
+      <p>Umzugskartons und Gegenstände verwalten, mit QR-Code schnell wiederfinden</p>
+    </div>
+    <button type="button" id="settingsBtn" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()">⚙</button>
+  </div>
+</header>
+
+    <!-- Main Content -->
+    <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
+        
+        <!-- Dashboard Statistiken -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-b3-panel="stats" id="b3-stats">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-amber-50 text-amber-700 rounded-xl font-bold">📦</div>
+                <div><p class="text-xs text-gray-500">Erfasste Kisten</p><h3 id="statBoxes" class="text-lg font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">📍</div>
+                <div><p class="text-xs text-gray-500">Standorte</p><h3 id="statLocs" class="text-lg font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
+                <div><p class="text-xs text-gray-500">Gesamtwert Inventar</p><h3 id="statValue" class="text-lg font-bold">0,00 €</h3></div>
+            </div>
+        </div>
+
+        <!-- Statistiken: Wert nach Standorten & Kategorien (Tags) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-b3-panel="values" id="b3-values">
+            <div id="locationValueStatsCard" class="bg-white p-5 rounded-2xl shadow-sm border space-y-2 hidden">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">📊 Wert nach Standorten</h4>
+                <div id="locationValueStatsList" class="grid grid-cols-2 gap-2"></div>
+            </div>
+            <div id="tagValueStatsCard" class="bg-white p-5 rounded-2xl shadow-sm border space-y-2 hidden">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">🏷️ Wert nach Kategorien (Tags)</h4>
+                <div id="tagValueStatsList" class="grid grid-cols-2 gap-2"></div>
+            </div>
+        </div>
+
+        <!-- Erfassung: Standort & Kiste -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-b3-panel="create" id="b3-create">
+            <!-- Standort anlegen -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
+                <h2 class="text-lg font-bold">📍 1. Standort anlegen</h2>
+                <div class="flex gap-2">
+                    <label class="helferlein-field" for="locIcon"><span class="helferlein-field-label">Symbol des Standorts</span><select id="locIcon" class="p-3 border rounded-xl text-sm bg-white" aria-label="Symbol des Standorts">
+                        <option value="📦">📦 Karton</option>
+                        <option value="🏠">🏠 Haus</option>
+                        <option value="🚪">🚪 Keller</option>
+                        <option value="🏡">🏡 Dachboden</option>
+                        <option value="🚗">🚗 Garage</option>
+                        <option value="🏢">🏢 Büro</option>
+                        <option value="⛺">⛺ Schuppen</option>
+                    </select></label>
+                    <label class="helferlein-field" for="locName"><span class="helferlein-field-label">Standort Name</span><input type="text" id="locName" placeholder="Standort Name" class="w-full p-3 border rounded-xl text-sm" aria-label="Standort Name"></label>
+                </div>
+                <button onclick="saveLocation()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Standort speichern</button>
+            </div>
+
+            <!-- Kiste hinzufügen -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
+                <h2 class="text-lg font-bold">📦 2. Kiste / Karton hinzufügen</h2>
+                <label class="helferlein-field" for="boxLocationSelect"><span class="helferlein-field-label">Standort der Kiste</span><select id="boxLocationSelect" class="w-full p-3 border rounded-xl text-sm bg-white" aria-label="Standort der Kiste">
+                    <option value="">-- Standort wählen --</option>
+                </select></label>
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="helferlein-field" for="boxName"><span class="helferlein-field-label">Kisten-Name</span><input type="text" id="boxName" placeholder="Kisten-Name (z.B. Karton #3)" class="p-3 border rounded-xl text-sm" aria-label="Kisten-Name (z.B. Karton #3)"></label>
+                    <label class="helferlein-field" for="boxValue"><span class="helferlein-field-label">Wert in € (optional)</span><input type="text" id="boxValue" placeholder="Wert in € (optional)" class="p-3 border rounded-xl text-sm" aria-label="Wert in € (optional)"></label>
+                </div>
+                <label class="helferlein-field" for="boxDesc"><span class="helferlein-field-label">Inhalt / Beschreibung</span><input type="text" id="boxDesc" placeholder="Inhalt / Beschreibung (z.B. Lichterketten)" class="w-full p-3 border rounded-xl text-sm" aria-label="Inhalt / Beschreibung (z.B. Lichterketten)"></label>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="helferlein-field" for="boxBarcode"><span class="helferlein-field-label">Barcode / EAN (optional)</span><input type="text" id="boxBarcode" placeholder="Barcode / EAN (optional)" class="p-3 border rounded-xl text-sm font-mono" aria-label="Barcode / EAN (optional)"></label>
+                    <label class="helferlein-field" for="boxExpiry"><span class="helferlein-field-label">Garantie- oder Ablaufdatum</span><input type="date" id="boxExpiry" class="p-3 border rounded-xl text-sm bg-white" title="Garantie / Ablaufdatum" aria-label="Garantie- oder Ablaufdatum"></label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="helferlein-field" for="boxTag"><span class="helferlein-field-label">Kennzeichnung der Kiste</span><select id="boxTag" class="p-3 border rounded-xl text-sm bg-white" aria-label="Kennzeichnung der Kiste">
+                        <option value="Standard">🏷️ Standard</option>
+                        <option value="Zerbrechlich">⚠️ Zerbrechlich</option>
+                        <option value="Wertvoll">💎 Wertvoll</option>
+                        <option value="Saison">❄️ Saison / Deko</option>
+                    </select></label>
+                    <label class="helferlein-field" for="boxPhotoInput"><span class="helferlein-field-label">Foto der Kiste auswählen</span><input type="file" id="boxPhotoInput" accept="image/*" capture="environment" class="text-xs p-2 border rounded-xl file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Foto der Kiste auswählen"></label>
+                </div>
+                <button onclick="saveBox()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Kiste speichern & QR-Code</button>
+            </div>
+        </div>
+
+        <!-- Suche, Filter & Inventar -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="inventory" id="b3-inventory">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-3">
+                <h3 class="font-bold text-lg">🗄️ Vollständiges Inventar</h3>
+                <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                    <label class="helferlein-field" for="tagFilter"><span class="helferlein-field-label">Inventar nach Kennzeichnung filtern</span><select id="tagFilter" onchange="renderInventory()" class="p-2 border rounded-xl text-sm bg-white" aria-label="Inventar nach Kennzeichnung filtern">
+                        <option value="">Alle Tags</option>
+                        <option value="Standard">Standard</option>
+                        <option value="Zerbrechlich">Zerbrechlich</option>
+                        <option value="Wertvoll">Wertvoll</option>
+                        <option value="Saison">Saison</option>
+                    </select></label>
+                    <label class="helferlein-field" for="sortFilter"><span class="helferlein-field-label">Inventar sortieren</span><select id="sortFilter" onchange="renderInventory()" class="p-2 border rounded-xl text-sm bg-white" aria-label="Inventar sortieren">
+                        <option value="name">Sortierung: Name</option>
+                        <option value="value-desc">Höchster Wert zuerst</option>
+                        <option value="value-asc">Geringster Wert zuerst</option>
+                    </select></label>
+                    <label class="helferlein-field" for="searchBox"><span class="helferlein-field-label">🔍 Suchen (Kiste, Artikel, Barcode)...</span><input type="text" id="searchBox" oninput="renderInventory()" placeholder="🔍 Suchen (Kiste, Artikel, Barcode)..." class="p-2 border rounded-xl text-sm flex-grow md:w-56" aria-label="🔍 Suchen (Kiste, Artikel, Barcode)..."></label>
+                </div>
+            </div>
+            <div id="inventoryContainer" class="space-y-4">
+                <p class="text-sm text-gray-400 text-center py-4">Noch keine Standorte oder Kisten erfasst.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL: Kiste Bearbeiten -->
+    <div id="editBoxModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-6 rounded-2xl max-w-lg w-full shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-lg font-bold">Kiste & Artikel bearbeiten</h3>
+            <input type="hidden" id="editBoxId">
+            <div>
+                <label for="editBoxLocSelect" class="block text-xs font-semibold text-gray-600 mb-1">Standort (Verschieben):</label>
+                <select id="editBoxLocSelect" class="w-full p-3 border rounded-xl text-sm bg-white"></select>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div><label for="editBoxName" class="block text-xs font-semibold text-gray-600 mb-1">Kisten-Name:</label><input type="text" id="editBoxName" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label for="editBoxTag" class="block text-xs font-semibold text-gray-600 mb-1">Tag (Kategorie):</label><select id="editBoxTag" class="w-full p-3 border rounded-xl text-sm bg-white"><option value="Standard">Standard</option><option value="Zerbrechlich">Zerbrechlich</option><option value="Wertvoll">Wertvoll</option><option value="Saison">Saison</option></select></div>
+            </div>
+            <div><label for="editBoxDesc" class="block text-xs font-semibold text-gray-600 mb-1">Beschreibung / Inhalt:</label><input type="text" id="editBoxDesc" class="w-full p-3 border rounded-xl text-sm"></div>
+            
+            <div class="grid grid-cols-3 gap-2">
+                <div><label for="editBoxValue" class="block text-xs font-semibold text-gray-600 mb-1">Wert (€):</label><input type="text" id="editBoxValue" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label for="editBoxBarcode" class="block text-xs font-semibold text-gray-600 mb-1">Barcode / EAN:</label><input type="text" id="editBoxBarcode" class="w-full p-3 border rounded-xl text-sm font-mono"></div>
+                <div><label for="editBoxExpiry" class="block text-xs font-semibold text-gray-600 mb-1">Ablauf:</label><input type="date" id="editBoxExpiry" class="w-full p-3 border rounded-xl text-sm bg-white"></div>
+            </div>
+
+            <div><label for="editBoxLentTo" class="block text-xs font-semibold text-gray-600 mb-1">Ausgeliehen an (leer = im Regal):</label><input type="text" id="editBoxLentTo" placeholder="z.B. Max" class="w-full p-3 border rounded-xl text-sm"></div>
+
+            <div class="border-t pt-3 space-y-2">
+                <label class="block text-xs font-bold text-gray-700">🔎 Unterartikel in dieser Kiste:</label>
+                <div id="subItemsContainer" class="space-y-2 max-h-36 overflow-y-auto pr-1"></div>
+                <div class="flex gap-2 pt-1">
+                    <input type="text" id="newSubItemName" placeholder="Artikel-Name (z.B. Bohrhammer)" class="p-2 border rounded-xl text-xs flex-grow">
+                    <input type="text" id="newSubItemVal" placeholder="Wert €" class="p-2 border rounded-xl text-xs w-20">
+                    <button onclick="addSubItem()" class="px-3 py-2 bg-gray-800 text-white rounded-xl text-xs font-bold">+ Hinzufügen</button>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-3 border-t">
+                <button onclick="closeEditBoxModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button>
+                <button onclick="updateBox()" class="px-5 py-2 bg-amber-600 text-white rounded-xl text-sm font-bold">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: QR Code anzeigen & Deep-Link -->
+    <div id="qrModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeQrModal()">
+        <div class="bg-white p-6 rounded-2xl text-center space-y-3 shadow-2xl" onclick="event.stopPropagation()">
+            <h3 id="qrModalTitle" class="font-bold text-lg">QR-Code</h3>
+            <div id="qrcode" class="flex justify-center p-2 bg-white border rounded-xl"></div>
+            <p id="qrLinkInfo" class="text-[11px] text-indigo-600 font-mono break-all"></p>
+            <p class="text-xs text-gray-500">Drucke diesen Code aus. Beim Scannen öffnet sich die Kiste direkt in der App!</p>
+            <button onclick="closeQrModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Live QR & Barcode Scanner -->
+    <div id="scannerModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-2xl space-y-4 text-center">
+            <h3 class="font-bold text-lg">🔍 Live Scanner</h3>
+            <div id="reader" class="w-full rounded-xl overflow-hidden border"></div>
+            <div id="scanResult" class="text-xs font-semibold text-amber-700 bg-amber-50 p-2 rounded-xl hidden"></div>
+            <button onclick="closeScannerModal()" class="px-5 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Scanner schließen</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Foto Zoom -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50" onclick="closeImageModal()">
+        <img id="zoomedImage" src="" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain">
+    </div>
+
+    <!-- Unsichtbares Element zur temporären QR-Generierung für den PDF-Export -->
+    <div id="hiddenQrContainer" class="hidden"></div>
+
+    <!-- Einstellungs-Modal mit Supabase Auth -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors space-y-5">
+            <div class="flex justify-between items-center border-b border-gray-200 pb-3">
+                <h3 class="text-lg font-bold text-gray-900">
+                    ⚙️ Einstellungen & Konto
+                </h3>
+                <button type="button" id="closeSettingsBtn" onclick="closeSettings()" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">
+                    &times;
+                </button>
+            </div>
+
+            <!-- CLOUD-KONTO -->
+            <div>
+                <h3 class="font-bold text-sm text-gray-800 mb-2">☁️ Konto</h3>
+                <div class="space-y-3">
+                    <div id="userInfo" class="text-xs font-semibold mb-2" aria-live="polite">Nicht angemeldet</div>
+                    <div id="cloudStatus" class="text-xs bg-gray-100 rounded-lg p-3 text-gray-700">
+                        Nicht angemeldet
+                    </div>
+
+                    <label class="helferlein-field" for="loginEmail"><span class="helferlein-field-label">E-Mail</span><input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
+                    <label class="helferlein-field" for="loginPassword"><span class="helferlein-field-label">Passwort</span><input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="registerUser()" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold">
+                            👤 Registrieren
+                        </button>
+                        <button type="button" onclick="loginUser()" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-semibold">
+                            🔑 Anmelden
+                        </button>
+                        <button type="button" onclick="logoutUser()" class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-semibold">
+                            🚪 Abmelden
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DATENSICHERUNG -->
+            <div class="border-t border-gray-200 pt-4">
+                <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Daten sichern und wiederherstellen</label>
+                <div class="flex gap-2">
+                    <button type="button" onclick="exportBackup()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Sicherung</button>
+                    <label class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">
+                        📤 Restore <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
+                    </label>
+                </div>
+            </div>
+
+            <div class="b3-box-help"><!-- Ausklappbarer Anleitung-Container -->
+        <div class="max-w-4xl mx-auto space-y-2">
+            <button onclick="toggleHelp()" id="helpToggleBtn" class="px-4 py-1.5 bg-amber-700/90 hover:bg-amber-700 text-amber-100 rounded-xl text-xs font-semibold border border-amber-500/40 shadow-sm transition-all flex items-center gap-1.5 mx-auto">
+                📖 <span>Hilfe & Anleitung anzeigen</span>
+            </button>
+
+            <div id="helpBox" class="bg-amber-700/90 border border-amber-500/40 rounded-2xl p-4 text-left text-xs text-amber-50 space-y-2 shadow-inner hidden">
+                <div class="font-bold text-sm flex items-center justify-between border-b border-amber-600 pb-1.5 text-white">
+                    <span>📖 Kurzanleitung – So funktioniert's:</span>
+                    <button onclick="toggleHelp()" class="text-amber-200 hover:text-white text-xs px-1.5 py-0.5 rounded">✕ Schließen</button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
+                    <div class="bg-amber-800/50 p-2.5 rounded-xl border border-amber-600/30">
+                        <span class="font-bold text-amber-200 block mb-0.5">1. Standort anlegen</span>
+                        Erstelle Ablageorte (wähle direkt ein passendes Icon wie Keller oder Garage).
+                    </div>
+                    <div class="bg-amber-800/50 p-2.5 rounded-xl border border-amber-600/30">
+                        <span class="font-bold text-amber-200 block mb-0.5">2. Kiste & Artikel</span>
+                        Füge Kisten hinzu und erfasse bei Bedarf feine <b>Unterartikel</b> mit Einzelwerten.
+                    </div>
+                    <div class="bg-amber-800/50 p-2.5 rounded-xl border border-amber-600/30">
+                        <span class="font-bold text-amber-200 block mb-0.5">3. QR-Code drucken</span>
+                        Drucke den QR-Code aus und klebe ihn auf die physische Kiste.
+                    </div>
+                    <div class="bg-amber-800/50 p-2.5 rounded-xl border border-amber-600/30">
+                        <span class="font-bold text-amber-200 block mb-0.5">4. Scanne & Finde</span>
+                        Scanne den Code mit der Handykamera (Deep-Link), um den Inhalt sofort zu öffnen!
+                    </div>
+                </div>
+            </div>
+        </div></div>
+
+            <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
+                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Logik -->
+    <script>
+        // Supabase Konfiguration
+        const SUPABASE_URL = "https://avapuibsidubuzxjtyld.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC";
+
+        window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("✅ Supabase verbunden");
+
+        async function registerUser() {
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPassword").value;
+
+            if (!email || !password) {
+                alert("Bitte E-Mail und Passwort eingeben.");
+                return;
+            }
+
+            const { error } = await window.supabaseClient.auth.signUp({ email, password });
+            if (error) {
+                alert(error.message);
+                return;
+            }
+
+            alert("Registrierung erfolgreich.");
+            updateUserDisplay();
+            closeSettings();
+        }
+
+        async function loginUser() {
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPassword").value;
+
+            if (!email || !password) {
+                alert("Bitte E-Mail und Passwort eingeben.");
+                return;
+            }
+
+            const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) {
+                alert(error.message);
+                return;
+            }
+
+            updateUserDisplay();
+            closeSettings();
+        }
+
+        async function logoutUser() {
+            await window.supabaseClient.auth.signOut();
+            updateUserDisplay();
+        }
+
+        async function updateUserDisplay() {
+            const { data } = await window.supabaseClient.auth.getUser();
+            const user = data?.user;
+
+            const headerInfo = document.getElementById("userInfo");
+            const cloudStatus = document.getElementById("cloudStatus");
+
+            if (user) {
+                if (headerInfo) headerInfo.textContent = "👤 " + user.email;
+                if (cloudStatus) cloudStatus.textContent = "✅ Angemeldet – " + (user.email || "Benutzer");
+            } else {
+                if (headerInfo) headerInfo.textContent = "Nicht angemeldet";
+                if (cloudStatus) cloudStatus.textContent = "Nicht angemeldet";
+            }
+        }
+
+        function openSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }
+        }
+
+        let html5QrCode = null;
+        let activeSubItemsTemp = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLocationsDropdown();
+            checkDeepLink();
+            renderInventory();
+            try { updateUserDisplay(); } catch(e){}
+        });
+
+        supabaseClient.auth.onAuthStateChange(async () => {
+            updateUserDisplay();
+        });
+
+        function toggleHelp() {
+            const helpBox = document.getElementById('helpBox');
+            const toggleBtn = document.getElementById('helpToggleBtn');
+            if (helpBox.classList.contains('hidden')) {
+                helpBox.classList.remove('hidden');
+                toggleBtn.innerHTML = '📖 <span>Hilfe & Anleitung ausblenden</span>';
+            } else {
+                helpBox.classList.add('hidden');
+                toggleBtn.innerHTML = '📖 <span>Hilfe & Anleitung anzeigen</span>';
+            }
+        }
+
+        function getData() {
+            try {
+                return JSON.parse(localStorage.getItem('mini_homebox_pro')) || { locations: [], boxes: [] };
+            } catch(e) {
+                return { locations: [], boxes: [] };
+            }
+        }
+
+        function saveData(data) {
+            if (!data || typeof data !== 'object' || !Array.isArray(data.boxes)) return false;
+            if (localStorage.getItem('helferlein_cloud_owner_umzugskisten-inventar') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
+                return false;
+            }
+            const existing = localStorage.getItem('mini_homebox_pro');
+            if (existing !== null) {
+                try { if (!Array.isArray(JSON.parse(existing).boxes)) throw new Error('invalid'); }
+                catch (_) { alert('Vorhandene Daten sind beschädigt; Überschreiben gesperrt.'); return false; }
+            }
+            try {
+                localStorage.setItem('mini_homebox_pro', JSON.stringify(data));
+                if (window.helferleinCloudBridge) void window.helferleinCloudBridge.changed(data).catch(console.error);
+                return true;
+            } catch (error) { console.error('Lokales Speichern fehlgeschlagen', error); return false; }
+        }
+
+        function checkDeepLink() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const boxIdParam = urlParams.get('box');
+            if (boxIdParam) {
+                document.getElementById('searchBox').value = boxIdParam;
+            }
+        }
+
+        function saveLocation() {
+            const name = document.getElementById('locName').value.trim();
+            const icon = document.getElementById('locIcon').value;
+            if (!name) return alert("Bitte Standort eingeben!");
+            let data = getData();
+            data.locations.push({ id: Date.now(), name, icon });
+            if (!saveData(data)) return;
+            document.getElementById('locName').value = "";
+            loadLocationsDropdown();
+            renderInventory();
+        }
+
+        function editLocation(locId) {
+            let data = getData();
+            let loc = data.locations.find(l => l.id === locId);
+            if (!loc) return;
+            let newName = prompt("Standort umbenennen:", loc.name);
+            if (newName !== null && newName.trim() !== "") {
+                loc.name = newName.trim();
+                if (!saveData(data)) return;
+                loadLocationsDropdown();
+                renderInventory();
+            }
+        }
+
+        function deleteLocation(locId) {
+            if (!confirm("⚠️ Möchtest du diesen Standort und ALLE Kisten darin wirklich löschen?")) return;
+            let data = getData();
+            data.locations = data.locations.filter(l => l.id !== locId);
+            data.boxes = data.boxes.filter(b => b.locId !== locId);
+            if (!saveData(data)) return;
+            loadLocationsDropdown();
+            renderInventory();
+        }
+
+        function loadLocationsDropdown() {
+            let data = getData();
+            const html = '<option value="">-- Standort wählen --</option>' + 
+                data.locations.map(l => `<option value="${l.id}">${l.icon || '📍'} ${l.name}</option>`).join('');
+            document.getElementById('boxLocationSelect').innerHTML = html;
+            document.getElementById('editBoxLocSelect').innerHTML = html;
+        }
+
+        function saveBox() {
+            const locId = document.getElementById('boxLocationSelect').value;
+            const name = document.getElementById('boxName').value.trim();
+            const desc = document.getElementById('boxDesc').value.trim();
+            const value = parseFloat(document.getElementById('boxValue').value.replace(',', '.')) || 0;
+            const tag = document.getElementById('boxTag').value;
+            const barcode = document.getElementById('boxBarcode').value.trim();
+            const expiry = document.getElementById('boxExpiry').value;
+            const photoInput = document.getElementById('boxPhotoInput');
+
+            if (!locId || !name) return alert("Bitte Standort und Kisten-Name angeben!");
+
+            if (photoInput.files && photoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    storeBoxData(locId, name, desc, value, tag, barcode, expiry, "", [], e.target.result);
+                };
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                storeBoxData(locId, name, desc, value, tag, barcode, expiry, "", [], "");
+            }
+        }
+
+        function storeBoxData(locId, name, desc, value, tag, barcode, expiry, lentTo, subItems, photo) {
+            let data = getData();
+            data.boxes.push({ 
+                id: Date.now(), 
+                locId: parseInt(locId), 
+                name, 
+                desc, 
+                value, 
+                tag, 
+                barcode, 
+                expiry, 
+                lentTo: lentTo || "", 
+                subItems: subItems || [],
+                photo 
+            });
+            if (!saveData(data)) return;
+            document.getElementById('boxName').value = "";
+            document.getElementById('boxDesc').value = "";
+            document.getElementById('boxValue').value = "";
+            document.getElementById('boxBarcode').value = "";
+            document.getElementById('boxExpiry').value = "";
+            document.getElementById('boxPhotoInput').value = "";
+            renderInventory();
+        }
+
+        function openEditBoxModal(boxId) {
+            let data = getData();
+            let box = data.boxes.find(b => b.id === boxId);
+            if (!box) return;
+
+            document.getElementById('editBoxId').value = box.id;
+            document.getElementById('editBoxLocSelect').value = box.locId;
+            document.getElementById('editBoxName').value = box.name;
+            document.getElementById('editBoxDesc').value = box.desc;
+            document.getElementById('editBoxValue').value = box.value || 0;
+            document.getElementById('editBoxTag').value = box.tag || "Standard";
+            document.getElementById('editBoxBarcode').value = box.barcode || "";
+            document.getElementById('editBoxExpiry').value = box.expiry || "";
+            document.getElementById('editBoxLentTo').value = box.lentTo || "";
+            
+            activeSubItemsTemp = JSON.parse(JSON.stringify(box.subItems || []));
+            renderSubItemsModal();
+
+            document.getElementById('editBoxModal').classList.remove('hidden');
+        }
+
+        function closeEditBoxModal() {
+            document.getElementById('editBoxModal').classList.add('hidden');
+        }
+
+        function renderSubItemsModal() {
+            const container = document.getElementById('subItemsContainer');
+            if (activeSubItemsTemp.length === 0) {
+                container.innerHTML = `<p class="text-[11px] text-gray-400 italic">Keine Unterartikel erfasst.</p>`;
+                return;
+            }
+            container.innerHTML = activeSubItemsTemp.map((item, idx) => `
+                <div class="flex justify-between items-center bg-gray-50 p-2 border rounded-xl text-xs">
+                    <span><b>${item.name}</b> (${(item.value || 0).toFixed(2)} €)</span>
+                    <button onclick="removeSubItem(${idx})" class="text-red-500 font-bold px-2 py-0.5 hover:bg-red-50 rounded-lg">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function addSubItem() {
+            const nameInput = document.getElementById('newSubItemName');
+            const valInput = document.getElementById('newSubItemVal');
+            const name = nameInput.value.trim();
+            const value = parseFloat(valInput.value.replace(',', '.')) || 0;
+
+            if (!name) return alert("Bitte Artikel-Name eingeben!");
+            activeSubItemsTemp.push({ name, value });
+            nameInput.value = "";
+            valInput.value = "";
+            renderSubItemsModal();
+        }
+
+        function removeSubItem(idx) {
+            activeSubItemsTemp.splice(idx, 1);
+            renderSubItemsModal();
+        }
+
+        function updateBox() {
+            const boxId = parseInt(document.getElementById('editBoxId').value);
+            const locId = parseInt(document.getElementById('editBoxLocSelect').value);
+            const name = document.getElementById('editBoxName').value.trim();
+            const desc = document.getElementById('editBoxDesc').value.trim();
+            const value = parseFloat(document.getElementById('editBoxValue').value.replace(',', '.')) || 0;
+            const tag = document.getElementById('editBoxTag').value;
+            const barcode = document.getElementById('editBoxBarcode').value.trim();
+            const expiry = document.getElementById('editBoxExpiry').value;
+            const lentTo = document.getElementById('editBoxLentTo').value.trim();
+
+            if (!locId || !name) return alert("Bitte Standort und Kisten-Name angeben!");
+
+            let data = getData();
+            let box = data.boxes.find(b => b.id === boxId);
+            if (box) {
+                box.locId = locId;
+                box.name = name;
+                box.desc = desc;
+                box.value = value;
+                box.tag = tag;
+                box.barcode = barcode;
+                box.expiry = expiry;
+                box.lentTo = lentTo;
+                box.subItems = activeSubItemsTemp;
+                if (!saveData(data)) return;
+            }
+            closeEditBoxModal();
+            renderInventory();
+        }
+
+        function deleteBox(boxId) {
+            if (!confirm("⚠️ Möchtest du diese Kiste wirklich löschen?")) return;
+            let data = getData();
+            data.boxes = data.boxes.filter(b => b.id !== boxId);
+            if (!saveData(data)) return;
+            renderInventory();
+        }
+
+        function renderInventory() {
+            const container = document.getElementById('inventoryContainer');
+            const search = document.getElementById('searchBox').value.toLowerCase();
+            const tagFilter = document.getElementById('tagFilter').value;
+            const sortFilter = document.getElementById('sortFilter').value;
+            let data = getData();
+
+            let totalBoxes = data.boxes.length;
+            let totalLocs = data.locations.length;
+            let totalVal = data.boxes.reduce((sum, b) => sum + Number(b.value || 0), 0);
+
+            document.getElementById('statBoxes').innerText = totalBoxes;
+            document.getElementById('statLocs').innerText = totalLocs;
+            document.getElementById('statValue').innerText = totalVal.toFixed(2).replace('.', ',') + ' €';
+
+            const locStatsCard = document.getElementById('locationValueStatsCard');
+            const locStatsList = document.getElementById('locationValueStatsList');
+            if (totalLocs > 0 && totalVal > 0) {
+                locStatsCard.classList.remove('hidden');
+                locStatsList.innerHTML = data.locations.map(loc => {
+                    const locVal = data.boxes.filter(b => b.locId === loc.id).reduce((sum, b) => sum + Number(b.value || 0), 0);
+                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">${loc.icon || '📍'} ${loc.name}</p><p class="text-sm font-bold text-amber-800">${locVal.toFixed(2).replace('.', ',')} €</p></div>`;
+                }).join('');
+            } else {
+                locStatsCard.classList.add('hidden');
+            }
+
+            const tagStatsCard = document.getElementById('tagValueStatsCard');
+            const tagStatsList = document.getElementById('tagValueStatsList');
+            const tags = ['Standard', 'Zerbrechlich', 'Wertvoll', 'Saison'];
+            if (totalBoxes > 0 && totalVal > 0) {
+                tagStatsCard.classList.remove('hidden');
+                tagStatsList.innerHTML = tags.map(t => {
+                    const tagVal = data.boxes.filter(b => (b.tag || 'Standard') === t).reduce((sum, b) => sum + Number(b.value || 0), 0);
+                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">🏷️ ${t}</p><p class="text-sm font-bold text-amber-800">${tagVal.toFixed(2).replace('.', ',')} €</p></div>`;
+                }).join('');
+            } else {
+                tagStatsCard.classList.add('hidden');
+            }
+
+            if (totalLocs === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Standorte erfasst.</p>`;
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+
+            container.innerHTML = data.locations.map(loc => {
+                let locBoxes = data.boxes.filter(b => b.locId === loc.id);
+                
+                if (tagFilter) {
+                    locBoxes = locBoxes.filter(b => (b.tag || 'Standard') === tagFilter);
+                }
+
+                if (search) {
+                    locBoxes = locBoxes.filter(b => 
+                        b.name.toLowerCase().includes(search) || 
+                        b.desc.toLowerCase().includes(search) || 
+                        (b.tag && b.tag.toLowerCase().includes(search)) ||
+                        (b.barcode && b.barcode.toLowerCase().includes(search)) ||
+                        (b.id.toString() === search) ||
+                        (b.subItems && b.subItems.some(sub => sub.name.toLowerCase().includes(search)))
+                    );
+                }
+
+                locBoxes.sort((a, b) => {
+                    if (sortFilter === 'value-desc') return (b.value || 0) - (a.value || 0);
+                    if (sortFilter === 'value-asc') return (a.value || 0) - (b.value || 0);
+                    return a.name.localeCompare(b.name);
+                });
+
+                if (locBoxes.length === 0 && search && !loc.name.toLowerCase().includes(search)) return '';
+
+                return `
+                    <div class="border rounded-2xl p-4 bg-gray-50 space-y-3">
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <h4 class="font-bold text-md text-amber-800">${loc.icon || '📍'} Standort: ${loc.name}</h4>
+                            <div class="flex gap-3">
+                                <button onclick="editLocation(${loc.id})" class="text-xs text-blue-600 hover:underline">✏️ Bearbeiten</button>
+                                <button onclick="deleteLocation(${loc.id})" class="text-xs text-red-500 hover:underline">🗑️ Löschen</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${locBoxes.length > 0 ? locBoxes.map(b => {
+                                const isExpired = b.expiry && b.expiry < today;
+                                const isLent = b.lentTo && b.lentTo.trim() !== "";
+                                const subItemsText = b.subItems && b.subItems.length > 0 ? b.subItems.map(s => `• ${s.name}`).join(' | ') : '';
+
+                                return `
+                                    <div class="bg-white p-3 border rounded-xl flex items-center justify-between shadow-sm gap-3 ${isExpired ? 'border-red-400 bg-red-50/30' : ''}">
+                                        <div class="flex items-center space-x-3">
+                                            ${b.photo ? `<img src="${b.photo}" onclick="zoomImage('${b.photo}')" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80">` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Kein Bild</div>'}
+                                            <div>
+                                                <div class="flex items-center space-x-2 flex-wrap gap-1">
+                                                    <h5 class="font-bold text-sm">📦 ${b.name}</h5>
+                                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">${b.tag || 'Standard'}</span>
+                                                    ${isLent ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold" title="Ausgeliehen an: ${b.lentTo}">🤝 Ausgeliehen (${b.lentTo})</span>` : ''}
+                                                    ${isExpired ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 font-bold" title="Ablaufdatum überschritten!">⚠️ Ablauf</span>` : ''}
+                                                </div>
+                                                <p class="text-xs text-gray-600 mt-0.5">${b.desc || 'Keine Beschreibung'}</p>
+                                                ${subItemsText ? `<p class="text-[11px] text-indigo-600 font-medium mt-0.5">Inhalt: ${subItemsText}</p>` : ''}
+                                                <div class="flex gap-3 text-[11px] text-gray-500 mt-0.5">
+                                                    <span class="font-semibold text-green-600">Wert: ${(b.value || 0).toFixed(2).replace('.', ',')} €</span>
+                                                    ${b.barcode ? `<span class="font-mono text-gray-400">EAN: ${b.barcode}</span>` : ''}
+                                                    ${b.expiry ? `<span>Ablauf: ${b.expiry.split('-').reverse().join('.')}</span>` : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <button onclick="showQrCode(${b.id}, '${b.name}', '${b.desc}')" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100" title="QR-Code & Deep-Link">🖨️</button>
+                                            <button onclick="openEditBoxModal(${b.id})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200" title="Bearbeiten">✏️</button>
+                                            <button onclick="deleteBox(${b.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="Löschen">✕</button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('') : '<p class="text-xs text-gray-400 col-span-2">Keine passenden Kisten an diesem Standort.</p>'}
+                        </div>
+                    </div>
+                `;
+            }).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Einträge gefunden.</p>`;
+        }
+
+        function exportInventoryPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const data = getData();
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(18);
+            doc.text("Mini-HomeBox Pro - Inventar-Report", 14, 20);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+
+            let y = 35;
+            const writeWrapped = (value, bold = false, fontSize = 10) => {
+                doc.setFont("helvetica", bold ? "bold" : "normal");
+                doc.setFontSize(fontSize);
+                const lines = doc.splitTextToSize(String(value), 180);
+                lines.forEach(line => {
+                    if (y > 270) { doc.addPage(); y = 20; }
+                    doc.text(line, 14, y);
+                    y += 6;
+                });
+            };
+
+            data.locations.forEach(loc => {
+                const cleanLocName = String(loc.name || '').replace(/[\u{1F000}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+                writeWrapped(`Standort: ${cleanLocName}`, true, 12);
+                y += 1;
+                const locBoxes = data.boxes.filter(b => b.locId === loc.id);
+                if (!locBoxes.length) {
+                    writeWrapped("  (Keine Kisten)");
+                } else {
+                    locBoxes.forEach(b => {
+                        const statusText = b.lentTo ? ` [Ausgeliehen an: ${b.lentTo}]` : '';
+                        const subStr = Array.isArray(b.subItems) && b.subItems.length ? ` | Artikel: ${b.subItems.map(item => item.name).join(', ')}` : '';
+                        writeWrapped(`- ${b.name}${statusText} | Wert: ${Number(b.value || 0).toFixed(2)} EUR${subStr}`);
+                    });
+                }
+                y += 4;
+            });
+            const totalVal = data.boxes.reduce((sum, b) => sum + Number(b.value || 0), 0);
+            y += 5;
+            writeWrapped(`Gesamtwert des Inventars: ${totalVal.toFixed(2)} EUR`, true, 12);
+            doc.save("kisten-inventar-report.pdf");
+        }
+
+        async function generateQrDataUrl(text) {
+            return new Promise((resolve) => {
+                const tempDiv = document.getElementById('hiddenQrContainer');
+                tempDiv.innerHTML = "";
+                
+                new QRCode(tempDiv, {
+                    text: text,
+                    width: 120,
+                    height: 120
+                });
+
+                setTimeout(() => {
+                    const canvas = tempDiv.querySelector('canvas');
+                    const img = tempDiv.querySelector('img');
+                    if (canvas) {
+                        resolve(canvas.toDataURL('image/png'));
+                    } else if (img) {
+                        resolve(img.src);
+                    } else {
+                        resolve(null);
+                    }
+                }, 50);
+            });
+        }
+
+        async function exportQrLabelsPDF() {
+            let data = getData();
+            if (data.boxes.length === 0) return alert("Keine Kisten vorhanden.");
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let x = 14, y = 20;
+            let colWidth = 90, rowHeight = 45;
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("Mini-HomeBox Pro - QR-Etiketten (Deep-Link)", 14, 12);
+
+            for (let i = 0; i < data.boxes.length; i++) {
+                let b = data.boxes[i];
+                if (y + rowHeight > 280) { 
+                    doc.addPage(); 
+                    y = 20; 
+                }
+
+                const loc = data.locations.find(l => l.id === b.locId);
+                const cleanLocName = loc ? loc.name.replace(/[\u{1F000}-\u{1F6FF}|[\u{1F900}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[📦🏠🚪🏡🚗🏢⛺📍]/gu, '').trim() : "Unbekannt";
+                const deepLinkUrl = `${window.location.origin}${window.location.pathname}?box=${b.id}`;
+
+                doc.setDrawColor(200);
+                doc.roundedRect(x, y, colWidth, rowHeight - 5, 3, 3);
+
+                const qrDataUrl = await generateQrDataUrl(deepLinkUrl);
+                if (qrDataUrl) {
+                    doc.addImage(qrDataUrl, 'PNG', x + 5, y + 4, 32, 32);
+                }
+
+                let textX = x + 40;
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(10);
+                doc.text(`Kiste: ${b.name}`, textX, y + 8);
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(8);
+                doc.text(`Ort: ${cleanLocName}`, textX, y + 14);
+                doc.text(`Inhalt: ${b.desc || '-'}`, textX, y + 20);
+                doc.text(`Wert: ${(b.value || 0).toFixed(2)} €`, textX, y + 26);
+                doc.text(`Tag: ${b.tag || 'Standard'}`, textX, y + 32);
+
+                if (x === 14) { 
+                    x = 110; 
+                } else { 
+                    x = 14; 
+                    y += rowHeight; 
+                }
+            }
+
+            doc.save("kisten-qr-etiketten.pdf");
+        }
+
+        function showQrCode(boxId, name, desc) {
+            document.getElementById('qrModalTitle').innerText = `QR-Code für: ${name}`;
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = "";
+            
+            const deepLinkUrl = `${window.location.origin}${window.location.pathname}?box=${boxId}`;
+            document.getElementById('qrLinkInfo').innerText = deepLinkUrl;
+
+            new QRCode(qrContainer, {
+                text: deepLinkUrl,
+                width: 128,
+                height: 128
+            });
+            document.getElementById('qrModal').classList.remove('hidden');
+        }
+
+        function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
+
+        function zoomImage(src) {
+            document.getElementById('zoomedImage').src = src;
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+        function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
+
+        function exportBackup() {
+            let data = JSON.stringify(getData());
+            let blob = new Blob([data], { type: 'application/json' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = `homebox-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function importBackup(event) {
+            const input = event.target;
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > 20 * 1024 * 1024) {
+                input.value = '';
+                return alert("Backup zu groß (maximal 20 MB).");
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                input.value = '';
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) ||
+                        !Array.isArray(parsed.locations) || !Array.isArray(parsed.boxes) ||
+                        !parsed.locations.every(item => item && typeof item === 'object' && !Array.isArray(item)) ||
+                        !parsed.boxes.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
+                        return alert("Ungültiges Backup-Format.");
+                    }
+                    if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
+                    saveData(parsed);
+                    loadLocationsDropdown();
+                        renderInventory();
+                    alert("Backup erfolgreich importiert!");
+                } catch (err) {
+                    alert("Fehler beim Lesen der Datei.");
+                }
+            };
+            reader.onerror = () => {
+                input.value = '';
+                alert("Backup-Datei konnte nicht gelesen werden.");
+            };
+            reader.readAsText(file);
+        }
+
+        function openScannerModal() {
+            document.getElementById('scannerModal').classList.remove('hidden');
+            const resBox = document.getElementById('scanResult');
+            resBox.classList.add('hidden');
+
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 220, height: 150 } },
+                (decodedText) => {
+                    resBox.innerText = `Erkannt: ${decodedText}`;
+                    resBox.classList.remove('hidden');
+
+                    if (decodedText.includes('?box=')) {
+                        const boxId = new URL(decodedText, window.location.href).searchParams.get('box') || '';
+                        document.getElementById('searchBox').value = boxId;
+                    } else {
+                        document.getElementById('searchBox').value = decodedText;
+                    }
+
+                    renderInventory();
+                    setTimeout(() => closeScannerModal(), 1500);
+                },
+                (errorMessage) => {}
+            ).catch(err => {
+                alert("Kamera-Zugriff fehlgeschlagen oder nicht unterstützt.");
+                closeScannerModal();
+            });
+        }
+
+        function closeScannerModal() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(err => {});
+            }
+            document.getElementById('scannerModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
