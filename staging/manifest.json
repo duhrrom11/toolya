@@ -1,0 +1,8 @@
+{
+  "name": "Alltagshelferlein Hub",
+  "short_name": "Helferlein",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#0284c7"
+}
