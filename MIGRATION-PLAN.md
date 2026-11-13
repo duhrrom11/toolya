@@ -132,3 +132,12 @@ Status: planning only. Do not overwrite the live toolya index.html or modify duh
 - The new mutation suite is **not yet verified** until [CI 43499712905](https://github.com/duhrrom11/toolya/actions/runs/43499712905) or a later full run passes. Intermediate runs were superseded/cancelled by branch commits; a cancelled run is not a passing test.
 - **P1 OPEN** until the new mutation suite passes; even then real database row-level security, cross-user denial, concurrency, and authorization redirects require approved isolated staging verification. Additional **P0/P1 OPEN**: analytics year assignment/closing/export, route and feature inventory, auth redirect allowlists, service worker/cache and origin storage, privacy/legal branding, accessibility/security and explicit release sign-off.
 - **Release NO-GO**. No changes to `main`, no production Supabase queries, merge or deployment.
+
+## Task mutation suite verified in CI (2026-11-13)
+
+- [GitHub Actions 43499805003](https://github.com/duhrrom11/toolya/actions/runs/43499805003), commit `d17c73f61b003eac98de5e705b674cfed04a3a12`: **completed / success**, no failed workflow steps.
+- Job logs show **PASS for all eight** `scripts/test_wishes_mutations.py` scenarios: `edit`, `edit-error`, `status`, `status-error`, `delete`, `delete-error`, `permission`, `guest`. Successful edit updates the rendered title to `Changed`; successful status change renders `Wieder öffnen`; successful deletion removes the task. On simulated failure the original task remains visible, with the expected error message. Guest access performs no write.
+- Mutation calls target `wishlist_gift_tasks` and include `eq('id','task-1')` and `eq('user_id','offline-user')`; simulated permission denial preserves the original task. These assertions verify client-side behavior under isolated local mocks, **not real Supabase RLS enforcement**.
+- Static audit: 106 files, 104 references, 0 missing, 0 legacy route occurrences. No confirmed new test failures, so no application fix was needed.
+- **P1 OPEN:** real authorization/RLS verification in approved nonproduction environment, cross-user access, task concurrency and edge cases; analytics year assignment, closing, export and permissions. **P0/P1 OPEN:** route/feature inventory, staging auth redirects/domain allowlists, service worker/cache/origin storage, legal/privacy branding, accessibility/security, explicit release sign-off.
+- **Release NO-GO**; no `main` changes, no production Supabase access, merge or deployment.
