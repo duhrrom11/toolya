@@ -32,7 +32,7 @@ window.addEventListener('load',()=>{
  const topic=[...document.querySelectorAll('#topics button')].find(x=>x.textContent.includes('Gaming'));
  topic?.click();test('topic',['Zebra Gaming']);
  const out=document.createElement('script');out.id='toolya-fixture-report';out.type='application/json';
- out.textContent=JSON.stringify(checks);document.documentElement.appendChild(out);
+ out.textContent=JSON.stringify({checks,calls:window.__fixtureCalls});document.documentElement.appendChild(out);
  };
  // ES module imports are deferred and may finish after window load.
  let attempts=0;const wait=()=>{if(grid().length===3)run();else if(++attempts<30)setTimeout(wait,100);else run()};wait();
@@ -57,7 +57,9 @@ def main():
   cmd=[chrome,'--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--disable-background-networking','--disable-extensions','--no-first-run','--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1','--virtual-time-budget=4500','--dump-dom',f'http://127.0.0.1:{server.server_port}/tools/wishes/discover.html']
   p=subprocess.run(cmd,capture_output=True,text=True,timeout=35)
   m=re.search(r'<script[^>]*id="toolya-fixture-report"[^>]*>(.*?)</script>',p.stdout,re.S)
-  checks=json.loads(m.group(1)) if m else []
+  report=json.loads(m.group(1)) if m else {}
+  checks=report.get('checks',[])
+  print('MOCK calls:',report.get('calls',[]),flush=True)
   if not checks or any(not c['pass'] for c in checks):
    status=re.search(r'<p id="status"[^>]*>(.*?)</p>',p.stdout,re.S)
    print('DIAGNOSTIC status:',status.group(1)[:250] if status else 'missing',flush=True)
