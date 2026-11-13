@@ -22,6 +22,11 @@ ROUTES = [
  ("tools/wishes/index.html","tools/wishes/notifications.html"),
  ("tools/wishes/index.html","index.html"),
  ("tools/wishes/dashboard.html","tools/wishes/reservations.html"),
+ ("tools/wishes/dashboard.html","tools/wishes/gift-tasks.html"),
+ ("tools/wishes/dashboard.html","tools/wishes/gift-analytics.html"),
+ ("tools/wishes/assistant.html","tools/wishes/gift-tasks.html"),
+ ("tools/wishes/assistant.html","tools/wishes/gift-analytics.html"),
+ ("tools/wishes/cockpit.html","tools/wishes/gift-tasks.html"),
  ("tools/wishes/planner.html","tools/wishes/occasions.html"),
  ("tools/wishes/occasions.html","tools/wishes/index.html"),
 ]
@@ -77,14 +82,6 @@ def main():
     server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Handler)
     threading.Thread(target=server.serve_forever,daemon=True).start()
     failures=[]
-    # Original repository also lacks these wishlist destinations. Confirm they are
-    # still absent rather than inventing pages or silently hiding broken links.
-    known_missing=["tools/wishes/gift-tasks.html","tools/wishes/gift-analytics.html"]
-    for missing in known_missing:
-        if (ROOT/missing).exists():
-            failures.append({"unexpected_page":missing})
-        else:
-            print("KNOWN-MISSING: "+missing,flush=True)
     try:
         for source,target in ROUTES:
             url=f'http://127.0.0.1:{server.server_port}/{source}?'+urllib.parse.urlencode({'__nav_target':target})
