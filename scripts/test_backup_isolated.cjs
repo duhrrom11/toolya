@@ -40,11 +40,12 @@ async function exported(){
  assert.equal(downloads.length,1,'one synthetic export');
  return JSON.parse(await downloads[0].text());
 }
-async function imported(obj){
+async function imported(obj,{expectAlert=true}={}){
  const file={name:'synthetic.json',size:Buffer.byteLength(JSON.stringify(obj)),content:JSON.stringify(obj)};
  await vm.runInContext('importGlobalBackup',ctx)({target:{files:[file],value:'selected'}});
- for(let i=0;i<1000 && alerts.length===0;i++)await new Promise(resolve=>setTimeout(resolve,5));
- assert(alerts.length>0,'import did not finish within timeout');
+ if(expectAlert){for(let i=0;i<1000 && alerts.length===0;i++)await new Promise(resolve=>setTimeout(resolve,5));
+ assert(alerts.length>0,'import did not finish within timeout');}
+ else await pause();
 }
 async function run(){
  await ok('allowlist excludes sessions and unknown keys',async()=>{
@@ -94,7 +95,7 @@ async function run(){
  });
  await ok('rejected confirmation does not modify storage',async()=>{
   setup({hub_favorites:'old'});confirms=false;
-  await imported({app:'Helferlein',version:'2.0',created:new Date().toISOString(),localStorage:{hub_favorites:'new'}});
+  await imported({app:'Helferlein',version:'2.0',created:new Date().toISOString(),localStorage:{hub_favorites:'new'}},{expectAlert:false});
   assert.equal(store.getItem('hub_favorites'),'old');
  });
  await ok('estate signup redirect uses current origin and path',async()=>{
