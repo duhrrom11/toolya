@@ -9,7 +9,7 @@ const mockRows=[
  {id:'local-b',user_id:'u2',title:'Apfel Wohnen',description:'Küche',icon:'🏠',created_at:'2026-03-01T00:00:00Z'},
  {id:'local-c',user_id:'u3',title:'Mitte Kreativ',description:'Zeichnen',icon:'🎨',created_at:'2026-02-01T00:00:00Z'}
 ];
-const q=(data)=>new Proxy({}, {get(t,k){if(k==='then')return f=>Promise.resolve({data,error:null}).then(f);return ()=>q(data)}});
+const q=(data)=>new Proxy({}, {get(t,k){if(k==='then')return f=>{window.__fixtureCalls.push('resolve:'+String(data?.length));return Promise.resolve({data,error:null}).then(f)};return ()=>q(data)}});
 window.__fixtureCalls=[];
 window.supabase.createClient=()=>({
  auth:{getUser:async()=>({data:{user:null},error:null})},
@@ -32,7 +32,7 @@ window.addEventListener('load',()=>{
  const topic=[...document.querySelectorAll('#topics button')].find(x=>x.textContent.includes('Gaming'));
  topic?.click();test('topic',['Zebra Gaming']);
  const out=document.createElement('script');out.id='toolya-fixture-report';out.type='application/json';
- out.textContent=JSON.stringify({checks,calls:window.__fixtureCalls});document.documentElement.appendChild(out);
+ out.textContent=JSON.stringify({checks,calls:window.__fixtureCalls,errors:window.__mockErrors,status:document.getElementById('status')?.textContent});document.documentElement.appendChild(out);
  };
  // ES module imports are deferred and may finish after window load.
  let attempts=0;const wait=()=>{if(grid().length===3)run();else if(++attempts<30)setTimeout(wait,100);else run()};wait();
@@ -59,7 +59,7 @@ def main():
   m=re.search(r'<script[^>]*id="toolya-fixture-report"[^>]*>(.*?)</script>',p.stdout,re.S)
   report=json.loads(m.group(1)) if m else {}
   checks=report.get('checks',[])
-  print('MOCK calls:',report.get('calls',[]),flush=True)
+  print('MOCK calls:',report.get('calls',[]),'errors:',report.get('errors',[]),'status:',report.get('status'),flush=True)
   if not checks or any(not c['pass'] for c in checks):
    status=re.search(r'<p id="status"[^>]*>(.*?)</p>',p.stdout,re.S)
    print('DIAGNOSTIC status:',status.group(1)[:250] if status else 'missing',flush=True)
