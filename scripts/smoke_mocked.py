@@ -12,6 +12,7 @@ import pathlib
 import re
 import shutil
 import subprocess
+from chrome_isolation import run_chrome
 import threading
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent / "staging"
@@ -90,10 +91,9 @@ def main():
                  '--disable-background-networking','--disable-extensions','--no-first-run',
                  '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1',
                  '--virtual-time-budget=1800','--dump-dom',base+page]
-            try:
-                p=subprocess.run(cmd,capture_output=True,text=True,timeout=35)
-            except subprocess.TimeoutExpired:
-                return {'page':page,'error':'timeout'}
+            p=run_chrome(cmd,timeout=45,label=page)
+            if p.timed_out:
+                return {'page':page,'error':'timeout','elapsed_seconds':round(p.elapsed_seconds,1),'stderr':p.stderr[-400:]}
             match=re.search(r'<script[^>]*id="toolya-mock-report"[^>]*>(.*?)</script>',p.stdout,re.S)
             if p.returncode or not match:
                 return {'page':page,'error':'render or mock report missing','exit':p.returncode}
@@ -102,7 +102,7 @@ def main():
             except ValueError:
                 return {'page':page,'error':'invalid mock report'}
             return {'page':page,'errors':errors[:8]} if errors else None
-        with ThreadPoolExecutor(max_workers=3) as pool:
+        with ThreadPoolExecutor(max_workers=1) as pool:
             jobs={pool.submit(check,page):page for page in pages}
             for future in as_completed(jobs):
                 issue=future.result()
