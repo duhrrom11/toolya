@@ -425,7 +425,7 @@
                     <button type="button" title="Empfohlen: Lokale Browserdaten als passwortgeschützte, verschlüsselte JSON-Datei exportieren" onclick="exportGlobalBackup(true)" aria-label="Backup verschlüsselt exportieren" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">🔐 Verschlüsselt</button>
                     <button type="button" title="Nur für nicht vertrauliche Daten. Nachlass-Tresordaten können damit nicht unverschlüsselt exportiert werden." onclick="exportGlobalBackup(false)" aria-label="Backup ohne Schutz exportieren" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Ohne Schutz</button>
                     <label class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">
-                        📤 Restore <input type="file" title="Bestehende lokale Daten können überschrieben werden" accept=".json,application/json" aria-label="Helferlein-Backup auswählen" onchange="importGlobalBackup(event)" class="hidden">
+                        📤 Restore <input type="file" title="Bestehende lokale Daten können überschrieben werden" accept=".json,application/json" aria-label="Toolya-Backup auswählen" onchange="importGlobalBackup(event)" class="hidden">
                     </label>
                 </div>
             </div>
@@ -444,7 +444,7 @@
 </section>
 <div class="b3-hub-settings-footer">
  <a href="https://ko-fi.com/duhrrom" rel="noopener noreferrer" target="_blank">☕ Kaffee spendieren</a>
- <a href="#toolDiscovery" onclick="closeSettings()">↗ Entdecke mehr Helferlein</a>
+ <a href="#toolDiscovery" onclick="closeSettings()">↗ Entdecke mehr Toolya</a>
 </div>
         </div>
     </div>
@@ -797,7 +797,7 @@
 
         async function exportGlobalBackup() {
             try {
-                const backup = { version: "2.0", app: "Helferlein", created: new Date().toISOString(), tools: Object.create(null), localStorage: Object.create(null) };
+                const backup = { version: "2.0", app: "Toolya", created: new Date().toISOString(), tools: Object.create(null), localStorage: Object.create(null) };
                 const toolPrefixes = ["kassenbon", "kisten", "wg", "secure", "notizen", "kfz", "haustier", "verleih", "pflanzen", "energie", "bk", "hub"];
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
@@ -819,7 +819,7 @@
                     }
                 }
                 if (skippedAppKeys.length) {
-                    const proceed = confirm("Hinweis: " + skippedAppKeys.length + " möglicherweise zu Helferlein gehörende lokale Datenspeicher werden von dieser Sicherung nicht erfasst. Die Sicherung könnte unvollständig sein. Bitte die jeweiligen Werkzeuge zusätzlich prüfen. Es werden keine unbekannten oder sicherheitskritischen Schlüssel automatisch übernommen. Trotzdem fortfahren?");
+                    const proceed = confirm("Hinweis: " + skippedAppKeys.length + " möglicherweise zu Toolya gehörende lokale Datenspeicher werden von dieser Sicherung nicht erfasst. Die Sicherung könnte unvollständig sein. Bitte die jeweiligen Werkzeuge zusätzlich prüfen. Es werden keine unbekannten oder sicherheitskritischen Schlüssel automatisch übernommen. Trotzdem fortfahren?");
                     if (!proceed) return;
                 }
                 if (Object.keys(backup.localStorage).length === 0) { alert("Keine Daten zum Sichern vorhanden."); return; }
@@ -858,7 +858,7 @@
                         return btoa(binary);
                     };
                     output = JSON.stringify({
-                        app: "Helferlein", format: "encrypted-backup-v1", kdf: "PBKDF2-SHA256",
+                        app: "Toolya", format: "encrypted-backup-v1", kdf: "PBKDF2-SHA256",
                         iterations: 600000, cipher: "AES-256-GCM",
                         salt: toBase64(salt), iv: toBase64(iv), ciphertext: toBase64(ciphertext)
                     }, null, 2);
@@ -872,7 +872,7 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `helferlein-backup-${encrypted ? "verschluesselt-" : ""}${new Date().toISOString().slice(0,10)}.json`;
+                a.download = `toolya-backup-${encrypted ? "verschluesselt-" : ""}${new Date().toISOString().slice(0,10)}.json`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -892,8 +892,8 @@
             reader.onload = async function(e) {
                 try {
                     let backup = JSON.parse(e.target.result);
-                    const encryptedImport = backup?.app === "Helferlein" && backup?.format === "encrypted-backup-v1";
-                    if (backup?.app === "Helferlein" && backup?.format === "encrypted-backup-v1") {
+                    const encryptedImport = (backup?.app === "Toolya" || backup?.app === "Helferlein") && backup?.format === "encrypted-backup-v1";
+                    if ((backup?.app === "Toolya" || backup?.app === "Helferlein") && backup?.format === "encrypted-backup-v1") {
                         if (!crypto?.subtle || backup.kdf !== "PBKDF2-SHA256" ||
                             backup.cipher !== "AES-256-GCM" || backup.iterations !== 600000) {
                             alert("Dieses verschlüsselte Backup-Format wird nicht unterstützt."); return;
@@ -920,9 +920,9 @@
                             alert("Entschlüsselung fehlgeschlagen. Passwort oder Sicherungsdatei ist ungültig."); return;
                         }
                     }
-                    if (!backup || backup.app !== "Helferlein" || !backup.localStorage ||
+                    if (!backup || !["Toolya", "Helferlein"].includes(backup.app) || !backup.localStorage ||
                         typeof backup.localStorage !== "object" || Array.isArray(backup.localStorage)) {
-                        alert("Ungültiges Helferlein Backup");
+                        alert("Ungültiges Toolya-Backup");
                         return;
                     }
                     if (backup.version !== "2.0") { alert("Diese Backup-Version wird nicht unterstützt."); return; }
@@ -939,7 +939,7 @@
                     const rejected = entries.filter(([key]) => !isHelferleinBackupKey(key));
                     const supported = entries.filter(([key]) => isHelferleinBackupKey(key));
                     if (!supported.length) {
-                        alert("Das Backup enthält keine unterstützten Helferlein-Daten. Es wurden keine Daten verändert.");
+                        alert("Das Backup enthält keine unterstützten Toolya-Daten. Es wurden keine Daten verändert.");
                         return;
                     }
                     const existing = supported.filter(([key]) => localStorage.getItem(key) !== null).length;
