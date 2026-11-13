@@ -49,3 +49,9 @@ Only rename directories and HTML files, and repair the references necessary to p
 - First complete run 43468874746: 32/32 pages rendered; 31 MOCK-PASS, 1 MOCK-WARNING on budget/index.html from incomplete Chart.js mock dataset shape. Fixed test mock to include dataset slots (commit d195e2f), with follow-up run pending at documentation time.
 - Mock browser results are diagnostics, not production functionality proof. Static anchor navigation is checked by the separate offline smoke script, but no state-changing button/form interactions were performed. Full external-library fidelity, authentication and workflows remain unverified.
 - No production HTML, design, text, Supabase, default branch or deployed site was changed.
+
+## Safe local navigation and wishlist target verification (2026-11-13)
+- Added scripts/smoke_navigation.py to click real HTML anchor elements in headless Chrome, with localhost-only pages, mocked CDN APIs and CSP connect-src 'none'. No forms, authenticated flows or backend writes.
+- Run 43470446025: 11/11 actual navigation changes passed (homepage -> tools, wishlist index -> dashboard/planner/notifications/home, dashboard -> reservations, planner -> occasions, occasions -> wishlist index). Static route and JS syntax checks and both 32-page browser suites also passed.
+- Confirmed tools/wishes/gift-tasks.html and tools/wishes/gift-analytics.html are absent from both staged output and original Helferlein tools/wishlist and tools/amazon-wishlist on main; known pre-existing missing destinations, not migration-created.
+- Browser interaction coverage remains intentionally limited to safe anchor navigation; no authenticated workflows, mutation controls or production APIs exercised. No application source, design, default branch or deployed site changed.
