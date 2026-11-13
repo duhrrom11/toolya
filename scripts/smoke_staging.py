@@ -124,7 +124,9 @@ def main():
             issues = report.get("errors",[]) + report.get("resources",[])
             if issues:
                 external = [x for x in issues if x.startswith(("https://", "http://")) and not x.startswith(base)]
-                local_resources = [x for x in report.get("resources",[]) if x.startswith(base)]
+                # A load error for the current document URL can be emitted by an empty image src.
+                # Only treat different local resource URLs as missing dependencies.
+                local_resources = [x for x in report.get("resources",[]) if x.startswith(base) and x != url]
                 if local_resources:
                     return {"page":page,"kind":"local_resource_error","errors":local_resources[:8]}
                 if external:
