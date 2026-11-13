@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Actual staged backup functions in two isolated Chromium localhost origins.
 Uses synthetic localStorage and real WebCrypto; never contacts production services."""
-import http.server, json, re, shutil, tempfile, threading
+import http.server, json, os, shutil, signal, subprocess, tempfile, threading
 from pathlib import Path
-from chrome_isolation import run_chrome
 
 ROOT=Path(__file__).resolve().parent.parent
 html=(ROOT/'staging/index.html').read_text(encoding='utf8')
@@ -22,7 +21,7 @@ window.confirm=()=>true;
 window.requestBackupPassword=async()=>PASS;
 window.initFavorites=()=>{};
 window.addEventListener('error',e=>{document.body.dataset.error=e.message});
-function report(value){const pre=document.createElement('pre');pre.id='result';pre.textContent=JSON.stringify(value);document.body.append(pre)}
+function report(value){fetch('/__result',{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(value)}).catch(e=>{document.body.dataset.reportError=String(e)})}
 """
 SOURCE="""
 async function begin(){document.body.dataset.phase='export-started';
@@ -75,6 +74,18 @@ window.addEventListener('message',async e=>{
 });
 """
 class Handler(http.server.BaseHTTPRequestHandler):
+ def do_POST(self):
+  if self.path!='/__result' or self.server.side!='A':
+   self.send_error(404);return
+  length=int(self.headers.get('Content-Length','0'))
+  if length<1 or length>100000:
+   self.send_error(413);return
+  try:
+   result=json.loads(self.rfile.read(length).decode('utf-8'))
+   self.server.result=result
+   self.server.completed.set()
+   self.send_response(204);self.end_headers()
+  except (ValueError,UnicodeError):self.send_error(400)
  def do_GET(self):
   source=self.server.side=='A'
   js=COMMON+code+(SOURCE if source else DEST)
@@ -82,7 +93,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
   body=('<html><body><script>'+js+'</script></body></html>').encode()
   self.send_response(200)
   self.send_header('Content-Type','text/html; charset=utf-8')
-  self.send_header('Content-Security-Policy',"default-src 'self' 'unsafe-inline' blob:; connect-src 'none'; frame-src http://127.0.0.1:*")
+  self.send_header('Content-Security-Policy',"default-src 'self' 'unsafe-inline' blob:; connect-src 'self'; frame-src http://127.0.0.1:*")
   self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
  def log_message(self,*args):pass
 def main():
@@ -91,20 +102,30 @@ def main():
  servers=[http.server.ThreadingHTTPServer(('127.0.0.1',0),Handler) for _ in range(2)]
  a,b=[s.server_address[1] for s in servers]
  for s,side in zip(servers,'AB'):
-  s.side=side;s.port_a=a;s.port_b=b
+  s.side=side;s.port_a=a;s.port_b=b;s.completed=threading.Event();s.result=None
   threading.Thread(target=s.serve_forever,daemon=True).start()
  try:
   with tempfile.TemporaryDirectory(prefix='toolya-encrypted-origin-') as profile:
    cmd=[chrome,'--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
     '--disable-background-networking','--disable-extensions','--no-first-run',
     '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1',
-    '--user-data-dir='+profile,'--virtual-time-budget=120000','--dump-dom',f'http://127.0.0.1:{a}/']
-   p=run_chrome(cmd,timeout=120,label='encrypted-two-origins')
-   if p.timed_out:raise AssertionError('Chrome timeout: '+p.stderr[-400:])
-   m=re.search(r'<pre id="result">(.*?)</pre>',p.stdout,re.S)
-   if p.returncode or not m:raise AssertionError('Missing browser result: '+p.stderr[-500:]+p.stdout[-500:])
-   import html as html_lib
-   result=json.loads(html_lib.unescape(m.group(1)))
+    '--user-data-dir='+profile,f'http://127.0.0.1:{a}/']
+   # Wait for an explicit same-origin HTTP completion callback from the real
+   # async import, rather than a virtual-time DOM snapshot.
+   process=subprocess.Popen(cmd,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,
+                            start_new_session=True)
+   try:
+    if not servers[0].completed.wait(timeout=120):
+     raise AssertionError('Encrypted browser restore did not report completion within 120s; '
+                          f'chrome_running={process.poll() is None}')
+    result=servers[0].result
+   finally:
+    if process.poll() is None:
+     os.killpg(process.pid,signal.SIGTERM)
+    try:process.communicate(timeout=5)
+    except subprocess.TimeoutExpired:
+     os.killpg(process.pid,signal.SIGKILL)
+     process.communicate()
    assert result['sourcePreserved'] and result['sourceVault'],result
    print('PASS source origin unchanged')
    dest=result['result']
