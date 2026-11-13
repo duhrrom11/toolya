@@ -17,9 +17,16 @@ jobs:
         if: always()
         run: |
           if [ -f migration-audit.json ]; then
-            python3 -c 'import json;d=json.load(open("migration-audit.json"));print("Files:",d["scanned_files"],"References:",d["references_checked"],"Missing:",len(d["missing"]),"Legacy:",len(d["old_route_occurrences"]));print(json.dumps(d["missing"][:30],ensure_ascii=False,indent=2))'
+            python3 -c 'import json;d=json.load(open("migration-audit.json"));print("Files:",d["scanned_files"],"References:",d["references_checked"],"Missing:",len(d["missing"]),"Legacy:",len(d["old_route_occurrences"]));print(json.dumps(d["missing"][:30],ensure_ascii=False,indent=2));print("Legacy routes:",json.dumps(d["old_route_occurrences"][:20],ensure_ascii=False))'
           fi
-      - name: Validate JS syntax\n        if: always()\n        run: |\n          find staging -type f \\( -name "*.js" -o -name "*.mjs" \\) -print0 | xargs -0 -n1 node --check\n      - name: Headless Chrome local smoke tests\n        if: always()\n        run: python3 scripts/smoke_staging.py\n      - name: Upload audit report
+      - name: Validate JS syntax
+        if: always()
+        run: |
+          find staging -type f \\( -name "*.js" -o -name "*.mjs" \\) -print0 | xargs -0 -n1 node --check
+      - name: Headless Chrome local smoke tests
+        if: always()
+        run: python3 scripts/smoke_staging.py
+      - name: Upload audit report
         if: always()
         uses: actions/upload-artifact@v4
         with:
