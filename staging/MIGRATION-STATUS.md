@@ -29,3 +29,9 @@ Only rename directories and HTML files, and repair the references necessary to p
 - Scanned 64 staged JavaScript, MJS and CSS files for static relative import/require and CSS url()/@import targets: no missing relative dependencies detected by these patterns.
 - Checked 75 staged HTML/JS/CSS files for selected old tool paths and obsolete renamed HTML targets; no matches in those scanned files. Remaining files and dynamic computed URLs still require review.
 - Static scanning is not browser validation; do not publish or merge until functional smoke tests and a full URL/route audit pass.
+
+## Follow-up audit (2026-11-13)
+- Completed additional static checks of the remaining 22 HTML/JS/CSS files for obsolete renamed routes and dynamic URL usage. Found a dynamically constructed cockpit navigation target in tools/wishes/gift-start.mjs still pointing to ./gift-cockpit.html; changed only this path to ./cockpit.html (commit 8797fd1).
+- Verified source tree does not contain gift-tasks.html or gift-analytics.html, despite references from wishlist HTML and JS. These are pre-existing missing destinations; do not fabricate pages or change visible navigation without a source implementation.
+- Added read-only scripts/audit_staging.py for repeatable local static link checks after branch checkout. It has not been executed against a full branch checkout in this session; do not describe it as a passing test.
+- Browser functional testing of staging was not performed: staging is not published, and no runnable local copy of the exact current branch was assembled. Therefore no functional sign-off and no deployment.
