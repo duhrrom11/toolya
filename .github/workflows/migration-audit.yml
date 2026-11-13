@@ -1,0 +1,28 @@
+name: Migration static audit
+on:
+  push:
+    branches:
+      - migration/english-paths-clean
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static dependency and route audit
+        run: python3 scripts/audit_staging.py > migration-audit.json
+      - name: Show audit summary
+        if: always()
+        run: |
+          if [ -f migration-audit.json ]; then
+            python3 -c 'import json;d=json.load(open("migration-audit.json"));print("Files:",d["scanned_files"],"References:",d["references_checked"],"Missing:",len(d["missing"]),"Legacy:",len(d["old_route_occurrences"]));print(json.dumps(d["missing"][:30],ensure_ascii=False,indent=2))'
+          fi
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-static-audit
+          path: migration-audit.json
+          if-no-files-found: ignore
