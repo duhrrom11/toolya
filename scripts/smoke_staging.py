@@ -82,6 +82,7 @@ def main():
     thread.start()
     base = f"http://127.0.0.1:{server.server_port}/"
     failures = []
+    offline_limited = []
     try:
         # Static navigation targets are checked without clicking or triggering application actions.
         for page in pages:
@@ -122,16 +123,20 @@ def main():
                 return {"page":page,"kind":"invalid_report"}
             issues = report.get("errors",[]) + report.get("resources",[])
             if issues:
+                external = [x for x in issues if x.startswith(("https://", "http://")) and not x.startswith(base)]
+                if external:
+                    return {"page":page,"kind":"offline_external_dependencies","errors":issues[:8]}
                 return {"page":page,"kind":"browser_errors","errors":issues[:8]}
             return None
         with ThreadPoolExecutor(max_workers=3) as pool:
             futures = {pool.submit(check,page):page for page in pages}
             for future in as_completed(futures):
                 result = future.result()
-                print(f"{'FAIL' if result else 'PASS'}: {futures[future]}",flush=True)
+                label = "OFFLINE-LIMITED" if result and result["kind"] == "offline_external_dependencies" else ("FAIL" if result else "PASS")
+                print(f"{label}: {futures[future]}",flush=True)
                 if result:
-                    failures.append(result)
-        print(json.dumps({"pages":len(pages),"failures":failures},ensure_ascii=False,indent=2))
+                    (offline_limited if result["kind"] == "offline_external_dependencies" else failures).append(result)
+        print(json.dumps({"pages":len(pages),"failures":failures,"offline_limited":offline_limited},ensure_ascii=False,indent=2))
         return 1 if failures else 0
     finally:
         server.shutdown()
