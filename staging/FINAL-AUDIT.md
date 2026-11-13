@@ -181,3 +181,72 @@ This update changes documentation only; no application code, production Supabase
 The 18 isolated assertions are valid but not substitutes for production-domain auth checks or actual UI-driven encrypted file transfer. The original wishlist defects, missing preview asset, stale robots sitemap and legacy redirects remain release concerns. The current task adds **documentation only**, not an implementation or authorization of release.
 
 **CI status correction (verified after checklist drafting):** run [43476720388](https://github.com/duhrrom11/toolya/actions/runs/43476720388) on commit `f3eff12083bb02a0cec57172a5b2bf9d1cf1c278` has **completed successfully**, including the two-origin browser and offline pending checks. The checklist documentation commit(s) are newer and require their own CI completion before claiming green at current branch HEAD.
+
+## Read-only local storage inventory and backup coverage (2026-11-13)
+
+**Method and boundary:** Inspected the staged homepage's **exact** backup allowlist and exclusion filter, staged HTML pages, local storage adapters, estate modules and wishlist modules, including user-scoped computed key constructors. This is a **source-derived inventory of first-party explicit browser storage**, not a read of actual user profiles or a guarantee against storage created by third-party SDKs, future dynamic code, or browser extensions. No browser data, production database or Supabase config was accessed. For each family below, “YES” means the homepage backup key predicate permits it **if the key exists and the value is readable**, not that it has been exported successfully for a real user.
+
+### A. Fixed-key first-party localStorage data — backed up by homepage
+
+| Tool / family | Exact keys (all allowlisted) | Data type / exposure | Priority |
+|---|---|---|---|
+| Homepage | `hub_favorites` | Favorite tools; preferences | P2 |
+| Budget | `kassenbon_data`, `budgetbuch_budgets`, `budgetbuch_goals` | Receipts, spending, financial goals; sensitive | **P0** |
+| Moving | `mini_homebox_pro` | Box and location inventory | P1 |
+| Housemates: context | `wg_active_bin_id`, `wg_last_loaded_bin_id` | Selected household / context; restore may not restore cloud permissions | P1 |
+| Housemates: finance | `wg_kassenbon_data`, `wg_budgetbuch_budgets`, `wg_budgetbuch_goals` | Shared household finances | **P0** |
+| Housemates: shared records | `wg_flatmates`, `wg_notes`, `wg_events`, `wg_inventory`, `wg_diets`, `wg_cleaning`, `wg_shopping`, `wg_cooking`, `wg_contracts`, `wg_infoboard` | Personal contacts, household notes, dietary data and shared records; restore only with appropriate owner/household context | **P0** |
+| Estate | `digital_estate_vault` | Encrypted vault; owner-bound recovery and cloud-snapshot conflicts | **P0** |
+| Car | `kfz_tracker_pro_v3` | Vehicles and costs | P1 |
+| Pet health | `haustier_pass_pro_v5` | Animal health records and treatment data | P1 |
+| Parking | `park_end_time`, `park_history_pro_v3` | Timer and parking history; expiry/time interpretation | P2 |
+| Loans | `verleih_tracker_pro_v3` | Borrower contacts and loan inventory | P1 |
+| Plants | `dismiss_frost`, `pflanzen_pass_v10` | Frost reminder and plant records | P2 |
+| Meters | `energie_tracker_pro_v8` | Meter readings and energy cost data | P1 |
+| Baking | `helperly_recipes_pro` | Personal recipes | P2 |
+| Global UI | `helferlein_ui_theme_v1` | Theme preference | P2 |
+| Layouts | `helferlein_ui_layout_backform_v1`, `helferlein_ui_layout_nachlass_v1`, `helferlein_ui_layout_pflanzen_v1` | Dashboard arrangements | P2 |
+| Layout regex | `helferlein_ui_layout_{energie,kassenbon,kisten,wg,notizen,kfz,haustier,verleih,pflanzen,nachlass,backform,parken,haushaltsbuch,umzugskisten}_v1` | Explicitly permitted set of layout variants, **not** an unrestricted wildcard | P2 |
+
+The homepage's fixed allowlist has **33 literal keys**; the layout regex adds selected variants (some overlap with those 33). The homepage explicitly excludes auth-like names (including `sb-`, `supabase`, `auth-token`, `access_token`, `refresh_token`, `session`, `password`, `secret`, `private_key`, PKCE/code verifier and Firebase prefixes), even if a key otherwise matched. Backup is origin-scoped, never an automatic transfer. The encrypted vault triggers mandatory encrypted backup; ordinary backups without a vault can follow a different export path, so **all sensitive backup files should be handled as sensitive even when the vault key is absent**.
+
+### B. First-party localStorage families NOT covered by homepage backup
+
+| Family / exact key pattern | Evidence / meaning | Backup | Risk and required disposition |
+|---|---|---|---|
+| Wishlist extra fields: `helferlein-wish-extras:<ownerId>` | `tools/wishes/app.mjs`, also read in `lists-dashboard.mjs`; owner-scoped wish images/prices/quantity/status | **NO** | **P0** if user-created records not replicated; owner-specific export/import and conflict check required |
+| Wishlist markers: `helferlein-wish-markers:<ownerId>` | `lists-dashboard.mjs`; wish status/markers | **NO** | P1: preserve per-owner markers |
+| Wishlist categories: `helferlein-wish-categories:<ownerId>` | `lists-dashboard.mjs`; wish classifications | **NO** | P1: preserve per-owner categories |
+| Wishlist favorites: `helferlein-wishlist-favorites:<ownerId>` | `lists-dashboard.mjs`; list favorites | **NO** | P1: per-owner export decision |
+| Wishlist recent: `helferlein-wishlist-recent:<ownerId>` | `lists-dashboard.mjs`; recently opened list IDs | **NO** | P2: may be reconstructible |
+| Wishlist checkpoint views: `helferlein-checkpoint-views-v1:<userId>` | `gift-start.mjs`; locally saved checkpoint views | **NO** | P1: user-generated view definitions, review before discarding |
+| Wishlist social read marker: `helferlein-social-seen:<userId>` | `social-dashboard.mjs`; timestamp for viewed updates | **NO** | P2: reinitialize deliberately |
+| Wishlist theme: `helferlein_wishlist_theme` | `tools/wishes/index.html`; separate from global UI theme | **NO** | P2: cosmetic, default may change |
+| Cloud owner: `helferlein_cloud_owner_<tool>` | `shared/helferlein-cloud-migration.js` and cloud-store offline owner validation; tool IDs are **legacy IDs** (e.g. `backform-umrechner`, `haushaltsbuch-kassenbon`, `autokosten-reifenwechsel`, `verliehene-gegenstaende-verwalten`, `zaehlerstaende-erfassen`, `umzugskisten-inventar`, `parkplatz-merker-parkschein-timer`, `haustier-gesundheitspass`, `pflanzenpflege-giessplan`) | **NO** | **P0**: never blindly copy owner binding; validate authenticated account and local payload |
+| Cloud enabled: `helferlein_cloud_enabled_<tool>_<uid>` | Opt-in flag in cloud migration adapter | **NO** | **P0**: require deliberate re-enablement and owner verification; do not silently turn sync on |
+| Cloud account slot: `helferlein_cloud_slot_<tool>_<uid>` | Per-user saved local payload for account switching | **NO** | **P0**: potentially unique local edits; preserve and reconcile manually |
+| Cloud account-switch journal: `helferlein_cloud_switch_<tool>` | Crash-recovery journal of prior owner/local bytes | **NO** | **P0**: in-progress switch must be recovered on original origin before transfer; do not discard |
+| Cloud cache: `helferlein_cloud_<tool>_<uid>_cache` | Snapshot/cache used by cloud store and migration adapter | **NO** | P1: remote freshness and owner check; not authoritative backup |
+| Cloud pending: `helferlein_cloud_<tool>_<uid>_pending` | Unsynced local writes; cloud-store `writePending` and offline flush logic | **NO** | **P0**: loss can discard edits; must not replay automatically or cross-owner |
+| Cloud baseline: `helferlein_cloud_<tool>_<uid>_base` | Revision baseline for pending reconciliation | **NO** | **P0**: must be evaluated **together** with pending and remote revision |
+| Cloud revision: `helferlein_cloud_<tool>_<uid>_revision` | Last known cloud revision | **NO** | **P0**: stale or missing revision can create conflicts; no blind copy |
+
+`<tool>` denotes the adapter's tool argument, not necessarily the new English URL slug; `<uid>` and `<ownerId>` are account identifiers. No secrets or actual identifiers are included here. The cloud-store's four-key tuple `{cache,pending,base,revision}` and the migration adapter's `{owner,enabled,slot,switch}` must be treated as a **single consistency/identity problem**, not as independent ordinary backup keys.
+
+### C. Browser sessions, IndexedDB, and remote state
+
+- **Supabase Auth**: Supabase JS client maintains browser-origin-scoped authentication state (SDK-managed key naming may vary); homepage backup intentionally filters session/auth-like keys. **Never export tokens, PKCE verifiers, refresh tokens or session cookies.** New-domain re-login is expected; confirm configured Site URL and redirect allowlist separately.
+- **IndexedDB / Cache Storage**: No direct first-party `indexedDB` or `caches.open` storage family was established in the inspected staged application code. This is **not proof** that the bundled third-party Supabase SDK, other browser libraries, or future versions never use other storage. A runtime inventory in disposable browsers is a remaining gate.
+- **Supabase remote records**: Wishlist, shared WG, and estate cloud snapshots are remote records, not captured by a `localStorage` export. Read-only backend schema/ownership and remote reconciliation need independent review; this inventory does **not** establish remote completeness.
+- **In-memory / unpersisted state**: UI drafts and unfinished operations can be lost on navigation even when no local storage key exists; user guidance should require completing edits before cutover.
+
+### D. Prioritized acceptance and no-go implications
+
+1. **P0 / blocking** — Account-scoped wishlist extras and cloud slot/switch/pending/base/revision/owner/opt-in state are excluded from global backup. Require a complete per-owner preservation and reconciliation design, verified with synthetic fixtures; otherwise **NO-GO** for users with local-only edits.
+2. **P0 / blocking** — Estate encrypted vault and sensitive finance/household data require verified encrypted export, owner-bound restore, explicit conflict checks and preserved original origin; backup inclusion alone does not prove safe recovery.
+3. **P0 / blocking** — Auth session storage is deliberately excluded and must remain excluded. Verify clean new-origin login and Supabase allowed redirects without copying credentials.
+4. **P1** — User-generated wishlist markers, categories, favorites and checkpoint views need an explicit migration/retention decision; document expected data loss before any waiver.
+5. **P1** — Cloud cache is not a trustworthy recovery source without remote revision validation; missing/stale baseline must block automatic flush.
+6. **P2** — Themes, layout settings, recently opened lists, social seen timestamp and parking timers may be re-created, but only by an explicit product decision.
+
+**Current inventory signoff: NOT APPROVED.** This is a documented source-level inventory; no production browser storage was inspected, no user data transferred, and no authorization to deploy is implied. Application code and production configuration remain unchanged.
