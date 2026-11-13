@@ -43,3 +43,9 @@ Only rename directories and HTML files, and repair the references necessary to p
 - GitHub Actions run 43460430391: static audit passed (103 staged files, 102 scanned references, 0 legacy route matches, 5 references to the two already missing original wishlist pages); Node JS syntax checks passed; 32-page offline browser test completed with 4 PASS, 28 OFFLINE-LIMITED, 0 local failures.
 - Earlier tests flagged self-document URLs as resource errors; this was determined to be a browser event artifact and filtered without modifying site source.
 - No visible page contents, design, production database, deployment or main branch changed. Remaining acceptance gate: browser verification with required external libraries available and safe production-isolated test configuration, plus interaction/navigation checks.
+
+## Offline mocked dependency diagnostics (2026-11-13)
+- Added scripts/smoke_mocked.py and GitHub Actions job step. Test-only localhost responses remove external script tags and inject inert stubs for Supabase, Tailwind, Lucide, Chart.js and other CDN APIs. CSP blocks all network connections; no production database calls or real user actions.
+- First complete run 43468874746: 32/32 pages rendered; 31 MOCK-PASS, 1 MOCK-WARNING on budget/index.html from incomplete Chart.js mock dataset shape. Fixed test mock to include dataset slots (commit d195e2f), with follow-up run pending at documentation time.
+- Mock browser results are diagnostics, not production functionality proof. Static anchor navigation is checked by the separate offline smoke script, but no state-changing button/form interactions were performed. Full external-library fidelity, authentication and workflows remain unverified.
+- No production HTML, design, text, Supabase, default branch or deployed site was changed.
