@@ -30,6 +30,8 @@ jobs:
           if [ -f migration-audit.json ]; then
             python3 -c 'import json;d=json.load(open("migration-audit.json"));print("Files:",d["scanned_files"],"References:",d["references_checked"],"Missing:",len(d["missing"]),"Legacy:",len(d["old_route_occurrences"]));print(json.dumps(d["missing"][:30],ensure_ascii=False,indent=2));print("Legacy routes:",json.dumps(d["old_route_occurrences"][:20],ensure_ascii=False))'
           fi
+      - name: Verify wishes page DOM contracts offline
+        run: python3 scripts/test_wishes_pages.py
       - name: Validate JS syntax
         if: always()
         run: |
