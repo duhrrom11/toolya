@@ -1,0 +1,36 @@
+/* B3 Umzugskisten – violet/indigo identity, responsive inventory forms. */
+body.b3-umzugskisten{--b3-accent:#6048c6;--b3-accent-2:#c398ff;--b3-header-start:#30256c;--b3-header-mid:#6850ba;--b3-header-end:#a681e9}
+body.b3-umzugskisten .b3-header{background:linear-gradient(112deg,var(--b3-header-start),var(--b3-header-mid) 56%,var(--b3-header-end));box-shadow:0 6px 22px #30256c24}
+body.b3-umzugskisten .b3-nav-links>a:first-child{background:linear-gradient(115deg,#5641b4,#8566df);color:white}
+body.b3-umzugskisten .b3-more[open]>summary{background:#6048c6;color:#fff}
+body.b3-umzugskisten .b3-action:not(.b3-outline){background:linear-gradient(110deg,#4d389e,#8063d2);color:white}
+body.b3-umzugskisten .b3-settings-footer .b3-home-link{color:#5540ad}
+body.b3-umzugskisten #settingsModal>div{max-height:90dvh;overflow-y:auto}
+body.b3-umzugskisten main.b3-dashboard [data-b3-panel="stats"]{gap:.75rem}
+body.b3-umzugskisten main.b3-dashboard [data-b3-panel="create"],
+body.b3-umzugskisten main.b3-dashboard [data-b3-panel="inventory"]{grid-column:1/-1!important}
+body.b3-umzugskisten .b3-box-help{border-top:1px solid var(--b3-line);padding-top:.75rem}
+body.b3-umzugskisten .b3-box-help #helpToggleBtn{color:#fff;background:#5941a6;border-radius:10px;padding:.65rem .8rem;font-size:.82rem}
+body.b3-umzugskisten .b3-box-help #helpBox{background:#f4f0ff;color:#32275f;border:1px solid #bba8ec}
+body.b3-umzugskisten .b3-box-help #helpBox .bg-amber-800\/50{background:#e2d7fb;color:#33265b}
+body.b3-umzugskisten main.b3-dashboard :is(input,select,textarea){min-width:0;max-width:100%}
+@media(min-width:768px) and (max-width:1023px){body.b3-umzugskisten main.b3-dashboard [data-b3-panel="create"]{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:640px){
+ body.b3-umzugskisten main.b3-dashboard [data-b3-panel="create"] :is(.grid-cols-2,.grid-cols-3),
+ body.b3-umzugskisten main.b3-dashboard [data-b3-panel="inventory"] :is(.grid-cols-2,.grid-cols-3){grid-template-columns:minmax(0,1fr)}
+ body.b3-umzugskisten #settingsModal .grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+body.b3-umzugskisten.b3-dark{--b3-accent:#c6b3ff}
+body.b3-umzugskisten.b3-dark .b3-settings-footer .b3-home-link{color:#cebfff}
+body.b3-umzugskisten.b3-dark main.b3-dashboard :is(.text-amber-600,.text-amber-700,.text-amber-800){color:#f2cd98!important}
+body.b3-umzugskisten.b3-dark main.b3-dashboard :is(.text-indigo-600,.text-indigo-700,.text-blue-600,.text-blue-700){color:#b9d2ff!important}
+body.b3-umzugskisten.b3-dark main.b3-dashboard :is(.text-green-600,.text-green-700){color:#a5efbe!important}
+body.b3-umzugskisten.b3-dark main.b3-dashboard :is(.bg-amber-50,.bg-amber-100){background:#4c372b!important}
+body.b3-umzugskisten.b3-dark main.b3-dashboard :is(.bg-indigo-50,.bg-blue-50){background:#2a3754!important}
+body.b3-umzugskisten.b3-dark main.b3-dashboard :is(.bg-green-50,.bg-green-100){background:#254437!important}
+body.b3-umzugskisten.b3-dark main.b3-dashboard button.bg-amber-600{background:#87530a!important;color:white!important}
+body.b3-umzugskisten.b3-dark #helpBox{background:#2a2948;color:#f0edff;border-color:#69608f}
+body.b3-umzugskisten.b3-dark #helpBox .bg-amber-800\/50{background:#3b365b;color:#f0ebff}
+body.b3-umzugskisten.b3-dark #settingsModal button[onclick="registerUser()"]{background:#246b3f!important;color:#fff!important}
+body.b3-umzugskisten.b3-dark #settingsModal button[onclick="loginUser()"]{background:#175b8f!important;color:#fff!important}
+body.b3-umzugskisten.b3-dark #settingsModal button[onclick="logoutUser()"]{background:#982d3a!important;color:#fff!important}
