@@ -4,12 +4,12 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const source=fs.readFileSync('staging/shared/helferlein-cloud-store.js','utf8');
 const uid='mock-user',other='other-user',tool='budget';
 const pendingKey=u=>`helferlein_cloud_${tool}_${u}_pending`;
-function create(seed={},signedIn=uid){
+function create(seed={},signedIn=uid,sessionOverrides={}){
  const data=new Map(Object.entries(seed));let calls=0;
  const storage={getItem:k=>data.get(k)??null,setItem(k,v){data.set(k,String(v))},removeItem:k=>data.delete(k)};
  const client={auth:{
   async getUser(){calls++;throw Error('getUser must not be called offline')},
-  async getSession(){return {data:{session:signedIn?{user:{id:signedIn},expires_at:Date.now()/1000+3600}:null},error:null}}
+  async getSession(){return {data:{session:signedIn?{user:{id:signedIn},expires_at:Date.now()/1000+3600,...sessionOverrides}:null},error:null}}
  },from(){calls++;throw Error('network access prohibited')}};
  const window={};const ctx=vm.createContext({window,localStorage:storage,navigator:{onLine:false},Date,JSON,Object,Error});
  vm.runInContext(source,ctx);
@@ -38,5 +38,23 @@ function create(seed={},signedIn=uid){
  const before=Object.fromEntries(a.data);
  assert.deepEqual(Object.fromEntries(a.data),before);
  console.log('PASS inspection never writes synthetic pending data');
- console.log('TOTAL 5');
+ const expired=create(seed,uid,{expires_at:Date.now()/1000-10});
+ assert.equal((await expired.store.inspect()).signedOut,true);
+ assert.equal(expired.networkCalls(),0);
+ console.log('PASS expired offline session cannot access pending data');
+ const malformed=create(seed,'invalid/user');
+ assert.equal((await malformed.store.inspect()).signedOut,true);
+ assert.equal(malformed.networkCalls(),0);
+ console.log('PASS malformed offline user identity rejected');
+ const wrongOwner=create({['helferlein_cloud_owner_'+tool]:other,[pendingKey(uid)]:JSON.stringify({synthetic:true})},uid);
+ assert.equal((await wrongOwner.store.inspect()).signedOut,true);
+ assert.equal(wrongOwner.networkCalls(),0);
+ console.log('PASS owner mismatch rejects even matching user pending key');
+ const corrupt=create({['helferlein_cloud_owner_'+tool]:uid,[pendingKey(uid)]:'{not-json'});
+ const original=Object.fromEntries(corrupt.data);
+ await assert.rejects(()=>corrupt.store.load(),/not valid JSON/);
+ assert.deepEqual(Object.fromEntries(corrupt.data),original);
+ assert.equal(corrupt.networkCalls(),0);
+ console.log('PASS malformed pending JSON rejected without modifying storage');
+ console.log('TOTAL 9');
 })().catch(e=>{console.error('FAIL',e);process.exitCode=1});
