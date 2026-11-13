@@ -13,7 +13,7 @@ window.addEventListener('unhandledrejection',e=>{window.__errors.push(String(e.r
 let operation='',payload=null,filters=[];
 function query(table){
  const q=new Proxy({}, {get(_t,key){
-  if(key==='then')return resolve=>Promise.resolve({data:table==='wishlist_gift_tasks'?[{...seed}]:[],error:null}).then(resolve);
+  if(key==='then')return resolve=>{if(operation){window.__calls.push({table,operation,payload,filters});return Promise.resolve(mode.endsWith('-error')||mode==='permission'?{data:null,error:{message:'synthetic denied'}}:{data:null,error:null}).then(resolve)}return Promise.resolve({data:table==='wishlist_gift_tasks'?[{...seed}]:[],error:null}).then(resolve)};
   if(key==='update'||key==='delete'||key==='insert')return p=>{operation=key;payload=p;filters=[];return q};
   if(key==='eq')return (field,value)=>{if(operation)filters.push([field,value]);return q};
   if(key==='single')return async()=>{
