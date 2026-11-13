@@ -61,3 +61,8 @@ Only rename directories and HTML files, and repair the references necessary to p
 - GitHub Actions run 43470828521: 11/11 control event checks passed; existing static audit, JS syntax checks, 32-page smoke tests, mock dependency tests, and 11 real anchor navigation checks also passed.
 - Important scope: these checks confirm control presence, event dispatch and immediate state change; they do NOT validate all downstream filter results, accessibility behavior, authentication, database workflows, or persistence. Tests may modify disposable local browser state only.
 - No website source, visible text, design, default branch, deployment or production Supabase changed.
+
+## Visible filter result assertions (2026-11-13)
+- Added scripts/smoke_results.py: all six homepage category filters checked against the actual visible tool cards and count text, passing in GitHub Actions run 43471325610.
+- Added scripts/smoke_discover_fixture.py: three in-memory synthetic wishlist collection records, intended to verify visible search, topic and sorting output without network access or production Supabase. Initial run 43471325610 failed because the test observed an empty rendered grid; root cause under investigation. Do not count this as a passing functional test or a confirmed migration defect.
+- Existing static route, JS syntax, page smoke, mocked dependency, anchor navigation and safe UI control tests passed in that run. No application files, visible content or design changed; no merge/deployment.
