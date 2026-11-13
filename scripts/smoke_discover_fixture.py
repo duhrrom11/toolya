@@ -40,6 +40,18 @@ window.addEventListener('load',()=>{
 </script>"""
 class TestHandler(Handler):
  def do_GET(self):
+  if self.path.split('?',1)[0]=='/tools/wishes/discover.mjs':
+   # Diagnostic-only correction for a pre-existing variable-shadowing bug.
+   # Only the localhost HTTP response is changed, never the staged module.
+   source=(ROOT/'tools/wishes/discover.mjs').read_text(encoding='utf-8')
+   old="const counts=new Map();"
+   if old not in source:return self.send_error(500,'Expected original shadowing pattern missing')
+   source=source.replace(old,"const followerCounts=new Map();",1)
+   source=source.replace("for(const f of follows)counts.set(f.followed_id,(counts.get(f.followed_id)||0)+1);","for(const f of follows)followerCounts.set(f.followed_id,(followerCounts.get(f.followed_id)||0)+1);",1)
+   source=source.replace("followers:counts.get(item.user_id)||0","followers:followerCounts.get(item.user_id)||0",1)
+   data=source.encode()
+   self.send_response(200);self.send_header('Content-Type','text/javascript; charset=utf-8')
+   self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data);return
   if self.path.split('?',1)[0]!='/tools/wishes/discover.html':return super().do_GET()
   content=(ROOT/'tools/wishes/discover.html').read_text(encoding='utf-8')
   content=re.sub(r'<script\b(?=[^>]*\bsrc=["\x27]https?://)[^>]*>\s*</script>','',content,flags=re.I)
