@@ -43,6 +43,9 @@ jobs:
       - name: Offline mock dependency browser diagnostics
         if: always()
         run: python3 scripts/smoke_mocked.py
+      - name: Isolated wishes functional browser checks
+        if: always()
+        run: python3 scripts/test_wishes_browser.py
       - name: Real localhost anchor navigation checks
         if: always()
         run: python3 scripts/smoke_navigation.py
