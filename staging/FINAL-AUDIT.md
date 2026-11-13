@@ -92,3 +92,11 @@ Scope: repository-tree and selected source inspection only; no browser authentic
 
 ### Explicit boundaries
 No real Supabase Auth configuration was inspected; runtime auth behavior, mail templates and allowlists remain unverified. No local browser export/import with synthetic fixtures was executed in this review, only the stated narrow classification simulation. No application source, production database/configuration, main branch, merge, deployment or DNS was changed.
+
+## Isolated executable backup/security regression suite (2026-11-13)
+
+- New `scripts/test_backup_isolated.cjs` is wired into `.github/workflows/migration-audit.yml`. It extracts and executes the **actual** homepage backup export/import functions in a Node `vm` context, with synthetic in-memory `localStorage`, mocked file reader, confirmations and download, and Node WebCrypto (PBKDF2-SHA256 / AES-GCM). It does not access a real browser profile, network, production database, accounts or credentials.
+- Cases: allowed/excluded keys and auth-token exclusion; encrypted export/import round-trip; wrong password; tampered ciphertext; malformed JSON; unsupported-key exclusion; quota-error rollback; declined overwrite; static estate signup `emailRedirectTo` expectation.
+- Important scope: the rollback simulation throws on **one** selected write, then allows restoration. It does not prove rollback under persistent storage corruption, concurrent writes, browser quota behavior, or full multi-origin browser migration. Redirect checks inspect source only, not Supabase Auth project allowlists or email delivery.
+- Initial CI run `43474397137` failed because the harness returned before asynchronous PBKDF2 decryption completed. The harness was changed to wait for the asynchronous import outcome (commit `f1e3fb2`). This was a **test synchronization defect**, not a confirmed application defect. Final CI verdict must be checked on the latest run; do not count cases as passing before that.
+- No application source or production configuration changed; no merge or deployment.
