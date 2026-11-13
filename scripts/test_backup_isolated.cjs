@@ -43,7 +43,8 @@ async function exported(){
 async function imported(obj){
  const file={name:'synthetic.json',size:Buffer.byteLength(JSON.stringify(obj)),content:JSON.stringify(obj)};
  await vm.runInContext('importGlobalBackup',ctx)({target:{files:[file],value:'selected'}});
- for(let i=0;i<20;i++)await pause();
+ for(let i=0;i<1000 && alerts.length===0;i++)await new Promise(resolve=>setTimeout(resolve,5));
+ assert(alerts.length>0,'import did not finish within timeout');
 }
 async function run(){
  await ok('allowlist excludes sessions and unknown keys',async()=>{
