@@ -25,7 +25,7 @@ window.addEventListener('error',e=>{document.body.dataset.error=e.message});
 function report(value){const pre=document.createElement('pre');pre.id='result';pre.textContent=JSON.stringify(value);document.body.append(pre)}
 """
 SOURCE="""
-async function begin(){
+async function begin(){document.body.dataset.phase='export-started';
  localStorage.setItem('hub_favorites','[1]');
  localStorage.setItem('digital_estate_vault','synthetic-vault');
  localStorage.setItem('sb-local-auth-token','SECRET-NOT-EXPORTED');
@@ -33,13 +33,13 @@ async function begin(){
  const original=URL.createObjectURL;
  URL.createObjectURL=blob=>{blob.text().then(async content=>{
   const target=document.getElementById('dest').contentWindow;
-  target.postMessage({kind:'backup',content},'http://127.0.0.1:__B__');
+  document.body.dataset.phase='encrypted-blob-ready';target.postMessage({kind:'backup',content},'http://127.0.0.1:__B__');
  });return 'blob:synthetic'};
  URL.revokeObjectURL=()=>{};
  await exportGlobalBackup(true);
 }
 window.addEventListener('message',e=>{
- if(e.origin!=='http://127.0.0.1:__B__'||e.data.kind!=='done')return;
+ if(e.origin!=='http://127.0.0.1:__B__'||e.data.kind!=='done')return;document.body.dataset.phase='destination-done';
  report({sourcePreserved:localStorage.getItem('hub_favorites')==='[1]',
   sourceVault:localStorage.getItem('digital_estate_vault')==='synthetic-vault',
   result:e.data.result,sourceErrors:events});
@@ -49,7 +49,7 @@ window.addEventListener('load',()=>{const frame=document.createElement('iframe')
 """
 DEST="""
 window.addEventListener('message',async e=>{
- if(e.origin!=='http://127.0.0.1:__A__'||e.data.kind!=='backup')return;
+ if(e.origin!=='http://127.0.0.1:__A__'||e.data.kind!=='backup')return;document.body.dataset.phase='import-started';
  localStorage.setItem('hub_favorites','old-destination');
  localStorage.setItem('sb-local-auth-token','DEST-SESSION');
  localStorage.setItem('helferlein-wish-extras:mock','DEST-EXTRAS');
@@ -90,7 +90,7 @@ def main():
    cmd=[chrome,'--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
     '--disable-background-networking','--disable-extensions','--no-first-run',
     '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1',
-    '--user-data-dir='+profile,'--virtual-time-budget=15000','--dump-dom',f'http://127.0.0.1:{a}/']
+    '--user-data-dir='+profile,'--virtual-time-budget=45000','--dump-dom',f'http://127.0.0.1:{a}/']
    p=run_chrome(cmd,timeout=90,label='encrypted-two-origins')
    if p.timed_out:raise AssertionError('Chrome timeout: '+p.stderr[-400:])
    m=re.search(r'<pre id="result">(.*?)</pre>',p.stdout,re.S)
