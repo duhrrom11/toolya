@@ -1,7 +1,7 @@
 (function(){
  'use strict';
  const C=EstateCrypto, STORE='digital_estate_vault';
- const API='https://avapuibsidubuzxjtyld.supabase.co', PUB='sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC';
+ const API='https://yheogmeaosuigyaxkwth.supabase.co', PUB='sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
  const db=supabase.createClient(API,PUB);
  const $=id=>document.getElementById(id);
  let user=null,key=null,payload=null,config=null,record=null,stamp=null,version=0,mailReady=false,busy=false,ownRaw=null,editId=null,idle=null;
