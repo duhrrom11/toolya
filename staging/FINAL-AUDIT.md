@@ -257,3 +257,49 @@ The homepage's fixed allowlist has **34 literal keys**; the layout regex adds se
 - [Run 43477162467](https://github.com/duhrrom11/toolya/actions/runs/43477162467) on documentation commit `4d371e5c2`: **FAILURE**. The static audit and JS checks passed, but `Headless Chrome local smoke tests` failed on the homepage/legal/privacy pages and `Isolated two-origin browser storage checks` timed out after 45 seconds. No application or test script changed between those two documentation commits; this suggests CI/Chromium nondeterminism but does **not** establish the root cause. Do not treat the failed run as green.
 - New documentation-only inventory runs `43477891416` and `43477943605` were in progress/queued at initial inspection; verify their eventual conclusions before claiming a green current HEAD.
 - **Release gate remains NO-GO** until a reproducibly green exact candidate commit and a resolved/accepted browser-test reliability criterion. No code or CI scripts changed in this inventory task.
+
+## Read-only Chromium CI stability assessment and reproducibility plan (2026-11-13)
+
+**Scope:** Inspected GitHub Actions run/job states and failing job logs plus the existing `.github/workflows/migration-audit.yml`, `scripts/smoke_staging.py`, `scripts/smoke_mocked.py`, and `scripts/test_two_origins.py`. **Only this report may be changed in this task.** No test, workflow, application, Supabase, merge or deployment changes.
+
+### Verified run ledger (at assessment)
+
+| Run | Head SHA prefix | Verified result | Evidence |
+|---|---|---|---|
+| [43478019991](https://github.com/duhrrom11/toolya/actions/runs/43478019991) | `1aacdee3c1` | **IN PROGRESS** at first and follow-up queries; do not count as green | Documentation-only commit, exact current HEAD before this report update |
+| [43477943605](https://github.com/duhrrom11/toolya/actions/runs/43477943605) | `1aa1cc98ee` | **SUCCESS** | Data inventory count correction, documentation only |
+| [43477891416](https://github.com/duhrrom11/toolya/actions/runs/43477891416) | `3e25dbad88` | **SUCCESS** | Data inventory, documentation only |
+| [43477162467](https://github.com/duhrrom11/toolya/actions/runs/43477162467) | `4d371e5c26` | **FAILURE** | `Headless Chrome local smoke tests` and `Isolated two-origin browser storage checks` |
+| [43477118211](https://github.com/duhrrom11/toolya/actions/runs/43477118211) | `9cd8c29a78` | **SUCCESS** | Documentation-only commit |
+| [43476720388](https://github.com/duhrrom11/toolya/actions/runs/43476720388) | `f3eff12083` | **SUCCESS** | Full migration CI including two-origin check |
+| [43475839897](https://github.com/duhrrom11/toolya/actions/runs/43475839897) | `5aed79fb65` | **SUCCESS** | Full migration CI, 18/18 isolated checks |
+| [43475811181](https://github.com/duhrrom11/toolya/actions/runs/43475811181) | `4879b46864` | **FAILURE** | Chrome smoke and two-origin steps failed; earlier test harness variant |
+| [43475397596](https://github.com/duhrrom11/toolya/actions/runs/43475397596) | `2585e58737` | **FAILURE** | Earlier browser test iteration |
+| [43475311677](https://github.com/duhrrom11/toolya/actions/runs/43475311677) | `8c91248385` | **FAILURE** | Earlier browser test iteration |
+
+**Direct failure evidence from run 43477162467:** the Chrome smoke printed `FAIL: index.html`, `FAIL: legal.html`, and `FAIL: privacy.html`; the two-origin subprocess raised `subprocess.TimeoutExpired` with `timeout=45` at `scripts/test_two_origins.py:62`. These are runner/browser outcomes, **not proof** that the staged pages or storage-isolation semantics are broken. The run's complete smoke JSON should be retained before categorizing each page failure; failure labels alone do not establish whether the cause was process timeout, missing instrumentation or rendering.
+
+### Prioritized stability risks and hypotheses
+
+| Priority | Finding / confidence | Consequence | Diagnostic discriminant |
+|---|---|---|---|
+| **P0 CI reliability** | **Observed:** same test code passed and failed on documentation-only pushes; full run sometimes red | Cannot require one lucky green run as reliable release evidence | Re-run same immutable SHA in serial and repeat; distinguish infrastructure from deterministic assertion |
+| **P1 process contention** | **Plausible, not proven:** `smoke_staging.py` and `smoke_mocked.py` use `ThreadPoolExecutor(max_workers=3)`; each case launches its own headless Chrome process; separate branch pushes can start overlapping workflows | Chromium process/CPU/memory exhaustion, slow shutdown or contention | Record process count, RSS, available memory, Chrome exit status and overlap with other runs; compare serial vs parallel |
+| **P1 fixed subprocess timeout** | **Observed:** 35-second per-page timeout in both smoke scripts; 45-second timeout in `test_two_origins.py`; 45-second timeout was actually reached | Runner speed influences pass/fail; a timeout is not a failed storage assertion | Capture elapsed time and timeout phase; differentiate startup, navigation, iframe message and browser exit |
+| **P1 limited failure artifacts** | **Observed:** two-origin script only parses final `--dump-dom` output and reports limited stderr; no phase timestamps, screenshots, Chrome process metrics or preserved timeout trace | Root cause cannot be established from timeout alone | On failure capture bounded stdout/stderr, phase marker, page/iframe state, Chrome version and memory; scrub fixture content |
+| **P2 nondeterministic browser lifecycle** | **Plausible:** `--virtual-time-budget=4000` and cross-origin iframe/postMessage handshake rely on browser event progression; `--dump-dom` waits for completion | Potential missed message or browser waiting despite successful page script | Distinguish no page load, no `before`, no `after`, DOM present but process still running |
+| **P2 CI environment drift** | **Observed:** workflow uses `ubuntu-latest`, system Chrome lookup and no pinned Chrome version | Browser/runner image changes can affect timing | Record runner image, Chrome/Chromium version, Python and Node versions on each run |
+| **P2 classification** | **Observed:** offline external CDN resources are reported `OFFLINE-LIMITED`; mocked browser script intentionally treats mock warnings as diagnostic | A green workflow does not mean external dependencies or real Supabase integration passed | Keep separate categories: deterministic assertion PASS, offline limitation, mock warning, infrastructure timeout, real app failure |
+
+### Reproducible production-isolated validation plan (proposal only; not implemented)
+
+1. **P0 — Freeze a single candidate SHA (Migration engineer / QA):** stop overlapping documentation pushes for the measurement window; record exact commit, runner image, Chrome/Python/Node versions and GitHub run ID. Use manual `workflow_dispatch` on the **same SHA**. Never compare two different SHAs as identical trials.
+2. **P0 — Establish baseline (QA):** run the complete workflow **at least 5 consecutive times**, serially, with no overlap, using localhost-only servers and synthetic storage fixtures. Acceptance for CI-stability gate: **5/5 complete green**, 5/5 two-origin PASS, zero unexplained Chromium timeouts. If any failure occurs, preserve its logs and classify before retrying; do not silently discard failed trials.
+3. **P1 — Collect bounded diagnostics (CI maintainer; future test-only authorization):** on every browser run log browser version, process exit code, elapsed time, URL/phase, bounded stderr and resource availability. On timeout collect process tree and last completed handshake phase, and terminate the process group; do not print real browser data, passwords, tokens or actual user IDs. Keep temporary profiles and artifacts synthetic only.
+4. **P1 — Isolate contention (CI maintainer; future test-only authorization):** compare a **serial** Chrome page sweep (max_workers=1) to the current max_workers=3, each for 5 runs at the same SHA. If serial is stable and parallel fails, reduce concurrency or isolate jobs; do not simply increase timeouts without root-cause evidence. Consider workflow-level concurrency with cancellation policy that does not hide test failures.
+5. **P1 — Separate process exit from test assertion (QA):** treat `TimeoutExpired`, missing `--dump-dom` report, Chrome nonzero exit, missing cross-origin `before/after` phase and explicit storage mismatch as **distinct failures**. Acceptance: an assertion PASS is never inferred from a browser that failed to exit; all timeouts remain visible and blocking until explained.
+6. **P1 — Control isolation (Security/QA):** retain `127.0.0.1` servers, ephemeral profiles, `connect-src 'none'`, DNS restriction, fake accounts and no production Supabase; check test harness makes no real network calls or production storage writes. Verify no external credentials enter logs.
+7. **P2 — Pin/record toolchain (CI maintainer; future authorization):** prefer explicit browser version or at minimum record browser binary/version and runner image. Re-run reproducibility suite after any runner/browser upgrade.
+8. **P0 — Release gate and escalation (Release approver):** require a fully green **exact release SHA** after reliability remediation, stable repeat results and separate data/auth/redirect GO gates. Any unexplained timeout, missing diagnostic evidence, or unresolved P0/P1 remains **NO-GO**. No retries used to relabel a red run as green.
+
+**Change boundary:** The proposed test/workflow improvements above require a **separate explicit request**. This task only documents the evidence and plan. No test scripts or application files were changed. The latest documentation commit will itself trigger CI; its outcome must be checked later.
