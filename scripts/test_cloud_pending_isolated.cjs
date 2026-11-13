@@ -23,7 +23,7 @@ function create(seed={},signedIn=uid){
  assert.equal(a.networkCalls(),0);
  console.log('PASS offline owner pending visible without network');
  const b=create(seed,other);
- assert.equal(await b.store.hasPending(),true);
+ assert.equal(await b.store.hasPending(),false);
  assert.equal((await b.store.inspect()).signedOut,true);
  assert.equal(b.networkCalls(),0);
  console.log('PASS mismatched account cannot claim pending while offline');
