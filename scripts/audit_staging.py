@@ -20,7 +20,7 @@ MODULE_REF = re.compile(r"""\b(?:import|require)\s*(?:\(\s*)?["\x27]([./][^"\x27
 CSS_REF = re.compile(r"""(?:url\(\s*["']?([^"'\)]+)|@import\s+["']([^"']+))""")
 QUOTED_PAGE = re.compile(r"""["'\x60]((?:\.{1,2}/|/)?[^"'\x60\s]*\.html(?:[?#][^"'\x60]*)?)["'\x60]""")
 OLD_ROUTES = re.compile(r"""(?:tools/(?:wishlist|digitaler-nachlass|haushaltsbuch-kassenbon|autokosten-reifenwechsel|umzugskisten-inventar)/|amazon-wishlist/|gift-(?:dashboard|assistant|planner|cockpit|task-report)\.html|social-(?:dashboard|feed)\.html|my-reservations\.html|duhrrom11\.github\.io/Helferlein/)""")
-KNOWN_MISSING_IN_ORIGINAL = {"tools/wishes/gift-tasks.html", "tools/wishes/gift-analytics.html"}
+KNOWN_MISSING_IN_ORIGINAL = set()  # Both previously missing wishes pages are now implemented.
 
 def target_for(source, raw):
     raw = raw.strip()
