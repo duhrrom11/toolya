@@ -102,3 +102,20 @@ No real Supabase Auth configuration was inspected; runtime auth behavior, mail t
 - No application source or production configuration changed; no merge or deployment.
 
 - Follow-up CI run `43474489747`: seven checks passed, then the intentionally **cancelled** import failed a test-only expectation that every import must display an alert. Cancellation correctly returns silently. Harness corrected in commit `4ba689d`; this was not an application defect. Final all-green run remains to be confirmed.
+
+## Extended origin, persistent-storage and pending-queue release checks (2026-11-13)
+
+Added isolated tests (only scripts and CI workflow changed):
+- `scripts/test_two_origins.py`: disposable Chromium profile and **two distinct localhost port origins**, same browser profile, CSP `connect-src 'none'`. Seeds only synthetic `localStorage` fixtures on origin A; asserts B is initially empty, then **explicitly** restores only two allowlisted synthetic keys on B, leaving auth token, wishlist extras and `helferlein_cloud_budget_mock-user_pending` on A. This is a browser-origin isolation and manual allowlist-copy test, **not** a real encrypted file export/import across browser origins; that cryptographic function is exercised separately in `test_backup_isolated.cjs`.
+- `scripts/test_backup_isolated.cjs` extended with persistent simulated `setItem` failure during import and rollback. Acceptance: application warns rollback may be incomplete, does **not** claim full recovery. The test intentionally preserves a prior value in the fixture; it does not prove data recovery if the underlying browser storage is irreparably corrupted.
+- `scripts/test_cloud_pending_isolated.cjs`: executes the **actual** `shared/helferlein-cloud-store.js` in a Node VM with `navigator.onLine=false`, synthetic unexpired session, account-scoped pending keys, and a Supabase stub whose `from()` and online `getUser()` throw. Tests matching owner, mismatched owner, signed-out state, no queue, and no mutation/network calls. It does not test real flush, conflict resolution, cloud persistence or migration of unsynced queues.
+- Both new scripts are wired into `.github/workflows/migration-audit.yml`. Verify CI outcome separately before claiming green.
+
+**Residual release risks (priorities unchanged):**
+- **P0:** Cross-origin encrypted *browser* export/import with real file picker, two real domain contexts, and disposable vault keys still requires dedicated rehearsal. Do not automatically copy auth tokens or pending cloud queues. A browser origin cannot directly read another origin's storage.
+- **P0:** Persistent storage failure cannot be reliably rolled back by another write to the same failed storage medium; preserve old origin and independently verified encrypted export. Explicit failure notice is necessary, not sufficient.
+- **P0:** Pending cloud writes are intentionally excluded from global backup; no automatic migration or guaranteed replay. A user-scoped, revision-aware manual reconciliation strategy must be designed and tested with offline mocks before publication.
+- **P0:** Supabase allowed redirects, confirmation emails, sessions and live auth remain unverified; no production project access.
+- **P1:** Legacy routes and old `robots.txt` sitemap remain unresolved.
+
+No application code, main branch, production Supabase, merge, DNS or deployment modified.
