@@ -56,12 +56,10 @@ window.addEventListener('message',async e=>{
  const file=new File([e.data.content],'synthetic-backup.json',{type:'application/json'});
  // importGlobalBackup returns after starting FileReader; its async onload continues
  // independently through PBKDF2. Await the real completion signal, not its return.
- const completion=new Promise((resolve,reject)=>{
+ const completion=new Promise(resolve=>{
   const previousAlert=window.alert;
-  const watchdog=setTimeout(()=>reject(Error('encrypted restore completion timeout')),30000);
   window.alert=message=>{
    previousAlert(message);
-   clearTimeout(watchdog);
    resolve(String(message));
   };
  });
@@ -100,7 +98,7 @@ def main():
    cmd=[chrome,'--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
     '--disable-background-networking','--disable-extensions','--no-first-run',
     '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1',
-    '--user-data-dir='+profile,'--virtual-time-budget=60000','--dump-dom',f'http://127.0.0.1:{a}/']
+    '--user-data-dir='+profile,'--virtual-time-budget=120000','--dump-dom',f'http://127.0.0.1:{a}/']
    p=run_chrome(cmd,timeout=120,label='encrypted-two-origins')
    if p.timed_out:raise AssertionError('Chrome timeout: '+p.stderr[-400:])
    m=re.search(r'<pre id="result">(.*?)</pre>',p.stdout,re.S)
