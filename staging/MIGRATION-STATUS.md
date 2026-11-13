@@ -72,3 +72,8 @@ Only rename directories and HTML files, and repair the references necessary to p
 - The discovery fixture test now corrects this shadowing only in the test HTTP response to separately examine search, sorting and topic rendering. This must not be mistaken for a production fix. Its CI outcome should be checked separately.
 - Added `scripts/smoke_moving_fixture.py` with three synthetic inventory boxes and a synthetic location; the browser reads these via a test-only `getData` replacement and never writes storage. Run 43472440592: 6/6 actual visible results passed (name, descending/ascending value, tag, search, reset), zero captured browser errors.
 - Existing static, page smoke, navigation, and UI control tests remain passing. No app source files, visible content, main branch, deployment or production Supabase changed.
+
+## Completed synthetic visible-result browser checks (2026-11-13)
+- GitHub Actions run 43472635866 completed successfully: wishlist discovery test 5/5 visible-result assertions (newest, alphabetical, popularity, search, gaming topic) with three synthetic records; moving inventory 6/6 (name, ascending/descending value, tag, search, reset); homepage six category result checks passed; existing route, JS, 32-page, 11 navigation and 11 safe UI checks passed.
+- IMPORTANT: wishlist discovery 5/5 pass is under a **test-response-only workaround** for the confirmed pre-existing `counts` variable-shadowing bug. Unmodified discovery application code remains broken when this path executes. No application fix was authorized because this is not a path/dependency defect.
+- No production data, authentication, network connections, app source files, visible content, main branch, merge or deployment changed.
