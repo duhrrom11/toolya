@@ -45,6 +45,9 @@ jobs:
       - name: Verify synthetic moving inventory search tags and sorting
         if: always()
         run: python3 scripts/smoke_moving_fixture.py
+      - name: Isolated encrypted backup import export and auth redirect assertions
+        if: always()
+        run: node scripts/test_backup_isolated.cjs
       - name: Upload audit report
         if: always()
         uses: actions/upload-artifact@v4
