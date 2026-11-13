@@ -141,3 +141,10 @@ Status: planning only. Do not overwrite the live toolya index.html or modify duh
 - Static audit: 106 files, 104 references, 0 missing, 0 legacy route occurrences. No confirmed new test failures, so no application fix was needed.
 - **P1 OPEN:** real authorization/RLS verification in approved nonproduction environment, cross-user access, task concurrency and edge cases; analytics year assignment, closing, export and permissions. **P0/P1 OPEN:** route/feature inventory, staging auth redirects/domain allowlists, service worker/cache/origin storage, legal/privacy branding, accessibility/security, explicit release sign-off.
 - **Release NO-GO**; no `main` changes, no production Supabase access, merge or deployment.
+
+## Analytics isolated browser suite (2026-11-13)
+
+- Added `scripts/test_wishes_analytics.py` and CI workflow step, covering eight localhost-only scenarios: gift year assignment success/failure, closing success/failure, closing without mandatory confirmation, local JSON export, synthetic RPC permission denial, and unauthenticated guest. All database calls use injected mocks; browser CSP blocks outbound connections. Tests assert RPC names and arguments, UI messages, and local export structure.
+- [CI 43500511699](https://github.com/duhrrom11/toolya/actions/runs/43500511699) is the follow-up for this new suite; **not yet verified**. Earlier intermediate CI 43500498918 was cancelled by a subsequent branch commit and is not evidence of success.
+- **P1 OPEN until logs confirm** all eight analytics scenarios. Mocked authorization denial is not evidence of actual RLS enforcement. Further P0/P1: real nonproduction RLS and cross-user controls, historical closing immutability and complete snapshots, export file integrity, year edge cases, full route/feature inventory, staging auth redirects and allowlists, cache/origin-storage, legal/privacy, accessibility/security and explicit acceptance.
+- **Release NO-GO**. No `main` modifications, production Supabase access, merge or deployment.
