@@ -23,3 +23,9 @@ Five representative HTML files were scanned for static href/src targets after co
 
 ## User constraints
 Only rename directories and HTML files, and repair the references necessary to preserve their operation. Do not change visible text, design, behavior, or tool functionality. Keep original Helferlein untouched and do not publish Toolya until verified.
+
+## Dependency audit follow-up (2026-11-13)
+- Scanned all 32 staged HTML pages for literal href/src targets. Missing: estate/handover.html -> assets/heir-e2ee-handoff.js (restored in commit 5648521). Two wishlist targets gift-tasks.html and gift-analytics.html were already missing from the original Helferlein source and must not be fabricated or silently redirected.
+- Scanned 64 staged JavaScript, MJS and CSS files for static relative import/require and CSS url()/@import targets: no missing relative dependencies detected by these patterns.
+- Checked 75 staged HTML/JS/CSS files for selected old tool paths and obsolete renamed HTML targets; no matches in those scanned files. Remaining files and dynamic computed URLs still require review.
+- Static scanning is not browser validation; do not publish or merge until functional smoke tests and a full URL/route audit pass.
