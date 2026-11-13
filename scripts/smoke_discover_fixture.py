@@ -13,7 +13,7 @@ const q=(data)=>new Proxy({}, {get(t,k){if(k==='then')return f=>Promise.resolve(
 window.supabase.createClient=()=>({
  auth:{getUser:async()=>({data:{user:null},error:null})},
  from:table=>q(table==='wishlist_lists'?mockRows:table==='wishlist_profiles'?[]:[]),
- rpc:()=>q([{list_id:'local-a',like_count:3},{list_id:'local-b',like_count:9},{list_id:'local-c',like_count:5}])
+ rpc:()=>q([{list_id:'local-a',like_count:12},{list_id:'local-b',like_count:9},{list_id:'local-c',like_count:5}])
 });
 window.addEventListener('load',()=>{
  const grid=()=>[...document.querySelectorAll('#grid article.card h2')].map(x=>x.textContent);
@@ -24,7 +24,7 @@ window.addEventListener('load',()=>{
  sort.value='az';sort.dispatchEvent(new Event('change',{bubbles:true}));
  test('az',['Apfel Wohnen','Mitte Kreativ','Zebra Gaming']);
  sort.value='popular';sort.dispatchEvent(new Event('change',{bubbles:true}));
- test('popular',['Apfel Wohnen','Mitte Kreativ','Zebra Gaming']);
+ test('popular',['Zebra Gaming','Apfel Wohnen','Mitte Kreativ']);
  search.value='Gaming';search.dispatchEvent(new Event('input',{bubbles:true}));
  test('search',['Zebra Gaming']);
  search.value='';search.dispatchEvent(new Event('input',{bubbles:true}));
