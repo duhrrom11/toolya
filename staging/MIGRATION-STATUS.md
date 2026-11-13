@@ -35,3 +35,11 @@ Only rename directories and HTML files, and repair the references necessary to p
 - Verified source tree does not contain gift-tasks.html or gift-analytics.html, despite references from wishlist HTML and JS. These are pre-existing missing destinations; do not fabricate pages or change visible navigation without a source implementation.
 - Added read-only scripts/audit_staging.py for repeatable local static link checks after branch checkout. It has not been executed against a full branch checkout in this session; do not describe it as a passing test.
 - Browser functional testing of staging was not performed: staging is not published, and no runnable local copy of the exact current branch was assembled. Therefore no functional sign-off and no deployment.
+
+## All-page offline browser smoke audit (2026-11-13)
+- Added scripts/smoke_staging.py covering all 32 staged HTML pages via a localhost-only HTTP server and headless Chrome. Checks rendered DOM, captures browser script errors/resource load failures, and verifies static same-origin navigation targets without clicking, logging in or submitting forms.
+- The test deliberately blocks external DNS/network access to avoid connecting to production Supabase or third-party services. Therefore 28 pages are classified OFFLINE-LIMITED because they depend on external CDN scripts (Tailwind, Supabase, etc.). These are NOT confirmed full functional passes.
+- Four estate HTML pages passed without external dependency errors. Final audit had zero additional local failures, but this does not validate remote dependencies or interactive application behavior.
+- GitHub Actions run 43460430391: static audit passed (103 staged files, 102 scanned references, 0 legacy route matches, 5 references to the two already missing original wishlist pages); Node JS syntax checks passed; 32-page offline browser test completed with 4 PASS, 28 OFFLINE-LIMITED, 0 local failures.
+- Earlier tests flagged self-document URLs as resource errors; this was determined to be a browser event artifact and filtered without modifying site source.
+- No visible page contents, design, production database, deployment or main branch changed. Remaining acceptance gate: browser verification with required external libraries available and safe production-isolated test configuration, plus interaction/navigation checks.
