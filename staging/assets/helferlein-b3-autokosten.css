@@ -1,0 +1,41 @@
+/* Car/vehicle theme layered on top of reusable Helferlein B3 UI. */
+body.b3-autokosten{--b3-accent:#cf4a16;--b3-accent-2:#ff9b59;--b3-header-start:#86230d;--b3-header-mid:#dd511e;--b3-header-end:#ffab56}
+body.b3-autokosten .b3-header{background:linear-gradient(113deg,var(--b3-header-start) 0%,var(--b3-header-mid) 56%,var(--b3-header-end) 100%);box-shadow:0 6px 20px #8b341c24}
+body.b3-autokosten .b3-nav-links>a:first-child{background:linear-gradient(110deg,#b63b13,#ef7131);color:#fff}
+body.b3-autokosten .b3-more[open]>summary{background:#bc431b;color:#fff}
+body.b3-autokosten .b3-action:not(.b3-outline){background:linear-gradient(115deg,#aa3415,#ed6b2a);color:#fff}
+body.b3-autokosten .b3-header .b3-tool-icon{background:#ffffff22}
+body.b3-autokosten .b3-settings-trigger:hover{background:#ffffff40}
+body.b3-autokosten .b3-settings-footer .b3-home-link{color:#a73d17}
+body.b3-autokosten main.b3-dashboard [data-b3-panel="stats"]{gap:.75rem}
+body.b3-autokosten main.b3-dashboard [data-b3-panel="deadlines"]{grid-column:1/-1!important}
+body.b3-autokosten main.b3-dashboard [data-b3-panel="create"]{grid-column:1/-1!important}
+body.b3-autokosten main.b3-dashboard [data-b3-panel="records"]{grid-column:1/-1!important}
+body.b3-autokosten #settingsModal>div{max-height:90dvh;overflow-y:auto}
+body.b3-autokosten #helpBox{max-height:55vh;overflow-y:auto}
+body.b3-autokosten #userInfo{color:var(--b3-ink)}
+body.b3-autokosten .b3-car-help{border-top:1px solid var(--b3-line);padding-top:.75rem}
+body.b3-autokosten .b3-car-help button#helpToggleBtn{color:#fff;background:#a8371d;border-radius:10px;padding:.65rem .8rem;font-size:.82rem}
+body.b3-autokosten .b3-car-help #helpBox{background:#fff5f0;color:#552717;border:1px solid #f0b9a4}
+body.b3-autokosten.b3-dark{--b3-accent:#ffbb81}
+body.b3-autokosten.b3-dark .b3-settings-footer .b3-home-link{color:#ffd0a5}
+body.b3-autokosten.b3-dark main.b3-dashboard :is(.bg-red-50,.bg-red-100){background:#4a2e31!important}
+body.b3-autokosten.b3-dark main.b3-dashboard :is(.bg-green-50,.bg-amber-50){background:#314337!important}
+body.b3-autokosten.b3-dark main.b3-dashboard :is(.text-red-700,.text-red-800,.text-red-900){color:#ffc8b4!important}
+body.b3-autokosten.b3-dark main.b3-dashboard :is(.text-green-600,.text-amber-600){color:#ffdfb0!important}
+body.b3-autokosten.b3-dark main.b3-dashboard button.bg-red-600{background:#ab331e!important;color:#fff}
+body.b3-autokosten.b3-dark #helpBox{background:#25374b;color:#ecf4ff;border-color:#50687d}
+body.b3-autokosten.b3-dark #helpBox :is(.bg-red-800\/50,.bg-red-700\/90){background:#31475b}
+body.b3-autokosten.b3-dark #settingsModal button[onclick="registerUser()"]{background:#246b3f!important;color:#fff!important}
+body.b3-autokosten.b3-dark #settingsModal button[onclick="loginUser()"]{background:#135b8f!important;color:#fff!important}
+body.b3-autokosten.b3-dark #settingsModal button[onclick="logoutUser()"]{background:#9b2935!important;color:#fff!important}
+@media(max-width:680px){
+ body.b3-autokosten [data-b3-panel="create"] .grid-cols-2,
+ body.b3-autokosten [data-b3-panel="create"] .grid-cols-3,
+ body.b3-autokosten [data-b3-panel="records"] .grid-cols-2,
+ body.b3-autokosten [data-b3-panel="records"] .grid-cols-3{grid-template-columns:minmax(0,1fr)}
+ body.b3-autokosten [data-b3-panel="create"] input,
+ body.b3-autokosten [data-b3-panel="create"] select,
+ body.b3-autokosten [data-b3-panel="records"] input,
+ body.b3-autokosten [data-b3-panel="records"] select{max-width:100%;min-width:0}
+}

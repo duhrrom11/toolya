@@ -1,0 +1,152 @@
+/* Helferlein B3 homepage – clean, responsive hub for the eleven tools.
+   CSS only: no tool state, login, favourites, or backup logic is modified. */
+:root{color-scheme:light}
+body.b3-home{--hub-ink:#203047;--hub-muted:#62748a;--hub-surface:#fff;--hub-bg:#f3f7fb;--hub-border:#dce7f1;--hub-primary:#086b78;--hub-accent:#09a8a2;--hub-shadow:0 16px 40px rgba(12,43,71,.065);background:var(--hub-bg)!important;color:var(--hub-ink)!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body.b3-home :is(button,a,input,select){-webkit-tap-highlight-color:transparent}
+body.b3-home :is(button,a,input,select):focus-visible{outline:3px solid #42c5bb;outline-offset:3px}
+body.b3-home .b3-hub-header{position:relative;z-index:30;background:linear-gradient(116deg,#0a344c 0%,#0c6577 54%,#19b1a7 100%);color:#fff;box-shadow:0 10px 28px #17475a30}
+body.b3-home .b3-hub-topbar{width:min(1200px,100%);margin:auto;padding:.85rem clamp(1rem,3vw,2rem);display:flex;align-items:center;gap:1rem;justify-content:space-between}
+body.b3-home .b3-hub-logo{display:flex;align-items:center;gap:.7rem;font-size:1.12rem;font-weight:850;letter-spacing:-.025em;color:white}
+body.b3-home .b3-hub-logo-mark{width:2.45rem;height:2.45rem;display:grid;place-items:center;border-radius:13px;background:#ffffff26;border:1px solid #ffffff49;font-size:1.65rem}
+body.b3-home .b3-hub-nav{display:flex;align-items:center;gap:.35rem}
+body.b3-home .b3-hub-nav a,body.b3-home .b3-hub-nav button{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:42px;padding:.55rem .85rem;border:1px solid transparent;border-radius:11px;font-weight:700;font-size:.84rem;color:white;transition:background .15s}
+body.b3-home .b3-hub-nav a:hover,body.b3-home .b3-hub-nav button:hover{background:#ffffff22}
+body.b3-home .b3-hub-nav #settingsBtn{border-color:#ffffff69;background:#ffffff1c}
+body.b3-home .b3-hub-hero{width:min(1200px,100%);margin:auto;padding:clamp(1.45rem,4vw,3rem) clamp(1rem,3vw,2rem) clamp(2.2rem,5vw,4rem);display:grid;grid-template-columns:minmax(0,1.4fr) minmax(230px,.6fr);gap:1.75rem;align-items:center}
+body.b3-home .b3-hero-eyebrow{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .75rem;border:1px solid #ffffff65;background:#ffffff18;border-radius:99px;font-size:.72rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+body.b3-home .b3-hub-hero h1{font-size:clamp(2.2rem,5vw,4.1rem);line-height:1.09;letter-spacing:-.052em;font-weight:850;margin:.9rem 0}
+body.b3-home .b3-hub-hero h1 span{color:#c6fff2}
+body.b3-home .b3-hub-hero p{color:#e0f5f4;max-width:600px;font-size:clamp(.91rem,1.3vw,1.09rem);line-height:1.7}
+body.b3-home .b3-hero-primary{background:white;color:#105065;box-shadow:0 5px 16px #1029442c}
+body.b3-home .b3-hero-secondary{border:1px solid #ffffff6b;color:white;background:#ffffff12}
+body.b3-home .b3-hero-preview{padding:1.15rem;border-radius:22px;background:#ffffff19;border:1px solid #ffffff54;box-shadow:0 20px 45px #00283a22;backdrop-filter:blur(8px)}
+body.b3-home .b3-preview-heading{font-size:.76rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#e3fff9}
+body.b3-home .b3-preview-list{display:grid;gap:.52rem;margin-top:.9rem}
+body.b3-home .b3-preview-list a{display:flex;align-items:center;gap:.65rem;border:1px solid #ffffff38;background:#ffffff19;border-radius:12px;padding:.72rem;min-height:50px;font-size:.85rem;font-weight:750;color:white;transition:background .15s,transform .15s}
+body.b3-home .b3-preview-list a:hover{background:#ffffff2f;transform:translateY(-1px)}
+body.b3-home .b3-preview-list .b3-preview-icon{display:grid;place-items:center;width:31px;height:31px;background:#ffffff2a;border-radius:9px;font-size:1.1rem}
+body.b3-home .b3-hero-status{margin-top:.95rem;font-size:.74rem;color:#ddf6f2;display:flex;align-items:center;gap:.5rem}
+body.b3-home .b3-hub-main{width:min(1200px,100%);padding:0 clamp(1rem,3vw,2rem) 3.2rem;margin:-.85rem auto 0;position:relative;z-index:2;display:flex;flex-direction:column;gap:1.5rem}
+body.b3-home .b3-discovery{padding:1.25rem clamp(1rem,2.5vw,1.65rem);border-radius:21px;background:var(--hub-surface);border:1px solid var(--hub-border);box-shadow:var(--hub-shadow)}
+body.b3-home .b3-discovery-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.75rem;margin-bottom:1rem}
+body.b3-home .b3-section-heading{font-size:1.24rem;letter-spacing:-.035em;font-weight:830;color:var(--hub-ink)}
+body.b3-home .b3-section-subtitle{font-size:.79rem;color:var(--hub-muted);margin-top:.2rem}
+body.b3-home .b3-categories{display:flex;flex-wrap:wrap;gap:.45rem}
+body.b3-home .b3-filter{border:1px solid var(--hub-border);border-radius:999px;padding:.57rem .85rem;min-height:40px;font-size:.78rem;font-weight:720;background:var(--hub-bg);color:var(--hub-muted);transition:background .15s}
+body.b3-home .b3-filter:hover{border-color:#2eaaa7;color:var(--hub-ink)}
+body.b3-home .b3-filter[aria-pressed="true"]{background:#0b6c79;border-color:#0b6c79;color:#fff}
+body.b3-home #searchEmptyState{background:var(--hub-surface);border-color:var(--hub-border);color:var(--hub-muted)}
+body.b3-home #toolsGrid{gap:1rem;align-items:stretch}
+body.b3-home .tool-card{--card-accent:#087f86;--card-soft:#e5f8f4;position:relative;background:var(--hub-surface)!important;border:1px solid var(--hub-border)!important;border-radius:19px;padding:1.2rem;box-shadow:var(--hub-shadow)!important;overflow:hidden;transition:transform .2s,box-shadow .2s,border-color .2s}
+body.b3-home .tool-card::before{height:4px!important;opacity:1!important;top:0;left:0;right:0;background:var(--card-accent)!important}
+body.b3-home .tool-card:hover{transform:translateY(-4px);border-color:var(--card-accent)!important;box-shadow:0 18px 34px #203a5822!important}
+body.b3-home .tool-card h3{color:var(--hub-ink)!important;font-size:1.06rem;line-height:1.35;letter-spacing:-.02em;font-weight:800}
+body.b3-home .tool-card p{color:var(--hub-muted)!important;font-size:.82rem;line-height:1.6}
+body.b3-home .tool-card>div:first-child>div:first-child>div:first-child{background:var(--card-soft)!important;color:var(--card-accent)!important;border-color:transparent!important;width:52px;height:52px}
+body.b3-home .tool-card>div:last-child{border-color:var(--hub-border)!important;margin-top:1.1rem}
+body.b3-home .tool-card>div:last-child>a[href^="tools/"]{color:#fff!important;background:var(--card-accent)!important;border:0!important;padding:.65rem 1rem;min-height:39px}
+body.b3-home .tool-card>div:last-child>a[href^="tools/"]:hover{filter:brightness(.94)}
+body.b3-home .tool-card .fav-btn{min-width:32px;min-height:32px;border-radius:9px;font-size:1.2rem}
+body.b3-home .tool-card .fav-btn:hover{background:var(--hub-bg)}
+body.b3-home .tool-card [id^="stats-"]{color:var(--card-accent)!important;background:var(--card-soft)!important;border-color:transparent!important}
+body.b3-home .tool-card[data-id="kassenbon"]{--card-accent:#087e83;--card-soft:#dff6f2}
+body.b3-home .tool-card[data-id="kisten"]{--card-accent:#6850ba;--card-soft:#eee8ff}
+body.b3-home .tool-card[data-id="wg-kasse"]{--card-accent:#255ab7;--card-soft:#e8f0ff}
+body.b3-home .tool-card[data-id="notizen"]{--card-accent:#675bad;--card-soft:#eceafd}
+body.b3-home .tool-card[data-id="kfz"]{--card-accent:#bc611f;--card-soft:#fff0e2}
+body.b3-home .tool-card[data-id="haustier"]{--card-accent:#bf426b;--card-soft:#ffe9f1}
+body.b3-home .tool-card[data-id="parken"]{--card-accent:#a76a1e;--card-soft:#fff2d9}
+body.b3-home .tool-card[data-id="verleih"]{--card-accent:#196c92;--card-soft:#e0f3fa}
+body.b3-home .tool-card[data-id="pflanzen"]{--card-accent:#2c814d;--card-soft:#e2f6e9}
+body.b3-home .tool-card[data-id="energie"]{--card-accent:#2477bc;--card-soft:#e4f2ff}
+body.b3-home .tool-card[data-id="backform"]{--card-accent:#a54a52;--card-soft:#fff0e9}
+body.b3-home .b3-faq{max-width:1200px;margin:1.1rem auto 0;padding:1.3rem clamp(1rem,3vw,2rem)}
+body.b3-home .b3-faq>h2{font-size:1.3rem;letter-spacing:-.03em;color:var(--hub-ink)}
+body.b3-home .b3-faq .grid>div{background:var(--hub-surface);border-color:var(--hub-border);box-shadow:var(--hub-shadow);padding:1.2rem;border-radius:15px}
+body.b3-home .b3-faq .grid h3{color:var(--hub-ink);font-size:.86rem}
+body.b3-home .b3-faq .grid p{color:var(--hub-muted);font-size:.8rem;line-height:1.65}
+body.b3-home .b3-footer{background:#102c43;color:#e8f5fb;border:0}
+body.b3-home .b3-footer h2{color:white}
+body.b3-home .b3-footer p{color:#bdd0de}
+body.b3-home .b3-footer strong{color:#f5ffff}
+body.b3-home .b3-footer a{color:#83e4df!important}
+body.b3-home #settingsModal{z-index:70}
+body.b3-home #settingsModal>div{background:var(--hub-surface);color:var(--hub-ink);border-color:var(--hub-border);max-height:90dvh;overflow-y:auto;box-shadow:0 24px 60px #07182a54}
+body.b3-home #settingsModal h3{color:var(--hub-ink)!important}
+body.b3-home #settingsModal #cloudStatus{background:var(--hub-bg);border:1px solid var(--hub-border);color:var(--hub-ink)}
+body.b3-home #settingsModal input{background:var(--hub-bg);color:var(--hub-ink);border-color:var(--hub-border)}
+body.b3-home .b3-hub-settings{border-top:1px solid var(--hub-border);padding-top:1rem;display:grid;gap:.7rem}
+body.b3-home .b3-hub-settings h3{font-size:.86rem;font-weight:800}
+body.b3-home .b3-hub-settings label{display:grid;gap:.35rem;font-size:.8rem;font-weight:700}
+body.b3-home #b3-hub-theme{padding:.7rem;border:1px solid var(--hub-border);border-radius:11px;background:var(--hub-bg);color:var(--hub-ink)}
+body.b3-home .b3-hub-settings p{color:var(--hub-muted);font-size:.75rem;line-height:1.6}
+body.b3-home .b3-hub-settings-footer{border-top:1px solid var(--hub-border);padding-top:1rem;display:grid;gap:.55rem}
+body.b3-home .b3-hub-settings-footer a{display:block;padding:.75rem;text-align:center;border-radius:11px;font-size:.82rem;font-weight:800}
+body.b3-home .b3-hub-settings-footer a:first-child{background:#fff2da;color:#814c09}
+body.b3-home .b3-hub-settings-footer a:last-child{background:var(--hub-bg);color:var(--hub-primary)}
+body.b3-home.b3-dark{--hub-ink:#eaf3ff;--hub-muted:#bccbdb;--hub-surface:#1c2b40;--hub-bg:#101c2d;--hub-border:#3e526d;--hub-shadow:0 15px 34px #030b1826}
+body.b3-home.b3-dark .tool-card{--card-soft:#2a4058}
+body.b3-home.b3-dark .tool-card>div:first-child>div:first-child>div:first-child,body.b3-home.b3-dark .tool-card [id^="stats-"]{color:#d6eeff!important;background:#30435b!important}
+body.b3-home.b3-dark .tool-card .fav-btn{color:#aab9cd}
+body.b3-home.b3-dark .tool-card>div:last-child>a[href^="tools/"]{filter:brightness(1.18)}
+body.b3-home.b3-dark #settingsModal .text-gray-600,body.b3-home.b3-dark #settingsModal .text-gray-700,body.b3-home.b3-dark #settingsModal .text-gray-800{color:#d8e8fa!important}
+body.b3-home.b3-dark #settingsModal :is(.bg-gray-100,.bg-gray-200){background:#2e4359!important;color:#e8f3ff!important}
+body.b3-home.b3-dark #settingsModal button[onclick="registerUser()"]{background:#246b4d!important;color:white!important}
+body.b3-home.b3-dark #settingsModal button[onclick="loginUser()"]{background:#28649a!important;color:white!important}
+body.b3-home.b3-dark #settingsModal button[onclick="logoutUser()"]{background:#923341!important;color:white!important}
+body.b3-home.b3-dark .b3-hub-settings-footer a:first-child{background:#4d412c;color:#ffe0a8}
+body.b3-home.b3-dark .b3-hub-settings-footer a:last-child{background:#2a4155;color:#a8e9ee}
+body.b3-home.b3-dark .b3-faq .grid a{color:#8de5e0}
+@media(max-width:790px){body.b3-home .b3-hub-hero{grid-template-columns:1fr}body.b3-home .b3-hero-preview{display:none}body.b3-home .b3-hub-nav a{display:none}body.b3-home .b3-hub-main{margin-top:-1rem}}
+@media(max-width:440px){body.b3-home .b3-hub-nav #settingsBtn{padding:.6rem;font-size:.78rem}body.b3-home .b3-hub-logo{font-size:1rem}body.b3-home .b3-hub-hero{padding-top:1rem}body.b3-home .b3-hub-hero h1{font-size:2.2rem}body.b3-home .b3-discovery{padding:1rem}body.b3-home .b3-filter{padding:.52rem .67rem;font-size:.73rem}body.b3-home #toolsGrid{gap:.8rem}body.b3-home #settingsModal .grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){body.b3-home *,body.b3-home *::before{transition:none!important;scroll-behavior:auto!important}}
+
+body.b3-home .b3-hub-account{font-size:.75rem;color:#e5f8f5;font-weight:700;padding:.5rem .65rem;border:1px solid #ffffff42;border-radius:10px;max-width:180px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+@media(max-width:680px){body.b3-home .b3-hub-account{display:none}}
+
+/* Search clear action: visible only when a query exists. */
+
+/* Accessible reset action for an empty search result. */
+.b3-reset-filters{display:inline-block;margin-left:.5rem;padding:.4rem .7rem;border-radius:.65rem;border:1px solid currentColor;font-weight:700;cursor:pointer;background:transparent;color:inherit}
+.b3-reset-filters:hover,.b3-reset-filters:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+
+/* Shared favorites / quickstart: let explanations breathe. */
+body.b3-home .b3-preview-hint{margin-top:.9rem;font-size:.78rem;color:#e7f8f4}
+body.b3-home .b3-quickstart-empty{margin-top:.55rem;color:#fff;font-size:.9rem;line-height:1.5}
+body.b3-home .tool-card p{font-size:.9rem;line-height:1.65;margin-top:.7rem}
+body.b3-home .tool-card>div:last-child{display:flex;justify-content:flex-end}
+@media(max-width:790px){body.b3-home .b3-hero-preview{display:block}}
+
+/* Der Kontostatus ist eine große, klar erkennbare Schaltfläche. */
+body.b3-home .b3-hub-nav .b3-auth-status{
+  color:#fff!important;
+  border:2px solid #ffffff80!important;
+  border-radius:999px!important;
+  padding:.65rem 1rem!important;
+  font-weight:850!important;
+  letter-spacing:.01em;
+  text-align:center;
+  cursor:pointer;
+  white-space:nowrap;
+  animation:b3-auth-pulse 2.6s ease-in-out infinite;
+}
+body.b3-home .b3-hub-nav .b3-auth-status.b3-auth-signed-in{
+  background:#15803d!important;
+  --b3-auth-glow:rgba(34,197,94,.53);
+}
+body.b3-home .b3-hub-nav .b3-auth-status.b3-auth-signed-out{
+  background:#b45309!important;
+  --b3-auth-glow:rgba(245,158,11,.52);
+}
+body.b3-home .b3-hub-nav .b3-auth-status:hover{filter:brightness(1.12)}
+body.b3-home .b3-hub-nav .b3-auth-status:focus-visible{outline:3px solid #fff;outline-offset:3px}
+@keyframes b3-auth-pulse{
+  0%,100%{box-shadow:0 0 0 0 var(--b3-auth-glow)}
+  50%{box-shadow:0 0 0 8px transparent}
+}
+@media(prefers-reduced-motion:reduce){
+  body.b3-home .b3-hub-nav .b3-auth-status{animation:none}
+}
+@media(max-width:450px){
+  body.b3-home .b3-hub-nav .b3-auth-status{font-size:.72rem!important;padding:.55rem .7rem!important;white-space:normal}
+}

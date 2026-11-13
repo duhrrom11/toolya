@@ -1,0 +1,35 @@
+/* B3 Parkplatz-Merker – sunny goldenrod and graphite, with accessible action colors. */
+body.b3-parkplatz{--b3-accent:#bb7615;--b3-accent-2:#f7ca6c;--b3-header-start:#583f27;--b3-header-mid:#ac7029;--b3-header-end:#f6be62}
+body.b3-parkplatz .b3-header{background:linear-gradient(113deg,var(--b3-header-start),var(--b3-header-mid) 56%,var(--b3-header-end));box-shadow:0 6px 22px #70401828}
+body.b3-parkplatz .b3-nav-links>a:first-child{background:linear-gradient(115deg,#88521b,#bd7c28);color:#fff}
+body.b3-parkplatz .b3-more[open]>summary{background:#87541d;color:#fff}
+body.b3-parkplatz .b3-action:not(.b3-outline){background:linear-gradient(115deg,#8b511d,#bc7a23);color:#fff}
+body.b3-parkplatz .b3-settings-footer .b3-home-link{color:#8f571a}
+body.b3-parkplatz #settingsModal>div{max-height:90dvh;overflow-y:auto}
+body.b3-parkplatz main.b3-dashboard [data-b3-panel="stats"]{gap:.7rem}
+body.b3-parkplatz main.b3-dashboard [data-b3-panel="timer"],
+body.b3-parkplatz main.b3-dashboard [data-b3-panel="history"]{grid-column:1/-1!important}
+body.b3-parkplatz main.b3-dashboard [data-b3-panel="timer"] :is(input,select,textarea){min-width:0;max-width:100%}
+body.b3-parkplatz #timerDisplay{font-variant-numeric:tabular-nums}
+body.b3-parkplatz .b3-park-account{margin:.75rem 0;padding:.6rem .7rem;background:var(--b3-bg);border:1px solid var(--b3-line);border-radius:12px}
+body.b3-parkplatz.b3-dark{--b3-accent:#f1bd70}
+body.b3-parkplatz.b3-dark .b3-settings-footer .b3-home-link{color:#f7c783}
+body.b3-parkplatz.b3-dark main.b3-dashboard :is(.text-amber-600,.text-amber-700,.text-amber-800,.text-amber-900){color:#ffdfa4!important}
+body.b3-parkplatz.b3-dark main.b3-dashboard :is(.text-blue-600,.text-blue-700,.text-blue-800){color:#b5d8ff!important}
+body.b3-parkplatz.b3-dark main.b3-dashboard :is(.text-red-600,.text-red-700){color:#ffc0c8!important}
+body.b3-parkplatz.b3-dark main.b3-dashboard :is(.text-green-600,.text-green-700){color:#a4f1c1!important}
+body.b3-parkplatz.b3-dark main.b3-dashboard :is(.bg-amber-50,.bg-amber-100){background:#443727!important}
+body.b3-parkplatz.b3-dark main.b3-dashboard :is(.bg-blue-50,.bg-blue-100){background:#293d53!important}
+body.b3-parkplatz.b3-dark main.b3-dashboard :is(.bg-green-50,.bg-green-100){background:#254337!important}
+body.b3-parkplatz.b3-dark main.b3-dashboard button.bg-amber-600{background:#89540b!important;color:#fff!important}
+body.b3-parkplatz.b3-dark #settingsModal button[onclick="supabaseLogin()"]{background:#87510d!important;color:#fff!important}
+body.b3-parkplatz.b3-dark #settingsModal button[onclick="supabaseRegister()"]{background:#30485d!important;color:#fff!important}
+body.b3-parkplatz.b3-dark #settingsModal button[onclick="supabaseLogout()"]{background:#55313b!important;color:#ffdae1!important}
+body.b3-parkplatz.b3-dark #helpModal>div{background:#1b2d42;color:#eef6ff}
+body.b3-parkplatz.b3-dark #helpModal :is(.bg-gray-50,.bg-white){background:#2b4054!important;color:#edf5ff!important}
+body.b3-parkplatz.b3-dark #helpModal :is(.text-gray-600,.text-amber-700,.text-amber-900){color:#f5d2a0!important}
+@media(max-width:640px){
+ body.b3-parkplatz main.b3-dashboard [data-b3-panel="stats"]{grid-template-columns:minmax(0,1fr)}
+ body.b3-parkplatz main.b3-dashboard [data-b3-panel="timer"]{grid-template-columns:minmax(0,1fr)}
+ body.b3-parkplatz main.b3-dashboard [data-b3-panel="timer"] .grid-cols-2{grid-template-columns:minmax(0,1fr)}
+}
