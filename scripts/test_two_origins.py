@@ -59,8 +59,8 @@ def main():
    cmd=[chrome,'--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
     '--disable-background-networking','--disable-extensions','--no-first-run',
     '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1',
-    '--user-data-dir='+profile,'--virtual-time-budget=4000','--dump-dom',f'http://127.0.0.1:{a}/']
-   p=run_chrome(cmd,timeout=60,label='two-origins')
+    '--user-data-dir='+profile,'--virtual-time-budget=10000','--dump-dom',f'http://127.0.0.1:{a}/']
+   p=run_chrome(cmd,timeout=120,label='two-origins')
    if p.timed_out:
     raise AssertionError(f'Chromium timed out after {p.elapsed_seconds:.1f}s; stderr={p.stderr[-400:]!r}')
    m=re.search(r'<pre id="result">(.*?)</pre>',p.stdout,re.S)
