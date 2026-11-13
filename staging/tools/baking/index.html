@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full">
+<head>
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>
+      try { if (localStorage.getItem('helferlein_cloud_owner_backform-umrechner')) document.documentElement.classList.add('helferlein-account-check'); }
+      catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backform-Umrechner & Rezeptrechner | Helferlein</title>
+    <meta name="description" content="Kostenloser Backform-Umrechner und Rezeptrechner: Backformen vergleichen, Zutatenmengen umrechnen und Backzeiten für Kuchen und Rezepte anpassen.">
+    <link rel="canonical" href="https://toolya.app/tools/baking/index.html">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#fff7ed', 100: '#ffedd5', 500: '#f97316', 600: '#ea580c', 700: '#c2410c' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #print-card, #print-card * { visibility: visible; }
+            #print-card { position: absolute; left: 0; top: 0; width: 100%; border: none !important; box-shadow: none !important; }
+        }
+    </style>
+    <link rel="stylesheet" href="../../assets/helferlein-b3.css">
+    <link rel="stylesheet" href="../../assets/helferlein-b3-backform.css">
+    <script defer src="../../assets/helferlein-b3-backform.js"></script>
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore || window.helferleinCloudBridge) return;
+        if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client: supabaseClient, tool: 'backform-umrechner', localKey: 'helperly_recipes_pro',
+          collection: 'recipes', localFormat: 'array',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css?v=20261112-3">
+    <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
+<script defer src="../../assets/helferlein-dialogs.js"></script>
+<link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script></head>
+<body class="bg-slate-50 text-slate-800 min-h-full flex flex-col font-sans">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
+
+    <!-- Header mit Titel, Untertitel, Zurück-Button, Anleitung & Einstellungen -->
+    <header class="b3-header">
+<div class="b3-header-inner">
+  <a class="b3-brand" href="../../index.html" aria-label="Helferlein Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</a>
+  <span class="b3-tool-icon" aria-hidden="true">🍰</span>
+  <div class="b3-tool-title"><h1>Backform-Umrechner & Rezeptrechner</h1><p>Backformen umrechnen, Zutatenmengen anpassen und Backzeiten abschätzen</p></div>
+  <button type="button" class="b3-settings-trigger" onclick="openSettings()" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button>
+</div></header>
+
+    <!-- B3 Navigation: original tab buttons still call openTab() -->
+<nav class="b3-backform-nav" aria-label="Backform-Werkzeuge">
+ <div class="b3-backform-tabs">
+  <button type="button" class="b3-tab bg-orange-50" onclick="openTab('rechner')" id="btn-tab-rechner">🧮 Rechner</button>
+  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('finder')" id="btn-tab-finder">⭕ Formen-Finder</button>
+  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('substanz')" id="btn-tab-substanz">🥄 Ersatz & Zucker</button>
+  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('tools')" id="btn-tab-tools">💶 Extras & Kosten</button>
+  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('rezepte')" id="btn-tab-rezepte">📚 Gespeicherte Rezepte</button>
+ </div>
+ <details class="b3-more" id="b3-backform-more"><summary>☷ Weitere Tools</summary>
+ <div class="b3-more-content">
+  <button class="b3-more-item" type="button" onclick="document.getElementById('b3-backform-more').open=false;openCookMode()">⏱️ Kochmodus & Multi-Timer</button>
+  <button class="b3-more-item" type="button" onclick="document.getElementById('b3-backform-more').open=false;openTab('rezepte')">📚 Gespeicherte Rezepte öffnen</button>
+  <button class="b3-more-item" type="button" onclick="document.getElementById('b3-backform-more').open=false;openSettings();toggleHelp()">📖 Hilfe & Anleitung</button>
+ </div></details>
+</nav>
+
+<!-- Main Container -->
+    <main id="main-content" tabindex="-1" class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- Left / Main Column -->
+        <div class="lg:col-span-2 space-y-6">
+
+            <!-- TAB: RECHNER -->
+            <div id="tab-rechner" class="space-y-6">
+                
+                <!-- 1. Basis, Ofenmodus & Temperatur -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-5 h-5 text-orange-500"></i> Backzeit, Ofenmodus & Temperatur
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label for="base-time" class="block text-xs font-medium text-slate-600 mb-1">Zeit laut Rezept (Min.)</label>
+                            <input type="number" id="base-time" value="45" oninput="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
+                        </div>
+                        <div>
+                            <label for="base-temp" class="block text-xs font-medium text-slate-600 mb-1">Temperatur laut Rezept (°C)</label>
+                            <input type="number" id="base-temp" value="180" oninput="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
+                        </div>
+                        <div>
+                            <label for="oven-mode" class="block text-xs font-medium text-slate-600 mb-1">Ofen-Modus</label>
+                            <select id="oven-mode" onchange="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
+                                <option value="unterhitze" selected>Ober-/Unterhitze</option>
+                                <option value="heissluft">Heißluft / Umluft (-20°C)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <div>
+                            <label for="recipe-material" class="block text-xs font-medium text-slate-600 mb-1">Rezept gilt für Material der Zielform</label>
+                            <select id="recipe-material" onchange="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm">
+                                <option value="silikon">Silikon</option>
+                                <option value="blech" selected>Metall / Blech</option>
+                                <option value="glas">Glas / Keramik</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col justify-end">
+                            <label class="flex items-center space-x-3 cursor-pointer py-2">
+                                <input type="checkbox" id="keep-recipe-amount" onchange="calculateAll()" class="w-4 h-4 text-orange-600 rounded border-slate-300">
+                                <span class="text-xs font-medium text-slate-700">Rezeptmenge beibehalten (keine Skalierung)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="use-oven-factor" checked class="w-4 h-4 text-orange-600 rounded border-slate-300" onchange="toggleOvenFactor()" aria-label="Meinen Ofenfaktor nutzen">
+                            <span class="text-xs font-medium text-slate-700">Meinen Ofenfaktor nutzen</span>
+                        </div>
+                        <div class="text-xs font-semibold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-lg">
+                            Faktor für alle Zutaten: <span id="factor-display">× 1.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Rezept einfügen & Einheit-Umschalter -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="file-text" class="w-5 h-5 text-orange-500"></i> Rezept einfügen & Einheiten
+                        </h2>
+                        <div>
+                            <label for="unit-system" class="text-xs font-medium text-slate-600 mr-2">Einheit:</label>
+                            <select id="unit-system" onchange="calculateRecipe()" class="px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-medium">
+                                <option value="metric" selected>Metrisch (g / ml)</option>
+                                <option value="imperial">US Cups / Ounces</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="helferlein-field" for="recipe-name"><span class="helferlein-field-label">Name des Rezepts</span><input type="text" id="recipe-name" placeholder="Name des Rezepts (z.B. Omas Apfelkuchen)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm mb-3" aria-label="Name des Rezepts (z.B. Omas Apfelkuchen)"></label>
+                        <label class="helferlein-field" for="recipe-input"><span class="helferlein-field-label">Zutaten des Rezepts</span><textarea id="recipe-input" rows="4" placeholder="Füge hier deine Zutaten ein (z.B. &#10;250g Mehl&#10;200g Zucker&#10;3 Eier&#10;100ml Milch)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-mono" aria-label="Zutaten des Rezepts"></textarea></label>
+                    </div>
+                    <button onclick="calculateRecipe()" class="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl transition shadow-md shadow-orange-500/20 text-sm flex items-center justify-center gap-2">
+                        <i data-lucide="calculator" class="w-4 h-4"></i> Rezept umrechnen & Analysieren
+                    </button>
+                </div>
+
+                <!-- 3. Form-Vergleich & Formen-Kombinator -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="maximize" class="w-5 h-5 text-orange-500"></i> Formen-Vergleich & Kombinator
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <!-- Original -->
+                        <div class="space-y-3 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Original-Form im Rezept</h3>
+                            <div>
+                                <label for="orig-shape" class="block text-xs font-medium text-slate-600 mb-1">Formtyp</label>
+                                <select id="orig-shape" onchange="updateShapeInputs('orig')" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+                                    <option value="round">Rund (Springform)</option>
+                                    <option value="rect">Kastenform / Eckig</option>
+                                    <option value="bundt">Gugelhupf</option>
+                                </select>
+                            </div>
+                            <div id="orig-dims-round">
+                                <label for="orig-d" class="block text-xs font-medium text-slate-600 mb-1">Durchmesser (cm)</label>
+                                <input type="number" id="orig-d" value="26" oninput="calculateAll()" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+                            </div>
+                            <div id="orig-dims-rect" class="hidden grid grid-cols-2 gap-2">
+                                <div>
+                                    <label for="orig-l" class="block text-xs font-medium text-slate-600 mb-1">Länge (cm)</label>
+                                    <input type="number" id="orig-l" value="30" oninput="calculateAll()" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+                                </div>
+                                <div>
+                                    <label for="orig-w" class="block text-xs font-medium text-slate-600 mb-1">Breite (cm)</label>
+                                    <input type="number" id="orig-w" value="10" oninput="calculateAll()" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Zielform / Kombinator -->
+                        <div class="space-y-3 p-4 rounded-xl bg-orange-50/50 border border-orange-100">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-orange-600">Zielform (Einzel oder 2er-Mix)</h3>
+                            <div>
+                                <label for="combinator-mode" class="block text-xs font-medium text-slate-600 mb-1">Modus</label>
+                                <select id="combinator-mode" onchange="toggleCombinator()" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+                                    <option value="single" selected>1 Zielform</option>
+                                    <option value="double">2 Formen gleichzeitig kombinieren</option>
+                                </select>
+                            </div>
+                            <div id="single-target-box">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label for="target-shape" class="block text-xs font-medium text-slate-600 mb-1">Typ</label>
+                                        <select id="target-shape" onchange="updateShapeInputs('target')" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+                                            <option value="round" selected>Rund</option>
+                                            <option value="rect">Kasten</option>
+                                            <option value="bundt">Gugelhupf</option>
+                                        </select>
+                                    </div>
+                                    <div id="target-dims-round">
+                                        <label for="target-d" class="block text-xs font-medium text-slate-600 mb-1">Ø (cm)</label>
+                                        <input type="number" id="target-d" value="20" oninput="calculateAll()" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+                                    </div>
+                                </div>
+                                <div id="target-dims-rect" class="hidden grid grid-cols-2 gap-2 mt-2">
+                                    <div>
+                                        <label for="target-l" class="block text-xs font-medium text-slate-600 mb-1">Länge (cm)</label>
+                                        <input type="number" id="target-l" value="25" oninput="calculateAll()" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="target-w" class="block text-xs font-medium text-slate-600 mb-1">Breite (cm)</label>
+                                        <input type="number" id="target-w" value="11" oninput="calculateAll()" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="double-target-box" class="hidden space-y-2">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label for="combo-d1" class="block text-[11px] font-medium text-slate-600">Form 1 Ø (cm)</label>
+                                        <input type="number" id="combo-d1" value="20" oninput="calculateAll()" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="combo-d2" class="block text-[11px] font-medium text-slate-600">Form 2 Ø (cm)</label>
+                                        <input type="number" id="combo-d2" value="16" oninput="calculateAll()" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-sm">
+                                    </div>
+                                </div>
+                                <p id="combo-result" class="text-[11px] font-semibold text-orange-600">Gesamt-Ratio: 102%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Zusätzliche Tools -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <h3 class="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="pie-chart" class="w-4 h-4 text-orange-500"></i> Torte teilen
+                        </h3>
+                        <div>
+                            <label for="slice-count" class="block text-xs font-medium text-slate-600 mb-1">Gewünschte Stücke</label>
+                            <input type="number" id="slice-count" value="12" oninput="updateSlices()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+                        </div>
+                        <p id="slice-info" class="text-xs text-slate-500">Stückbreite am Rand.</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <h3 class="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-orange-500"></i> Glasur und Fondant
+                        </h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label for="glaze-type" class="block text-xs font-medium text-slate-600 mb-1">Sorte</label>
+                                <select id="glaze-type" onchange="calculateGlaze()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+                                    <option value="schoko">Schoko</option>
+                                    <option value="fondant">Fondant</option>
+                                    <option value="puderzucker">Guss</option>
+                                </select>
+                            </div>
+                            <div class="flex items-end pb-1">
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" id="glaze-sides" checked onchange="calculateGlaze()" class="w-4 h-4 text-orange-600 rounded">
+                                    <span class="text-xs font-medium text-slate-700">Mit Rand</span>
+                                </label>
+                            </div>
+                        </div>
+                        <p id="glaze-result" class="text-xs font-semibold text-orange-600">Ca. 180g Glasur</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- TAB: FORMEN-FINDER -->
+            <div id="tab-finder" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="search" class="w-5 h-5 text-orange-500"></i> Formen-Finder („Welche Form passt zu meinem Teig?“)
+                    </h2>
+                    <p class="text-xs text-slate-500">Du hast ein Rezept für eine bestimmte Springformgröße im Kopf, möchtest aber wissen, welche Alternativen (Kastenform, Muffins etc.) exakt dasselbe Teigvolumen ergeben?</p>
+                    
+                    <div class="space-y-3 pt-2">
+                        <label class="block text-xs font-medium text-slate-600">Deine Rezept-Originalform:</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <select id="finder-shape" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm">
+                                <option value="26">Runde Springform Ø 26 cm (Standard)</option>
+                                <option value="28">Runde Springform Ø 28 cm</option>
+                                <option value="24">Runde Springform Ø 24 cm</option>
+                                <option value="20">Runde Springform Ø 20 cm</option>
+                                <option value="rect30">Kastenform 30 cm</option>
+                                <option value="bundt">Gugelhupfform 22 cm</option>
+                            </select>
+                            <button onclick="runFormFinder()" class="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-sm transition">Passende Formen finden</button>
+                        </div>
+                    </div>
+
+                    <div id="finder-results" class="pt-4 space-y-2 border-t border-slate-100">
+                        <p class="text-xs text-slate-400 italic">Klicke auf den Button, um äquivalente Backformen zu berechnen...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: ERSATZ & ZUCKER -->
+            <div id="tab-substanz" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="refresh-cw" class="w-5 h-5 text-orange-500"></i> Substitutions-Helfer (Zutaten-Ersatz)
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
+                            <h4 class="font-bold text-xs text-slate-800">Butter fehlt</h4>
+                            <p class="text-xs text-slate-600">Margarine (1:1) oder Pflanzenöl (100g Butter = 75g Öl).</p>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
+                            <h4 class="font-bold text-xs text-slate-800">Eier fehlen (pro Ei)</h4>
+                            <p class="text-xs text-slate-600">1 EL Chiasamen + 3 EL Wasser ODER 2 EL Apfelmark.</p>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
+                            <h4 class="font-bold text-xs text-slate-800">Backpulver fehlt</h4>
+                            <p class="text-xs text-slate-600">1 TL Natron + 1 TL Zitronensaft oder Essig.</p>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
+                            <h4 class="font-bold text-xs text-slate-800">Buttermilch fehlt</h4>
+                            <p class="text-xs text-slate-600">250ml Milch + 1 EL Zitronensaft (5 Min. ruhen lassen).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="candy" class="w-5 h-5 text-orange-500"></i> Zucker- & Süßungs-Umrechner
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label for="sugar-input" class="block text-xs font-medium text-slate-600 mb-1">Haushaltszucker (g)</label>
+                            <input type="number" id="sugar-input" value="200" oninput="calculateSugar()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+                        </div>
+                        <div>
+                            <label for="sugar-type" class="block text-xs font-medium text-slate-600 mb-1">Alternative</label>
+                            <select id="sugar-type" onchange="calculateSugar()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+                                <option value="xylit">Erythrit / Xylit (1:1)</option>
+                                <option value="honey">Honig / Ahornsirup</option>
+                                <option value="stevia">Stevia (Konzentrat)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">Benötigte Menge</label>
+                            <div id="sugar-result" class="px-3 py-2 rounded-xl bg-orange-50 border border-orange-100 text-sm font-bold text-orange-600">200g</div>
+                        </div>
+                    </div>
+                    <p id="sugar-tip" class="text-xs text-slate-500">Hinweis: Xylit/Erythrit hat einen leichten Frische-Effekt auf der Zunge.</p>
+                </div>
+            </div>
+
+            <!-- TAB: EXTRAS & KOSTEN -->
+            <div id="tab-tools" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="euro" class="w-5 h-5 text-orange-500"></i> Zutaten-Preis-Kalkulator
+                    </h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div>
+                            <label for="price-mehl" class="block text-[11px] font-medium text-slate-600">Mehl (€/kg)</label>
+                            <input type="number" step="0.05" id="price-mehl" value="0.65" oninput="calculateAll()" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-sm">
+                        </div>
+                        <div>
+                            <label for="price-butter" class="block text-[11px] font-medium text-slate-600">Butter (€/250g)</label>
+                            <input type="number" step="0.05" id="price-butter" value="2.40" oninput="calculateAll()" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-sm">
+                        </div>
+                        <div>
+                            <label for="price-zucker" class="block text-[11px] font-medium text-slate-600">Zucker (€/kg)</label>
+                            <input type="number" step="0.05" id="price-zucker" value="1.20" oninput="calculateAll()" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-sm">
+                        </div>
+                        <div>
+                            <label for="price-ei" class="block text-[11px] font-medium text-slate-600">Ei (€/Stück)</label>
+                            <input type="number" step="0.05" id="price-ei" value="0.30" oninput="calculateAll()" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <h3 class="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="list-checks" class="w-4 h-4 text-orange-500"></i> Back-Checkliste („Mise en place“)
+                        </h3>
+                        <ul class="text-xs text-slate-600 space-y-1.5 list-disc pl-4">
+                            <li>Butter 2 Std. vorher aus dem Kühlschrank nehmen.</li>
+                            <li>Springform fetten und mit Mehl/Semmelbröseln ausstreuen.</li>
+                            <li>Ofen rechtzeitig auf Ziel-Temperatur vorheizen.</li>
+                            <li>Alle Zutaten abwiegen und bereitstellen.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <h3 class="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="thermometer" class="w-4 h-4 text-orange-500"></i> Teig-Klimatologie & Raumtemperatur
+                        </h3>
+                        <div>
+                            <label for="room-temp" class="block text-xs font-medium text-slate-600 mb-1">Aktuelle Raumtemperatur (°C)</label>
+                            <input type="number" id="room-temp" value="21" oninput="checkClimate()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+                        </div>
+                        <p id="climate-result" class="text-xs text-slate-500">Perfektes Backklima. Keine Anpassung nötig.</p>
+                    </div>
+                </div>
+
+                <!-- 🛒 NEU: Amazon Zubehör- & Equipment-Empfehlungen in den Werkzeugen -->
+                <div class="bg-amber-50/60 p-6 rounded-2xl border border-amber-200 shadow-sm space-y-3">
+                    <h3 class="text-sm font-semibold text-amber-900 flex items-center gap-2">
+                        <i data-lucide="shopping-bag" class="w-4 h-4 text-amber-600"></i> Passendes Backzubehör auf Amazon
+                    </h3>
+                    <p class="text-xs text-amber-800">Fehlt dir noch die richtige Form oder das passende Equipment? Hier direkt stöbern:</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                        <a href="https://www.amazon.de/s?k=springform+antihaft" target="_blank" rel="noopener" class="p-3 bg-white hover:bg-amber-50 rounded-xl border border-amber-200 text-xs font-semibold text-amber-900 flex items-center justify-between transition shadow-sm">
+                            <span>Springformen</span> <i data-lucide="external-link" class="w-3.5 h-3.5 text-amber-600"></i>
+                        </a>
+                        <a href="https://www.amazon.de/s?k=ofen thermometers digital" target="_blank" rel="noopener" class="p-3 bg-white hover:bg-amber-50 rounded-xl border border-amber-200 text-xs font-semibold text-amber-900 flex items-center justify-between transition shadow-sm">
+                            <span>Ofenthermometer</span> <i data-lucide="external-link" class="w-3.5 h-3.5 text-amber-600"></i>
+                        </a>
+                        <a href="https://www.amazon.de/s?k=backpapier zuschnitte" target="_blank" rel="noopener" class="p-3 bg-white hover:bg-amber-50 rounded-xl border border-amber-200 text-xs font-semibold text-amber-900 flex items-center justify-between transition shadow-sm">
+                            <span>Backpapier</span> <i data-lucide="external-link" class="w-3.5 h-3.5 text-amber-600"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: GESPEICHERTE REZEPTE -->
+            <div id="tab-rezepte" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="bookmark" class="w-5 h-5 text-orange-500"></i> Gespeicherte Rezepte & Geling-Protokoll
+                    </h2>
+                    <div id="saved-recipes-list" class="space-y-4">
+                        <p class="text-xs text-slate-500">Noch keine Rezepte gespeichert.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Results & Output Sidebar -->
+        <div class="space-y-6">
+            
+            <!-- Umgerechnet & Analyse -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5 sticky top-24">
+                <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 text-orange-500"></i> Umgerechnet & Analyse
+                </h2>
+
+                <!-- Kennzahlen Grid -->
+                <div id="conversion-results" role="status" aria-live="polite" aria-atomic="true" class="grid grid-cols-2 gap-3">
+                    <div class="p-3 rounded-xl bg-orange-50 border border-orange-100 text-center">
+                        <span class="block text-[10px] font-semibold text-orange-600 uppercase">Faktor</span>
+                        <span id="res-factor" class="text-base font-bold text-slate-900">1.00</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                        <span class="block text-[10px] font-semibold text-slate-500 uppercase">Backzeit</span>
+                        <span id="res-time" class="text-base font-bold text-slate-900">45 Min.</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                        <span class="block text-[10px] font-semibold text-slate-500 uppercase">Temperatur</span>
+                        <span id="res-temp" class="text-base font-bold text-slate-900">180 °C</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                        <span class="block text-[10px] font-semibold text-slate-500 uppercase">Kosten</span>
+                        <span id="res-cost" class="text-base font-bold text-slate-900">0.85 €</span>
+                    </div>
+                </div>
+
+                <!-- Volumen & Füllstands-Warnung -->
+                <div id="volume-warning-box" class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1">
+                    <strong class="block font-semibold text-slate-800">Teig-Füllstand (Höhe):</strong>
+                    <p id="volume-warning-text">Teighöhe entspricht exakt dem Original.</p>
+                </div>
+
+                <!-- Makros & Nährwerte -->
+                <div class="p-3 rounded-xl bg-emerald-50/60 border border-emerald-100 text-xs text-emerald-900 space-y-1">
+                    <strong class="block font-semibold">Nährwert-Schätzer (pro Stück):</strong>
+                    <p id="macro-text">Ca. 280 kcal | 4g Eiweiß | 12g Fett | 38g Kohlenhydrate</p>
+                </div>
+
+                <!-- Umgerechnete Zutaten / Rezeptkarte -->
+                <div class="space-y-2 pt-2">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Zutaten & Einkaufsliste</h3>
+                        <button onclick="window.print()" class="text-xs text-orange-600 hover:text-orange-700 font-medium flex items-center gap-1">
+                            <i data-lucide="printer" class="w-3.5 h-3.5"></i> Drucken
+                        </button>
+                    </div>
+                    <div id="print-card" class="p-4 rounded-xl bg-slate-50 border border-slate-100 text-sm font-mono space-y-1 min-h-[110px] max-h-[180px] overflow-y-auto">
+                        <p class="text-slate-400 italic font-sans text-xs">Füge links ein Rezept ein...</p>
+                    </div>
+                </div>
+
+                <!-- 🛒 NEU: Dezente Amazon-Schnellsuche unter der Einkaufsliste -->
+                <div class="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-xs text-amber-900 space-y-2">
+                    <div class="flex items-center justify-between font-semibold">
+                        <span>💡 Fehlendes Zubehör?</span>
+                        <a href="https://www.amazon.de/s?k=backzubehör" target="_blank" rel="noopener" class="text-orange-600 hover:underline flex items-center gap-1 text-[11px]">Amazon Suche <i data-lucide="external-link" class="w-3 h-3"></i></a>
+                    </div>
+                    <p class="text-[11px] text-amber-800">Finde passende Silikonformen, Teigschaber oder Spritzbeutel direkt online.</p>
+                </div>
+
+                <!-- Kochmodus & Multi-Timer -->
+                <button onclick="openCookMode()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl transition text-xs flex items-center justify-center gap-2 shadow-md">
+                    <i data-lucide="timer" class="w-4 h-4 text-orange-400"></i> Kochmodus & Multi-Timer starten
+                </button>
+
+                <!-- Lagerungs-Tipp -->
+                <div class="p-3 rounded-xl bg-sky-50 border border-sky-100 text-xs text-sky-900">
+                    <strong class="block font-semibold">Lagerungstipp:</strong>
+                    <p id="storage-tip">Rührkuchen: Bei Raumtemperatur in Alufolie luftdicht verpacken (3-4 Tage frisch).</p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Einstellungs-Modal mit Supabase Auth -->
+    <div id="settings-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white max-w-md w-full p-6 rounded-3xl shadow-2xl space-y-5">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="settings" class="w-5 h-5 text-orange-500"></i> Einstellungen & Cloud-Konto
+                </h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+            </div>
+
+            <!-- Cloud-Konto Status & Login -->
+            <div class="space-y-3">
+                <div id="cloud-status-box" class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 flex items-center justify-between">
+                    <span id="cloud-status-text">Nicht angemeldet</span>
+                    <span id="cloud-user-email" class="font-bold text-slate-900"></span>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="helferlein-field" for="auth-email"><span class="helferlein-field-label">E-Mail-Adresse</span><input type="email" id="auth-email" placeholder="E-Mail-Adresse" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none"></label>
+                    <label class="helferlein-field" for="auth-password"><span class="helferlein-field-label">Passwort</span><input type="password" id="auth-password" placeholder="Passwort" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none"></label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="supabaseLogin()" class="py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-xs transition shadow-sm">Anmelden</button>
+                    <button onclick="supabaseRegister()" class="py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-medium rounded-xl text-xs transition shadow-sm">Registrieren</button>
+                </div>
+                <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-xl text-xs transition">Abmelden</button>
+            </div>
+
+            <!-- Ofenprofil Einstellungen -->
+            <div class="border-t border-slate-100 pt-3 space-y-3">
+                <label for="user-oven-factor" class="block text-xs font-medium text-slate-600">Individueller Ofenfaktor</label>
+                <input type="number" step="0.05" id="user-oven-factor" value="1.0" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm">
+            </div>
+
+            <div class="border-t border-slate-100 pt-3 flex justify-end gap-2">
+                <button onclick="saveSettings()" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-xs transition">Speichern</button>
+                <button onclick="closeSettings()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition">Schließen</button>
+            </div>
+<section id="b3-backform-preferences" aria-label="Darstellung und Dashboard">
+  <h3>🎨 Darstellung & Dashboard</h3>
+  <label for="b3-backform-theme">Designmodus
+    <select id="b3-backform-theme" aria-label="Globaler Designmodus">
+      <option value="auto">Automatisch</option><option value="light">Hell</option><option value="dark">Dunkel</option>
+    </select>
+  </label>
+  <button type="button" id="b3-backform-edit">✎ Dashboard bearbeiten</button>
+  <div id="b3-backform-editor" hidden aria-label="Dashboard-Einstellungen"></div>
+  <p class="text-xs">Alle Rechenwerkzeuge bleiben erreichbar. Hier kannst du Reihenfolge und Kartendichte anpassen.</p>
+  <div class="b3-backform-help"><div id="help-box" class="hidden border-t border-slate-100 bg-orange-50/40 px-4 sm:px-8 py-4">
+            <div class="max-w-4xl mx-auto space-y-2">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-orange-900">Kurzanleitung – So funktioniert's:</h3>
+                    <button onclick="toggleHelp()" class="text-slate-400 hover:text-slate-600 text-xs">Schließen ✕</button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs text-slate-600">
+                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
+                        <strong class="text-slate-800 block mb-0.5">1. Rezept & Basis</strong>
+                        Gib Zeit, Temperatur und deine Zutaten im Rechner ein.
+                    </div>
+                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
+                        <strong class="text-slate-800 block mb-0.5">2. Form vergleichen</strong>
+                        Wähle Original- und Zielform (oder 2er-Mix) aus.
+                    </div>
+                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
+                        <strong class="text-slate-800 block mb-0.5">3. Cloud-Konto</strong>
+                        Verbinde dein Supabase-Konto für die Datensicherung.
+                    </div>
+                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
+                        <strong class="text-slate-800 block mb-0.5">4. Kochmodus</strong>
+                        Starte den Multi-Timer direkt in der Küche!
+                    </div>
+                </div>
+            </div>
+        </div></div>
+</section>
+<div class="b3-settings-footer">
+ <a class="b3-kofi-link" href="https://ko-fi.com/duhrrom" target="_blank" rel="noopener noreferrer">☕ Kaffee spendieren</a>
+ <a class="b3-home-link" href="../../index.html">↗ Entdecke mehr Helferlein</a>
+</div>
+        </div>
+    </div>
+
+    <!-- Kochmodus & Multi-Timer Modal -->
+    <div id="cook-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white max-w-md w-full p-8 rounded-3xl shadow-2xl text-center space-y-6">
+            <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">
+                <i data-lucide="timer" class="w-8 h-8"></i>
+            </div>
+            <div>
+                <h3 id="timer-phase-title" role="status" aria-live="polite" aria-atomic="true" class="text-xl font-bold text-slate-900">Phase 1: Backen</h3>
+                <p class="text-xs text-slate-500 mt-1">Multi-Timer aktiv</p>
+            </div>
+            <div id="timer-display" class="text-5xl font-mono font-bold text-slate-800 tracking-wider">
+                45:00
+            </div>
+            <div class="flex justify-center gap-3">
+                <button onclick="startTimer()" class="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-sm transition">Start</button>
+                <button onclick="pauseTimer()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-medium rounded-xl text-sm transition">Pause</button>
+                <button onclick="nextTimerPhase()" class="px-5 py-2.5 bg-slate-900 text-white font-medium rounded-xl text-sm transition">Nächste Phase</button>
+            </div>
+            <button onclick="closeCookMode()" class="text-xs text-slate-400 hover:text-slate-600 underline pt-2">Schließen</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Logik -->
+    <script>
+        lucide.createIcons();
+
+        // Supabase Konfiguration & Instanz
+        const SUPABASE_URL = "https://avapuibsidubuzxjtyld.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function supabaseRegister() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            const { error } = await supabaseClient.auth.signUp({ email, password });
+            if(error) alert(error.message);
+            else { alert('Registrierung erfolgreich!'); checkUserSession(); }
+        }
+
+        async function supabaseLogin() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if(error) alert(error.message);
+            else { alert('Erfolgreich angemeldet!'); checkUserSession(); closeSettings(); }
+        }
+
+        async function supabaseLogout() {
+            await supabaseClient.auth.signOut();
+            checkUserSession();
+            alert('Abgemeldet.');
+        }
+
+        async function checkUserSession() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            const statusText = document.getElementById('cloud-status-text');
+            const userEmailSpan = document.getElementById('cloud-user-email');
+            const btnLogout = document.getElementById('btn-logout');
+
+            if(user) {
+                statusText.innerText = "Status: Verbunden";
+                userEmailSpan.innerText = user.email;
+                btnLogout.classList.remove('hidden');
+            } else {
+                statusText.innerText = "Nicht angemeldet";
+                userEmailSpan.innerText = "";
+                btnLogout.classList.add('hidden');
+            }
+        }
+
+        function toggleHelp() {
+            const box = document.getElementById('help-box');
+            box.classList.toggle('hidden');
+        }
+
+        function openSettings() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+            checkUserSession();
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function openTab(tabId) {
+            ['rechner', 'finder', 'substanz', 'tools', 'rezepte'].forEach(id => {
+                document.getElementById('tab-' + id).classList.add('hidden');
+                document.getElementById('btn-tab-' + id)?.classList.remove('bg-orange-50', 'text-orange-600');
+                document.getElementById('btn-tab-' + id)?.classList.add('text-slate-600', 'hover:bg-slate-100');
+            });
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('btn-tab-' + tabId);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-100');
+                activeBtn.classList.add('bg-orange-50', 'text-orange-600');
+            }
+        }
+
+        function updateShapeInputs(type) {
+            const shape = document.getElementById(type + '-shape').value;
+            document.getElementById(type + '-dims-round').classList.toggle('hidden', shape !== 'round' && shape !== 'bundt');
+            document.getElementById(type + '-dims-rect').classList.toggle('hidden', shape !== 'rect');
+            calculateAll();
+        }
+
+        function toggleCombinator() {
+            const mode = document.getElementById('combinator-mode').value;
+            document.getElementById('single-target-box').classList.toggle('hidden', mode === 'double');
+            document.getElementById('double-target-box').classList.toggle('hidden', mode === 'single');
+            calculateAll();
+        }
+
+        function getArea(shape, d, l, w) {
+            if (shape === 'round' || shape === 'bundt') return Math.PI * Math.pow(d / 2, 2);
+            if (shape === 'rect') return l * w;
+            return 0;
+        }
+
+        function calculateAll() {
+            const origShape = document.getElementById('orig-shape').value;
+            const origD = parseFloat(document.getElementById('orig-d').value) || 26;
+            const origL = parseFloat(document.getElementById('orig-l').value) || 30;
+            const origW = parseFloat(document.getElementById('orig-w').value) || 10;
+            const origArea = getArea(origShape, origD, origL, origW);
+
+            const comboMode = document.getElementById('combinator-mode').value;
+            let targetArea = 0;
+
+            if (comboMode === 'double') {
+                const d1 = parseFloat(document.getElementById('combo-d1').value) || 20;
+                const d2 = parseFloat(document.getElementById('combo-d2').value) || 16;
+                targetArea = Math.PI * Math.pow(d1 / 2, 2) + Math.PI * Math.pow(d2 / 2, 2);
+                document.getElementById('combo-result').innerText = `Gesamt-Ratio: ${Math.round((targetArea / origArea) * 100)}%`;
+            } else {
+                const targetShape = document.getElementById('target-shape').value;
+                const targetD = parseFloat(document.getElementById('target-d').value) || 20;
+                const targetL = parseFloat(document.getElementById('target-l').value) || 25;
+                const targetW = parseFloat(document.getElementById('target-w').value) || 11;
+                targetArea = getArea(targetShape, targetD, targetL, targetW);
+            }
+
+            const keepAmount = document.getElementById('keep-recipe-amount').checked;
+            let factor = keepAmount ? 1.0 : (targetArea / origArea);
+
+            const useOvenFactor = document.getElementById('use-oven-factor').checked;
+            const userOvenF = useOvenFactor ? (parseFloat(document.getElementById('user-oven-factor').value) || 1.0) : 1.0;
+
+            let baseTime = parseFloat(document.getElementById('base-time').value) || 45;
+            let baseTemp = parseFloat(document.getElementById('base-temp').value) || 180;
+            const ovenMode = document.getElementById('oven-mode').value;
+
+            if (ovenMode === 'heissluft') {
+                baseTemp -= 20;
+                baseTime *= 0.93;
+            }
+
+            const origMat = document.getElementById('recipe-material').value;
+            let adjTime = Math.round(baseTime * Math.pow(factor, 0.33) * userOvenF);
+            let adjTemp = baseTemp;
+            if(origMat === 'silikon') adjTemp += 10;
+
+            document.getElementById('res-factor').innerText = factor.toFixed(2);
+            document.getElementById('factor-display').innerText = '× ' + factor.toFixed(2);
+            document.getElementById('res-time').innerText = adjTime + ' Min.';
+            document.getElementById('res-temp').innerText = adjTemp + ' °C';
+
+            const heightRatio = factor;
+            const warningBox = document.getElementById('volume-warning-box');
+            const warningText = document.getElementById('volume-warning-text');
+            if (heightRatio > 1.25) {
+                warningBox.className = "p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1";
+                warningText.innerText = "Achtung: Teig steht deutlich höher als im Original! Form zu 2/3 füllen oder größere Form wählen.";
+            } else if (heightRatio < 0.75) {
+                warningBox.className = "p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 space-y-1";
+                warningText.innerText = "Hinweis: Teig ist recht flach in dieser Form. Backzeit ggf. 5 Min. verkürzen.";
+            } else {
+                warningBox.className = "p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1";
+                warningText.innerText = "Teighöhe / Füllstand ist optimal im Verhältnis zum Original.";
+            }
+
+            const matCost = (2.20 * factor) + (adjTime > 0 ? 0.30 : 0);
+            document.getElementById('res-cost').innerText = matCost.toFixed(2) + ' €';
+
+            updateSlices();
+        }
+
+        function toggleOvenFactor() { calculateAll(); }
+
+        function updateSlices() {
+            const count = parseFloat(document.getElementById('slice-count').value) || 12;
+            const targetD = parseFloat(document.getElementById('target-d').value) || 20;
+            const sliceWidth = ((Math.PI * targetD) / count).toFixed(1);
+            document.getElementById('slice-info').innerText = `ca. ${sliceWidth} cm Stückbreite am Rand.`;
+        }
+
+        function calculateSugar() {
+            const g = parseFloat(document.getElementById('sugar-input').value) || 200;
+            const type = document.getElementById('sugar-type').value;
+            const res = document.getElementById('sugar-result');
+            const tip = document.getElementById('sugar-tip');
+
+            if (type === 'xylit') {
+                res.innerText = g + 'g';
+                tip.innerText = 'Erythrit/Xylit wird 1:1 dosiert. Leichter Kühleffekt.';
+            } else if (type === 'honey') {
+                res.innerText = Math.round(g * 0.8) + 'g (Flüssigkeit im Teig um 20ml reduzieren)';
+                tip.innerText = 'Honig süßt stärker und bringt Feuchtigkeit mit.';
+            } else {
+                res.innerText = (g / 200).toFixed(1) + ' TL Konzentrat';
+                tip.innerText = 'Stevia-Konzentrat extrem sparsam dosieren.';
+            }
+        }
+
+        function checkClimate() {
+            const temp = parseFloat(document.getElementById('room-temp').value) || 21;
+            const res = document.getElementById('climate-result');
+            if (temp > 26) {
+                res.innerText = "Achtung, warm! Mürbeteig 30 Min. länger kühlen, Hefeteig geht doppelt so schnell.";
+            } else if (temp < 18) {
+                res.innerText = "Etwas kühl. Hefeteig an einem warmen Ort (z.B. Ofen bei 30°C) gehen lassen.";
+            } else {
+                res.innerText = "Perfektes Backklima. Keine Anpassung nötig.";
+            }
+        }
+
+        function runFormFinder() {
+            const origD = parseFloat(document.getElementById('finder-shape').value) || 26;
+            const area = Math.PI * Math.pow(origD / 2, 2);
+            const container = document.getElementById('finder-results');
+
+            let html = `<p class="text-xs font-bold text-slate-800 mb-2">Äquivalente Formen für Ø ${origD} cm Form:</p>`;
+            html += `<div class="space-y-1.5 text-xs">`;
+            html += `<div class="p-2 bg-slate-50 rounded-lg">👉 Entspricht ca. <b>1x Springform Ø ${origD} cm</b></div>`;
+            html += `<div class="p-2 bg-slate-50 rounded-lg">👉 Entspricht ca. <b>2 kleine Springformen Ø ${Math.round(origD * 0.7)} cm</b></div>`;
+            html += `<div class="p-2 bg-slate-50 rounded-lg">👉 Entspricht ca. <b>${Math.round(area / 38)} Muffins</b></div>`;
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function calculateRecipe() {
+            calculateAll();
+            const rawText = document.getElementById('recipe-input').value;
+            const factor = parseFloat(document.getElementById('res-factor').innerText);
+            const name = document.getElementById('recipe-name').value || 'Unbenanntes Rezept';
+            const unitSys = document.getElementById('unit-system').value;
+
+            const lines = rawText.split('\n');
+            let outputHtml = `<p class="font-bold text-slate-800 mb-1">${name} (Faktor ×${factor})</p>`;
+
+            lines.forEach(line => {
+                if(!line.trim()) return;
+                const match = line.match(/^(\d+([.,]\d+)?)\s*(g|ml|TL|EL|Stück|Pck|Eier|Ei)?\s*(.*)/i);
+                if(match) {
+                    let val = parseFloat(match[1].replace(',', '.')) * factor;
+                    const unit = match[3] || '';
+                    const desc = (match[4] || '').toLowerCase();
+
+                    if (unit.match(/ei|eier/i) || desc.includes('ei')) {
+                        const eggs = Math.round(val);
+                        outputHtml += `<div><span class="text-orange-600 font-bold">${eggs} Eier</span> ${match[4]}</div>`;
+                    } else if (unitSys === 'imperial' && unit === 'g') {
+                        let cups = (val / 125).toFixed(1);
+                        outputHtml += `<div><span class="text-orange-600 font-bold">ca. ${cups} Cups</span> ${match[4]}</div>`;
+                    } else {
+                        outputHtml += `<div><span class="text-orange-600 font-bold">${val.toFixed(1).replace('.0','')}${unit}</span> ${match[4]}</div>`;
+                    }
+                } else {
+                    outputHtml += `<div>${line}</div>`;
+                }
+            });
+
+            document.getElementById('print-card').innerHTML = outputHtml;
+            saveRecipeToStorage(name, rawText, factor);
+        }
+
+        function persistRecipes(recipes) {
+            if (!Array.isArray(recipes) || recipes.some(r => !r || typeof r !== 'object' || Array.isArray(r))) {
+                alert('Ungültige Rezeptliste. Daten nicht gespeichert.');
+                return false;
+            }
+            if (localStorage.getItem('helferlein_cloud_owner_backform-umrechner') && !window.helferleinCloudBridge) {
+                alert('Cloud-Kontoschutz nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
+                return false;
+            }
+            try {
+                const existing = localStorage.getItem('helperly_recipes_pro');
+                if (existing !== null && !Array.isArray(JSON.parse(existing))) throw new Error('invalid recipes');
+                localStorage.setItem('helperly_recipes_pro', JSON.stringify(recipes));
+                if (window.helferleinCloudBridge) {
+                    void window.helferleinCloudBridge.changed({ recipes }).catch(error =>
+                        console.error('Rezept-Cloud-Synchronisierung ausstehend:', error));
+                }
+                return true;
+            } catch (error) {
+                console.error('Rezeptspeicherung fehlgeschlagen:', error);
+                alert('Rezepte konnten nicht gespeichert werden. Bestehende Daten bleiben erhalten.');
+                return false;
+            }
+        }
+
+        function saveRecipeToStorage(name, text, factor) {
+            let recipes = JSON.parse(localStorage.getItem('helperly_recipes_pro') || '[]');
+            recipes.push({ name, text, factor, note: '', date: new Date().toLocaleDateString() });
+            if (!persistRecipes(recipes)) return;
+            renderSavedRecipes();
+        }
+
+        function escapeRecipeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
+        }
+
+        function renderSavedRecipes() {
+            let recipes = JSON.parse(localStorage.getItem('helperly_recipes_pro') || '[]');
+            const container = document.getElementById('saved-recipes-list');
+            if(recipes.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500">Noch keine Rezepte gespeichert.</p>';
+                return;
+            }
+            let html = '';
+            recipes.forEach((r, idx) => {
+                html += `<div class="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-bold text-sm text-slate-800">${escapeRecipeHtml(r.name)}</h4>
+                            <p class="text-[11px] text-slate-500">Faktor: ×${escapeRecipeHtml(r.factor)} | ${escapeRecipeHtml(r.date)}</p>
+                        </div>
+                        <button onclick="deleteRecipe(${idx})" class="text-red-500 hover:text-red-700 text-xs font-medium">Löschen</button>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">Geling-Protokoll / Notiz:</label>
+                        <input type="text" value="${escapeRecipeHtml(r.note)}" onchange="saveNote(${idx}, this.value)" placeholder="Z.B. Nächstes Mal 5 Min weniger backen..." class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function saveNote(idx, note) {
+            let recipes = JSON.parse(localStorage.getItem('helperly_recipes_pro') || '[]');
+            recipes[idx].note = note;
+            if (!persistRecipes(recipes)) return;
+        }
+
+        function deleteRecipe(idx) {
+            let recipes = JSON.parse(localStorage.getItem('helperly_recipes_pro') || '[]');
+            recipes.splice(idx, 1);
+            if (!persistRecipes(recipes)) return;
+            renderSavedRecipes();
+        }
+
+        function saveSettings() {
+            alert('Gespeichert');
+            closeSettings();
+        }
+
+        // Multi-Timer Logik
+        let timerInterval = null;
+        let timerDeadline = null;
+        let timerPhases = [
+            { title: "Phase 1: Teig gehen lassen / Kühlen", seconds: 30 * 60 },
+            { title: "Phase 2: Backen im Ofen", seconds: 45 * 60 },
+            { title: "Phase 3: Auskühlen in der Form", seconds: 20 * 60 }
+        ];
+        let currentPhaseIdx = 0;
+        let timeLeft = 45 * 60;
+
+        function openCookMode() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerDeadline = null;
+            const baseTime = parseFloat(document.getElementById('res-time').innerText) || 45;
+            timerPhases[1].seconds = Math.max(1, Math.round(baseTime * 60));
+            currentPhaseIdx = 1;
+            timeLeft = timerPhases[currentPhaseIdx].seconds;
+            updateTimerDisplay();
+            document.getElementById('cook-modal').classList.remove('hidden');
+        }
+
+        function closeCookMode() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerDeadline = null;
+            document.getElementById('cook-modal').classList.add('hidden');
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            if (timeLeft <= 0) return;
+            // Use elapsed wall-clock time: background tabs can throttle intervals.
+            timerDeadline = Date.now() + timeLeft * 1000;
+            const tick = () => {
+                timeLeft = Math.max(0, Math.ceil((timerDeadline - Date.now()) / 1000));
+                updateTimerDisplay();
+                if (timeLeft === 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    timerDeadline = null;
+                    alert('Timer abgelaufen!');
+                }
+            };
+            timerInterval = setInterval(tick, 1000);
+            tick();
+        }
+
+        function pauseTimer() {
+            if (timerDeadline !== null) {
+                timeLeft = Math.max(0, Math.ceil((timerDeadline - Date.now()) / 1000));
+                updateTimerDisplay();
+            }
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerDeadline = null;
+        }
+
+        function nextTimerPhase() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerDeadline = null;
+            currentPhaseIdx = (currentPhaseIdx + 1) % timerPhases.length;
+            timeLeft = timerPhases[currentPhaseIdx].seconds;
+            updateTimerDisplay();
+            startTimer();
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('timer-phase-title').innerText = timerPhases[currentPhaseIdx].title;
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
+            document.getElementById('timer-display').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        // Initialisierung beim Laden
+        checkUserSession();
+        renderSavedRecipes();
+        calculateAll();
+    </script>
+</body>
+</html>
