@@ -16,7 +16,7 @@ from urllib.parse import urlsplit
 ROOT = Path(__file__).resolve().parent.parent / "staging"
 SOURCE_EXT = {".html", ".js", ".mjs", ".css", ".json", ".xml"}
 HTML_ATTR = re.compile(r"""\\b(?:href|src|action|poster)\s*=\s*["']([^"'<>]+)["']""", re.I)
-MODULE_REF = re.compile(r"""(?:\\bimport\\s*(?:[\\w{},* ]+\\s+from\\s*)?|\\bimport\\s*\\(|\\brequire\\s*\\()\\s*["\x27\\x60]([^"\x27\\x60]+)["\x27\\x60]""")
+MODULE_REF = re.compile(r"""\b(?:import|require)\s*(?:\(\s*)?["\x27]([./][^"\x27]+)["\x27]""")
 CSS_REF = re.compile(r"""(?:url\(\s*["']?([^"'\)]+)|@import\s+["']([^"']+))""")
 QUOTED_PAGE = re.compile(r"""["'\x60]((?:\.{1,2}/|/)?[^"'\x60\s]*\.html(?:[?#][^"'\x60]*)?)["'\x60]""")
 OLD_ROUTES = re.compile(r"""(?:tools/(?:wishlist|digitaler-nachlass|haushaltsbuch-kassenbon|autokosten-reifenwechsel|umzugskisten-inventar)/|amazon-wishlist/|gift-(?:dashboard|assistant|planner|cockpit|task-report)\.html|social-(?:dashboard|feed)\.html|my-reservations\.html|duhrrom11\.github\.io/Helferlein/)""")
