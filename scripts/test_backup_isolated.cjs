@@ -128,6 +128,20 @@ async function run(){
   assert.equal(store.getItem('wg_inventory'),'original2');
   assert(alerts.some(x=>x.includes('nicht vollständig möglich')));
  });
+ await ok('conflicting encrypted vault requires explicit consent and preserves old vault on rejection',async()=>{
+  setup({digital_estate_vault:'existing-vault',hub_favorites:'existing-favorites'});
+  confirms=false;
+  await imported(global.encrypted,{expectAlert:false});
+  assert.equal(store.getItem('digital_estate_vault'),'existing-vault');
+  assert.equal(store.getItem('hub_favorites'),'existing-favorites');
+ });
+ await ok('wrong-password encrypted restore cannot overwrite an existing vault',async()=>{
+  setup({digital_estate_vault:'existing-vault'});
+  password='incorrect-passphrase';
+  await imported(global.encrypted);
+  assert.equal(store.getItem('digital_estate_vault'),'existing-vault');
+  assert(alerts.some(x=>x.includes('Entschlüsselung fehlgeschlagen')));
+ });
  await ok('rejected confirmation does not modify storage',async()=>{
   setup({hub_favorites:'old'});confirms=false;
   await imported({app:'Helferlein',version:'2.0',created:new Date().toISOString(),localStorage:{hub_favorites:'new'}},{expectAlert:false});
