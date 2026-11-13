@@ -250,3 +250,10 @@ The homepage's fixed allowlist has **34 literal keys**; the layout regex adds se
 6. **P2** — Themes, layout settings, recently opened lists, social seen timestamp and parking timers may be re-created, but only by an explicit product decision.
 
 **Current inventory signoff: NOT APPROVED.** This is a documented source-level inventory; no production browser storage was inspected, no user data transferred, and no authorization to deploy is implied. Application code and production configuration remain unchanged.
+
+### Documentation CI verification and nondeterministic browser-test warning (2026-11-13)
+
+- [Run 43477118211](https://github.com/duhrrom11/toolya/actions/runs/43477118211) on documentation commit `9cd8c29a7`: **SUCCESS**.
+- [Run 43477162467](https://github.com/duhrrom11/toolya/actions/runs/43477162467) on documentation commit `4d371e5c2`: **FAILURE**. The static audit and JS checks passed, but `Headless Chrome local smoke tests` failed on the homepage/legal/privacy pages and `Isolated two-origin browser storage checks` timed out after 45 seconds. No application or test script changed between those two documentation commits; this suggests CI/Chromium nondeterminism but does **not** establish the root cause. Do not treat the failed run as green.
+- New documentation-only inventory runs `43477891416` and `43477943605` were in progress/queued at initial inspection; verify their eventual conclusions before claiming a green current HEAD.
+- **Release gate remains NO-GO** until a reproducibly green exact candidate commit and a resolved/accepted browser-test reliability criterion. No code or CI scripts changed in this inventory task.
