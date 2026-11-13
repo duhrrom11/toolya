@@ -57,6 +57,10 @@ def main():
   p=subprocess.run(cmd,capture_output=True,text=True,timeout=35)
   m=re.search(r'<script[^>]*id="toolya-fixture-report"[^>]*>(.*?)</script>',p.stdout,re.S)
   checks=json.loads(m.group(1)) if m else []
+  if not checks or any(not c['pass'] for c in checks):
+   status=re.search(r'<p id="status"[^>]*>(.*?)</p>',p.stdout,re.S)
+   print('DIAGNOSTIC status:',status.group(1)[:250] if status else 'missing',flush=True)
+   print('DIAGNOSTIC report:',bool(m),'dom_length:',len(p.stdout),flush=True)
   for c in checks:print(('PASS' if c['pass'] else 'FAIL')+': '+c['name']+' '+str(c['actual']),flush=True)
   return 0 if p.returncode==0 and len(checks)==5 and all(c['pass'] for c in checks) else 1
  finally:server.shutdown()
