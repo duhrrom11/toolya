@@ -4,6 +4,9 @@ on:
     branches:
       - migration/english-paths-clean
   workflow_dispatch:
+concurrency:
+  group: migration-audit-${{ github.ref }}
+  cancel-in-progress: false
 permissions:
   contents: read
 jobs:
@@ -11,6 +14,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Record browser and runner versions
+        run: |
+          echo "Runner: ${RUNNER_OS} ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+          python3 --version
+          node --version
+          if command -v google-chrome >/dev/null; then google-chrome --version; elif command -v chromium >/dev/null; then chromium --version; else echo "Chromium missing"; exit 1; fi
+          echo "CPU: $(nproc) available memory:"
+          grep -E 'MemTotal|MemAvailable' /proc/meminfo
       - name: Static dependency and route audit
         run: python3 scripts/audit_staging.py > migration-audit.json
       - name: Show audit summary
