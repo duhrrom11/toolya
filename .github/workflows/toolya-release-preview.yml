@@ -1,0 +1,25 @@
+name: Toolya release preview gate (no deployment)
+on:
+  push:
+    branches: [release/toolya-website-prep]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-static-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build preview and block legacy production backend
+        run: node scripts/build-release-preview.mjs
+      - name: Upload non-public preview artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: toolya-release-preview
+          path: .release-preview/
+          retention-days: 2
