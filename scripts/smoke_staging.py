@@ -124,6 +124,9 @@ def main():
             issues = report.get("errors",[]) + report.get("resources",[])
             if issues:
                 external = [x for x in issues if x.startswith(("https://", "http://")) and not x.startswith(base)]
+                local_resources = [x for x in report.get("resources",[]) if x.startswith(base)]
+                if local_resources:
+                    return {"page":page,"kind":"local_resource_error","errors":local_resources[:8]}
                 if external:
                     return {"page":page,"kind":"offline_external_dependencies","errors":issues[:8]}
                 return {"page":page,"kind":"browser_errors","errors":issues[:8]}
