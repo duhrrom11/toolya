@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const portal = new URL('./erben.html', location.href).href;
+  const portal = new URL('./heirs.html', location.href).href;
   const personList = () => getVaultConfig()?.alarmPersons || [];
   const keyFor = person => {
     const key = currentDecryptedVault?.trusteeKeys?.[person.id];
