@@ -64,6 +64,32 @@ async function run(){
   assert.equal(store.getItem('digital_estate_vault'),'mock-vault');
   assert.equal(store.getItem('sb-local-auth-token'),null);
  });
+ await ok('cross-origin restore does not copy excluded owner-scoped or auth keys',async()=>{
+  setup({'helferlein-wish-extras:mock':'existing-extras',
+    'helferlein_cloud_owner_budget':'existing-owner',
+    'helferlein_cloud_budget_mock_pending':'existing-pending',
+    'sb-local-auth-token':'existing-auth'});
+  await imported(global.encrypted);
+  assert.equal(store.getItem('hub_favorites'),'[1]');
+  assert.equal(store.getItem('digital_estate_vault'),'mock-vault');
+  assert.equal(store.getItem('helferlein-wish-extras:mock'),'existing-extras');
+  assert.equal(store.getItem('helferlein_cloud_owner_budget'),'existing-owner');
+  assert.equal(store.getItem('helferlein_cloud_budget_mock_pending'),'existing-pending');
+  assert.equal(store.getItem('sb-local-auth-token'),'existing-auth');
+ });
+ await ok('owner-scoped pending and wishlist extras remain excluded from export',async()=>{
+  setup({'hub_favorites':'["safe"]',
+    'helferlein-wish-extras:mock':'DO-NOT-COPY-EXTRAS',
+    'helferlein_cloud_owner_budget':'DO-NOT-COPY-OWNER',
+    'helferlein_cloud_budget_mock_pending':'DO-NOT-COPY-PENDING',
+    'sb-local-auth-token':'DO-NOT-COPY-AUTH'});
+  const excludedBackup=await exported();
+  setup();await imported(excludedBackup);
+  assert.equal(store.getItem('hub_favorites'),'["safe"]');
+  for(const key of ['helferlein-wish-extras:mock','helferlein_cloud_owner_budget',
+    'helferlein_cloud_budget_mock_pending','sb-local-auth-token'])
+    assert.equal(store.getItem(key),null,'excluded key must not be restored: '+key);
+ });
  await ok('wrong password does not change store',async()=>{
   setup({hub_favorites:'unchanged'});password='incorrect-passphrase';
   await imported(global.encrypted);assert.equal(store.getItem('hub_favorites'),'unchanged');
