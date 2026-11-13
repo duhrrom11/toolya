@@ -25,10 +25,9 @@ try{
  ids.profileA=(await add('wishlist_profiles',A,{user_id:A.user.id,handle:marker+'a',display_name:'Release Test A'})).user_id;
  ids.profileB=(await add('wishlist_profiles',B,{user_id:B.user.id,handle:marker+'b',display_name:'Release Test B'})).user_id;
  ids.list=(await add('wishlist_lists',A,{user_id:A.user.id,title:marker,visibility:'public'})).id;
- ids.product=Number(String(Date.now()).slice(-12));
- ids.asin=('T'+String(ids.product).slice(-9)).padEnd(10,'0');
- await add('wishlist_products',A,{id:ids.product,marketplace:'amazon.de',asin:ids.asin,title:'Release candidate fixture'});
- ids.wish=(await add('wishlist_wishes',A,{id:ids.product,user_id:A.user.id,product_id:ids.product,visibility:'public'})).id;
+ ids.asin=('T'+String(Date.now()).slice(-9)).padEnd(10,'0');
+ ids.product=(await add('wishlist_products',A,{marketplace:'amazon.de',asin:ids.asin,title:'Release candidate fixture'})).id;
+ ids.wish=(await add('wishlist_wishes',A,{user_id:A.user.id,product_id:ids.product,visibility:'public'})).id;
  await add('wishlist_list_items',A,{list_id:ids.list,user_id:A.user.id,wish_id:ids.wish});
  ids.occasion=(await add('wishlist_occasions',B,{user_id:B.user.id,title:marker,occasion_date:'2026-12-20'})).id;
  ids.plan=(await add('wishlist_gift_plans',B,{user_id:B.user.id,occasion_id:ids.occasion,title:marker,source_wish_id:ids.wish,source_list_id:ids.list,source_product_id:ids.product})).id;
