@@ -50,7 +50,7 @@ window.addEventListener('load',()=>setTimeout(()=>{
    reviewStatus:document.getElementById('reviewStatus').textContent,editor:document.getElementById('giftYearEditor').textContent,
    review:document.getElementById('annualReview').textContent,loginVisible:!document.getElementById('login').hidden});
   document.documentElement.append(report);
- },450);
+ },1200);
 },250));
 </script>"""
 def main():
