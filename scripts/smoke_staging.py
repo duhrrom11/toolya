@@ -52,7 +52,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.send_error(404)
                 return
             data = file.read_text(encoding="utf-8")
-            data = re.sub(r"<head(\\s[^>]*)?>", lambda m: m.group(0) + INSTRUMENT, data, count=1, flags=re.I)
+            data = re.sub(r"<head(\s[^>]*)?>", lambda m: m.group(0) + INSTRUMENT, data, count=1, flags=re.I)
             payload = data.encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
