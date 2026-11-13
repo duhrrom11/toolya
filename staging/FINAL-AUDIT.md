@@ -323,3 +323,15 @@ The homepage's fixed allowlist has **34 literal keys**; the layout regex adds se
 - **Residual limits:** This mitigates concurrency and process leaks but does not prove why previous Chromium timeouts occurred. Runner and browser version drift, long-running child processes, event-loop/iframe stalls and real data/auth migration risks remain. Future failures should be classified using new diagnostics; do not increase timeouts or waive red runs without evidence.
 
 **Release remains NO-GO.** These are test/CI-only changes and do not authorize any production migration.
+
+### Post-hardening CI verification — confirmed (2026-11-13)
+
+**Verified successful full workflow:** [run 43478825999](https://github.com/duhrrom11/toolya/actions/runs/43478825999), exact commit `b583c837605b542d24d8498551fff90a4511a12a`, status `completed`, conclusion `success`. The four intermediate test-hardening commits `bf6ab16ac9`, `beccc05369`, `f41e773dab`, and `bb380d2021` also each had a completed successful workflow. No test-only fixes were needed after this verification.
+
+**Assertions observed in the successful job log:** isolated backup **10/10 PASS**, cross-origin browser storage **3/3 PASS**, offline cloud pending **5/5 PASS**, combined **18/18**. The smoke, mocked browser, navigation, UI and static audit steps all completed successfully as workflow steps. Note that the offline smoke intentionally reports offline external-dependency limitations and the mocked browser diagnostics may contain expected fake/offline errors; a green workflow is **not** proof of live CDN or Supabase integration.
+
+**Recorded runner/toolchain:** Linux `ubuntu26` image `20261101.186.1`; Python `3.14.4`; Chrome `156.0.8078.79`; 4 CPUs; memory available `15430320 kB` at test setup. The two-origin step ran from approximately `18:04:37` to `18:05:11` UTC (~34 seconds), below its 60-second timeout, but long enough to warrant monitoring rather than claiming timeout elimination.
+
+**Outstanding reliability qualification:** This is **one confirmed green full run at the hardening-and-documentation SHA**, not the prescribed 5/5 serial repetitions at one immutable SHA. Prior Chromium failures remain recorded; the root cause is not proven. A separate workflow run at a prior intermediate SHA may remain queued due to branch-scoped concurrency; it does not invalidate the green result for `b583c8376`. This report update itself creates a newer documentation commit, so its exact-HEAD CI must be verified separately.
+
+**Release decision remains NO-GO:** real encrypted cross-origin UI restore, excluded owner-scoped wishlist/cloud pending data, vault conflict recovery, production Auth redirect review, and legacy URL/metadata acceptance remain open. No application source, production Supabase data/config, merge or deployment changed.
