@@ -21,7 +21,7 @@ function render(){renderWeek();renderChecklistProgress();renderYearBalance();
  const visible=tasks.filter(t=>!t.archived_at&&(filter==='all'||(filter==='done'?t.status==='done':t.status!=='done'))).sort((a,b)=>Number(a.status==='done')-Number(b.status==='done')||((a.due_date?days(a.due_date):99999)-(b.due_date?days(b.due_date):99999))||a.priority-b.priority);
  if(!visible.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine Aufgaben in dieser Ansicht.';root.append(p)}
  for(const t of visible){
-  const item=document.createElement('article');item.className='item',h=document.createElement('h3');h.textContent=t.title;
+  const item=document.createElement('article'),h=document.createElement('h3');item.className='item';h.textContent=t.title;
   const occasion=occasions.find(o=>o.id===t.occasion_id),gift=gifts.find(g=>g.id===t.gift_plan_id);
   const meta=document.createElement('p');meta.textContent=[labels[t.status],priorities[t.priority],t.due_date?'Fällig: '+new Date(t.due_date+'T12:00:00').toLocaleDateString('de-DE'):'Ohne Fälligkeit',occasion?.title,gift?.title].filter(Boolean).join(' · ');
   const controls=document.createElement('div');controls.className='controls';
