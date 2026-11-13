@@ -14,14 +14,14 @@ const code=section('function isAuthSessionStorageKey(', '// Password input uses 
  section('async function importGlobalBackup(', '// JS Funktionen Global machen');
 const checks=[];
 function ok(name,fn){return Promise.resolve().then(fn).then(()=>{checks.push(name);console.log('PASS',name)})}
-let store,alerts,downloads,password,confirms,failKey,ctx;
+let store,alerts,downloads,password,confirms,failKey,persistentFailKey,ctx;
 const pause=()=>new Promise(resolve=>setTimeout(resolve,0));
 function setup(initial={}){
- const data=new Map(Object.entries(initial));alerts=[];downloads=[];password='a-mock-passphrase-1234';confirms=true;failKey=null;
+ const data=new Map(Object.entries(initial));alerts=[];downloads=[];password='a-mock-passphrase-1234';confirms=true;failKey=null;persistentFailKey=null;
  store={
   get length(){return data.size},key:i=>[...data.keys()][i]??null,
   getItem:k=>data.has(k)?data.get(k):null,
-  setItem(k,v){if(k===failKey){failKey=null;throw Error('synthetic quota failure')}data.set(k,String(v))},
+  setItem(k,v){if(k===persistentFailKey)throw Error('persistent synthetic storage failure');if(k===failKey){failKey=null;throw Error('synthetic quota failure')}data.set(k,String(v))},
   removeItem:k=>data.delete(k),dump:()=>Object.fromEntries(data)
  };
  class Reader{readAsText(file){queueMicrotask(()=>{this.onload({target:{result:file.content}})})}}
@@ -92,6 +92,15 @@ async function run(){
    localStorage:{hub_favorites:'new',wg_inventory:'new2'}});
   assert.equal(store.getItem('hub_favorites'),'old');assert.equal(store.getItem('wg_inventory'),'old2');
   assert(alerts.some(x=>x.includes('vorherige Datenstand')));
+ });
+ await ok('persistent storage failure is explicitly reported and not falsely rolled back',async()=>{
+  setup({hub_favorites:'original',wg_inventory:'original2'});
+  persistentFailKey='hub_favorites';
+  await imported({app:'Helferlein',version:'2.0',created:new Date().toISOString(),
+   localStorage:{wg_inventory:'changed',hub_favorites:'new'}});
+  assert.equal(store.getItem('hub_favorites'),'original');
+  assert.equal(store.getItem('wg_inventory'),'original2');
+  assert(alerts.some(x=>x.includes('nicht vollständig möglich')));
  });
  await ok('rejected confirmation does not modify storage',async()=>{
   setup({hub_favorites:'old'});confirms=false;
