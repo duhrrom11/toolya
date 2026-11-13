@@ -39,7 +39,7 @@ window.supabase={createClient:()=>client};
 window.supabaseClient=client;
 window.tailwind={config:{}};
 window.lucide={createIcons:noop,icons:{}};
-window.Chart=class{constructor(){this.data={datasets:[]}}destroy(){}update(){}};
+window.Chart=class{constructor(){this.data={datasets:[{data:[]},{data:[]}],labels:[]}}destroy(){}update(){}};
 window.jspdf={jsPDF:class{save(){}text(){}autoTable(){}}};
 window.QRCode=class{constructor(){}};
 window.Tesseract={recognize:async()=>({data:{text:''}})};
