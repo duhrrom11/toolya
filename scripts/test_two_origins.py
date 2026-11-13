@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Single headless Chromium process, two localhost origins via iframe/postMessage.
 Synthetic storage only. No network outside localhost, no real user data or app writes."""
-import http.server, json, re, shutil, subprocess, tempfile, threading
+import http.server, json, re, shutil, tempfile, threading
+from chrome_isolation import run_chrome
 A="""<!doctype html><meta charset="utf-8"><script>
 window.addEventListener('load',()=>{
  const fixtures={hub_favorites:'["synthetic"]',wg_inventory:'["box-a"]',
@@ -59,9 +60,11 @@ def main():
     '--disable-background-networking','--disable-extensions','--no-first-run',
     '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1',
     '--user-data-dir='+profile,'--virtual-time-budget=4000','--dump-dom',f'http://127.0.0.1:{a}/']
-   p=subprocess.run(cmd,capture_output=True,text=True,timeout=45)
+   p=run_chrome(cmd,timeout=60,label='two-origins')
+   if p.timed_out:
+    raise AssertionError(f'Chromium timed out after {p.elapsed_seconds:.1f}s; stderr={p.stderr[-400:]!r}')
    m=re.search(r'<pre id="result">(.*?)</pre>',p.stdout,re.S)
-   if p.returncode or not m:raise AssertionError('No browser result: '+p.stderr[-600:])
+   if p.returncode or not m:raise AssertionError(f'No browser result (exit={p.returncode}, elapsed={p.elapsed_seconds:.1f}s): '+p.stderr[-600:])
    x=json.loads(m.group(1).replace('&quot;','"').replace('&amp;','&'))
    assert x['differentOrigins'] and x['sourcePreserved'] and x['initiallyEmpty'],x
    print('PASS distinct browser origins; original synthetic keys retained')
