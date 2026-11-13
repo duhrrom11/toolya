@@ -48,6 +48,12 @@ jobs:
       - name: Isolated encrypted backup import export and auth redirect assertions
         if: always()
         run: node scripts/test_backup_isolated.cjs
+      - name: Isolated two-origin browser storage checks
+        if: always()
+        run: python3 scripts/test_two_origins.py
+      - name: Offline cloud pending owner isolation checks
+        if: always()
+        run: node scripts/test_cloud_pending_isolated.cjs
       - name: Upload audit report
         if: always()
         uses: actions/upload-artifact@v4
