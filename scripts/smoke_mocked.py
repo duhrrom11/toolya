@@ -64,8 +64,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return self.send_error(404)
         content=file.read_text(encoding='utf-8')
         # Strip only remote script tags in the test response, preserving their order elsewhere.
-        content=re.sub(r'<script\\b(?=[^>]*\\bsrc=["\\x27]https?://)[^>]*>\\s*</script>', '', content, flags=re.I)
-        content=re.sub(r'<head(\\s[^>]*)?>',lambda m:m.group(0)+MOCK,content,count=1,flags=re.I)
+        content=re.sub(r'<script\b(?=[^>]*\bsrc=["\x27]https?://)[^>]*>\s*</script>', '', content, flags=re.I)
+        content=re.sub(r'<head(\s[^>]*)?>',lambda m:m.group(0)+MOCK,content,count=1,flags=re.I)
         data=content.encode('utf-8')
         self.send_response(200)
         self.send_header('Content-Type','text/html; charset=utf-8')
