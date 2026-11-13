@@ -46,6 +46,9 @@ jobs:
       - name: Isolated wishes functional browser checks
         if: always()
         run: python3 scripts/test_wishes_browser.py
+      - name: Isolated wishes mutation browser checks
+        if: always()
+        run: python3 scripts/test_wishes_mutations.py
       - name: Real localhost anchor navigation checks
         if: always()
         run: python3 scripts/smoke_navigation.py
