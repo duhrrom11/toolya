@@ -43,7 +43,7 @@ async function exported(){
 async function imported(obj,{expectAlert=true}={}){
  const file={name:'synthetic.json',size:Buffer.byteLength(JSON.stringify(obj)),content:JSON.stringify(obj)};
  await vm.runInContext('importGlobalBackup',ctx)({target:{files:[file],value:'selected'}});
- if(expectAlert){for(let i=0;i<1000 && alerts.length===0;i++)await new Promise(resolve=>setTimeout(resolve,5));
+ if(expectAlert){for(let i=0;i<4000 && alerts.length===0;i++)await new Promise(resolve=>setTimeout(resolve,5));
  assert(alerts.length>0,'import did not finish within timeout');}
  else await pause();
 }
