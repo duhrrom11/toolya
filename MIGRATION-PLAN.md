@@ -74,3 +74,12 @@ Status: planning only. Do not overwrite the live toolya index.html or modify duh
 4. Rewrite references and scan for broken links, old /Helferlein/ base paths, stale domain URLs, and renamed asset imports.
 5. Check auth redirects, PWA service worker and cache, storage origins, legal text, accessibility, and security.
 6. Validate in staging; release only after acceptance and verification. No automatic data migration across browser origins.
+
+## Verified isolated CI and unresolved release blockers (2026-11-13)
+
+- GitHub Actions run 43493967857 (commit 3d5f87d939ec3dcb5e2e34dea0c046391f09bc27): success. Isolated localhost two-origin storage checks 3/3; real encrypted export/import 5/5; offline owner/auth/pending conflict checks 9/9. This is not a production release approval.
+- Static staging audit: 104 files scanned, 102 references checked, five unresolved links, zero legacy route occurrences. Three links target `staging/tools/wishes/gift-tasks.html` (assistant, cockpit, dashboard); two target `staging/tools/wishes/gift-analytics.html` (assistant, dashboard). Both HTML targets are absent from the branch tree, although `gift-tasks.mjs` and `gift-analytics.mjs` exist.
+- Do not silently redirect these links to unrelated pages or create placeholder HTML: task management and yearly analytics require verified functional pages, correct DOM bindings, authentication and isolated browser tests. Treat these as release-blocking until implemented and validated or explicitly removed with product acceptance.
+- Offline browser diagnostics report external CDN dependencies (Supabase, Tailwind, Lucide). These are offline limitations, not proof of production defects. Verify dependency behavior and CSP under approved staging conditions without production Supabase access.
+- Remaining P0/P1 release gates: complete route/feature inventory, verify auth redirects and domain allowlists, review service worker/cache and origin-specific storage behavior, verify legal/privacy branding, accessibility and security, and obtain explicit acceptance. Do not infer completion from a green CI job.
+- Release decision: **NO-GO**. Do not modify `main`, access production Supabase, merge or deploy during this audit.
