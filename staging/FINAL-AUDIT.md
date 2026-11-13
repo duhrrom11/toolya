@@ -137,3 +137,45 @@ No application code, main branch, production Supabase, merge, DNS or deployment 
 **Remaining boundaries:** The cross-origin test performs an explicit synthetic allowlist transfer, not the actual encrypted file export/import UI across two browser origins. It does not validate IndexedDB, production domain cookies, Supabase auth redirects, live cloud flush, recovery keys or pending-write reconciliation. Persistent storage corruption can still make rollback impossible. Accordingly, **release remains NO-GO** until separate acceptance gates are met.
 
 This update changes documentation only; no application code, production Supabase settings/data, merge or deployment.
+
+## Final release checklist and responsibility matrix (2026-11-13)
+
+**Current decision: NO-GO; no merge, production configuration change or deployment authorized.** Latest *completed* green CI at checklist preparation: [run 43475839897](https://github.com/duhrrom11/toolya/actions/runs/43475839897), 18/18 new isolated assertions. Newer run [43476720388](https://github.com/duhrrom11/toolya/actions/runs/43476720388) was in progress at initial check; verify its final result separately. `main...migration/english-paths-clean`: 80 commits ahead, 0 behind, 117 files added, 0 existing files modified/deleted.
+
+**Roles are proposed assignments, not confirmed named people.** Owner/Release approver = project owner; Migration engineer = implementing engineer; Security/Auth reviewer = person authorized to inspect Supabase settings; Data steward = owner of backup/vault recovery decisions; QA reviewer = independent test signoff. One person may hold multiple roles, but every gate requires a recorded reviewer and evidence link.
+
+### Ordered gates and hard stop criteria
+
+| Order | Gate / responsible role | Required evidence and objective GO condition | Automatic NO-GO |
+|---|---|---|---|
+| 0 | **Freeze / isolation** — Migration engineer + Release approver | Compare `main...migration/english-paths-clean`; no changes outside permitted staging/test/docs/CI; record exact commit and CI run. Preserve public coming-soon site and original Helferlein. | Any unintended modification of `main`, source Helferlein, production Supabase, DNS or deployed site. |
+| 1 | **Data inventory / ownership** — Data steward + Migration engineer | Signed-off table of every `localStorage`/IndexedDB store and backup coverage; explicit handling for `helferlein-wish-extras:*`, `helferlein_cloud_*_pending`, owner IDs, encrypted estate vault and unsynced queues. | Unknown keys, unclassified pending edits, account-mismatch or a claim that global backup covers all data. |
+| 2 | **Realistic encrypted cross-origin rehearsal** — QA + Data steward | Two disposable browser origins and synthetic fixture users; run actual UI file export/import (not merely VM crypto or explicit allowlist copy); validate file integrity, wrong password, tampering, quotas, rollback and preserved original data. Repeat in representative browsers. | Any lost, leaked, silently overwritten or nonrecoverable synthetic data without a documented safe fallback. |
+| 3 | **Estate vault and cloud conflict rehearsal** — Data steward + Security reviewer | Synthetic vault keys, mocked remote snapshots, mismatched account and revisions, pending writes and disconnected state; prove fail-closed behavior and owner-approved reconciliation; document old/new origin storage and encrypted recovery. | Automatic pending replay, cross-owner access, silent conflict resolution or false claim of complete rollback under persistent corruption. |
+| 4 | **Auth redirect security** — Security/Auth reviewer | Read-only production Supabase Site URL, allowed redirect URLs, email confirmation template, callback handling, CSP and cookie/session assumptions; use **separate test Supabase project and disposable accounts** for runtime confirmation after authorization. Confirm new canonical URL, old-domain transition, expired/replayed link and rejection of arbitrary redirect origins. | Redirect to wrong host, unallowlisted callback, open redirect, real credentials in tests or change to production settings without explicit authorization. |
+| 5 | **Legacy URLs, metadata and assets** — Migration engineer + QA | Exhaustive old-to-new URL matrix including query/hash behavior; validate 404/redirect strategy, staged `robots.txt` sitemap, `sitemap.xml`, `manifest.json`, social preview and estate optional dependencies. Verify source-existing wishlist defects remain separately documented. | Required bookmarked paths 404, old sitemap URL remains, required asset absent, unresolved feature dependency. |
+| 6 | **Full release rehearsal** — QA reviewer | Green CI at **exact candidate commit**; local/offline browser diagnostics and staged link scan; representative encrypted backup and account-recovery rehearsal; evidence URLs, known limitations, test logs, rollback drill and written signoffs. | Any P0/P1 gate unpassed, CI red/in progress, unexplained modified source or missing rollback proof. |
+| 7 | **Explicit release decision** — Project owner / Release approver | Written GO for a specific commit and deployment plan, verified encrypted backups, DNS/redirect rollback operator, communication plan and monitoring owner. **Separate authorization required for merge, deploy or production config changes.** | No signed approval, unresolved P0/P1 issue or inability to revert routing and protect old/new origin data. |
+
+### Practical GO/NO-GO checklist (all boxes must be evidenced before GO)
+
+- [ ] Exact release commit, branch diff, CI run and static asset inventory recorded.
+- [ ] Every local storage family and owner binding inventoried; pending queues and wishlist extras explicitly classified.
+- [ ] Encrypted backup/restore verified through real UI on two disposable origins and supported browsers.
+- [ ] Vault restore, cloud conflicts, cross-account protection and persistent-storage failure handling accepted.
+- [ ] Supabase redirect allowlist and confirmation email flow inspected read-only; isolated auth test passed.
+- [ ] Legacy redirects, canonical URLs, `robots.txt`, sitemap and required assets accepted.
+- [ ] Full CI green on exact candidate commit and independent QA signoff recorded.
+- [ ] Rollback drill documented, old site preserved, backups verified and release approver signs GO.
+
+### Rollback responsibility and sequencing
+
+- **Before any future cutover (Release approver + Data steward):** Keep old host operational, verify encrypted backup integrity, record DNS/hosting config, deploy SHA, allowed redirect settings and recovery contacts. Avoid exporting auth tokens. Establish who may stop the rollout.
+- **Trigger (QA/Security/Data steward):** Stop on unexpected login redirect, data mismatch, missing pending changes, vault restore failure, unexpected 404 or failed critical CI. Freeze writes/entrypoints if safe and explicitly authorized.
+- **Restore (Migration engineer / infrastructure operator):** Restore prior hosting/routing/DNS according to approved runbook; do **not** assume browser storage follows DNS. Preserve both origins' data and investigate cloud revisions before resuming sync.
+- **Auth (Security/Auth reviewer):** Only through separately approved production change control, restore previous allowlist/Site URL if modified; require re-login where needed.
+- **Closure (Project owner + QA):** Verify old-site accessibility, login and data-read path; document affected accounts, pending conflicts and backup evidence; require a new GO before retrying.
+
+### Verification limits
+
+The 18 isolated assertions are valid but not substitutes for production-domain auth checks or actual UI-driven encrypted file transfer. The original wishlist defects, missing preview asset, stale robots sitemap and legacy redirects remain release concerns. The current task adds **documentation only**, not an implementation or authorization of release.
