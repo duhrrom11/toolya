@@ -108,3 +108,11 @@ Status: planning only. Do not overwrite the live toolya index.html or modify duh
 - Corrected the seventh case to **form-error** with an explicit synthetic insert failure and an exact expected failure message. The successful form submission path remains **P1 OPEN** pending a separate positive-path fixture and verification. The corrected assertion must pass in follow-up CI before being considered verified.
 - Other **P0/P1 OPEN**: positive create/edit/delete task behavior and permission boundaries, analytics year changes/closing/export, staging auth redirects and allowlists, complete route/feature inventory, PWA cache/origin storage, legal/privacy branding, accessibility/security and explicit release acceptance.
 - **NO-GO**; no `main` changes, production Supabase, merge or deployment.
+
+## Isolated wishes form verification follow-up (2026-11-13)
+
+- [CI 43498097504](https://github.com/duhrrom11/toolya/actions/runs/43498097504) at `a59faf77`: **completed / success**. Job logs confirm `PASS gift-tasks form-error` with the exact expected `Aufgabe konnte nicht gespeichert werden.` message. This verifies the corrected negative-path assertion, not successful insertion.
+- [CI 43498118711](https://github.com/duhrrom11/toolya/actions/runs/43498118711) at `9746a4fd`: status must be checked separately; do not infer success from earlier runs.
+- Added a distinct **form-success** browser scenario at `10360b3e` with isolated mock insert payload capture, exact user ID/title/status checks, rendered task heading, success message and form reset assertions. This increases the suite to eight scenarios. [CI 43498500705](https://github.com/duhrrom11/toolya/actions/runs/43498500705) must confirm this positive path before marking it verified.
+- **P1 OPEN until CI success:** successful task insertion and DOM update. Additional P0/P1 remain: update/delete and permission checks; analytics year assignment/closing/export; full route/feature inventory; staging auth redirects/domain allowlists; cache and origin-storage review; legal/privacy branding; accessibility/security; explicit acceptance.
+- **NO-GO**; no production Supabase access, no `main` modification, merge or deployment.
