@@ -14,6 +14,7 @@ import pathlib
 import re
 import shutil
 import subprocess
+from chrome_isolation import run_chrome
 import threading
 import urllib.error
 import urllib.parse
@@ -107,10 +108,9 @@ def main():
                        "--disable-extensions", "--no-first-run", "--no-default-browser-check",
                        "--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1",
                        "--virtual-time-budget=1800", "--dump-dom", url]
-            try:
-                proc = subprocess.run(command, capture_output=True, text=True, timeout=35)
-            except subprocess.TimeoutExpired:
-                return {"page":page,"kind":"timeout"}
+            proc = run_chrome(command, timeout=45, label=page)
+            if proc.timed_out:
+                return {"page":page,"kind":"timeout","elapsed_seconds":round(proc.elapsed_seconds,1),"stderr":proc.stderr[-400:]}
             dom = proc.stdout
             if proc.returncode or "<html" not in dom.lower() or "<body" not in dom.lower():
                 return {"page":page,"kind":"render","exit":proc.returncode,"stderr":proc.stderr[-300:]}
@@ -133,7 +133,7 @@ def main():
                     return {"page":page,"kind":"offline_external_dependencies","errors":issues[:8]}
                 return {"page":page,"kind":"browser_errors","errors":issues[:8]}
             return None
-        with ThreadPoolExecutor(max_workers=3) as pool:
+        with ThreadPoolExecutor(max_workers=1) as pool:
             futures = {pool.submit(check,page):page for page in pages}
             for future in as_completed(futures):
                 result = future.result()
