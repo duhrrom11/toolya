@@ -179,3 +179,5 @@ This update changes documentation only; no application code, production Supabase
 ### Verification limits
 
 The 18 isolated assertions are valid but not substitutes for production-domain auth checks or actual UI-driven encrypted file transfer. The original wishlist defects, missing preview asset, stale robots sitemap and legacy redirects remain release concerns. The current task adds **documentation only**, not an implementation or authorization of release.
+
+**CI status correction (verified after checklist drafting):** run [43476720388](https://github.com/duhrrom11/toolya/actions/runs/43476720388) on commit `f3eff12083bb02a0cec57172a5b2bf9d1cf1c278` has **completed successfully**, including the two-origin browser and offline pending checks. The checklist documentation commit(s) are newer and require their own CI completion before claiming green at current branch HEAD.
