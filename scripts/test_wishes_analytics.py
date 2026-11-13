@@ -69,7 +69,7 @@ def main():
    if mode in ('year','year-error','permission'):
     ok=ok and len(calls)==1 and calls[0].get('rpc')=='wishlist_set_gift_year' and calls[0]['args']['p_plan_id']=='gift-1'
     ok=ok and d.get('status')==('Geschenkjahr gespeichert.' if mode=='year' else 'Geschenkjahr konnte nicht gespeichert werden.')
-    if mode=='year':ok=ok and 'Offline-Geschenk' not in d.get('editor','')
+    if mode=='year':ok=ok and 'Offline-GeschenkJahr: '+str(__import__('datetime').date.today().year-1)+' · bestätigt' in d.get('editor','')
     else:ok=ok and 'Offline-Geschenk' in d.get('editor','')
    elif mode in ('close','close-error','close-confirm'):
     ok=ok and (len(calls)==0 if mode=='close-confirm' else len(calls)>=1 and calls[0].get('rpc')=='wishlist_close_gift_year' and calls[0]['args']['p_confirm'] is True)
