@@ -345,3 +345,15 @@ The homepage's fixed allowlist has **34 literal keys**; the layout regex adds se
 **Next reproducibility procedure:** Freeze a candidate commit (prefer a SHA after this documentation update); using an authorized GitHub Actions interface, dispatch the `Migration static audit` workflow five times **sequentially** against the exact same SHA/ref, waiting for each complete result before starting the next. Record run ID, attempt, exact `head_sha`, runner/Chrome version, duration, per-step conclusion, isolated assertions (backup 10, two-origin 3, pending 5), and any timeout diagnostics. **GO for CI reliability only if all 5/5 are green without unexplained timeout.** Do not count runs from different commits, incomplete runs, or a retry that hides an earlier failure. Keep `NO-GO` for release independently of CI reliability until the data/auth/legacy gates pass.
 
 **This update changes only `staging/FINAL-AUDIT.md`.** Its resulting new commit may itself trigger another push CI; that is not one of the five controlled repetitions.
+
+## Five-run execution capability audit — GitHub + browser automation (2026-11-13)
+
+**Newest verified CI:** [run 43479911364](https://github.com/duhrrom11/toolya/actions/runs/43479911364) on SHA `641c973b589dff9337e79d8ff44236dea716b937`: **completed / success**. This is an ordinary documentation push run, **not** a controlled repeated trial.
+
+**GitHub connector capability inspection:** Available actions include read-only workflow/run/job/log retrieval and retry actions for **failed** workflow jobs. No exposed action dispatches the full workflow or re-runs a successfully completed full workflow. A failed-job retry is not an equivalent five-run whole-workflow reproducibility test.
+
+**TinyFish browser automation capability inspection:** `run_web_automation` can navigate and click GitHub Actions, but `list_profiles` reports one default profile (`prof_a093696d154844d8`) with `signed_in_sites: []`. There is **no verified authenticated GitHub browser profile**. Per connector guidance, do not run a sign-in-required automation until the user confirms a signed-in profile or authorizes a browser-profile sign-in setup. No sign-in attempt, browser workflow dispatch, or credential handling occurred.
+
+**Same-SHA reproducibility results:** **0/5 initiated; 0/5 completed.** The five-run acceptance criterion remains **UNVERIFIED**, not passed or failed. To enable: obtain an authenticated GitHub browser profile through the user's explicit setup action, then choose and freeze a candidate SHA and execute one full `workflow_dispatch` at a time (waiting for completion), checking exact head SHA and per-step results for each of five runs. Do not create dummy commits, change production data, or count differing SHA push runs.
+
+**Boundary:** Only this audit document was modified. No application code, test scripts, CI configuration, merge, production Supabase access or publication. The documentation update itself may trigger another normal push CI, which is not a controlled repetition. Overall release **NO-GO**.
