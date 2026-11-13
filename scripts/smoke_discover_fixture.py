@@ -10,10 +10,11 @@ const mockRows=[
  {id:'local-c',user_id:'u3',title:'Mitte Kreativ',description:'Zeichnen',icon:'🎨',created_at:'2026-02-01T00:00:00Z'}
 ];
 const q=(data)=>new Proxy({}, {get(t,k){if(k==='then')return f=>Promise.resolve({data,error:null}).then(f);return ()=>q(data)}});
+window.__fixtureCalls=[];
 window.supabase.createClient=()=>({
  auth:{getUser:async()=>({data:{user:null},error:null})},
- from:table=>q(table==='wishlist_lists'?mockRows:table==='wishlist_profiles'?[]:[]),
- rpc:()=>q([{list_id:'local-a',like_count:12},{list_id:'local-b',like_count:9},{list_id:'local-c',like_count:5}])
+ from:table=>(window.__fixtureCalls.push(table),q(table==='wishlist_lists'?mockRows:[])),
+ rpc:()=>(window.__fixtureCalls.push('rpc'),q([{list_id:'local-a',like_count:12},{list_id:'local-b',like_count:9},{list_id:'local-c',like_count:5}]))
 });
 window.addEventListener('load',()=>{
  const grid=()=>[...document.querySelectorAll('#grid article.card h2')].map(x=>x.textContent);
@@ -61,6 +62,7 @@ def main():
    status=re.search(r'<p id="status"[^>]*>(.*?)</p>',p.stdout,re.S)
    print('DIAGNOSTIC status:',status.group(1)[:250] if status else 'missing',flush=True)
    print('DIAGNOSTIC report:',bool(m),'dom_length:',len(p.stdout),flush=True)
+   print('DIAGNOSTIC fixture calls:',re.search(r'__fixtureCalls.{0,200}',p.stdout).group(0) if re.search(r'__fixtureCalls.{0,200}',p.stdout) else 'not in DOM',flush=True)
   for c in checks:print(('PASS' if c['pass'] else 'FAIL')+': '+c['name']+' '+str(c['actual']),flush=True)
   return 0 if p.returncode==0 and len(checks)==5 and all(c['pass'] for c in checks) else 1
  finally:server.shutdown()
