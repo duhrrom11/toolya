@@ -303,3 +303,23 @@ The homepage's fixed allowlist has **34 literal keys**; the layout regex adds se
 8. **P0 — Release gate and escalation (Release approver):** require a fully green **exact release SHA** after reliability remediation, stable repeat results and separate data/auth/redirect GO gates. Any unexplained timeout, missing diagnostic evidence, or unresolved P0/P1 remains **NO-GO**. No retries used to relabel a red run as green.
 
 **Change boundary:** The proposed test/workflow improvements above require a **separate explicit request**. This task only documents the evidence and plan. No test scripts or application files were changed. The latest documentation commit will itself trigger CI; its outcome must be checked later.
+
+## Chromium test harness hardening implemented (2026-11-13)
+
+**Scope / branch:** `migration/english-paths-clean`; changes restricted to `scripts/chrome_isolation.py` (new), `scripts/smoke_staging.py`, `scripts/smoke_mocked.py`, `scripts/test_two_origins.py`, `.github/workflows/migration-audit.yml`, and this report. No staged application HTML/JS/CSS, Supabase settings/data, main, merge, DNS or deployment changed.
+
+### Implementation and observable effects
+
+1. **Process cleanup and bounded timeout diagnostics** (`scripts/chrome_isolation.py`): launch headless Chrome in a separate process session; on timeout send SIGTERM to process group, wait up to three seconds, then SIGKILL if necessary, reap stdout/stderr and report test label, configured timeout, measured elapsed time, exit status and a bounded stderr tail. Return a distinct `timed_out` flag so a process timeout cannot masquerade as a storage assertion pass.
+2. **Reduced local smoke parallelism** (`scripts/smoke_staging.py`, `scripts/smoke_mocked.py`): `ThreadPoolExecutor(max_workers=3)` -> `max_workers=1`; both use the shared Chromium runner, 45-second per-page timeout and failure details. Expected tradeoff: lower runner pressure but longer total smoke duration.
+3. **Two-origin Chromium cleanup** (`scripts/test_two_origins.py`): shared process runner, 60-second timeout, bounded stderr/elapsed diagnostics, retained ephemeral browser profile, two distinct localhost port origins, cross-origin iframe and explicit synthetic allowlist transfer. This does not create a real browser backup file and does not touch user data.
+4. **CI overlap and environment metadata** (`.github/workflows/migration-audit.yml`): branch-scoped concurrency group with `cancel-in-progress: false`; browser/runner/Python/Node versions, CPU count and available memory recorded before tests. A queued run is **not** counted as a pass; preserve failed runs rather than silently retrying.
+
+### Verification state and acceptance
+
+- Prior baseline [run 43478350664](https://github.com/duhrrom11/toolya/actions/runs/43478350664) completed **SUCCESS** on the preceding documentation-only commit.
+- Hardening commits `bf6ab16`, `beccc053`, `f41e773`, `bb380d2`, and `ef3a558` were pushed to the migration branch. Their CI outcomes must be verified against the exact respective SHAs. At the initial post-change check, several earlier pushes were still running; **do not claim a completed green hardening run yet**.
+- **Required acceptance:** exact final commit green; 3/3 two-origin assertions, 5/5 offline pending assertions, 10/10 backup assertions; 32 staged pages covered; no unexplained timeout. For the CI reliability release gate, run at least five consecutive, nonoverlapping trials on the same immutable candidate SHA and require 5/5 complete success.
+- **Residual limits:** This mitigates concurrency and process leaks but does not prove why previous Chromium timeouts occurred. Runner and browser version drift, long-running child processes, event-loop/iframe stalls and real data/auth migration risks remain. Future failures should be classified using new diagnostics; do not increase timeouts or waive red runs without evidence.
+
+**Release remains NO-GO.** These are test/CI-only changes and do not authorize any production migration.
