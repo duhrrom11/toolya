@@ -13,16 +13,17 @@ const text=(node,max=250)=>Array.from(node?.textContent?.replace(/\s+/g,' ').tri
 export function safeImage(raw){try{const u=new URL(raw);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&['m.media-amazon.com','images-eu.ssl-images-amazon.com','images-na.ssl-images-amazon.com','images.ssl-images-amazon.com'].includes(u.hostname)?u.href:null}catch{return null}}
 export function parsePrice(raw){if(!raw)return null;let s=raw.replace(/[^\d,.]/g,'');if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');else if(/^\d{1,3}(\.\d{3})+$/.test(s))s=s.replace(/\./g,'');const n=Number(s);return s&&Number.isFinite(n)&&n>=0&&n<=999999?n:null;}
 function doc(html){if(typeof html!=='string'||html.length>3000000)throw new ScrapeError('TOO_LARGE','Amazon-Antwort ist zu groß.');const {document:d}=parseHTML(html);if(d.querySelector('form[action*="validateCaptcha"],#captchacharacters')||/robot check|automatisierte zugriffe|enter the characters you see/i.test(text(d.body,10000)))throw new ScrapeError('BLOCKED','Amazon blockiert den Abruf oder verlangt eine Prüfung. Bitte später erneut versuchen.');return d;}
+const pick=(root,selectors)=>selectors.split(',').map(selector=>root.querySelector(selector)).find(Boolean)||null;
 function productData(root,asin){
- const titleNode=root.querySelector('#productTitle,[id^="itemName"],.a-link-normal[title],.product-title');
+ const titleNode=pick(root,'#productTitle,[id^="itemName"],.a-link-normal[title],.product-title');
  const title=text(titleNode)||titleNode?.getAttribute('title')?.trim().slice(0,250);
- const img=root.querySelector('#landingImage,#imgBlkFront,img[data-a-dynamic-image],.g-itemImage img,img');
+ const img=pick(root,'#landingImage,#imgBlkFront,img[data-a-dynamic-image],.g-itemImage img,img');
  let imageUrl=safeImage(img?.getAttribute('data-old-hires'))||safeImage(img?.getAttribute('data-src'))||safeImage(img?.getAttribute('src'));
  if(!imageUrl)try{imageUrl=Object.keys(JSON.parse(img?.getAttribute('data-a-dynamic-image')||'{}')).map(safeImage).find(Boolean)||null}catch{}
- const priceNode=root.querySelector('#corePriceDisplay_desktop_feature_div .a-price:not(.a-text-price) .a-offscreen,#corePrice_feature_div .a-price .a-offscreen,.a-price:not(.a-text-price) .a-offscreen,[id^="itemPrice"],#priceblock_ourprice,#priceblock_dealprice');
+ const priceNode=pick(root,'#corePriceDisplay_desktop_feature_div .a-price:not(.a-text-price) .a-offscreen,#corePrice_feature_div .a-price .a-offscreen,.a-price:not(.a-text-price) .a-offscreen,[id^="itemPrice"],#priceblock_ourprice,#priceblock_dealprice');
  const price=parsePrice(text(priceNode,100));
- const description=text(root.querySelector('#feature-bullets,#productDescription'),1000);
- const quantityNode=root.querySelector('[id^="itemRequestedQty"],[data-quantity]');const quantityText=quantityNode?.getAttribute('data-quantity')||text(quantityNode,100);const quantityMatch=quantityText?.match(/\d+/);const quantity=quantityMatch?Math.min(999,Math.max(1,Number(quantityMatch[0]))):1;
+ const description=text(pick(root,'#feature-bullets,#productDescription'),1000);
+ const quantityNode=pick(root,'[id^="itemRequestedQty"],[data-quantity]');const quantityText=quantityNode?.getAttribute('data-quantity')||text(quantityNode,100);const quantityMatch=quantityText?.match(/\d+/);const quantity=quantityMatch?Math.min(999,Math.max(1,Number(quantityMatch[0]))):1;
  return title?{asin,marketplace:'amazon.de',title,imageUrl,price,currency:'EUR',description,quantity,productUrl:`https://www.amazon.de/dp/${asin}?tag=duhrrom-21`,scrapedAt:new Date().toISOString()}:null;
 }
 export function parseProduct(html,asin){const d=doc(html);const canonical=d.querySelector('link[rel="canonical"]')?.getAttribute('href');if(canonical){let c;try{c=normalizeAmazonUrl(canonical)}catch{}if(c?.kind==='product'&&c.id!==asin)throw new ScrapeError('MISMATCH','Amazon hat ein anderes Produkt geliefert.');}const p=productData(d,asin);if(!p||!d.querySelector('#productTitle'))throw new ScrapeError('UNAVAILABLE','Produktdaten konnten nicht eindeutig gelesen werden.');return p;}
@@ -35,7 +36,7 @@ export function parseList(html,source){
  for(const a of d.querySelectorAll('.a-pagination .a-last:not(.a-disabled) a,a[rel="next"],a.wl-see-more,[id*="showMore"] a,a[href*="lastEvaluatedKey"],a[href*="paginationToken"]')){try{const u=new URL(a.getAttribute('href'),'https://www.amazon.de');const n=normalizeAmazonUrl(u.href);if(n.kind==='list'&&n.id===source.id){next=u.href;break;}}catch{}}
  // Amazon's AJAX continuation is an explicit completeness signal even when no normal next link exists.
  const continuation=d.querySelector('[data-load-more-url],[data-pagination-token],.wl-see-more,.g-load-more,[data-last-evaluated-key]');
- const title=text(d.querySelector('#profile-list-name,#wl-list-info h1,h1'),80)||'Amazon-Wunschliste';
+ const title=text(pick(d,'#profile-list-name,#wl-list-info h1,h1'),80)||'Amazon-Wunschliste';
  const countNode=d.querySelector('#wl-list-entry-count,[data-item-count]');const countText=countNode?.getAttribute('data-item-count')||text(countNode,100);const countMatch=countText?.match(/\d+/);const expected=countMatch?Number(countMatch[0]):null;
  if(!rows.length)throw new ScrapeError('EMPTY_OR_PRIVATE','Keine Produkte gelesen. Die Liste ist leer, privat oder das Amazon-Format wird nicht unterstützt.');
  return {title,expected,products:[...products.values()],next,incomplete:!!continuation&&!next,failed};
