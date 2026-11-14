@@ -1,5 +1,5 @@
 import {currentUser,likeCounts,myReactions,reactionButtons} from './collection-social.mjs';
-const db=window.supabase.createClient('https://yheogmeaosuigyaxkwth.supabase.co','sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv');
+import {db} from './toolya-client.mjs';
 const $=id=>document.getElementById(id);
 let all=[],viewer=null,reactions={likes:new Set(),bookmarks:new Set()},counts=new Map();
 const normalize=x=>String(x||'').toLocaleLowerCase('de-DE');

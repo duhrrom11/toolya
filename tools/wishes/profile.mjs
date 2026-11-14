@@ -1,4 +1,4 @@
-const db=window.supabase.createClient('https://yheogmeaosuigyaxkwth.supabase.co','sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv');
+import {db} from './toolya-client.mjs';
 const $=id=>document.getElementById(id);
 const handle=new URLSearchParams(location.search).get('handle');
 async function load(){
