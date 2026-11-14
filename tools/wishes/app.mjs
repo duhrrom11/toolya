@@ -2,10 +2,9 @@ import {buddy,notify} from '../../shared/toolya/platform.mjs';
 import {wishSaveOutcome} from './wish-save-outcome.mjs';
 import {appendProductMetadata} from './product-card.mjs?v=20261114-mascot1';
 import {mountAmazonImport} from './amazon-import.mjs?v=20261114-mascot1';
-import {planWishExtrasImport} from './wish-extras-sync.mjs';
 import {mountListsDashboard} from './lists-dashboard.mjs?v=20261114-mascot1';
 import {parseAmazonUrl,affiliateUrl,sharedAmazonProductUrl} from './amazon-links.mjs';
-import {validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink,exportWishlistCsv,priorityLabel,validateWishlistExportPage,exportWishlistJson,exportProgressText,previewWishlistBackup} from './wishlist-utils.mjs';
+import {validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink,priorityLabel} from './wishlist-utils.mjs';
 import {db} from './toolya-client.mjs';
 const $=id=>document.getElementById(id);let user=null,profile=null,offset=0;let feedBusy=false;let feedRefreshPending=false;let feedRevision=0;let editingWishId=null;let editingWishBaseline=null;let editingWishExtrasBaseline=null;let editingWishFeedRevision=null;let selectedProfileId=null;let peopleSearchGeneration=0;let authGeneration=0;let profileLoadGeneration=0;let wishEditorRevision=0;let wishSaveRunGeneration=0;const dashboard=mountListsDashboard(db,()=>user);const hiddenWishIds=new Set();const hiddenProfileIds=new Set();let lastHiddenWishId=null;let renderedWishCount=0;const updateHiddenWishes=()=>{const count=hiddenWishIds.size;$('hiddenWishInfo').hidden=!count;$('restoreHiddenWishes').hidden=!count;$('undoHiddenWish').hidden=!count||lastHiddenWishId===null;$('hiddenWishInfo').textContent=count===1?'1 Wunsch für diese Sitzung ausgeblendet.':count+' Wünsche für diese Sitzung ausgeblendet.'};
 const updateHiddenProfiles=()=>{const count=hiddenProfileIds.size;$('hiddenProfileInfo').hidden=!count;$('restoreHiddenProfiles').hidden=!count;$('hiddenProfileInfo').textContent=count===1?'1 Profil für diese Sitzung ausgeblendet.':count+' Profile für diese Sitzung ausgeblendet.'};
@@ -224,91 +223,6 @@ $('copyMyProfile').onclick=run(async()=>{
  if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert.');
  report('Link zu deinem öffentlichen Profil kopiert.');
 });
-async function loadOwnWishesForExport(ownerId) {
- const rows=[];
- const pageSize=200;
- for(let start=0;start<10000;start+=pageSize){
-  const r=await db.from('wishlist_wishes')
-   .select('priority,note,created_at,wishlist_products(asin,marketplace,title,image_url,price,description,scraped_at)')
-   .eq('user_id',ownerId).order('id',{ascending:true}).range(start,start+pageSize-1);
-  if(r.error)throw r.error;
-  if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert. Export abgebrochen.');
-  validateWishlistExportPage(r.data,pageSize);
-  rows.push(...r.data);
-  $('exportProgress').textContent=exportProgressText(rows.length);
-  if(r.data.length<pageSize)return rows;
- }
- throw Error('Zu viele Wünsche für einen Export. Bitte den Support kontaktieren.');
-}
-function downloadOwnBackup(data,mime,extension){
- const blob=new Blob([data],{type:mime});
- const objectUrl=URL.createObjectURL(blob);
- try{
-  const a=document.createElement('a');
-  a.href=objectUrl;
-  a.download='meine-wunschliste-'+new Date().toISOString().slice(0,10)+'.'+extension;
-  document.body.append(a);
-  try{a.click()}finally{a.remove()}
- }finally{setTimeout(()=>URL.revokeObjectURL(objectUrl),1000)}
-}
-async function runOwnExport(format){
- const ownerId=requireUser();
- $('exportProgress').textContent='Export wird vorbereitet …';
- try{
-  const rows=await loadOwnWishesForExport(ownerId);
-  if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert. Export abgebrochen.');
-  if(format==='csv')downloadOwnBackup(exportWishlistCsv(rows),'text/csv;charset=utf-8','csv');
-  else if(format==='json')downloadOwnBackup(exportWishlistJson(rows,profile),'application/json;charset=utf-8','json');
-  else throw Error('Unbekanntes Exportformat');
-  $('exportProgress').textContent=rows.length+' Wünsche als '+format.toUpperCase()+' bereitgestellt.';
-  report(rows.length+' eigene Wünsche als '+format.toUpperCase()+' bereitgestellt.');
- }catch(error){
-  $('exportProgress').textContent='Export fehlgeschlagen. Bitte erneut versuchen.';
-  throw error;
- }
-}
-$('exportWishes').onclick=run(()=>runOwnExport('csv'));
-$('exportWishesJson').onclick=run(()=>runOwnExport('json'));
-$('backupFile').addEventListener('change',()=>{
- $('backupPreview').replaceChildren();
- $('backupPreviewStatus').textContent='';
-});
-$('previewBackup').onclick=run(async()=>{
- const file=$('backupFile').files?.[0];
- if(!file)throw Error('Bitte zuerst eine JSON-Sicherungsdatei auswählen.');
- if(file.size>2_000_000)throw Error('Die Sicherungsdatei darf höchstens 2 MB groß sein.');
- $('backupPreview').replaceChildren();
- $('backupPreviewStatus').textContent='Sicherung wird lokal geprüft …';
- try{
-  const data=previewWishlistBackup(await file.text());
-  const fragment=document.createDocumentFragment();
-  if(data.profile){
-   const heading=document.createElement('h4');
-   heading.textContent='Gesichertes Profil';
-   const summary=document.createElement('p');
-   summary.textContent=profileDisplayLabel(data.profile.display_name,data.profile.handle)+' · '+data.profile.bio;
-   fragment.append(heading,summary);
-  }
-  const heading=document.createElement('h4');
-  heading.textContent='Wünsche in der Sicherung ('+data.count+')';
-  fragment.append(heading);
-  for(const wish of data.wishes.slice(0,30)){
-   const p=document.createElement('p');
-   p.textContent=wish.title+' · '+wish.asin+' · '+priorityLabel(wish.priority)+(wish.note?' · '+wish.note:'');
-   fragment.append(p);
-  }
-  if(data.count>30){
-   const extra=document.createElement('p');
-   extra.textContent='Weitere '+(data.count-30)+' Wünsche werden in der Vorschau nicht angezeigt.';
-   fragment.append(extra);
-  }
-  $('backupPreview').replaceChildren(fragment);
-  $('backupPreviewStatus').textContent='Sicherung gültig: '+data.count+' Wünsche. Nur Vorschau – keine Daten wurden gespeichert.';
- }catch(error){
-  $('backupPreviewStatus').textContent='Prüfung fehlgeschlagen. Es wurden keine Daten gespeichert.';
-  throw error;
- }
-});
 $('saveWish').onclick=run(async()=>{const ownerId=requireUser();if(!profile)throw Error('Zuerst Profil speichern');const wishId=editingWishId;const editorRevision=wishEditorRevision;const targetList=wishId?null:dashboard.selectedList();const p=wishId?null:parseAmazonUrl($('url').value);if(!wishId&&(!p||p.marketplace!=='amazon.de'))invalidWishField($('url'),'Nur gültige Amazon.de-Produktlinks');let title,note;try{({title,note}=validateWishFields($('productTitle').value,$('wishNote').value))}catch(error){const message=wishlistErrorMessage(error);invalidWishField(message.startsWith('Notiz')?$('wishNote'):$('productTitle'),message)}const priority=validatePriority($('priority').value);const visibility=$('wishVisibility').value;if(!['public','private'].includes(visibility))throw Error('Ungültige Sichtbarkeit');const extras=readValidatedWishExtras();if(wishId){if(editingWishFeedRevision!==feedRevision)throw Error('Der Feed wurde seit dem Öffnen dieses Wunsches aktualisiert. Bitte Änderungen prüfen und den Wunsch aus dem aktuellen Feed erneut öffnen.');if(JSON.stringify(readWishExtras(ownerId,wishId))!==editingWishExtrasBaseline)throw Error('Zusatzdaten wurden in einem anderen Tab geändert. Bitte Wunsch erneut öffnen und Änderungen prüfen.');if(!editingWishBaseline||editingWishBaseline.id!==wishId)throw Error('Bearbeitungsstand ist veraltet. Bitte Wunsch erneut öffnen.');let wishUpdate=db.from('wishlist_wishes').update({note,priority,visibility}).eq('id',wishId).eq('user_id',ownerId);for(const field of ['note','priority','visibility']){const old=editingWishBaseline[field];wishUpdate=old===null?wishUpdate.is(field,null):wishUpdate.eq(field,old)}const changed=await wishUpdate.select('id');if(changed.error)throw changed.error;if(!changed.data?.length)throw Error('Der Wunsch wurde in einem anderen Tab geändert oder entfernt. Bitte Feed aktualisieren und erneut bearbeiten.');if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');const extrasSaved=saveWishExtras(ownerId,wishId,extras);let completionRevision=editorRevision;if(editingWishId===wishId&&wishEditorRevision===editorRevision){resetWishEditor();completionRevision=wishEditorRevision;}await refreshFeed();if(user?.id!==ownerId)return;await dashboard.refresh();if(user?.id!==ownerId)return;if(wishEditorRevision!==completionRevision||editingWishId!==null&&editingWishId!==wishId)return;const {type,message}=wishSaveOutcome({editing:true,extrasSaved});$('wishSaveFeedback').textContent=message;report(message);notify(type,message);return;}let r=await db.from('wishlist_products').select('id').eq('marketplace',p.marketplace).eq('asin',p.asin).maybeSingle();if(r.error)throw r.error;if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');let id=r.data?.id;if(!id){r=await db.from('wishlist_products').insert({...p,title}).select('id').single();if(r.error){if(!isUniqueViolation(r.error))throw r.error;const retry=await db.from('wishlist_products').select('id').eq('marketplace',p.marketplace).eq('asin',p.asin).single();if(retry.error)throw retry.error;id=retry.data.id}else id=r.data.id}if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');r=await db.from('wishlist_wishes').insert({user_id:ownerId,product_id:id,note,priority,visibility}).select('id').single();if(r.error){if(isUniqueViolation(r.error))throw Error('Dieses Produkt steht bereits auf deiner Wunschliste. Bitte den bestehenden Wunsch bearbeiten.');throw r.error;}if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');const extrasSaved=saveWishExtras(ownerId,r.data.id,extras);let assignmentError=null;if(targetList){try{await dashboard.assignWish(r.data.id,targetList,ownerId)}catch(e){assignmentError=e}}if(user?.id!==ownerId)return;let completionRevision=editorRevision;if(editingWishId===null&&wishEditorRevision===editorRevision){resetWishEditor();completionRevision=wishEditorRevision;}await refreshFeed();if(user?.id!==ownerId)return;await dashboard.refresh();if(user?.id!==ownerId)return;if(wishEditorRevision!==completionRevision||editingWishId!==null)return;const {type,message}=wishSaveOutcome({editing:false,extrasSaved,assignmentError:!!assignmentError});$('wishSaveFeedback').textContent=message;report(message);notify(type,message)});
 async function feed(){if(feedBusy){feedRefreshPending=true;return;}feedBusy=true;$('feed').setAttribute('aria-busy','true');const filter=$('feedFilter').value;const sort=$('feedSort').value;const feedUserId=user?.id;const feedProfileId=selectedProfileId;const revision=feedRevision;const requestedOffset=offset;const isStale=()=>isFeedRequestStale({offset:requestedOffset,revision,filter,sort,userId:feedUserId,profileId:feedProfileId},{offset,revision:feedRevision,filter:$('feedFilter').value,sort:$('feedSort').value,userId:user?.id,profileId:selectedProfileId});try{let allowed=null;if(filter==='profile'){if(!selectedProfileId){offset=0;$('feed').textContent='Kein gültiges Profil ausgewählt.';$('more').disabled=true;return;}allowed=[selectedProfileId]}else if(filter==='mine'){if(!user){offset=0;$('feed').textContent='Bitte anmelden.';$('more').disabled=true;return;}allowed=[user.id]}else if(filter==='following'){if(!user){offset=0;$('feed').textContent='Bitte anmelden.';$('more').disabled=true;return;}const following=await db.from('wishlist_follows').select('followed_id').eq('follower_id',user.id);if(isStale()){feedRefreshPending=true;return;}if(following.error)throw following.error;allowed=following.data.map(x=>x.followed_id);if(!allowed.length){offset=0;$('feed').textContent='Du folgst noch niemandem.';$('more').disabled=true;return;}}let query=db.from('wishlist_wishes').select('id,user_id,priority,created_at,wishlist_products(asin,marketplace,title,image_url,price,description,scraped_at),wishlist_profiles(display_name,handle),note,visibility');if(sort==='priority')query=query.order('priority',{ascending:true});query=query.order('created_at',{ascending:false}).order('id',{ascending:false}).range(requestedOffset,requestedOffset+20);if(allowed)query=query.in('user_id',allowed);const r=await query;if(isStale()){feedRefreshPending=true;return;}if(r.error)throw r.error;const page=feedPage(r.data);
 // Fetch private extras only for wishes owned by the current account. Public cards
@@ -342,40 +256,6 @@ if(cloudOwner&&!Object.keys(readWishExtras(cloudOwner,cloudWishId)).length){
 }
 $('wishVisibility').dispatchEvent(new Event('change'));$('wishSaveFeedback').textContent='';$('wishEditorHeading').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'});$('wishNote').focus({preventScroll:true});report('Notiz, Priorität und Sichtbarkeit bearbeiten')};div.append(edit);const remove=document.createElement('button');remove.type='button';remove.textContent='Wunsch entfernen';remove.setAttribute('aria-label','Wunsch entfernen: '+w.wishlist_products.title);remove.onclick=run(async()=>{if(!confirm('Diesen Wunsch wirklich entfernen?'))return;const ownerId=requireUser();if(w.user_id!==ownerId)throw Error('Dieser Wunsch gehört nicht zu deinem Konto');const deleted=await db.from('wishlist_wishes').delete().eq('id',w.id).eq('user_id',ownerId).select('id');if(deleted.error)throw deleted.error;if(!deleted.data?.length)throw Error('Wunsch konnte nicht entfernt werden.');if(user?.id!==ownerId)return;if(editingWishId===w.id)resetWishEditor();await refreshFeed();if(user?.id!==ownerId)return;await dashboard.refresh();if(user?.id!==ownerId)return;report('Wunsch entfernt')});div.append(remove)}fragment.append(div)}if(isStale()){feedRefreshPending=true;return;}if(!requestedOffset){$('feed').replaceChildren();renderedWishCount=0;}else if(!renderedWishCount&&fragment.childElementCount)$('feed').replaceChildren();renderedWishCount+=fragment.childElementCount;$('feed').append(fragment);offset=requestedOffset+page.items.length;$('feedCount').textContent=renderedWishCount+' Wünsche sichtbar'+(hiddenWishIds.size?' · '+hiddenWishIds.size+' Wünsche ausgeblendet':'')+(hiddenProfileIds.size?' · '+hiddenProfileIds.size+' Profile ausgeblendet':'')+'.';$('more').disabled=!page.hasMore;if(!offset)$('feed').textContent='Noch keine Wünsche.';else if(!renderedWishCount)$('feed').textContent=hiddenWishIds.size||hiddenProfileIds.size?'Alle bisher geladenen Wünsche sind ausgeblendet. Du kannst die Ausblendungen oben zurücksetzen.':'Keine sichtbaren Wünsche auf dieser Seite.'}catch(e){if(isStale()){feedRefreshPending=true;return;}if(!feedRefreshPending){$('more').disabled=true;$('feedCount').textContent='Laden fehlgeschlagen.';if(!offset)$('feed').textContent='Wünsche konnten nicht geladen werden. Mit „Erneut laden“ kannst du es noch einmal versuchen.';}throw e}finally{feedBusy=false;$('feed').removeAttribute('aria-busy');if(feedRefreshPending){feedRefreshPending=false;await refreshFeed()}}}
 
-async function searchPeople(){
- const generation=++peopleSearchGeneration;
- const searchingUserId=user?.id;
- const term=$('peopleSearch').value.trim();
- let safe;try{safe=validatedProfileSearch(term)}catch(e){$('peopleResults').removeAttribute('aria-busy');$('peopleSearchCount').textContent='';$('peopleResults').textContent=wishlistErrorMessage(e);return;}
- $('peopleResults').setAttribute('aria-busy','true');$('peopleSearchCount').textContent='Suche läuft …';$('peopleResults').textContent='Suche läuft …';
- let result;try{result=await db.from('wishlist_profiles').select('user_id,handle,display_name,bio').or('handle.ilike.%'+safe+'%,display_name.ilike.%'+safe+'%').order('handle').limit(20)}catch(e){result={error:e}}
- if(generation!==peopleSearchGeneration||user?.id!==searchingUserId||$('peopleSearch').value.trim()!==term){if(generation===peopleSearchGeneration)$('peopleResults').removeAttribute('aria-busy');return;}
- if(result.error){$('peopleResults').removeAttribute('aria-busy');$('peopleResults').textContent='Suche fehlgeschlagen. Bitte erneut versuchen.';$('peopleSearchCount').textContent='Suche fehlgeschlagen.';throw result.error;}
- let followed=new Set();
- if(user){let f;try{f=await db.from('wishlist_follows').select('followed_id').eq('follower_id',searchingUserId)}catch(e){f={error:e}}if(generation!==peopleSearchGeneration||user?.id!==searchingUserId||$('peopleSearch').value.trim()!==term)return;if(f.error){$('peopleResults').removeAttribute('aria-busy');$('peopleResults').textContent='Abonnements konnten nicht geladen werden.';$('peopleSearchCount').textContent='Abonnements konnten nicht geladen werden.';throw f.error;}followed=new Set(f.data.map(x=>x.followed_id))}
- const root=$('peopleResults');root.removeAttribute('aria-busy');root.replaceChildren();$('peopleSearchCount').textContent=result.data.length===20?'20 Profile gefunden (maximal 20 pro Suche).':result.data.length+' Profile gefunden.';
- if(!result.data.length){root.textContent='Keine Profile gefunden.';return;}
- for(const p of result.data){
-  const item=document.createElement('div');item.className='item';
-  const name=document.createElement('strong');name.textContent=profileDisplayLabel(p.display_name,p.handle);item.append(name);const view=document.createElement('button');view.type='button';view.textContent='Wünsche ansehen';view.onclick=run(async()=>{selectedProfileId=p.user_id;window.history.replaceState(null,'',profilePageUrl(window.location.href,p.handle));$('feedFilter').querySelector('[value="profile"]').hidden=false;$('feedFilter').value='profile';$('profileFeedInfo').hidden=false;$('profileFeedInfo').textContent='Wünsche von '+p.display_name+' (@'+p.handle+')';await refreshFeed();$('feed').scrollIntoView({behavior:'smooth',block:'start'})});item.append(view);const share=document.createElement('button');share.type='button';share.textContent='Profil-Link kopieren';share.onclick=run(async()=>{const url=profilePageUrl(window.location.href,p.handle);await copyShareLink(url);report('Profil-Link kopiert')});item.append(share);const publicProfile=document.createElement('a');publicProfile.href=new URL('./profile.html?handle='+encodeURIComponent(p.handle),window.location.href).href;publicProfile.textContent='🌈 Profil & Sammlungen';item.append(publicProfile);
-  if(p.bio){const bio=document.createElement('p');bio.textContent=p.bio;item.append(bio)}
-  if(user&&profile&&p.user_id!==user.id){
-   const btn=document.createElement('button');btn.type='button';const isFollowing=followed.has(p.user_id);btn.textContent=isFollowing?'Nicht mehr folgen':'Folgen';
-   btn.onclick=run(async()=>{
-     const ownerId=requireUser();if(ownerId!==searchingUserId||generation!==peopleSearchGeneration||!item.isConnected)throw Error('Suchergebnis ist veraltet. Bitte erneut suchen.');const res=isFollowing?await db.from('wishlist_follows').delete().eq('follower_id',ownerId).eq('followed_id',p.user_id).select('follower_id'):await db.from('wishlist_follows').insert({follower_id:ownerId,followed_id:p.user_id});
-     if(res.error)throw res.error;if(isFollowing&&!res.data?.length)throw Error('Abonnement konnte nicht entfernt werden');if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');
-     await searchPeople();await refreshFeed();if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');report(isFollowing?'Nicht mehr abonniert':'Profil abonniert');
-   });item.append(btn)
-  }
-  root.append(item)
- }
-}
-const clearPeopleResults=()=>{peopleSearchGeneration++;$('peopleResults').removeAttribute('aria-busy');$('peopleResults').replaceChildren();$('peopleSearchCount').textContent=''};
-$('peopleSearch').addEventListener('input',clearPeopleResults);
-$('clearPeopleSearch').onclick=()=>{$('peopleSearch').value='';clearPeopleResults();$('peopleSearch').focus();report('Profilsuche zurückgesetzt.')};
-$('peopleSearch').addEventListener('keydown',event=>{if(event.key==='Escape'){$('clearPeopleSearch').click()}});
-$('searchPeople').onclick=run(searchPeople);
-$('peopleSearch').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();$('searchPeople').click()}});
 $('feedFilter').onchange=run(async()=>{if($('feedFilter').value!=='profile'){selectedProfileId=null;$('feedFilter').querySelector('[value="profile"]').hidden=true;$('profileFeedInfo').hidden=true;window.history.replaceState(null,'',profilePageUrl(window.location.href))}await refreshFeed()});
 $('feedSort').onchange=run(async()=>{await refreshFeed()});
 $('reloadFeed').onclick=run(async()=>{await refreshFeed()});
