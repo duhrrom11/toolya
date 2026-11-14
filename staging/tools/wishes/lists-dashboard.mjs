@@ -1,3 +1,4 @@
+import {appendProductMetadata} from './product-card.mjs';
 import {LIST_TEMPLATES,WISH_CATEGORIES,filterListWishes} from './list-features.mjs';
 import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages,executeBulkJob,bulkControlsEnabled,currentDashboardLoad,fetchDashboardBase,fetchDashboardMembership,membershipForSelectedList,bulkMoveRefreshStatus,moveFailureState,bulkMoveCounts} from './bulk-helpers.mjs';
 // Multi-list dashboard. Requires LISTS-SCHEMA-PROPOSAL.sql to be reviewed and applied separately.
@@ -103,7 +104,7 @@ export function mountListsDashboard(db, getUser) {
   if(wr.error){invalidateMembershipState();setItemsFeedback('error','Wünsche konnten nicht geladen werden. Bitte erneut versuchen.');throw wr.error}
   let allWishes;
   try{
-   const additional=wr.data?.length===1000?await fetchAllPages((from,to)=>db.from('wishlist_wishes').select('id,note,priority,created_at,wishlist_products(title)').eq('user_id',id).order('created_at',{ascending:false}).order('id',{ascending:false}).range(from+1000,to+1000),{isCurrent:()=>getUser()?.id===id&&generation===loadGeneration}):[];
+   const additional=wr.data?.length===1000?await fetchAllPages((from,to)=>db.from('wishlist_wishes').select('id,note,priority,created_at,wishlist_products(title,asin,marketplace,image_url,price,description,scraped_at)').eq('user_id',id).order('created_at',{ascending:false}).order('id',{ascending:false}).range(from+1000,to+1000),{isCurrent:()=>getUser()?.id===id&&generation===loadGeneration}):[];
    if(additional===null)return;
    allWishes=[...(wr.data||[]),...additional];
   }catch(e){if(!currentDashboardLoad({requestedUserId:id,currentUserId:getUser()?.id,requestedGeneration:generation,currentGeneration:loadGeneration}))return;setItemsFeedback('error','Weitere Wünsche konnten nicht geladen werden. Bitte erneut versuchen.');throw e}
@@ -411,7 +412,7 @@ actions.append(button('Duplizieren',async()=>{
    const selectRow=document.createElement('label');selectRow.className='wish-card-select';const selectCheck=document.createElement('input');selectCheck.type='checkbox';selectCheck.setAttribute('aria-label','Für Sammelaktion auswählen: '+(wish.wishlist_products?.title||'Wunsch'));selectCheck.checked=bulkIds.has(wish.id);selectCheck.disabled=listMutationBusy||listCopyBusy||activeWishMutations.size>0||!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived;selectCheck.onchange=()=>{if(listMutationBusy||listCopyBusy||!selectCheck.isConnected||cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||selected!==list.id||!wishes.some(w=>w.id===wish.id)||!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived||activeWishMutations.size){selectCheck.checked=bulkIds.has(wish.id);return}if(selectCheck.checked)bulkIds.add(wish.id);else bulkIds.delete(wish.id);if(selectedOnlyView){renderWishCards();restoreWishCardControl(wish.id,'.wish-card-select input')}else updateBulkToolbar()};const selectText=document.createElement('span');selectText.textContent='Für Mehrfachaktion auswählen';selectRow.append(selectCheck,selectText);card.append(selectRow);
    const title=document.createElement('h4');title.textContent=wish.wishlist_products?.title||'Wunsch';
    const priority=document.createElement('p');priority.className='wish-priority';priority.textContent=['','Sehr wichtig','Normal','Irgendwann'][wish.priority]||'Priorität '+wish.priority;
-   card.append(title,priority);
+   card.append(title,priority);appendProductMetadata(card,wish.wishlist_products);
    // Optional device-local product details, scoped to the signed-in owner.
    try{
     const owner=getUser()?.id;
@@ -419,7 +420,7 @@ actions.append(button('Duplizieren',async()=>{
      const local=JSON.parse(localStorage.getItem('helferlein-wish-extras:'+owner)||'{}')?.[wish.id];
      const extras=local&&typeof local==='object'&&Object.keys(local).length?local:cloudWishExtras.get(String(wish.id));
      if(extras&&typeof extras==='object'){
-      if(typeof extras.imageUrl==='string'&&extras.imageUrl.startsWith('https://')){
+      if(!wish.wishlist_products?.image_url&&typeof extras.imageUrl==='string'&&extras.imageUrl.startsWith('https://')){
        const image=document.createElement('img');image.className='wish-product-image';image.src=extras.imageUrl;image.alt='Produktbild';image.loading='lazy';image.referrerPolicy='no-referrer';card.append(image);
       }
       const tags=document.createElement('div');tags.className='wish-product-extras';

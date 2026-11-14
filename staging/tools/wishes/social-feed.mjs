@@ -1,5 +1,5 @@
 import {currentUser,likeCounts,myReactions,reactionButtons} from './collection-social.mjs';
-const db=window.supabase.createClient('https://avapuibsidubuzxjtyld.supabase.co','sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC');
+const db=window.supabase.createClient('https://yheogmeaosuigyaxkwth.supabase.co','sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv');
 const $=id=>document.getElementById(id);
 const tabs=[...document.querySelectorAll('[data-tab]')];
 let tab='following',viewer=null,all=[],following=new Set(),reactions={likes:new Set(),bookmarks:new Set()},counts=new Map(),profiles=new Map();

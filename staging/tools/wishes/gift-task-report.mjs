@@ -1,4 +1,4 @@
-const db=window.supabase.createClient('https://avapuibsidubuzxjtyld.supabase.co','sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC');
+const db=window.supabase.createClient('https://yheogmeaosuigyaxkwth.supabase.co','sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv');
 const $=id=>document.getElementById(id);
 const day=86400000;let exportRows=null;
 function el(tag,value,cls){const node=document.createElement(tag);node.textContent=String(value);if(cls)node.className=cls;return node}

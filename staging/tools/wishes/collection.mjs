@@ -1,6 +1,6 @@
 import {currentUser,likeCounts,myReactions,reactionButtons} from './collection-social.mjs';
 import {affiliateUrl} from './amazon-links.mjs';
-const db=window.supabase.createClient('https://avapuibsidubuzxjtyld.supabase.co','sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC');
+const db=window.supabase.createClient('https://yheogmeaosuigyaxkwth.supabase.co','sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv');
 const $=id=>document.getElementById(id);
 const id=new URLSearchParams(location.search).get('id');
 const validId=typeof id==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);

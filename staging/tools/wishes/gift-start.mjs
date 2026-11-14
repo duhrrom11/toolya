@@ -1,4 +1,4 @@
-const db=window.supabase.createClient('https://avapuibsidubuzxjtyld.supabase.co','sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC');
+const db=window.supabase.createClient('https://yheogmeaosuigyaxkwth.supabase.co','sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv');
 const $=id=>document.getElementById(id),day=86400000;
 const metricLabels={open:'Offene Aufgaben',overdue:'Überfällige Aufgaben',today:'Heute fällige Aufgaben',upcoming:'Anlässe in 30 Tagen',done:'Erledigte Aufgaben',completion_rate:'Erledigungsquote'};const linkOptions={cockpit:['🎛️ Planungscockpit','./cockpit.html'],assistant:['🧭 Tagesplanung','./assistant.html'],tasks:['✅ Aufgaben','./gift-tasks.html'],occasions:['🎂 Anlässe','./occasions.html'],analytics:['📈 Jahresstatistik','./gift-analytics.html'],report:['📊 Aktivitätsbericht','./report.html'],planner:['🎁 Geschenkplanung','./planner.html']};
 function validSelection(values,allowed,max,min=0){return Array.isArray(values)&&values.length>=min&&values.length<=max&&new Set(values).size===values.length&&values.every(x=>allowed.includes(x))}

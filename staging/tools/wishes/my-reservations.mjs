@@ -1,4 +1,4 @@
-const db=window.supabase.createClient('https://avapuibsidubuzxjtyld.supabase.co','sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC');
+const db=window.supabase.createClient('https://yheogmeaosuigyaxkwth.supabase.co','sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv');
 const $=id=>document.getElementById(id);
 let user=null,rows=[],cursor=null,loading=false;
 const fmt=value=>new Intl.DateTimeFormat('de-DE',{dateStyle:'medium'}).format(new Date(value));
