@@ -52,3 +52,16 @@ test('obsolete bulk history and multi-wish move HTML removed',()=>{
   assert.equal(html.includes('id="'+id+'"'),false,id);
  assert.match(html,/id="wishDetailDialog"/);
 });
+
+test('private Wishlist feed does not query follows or expose people search',()=>{
+ const app=source('app.mjs');
+ const html=readFileSync(resolve(root,'tools/wishes/index.html'),'utf8');
+ assert.match(app,/const allowed=\[user\.id\]/);
+ assert.doesNotMatch(app,/wishlist_follows/);
+ assert.doesNotMatch(app,/profileLink\.href/);
+ assert.doesNotMatch(html,/id="peopleSearch"/);
+ assert.match(html,/id="saveProfile"/);
+ assert.match(html,/id="feed"/);
+ assert.match(app,/mountAmazonImport/);
+ assert.match(app,/mountListsDashboard/);
+});
