@@ -24,9 +24,10 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
  await page.evaluate(()=>{toolyaBuddy.dismiss();toolyaBuddy.setCharacter('purple')});await page.locator('.toolya-settings').evaluate(d=>d.open=true);await page.getByLabel('Begleiter',{exact:true}).selectOption('purple');
  await page.screenshot({path:'test-results/mascot-home-mobile.png',fullPage:true});
  for(const route of routes){await page.goto(origin+'/tools/'+route+'/');await page.waitForFunction(()=>window.toolyaBuddy);assert.equal(await page.locator('.toolya-buddy').count(),1,route);await page.evaluate(()=>toolyaBuddy.dismiss());await page.waitForFunction(()=>{const f=document.querySelector('.toolya-idle .ty-frame');return f&&!f.hidden});
-  const measurement=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth,overflow:[...document.querySelectorAll('body *')].filter(e=>e.getBoundingClientRect().right>innerWidth+1).slice(0,8).map(e=>({tag:e.tagName,id:e.id,class:e.className,right:e.getBoundingClientRect().right}))}));
+  const measurement=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth,overflow:[...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();if(r.right<=321||r.width===0)return false;for(let p=e.parentElement;p;p=p.parentElement){if(/auto|scroll|hidden|clip/.test(getComputedStyle(p).overflowX)&&p.getBoundingClientRect().right<=321)return false}return true}).slice(0,20).map(e=>({tag:e.tagName,id:e.id,class:e.className,right:e.getBoundingClientRect().right}))}));
+  if(route==='wishes')await page.screenshot({path:'test-results/mascot-wishes-mobile.png',fullPage:true});
   assert(measurement.scroll<=321,route+' overflow '+JSON.stringify(measurement));assert.equal(await page.evaluate(()=>toolyaBuddy.character),'purple');
-  await page.screenshot({path:'test-results/mascot-'+route+'-mobile.png',fullPage:true});
+  await page.screenshot({path:'test-results/mascot-'+route+'-mobile.png',fullPage:true});await page.locator('.toolya-buddy').screenshot({path:'test-results/mascot-'+route+'-detail.png'});
  }
  await page.goto(origin+'/tools/wishes/');await page.waitForFunction(()=>window.toolyaBuddy);
  for(const emotion of ['happy','proud','curious','thoughtful','surprised','concerned','sad','shy','cheeky','sleepy','laughing','grateful','motivated','puzzled','celebrating','affectionate']){

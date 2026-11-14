@@ -22,3 +22,5 @@
 .toolya-buddy[data-page-hidden] .ty-frame{animation-play-state:paused!important}.hl-alert-panel>.ty-sprite-wrap{float:left;margin:0 12px 8px 0}dialog .ty-sprite-wrap{flex-shrink:0}
 
 .toolya-support{max-width:680px;margin:24px auto;padding:12px;box-sizing:border-box}.toolya-settings>p{padding:0 12px;line-height:1.5}.toolya-settings>p a{text-decoration:underline}
+
+.toolya-buddy,.toolya-settings{grid-column:1/-1}.ty-nav-mascot>.ty-sprite-wrap{width:100%;height:100%;flex:none}.ty-nav-mascot .ty-frame{border-radius:10px}
