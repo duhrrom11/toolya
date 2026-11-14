@@ -45,10 +45,9 @@ if(main&&$('listsDashboard')){
  function fromHash(){let target;try{target=$(decodeURIComponent(location.hash.slice(1)))}catch{}const hash=location.hash;const id=hash==='#konto'?'account':hash==='#geschenke'?'gifts':target?.closest('[data-wishes-area]')?.dataset.wishesArea||(new URLSearchParams(location.search).has('profile')?'discover':'lists');showWishlistArea(id,false);if(target){for(let p=target.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true}}
  addEventListener('hashchange',fromHash);fromHash();
  nav.addEventListener('click',e=>{const a=e.target.closest('a[data-area]');if(!a)return;e.preventDefault();showWishlistArea(a.dataset.area);nav.scrollIntoView({block:'start',behavior:'auto'})});
- // Editing a wish from the discovery feed must reveal the editor before focus.
- document.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.closest('#feed')&&b.textContent.trim()==='Bearbeiten')showWishlistArea('lists')},true);
+
 }else{
  const header=document.querySelector('header');if(header)header.after(nav);
- const group=['planner.html','assistant.html','cockpit.html','gift-analytics.html','report.html'].includes(page)?'gifts':['profile.html','notifications.html','bookmarks.html'].includes(page)?'account':'discover';
+ const group=['planner.html','assistant.html','cockpit.html','gift-analytics.html','report.html'].includes(page)?'gifts':['profile.html'].includes(page)?'account':'discover';
  nav.querySelector(`[data-area="${group}"]`)?.setAttribute('aria-current','page');
 }
