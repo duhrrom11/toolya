@@ -28,3 +28,11 @@ test('wishlist and Amazon import remain wired',()=>{
  assert.match(c,/mountListsDashboard/);
  assert.match(c,/amazon-import\.mjs/);
 });
+
+test('obsolete dashboard history HTML is removed without removing settings',()=>{
+ const html=readFileSync(resolve(root,'tools/wishes/index.html'),'utf8');
+ for(const id of ['homeGiftCheckpoints','homeGiftBackup','homeGiftHistory'])
+  assert.equal(html.includes('id="'+id+'"'),false,id);
+ assert.match(html,/id="homeGiftSettings"/);
+ assert.match(html,/id="homePreviewDraft"/);
+});
