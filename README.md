@@ -16,3 +16,6 @@ Eigenständige GitHub-Pages-Veröffentlichung für `toolya.app`.
 5. Vor Übernahme der Anwendungen absolute/relative Pfade, PWA, Canonical-URLs, Supabase-Redirect-URLs, RLS und browserlokale Datenmigration prüfen.
 
 **Nicht** das bestehende Helferlein-Repository umkonfigurieren oder dessen GitHub-Pages-Custom-Domain verändern.
+
+## Wishlist / Amazon-Import
+Die Wishlist liegt unter `/tools/wishes/index.html` und verwendet ausschließlich das Toolya-Supabase-Projekt `yheogmeaosuigyaxkwth`. Die übrige Website bleibt in Vorbereitung. Amazon-Abrufe können von Amazon abgelehnt werden; unvollständige Vorschauen werden nicht importiert. Backend- und SQL-Quellcode stehen unter `supabase/`.

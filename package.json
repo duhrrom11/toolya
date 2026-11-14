@@ -1,0 +1,30 @@
+{
+  "name": "toolya",
+  "version": "1.0.0",
+  "description": "Eigenständige GitHub-Pages-Veröffentlichung für `toolya.app`.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node --test tests/amazon/*.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/duhrrom11/toolya.git"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/duhrrom11/toolya/issues"
+  },
+  "homepage": "https://github.com/duhrrom11/toolya#readme",
+  "dependencies": {
+    "linkedom": "0.18.12"
+  },
+  "private": true,
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}
