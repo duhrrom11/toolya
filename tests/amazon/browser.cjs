@@ -1,6 +1,6 @@
 const {chromium}=require('playwright');
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
-const root=path.resolve('staging');
+const root=path.resolve(fs.existsSync('staging/tools/wishes')?'staging':'.');
 (async()=>{const server=http.createServer((req,res)=>{const p=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname);if(!p.startsWith(root+'/')){res.writeHead(403).end();return}try{const body=fs.readFileSync(p);res.setHeader('content-type',p.endsWith('.mjs')||p.endsWith('.js')?'text/javascript':p.endsWith('.css')?'text/css':'text/html');res.end(body)}catch{res.writeHead(404).end()}});await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});try{
 const page=await browser.newPage({viewport:{width:375,height:812}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -12,7 +12,7 @@ await page.addInitScript(()=>{
  const db={auth:{getUser:async()=>({data:{user},error:null}),getSession:async()=>({data:{session:{user,access_token:'offline'}},error:null}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},from:q,rpc:async(name,args)=>{window.__calls.push({name,args});return {data:{listId:'new-list',inserted:1,existing:0,linked:1},error:null}},functions:{invoke:async(name,args)=>({data:{kind:window.__previewKind,title:'Amazon-Testliste',products:[{asin:'B012345678',title:'Sauberer Produkttitel',imageUrl:'https://m.media-amazon.com/a.jpg',price:19.99,description:'Beschreibung',productUrl:'https://www.amazon.de/dp/B012345678?tag=duhrrom-21'}],complete:window.__complete,warnings:['Unvollständige Liste'],previewId:window.__complete?'preview-offline':null},error:null})}};
  window.supabase={createClient:(url)=>{if(!url.includes('yheogmeaosuigyaxkwth'))throw Error('Wrong project');return db}};
 });
-await page.goto(`http://127.0.0.1:${server.address().port}/tools/wishes/index.html`);await page.waitForSelector('.amazon-import');await page.locator('#homeNewList').click();
+await page.goto(`http://127.0.0.1:${server.address().port}/tools/wishes/index.html`);await page.waitForSelector('.amazon-import',{state:'attached'});await page.locator('#homeNewList').click();
 const list=page.locator('.amazon-import').filter({has:page.locator('h3',{hasText:'Amazon-Wunschliste übernehmen'})});
 await list.locator('input[type=url]').fill('https://www.amazon.de/hz/wishlist/ls/ABCDEFGH123');await list.getByRole('button',{name:'Amazon-Link auslesen'}).click();await list.getByText('Sauberer Produkttitel',{exact:true}).waitFor();assert.match(await list.textContent(),/19,99/);await list.getByRole('button',{name:'Neue Liste mit diesen Produkten anlegen'}).click();await list.getByText(/Gespeichert: 1/).waitFor();
 let calls=await page.evaluate(()=>window.__calls);assert.equal(calls.length,1);assert.equal(calls[0].args.p_preview_id,'preview-offline');assert.equal(calls[0].args.p_visibility,'private');assert.equal(calls[0].args.p_list_title,'Amazon-Testliste');
