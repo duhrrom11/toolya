@@ -1,5 +1,5 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
-import {normalizeAmazonUrl,parsePrice,safeImage,parseProduct,parseList,scrape} from '../../supabase/functions/amazon-scrape/core.mjs';
+import {normalizeAmazonUrl,wishlistContinuation,parsePrice,safeImage,parseProduct,parseList,scrape} from '../../supabase/functions/amazon-scrape/core.mjs';
 const asin='B012345678';const list='ABCDEFGH123';const source=normalizeAmazonUrl('https://www.amazon.de/hz/wishlist/ls/'+list);
 const row=(id=asin)=>`<li id="item_1" data-itemid="I1"><a id="itemName_1" href="/dp/${id}">Tasse &amp; Teller</a><div class="g-itemImage"><img src="https://m.media-amazon.com/images/I/a.jpg"></div><span class="a-price"><span class="a-offscreen">1.234,56 €</span></span></li>`;
 const html=body=>'<html><body>'+body+'</body></html>';
@@ -12,3 +12,13 @@ test('list deduplicates only actual wish items, excludes recommendations',()=>{c
 test('follows same-list pagination, deduplicates across pages',async()=>{let n=0;const r=await scrape(source.url,async url=>{n++;return respond(row(n===1?asin:'B099999999')+(n===1?`<a rel="next" href="${source.url}?page=2">Weiter</a>`:''))});assert.equal(n,2);assert.equal(r.products.length,2);assert.equal(r.complete,true);});
 test('unknown continuation and broken item mark import incomplete',async()=>{const r=await scrape(source.url,async()=>respond(row()+'<div class="g-load-more"></div><li id="item_bad" data-itemid="bad">unlesbar</li>'));assert.equal(r.complete,false);assert.ok(r.warnings.length);});
 test('pagination loops fail closed; redirects never followed',async()=>{const r=await scrape(source.url,async()=>respond(row()+`<a rel="next" href="${source.url}">Weiter</a>`));assert.equal(r.complete,false);await assert.rejects(()=>scrape(source.url,async()=>new Response('',{status:302,headers:{location:'http://127.0.0.1'}})));});
+
+test('Amazon AJAX scroll continues only within the same wishlist and terminates explicitly',async()=>{
+ let calls=0;
+ const next='/hz/wishlist/slv/items?paginationToken=opaque&lid='+list+'&type=wishlist';
+ const result=await scrape(source.url,async url=>{calls++;return respond(calls===1?'<h1>Seitenübergreifende Liste</h1>'+row()+`<input name="showMoreUrl" value="${next.replaceAll('&','&amp;')}">`:row('B099999999')+`<script data-a-state='{"key":"scrollState"}'>{"lastEvaluatedKey":null,"showMoreUrl":"/hz/wishlist/slv/items"}</script>`);});
+ assert.equal(calls,2);assert.equal(result.title,'Seitenübergreifende Liste');assert.equal(result.complete,true);assert.equal(result.products.length,2);
+ assert.throws(()=>wishlistContinuation('/hz/wishlist/slv/items?paginationToken=opaque&lid=OTHERLIST',source));
+ assert.throws(()=>wishlistContinuation('https://evil.test/hz/wishlist/slv/items?lid='+list,source));
+ const p=parseList(html(row().replace('<li ', '<li data-price="17.47" ').replace('<span class="a-price"><span class="a-offscreen">1.234,56 €</span></span>','')),source);assert.equal(p.products[0].price,17.47);
+});
