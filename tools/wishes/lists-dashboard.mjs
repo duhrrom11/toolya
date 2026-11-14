@@ -1,6 +1,6 @@
 import {appendProductMetadata} from './product-card.mjs';
 import {LIST_TEMPLATES,WISH_CATEGORIES,filterListWishes} from './list-features.mjs';
-import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages,executeBulkJob,bulkControlsEnabled,currentDashboardLoad,fetchDashboardBase,fetchDashboardMembership,membershipForSelectedList,bulkMoveRefreshStatus,moveFailureState,bulkMoveCounts} from './bulk-helpers.mjs';
+import {fetchAllPages,currentDashboardLoad,fetchDashboardBase,fetchDashboardMembership,membershipForSelectedList,moveFailureState} from './bulk-helpers.mjs';
 // Multi-list dashboard. Requires LISTS-SCHEMA-PROPOSAL.sql to be reviewed and applied separately.
 export function mountListsDashboard(db, getUser) {
  const $=id=>document.getElementById(id);
@@ -209,121 +209,12 @@ actions.append(button('Duplizieren',async()=>{
  function renderUnassigned(){const n=Math.max(0,wishes.length-allAssignedIds.size);$('unassignedCount').textContent=String(n);$('showUnassigned').disabled=!n||listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size>0||!membershipReady||getUser()?.id!==loadedOwner}
  let selectedOnlyView=false,activeWishMutations=new Set(),listCopyBusy=false,listMutationBusy=false;
  function visibleWishes(){const globallyUnassigned=$('listWishAssignment').value==='global-unassigned';return filterListWishes((globallyUnassigned?wishes.filter(w=>!allAssignedIds.has(w.id)):wishes).filter(w=>!selectedOnlyView||bulkIds.has(w.id)),{search:$('listWishSearch').value,priority:$('listWishPriority').value,assignment:globallyUnassigned?'all':$('listWishAssignment').value,assignedIds,sort:$('listWishSort').value,category:$('listWishCategory').value,categories:wishCategories,marker:$('listWishMarker').value,markers:wishMarkers})}
- function syncBulkMoveTargets(){
-  const target=$('bulkMoveTarget'),previous=target.value;
-  target.replaceChildren();
-  const empty=document.createElement('option');empty.value='';empty.textContent='Zielliste wählen';target.append(empty);
-  for(const list of lists.filter(l=>!l.archived&&l.id!==selected)){
-   const option=document.createElement('option');option.value=list.id;option.textContent=list.icon+' '+list.title;target.append(option);
-  }
-  target.value=lists.some(l=>l.id===previous&&!l.archived&&l.id!==selected)?previous:'';
- }
- function updateBulkToolbar(results=visibleWishes()){syncListQuickSwitch();const ids=results.slice(0,visibleLimit).map(w=>w.id),singleBusy=activeWishMutations.size>0||listCopyBusy||listMutationBusy||getUser()?.id!==loadedOwner,selectedVisible=ids.filter(id=>bulkIds.has(id)).length,activeList=membershipReady&&getUser()?.id===loadedOwner&&lists.some(l=>l.id===selected&&!l.archived);$('bulkSelectedCount').textContent=bulkIds.size+' ausgewählt'+(bulkIds.size!==selectedVisible?' ('+selectedVisible+' sichtbar)':'');$('bulkSelectVisible').checked=ids.length>0&&selectedVisible===ids.length;$('bulkSelectVisible').indeterminate=selectedVisible>0&&selectedVisible<ids.length;$('bulkSelectVisible').disabled=singleBusy||!bulkControlsEnabled({membershipReady,bulkBusy})||!activeList||!ids.length;$('bulkAdd').disabled=singleBusy||!bulkControlsEnabled({membershipReady,bulkBusy})||!bulkIds.size||!activeList;$('bulkRemove').disabled=singleBusy||!bulkControlsEnabled({membershipReady,bulkBusy})||!bulkIds.size||!activeList;$('bulkClear').disabled=singleBusy||bulkBusy||!bulkIds.size;$('bulkSelectCategory').disabled=singleBusy||!bulkControlsEnabled({membershipReady,bulkBusy})||!activeList;$('listWishAssignment').disabled=bulkBusy||singleBusy;$('bulkMoveTarget').disabled=singleBusy||!bulkControlsEnabled({membershipReady,bulkBusy})||!activeList||!bulkIds.size;$('bulkMove').disabled=singleBusy||!bulkControlsEnabled({membershipReady,bulkBusy})||!activeList||!bulkIds.size||!$('bulkMoveTarget').value||![...bulkIds].some(id=>assignedIds.has(id))}
-
- function renderBulkHistory(){const list=$('bulkHistoryList');list.replaceChildren();$('bulkHistoryEmpty').hidden=bulkHistory.length>0;$('bulkHistoryClear').disabled=!bulkHistory.length||bulkBusy||listMutationBusy||listCopyBusy||activeWishMutations.size>0||!membershipReady||getUser()?.id!==loadedOwner;for(const entry of bulkHistory){const item=document.createElement('li');const summary=document.createElement('p');summary.textContent=entry.time+' · '+(entry.add?'Hinzufügen zu ':'Entfernen aus ')+entry.listTitle+' · damals '+entry.success+' erfolgreich, '+entry.failed.length+' fehlgeschlagen, '+entry.remaining.length+' nicht bearbeitet (kein aktueller Listenstatus)';item.append(summary);if(entry.errors.length){const detail=document.createElement('small');detail.textContent=entry.errors.slice(0,3).map(e=>e.reason+' ('+e.count+'×)').join(' · ');item.append(detail)}if(entry.failed.length||entry.remaining.length){const retry=button('Offene Änderungen prüfen',async()=>{if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||getUser()?.id!==entry.uid||loadedOwner!==entry.uid||!bulkHistory.includes(entry))return;if(!lists.some(l=>l.id===entry.listId&&!l.archived))return msg('Diese Liste ist nicht mehr aktiv. Bitte Verlauf prüfen.');if(selected!==entry.listId){openList(entry.listId);if(selected===entry.listId&&getUser()?.id===entry.uid&&loadedOwner===entry.uid)$('bulkStatus').textContent='Liste geöffnet. Bitte die ausstehenden Änderungen erneut prüfen.';return}const retryGeneration=loadGeneration;try{await load()}catch(e){if(getUser()?.id===entry.uid&&loadedOwner===entry.uid&&bulkHistory.includes(entry))msg('Aktuelle Listenzuordnungen konnten nicht geladen werden. Bitte erneut versuchen.');return}if(getUser()?.id!==entry.uid||loadedOwner!==entry.uid||!bulkHistory.includes(entry)||!membershipReady||selected!==entry.listId||loadGeneration!==retryGeneration+1)return;prepareBulk({uid:entry.uid,listId:entry.listId,add:entry.add,targets:[...entry.failed,...entry.remaining]})});item.append(retry)}list.append(item)}}
- function showBulkResult(result){const {uid,listId,add,total,success,failed,remaining,interrupted}=result;if(getUser()?.id!==uid||loadedOwner!==uid||selected!==listId||!membershipReady)return;lastBulkResult=result;$('bulkResultPanel').hidden=false;$('bulkResultHeading').textContent=interrupted?'Sammelaktion unterbrochen':'Sammelaktion abgeschlossen';$('bulkResultSummary').textContent=total+' vorgesehen · '+success+' erfolgreich · '+failed.length+' fehlgeschlagen · '+remaining.length+' nicht bearbeitet';$('bulkResultContext').textContent=(add?'Hinzufügen zu ':'Entfernen aus ')+(lists.find(l=>l.id===listId)?.title||'Liste')+'. Bereits erfolgreiche Änderungen bleiben bestehen.';const resultLocked=listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size>0;$('bulkRetryFailed').disabled=resultLocked||!failed.length;$('bulkSelectRemaining').disabled=resultLocked||!remaining.length;$('bulkResumeRemaining').disabled=resultLocked||!remaining.length;if(result.errors?.length){$('bulkResultContext').textContent+=' Hinweise: '+result.errors.slice(0,3).map(e=>e.reason+' ('+e.count+'×)').join(' · ')} }
- function prepareBulk(job){if(listMutationBusy||listCopyBusy||activeWishMutations.size||!bulkControlsEnabled({membershipReady,bulkBusy})||!job||!Array.isArray(job.targets)||!job.targets.length||getUser()?.id!==job.uid||loadedOwner!==job.uid||selected!==job.listId)return;const list=lists.find(l=>l.id===job.listId&&!l.archived);if(!list)return;const eligible=eligibleBulkTargets(job.targets,wishes.map(w=>w.id),assignedIds,job.add);if(!eligible.length){$('bulkStatus').textContent='Keine ausstehenden Änderungen mehr vorhanden.';return}pendingBulk={...job,targets:eligible,generation:loadGeneration};$('bulkConfirmTitle').textContent=job.add?'Wünsche zur Liste hinzufügen':'Wünsche aus der Liste entfernen';$('bulkConfirmDescription').textContent=eligible.length+' Wünsche '+(job.add?'zu „'+list.title+'“ hinzufügen?':'aus „'+list.title+'“ entfernen?')+' Die Wünsche selbst bleiben erhalten.';$('bulkConfirmSample').textContent=eligible.slice(0,5).map(id=>'• '+(wishes.find(w=>w.id===id)?.wishlist_products?.title||'Wunsch')).join('\n')+(eligible.length>5?'\n… und '+(eligible.length-5)+' weitere':'');$('bulkConfirmDialog').showModal()}
- async function bulkAssign(add){
-  if(listMutationBusy||listCopyBusy||activeWishMutations.size||!bulkControlsEnabled({membershipReady,bulkBusy})||!selected||!bulkIds.size||getUser()?.id!==loadedOwner)return;
-  const uid=owner(),listId=selected,targets=eligibleBulkTargets(bulkIds,wishes.map(w=>w.id),assignedIds,add);
-  if(!targets.length){$('bulkStatus').textContent='Alle ausgewählten Wünsche haben bereits den gewünschten Zustand.';return}
-  const list=lists.find(l=>l.id===listId);if(!list||list.archived){$('bulkStatus').textContent='Bitte eine aktive Liste wählen.';return}
-  prepareBulk({uid,listId,add,targets});
- }
- function reportBulk(done,total,success,failed){$('bulkProgressBar').max=Math.max(1,total);$('bulkProgressBar').value=done;$('bulkProgressText').textContent=done+' von '+total+' verarbeitet';$('bulkProgressDetails').textContent=success+' erfolgreich · '+failed+' fehlgeschlagen'+(bulkStopRequested?' · Stopp angefordert':'')}
- async function applyBulk(){
-  const job=pendingBulk;if(!job)return;if(bulkBusy||listCopyBusy||listMutationBusy){$('bulkStatus').textContent='Eine andere Änderung läuft. Bitte die Sammelaktion anschließend erneut prüfen.';return}if(activeWishMutations.size){$('bulkStatus').textContent='Ein ausgewählter Wunsch wird gerade bearbeitet. Bitte danach erneut bestätigen.';return}
-  pendingBulk=null;$('bulkConfirmDialog').close();
-  const {uid,listId,add,targets}=job;
-  if(job.generation!==loadGeneration||loadedOwner!==uid||getUser()?.id!==uid){$('bulkStatus').textContent='Die Daten oder das Benutzerkonto wurden zwischen Auswahl und Bestätigung gewechselt. Bitte Sammelaktion erneut prüfen.';return}if(!bulkContextValid(job,{userId:getUser()?.id,listId:selected,ready:membershipReady,activeListIds:new Set(lists.filter(l=>!l.archived).map(l=>l.id))})){$('bulkStatus').textContent='Die Liste ist nicht mehr aktuell. Bitte die Sammelaktion erneut vorbereiten.';return}
-   const currentTargets=new Set(eligibleBulkTargets(targets,wishes.map(w=>w.id),assignedIds,add));if(currentTargets.size!==targets.length||targets.some(id=>!currentTargets.has(id))){$('bulkStatus').textContent='Die Listenzuordnung hat sich geändert. Bitte Auswahl und Aktion erneut prüfen.';return}
-  const generation=loadGeneration,run=++bulkRunId;bulkBusy=true;bulkStopRequested=false;lastBulkResult=null;$('bulkResultPanel').hidden=true;
-  $('bulkProgressPanel').hidden=false;$('bulkStop').disabled=false;
-  updateBulkToolbar();reportBulk(0,targets.length,0,0);
-  try{
-   const result=await executeBulkJob({
-    targets,
-    isCurrent:()=>run===bulkRunId&&generation===loadGeneration&&getUser()?.id===uid&&loadedOwner===uid&&selected===listId,
-    shouldStop:()=>bulkStopRequested,
-    write:async wishId=>{
-     if(getUser()?.id!==uid||loadedOwner!==uid||generation!==loadGeneration||run!==bulkRunId)throw Error('Sammelaktion nach Kontowechsel oder Listen-Reload abgebrochen.');
-     const q=add?db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid}):db.from('wishlist_list_items').delete().eq('list_id',listId).eq('wish_id',wishId).eq('user_id',uid).select('wish_id');
-     const result=await q;
-     if(add&&result.error?.code==='23505')return {error:new Error('Zuordnung wurde möglicherweise bereits in einem anderen Tab hinzugefügt. Bitte Liste neu laden.')};
-     if(!add&&!result.error&&!result.data?.length)return {error:new Error('Zuordnung wurde bereits in einem anderen Tab entfernt. Bitte Liste neu laden.')};
-     return result;
-    },
-    onProgress:({done,total,success,failed})=>{if(run===bulkRunId&&generation===loadGeneration&&getUser()?.id===uid&&loadedOwner===uid&&selected===listId)reportBulk(done,total,success,failed)}
-   });
-   if(result.invalidated||run!==bulkRunId||generation!==loadGeneration||getUser()?.id!==uid||loadedOwner!==uid||selected!==listId)return;
-   for(const id of result.completed)bulkIds.delete(id);
-   const summary={uid,listId,add,total:result.total,success:result.success,failed:result.failed,remaining:result.remaining,interrupted:result.interrupted,errors:result.errors};
-   $('bulkStatus').textContent='Sammelaktion beendet. Details stehen in der Ergebnisübersicht.';
-   const refresh=load({afterBulk:true}),refreshGeneration=loadGeneration;
-   try{await refresh}catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&run===bulkRunId&&refreshGeneration===loadGeneration)msg('Zuordnungen aktualisiert, aber das Neuladen ist fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
-   if(getUser()?.id===uid&&loadedOwner===uid&&run===bulkRunId&&refreshGeneration===loadGeneration&&membershipReady&&selected===listId){bulkHistory.unshift({...summary,time:new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),listTitle:lists.find(l=>l.id===listId)?.title||'Liste'});bulkHistory=bulkHistory.slice(0,10);renderBulkHistory();showBulkResult(summary)}
-  }finally{
-   if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkStop').disabled=true;$('bulkProgressPanel').hidden=true;if(getUser()?.id===uid&&loadedOwner===uid&&selected===listId){updateBulkToolbar();renderWishCards()}}
-  }
- }
- async function moveSelectedWishes(){
-  if(listMutationBusy||listCopyBusy||!bulkControlsEnabled({membershipReady,bulkBusy})||!getUser()||getUser()?.id!==loadedOwner)return;
-  const uid=owner(),sourceId=selected,targetId=$('bulkMoveTarget').value,confirmationGeneration=loadGeneration;
-  const source=lists.find(l=>l.id===sourceId&&!l.archived),target=lists.find(l=>l.id===targetId&&!l.archived);
-  if(!source||!target||sourceId===targetId)return msg('Bitte zwei verschiedene aktive Listen auswählen.');
-  const loadedWishIds=new Set(wishes.map(w=>w.id));
-  const targets=[...bulkIds].filter(id=>assignedIds.has(id)&&loadedWishIds.has(id));
-  const skipped=bulkIds.size-targets.length;
-  if(!targets.length)return msg('Nur Wünsche, die bereits in dieser Liste liegen, können verschoben werden.');
-  if(activeWishMutations.size)return msg('Ein Wunsch wird gerade bearbeitet. Bitte danach erneut versuchen.');if(!window.confirm(targets.length+' Wünsche von „'+source.title+'“ nach „'+target.title+'“ verschieben?'+(skipped?' '+skipped+' nicht zugeordnete Auswahl(en) werden übersprungen.':'')+' Die Wünsche bleiben erhalten. Ein Stopp wirkt vor dem nächsten Wunsch; bei Fehlern kann ein Wunsch in beiden Listen stehen.'))return;if(listMutationBusy||listCopyBusy||!bulkControlsEnabled({membershipReady,bulkBusy})||getUser()?.id!==uid||loadedOwner!==uid||selected!==sourceId||confirmationGeneration!==loadGeneration||!lists.some(l=>l.id===sourceId&&!l.archived)||!lists.some(l=>l.id===targetId&&!l.archived)||activeWishMutations.size||targets.some(id=>!assignedIds.has(id)||!wishes.some(w=>w.id===id))){$('bulkStatus').textContent='Listendaten oder Auswahl haben sich geändert. Bitte Verschieben erneut prüfen.';return}
-  const generation=loadGeneration,run=++bulkRunId;
-  const current=()=>getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId&&generation===loadGeneration&&run===bulkRunId;
-  let moved=0,failed=0,partial=0,stopped=false;
-  bulkBusy=true;bulkStopRequested=false;
-  $('bulkProgressPanel').hidden=false;$('bulkStop').disabled=false;
-  updateBulkToolbar();reportBulk(0,targets.length,0,0);
-  try{
-   for(const wishId of targets){
-    if(!current()||bulkStopRequested){stopped=true;break}
-    let writeStarted=false;
-    try{
-     const targetState=await db.from('wishlist_list_items').select('wish_id').eq('list_id',targetId).eq('wish_id',wishId).eq('user_id',uid).limit(1);
-     if(!current()){stopped=true;break}
-     if(targetState.error)throw targetState.error;
-     if(!targetState.data?.length){
-      writeStarted=true;
-      const {error}=await db.from('wishlist_list_items').insert({list_id:targetId,wish_id:wishId,user_id:uid});
-      if(error&&error.code!=='23505')throw error;
-     }
-     if(!current()){stopped=true;partial++;if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId&&generation===loadGeneration&&run===bulkRunId)msg('Zielzuordnung nach Kontextwechsel nicht eindeutig bestätigt. Diese Aktion hat die Ursprungszuordnung noch nicht gelöscht; andere Tabs können sie verändert haben. Bitte beide Listen prüfen.');break}
-     const confirmed=await db.from('wishlist_list_items').select('wish_id').eq('list_id',targetId).eq('wish_id',wishId).eq('user_id',uid).limit(1);
-     if(!current()){stopped=true;partial++;break}
-     if(confirmed.error)throw confirmed.error;
-     if(!confirmed.data?.length){partial++;failed++;if(current())msg('Zielzuordnung fehlt inzwischen. Die Ursprungszuordnung wurde von dieser Aktion nicht gelöscht, kann aber parallel verändert worden sein. Bitte beide Listen neu laden und prüfen.');continue}
-     // Complete the current source removal before honoring Stop on the next wish.
-     writeStarted=true;
-     const {error,data:removed}=await db.from('wishlist_list_items').delete().eq('list_id',sourceId).eq('wish_id',wishId).eq('user_id',uid).select('wish_id');
-     if(!current()){stopped=true;partial++;break}
-     if(error||!removed?.length){partial++;failed++;if(current())msg('Ursprungszuordnung konnte nicht eindeutig entfernt werden. Bitte beide Listen prüfen.');continue}
-     const finalTarget=await db.from('wishlist_list_items').select('wish_id').eq('list_id',targetId).eq('wish_id',wishId).eq('user_id',uid).limit(1);
-     if(!current()){stopped=true;partial++;break}
-     if(finalTarget.error||!finalTarget.data?.length){partial++;failed++;if(current())msg('Ursprungszuordnung entfernt, aber Zielzuordnung konnte anschließend nicht bestätigt werden. Bitte beide Listen prüfen.');continue}
-     moved++;bulkIds.delete(wishId);
-    }catch(e){failed++;if(writeStarted)partial++;if(current())msg('Ein Wunsch konnte nicht eindeutig verschoben werden: '+(e.message||'Unbekannter Fehler')+(writeStarted?' Schreiboperation bereits gestartet; bitte beide Listen prüfen.':''))}
-    finally{if(current())reportBulk(moved+failed,targets.length,moved,failed)}
-   }
-   if(current()){
-    const counts=bulkMoveCounts({total:targets.length,moved,failed,uncertain:partial,stopped});
-    const summary=counts.moved+' verschoben, '+counts.failed+' fehlgeschlagen'+(skipped?', '+skipped+' nicht in dieser Liste – übersprungen':'')+(stopped?', Vorgang gestoppt; '+(targets.length-moved-failed)+' nicht abgeschlossen':'')+(partial?', bei '+partial+' Vorgängen Zuordnungsstand unklar (Überschneidung mit fehlgeschlagen/nicht abgeschlossen möglich) – bitte beide Listen prüfen':'')+'.';
-    const refresh=load({afterBulk:true}),refreshGeneration=loadGeneration;
-    try{await refresh;if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId&&run===bulkRunId&&refreshGeneration===loadGeneration&&membershipReady)$('bulkStatus').textContent=summary}
-    catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId&&run===bulkRunId&&refreshGeneration===loadGeneration){msg('Bitte Listen neu laden: '+(e.message||'Ladefehler'));$('bulkStatus').textContent=bulkMoveRefreshStatus(summary,{refreshSucceeded:false,currentContext:true})}}
-   }
-  }finally{
-   if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkProgressPanel').hidden=true;$('bulkStop').disabled=true;if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId){updateBulkToolbar();renderWishCards()}}
-  }
- }
- async function moveWishToList(wishId,sourceListId,targetListId,control){
+ function syncBulkMoveTargets(){}
+ function updateBulkToolbar(){syncListQuickSwitch()}
+ function renderBulkHistory(){}
+ function showBulkResult(){}
+ // Bulk operations removed; individual wish assignment and movement remain.
+  async function moveWishToList(wishId,sourceListId,targetListId,control){
   if(listMutationBusy||listCopyBusy||bulkBusy||!membershipReady||!getUser()||getUser()?.id!==loadedOwner||sourceListId===targetListId||activeWishMutations.size)return;
   const uid=owner(),generation=loadGeneration;
   const source=lists.find(l=>l.id===sourceListId&&!l.archived);
