@@ -18,3 +18,31 @@ jobs:
       - run: node --test tests/amazon/*.test.mjs
       - run: node --check tools/wishes/amazon-import.mjs
       - run: node tests/amazon/browser.cjs
+      - run: node tests/amazon/release-acceptance.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wishlist-mobile-acceptance
+          path: test-results/*.png
+          if-no-files-found: ignore
+  privacy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions: {contents: read}
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: local-fixture-only
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Verify captured Toolya visibility policies in disposable PostgreSQL
+        run: |
+          docker exec -i ${{ job.services.postgres.id }} psql -U postgres -v ON_ERROR_STOP=1 < tests/amazon/live-policy-schema.sql
+          docker exec -i ${{ job.services.postgres.id }} psql -U postgres -v ON_ERROR_STOP=1 < tests/amazon/privacy-rollback.sql

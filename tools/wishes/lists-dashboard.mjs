@@ -160,7 +160,7 @@ export function mountListsDashboard(db, getUser) {
      const asin=wish.wishlist_products?.asin;
      const title=wish.wishlist_products?.title||'Wunsch';
      return (index+1)+'. '+title+(asin?'\nhttps://www.amazon.de/dp/'+encodeURIComponent(asin):'');
-    }), '', 'Geteilt als Textkopie aus Helferlein Wishes. Preise und Verfügbarkeit nicht geprüft.'];
+    }), '', 'Geteilt als Textkopie aus Toolya Wishes. Preise und Verfügbarkeit nicht geprüft.'];
     const snapshot=lines.join('\n');
     try{
      if(navigator.share)await navigator.share({title:list.title,text:snapshot});
