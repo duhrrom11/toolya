@@ -33,6 +33,6 @@ async function load(){
  $('count').textContent=(lists||[]).length+' öffentliche Sammlungen'+((lists||[]).length===48?' · maximal 48 angezeigt':'');
  if(!lists?.length){const empty=document.createElement('p');empty.className='empty';empty.textContent='Dieses Profil hat noch keine öffentlichen Sammlungen.';grid.append(empty)}
  $('share').addEventListener('click',async()=>{try{if(navigator.share)await navigator.share({title:profile.display_name,url:location.href});else if(navigator.clipboard&&isSecureContext){await navigator.clipboard.writeText(location.href);$('status').hidden=false;$('status').textContent='Profil-Link kopiert.'}else{$('status').hidden=false;$('status').textContent='Profil-Link: '+location.href}}catch(e){if(e?.name!=='AbortError'){$('status').hidden=false;$('status').textContent='Teilen nicht möglich.'}}});
- document.title=profile.display_name+' · Helferlein Wishes';$('profile').hidden=false;$('status').hidden=true;
+ document.title=profile.display_name+' · Toolya Wishes';$('profile').hidden=false;$('status').hidden=true;
 }
 load().catch(()=>{$('status').hidden=false;$('status').textContent='Profil konnte nicht geladen werden. Bitte später erneut versuchen.'});
