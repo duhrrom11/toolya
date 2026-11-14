@@ -1,0 +1,19 @@
+name: Toolya Amazon scraper
+on:
+  push:
+    paths: ['supabase/**', 'staging/tools/wishes/**', 'tests/amazon/**', 'package*.json', '.github/workflows/amazon-scraper.yml']
+  pull_request:
+    paths: ['supabase/**', 'staging/tools/wishes/**', 'tests/amazon/**', 'package*.json', '.github/workflows/amazon-scraper.yml']
+jobs:
+  isolated:
+    runs-on: ubuntu-latest
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm}
+      - run: npm ci
+      - run: node --test tests/amazon/*.test.mjs
+      - run: node --check staging/tools/wishes/amazon-import.mjs
+      - run: node tests/amazon/browser.cjs
