@@ -56,7 +56,7 @@ function mountPreferences(){
    fallbackDialog=document.createElement('dialog');fallbackDialog.id='toolya-display-settings';fallbackDialog.className='toolya-settings-dialog';fallbackDialog.setAttribute('aria-labelledby','toolya-settings-title');
    const title=document.createElement('h2');title.id='toolya-settings-title';title.textContent='Einstellungen';
    const close=document.createElement('button');close.type='button';close.textContent='Schließen';close.setAttribute('aria-label','Einstellungen schließen');close.onclick=()=>fallbackDialog.close();fallbackDialog.append(title,close);document.body.append(fallbackDialog);
-   fallbackTrigger=document.createElement('button');fallbackTrigger.type='button';fallbackTrigger.className='toolya-settings-trigger helferlein-gear';fallbackTrigger.textContent='⚙ Einstellungen';fallbackTrigger.setAttribute('aria-label','Einstellungen öffnen');fallbackTrigger.setAttribute('aria-haspopup','dialog');fallbackTrigger.setAttribute('aria-controls',fallbackDialog.id);fallbackTrigger.onclick=()=>fallbackDialog.showModal();
+   fallbackTrigger=document.createElement('button');fallbackTrigger.type='button';fallbackTrigger.className='toolya-settings-trigger helferlein-gear';const gear=document.createElement('span');gear.className='helferlein-gear-symbol';gear.setAttribute('aria-hidden','true');gear.textContent='⚙';fallbackTrigger.append(gear);fallbackTrigger.setAttribute('aria-label','Einstellungen öffnen');fallbackTrigger.setAttribute('aria-haspopup','dialog');fallbackTrigger.setAttribute('aria-controls',fallbackDialog.id);fallbackTrigger.onclick=()=>fallbackDialog.showModal();
    const header=document.querySelector('.wishlist-header-controls,header .row,header,nav');
    if(header)header.append(fallbackTrigger);else (document.querySelector('main')||document.body).prepend(fallbackTrigger);
   }
@@ -65,7 +65,7 @@ function mountPreferences(){
  if(surface.contains(panel))return;
  let appearance=[...surface.querySelectorAll('section')].find(s=>[...s.querySelectorAll('h2,h3,h4')].some(h=>/Darstellung/.test(h.textContent)));
  if(!appearance){appearance=document.createElement('section');appearance.className='toolya-appearance';appearance.setAttribute('aria-label','Darstellung');const h=document.createElement('h3');h.textContent='Darstellung';appearance.append(h);surface.append(appearance)}
- appearance.append(panel);
+ appearance.append(panel);panel.onclick=e=>e.stopPropagation();
  if(modal&&fallbackDialog){fallbackDialog.remove();fallbackTrigger.remove();fallbackDialog=null;fallbackTrigger=null}
 }
 mountPreferences();window.addEventListener('storage',e=>{if(e.key===key||e.key===null)apply()});
