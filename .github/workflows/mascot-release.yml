@@ -1,0 +1,49 @@
+name: Toolya platform and mascot release
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  platform:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm}
+      - run: npm ci
+      - run: node --test tests/mascot/*.test.mjs tests/platform/*.test.mjs tests/amazon/*.test.mjs
+      - run: node tests/platform/browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mascot-platform-mobile-evidence
+          path: test-results/
+          if-no-files-found: ignore
+  estate-security:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env: {POSTGRES_USER: estate, POSTGRES_PASSWORD: isolated-only, POSTGRES_DB: estate_synthetic}
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U estate -d estate_synthetic"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      ESTATE_TEST_DATABASE_URL: postgres://estate:isolated-only@127.0.0.1:5432/estate_synthetic
+      NODE_PATH: /tmp/estate-ci/node_modules
+      ESTATE_CHROMIUM: /usr/bin/google-chrome
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: npm install --prefix /tmp/estate-ci pg@8.16.3 esbuild@0.25.12 playwright@1.62.1
+      - run: node tests/security/estate-mail-v2.test.cjs
+      - run: node tests/security/estate-release-v2.test.cjs
+      - run: node tests/security/estate-browser-v2.cjs

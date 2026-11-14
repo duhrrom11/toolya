@@ -1,0 +1,63 @@
+/* B3 Backform – warm raspberry/bakery theme. Presentation-only. */
+body.b3-backform{--b3-accent:#a54a52;--b3-accent-2:#f7b17e;--b3-header-start:#602939;--b3-header-mid:#b15c59;--b3-header-end:#eaa378}
+body.b3-backform .b3-header{background:linear-gradient(112deg,var(--b3-header-start),var(--b3-header-mid) 57%,var(--b3-header-end));box-shadow:0 7px 23px #63294326;position:relative;z-index:12}
+body.b3-backform .b3-header .b3-tool-title h1,body.b3-backform .b3-header .b3-tool-title p{color:white!important}
+body.b3-backform .b3-backform-nav{display:flex;gap:.35rem;align-items:center;max-width:1280px;margin:.6rem auto 0;border:1px solid var(--b3-line);border-radius:16px;background:var(--b3-surface);padding:.45rem;position:relative;z-index:11;width:calc(100% - 2rem);min-width:0}
+body.b3-backform .b3-backform-tabs{flex:1 1 auto;min-width:0;display:flex;gap:.35rem;overflow-x:auto;scrollbar-width:thin}
+body.b3-backform .b3-backform-nav .b3-tab{padding:.7rem .82rem;white-space:nowrap;color:var(--b3-ink);border-radius:10px;border:0;background:transparent;font-size:.85rem;font-weight:700;min-height:44px}
+body.b3-backform .b3-backform-nav .b3-tab:hover{background:var(--b3-bg)}
+body.b3-backform .b3-backform-nav .b3-tab.bg-orange-50{background:linear-gradient(110deg,#983e4f,#d7816b)!important;color:white!important}
+body.b3-backform .b3-more{flex:0 0 auto;margin-left:auto}
+body.b3-backform .b3-more>summary{min-height:44px}
+body.b3-backform .b3-more[open]>summary{background:#a64a54;color:white}
+body.b3-backform .b3-more-content{display:grid;gap:.4rem}
+body.b3-backform .b3-more-item{min-height:43px;width:100%;text-align:left;white-space:normal}
+body.b3-backform main.b3-backform-main{max-width:1280px;min-width:0}
+body.b3-backform main.b3-backform-main>div{min-width:0}
+body.b3-backform main.b3-backform-main :is(input,select,textarea){min-width:0;max-width:100%}
+body.b3-backform main.b3-backform-main [id^="tab-"][data-b3-size="s"]>div{padding:1rem}
+body.b3-backform main.b3-backform-main [id^="tab-"][data-b3-size="m"]>div{padding:1.5rem}
+body.b3-backform main.b3-backform-main [id^="tab-"][data-b3-size="l"]>div{padding:2rem}
+body.b3-backform #settings-modal>div{max-height:90dvh;overflow-y:auto}
+body.b3-backform #b3-backform-preferences{border-top:1px solid var(--b3-line);padding-top:1rem;display:grid;gap:.6rem}
+body.b3-backform #b3-backform-preferences h3{font-weight:800;color:var(--b3-ink)}
+body.b3-backform #b3-backform-preferences label{font-size:.82rem;font-weight:700;display:grid;gap:.4rem}
+body.b3-backform #b3-backform-theme{padding:.7rem;border:1px solid var(--b3-line);border-radius:11px;background:var(--b3-bg);color:var(--b3-ink)}
+body.b3-backform #b3-backform-edit{padding:.7rem .8rem;background:#a24652;color:white;border-radius:11px;font-size:.82rem;font-weight:750}
+body.b3-backform #b3-backform-editor{border:1px solid var(--b3-line);background:var(--b3-bg);padding:.75rem;border-radius:12px;display:grid;gap:.7rem;color:var(--b3-ink)}
+body.b3-backform #b3-backform-editor[hidden]{display:none}
+body.b3-backform .b3-backform-editor-row{display:flex;align-items:center;flex-wrap:wrap;gap:.35rem;border:1px solid var(--b3-line);padding:.55rem;border-radius:10px}
+body.b3-backform .b3-backform-editor-row strong{flex:1 1 105px;font-size:.83rem}
+body.b3-backform .b3-backform-editor-row button,body.b3-backform .b3-backform-editor-actions button{min-height:40px;border:1px solid var(--b3-line);padding:.5rem .7rem;background:var(--b3-surface);color:var(--b3-ink);border-radius:9px}
+body.b3-backform .b3-backform-editor-row button:disabled{opacity:.4}
+body.b3-backform .b3-backform-editor-actions{display:flex;flex-wrap:wrap;gap:.4rem}
+body.b3-backform .b3-backform-editor-actions button:first-child{background:#9a3d4e;color:white}
+body.b3-backform #help-box{padding:1rem;background:var(--b3-bg);color:var(--b3-ink);border:1px solid var(--b3-line);border-radius:13px;max-height:45vh;overflow:auto}
+body.b3-backform #help-box:not(.hidden){display:block}
+body.b3-backform .b3-settings-footer{margin-top:.8rem}
+body.b3-backform .b3-settings-footer .b3-home-link{color:#9d4450}
+body.b3-backform.b3-dark{--b3-ink:#f2f4fa;--b3-surface:#1e2a3e;--b3-bg:#111a29;--b3-line:#4b5b70;--b3-accent:#ffb1b9}
+body.b3-backform.b3-dark .b3-settings-footer .b3-home-link{color:#ffbec4}
+body.b3-backform.b3-dark main.b3-backform-main :is(.bg-white,.bg-slate-50,.bg-orange-50,.bg-orange-50\/50,.bg-orange-100){background:#233149!important;color:#ecf4ff!important;border-color:#4c5f78!important}
+body.b3-backform.b3-dark main.b3-backform-main :is(.text-slate-900,.text-slate-800,.text-slate-700,.text-slate-600,.text-slate-500){color:#e3ecfa!important}
+body.b3-backform.b3-dark main.b3-backform-main :is(.text-orange-600,.text-orange-700,.text-orange-800){color:#ffc6a3!important}
+body.b3-backform.b3-dark main.b3-backform-main :is(input,select,textarea){background:#132034!important;color:#f0f5ff!important;border-color:#65748c!important}
+body.b3-backform.b3-dark main.b3-backform-main button.bg-orange-600{background:#a84b35!important;color:white!important}
+body.b3-backform.b3-dark #settings-modal>div{background:#1c293d;color:#f1f5ff;border-color:#4b5b70}
+body.b3-backform.b3-dark #settings-modal :is(.text-slate-900,.text-slate-800,.text-slate-700,.text-slate-600,.text-slate-500){color:#e3ecfb!important}
+body.b3-backform.b3-dark #settings-modal :is(.bg-slate-50,.bg-white){background:#24354a!important;color:#e6f1ff!important}
+body.b3-backform.b3-dark #settings-modal :is(input,select){background:#122035;color:#fff;border-color:#5a6b81}
+body.b3-backform.b3-dark #settings-modal button.bg-orange-600{background:#a74b37!important;color:white!important}
+body.b3-backform.b3-dark #settings-modal button.bg-slate-800{background:#3c5372!important;color:white!important}
+body.b3-backform.b3-dark #settings-modal button.bg-slate-100{background:#34475e!important;color:white!important}
+body.b3-backform.b3-dark #help-box :is(.bg-white,.bg-orange-50\/40){background:#2b3d52!important;color:#f1f7ff}
+body.b3-backform.b3-dark #help-box :is(.text-slate-800,.text-slate-600,.text-orange-900){color:#f4eced!important}
+@media(max-width:767px){
+ body.b3-backform .b3-backform-nav{width:calc(100% - 1rem);margin-top:.4rem}
+ body.b3-backform .b3-backform-nav .b3-tab{padding:.65rem .7rem;font-size:.78rem}
+ body.b3-backform main.b3-backform-main{padding:.75rem;gap:1rem}
+ body.b3-backform main.b3-backform-main [id^="tab-"][data-b3-size]>div{padding:1rem}
+ body.b3-backform main.b3-backform-main :is(.grid-cols-2,.grid-cols-3,.grid-cols-4){grid-template-columns:minmax(0,1fr)}
+ body.b3-backform main.b3-backform-main [id^="tab-"] :is(.flex.justify-between,.flex.items-center.justify-between){flex-wrap:wrap;gap:.5rem}
+}
+@media print{body.b3-backform .b3-header,body.b3-backform .b3-backform-nav{display:none!important}}

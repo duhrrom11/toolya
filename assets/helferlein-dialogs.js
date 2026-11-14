@@ -1,4 +1,4 @@
-/* Helferlein's own notice window instead of browser-branded alert boxes. */
+/* Toolya's own notice window instead of browser-branded alert boxes. */
 (() => {
  'use strict';
  const nativeAlert=window.alert.bind(window), queue=[]; let showing=false;
@@ -11,7 +11,7 @@
   overlay.className='hl-alert-overlay';panel.className='hl-alert-panel';
   panel.setAttribute('role','alertdialog');panel.setAttribute('aria-modal','true');
   const title=document.createElement('h2'),body=document.createElement('p'),button=document.createElement('button');
-  title.textContent='Helferlein';title.id='hl-alert-title';
+  title.textContent='Toolya';title.id='hl-alert-title';
   body.textContent=message;body.id='hl-alert-message';
   button.type='button';button.textContent='OK';
   panel.setAttribute('aria-labelledby',title.id);panel.setAttribute('aria-describedby',body.id);

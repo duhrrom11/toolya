@@ -1,3 +1,6 @@
+# Current authorization – 14.11.2026
+The owner confirmed toolya.app in duhrrom11/toolya as the release target, including adoption of the other tools. This supersedes the historical planning-only/coming-soon restrictions below. User data and old Helferlein hosting remain protected. Current routes and selected runtime assets are recorded in docs/runtime-port-inventory.json.
+
 # Toolya migration inventory and naming policy
 
 Status: planning only. Do not overwrite the live toolya index.html or modify duhrrom11/Helferlein. Last source tree reviewed: 2026-11-13.

@@ -1,0 +1,26 @@
+.toolya-settings{max-width:680px;margin:12px auto;color:inherit}.toolya-settings summary{cursor:pointer;padding:12px;min-height:44px;box-sizing:border-box}.toolya-context{font:600 .85rem/1.4 system-ui;display:block;margin:0 0 5px;color:inherit}.toolya-buddy[data-pose=idle] .toolya-context{display:none}.toolya-donation{display:inline-flex!important;align-items:center;gap:10px;max-width:100%;box-sizing:border-box;padding:10px!important;border-radius:14px;border:1px solid currentColor;text-decoration:none!important;white-space:normal!important;line-height:1.4!important}.toolya-donation img{object-fit:contain;flex:0 0 64px}.toolya-donation span{min-width:0;overflow-wrap:anywhere}.toolya-donation small{font-size:.8em;font-weight:400}.toolya-donation:focus-visible,.toolya-settings summary:focus-visible{outline:3px solid currentColor;outline-offset:3px}@media(max-width:360px){.toolya-donation img{width:48px;height:48px;flex-basis:48px}}@media(forced-colors:active){.toolya-donation{border:2px solid LinkText}}
+
+.toolya-idle{display:inline-flex;align-items:center;gap:8px;padding:8px;min-height:44px;border:1px solid currentColor;border-radius:14px;background:transparent;color:inherit;font:inherit;cursor:pointer;touch-action:manipulation;max-width:100%;box-sizing:border-box}.toolya-idle img{object-fit:contain;flex:0 0 72px}.toolya-idle span{overflow-wrap:anywhere;min-width:0}.toolya-idle:focus-visible{outline:3px solid currentColor;outline-offset:3px}.toolya-buddy:not([data-pose=idle]) .toolya-idle{display:none}
+/* Frame atlases contain newly drawn eyes, ears, paws and tail positions. Original PNGs are fallback-only. */
+.ty-sprite-wrap{display:inline-block;position:relative;flex:0 0 84px;width:84px;height:84px;vertical-align:middle;border-radius:14px;isolation:isolate}
+.ty-sprite-wrap>img{display:block;width:100%;height:100%;object-fit:contain;max-width:none;animation:none!important;transform:none!important}
+.ty-frame{position:absolute;inset:0;pointer-events:none;background-color:#fff;background-size:800% 400%;background-repeat:no-repeat;border-radius:14px}
+.ty-frame[hidden]{display:none}.ty-sprite-wrap:focus-within{outline:3px solid currentColor;outline-offset:3px}
+.ty-animated{animation:ty-frame-pair 1.8s steps(1,end) 3}
+@keyframes ty-frame-pair{0%,79%,100%{background-position:var(--ty-a) var(--ty-y)}80%,99%{background-position:var(--ty-b) var(--ty-y)}}
+.toolya-buddy[data-motion=calm] .ty-animated{animation-duration:2.7s;animation-iteration-count:2}
+.toolya-buddy[data-motion=lively] .ty-animated{animation-duration:1s;animation-iteration-count:4}
+.toolya-buddy[data-motion=off] .ty-frame,.toolya-buddy:focus-within .ty-frame{animation:none!important}
+.toolya-donation .ty-sprite-wrap{width:64px;height:64px;flex-basis:64px}.toolya-idle .ty-sprite-wrap{width:84px;height:84px;flex-basis:84px}
+.toolya-donation img{width:100%;height:100%;flex-basis:auto}.toolya-idle img{flex-basis:auto}
+@media(max-width:480px){.tb-message-box>.ty-sprite-wrap{width:64px;height:64px;flex-basis:64px}}
+@media(prefers-reduced-motion:reduce){.ty-frame{animation:none!important;transition:none!important}}
+@media(prefers-reduced-data:reduce){.ty-frame{animation:none!important}}
+@media(forced-colors:active){.ty-sprite-wrap{border:1px solid CanvasText}}
+.toolya-context{overflow-wrap:anywhere}.toolya-settings{min-width:0;box-sizing:border-box;width:100%}
+
+.toolya-buddy[data-page-hidden] .ty-frame{animation-play-state:paused!important}.hl-alert-panel>.ty-sprite-wrap{float:left;margin:0 12px 8px 0}dialog .ty-sprite-wrap{flex-shrink:0}
+
+.toolya-support{max-width:680px;margin:24px auto;padding:12px;box-sizing:border-box}.toolya-settings>p{padding:0 12px;line-height:1.5}.toolya-settings>p a{text-decoration:underline}
+
+.toolya-buddy,.toolya-settings{grid-column:1/-1}.ty-nav-mascot>.ty-sprite-wrap{width:100%;height:100%;flex:none}.ty-nav-mascot .ty-frame{border-radius:10px}

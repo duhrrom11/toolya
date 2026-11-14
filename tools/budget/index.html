@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full">
+<head>
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>
+      try { if (localStorage.getItem('helferlein_cloud_owner_haushaltsbuch-kassenbon')) document.documentElement.classList.add('helferlein-account-check'); }
+      catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haushaltsbuch mit Kassenbon-Scanner | Toolya</title>
+    <meta name="description" content="Kostenloses Haushaltsbuch mit Kassenbon-Scanner: Einnahmen und Ausgaben erfassen, Budgets planen, Belege digitalisieren und Garantiefristen verwalten.">
+    <link rel="canonical" href="https://toolya.app/tools/budget/index.html">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js für Finanz-Analysen -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jsPDF für PDF-Berichte -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Tesseract.js für OCR Texterkennung -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <!-- QRCode.js für Sticker-Generierung -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="../../assets/vendor/supabase-2.57.0.js"></script>
+
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #printStickerArea, #printStickerArea * { visibility: visible; }
+            #printStickerArea { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+    <link rel="stylesheet" href="../../assets/helferlein-b3.css">
+    <link rel="stylesheet" href="../../assets/helferlein-b3-haushaltsbuch.css">
+    <script>
+      window.HELFERLEIN_B3 = {
+        key:'haushaltsbuch',
+        name:'Haushaltsbuch & Kassenbon-Scanner',
+        panels:[
+          {id:'stats',name:'Monatsstatistiken',size:'l'},
+          {id:'charts',name:'Diagramme & Budgets',size:'l'},
+          {id:'goals',name:'Sparziele',size:'m'},
+          {id:'form',name:'Buchungen & Kassenbons erfassen',size:'l'},
+          {id:'history',name:'Buchungshistorie & Belege',size:'l'}
+        ],
+        navigation:[
+          ['📊','Übersicht','#main-content'],
+          ['📈','Statistiken','#b3-stats'],
+          ['🎯','Budgets','#b3-charts'],
+          ['🧾','Beleg erfassen','#formCard'],
+          ['📋','Buchungen','#b3-history']
+        ],
+        extra:[
+          {label:'📊 Alle Buchungen (CSV)',handler:'exportAllBookingsCSV'},
+          {label:'💼 Steuer-Datei herunterladen (CSV)',handler:'exportSteuerCSV'},
+          {label:'📄 Finanzbericht (PDF)',handler:'exportPDF'},
+          {label:'💾 Sicherung herunterladen',handler:'exportBackup'},
+          {label:'📂 Sicherung einlesen',handler:'openSettings'}
+        ],
+        helpId:'guideSection',
+        helpToggle:'toggleGuide'
+      };
+    </script>
+    <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore || window.helferleinCloudBridge) return;
+        if (!window.supabaseClient) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client: window.supabaseClient, tool: 'haushaltsbuch-kassenbon',
+          localKey: 'helferlein_haushaltsbuch_bundle_v1', collection: 'entries', localFormat: 'bundle',
+          bundleSources: [
+            { key: 'kassenbon_data', field: 'entries', kind: 'array' },
+            { key: 'budgetbuch_budgets', field: 'budgets', kind: 'record' },
+            { key: 'budgetbuch_goals', field: 'goals', kind: 'array' }
+          ],
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css?v=20261112-3">
+    <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
+<script defer src="../../assets/helferlein-dialogs.js"></script>
+<link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><script type="module" src="../../shared/toolya/platform.mjs"></script></head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col font-sans">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
+
+    <!-- Header -->
+    <header class="b3-header">
+  <div class="b3-header-inner">
+    <a class="b3-brand" href="../../index.html" aria-label="Toolya Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Toolya</a>
+    <span class="b3-tool-icon" aria-hidden="true">🧾</span>
+    <div class="b3-tool-title">
+      <h1>Haushaltsbuch mit Kassenbon-Scanner</h1>
+      <p>Ausgaben erfassen, Budget planen, Belege scannen und Garantien verwalten</p>
+    </div>
+    <button type="button" class="b3-settings-trigger" id="settingsBtn" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()">⚙</button>
+  </div>
+</header>
+
+    <!-- Gebrauchsanleitung / Dokumentation (Aufklappbar) -->
+    <section id="guideSection" class="hidden bg-emerald-950 text-emerald-50 border-b border-emerald-800 p-6 transition-all duration-300">
+        <div class="max-w-7xl mx-auto space-y-4">
+            <div class="flex justify-between items-center border-b border-emerald-700 pb-3">
+                <h2 class="text-lg font-bold flex items-center gap-2">📘 Kombinierte Gebrauchsanleitung</h2>
+                <button onclick="toggleGuide()" class="text-emerald-300 hover:text-white text-xl font-bold">&times;</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs leading-relaxed">
+                <div class="bg-emerald-900/70 p-4 rounded-xl border border-emerald-700 space-y-2">
+                    <h3 class="font-bold text-sm text-emerald-200">1. Buchungen & Finanzen</h3>
+                    <p>Wähle <strong>Ausgabe</strong>, <strong>Einnahme</strong> oder erstelle wiederkehrende <strong>Fixkosten/Abos</strong>. Gib Betrag, Datum, Kategorie und Zahlungsart ein. Alle Monats-Salden und Fixkosten-Quoten werden live berechnet.</p>
+                </div>
+                <div class="bg-emerald-900/70 p-4 rounded-xl border border-emerald-700 space-y-2">
+                    <h3 class="font-bold text-sm text-emerald-200">2. Budgets & Sparziele</h3>
+                    <p>Setze Monats-Limits pro Kategorie mit visuellen Ampel-Fortschrittsbalken. Erstelle eigene Sparschwein-Ziele (Urlaub, Notgroschen) und zahle flexibel Beträge ein.</p>
+                </div>
+                <div class="bg-emerald-900/70 p-4 rounded-xl border border-emerald-700 space-y-2">
+                    <h3 class="font-bold text-sm text-emerald-200">3. Kassenbons, OCR & Galerie</h3>
+                    <p>Scanne Belege mit dem <strong>OCR-Scanner</strong>, lade mehrere Dokumentenfotos hoch oder schärfe verblasste Thermobons über den Helligkeits-/Kontrastfilter nach.</p>
+                </div>
+                <div class="bg-emerald-900/70 p-4 rounded-xl border border-emerald-700 space-y-2">
+                    <h3 class="font-bold text-sm text-emerald-200">4. Garantie, QR, Kalender & Export</h3>
+                    <p>Garantiezeiten & Rückgabefristen im Blick behalten, Ablauf im <strong>Google Kalender</strong> sichern, <strong>QR-Sticker</strong> für Kartons drucken und steuerrelevante Daten als CSV oder PDF exportieren.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-7xl space-y-6">
+        
+        <!-- Combined Dashboard Statistiken -->
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3" data-b3-panel="stats" id="b3-stats">
+            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
+                <p class="text-[11px] text-gray-500 font-medium">Monats-Einnahmen</p>
+                <h3 id="statIncome" class="text-base font-bold text-emerald-600">0,00 €</h3>
+            </div>
+            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
+                <p class="text-[11px] text-gray-500 font-medium">Monats-Ausgaben</p>
+                <h3 id="statExpense" class="text-base font-bold text-red-600">0,00 €</h3>
+            </div>
+            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
+                <p class="text-[11px] text-gray-500 font-medium">Monats-Saldo</p>
+                <h3 id="statBalance" class="text-base font-bold text-blue-600">0,00 €</h3>
+            </div>
+            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
+                <p class="text-[11px] text-gray-500 font-medium">Fixkosten-Quote</p>
+                <h3 id="statFixRatio" class="text-base font-bold text-purple-600">0 %</h3>
+            </div>
+            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
+                <p class="text-[11px] text-gray-500 font-medium">Garantiewert aktiv</p>
+                <h3 id="statTotalWarrantyVal" class="text-base font-bold text-teal-600">0,00 €</h3>
+            </div>
+            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
+                <p class="text-[11px] text-gray-500 font-medium">Hausrat-Zeitwert</p>
+                <h3 id="statZeitwertTotal" class="text-base font-bold text-amber-600">0,00 €</h3>
+            </div>
+            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200 col-span-2 md:col-span-1">
+                <p class="text-[11px] text-gray-500 font-medium">Steuer-Gesamtwert</p>
+                <h3 id="statTaxVal" class="text-base font-bold text-indigo-600">0,00 €</h3>
+            </div>
+        </div>
+
+        <!-- Section: Charts & Budgets -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" data-b3-panel="charts" id="b3-charts">
+            <!-- Diagramme -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+                <h3 class="font-bold text-base text-gray-900 border-b pb-2">📊 Visuelle Finanz-Analyse</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 text-center mb-2">Ausgaben nach Kategorie</p>
+                        <div class="h-48 flex justify-center"><canvas id="categoryChart" role="img" aria-label="Diagramm: Haushaltsausgaben nach Kategorie" aria-describedby="categoryChartSummary"></canvas></div>
+                        <p id="categoryChartSummary" class="text-xs text-gray-600 mt-2" aria-live="off"></p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 text-center mb-2">Monatsverlauf (Cashflow)</p>
+                        <div class="h-48 flex justify-center"><canvas id="cashflowChart" role="img" aria-label="Diagramm: monatlicher Cashflow im Haushaltsbuch" aria-describedby="cashflowChartSummary"></canvas></div>
+                        <p id="cashflowChartSummary" class="text-xs text-gray-600 mt-2" aria-live="off"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kategorie-Budgets -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <h3 class="font-bold text-base text-gray-900">🎯 Monats-Budgets & Limite</h3>
+                    <button onclick="openBudgetModal()" class="px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold">⚙️ Budgets anpassen</button>
+                </div>
+                <div id="budgetProgressList" tabindex="0" role="region" aria-label="Monatsbudgets" tabindex="0" role="region" aria-label="Monatsbudgets" class="space-y-3 max-h-56 overflow-y-auto pr-1">
+                    <p class="text-xs text-gray-400 text-center py-4">Lade Budgets...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Sparziele Widget -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="goals" id="b3-goals">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-base text-gray-900">🐷 Sparschwein & Sparziele</h3>
+                <button onclick="openAddGoalModal()" class="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-sm">+ Neues Sparziel</button>
+            </div>
+            <div id="savingsGoalsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <p class="text-xs text-gray-400 text-center col-span-3 py-2">Noch keine Sparziele angelegt.</p>
+            </div>
+        </div>
+
+        <!-- Erfassung & Bearbeitung Formular -->
+        <div id="formCard" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="form">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h2 id="formTitle" class="text-lg font-bold text-gray-900">✍️ Neue Buchung / Kassenbon erfassen</h2>
+                <button id="cancelEditBtn" onclick="cancelEdit()" class="hidden px-3 py-1 bg-gray-200 hover:bg-gray-300 text-xs font-bold rounded-lg text-gray-700">✕ Abbrechen</button>
+            </div>
+
+            <!-- Buchungstyp Wahl -->
+            <div class="flex gap-3">
+                <label class="flex-1 text-center py-2.5 rounded-xl border font-bold text-xs cursor-pointer transition-all bg-red-50 border-red-200 text-red-700 hover:bg-red-100">
+                    <input type="radio" name="entryType" value="ausgabe" checked onchange="updateFormUI()" class="hidden"> 🔻 Ausgabe
+                </label>
+                <label class="flex-1 text-center py-2.5 rounded-xl border font-bold text-xs cursor-pointer transition-all bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100">
+                    <input type="radio" name="entryType" value="einnahme" onchange="updateFormUI()" class="hidden"> 🔺 Einnahme
+                </label>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                    <label for="receiptTitle" class="block text-xs font-semibold text-gray-600 mb-1">Titel / Artikel / Zweck *:</label>
+                    <input type="text" id="receiptTitle" placeholder="z.B. Waschmaschine, Supermarkt, Gehalt" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label for="receiptStore" class="block text-xs font-semibold text-gray-600 mb-1">Händler / Partner / Quelle:</label>
+                    <input type="text" id="receiptStore" placeholder="z.B. MediaMarkt, Rewe, Arbeitgeber" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label for="receiptDate" class="block text-xs font-semibold text-gray-600 mb-1">Kaufdatum *:</label>
+                    <input type="date" id="receiptDate" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div>
+                    <label for="receiptPrice" class="block text-xs font-semibold text-gray-600 mb-1">Betrag (€) *:</label>
+                    <input type="number" step="0.01" id="receiptPrice" placeholder="299.99" class="w-full p-3 border rounded-xl text-sm font-bold">
+                </div>
+                <div>
+                    <label for="receiptCategory" class="block text-xs font-semibold text-gray-600 mb-1">Kategorie:</label>
+                    <select id="receiptCategory" class="w-full p-3 border rounded-xl text-sm bg-white">
+                        <option value="Lebensmittel">🛒 Lebensmittel & Haushalt</option>
+                        <option value="Wohnen">🏠 Wohnen & Miete</option>
+                        <option value="Energie">⚡ Strom, Gas & Wasser</option>
+                        <option value="Auto">🚗 Auto, Tanken & ÖPNV</option>
+                        <option value="Freizeit">🎉 Freizeit, Gastronomie & Urlaub</option>
+                        <option value="Elektronik">📱 Elektronik & Technik</option>
+                        <option value="Gesundheit">💊 Gesundheit & Drogerie</option>
+                        <option value="Verträge">📜 Verträge & Abos</option>
+                        <option value="Einnahme">💶 Einnahmen & Gehalt</option>
+                        <option value="Sonstiges">📦 Sonstiges</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="receiptPaymentMethod" class="block text-xs font-semibold text-gray-600 mb-1">Zahlungsart:</label>
+                    <select id="receiptPaymentMethod" class="w-full p-3 border rounded-xl text-sm bg-white">
+                        <option value="EC-Karte">💳 EC / Bankkarte</option>
+                        <option value="Bargeld">💵 Bargeld</option>
+                        <option value="Kreditkarte">💳 Kreditkarte</option>
+                        <option value="Überweisung">🏦 Überweisung / Dauerauftrag</option>
+                        <option value="PayPal">🅿️ PayPal</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="receiptWarranty" class="block text-xs font-semibold text-gray-600 mb-1">Garantie (Monate):</label>
+                    <input type="number" id="receiptWarranty" value="0" placeholder="24" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label for="receiptReturnDays" class="block text-xs font-semibold text-gray-600 mb-1">Rückgabe (Tage):</label>
+                    <input type="number" id="receiptReturnDays" value="14" placeholder="14" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label for="receiptLifespan" class="block text-xs font-semibold text-gray-600 mb-1">Nutzung (Jahre):</label>
+                    <input type="number" id="receiptLifespan" value="5" placeholder="5" class="w-full p-3 border rounded-xl text-sm" title="Erforderlich für den Hausrat-Zeitwert">
+                </div>
+            </div>
+
+            <!-- Seriennummer, Lagerort & Checkboxen -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div>
+                    <label for="receiptSN" class="block text-xs font-semibold text-gray-600 mb-1">Seriennummer / S/N:</label>
+                    <input type="text" id="receiptSN" placeholder="z.B. SN-987456123" class="w-full p-2.5 border rounded-lg text-xs bg-white">
+                </div>
+                <div>
+                    <label for="receiptLocation" class="block text-xs font-semibold text-gray-600 mb-1">Lagerort Karton / Zubehör:</label>
+                    <input type="text" id="receiptLocation" placeholder="z.B. Keller Kiste #2" class="w-full p-2.5 border rounded-lg text-xs bg-white">
+                </div>
+                <div class="flex flex-col justify-center space-y-2 pt-1">
+                    <label class="inline-flex items-center cursor-pointer space-x-2">
+                        <input type="checkbox" id="receiptIsFixkosten" class="w-4 h-4 text-purple-600 rounded">
+                        <span class="text-xs font-bold text-gray-700">🔄 Wiederkehrende Fixkosten / Abo</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer space-x-2">
+                        <input type="checkbox" id="receiptIsTax" class="w-4 h-4 text-emerald-600 rounded">
+                        <span class="text-xs font-bold text-gray-700">💼 Steuerrelevant</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Beleg-Scan / Foto / OCR / Thermopapier Filter -->
+            <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 space-y-3">
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                    <label class="block text-xs font-bold text-emerald-900">📷 Belegfoto, Mehrseiten-Scan & Thermopapier-Filter</label>
+                    <button type="button" onclick="runOCR()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-sm">🔍 Text automatisch erkennen (OCR)</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+                    <label class="helferlein-field" for="receiptPhotoInput"><span class="helferlein-field-label">Belegfoto auswählen</span><input type="file" id="receiptPhotoInput" accept="image/*" multiple onchange="loadPhotosToCanvas(event)" class="text-xs p-2 border rounded-xl bg-white w-full" aria-label="Belegfoto auswählen"></label>
+                    <div id="ocrStatus" role="status" aria-live="polite" aria-atomic="true" class="text-xs text-emerald-800 font-semibold hidden">🔍 Scanne Kassenbon... Bitte warten.</div>
+                </div>
+
+                <button type="button" onclick="clearReceiptPhotos()" class="text-xs px-3 py-2 rounded-lg border border-red-200 text-red-700 bg-white hover:bg-red-50">🗑️ Alle Belegbilder entfernen</button>
+                <div id="uploadGalleryPreview" class="flex gap-2 overflow-x-auto py-2 hidden"></div>
+
+                <!-- Canvas Editor für Thermopapier Filter -->
+                <div id="canvasEditor" class="hidden space-y-2 pt-2 border-t border-emerald-200">
+                    <p class="text-[11px] text-emerald-800 font-medium">⚡ Thermopapier-Filter (Helligkeit/Kontrast anpassen):</p>
+                    <div class="flex gap-4 items-center flex-wrap">
+                        <label class="text-xs">Helligkeit: <input type="range" id="filterBrightness" min="-100" max="100" value="0" onchange="tryApplyCanvasFilter()" class="align-middle"></label>
+                        <label class="text-xs">Kontrast: <input type="range" id="filterContrast" min="-100" max="100" value="0" onchange="tryApplyCanvasFilter()" class="align-middle"></label>
+                    </div>
+                    <div class="max-h-48 overflow-hidden rounded-lg border bg-black flex justify-center">
+                        <canvas id="photoCanvas" class="max-h-48 object-contain"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label for="receiptNote" class="block text-xs font-semibold text-gray-600 mb-1">Notiz / Bemerkung:</label>
+                <input type="text" id="receiptNote" placeholder="z.B. Inkl. 3 Jahre Garantie-Erweiterung" class="w-full p-3 border rounded-xl text-sm">
+            </div>
+
+            <button id="saveBtn" onclick="saveReceipt()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3.5 rounded-xl text-sm shadow-md transition-colors">Buchung / Kassenbon speichern</button>
+        </div>
+
+        <!-- Transaktions-Historie & Beleg-Übersicht -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="history" id="b3-history">
+            <div class="flex justify-between items-center flex-wrap gap-2">
+                <h3 class="font-bold text-lg text-gray-900">📋 Buchungshistorie & Kassenbons</h3>
+                <div class="flex gap-2 flex-wrap">
+                    <label class="helferlein-field" for="filterType"><span class="helferlein-field-label">Buchungen nach Typ filtern</span><select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Buchungen nach Typ filtern">
+                        <option value="All">Alle Typen</option>
+                        <option value="ausgabe">🔻 Nur Ausgaben</option>
+                        <option value="einnahme">🔺 Nur Einnahmen</option>
+                        <option value="fixkosten">🔄 Nur Fixkosten/Abos</option>
+                        <option value="garantie">🛡️ Nur mit Aktiver Garantie</option>
+                    </select></label>
+                    <label class="helferlein-field" for="filterCategory"><span class="helferlein-field-label">Nach Kategorie filtern</span><select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Nach Kategorie filtern">
+                        <option value="All">Alle Kategorien</option>
+                        <option value="Lebensmittel">🛒 Lebensmittel</option>
+                        <option value="Wohnen">🏠 Wohnen</option>
+                        <option value="Energie">⚡ Energie</option>
+                        <option value="Auto">🚗 Auto</option>
+                        <option value="Freizeit">🎉 Freizeit</option>
+                        <option value="Elektronik">📱 Elektronik</option>
+                        <option value="Gesundheit">💊 Gesundheit</option>
+                        <option value="Verträge">📜 Verträge</option>
+                        <option value="Einnahme">💶 Einnahmen</option>
+                        <option value="Sonstiges">📦 Sonstiges</option>
+                    </select></label>
+                </div>
+            </div>
+            <div id="receiptsList" class="space-y-3">
+                <p class="text-sm text-gray-400 text-center py-4">Noch keine Buchungen vorhanden.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: Budget Verwaltung -->
+    <div id="budgetModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold">⚙️ Monats-Budgets festlegen</h3>
+                <button onclick="closeBudgetModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <div id="budgetInputList" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button onclick="closeBudgetModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveBudgetsFromModal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Neues Sparziel -->
+    <div id="savingsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold">🐷 Neues Sparziel anlegen</h3>
+                <button onclick="closeSavingsModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label for="goalTitle" class="block font-semibold mb-1">Bezeichnung des Zieles *:</label>
+                    <input type="text" id="goalTitle" placeholder="z.B. Urlaub, Notgroschen" class="w-full p-2.5 border rounded-xl">
+                </div>
+                <div>
+                    <label for="goalTarget" class="block font-semibold mb-1">Zielbetrag (€) *:</label>
+                    <input type="number" step="0.01" id="goalTarget" placeholder="1500" class="w-full p-2.5 border rounded-xl">
+                </div>
+                <div>
+                    <label for="goalCurrent" class="block font-semibold mb-1">Bereits gespart (€):</label>
+                    <input type="number" step="0.01" id="goalCurrent" value="0" class="w-full p-2.5 border rounded-xl">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button onclick="closeSavingsModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveSavingsGoal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md">Anlegen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Galerie -->
+    <div id="galleryModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 id="galleryTitle" class="text-lg font-bold">🖼️ Dokumenten-Galerie</h3>
+                <button onclick="closeGalleryModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <div id="galleryContainer" class="flex-grow overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <div class="flex justify-end pt-2 border-t">
+                <button onclick="closeGalleryModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: QR-Code Sticker -->
+    <div id="qrModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold">🏷️ Geräte-Sticker drucken</h3>
+                <button onclick="closeQRModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <div id="printStickerArea" class="p-4 border-2 border-dashed border-gray-400 rounded-2xl bg-gray-50 flex flex-col items-center text-center space-y-3">
+                <h4 id="stickerTitle" class="font-bold text-sm text-gray-900"></h4>
+                <div id="qrcode" class="p-2 bg-white border rounded-xl shadow-sm min-w-[130px] min-h-[130px] flex items-center justify-center"></div>
+                <div class="text-[11px] text-gray-600 space-y-0.5">
+                    <p id="stickerStoreDate"></p>
+                    <p id="stickerSN"></p>
+                    <p id="stickerWarranty"></p>
+                </div>
+            </div>
+            <div class="flex justify-between gap-2 pt-2">
+                <button onclick="closeQRModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
+                <button onclick="window.print()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md">🖨️ Sticker Drucken</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Einstellungs-Modal mit Supabase Auth -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors space-y-5">
+            <div class="flex justify-between items-center border-b border-gray-200 pb-3">
+                <h3 class="text-lg font-bold text-gray-900">
+                    ⚙️ Einstellungen und Konto
+                </h3>
+                <button type="button" id="closeSettingsBtn" onclick="closeSettings()" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">
+                    &times;
+                </button>
+            </div>
+
+            <!-- CLOUD-KONTO -->
+            <div>
+                <h3 class="font-bold text-sm text-gray-800 mb-2">☁️ Mein Konto</h3>
+                <div class="space-y-3">
+                    <div id="userInfo" class="text-xs font-semibold mb-2" aria-live="polite">Nicht angemeldet</div>
+                    <div id="cloudStatus" class="text-xs bg-gray-100 rounded-lg p-3 text-gray-700">
+                        Nicht angemeldet
+                    </div>
+
+                    <label class="helferlein-field" for="loginEmail"><span class="helferlein-field-label">E-Mail</span><input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
+                    <label class="helferlein-field" for="loginPassword"><span class="helferlein-field-label">Passwort</span><input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="registerUser()" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold">
+                            👤 Registrieren
+                        </button>
+                        <button type="button" onclick="loginUser()" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-semibold">
+                            🔑 Anmelden
+                        </button>
+                        <button type="button" onclick="logoutUser()" class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-semibold">
+                            🚪 Abmelden
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DATENSICHERUNG -->
+            <div class="border-t border-gray-200 pt-4">
+                <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Daten sichern und wiederherstellen</label>
+                <div class="flex gap-2">
+                    <button type="button" onclick="exportBackup()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Sicherung</button>
+                    <label class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">
+                        📤 Restore <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
+                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skript Logik -->
+    <script>
+        // Supabase Konfiguration
+        const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
+
+        window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("✅ Supabase verbunden");
+
+        async function registerUser() {
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPassword").value;
+
+            if (!email || !password) {
+                alert("Bitte E-Mail und Passwort eingeben.");
+                return;
+            }
+
+            const { error } = await window.supabaseClient.auth.signUp({ email, password });
+            if (error) {
+                alert(error.message);
+                return;
+            }
+
+            alert("Registrierung erfolgreich.");
+            updateUserDisplay();
+            closeSettings();
+        }
+
+        async function loginUser() {
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPassword").value;
+
+            if (!email || !password) {
+                alert("Bitte E-Mail und Passwort eingeben.");
+                return;
+            }
+
+            const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) {
+                alert(error.message);
+                return;
+            }
+
+            updateUserDisplay();
+            closeSettings();
+        }
+
+        async function logoutUser() {
+            await window.supabaseClient.auth.signOut();
+            updateUserDisplay();
+        }
+
+        async function updateUserDisplay() {
+            const { data } = await window.supabaseClient.auth.getUser();
+            const user = data?.user;
+
+            const headerInfo = document.getElementById("userInfo");
+            const cloudStatus = document.getElementById("cloudStatus");
+
+            if (user) {
+                if (headerInfo) headerInfo.textContent = "👤 " + user.email;
+                if (cloudStatus) cloudStatus.textContent = "✅ Angemeldet – " + (user.email || "Benutzer");
+            } else {
+                if (headerInfo) headerInfo.textContent = "Nicht angemeldet";
+                if (cloudStatus) cloudStatus.textContent = "Nicht angemeldet";
+            }
+        }
+
+        function openSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }
+        }
+
+        let currentUploadedPhotos = [];
+        let pendingPhotoReads = 0;
+        let photoReadFailed = false;
+        let photoReadGeneration = 0;
+        let ocrGeneration = 0;
+        let rawImage = null;
+        let editingReceiptId = null;
+
+        let categoryChartInstance = null;
+        let cashflowChartInstance = null;
+
+        const defaultCategories = [
+            "Lebensmittel", "Wohnen", "Energie", "Auto", "Freizeit", 
+            "Elektronik", "Gesundheit", "Verträge", "Sonstiges"
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const receiptDateInput = document.getElementById('receiptDate');
+            receiptDateInput.valueAsDate = new Date();
+            receiptDateInput.dataset.autoDefault = 'true';
+            receiptDateInput.addEventListener('input', () => { receiptDateInput.dataset.autoDefault = 'false'; });
+            initCharts();
+            renderApp();
+            try { updateUserDisplay(); } catch(e){}
+        });
+
+        supabaseClient.auth.onAuthStateChange(async () => {
+            updateUserDisplay();
+        });
+
+        function toggleGuide() {
+            document.getElementById('guideSection').classList.toggle('hidden');
+        }
+
+        function getData() {
+            try {
+                const value = JSON.parse(localStorage.getItem('kassenbon_data'));
+                return Array.isArray(value) ? value : [];
+            } catch(e) {
+                return [];
+            }
+        }
+
+        function householdCloudSnapshot() {
+            const sources = [
+                ['kassenbon_data', 'entries', 'array'],
+                ['budgetbuch_budgets', 'budgets', 'record'],
+                ['budgetbuch_goals', 'goals', 'array']
+            ];
+            const snapshot = {};
+            for (const [key, field, kind] of sources) {
+                const raw = localStorage.getItem(key);
+                const value = raw === null ? (kind === 'array' ? [] : {}) : JSON.parse(raw);
+                if (kind === 'array' ? !Array.isArray(value)
+                    : !value || typeof value !== 'object' || Array.isArray(value)) {
+                    throw new Error('Ungültige gespeicherte Haushaltsdaten: ' + key);
+                }
+                snapshot[field] = value;
+            }
+            return snapshot;
+        }
+        function householdCloudCanSave() {
+            try {
+                // Preserve legacy offline behavior before an account claims this browser.
+                if (typeof window === 'undefined' || (!window.helferleinCloudBridge &&
+                    !localStorage.getItem('helferlein_cloud_owner_haushaltsbuch-kassenbon'))) return true;
+                householdCloudSnapshot();
+                if (localStorage.getItem('helferlein_cloud_owner_haushaltsbuch-kassenbon') && !window.helferleinCloudBridge)
+                    throw new Error('Kontoschutz noch nicht geladen; bitte Seite neu öffnen.');
+                if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal())
+                    throw new Error('Kontowechsel oder Cloud-Übernahme aktiv; Speichern gesperrt.');
+                return true;
+            } catch (error) {
+                alert('Speichern gesperrt: ' + error.message + '. Bestehende Daten bleiben erhalten.');
+                return false;
+            }
+        }
+        function householdCloudChanged() {
+            if (typeof window === 'undefined' || !window.helferleinCloudBridge) return;
+            void window.helferleinCloudBridge.changed(householdCloudSnapshot()).catch(error =>
+                console.error('Haushaltsbuch-Online-Sicherung ausstehend:', error));
+        }
+
+        function saveData(data) {
+            try {
+                if (!householdCloudCanSave()) return false;
+                localStorage.setItem('kassenbon_data', JSON.stringify(data)); window.toolyaNotice?.('success','Änderungen auf diesem Gerät gespeichert.');
+                householdCloudChanged();
+                return true;
+            } catch (error) {
+                console.error('Speichern fehlgeschlagen:', error);
+                alert('Speichern fehlgeschlagen. Der Gerätespeicher ist möglicherweise voll oder blockiert. Bitte Daten sichern und Speicherplatz prüfen.');
+                return false;
+            }
+        }
+
+        function getBudgets() {
+            try {
+                const value = JSON.parse(localStorage.getItem('budgetbuch_budgets'));
+                return value !== null && typeof value === 'object' && !Array.isArray(value) ? value : {};
+            } catch(e) {
+                return {};
+            }
+        }
+
+        function saveBudgets(budgets) {
+            try {
+                if (!householdCloudCanSave()) return false;
+                localStorage.setItem('budgetbuch_budgets', JSON.stringify(budgets)); window.toolyaNotice?.('success','Änderungen auf diesem Gerät gespeichert.');
+                householdCloudChanged();
+                return true;
+            } catch (error) {
+                console.error('Speichern fehlgeschlagen:', error);
+                alert('Speichern fehlgeschlagen. Der Gerätespeicher ist möglicherweise voll oder blockiert. Bitte Daten sichern und Speicherplatz prüfen.');
+                return false;
+            }
+        }
+
+        function getSavingsGoals() {
+            try {
+                const value = JSON.parse(localStorage.getItem('budgetbuch_goals'));
+                return Array.isArray(value) ? value : [];
+            } catch(e) {
+                return [];
+            }
+        }
+
+        function saveSavingsGoals(goals) {
+            try {
+                if (!householdCloudCanSave()) return false;
+                localStorage.setItem('budgetbuch_goals', JSON.stringify(goals)); window.toolyaNotice?.('success','Änderungen auf diesem Gerät gespeichert.');
+                householdCloudChanged();
+                return true;
+            } catch (error) {
+                console.error('Speichern fehlgeschlagen:', error);
+                alert('Speichern fehlgeschlagen. Der Gerätespeicher ist möglicherweise voll oder blockiert. Bitte Daten sichern und Speicherplatz prüfen.');
+                return false;
+            }
+        }
+
+        function updateFormUI() {
+            const type = document.querySelector('input[name="entryType"]:checked').value;
+            const catSelect = document.getElementById('receiptCategory');
+            if (type === 'einnahme') {
+                catSelect.value = 'Einnahme';
+            } else if (catSelect.value === 'Einnahme') {
+                catSelect.value = 'Lebensmittel';
+            }
+        }
+
+        /* --- Chart.js Initialisierung --- */
+        function initCharts() {
+            const ctxCat = document.getElementById('categoryChart').getContext('2d');
+            categoryChartInstance = new Chart(ctxCat, {
+                type: 'doughnut',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6', '#64748b'] }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            const ctxCF = document.getElementById('cashflowChart').getContext('2d');
+            cashflowChartInstance = new Chart(ctxCF, {
+                type: 'bar',
+                data: {
+                    labels: ['Einnahmen', 'Ausgaben'],
+                    datasets: [{ label: 'Betrag €', data: [0, 0], backgroundColor: ['#10b981', '#ef4444'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        /* --- Mehrseiten Scan & Canvas --- */
+        function loadPhotosToCanvas(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+            const selectedFiles = Array.from(files);
+            if (selectedFiles.some(file => !['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type))) {
+                event.target.value = '';
+                alert('Bitte nur JPG-, PNG-, GIF- oder WebP-Bilder auswählen. Bereits vorhandene Belegbilder bleiben erhalten.');
+                return;
+            }
+            // Fotos werden als Base64 im begrenzten Gerätespeicher abgelegt.
+            // Große Mehrfach-Uploads vor dem Ersetzen vorhandener Bilder abweisen.
+            const maxTotalPhotoBytes = 4 * 1024 * 1024;
+            if (selectedFiles.some(file => !Number.isFinite(file.size) || file.size <= 0) ||
+                selectedFiles.reduce((total, file) => total + file.size, 0) > maxTotalPhotoBytes) {
+                event.target.value = '';
+                alert('Die ausgewählten Belegbilder sind zusammen zu groß (maximal 4 MB). Bitte kleinere Fotos auswählen. Bereits vorhandene Belegbilder bleiben erhalten.');
+                return;
+            }
+            const generation = ++photoReadGeneration;
+            ocrGeneration++;
+            pendingPhotoReads = files.length;
+            photoReadFailed = false;
+            currentUploadedPhotos = Array(files.length).fill(null);
+            rawImage = null;
+            const previewContainer = document.getElementById('uploadGalleryPreview');
+            previewContainer.innerHTML = "";
+            previewContainer.classList.remove('hidden');
+
+            selectedFiles.forEach((file, idx) => {
+                let reader;
+                try {
+                    reader = new FileReader();
+                } catch (error) {
+                    if (generation !== photoReadGeneration) return;
+                    pendingPhotoReads--;
+                    photoReadFailed = true;
+                    console.error('Bildleser konnte nicht gestartet werden:', error);
+                    alert('Der Browser konnte den Bildleser nicht starten. Bitte die Bildauswahl erneut versuchen.');
+                    return;
+                }
+                reader.onload = function(e) {
+                    if (generation !== photoReadGeneration) return;
+                    if (!safeReceiptPhoto(e.target.result)) {
+                        pendingPhotoReads--;
+                        photoReadFailed = true;
+                        alert('Ein Belegbild hat ein ungültiges Format. Bitte die Bildauswahl erneut versuchen.');
+                        return;
+                    }
+                    currentUploadedPhotos[idx] = e.target.result;
+                    if (idx !== 0) pendingPhotoReads--;
+                    const imgThumb = document.createElement('img');
+                    imgThumb.src = e.target.result;
+                    imgThumb.className = "w-14 h-14 object-cover rounded-lg border shadow-sm";
+                    imgThumb.dataset.photoIndex = String(idx);
+                    const next = [...previewContainer.children].find(child => Number(child.dataset.photoIndex) > idx);
+                    previewContainer.insertBefore(imgThumb, next || null);
+
+                    if (idx === 0) {
+                        const img = new Image();
+                        img.onload = function() {
+                            if (generation !== photoReadGeneration) return;
+                            try {
+                                rawImage = img;
+                                document.getElementById('canvasEditor').classList.remove('hidden');
+                                applyCanvasFilter();
+                            } catch (error) {
+                                photoReadFailed = true;
+                                console.error('Belegbild konnte nicht verarbeitet werden:', error);
+                                alert('Das erste Belegbild konnte nicht verarbeitet werden. Bitte erneut auswählen.');
+                            } finally {
+                                pendingPhotoReads--;
+                            }
+                        };
+                        img.onerror = function() {
+                            if (generation !== photoReadGeneration) return;
+                            pendingPhotoReads--;
+                            photoReadFailed = true;
+                            alert('Das erste Belegbild konnte nicht geöffnet werden. Bitte erneut auswählen.');
+                        };
+                        try {
+                            img.src = e.target.result;
+                        } catch (error) {
+                            if (generation !== photoReadGeneration) return;
+                            pendingPhotoReads--;
+                            photoReadFailed = true;
+                            console.error('Belegbild konnte nicht geöffnet werden:', error);
+                            alert('Das erste Belegbild konnte nicht geöffnet werden. Bitte erneut auswählen.');
+                        }
+                    }
+                };
+                reader.onerror = function() {
+                    if (generation !== photoReadGeneration) return;
+                    pendingPhotoReads--;
+                    photoReadFailed = true;
+                    alert('Ein Belegbild konnte nicht gelesen werden. Bitte die Bildauswahl erneut versuchen.');
+                };
+                try {
+                    reader.readAsDataURL(file);
+                } catch (error) {
+                    if (generation !== photoReadGeneration) return;
+                    pendingPhotoReads--;
+                    photoReadFailed = true;
+                    console.error('Belegbild konnte nicht geöffnet werden:', error);
+                    alert('Ein Belegbild konnte nicht geöffnet werden. Bitte die Bildauswahl erneut versuchen.');
+                }
+            });
+        }
+
+        function clearReceiptPhotos() {
+            ocrGeneration++;
+            photoReadGeneration++;
+            pendingPhotoReads = 0;
+            photoReadFailed = false;
+            currentUploadedPhotos = [];
+            rawImage = null;
+            document.getElementById('receiptPhotoInput').value = '';
+            const preview = document.getElementById('uploadGalleryPreview');
+            preview.replaceChildren();
+            preview.classList.add('hidden');
+            document.getElementById('canvasEditor').classList.add('hidden');
+            document.getElementById('ocrStatus').classList.add('hidden');
+        }
+
+        function applyCanvasFilter() {
+            if (!rawImage) return;
+            const canvas = document.getElementById('photoCanvas');
+            const ctx = canvas.getContext('2d');
+            const b = parseInt(document.getElementById('filterBrightness').value);
+            const c = parseInt(document.getElementById('filterContrast').value);
+
+            if (!Number.isFinite(rawImage.width) || !Number.isFinite(rawImage.height) ||
+                rawImage.width <= 0 || rawImage.height <= 0) {
+                throw new Error('Ungültige Bildabmessungen');
+            }
+            const scale = Math.min(1, 600 / rawImage.width, 900 / rawImage.height);
+            canvas.width = Math.max(1, Math.round(rawImage.width * scale));
+            canvas.height = Math.max(1, Math.round(rawImage.height * scale));
+            ctx.filter = `brightness(${100 + b}%) contrast(${100 + c}%)`;
+            ctx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
+
+            if (currentUploadedPhotos.length > 0) {
+                const processedPhoto = canvas.toDataURL('image/jpeg', 0.6);
+                if (!safeReceiptPhoto(processedPhoto)) {
+                    throw new Error('Belegfoto konnte nicht gültig gespeichert werden');
+                }
+                currentUploadedPhotos[0] = processedPhoto;
+            }
+        }
+
+        function tryApplyCanvasFilter() {
+            try {
+                applyCanvasFilter();
+            } catch (error) {
+                photoReadFailed = true;
+                console.error('Belegfoto-Filter fehlgeschlagen:', error);
+                alert('Die Bildanpassung ist fehlgeschlagen. Bitte das Belegfoto erneut auswählen.');
+            }
+        }
+
+        function extractReceiptTotal(text) {
+            if (typeof text !== 'string') return null;
+            const lines = text.split(/\r?\n/);
+            const amountPattern = /(?:^|\s)(?:€|EUR)?\s*(\d{1,6}(?:[.,]\d{3})*[.,]\d{2}|\d{1,6}[.,]\d{2})\s*(?:€|EUR)?\s*$/i;
+            const totalLabel = /\b(?:gesamt(?:betrag|summe)?|summe|total|zu zahlen|zahlbetrag|endbetrag|rechnungsbetrag)\b/i;
+            for (let i = lines.length - 1; i >= 0; i--) {
+                if (!totalLabel.test(lines[i])) continue;
+                const candidates = [lines[i]];
+                if (i + 1 < lines.length && lines[i + 1].trim()) {
+                    candidates.push(lines[i + 1]);
+                }
+                for (const candidate of candidates) {
+                    // In der Folgezeile nur einen alleinstehenden Betrag übernehmen,
+                    // damit Artikelpreise nicht fälschlich als Gesamtsumme gelten.
+                    if (candidate !== lines[i] && !/^(?:\s*(?:€|EUR)?\s*\d[\d.,]*\s*(?:€|EUR)?\s*)$/i.test(candidate)) continue;
+                    const match = candidate.match(amountPattern);
+                    if (!match) continue;
+                    const raw = match[1];
+                    const separator = Math.max(raw.lastIndexOf(','), raw.lastIndexOf('.'));
+                    const whole = raw.slice(0, separator).replace(/[.,]/g, '');
+                    const value = Number(whole + '.' + raw.slice(separator + 1));
+                    if (Number.isFinite(value) && value > 0) return value.toFixed(2);
+                }
+            }
+            return null;
+        }
+
+        function extractReceiptDate(text) {
+            if (typeof text !== 'string') return null;
+            const candidates = [];
+            for (const line of text.split(/\r?\n/)) {
+                const matches = line.matchAll(/(^|[^\d])(?:(\d{1,2})[./](\d{1,2})[./](\d{4})|(\d{4})-(\d{1,2})-(\d{1,2}))(?!\d)/g);
+                for (const match of matches) {
+                    const year = match[4] || match[5];
+                    const month = String(Number(match[3] || match[6])).padStart(2, '0');
+                    const day = String(Number(match[2] || match[7])).padStart(2, '0');
+                    const date = year + '-' + month + '-' + day;
+                    if (!Number.isFinite(parseReceiptDate(date).getTime())) continue;
+                    candidates.push({
+                        date,
+                        labeled: /\b(?:datum|kaufdatum|belegdatum|rechnungsdatum)\b/i.test(line)
+                    });
+                }
+            }
+            return (candidates.find(candidate => candidate.labeled) || candidates[0])?.date || null;
+        }
+
+        /* --- Tesseract OCR --- */
+        async function runOCR() {
+            const input = document.getElementById('receiptPhotoInput');
+            if (!input.files || !input.files[0]) return alert("Bitte wähle zuerst ein Belegfoto aus!");
+            const generation = ++ocrGeneration;
+            const file = input.files[0];
+            const statusEl = document.getElementById('ocrStatus');
+            let worker = null;
+            statusEl.innerText = "🔍 Scanne Kassenbon... Bitte warten.";
+            statusEl.classList.remove('hidden');
+
+            try {
+                worker = await Tesseract.createWorker('deu');
+                if (generation !== ocrGeneration) return;
+                const ret = await worker.recognize(file);
+                if (generation !== ocrGeneration) return;
+
+                const text = ret.data.text;
+                const recognizedPrice = extractReceiptTotal(text);
+                const recognizedDate = extractReceiptDate(text);
+                const priceInput = document.getElementById('receiptPrice');
+                const dateInput = document.getElementById('receiptDate');
+                let fieldsUpdated = 0;
+                if (recognizedPrice !== null && !priceInput.value) {
+                    priceInput.value = recognizedPrice;
+                    fieldsUpdated++;
+                }
+                if (recognizedDate !== null && (!dateInput.value || dateInput.dataset.autoDefault === 'true')) {
+                    dateInput.value = recognizedDate;
+                    dateInput.dataset.autoDefault = 'false';
+                    fieldsUpdated++;
+                }
+                if (fieldsUpdated > 0) {
+                    statusEl.innerText = '✅ Texterkennung: ' + fieldsUpdated + ' Feld(er) ausgefüllt. Bitte Angaben prüfen.';
+                } else if (recognizedPrice !== null || recognizedDate !== null) {
+                    statusEl.innerText = 'ℹ️ Angaben erkannt. Bereits ausgefüllte Felder wurden nicht überschrieben.';
+                } else {
+                    statusEl.innerText = '⚠️ Kein eindeutiger Gesamtbetrag oder gültiges Datum erkannt. Bitte manuell eintragen.';
+                }
+            } catch(e) {
+                if (generation === ocrGeneration) statusEl.innerText = "❌ Texterkennung fehlgeschlagen.";
+            } finally {
+                if (worker) {
+                    try { await worker.terminate(); } catch (error) { console.warn('OCR worker cleanup:', error); }
+                }
+            }
+        }
+
+        function nextReceiptId(data, now = Date.now()) {
+            let id = now;
+            while (data.some(item => item && item.id === id)) id++;
+            return id;
+        }
+
+        /* --- Buchung Speichern --- */
+        function saveReceipt() {
+            if (photoReadFailed) {
+                alert('Mindestens ein Belegbild konnte nicht geladen werden. Bitte Bilder erneut auswählen oder entfernen.');
+                return;
+            }
+            if (pendingPhotoReads > 0) {
+                alert('Die Belegbilder werden noch geladen. Bitte kurz warten und erneut speichern.');
+                return;
+            }
+            const title = document.getElementById('receiptTitle').value.trim();
+            const store = document.getElementById('receiptStore').value.trim();
+            const date = document.getElementById('receiptDate').value;
+            const price = Number(document.getElementById('receiptPrice').value);
+            const category = document.getElementById('receiptCategory').value;
+            const paymentMethod = document.getElementById('receiptPaymentMethod').value;
+            const warrantyMonths = Number(document.getElementById('receiptWarranty').value);
+            const returnDays = Number(document.getElementById('receiptReturnDays').value);
+            const lifespan = Number(document.getElementById('receiptLifespan').value);
+            const sn = document.getElementById('receiptSN').value.trim();
+            const location = document.getElementById('receiptLocation').value.trim();
+            const isFixkosten = document.getElementById('receiptIsFixkosten').checked;
+            const isTax = document.getElementById('receiptIsTax').checked;
+            const note = document.getElementById('receiptNote').value.trim();
+            const entryType = document.querySelector('input[name="entryType"]:checked').value;
+
+            if (!title || !date || !Number.isFinite(parseReceiptDate(date).getTime()) ||
+                !Number.isFinite(price) || price <= 0) {
+                return alert("Bitte Titel, gültiges Kaufdatum und einen positiven Betrag angeben!");
+            }
+            if (!Number.isSafeInteger(warrantyMonths) || warrantyMonths < 0 ||
+                !Number.isSafeInteger(returnDays) || returnDays < 0 ||
+                !Number.isFinite(lifespan) || lifespan <= 0) {
+                return alert("Bitte gültige Garantie-, Rückgabe- und Lebensdauerwerte angeben.");
+            }
+
+            currentUploadedPhotos = currentUploadedPhotos.filter(src => safeReceiptPhoto(src));
+            let data = getData();
+
+            if (editingReceiptId !== null) {
+                const index = data.findIndex(r => r && r.id === editingReceiptId);
+                if (index === -1) {
+                    alert("Diese Buchung ist nicht mehr vorhanden. Die Änderungen wurden nicht gespeichert.");
+                    return;
+                }
+                {
+                    data[index] = {
+                        ...data[index],
+                        title, store, date, price, category, paymentMethod, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, note, entryType,
+                        photos: [...currentUploadedPhotos]
+                    };
+                }
+            } else {
+                const normalizeTitle = value => String(value || '').trim().toLocaleLowerCase('de-DE');
+                const duplicate = data.some(r => r && typeof r === 'object' &&
+                    r.date === date && normalizeTitle(r.title) === normalizeTitle(title) &&
+                    Number(r.price) === price &&
+                    (r.entryType === 'einnahme' || r.category === 'Einnahme' ? 'einnahme' : 'ausgabe') ===
+                    (entryType === 'einnahme' ? 'einnahme' : 'ausgabe'));
+                if (duplicate && !confirm('Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\\n\\nTrotzdem erneut speichern?')) return;
+                const newId = nextReceiptId(data);
+                data.push({
+                    id: newId,
+                    title, store, date, price, category, paymentMethod, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, note, entryType,
+                    photos: currentUploadedPhotos.length > 0 ? [...currentUploadedPhotos] : []
+                });
+            }
+
+            data.sort((a, b) => {
+                const firstDate = a ? parseReceiptDate(a.date) : new Date(NaN);
+                const secondDate = b ? parseReceiptDate(b.date) : new Date(NaN);
+                const first = Number.isFinite(firstDate.getTime()) ? firstDate.getTime() : 0;
+                const second = Number.isFinite(secondDate.getTime()) ? secondDate.getTime() : 0;
+                return second - first;
+            });
+            if (!saveData(data)) return;
+
+            resetForm();
+            renderApp();
+        }
+
+        function editReceipt(id) {
+            const data = getData();
+            const r = data.find(item => item && item.id === id);
+            if (!r) return;
+
+            photoReadGeneration++;
+            ocrGeneration++;
+            pendingPhotoReads = 0;
+            photoReadFailed = false;
+            rawImage = null;
+            document.getElementById('receiptPhotoInput').value = '';
+            document.getElementById('canvasEditor').classList.add('hidden');
+            document.getElementById('ocrStatus').classList.add('hidden');
+            editingReceiptId = id;
+            document.getElementById('receiptTitle').value = r.title || '';
+            document.getElementById('receiptStore').value = r.store || '';
+            document.getElementById('receiptDate').value = r.date || '';
+            document.getElementById('receiptDate').dataset.autoDefault = 'false';
+            document.getElementById('receiptPrice').value = r.price || '';
+            document.getElementById('receiptCategory').value = r.category || 'Sonstiges';
+            document.getElementById('receiptPaymentMethod').value = r.paymentMethod || 'EC-Karte';
+            document.getElementById('receiptWarranty').value = r.warrantyMonths || 0;
+            document.getElementById('receiptReturnDays').value = r.returnDays !== undefined ? r.returnDays : 14;
+            document.getElementById('receiptLifespan').value = r.lifespan || 5;
+            document.getElementById('receiptSN').value = r.sn || '';
+            document.getElementById('receiptLocation').value = r.location || '';
+            document.getElementById('receiptIsFixkosten').checked = !!r.isFixkosten;
+            document.getElementById('receiptIsTax').checked = !!r.isTax;
+            document.getElementById('receiptNote').value = r.note || '';
+
+            const entryType = r.entryType === 'einnahme' ? 'einnahme' : 'ausgabe';
+            const radio = document.querySelector(`input[name="entryType"][value="${entryType}"]`);
+            if (radio) radio.checked = true;
+
+            const photos = Array.isArray(r.photos) ? r.photos.filter(src => safeReceiptPhoto(src)) : [];
+            currentUploadedPhotos = [...photos];
+            const previewContainer = document.getElementById('uploadGalleryPreview');
+            previewContainer.innerHTML = "";
+            if (photos.length > 0) {
+                previewContainer.classList.remove('hidden');
+                photos.forEach(src => {
+                    const imgThumb = document.createElement('img');
+                    imgThumb.src = src;
+                    imgThumb.className = "w-14 h-14 object-cover rounded-lg border shadow-sm";
+                    previewContainer.appendChild(imgThumb);
+                });
+            } else {
+                previewContainer.classList.add('hidden');
+            }
+
+            document.getElementById('formTitle').innerText = `✏️ Buchung bearbeiten: ${r.title}`;
+            document.getElementById('saveBtn').innerText = "💾 Änderungen speichern";
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+            document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelEdit() { resetForm(); }
+
+        function resetForm() {
+            ocrGeneration++;
+            photoReadGeneration++;
+            pendingPhotoReads = 0;
+            photoReadFailed = false;
+            editingReceiptId = null;
+            document.getElementById('receiptTitle').value = "";
+            document.getElementById('receiptStore').value = "";
+            document.getElementById('receiptPrice').value = "";
+            document.getElementById('receiptSN').value = "";
+            document.getElementById('receiptLocation').value = "";
+            document.getElementById('receiptNote').value = "";
+            document.getElementById('receiptWarranty').value = "0";
+            document.getElementById('receiptReturnDays').value = "14";
+            document.getElementById('receiptLifespan').value = "5";
+            document.getElementById('receiptPaymentMethod').selectedIndex = 0;
+            const expenseRadio = document.querySelector('input[name="entryType"][value="ausgabe"]');
+            if (expenseRadio) expenseRadio.checked = true;
+            document.getElementById('receiptCategory').value = 'Lebensmittel';
+            document.getElementById('receiptIsFixkosten').checked = false;
+            document.getElementById('receiptIsTax').checked = false;
+            document.getElementById('receiptPhotoInput').value = "";
+            document.getElementById('uploadGalleryPreview').classList.add('hidden');
+            document.getElementById('uploadGalleryPreview').replaceChildren();
+            document.getElementById('canvasEditor').classList.add('hidden');
+            document.getElementById('ocrStatus').classList.add('hidden');
+            document.getElementById('formTitle').innerText = "✍️ Neue Buchung / Kassenbon erfassen";
+            document.getElementById('saveBtn').innerText = "Buchung / Kassenbon speichern";
+            document.getElementById('cancelEditBtn').classList.add('hidden');
+            document.getElementById('receiptDate').valueAsDate = new Date();
+            document.getElementById('receiptDate').dataset.autoDefault = 'true';
+            currentUploadedPhotos = [];
+            rawImage = null;
+        }
+
+        function deleteReceipt(id) {
+            if (!confirm("⚠️ Diese Buchung wirklich löschen?")) return;
+            let data = getData().filter(item => item.id !== id);
+            if (!saveData(data)) return;
+            if (editingReceiptId === id) cancelEdit();
+            renderApp();
+        }
+
+        /* --- Render App, Stats, Charts & Budgets --- */
+        function parseReceiptDate(value) {
+            if (typeof value !== 'string') return new Date(NaN);
+            const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+            if (!match) return new Date(NaN);
+            const year = Number(match[1]);
+            const month = Number(match[2]);
+            const day = Number(match[3]);
+            const date = new Date(0);
+            date.setFullYear(year, month - 1, day);
+            date.setHours(12, 0, 0, 0);
+            return date.getFullYear() === year && date.getMonth() === month - 1 &&
+                date.getDate() === day ? date : new Date(NaN);
+        }
+
+        function addWarrantyMonths(buyDate, months) {
+            if (!(buyDate instanceof Date) || !Number.isFinite(buyDate.getTime()) ||
+                !Number.isSafeInteger(months) || months <= 0) return null;
+            const expiry = new Date(buyDate);
+            const originalDay = expiry.getDate();
+            expiry.setDate(1);
+            expiry.setMonth(expiry.getMonth() + months);
+            const lastDay = new Date(expiry.getFullYear(), expiry.getMonth() + 1, 0).getDate();
+            expiry.setDate(Math.min(originalDay, lastDay));
+            return Number.isFinite(expiry.getTime()) ? expiry : null;
+        }
+
+        function renderApp() {
+            const data = getData();
+            const budgets = getBudgets();
+            const now = new Date();
+            const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+            let totalIncome = 0;
+            let totalExpense = 0;
+            let fixExpense = 0;
+            let totalZeitwert = 0;
+            let activeWarrantyValue = 0;
+            let taxValueTotal = 0;
+
+            const categoryExpenses = Object.create(null);
+            defaultCategories.forEach(cat => categoryExpenses[cat] = 0);
+
+            data.forEach(r => {
+                if (!r || typeof r !== 'object') return;
+                const parsedPrice = Number(r.price);
+                const price = Number.isFinite(parsedPrice) ? parsedPrice : 0;
+                const isCurrentMonth = typeof r.date === 'string' && r.date.startsWith(currentMonthStr);
+                const isIncome = r.entryType === 'einnahme' || r.category === 'Einnahme';
+
+                if (isIncome) {
+                    if (isCurrentMonth) totalIncome += price;
+                } else {
+                    if (isCurrentMonth) {
+                        totalExpense += price;
+                        if (r.isFixkosten) fixExpense += price;
+                        const category = typeof r.category === 'string' && r.category.trim() ? r.category : 'Sonstiges';
+                        categoryExpenses[category] = (categoryExpenses[category] || 0) + price;
+                    }
+                }
+
+                if (r.isTax) taxValueTotal += price;
+
+                const warrantyMonths = Number(r.warrantyMonths);
+                if (Number.isFinite(warrantyMonths) && warrantyMonths > 0) {
+                    const buyDate = parseReceiptDate(r.date);
+                    if (Number.isFinite(buyDate.getTime())) {
+                        const expDate = addWarrantyMonths(buyDate, warrantyMonths);
+                        if (expDate && expDate >= now) activeWarrantyValue += price;
+                    }
+                }
+
+                const buyDate = parseReceiptDate(r.date);
+                const lifespanValue = Number(r.lifespan);
+                const lifespan = Number.isFinite(lifespanValue) && lifespanValue > 0 ? lifespanValue : 5;
+                if (!isIncome && Number.isFinite(buyDate.getTime()) && buyDate <= now) {
+                    const ageYears = (now - buyDate) / (1000 * 60 * 60 * 24 * 365.25);
+                    const zeitwert = Math.max(0, Math.max(0, price) * (1 - ageYears / lifespan));
+                    if (Number.isFinite(zeitwert)) totalZeitwert += zeitwert;
+                }
+            });
+
+            document.getElementById('statIncome').innerText = totalIncome.toFixed(2) + " €";
+            document.getElementById('statExpense').innerText = totalExpense.toFixed(2) + " €";
+            const balance = totalIncome - totalExpense;
+            const balanceEl = document.getElementById('statBalance');
+            balanceEl.innerText = balance.toFixed(2) + " €";
+            balanceEl.className = `text-base font-bold ${balance >= 0 ? 'text-emerald-600' : 'text-red-600'}`;
+            document.getElementById('statFixRatio').innerText = totalExpense > 0 ? ((fixExpense / totalExpense) * 100).toFixed(0) + " %" : "0 %";
+            document.getElementById('statTotalWarrantyVal').innerText = activeWarrantyValue.toFixed(2) + " €";
+            document.getElementById('statZeitwertTotal').innerText = totalZeitwert.toFixed(2) + " €";
+            document.getElementById('statTaxVal').innerText = taxValueTotal.toFixed(2) + " €";
+
+            if (categoryChartInstance && cashflowChartInstance) {
+                const catLabels = Object.keys(categoryExpenses).filter(k => categoryExpenses[k] > 0);
+                const catValues = catLabels.map(k => categoryExpenses[k]);
+                categoryChartInstance.data.labels = catLabels.length ? catLabels : ['Keine Ausgaben'];
+                categoryChartInstance.data.datasets[0].data = catValues.length ? catValues : [1];
+                categoryChartInstance.update();
+
+                cashflowChartInstance.data.datasets[0].data = [totalIncome, totalExpense];
+                cashflowChartInstance.update();
+            }
+
+            // Text alternatives share the exact calculated values used by the charts.
+            // textContent prevents category names from becoming executable markup.
+            const formatChartAmount = value => Number(value).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+            const categoryChartSummary = Object.entries(categoryExpenses)
+                .filter(([, amount]) => amount > 0)
+                .map(([category, amount]) => category + ': ' + formatChartAmount(amount))
+                .join('; ');
+            document.getElementById('categoryChartSummary').textContent = categoryChartSummary || 'Keine Ausgaben in diesem Monat.';
+            document.getElementById('cashflowChartSummary').textContent =
+                'Einnahmen: ' + formatChartAmount(totalIncome) + '; Ausgaben: ' + formatChartAmount(totalExpense) +
+                '; Saldo: ' + formatChartAmount(totalIncome - totalExpense) + '.';
+
+            const budgetContainer = document.getElementById('budgetProgressList');
+            budgetContainer.innerHTML = defaultCategories.map(cat => {
+                const rawLimit = Number(budgets[cat]);
+                const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 0;
+                const spent = categoryExpenses[cat] || 0;
+                const percent = limit > 0 ? Math.min(100, (spent / limit) * 100) : 0;
+                let barColor = "bg-emerald-500";
+                if (percent > 80) barColor = "bg-amber-500";
+                if (percent >= 100) barColor = "bg-red-500";
+
+                return `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs">
+                            <span class="font-bold text-gray-700">${cat}</span>
+                            <span class="text-gray-500">${spent.toFixed(2)} € / <strong>${limit.toFixed(2)} €</strong></span>
+                        </div>
+                        <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                            <div class="${barColor} h-2 transition-all" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            renderSavingsGoals();
+            renderTransactionList();
+        }
+
+        /* --- Sparziele Render --- */
+        function escapeHaushaltsHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
+        }
+
+        function safeHaushaltsId(value) {
+            return Number.isSafeInteger(value) && value >= 0 ? String(value) : 'null';
+        }
+
+        function safeReceiptPhoto(value) {
+            if (typeof value !== 'string') return '';
+            return /^(?:data:image\/(?:png|jpeg|gif|webp);base64,[a-z0-9+/=]+|https:\/\/[^\s"'<>]+)$/i.test(value)
+                ? escapeHaushaltsHtml(value) : '';
+        }
+
+        function renderSavingsGoals() {
+            const goals = getSavingsGoals();
+            const container = document.getElementById('savingsGoalsGrid');
+            if (goals.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-2">Noch keine Sparziele angelegt.</p>`;
+                return;
+            }
+            container.innerHTML = goals.filter(g => g && typeof g === 'object').map(g => {
+                const current = Number(g.current);
+                const target = Number(g.target);
+                const saved = Number.isFinite(current) ? current : 0;
+                const goal = Number.isFinite(target) ? target : 0;
+                const percent = goal > 0 ? Math.max(0, Math.min(100, (saved / goal) * 100)) : 0;
+                return `
+                    <div class="p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-sm text-emerald-900">${escapeHaushaltsHtml(g.title)}</span>
+                            <button onclick="deleteSavingsGoal(${safeHaushaltsId(g.id)})" class="text-red-500 text-xs font-bold hover:opacity-80">✕</button>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-600">
+                            <span>Gespart: <strong>${saved.toFixed(2)} €</strong></span>
+                            <span>Ziel: ${goal.toFixed(2)} €</span>
+                        </div>
+                        <div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden">
+                            <div class="bg-emerald-600 h-2.5 transition-all" style="width: ${percent}%"></div>
+                        </div>
+                        <div class="flex gap-2 pt-1">
+                            <button onclick="depositGoal(${safeHaushaltsId(g.id)})" class="flex-1 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">+ Einzahlen</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* --- Transaktionsliste Render --- */
+        function renderTransactionList() {
+            const data = getData();
+            const typeFilter = document.getElementById('filterType').value;
+            const catFilter = document.getElementById('filterCategory').value;
+            const container = document.getElementById('receiptsList');
+
+            const now = new Date();
+            let filtered = data.filter(r => r && typeof r === 'object');
+            if (typeFilter === 'ausgabe') filtered = filtered.filter(r => r.entryType !== 'einnahme');
+            if (typeFilter === 'einnahme') filtered = filtered.filter(r => r.entryType === 'einnahme');
+            if (typeFilter === 'fixkosten') filtered = filtered.filter(r => r.isFixkosten);
+            if (typeFilter === 'garantie') filtered = filtered.filter(r => {
+                const months = Number(r.warrantyMonths);
+                const buyDate = parseReceiptDate(r.date);
+                if (!Number.isFinite(months) || months <= 0 || !Number.isFinite(buyDate.getTime())) return false;
+                const expDate = addWarrantyMonths(buyDate, months);
+                return expDate !== null && expDate >= now;
+            });
+            if (catFilter !== 'All') filtered = filtered.filter(r => r.category === catFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Buchungen gefunden.</p>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(r => {
+                const isIncome = r.entryType === 'einnahme' || r.category === 'Einnahme';
+                const photos = Array.isArray(r.photos) ? r.photos.map(safeReceiptPhoto).filter(Boolean) : [];
+                const price = Number(r.price);
+                const displayPrice = Number.isFinite(price) ? price.toFixed(2) : 'k.A.';
+
+                let isWarrantyActive = false;
+                let diffDaysWarranty = 0;
+                const warrantyMonths = Number(r.warrantyMonths);
+                const buyDate = parseReceiptDate(r.date);
+                const validBuyDate = Number.isFinite(buyDate.getTime());
+                const hasWarranty = validBuyDate && Number.isFinite(warrantyMonths) && warrantyMonths > 0;
+                if (hasWarranty) {
+                    const expDate = addWarrantyMonths(buyDate, warrantyMonths);
+                    diffDaysWarranty = expDate ? Math.ceil((expDate - now) / (1000 * 60 * 60 * 24)) : -1;
+                    isWarrantyActive = diffDaysWarranty >= 0;
+                }
+
+                let isReturnActive = false;
+                let diffDaysReturn = 0;
+                const returnDays = Number(r.returnDays);
+                if (validBuyDate && Number.isFinite(returnDays) && returnDays > 0) {
+                    const retDate = new Date(buyDate);
+                    retDate.setDate(retDate.getDate() + returnDays);
+                    diffDaysReturn = Math.ceil((retDate - now) / (1000 * 60 * 60 * 24));
+                    isReturnActive = diffDaysReturn >= 0;
+                }
+
+                return `
+                    <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <div class="flex items-start space-x-3">
+                            ${photos.length > 0 
+                                ? `<div class="relative cursor-pointer" onclick="openGalleryModal(${safeHaushaltsId(r.id)})">
+                                     <img src="${photos[0]}" class="w-16 h-16 object-cover rounded-xl border shadow-sm">
+                                     ${photos.length > 1 ? `<span class="absolute bottom-0 right-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-br-xl">+${photos.length - 1}</span>` : ''}
+                                   </div>` 
+                                : `<div class="w-16 h-16 ${isIncome ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'} rounded-xl flex items-center justify-center font-bold text-xl">${isIncome ? '🔺' : '🧾'}</div>`
+                            }
+                            <div class="space-y-1">
+                                <div class="flex items-center space-x-2 flex-wrap gap-1">
+                                    <span class="text-sm font-bold text-gray-900">${escapeHaushaltsHtml(r.title)}</span>
+                                    <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-semibold">${escapeHaushaltsHtml(r.category)}</span>
+                                    ${r.isFixkosten ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">🔄 Fixkosten</span>` : ''}
+                                    ${r.isTax ? `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">💼 Steuer</span>` : ''}
+                                    ${hasWarranty ? (isWarrantyActive ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">Garantie aktiv (${diffDaysWarranty} T)</span>` : `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">Garantie abgelaufen</span>`) : ''}
+                                    ${isReturnActive ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">⏱️ Rückgabe: ${diffDaysReturn} T</span>` : ''}
+                                </div>
+                                <p class="text-xs text-gray-600">
+                                    Betrag: <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${displayPrice} €</strong> | Datum: ${escapeHaushaltsHtml(r.date)} | Zahlungsart: ${r.paymentMethod || 'k.A.'}
+                                </p>
+                                <p class="text-[11px] text-gray-500">
+                                    ${r.store ? 'Partner: ' + escapeHaushaltsHtml(r.store) + ' | ' : ''} ${r.sn ? 'S/N: ' + escapeHaushaltsHtml(r.sn) + ' | ' : ''} ${r.location ? 'Karton: ' + escapeHaushaltsHtml(r.location) + ' | ' : ''} ${r.note ? 'Notiz: ' + r.note : ''}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
+                            <button onclick="editReceipt(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-bold">✏️ Bearbeiten</button>
+                            ${hasWarranty ? `<button onclick="openQRModal(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold">🏷️ QR</button>` : ''}
+                            ${hasWarranty ? `<button onclick="openGoogleCalendar(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold">📅 Google</button>` : ''}
+                            ${hasWarranty ? `<button onclick="downloadICS(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold">📄 .ics</button>` : ''}
+                            <button onclick="deleteReceipt(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* --- Modals Handling --- */
+        function openBudgetModal() {
+            const budgets = getBudgets();
+            const container = document.getElementById('budgetInputList');
+            container.innerHTML = defaultCategories.map((cat, index) => `
+                <div class="flex justify-between items-center gap-2">
+                    <label for="budget-amount-${index}" class="font-semibold text-gray-700">${cat}:</label>
+                    <input id="budget-amount-${index}" type="number" step="10" data-cat="${cat}" value="${Number.isFinite(Number(budgets[cat])) && Number(budgets[cat]) >= 0 ? Number(budgets[cat]) : 0}" class="p-2 border rounded-xl w-32 text-right font-bold">
+                </div>
+            `).join('');
+            document.getElementById('budgetModal').classList.remove('hidden');
+            document.getElementById('budgetModal').classList.add('flex');
+        }
+
+        function closeBudgetModal() {
+            document.getElementById('budgetModal').classList.remove('flex');
+            document.getElementById('budgetModal').classList.add('hidden');
+        }
+
+        function saveBudgetsFromModal() {
+            const budgets = {};
+            for (const input of document.querySelectorAll('#budgetInputList input')) {
+                const category = input.getAttribute('data-cat');
+                const amount = input.value.trim() === '' ? 0 : Number(input.value);
+                if (!Number.isFinite(amount) || amount < 0) {
+                    alert('Bitte für ' + category + ' einen gültigen Budgetbetrag ab 0 € eingeben.');
+                    input.focus();
+                    return;
+                }
+                budgets[category] = amount;
+            }
+            if (!saveBudgets(budgets)) return;
+            closeBudgetModal();
+            renderApp();
+        }
+
+        function openAddGoalModal() {
+            document.getElementById('savingsModal').classList.remove('hidden');
+            document.getElementById('savingsModal').classList.add('flex');
+        }
+
+        function closeSavingsModal() {
+            document.getElementById('savingsModal').classList.remove('flex');
+            document.getElementById('savingsModal').classList.add('hidden');
+        }
+
+        function saveSavingsGoal() {
+            const title = document.getElementById('goalTitle').value.trim();
+            const target = Number(document.getElementById('goalTarget').value);
+            const current = Number(document.getElementById('goalCurrent').value);
+            if (!title || !Number.isFinite(target) || target <= 0 || !Number.isFinite(current) || current < 0)
+                return alert("Bitte gültigen Titel, positiven Zielbetrag und Startbetrag ab 0 € eingeben!");
+
+            const goals = getSavingsGoals();
+            goals.push({ id: Date.now(), title, target, current });
+            if (!saveSavingsGoals(goals)) return;
+
+            document.getElementById('goalTitle').value = "";
+            document.getElementById('goalTarget').value = "";
+            document.getElementById('goalCurrent').value = "0";
+            closeSavingsModal();
+            renderApp();
+        }
+
+        function depositGoal(id) {
+            const goals = getSavingsGoals();
+            const goal = goals.find(g => g.id === id);
+            if (!goal) return;
+            const amount = parseFloat(prompt(`Betrag auf Sparziel "${goal.title}" einzahlen (€):`, "50"));
+            if (amount > 0) {
+                const previous = Number(goal.current);
+                goal.current = (Number.isFinite(previous) ? previous : 0) + amount;
+                if (!saveSavingsGoals(goals)) return;
+                renderApp();
+            }
+        }
+
+        function deleteSavingsGoal(id) {
+            if (!confirm("Sparziel löschen?")) return;
+            if (!saveSavingsGoals(getSavingsGoals().filter(g => g && g.id !== id))) return;
+            renderApp();
+        }
+
+        function openGalleryModal(id) {
+            const data = getData();
+            const r = data.find(item => item && item.id === id);
+            if (!r) return;
+            const photos = Array.isArray(r.photos) ? r.photos.map(safeReceiptPhoto).filter(Boolean) : [];
+            const container = document.getElementById('galleryContainer');
+            document.getElementById('galleryTitle').innerText = `🖼️ Galerie: ${r.title || 'Beleg'}`;
+            container.innerHTML = photos.map((src, idx) => `
+                <div class="space-y-1 text-center">
+                    <img src="${src}" class="w-full object-contain rounded-xl border max-h-80 bg-gray-100">
+                    <span class="text-xs text-gray-500">Seite ${idx + 1} von ${photos.length}</span>
+                </div>
+            `).join('');
+            document.getElementById('galleryModal').classList.remove('hidden');
+            document.getElementById('galleryModal').classList.add('flex');
+        }
+
+        function closeGalleryModal() {
+            document.getElementById('galleryModal').classList.remove('flex');
+            document.getElementById('galleryModal').classList.add('hidden');
+        }
+
+        function openQRModal(id) {
+            const data = getData();
+            const r = data.find(item => item && item.id === id);
+            if (!r) return;
+            const modal = document.getElementById('qrModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            document.getElementById('stickerTitle').innerText = r.title;
+            document.getElementById('stickerStoreDate').innerText = `Kauf: ${r.date} (${r.store || 'Garantie-Beleg'})`;
+            document.getElementById('stickerSN').innerText = `S/N: ${r.sn || 'keine'}`;
+            const buyDate = parseReceiptDate(r.date);
+            const warrantyMonths = Number(r.warrantyMonths);
+            let warrantyLabel = 'Keine gültige Garantieangabe';
+            if (Number.isFinite(buyDate.getTime()) && Number.isFinite(warrantyMonths) && warrantyMonths > 0) {
+                const expDate = addWarrantyMonths(buyDate, warrantyMonths);
+                if (expDate) warrantyLabel = 'Garantie bis: ' + expDate.toLocaleDateString('de-DE');
+            }
+            document.getElementById('stickerWarranty').innerText = warrantyLabel;
+
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = "";
+            const qrText = `GERÄT: ${r.title}\nKAUFDATUM: ${r.date}\nHÄNDLER: ${r.store || 'k.A.'}\nSERIENNR: ${r.sn || 'k.A.'}`;
+
+            // QR content includes private receipt data: never send it to a third-party image service.
+            if (typeof QRCode === 'undefined') {
+                qrContainer.textContent = 'QR-Code momentan nicht verfügbar. Bitte die Seite neu laden.';
+            } else {
+                try {
+                    new QRCode(qrContainer, { text: qrText, width: 120, height: 120 });
+                } catch (error) {
+                    console.error('QR-Code konnte nicht erstellt werden:', error);
+                    qrContainer.textContent = 'QR-Code konnte nicht erstellt werden.';
+                }
+            }
+        }
+
+        function closeQRModal() {
+            document.getElementById('qrModal').classList.remove('flex');
+            document.getElementById('qrModal').classList.add('hidden');
+        }
+
+        function openGoogleCalendar(id) {
+            const data = getData();
+            const r = data.find(item => item && item.id === id);
+            if (!r) return;
+            const buyDate = parseReceiptDate(r.date);
+            const months = Number(r.warrantyMonths);
+            if (!Number.isFinite(buyDate.getTime()) || !Number.isFinite(months) || months <= 0) {
+                alert('Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.');
+                return;
+            }
+            const correctedExpiry = addWarrantyMonths(buyDate, months);
+            if (!correctedExpiry) return;
+            const fmtDate = d => d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') +
+                String(d.getDate()).padStart(2, '0');
+            const dateStr = fmtDate(correctedExpiry);
+            const endDate = new Date(correctedExpiry);
+            endDate.setDate(endDate.getDate() + 1);
+            const endDateStr = fmtDate(endDate);
+
+            const title = encodeURIComponent(`Garantie-Ablauf: ${r.title}`);
+            const price = Number(r.price);
+            const displayPrice = Number.isFinite(price) ? price.toFixed(2) + ' €' : 'k.A.';
+            const details = encodeURIComponent(`Garantie für ${r.title} (${r.store}) läuft heute ab.\nKaufdatum: ${r.date}\nPreis: ${displayPrice}\nS/N: ${r.sn || 'k.A.'}`);
+            window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}/${endDateStr}&details=${details}`, '_blank');
+        }
+
+        function escapeCalendarText(value) {
+            return String(value ?? '').replace(/\r\n|\r|\n/g, '\n')
+                .replace(/\\/g, '\\\\').replace(/;/g, '\\;')
+                .replace(/,/g, '\\,').replace(/\n/g, '\\n');
+        }
+
+        function downloadICS(id) {
+            const r = getData().find(item => item && item.id === id);
+            if (!r) return;
+
+            const buyDate = parseReceiptDate(r.date);
+            const months = Number(r.warrantyMonths);
+            if (!Number.isFinite(buyDate.getTime()) || !Number.isFinite(months) || months <= 0) {
+                alert('Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.');
+                return;
+            }
+            const expDate = addWarrantyMonths(buyDate, months);
+            if (!expDate) return;
+            const reminderDate = new Date(expDate);
+            reminderDate.setDate(reminderDate.getDate() - 30);
+            const endDate = new Date(reminderDate);
+            endDate.setDate(endDate.getDate() + 1);
+            const fmt = date => date.getFullYear() + String(date.getMonth() + 1).padStart(2, '0') +
+                String(date.getDate()).padStart(2, '0');
+            const title = escapeCalendarText(r.title || 'Beleg');
+            const description = escapeCalendarText('Die Garantie für ' + (r.title || 'Beleg') +
+                ' (' + (r.store || 'k.A.') + ') läuft am ' + expDate.toLocaleDateString('de-DE') +
+                ' ab.\nS/N: ' + (r.sn || 'k.A.') + '\nKarton-Lagerort: ' + (r.location || 'k.A.'));
+            const ics = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//Alltagshelferlein//Garantie Tracker//DE',
+                'BEGIN:VEVENT',
+                'UID:' + encodeURIComponent(String(r.id ?? 'beleg')) + '-' + fmt(reminderDate) + '@helferlein.local',
+                'DTSTAMP:' + new Date().toISOString().replace(/[-:]|\.\d{3}/g, ''),
+                'SUMMARY:Garantie-Ablauf: ' + title,
+                'DESCRIPTION:' + description,
+                'DTSTART;VALUE=DATE:' + fmt(reminderDate),
+                'DTEND;VALUE=DATE:' + fmt(endDate),
+                'STATUS:CONFIRMED',
+                'BEGIN:VALARM',
+                'TRIGGER;RELATED=START:PT9H',
+                'ACTION:DISPLAY',
+                'DESCRIPTION:Garantie läuft in 30 Tagen ab!',
+                'END:VALARM',
+                'END:VEVENT',
+                'END:VCALENDAR'
+            ].join('\r\n') + '\r\n';
+            const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'garantie-' + String(r.title || 'beleg').toLowerCase()
+                .replace(/[^a-z0-9äöüß_-]+/gi, '-').slice(0, 80) + '.ics';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        /* --- Export & Import --- */
+        function steuerCsvFeld(value) {
+            const text = String(value ?? '');
+            const safe = /^\s*[=+\-@]/.test(text) ? "'" + text : text;
+            return '"' + safe.replace(/"/g, '""') + '"';
+        }
+
+        function exportAllBookingsCSV() {
+            const data = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r));
+            if (data.length === 0) return alert('Keine Buchungen für den CSV-Export vorhanden.');
+            const rows = [['Datum', 'Typ', 'Titel', 'Haendler', 'Kategorie', 'Preis_EUR',
+                'Zahlungsart', 'Fixkosten', 'Steuerrelevant', 'Garantie_Monate',
+                'Rueckgabe_Tage', 'Lebensdauer_Jahre', 'Seriennummer', 'Lagerort', 'Notiz'].join(';')];
+            // Nur die Exportansicht sortieren; die gespeicherte Reihenfolge bleibt erhalten.
+            const bookingDate = r => {
+                if (typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return null;
+                const parsed = parseReceiptDate(r.date);
+                return Number.isFinite(parsed.getTime()) ? r.date : null;
+            };
+            data.sort((a, b) => {
+                const aDate = bookingDate(a);
+                const bDate = bookingDate(b);
+                if (aDate === null) return bDate === null ? 0 : 1;
+                if (bDate === null) return -1;
+                return aDate < bDate ? -1 : aDate > bDate ? 1 : 0;
+            });
+            for (const r of data) {
+                const price = Number(r.price);
+                const fields = [r.date, r.entryType, r.title, r.store, r.category,
+                    Number.isFinite(price) ? price.toFixed(2) : '',
+                    r.paymentMethod, r.isFixkosten === true ? 'Ja' : 'Nein',
+                    r.isTax === true ? 'Ja' : 'Nein', r.warrantyMonths, r.returnDays,
+                    r.lifespan, r.sn, r.location, r.note];
+                rows.push(fields.map(steuerCsvFeld).join(';'));
+            }
+            const csv = '\uFEFF' + rows.join('\r\n') + '\r\n';
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const a = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            a.href = url;
+            a.download = 'alle-buchungen-' + new Date().toISOString().split('T')[0] + '.csv';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function exportSteuerCSV() {
+            const data = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r) && r.isTax === true);
+            if (data.length === 0) return alert("Keine steuerrelevanten Buchungen gefunden!");
+            const rows = [["Datum", "Typ", "Titel", "Haendler", "Kategorie", "Preis_EUR", "Zahlungsart", "Seriennummer", "Notiz"].join(';')];
+            for (const r of data) {
+                const price = Number(r.price);
+                const fields = [
+                    r.date, r.entryType, r.title, r.store, r.category,
+                    Number.isFinite(price) ? price.toFixed(2) : '',
+                    r.paymentMethod, r.sn, r.note
+                ];
+                rows.push(fields.map(steuerCsvFeld).join(';'));
+            }
+            // Stable chronological order in the export; saved bookings remain untouched.
+            const header = rows.shift();
+            rows.sort((a, b) => a.slice(0, 10).localeCompare(b.slice(0, 10)));
+            rows.unshift(header);
+            const csv = '\uFEFF' + rows.join('\r\n') + '\r\n';
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const a = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            a.href = url;
+            a.download = 'steuer-buchungen-' + new Date().toISOString().split('T')[0] + '.csv';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function exportBackup() {
+            const backupObj = {
+                format: 'helferlein-haushaltsbuch',
+                version: 1,
+                data: getData(),
+                budgets: getBudgets(),
+                goals: getSavingsGoals()
+            };
+            const blob = new Blob([JSON.stringify(backupObj)], { type: 'application/json' });
+            const a = document.createElement('a');
+            const backupUrl = URL.createObjectURL(blob);
+            a.href = backupUrl;
+            a.download = `haushaltsbuch-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(backupUrl), 1000);
+        }
+
+        function validateHaushaltsbuchBackup(parsed) {
+            const isObject = parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed);
+            const wgFields = ['flatmates', 'notes', 'events', 'cleaning', 'shopping', 'cooking', 'contracts', 'infoboard', 'inventory', 'diets'];
+            if (isObject && ((parsed.format && parsed.format !== 'helferlein-haushaltsbuch') ||
+                wgFields.some(key => Object.prototype.hasOwnProperty.call(parsed, key))))
+                throw new Error('Dies ist kein Haushaltsbuch-Backup.');
+            if (isObject && Object.prototype.hasOwnProperty.call(parsed, 'version') &&
+                (!Number.isSafeInteger(parsed.version) || parsed.version !== 1))
+                throw new Error('Diese Backup-Version wird nicht unterstützt. Bitte eine kompatible Version verwenden.');
+            const data = Array.isArray(parsed) ? { data: parsed } : parsed;
+            if (!isObject && !Array.isArray(parsed)) throw new Error('Unbekanntes Backup-Format');
+            const sections = {
+                data: ['kassenbon_data', Array.isArray],
+                budgets: ['budgetbuch_budgets', value => value !== null && typeof value === 'object' && !Array.isArray(value)],
+                goals: ['budgetbuch_goals', Array.isArray]
+            };
+            const changes = [];
+            for (const [key, [storageKey, check]] of Object.entries(sections)) {
+                if (!Object.prototype.hasOwnProperty.call(data, key)) continue;
+                if (!check(data[key])) throw new Error('Ungültiger Backup-Bereich: ' + key);
+                if ((key === 'data' || key === 'goals') &&
+                    data[key].some(item => !item || typeof item !== 'object' || Array.isArray(item)))
+                    throw new Error('Ungültige Einträge im Backup-Bereich: ' + key);
+                changes.push([storageKey, JSON.stringify(data[key])]);
+            }
+            if (!changes.length) throw new Error('Unbekanntes Backup-Format');
+            return changes;
+        }
+
+        function importBackup(event) {
+            const input = event.target;
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > 20 * 1024 * 1024) {
+                alert("Backup zu groß (maximal 20 MB).");
+                input.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const changes = validateHaushaltsbuchBackup(JSON.parse(e.target.result));
+                    const sectionLabels = {
+                        kassenbon_data: 'Buchungen',
+                        budgetbuch_budgets: 'Budgets',
+                        budgetbuch_goals: 'Sparziele'
+                    };
+                    const countBackupEntries = item => Array.isArray(item) ? item.length :
+                        item && typeof item === 'object' ? Object.keys(item).length : 0;
+                    const emptiedSections = [];
+                    const preview = changes.map(([key, value]) => {
+                        const incoming = JSON.parse(value);
+                        let existing;
+                        try { existing = JSON.parse(localStorage.getItem(key)); } catch (_) { existing = null; }
+                        const existingCount = countBackupEntries(existing);
+                        const incomingCount = countBackupEntries(incoming);
+                        if (existingCount > 0 && incomingCount === 0) emptiedSections.push(sectionLabels[key]);
+                        return sectionLabels[key] + ': ' + existingCount + ' vorhanden → ' + incomingCount + ' im Backup';
+                    });
+                    if (!confirm('Backup-Datei prüfen:\n\n' + preview.join('\n') +
+                        '\n\nNur diese Bereiche werden vollständig ersetzt. Andere Bereiche bleiben unverändert.\nBitte vorher ein Sicherung herunterladen.\n\nImport fortsetzen?')) return;
+                    if (emptiedSections.length && !confirm('ACHTUNG: Das Backup enthält keine Einträge für: ' +
+                        emptiedSections.join(', ') + '.\n\nAlle derzeit vorhandenen Einträge in diesen Bereichen werden gelöscht.\n\nTrotzdem importieren?')) return;
+                    const previous = changes.map(([key]) => [key, localStorage.getItem(key)]);
+                    try {
+                        for (const [key, value] of changes) localStorage.setItem(key, value);
+                    } catch (writeError) {
+                        for (const [key, value] of previous) {
+                            try {
+                                if (value === null) localStorage.removeItem(key);
+                                else localStorage.setItem(key, value);
+                            } catch (rollbackError) {
+                                console.error('Wiederherstellung eines Backup-Bereichs fehlgeschlagen:', key, rollbackError);
+                            }
+                        }
+                        throw new Error('Speicherplatz reicht nicht aus. Bitte vorhandene Daten prüfen und erneut versuchen.');
+                    }
+                    renderApp();
+                    alert("Backup erfolgreich importiert!");
+                } catch(err) {
+                    console.error("Haushaltsbuch-Import fehlgeschlagen:", err);
+                    alert("Import fehlgeschlagen: " + (err.message || "Ungültige Datei"));
+                } finally {
+                    input.value = '';
+                }
+            };
+            reader.onerror = () => {
+                alert("Die Backup-Datei konnte nicht gelesen werden.");
+                input.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const data = getData();
+
+            doc.setFontSize(16);
+            doc.text("Haushalts-, Finanz- & Kassenbon-Übersicht", 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
+
+            let totalIncome = 0;
+            let totalExpense = 0;
+            let validEntries = 0;
+            let earliestDate = null;
+            let latestDate = null;
+            data.forEach(r => {
+                if (!r || typeof r !== 'object') return;
+                const price = Number(r.price);
+                if (!Number.isFinite(price) || price < 0) return;
+                validEntries++;
+                if (typeof r.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(r.date) &&
+                    Number.isFinite(parseReceiptDate(r.date).getTime())) {
+                    if (earliestDate === null || r.date < earliestDate) earliestDate = r.date;
+                    if (latestDate === null || r.date > latestDate) latestDate = r.date;
+                }
+                if (r.entryType === 'einnahme' || r.category === 'Einnahme') totalIncome += price;
+                else totalExpense += price;
+            });
+            const money = amount => amount.toFixed(2).replace('.', ',') + ' EUR';
+            doc.setFontSize(11);
+            doc.text('Zusammenfassung (alle Buchungen)', 14, 39);
+            doc.setFontSize(10);
+            doc.text('Buchungen: ' + validEntries, 14, 46);
+            doc.text('Einnahmen: ' + money(totalIncome), 14, 52);
+            doc.text('Ausgaben: ' + money(totalExpense), 14, 58);
+            doc.text('Saldo: ' + money(totalIncome - totalExpense), 14, 64);
+            const formatDate = value => value.slice(8, 10) + '.' + value.slice(5, 7) + '.' + value.slice(0, 4);
+            const period = earliestDate && latestDate ? formatDate(earliestDate) + ' bis ' + formatDate(latestDate) : 'Keine gültigen Buchungsdaten';
+            doc.text('Zeitraum: ' + period, 14, 70);
+
+            // Chronologisch ausgeben, ohne die gespeicherte Reihenfolge zu verändern.
+            const bookingDate = r => {
+                if (!r || typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return null;
+                const parsed = parseReceiptDate(r.date);
+                return Number.isFinite(parsed.getTime()) ? r.date : null;
+            };
+            const sortedData = data.filter(r => r && typeof r === 'object' && !Array.isArray(r))
+                .sort((a, b) => {
+                    const aDate = bookingDate(a);
+                    const bDate = bookingDate(b);
+                    if (aDate === null) return bDate === null ? 0 : 1;
+                    if (bDate === null) return -1;
+                    return aDate < bDate ? -1 : aDate > bDate ? 1 : 0;
+                });
+            let y = 82;
+            sortedData.forEach((r) => {
+                const sign = (r.entryType === 'einnahme' || r.category === 'Einnahme') ? '+' : '-';
+                const price = Number(r.price);
+                const amount = Number.isFinite(price) ? sign + price.toFixed(2) : 'k.A.';
+                const line = `${r.date || 'k.A.'} | ${r.title || 'Ohne Titel'} (${r.category || 'Sonstiges'}): ${amount} € [${r.paymentMethod || 'k.A.'}]`;
+                const lines = doc.splitTextToSize(line, 180);
+                for (const textLine of lines) {
+                    if (y > 275) { doc.addPage(); y = 20; }
+                    doc.text(textLine, 14, y);
+                    y += 6;
+                }
+                y += 2;
+            });
+
+            doc.save(`finanz-bericht-${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>
+      try { if (localStorage.getItem('helferlein_cloud_owner_verliehene-gegenstaende-verwalten')) document.documentElement.classList.add('helferlein-account-check'); }
+      catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verliehene Gegenstände verwalten | Toolya</title>
+    <meta name="description" content="Verliehene Gegenstände einfach verwalten: Werkzeug, Bücher und andere Leihgaben dokumentieren, Rückgaben verfolgen und Erinnerungen vorbereiten.">
+    <link rel="canonical" href="https://toolya.app/tools/loans/index.html">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF für PDF-Report -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- qrcodejs für QR-Codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="../../assets/vendor/supabase-2.57.0.js"></script>
+    <link rel="stylesheet" href="../../assets/helferlein-b3.css">
+    <link rel="stylesheet" href="../../assets/helferlein-b3-verleih.css">
+    <script>
+      window.HELFERLEIN_B3 = {
+        key:'verleih',
+        name:'Verliehene Gegenstände',
+        panels:[
+          {id:'stats',name:'Ausleih-Statistiken',size:'l'},
+          {id:'create',name:'Kontakte, Gegenstände & Verleih erfassen',size:'l'},
+          {id:'inventory',name:'Stamm-Inventar',size:'l'},
+          {id:'loans',name:'Verleih-Liste & Rückgaben',size:'l',locked:true},
+          {id:'recommendations',name:'Hilfreiches Zubehör',size:'m'}
+        ],
+        navigation:[
+          ['🤝','Übersicht','#main-content'],
+          ['📊','Statistiken','#b3-stats'],
+          ['➕','Verleih erfassen','#b3-create'],
+          ['🛠️','Inventar','#b3-inventory'],
+          ['📋','Rückgaben','#b3-loans']
+        ],
+        extra:[
+          {label:'📄 Verleih-Bericht (PDF)',handler:'exportPDF'}
+        ],
+        helpId:'helpModal',
+        helpToggle:'toggleHelpModal'
+      };
+    </script>
+    <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
+        const client = supabaseClient;
+        if (!client || window.helferleinCloudBridge) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client, tool: 'verliehene-gegenstaende-verwalten', localKey: 'verleih_tracker_pro_v3', collection: 'items',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css?v=20261112-3">
+    <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
+<script defer src="../../assets/helferlein-dialogs.js"></script>
+<link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><script type="module" src="../../shared/toolya/platform.mjs"></script></head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
+
+    <!-- Header im exakten Mini-HomeBox-Stil -->
+    <header class="b3-header"><div class="b3-header-inner">
+ <a class="b3-brand" href="../../index.html" aria-label="Toolya Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Toolya</a>
+ <span class="b3-tool-icon" aria-hidden="true">🤝</span>
+ <div class="b3-tool-title"><h1>Verliehene Gegenstände verwalten</h1><p>Werkzeuge und Gegenstände verleihen, Rückgaben und Kautionen organisieren</p></div>
+ <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()">⚙</button>
+</div></header>
+
+    <!-- MODAL: Einstellungen & Supabase Auth -->
+    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleSettingsModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl text-gray-800" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg text-indigo-900">⚙️ Einstellungen und Konto</h3>
+                <button onclick="toggleSettingsModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
+            </div>
+            
+            <div class="p-3 bg-gray-50 rounded-xl border text-xs space-y-1">
+                <div id="header-user-badge" class="b3-account-status text-xs font-semibold" aria-live="polite">👤 <span id="header-user-email">Nicht angemeldet</span></div>
+            <div id="cloud-status-text" class="font-bold text-gray-700">Nicht angemeldet</div>
+                <div id="cloud-user-display" class="text-indigo-700 font-semibold"></div>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label for="auth-email" class="block text-gray-500 mb-1">E-Mail-Adresse</label>
+                    <input type="email" id="auth-email" placeholder="name@beispiel.de" class="w-full p-2.5 rounded-xl border text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="auth-password" class="block text-gray-500 mb-1">Passwort</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" class="w-full p-2.5 rounded-xl border text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button onclick="supabaseLogin()" class="py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-sm">Anmelden</button>
+                    <button onclick="supabaseRegister()" class="py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl transition shadow-sm">Registrieren</button>
+                </div>
+                <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-xl transition">Abmelden</button>
+            </div>
+            <button onclick="toggleSettingsModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Hilfe & Ausklappbare Anleitungen -->
+    <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleHelpModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto text-gray-800" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg text-indigo-900">📖 Hilfe & Anleitungen</h3>
+                <button onclick="toggleHelpModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <details class="bg-gray-50 border rounded-xl p-3">
+                    <summary class="font-bold cursor-pointer text-indigo-700">Wie verwalte ich Leihgaben und Kontakte?</summary>
+                    <p class="mt-2 text-gray-600 leading-relaxed">
+                        Lege zuerst Kontakte und Stamm-Gegenstände an. Bei der Erfassung eines Verleihs wählst du den Gegenstand und den Ausleiher aus, hinterlegst Kautionen oder Fristen und kannst direkt WhatsApp-Erinnerungen versenden.
+                    </p>
+                </details>
+                <details class="bg-gray-50 border rounded-xl p-3">
+                    <summary class="font-bold cursor-pointer text-indigo-700">Wie nutze ich Kalender-Erinnerungen & ICS?</summary>
+                    <p class="mt-2 text-gray-600 leading-relaxed">
+                        Für aktive Verleihvorgänge mit Rückgabedatum kannst du direkt einen Google-Kalender-Eintrag generieren oder eine ICS-Datei herunterladen, um rechtzeitig erinnert zu werden.
+                    </p>
+                </details>
+                <details class="bg-gray-50 border rounded-xl p-3">
+                    <summary class="font-bold cursor-pointer text-indigo-700">Wie erstelle ich einen PDF-Report?</summary>
+                    <p class="mt-2 text-gray-600 leading-relaxed">
+                        Mit dem Button „📄 PDF-Report“ erstellst du jederzeit eine übersichtliche Dokumentation aller verliehenen Gegenstände und offenen Kautionen für deine Unterlagen.
+                    </p>
+                </details>
+            </div>
+            <button onclick="toggleHelpModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-5xl space-y-6 mt-2">
+                
+        <!-- Dashboard Statistiken -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3" data-b3-panel="stats" id="b3-stats">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
+                <div class="p-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold">📦</div>
+                <div><p class="text-[11px] text-gray-500">Aktiv</p><h3 id="statActive" class="text-base font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
+                <div class="p-3 bg-red-50 text-red-600 rounded-xl font-bold">⏰</div>
+                <div><p class="text-[11px] text-gray-500">Überfällig (&gt;30T)</p><h3 id="statOverdue" class="text-base font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
+                <div class="p-3 bg-amber-50 text-amber-700 rounded-xl font-bold">⚠️</div>
+                <div><p class="text-[11px] text-gray-500">Verloren/Defekt</p><h3 id="statLost" class="text-base font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
+                <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">✅</div>
+                <div><p class="text-[11px] text-gray-500">Zurück</p><h3 id="statReturned" class="text-base font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3 sm:col-span-2 md:col-span-1">
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">💶</div>
+                <div><p class="text-[11px] text-gray-500">Offene Kaution</p><h3 id="statDeposit" class="text-base font-bold">0,00 €</h3></div>
+            </div>
+        </div>
+
+        <!-- Erfassung: Kontakte, Stamm-Gegenstände & Verleih -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-b3-panel="create" id="b3-create">
+            <!-- 1. Kontakte & Stamm-Gegenstände verwalten -->
+            <div class="space-y-4 md:col-span-1">
+                <!-- Kontakt anlegen -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
+                    <h2 class="text-base font-bold">👤 Kontakt anlegen</h2>
+                    <label class="helferlein-field" for="contactName"><span class="helferlein-field-label">Name</span><input type="text" id="contactName" placeholder="Name (z.B. Nachbar Müller)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Name (z.B. Nachbar Müller)"></label>
+                    <label class="helferlein-field" for="contactPhone"><span class="helferlein-field-label">Telefon (für WhatsApp)</span><input type="text" id="contactPhone" placeholder="Telefon (für WhatsApp)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Telefon (für WhatsApp)"></label>
+                    <button onclick="saveContact()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 rounded-xl text-xs">Kontakt speichern</button>
+                </div>
+
+                <!-- Stamm-Gegenstand (Inventar) anlegen -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
+                    <h2 class="text-base font-bold">🛠️ Stamm-Gegenstand anlegen</h2>
+                    <label class="helferlein-field" for="invTitle"><span class="helferlein-field-label">Bezeichnung</span><input type="text" id="invTitle" placeholder="Bezeichnung (z.B. Bosch Bohrhammer)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Bezeichnung (z.B. Bosch Bohrhammer)"></label>
+                    <label class="helferlein-field" for="invCategory"><span class="helferlein-field-label">Kategorie des Gegenstands</span><select id="invCategory" class="w-full p-2.5 border rounded-xl text-xs bg-white" aria-label="Kategorie des Gegenstands">
+                        <option value="Werkzeug">🔨 Werkzeug</option>
+                        <option value="Elektronik">💻 Elektronik & IT</option>
+                        <option value="Bücher & Medien">📚 Bücher & Medien</option>
+                        <option value="Sport & Freizeit">⚽ Sport & Freizeit</option>
+                        <option value="Sonstiges">📦 Sonstiges</option>
+                    </select></label>
+                    <label class="helferlein-field" for="invSerial"><span class="helferlein-field-label">Seriennummer / ISBN / Barcode</span><input type="text" id="invSerial" placeholder="Seriennummer / ISBN / Barcode" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Seriennummer / ISBN / Barcode"></label>
+                    <label class="helferlein-field" for="invGpsLink"><span class="helferlein-field-label">GPS-Tracker URL / AirTag Link (optional)</span><input type="text" id="invGpsLink" placeholder="GPS-Tracker URL / AirTag Link (optional)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="GPS-Tracker URL / AirTag Link (optional)"></label>
+                    <button onclick="saveInventoryItem()" class="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-medium py-2 rounded-xl text-xs">In Stamm-Inventar speichern</button>
+                </div>
+            </div>
+
+            <!-- 2. Gegenstand verliehen eintragen -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3 md:col-span-2 flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg font-bold mb-3">➕ Verleih-Vorgang erfassen</h2>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label for="itemInventorySelect" class="block text-[11px] font-semibold text-gray-600 mb-1">Gegenstand aus Inventar wählen:</label>
+                            <select id="itemInventorySelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="fillInventoryData(this)">
+                                <option value="">-- Gegenstand wählen --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="itemPersonSelect" class="block text-[11px] font-semibold text-gray-600 mb-1">Ausleiher wählen:</label>
+                            <select id="itemPersonSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="checkCustomPerson(this)">
+                                <option value="">-- Kontakt wählen --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <label class="helferlein-field" for="itemCustomPerson"><span class="helferlein-field-label">Oder neuen Namen direkt eingeben...</span><input type="text" id="itemCustomPerson" placeholder="Oder neuen Namen direkt eingeben..." class="w-full p-3 border rounded-xl text-sm mb-3 hidden"></label>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                        <div>
+                            <label for="itemDate" class="block text-[11px] font-semibold text-gray-600 mb-1">Ausleihdatum:</label>
+                            <input type="date" id="itemDate" class="w-full p-3 border rounded-xl text-sm">
+                        </div>
+                        <div>
+                            <label for="itemReturnDate" class="block text-[11px] font-semibold text-gray-600 mb-1">Geplante Rückgabe:</label>
+                            <input type="date" id="itemReturnDate" class="w-full p-3 border rounded-xl text-sm">
+                        </div>
+                        <div>
+                            <label for="itemDeposit" class="block text-[11px] font-semibold text-gray-600 mb-1">Kaution / Wert in €:</label>
+                            <input type="text" id="itemDeposit" placeholder="z.B. 50.00" class="w-full p-3 border rounded-xl text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                        <label class="helferlein-field" for="itemNote"><span class="helferlein-field-label">Notiz (optional)</span><input type="text" id="itemNote" placeholder="Notiz (optional)" class="p-3 border rounded-xl text-sm" aria-label="Notiz (optional)"></label>
+                        <label class="helferlein-field" for="itemPhotoInput"><span class="helferlein-field-label">Foto des verliehenen Gegenstands auswählen</span><input type="file" id="itemPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700" aria-label="Foto des verliehenen Gegenstands auswählen"></label>
+                    </div>
+                </div>
+
+                <button onclick="saveItem()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-xl text-sm shadow-sm">Verleih speichern</button>
+            </div>
+        </div>
+
+        <!-- Stamm-Inventar Übersicht -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="inventory" id="b3-inventory">
+            <h3 class="font-bold text-base">🛠️ Stamm-Inventar & Gegenstände (Mit Seriennummer & GPS)</h3>
+            <div id="inventoryList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                <p class="text-xs text-gray-400 italic">Keine Stamm-Gegenstände im Inventar hinterlegt.</p>
+            </div>
+        </div>
+
+        <!-- Verleih-Liste mit Filtern -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="loans" id="b3-loans">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+                <h3 class="font-bold text-lg">📋 Verleih-Zentrale & Historie</h3>
+                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                    <label class="helferlein-field" for="filterCategory"><span class="helferlein-field-label">Nach Kategorie filtern</span><select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Nach Kategorie filtern">
+                        <option value="">Alle Kategorien</option>
+                        <option value="Werkzeug">🔨 Werkzeug</option>
+                        <option value="Elektronik">💻 Elektronik & IT</option>
+                        <option value="Bücher & Medien">📚 Bücher & Medien</option>
+                        <option value="Sport & Freizeit">⚽ Sport & Freizeit</option>
+                        <option value="Sonstiges">📦 Sonstiges</option>
+                    </select></label>
+                    <label class="helferlein-field" for="filterPerson"><span class="helferlein-field-label">Verleih nach Person filtern</span><select id="filterPerson" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verleih nach Person filtern">
+                        <option value="">Alle Personen</option>
+                    </select></label>
+                </div>
+            </div>
+            <div id="itemsList" class="space-y-3">
+                <p class="text-sm text-gray-400 text-center py-4">Keine verliehenen Gegenstände erfasst.</p>
+            </div>
+        </div>
+
+        <!-- Amazon Affiliate Empfehlungen mit ID duhrrom-21 -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3" data-b3-panel="recommendations" id="b3-recommendations">
+            <h4 class="font-bold text-sm text-gray-700">🛒 Nützliches Zubehör & GPS-Tracker auf Amazon</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <a href="https://www.amazon.de/s?k=apple+airtag+bluetooth+tracker&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
+                    <span class="text-2xl">📍</span>
+                    <div>
+                        <p class="font-bold text-gray-800">Bluetooth & GPS Tracker (AirTags)</p>
+                        <p class="text-[10px] text-indigo-700">Ideal zur Sicherung von Werkzeug & Geräten →</p>
+                    </div>
+                </a>
+                <a href="https://www.amazon.de/s?k=werkzeugkoffer+sortimentskasten+leer&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
+                    <span class="text-2xl">🧰</span>
+                    <div>
+                        <p class="font-bold text-gray-800">Werkzeugkoffer & Boxen</p>
+                        <p class="text-[10px] text-indigo-700">Für die geordnete Aufbewahrung im Schuppen →</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL: QR Code Ansicht -->
+    <div id="qrModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeQrModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl" onclick="event.stopPropagation()">
+            <h3 id="qrTitle" class="font-bold text-lg text-indigo-800">QR-Code</h3>
+            <div id="qrcode" class="flex justify-center p-4 bg-gray-50 rounded-xl border"></div>
+            <p class="text-xs text-gray-500">Scannen, um Details aufzurufen.</p>
+            <button onclick="closeQrModal()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Bearbeiten -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl space-y-4">
+            <h3 class="text-lg font-bold">Verleih-Eintrag bearbeiten</h3>
+            <input type="hidden" id="editId">
+            <div><label for="editTitle" class="block text-xs font-semibold text-gray-600 mb-1">Gegenstand:</label><input type="text" id="editTitle" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div><label for="editPerson" class="block text-xs font-semibold text-gray-600 mb-1">Ausleiher:</label><input type="text" id="editPerson" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div class="grid grid-cols-2 gap-2">
+                <div><label for="editDate" class="block text-xs font-semibold text-gray-600 mb-1">Ausleihdatum:</label><input type="date" id="editDate" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label for="editReturnDate" class="block text-xs font-semibold text-gray-600 mb-1">Geplante Rückgabe:</label><input type="date" id="editReturnDate" class="w-full p-3 border rounded-xl text-sm"></div>
+            </div>
+            <div><label for="editDeposit" class="block text-xs font-semibold text-gray-600 mb-1">Kaution / Wert (€):</label><input type="text" id="editDeposit" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div><label for="editNote" class="block text-xs font-semibold text-gray-600 mb-1">Notiz:</label><input type="text" id="editNote" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button>
+                <button onclick="updateItem()" class="px-5 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Logik -->
+    <script>
+        // Supabase Konfiguration & Instanz
+        const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function toggleSettingsModal() {
+            document.getElementById('settingsModal').classList.toggle('hidden');
+        }
+
+        function toggleHelpModal() {
+            document.getElementById('helpModal').classList.toggle('hidden');
+        }
+
+        async function supabaseRegister() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            const { error } = await supabaseClient.auth.signUp({ email, password });
+            if(error) alert(error.message);
+            else { alert('Registrierung erfolgreich!'); checkUserSession(); }
+        }
+
+        async function supabaseLogin() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if(error) alert(error.message);
+            else { alert('Erfolgreich angemeldet!'); checkUserSession(); toggleSettingsModal(); }
+        }
+
+        async function supabaseLogout() {
+            await supabaseClient.auth.signOut();
+            checkUserSession();
+            alert('Abgemeldet.');
+        }
+
+        async function checkUserSession() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            const statusText = document.getElementById('cloud-status-text');
+            const userDisplay = document.getElementById('cloud-user-display');
+            const headerBadge = document.getElementById('header-user-badge');
+            const headerEmail = document.getElementById('header-user-email');
+            const btnLogout = document.getElementById('btn-logout');
+
+            if(user) {
+                statusText.innerText = "Status: Verbunden & Angemeldet";
+                userDisplay.innerText = user.email;
+                headerEmail.innerText = user.email;
+                headerBadge.classList.remove('hidden');
+                headerBadge.classList.add('inline-flex');
+                btnLogout.classList.remove('hidden');
+            } else {
+                statusText.innerText = "Nicht angemeldet";
+                userDisplay.innerText = "";
+                headerBadge.classList.add('hidden');
+                headerBadge.classList.remove('inline-flex');
+                btnLogout.classList.add('hidden');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('itemDate').valueAsDate = new Date();
+            loadDropdowns();
+            renderInventory();
+            renderApp();
+            checkUserSession();
+        });
+
+        function getData() {
+            try {
+                return JSON.parse(localStorage.getItem('verleih_tracker_pro_v3')) || { items: [], contacts: [], inventory: [] };
+            } catch(e) {
+                return { items: [], contacts: [], inventory: [] };
+            }
+        }
+
+        function saveData(data) {
+            if (!data || typeof data !== 'object' || !Array.isArray(data.items)) return false;
+            if (localStorage.getItem('helferlein_cloud_owner_verliehene-gegenstaende-verwalten') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
+                return false;
+            }
+            const existing = localStorage.getItem('verleih_tracker_pro_v3');
+            if (existing !== null) {
+                try { if (!Array.isArray(JSON.parse(existing).items)) throw new Error('invalid'); }
+                catch (_) { alert('Vorhandene Daten sind beschädigt; Überschreiben gesperrt.'); return false; }
+            }
+            try {
+                localStorage.setItem('verleih_tracker_pro_v3', JSON.stringify(data)); window.toolyaNotice?.('success','Änderungen auf diesem Gerät gespeichert.');
+                if (window.helferleinCloudBridge) void window.helferleinCloudBridge.changed(data).catch(console.error);
+                return true;
+            } catch (error) { console.error('Lokales Speichern fehlgeschlagen', error); return false; }
+        }
+
+        function saveContact() {
+            const name = document.getElementById('contactName').value.trim();
+            const phone = document.getElementById('contactPhone').value.trim();
+            if (!name) return alert("Bitte einen Namen eingeben!");
+
+            let data = getData();
+            if(!data.contacts) data.contacts = [];
+            data.contacts.push({ id: Date.now(), name, phone });
+            if (!saveData(data)) return;
+
+            document.getElementById('contactName').value = "";
+            document.getElementById('contactPhone').value = "";
+            loadDropdowns();
+            alert("Gespeichert");
+        }
+
+        function saveInventoryItem() {
+            const title = document.getElementById('invTitle').value.trim();
+            const category = document.getElementById('invCategory').value;
+            const serial = document.getElementById('invSerial').value.trim();
+            const gpsLink = document.getElementById('invGpsLink').value.trim();
+
+            if (!title) return alert("Bitte eine Bezeichnung für den Gegenstand angeben!");
+
+            let data = getData();
+            if(!data.inventory) data.inventory = [];
+            data.inventory.push({ id: Date.now(), title, category, serial, gpsLink });
+            if (!saveData(data)) return;
+
+            document.getElementById('invTitle').value = "";
+            document.getElementById('invSerial').value = "";
+            document.getElementById('invGpsLink').value = "";
+            loadDropdowns();
+            renderInventory();
+            alert("Gespeichert");
+        }
+
+        function deleteInventoryItem(id) {
+            if (!confirm("Diesen Stamm-Gegenstand wirklich löschen?")) return;
+            let data = getData();
+            data.inventory = data.inventory.filter(i => i.id !== id);
+            if (!saveData(data)) return;
+            loadDropdowns();
+            renderInventory();
+        }
+
+        function loadDropdowns() {
+            let data = getData();
+            const invSelect = document.getElementById('itemInventorySelect');
+            const personSelect = document.getElementById('itemPersonSelect');
+            const filterPerson = document.getElementById('filterPerson');
+
+            const inventory = data.inventory || [];
+            const contacts = data.contacts || [];
+
+            // DOM-Optionen statt HTML-Interpolation: Inventar- und Kontaktdaten sind Benutzereingaben.
+            const addOption = (select, value, label) => {
+                const option = new Option(String(label ?? ''), String(value ?? ''));
+                select.add(option);
+                return option;
+            };
+            invSelect.replaceChildren();
+            addOption(invSelect, '', '-- Inventar-Gegenstand wählen --');
+            inventory.forEach(i => {
+                const option = addOption(invSelect, i.title, `${i.title} (${i.category}${i.serial ? ' | SN: ' + i.serial : ''})`);
+                option.dataset.category = String(i.category ?? '');
+                option.dataset.serial = String(i.serial ?? '');
+                option.dataset.gps = String(i.gpsLink ?? '');
+            });
+            personSelect.replaceChildren();
+            addOption(personSelect, '', '-- Kontakt wählen --');
+            addOption(personSelect, 'custom', '+ Neuen Namen eingeben');
+            contacts.forEach(c => addOption(personSelect, c.name, c.name));
+            filterPerson.replaceChildren();
+            addOption(filterPerson, '', 'Alle Personen');
+            [...new Set(data.items.map(i => i.person))].forEach(p => addOption(filterPerson, p, p));
+        }
+
+        function fillInventoryData(select) {
+            // Optional
+        }
+
+        function checkCustomPerson(select) {
+            const customInput = document.getElementById('itemCustomPerson');
+            if (select.value === 'custom') {
+                customInput.classList.remove('hidden');
+                customInput.focus();
+            } else {
+                customInput.classList.add('hidden');
+                customInput.value = "";
+            }
+        }
+
+        function saveItem() {
+            const invSelect = document.getElementById('itemInventorySelect');
+            let title = invSelect.value;
+            let category = "Sonstiges";
+            let serial = "";
+            let gpsLink = "";
+
+            if (invSelect.selectedOptions.length > 0 && invSelect.selectedOptions[0].dataset.category) {
+                category = invSelect.selectedOptions[0].dataset.category;
+                serial = invSelect.selectedOptions[0].dataset.serial || "";
+                gpsLink = invSelect.selectedOptions[0].dataset.gps || "";
+            }
+
+            if (!title) {
+                title = prompt("Bitte Namen des Gegenstands eingeben:");
+                if (!title) return;
+            }
+
+            let person = document.getElementById('itemPersonSelect').value;
+            if (person === 'custom' || !person) {
+                person = document.getElementById('itemCustomPerson').value.trim();
+            }
+            const date = document.getElementById('itemDate').value;
+            const returnDate = document.getElementById('itemReturnDate').value;
+            const deposit = parseFloat(document.getElementById('itemDeposit').value.replace(',', '.')) || 0;
+            const note = document.getElementById('itemNote').value.trim();
+            const photoInput = document.getElementById('itemPhotoInput');
+
+            if (!person || !date) return alert("Bitte Person und Ausleihdatum angeben!");
+
+            if (photoInput.files && photoInput.files[0]) {
+                compressImage(photoInput.files[0], (compressedPhoto) => {
+                    storeData(title, category, serial, gpsLink, person, date, returnDate, deposit, note, compressedPhoto);
+                });
+            } else {
+                storeData(title, category, serial, gpsLink, person, date, returnDate, deposit, note, "");
+            }
+        }
+
+        function compressImage(file, callback) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 300;
+                    const MAX_HEIGHT = 300;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    } else {
+                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    callback(canvas.toDataURL('image/jpeg', 0.7));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function storeData(title, category, serial, gpsLink, person, date, returnDate, deposit, note, photo) {
+            let data = getData();
+            data.items.push({ id: Date.now(), title, category, serial, gpsLink, person, date, returnDate, deposit, note, photo, status: 'active' });
+            if (!saveData(data)) return;
+
+            document.getElementById('itemInventorySelect').value = "";
+            document.getElementById('itemPersonSelect').value = "";
+            document.getElementById('itemCustomPerson').value = "";
+            document.getElementById('itemCustomPerson').classList.add('hidden');
+            document.getElementById('itemDeposit').value = "";
+            document.getElementById('itemNote').value = "";
+            document.getElementById('itemReturnDate').value = "";
+            document.getElementById('itemPhotoInput').value = "";
+            document.getElementById('itemDate').valueAsDate = new Date();
+            
+            loadDropdowns();
+            renderApp();
+        }
+
+        function setStatus(id, newStatus) {
+            let data = getData();
+            let item = data.items.find(i => i.id === id);
+            if (item) {
+                item.status = newStatus;
+                if (!saveData(data)) return;
+                renderApp();
+            }
+        }
+
+        function extendReturnDate(id, days) {
+            let data = getData();
+            let item = data.items.find(i => i.id === id);
+            if (item) {
+                let baseDate = item.returnDate ? new Date(item.returnDate) : new Date();
+                baseDate.setDate(baseDate.getDate() + days);
+                item.returnDate = baseDate.toISOString().split('T')[0];
+                if (!saveData(data)) return;
+                renderApp();
+                alert(`Rückgabedatum um ${days} Tage verlängert!`);
+            }
+        }
+
+        function deleteItem(id) {
+            if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
+            let data = getData();
+            data.items = data.items.filter(i => i.id !== id);
+            if (!saveData(data)) return;
+            loadDropdowns();
+            renderApp();
+        }
+
+        function openEditModal(id) {
+            let data = getData();
+            let item = data.items.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('editId').value = item.id;
+            document.getElementById('editTitle').value = item.title;
+            document.getElementById('editPerson').value = item.person;
+            document.getElementById('editDate').value = item.date;
+            document.getElementById('editReturnDate').value = item.returnDate || "";
+            document.getElementById('editDeposit').value = item.deposit || "";
+            document.getElementById('editNote').value = item.note || "";
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        function updateItem() {
+            const id = parseInt(document.getElementById('editId').value);
+            const title = document.getElementById('editTitle').value.trim();
+            const person = document.getElementById('editPerson').value.trim();
+            const date = document.getElementById('editDate').value;
+            const returnDate = document.getElementById('editReturnDate').value;
+            const deposit = parseFloat(document.getElementById('editDeposit').value.replace(',', '.')) || 0;
+            const note = document.getElementById('editNote').value.trim();
+
+            if (!title || !person || !date) return alert("Bitte Gegenstand, Person und Ausleihdatum angeben!");
+
+            let data = getData();
+            let item = data.items.find(i => i.id === id);
+            if (item) {
+                item.title = title;
+                item.person = person;
+                item.date = date;
+                item.returnDate = returnDate;
+                item.deposit = deposit;
+                item.note = note;
+                if (!saveData(data)) return;
+            }
+            closeEditModal();
+            loadDropdowns();
+            renderApp();
+        }
+
+        function showQrCode(title, person) {
+            document.getElementById('qrTitle').innerText = title + " (" + person + ")";
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), {
+                text: "Gegenstand: " + title + " | Verliehen an: " + person,
+                width: 180,
+                height: 180
+            });
+            document.getElementById('qrModal').classList.remove('hidden');
+        }
+
+        function closeQrModal() {
+            document.getElementById('qrModal').classList.add('hidden');
+        }
+
+        function downloadICS(title, dateStr, person) {
+            const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateStr));
+            if (!match) return alert("Ungültiges Rückgabedatum.");
+            const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+            if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== dateStr)
+                return alert("Ungültiges Rückgabedatum.");
+            const formatDate = value => value.toISOString().slice(0, 10).replace(/-/g, '');
+            const startDate = formatDate(date);
+            date.setUTCDate(date.getUTCDate() + 1);
+            const endDate = formatDate(date);
+            const escapeIcs = value => String(value ?? '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+            const icsContent = [
+                "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Toolya//Verleih//DE",
+                "BEGIN:VEVENT", `SUMMARY:${escapeIcs(`Rückgabe: ${title} (${person})`)}`,
+                `DTSTART;VALUE=DATE:${startDate}`, `DTEND;VALUE=DATE:${endDate}`,
+                "DESCRIPTION:Verleih-Rückgabe fällig", "END:VEVENT", "END:VCALENDAR", ""
+            ].join("\r\n");
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Rueckgabe_${String(title).replace(/[^a-z0-9_-]+/gi, '_')}.ics`;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
+        }
+
+        function safeGpsUrl(value) {
+            try {
+                const url = new URL(String(value), window.location.href);
+                return url.protocol === 'https:' || url.protocol === 'http:' ? escapeHtml(url.href) : '';
+            } catch (_) { return ''; }
+        }
+
+        function safeImageUrl(value) {
+            const image = String(value ?? '');
+            return /^data:image\/(?:png|jpeg|gif|webp);base64,[a-z0-9+/=]+$/i.test(image) ? escapeHtml(image) : '';
+        }
+
+        function renderInventory() {
+            let data = getData();
+            const container = document.getElementById('inventoryList');
+            const inventory = data.inventory || [];
+
+            if (inventory.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 italic">Keine Stamm-Gegenstände im Inventar hinterlegt.</p>`;
+                return;
+            }
+
+            container.onclick = event => {
+                const button = event.target.closest('[data-inventory-delete]');
+                if (!button || !container.contains(button)) return;
+                const index = Number(button.dataset.inventoryDelete);
+                if (!Number.isInteger(index) || index < 0 || index >= inventory.length) return;
+                deleteInventoryItem(inventory[index].id);
+            };
+            container.innerHTML = inventory.map((i, index) => `
+                <div class="p-3 border rounded-xl bg-gray-50 flex justify-between items-start text-xs">
+                    <div>
+                        <span class="font-bold text-indigo-800 block">${escapeHtml(i.title)}</span>
+                        <span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full inline-block mt-1">${escapeHtml(i.category)}</span>
+                        ${i.serial ? `<p class="text-gray-600 mt-1">SN/ISBN: <span class="font-mono">${escapeHtml(i.serial)}</span></p>` : ''}
+                        ${safeGpsUrl(i.gpsLink) ? `<a href="${safeGpsUrl(i.gpsLink)}" rel="noopener noreferrer" target="_blank" class="text-blue-600 font-semibold underline block mt-1">📍 GPS-Tracker öffnen</a>` : ''}
+                    </div>
+                    <button data-inventory-delete="${index}" class="text-red-500 font-bold px-1.5 hover:bg-red-100 rounded">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function renderApp() {
+            let data = getData();
+            const container = document.getElementById('itemsList');
+            const categoryFilter = document.getElementById('filterCategory').value;
+            const personFilter = document.getElementById('filterPerson').value;
+
+            let activeCount = data.items.filter(i => i.status === 'active').length;
+            let returnedCount = data.items.filter(i => i.status === 'returned').length;
+            let lostCount = data.items.filter(i => i.status === 'lost').length;
+            let overdueCount = 0;
+            let totalDeposit = data.items.filter(i => i.status === 'active').reduce((sum, i) => sum + Number(i.deposit || 0), 0);
+
+            const today = new Date();
+            let filteredItems = data.items;
+            if (categoryFilter !== "") {
+                filteredItems = filteredItems.filter(i => i.category === categoryFilter);
+            }
+            if (personFilter !== "") {
+                filteredItems = filteredItems.filter(i => i.person === personFilter);
+            }
+
+            // Event-Delegation: keine benutzerkontrollierten Zeichen in Inline-JavaScript.
+            container.onclick = event => {
+                const trigger = event.target.closest('[data-loan-action]');
+                if (!trigger || !container.contains(trigger)) return;
+                const index = Number(trigger.dataset.loanIndex);
+                if (!Number.isInteger(index) || index < 0 || index >= filteredItems.length) return;
+                const item = filteredItems[index];
+                switch (trigger.dataset.loanAction) {
+                    case 'ics': downloadICS(item.title, item.returnDate, item.person); break;
+                    case 'qr': showQrCode(item.title, item.person); break;
+                    case 'extend7': extendReturnDate(item.id, 7); break;
+                    case 'extend14': extendReturnDate(item.id, 14); break;
+                    case 'edit': openEditModal(item.id); break;
+                    case 'delete': deleteItem(item.id); break;
+                }
+            };
+            container.onchange = event => {
+                const trigger = event.target.closest('[data-loan-action="status"]');
+                if (!trigger || !container.contains(trigger)) return;
+                const index = Number(trigger.dataset.loanIndex);
+                if (!Number.isInteger(index) || index < 0 || index >= filteredItems.length) return;
+                if (['active', 'returned', 'lost'].includes(trigger.value)) {
+                    setStatus(filteredItems[index].id, trigger.value);
+                }
+            };
+
+            if (filteredItems.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Gegenstände für diesen Filter gefunden.</p>`;
+            } else {
+                container.innerHTML = filteredItems.map((i, itemIndex) => {
+                    let d = new Date(i.date);
+                    let diff = Math.ceil((today - d) / (1000 * 60 * 60 * 24));
+                    
+                    let badge = "";
+                    if (i.status === 'returned') {
+                        badge = `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">✅ Zurückgegeben</span>`;
+                    } else if (i.status === 'lost') {
+                        badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">⚠️ Verloren / Defekt</span>`;
+                    } else if (diff > 30) {
+                        overdueCount++;
+                        badge = `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Überfällig (${diff}T)</span>`;
+                    } else {
+                        badge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">🟢 aktiv (${diff}T)</span>`;
+                    }
+
+                    let contact = (data.contacts || []).find(c => c.name === i.person);
+                    let phone = contact ? contact.phone : "";
+                    let whatsappDropdown = "";
+                    if (phone && i.status === 'active') {
+                        let cleanPhone = phone.replace(/[^0-9+]/g, '');
+                        let msgFriendly = encodeURIComponent(`Hi ${i.person}! Wollte kurz nachhören, wie es mit meinem "${i.title}" läuft und wann du es ca. zurückbringen kannst? Liebe Grüße!`);
+                        let msgUrgent = encodeURIComponent(`Hallo ${i.person}, ich benötige meinen Gegenstand "${i.title}" in den nächsten Tagen wieder. Sag mir bitte Bescheid, wann das klappt. Danke!`);
+                        
+                        whatsappDropdown = `
+                            <select onchange="if(this.value) { window.open(this.value, '_blank'); this.value=''; }" class="p-1.5 bg-green-50 text-green-700 hover:bg-green-100 rounded-xl text-xs font-semibold border border-green-200">
+                                <option value="">💬 WhatsApp...</option>
+                                <option value="https://wa.me/${cleanPhone}?text=${msgFriendly}">Freundliche Erinnerung</option>
+                                <option value="https://wa.me/${cleanPhone}?text=${msgUrgent}">Dringende Rückgabe</option>
+                            </select>
+                        `;
+                    }
+
+                    let extendButtons = "";
+                    let calButtons = "";
+                    let gpsButton = "";
+
+                    if (safeGpsUrl(i.gpsLink)) {
+                        gpsButton = `<a href="${safeGpsUrl(i.gpsLink)}" rel="noopener noreferrer" target="_blank" class="px-2 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="GPS-Tracker">📍 GPS</a>`;
+                    }
+
+                    if (i.status === 'active') {
+                        extendButtons = `
+                            <button data-loan-action="extend7" data-loan-index="${itemIndex}" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold" title="+7 Tage">+7T</button>
+                            <button data-loan-action="extend14" data-loan-index="${itemIndex}" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold" title="+14 Tage">+14T</button>
+                        `;
+
+                        if (i.returnDate) {
+                            let rd = new Date(i.returnDate);
+                            let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Rückgabe: ' + i.title + ' (' + i.person + ')')}&dates=${rd.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${rd.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('Verleih-Rückgabe fällig')}`;
+                            calButtons = `
+                                <a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="px-2 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
+                                <button data-loan-action="ics" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Kalender">📥 ICS</button>
+                            `;
+                        }
+                    }
+
+                    let statusDropdown = `
+                        <select data-loan-action="status" data-loan-index="${itemIndex}" class="p-1.5 bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold border">
+                            <option value="active" ${i.status === 'active' ? 'selected' : ''}>📌 Status: Aktiv</option>
+                            <option value="returned" ${i.status === 'returned' ? 'selected' : ''}>✅ Zurückgegeben</option>
+                            <option value="lost" ${i.status === 'lost' ? 'selected' : ''}>⚠️ Verloren / Defekt</option>
+                        </select>
+                    `;
+
+                    return `
+                        <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 ${i.status !== 'active' ? 'opacity-60' : ''}">
+                            <div class="flex items-center space-x-3">
+                                ${safeImageUrl(i.photo) ? `<img src="${safeImageUrl(i.photo)}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" data-loan-action="qr" data-loan-index="${itemIndex}">` : `<div data-loan-action="qr" data-loan-index="${itemIndex}" class="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer" title="QR-Code anzeigen">📱 QR</div>`}
+                                <div>
+                                    <div class="flex items-center space-x-2 flex-wrap gap-1">
+                                        <span class="text-xs font-bold text-gray-800">📦 ${escapeHtml(i.title)}</span>
+                                        <span class="text-[10px] bg-gray-200 text-gray-700 font-semibold px-2 py-0.5 rounded-full">${escapeHtml(i.category || 'Sonstiges')}</span>
+                                        <span class="text-xs text-indigo-600 font-semibold">→ ${escapeHtml(i.person)}</span>
+                                        ${badge}
+                                        ${i.serial ? `<span class="text-[10px] font-mono bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border">SN: ${escapeHtml(i.serial)}</span>` : ''}
+                                        ${i.deposit > 0 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">Kaution: ${Number(i.deposit).toFixed(2).replace('.', ',')} €</span>` : ''}
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">Ausleihe: ${d.toLocaleDateString('de-DE')} ${i.returnDate ? '| Rückgabe: ' + new Date(i.returnDate).toLocaleDateString('de-DE') : ''} ${i.note ? '| Notiz: ' + escapeHtml(i.note) : ''}</p>
+                                    ${i.status === 'active' ? `<div class="flex gap-1 mt-1.5 items-center"><span class="text-[10px] text-gray-400">Verlängern:</span> ${extendButtons}</div>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
+                                ${gpsButton}
+                                ${whatsappDropdown}
+                                ${calButtons}
+                                ${statusDropdown}
+                                <button data-loan-action="edit" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
+                                <button data-loan-action="delete" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            document.getElementById('statActive').innerText = activeCount;
+            document.getElementById('statOverdue').innerText = overdueCount;
+            document.getElementById('statLost').innerText = lostCount;
+            document.getElementById('statReturned').innerText = returnedCount;
+            document.getElementById('statDeposit').innerText = totalDeposit.toFixed(2).replace('.', ',') + ' €';
+        }
+
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let data = getData();
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(18);
+            doc.text("Leih- & Verleih-Report Pro", 14, 20);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+
+            let y = 35;
+            let totalDeposit = data.items.filter(i => i.status === 'active').reduce((sum, i) => sum + Number(i.deposit || 0), 0);
+
+            doc.setFont("helvetica", "bold");
+            doc.text(`Offene Kaution / Wert: ${totalDeposit.toFixed(2)} EUR`, 14, y);
+            y += 10;
+
+            doc.setFont("helvetica", "underline");
+            doc.text("Verleih-Historie:", 14, y);
+            y += 7;
+
+            doc.setFont("helvetica", "normal");
+            data.items.forEach(i => {
+                if (y > 270) { doc.addPage(); y = 20; }
+                let statusLabel = i.status === 'returned' ? "[ZURÜCK]" : (i.status === 'lost' ? "[VERLOREN/DEFEKT]" : "[AKTIV]");
+                let serialText = i.serial ? ` (SN: ${i.serial})` : "";
+                let depText = Number(i.deposit || 0) > 0 ? ` [Kaution: ${Number(i.deposit).toFixed(2)} EUR]` : "";
+                const lines = doc.splitTextToSize(`- ${statusLabel} ${i.title}${serialText} an ${i.person} (seit ${new Date(i.date).toLocaleDateString('de-DE')})${depText}`, 180);
+                lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
+            });
+
+            doc.save("verleih-report-pro.pdf");
+        }
+    </script>
+</body>
+</html>

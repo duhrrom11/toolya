@@ -1,0 +1,10 @@
+{
+  "name": "Toolya – Deine Alltagshelfer",
+  "short_name": "Toolya",
+  "id": "/",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f3f7fb",
+  "theme_color": "#086b78"
+}

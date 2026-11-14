@@ -1,4 +1,4 @@
-/* Einheitlicher, barrierearmer Einstellungszugang für alle Helferlein-Tools. */
+/* Einheitlicher, barrierearmer Einstellungszugang für alle Toolya-Tools. */
 .helferlein-gear{
   appearance:none;display:inline-grid;place-items:center;flex:0 0 auto;
   width:46px;min-width:46px;height:46px;border-radius:13px;

@@ -1,19 +1,1039 @@
-<!doctype html>
-<html lang="de">
+<!DOCTYPE html>
+<html lang="de" class="h-full">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#0284c7">
-<title>Toolya – Bald verfügbar</title>
-<style>
-:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:light}
-body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f0f7ff;color:#13243a}
-main{max-width:560px;padding:36px;text-align:center}
-h1{font-size:clamp(3rem,9vw,5rem);margin:0;color:#0369a1;letter-spacing:-.05em}
-p{font-size:1.2rem;line-height:1.65}
-small{color:#475569}
-</style>
-</head>
-<body><main><h1>toolya.</h1><p>Praktische Online-Tools für deinen Alltag.<br>Hier entsteht unsere neue Website.</p><p><a href="/tools/wishes/index.html" style="display:inline-block;padding:12px 20px;border-radius:12px;background:#0369a1;color:white;text-decoration:none;font-weight:700">♡ Wishlist öffnen</a></p><small>Die bisherigen Helferlein-Tools bleiben vorerst unter ihrer bisherigen Adresse erreichbar.</small></main></body>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO Meta-Daten -->
+    <title>✨ Kostenlose Online-Tools & clevere Rechner ✨ | Toolya</title>
+    <meta name="description" content="Entdecke 12 kostenlose Online-Rechner und Apps: Haushaltsbuch, Zählerstände, Backform-Umrechner, WG-Planer und mehr. Direkt im Browser.">
+    <link rel="canonical" href="https://toolya.app/index.html">
+    <meta name="robots" content="index,follow">
+
+    <!-- Open Graph / Social Media Sharing -->
+    <meta property="og:title" content="Kostenlose Online-Tools & clevere Rechner | Toolya">
+    <meta property="og:description" content="Entdecke 12 praktische Web-Apps für Auto, Haushalt & Finanzen – ohne Anmeldung nutzbar, mit optionalem Konto.">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:url" content="https://toolya.app/index.html">
+    <meta property="og:image" content="https://toolya.app/assets/preview.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Toolya – praktische Alltagstools">
+    <meta name="twitter:description" content="Kostenlose Werkzeuge für Alltag und Haushalt, mit optionalem Konto.">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <!-- PWA / App-Modus Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Alltags-Tools">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#0284c7">
+
+    <!-- Schema.org -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "name": "Kostenlose Online-Tools & clevere Rechner | Toolya",
+          "operatingSystem": "Web Browser",
+          "applicationCategory": "UtilitiesApplication",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+          "description": "Kostenlose Online-Tools für Haushalt, Finanzen und Organisation ohne Anmeldung. Lokale Speicherung und optionale Online-Dienste je nach Tool.",
+          "author": { "@type": "Person", "name": "Romain Duhr" }
+        }
+      ]
+    }
+    </script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
+            background: linear-gradient(135deg, #0284c7 0%, #6366f1 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tool-card:hover::before { opacity: 1; }
+    </style>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <script src="assets/vendor/supabase-2.57.0.js"></script>
+    <link rel="stylesheet" href="assets/helferlein-b3-startseite.css">
+    <script defer src="assets/helferlein-b3-startseite.js"></script>
+    <link rel="stylesheet" href="assets/helferlein-accessibility.css?v=20261112-3">
+    <script src="assets/helferlein-accessibility.js?v=20261112-3" defer></script>
+<script defer src="assets/helferlein-dialogs.js"></script>
+<script type="module" src="shared/toolya/platform.mjs"></script></head>
+<body class="b3-home bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
+
+    <!-- B3 Toolya Hub: redesigned header and discoverability, same tools and storage -->
+<header class="b3-hub-header">
+ <div class="b3-hub-topbar">
+  <a class="b3-hub-logo" href="index.html" aria-label="Toolya Startseite"><span class="b3-hub-logo-mark" aria-hidden="true">✳</span> Toolya</a>
+  <nav class="b3-hub-nav" aria-label="Hauptnavigation">
+   <a href="#toolsGrid">Alle Tools</a>
+   <button type="button" id="userInfo" class="b3-hub-account b3-auth-status b3-auth-signed-out" aria-controls="settingsModal" aria-haspopup="dialog" aria-label="Anmelden oder registrieren">Anmelden/Registrieren</button>
+   <button type="button" id="settingsBtn" aria-haspopup="dialog" aria-controls="settingsModal" aria-label="Einstellungen öffnen">⚙ Einstellungen</button>
+  </nav>
+ </div>
+ <div class="b3-hub-hero">
+  <div>
+   <span class="b3-hero-eyebrow">✦ Dein digitaler Werkzeugkasten</span>
+   <h1>Mehr Alltag.<br><span>Weniger Aufwand.</span></h1>
+   <p>Zwölf praktische Helfer für Finanzen, Zuhause, Organisation und unterwegs.</p>
+   <p class="b3-hero-status">✓ 12 kostenlose Web-Apps &nbsp;·&nbsp; ✓ Ohne Installation</p>
+  </div>
+  <aside class="b3-hero-preview" aria-label="Dein Schnellstart">
+   <div class="b3-preview-heading">⭐ Mein Schnellstart</div>
+   <div class="b3-preview-list" id="b3-quickstart-list" aria-live="polite">
+    <p class="b3-quickstart-empty">Markiere unten ein Tool mit ⭐, damit es hier erscheint.</p>
+   </div>
+   <p class="b3-preview-hint">Hier erscheinen deine ersten drei Favoriten.</p>
+  </aside>
+ </div>
+</header>
+
+<!-- Main Content -->
+    <main id="main-content" tabindex="-1" class="b3-hub-main flex-grow container mx-auto p-4 md:p-8 max-w-7xl space-y-6">
+
+        <!-- B3 Kategorie- und Suchbereich: rein lokale Filterung der vorhandenen Karten -->
+<section class="b3-discovery" id="toolDiscovery" aria-label="Werkzeugfinder">
+ <div class="b3-discovery-top">
+  <div><h2 class="b3-section-heading">Finde dein Toolya</h2>
+    <p class="b3-section-subtitle" id="b3-result-count" role="status" aria-live="polite">12 von 12 Tools</p></div>
+ </div>
+ <div class="b3-categories" role="group" aria-label="Tool-Kategorien">
+  <button type="button" class="b3-filter" data-b3-category-filter="alle" aria-pressed="true">Alle 12</button>
+  <button type="button" class="b3-filter" data-b3-category-filter="finanzen" aria-pressed="false">💶 Finanzen</button>
+  <button type="button" class="b3-filter" data-b3-category-filter="zuhause" aria-pressed="false">🏡 Zuhause</button>
+  <button type="button" class="b3-filter" data-b3-category-filter="organisation" aria-pressed="false">📋 Organisation</button>
+  <button type="button" class="b3-filter" data-b3-category-filter="unterwegs" aria-pressed="false">🚗 Unterwegs</button>
+  <button type="button" class="b3-filter" data-b3-category-filter="tiere" aria-pressed="false">🐾 Tiere</button>
+ </div>
+</section>
+<p id="searchEmptyState" class="hidden text-sm text-gray-600 bg-white border border-gray-200 rounded-xl p-4" role="status" aria-live="polite">Keine Tools in dieser Kategorie gefunden.</p>
+
+<!-- Tools Grid (Alle 12 Tools) -->
+        <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- Wishlist -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="wishlist" data-category="organisation" data-name="wishlist wunschlisten wünsche geschenke geschenkplanung amazon merkliste geburtstag hochzeit ideen">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl font-bold border border-rose-200 shadow-inner" aria-hidden="true">♡</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('wishlist', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="wishlist" aria-label="Wishlist zu Favoriten hinzufügen oder entfernen">⭐</button>
+                            </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Wishlist – Wunschlisten &amp; Geschenke</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Erstelle persönliche Wunschlisten, teile deine Wünsche mit Familie und Freunden, entdecke Geschenkideen und plane Geschenke für Geburtstage und andere Anlässe.</p>
+                </div>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
+                    <a href="tools/wishes/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 1 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kassenbon" data-category="finanzen" data-name="haushaltsbuch ausgaben budget kassenbon scanner belege garantie rechner">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-bold border border-emerald-200 shadow-inner" aria-hidden="true">🧾</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('kassenbon', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kassenbon">⭐</button>
+                            </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Haushaltsbuch mit Kassenbon-Scanner</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Behalte dein Geld im Blick: Erfasse Einnahmen und Ausgaben, plane Budgets, scanne Kassenbons und finde wichtige Belege oder Garantiefristen schnell wieder.</p>
+
+                </div>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
+                    <a href="tools/budget/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 2 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kisten" data-category="zuhause" data-name="umzugskisten app inventarliste inventar kisten qr code umzug lager">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl font-bold border border-blue-200 shadow-inner" aria-hidden="true">📦</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('kisten', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kisten">⭐</button>
+                            </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Umzugskisten-App & Inventarliste</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Behalte beim Umzug oder im Lager den Überblick: Erfasse den Inhalt jeder Kiste, suche nach Gegenständen und finde mit QR-Code-Etiketten alles leichter wieder.</p>
+
+                </div>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
+                    <a href="tools/moving/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 3 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="wg-kasse" data-category="finanzen" data-name="wg organisator wg ausgaben aufteilen wg haushaltsbuch putzplan kalender">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl font-bold border border-amber-200 shadow-inner" aria-hidden="true">💶</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('wg-kasse', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="wg-kasse">⭐</button>
+                            </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">WG-Organisator mit Haushaltsbuch</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Organisiert euren gemeinsamen Alltag: Teilt Ausgaben gerecht auf, führt ein Haushaltsbuch und verwaltet Putzplan, Kalender und Notizen an einem Ort.</p>
+
+                </div>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
+                    <a href="tools/housemates/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 4 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="notizen" data-category="organisation" data-name="digitaler nachlass nachlassverwalter dokumente vorsorge sicherheitsprüfung">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl font-bold border border-purple-200 shadow-inner" aria-hidden="true">🔐</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('notizen', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="notizen">⭐</button>
+
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Digitaler Nachlassverwalter</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Sammle wichtige Informationen für deine Angehörigen und lege Vertrauenspersonen fest. Die Notfallfreigabe wird noch eingerichtet – bitte noch keine Passwörter oder PINs hinterlegen.</p>
+
+                </div>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
+                    <a href="tools/estate/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 5 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kfz" data-category="unterwegs" data-name="autokosten rechner tankbuch reifenwechsel tüv fahrzeugkosten wartung">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center text-xl font-bold border border-red-200 shadow-inner" aria-hidden="true">🚗</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('kfz', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kfz">⭐</button>
+                            </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Autokosten-Rechner & Reifenwechsel</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Tankkosten, Reparaturen, TÜV-Termine und Reifenwechsel dokumentieren. Fahrzeugkosten im Blick behalten.</p>
+
+                </div>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
+                    <a href="tools/car/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 6 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="haustier" data-category="tiere" data-name="impfpass hund impfpass katze haustier gesundheitspass tierarzt impfungen">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center text-xl font-bold border border-teal-200 shadow-inner" aria-hidden="true">🐾</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('haustier', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="haustier">⭐</button>
+                            </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Digitaler Impfpass für Hund & Katze</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Impfungen, Tierarztbesuche, Medikamente, Gewicht und Kosten im digitalen Haustier-Gesundheitspass erfassen.</p>
+
+                </div>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
+                    <a href="tools/pet-health/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 7 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="parken" data-category="unterwegs" data-name="parkplatz merken parkschein timer parkzeit gps auto wiederfinden">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl font-bold border border-sky-200 shadow-inner" aria-hidden="true">🅿️</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('parken', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="parken">⭐</button>
+                            </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Parkplatz-Merker & Parkschein-Timer</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Parkplatz per GPS merken, Parkzeit im Blick behalten und Parkgebühren und Parkvorgänge verwalten.</p>
+
+                </div>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
+                    <a href="tools/parking/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 8 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="verleih" data-category="organisation" data-name="verliehene gegenstände verwalten werkzeug verleihen leihgaben kaution">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold border border-indigo-200 shadow-inner" aria-hidden="true">🤝</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('verleih', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="verleih">⭐</button>
+                            </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Verliehene Gegenstände verwalten</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Werkzeuge, Bücher und andere Leihgaben erfassen, Rückgaben verfolgen und Erinnerungen vorbereiten.</p>
+
+                </div>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
+                    <a href="tools/loans/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 9 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="pflanzen" data-category="zuhause" data-name="pflanzenpflege app gießplan pflanzen gießen erinnerung düngeplan">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-lime-50 text-lime-600 rounded-xl flex items-center justify-center text-xl font-bold border border-lime-200 shadow-inner" aria-hidden="true">🌱</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('pflanzen', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="pflanzen">⭐</button>
+                            </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Pflanzenpflege-App mit Gießplan</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Zimmer- und Gartenpflanzen organisieren, Gießintervalle und Düngen dokumentieren und Pflege planen.</p>
+
+                </div>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
+                    <a href="tools/plants/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 10 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="energie" data-category="finanzen" data-name="zählerstände erfassen stromzähler wasserzähler gaszähler verbrauch kosten">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-xl font-bold border border-orange-200 shadow-inner" aria-hidden="true">⚡</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('energie', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="energie">⭐</button>
+                            </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Zählerstände erfassen: Strom, Gas & Wasser</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Strom-, Wasser- und Gaszählerstände dokumentieren, Verbrauch auswerten und Kosten vergleichen.</p>
+
+                </div>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
+                    <a href="tools/meters/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 11 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="backform" data-category="zuhause" data-name="backform umrechnen backform rechner rezeptrechner zutaten teigmenge backzeit">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-pink-50 text-pink-600 rounded-xl flex items-center justify-center text-xl font-bold border border-pink-200 shadow-inner" aria-hidden="true">🍰</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('backform', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="backform">⭐</button>
+                            </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Backform-Umrechner & Rezeptrechner</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Du hast eine andere Backform als im Rezept? Rechne Zutaten und Teigmengen passend um und erhalte eine Orientierung für die neue Backzeit.</p>
+
+                </div>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
+                    <a href="tools/baking/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FAQ-Sektion -->
+    <section class="b3-faq container mx-auto px-4 max-w-7xl mt-8 pt-8 border-t border-gray-200" aria-labelledby="faq-title">
+      <h2 id="faq-title" class="text-lg font-bold text-gray-800 mb-4">Häufig gestellte Fragen</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2"><h3 class="font-bold text-gray-900">Was kostet Toolya?</h3>
+          <p>Die derzeit angebotenen Tools kannst du kostenlos nutzen. Freiwillige Unterstützung über <a href="https://ko-fi.com/duhrrom" rel="noopener noreferrer" target="_blank" class="text-sky-700 underline">Ko-fi</a> ist möglich. Einige Produktlinks in der Wishlist sind Partnerlinks.</p></div>
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2"><h3 class="font-bold text-gray-900">Brauche ich ein Konto?</h3>
+          <p>Viele Alltagsfunktionen laufen ohne Anmeldung. Für Wunschlisten mit Online-Funktionen, Cloud-Sicherungen oder den digitalen Nachlass kann eine Anmeldung nötig sein.</p></div>
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2"><h3 class="font-bold text-gray-900">Wo werden meine Daten gespeichert?</h3>
+          <p>Je nach Tool im Browser auf deinem Gerät und/oder bei einem Onlinedienst wie Supabase. Manche Funktionen binden weitere externe Dienste ein. Einzelheiten stehen in der <a href="privacy.html" class="text-sky-700 underline">Datenschutzerklärung</a>.</p></div>
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2"><h3 class="font-bold text-gray-900">Wie sichere ich meine Daten?</h3>
+          <p>In den Einstellungen findest du je nach Tool Sicherungs- und Wiederherstellungsfunktionen. Die Sicherung der Hauptseite enthält nur unterstützte lokale Browserdaten, keine vollständige Sicherung aller Cloud-Daten. Vertrauliche Sicherungen solltest du verschlüsseln.</p></div>
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2"><h3 class="font-bold text-gray-900">Was macht das drehende Zahnrad?</h3>
+          <p>Es öffnet die Einstellungen. Gemeinsame Bereiche betreffen Konto, Datensicherung und Darstellung. Zusätzliche Einstellungen eines Tools bleiben dort verfügbar, wo sie gebraucht werden.</p></div>
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2"><h3 class="font-bold text-gray-900">Kann ich meine Tools schneller öffnen?</h3>
+          <p>Markiere deine wichtigsten Tools mit dem Stern ⭐. Deine ersten drei Favoriten erscheinen im Schnellstart auf der Startseite.</p></div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="b3-footer mt-8 py-8 border-t border-gray-200 bg-white">
+        <div class="container mx-auto px-4 max-w-7xl text-center space-y-3">
+            <h2 class="text-sm font-bold text-gray-800">Über Toolya</h2>
+            <p class="text-xs text-gray-500 leading-relaxed max-w-2xl mx-auto">
+                Diese Sammlung kostenloser Online-Tools wurde konzipiert, um alltägliche Probleme (Haushalt, Finanzen, Auto) einfach und effizient im Browser zu lösen.
+                <strong>Ohne versteckte Kosten und mit vielen Funktionen ohne Anmeldung.</strong>
+            </p>
+            <p class="text-xs text-gray-500">
+                Entwickelt mit ❤️ und 💡 von Romain Duhr.
+                <span class="font-semibold text-emerald-600">Datenschutz hat Priorität:</span> Viele Daten werden lokal gespeichert; einige Funktionen nutzen externe Dienste.
+            </p>
+            <div class="flex justify-center gap-6 mt-4 pt-4 border-t border-gray-100">
+                <a href="privacy.html" class="text-xs text-sky-600 hover:text-sky-800 font-medium transition-colors">Datenschutzerklärung</a>
+                <a href="legal.html" class="text-xs text-sky-600 hover:text-sky-800 font-medium transition-colors">Impressum</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Einstellungs-Modal -->
+    <div id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors space-y-5">
+            <div class="flex justify-between items-center border-b border-gray-200 pb-3">
+                <h3 id="settingsTitle" class="text-lg font-bold text-gray-900">
+                    ⚙️ Einstellungen
+                </h3>
+                <button type="button" id="closeSettingsBtn" aria-label="Einstellungen schließen" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">
+                    &times;
+                </button>
+            </div>
+
+            <!-- CLOUD-KONTO -->
+            <div>
+                <h3 class="font-bold text-sm text-gray-800 mb-2">☁️ Cloud-Konto</h3>
+                <div class="space-y-3">
+                    <div id="cloudStatus" role="status" aria-live="polite" class="text-xs bg-gray-100 rounded-lg p-3 text-gray-700">
+                        Nicht angemeldet
+                    </div>
+
+                    <label class="helferlein-field" for="loginEmail"><span class="helferlein-field-label">E-Mail-Adresse</span><input type="email" id="loginEmail" required aria-label="E-Mail-Adresse" autocomplete="email" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
+                    <label class="helferlein-field" for="loginPassword"><span class="helferlein-field-label">Passwort</span><input type="password" id="loginPassword" required minlength="6" aria-label="Passwort" autocomplete="current-password" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="registerUser()" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold">
+                            👤 Registrieren
+                        </button>
+                        <button type="button" onclick="loginUser()" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-semibold">
+                            🔑 Anmelden
+                        </button>
+                        <button type="button" onclick="logoutUser()" class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-semibold">
+                            🚪 Abmelden
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DATENSICHERUNG -->
+            <div class="border-t border-gray-200 pt-4">
+                <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Datensicherung (Backup & Wiederherstellung)</label>
+
+                <div class="flex gap-2">
+                    <button type="button" title="Empfohlen: Lokale Browserdaten als passwortgeschützte, verschlüsselte JSON-Datei exportieren" onclick="exportGlobalBackup(true)" aria-label="Backup verschlüsselt exportieren" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">🔐 Verschlüsselt</button>
+                    <button type="button" title="Nur für nicht vertrauliche Daten. Nachlass-Tresordaten können damit nicht unverschlüsselt exportiert werden." onclick="exportGlobalBackup(false)" aria-label="Backup ohne Schutz exportieren" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Ohne Schutz</button>
+                    <label class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">
+                        📤 Restore <input type="file" title="Bestehende lokale Daten können überschrieben werden" accept=".json,application/json" aria-label="Toolya-Backup auswählen" onchange="importGlobalBackup(event)" class="hidden">
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
+                <button type="button" id="cancelSettingsBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Schließen</button>
+            </div>
+<section class="b3-hub-settings" aria-label="Darstellung">
+ <h3>🎨 Darstellung</h3>
+ <label for="b3-hub-theme">Designmodus
+  <select id="b3-hub-theme" aria-label="Globaler Designmodus">
+   <option value="auto">Automatisch</option><option value="light">Hell</option><option value="dark">Dunkel</option>
+  </select>
+ </label>
+
+</section>
+<div class="b3-hub-settings-footer">
+ <a href="https://ko-fi.com/duhrrom" rel="noopener noreferrer" target="_blank">☕ Kaffee spendieren</a>
+ <a href="#toolDiscovery" onclick="closeSettings()">↗ Entdecke mehr Toolya</a>
+</div>
+        </div>
+    </div>
+
+    <!-- UI SKRIPT -->
+    <script>
+        const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
+
+        window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Client initialisiert; die tatsächliche Erreichbarkeit wird bei Auth-Anfragen geprüft.
+
+        async function registerUser() {
+            const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+            const password = document.getElementById("loginPassword").value;
+
+            if (!email || !password) {
+                alert("Bitte E-Mail und Passwort eingeben.");
+                return;
+            }
+
+            if (!document.getElementById("loginEmail").checkValidity()) {
+                alert("Bitte eine gültige E-Mail-Adresse eingeben.");
+                return;
+            }
+            if (password.length < 6) {
+                alert("Das Passwort muss mindestens 6 Zeichen lang sein.");
+                return;
+            }
+
+            let data, error;
+            try { ({ data, error } = await window.supabaseClient.auth.signUp({ email, password })); }
+            catch (_) { document.getElementById("loginPassword").value = ""; alert("Registrierung momentan nicht erreichbar."); return; }
+            if (error) {
+                document.getElementById("loginPassword").value = "";
+                alert(error.message);
+                return;
+            }
+
+            document.getElementById("loginPassword").value = "";
+            alert(data.session ? "Registrierung erfolgreich." : "Registrierung eingereicht. Bitte prüfe deine E-Mails zur Bestätigung.");
+            updateUserDisplay();
+            closeSettings();
+        }
+
+        async function loginUser() {
+            const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+            const password = document.getElementById("loginPassword").value;
+
+            if (!email || !password) {
+                alert("Bitte E-Mail und Passwort eingeben.");
+                return;
+            }
+
+            if (!document.getElementById("loginEmail").checkValidity()) {
+                alert("Bitte eine gültige E-Mail-Adresse eingeben.");
+                return;
+            }
+
+            let error;
+            try { ({ error } = await window.supabaseClient.auth.signInWithPassword({ email, password })); }
+            catch (_) { document.getElementById("loginPassword").value = ""; alert("Anmeldung momentan nicht erreichbar."); return; }
+            if (error) {
+                document.getElementById("loginPassword").value = "";
+                alert(error.message);
+                return;
+            }
+
+            document.getElementById("loginPassword").value = "";
+            updateUserDisplay();
+            closeSettings();
+        }
+
+        async function logoutUser() {
+            let error;
+            try { ({ error } = await window.supabaseClient.auth.signOut()); }
+            catch (_) { alert("Abmeldung momentan nicht erreichbar."); return; }
+            if (error) { alert("Abmeldung fehlgeschlagen: " + error.message); return; }
+            const passwordField = document.getElementById("loginPassword");
+            if (passwordField) passwordField.value = "";
+            updateUserDisplay();
+        }
+
+        let authStatusRequestId = 0;
+        async function updateUserDisplay() {
+            const requestId = ++authStatusRequestId;
+            let data, error;
+            try {
+                ({ data, error } = await window.supabaseClient.auth.getUser());
+            } catch (_) {
+                // Network failures must not leave a stale signed-in identity on screen.
+                error = { message: "Anmeldestatus momentan nicht erreichbar" };
+            }
+            // Ignore responses from older requests (e.g. a slow sign-in finishing after sign-out).
+            if (requestId !== authStatusRequestId) return;
+            const user = error ? null : (data?.user ?? null);
+
+            const headerInfo = document.getElementById("userInfo");
+            const cloudStatus = document.getElementById("cloudStatus");
+            if (headerInfo) {
+                headerInfo.classList.toggle("b3-auth-signed-in", Boolean(user));
+                headerInfo.classList.toggle("b3-auth-signed-out", !user);
+                headerInfo.textContent = user ? "Angemeldet" : "Anmelden/Registrieren";
+                headerInfo.setAttribute("aria-label", user
+                    ? "Angemeldet – Kontoeinstellungen öffnen"
+                    : "Anmelden oder registrieren");
+                headerInfo.title = user ? "Kontoeinstellungen öffnen" : "Anmelden oder registrieren";
+            }
+            if (cloudStatus) cloudStatus.textContent = user
+                ? "✅ Angemeldet"
+                : error ? "Anmeldestatus gerade nicht verfügbar" : "Nicht angemeldet";
+        }
+
+        document.getElementById("userInfo")?.addEventListener("click", () => {
+            openSettings();
+            // Beim angemeldeten Konto nicht das Loginformular in den Vordergrund stellen.
+            const statusButton = document.getElementById("userInfo");
+            if (statusButton?.classList.contains("b3-auth-signed-in")) {
+                document.getElementById("cloudStatus")?.focus();
+            }
+        });
+
+        function openSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                const loggedIn = document.getElementById("userInfo")?.classList.contains("b3-auth-signed-in");
+                if (!loggedIn) document.getElementById("loginEmail")?.focus();
+            }
+        }
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && !document.getElementById('settingsModal')?.classList.contains('hidden')) {
+                closeSettings();
+            }
+        });
+
+        function closeSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+                document.getElementById("settingsBtn")?.focus();
+            }
+        }
+
+        function readFavorites() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('hub_favorites') || '[]');
+                return Array.isArray(saved) ? [...new Set(saved.filter(id => typeof id === "string" && /^[a-z0-9-]+$/.test(id)))] : [];
+            } catch (_) { return []; }
+        }
+
+        function toggleFavorite(toolId, event) {
+            if(event) { event.preventDefault(); event.stopPropagation(); }
+            if (!document.querySelector(`#toolsGrid .tool-card[data-id="${toolId}"]`)) return;
+            let favs = readFavorites();
+            favs = favs.includes(toolId) ? favs.filter(id => id !== toolId) : [...favs, toolId];
+            try { localStorage.setItem('hub_favorites', JSON.stringify(favs)); }
+            catch (_) { alert('Favoriten konnten nicht gespeichert werden.'); return; }
+            initFavorites();
+        }
+
+        function initFavorites() {
+            const favs = readFavorites();
+            const quickstart = document.getElementById('b3-quickstart-list');
+            if (quickstart) {
+                quickstart.replaceChildren();
+                const favorites = favs.map(id => document.querySelector('#toolsGrid .tool-card[data-id="' + id + '"]')).filter(Boolean).slice(0, 3);
+                if (!favorites.length) {
+                    const empty = document.createElement('p');
+                    empty.className = 'b3-quickstart-empty';
+                    empty.textContent = 'Markiere unten ein Tool mit ⭐, damit es hier erscheint.';
+                    quickstart.appendChild(empty);
+                } else {
+                    favorites.forEach(card => {
+                        const source = card.querySelector('a[href^="tools/"]');
+                        if (!source) return;
+                        const link = document.createElement('a');
+                        link.href = source.getAttribute('href');
+                        const icon = document.createElement('span');
+                        icon.className = 'b3-preview-icon';
+                        icon.setAttribute('aria-hidden', 'true');
+                        icon.textContent = card.firstElementChild?.firstElementChild?.firstElementChild?.textContent?.trim() || '⭐';
+                        const text = document.createElement('span');
+                        text.textContent = card.querySelector('h3')?.textContent?.trim() || 'Mein Tool';
+                        link.append(icon, text);
+                        quickstart.appendChild(link);
+                    });
+                }
+            }
+            document.querySelectorAll('#toolsGrid .tool-card').forEach(c => {
+                const btn = c.querySelector('.fav-btn');
+                if (btn) {
+                    const active = favs.includes(c.getAttribute('data-id'));
+                    btn.style.color = active ? '#f59e0b' : '#d1d5db';
+                    btn.setAttribute('aria-pressed', String(active));
+                    btn.setAttribute('aria-label', active ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen');
+                }
+            });
+        }
+
+        function filterTools() {
+            const category = document.querySelector('[data-b3-category-filter][aria-pressed="true"]')?.getAttribute('data-b3-category-filter') || 'alle';
+            let matches = 0;
+            document.querySelectorAll('#toolsGrid .tool-card').forEach(card => {
+                const categoryMatches = category === 'alle' || card.getAttribute('data-category') === category;
+                const visible = categoryMatches;
+                card.style.display = visible ? 'flex' : 'none';
+                if (visible) matches++;
+            });
+            document.getElementById('searchEmptyState')?.classList.toggle('hidden', matches !== 0);
+            const counter = document.getElementById('b3-result-count');
+            if (counter) counter.textContent = matches + ' von ' + document.querySelectorAll('#toolsGrid .tool-card').length + ' Tools';
+        }
+
+        // Authentifizierungs- und Sitzungsdaten gehören niemals in unverschlüsselte Backups.
+        function isAuthSessionStorageKey(key) {
+            const normalized = String(key ?? '').toLowerCase();
+            return normalized.startsWith('sb-') ||
+                normalized.includes('supabase') ||
+                normalized.startsWith('firebase:') ||
+                normalized.includes('auth-token') ||
+                normalized.includes('access_token') ||
+                normalized.includes('refresh_token') ||
+                normalized.includes('code-verifier') ||
+                normalized.includes('pkce') ||
+                normalized.includes('session') ||
+                normalized.includes('password') ||
+                normalized.includes('secret') ||
+                normalized.includes('private_key');
+        }
+
+        // Nur geprüfte Toolya-Datenschlüssel sichern, niemals fremde Browserdaten.
+        const HELFERLEIN_BACKUP_KEYS = new Set([
+            "hub_favorites",
+            "kassenbon_data",
+            "budgetbuch_budgets",
+            "budgetbuch_goals",
+            "mini_homebox_pro",
+            "wg_active_bin_id",
+            "wg_last_loaded_bin_id",
+            "wg_kassenbon_data",
+            "wg_budgetbuch_budgets",
+            "wg_budgetbuch_goals",
+            "wg_flatmates",
+            "wg_notes",
+            "wg_events",
+            "wg_inventory",
+            "wg_diets",
+            "wg_cleaning",
+            "wg_shopping",
+            "wg_cooking",
+            "wg_contracts",
+            "wg_infoboard",
+            "digital_estate_vault",
+            "kfz_tracker_pro_v3",
+            "haustier_pass_pro_v5",
+            "park_end_time",
+            "park_history_pro_v3",
+            "verleih_tracker_pro_v3",
+            "dismiss_frost",
+            "pflanzen_pass_v10",
+            "energie_tracker_pro_v8",
+            "helperly_recipes_pro",
+            "helferlein_ui_theme_v1",
+            "helferlein_ui_layout_backform_v1",
+            "helferlein_ui_layout_nachlass_v1",
+            "helferlein_ui_layout_pflanzen_v1"
+        ]);
+        function isHelferleinBackupKey(key) {
+            const knownLayout = /^helferlein_ui_layout_(?:energie|kassenbon|kisten|wg|notizen|kfz|haustier|verleih|pflanzen|nachlass|backform|parken|haushaltsbuch|umzugskisten)_v1$/.test(key);
+            return (HELFERLEIN_BACKUP_KEYS.has(key) || knownLayout) && !isAuthSessionStorageKey(key);
+        }
+
+        // Password input uses a masked dialog rather than a visible browser prompt.
+        function requestBackupPassword(message, confirmPassword = false) {
+            return new Promise(resolve => {
+                const overlay = document.createElement('div');
+                overlay.setAttribute('role', 'presentation');
+                overlay.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4';
+                const dialog = document.createElement('form');
+                dialog.setAttribute('role', 'dialog');
+                dialog.setAttribute('aria-modal', 'true');
+                dialog.setAttribute('aria-label', 'Backup-Passwort');
+                dialog.className = 'w-full max-w-sm rounded-2xl bg-white p-5 text-gray-900 shadow-2xl';
+                const heading = document.createElement('h2');
+                heading.className = 'mb-3 text-lg font-bold';
+                heading.textContent = message;
+                const field = document.createElement('input');
+                field.type = 'password';
+                field.required = true;
+                field.autocomplete = 'off';
+                field.setAttribute('aria-label', 'Backup-Passwort');
+                field.className = 'w-full rounded-lg border border-gray-400 px-3 py-2 text-gray-900';
+                const second = document.createElement('input');
+                if (confirmPassword) {
+                    second.type = 'password';
+                    second.required = true;
+                    second.autocomplete = 'off';
+                    second.placeholder = 'Passwort wiederholen';
+                    second.setAttribute('aria-label', 'Backup-Passwort wiederholen');
+                    second.className = 'mt-3 w-full rounded-lg border border-gray-400 px-3 py-2 text-gray-900';
+                }
+                const error = document.createElement('p');
+                error.className = 'mt-2 text-sm text-red-700';
+                error.setAttribute('role', 'alert');
+                const controls = document.createElement('div');
+                controls.className = 'mt-4 flex justify-end gap-3';
+                const cancel = document.createElement('button');
+                cancel.type = 'button';
+                cancel.textContent = 'Abbrechen';
+                cancel.className = 'rounded-lg border px-3 py-2';
+                const submit = document.createElement('button');
+                submit.type = 'submit';
+                submit.textContent = 'Bestätigen';
+                submit.className = 'rounded-lg bg-indigo-700 px-3 py-2 text-white';
+                const finish = value => {
+                    document.removeEventListener('keydown', onEscape, true);
+                    overlay.remove();
+                    resolve(value);
+                };
+                const onEscape = event => {
+                    if (event.key === 'Escape') { event.preventDefault(); finish(null); }
+                };
+                cancel.addEventListener('click', () => finish(null));
+                dialog.addEventListener('submit', event => {
+                    event.preventDefault();
+                    if (confirmPassword && field.value.length < 12) {
+                        error.textContent = 'Bitte mindestens 12 Zeichen verwenden.';
+                        return;
+                    }
+                    if (confirmPassword && field.value !== second.value) {
+                        error.textContent = 'Die Passwörter stimmen nicht überein.';
+                        return;
+                    }
+                    finish(field.value);
+                });
+                controls.append(cancel, submit);
+                dialog.append(heading, field);
+                if (confirmPassword) dialog.append(second);
+                dialog.append(error, controls);
+                overlay.append(dialog);
+                document.body.append(overlay);
+                document.addEventListener('keydown', onEscape, true);
+                field.focus();
+            });
+        }
+
+        async function exportGlobalBackup() {
+            try {
+                const backup = { version: "2.0", app: "Toolya", created: new Date().toISOString(), tools: Object.create(null), localStorage: Object.create(null) };
+                const toolPrefixes = ["kassenbon", "kisten", "wg", "secure", "notizen", "kfz", "haustier", "verleih", "pflanzen", "energie", "bk", "hub"];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    const value = localStorage.getItem(key);
+                    if (key === null || value === null || !isHelferleinBackupKey(key)) continue;
+                    backup.localStorage[key] = value;
+                    const prefix = toolPrefixes.find(p => key.startsWith(p)) || "sonstige";
+                    if (!backup.tools[prefix]) backup.tools[prefix] = [];
+                    backup.tools[prefix].push(key);
+                }
+                // Inform users about Toolya data outside the supported backup allowlist.
+                // Never export unknown keys, authentication data or session secrets.
+                const skippedAppKeys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (!key || isHelferleinBackupKey(key) || isAuthSessionStorageKey(key)) continue;
+                    if (/^(?:wg_|bk_|kassenbon|budgetbuch|mini_homebox|digital_estate|kfz_|haustier_|park_|verleih_|pflanzen_|energie_|helperly_|hub_)/i.test(key)) {
+                        skippedAppKeys.push(key);
+                    }
+                }
+                if (skippedAppKeys.length) {
+                    const proceed = confirm("Hinweis: " + skippedAppKeys.length + " möglicherweise zu Toolya gehörende lokale Datenspeicher werden von dieser Sicherung nicht erfasst. Die Sicherung könnte unvollständig sein. Bitte die jeweiligen Werkzeuge zusätzlich prüfen. Es werden keine unbekannten oder sicherheitskritischen Schlüssel automatisch übernommen. Trotzdem fortfahren?");
+                    if (!proceed) return;
+                }
+                if (Object.keys(backup.localStorage).length === 0) { alert("Keine Daten zum Sichern vorhanden."); return; }
+                const containsVault = Object.prototype.hasOwnProperty.call(backup.localStorage, "digital_estate_vault");
+                const encrypted = arguments.length > 0 && arguments[0] === true;
+                if (containsVault && !encrypted) {
+                    alert("Die Nachlass-Tresordaten enthalten möglicherweise Entschlüsselungsschlüssel. Bitte dafür ausschließlich „Verschlüsselt“ verwenden.");
+                    return;
+                }
+                const warning = encrypted
+                    ? "Die Sicherung wird mit einem selbst gewählten Passwort verschlüsselt. Ohne dieses Passwort ist eine Wiederherstellung nicht möglich. Fortfahren?"
+                    : containsVault
+                    ? "Dieses Backup enthält möglicherweise vertrauliche Nachlassdaten und ist NICHT verschlüsselt. Nur auf einem vertrauenswürdigen Gerät speichern und sicher aufbewahren. Trotzdem exportieren?"
+                    : "Dieses Backup ist NICHT verschlüsselt und kann persönliche Daten enthalten. Nur auf einem vertrauenswürdigen Gerät speichern und sicher aufbewahren?";
+                if (!confirm(warning)) return;
+                let output = JSON.stringify(backup, null, 2);
+                if (encrypted) {
+                    if (!crypto?.subtle || !crypto.getRandomValues) {
+                        alert("Verschlüsselung ist in diesem Browser nicht verfügbar."); return;
+                    }
+                    const password = await requestBackupPassword("Neues Backup-Passwort (mindestens 12 Zeichen)", true);
+                    if (password === null) return;
+                    const salt = crypto.getRandomValues(new Uint8Array(16));
+                    const iv = crypto.getRandomValues(new Uint8Array(12));
+                    const keyMaterial = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+                    const key = await crypto.subtle.deriveKey(
+                        { name: "PBKDF2", salt, iterations: 600000, hash: "SHA-256" },
+                        keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt"]);
+                    const ciphertext = new Uint8Array(await crypto.subtle.encrypt(
+                        { name: "AES-GCM", iv }, key, new TextEncoder().encode(output)));
+                    const toBase64 = bytes => {
+                        let binary = "";
+                        for (let i = 0; i < bytes.length; i += 8192) {
+                            binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+                        }
+                        return btoa(binary);
+                    };
+                    output = JSON.stringify({
+                        app: "Toolya", format: "encrypted-backup-v1", kdf: "PBKDF2-SHA256",
+                        iterations: 600000, cipher: "AES-256-GCM",
+                        salt: toBase64(salt), iv: toBase64(iv), ciphertext: toBase64(ciphertext)
+                    }, null, 2);
+                }
+                const blob = new Blob([output], { type: 'application/json' });
+                // The restore function rejects files larger than 20 MiB. Never export an unusable backup.
+                if (blob.size > 20 * 1024 * 1024) {
+                    alert("Die Sicherung ist größer als 20 MB und kann derzeit nicht wiederhergestellt werden. Export abgebrochen; Ihre lokalen Daten bleiben unverändert.");
+                    return;
+                }
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `helferlein-backup-${encrypted ? "verschluesselt-" : ""}${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                // Give the browser time to begin downloading before releasing the blob URL.
+                setTimeout(() => URL.revokeObjectURL(url), 60000);
+            } catch (err) { alert('Backup konnte nicht erstellt werden'); }
+        }
+
+        async function importGlobalBackup(event) {
+            const file = event.target.files[0];
+            // Reset immediately so the same file can be selected again after any error.
+            event.target.value = "";
+            if (!file) return;
+            if (!/\.json$/i.test(file.name)) { alert("Bitte eine JSON-Backupdatei auswählen."); return; }
+            if (file.size > 20 * 1024 * 1024) { alert("Backup ist größer als 20 MB."); return; }
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    let backup = JSON.parse(e.target.result);
+                    const encryptedImport = backup?.app === "Toolya" && backup?.format === "encrypted-backup-v1";
+                    if (backup?.app === "Toolya" && backup?.format === "encrypted-backup-v1") {
+                        if (!crypto?.subtle || backup.kdf !== "PBKDF2-SHA256" ||
+                            backup.cipher !== "AES-256-GCM" || backup.iterations !== 600000) {
+                            alert("Dieses verschlüsselte Backup-Format wird nicht unterstützt."); return;
+                        }
+                        const password = await requestBackupPassword("Passwort zum Entschlüsseln eingeben");
+                        if (password === null) return;
+                        try {
+                            const fromBase64 = str => Uint8Array.from(atob(str), c => c.charCodeAt(0));
+                            const salt = fromBase64(backup.salt);
+                            const iv = fromBase64(backup.iv);
+                            const ciphertext = fromBase64(backup.ciphertext);
+                            if (salt.length !== 16 || iv.length !== 12 || ciphertext.length > 20 * 1024 * 1024) throw Error("invalid encrypted backup");
+                            const material = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+                            const key = await crypto.subtle.deriveKey(
+                                { name: "PBKDF2", salt, iterations: 600000, hash: "SHA-256" },
+                                material, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+                            const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+                            if (plaintext.byteLength > 20 * 1024 * 1024) {
+                                alert("Der entschlüsselte Inhalt überschreitet die maximale Backup-Größe.");
+                                return;
+                            }
+                            backup = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(plaintext));
+                        } catch (_) {
+                            alert("Entschlüsselung fehlgeschlagen. Passwort oder Sicherungsdatei ist ungültig."); return;
+                        }
+                    }
+                    if (!backup || backup.app !== "Toolya" || !backup.localStorage ||
+                        typeof backup.localStorage !== "object" || Array.isArray(backup.localStorage)) {
+                        alert("Ungültiges Toolya Backup");
+                        return;
+                    }
+                    if (backup.version !== "2.0") { alert("Diese Backup-Version wird nicht unterstützt."); return; }
+                    if (typeof backup.created !== "string" || !Number.isFinite(Date.parse(backup.created))) { alert("Das Backup enthält kein gültiges Sicherungsdatum."); return; }
+                    const entries = Object.entries(backup.localStorage);
+                    if (entries.length > 500 || entries.some(([key, value]) => key.length > 200 || (typeof value === "string" && value.length > 20 * 1024 * 1024))) {
+                        alert("Backup enthält zu viele oder zu große Dateneinträge. Es wurden keine Daten verändert.");
+                        return;
+                    }
+                    if (!entries.every(([key, value]) => typeof key === "string" && key.length > 0 && key !== "__proto__" && key !== "constructor" && key !== "prototype" && typeof value === "string")) {
+                        alert("Backup enthält ungültige Einträge");
+                        return;
+                    }
+                    const rejected = entries.filter(([key]) => !isHelferleinBackupKey(key));
+                    const supported = entries.filter(([key]) => isHelferleinBackupKey(key));
+                    if (!supported.length) {
+                        alert("Das Backup enthält keine unterstützten Toolya-Daten. Es wurden keine Daten verändert.");
+                        return;
+                    }
+                    const existing = supported.filter(([key]) => localStorage.getItem(key) !== null).length;
+                    const changed = supported.filter(([key, value]) => {
+                        const current = localStorage.getItem(key);
+                        return current !== null && current !== value;
+                    }).length;
+                    const containsVault = supported.some(([key]) => key === "digital_estate_vault");
+                    const vaultChanged = supported.some(([key, value]) =>
+                        key === "digital_estate_vault" && localStorage.getItem(key) !== null &&
+                        localStorage.getItem(key) !== value);
+                    const vaultWarning = containsVault
+                        ? (encryptedImport ? " Das Backup enthält Nachlass-Tresordaten. Nach der Wiederherstellung liegen diese wieder im lokalen Browser-Speicher." : " WARNUNG: Das unverschlüsselte Backup enthält Nachlass-Tresordaten und möglicherweise Schlüsselmaterial.")
+                        : "";
+                    const ignoredMessage = rejected.length
+                        ? " " + rejected.length + " unbekannte oder sicherheitskritische Einträge werden aus Sicherheitsgründen NICHT importiert."
+                        : "";
+                    if (vaultChanged && !confirm("ACHTUNG: Der bestehende digitale Nachlass-Tresor auf diesem Gerät unterscheidet sich von der Sicherung. Wenn du fortfährst, wird der bisherige lokale Tresor überschrieben. Vorher unbedingt den aktuellen Tresor separat verschlüsselt sichern. Trotzdem fortfahren?")) return;
+                    if (!confirm("Backup mit " + supported.length + " unterstützten Einträgen vom " +
+                        new Date(backup.created).toLocaleString("de-DE") + " importieren? " + existing +
+                        " vorhandene Einträge werden überschrieben, davon " + changed +
+                        " mit abweichendem Inhalt. Andere lokale Daten bleiben bestehen." + ignoredMessage + vaultWarning +
+                        " Bitte vorher eine Sicherung exportieren.")) return;
+
+                    // Vollständiger Rollback, falls z.B. die Browser-Speicherquote erreicht wird.
+                    const previous = supported.map(([key]) => [key, localStorage.getItem(key)]);
+                    let count = 0;
+                    try {
+                        for (const [key, value] of supported) {
+                            localStorage.setItem(key, value);
+                            count++;
+                        }
+                    } catch (writeError) {
+                        let rollbackFailed = false;
+                        for (const [key, oldValue] of previous) {
+                            try {
+                                if (oldValue === null) localStorage.removeItem(key);
+                                else localStorage.setItem(key, oldValue);
+                            } catch (rollbackError) {
+                                rollbackFailed = true;
+                            }
+                        }
+                        alert(rollbackFailed
+                            ? "Import fehlgeschlagen. Die Wiederherstellung des vorherigen Datenstands war nicht vollständig möglich. Bitte vorhandene Sicherungen aufbewahren."
+                            : "Import fehlgeschlagen. Der vorherige Datenstand wurde wiederhergestellt.");
+                        return;
+                    }
+                    // Storage writes have already succeeded. A display refresh error must not
+                    // incorrectly report that the restore failed or trigger a second import.
+                    try {
+                        initFavorites();
+                    } catch (refreshError) {
+                        alert(`${count} Einträge wurden wiederhergestellt, aber die Anzeige konnte nicht aktualisiert werden. Bitte die Seite neu laden.`);
+                        return;
+                    }
+                    alert(`${count} Einträge erfolgreich wiederhergestellt.${rejected.length ? " " + rejected.length + " nicht unterstützte Einträge wurden übersprungen." : ""}`);
+                } catch (err) { alert("Fehler beim Import des Backups"); }
+            };
+            reader.onerror = () => alert("Backupdatei konnte nicht gelesen werden.");
+            reader.readAsText(file);
+        }
+
+        // JS Funktionen Global machen
+        window.openSettings = openSettings;
+        window.closeSettings = closeSettings;
+        window.toggleFavorite = toggleFavorite;
+        window.filterTools = filterTools;
+        window.initFavorites = initFavorites;
+        window.exportGlobalBackup = exportGlobalBackup;
+        window.importGlobalBackup = importGlobalBackup;
+        window.registerUser = registerUser;
+        window.loginUser = loginUser;
+        window.logoutUser = logoutUser;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const settingsBtn = document.getElementById('settingsBtn');
+                const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+                const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
+
+                if(settingsBtn) settingsBtn.addEventListener('click', openSettings);
+                if(closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeSettings);
+                if(cancelSettingsBtn) cancelSettingsBtn.addEventListener('click', closeSettings);
+            } catch(e){}
+            try { initFavorites(); } catch(e){}
+            updateUserDisplay().catch(() => {
+                const status = document.getElementById("cloudStatus");
+                if (status) status.textContent = "Anmeldestatus derzeit nicht verfügbar";
+            });
+        });
+
+        supabaseClient.auth.onAuthStateChange(async () => {
+            updateUserDisplay().catch(() => {});
+        });
+    </script>
+</body>
 </html>
