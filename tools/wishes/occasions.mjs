@@ -1,4 +1,4 @@
-const db=window.supabase.createClient('https://yheogmeaosuigyaxkwth.supabase.co','sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv');
+import {db} from './toolya-client.mjs';
 const $=id=>document.getElementById(id);
 let user=null,items=[],editing=null,filter='all';
 const today=()=>{const d=new Date();return Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())};

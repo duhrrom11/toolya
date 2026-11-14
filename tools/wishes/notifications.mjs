@@ -1,4 +1,4 @@
-const db=window.supabase.createClient('https://yheogmeaosuigyaxkwth.supabase.co','sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv');
+import {db} from './toolya-client.mjs';
 const $=id=>document.getElementById(id);
 const PAGE=20;let user=null,cursor=null,loading=false,events=[],hasMore=false;
 const url=(path,query)=>new URL(path+query,location.href).href;

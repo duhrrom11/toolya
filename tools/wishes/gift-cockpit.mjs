@@ -1,4 +1,4 @@
-const db=window.supabase.createClient('https://yheogmeaosuigyaxkwth.supabase.co','sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv');
+import {db} from './toolya-client.mjs';
 const $=id=>document.getElementById(id),day=86400000;
 function el(tag,value,cls){const e=document.createElement(tag);e.textContent=String(value);if(cls)e.className=cls;return e}
 function card(root,title,body,cls){const box=el('article','','card '+(cls||''));box.append(el('h3',title),el('p',body));root.append(box);return box}
