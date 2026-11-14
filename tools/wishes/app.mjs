@@ -2,6 +2,7 @@ import {buddy,notify} from '../../shared/toolya/platform.mjs';
 import {wishSaveOutcome} from './wish-save-outcome.mjs';
 import {appendProductMetadata} from './product-card.mjs?v=20261114-mascot1';
 import {mountAmazonImport} from './amazon-import.mjs?v=20261114-mascot1';
+import {planWishExtrasImport} from './wish-extras-sync.mjs';
 import {mountListsDashboard} from './lists-dashboard.mjs?v=20261114-mascot1';
 import {parseAmazonUrl,affiliateUrl,sharedAmazonProductUrl} from './amazon-links.mjs';
 import {validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink,priorityLabel} from './wishlist-utils.mjs';
