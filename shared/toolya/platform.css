@@ -24,3 +24,5 @@
 .toolya-support{max-width:680px;margin:24px auto;padding:12px;box-sizing:border-box}.toolya-settings>p{padding:0 12px;line-height:1.5}.toolya-settings>p a{text-decoration:underline}
 
 .toolya-buddy,.toolya-settings{grid-column:1/-1}.ty-nav-mascot>.ty-sprite-wrap{width:100%;height:100%;flex:none}.ty-nav-mascot .ty-frame{border-radius:10px}
+
+.toolya-preferences{min-width:0;max-width:100%;box-sizing:border-box;margin:16px 0}.toolya-preferences legend{font-weight:700}.toolya-preferences label{min-width:0}.toolya-preferences select{max-width:100%}.toolya-preferences p{line-height:1.5;overflow-wrap:anywhere}.toolya-settings-dialog{width:min(560px,calc(100% - 32px));max-height:85vh;overflow:auto;box-sizing:border-box;border:1px solid currentColor;border-radius:16px;padding:20px;background:Canvas;color:CanvasText}.toolya-settings-dialog::backdrop{background:#0008}.toolya-settings-dialog>button{float:right;min-height:44px}.toolya-settings-trigger{margin:8px;min-height:44px;max-width:100%;cursor:pointer}.toolya-settings-trigger:focus-visible{outline:3px solid currentColor;outline-offset:3px}
