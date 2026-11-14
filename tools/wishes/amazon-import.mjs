@@ -12,7 +12,7 @@ export function mountAmazonImport({db,getUser,dashboard,refreshFeed}){
  const nameLabel=document.createElement('label');nameLabel.textContent='Name der neuen Liste';const name=document.createElement('input');name.maxLength=80;nameLabel.append(name);nameLabel.hidden=kind!=='list';
  const visibilityLabel=document.createElement('label');visibilityLabel.textContent='Sichtbarkeit neuer Wünsche';const visibility=document.createElement('select');for(const [v,t] of [['private','Nur für mich'],['public','Öffentlich']]){const o=document.createElement('option');o.value=v;o.textContent=t;visibility.append(o)}visibilityLabel.append(visibility);
  const commit=document.createElement('button');commit.type='button';commit.textContent=kind==='list'?'Neue Liste mit diesen Produkten anlegen':'Produkt als Wunsch speichern';commit.hidden=true;
- panel.append(heading,label,preview,status,results,nameLabel,visibilityLabel,commit);anchor.after(panel);
+ panel.append(heading,label,preview,status,results,nameLabel,visibilityLabel,commit);(kind==='list'?(anchor.closest('.list-create')||anchor):anchor).after(panel);
  let snapshot=null,busy=false,version=0;
  function reset(){version++;snapshot=null;results.replaceChildren();commit.hidden=true;status.textContent='';}
  input.addEventListener('input',reset);

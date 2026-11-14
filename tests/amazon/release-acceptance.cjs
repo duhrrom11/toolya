@@ -42,7 +42,7 @@ const root=path.resolve('.'),listId='dc200000-0000-4000-8000-000000000001';
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin+'/tools/wishes/index.html');await page.locator('#logout').waitFor();assert.equal(await page.evaluate(()=>window.__clientCount),1);
   await page.locator('#homeNewList').click();
-  for(const width of [320,375,768]){await page.setViewportSize({width,height:900});await page.screenshot({path:`test-results/wishlist-${width}.png`});const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));assert.ok(size.scroll<=size.width+1,'Wishlist overflow '+JSON.stringify(size));}
+  for(const width of [320,375,768]){await page.setViewportSize({width,height:900});await page.screenshot({path:`test-results/wishlist-${width}.png`});const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));assert.ok(size.scroll<=size.width+1,'Wishlist overflow '+JSON.stringify(size));assert.ok((await page.locator('#createList').boundingBox()).width>=150,'Manual list button squeezed');assert.ok((await page.locator('.amazon-import input[type=url]').first().boundingBox()).width>=150,'Amazon URL input squeezed');}
   await page.locator('#logout').click();
   if(!await page.locator('#wishlistAuthMenu').evaluate(el=>el.open))await page.locator('#wishlistAuthMenu > summary').click();
   await page.locator('#email').fill('fixture@example.test');await page.locator('#password').fill('Local-Only-2026!');await page.locator('#signup').click();
