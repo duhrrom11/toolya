@@ -1,6 +1,7 @@
 name: Toolya Amazon scraper
 on:
   push:
+    branches: [main]
     paths: ['supabase/**', 'tools/wishes/**', 'assets/**', 'tests/amazon/**', 'package*.json', '.github/workflows/amazon-scraper.yml']
   pull_request:
     paths: ['supabase/**', 'tools/wishes/**', 'assets/**', 'tests/amazon/**', 'package*.json', '.github/workflows/amazon-scraper.yml']

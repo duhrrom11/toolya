@@ -31,7 +31,7 @@ const {transform}=require('esbuild');
   for(const env of [{ESTATE_MAIL_FROM:'sender@example.invalid'},{BREVO_API_KEY:'synthetic-brevo-secret'},{BREVO_API_KEY:'synthetic-brevo-secret',ESTATE_MAIL_FROM:'bad\r\nheader@example.invalid'}]){s=await scenario({env});assert.equal(s.health.notifications,false);assert.equal(s.calls.length,0);assert(!s.rpcs.includes('claim'));}
   s=await scenario({kind:'reminder'});assert(s.calls[0].body.textContent.includes('Sie löst keinen Notfallalarm aus'));assert.deepEqual(s.delivered,[s.job.id]);
   for(const kind of ['reporter-started','reporter-stopped']){
-   s=await scenario({kind,confirmed:false});assert.deepEqual(s.calls[0].body.to,[{email:'reporter@example.invalid'}]);assert.deepEqual(s.delivered,[s.job.id]);assert(s.calls[0].body.textContent.includes('erben.html'));assert(!s.calls[0].body.textContent.includes('index.html'));
+   s=await scenario({kind,confirmed:false});assert.deepEqual(s.calls[0].body.to,[{email:'reporter@example.invalid'}]);assert.deepEqual(s.delivered,[s.job.id]);assert(s.calls[0].body.textContent.includes('heirs.html'));assert(!s.calls[0].body.textContent.includes('index.html'));
    assert(s.calls[0].body.subject.includes(kind==='reporter-started'?'gestartet':'Entwarnung'));
    if(kind==='reporter-started'){assert(s.calls[0].body.textContent.includes('14.11.2026'));assert(s.calls[0].body.textContent.includes('13:00:00'));assert(s.calls[0].body.textContent.includes('aktuellen Countdown'));}
   }

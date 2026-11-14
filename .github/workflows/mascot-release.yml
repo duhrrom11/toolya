@@ -1,7 +1,7 @@
 name: Toolya platform and mascot release
 on:
   push:
-    branches: [main, feature/mascot-universe-release]
+    branches: [main]
   pull_request:
 permissions:
   contents: read
