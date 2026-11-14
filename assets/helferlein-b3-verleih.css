@@ -1,0 +1,36 @@
+/* B3 Verliehene Gegenstände – petrol blue / cyan identity. */
+body.b3-verleih{--b3-accent:#196c92;--b3-accent-2:#65d7dc;--b3-header-start:#123657;--b3-header-mid:#1e729c;--b3-header-end:#60c5d1}
+body.b3-verleih .b3-header{background:linear-gradient(112deg,var(--b3-header-start),var(--b3-header-mid) 56%,var(--b3-header-end));box-shadow:0 6px 22px #13486329}
+body.b3-verleih .b3-nav-links>a:first-child{background:linear-gradient(115deg,#174f88,#2aa0a6);color:white}
+body.b3-verleih .b3-more[open]>summary{background:#196c92;color:white}
+body.b3-verleih .b3-action:not(.b3-outline){background:linear-gradient(110deg,#17577e,#268ca5);color:white}
+body.b3-verleih .b3-settings-footer .b3-home-link{color:#135f83}
+body.b3-verleih #settingsModal>div{max-height:90dvh;overflow-y:auto}
+body.b3-verleih main.b3-dashboard [data-b3-panel="stats"]{gap:.7rem}
+body.b3-verleih main.b3-dashboard [data-b3-panel="create"],
+body.b3-verleih main.b3-dashboard [data-b3-panel="inventory"],
+body.b3-verleih main.b3-dashboard [data-b3-panel="loans"]{grid-column:1/-1!important}
+body.b3-verleih main.b3-dashboard :is(input,select,textarea){min-width:0;max-width:100%}
+body.b3-verleih .b3-account-status{margin:.6rem 0;padding:.7rem;border:1px solid var(--b3-line);border-radius:11px;background:var(--b3-bg)}
+body.b3-verleih.b3-dark{--b3-accent:#92e4ed}
+body.b3-verleih.b3-dark .b3-settings-footer .b3-home-link{color:#a0e3f7}
+body.b3-verleih.b3-dark main.b3-dashboard :is(.text-indigo-600,.text-indigo-700,.text-blue-600,.text-blue-700){color:#bbd6ff!important}
+body.b3-verleih.b3-dark main.b3-dashboard :is(.text-amber-600,.text-amber-700,.text-amber-800){color:#ffe3a9!important}
+body.b3-verleih.b3-dark main.b3-dashboard :is(.text-green-600,.text-green-700){color:#a7f0c6!important}
+body.b3-verleih.b3-dark main.b3-dashboard :is(.text-red-600,.text-red-700,.text-red-800){color:#ffc4ce!important}
+body.b3-verleih.b3-dark main.b3-dashboard :is(.bg-indigo-50,.bg-blue-50){background:#2b3c57!important}
+body.b3-verleih.b3-dark main.b3-dashboard :is(.bg-amber-50,.bg-amber-100){background:#4a3928!important}
+body.b3-verleih.b3-dark main.b3-dashboard :is(.bg-green-50,.bg-green-100){background:#264435!important}
+body.b3-verleih.b3-dark main.b3-dashboard :is(.bg-red-50,.bg-red-100){background:#4b2c38!important}
+body.b3-verleih.b3-dark main.b3-dashboard button.bg-indigo-600{background:#3354a4!important;color:white!important}
+body.b3-verleih.b3-dark #settingsModal button[onclick="supabaseLogin()"]{background:#2b5397!important;color:white!important}
+body.b3-verleih.b3-dark #settingsModal button[onclick="supabaseRegister()"]{background:#35495b!important;color:white!important}
+body.b3-verleih.b3-dark #settingsModal button[onclick="supabaseLogout()"]{background:#56333d!important;color:#ffdde4!important}
+body.b3-verleih.b3-dark #helpModal>div{background:#203147;color:#eef6ff}
+body.b3-verleih.b3-dark #helpModal :is(.bg-gray-50,.bg-white){background:#2b4055!important;color:#eef6ff!important}
+body.b3-verleih.b3-dark #helpModal :is(.text-gray-600,.text-indigo-700,.text-indigo-900){color:#c3e5ff!important}
+@media(max-width:640px){
+ body.b3-verleih main.b3-dashboard [data-b3-panel="stats"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.b3-verleih main.b3-dashboard [data-b3-panel="create"]{grid-template-columns:minmax(0,1fr)}
+ body.b3-verleih main.b3-dashboard [data-b3-panel="create"] :is(.grid-cols-2,.grid-cols-3){grid-template-columns:minmax(0,1fr)}
+}

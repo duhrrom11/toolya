@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>try { if (localStorage.getItem('helferlein_cloud_owner_parkplatz-merker-parkschein-timer')) document.documentElement.classList.add('helferlein-account-check'); } catch (_) { document.documentElement.classList.add('helferlein-account-check'); }</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parkplatz-Merker & Parkschein-Timer | Toolya</title>
+    <meta name="description" content="Parkplatz wiederfinden und Parkzeit überwachen: Kostenloser Parkplatz-Merker mit GPS, Parkschein-Timer und Übersicht über Parkgebühren.">
+    <link rel="canonical" href="https://toolya.app/tools/parking/index.html">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF für den PDF-Report-Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="../../assets/vendor/supabase-2.57.0.js"></script>
+    <link rel="stylesheet" href="../../assets/helferlein-b3.css">
+    <link rel="stylesheet" href="../../assets/helferlein-b3-parkplatz.css">
+    <script>
+      window.HELFERLEIN_B3 = {
+        key:'parkplatz',
+        name:'Parkplatz-Merker & Parkschein-Timer',
+        panels:[
+          {id:'stats',name:'Parkstatistiken',size:'l'},
+          {id:'timer',name:'Parkschein-Timer & Parkplatz erfassen',size:'l',locked:true},
+          {id:'history',name:'Parkhistorie & Standorte',size:'l'},
+          {id:'recommendations',name:'Parkzubehör',size:'m'}
+        ],
+        navigation:[
+          ['🅿️','Übersicht','#main-content'],
+          ['📊','Statistiken','#b3-stats'],
+          ['⏱️','Parkschein-Timer','#b3-timer'],
+          ['📍','Parkplatz merken','#b3-timer'],
+          ['📋','Parkhistorie','#b3-history']
+        ],
+        extra:[
+          {label:'🔔 Push-Alarm aktivieren',handler:'requestNotificationPermission'},
+          {label:'📄 Parkbericht (PDF)',handler:'exportPDF'}
+        ],
+        helpId:'helpModal',
+        helpToggle:'toggleHelpModal'
+      };
+    </script>
+    <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore || window.helferleinCloudBridge) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client: supabaseClient, tool: 'parkplatz-merker-parkschein-timer', localKey: 'park_history_pro_v3', collection: 'sessions',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css?v=20261112-3">
+    <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
+<script defer src="../../assets/helferlein-dialogs.js"></script>
+<link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><script type="module" src="../../shared/toolya/platform.mjs"></script></head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
+
+    <!-- Header im exakten Mini-HomeBox-Stil -->
+    <header class="b3-header"><div class="b3-header-inner">
+  <a class="b3-brand" href="../../index.html" aria-label="Toolya Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Toolya</a>
+  <span class="b3-tool-icon" aria-hidden="true">🅿️</span>
+  <div class="b3-tool-title"><h1>Parkplatz-Merker & Parkschein-Timer</h1>
+    <p>Parkplatz per GPS merken, Parkzeit im Blick behalten und Parkkosten erfassen</p></div>
+  <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()">⚙</button>
+</div></header>
+
+    <!-- MODAL: Einstellungen & Supabase Auth -->
+    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleSettingsModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl text-gray-800" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg text-amber-900">⚙️ Einstellungen und Konto</h3>
+                <button onclick="toggleSettingsModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
+            </div>
+            
+            <div class="p-3 bg-gray-50 rounded-xl border text-xs space-y-1">
+                <div id="header-user-badge" class="b3-park-account text-xs font-semibold" aria-live="polite">
+  👤 <span id="header-user-email">Nicht angemeldet</span>
+</div>
+            <div id="cloud-status-text" class="font-bold text-gray-700">Nicht angemeldet</div>
+                <div id="cloud-user-display" class="text-amber-700 font-semibold"></div>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label for="auth-email" class="block text-gray-500 mb-1">E-Mail-Adresse</label>
+                    <input type="email" id="auth-email" placeholder="name@beispiel.de" class="w-full p-2.5 rounded-xl border text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div>
+                    <label for="auth-password" class="block text-gray-500 mb-1">Passwort</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" class="w-full p-2.5 rounded-xl border text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button onclick="supabaseLogin()" class="py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition shadow-sm">Anmelden</button>
+                    <button onclick="supabaseRegister()" class="py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl transition shadow-sm">Registrieren</button>
+                </div>
+                <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-xl transition">Abmelden</button>
+            </div>
+            <button onclick="toggleSettingsModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Hilfe & Ausklappbare Anleitungen -->
+    <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleHelpModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto text-gray-800" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg text-amber-900">📖 Hilfe & Anleitungen</h3>
+                <button onclick="toggleHelpModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <details class="bg-gray-50 border rounded-xl p-3">
+                    <summary class="font-bold cursor-pointer text-amber-700">Wie funktioniert die Parkscheiben-Funktion?</summary>
+                    <p class="mt-2 text-gray-600 leading-relaxed">
+                        Die Parkscheiben-Automatik rundet deine aktuelle Uhrzeit gemäß den gesetzlichen Vorschriften automatisch auf die nächste halbe Stunde auf (z.B. 14:12 Uhr wird zu 14:30 Uhr) und addiert standardmäßig 2 Stunden Parkzeit hinzu.
+                    </p>
+                </details>
+                <details class="bg-gray-50 border rounded-xl p-3">
+                    <summary class="font-bold cursor-pointer text-amber-700">Wie nutze ich den GPS-Standort & die Navigation?</summary>
+                    <p class="mt-2 text-gray-600 leading-relaxed">
+                        Klicke auf „GPS-Standort ermitteln & speichern“, um die Koordinaten zu sichern. In der Historie führt dich der blaue **„🧭 Route“**-Button direkt per Google Maps zu deinem Fahrzeug zurück.
+                    </p>
+                </details>
+                <details class="bg-gray-50 border rounded-xl p-3">
+                    <summary class="font-bold cursor-pointer text-amber-700">Wie nutze ich den PDF-Report?</summary>
+                    <p class="mt-2 text-gray-600 leading-relaxed">
+                        Mit dem Button **„📄 PDF-Report“** erstellst du jederzeit eine übersichtliche Abrechnung aller Parkvorgänge und Gebühren für deine Unterlagen.
+                    </p>
+                </details>
+            </div>
+            <button onclick="toggleHelpModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-5xl space-y-6 mt-2">
+                
+        <!-- Dashboard Statistiken -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-b3-panel="stats" id="b3-stats">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-amber-50 text-amber-700 rounded-xl font-bold">🅿️</div>
+                <div><p class="text-xs text-gray-500">Gespeicherte Parkvorgänge</p><h3 id="statCount" class="text-lg font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
+                <div><p class="text-xs text-gray-500">Gebühren (Gefiltert)</p><h3 id="statCost" class="text-lg font-bold">0,00 €</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">📍</div>
+                <div><p class="text-xs text-gray-500">GPS-Standort</p><h3 id="statGps" class="text-xs font-bold text-blue-600">Nicht gespeichert</h3></div>
+            </div>
+        </div>
+
+        <!-- Timer & Erfassung -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-b3-panel="timer" id="b3-timer">
+            <!-- Aktiver Timer / Starten & Parkscheibe -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4 text-center flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg font-bold mb-2">⏱️ Park-Timer & Parkscheibe</h2>
+                    <div class="flex justify-center gap-1.5 mb-3 flex-wrap">
+                        <button onclick="startTimer(30)" class="px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">30 Min</button>
+                        <button onclick="startTimer(60)" class="px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">1 Std</button>
+                        <button onclick="startTimer(120)" class="px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">2 Std</button>
+                        <button onclick="startParkscheibe()" class="px-2.5 py-1.5 bg-blue-100 text-blue-800 font-bold rounded-xl text-xs" title="Rundet auf die nächste halbe Stunde auf (Parkscheiben-Regel)">🔵 Parkscheibe</button>
+                    </div>
+                    <div id="timerDisplay" class="text-3xl font-bold text-amber-600 my-2">00:00:00</div>
+                    <p id="timerStatus" class="text-xs text-gray-500">Kein aktiver Parkschein-Timer</p>
+                </div>
+                <button onclick="stopTimer()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 rounded-xl text-xs">Timer stoppen / zurücksetzen</button>
+            </div>
+
+            <!-- Parkplatz-Details & Favoriten -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
+                <h2 class="text-lg font-bold">📝 Parkplatz & Tiefgarage</h2>
+                
+                <!-- Stamm-Parkplatz Favoriten -->
+                <div class="space-y-1">
+                    <p class="text-[11px] font-semibold text-gray-500">Stamm-Parkplatz wählen:</p>
+                    <div class="flex gap-1.5 flex-wrap">
+                        <button onclick="setFavorite('⭐ Bahnhof')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium">⭐ Bahnhof</button>
+                        <button onclick="setFavorite('⭐ Arbeit / Büro')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium">⭐ Arbeit</button>
+                        <button onclick="setFavorite('⭐ Supermarkt')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium">⭐ Supermarkt</button>
+                    </div>
+                </div>
+
+                <label class="helferlein-field" for="parkDesc"><span class="helferlein-field-label">Standort / Parkhaus</span><input type="text" id="parkDesc" placeholder="Standort / Parkhaus (z.B. P2 Innenstadt)" class="w-full p-2.5 border rounded-xl text-sm" aria-label="Standort / Parkhaus (z.B. P2 Innenstadt)"></label>
+                <!-- Tiefgaragen-Ebene & Sektor -->
+                <label class="helferlein-field" for="parkSector"><span class="helferlein-field-label">Parkebene / Sektor</span><input type="text" id="parkSector" placeholder="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)" class="w-full p-2.5 border rounded-xl text-sm" aria-label="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)"></label>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="helferlein-field" for="parkCost"><span class="helferlein-field-label">Gebühr in €</span><input type="text" id="parkCost" placeholder="Gebühr in € (z.B. 2.50)" class="p-2.5 border rounded-xl text-sm" aria-label="Gebühr in € (z.B. 2.50)"></label>
+                    <label class="helferlein-field" for="parkPhotoInput"><span class="helferlein-field-label">Parkplatzfoto auswählen</span><input type="file" id="parkPhotoInput" accept="image/*" capture="environment" class="text-xs p-1.5 border rounded-xl file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Parkplatzfoto auswählen"></label>
+                </div>
+                <button onclick="saveParkingSession()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">GPS-Standort ermitteln & speichern</button>
+            </div>
+        </div>
+
+        <!-- Historie mit Filter -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="history" id="b3-history">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
+                <h3 class="font-bold text-lg">📋 Parkhistorie & Standorte</h3>
+                <label class="helferlein-field" for="timeFilter"><span class="helferlein-field-label">Parkhistorie nach Zeitraum filtern</span><select id="timeFilter" onchange="renderParkingList()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Parkhistorie nach Zeitraum filtern">
+                    <option value="all">Gesamte Historie anzeigen</option>
+                    <option value="month">Aktueller Monat</option>
+                    <option value="year">Aktuelles Jahr</option>
+                </select></label>
+            </div>
+            <div id="parkingList" class="space-y-3">
+                <p class="text-sm text-gray-400 text-center py-4">Keine Parkvorgänge gespeichert.</p>
+            </div>
+        </div>
+
+        <!-- Amazon Affiliate Empfehlungen mit ID duhrrom-21 -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3" data-b3-panel="recommendations" id="b3-recommendations">
+            <h4 class="font-bold text-sm text-gray-700">🛒 Nützliches PKW- & Park-Zubehör auf Amazon</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <a href="https://www.amazon.de/s?k=parkscheibe+mit+parkguthaben+uhr&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
+                    <span class="text-2xl">🔵</span>
+                    <div>
+                        <p class="font-bold text-gray-800">Digitale Parkscheiben</p>
+                        <p class="text-[10px] text-amber-700">Mit Zulassung für die Windschutzscheibe →</p>
+                    </div>
+                </a>
+                <a href="https://www.amazon.de/s?k=kfz+smartphone+halterung+magsafe&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
+                    <span class="text-2xl">📱</span>
+                    <div>
+                        <p class="font-bold text-gray-800">KFZ Smartphone-Halterungen</p>
+                        <p class="text-[10px] text-amber-700">Für sichere Navigation zum Parkplatz →</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL: Foto Zoom -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50" onclick="closeImageModal()">
+        <img id="zoomedImage" src="" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain">
+    </div>
+
+    <!-- Script Logik -->
+    <script>
+        // Supabase Konfiguration & Instanz
+        const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function toggleSettingsModal() {
+            document.getElementById('settingsModal').classList.toggle('hidden');
+        }
+
+        function toggleHelpModal() {
+            document.getElementById('helpModal').classList.toggle('hidden');
+        }
+
+        async function supabaseRegister() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            const { error } = await supabaseClient.auth.signUp({ email, password });
+            if(error) alert(error.message);
+            else { alert('Registrierung erfolgreich!'); checkUserSession(); }
+        }
+
+        async function supabaseLogin() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if(error) alert(error.message);
+            else { alert('Erfolgreich angemeldet!'); checkUserSession(); toggleSettingsModal(); }
+        }
+
+        async function supabaseLogout() {
+            await supabaseClient.auth.signOut();
+            checkUserSession();
+            alert('Abgemeldet.');
+        }
+
+        async function checkUserSession() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            const statusText = document.getElementById('cloud-status-text');
+            const userDisplay = document.getElementById('cloud-user-display');
+            const headerBadge = document.getElementById('header-user-badge');
+            const headerEmail = document.getElementById('header-user-email');
+            const btnLogout = document.getElementById('btn-logout');
+
+            if(user) {
+                statusText.innerText = "Status: Verbunden & Angemeldet";
+                userDisplay.innerText = user.email;
+                headerEmail.innerText = user.email;
+                headerBadge.classList.remove('hidden');
+                headerBadge.classList.add('inline-flex');
+                btnLogout.classList.remove('hidden');
+            } else {
+                statusText.innerText = "Nicht angemeldet";
+                userDisplay.innerText = "";
+                headerBadge.classList.add('hidden');
+                headerBadge.classList.remove('inline-flex');
+                btnLogout.classList.add('hidden');
+            }
+        }
+
+        let activeEndTime = localStorage.getItem('park_end_time') ? parseInt(localStorage.getItem('park_end_time')) : null;
+        let timerInterval = null;
+        let currentGps = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (activeEndTime) runTimerLoop();
+            renderParkingList();
+            checkUserSession();
+        });
+
+        function getData() {
+            try {
+                return JSON.parse(localStorage.getItem('park_history_pro_v3')) || { sessions: [] };
+            } catch(e) {
+                return { sessions: [] };
+            }
+        }
+
+        function saveData(data) {
+            if (!data || !Array.isArray(data.sessions)) return false;
+            if (localStorage.getItem('helferlein_cloud_owner_parkplatz-merker-parkschein-timer') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.'); return false;
+            }
+            const previous = localStorage.getItem('park_history_pro_v3');
+            if (previous !== null) {
+                try { if (!Array.isArray(JSON.parse(previous).sessions)) throw new Error('invalid'); }
+                catch (_) { alert('Vorhandene Parkdaten beschädigt; Überschreiben gesperrt.'); return false; }
+            }
+            try {
+                localStorage.setItem('park_history_pro_v3', JSON.stringify(data)); window.toolyaNotice?.('success','Änderungen auf diesem Gerät gespeichert.');
+                if (window.helferleinCloudBridge) void window.helferleinCloudBridge.changed(data).catch(console.error);
+                return true;
+            } catch (error) { console.error('Parkdaten konnten nicht gespeichert werden', error); return false; }
+        }
+
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") alert("Push-Benachrichtigungen aktiviert!");
+                });
+            } else {
+                alert("Dein Browser unterstützt keine Benachrichtigungen.");
+            }
+        }
+
+        function startTimer(minutes) {
+            let endTime = new Date().getTime() + minutes * 60000;
+            activeEndTime = endTime;
+            localStorage.setItem('park_end_time', endTime);
+            runTimerLoop();
+        }
+
+        function startParkscheibe() {
+            let now = new Date();
+            let minutes = now.getMinutes();
+            let nextHalfHourMinutes = minutes <= 30 ? 30 : 60;
+            let target = new Date(now);
+            if (nextHalfHourMinutes === 60) {
+                target.setHours(target.getHours() + 1);
+                target.setMinutes(0, 0, 0);
+            } else {
+                target.setMinutes(30, 0, 0);
+            }
+            
+            let diffMs = (target.getTime() - now.getTime()) + (120 * 60000);
+            activeEndTime = new Date().getTime() + diffMs;
+            localStorage.setItem('park_end_time', activeEndTime);
+            runTimerLoop();
+            alert("Parkscheibe gestellt auf nächste halbe Stunde + 2 Stunden Parkzeit!");
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            activeEndTime = null;
+            localStorage.removeItem('park_end_time');
+            document.getElementById("timerDisplay").innerText = "00:00:00";
+            document.getElementById("timerStatus").innerText = "Kein aktiver Parkschein-Timer";
+        }
+
+        function runTimerLoop() {
+            clearInterval(timerInterval);
+            if (activeEndTime == null || !Number.isFinite(Number(activeEndTime))) return;
+            const tick = () => {
+                const distance = Number(activeEndTime) - Date.now();
+                if (distance <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    document.getElementById("timerDisplay").innerText = "⏰ ABGELAUFEN!";
+                    document.getElementById("timerStatus").innerText = "Bitte Parkzeit verlängern oder zum Auto gehen!";
+                    if ("Notification" in window && Notification.permission === "granted") {
+                        new Notification("Park-Alarm", { body: "Deine Parkzeit ist abgelaufen!" });
+                    }
+                    return;
+                }
+                const remaining = Math.ceil(distance / 1000);
+                const h = Math.floor(remaining / 3600);
+                const m = Math.floor((remaining % 3600) / 60);
+                const sec = remaining % 60;
+                document.getElementById("timerDisplay").innerText =
+                    (h > 0 ? h + "h " : "") + String(m).padStart(2, '0') + "m " + String(sec).padStart(2, '0') + "s";
+                document.getElementById("timerStatus").innerText = "Parkzeit läuft...";
+            };
+            tick();
+            if (Number(activeEndTime) > Date.now()) timerInterval = setInterval(tick, 1000);
+        }
+
+        function setFavorite(name) {
+            document.getElementById('parkDesc').value = name;
+        }
+
+        function saveParkingSession() {
+            const desc = document.getElementById('parkDesc').value.trim() || "Unbenannter Parkplatz";
+            const sector = document.getElementById('parkSector').value.trim();
+            const cost = parseFloat(document.getElementById('parkCost').value.replace(',', '.')) || 0;
+            const photoInput = document.getElementById('parkPhotoInput');
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    currentGps = { lat: position.coords.latitude, lng: position.coords.longitude };
+                    document.getElementById('statGps').innerText = "Gespeichert ✓";
+                    processPhotoAndSave(desc, sector, cost, currentGps, photoInput);
+                }, () => {
+                    alert("GPS-Standort konnte nicht ermittelt werden. Ohne GPS speichern...");
+                    processPhotoAndSave(desc, sector, cost, null, photoInput);
+                });
+            } else {
+                processPhotoAndSave(desc, sector, cost, null, photoInput);
+            }
+        }
+
+        function processPhotoAndSave(desc, sector, cost, gps, photoInput) {
+            if (photoInput.files && photoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    storeSessionData(desc, sector, cost, gps, e.target.result);
+                };
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                storeSessionData(desc, sector, cost, gps, "");
+            }
+        }
+
+        function storeSessionData(desc, sector, cost, gps, photo) {
+            let data = getData();
+            let now = new Date();
+            data.sessions.push({
+                id: Date.now(),
+                timestamp: now.getTime(),
+                desc,
+                sector,
+                cost,
+                gps,
+                photo,
+                date: now.toLocaleDateString('de-DE') + ' ' + now.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})
+            });
+            if (!saveData(data)) return;
+
+            document.getElementById('parkDesc').value = "";
+            document.getElementById('parkSector').value = "";
+            document.getElementById('parkCost').value = "";
+            document.getElementById('parkPhotoInput').value = "";
+            renderParkingList();
+            alert("Gespeichert");
+        }
+
+        function deleteSession(id) {
+            if (!confirm("Möchtest du diesen Eintrag wirklich löschen?")) return;
+            let data = getData();
+            data.sessions = data.sessions.filter(s => s.id !== id);
+            if (!saveData(data)) return;
+            renderParkingList();
+        }
+
+        function renderParkingList() {
+            let data = getData();
+            const list = document.getElementById('parkingList');
+            const filter = document.getElementById('timeFilter').value;
+
+            let filteredSessions = data.sessions;
+            let now = new Date();
+
+            if (filter === 'month') {
+                filteredSessions = data.sessions.filter(s => {
+                    let d = new Date(s.timestamp || s.id);
+                    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                });
+            } else if (filter === 'year') {
+                filteredSessions = data.sessions.filter(s => {
+                    let d = new Date(s.timestamp || s.id);
+                    return d.getFullYear() === now.getFullYear();
+                });
+            }
+
+            document.getElementById('statCount').innerText = data.sessions.length;
+            let totalCost = filteredSessions.reduce((sum, s) => sum + Number(s.cost || 0), 0);
+            document.getElementById('statCost').innerText = totalCost.toFixed(2).replace('.', ',') + ' €';
+
+            if (filteredSessions.length === 0) {
+                list.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Parkvorgänge für diesen Zeitraum gespeichert.</p>`;
+                return;
+            }
+
+            list.innerHTML = filteredSessions.map(s => `
+                <div class="p-4 bg-gray-50 border rounded-2xl flex items-center justify-between shadow-sm gap-3">
+                    <div class="flex items-center space-x-3">
+                        ${s.photo ? `<img src="${s.photo}" onclick="zoomImage('${s.photo}')" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80">` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Beleg</div>'}
+                        <div>
+                            <h4 class="font-bold text-sm">📍 ${s.desc}</h4>
+                            ${s.sector ? `<p class="text-xs font-semibold text-amber-700">🅿️ Sektor: ${s.sector}</p>` : ''}
+                            <p class="text-xs text-gray-500">Datum: ${s.date} | Gebühr: <span class="font-semibold text-green-600">${Number(s.cost || 0).toFixed(2).replace('.', ',')} €</span></p>
+                            ${s.gps ? `<p class="text-[10px] text-blue-600 mt-0.5">GPS: ${Number(s.gps.lat).toFixed(4)}, ${Number(s.gps.lng).toFixed(4)}</p>` : ''}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${s.gps ? `<a href="https://www.google.com/maps/search/?api=1&query=${s.gps.lat},${s.gps.lng}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold">🧭 Route</a>` : ''}
+                        <button onclick="deleteSession(${s.id})" class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function zoomImage(src) {
+            document.getElementById('zoomedImage').src = src;
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+        function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
+
+        // PDF Report Export via jsPDF
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let data = getData();
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(18);
+            doc.text("Parkschein- & Parkplatz-Report", 14, 20);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+
+            const sessions = data.sessions.filter(s => s && typeof s === 'object' && !Array.isArray(s));
+            let y = 35;
+            let totalCost = sessions.reduce((sum, s) => sum + Number(s.cost || 0), 0);
+
+            doc.setFont("helvetica", "bold");
+            doc.text(`Parkvorgänge: ${sessions.length} | Gesamtkosten: ${totalCost.toFixed(2)} EUR`, 14, y);
+            y += 10;
+
+            doc.setFont("helvetica", "underline");
+            doc.text("Parkhistorie:", 14, y);
+            y += 7;
+
+            doc.setFont("helvetica", "normal");
+            if (!sessions.length) doc.text("Keine Parkvorgänge erfasst.", 14, y);
+            sessions.forEach((s, idx) => {
+                if (y > 270) { doc.addPage(); y = 20; }
+                let sectorText = s.sector ? ` [Sektor: ${s.sector}]` : "";
+                const lines = doc.splitTextToSize(`${idx + 1}. Standort: ${s.desc}${sectorText} | ${s.date} | ${Number(s.cost || 0).toFixed(2)} EUR`, 180);
+                lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
+            });
+
+            doc.save("park-report.pdf");
+        }
+    </script>
+</body>
+</html>

@@ -60,7 +60,7 @@
    const note=document.createElement('p');
    note.textContent='Für eine lokale Sicherung dieses Tools nutze seine Exportfunktion, falls vorhanden. Die Startseite bietet eine Sicherung ausgewählter Browserdaten.';
    const link=document.createElement('a');
-   link.href=ROOT;link.textContent='Zur Helferlein-Startseite';
+   link.href=ROOT;link.textContent='Zur Toolya-Startseite';
    section.append(title,note,link);surface.append(section);
  }
  const hasTheme=surface.querySelector('[data-b3-theme],#b3-backform-theme,#b3-hub-theme');

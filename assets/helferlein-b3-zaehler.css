@@ -1,0 +1,36 @@
+/* B3 Zählerstände: deep blue / electric cyan; keep notifications and data legible. */
+body.b3-zaehler{--b3-accent:#196db1;--b3-accent-2:#55c8ee;--b3-header-start:#16315f;--b3-header-mid:#2477bc;--b3-header-end:#68c9e9}
+body.b3-zaehler .b3-header{background:linear-gradient(112deg,var(--b3-header-start),var(--b3-header-mid) 57%,var(--b3-header-end));box-shadow:0 6px 22px #185c862b}
+body.b3-zaehler .b3-nav-links>a:first-child{background:linear-gradient(115deg,#1f579d,#2a9ac2);color:#fff}
+body.b3-zaehler .b3-more[open]>summary{background:#226fa9;color:#fff}
+body.b3-zaehler .b3-action:not(.b3-outline){background:linear-gradient(110deg,#1d5698,#2c88bc);color:white}
+body.b3-zaehler .b3-settings-footer .b3-home-link{color:#1e6299}
+body.b3-zaehler #settingsModal>div{max-height:90dvh;overflow-y:auto}
+body.b3-zaehler main.b3-dashboard [data-b3-panel="stats"]{gap:.75rem}
+body.b3-zaehler main.b3-dashboard :is([data-b3-panel="alarm"],[data-b3-panel="tariffs"],[data-b3-panel="create"],[data-b3-panel="chart"],[data-b3-panel="forecast"],[data-b3-panel="history"]){grid-column:1/-1!important}
+body.b3-zaehler main.b3-dashboard :is(input,select,textarea){min-width:0;max-width:100%}
+body.b3-zaehler .b3-energy-help{border-top:1px solid var(--b3-line);padding-top:.8rem}
+body.b3-zaehler .b3-energy-help>div{background:var(--b3-surface);color:var(--b3-ink);border-color:var(--b3-line)}
+body.b3-zaehler .b3-energy-help button{border-radius:11px}
+body.b3-zaehler .b3-energy-help #accordionContent{color:var(--b3-ink);background:var(--b3-bg)}
+body.b3-zaehler .b3-energy-help #accordionContent :is(.bg-sky-50\/50,.bg-blue-50\/50,.bg-orange-50\/50){background:var(--b3-surface)}
+body.b3-zaehler #readingAlarmBanner:not(.hidden){display:flex!important;gap:.8rem}
+body.b3-zaehler.b3-dark{--b3-accent:#8ed7ff}
+body.b3-zaehler.b3-dark .b3-settings-footer .b3-home-link{color:#9bddff}
+body.b3-zaehler.b3-dark main.b3-dashboard :is(.text-sky-700,.text-sky-800,.text-sky-900,.text-blue-600,.text-blue-700,.text-blue-900){color:#b5ddff!important}
+body.b3-zaehler.b3-dark main.b3-dashboard :is(.text-amber-600,.text-amber-700,.text-amber-800){color:#ffde9f!important}
+body.b3-zaehler.b3-dark main.b3-dashboard :is(.text-orange-600,.text-orange-700,.text-orange-900){color:#ffc4a0!important}
+body.b3-zaehler.b3-dark main.b3-dashboard :is(.text-green-600,.text-green-700,.text-emerald-700){color:#a9f1d0!important}
+body.b3-zaehler.b3-dark main.b3-dashboard :is(.bg-sky-50,.bg-sky-100,.bg-blue-50){background:#2a3e59!important}
+body.b3-zaehler.b3-dark main.b3-dashboard :is(.bg-amber-50,.bg-amber-100,.bg-orange-50){background:#453927!important}
+body.b3-zaehler.b3-dark main.b3-dashboard button.bg-sky-700{background:#1c5687!important;color:#fff!important}
+body.b3-zaehler.b3-dark #accordionContent :is(.text-sky-900,.text-blue-900,.text-orange-900){color:#dcf0ff!important}
+body.b3-zaehler.b3-dark #settingsModal button[onclick="registerUser()"]{background:#236b41!important;color:white!important}
+body.b3-zaehler.b3-dark #settingsModal button[onclick="loginUser()"]{background:#195e8e!important;color:white!important}
+body.b3-zaehler.b3-dark #settingsModal button[onclick="logoutUser()"]{background:#982d3e!important;color:white!important}
+@media(max-width:640px){
+ body.b3-zaehler main.b3-dashboard [data-b3-panel="stats"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.b3-zaehler #readingAlarmBanner:not(.hidden){flex-direction:column;align-items:stretch}
+ body.b3-zaehler main.b3-dashboard [data-b3-panel="create"] :is(.grid-cols-2,.grid-cols-3,.grid-cols-4),
+ body.b3-zaehler main.b3-dashboard [data-b3-panel="tariffs"] :is(.grid-cols-2,.grid-cols-3){grid-template-columns:minmax(0,1fr)}
+}

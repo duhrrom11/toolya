@@ -1,0 +1,39 @@
+/* B3 Haushaltsbuch – shared layout, turquoise identity, legible finance forms. */
+body.b3-haushaltsbuch{--b3-accent:#087f86;--b3-accent-2:#20d5bb;--b3-header-start:#064653;--b3-header-mid:#087e83;--b3-header-end:#20c9b4}
+body.b3-haushaltsbuch .b3-header{background:linear-gradient(112deg,var(--b3-header-start),var(--b3-header-mid) 56%,var(--b3-header-end));box-shadow:0 6px 22px #084b552c}
+body.b3-haushaltsbuch .b3-nav-links>a:first-child{background:linear-gradient(115deg,#076f7e,#17b3a6);color:#fff}
+body.b3-haushaltsbuch .b3-more[open]>summary{background:#086f79;color:#fff}
+body.b3-haushaltsbuch .b3-action:not(.b3-outline){background:linear-gradient(110deg,#066774,#11a9a1);color:white}
+body.b3-haushaltsbuch .b3-settings-footer .b3-home-link{color:#076d79}
+body.b3-haushaltsbuch #settingsModal>div{max-height:90dvh;overflow-y:auto}
+body.b3-haushaltsbuch main.b3-dashboard [data-b3-panel="stats"]{gap:.65rem;grid-template-columns:repeat(2,minmax(0,1fr))}
+body.b3-haushaltsbuch main.b3-dashboard [data-b3-panel="charts"],
+body.b3-haushaltsbuch main.b3-dashboard [data-b3-panel="form"],
+body.b3-haushaltsbuch main.b3-dashboard [data-b3-panel="history"]{grid-column:1/-1!important}
+body.b3-haushaltsbuch .b3-finance-guide{border-top:1px solid var(--b3-line);padding-top:.8rem}
+body.b3-haushaltsbuch .b3-finance-guide button{background:#087f86;color:white;border-radius:11px;padding:.65rem .8rem;font-weight:700}
+body.b3-haushaltsbuch .b3-finance-guide .b3-guide-content{color:var(--b3-ink);background:var(--b3-bg);border-radius:14px;border:1px solid var(--b3-line);padding:.75rem}
+@media(min-width:768px){body.b3-haushaltsbuch main.b3-dashboard [data-b3-panel="stats"]{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:1280px){body.b3-haushaltsbuch main.b3-dashboard [data-b3-panel="stats"]{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:420px){
+ body.b3-haushaltsbuch main.b3-dashboard [data-b3-panel="stats"]{grid-template-columns:minmax(0,1fr)}
+ body.b3-haushaltsbuch main.b3-dashboard [data-b3-panel="form"] :is(.grid-cols-2,.grid-cols-3,.grid-cols-4),
+ body.b3-haushaltsbuch main.b3-dashboard [data-b3-panel="history"] :is(.grid-cols-2,.grid-cols-3){grid-template-columns:minmax(0,1fr)}
+}
+body.b3-haushaltsbuch main.b3-dashboard :is(input,select,textarea){min-width:0;max-width:100%}
+body.b3-haushaltsbuch.b3-dark{--b3-accent:#6ee8de}
+body.b3-haushaltsbuch.b3-dark .b3-settings-footer .b3-home-link{color:#9ff6e9}
+body.b3-haushaltsbuch.b3-dark main.b3-dashboard :is(.text-emerald-600,.text-emerald-700,.text-teal-600,.text-teal-700){color:#8df1c5!important}
+body.b3-haushaltsbuch.b3-dark main.b3-dashboard :is(.text-blue-600,.text-indigo-600){color:#abcfff!important}
+body.b3-haushaltsbuch.b3-dark main.b3-dashboard :is(.text-red-600,.text-red-700,.text-red-800){color:#ffb8c2!important}
+body.b3-haushaltsbuch.b3-dark main.b3-dashboard :is(.text-purple-600,.text-purple-700){color:#e0baff!important}
+body.b3-haushaltsbuch.b3-dark main.b3-dashboard .text-amber-600{color:#f4d298!important}
+body.b3-haushaltsbuch.b3-dark main.b3-dashboard :is(.bg-emerald-50,.bg-teal-50){background:#21463f!important}
+body.b3-haushaltsbuch.b3-dark main.b3-dashboard :is(.bg-purple-50,.bg-indigo-50){background:#34324b!important}
+body.b3-haushaltsbuch.b3-dark main.b3-dashboard :is(.bg-red-50,.bg-red-100){background:#462935!important}
+body.b3-haushaltsbuch.b3-dark main.b3-dashboard button.bg-emerald-700{background:#236646!important;color:white!important}
+body.b3-haushaltsbuch.b3-dark #settingsModal button[onclick="registerUser()"]{background:#236843!important;color:white!important}
+body.b3-haushaltsbuch.b3-dark #settingsModal button[onclick="loginUser()"]{background:#175c8a!important;color:white!important}
+body.b3-haushaltsbuch.b3-dark #settingsModal button[onclick="logoutUser()"]{background:#962d3b!important;color:white!important}
+body.b3-haushaltsbuch.b3-dark .b3-finance-guide .b3-guide-content{background:#23394a;color:#edf8ff;border-color:#527084}
+body.b3-haushaltsbuch.b3-dark .b3-finance-guide :is(.bg-emerald-900\/70,.bg-emerald-950){background:#304858;color:#e7f5ff}

@@ -1,0 +1,38 @@
+/* B3 Haustier-Gesundheitspass – coral-to-rose theme and readable medical records. */
+body.b3-haustiere{--b3-accent:#bf426b;--b3-accent-2:#ffa48d;--b3-header-start:#762453;--b3-header-mid:#c74f79;--b3-header-end:#f49d80}
+body.b3-haustiere .b3-header{background:linear-gradient(112deg,var(--b3-header-start),var(--b3-header-mid) 56%,var(--b3-header-end));box-shadow:0 6px 22px #882a5429}
+body.b3-haustiere .b3-nav-links>a:first-child{background:linear-gradient(115deg,#a32e62,#e36b86);color:#fff}
+body.b3-haustiere .b3-more[open]>summary{background:#af3865;color:#fff}
+body.b3-haustiere .b3-action:not(.b3-outline){background:linear-gradient(115deg,#a63265,#d95a7e);color:white}
+body.b3-haustiere .b3-settings-footer .b3-home-link{color:#ad3864}
+body.b3-haustiere #settingsModal>div{max-height:90dvh;overflow-y:auto}
+body.b3-haustiere main.b3-dashboard [data-b3-panel="stats"]{gap:.7rem}
+body.b3-haustiere main.b3-dashboard [data-b3-panel="deadlines"],
+body.b3-haustiere main.b3-dashboard [data-b3-panel="create"],
+body.b3-haustiere main.b3-dashboard [data-b3-panel="medication"],
+body.b3-haustiere main.b3-dashboard [data-b3-panel="records"]{grid-column:1/-1!important}
+body.b3-haustiere .b3-pet-help{border-top:1px solid var(--b3-line);padding-top:.75rem}
+body.b3-haustiere .b3-pet-help #helpToggleBtn{color:#fff;background:#ab3c66;border-radius:10px;padding:.65rem .8rem;font-size:.82rem}
+body.b3-haustiere .b3-pet-help #helpBox{background:#fff2f6;color:#63203b;border:1px solid #e8a2bb}
+body.b3-haustiere .b3-pet-help #helpBox .bg-teal-800\/50{background:#ffe0ec;color:#5a2543}
+body.b3-haustiere main.b3-dashboard :is(input,select,textarea){min-width:0;max-width:100%}
+@media(min-width:768px) and (max-width:1023px){body.b3-haustiere main.b3-dashboard [data-b3-panel="create"]{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:640px){
+ body.b3-haustiere main.b3-dashboard :is([data-b3-panel="create"],[data-b3-panel="records"],[data-b3-panel="medication"]) :is(.grid-cols-2,.grid-cols-3){grid-template-columns:minmax(0,1fr)}
+ body.b3-haustiere #settingsModal .grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+body.b3-haustiere.b3-dark{--b3-accent:#ffacd1}
+body.b3-haustiere.b3-dark .b3-settings-footer .b3-home-link{color:#ffb9d8}
+body.b3-haustiere.b3-dark main.b3-dashboard :is(.text-teal-600,.text-teal-700,.text-green-600,.text-green-700){color:#9bf1cc!important}
+body.b3-haustiere.b3-dark main.b3-dashboard :is(.text-blue-600,.text-blue-700,.text-indigo-600){color:#bcd5ff!important}
+body.b3-haustiere.b3-dark main.b3-dashboard :is(.text-amber-600,.text-amber-700,.text-amber-800){color:#ffe0a6!important}
+body.b3-haustiere.b3-dark main.b3-dashboard :is(.text-red-600,.text-red-700,.text-red-800){color:#ffc0ca!important}
+body.b3-haustiere.b3-dark main.b3-dashboard :is(.bg-teal-50,.bg-teal-100,.bg-green-50){background:#25483d!important}
+body.b3-haustiere.b3-dark main.b3-dashboard :is(.bg-amber-50,.bg-amber-100){background:#46392b!important}
+body.b3-haustiere.b3-dark main.b3-dashboard :is(.bg-red-50,.bg-red-100){background:#492c38!important}
+body.b3-haustiere.b3-dark main.b3-dashboard button.bg-teal-600{background:#1b695d!important;color:white!important}
+body.b3-haustiere.b3-dark #helpBox{background:#33273e;color:#f9eafa;border-color:#855770}
+body.b3-haustiere.b3-dark #helpBox .bg-teal-800\/50{background:#44334a;color:#ffeaff}
+body.b3-haustiere.b3-dark #settingsModal button[onclick="registerUser()"]{background:#236b42!important;color:#fff!important}
+body.b3-haustiere.b3-dark #settingsModal button[onclick="loginUser()"]{background:#165d8c!important;color:#fff!important}
+body.b3-haustiere.b3-dark #settingsModal button[onclick="logoutUser()"]{background:#9d2d3b!important;color:#fff!important}
