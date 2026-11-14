@@ -22,7 +22,7 @@ const root=path.resolve('.'),listId='dc200000-0000-4000-8000-000000000001';
     const result=()=>{
      window.__dbCalls.push({table,single,start,end,ids,filters});
      if(table==='wishlist_profiles')return {data:single?{user_id:user.id,display_name:'Offline',handle:'offline'}:[],error:null};
-     if(table==='wishlist_lists')return {data:single?(mode==='private'?null:list):[list],error:null};
+     if(table==='wishlist_lists')return {data:single?(mode==='private'?null:list):(mode==='empty-lists'?[]:[list]),error:null};
      if(collection&&table==='wishlist_list_items')return {data:Array.from({length:121},(_,i)=>({wish_id:1000+i})).slice(start,end+1),error:null};
      if(collection&&table==='wishlist_wishes')return {data:(ids||[]).map(id=>({id,note:'',priority:2,visibility:id===1040?'private':'public',wishlist_products:product(id)})),error:null};
      return {data:[],error:null};
@@ -41,7 +41,7 @@ const root=path.resolve('.'),listId='dc200000-0000-4000-8000-000000000001';
   });
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin+'/tools/wishes/index.html');await page.locator('#logout').waitFor();assert.equal(await page.evaluate(()=>window.__clientCount),1);
-  await page.locator('#homeNewList').click();
+  await page.locator('#homeNewList').click();assert.doesNotMatch(await page.locator('#listsStatus').textContent(),/Cannot read|undefined|TypeError/);
   for(const width of [320,375,768]){await page.setViewportSize({width,height:900});await page.screenshot({path:`test-results/wishlist-${width}.png`});const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));assert.ok(size.scroll<=size.width+1,'Wishlist overflow '+JSON.stringify(size));assert.ok((await page.locator('#createList').boundingBox()).width>=150,'Manual list button squeezed');assert.ok((await page.locator('.amazon-import input[type=url]').first().boundingBox()).width>=150,'Amazon URL input squeezed');}
   await page.locator('#logout').click();
   if(!await page.locator('#wishlistAuthMenu').evaluate(el=>el.open))await page.locator('#wishlistAuthMenu > summary').click();
@@ -49,7 +49,7 @@ const root=path.resolve('.'),listId='dc200000-0000-4000-8000-000000000001';
   await page.waitForFunction(()=>window.__authCalls.some(x=>x.kind==='signup'));
   assert.equal(await page.evaluate(()=>window.__authCalls.find(x=>x.kind==='signup').redirect),origin+'/tools/wishes/index.html');
   await page.locator('#password').fill('Local-Only-2026!');await page.locator('#signin').click();await page.locator('#logout').waitFor();assert.equal(await page.evaluate(()=>window.__clientCount),1);
-  console.log('PASS isolated login/logout/signup redirect and one shared client; Android widths 320, 375, 768');
+  await page.goto(origin+'/tools/wishes/index.html?mode=empty-lists');await page.getByText('Noch keine Listen. Erstelle deine erste Wunschliste.',{exact:true}).waitFor();assert.doesNotMatch(await page.locator('#listsStatus').textContent(),/Cannot read|undefined|TypeError/);assert.equal(await page.locator('#createList').isEnabled(),true);console.log('PASS isolated login/logout/signup redirect, empty list dashboard, one shared client; Android widths 320, 375, 768');
   await page.goto(origin+'/tools/wishes/collection.html?id='+listId);await page.locator('#collection').waitFor();
   assert.equal(await page.locator('#grid .card').count(),120);assert.equal(await page.locator('#grid .cover img').count(),120);assert.match(await page.locator('#grid').textContent(),/19,99/);
   const membershipCalls=await page.evaluate(()=>window.__dbCalls.filter(x=>x.table==='wishlist_list_items'));assert.equal(membershipCalls.length,2);assert.equal(membershipCalls[1].start,100);
