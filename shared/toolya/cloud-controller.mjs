@@ -144,3 +144,16 @@ export function createLoansCloudController(repository) {
   return createCloudController({repository,validate:validateLoansSnapshot,
     initial:{items:[],contacts:[],inventory:[]}});
 }
+
+export function validateMetersSnapshot(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data) ||
+      !Array.isArray(data.readings) ||
+      !data.readings.every(item => item && typeof item === 'object' && !Array.isArray(item)) ||
+      !data.tarifs || typeof data.tarifs !== 'object' || Array.isArray(data.tarifs))
+    throw new Error('Ungültiger Zählerstände-Datenstand.');
+  return data;
+}
+export function createMetersCloudController(repository) {
+  return createCloudController({repository,validate:validateMetersSnapshot,
+    initial:{readings:[],tarifs:{}}});
+}
