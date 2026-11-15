@@ -196,3 +196,14 @@ test('estate edge routes trustee access through service-role RPC without exposin
  assert.match(source,/if\(action==='alarm'&&!result\.error\)\{await deliverOne\(\)/);
  assert.doesNotMatch(source,/rpc\(action,null,\{[^}]*\bkey:b\.key/);
 });
+
+test('estate SQL migration and isolated RPC fixture fail closed on missing alarm deadline',()=>{
+ const fixture=readFileSync(new URL('./fixtures/estate-release-v2-isolated.sql',import.meta.url),'utf8');
+ const migration=readFileSync(new URL('../supabase/migrations/20261115195000_estate_release_null_deadline_guard.sql',import.meta.url),'utf8');
+ const assertions=readFileSync(new URL('./fixtures/estate-release-v2-assertions.sql',import.meta.url),'utf8');
+ const guard=/elsif v\.alarm_started_at is null or v\.alarm_deadline is null or v\.alarm_deadline>now\(\) or v\.alarm_canceled_at is not null then/;
+ assert.match(fixture,guard);
+ assert.match(migration,guard);
+ assert.match(assertions,/NULL deadline granted one-key access/);
+ assert.equal(migration.slice(migration.indexOf('CREATE OR REPLACE FUNCTION')),fixture.slice(fixture.indexOf('CREATE OR REPLACE FUNCTION')),'isolated fixture and pending migration must implement identical SQL');
+});
