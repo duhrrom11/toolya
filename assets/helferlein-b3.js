@@ -14,31 +14,9 @@
   const defaults = () => definitions.map((d,i)=>({id:d.id,visible:true,size:d.size,order:i}));
   const safeRead = (key) => { try{return localStorage.getItem(key)}catch{return null} };
   const safeWrite = (key,value) => {try{localStorage.setItem(key,value);return true}catch{return false}};
-  const media = window.matchMedia('(prefers-color-scheme: dark)');
-  let theme = safeRead(THEME_KEY) || 'auto';
-  if(!['light','dark','auto'].includes(theme))theme='auto';
   function applyTheme(){
-    const dark=theme==='dark'||(theme==='auto'&&media.matches);
-    document.body.classList.toggle('b3-dark',dark);
-    document.documentElement.style.colorScheme=dark?'dark':'light';
-    // Account actions have legacy Tailwind fills; guarantee accessible contrast
-    // even when CDN-generated utility styles arrive after the local stylesheet.
-    [
-      ['#settingsModal button[onclick="supabaseLogin()"]','#246b3f','#ffffff'],
-      ['#settingsModal button[onclick="supabaseRegister()"]','#31495f','#f7fbff'],
-      ['#settingsModal button[onclick="supabaseLogout()"]','#4b2934','#ffdce1']
-    ].forEach(([selector,bg,fg])=>{
-      const el=document.querySelector(selector);
-      if(!el)return;
-      if(dark){
-        el.style.setProperty('background-color',bg,'important');
-        el.style.setProperty('color',fg,'important');
-      }else{
-        el.style.removeProperty('background-color');
-        el.style.removeProperty('color');
-      }
-    });
-    document.querySelectorAll('[data-b3-theme]').forEach(el=>{el.value=theme});
+    document.body.classList.remove('b3-dark');
+    document.documentElement.style.colorScheme='light';
   }
   function loadLayout(){
     try{
@@ -174,19 +152,7 @@
     const modalSurface=modal?.firstElementChild;
     const prefs=create('section',{class:'b3-preferences','aria-label':'Darstellung und Dashboard'});
     prefs.append(create('h4',{},'Darstellung & Dashboard'));
-    const label=create('label',{},'Designmodus');
-    const select=create('select',{'aria-label':'Globaler Designmodus','data-b3-theme':'true',class:'b3-theme-select'});
-    [['auto','Automatisch'],['light','Hell'],['dark','Dunkel']].forEach(([value,name])=>
-      select.append(create('option',{value},name))
-    );
-    select.value=theme;
-    select.addEventListener('change',()=>{
-      theme=select.value;
-      if(!safeWrite(THEME_KEY,theme))window.alert('Designmodus konnte nicht gespeichert werden');
-      applyTheme();
-    });
-    label.append(select);
-    prefs.append(label);
+
     const edit=button('✎ Dashboard bearbeiten',()=>{
       if(!draft)draft=clone(layout);
       const host=document.getElementById('b3-editor');
@@ -227,9 +193,8 @@
     renderLayout(layout);
     // Only one tool-navigation row under the header, including on phones.
     // Remove the former duplicate mobile bottom bar.
-    media.addEventListener?.('change',applyTheme);
+
     window.addEventListener('storage',e=>{
-      if(e.key===THEME_KEY){theme=['light','dark','auto'].includes(e.newValue)?e.newValue:'auto';applyTheme()}
       if(e.key===LAYOUT_KEY&&!draft){layout=loadLayout();renderLayout(layout)}
     });
   }
