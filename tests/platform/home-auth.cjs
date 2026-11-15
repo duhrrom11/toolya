@@ -31,7 +31,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  await page.waitForFunction(()=>document.querySelector('#settingsModal').classList.contains('hidden'),{},{timeout:5000});
  await page.waitForFunction(()=>document.querySelector('#userInfo').textContent==='Angemeldet',{},{timeout:5000});
  await page.reload();await page.waitForFunction(()=>document.querySelector('#userInfo').textContent==='Angemeldet',{},{timeout:5000});
- await page.evaluate(()=>{window.__logoutDone=false;logoutUser().then(()=>window.__logoutDone=true)});
+ await page.evaluate(()=>{window.__signedOutEvents=0;supabaseClient.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')window.__signedOutEvents++});window.__logoutDone=false;logoutUser().then(()=>window.__logoutDone=true)});
  await page.waitForFunction(()=>window.__logoutDone&&document.querySelector('#userInfo').textContent==='Anmelden',{},{timeout:5000});
  await page.waitForFunction(()=>document.querySelector('#cloudStatus').textContent==='Nicht angemeldet',{},{timeout:5000});
  await page.waitForTimeout(200);

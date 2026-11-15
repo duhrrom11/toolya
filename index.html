@@ -929,8 +929,8 @@
                 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", showPasswordRecovery, { once: true });
                 else showPasswordRecovery();
             }
-            // Missing-session getUser emits SIGNED_OUT itself. Never query Auth again
-            // for an empty session: that would recursively emit SIGNED_OUT forever.
+            // Empty-session events need no follow-up Auth request. Render signed-out
+            // state directly so status checks cannot contend with a new login.
             if (!session) {
                 ++authStatusRequestId;
                 renderUserDisplay(null);
