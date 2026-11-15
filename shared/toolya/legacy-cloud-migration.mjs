@@ -34,6 +34,18 @@ function validateBudget(value) {
   return copy(value);
 }
 const TOOLS = Object.freeze({
+  'verliehene-gegenstaende-verwalten': {
+    keys: ['verleih_tracker_pro_v3'],
+    validate: value => {
+      if (!value || typeof value !== 'object' || Array.isArray(value) ||
+          !['items','contacts','inventory'].every(key =>
+            Array.isArray(value[key]) && value[key].every(item =>
+              item && typeof item === 'object' && !Array.isArray(item))))
+        throw new Error('Verleih-Bestand ist beschädigt.');
+      return copy(value);
+    },
+    build: values => values[0]
+  },
   'umzugskisten-inventar': {
     keys: ['mini_homebox_pro'],
     validate: value => {
