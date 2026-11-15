@@ -34,7 +34,8 @@ const root=path.resolve(__dirname,'../..');
   assert(source.includes(target),'Owner error-handler instrumentation anchor changed');
   const instrumented=source.replace(target,`catch(e){window.__estateTestError={
    category:['conflict','login_required','backup_required','vault_mismatch','invalid_vault','unavailable','reauthenticate'].includes(e?.message)?e.message:'unclassified',
-   type:['TypeError','ReferenceError','SyntaxError','Error'].includes(e?.name)?e.name:'other'
+   type:['TypeError','ReferenceError','SyntaxError','Error'].includes(e?.name)?e.name:'other',
+   location:(String(e?.stack||'').match(/(?:estate-owner\\.js|estate-cloud-guard\\.js|supabase-2\\.57\\.0\\.js):\\d+:\\d+/)||[])[0]||'unknown'
   };message(errorText(e),true);`);
   await route.fulfill({status:200,contentType:'text/javascript',body:instrumented});
  });
