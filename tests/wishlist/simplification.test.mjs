@@ -358,3 +358,25 @@ test('coordination RPC errors return failure without overwriting another session
  assert.equal(await failing(),false);
  assert.equal(elements.status.textContent,'Reservierungsabgleich nicht verfügbar.');
 });
+
+test('invalid newer product search re-enables button while older request is pending',async()=>{
+ const planner=source('gift-planner.mjs');
+ const start=planner.indexOf('let productSearchRevision=0;');
+ const end=planner.indexOf("$('searchProducts').addEventListener",start);
+ assert.ok(start>=0&&end>start);
+ let complete;
+ const pending=new Promise(resolve=>complete=resolve);
+ const elements={productQuery:{value:'Geschenk'},productResults:{replaceChildren(){}},productSearchStatus:{textContent:''},searchProducts:{disabled:false}};
+ const db={from:()=>({select:()=>({ilike:()=>({order:()=>({limit:()=>pending})})})})};
+ const body="let user={id:'first'},occasions=[],selectedProduct=null;const showProductSource=()=>{};\n"+planner.slice(start,end)+"\nreturn searchProducts;";
+ const search=new Function('$','db','document',body)(id=>elements[id],db,{createElement:()=>({})});
+ const first=search();
+ assert.equal(elements.searchProducts.disabled,true);
+ elements.productQuery.value='x';
+ await search();
+ assert.equal(elements.searchProducts.disabled,false);
+ assert.match(elements.productSearchStatus.textContent,/mindestens zwei Zeichen/);
+ complete({data:[],error:null});
+ await first;
+ assert.equal(elements.searchProducts.disabled,false);
+});
