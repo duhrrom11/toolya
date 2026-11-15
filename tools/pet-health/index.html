@@ -753,6 +753,7 @@
                             <div>
                                 <p class="font-bold">${m.name}</p>
                                 <p class="text-[11px] ${isLowStock ? 'text-red-600 font-bold' : 'text-gray-600'}">Vorrat: ${m.stock} ${isLowStock ? '⚠️ Fast leer!' : ''}</p>
+                                <a href="https://www.amazon.de/s?k=${encodeURIComponent(String(m.name || '').trim())}&amp;tag=duhrrom-21" target="_blank" rel="noopener noreferrer sponsored" aria-label="Auf Amazon nach ${String(m.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')} suchen (Partnerlink)" class="inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-lg bg-amber-400 hover:bg-amber-500 text-gray-900 font-semibold text-[11px]">🛒 Amazon</a>
                             </div>
                             <button onclick="deleteMedication(${m.id})" class="text-red-500 font-bold px-2 hover:bg-red-100 rounded">✕</button>
                         </div>
