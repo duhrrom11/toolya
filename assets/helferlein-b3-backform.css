@@ -61,3 +61,32 @@ body.b3-backform.b3-dark #help-box :is(.text-slate-800,.text-slate-600,.text-ora
  body.b3-backform main.b3-backform-main [id^="tab-"] :is(.flex.justify-between,.flex.items-center.justify-between){flex-wrap:wrap;gap:.5rem}
 }
 @media print{body.b3-backform .b3-header,body.b3-backform .b3-backform-nav{display:none!important}}
+
+/* Baking information architecture: four stable sections, a guided calculator, and focused results. */
+body.b3-backform .b3-backform-tabs{flex-wrap:wrap;overflow:visible}
+body.b3-backform .b3-backform-nav .b3-tab{white-space:normal;text-align:center;flex:1 1 auto}
+body.b3-backform .b3-workflow-intro{padding:1.1rem 1.25rem;border:1px solid #edc8b8;border-radius:16px;background:linear-gradient(120deg,#fff4ed,#fffaf6);color:#663943}
+body.b3-backform .b3-workflow-intro strong{display:block;font-size:1rem;font-weight:800}
+body.b3-backform .b3-workflow-intro p{font-size:.86rem;line-height:1.55;margin-top:.35rem}
+body.b3-backform .b3-subview-link button,body.b3-backform .b3-subview-back button{display:block;width:100%;padding:.8rem 1rem;border-radius:12px;border:1px solid #e6bdaf;background:#fff8f3;color:#883c4a;font-size:.88rem;font-weight:750;text-align:left}
+body.b3-backform .b3-subview-link button:hover,body.b3-backform .b3-subview-back button:hover{background:#ffece1}
+body.b3-backform[data-baking-view="finder"] #b3-baking-results,
+body.b3-backform[data-baking-view="substanz"] #b3-baking-results,
+body.b3-backform[data-baking-view="tools"] #b3-baking-results,
+body.b3-backform[data-baking-view="rezepte"] #b3-baking-results{display:none}
+body.b3-backform[data-baking-view="finder"] main.b3-backform-main,
+body.b3-backform[data-baking-view="substanz"] main.b3-backform-main,
+body.b3-backform[data-baking-view="tools"] main.b3-backform-main,
+body.b3-backform[data-baking-view="rezepte"] main.b3-backform-main{display:block;max-width:980px}
+body.b3-backform[data-baking-view="finder"] main.b3-backform-main>div:first-child,
+body.b3-backform[data-baking-view="substanz"] main.b3-backform-main>div:first-child,
+body.b3-backform[data-baking-view="tools"] main.b3-backform-main>div:first-child,
+body.b3-backform[data-baking-view="rezepte"] main.b3-backform-main>div:first-child{width:100%}
+body.b3-backform .b3-helper-extras{margin-top:1rem}
+@media(max-width:767px){
+ body.b3-backform .b3-backform-nav{align-items:flex-start}
+ body.b3-backform .b3-backform-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.3rem}
+ body.b3-backform .b3-backform-nav .b3-tab{font-size:.76rem;padding:.6rem .35rem;min-height:48px}
+ body.b3-backform .b3-more{align-self:center}
+ body.b3-backform .b3-workflow-intro{padding:.9rem}
+}
