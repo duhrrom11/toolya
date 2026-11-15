@@ -608,3 +608,17 @@ test('estate: browser keeps existing vaults separate and refuses pending overwri
  });
  expect(result).toEqual({different:'vault_mismatch',pending:'conflict',newDevice:'ok'});
 });
+
+test('estate: new-device cloud recovery checks password and does not touch localStorage',async({page})=>{
+ await isolatedEstate(page,true);await page.goto(origin+'/tools/estate/index.html');
+ const result=await page.evaluate(async()=>{
+  const remote={vault_id:'v',updated_at:'rev',recovery_key:{ciphertext:'wrapped'},encrypted_data:{ciphertext:'data'},encrypted_config:{ciphertext:'config'}};
+  const client={auth:{async getUser(){return {data:{user:{id:'owner'}},error:null}}},from(){return {select(){return this},eq(){return this},async maybeSingle(){return {data:remote,error:null}}}}};
+  localStorage.setItem('digital_estate_vault','existing-backup');
+  const restored=await EstateCloudGuard.restoreCloudSnapshot({client,ownerId:'owner',password:'secret',cryptoApi:{
+   async unwrap(){return 'key'},async decrypt(v){return v===remote.encrypted_data?{entries:[{id:'e'}]}:{ownerName:'Owner'}}
+  },validatePayload:x=>x});
+  return {vault:restored.config.vaultId,entries:restored.payload.entries.length,local:localStorage.getItem('digital_estate_vault')};
+ });
+ expect(result).toEqual({vault:'v',entries:1,local:'existing-backup'});
+});
