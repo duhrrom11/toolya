@@ -452,8 +452,15 @@
             try { updateUserDisplay(); } catch(e){}
         });
 
-        supabaseClient.auth.onAuthStateChange(() => {
-            // Auth callbacks run while the SDK holds its session lock.
+        supabaseClient.auth.onAuthStateChange((event,session) => {
+            // Invalidate immediately: a previous user's in-memory snapshot must
+            // never remain usable across logout or account changes.
+            if (movingCloudReady &&
+                (!session?.user?.id || session.user.id !== movingCloudUserId ||
+                 session.user.is_anonymous)) {
+                movingCloudBlock('Toolya-Sitzung geändert. Bitte neu anmelden oder Seite laden.');
+            }
+            // Supabase auth callbacks hold the session lock; defer SDK calls.
             setTimeout(() => { updateUserDisplay().catch(() => {}); }, 0);
         });
 
