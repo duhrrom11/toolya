@@ -74,7 +74,7 @@ for(const item of tools){
     page.on('dialog',dialog=>{console.log('[UI dialog]',dialog.message());return dialog.dismiss();});
     if(item.tool==='autokosten-reifenwechsel'){
       await page.locator('#carName').fill('Nicht gespeichert');
-      await expect(page.locator('#carName')).toHaveValue(item.tool==='autokosten-reifenwechsel' && page ? /^(Nicht gespeichert|Mock-Fahrzeug)$/ : '');
+      await expect(page.locator('#carName')).toHaveValue(/^(Nicht gespeichert|Mock-Fahrzeug)$/);
       await page.evaluate(async()=>await saveCar());
     }else{
       await page.locator('#receiptTitle').fill('Nicht gespeichert');
