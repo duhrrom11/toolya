@@ -171,7 +171,7 @@ async function searchProducts(){
    if(product.asin&&/^[A-Z0-9]{10}$/i.test(product.asin)){const a=document.createElement('a');a.href='https://www.amazon.de/dp/'+encodeURIComponent(product.asin);a.target='_blank';a.rel='noopener noreferrer';a.textContent='Produkt bei Amazon ansehen ↗';card.append(a)}
    card.append(button);root.append(card);
   }
- }catch{if(revision===productSearchRevision&&user?.id===ownerId)$('productSearchStatus').textContent='Suche fehlgeschlagen. Bitte erneut versuchen.'}
+ }catch{if(revision===productSearchRevision&&user?.id===ownerId&&$('productQuery').value.trim()===q)$('productSearchStatus').textContent='Suche fehlgeschlagen. Bitte erneut versuchen.'}
  finally{if(revision===productSearchRevision)$('searchProducts').disabled=false}
 }
 $('searchProducts').addEventListener('click',searchProducts);
