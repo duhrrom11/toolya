@@ -18,7 +18,7 @@ function fakeRepository(initial = null) {
       if (expected !== revision) throw Error('revision conflict');
       writes++;
       current = structuredClone(data);
-      revision = writes + 1;
+      revision = revision === null ? 1 : revision + 1;
       return { data: structuredClone(current), revision };
     }
   };
