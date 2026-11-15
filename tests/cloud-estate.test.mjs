@@ -159,6 +159,10 @@ test('estate emergency replica maps distinct tokens to the same authenticated en
  assert.equal(canonical.guardians[0].hash,await C.hash(first));
  const upperOpened=await C.openReplica({content:canonical.content,envelope:canonical.guardians[0].envelope},first.toUpperCase());
  assert.equal(upperOpened.entries[0].title,entries[0].title);
+ const formatted=first.slice(0,32)+'-'+first.slice(32);
+ const formattedReplica=await C.readReplica(entries,[people[0]],{p1:formatted});
+ assert.equal(formattedReplica.guardians[0].hash,await C.hash(first));
+ assert.equal((await C.openReplica({content:formattedReplica.content,envelope:formattedReplica.guardians[0].envelope},formatted)).entries[0].title,entries[0].title);
 });
 
 test('estate emergency edge validates distinct trustee keys before RPC and restricts second key to open',()=>{
