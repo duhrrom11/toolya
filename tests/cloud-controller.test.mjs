@@ -117,3 +117,14 @@ test('controller rejects inconsistent read revisions and remains blocked', async
     assert.equal(controller.ready,false);
   }
 });
+
+test('invalid write acknowledgement locks controller until reload', async () => {
+  const repo = {
+    async read() { return {exists:false,data:null,revision:null}; },
+    async save() { return {data:{cars:[],events:[],tires:[]},revision:99}; }
+  };
+  const controller = createCarCloudController(repo);
+  await controller.load();
+  await assert.rejects(controller.replace({cars:[],events:[],tires:[]}),/inkonsistent/);
+  assert.equal(controller.ready,false);
+});
