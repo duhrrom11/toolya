@@ -11,6 +11,7 @@
   finished=true;clearTimeout(timeout);
   if(error||!data?.user?.id||data.user.is_anonymous){reject();return;}
   document.documentElement.classList.remove('toolya-auth-pending');
+  window.dispatchEvent(new Event('toolya-auth-verified'));
  }).catch(()=>{if(!finished){finished=true;clearTimeout(timeout);reject();}});
  client.auth.onAuthStateChange((event)=>{
   if(event==='SIGNED_OUT'){
