@@ -1,0 +1,39 @@
+name: Toolya Connect isolated browser CI
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/connect-playwright.yml'
+      - 'tests/platform/connect-playwright.cjs'
+      - 'shared/toolya/cloud-controller.mjs'
+      - 'shared/toolya/connect-panel.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+  pull_request:
+    paths:
+      - '.github/workflows/connect-playwright.yml'
+      - 'tests/platform/connect-playwright.cjs'
+      - 'shared/toolya/cloud-controller.mjs'
+      - 'shared/toolya/connect-panel.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-connect-browser:
+    name: Two-context Chromium / no production data
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Install isolated Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Two-device browser regression (blocking)
+        run: npm run test:connect:browser
