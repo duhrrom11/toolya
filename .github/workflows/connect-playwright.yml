@@ -5,6 +5,11 @@ on:
     paths:
       - '.github/workflows/connect-playwright.yml'
       - 'tests/platform/connect-playwright.cjs'
+      - 'tests/platform/connect-tool-integration.cjs'
+      - 'tools/car/index.html'
+      - 'tools/budget/index.html'
+      - 'tools/moving/index.html'
+      - 'tools/loans/index.html'
       - 'shared/toolya/cloud-controller.mjs'
       - 'shared/toolya/connect-panel.mjs'
       - 'package.json'
@@ -13,6 +18,11 @@ on:
     paths:
       - '.github/workflows/connect-playwright.yml'
       - 'tests/platform/connect-playwright.cjs'
+      - 'tests/platform/connect-tool-integration.cjs'
+      - 'tools/car/index.html'
+      - 'tools/budget/index.html'
+      - 'tools/moving/index.html'
+      - 'tools/loans/index.html'
       - 'shared/toolya/cloud-controller.mjs'
       - 'shared/toolya/connect-panel.mjs'
       - 'package.json'
@@ -35,5 +45,7 @@ jobs:
         run: npm ci
       - name: Install isolated Chromium
         run: npx playwright install --with-deps chromium
+      - name: CloudOnly tool integration contract
+        run: node tests/platform/connect-tool-integration.cjs
       - name: Two-device browser regression (blocking)
         run: npm run test:connect:browser
