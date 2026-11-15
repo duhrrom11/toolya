@@ -30,7 +30,7 @@ function verifiedImage(link){
  try{
   const u=new URL(value);
   if(u.protocol!=='https:'||u.username||u.password||u.port)return null;
-  if(!['m.media-amazon.com','images-eu.ssl-images-amazon.com','images-na.ssl-images-amazon.com','images.ssl-images-amazon.com'].includes(u.hostname))return null;
+  if(!['m.media-amazon.com','images-eu.ssl-images-amazon.com','images-na.ssl-images-amazon.com','images.ssl-images-amazon.com'].includes(u.hostname) && !['brennenstuhl.com','www.brennenstuhl.com','tesa.com','www.tesa.com'].includes(u.hostname))return null;
   return u.href;
  }catch{return null;}
 }
@@ -105,6 +105,6 @@ function add(){
  section.append(group);
  main.append(section);
 }
-function start(){add();existing();}
+// Do not inject generic Amazon searches: show only curated, concrete products.\nfunction start(){existing();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
