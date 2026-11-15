@@ -26,6 +26,18 @@ const root=path.resolve(__dirname,'../..');
  const context=await browser.newContext();const errors=[];
  context.on('page',p=>{p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error'&&!m.text().includes('status of 4'))errors.push(m.text());});});
  await context.addInitScript(()=>{window.print=()=>{document.body.dataset.printReady='true';};document.addEventListener('securitypolicyviolation',e=>console.warn('CSP-SOURCE',e.sourceFile,e.lineNumber,e.columnNumber,e.violatedDirective,e.sample));});
+ // Test-only instrumentation: expose a fixed error category, never exception text,
+ // encrypted snapshots, credentials, JWTs, request bodies or personal data.
+ await context.route(origin+'/assets/estate-owner.js',async route=>{
+  const source=fs.readFileSync(path.join(root,'assets/estate-owner.js'),'utf8');
+  const target='catch(e){message(errorText(e),true);';
+  assert(source.includes(target),'Owner error-handler instrumentation anchor changed');
+  const instrumented=source.replace(target,`catch(e){window.__estateTestError={
+   category:['conflict','login_required','backup_required','vault_mismatch','invalid_vault','unavailable','reauthenticate'].includes(e?.message)?e.message:'unclassified',
+   type:['TypeError','ReferenceError','SyntaxError','Error'].includes(e?.name)?e.name:'other'
+  };message(errorText(e),true);`);
+  await route.fulfill({status:200,contentType:'text/javascript',body:instrumented});
+ });
  await context.route('https://yheogmeaosuigyaxkwth.supabase.co/**',async route=>{
   const req=route.request(),u=new URL(req.url()),method=req.method(),body=req.postDataJSON();
   const fulfill=async(status,obj)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(obj)});
@@ -80,5 +92,5 @@ const root=path.resolve(__dirname,'../..');
   await page.setViewportSize({width:1280,height:950});await page.locator('[data-tab=people]').click();await page.screenshot({path:'/tmp/estate-owner-isolated.png',fullPage:true});await trustee.screenshot({path:'/tmp/estate-trustee-isolated.png',fullPage:true});
   assert.deepEqual(errors,[]);
   console.log('PASS: Chromium actual owner/trustee UI, legacy data/key preservation, password-protected local storage, local QR, per-person mail/WhatsApp, A4 print, two-key open, one-key refusal, alarm mail, 24h gate, authenticated cancellation, edit persistence, lock, 320/375/768/1280px');
- }catch(error){for(const p of context.pages()){try{console.error('BROWSER DIAGNOSTIC',p.url(),await p.locator('body').innerText({timeout:2000}));await p.screenshot({path:'/tmp/estate-failure-'+context.pages().indexOf(p)+'.png',fullPage:true});}catch{}}console.error('BROWSER ERRORS',errors);throw error;}finally{global.fetch=originalFetch;await browser.close();server.close();await pg.end();fs.unlinkSync(tempfile);}
+ }catch(error){for(const p of context.pages()){try{console.error('BROWSER DIAGNOSTIC',new URL(p.url()).pathname,await p.evaluate(()=>({error:window.__estateTestError||null,loginHidden:document.getElementById('login-panel')?.hidden,ownerVisible:!document.getElementById('owner-app')?.hidden,notice:document.getElementById('message')?.classList.contains('error')?'error':'none'})));await p.screenshot({path:'/tmp/estate-failure-'+context.pages().indexOf(p)+'.png',fullPage:true});}catch{}}console.error('BROWSER ERRORS',errors);throw error;}finally{global.fetch=originalFetch;await browser.close();server.close();await pg.end();fs.unlinkSync(tempfile);}
 })().catch(e=>{console.error(e);process.exitCode=1;});
