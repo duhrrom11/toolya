@@ -58,12 +58,24 @@ function mark(link){
  link.insertAdjacentElement('beforebegin',mark);
  if(!link.closest('[data-user-content]'))addProductImage(link);
 }
+const verifiedProducts={
+ 'energiekostenmessgerät stromzähler':{asin:'B007459MH6',name:'Brennenstuhl Primera-Line PM 231 E Energiekostenmessgerät'}
+};
+function upgradeVerified(link){
+ const href=link.getAttribute('href')||'';
+ let query='';try{query=new URL(href,location.href).searchParams.get('k')||''}catch{return}
+ const product=verifiedProducts[query.toLocaleLowerCase('de')];
+ if(!product)return;
+ link.href='https://www.amazon.de/dp/'+product.asin+'?tag='+TAG;
+ link.textContent=product.name+' bei Amazon ansehen ↗';
+}
 function existing(){
  document.querySelectorAll('a[href*="amazon.de"]').forEach(link=>{
   if(link.closest('[data-user-content],#wishlist-root'))return;
   const clean=normalize(link.getAttribute('href'));
   if(!clean)return;
   link.href=clean;
+  upgradeVerified(link);
   mark(link);
  });
 }
