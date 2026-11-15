@@ -107,7 +107,7 @@ export async function handleRequest(req: Request): Promise<Response> {
     if (result.kind !== 'list' || !result.complete || !result.products.length) {
       throw new Error('Amazon-Wunschliste konnte nicht vollständig gelesen werden');
     }
-    const products = result.products.map((p: { asin: string; title: string; description?: string; productUrl: string }) => ({
+    const products = result.products.map((p: { asin: string; title: string; description?: string; price?: number | null; imageUrl?: string | null; productUrl: string }) => ({
       publication_id: list.id, asin: p.asin, title: p.title,
       description: p.description?.trim() || null, price: typeof p.price === 'number' && Number.isFinite(p.price) ? p.price : null, product_url: p.productUrl, image_url: p.imageUrl || null,
     }));
