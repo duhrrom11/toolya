@@ -481,8 +481,8 @@
         let movingCloudReady = false;
         function movingCloudBlock(message) {
             movingCloudReady = false;
-            window.toolyaConnectPanel?.dispose();
-            window.toolyaConnectPanel=null;
+            
+            
             movingCloudController?.invalidate();
             let gate = document.getElementById('toolya-cloud-gate');
             if (!gate) {
@@ -529,14 +529,6 @@
                 checkDeepLink();
                 renderInventory();
                 await updateUserDisplay();
-                // Connect is mounted only after authenticated CloudOnly bootstrap.
-                const {mountConnectPanel}=await import('../../shared/toolya/connect-panel.mjs');
-                window.toolyaConnectPanel?.dispose();
-                window.toolyaConnectPanel=mountConnectPanel({
-                    controller:movingCloudController,
-                    host:document.querySelector('main')||document.body,
-                    onReload:()=>{loadLocationsDropdown();checkDeepLink();renderInventory();}
-                });
             } catch(error) {
                 console.error(error);
                 movingCloudBlock('Toolya Cloud gesperrt: '+error.message);
