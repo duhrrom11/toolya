@@ -46,3 +46,14 @@ test('estate backup readback refuses invalid ciphertext without claiming success
  const client={auth:{async getUser(){return {data:{user:{id:'owner'}},error:null}}},from(){return {select(){return this},eq(){return this},async single(){return {data:{vault_id:'v',updated_at:'rev',recovery_key:{ciphertext:'wrapped'},encrypted_data:{ciphertext:'bad'},encrypted_config:{ciphertext:'config'}},error:null}}}}};
  await assert.rejects(verifyEncryptedBackup({client,ownerId:'owner',vaultId:'v',expectedStamp:'rev',key:'key',cryptoApi:{async decrypt(){throw Error('decrypt_failed')}},validatePayload:x=>x}),/decrypt_failed/);
 });
+
+test('estate backup refuses mismatched ciphertext or recovery envelope even with matching revision',async()=>{
+ const remote={vault_id:'v',updated_at:'rev',encrypted_data:{ciphertext:'cloud-data'},encrypted_config:{ciphertext:'cloud-config'},recovery_key:{ciphertext:'cloud-recovery'}};
+ const client={auth:{async getUser(){return {data:{user:{id:'owner'}},error:null}}},from(){return {select(){return this},eq(){return this},async single(){return {data:remote,error:null}}}}};
+ const base={client,ownerId:'owner',vaultId:'v',expectedStamp:'rev',key:'key',
+  cryptoApi:{async decrypt(v){return v===remote.encrypted_data?{entries:[]}:{alarmPersons:[]}}},
+  validatePayload:x=>x,expectedEncryptedData:remote.encrypted_data,expectedEncryptedConfig:remote.encrypted_config,expectedRecoveryKey:remote.recovery_key};
+ assert.equal((await verifyEncryptedBackup(base)).entries,0);
+ for(const changed of [{expectedEncryptedData:{ciphertext:'other'}},{expectedEncryptedConfig:{ciphertext:'other'}},{expectedRecoveryKey:{ciphertext:'other'}}])
+  await assert.rejects(verifyEncryptedBackup({...base,...changed}),/backup_unverified/);
+});
