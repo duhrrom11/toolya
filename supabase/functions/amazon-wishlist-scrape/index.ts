@@ -65,21 +65,35 @@ export async function handleRequest(req: Request): Promise<Response> {
   if (authError || !user) return json({ error: 'Unauthorized' }, 401);
   let body: unknown;
   try { body = await req.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
-  const publicationId = body && typeof body === 'object' && !Array.isArray(body) ? (body as { publication_id?: unknown }).publication_id : undefined;
-  if (typeof publicationId !== 'string' || !ID.test(publicationId)) return json({ error: 'Invalid publication ID' }, 400);
+  const payload = body && typeof body === 'object' && !Array.isArray(body) ? body as { publication_id?: unknown; amazon_url?: unknown; action?: unknown } : {};
+  const creating = payload.action === 'create';
+  const publicationId = payload.publication_id;
+  if (!creating && (typeof publicationId !== 'string' || !ID.test(publicationId))) return json({ error: 'Invalid publication ID' }, 400);
   const admin = createClient(url, secret);
-  const { data: list, error } = await admin.from('wishlist_amazon_publications')
-    .select('id,user_id,amazon_url,scrape_status').eq('id', publicationId).eq('user_id', user.id).maybeSingle();
-  if (error || !list) return json({ error: 'Not found' }, 404);
+  let list: {id:string;user_id:string;amazon_url:string;scrape_status:string} | null = null;
+  if (creating) {
+    const valid = amazonUrl(payload.amazon_url);
+    if (!valid) return json({error:'Nur öffentliche Amazon.de-Wunschlistenlinks sind erlaubt'},400);
+    const profile = await admin.from('wishlist_profiles').select('first_name,last_name').eq('user_id',user.id).maybeSingle();
+    if (profile.error || !profile.data?.first_name?.trim() || !profile.data?.last_name?.trim())
+      return json({error:'Bitte zuerst dein Profil vervollständigen'},400);
+    const inserted = await admin.from('wishlist_amazon_publications').insert({user_id:user.id,amazon_url:valid.href}).select('id,user_id,amazon_url,scrape_status').single();
+    if (inserted.error) return json({error:'Wunschliste konnte nicht angelegt werden'},400);
+    list = inserted.data;
+  } else {
+    const found = await admin.from('wishlist_amazon_publications').select('id,user_id,amazon_url,scrape_status').eq('id',publicationId).eq('user_id',user.id).maybeSingle();
+    if (found.error || !found.data) return json({error:'Not found'},404);
+    list = found.data;
+  }
   const target = amazonUrl(list.amazon_url);
   if (!target) return json({ error: 'Invalid Amazon URL' }, 400);
   // The database serializes claims per user and enforces limits across all edge instances.
   const { data: claim, error: claimError } = await admin.rpc('claim_amazon_wishlist_scrape', {
     p_publication_id: list.id, p_user_id: user.id,
   });
-  if (claimError) return json({ error: 'Scraper unavailable' }, 503);
-  if (claim === 'rate_limited') return json({ error: 'Too many scrape requests' }, 429);
-  if (claim !== 'claimed') return json({ error: 'Already processed or in progress' }, 409);
+  if (claimError) { if (creating) await admin.from('wishlist_amazon_publications').delete().eq('id',list.id).eq('user_id',user.id); return json({error:'Scraper unavailable'},503); }
+  if (claim === 'rate_limited') { if (creating) await admin.from('wishlist_amazon_publications').delete().eq('id',list.id).eq('user_id',user.id); return json({error:'Too many scrape requests'},429); }
+  if (claim !== 'claimed') { if (creating) await admin.from('wishlist_amazon_publications').delete().eq('id',list.id).eq('user_id',user.id); return json({error:'Already processed or in progress'},409); }
 
   let scrape_status = 'failed', scrape_error: string | null = 'Keine auslesbaren Produkte', title: string | null = null;
   let productCount = 0;
@@ -95,22 +109,28 @@ export async function handleRequest(req: Request): Promise<Response> {
     }
     const products = result.products.map((p: { asin: string; title: string; description?: string; productUrl: string }) => ({
       publication_id: list.id, asin: p.asin, title: p.title,
-      description: p.description || null, product_url: p.productUrl,
+      description: p.description?.trim() || null, price: typeof p.price === 'number' && Number.isFinite(p.price) ? p.price : null, product_url: p.productUrl, image_url: p.imageUrl || null,
     }));
-    const insert = await admin.from('wishlist_amazon_publication_products').insert(products);
-    if (insert.error) throw new Error('Produktdaten konnten nicht gespeichert werden');
-    productCount = products.length;
+    // One transaction replaces the previous snapshot only after a complete scrape.
+    // A failed fetch, parse or database write leaves existing products untouched.
+    const committed = await admin.rpc('commit_amazon_wishlist_scrape', {
+      p_publication_id: list.id, p_user_id: user.id,
+      p_products: products, p_title: result.title?.slice(0, 200) || null,
+    });
+    if (committed.error) throw new Error('Produktdaten konnten nicht gespeichert werden');
+    productCount = committed.data;
     title = result.title?.slice(0, 200) || null;
     scrape_status = 'success';
     scrape_error = null;
   } catch (e) {
     scrape_error = controllerError(e);
   }
-  const saved = await admin.from('wishlist_amazon_publications')
-    .update({ scrape_status, scrape_error, title, updated_at: new Date().toISOString() })
+  const saved = scrape_status === 'success' ? { error: null } : await admin.from('wishlist_amazon_publications')
+    .update({ scrape_status, scrape_error, updated_at: new Date().toISOString() })
     .eq('id', list.id).eq('user_id', user.id).eq('scrape_status', 'processing');
+  if (creating && scrape_status !== 'success') await admin.from('wishlist_amazon_publications').delete().eq('id',list.id).eq('user_id',user.id);
   if (saved.error) return json({ error: 'Scraper-Status konnte nicht gespeichert werden' }, 503);
-  return json({ status: scrape_status, product_count: productCount });
+  return json({ status: scrape_status, product_count: productCount, ...(creating && scrape_status==='success' ? {publication_id:list.id} : {}), ...(creating && scrape_status==='failed' ? {error:'Die Amazon-Liste ist nicht öffentlich erreichbar oder konnte nicht vollständig gelesen werden'} : {}) });
 }
 
 if (import.meta.main) Deno.serve(handleRequest);
