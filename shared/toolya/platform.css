@@ -4,7 +4,7 @@
 /* Frame atlases contain newly drawn eyes, ears, paws and tail positions. Original PNGs are fallback-only. */
 .ty-sprite-wrap{display:inline-block;position:relative;flex:0 0 84px;width:84px;height:84px;vertical-align:middle;border-radius:14px;isolation:isolate}
 .ty-sprite-wrap>img{display:block;width:100%;height:100%;object-fit:contain;max-width:none;animation:none!important;transform:none!important}
-.ty-frame{position:absolute;inset:0;pointer-events:none;background-color:#fff;background-size:800% 400%;background-repeat:no-repeat;border-radius:14px}
+.ty-frame{position:absolute;inset:0;pointer-events:none;background-color:transparent;background-size:800% 400%;background-repeat:no-repeat;border-radius:14px}
 .ty-frame[hidden]{display:none}.ty-sprite-wrap:focus-within{outline:3px solid currentColor;outline-offset:3px}
 .ty-animated{animation:ty-frame-pair 1.8s steps(1,end) 3}
 @keyframes ty-frame-pair{0%,79%,100%{background-position:var(--ty-a) var(--ty-y)}80%,99%{background-position:var(--ty-b) var(--ty-y)}}

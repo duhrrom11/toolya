@@ -112,3 +112,6 @@ body.b3-home .b3-hub-hero{position:relative;isolation:isolate}
 body.b3-home .b3-hub-hero::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:url('./toolya/home/hero-atmosphere.webp') center bottom/100% 100% no-repeat;opacity:.7;animation:ty-atmosphere 3s ease-in-out 2}
 @keyframes ty-atmosphere{0%,100%{opacity:.7}50%{opacity:1}}
 @media(max-width:680px){body.b3-home .b3-hub-hero::before{background-size:auto 45%;opacity:.45}}
+
+/* True alpha assets need no white matte or blend-mode workaround. */
+.ty-hero-character[data-art=outfit]{mix-blend-mode:normal}
