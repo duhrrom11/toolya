@@ -96,3 +96,17 @@ test('logout and reload at identical revision cannot authorize stale backup impo
   assert.equal(controller.ready,true);
   assert.equal(controller.revision,1);
 });
+
+test('non-serializable backup is rejected before any consent or write', async () => {
+  const repo=repository({cars:[],events:[],tires:[]});
+  const controller=createCarCloudController(repo);await controller.load();
+  const cyclic={cars:[],events:[],tires:[]};cyclic.self=cyclic;
+  let confirmations=0;
+  await assert.rejects(confirmCloudReplacement({
+    controller,incoming:cyclic,validate:x=>x,
+    confirm:async()=>{confirmations++;return true;},
+    exportBackup:async()=>true
+  }),/gültiges JSON/);
+  assert.equal(confirmations,0);
+  assert.equal(repo.writes,0);
+});
