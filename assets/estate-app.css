@@ -3,5 +3,5 @@
 header .row{min-width:0;justify-content:flex-end}#account-label{overflow-wrap:anywhere}.card,.person,.entry{min-width:0;overflow-wrap:anywhere}nav button{overflow-wrap:anywhere}.row.toolbar>*{max-width:100%}@media(max-width:650px){header .row{flex:1}#account-label{flex-basis:100%;text-align:right}}
 
 /* Hide empty secondary account header, keep signed-in account actions. */
-body:has(.toolya-header) > header:has(#account-label:empty):has(#lock[hidden]):has(#logout[hidden]){display:none}
-body:has(.toolya-header) > header:has(#account-label:not(:empty)){justify-content:flex-end}
+body > header:has(#account-label:empty):has(#lock[hidden]):has(#logout[hidden]){display:none}
+body > header:has(#account-label:not(:empty)){justify-content:flex-end}
