@@ -52,6 +52,10 @@ export function createCloudController({ repository, validate, initial }) {
         const result = await repository.save(payload, revision);
         if (token !== generation || !loaded)
           throw new Error('Cloud-Sitzung während des Speicherns ungültig geworden.');
+        if (!result || !Number.isSafeInteger(result.revision) ||
+            result.revision !== (revision === null ? 1 : revision + 1) ||
+            result.data === null || result.data === undefined)
+          throw new Error('Cloud-Speicherantwort ist inkonsistent.');
         state = clone(validate(result.data));
         revision = result.revision;
         return clone(state);
