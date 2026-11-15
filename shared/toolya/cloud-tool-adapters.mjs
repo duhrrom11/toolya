@@ -1,6 +1,6 @@
 import { createCloudRepository } from './cloud-repository.mjs';
 import { requireVerifiedUser } from './cloud-auth-gate.mjs';
-import { createCarCloudController, createBudgetCloudController, createMovingCloudController, createLoansCloudController, createMetersCloudController, createPlantsCloudController, createParkingCloudController } from './cloud-controller.mjs';
+import { createCarCloudController, createBudgetCloudController, createMovingCloudController, createLoansCloudController, createMetersCloudController, createPlantsCloudController, createParkingCloudController, createPetHealthCloudController } from './cloud-controller.mjs';
 import { createLegacyMigration, sameJson } from './legacy-cloud-migration.mjs';
 
 /**
@@ -14,6 +14,7 @@ export async function prepareCloudTool({ client, tool, storage, confirmMigration
     'zaehlerstaende-erfassen': createMetersCloudController,
     'pflanzenpflege-giessplan': createPlantsCloudController,
     'parkplatz-merker-parkschein-timer': createParkingCloudController,
+    'haustier-gesundheitspass': createPetHealthCloudController,
     'autokosten-reifenwechsel': createCarCloudController,
     'haushaltsbuch-kassenbon': createBudgetCloudController
   }[tool];
@@ -72,6 +73,10 @@ export async function prepareCloudTool({ client, tool, storage, confirmMigration
   }
   return Object.freeze({
     controller,
+    async savePetHealth(data) {
+      if(tool!=='haustier-gesundheitspass') throw Error('Falscher Adapter.');
+      return controller.replace(data);
+    },
     async saveParking(data) {
       if(tool!=='parkplatz-merker-parkschein-timer') throw Error('Falscher Adapter.');
       return controller.replace(data);
