@@ -227,3 +227,33 @@ test('product search ignores stale session responses and preserves newer query e
  assert.ok(planner.includes("if($('productQuery').value.trim()===q)$('productQuery').value=''"));
  assert.ok(planner.includes('if(revision===productSearchRevision)$(' + "'searchProducts'" + ').disabled=false'));
 });
+
+test('product search keeps edits typed during an in-flight request',async()=>{
+ const planner=source('gift-planner.mjs');
+ const start=planner.indexOf('let productSearchRevision=0;');
+ const end=planner.indexOf("$('searchProducts').addEventListener",start);
+ assert.ok(start>=0&&end>start);
+ const handlers={};
+ const fields={
+  productQuery:{value:'geschenk'},
+  productResults:{items:['previous'],replaceChildren(){this.items=[]}},
+  productSearchStatus:{textContent:''},
+  searchProducts:{disabled:false}
+ };
+ let complete;
+ const pending=new Promise(resolve=>{complete=resolve});
+ const db={from:()=>({select:()=>({ilike:()=>({order:()=>({limit:()=>pending})})})})};
+ const run=new Function('$','db','document',`
+  let user={id:'owner'},occasions=[],selectedProduct=null;
+  const showProductSource=()=>{};
+  ${planner.slice(start,end)}
+  return searchProducts;
+ `)(id=>fields[id],db,{createElement:()=>({})});
+ const request=run();
+ fields.productQuery.value='neue Suche';
+ complete({data:[],error:null});
+ await request;
+ assert.equal(fields.productQuery.value,'neue Suche');
+ assert.equal(fields.productResults.items[0],'previous');
+ assert.equal(fields.searchProducts.disabled,false);
+});
