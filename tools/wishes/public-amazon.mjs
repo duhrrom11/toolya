@@ -1,4 +1,4 @@
-import {requireWishlistWriter,guardedWishlistWrite} from './wishlist-auth.mjs';
+import {guardedWishlistWrite} from './wishlist-auth.mjs';
 // Deployment must explicitly choose production or preview; never infer it from URL parameters.
 const PROD_PROJECT = 'yheogmeaosuigyaxkwth';
 const PROD_PUBLISHABLE_KEY = 'sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
@@ -110,9 +110,10 @@ $('profileForm').onsubmit=async event=>{
  const first_name=$('firstName').value.trim(),last_name=$('lastName').value.trim(),country=$('country').value.trim()||null;
  if(!first_name||!last_name){status('profileStatus','Vorname und Nachname sind Pflicht.');return}
  if((first_name+' '+last_name).length>80){status('profileStatus','Vorname und Nachname dürfen zusammen höchstens 79 Zeichen haben.');return}
- const payload={user_id:sessionUser.id,first_name,last_name,country,display_name:first_name+' '+last_name,handle:profile?.handle||'amazon_'+crypto.randomUUID().slice(0,12)};
+ const writerId=sessionUser.id;
+ const payload={user_id:writerId,first_name,last_name,country,display_name:first_name+' '+last_name,handle:profile?.handle||'amazon_'+crypto.randomUUID().slice(0,12)};
  let r;
- try{r=await guardedWishlistWrite(db,sessionUser.id,()=>db.from('wishlist_profiles').upsert(payload,{onConflict:'user_id'}));}
+ try{r=await guardedWishlistWrite(db,writerId,()=>db.from('wishlist_profiles').upsert(payload,{onConflict:'user_id'}));}
  catch(error){status('profileStatus',error.message);return}
  if(r.error){status('profileStatus',r.error.message);return}
  profile={...profile,...payload};status('profileStatus','Profil gespeichert.');await refresh();
@@ -122,8 +123,9 @@ $('publishForm').onsubmit=async event=>{
  if(!profile?.first_name?.trim()||!profile?.last_name?.trim()){status('publishStatus','Bitte zuerst Vorname und Nachname im Profil speichern.');location.hash='#profile';return}
  const url=safeAmazonListUrl($('amazonUrl').value);if(!url){status('publishStatus','Bitte einen gültigen öffentlichen Amazon-Wunschlisten-Link verwenden.');return}
  $('publishButton').disabled=true;
+ const writerId=sessionUser.id;
  try{
- const r=await guardedWishlistWrite(db,sessionUser.id,()=>db.from('wishlist_amazon_publications').insert({user_id:sessionUser.id,amazon_url:url}).select('id').single());
+ const r=await guardedWishlistWrite(db,writerId,()=>db.from('wishlist_amazon_publications').insert({user_id:writerId,amazon_url:url}).select('id').single());
  if(r.error)throw r.error;
  status('publishStatus','Wunschliste veröffentlicht. Scraper wird gestartet …');
  const {data: scrapeResult,error}=await db.functions.invoke('amazon-wishlist-scrape',{body:{publication_id:r.data.id}});
