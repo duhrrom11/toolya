@@ -19,6 +19,7 @@ on:
       - 'tools/pet-health/**'
       - 'tools/baking/**'
       - 'tools/wishes/**'
+      - 'tools/estate/**'
       - 'shared/toolya/**'
       - 'assets/**'
       - 'package*.json'
