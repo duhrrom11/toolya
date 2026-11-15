@@ -26,6 +26,31 @@ function safeAmazonListUrl(value){
  }catch{return null}
 }
 const text=(tag,value)=>{const el=document.createElement(tag);el.textContent=value??'';return el};
+const listIdPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const listUrl=id=>new URL('./public.html?list='+encodeURIComponent(id)+'#selectedList',location.href).href;
+async function renderSelectedList(){
+ const id=new URL(location.href).searchParams.get('list');
+ const section=$('selectedList'),container=$('selectedListCard');
+ if(!id){section.hidden=true;return}
+ section.hidden=false;container.replaceChildren();
+ if(!listIdPattern.test(id)){status('selectedListStatus','Dieser Wunschlisten-Link ist ungültig.');return}
+ status('selectedListStatus','Wunschliste wird geladen …');
+ const {data:list,error}=await db.from('wishlist_amazon_publications')
+  .select('id,user_id,amazon_url,title,scrape_status').eq('id',id).eq('scrape_status','success').maybeSingle();
+ if(error||!list){status('selectedListStatus','Diese Wunschliste ist nicht mehr öffentlich verfügbar.');return}
+ const [owner,preview]=await Promise.all([
+  db.from('wishlist_profiles').select('user_id,first_name,last_name,country').eq('user_id',list.user_id).maybeSingle(),
+  db.from('wishlist_amazon_publication_products').select('publication_id,title,description,product_url,image_url,asin').eq('publication_id',id).order('created_at',{ascending:false}).limit(10)
+ ]);
+ if(owner.error||preview.error){status('selectedListStatus','Die Wunschliste konnte nicht vollständig geladen werden.');return}
+ const previousProfiles=profiles,previousProducts=products;
+ try{
+  profiles=[owner.data].filter(Boolean);
+  products=preview.data||[];
+  container.append(card(list));
+ }finally{profiles=previousProfiles;products=previousProducts}
+ status('selectedListStatus','');
+}
 function safeImageUrl(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&(/(^|\.)images-amazon\.com$/.test(u.hostname)||/(^|\.)ssl-images-amazon\.com$/.test(u.hostname)||/(^|\.)media-amazon\.com$/.test(u.hostname))?u.href:null}catch{return null}}
 function card(list){
  const person=profiles.find(p=>p.user_id===list.user_id);
@@ -103,10 +128,21 @@ async function renderTicker(){
  const r=await db.rpc('search_public_amazon_wishlists',{search_term:'',page_limit:10,page_offset:0});
  if(r.error)return;
  const track=$('tickerTrack');track.replaceChildren();const newest=r.data||[];
- if(!newest.length){track.append(text('span','Noch keine Wunschlisten veröffentlicht.'));return}
- for(let n=0;n<2;n++)for(const list of newest){
- const a=text('a',[list.first_name,list.last_name].filter(Boolean).join(' ')+' · '+(list.title||'Amazon-Wunschliste'));
- a.href=list.amazon_url;a.target='_blank';a.rel='noopener noreferrer';track.append(a);
+ if(!newest.length){const empty=text('span','Noch keine Wunschlisten veröffentlicht.');empty.className='ticker-empty';track.append(empty);return}
+ // Duplicate groups create a continuous loop; the second copy is only visual.
+ for(let n=0;n<2;n++){
+  const group=document.createElement('div');group.className='ticker-group';
+  if(n===1){group.setAttribute('aria-hidden','true');group.inert=true}
+  for(const list of newest){
+   const name=[list.first_name,list.last_name].filter(Boolean).join(' ')||'Toolya-Mitglied';
+   const a=document.createElement('a');a.href=listUrl(list.id);
+   a.setAttribute('aria-label','Wunschliste '+(list.title||'Amazon-Wunschliste')+' von '+name+' auf Toolya ansehen');
+   const avatar=text('span','♡');avatar.className='ticker-avatar';avatar.setAttribute('aria-hidden','true');
+   const label=text('span',name+' · '+(list.title||'Amazon-Wunschliste'));label.className='ticker-label';
+   const arrow=text('span','↗');arrow.className='ticker-arrow';arrow.setAttribute('aria-hidden','true');
+   a.append(avatar,label,arrow);group.append(a);
+  }
+  track.append(group);
  }
 }
 async function loadProfile(){
@@ -165,4 +201,4 @@ let debounce;$('search').addEventListener('input',()=>{clearTimeout(debounce);de
 $('prevPage').onclick=()=>{if(page>0){page--;refresh(false)}};
 $('nextPage').onclick=()=>{page++;refresh(false)};
 db.auth.onAuthStateChange(()=>setTimeout(loadProfile,0));
-await loadProfile();await refresh();
+await loadProfile();await renderSelectedList();
