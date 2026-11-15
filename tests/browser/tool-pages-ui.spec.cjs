@@ -30,6 +30,7 @@ async function isolated(page,authenticated){
               },
               async rpc(name,args){
                 if(name!=='toolya_save_snapshot')throw Error('unexpected RPC '+name);
+                console.log('[mock rpc]',name,JSON.stringify(args).slice(0,220));
                 m.writes.push(JSON.parse(JSON.stringify(args)));
                 return {data:[{data:args.p_data,revision:m.writes.length}],error:null};
               }
@@ -79,7 +80,7 @@ for(const item of tools){
       await page.locator('#receiptPrice').fill('12.50');
       await page.locator('#saveBtn').dispatchEvent('click');
     }
-    console.log('[UI diagnostic]',item.tool,await page.evaluate(()=>({ready:toolyaCloudReady,writes:window.__toolyaMock.writes.length,gate:document.querySelector('#toolya-cloud-gate')?.textContent,form:document.querySelector('#receiptTitle')?.value})));
+    console.log('[UI diagnostic]',item.tool,await page.evaluate(()=>({url:location.href,ready:toolyaCloudReady,writes:window.__toolyaMock.writes.length,gate:document.querySelector('#toolya-cloud-gate')?.textContent,form:document.querySelector('#receiptTitle')?.value,car:document.querySelector('#carName')?.value})));
     await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
     expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   });
