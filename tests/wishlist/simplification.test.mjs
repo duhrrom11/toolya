@@ -7,7 +7,7 @@ import {resolve,dirname} from 'node:path';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
 const source=name=>readFileSync(resolve(root,'tools/wishes',name),'utf8');
 test('Wishlist module syntax',()=>{
- for(const file of ['app.mjs','lists-dashboard.mjs','gift-start.mjs','workspace.mjs'])
+ for(const file of ['app.mjs','lists-dashboard.mjs','gift-start.mjs','workspace.mjs','gift-finder.mjs','wish-worlds.mjs','gift-ideas.mjs'])
   assert.doesNotThrow(()=>execFileSync(process.execPath,['--check',resolve(root,'tools/wishes',file)],{stdio:'pipe'}),file);
 });
 test('batch actions removed, single wish movement retained',()=>{
