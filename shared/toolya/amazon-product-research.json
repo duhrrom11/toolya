@@ -1,0 +1,27 @@
+{
+  "note": "Research shortlist only. Not an Amazon catalog. ASIN and image must be verified by the existing scraper before publication.",
+  "researchedAt": "2026-11-15",
+  "items": [
+    {
+      "tool": "baking",
+      "name": "Dr. Oetker Back-Freude Classic Springform 26 cm",
+      "model": "2513",
+      "source": "https://geizhals.de/dr-oetker-back-freude-classic-springform-backform-26cm-2513-a2429566.html",
+      "status": "awaiting verified Amazon ASIN"
+    },
+    {
+      "tool": "plants",
+      "name": "Gardena Classic Gartenschere",
+      "model": "8754-30",
+      "source": "https://www.gardena.com/de/produkte/baum-hecken-strauchpflege/gartenscheren?start=21&sz=19",
+      "status": "awaiting verified Amazon ASIN"
+    },
+    {
+      "tool": "moving",
+      "name": "Bosch Professional GLM 40 Laser-Entfernungsmesser",
+      "model": "GLM 40",
+      "source": "https://www.pcwelt.de/article/2611330/bosch-glm-40-lasermessgerat-amazon-angebot-deal.html",
+      "status": "awaiting verified Amazon ASIN"
+    }
+  ]
+}
