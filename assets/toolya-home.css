@@ -117,3 +117,7 @@ body.b3-home .b3-hub-hero::before{content:'';position:absolute;inset:0;z-index:-
 .ty-hero-character[data-art=outfit]{mix-blend-mode:normal}
 
 .ty-hero-character{background-image:none}
+
+/* Keep the approved purple hero illustration still during turquoise reactions. */
+.ty-hero-character[data-character=purple]{visibility:hidden;animation:none!important;transform:none!important}
+.ty-hero-stage[data-live=true] .ty-hero-art{opacity:1;clip-path:inset(0 0 0 50%);transition:none}

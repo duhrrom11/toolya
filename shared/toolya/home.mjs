@@ -16,13 +16,13 @@ const later=(fn,delay)=>{const id=setTimeout(()=>{timers.delete(id);fn();},delay
 function clear(){++epoch;for(const id of timers)clearTimeout(id);timers.clear();for(const animation of animations)animation.cancel();animations.clear();}
 function pose(index,character){
  const targets=character===undefined?characters:[characters[character]];
- for(const el of targets){el.dataset.art='pose';el.style.backgroundImage=`url("assets/toolya/home/${el.dataset.character}-poses.webp")`;el.style.backgroundSize='400% 200%';el.style.backgroundPosition=`${index%4*100/3}% ${Math.floor(index/4)*100}%`;}
+ for(const el of targets){if(el.dataset.character==='purple')continue;el.dataset.art='pose';el.style.backgroundImage=`url("assets/toolya/home/${el.dataset.character}-poses.webp")`;el.style.backgroundSize='400% 200%';el.style.backgroundPosition=`${index%4*100/3}% ${Math.floor(index/4)*100}%`;}
 }
 function rest(){
  delete stage.dataset.reaction;message.hidden=true;
  if(role===null){stage.dataset.live='false';return;}
  stage.dataset.live='true';
- characters.forEach((el,i)=>{const index=role*2+i;el.dataset.art='outfit';el.style.backgroundImage='url("assets/toolya/outfits.webp?v=20261115-alpha")';el.style.backgroundSize='800% 400%';el.style.backgroundPosition=`${index%8*100/7}% ${Math.floor(index/8)*100/3}%`;});
+ characters.forEach((el,i)=>{if(el.dataset.character==='purple')return;const index=role*2+i;el.dataset.art='outfit';el.style.backgroundImage='url("assets/toolya/outfits.webp?v=20261115-alpha")';el.style.backgroundSize='800% 400%';el.style.backgroundPosition=`${index%8*100/7}% ${Math.floor(index/8)*100/3}%`;});
 }
 function say(text){if(!text)return;message.textContent=text;message.hidden=false;}
 function react(kind,index,text='',duration=1800){
@@ -37,7 +37,7 @@ function react(kind,index,text='',duration=1800){
  say(text);later(()=>{if(epoch===current)rest();},duration);return true;
 }
 async function preload(){
- const files=['turquoise-poses.webp','purple-poses.webp','hero-arch.webp'];
+ const files=['turquoise-poses.webp','hero-arch.webp'];
  const loaded=await Promise.all(files.map(file=>new Promise(resolve=>{const img=new Image();img.onload=()=>resolve(true);img.onerror=()=>resolve(false);img.src='assets/toolya/home/'+file;})));
  posesReady=loaded.every(Boolean);stage.dataset.posesReady=String(posesReady);window.toolyaHomeReady=true;
  if(mayMove())react('welcome',2,'',1700);
