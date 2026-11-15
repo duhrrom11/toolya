@@ -68,7 +68,7 @@ export function createCloudRepository(client, tool) {
       throw new Error('Erwartete Cloud-Version ungültig.');
     }
     if (expectedRevision === undefined) throw new Error('Erwartete Cloud-Version erforderlich.');
-    if (typeof navigator !== 'undefined' && !navigator.onLine)
+    if (typeof window !== 'undefined' && typeof navigator !== 'undefined' && navigator.onLine === false)
       throw new Error('Offline: Änderungen wurden nicht gespeichert.');
     // Atomic server-side compare-and-swap; no client timestamps or direct writes.
     const result = await client.rpc('toolya_save_snapshot', {
