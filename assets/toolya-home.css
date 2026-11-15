@@ -166,3 +166,8 @@ body.b3-home .ty-tool-card[data-id="backform"]{--icon-color:#b56bb0;--icon-src:u
  }
  body.b3-home .toolya-buddy .tb-message-box{max-height:min(65dvh,420px);overflow-y:auto;box-shadow:0 14px 38px rgba(10,30,50,.24);align-items:flex-start}
 }
+
+/* The browser can request desktop layout on a phone (viewport >900px).
+   Keep visible companion notices viewport-fixed at every breakpoint. */
+body.b3-home .toolya-buddy:has(.tb-message-box:not([hidden])){position:fixed!important;z-index:10020!important;left:max(12px,env(safe-area-inset-left))!important;right:max(12px,env(safe-area-inset-right))!important;bottom:max(20px,env(safe-area-inset-bottom))!important;top:auto!important;width:auto!important;max-width:min(680px,calc(100vw - 24px))!important;margin:0 auto!important;transform:none!important;order:unset!important;}
+body.b3-home .toolya-buddy:has(.tb-message-box:not([hidden])) .tb-message-box{box-sizing:border-box;max-height:min(65dvh,420px);overflow-y:auto;box-shadow:0 14px 38px rgba(10,30,50,.24);}
