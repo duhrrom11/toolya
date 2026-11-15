@@ -8,7 +8,7 @@ for(const [tool,controller,refresh] of [
  ['loans','loansCloudController','renderInventory']
 ]){
  const html=fs.readFileSync('tools/'+tool+'/index.html','utf8');
- assert.match(html,/mountConnectPanel\\s*\\(/,'Connect panel missing: '+tool);
+ assert.match(html,/mountConnectPanel\s*\(/,'Connect panel missing: '+tool);
  assert.ok(html.includes('controller:'+controller),'wrong CloudOnly controller: '+tool);
  assert.ok(html.includes('onReload:'),'manual reload callback missing: '+tool);
  assert.ok(html.includes(refresh),'UI refresh missing: '+tool);
