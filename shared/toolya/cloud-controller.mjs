@@ -157,3 +157,18 @@ export function createMetersCloudController(repository) {
   return createCloudController({repository,validate:validateMetersSnapshot,
     initial:{readings:[],tarifs:{}}});
 }
+
+export function validatePlantsSnapshot(data) {
+  if(!data||typeof data!=='object'||Array.isArray(data)||!Array.isArray(data.plants)||
+     !data.plants.every(x=>x&&typeof x==='object'&&!Array.isArray(x))||
+     !Array.isArray(data.inventory)||!Array.isArray(data.seeds)||!Array.isArray(data.beetSlots))
+    throw Error('Ungültiger Pflanzen-Datenstand.');
+  return data;
+}
+export function createPlantsCloudController(repository) {
+  return createCloudController({repository,validate:validatePlantsSnapshot,initial:{
+    plants:[],monthWaterLiters:0,totalHarvestGrams:0,
+    inventory:[{name:'Tomatendünger Flüssig',qty:'1 L'},{name:'Bio Blumenerde',qty:'40 L'}],
+    seeds:[],beetSlots:Array(16).fill(null),cisternMax:500,cisternCurrent:500
+  }});
+}
