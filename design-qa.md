@@ -54,3 +54,8 @@ final result: blocked
 - [P2] Legacy main max-width/margins created excessive inset and vertical gaps. Matched intended1440px main width and500px desktop hero, removed redundant spacing utilities.
 - [P2] Tool order counted HTML comments when placing the plant card. Explicit canonical card order now matches the approved four-card arrangement.
 - Corrections are awaiting the next CI screenshot comparison. Local Cloud Browser transport remains unavailable; `final result: blocked` still applies. No local interactive preview handoff or publication claimed.
+
+## CI comparison, second iteration
+- Revised platform job132644715988 passed on commit00a20d425d81d49156cd7abf3fb8ea38cf0fcc11; artifact14138908642 inspected. Desktop1440×2612, mobile351×4689. Source/desktop composite `/tmp/toolya-home-revised-comparison.png`.
+- Confirmed fixes: mobile headline, visible settings gear, neutral account button, clean rest-state characters, correct first four cards, main inset and header spacing.
+- [P2] Mobile card intrinsic minimum width still extended the full-page screenshot beyond the320px CSS viewport, despite root scrollWidth being clipped. Fixed card/link min-width and width constraints plus long German title wrapping. Added actual per-card bounding-box assertion instead of relying only on document scrollWidth. New screenshot comparison pending.

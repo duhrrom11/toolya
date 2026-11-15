@@ -54,6 +54,7 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
  await page.getByLabel('Begleiter ausblenden',{exact:true}).uncheck();
  await page.locator('#cancelSettingsBtn').click();
  assert.equal(await page.locator('body').getAttribute('data-home-motion'),'off');
+ assert(await page.locator('.ty-tool-card').evaluateAll(cards=>cards.every(e=>e.getBoundingClientRect().right<=innerWidth+1)),'every mobile card fits the viewport');
  await page.screenshot({path:'test-results/mascot-home-mobile.png',fullPage:true});
  const desktopContext=await browser.newContext({viewport:{width:1440,height:1024},storageState:await context.storageState()});
  await desktopContext.route('**/*',guard);const desktop=await desktopContext.newPage();desktop.on('pageerror',e=>errors.push(e.message));

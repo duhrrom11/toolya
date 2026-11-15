@@ -93,3 +93,8 @@ body.b3-home .b3-hub-main>:not([hidden])~:not([hidden]){margin-top:0;margin-bott
 body.b3-home[data-home-motion=off] #settingsBtn:hover .ty-settings-icon{rotate:none}
 body.b3-home .b3-footer .text-emerald-600{color:var(--hub-primary)!important}
 body.b3-home #settingsModal button[onclick="registerUser()"]{background:var(--hub-primary)!important;color:var(--hub-surface)!important}
+/* A long German tool title must never set a grid item's minimum width. */
+body.b3-home .ty-tool-card{min-width:0;width:100%;max-width:100%;box-sizing:border-box}
+.ty-tool-link{min-width:0;width:100%;max-width:100%;box-sizing:border-box}
+.ty-tool-copy{overflow-wrap:anywhere;hyphens:auto}
+@media(max-width:370px){body.b3-home .ty-tool-card h3{font-size:20px}.ty-tool-art{width:56px;height:56px}.ty-tool-link{gap:10px}}
