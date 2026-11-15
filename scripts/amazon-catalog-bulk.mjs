@@ -13,6 +13,8 @@ for(const [tool,items] of Object.entries(candidates)){
    const result=await scrape('https://www.amazon.de/dp/'+item.asin);
    const p=result.products?.[0];
    if(!result.complete||p?.asin!==item.asin||!p.title||!p.imageUrl)throw Error('Incomplete product');
+   const image=new URL(p.imageUrl);
+   if(image.protocol!=='https:'||!['m.media-amazon.com','images-eu.ssl-images-amazon.com','images-na.ssl-images-amazon.com','images.ssl-images-amazon.com'].includes(image.hostname))throw Error('Untrusted product image');
    if(item.label){const words=item.label.toLocaleLowerCase('de').split(/[^\\p{L}\\p{N}]+/u).filter(x=>x.length>=3);const title=p.title.toLocaleLowerCase('de');if(words.length&&!words.some(word=>title.includes(word)))throw Error('Product title does not match expected product');}
    const record={asin:p.asin,title:p.title,imageUrl:p.imageUrl,productUrl:p.productUrl,source:'amazon-scrape',scrapedAt:p.scrapedAt};
    const at=existing.findIndex(x=>x.asin===p.asin);
