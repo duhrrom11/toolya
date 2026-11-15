@@ -88,6 +88,8 @@
  async function persist(){if(!key)throw Error('login_required');await authenticated();const encryptedData=await C.encrypt(payload,key),encryptedConfig=await C.encrypt(config,key);if(JSON.stringify(encryptedData).length>1000000)throw Error('Deine Unterlagen sind zu groß für diesen Tresor. Bitte kürze den letzten Eintrag.');localWrite({...record,encryptedData,encryptedConfig,pending:true});render();await sync();}
  async function sync(){
   await authenticated();if(!record||!key)throw Error('login_required');
+  // Validate recipient IDs and key uniqueness before any cloud snapshot is written.
+  await C.readReplica([],config.alarmPersons,payload.trusteeKeys);
   const snapshot=ownRaw;
   const confirmedStamp=await EstateCloudGuard.saveEncryptedSnapshot({
    client:db,ownerId:user.id,vaultId:config.vaultId,expectedStamp:stamp,
