@@ -337,3 +337,24 @@ test('coordination refresh errors cannot overwrite another account feedback',asy
  assert.equal(elements.giftFormFeedback.textContent,'Neue Sitzung');
  assert.equal(elements.save.disabled,false);
 });
+
+test('coordination RPC errors return failure without overwriting another session',async()=>{
+ const planner=source('gift-planner.mjs');
+ const start=planner.indexOf('async function loadCoordination()');
+ const end=planner.indexOf('async function importReservedWish()',start);
+ assert.ok(start>=0&&end>start);
+ let complete;
+ const pending=new Promise(resolve=>complete=resolve);
+ const elements={status:{textContent:'Neue Sitzung'}};
+ const body="let user={id:'first'},coordination=new Map();\n"+planner.slice(start,end)+"\nreturn {loadCoordination,setUser:id=>user={id},getCoordination:()=>coordination};";
+ const run=new Function('$','db',body)(id=>elements[id],{rpc:()=>pending});
+ const request=run.loadCoordination();
+ run.setUser('second');
+ complete({data:[{plan_id:'old',reservation_state:'reserved'}],error:null});
+ assert.equal(await request,false);
+ assert.equal(run.getCoordination().size,0);
+ assert.equal(elements.status.textContent,'Neue Sitzung');
+ const failing=new Function('$','db',"let user={id:'first'},coordination=new Map();\n"+planner.slice(start,end)+"\nreturn loadCoordination;")(id=>elements[id],{rpc:async()=>({error:Error('offline')})});
+ assert.equal(await failing(),false);
+ assert.equal(elements.status.textContent,'Reservierungsabgleich nicht verfügbar.');
+});
