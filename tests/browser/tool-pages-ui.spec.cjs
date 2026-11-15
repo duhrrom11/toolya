@@ -157,3 +157,37 @@ test('autokosten-reifenwechsel: attached images await confirmed cloud save',asyn
   expect(result.car).toMatchObject({name:'Fahrzeug mit Anhängen',photo:'data:mock/fixture.png',papers:'data:mock/paper.png'});
   expect(result.cleared).toBe(true);
 });
+
+
+test('umzugskisten-inventar: unauthenticated browser cannot write',async({page})=>{
+  await isolated(page,false);
+  await page.goto(origin+'/tools/moving/index.html');
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Registrierte Anmeldung erforderlich');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+test('umzugskisten-inventar: cloud-confirmed location save and blocked failure',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/moving/index.html');
+  await expect.poll(()=>page.evaluate(()=>movingCloudReady && !!movingCloudController?.ready)).toBe(true);
+  await page.evaluate(async()=>{
+    document.querySelector('#locName').value='Keller';
+    await saveLocation();
+  });
+  const result=await page.evaluate(()=>({
+    writes:window.__toolyaMock.writes.length,
+    snapshot:window.__toolyaMock.writes[0]?.p_data,
+    input:document.querySelector('#locName').value
+  }));
+  expect(result.writes).toBe(1);
+  expect(result.snapshot.locations[0].name).toBe('Keller');
+  expect(result.input).toBe('');
+  page.on('dialog',dialog=>dialog.dismiss());
+  await page.evaluate(async()=>{
+    window.supabaseClient.rpc=async()=>({data:null,error:{code:'40001',message:'mock conflict'}});
+    document.querySelector('#locName').value='Dachboden';
+    await saveLocation();
+  });
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
+  expect(await page.locator('#locName').inputValue()).toBe('Dachboden');
+});
