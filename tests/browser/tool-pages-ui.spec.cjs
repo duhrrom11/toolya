@@ -429,3 +429,39 @@ test('haustier-gesundheitspass: photo processing precedes confirmed cloud write'
   });
   expect(result).toMatchObject({writes:1,photo:'data:mock/pet.png'});
 });
+
+
+test('backform-umrechner: unauthenticated browser blocks recipe writes',async({page})=>{
+  await isolated(page,false);
+  await page.goto(origin+'/tools/baking/index.html');
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Registrierte Anmeldung erforderlich');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+test('backform-umrechner: cloud recipe save and conflict lock',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/baking/index.html');
+  await expect.poll(()=>page.evaluate(()=>bakingCloudReady&&!!bakingCloudController?.ready)).toBe(true);
+  const result=await page.evaluate(async()=>{
+    const saved=await persistRecipes([{name:'Kuchen',text:'Mehl',factor:1,note:''}]);
+    return {saved,writes:window.__toolyaMock.writes.length,name:window.__toolyaMock.writes[0]?.p_data?.recipes?.[0]?.name};
+  });
+  expect(result).toMatchObject({saved:true,writes:1,name:'Kuchen'});
+  await page.evaluate(async()=>{
+    supabaseClient.rpc=async()=>({data:null,error:{code:'40001',message:'conflict'}});
+    await persistRecipes([]);
+  });
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
+});
+test('backform-umrechner: save and delete recipe await cloud confirmation',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/baking/index.html');
+  await expect.poll(()=>page.evaluate(()=>bakingCloudReady&&!!bakingCloudController?.ready)).toBe(true);
+  const result=await page.evaluate(async()=>{
+    await saveRecipeToStorage('Kuchen','Mehl',1);
+    await deleteRecipe(0);
+    return {writes:window.__toolyaMock.writes.length,recipes:getRecipes()};
+  });
+  expect(result.writes).toBe(2);
+  expect(result.recipes).toEqual([]);
+});
