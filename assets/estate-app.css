@@ -21,3 +21,16 @@ body:has(.ty-tool-hero[data-tool="estate"]) nav button[aria-current=true]{backgr
 /* Keep header actions above the decorative mascot on narrow viewports. */
 .ty-tool-hero[data-tool="estate"] .ty-tool-hero-copy{position:relative;z-index:3}
 .ty-tool-hero[data-tool="estate"] .ty-tool-hero-actions{position:relative;z-index:4}
+
+/* Three coordinated Toolya entry actions: owner login, new vault, trusted access. */
+.estate-access-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch;margin:22px 0 8px}
+.estate-access-actions > button,.estate-access-actions > a.button{display:inline-flex;align-items:center;justify-content:center;min-width:0;min-height:58px;width:100%;padding:13px 16px;border-radius:18px;font-size:.94rem;font-weight:750;line-height:1.35;letter-spacing:0;text-align:center;white-space:normal;text-wrap:balance;box-shadow:0 5px 16px rgba(18,69,76,.12);transition:transform .18s ease,box-shadow .18s ease,background-color .18s ease}
+.estate-access-actions .estate-action-primary{background:linear-gradient(135deg,#087e85,#176c75);color:white;border-color:#087e85}
+.estate-access-actions .estate-action-secondary{background:linear-gradient(135deg,#e5f7f4,#f0f9f7);color:#145b60;border-color:#a9dcd6}
+.estate-access-actions .estate-action-trustee{background:linear-gradient(135deg,#f0e9fa,#f9f5ff);color:#644b8b;border:1px solid #d7c6ed;text-decoration:none}
+.estate-access-actions > :is(button,a.button):hover{transform:translateY(-2px);box-shadow:0 9px 22px rgba(18,69,76,.18);filter:brightness(1.02)}
+.estate-access-actions > :is(button,a.button):focus-visible{outline:3px solid #bd7013;outline-offset:3px}
+[data-theme=dark] .estate-access-actions .estate-action-secondary{background:#254b47;color:#d3f7ef;border-color:#537f77}
+[data-theme=dark] .estate-access-actions .estate-action-trustee{background:#3c3151;color:#eee1ff;border-color:#75608e}
+@media(max-width:760px){.estate-access-actions{grid-template-columns:1fr}.estate-access-actions > button,.estate-access-actions > a.button{min-height:54px}}
+@media(prefers-reduced-motion:reduce){.estate-access-actions > :is(button,a.button){transition:none!important}.estate-access-actions > :is(button,a.button):hover{transform:none!important}}
