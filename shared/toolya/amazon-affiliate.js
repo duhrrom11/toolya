@@ -105,7 +105,8 @@ function add(){
  section.append(group);
  main.append(section);
 }
-// Do not inject generic Amazon searches: show only curated, concrete products.\nasync function loadCatalog(){
+// Do not inject generic Amazon searches: show only curated, concrete products.
+async function loadCatalog(){
  const tool=location.pathname.match(/\/tools\/([^/]+)\//)?.[1];
  if(!tool||tool==='wishes')return;
  let catalog;
