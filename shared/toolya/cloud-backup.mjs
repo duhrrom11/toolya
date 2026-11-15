@@ -32,7 +32,8 @@ export async function confirmCloudReplacement({
   if (backedUp !== true) throw Error('Cloud-Sicherung nicht bestätigt. Import abgebrochen.');
   if (await confirm('Sicherung kontrolliert? Vorhandene Cloud-Daten jetzt wirklich ersetzen?') !== true)
     return { status: 'cancelled' };
-  if (controller.revision !== revision) throw Error('Cloud-Datenstand hat sich geändert.');
+  if (!controller.ready || controller.revision !== revision)
+    throw Error('Cloud-Sitzung oder Datenstand hat sich geändert.');
   const data = await controller.replace(next, { expectedRevision: revision });
   return { status: 'confirmed', data };
 }
