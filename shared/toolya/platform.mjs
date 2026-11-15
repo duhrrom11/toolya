@@ -1,7 +1,7 @@
 import {ToolyaBuddy} from './buddy.mjs';
 const ASSETS=new URL('../../assets/toolya/',import.meta.url).href;
 const atlasURL=file=>ASSETS+file+'?v=20261115-alpha';
-for(const file of ['buddy.css','platform.css','footer.css']){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL(file,import.meta.url).href;document.head.append(l)}
+for(const file of ['buddy.css','platform.css','footer.css','header.css']){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL(file,import.meta.url).href;document.head.append(l)}
 export const EMOTIONS=['happy','proud','curious','thoughtful','surprised','concerned','sad','shy','cheeky','sleepy','laughing','grateful','motivated','puzzled','celebrating','affectionate'];
 export const TOOLS={wishes:{role:0,name:'Geschenkexperte',greeting:'Hier ist Platz für große und kleine Wünsche.'},budget:{role:1,name:'Buchhalter',greeting:'Deine Ausgaben gut im Blick.'},housemates:{role:2,name:'WG-Organisator',greeting:'Ein guter Plan macht den Alltag leichter.'},moving:{role:3,name:'Umzugshelfer',greeting:'Damit beim Umzug nichts verloren geht.'},estate:{role:4,name:'Vorsorgebegleiter',greeting:'In Ruhe das Wichtige ordnen.',serious:true},car:{role:5,name:'Mechaniker',greeting:'Dein Fahrzeug gut organisiert.'},'pet-health':{role:6,name:'Tierbegleiter',greeting:'Alles Wichtige für deine tierischen Freunde.',serious:true},parking:{role:7,name:'Parkhelfer',greeting:'Parkplatz und Parkzeit im Blick.'},loans:{role:8,name:'Verleih-Organisator',greeting:'Behalte verliehene Gegenstände im Blick.'},plants:{role:9,name:'Gärtner',greeting:'Ein guter Tag für deine grünen Freunde.'},meters:{role:10,name:'Energiehelfer',greeting:'Zählerstände einfach im Blick.'},baking:{role:11,name:'Backhelfer',greeting:'Die passende Form für deine Backidee.'},home:{role:12,name:'Alltagsbegleiter',greeting:'Was möchtest du heute erledigen?'}};
 const parts=decodeURI(location.pathname).split('/').filter(Boolean);
@@ -26,7 +26,8 @@ function attach(img,kind='outfit',role=context.role){
  if(img.dataset.toolyaSprite)return;img.dataset.toolyaSprite='true';const wrap=document.createElement('span');wrap.className='ty-sprite-wrap';img.before(wrap);wrap.append(img);const frame=document.createElement('span');frame.className='ty-frame';frame.hidden=true;frame.setAttribute('aria-hidden','true');wrap.append(frame);const r={img,frame,kind,role};frames.add(r);return r;
 }
 buddy.image=(img,type)=>{img.hidden=false;img.src=pixel;img.onerror=()=>stockImage(img,type)};
-function refreshFrames(){syncFooterMascot();for(const r of frames){if(!r.img.isConnected){frames.delete(r);continue}const character=buddy.character==='purple'?1:0;if(r.kind==='dialog'){const index=EMOTIONS.indexOf(r.emotion||'concerned')*2;paint(r,'emotions-'+buddy.character+'.webp',index,index+1,false);}else if(r.kind==='notice'&&buddy.current&&buddy.current.type!=='welcome'){
+function refreshFrames(){
+ syncToolHeroMascot();syncFooterMascot();for(const r of frames){if(!r.img.isConnected){frames.delete(r);continue}const character=buddy.character==='purple'?1:0;if(r.kind==='dialog'){const index=EMOTIONS.indexOf(r.emotion||'concerned')*2;paint(r,'emotions-'+buddy.character+'.webp',index,index+1,false);}else if(r.kind==='notice'&&buddy.current&&buddy.current.type!=='welcome'){
  const index=EMOTIONS.indexOf(currentEmotion)*2,flip=sequence%2;paint(r,'emotions-'+buddy.character+'.webp',index+flip,index+1-flip,true);
  }else paint(r,'outfits.webp',r.role*2+character);}}
 const render=buddy.render.bind(buddy);buddy.render=(preserve=false)=>{render(preserve);if(buddy.current!==previousItem){previousItem=buddy.current;sequence++;const choices=context.serious?{welcome:['happy'],success:['proud','grateful'],tip:['thoughtful','curious'],warning:['concerned'],error:['concerned','sad'],'form-error':['concerned']}:{welcome:['happy'],success:['proud','celebrating','motivated','grateful'],tip:['curious','thoughtful','cheeky'],warning:['concerned','surprised'],error:['concerned','puzzled','sad'],'form-error':['puzzled','concerned']};const list=choices[buddy.current?.type]||['happy'];currentEmotion=buddy.current?.emotion||list[sequence%list.length];}refreshFrames()};
@@ -115,3 +116,48 @@ function mountFooter(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountFooter,{once:true});else mountFooter();
 window.addEventListener('storage',e=>{if(e.key==='helferlein-toolya-preferences-v1')syncFooterMascot()});
+
+/* Thematic tool headers: retain original settings handlers and tool-specific navigation. */
+function syncToolHeroMascot(){
+ const hero=document.querySelector('.ty-tool-hero');if(!hero)return;
+ const character=read().character==='purple'?'purple':'turquoise';
+ const img=hero.querySelector('.ty-tool-hero-mascot');
+ const src=ASSETS+'originals/toolya_wishlist_'+character+'_welcome_1024.png';
+ if(img&&img.getAttribute('src')!==src)img.src=src;
+ hero.dataset.character=character;
+}
+function mountToolHero(){
+ if(tool==='home'||!TOOLS[tool]||document.querySelector('.ty-tool-hero'))return;
+ const old=document.querySelector('header.b3-header,header.wishlist-header,header');
+ if(!old)return;
+ const heading=old.querySelector('h1');
+ const title=heading?.textContent?.trim()||document.title.split('|')[0].trim();
+ const description=old.querySelector('.b3-tool-title p')?.textContent?.trim()||context.greeting;
+ const icon=old.querySelector('.b3-tool-icon')?.textContent?.trim()||'✦';
+ const hero=document.createElement('section');hero.className='ty-tool-hero';hero.dataset.tool=tool;hero.setAttribute('aria-label','Toolya Themen-Header');
+ const inner=document.createElement('div');inner.className='ty-tool-hero-inner';
+ const copy=document.createElement('div');copy.className='ty-tool-hero-copy';
+ const top=document.createElement('div');top.className='ty-tool-hero-top';
+ const logo=document.createElement('a');logo.className='ty-tool-wordmark';logo.href=new URL('../../index.html',import.meta.url).href;logo.setAttribute('aria-label','Toolya Startseite');
+ const mark=document.createElement('span');mark.className='b3-hub-logo-mark';mark.textContent='✳';mark.setAttribute('aria-hidden','true');logo.append(mark,document.createTextNode(' Toolya'));
+ const actions=document.createElement('div');actions.className='ty-tool-hero-actions';
+ const originalSettings=old.querySelector('.b3-settings-trigger');
+ if(originalSettings){actions.append(originalSettings);}
+ else {
+  const trigger=document.createElement('button');trigger.type='button';trigger.className='ty-tool-hero-settings';trigger.setAttribute('aria-label','Einstellungen öffnen');trigger.textContent='⚙';
+  trigger.addEventListener('click',()=>{const existing=document.querySelector('.toolya-preferences');const modal=existing?.closest('dialog,[role=dialog],#settingsModal,#settings-modal');const opener=document.querySelector('[aria-label="Einstellungen öffnen"]:not(.ty-tool-hero-settings)');if(opener)opener.click();else if(modal?.showModal)modal.showModal();else if(modal)modal.classList.remove('hidden');});
+  actions.append(trigger);
+ }
+ top.append(logo,actions);
+ const h=document.createElement('h1');const symbol=document.createElement('span');symbol.className='ty-tool-hero-icon';symbol.textContent=icon;symbol.setAttribute('aria-hidden','true');h.append(symbol,document.createTextNode(title));
+ const p=document.createElement('p');p.textContent=description;
+ copy.append(top,h,p);
+ const img=document.createElement('img');img.className='ty-tool-hero-mascot';img.alt='Dein ausgewählter Toolya-Begleiter';img.width=185;img.height=190;img.decoding='async';
+ inner.append(copy,img);hero.append(inner);
+ old.before(hero);
+ if(old.matches('.b3-header')){old.classList.add('ty-tool-original-header');heading?.setAttribute('aria-hidden','true');}
+ else {if(heading){heading.hidden=true;}const oldBack=old.previousElementSibling;if(oldBack?.tagName==='A'&&oldBack.getAttribute('href')?.includes('index.html'))oldBack.hidden=true;}
+ syncToolHeroMascot();
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountToolHero,{once:true});else mountToolHero();
+window.addEventListener('storage',e=>{if(e.key===key||e.key===null)syncToolHeroMascot()});
