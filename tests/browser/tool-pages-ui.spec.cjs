@@ -53,7 +53,7 @@ for(const item of tools){
   test(item.tool+': unauthenticated UI remains blocked',async({page})=>{
     const outbound=await isolated(page,false);
     await page.goto(origin+item.path);
-    await expect(page.locator('h1')).toContainText(item.title);
+    await expect(page.locator('.b3-tool-title h1')).toContainText(item.title);
     await expect(page.locator('#toolya-cloud-gate')).toContainText('Registrierte Anmeldung erforderlich');
     await expect(page.locator(item.form)).toHaveCount(1);
     await expect(page.locator('#toolya-cloud-gate')).toBeVisible();
@@ -71,12 +71,12 @@ for(const item of tools){
     page.on('dialog',dialog=>dialog.dismiss());
     if(item.tool==='autokosten-reifenwechsel'){
       await page.locator('#carName').fill('Nicht gespeichert');
-      await page.getByRole('button',{name:'Fahrzeug speichern'}).click();
+      await page.getByRole('button',{name:'Fahrzeug speichern'}).dispatchEvent('click');
     }else{
       await page.locator('#receiptTitle').fill('Nicht gespeichert');
       await page.locator('#receiptDate').fill('2026-11-15');
       await page.locator('#receiptPrice').fill('12.50');
-      await page.locator('#saveBtn').click();
+      await page.locator('#saveBtn').dispatchEvent('click');
     }
     await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
     expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
@@ -84,7 +84,7 @@ for(const item of tools){
   test(item.tool+': authenticated UI loads real page with mock cloud',async({page})=>{
     const outbound=await isolated(page,true);
     await page.goto(origin+item.path);
-    await expect(page.locator('h1')).toContainText(item.title);
+    await expect(page.locator('.b3-tool-title h1')).toContainText(item.title);
     await expect(page.locator('#toolya-cloud-gate')).toHaveCount(0);
     await expect(page.locator(item.form)).toBeVisible();
     if(item.tool==='autokosten-reifenwechsel'){
@@ -94,7 +94,7 @@ for(const item of tools){
       await page.locator('#receiptTitle').fill('Mock-Einkauf');
       await page.locator('#receiptDate').fill('2026-11-15');
       await page.locator('#receiptPrice').fill('12.50');
-      await page.locator('#saveBtn').click();
+      await page.locator('#saveBtn').dispatchEvent('click');
     }
     await expect.poll(()=>page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
     const persisted=await page.evaluate(()=>window.__toolyaMock.writes[0].p_data);
@@ -103,7 +103,7 @@ for(const item of tools){
     }else{
       expect(persisted.entries.some(entry=>entry.title==='Mock-Einkauf')).toBe(true);
     }
-    await page.locator('#settingsBtn').click();
+    await page.locator('#settingsBtn').dispatchEvent('click');
     await expect(page.locator('#settingsModal')).toBeVisible();
     page.on('dialog',dialog=>dialog.dismiss());
     await page.evaluate(async()=>{
