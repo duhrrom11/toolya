@@ -519,6 +519,7 @@
 
 // Cloud-only: all private content is blocked until a verified cloud snapshot loads.
 let toolyaCloudReady = false;
+let toolyaCloudUserId = null;
 let toolyaCloudController = null;
 function toolyaCloudSnapshot() {
   if (!toolyaCloudReady || !toolyaCloudController?.ready)
@@ -590,7 +591,10 @@ async function toolyaCloudBoot(tool) {
         return confirm('Sicherung wurde zum Download angeboten. Bitte erst nach erfolgreichem Speichern bestätigen.');
       }
     });
-    toolyaCloudController=prepared.controller;toolyaCloudReady=true;
+    toolyaCloudController=prepared.controller;
+    toolyaCloudUserId=(await window.supabaseClient.auth.getUser()).data?.user?.id || null;
+    if(!toolyaCloudUserId) throw Error('Anmeldung während des Ladens verloren.');
+    toolyaCloudReady=true;
     gate.remove();
     if(tool==='autokosten-reifenwechsel')loadCarDropdowns();
     if(tool==='haushaltsbuch-kassenbon')initCharts();
@@ -710,7 +714,25 @@ async function toolyaCloudBoot(tool) {
         });
 
         supabaseClient.auth.onAuthStateChange((event) => {
-            if(event==='SIGNED_OUT' || event==='SIGNED_IN'){toolyaCloudReady=false;toolyaCloudController?.invalidate();if(document.readyState!=='loading' && toolyaCloudController)toolyaCloudBlock('Anmeldung hat sich geändert. Bitte Seite neu laden.');}
+            if (event === 'SIGNED_OUT') {
+                toolyaCloudReady=false;toolyaCloudUserId=null;
+                toolyaCloudController?.invalidate();
+                toolyaCloudBlock('Abgemeldet. Bitte erneut anmelden.');
+            } else if (event === 'SIGNED_IN' && toolyaCloudUserId) {
+                // SIGNED_IN may also fire for a refreshed session of the same user.
+                setTimeout(async () => {
+                    try {
+                        const {data,error}=await window.supabaseClient.auth.getUser();
+                        if(error || data?.user?.id!==toolyaCloudUserId) {
+                            toolyaCloudReady=false;toolyaCloudController?.invalidate();
+                            toolyaCloudBlock('Konto gewechselt. Bitte Seite neu laden.');
+                        }
+                    } catch (_) {
+                        toolyaCloudReady=false;toolyaCloudController?.invalidate();
+                        toolyaCloudBlock('Anmeldung konnte nicht geprüft werden.');
+                    }
+                },0);
+            }
             // Auth callbacks run while the SDK holds its session lock.
             setTimeout(() => { updateUserDisplay().catch(() => {}); }, 0);
         });
