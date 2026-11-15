@@ -55,8 +55,15 @@
    if(!await confirmAction('Bestehenden Tresor schützen','Deine Unterlagen und Kontakte bleiben erhalten. Der bisher ungeschützt auf diesem Gerät gespeicherte Hauptschlüssel wird jetzt mit deinem Tresorpasswort geschützt. Bewahre dieses Passwort gut auf.'))return;
    recovery=await C.wrap(workingKey,vaultPassword);
   }else if(remote){
-   if(!remote.recovery_key)throw Error('Deine Online-Sicherung braucht noch das ursprüngliche Gerät. Lege dort zuerst ein Passwort für den Gerätewechsel fest.');
-   workingKey=await C.unwrap(remote.recovery_key,vaultPassword);workingPayload=validatePayload(await C.decrypt(remote.encrypted_data,workingKey));workingConfig=normalizeConfig(remote.encrypted_config?await C.decrypt(remote.encrypted_config,workingKey):{});workingConfig.vaultId=remote.vault_id;recovery=remote.recovery_key;stamp=remote.updated_at;restore=true;
+   // Recover only an authenticated, decryptable cloud vault; keep all existing browser data intact.
+   const restored=await EstateCloudGuard.restoreCloudSnapshot({
+    client:db,ownerId:user.id,password:vaultPassword,cryptoApi:C,validatePayload
+   });
+   if(!restored||restored.remote.vault_id!==remote.vault_id||
+      restored.stamp!==remote.updated_at)throw Error('conflict');
+   workingKey=restored.key;workingPayload=restored.payload;
+   workingConfig=normalizeConfig(restored.config);
+   recovery=restored.recovery;stamp=restored.stamp;restore=true;
   }else{
    workingKey=C.random();workingPayload={entries:[],trusteeKeys:{}};workingConfig={vaultId:'v_'+C.random().slice(0,32),ownerName:'',ownerEmail:user.email,alarmPersons:[],trustees:[],checkInIntervalDays:30,lastCheckIn:new Date().toISOString(),remindersEnabled:false};recovery=await C.wrap(workingKey,vaultPassword);stamp=null;
   }
