@@ -68,7 +68,7 @@
     <script src="../../shared/helferlein-cloud-migration.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
-        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore || window.helferleinCloudBridge) return;
+        return; // legacy opt-in bridge disabled for cloud-only
         if (!window.supabaseClient) return;
         window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
           client: window.supabaseClient, tool: 'haushaltsbuch-kassenbon',
@@ -516,6 +516,59 @@
 
     <!-- Skript Logik -->
     <script>
+
+// Cloud-only: all private content is blocked until a verified cloud snapshot loads.
+let toolyaCloudReady = false;
+let toolyaCloudController = null;
+function toolyaCloudSnapshot() {
+  if (!toolyaCloudReady || !toolyaCloudController?.ready)
+    throw Error('Cloud nicht bereit. Bitte anmelden oder neu laden.');
+  return toolyaCloudController.snapshot();
+}
+async function toolyaCloudSave(patch) {
+  try {
+    if (!toolyaCloudReady) throw Error('Cloud nicht bereit.');
+    const next = toolyaCloudController.snapshot();
+    Object.assign(next, patch);
+    await toolyaCloudController.replace(next);
+    window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');
+    return true;
+  } catch(error) {
+    toolyaCloudReady = false;
+    alert('Cloud-Speicherung nicht bestätigt: '+error.message+'. Bitte Seite neu laden; Eingaben nicht als gespeichert betrachten.');
+    return false;
+  }
+}
+async function toolyaCloudBoot(tool) {
+  const gate = document.createElement('div');
+  gate.setAttribute('role','alert');gate.id='toolya-cloud-gate';
+  gate.style.cssText='position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
+  gate.textContent='Toolya Cloud wird geladen …';document.body.append(gate);
+  try {
+    const {prepareCloudTool} = await import('../../shared/toolya/cloud-tool-adapters.mjs');
+    const storage = localStorage;
+    const prepared = await prepareCloudTool({
+      client:window.supabaseClient,tool,storage,
+      confirmMigration: async () => confirm('Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden niemals überschrieben.'),
+      exportBackup: async (data) => {
+        const blob = new Blob([JSON.stringify(data)],{type:'application/json'});
+        const url = URL.createObjectURL(blob), link=document.createElement('a');
+        link.href=url;link.download='toolya-bestand-vor-cloud.json';link.click();
+        setTimeout(()=>URL.revokeObjectURL(url),60000);
+        return confirm('Sicherung wurde zum Download angeboten. Bitte erst nach erfolgreichem Speichern bestätigen.');
+      }
+    });
+    toolyaCloudController=prepared.controller;toolyaCloudReady=true;
+    gate.remove();
+    if(tool==='autokosten-reifenwechsel')loadCarDropdowns();
+    if(tool==='haushaltsbuch-kassenbon')initCharts();
+    renderApp();
+  } catch(error) {
+    gate.textContent='Toolya Cloud gesperrt: '+error.message+' Bitte anmelden und Seite neu laden.';
+    console.error(error);
+  }
+}
+
         // Supabase Konfiguration
         const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
@@ -620,12 +673,12 @@
             receiptDateInput.valueAsDate = new Date();
             receiptDateInput.dataset.autoDefault = 'true';
             receiptDateInput.addEventListener('input', () => { receiptDateInput.dataset.autoDefault = 'false'; });
-            initCharts();
-            renderApp();
+            void toolyaCloudBoot('haushaltsbuch-kassenbon');
             try { updateUserDisplay(); } catch(e){}
         });
 
-        supabaseClient.auth.onAuthStateChange(() => {
+        supabaseClient.auth.onAuthStateChange((event) => {
+            if(event==='SIGNED_OUT' || event==='SIGNED_IN'){toolyaCloudReady=false;toolyaCloudController?.invalidate();}
             // Auth callbacks run while the SDK holds its session lock.
             setTimeout(() => { updateUserDisplay().catch(() => {}); }, 0);
         });
@@ -634,111 +687,21 @@
             document.getElementById('guideSection').classList.toggle('hidden');
         }
 
-        function getData() {
-            try {
-                const value = JSON.parse(localStorage.getItem('kassenbon_data'));
-                return Array.isArray(value) ? value : [];
-            } catch(e) {
-                return [];
-            }
-        }
+        function getData(){return toolyaCloudSnapshot().entries;}
 
-        function householdCloudSnapshot() {
-            const sources = [
-                ['kassenbon_data', 'entries', 'array'],
-                ['budgetbuch_budgets', 'budgets', 'record'],
-                ['budgetbuch_goals', 'goals', 'array']
-            ];
-            const snapshot = {};
-            for (const [key, field, kind] of sources) {
-                const raw = localStorage.getItem(key);
-                const value = raw === null ? (kind === 'array' ? [] : {}) : JSON.parse(raw);
-                if (kind === 'array' ? !Array.isArray(value)
-                    : !value || typeof value !== 'object' || Array.isArray(value)) {
-                    throw new Error('Ungültige gespeicherte Haushaltsdaten: ' + key);
-                }
-                snapshot[field] = value;
-            }
-            return snapshot;
-        }
-        function householdCloudCanSave() {
-            try {
-                // Preserve legacy offline behavior before an account claims this browser.
-                if (typeof window === 'undefined' || (!window.helferleinCloudBridge &&
-                    !localStorage.getItem('helferlein_cloud_owner_haushaltsbuch-kassenbon'))) return true;
-                householdCloudSnapshot();
-                if (localStorage.getItem('helferlein_cloud_owner_haushaltsbuch-kassenbon') && !window.helferleinCloudBridge)
-                    throw new Error('Kontoschutz noch nicht geladen; bitte Seite neu öffnen.');
-                if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal())
-                    throw new Error('Kontowechsel oder Cloud-Übernahme aktiv; Speichern gesperrt.');
-                return true;
-            } catch (error) {
-                alert('Speichern gesperrt: ' + error.message + '. Bestehende Daten bleiben erhalten.');
-                return false;
-            }
-        }
-        function householdCloudChanged() {
-            if (typeof window === 'undefined' || !window.helferleinCloudBridge) return;
-            void window.helferleinCloudBridge.changed(householdCloudSnapshot()).catch(error =>
-                console.error('Haushaltsbuch-Online-Sicherung ausstehend:', error));
-        }
+        function householdCloudSnapshot(){return toolyaCloudSnapshot();}
+        function householdCloudCanSave(){return toolyaCloudReady;}
+        function householdCloudChanged(){}
 
-        function saveData(data) {
-            try {
-                if (!householdCloudCanSave()) return false;
-                localStorage.setItem('kassenbon_data', JSON.stringify(data)); window.toolyaNotice?.('success','Änderungen auf diesem Gerät gespeichert.');
-                householdCloudChanged();
-                return true;
-            } catch (error) {
-                console.error('Speichern fehlgeschlagen:', error);
-                alert('Speichern fehlgeschlagen. Der Gerätespeicher ist möglicherweise voll oder blockiert. Bitte Daten sichern und Speicherplatz prüfen.');
-                return false;
-            }
-        }
+        async function saveData(data){return toolyaCloudSave({entries:data});}
 
-        function getBudgets() {
-            try {
-                const value = JSON.parse(localStorage.getItem('budgetbuch_budgets'));
-                return value !== null && typeof value === 'object' && !Array.isArray(value) ? value : {};
-            } catch(e) {
-                return {};
-            }
-        }
+        function getBudgets(){return toolyaCloudSnapshot().budgets;}
 
-        function saveBudgets(budgets) {
-            try {
-                if (!householdCloudCanSave()) return false;
-                localStorage.setItem('budgetbuch_budgets', JSON.stringify(budgets)); window.toolyaNotice?.('success','Änderungen auf diesem Gerät gespeichert.');
-                householdCloudChanged();
-                return true;
-            } catch (error) {
-                console.error('Speichern fehlgeschlagen:', error);
-                alert('Speichern fehlgeschlagen. Der Gerätespeicher ist möglicherweise voll oder blockiert. Bitte Daten sichern und Speicherplatz prüfen.');
-                return false;
-            }
-        }
+        async function saveBudgets(budgets){return toolyaCloudSave({budgets});}
 
-        function getSavingsGoals() {
-            try {
-                const value = JSON.parse(localStorage.getItem('budgetbuch_goals'));
-                return Array.isArray(value) ? value : [];
-            } catch(e) {
-                return [];
-            }
-        }
+        function getSavingsGoals(){return toolyaCloudSnapshot().goals;}
 
-        function saveSavingsGoals(goals) {
-            try {
-                if (!householdCloudCanSave()) return false;
-                localStorage.setItem('budgetbuch_goals', JSON.stringify(goals)); window.toolyaNotice?.('success','Änderungen auf diesem Gerät gespeichert.');
-                householdCloudChanged();
-                return true;
-            } catch (error) {
-                console.error('Speichern fehlgeschlagen:', error);
-                alert('Speichern fehlgeschlagen. Der Gerätespeicher ist möglicherweise voll oder blockiert. Bitte Daten sichern und Speicherplatz prüfen.');
-                return false;
-            }
-        }
+        async function saveSavingsGoals(goals){return toolyaCloudSave({goals});}
 
         function updateFormUI() {
             const type = document.querySelector('input[name="entryType"]:checked').value;
@@ -1032,7 +995,7 @@
         }
 
         /* --- Buchung Speichern --- */
-        function saveReceipt() {
+        async function saveReceipt() {
             if (photoReadFailed) {
                 alert('Mindestens ein Belegbild konnte nicht geladen werden. Bitte Bilder erneut auswählen oder entfernen.');
                 return;
@@ -1106,7 +1069,7 @@
                 const second = Number.isFinite(secondDate.getTime()) ? secondDate.getTime() : 0;
                 return second - first;
             });
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
 
             resetForm();
             renderApp();
@@ -1205,10 +1168,10 @@
             rawImage = null;
         }
 
-        function deleteReceipt(id) {
+        async function deleteReceipt(id) {
             if (!confirm("⚠️ Diese Buchung wirklich löschen?")) return;
             let data = getData().filter(item => item.id !== id);
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             if (editingReceiptId === id) cancelEdit();
             renderApp();
         }
@@ -1519,7 +1482,7 @@
             document.getElementById('budgetModal').classList.add('hidden');
         }
 
-        function saveBudgetsFromModal() {
+        async function saveBudgetsFromModal() {
             const budgets = {};
             for (const input of document.querySelectorAll('#budgetInputList input')) {
                 const category = input.getAttribute('data-cat');
@@ -1531,7 +1494,7 @@
                 }
                 budgets[category] = amount;
             }
-            if (!saveBudgets(budgets)) return;
+            if (!await saveBudgets(budgets)) return;
             closeBudgetModal();
             renderApp();
         }
@@ -1546,7 +1509,7 @@
             document.getElementById('savingsModal').classList.add('hidden');
         }
 
-        function saveSavingsGoal() {
+        async function saveSavingsGoal() {
             const title = document.getElementById('goalTitle').value.trim();
             const target = Number(document.getElementById('goalTarget').value);
             const current = Number(document.getElementById('goalCurrent').value);
@@ -1555,7 +1518,7 @@
 
             const goals = getSavingsGoals();
             goals.push({ id: Date.now(), title, target, current });
-            if (!saveSavingsGoals(goals)) return;
+            if (!await saveSavingsGoals(goals)) return;
 
             document.getElementById('goalTitle').value = "";
             document.getElementById('goalTarget').value = "";
@@ -1564,7 +1527,7 @@
             renderApp();
         }
 
-        function depositGoal(id) {
+        async function depositGoal(id) {
             const goals = getSavingsGoals();
             const goal = goals.find(g => g.id === id);
             if (!goal) return;
@@ -1572,14 +1535,14 @@
             if (amount > 0) {
                 const previous = Number(goal.current);
                 goal.current = (Number.isFinite(previous) ? previous : 0) + amount;
-                if (!saveSavingsGoals(goals)) return;
+                if (!await saveSavingsGoals(goals)) return;
                 renderApp();
             }
         }
 
-        function deleteSavingsGoal(id) {
+        async function deleteSavingsGoal(id) {
             if (!confirm("Sparziel löschen?")) return;
-            if (!saveSavingsGoals(getSavingsGoals().filter(g => g && g.id !== id))) return;
+            if (!await saveSavingsGoals(getSavingsGoals().filter(g => g && g.id !== id))) return;
             renderApp();
         }
 
