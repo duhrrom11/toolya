@@ -1,0 +1,25 @@
+/* Tool-specific A2/B2 header, without altering the homepage. */
+.ty-tool-hero{--ty-accent:#087e85;--ty-soft:#d7f5f2;position:relative;isolation:isolate;box-sizing:border-box;width:min(100% - 24px,1440px);max-width:calc(100% - 24px);margin:12px auto 16px;border-radius:26px;overflow:hidden;background:linear-gradient(115deg,#f7ffff 0%,var(--ty-soft) 100%);border:1px solid color-mix(in srgb,var(--ty-accent) 24%,white);box-shadow:0 9px 28px #16445618;color:#193c4b;font-family:system-ui,-apple-system,sans-serif}
+.ty-tool-hero[data-theme=purple]{--ty-accent:#7954a9;--ty-soft:#f0e7fa}
+.ty-tool-hero[data-tool=budget],.ty-tool-hero[data-tool=meters],.ty-tool-hero[data-tool=loans]{--ty-accent:#2d78a6;--ty-soft:#e0f0fb}
+.ty-tool-hero[data-tool=plants],.ty-tool-hero[data-tool=pet-health]{--ty-accent:#25816e;--ty-soft:#e0f6e8}
+.ty-tool-hero[data-tool=estate]{--ty-accent:#677393;--ty-soft:#e9edf7}
+.ty-tool-hero[data-tool=wishes]{--ty-accent:#9060a6;--ty-soft:#f4e8f6}
+.ty-tool-hero[data-tool=car],.ty-tool-hero[data-tool=parking],.ty-tool-hero[data-tool=moving]{--ty-accent:#337fa3;--ty-soft:#e1f1f7}
+.ty-tool-hero[data-tool=baking],.ty-tool-hero[data-tool=housemates]{--ty-accent:#a16d73;--ty-soft:#faece9}
+.ty-tool-hero:after{content:"";position:absolute;right:-70px;bottom:-160px;width:430px;height:350px;border:2px solid var(--ty-accent);border-radius:50%;opacity:.12;pointer-events:none}
+.ty-tool-hero-inner{position:relative;display:flex;align-items:center;gap:clamp(12px,3vw,30px);padding:18px clamp(16px,3vw,36px);min-height:154px}
+.ty-tool-hero-copy{flex:1;min-width:0;z-index:1}
+.ty-tool-hero-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.ty-tool-wordmark{display:inline-flex;align-items:center;gap:6px;color:#076c75!important;font-size:clamp(21px,2.4vw,30px);font-weight:900;letter-spacing:-1.2px;text-decoration:none!important;white-space:nowrap}
+.ty-tool-wordmark .b3-hub-logo-mark{font-size:.85em}
+.ty-tool-hero-actions{display:flex;align-items:center;gap:10px}
+.ty-tool-hero-actions button{min-width:44px;min-height:44px;cursor:pointer}
+.ty-tool-hero h1{margin:0;color:#183a4b;font-size:clamp(23px,3vw,38px);font-weight:850;line-height:1.18;letter-spacing:-.7px;overflow-wrap:anywhere}
+.ty-tool-hero p{margin:8px 0 0;font-size:clamp(13px,1.5vw,16px);line-height:1.5;color:#4c6470}
+.ty-tool-hero-icon{display:inline-block;margin-right:8px}
+.ty-tool-hero-mascot{position:relative;z-index:1;flex:0 0 clamp(90px,16vw,185px);width:clamp(90px,16vw,185px);height:clamp(118px,17vw,190px);object-fit:contain;object-position:center bottom;filter:drop-shadow(0 8px 10px #244b5428)}
+.ty-tool-hero .b3-settings-trigger{position:static;transform:none}
+.ty-tool-original-header{display:none!important}
+@media(max-width:500px){.ty-tool-hero-inner{padding:14px;gap:6px;min-height:128px}.ty-tool-hero-mascot{flex-basis:84px;width:84px;height:110px}.ty-tool-hero h1{font-size:22px}.ty-tool-hero p{font-size:12px}.ty-tool-hero-top{margin-bottom:8px}.ty-tool-wordmark{font-size:22px}}
+@media(prefers-reduced-motion:reduce){.ty-tool-hero *{animation:none!important;transition:none!important}}
