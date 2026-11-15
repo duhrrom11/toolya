@@ -34,7 +34,7 @@ function productData(root,asin){
  const priceNode=pick(root,'#corePriceDisplay_desktop_feature_div .a-price:not(.a-text-price) .a-offscreen,#corePrice_feature_div .a-price .a-offscreen,.a-price:not(.a-text-price) .a-offscreen,[id^="itemPrice"],#priceblock_ourprice,#priceblock_dealprice');
  const rawPrice=root.getAttribute?.('data-price');const attributePrice=typeof rawPrice==='string'&&/^\d+(?:\.\d{1,2})?$/.test(rawPrice)?Number(rawPrice):null;
  const price=parsePrice(text(priceNode,100))??(attributePrice!==null&&attributePrice<=999999?attributePrice:null);
- const description=text(pick(root,'#feature-bullets,#productDescription'),1000);
+ const description=text(pick(root,'#feature-bullets,#productDescription,[id^="itemComment"],[id^="itemDescription"],.g-item-comment,.g-itemComment,.item-comment,.item-description,[data-item-description]'),1000) || text({textContent:root.getAttribute?.('data-item-description')||''},1000);
  const quantityNode=pick(root,'[id^="itemRequestedQty"],[id^="itemRequested_"],[data-quantity]');const quantityText=quantityNode?.getAttribute('data-quantity')||text(quantityNode,100);const quantityMatch=quantityText?.match(/\d+/);const quantity=quantityMatch?Math.min(999,Math.max(1,Number(quantityMatch[0]))):1;
  return title?{asin,marketplace:'amazon.de',title,imageUrl,price,currency:'EUR',description,quantity,productUrl:`https://www.amazon.de/dp/${asin}?tag=duhrrom-21`,scrapedAt:new Date().toISOString()}:null;
 }
