@@ -7,8 +7,6 @@ const read=k=>{try{return localStorage.getItem(k)}catch{return null}};
 const save=(k,v)=>{try{localStorage.setItem(k,v);return true}catch{return false}};
 const clone=x=>JSON.parse(JSON.stringify(x));
 const defaults=()=>tabs.map(([id],order)=>({id,order,size:'m'}));
-let theme=['auto','light','dark'].includes(read(T))?read(T):'auto';
-const media=window.matchMedia('(prefers-color-scheme: dark)');
 function load(){
  try{
  const stored=JSON.parse(read(L)||'null');
@@ -28,12 +26,9 @@ function node(tag,props={},label=''){
  return x;
 }
 function applyTheme(){
- const dark=theme==='dark'||(theme==='auto'&&media.matches);
- document.body.classList.toggle('b3-dark',dark);
- document.body.classList.toggle('b3-light',!dark);
- document.documentElement.style.colorScheme=dark?'dark':'light';
- const sel=document.getElementById('b3-backform-theme');
- if(sel)sel.value=theme;
+ document.body.classList.remove('b3-dark');
+ document.body.classList.add('b3-light');
+ document.documentElement.style.colorScheme='light';
 }
 function paint(arr){
  for(const [index,x] of arr.entries()){
@@ -81,11 +76,6 @@ function editorRender(){
 function init(){
  document.body.classList.add('b3','b3-backform');
  document.getElementById('main-content')?.classList.add('b3-backform-main');
- const control=document.getElementById('b3-backform-theme');
- if(control){
- control.value=theme;
- control.addEventListener('change',()=>{theme=control.value;if(!save(T,theme))alert('Designmodus konnte nicht gespeichert werden.');applyTheme();});
- }
  const editor=document.getElementById('b3-backform-editor');
  const edit=document.getElementById('b3-backform-edit');
  if(editor&&edit){
@@ -93,9 +83,8 @@ function init(){
  }
  // Original openTab() stays the only controller for recipe, finder and cost views.
  paint(layout);applyTheme();
- media.addEventListener?.('change',applyTheme);
+
  window.addEventListener('storage',e=>{
- if(e.key===T){theme=['auto','light','dark'].includes(e.newValue)?e.newValue:'auto';applyTheme()}
  if(e.key===L&&!draft){layout=load();paint(layout)}
  });
 }
