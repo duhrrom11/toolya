@@ -1,4 +1,4 @@
--- Ephemeral PostgreSQL fixture only. Function definition retrieved read-only from deployed migration.
+-- Ephemeral PostgreSQL fixture only. Function definition retrieved read-only from deployed migration; single-key NULL-deadline fail-closed fix is proposed here only.
 CREATE SCHEMA auth;
 CREATE TABLE auth.sessions(id uuid primary key,user_id uuid not null);
 CREATE SCHEMA estate_private;
@@ -115,7 +115,7 @@ begin
   second_hash:=p_data->>'secondHash';
   if second_hash is not null then
    if second_hash=h or not exists(select 1 from estate_private.read_guardians where key_hash=second_hash and owner_id=v.owner_id and contact_id<>g.contact_id) then return '{"error":"invalid_keys"}'; end if;
-  elsif v.alarm_started_at is null or v.alarm_deadline>now() or v.alarm_canceled_at is not null then
+  elsif v.alarm_started_at is null or v.alarm_deadline is null or v.alarm_deadline>now() or v.alarm_canceled_at is not null then
    return jsonb_build_object('error','two_keys_required','deadline',v.alarm_deadline);
   end if;
   return jsonb_build_object('content',v.content,'envelope',g.envelope,'version',v.version);
