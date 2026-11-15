@@ -7,6 +7,11 @@ export function createCloudController({ repository, validate, initial }) {
     throw new TypeError('Cloud-Controller benötigt Repository und Validator.');
   }
   const clone = value => JSON.parse(JSON.stringify(value));
+  const normalize = value => Array.isArray(value) ? value.map(normalize) :
+    value && typeof value === 'object'
+      ? Object.fromEntries(Object.keys(value).sort().map(key => [key, normalize(value[key])]))
+      : value;
+  const sameJson = (a, b) => JSON.stringify(normalize(a)) === JSON.stringify(normalize(b));
   let state = clone(initial), revision = null, loaded = false, busy = false, generation = 0;
   const ensureReady = () => {
     if (!loaded) throw new Error('Cloud-Daten noch nicht geladen.');
@@ -54,7 +59,8 @@ export function createCloudController({ repository, validate, initial }) {
           throw new Error('Cloud-Sitzung während des Speicherns ungültig geworden.');
         if (!result || !Number.isSafeInteger(result.revision) ||
             result.revision !== (revision === null ? 1 : revision + 1) ||
-            result.data === null || result.data === undefined)
+            result.data === null || result.data === undefined ||
+            !sameJson(result.data, payload))
           throw new Error('Cloud-Speicherantwort ist inkonsistent.');
         state = clone(validate(result.data));
         revision = result.revision;
