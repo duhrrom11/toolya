@@ -83,5 +83,5 @@ test('estate refuses invalid new-device recovery and changed identity',async()=>
  const base={client,ownerId:'owner',password:'password',cryptoApi:{async unwrap(){return 'key'},async decrypt(v){user={id:'other'};return v===remote.encrypted_data?{entries:[]}:{vaultId:'v_1'}}},validatePayload:p=>p};
  await assert.rejects(restoreCloudSnapshot(base),/login_required/);
  user={id:'owner'};
- await assert.rejects(restoreCloudSnapshot({...base,cryptoApi:{async unwrap(){throw Error('wrong_password')}}}),/wrong_password/);
+ await assert.rejects(restoreCloudSnapshot({...base,cryptoApi:{async unwrap(){throw Error('wrong_password')},async decrypt(){return {entries:[]}}}}),/wrong_password/);
 });
