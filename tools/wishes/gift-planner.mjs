@@ -140,8 +140,8 @@ let productSearchRevision=0;
 async function searchProducts(){
  const revision=++productSearchRevision,ownerId=user?.id;
  const q=$('productQuery').value.trim(),root=$('productResults');
- if(q.length<2){$('productSearchStatus').textContent='Bitte mindestens zwei Zeichen eingeben.';return}
- if(!ownerId){$('productSearchStatus').textContent='Bitte zuerst anmelden.';return}
+ if(q.length<2){$('searchProducts').disabled=false;$('productSearchStatus').textContent='Bitte mindestens zwei Zeichen eingeben.';return}
+ if(!ownerId){$('searchProducts').disabled=false;$('productSearchStatus').textContent='Bitte zuerst anmelden.';return}
  $('searchProducts').disabled=true;$('productSearchStatus').textContent='Suche läuft …';
  try{
   const safe=q.replace(/[,%()]/g,' ').trim();if(safe.length<2)throw Error('Bitte einen Suchbegriff verwenden.');
