@@ -1,0 +1,45 @@
+name: Refresh curated Amazon product catalog
+on:
+  workflow_dispatch:
+    inputs:
+      tool:
+        description: 'Tool slug (e.g. meters, moving, car)'
+        required: true
+        type: choice
+        options: [baking, budget, car, estate, housemates, loans, meters, moving, parking, pet-health, plants]
+      product_url:
+        description: 'Direct Amazon.de product URL (/dp/ASIN)'
+        required: true
+        type: string
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Scrape and validate one product
+        env:
+          TOOL: ${{ inputs.tool }}
+          PRODUCT_URL: ${{ inputs.product_url }}
+        run: node scripts/amazon-catalog-import.mjs "$TOOL" "$PRODUCT_URL"
+      - name: Validate catalog and browser integration
+        run: |
+          node --check shared/toolya/amazon-affiliate.js
+          node -e "const c=require('./shared/toolya/amazon-catalog.json');for(const [tool,products] of Object.entries(c)){if(!Array.isArray(products))throw Error(tool);for(const p of products){if(!/^[A-Z0-9]{10}$/.test(p.asin)||!p.imageUrl?.startsWith('https://')||!p.productUrl?.includes('tag=duhrrom-21'))throw Error('Invalid product '+tool)}}"
+      - name: Commit verified catalog update
+        run: |
+          if git diff --quiet -- shared/toolya/amazon-catalog.json; then exit 0; fi
+          git config user.name 'toolya-catalog-bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add shared/toolya/amazon-catalog.json
+          git commit -m "Update verified Amazon catalog product"
+          git push
