@@ -45,6 +45,27 @@ export function createCloudController({ repository, validate, initial }) {
         throw error;
       } finally { busy = false; }
     },
+    // Toolya Connect: explicitly check another device's revision. Never merge
+    // or overwrite an unacknowledged local snapshot, and never auto-save.
+    async checkRemote() {
+      ensureReady();
+      busy = true;
+      const token = ++generation;
+      try {
+        const remote = await repository.read();
+        if (token !== generation || !loaded || !remote ||
+            typeof remote.exists !== 'boolean' ||
+            (remote.exists && (!Number.isSafeInteger(remote.revision) || remote.revision < 1 || remote.data == null)) ||
+            (!remote.exists && (remote.revision !== null || remote.data !== null)))
+          throw Error('Cloud-Antwort ist inkonsistent.');
+        const next = clone(validate(remote.exists ? remote.data : initial));
+        const changed = remote.revision !== revision || !sameJson(next,state);
+        return Object.freeze({changed,remoteRevision:remote.revision,localRevision:revision});
+      } catch(error) {
+        loaded = false; // A failed verification must never authorize writes.
+        throw error;
+      } finally { busy = false; }
+    },
     async replace(next, { expectedRevision } = {}) {
       ensureReady();
       if (expectedRevision !== undefined && expectedRevision !== revision) {
