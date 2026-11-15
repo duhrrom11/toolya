@@ -7,7 +7,7 @@ const feedback=(id,message)=>{$(id).textContent=message;$('status').textContent=
 const invalid=(id,message,feedbackId)=>{const field=$(id);field.setAttribute('aria-invalid','true');field.setAttribute('aria-describedby',feedbackId);feedback(feedbackId,message);field.focus()};
 for(const id of ['budgetAmount','budgetOccasion','occasion','title','planned','actual'])for(const type of ['input','change'])$(id).addEventListener(type,()=>{$(id).removeAttribute('aria-invalid');$(id).removeAttribute('aria-describedby')});
 const byId=id=>occasions.find(x=>x.id===id);
-const number=id=>{const v=Number($(id).value);return Number.isFinite(v)&&v>=0?v:null};
+const number=id=>{const raw=$(id).value.trim();if(raw==='')return null;const v=Number(raw);return Number.isFinite(v)&&v>=0?v:null};
 function option(select,value,label){const el=document.createElement('option');el.value=value;el.textContent=label;select.append(el)}
 function choices(){
  for(const id of ['occasion','budgetOccasion','filterOccasion'])$(id).replaceChildren();
