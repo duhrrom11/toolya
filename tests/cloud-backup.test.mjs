@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { confirmCloudReplacement } from '../shared/toolya/cloud-backup.mjs';
+import { confirmCloudReplacement, exportJsonBackup } from '../shared/toolya/cloud-backup.mjs';
 import { createCarCloudController, createBudgetCloudController } from '../shared/toolya/cloud-controller.mjs';
 
 function repository(initial) {
@@ -109,4 +109,13 @@ test('non-serializable backup is rejected before any consent or write', async ()
   }),/gültiges JSON/);
   assert.equal(confirmations,0);
   assert.equal(repo.writes,0);
+});
+
+test('invalid backup export never creates a download', () => {
+  let created=0;
+  const doc={createElement(){created++;throw Error('must not create download');}};
+  const cyclic={cars:[]};cyclic.self=cyclic;
+  assert.throws(()=>exportJsonBackup(cyclic,'backup.json',doc),/als JSON/);
+  assert.throws(()=>exportJsonBackup(null,'backup.json',doc),/gültigen Daten/);
+  assert.equal(created,0);
 });
