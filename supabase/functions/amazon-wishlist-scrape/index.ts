@@ -1,4 +1,4 @@
-import { scrape } from './toolya-core.mjs';
+import { scrape, fetchAmazon, parseProduct } from './toolya-core.mjs';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.8';
 
 const cors = {
@@ -65,11 +65,47 @@ export async function handleRequest(req: Request): Promise<Response> {
   if (authError || !user) return json({ error: 'Unauthorized' }, 401);
   let body: unknown;
   try { body = await req.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
-  const payload = body && typeof body === 'object' && !Array.isArray(body) ? body as { publication_id?: unknown; amazon_url?: unknown; action?: unknown } : {};
+  const payload = body && typeof body === 'object' && !Array.isArray(body) ? body as { publication_id?: unknown; amazon_url?: unknown; action?: unknown; asin?: unknown } : {};
   const creating = payload.action === 'create';
   const publicationId = payload.publication_id;
   if (!creating && (typeof publicationId !== 'string' || !ID.test(publicationId))) return json({ error: 'Invalid publication ID' }, 400);
   const admin = createClient(url, secret);
+  // Metadata enrichment is deliberately a separate, rate-limited, one-ASIN request.
+  // It must never claim/rewrite a whole wishlist or alter its update status.
+  if (payload.action === 'enrich-product') {
+    const asin = typeof payload.asin === 'string' ? payload.asin.toUpperCase() : '';
+    if (typeof publicationId !== 'string' || !ID.test(publicationId) ||
+        !/^[A-Z0-9]{10}$/.test(asin)) return json({error:'Ungültige Produktanfrage'},400);
+    const {data: claim, error: claimError} = await admin.rpc('claim_amazon_wishlist_enrichment', {
+      p_publication_id: publicationId,p_user_id:user.id,p_asin:asin,
+    });
+    if (claimError) return json({error:'Produktanreicherung nicht verfügbar'},503);
+    if (claim === 'rate_limited') return json({error:'Maximal 20 Produktabrufe pro Stunde. Bitte später erneut versuchen.'},429);
+    if (claim === 'recently_attempted') return json({error:'Dieses Produkt wurde gerade überprüft. Bitte später erneut versuchen.'},429);
+    if (claim !== 'claimed') return json({error:'Produkt nicht gefunden oder nicht freigegeben'},404);
+    const existing = await admin.from('wishlist_amazon_publication_products')
+      .select('id,price,description,image_url')
+      .eq('publication_id',publicationId).eq('asin',asin).maybeSingle();
+    if (existing.error || !existing.data) return json({error:'Produkt nicht gefunden'},404);
+    try {
+      const html = await fetchAmazon('https://www.amazon.de/dp/'+asin,
+        (target,options)=>fetch(target,{...options,signal:AbortSignal.timeout(6000)}));
+      const detail = parseProduct(html,asin);
+      const price=existing.data.price ?? detail.price;
+      const description=existing.data.description?.trim() || detail.description?.trim() || null;
+      const image_url=existing.data.image_url || detail.imageUrl || null;
+      if(price === existing.data.price && description === (existing.data.description||null) &&
+         image_url === existing.data.image_url)
+        return json({status:'no_new_data',price_available:price!=null,description_available:!!description});
+      const updated=await admin.from('wishlist_amazon_publication_products')
+        .update({price,description,image_url}).eq('id',existing.data.id)
+        .eq('publication_id',publicationId).select('id').single();
+      if(updated.error) return json({error:'Produktinformationen konnten nicht gespeichert werden'},503);
+      return json({status:'success',price_available:price!=null,description_available:!!description});
+    } catch (e) {
+      return json({status:'unavailable',reason:controllerError(e)},200);
+    }
+  }
   let list: {id:string;user_id:string;amazon_url:string;scrape_status:string} | null = null;
   if (creating) {
     const valid = amazonUrl(payload.amazon_url);
@@ -103,7 +139,7 @@ export async function handleRequest(req: Request): Promise<Response> {
     if (!['amazon.de', 'www.amazon.de'].includes(target.hostname)) {
       throw new Error('Der bestehende Toolya-Importer unterstützt derzeit Amazon.de');
     }
-    const result = await scrape(target.href, fetch, { enrichMissing: true });
+    const result = await scrape(target.href, fetch, { enrichMissing: false });
     if (result.kind !== 'list' || !result.complete || !result.products.length) {
       throw new Error('Amazon-Wunschliste konnte nicht vollständig gelesen werden');
     }
