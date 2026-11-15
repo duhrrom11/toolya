@@ -66,3 +66,16 @@ test('rejects invalid snapshot and async mutations', async () => {
   await assert.rejects(controller.mutate(async s => s), /Asynchrone/);
   assert.equal(repo.writes, 0);
 });
+
+test('reentrant mutations cannot race during transform', async () => {
+  const repo = fakeRepository(), controller = createCarCloudController(repo);
+  await controller.load();
+  let nested;
+  await controller.mutate(state => {
+    nested = controller.mutate(other => { other.cars.push({ id: 2 }); });
+    state.cars.push({ id: 1 });
+  });
+  await assert.rejects(nested, /Speichern läuft/);
+  assert.deepEqual(repo.current.cars.map(c => c.id), [1]);
+  assert.equal(repo.writes, 1);
+});
