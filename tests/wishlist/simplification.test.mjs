@@ -209,7 +209,7 @@ test('failed product searches retain previous results and query',()=>{
  const search=planner.slice(start,end);
  assert.equal(search.includes("root.replaceChildren();\n if(q.length<2)"),false);
  assert.ok(search.includes("root.replaceChildren();if($('productQuery').value.trim()===q)$('productQuery').value='';if(!products?.length)"));
- assert.ok(search.includes("}catch{$('productSearchStatus').textContent='Suche fehlgeschlagen."));
+ assert.ok(search.includes("}catch{if(revision===productSearchRevision&&user?.id===ownerId)$('productSearchStatus').textContent='Suche fehlgeschlagen."));
 });
 
 test('budget saves preserve newer edits and handle rejected requests',()=>{
