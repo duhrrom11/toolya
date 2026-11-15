@@ -45,7 +45,7 @@
    if(local.ownerEmail&&local.ownerEmail.toLowerCase()!==user.email.toLowerCase()&&remote?.vault_id!==local.vaultId)throw Error('Dieser Gerätetresor nennt eine andere E-Mail-Adresse. Bitte melde dich mit dem dazugehörigen Konto an.');
    if(remote&&remote.vault_id!==local.vaultId)throw Error('Dieser Gerätetresor und deine Online-Sicherung sind unterschiedlich. Bitte öffne die Online-Sicherung in einem anderen Browserprofil. Beide Stände bleiben erhalten.');
    workingKey=local.masterKeyHex;workingPayload=validatePayload(await C.decrypt(local.encryptedData,workingKey));workingConfig=normalizeConfig(local);stamp=remote?.updated_at||null;
-   if(remote&&JSON.stringify(remote.encrypted_data)!==JSON.stringify(local.encryptedData)){
+   if(remote&&(JSON.stringify(remote.encrypted_data)!==JSON.stringify(local.encryptedData)||remote.encrypted_config)){
     const cloud=validatePayload(await C.decrypt(remote.encrypted_data,workingKey));
     const cloudConfig=remote.encrypted_config?normalizeConfig(await C.decrypt(remote.encrypted_config,workingKey)):workingConfig;
     EstateCloudGuard.assertLegacyMergeSafe(workingPayload,workingConfig,cloud,cloudConfig);
