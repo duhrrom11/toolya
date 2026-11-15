@@ -9,7 +9,7 @@
   "scripts": {
     "test": "node --test tests/amazon/*.test.mjs && node tests/platform/cloudonly-contract.cjs && node tests/platform/connect-panel.cjs && node tests/platform/connect-two-devices.cjs && npm run test:connect:browser",
     "dev": "node scripts/home-preview.cjs",
-    "test:connect:browser": "node tests/platform/connect-two-devices.browser.cjs"
+    "test:connect:browser": "node tests/platform/connect-playwright.cjs"
   },
   "repository": {
     "type": "git",
