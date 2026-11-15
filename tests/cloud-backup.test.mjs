@@ -4,14 +4,14 @@ import { confirmCloudReplacement } from '../shared/toolya/cloud-backup.mjs';
 import { createCarCloudController, createBudgetCloudController } from '../shared/toolya/cloud-controller.mjs';
 
 function repository(initial) {
-  let data = structuredClone(initial), revision = 'r1', writes = 0;
+  let data = structuredClone(initial), revision = 1, writes = 0;
   return {
     get writes() { return writes; },
     get data() { return structuredClone(data); },
     async read() { return { exists:true, data:structuredClone(data), revision }; },
     async save(next, expected) {
       if (expected !== revision) throw Error('conflict');
-      data = structuredClone(next);revision = 'r' + (++writes + 1);
+      data = structuredClone(next);revision = ++writes + 1;
       return { data:structuredClone(data), revision };
     }
   };
