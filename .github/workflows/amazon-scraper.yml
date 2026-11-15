@@ -16,7 +16,8 @@ jobs:
       - uses: actions/setup-node@v4
         with: {node-version: '22', cache: npm}
       - run: npm ci
-      - run: node --test tests/amazon/*.test.mjs
+      - name: Full native npm test (Amazon + Wishlist)
+        run: npm test
       - run: node --check tools/wishes/amazon-import.mjs
       - run: node tests/amazon/browser.cjs
       - run: node tests/amazon/release-acceptance.cjs
