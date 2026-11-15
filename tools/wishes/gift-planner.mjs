@@ -122,20 +122,25 @@ function showProductSource(){
  $('clearProduct').hidden=!selectedProduct;
 }
 $('clearProduct').addEventListener('click',()=>{selectedProduct=null;showProductSource()});
+let productSearchRevision=0;
 async function searchProducts(){
+ const revision=++productSearchRevision,ownerId=user?.id;
  const q=$('productQuery').value.trim(),root=$('productResults');
  if(q.length<2){$('productSearchStatus').textContent='Bitte mindestens zwei Zeichen eingeben.';return}
+ if(!ownerId){$('productSearchStatus').textContent='Bitte zuerst anmelden.';return}
  $('searchProducts').disabled=true;$('productSearchStatus').textContent='Suche läuft …';
  try{
   const safe=q.replace(/[,%()]/g,' ').trim();if(safe.length<2)throw Error('Bitte einen Suchbegriff verwenden.');
   const {data:products,error}=await db.from('wishlist_products').select('id,title,asin').ilike('title','%'+safe+'%').order('created_at',{ascending:false}).limit(40);
+  if(revision!==productSearchRevision||user?.id!==ownerId)return;
   if(error)throw error;
   const ids=(products||[]).map(p=>p.id);
   let wishes=[];
-  if(ids.length){const result=await db.from('wishlist_wishes').select('id,product_id,priority').eq('user_id',user.id).in('product_id',ids).order('created_at',{ascending:false}).limit(200);if(result.error)throw result.error;wishes=result.data||[]}
+  if(ids.length){const result=await db.from('wishlist_wishes').select('id,product_id,priority') .eq('user_id',ownerId).in('product_id',ids).order('created_at',{ascending:false}).limit(200);if(result.error)throw result.error;wishes=result.data||[]}
+  if(revision!==productSearchRevision||user?.id!==ownerId)return;
   const wishByProduct=new Map();for(const w of wishes)if(!wishByProduct.has(String(w.product_id)))wishByProduct.set(String(w.product_id),w);
   $('productSearchStatus').textContent=(products||[]).length+' Produkte gefunden · '+wishByProduct.size+' mit eigenen Wünschen. Die Suche zeigt höchstens 40 Produkte.';
-  root.replaceChildren();$('productQuery').value='';if(!products?.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine passenden Produkte gefunden.';root.append(p)}
+  root.replaceChildren();if($('productQuery').value.trim()===q)$('productQuery').value='';if(!products?.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine passenden Produkte gefunden.';root.append(p)}
   for(const product of products||[]){
    const wish=wishByProduct.get(String(product.id));
    const card=document.createElement('article');card.className='product-result';
@@ -152,8 +157,8 @@ async function searchProducts(){
    if(product.asin&&/^[A-Z0-9]{10}$/i.test(product.asin)){const a=document.createElement('a');a.href='https://www.amazon.de/dp/'+encodeURIComponent(product.asin);a.target='_blank';a.rel='noopener noreferrer';a.textContent='Produkt bei Amazon ansehen ↗';card.append(a)}
    card.append(button);root.append(card);
   }
- }catch{$('productSearchStatus').textContent='Suche fehlgeschlagen. Bitte erneut versuchen.'}
- finally{$('searchProducts').disabled=false}
+ }catch{if(revision===productSearchRevision&&user?.id===ownerId)$('productSearchStatus').textContent='Suche fehlgeschlagen. Bitte erneut versuchen.'}
+ finally{if(revision===productSearchRevision)$('searchProducts').disabled=false}
 }
 $('searchProducts').addEventListener('click',searchProducts);
 $('productQuery').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();searchProducts()}});
