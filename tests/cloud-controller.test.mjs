@@ -79,3 +79,20 @@ test('reentrant mutations cannot race during transform', async () => {
   assert.deepEqual(repo.current.cars.map(c => c.id), [1]);
   assert.equal(repo.writes, 1);
 });
+
+test('late cloud confirmation after logout cannot restore controller state', async () => {
+  let finish;
+  const repo = {
+    async read() { return { exists:false, data:null, revision:null }; },
+    save() { return new Promise(resolve => { finish = resolve; }); }
+  };
+  const controller = createCarCloudController(repo);
+  await controller.load();
+  const pending = controller.replace({cars:[{id:1}],events:[],tires:[]});
+  controller.invalidate();
+  finish({data:{cars:[{id:1}],events:[],tires:[]},revision:1});
+  await assert.rejects(pending, /Sitzung/);
+  assert.equal(controller.ready,false);
+  assert.equal(controller.revision,null);
+  assert.throws(() => controller.snapshot(), /noch nicht geladen/);
+});
