@@ -19,7 +19,11 @@ for (const [tool, empty, changed] of [
       const url = new URL(route.request().url());
       return url.origin === origin ? route.continue() : route.abort();
     });
-    await page.goto(origin + '/');
+    // Load an inert same-origin document: never execute the real tool UI or its CDN scripts.
+    await page.route(origin + '/__toolya_browser_fixture__', route => route.fulfill({
+      status: 200, contentType: 'text/html', body: '<!doctype html><title>Toolya isolated cloud fixture</title>'
+    }));
+    await page.goto(origin + '/__toolya_browser_fixture__');
     const result = await page.evaluate(async ({tool,empty,changed}) => {
       const {prepareCloudTool} = await import('/shared/toolya/cloud-tool-adapters.mjs');
       const {confirmCloudReplacement} = await import('/shared/toolya/cloud-backup.mjs');
