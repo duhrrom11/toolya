@@ -16,9 +16,18 @@
  async function unwrap(w,password){if(w?.version!==1||w.kdf!=='PBKDF2-SHA256'||w.iterations!==600000||decode(w.salt).length!==16||decode(w.iv).length!==12||decode(w.ciphertext).length!==48)throw Error('invalid_recovery');return hex(new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:decode(w.iv)},await passwordKey(password,decode(w.salt)),decode(w.ciphertext))));}
  const normalize=s=>String(s).replace(/[\s-]/g,'').toLowerCase();
  async function readReplica(entries,people,keys){
+  if(!Array.isArray(people)||!keys||typeof keys!=='object')throw Error('invalid_vault');
   const readKey=random();
-  const guardians=[];
-  for(const person of people){const token=keys[person.id];unhex(token);guardians.push({id:String(person.id),hash:await hash(token),envelope:await encrypt({readKey},await hash('Toolya read envelope v2:'+token))});}
+  const guardians=[],ids=new Set(),tokens=new Set();
+  for(const person of people){
+   const id=person?.id==null?'':String(person.id),token=keys[id];
+   if(!id||ids.has(id)||typeof token!=='string')throw Error('conflict');
+   unhex(token);
+   const canonical=token.toLowerCase();
+   if(tokens.has(canonical))throw Error('conflict');
+   ids.add(id);tokens.add(canonical);
+   guardians.push({id,hash:await hash(canonical),envelope:await encrypt({readKey},await hash('Toolya read envelope v2:'+canonical))});
+  }
   return {content:await encrypt({entries},readKey),guardians};
  }
  async function openReplica(result,token){const {readKey}=await decrypt(result.envelope,await hash('Toolya read envelope v2:'+token));return decrypt(result.content,readKey);}
