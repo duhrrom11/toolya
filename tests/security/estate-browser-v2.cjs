@@ -54,7 +54,14 @@ const root=path.resolve(__dirname,'../..');
    const response=await handler(new Request(req.url(),{method,headers,body:JSON.stringify(body)}));return route.fulfill({status:response.status,headers:{...Object.fromEntries(response.headers),'access-control-allow-origin':origin},body:await response.text()});
   }
   if(u.pathname==='/rest/v1/vault_cloud_snapshots'){
-   if(method==='GET')return fulfill(200,(await pg.query('select * from vault_cloud_snapshots where owner_user_id=$1',[owner])).rows);
+   if(method==='GET'){
+    const rows=(await pg.query('select * from vault_cloud_snapshots where owner_user_id=$1',[owner])).rows;
+    // PostgREST .single()/.maybeSingle() request an object representation,
+    // not an array. Preserve the exact response contract in the isolated mock.
+    const singular=String(req.headers().accept||'').includes('application/vnd.pgrst.object+json');
+    if(singular)return rows.length===1?fulfill(200,rows[0]):fulfill(406,{code:'PGRST116',details:'The result contains 0 rows',hint:null,message:'Cannot coerce the result to a single JSON object'});
+    return fulfill(200,rows);
+   }
    if(method==='POST'){const data=Array.isArray(body)?body[0]:body;return fulfill(201,(await pg.query('insert into vault_cloud_snapshots(owner_user_id,vault_id,encrypted_data,encrypted_config,recovery_key,updated_at) values($1,$2,$3,$4,$5,$6) returning updated_at',[owner,data.vault_id,data.encrypted_data,data.encrypted_config,data.recovery_key,data.updated_at])).rows);}
    if(method==='PATCH')return fulfill(200,(await pg.query('update vault_cloud_snapshots set encrypted_data=$1,encrypted_config=$2,recovery_key=$3,updated_at=$4 where owner_user_id=$5 and updated_at=$6 returning updated_at',[body.encrypted_data,body.encrypted_config,body.recovery_key,body.updated_at,owner,u.searchParams.get('updated_at')?.replace(/^eq\./,'')])).rows);
   }
