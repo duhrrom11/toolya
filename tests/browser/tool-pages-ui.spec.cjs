@@ -7,6 +7,7 @@ const tools=[
 ];
 async function isolated(page,authenticated){
   const outbound=[];
+  page.on('pageerror',error=>console.log('[UI pageerror]',error.message));
   await page.route('**/*',async route=>{
     const url=route.request().url();
     if(url.startsWith('http://127.0.0.1:4173/')){
@@ -68,7 +69,7 @@ for(const item of tools){
       window.__toolyaMock.writes.length=0;
       window.supabaseClient.rpc=async()=>({data:null,error:{code:'40001',message:'mock conflict'}});
     });
-    page.on('dialog',dialog=>dialog.dismiss());
+    page.on('dialog',dialog=>{console.log('[UI dialog]',dialog.message());return dialog.dismiss();});
     if(item.tool==='autokosten-reifenwechsel'){
       await page.locator('#carName').fill('Nicht gespeichert');
       await page.getByRole('button',{name:'Fahrzeug speichern'}).dispatchEvent('click');
@@ -78,6 +79,7 @@ for(const item of tools){
       await page.locator('#receiptPrice').fill('12.50');
       await page.locator('#saveBtn').dispatchEvent('click');
     }
+    console.log('[UI diagnostic]',item.tool,await page.evaluate(()=>({ready:toolyaCloudReady,writes:window.__toolyaMock.writes.length,gate:document.querySelector('#toolya-cloud-gate')?.textContent,form:document.querySelector('#receiptTitle')?.value})));
     await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
     expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   });
@@ -89,13 +91,14 @@ for(const item of tools){
     await expect(page.locator(item.form)).toBeVisible();
     if(item.tool==='autokosten-reifenwechsel'){
       await page.locator('#carName').fill('Mock-Fahrzeug');
-      await page.getByRole('button',{name:'Fahrzeug speichern'}).click();
+      await page.getByRole('button',{name:'Fahrzeug speichern'}).dispatchEvent('click');
     }else{
       await page.locator('#receiptTitle').fill('Mock-Einkauf');
       await page.locator('#receiptDate').fill('2026-11-15');
       await page.locator('#receiptPrice').fill('12.50');
       await page.locator('#saveBtn').dispatchEvent('click');
     }
+    console.log('[UI diagnostic]',item.tool,await page.evaluate(()=>({ready:toolyaCloudReady,writes:window.__toolyaMock.writes.length,gate:document.querySelector('#toolya-cloud-gate')?.textContent,form:document.querySelector('#receiptTitle')?.value})));
     await expect.poll(()=>page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
     const persisted=await page.evaluate(()=>window.__toolyaMock.writes[0].p_data);
     if(item.tool==='autokosten-reifenwechsel'){
