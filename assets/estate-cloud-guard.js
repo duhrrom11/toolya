@@ -43,5 +43,11 @@
   await requireOwner(client,ownerId);
   return {entries:payload.entries.length,stamp:remote.updated_at};
  }
- root.EstateCloudGuard={requireOwner,saveEncryptedSnapshot,verifyEncryptedBackup};
+ function assertRestoreCompatible(local,remote){
+  if(!local||!remote)return;
+  if(local.vaultId!==remote.vault_id)throw Error('vault_mismatch');
+  if(local.version===2&&local.pending&&local.cloudStamp!==remote.updated_at)
+   throw Error('conflict');
+ }
+ root.EstateCloudGuard={requireOwner,saveEncryptedSnapshot,verifyEncryptedBackup,assertRestoreCompatible};
 })(typeof window!=='undefined'?window:globalThis);
