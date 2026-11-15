@@ -18,7 +18,7 @@
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
     <script>
-        tailwind.config = {
+        if (typeof tailwind !== 'undefined') tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
@@ -651,7 +651,7 @@
 
     <!-- JavaScript Logik -->
     <script>
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
 
         // Supabase Konfiguration & Instanz
         const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
