@@ -9,9 +9,6 @@ const defaultLayout=()=>config.panels.map((p,i)=>({id:p.id,visible:true,size:p.s
 const read=k=>{try{return localStorage.getItem(k)}catch{return null}};
 const write=(k,v)=>{try{localStorage.setItem(k,v);return true}catch{return false}};
 const clone=x=>JSON.parse(JSON.stringify(x));
-const validTheme=v=>['auto','light','dark'].includes(v)?v:'auto';
-const media=window.matchMedia('(prefers-color-scheme:dark)');
-let theme=validTheme(read(THEME_KEY));
 function load(){
  try{
   const stored=JSON.parse(read(LAYOUT_KEY)||'null');
@@ -35,10 +32,8 @@ const btn=(label,fn,light=false)=>{
  b.addEventListener('click',fn);return b;
 };
 function applyTheme(){
- const dark=theme==='dark'||(theme==='auto'&&media.matches);
- document.body.classList.toggle('b3-dark',dark);
- document.documentElement.style.colorScheme=dark?'dark':'light';
- document.querySelectorAll('[data-b3-theme]').forEach(e=>e.value=theme);
+ document.body.classList.remove('b3-dark');
+ document.documentElement.style.colorScheme='light';
 }
 function paint(items){
  items.forEach((item,i)=>{
@@ -124,16 +119,7 @@ function init(){
  const surface=modal.firstElementChild;
  const prefs=el('section',{class:'b3-preferences','aria-label':'Darstellung und Dashboard'});
  prefs.append(el('h4',{},'Darstellung & Dashboard'));
- const label=el('label',{},'Designmodus');
- const select=el('select',{'data-b3-theme':'true','aria-label':'Globaler Designmodus',class:'b3-theme-select'});
- [['auto','Automatisch'],['light','Hell'],['dark','Dunkel']].forEach(([id,text])=>select.append(el('option',{value:id},text)));
- select.value=theme;
- select.addEventListener('change',()=>{
-  theme=validTheme(select.value);
-  if(!write(THEME_KEY,theme))alert('Designmodus konnte nicht gespeichert werden');
-  applyTheme();
- });
- label.append(select);prefs.append(label);
+
  const editor=el('section',{id:'b3-editor',class:'b3-editor','aria-label':'Dashboard bearbeiten'});
  editor.hidden=true;
  const edit=btn('✎ Dashboard bearbeiten',()=>{
@@ -162,9 +148,8 @@ function init(){
  footer.append(el('a',{href:'../../index.html',class:'b3-home-link'},'↗ Entdecke mehr Toolya'));
  if(surface)surface.append(footer);
  main.prepend(editor);paint(layout);
- media.addEventListener?.('change',applyTheme);
+
  window.addEventListener('storage',event=>{
-  if(event.key===THEME_KEY){theme=validTheme(event.newValue);applyTheme()}
   if(event.key===LAYOUT_KEY&&!draft){layout=load();paint(layout)}
  });
 }
