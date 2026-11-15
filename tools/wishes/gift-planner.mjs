@@ -87,7 +87,7 @@ $('form').addEventListener('submit',async event=>{event.preventDefault();const o
  if(r.error)throw r.error;
  gifts=gifts.filter(x=>x.id!==r.data.id);gifts.push(r.data);
  reset();render();feedback('giftFormFeedback','Geschenk gespeichert.');$('giftFormFeedback').focus({preventScroll:true});
- if(r.data.source_wish_id){const coordinationOk=await loadCoordination();if(!coordinationOk&&user?.id===ownerId)feedback('giftFormFeedback','Geschenk gespeichert. Die Abstimmung konnte nicht aktualisiert werden.');}
+ if(r.data.source_wish_id){let coordinationOk=false;try{coordinationOk=await loadCoordination()}catch{}if(!coordinationOk&&user?.id===ownerId)feedback('giftFormFeedback','Geschenk gespeichert. Die Abstimmung konnte nicht aktualisiert werden.');}
  }catch{if(user?.id===ownerId)feedback('giftFormFeedback','Geschenk konnte nicht gespeichert werden.')}finally{$('save').disabled=false}
 });
 $('cancel').addEventListener('click',()=>{const origin=giftEditOrigin;reset();$('giftFormFeedback').textContent='';giftEditOrigin=null;feedback('giftFormFeedback','Bearbeitung abgebrochen.');if(origin?.isConnected)origin.focus({preventScroll:true});else $('giftFormFeedback').focus({preventScroll:true})});
