@@ -74,7 +74,23 @@
   if(!Array.isArray(localPayload?.entries)||!Array.isArray(cloudPayload?.entries)||
      !Array.isArray(localConfig?.alarmPersons)||!Array.isArray(cloudConfig?.alarmPersons))
    throw Error('invalid_vault');
+  // Duplicate contact IDs make key-to-recipient assignments ambiguous.
+  for(const people of [localConfig.alarmPersons,cloudConfig.alarmPersons]){
+   const ids=new Set();
+   for(const person of people){
+    const id=person?.id==null?'':String(person.id);
+    if(!id||ids.has(id))throw Error('conflict');
+    ids.add(id);
+   }
+  }
   const localKeys=localPayload.trusteeKeys||{},cloudKeys=cloudPayload.trusteeKeys||{};
+  if(!localKeys||typeof localKeys!=='object'||Array.isArray(localKeys)||
+     !cloudKeys||typeof cloudKeys!=='object'||Array.isArray(cloudKeys))throw Error('invalid_vault');
+  // Never silently rotate an already issued trustee key during migration.
+  for(const keys of [localKeys,cloudKeys]){
+   for(const value of Object.values(keys))
+    if(typeof value!=='string'||!/^[a-f0-9]{64}$/i.test(value))throw Error('conflict');
+  }
   for(const [id,remoteKey] of Object.entries(cloudKeys)){
    if(Object.prototype.hasOwnProperty.call(localKeys,id)&&localKeys[id]!==remoteKey)
     throw Error('conflict');
