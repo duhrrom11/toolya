@@ -117,5 +117,7 @@ test('invalid backup export never creates a download', () => {
   const cyclic={cars:[]};cyclic.self=cyclic;
   assert.throws(()=>exportJsonBackup(cyclic,'backup.json',doc),/als JSON/);
   assert.throws(()=>exportJsonBackup(null,'backup.json',doc),/gültigen Daten/);
+  assert.throws(()=>exportJsonBackup(42,'backup.json',doc),/gültigen Daten/);
+  assert.throws(()=>exportJsonBackup([],'backup.json',doc),/gültigen Daten/);
   assert.equal(created,0);
 });
