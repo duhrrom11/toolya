@@ -261,6 +261,23 @@
 
         window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         // Client initialisiert; die tatsächliche Erreichbarkeit wird bei Auth-Anfragen geprüft.
+        // Tool access is checked on every navigation, not inferred from cached UI state.
+        // Keep the home page visible; show the existing login/register dialog instead of a loading screen.
+        document.addEventListener('click', async event => {
+            const link=event.target.closest?.('.ty-tool-link');
+            if(!link || event.defaultPrevented || event.button!==0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)return;
+            event.preventDefault();
+            try {
+                const {data,error}=await window.supabaseClient.auth.getUser();
+                if(!error && data?.user?.id && !data.user.is_anonymous){
+                    window.location.assign(link.href);
+                    return;
+                }
+            }catch(error){console.warn('Toolya authentication check failed',error);}
+            openSettings();
+            document.getElementById('loginEmail')?.focus();
+        },true);
+
 
         async function registerUser() {
             const email = document.getElementById("loginEmail").value.trim().toLowerCase();
