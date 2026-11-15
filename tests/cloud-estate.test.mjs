@@ -100,9 +100,18 @@ test('estate first local recovery write refuses a vault created by another tab',
 
 test('estate legacy merge rejects conflicting trustee keys and contact identities',()=>{
  const guard=ctx.EstateCloudGuard;
- const local={entries:[],trusteeKeys:{p1:'local-key'}},cloud={entries:[],trusteeKeys:{p1:'cloud-key'}};
+ const local={entries:[],trusteeKeys:{p1:'a'.repeat(64)}},cloud={entries:[],trusteeKeys:{p1:'b'.repeat(64)}};
  const contacts={alarmPersons:[{id:'p1',contact:'first@example.invalid'}]};
  assert.throws(()=>guard.assertLegacyMergeSafe(local,contacts,cloud,contacts),/conflict/);
- assert.throws(()=>guard.assertLegacyMergeSafe(local,contacts,{entries:[],trusteeKeys:{p1:'local-key'}},{alarmPersons:[{id:'p1',contact:'second@example.invalid'}]}),/conflict/);
- assert.doesNotThrow(()=>guard.assertLegacyMergeSafe(local,contacts,{entries:[],trusteeKeys:{p2:'new-key'}},{alarmPersons:[{id:'p2',contact:'new@example.invalid'}]}));
+ assert.throws(()=>guard.assertLegacyMergeSafe(local,contacts,{entries:[],trusteeKeys:{p1:'a'.repeat(64)}},{alarmPersons:[{id:'p1',contact:'second@example.invalid'}]}),/conflict/);
+ assert.doesNotThrow(()=>guard.assertLegacyMergeSafe(local,contacts,{entries:[],trusteeKeys:{p2:'c'.repeat(64)}},{alarmPersons:[{id:'p2',contact:'new@example.invalid'}]}));
+});
+
+test('estate legacy merge rejects duplicate contacts and malformed issued keys',()=>{
+ const guard=ctx.EstateCloudGuard;
+ const local={entries:[],trusteeKeys:{p1:'a'.repeat(64)}};
+ const people={alarmPersons:[{id:'p1',contact:'one@example.invalid'}]};
+ const duplicate={alarmPersons:[{id:'p1',contact:'one@example.invalid'},{id:'p1',contact:'two@example.invalid'}]};
+ assert.throws(()=>guard.assertLegacyMergeSafe(local,people,local,duplicate),/conflict/);
+ assert.throws(()=>guard.assertLegacyMergeSafe({entries:[],trusteeKeys:{p1:'invalid'}},people,local,people),/conflict/);
 });
