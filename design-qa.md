@@ -1,71 +1,44 @@
-# Toolya homepage redesign QA
+# Toolya homepage redesign QA — 15 November 2026
 
 final result: blocked
 
-## Target and implementation
-- Approved source: `/workspace/scratch/6efad5209ab9/generated_images/exec-94faedac-a562-4980-a037-16dfec208dac.png` (1487 × 1058 pixels).
-- Implementation: `index.html`, `assets/toolya-home.css`, `shared/toolya/home.mjs`.
-- Intended desktop CSS viewport: 1440 × 1024; responsive breakpoints 1000, 680 and 370 pixels.
-- State: signed out, initial favorites empty unless existing local preferences supply them.
-- Implementation screenshot: unavailable. Cloud Browser tab 4 at the required local preview route repeatedly displayed `upstream connect error or disconnect/reset before headers. reset reason: connection termination`.
-- Read-only preview served HTTP 200 (59,987 bytes) inside its execution session. This is NOT visual verification.
+The code, isolated browser tests and CI-rendered visual comparison are complete. The remaining blocker is the local Cloud Browser preview transport: it returns an upstream connection error. No working interactive preview handoff or production release is claimed.
 
-## Findings
-- [P1, blocking acceptance] Browser preview transport unavailable. No rendered design comparison, responsive acceptance, pointer/keyboard/touch interaction acceptance or console-error acceptance can be claimed.
-- Full-view and focused-region comparison: blocked; no false side-by-side or density-normalization claim.
+## Visual truth and evidence
+- Source: `/workspace/scratch/6efad5209ab9/generated_images/exec-94faedac-a562-4980-a037-16dfec208dac.png`,1487×1058 pixels.
+- Checked implementation commit: `2d07ebd9b2e8ac3804394cee44f7eb1eb5dbf48b`.
+- Platform and isolated estate-security: https://github.com/duhrrom11/toolya/actions/runs/43659941158 — success.
+- Amazon: https://github.com/duhrrom11/toolya/actions/runs/43659941228 — success.
+- Final screenshot artifact:14139696956 (`mascot-platform-mobile-evidence`) in the platform run.
+- Desktop screenshot: `/tmp/toolya-home-release-check/mascot-home-desktop.png`,1440×2612 pixels; CSS viewport1440×1024, deviceScaleFactor1. Source normalized to1440×1024 and compared with the first1024 screenshot pixels in `/tmp/toolya-home-release-comparison.png`.
+- Mobile screenshot: `/tmp/toolya-home-release-check/mascot-home-mobile.png`,320×4603 pixels; CSS viewport320×812, deviceScaleFactor1. Focused readable inspection: `/tmp/toolya-home-release-mobile-top.png` (first1750 pixels). Whole mobile page also opened in prior unchanged-layout iteration.
+- States: signed out, light theme, real local favorite mechanism populated only inside an isolated browser context. Three quickstart links and four selected card stars deliberately verify that quickstart truncates without deleting saved favorites. The source shows three stars; this fixture difference is intentional.
+- Cloud Browser local-preview tab4 was retried and still returned `upstream connect error or disconnect/reset before headers`. Internal HTTP200 is not treated as visual evidence. CI screenshots are actual Chromium renders; they are not a live preview.
+
+## Findings and iteration history
+| Iteration | Evidence | Findings and corrections |
+| --- | --- | --- |
+| Initial CI | Run43658283772, job132641656796 | Old homepage `.toolya-idle` test locator failed because the large duo replaces it. Shared idle/keyboard/warning/dialog coverage moved to the plants tool; added actual homepage tests. |
+| First render | Commitdabb96b1, artifact14139074509 | Mobile headline overflow, invisible settings gear, old orange account styling, transient double-image capture, excessive desktop spacing and wrong card order. Fixed whitespace/font sizes, real gear icon, CSS specificity, computed-opacity screenshot wait, hero/main sizing and explicit card ordering. |
+| Second render | Commit00a20d42, artifact14138908642 | Verified earlier corrections. Found card intrinsic minimum widths extending the320px viewport. Added width/min-width constraints and real card bounding-box assertion. |
+| Third render | Commit1001f93e, artifact14138629369 | Width now320px. Found awkward title breaks; changed mobile cards to icon/title header plus full-width description. |
+| Fourth render | Commit674720c6, artifact14139511964 | Readable mobile cards and stable desktop confirmed. Added the requested raster header waves/light points. |
+| Final render | Commit2d07ebd9, artifact14139696956 | Header atmosphere and final desktop/mobile views opened and compared. No remaining actionable P0/P1/P2 layout finding in these captured states. Local preview transport remains a handoff blocker. |
 
 ## Required fidelity surfaces
-- Fonts/typography: implemented system sans-serif with deliberate heading weights, sizes and wrapping; visual comparison pending.
-- Spacing/layout: hero, horizontal real favorites, category filters and pastel two-column tool cards implemented; desktop/mobile overflow and density checks pending.
-- Colors: blue turquoise #009fc4 / accessible darker primary #007e9f, ivory, pink, blue, lavender and peach. No green UI card palette. Contrast/rendered-state inspection pending.
-- Images: generated transparent hero duo and four independent transparent card illustrations; original eight PNG hashes verified by existing tests. Other icons are vendored Bootstrap Icons (MIT). Asset scale/crop/halos pending browser comparison.
-- Copy/content: all twelve existing tool routes and IDs retained. Shorter card labels and descriptions. Real favorites preserved; no fabricated initial favorites. No production API or tool-data modifications.
+- Typography: strong dark headings, blue-turquoise emphasis, readable body text. Mobile long German titles fit. System sans-serif is less rounded than the image mockup (P3).
+- Spacing/layout: split desktop hero, horizontal favorites, category row, two-column cards; mobile duo precedes heading, three compact favorites and single-column cards. Header500px on desktop; no viewport overflow in final320px capture. All12 tools retained. Some optional header navigation and card copy are simplified to match the existing product.
+- Colors/tokens: ivory, blue turquoise (`#009fc4`, darker accessible primary`#007e9f`), blush, sky blue, lavender and peach. Old orange account styling and decorative green footer accent removed. No green card backgrounds.
+- Images: original character identities preserved; transparent hero, separate arch, two independently selected eight-pose atlases, four independent card illustrations and quiet header atmosphere. Original eight PNG hashes unchanged. Standard auxiliary Bootstrap icons are a P3 fidelity simplification. Transparent pixels can retain RGB color values; these are not visible opaque halos in the CI renders.
+- Copy/content: genuine tool routes, favorite IDs/storage, account/settings and tool data remain intact. No fabricated online save or donation claims. No production APIs or data modifications.
 
-## Verification actually completed
-- `node --test tests/mascot/*.test.mjs tests/platform/*.test.mjs tests/amazon/*.test.mjs`: 68 passed, 0 failed.
-- All executable inline homepage scripts, home.mjs and preview server: node --check passed.
-- Original PNG invariance and local HTML reference resolution passed as part of the suite.
-- Browser-rendered interactions, console errors, desktop/mobile, dark mode and reduced-motion rendering: NOT verified.
+## Actually completed verification
+-68 existing Node module/platform/Amazon checks passed locally and in GitHub.
+- JavaScript syntax checked for all executable inline scripts, homepage module, static preview server and browser runner.
+- Real isolated Chromium checks passed:12 tool routes,320px reflow, original shared buddy keyboard/touch/cooldown and warning/dialog behavior, homepage five-tap Easter egg, category counts, favorite persistence and three-link limit, hidden/motion preferences, reduced motion, pose asset loading, visible mobile gear, per-card bounds, desktop CTA reaction and hover capture.
+- Captured browser page-error lists were empty; no production writes attempted. Supabase/mail/analytics and non-static external requests were blocked in the runner.
+- Dark-theme appearance, physical Android hardware and a live local interactive handoff were not visually accepted in this run. No claim of those checks is made.
 
-## Implementation details / remaining acceptance
-- Home-specific hover lift/glow, pointer tilt, press depression, star pop, finite reactions and category entrance transitions.
-- Duo now has dedicated 4×2 transparent pose atlases for both characters: neutral, blink, wave, point down-left, celebrate, laugh, gaze left and gaze right. Eyelids, gaze and paw positions are separately drawn states and independently selected per character. These are registered frame illustrations, not skeletal rigs. The arch is a separate transparent asset. Browser assessment of registration and transitions remains pending.
-- Category costumes: finance/bookkeeper, home/gardener, organization/planner, travel/mechanic, animals/pet helper. All resets to the approved hero duo.
-- Five taps within five seconds, 15-second cooldown, keyboard-native buttons, warning/dialog/quiet/hidden guards.
-- Reduced-motion, motion-off and hidden preferences integrated. No sound. Original runtime tools unchanged.
-- Follow-up: restore preview transport, visually compare same viewport and state, fix drift, exercise interactions and check console before release.
-- No merge, deployment or production data changes.
-
-## Continuation: 15 November 2026
-- GitHub run 43658283889 (Amazon) passed; estate-security job 132641657116 passed.
-- Platform job 132641656796 failed at the old `.toolya-idle` homepage locator: the redesign intentionally replaces that shortcut with the header duo. No application crash was reported in that failure.
-- Shared idle/keyboard/warning/dialog tests moved to the plants tool. Added real homepage touch/favorite persistence/category/settings/motion and desktop hover checks, with all production requests still blocked.
-- Dedicated character pose atlases, separate arch, offscreen pausing, cancellation of animations when settings/dialogs block motion, and back/forward-cache restoration implemented. New CI pending.
-- Cloud Browser local-preview transport retried and remains unavailable. No rendered visual acceptance claimed.
-
-## CI-rendered comparison, first iteration
-- Exact checked commit: dabb96b1a726bb1090c40e60a353893f6e9ce859. Platform and estate-security passed in run 43658954489; Amazon passed in run 43658954502.
-- Real Chromium screenshots from artifact 14139074509: desktop 1440×2766 pixels (CSS viewport1440×1024, density1), mobile367×4862 pixels (CSS viewport320×812, density1).
-- Opened the actual source and CI screenshots. Full-view comparison `/tmp/toolya-home-comparison.png`: source normalized from1487×1058 to1440×1024 and compared with the screenshot's first1024 pixels. Mobile screenshot separately inspected at readable scale.
-- [P1] Mobile headline had no whitespace at the hidden line break and exceeded its container. Fixed source whitespace, restored explicit mobile line breaks and reduced responsive font size. Added h1 client/scroll-width assertion.
-- [P1] Mobile settings gear invisible because the old text-only button was hidden by font-size0. Added actual vendored gear icon and visible-icon assertion; shortened the sign-in label while preserving its accessible registration label.
-- [P2] Old high-specificity orange account styles overrode the chosen palette. Added equally specific cyan/ivory overrides.
-- [P2] Desktop capture occurred during opacity crossfade, producing temporary doubled figures. Screenshot now waits for both illustration layers' final computed opacity.
-- [P2] Legacy main max-width/margins created excessive inset and vertical gaps. Matched intended1440px main width and500px desktop hero, removed redundant spacing utilities.
-- [P2] Tool order counted HTML comments when placing the plant card. Explicit canonical card order now matches the approved four-card arrangement.
-- Corrections are awaiting the next CI screenshot comparison. Local Cloud Browser transport remains unavailable; `final result: blocked` still applies. No local interactive preview handoff or publication claimed.
-
-## CI comparison, second iteration
-- Revised platform job132644715988 passed on commit00a20d425d81d49156cd7abf3fb8ea38cf0fcc11; artifact14138908642 inspected. Desktop1440×2612, mobile351×4689. Source/desktop composite `/tmp/toolya-home-revised-comparison.png`.
-- Confirmed fixes: mobile headline, visible settings gear, neutral account button, clean rest-state characters, correct first four cards, main inset and header spacing.
-- [P2] Mobile card intrinsic minimum width still extended the full-page screenshot beyond the320px CSS viewport, despite root scrollWidth being clipped. Fixed card/link min-width and width constraints plus long German title wrapping. Added actual per-card bounding-box assertion instead of relying only on document scrollWidth. New screenshot comparison pending.
-
-## CI comparison, third iteration
-- Platform job132645256647 passed on commit1001f93ee0c0d565f279051de27d0799c12c83e4; artifact14138629369 inspected. Mobile is now exactly320px wide; all card boxes fit.
-- [P2] Fitting the former side-by-side layout caused awkward single-letter title wraps at320px. Switched mobile cards to a compact icon/title header with full-width descriptions and a top-right favorite control. Desktop remains unchanged. Final mobile evidence pending.
-
-## Readable mobile cards confirmed
-- Commit674720c68c785b085b15ac0e2b7353600536922f: platform/estate-security run43659639470 and Amazon run43659639428 all passed. Artifact14139511964 inspected.
-- Mobile320×4603: long names now remain readable, descriptions use full card width, all favorite controls fit. Desktop1440×2612: stable hero, intended palette, favorites and first four card order confirmed. Composite `/tmp/toolya-home-readable-comparison.png` includes normalized source and actual CI screenshot in the same image.
-- Remaining design polish (P3): system sans-serif differs slightly from the illustrated mockup, auxiliary tool icons use the standard icon family, and quickstart labels wrap at320px. No remaining actionable P0/P1/P2 layout issue in these CI views.
-- Header atmosphere raster added afterward to complete the requested quiet blue/lavender waves and light points; final CI evidence to be checked next. Local-preview transport is still the sole handoff blocker.
+## Follow-up polish / remaining gate
+- P3: closer rounded font and auxiliary illustration family; optional further refinement of compact favorite labels.
+- Required before a Product Design interactive handoff: restore local preview transport and inspect the running page in Cloud Browser. No merge or deployment performed.

@@ -1,17 +1,13 @@
 # Hauptseiten-Redesign – 15.11.2026
 
-Branch: `design/home-mascot-duo`.
+Branch `design/home-mascot-duo`, Entwurf https://github.com/duhrrom11/toolya/pull/12.
 
-Gewählt: heller Header mit beiden großen Originalfiguren und Lavendelbogen, horizontale Favoritenleiste; farbige breite Toolkarten. Akzent bläuliches Türkis; rosa, hellblaue, lavendelfarbene und pfirsichfarbene Karten. Keine grünen Karten.
+Umgesetzt ist der gewählte helle Header mit beiden großen Originalfiguren und Lavendelbogen, horizontalen Favoriten und breiten Pastellkarten. Akzent: bläuliches Türkis; Karten: Rosa, Hellblau, Lavendel und Pfirsich. Alle zwölf bestehenden Tool-Routen und gespeicherten Favoriten bleiben erhalten; maximal drei Favoriten erscheinen im Schnellstart.
 
-Implementiert: neue Hauptseite mit allen zwölf bestehenden Tool-Links, vorhandene echte Favoriten (bis zu drei Schnellzugriffe), Einstellungen/Konto weiterverwendet. Neue transparente Header- und Kartenbilder. Hover-Anheben, Lichtsaum/Schatten, dezente Mausneigung, Druckeffekt, Symbolbewegung und Stern-Pop. Maskottchen reagieren auf Entdecken, Kategorien und erfolgreich gesetzte Favoriten. Kategorie-Outfits, Fünf-Klick-Kitzelreaktion, begrenzte Begrüßung und gelegentlicher Framewechsel in Kategorie-Outfits. Mobile Reihenfolge: Duo, Überschrift, Favoriten, Karten. Warnungen und Dialoge haben Vorrang; Ruhemodus, Ausblenden und reduzierte Bewegung berücksichtigt.
+Buttons und Karten haben Hover-Anheben, Lichtsaum/Schatten und Druckeffekt; Toolkarten zusätzlich dezente Mausneigung und Symbolbewegung, Favoriten einen Stern-Pop. Kategorien wechseln weich. Das Duo reagiert auf Entdecken und erfolgreich gesetzte Favoriten, erhält Kategorie-Outfits und hat ein Fünf-Tipp-Kitzel-Easteregg. Eigene gezeichnete Blink-, Wink-, Zeige-, Lach- und Blickzustände sind pro Figur unabhängig auswählbar. Das sind Frameanimationen, kein frei riggbares Skelett. Hintergrundwellen, wenige Lichtpunkte und weiche Schatten ergänzen den Header.
 
-Animationen beruhen auf vorhandenen Emotion-/Outfit-Frameillustrationen und Ganzfigurbewegungen. Kein Skelett-Rig oder echte unabhängige Blicksteuerung. Das ist bei weiterer visueller Verfeinerung zu beachten.
+Auf dem Smartphone stehen Duo, Überschrift, Favoriten und Toolkarten untereinander. Die Karten verwenden einen Symbol-/Titelkopf und volle Breite für Beschreibungen. Ruhemodus, Ausblenden, reduzierte Bewegung, Warnungen, offene Dialoge und pausierte/unsichtbare Seiten werden berücksichtigt.
 
-68 vorhandene Node-Prüfungen bestanden. JavaScript-Syntax geprüft. Cloud-Browser-Vorschau ist durch lokalen Verbindungsfehler blockiert. Details und offene Abnahme: `design-qa.md`. Noch keine visuelle Abnahme, kein Merge und keine Veröffentlichung. Wishlist-Branch und Produktivdaten unverändert.
+Geprüfter Codecommit: `2d07ebd9b2e8ac3804394cee44f7eb1eb5dbf48b`.68 Modulprüfungen und isolierte Chromium-Prüfungen bestanden; keine Laufzeitfehler oder produktiven Schreibversuche. Plattform/Nachlass: https://github.com/duhrrom11/toolya/actions/runs/43659941158 . Amazon: https://github.com/duhrrom11/toolya/actions/runs/43659941228 . Desktop1440px und Mobil320px anhand echter CI-Screenshots geprüft (Artefakt14139696956). Original-PNGs unverändert.
 
-## Fortsetzung
-
-Beide Figuren erhalten eigene Acht-Posen-Atlanten mit gezeichneten Blink-, Wink-, Zeige-, Lach- und Blickzuständen. Der Bogen ist separat. Zeitversetzte Reaktionen und Blick-/Pfoten-Framewechsel sind unabhängig pro Figur steuerbar; kein Skelett-Rig. Laufende Animationen werden bei Warnungen, Dialogen oder reduzierter Bewegung abgebrochen, nach Rückkehr aus dem Browser-Cache korrekt wieder aufgenommen.
-
-Der erste Plattform-Browsertest scheiterte an einem veralteten Startseiten-Locator. Dieser Test prüft den alten Begleiter jetzt weiterhin auf einer Toolseite; neue Startseitentests prüfen das Duo, echte Favoritenpersistenz, Kategorien, Sichtbarkeit und Bewegungseinstellungen sowie Desktop-/Mobile-Screenshots. Produktive Requests bleiben gesperrt. Erneuter CI-Lauf und visuelle Abnahme stehen noch aus.
+Die direkte Cloud-Browser-Vorschau bleibt durch einen lokalen Verbindungsfehler blockiert. Deshalb bleibt die interaktive Übergabe in `design-qa.md` gesperrt; die CI-Prüfung und Screenshot-Sichtung ersetzen keine funktionierende lokale Vorschau. Keine Veröffentlichung, kein Merge, keine Produktivdatenänderung und keine Änderung am parallelen Wishlist-Branch.
