@@ -3,6 +3,7 @@ name: Isolated Toolya browser tests
 on:
   push:
     branches:
+      - main
       - feature/toolya-connect-phase-b
     paths:
       - '.github/workflows/toolya-browser-tests.yml'
@@ -41,7 +42,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Run isolated Toolya cloud-only UI tests
-        run: npx playwright test tests/browser/tool-pages-ui.spec.cjs --reporter=line
+        run: npx playwright test tests/browser/tool-pages-ui.spec.cjs tests/browser/cloud-isolated.spec.cjs --reporter=line
       - name: Upload Playwright diagnostics on failure
         if: failure()
         uses: actions/upload-artifact@v4
