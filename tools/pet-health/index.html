@@ -51,6 +51,7 @@
     <script src="../../shared/helferlein-cloud-migration.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
+        return; // disable legacy local-first bridge
         if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
         const client = window.supabaseClient;
         if (!client || window.helferleinCloudBridge) return;
@@ -411,12 +412,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadPetDropdowns();
-            renderApp();
-            try { updateUserDisplay(); } catch(e){}
+            void petCloudBoot();
         });
 
-        supabaseClient.auth.onAuthStateChange(() => {
+        supabaseClient.auth.onAuthStateChange((event,session) => {
+            if(petCloudReady&&(!session?.user?.id||session.user.id!==petCloudUserId||session.user.is_anonymous))
+                petCloudBlock('Sitzung geändert. Bitte neu anmelden.');
             // Auth callbacks run while the SDK holds its session lock.
             setTimeout(() => { updateUserDisplay().catch(() => {}); }, 0);
         });
@@ -433,34 +434,61 @@
             }
         }
 
-        function getData() {
-            try {
-                return JSON.parse(localStorage.getItem('haustier_pass_pro_v5')) || { pets: [], events: [], meds: [] };
-            } catch(e) {
-                return { pets: [], events: [], meds: [] };
-            }
+        let petCloudReady=false,petCloudUserId=null,petCloudController=null;
+        function petCloudBlock(message){
+            petCloudReady=false;petCloudController?.invalidate();
+            let gate=document.getElementById('toolya-cloud-gate');
+            if(!gate){gate=document.createElement('div');gate.id='toolya-cloud-gate';gate.setAttribute('role','alert');
+                gate.style.cssText='position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
+                document.body.append(gate);}
+            gate.textContent=message+' ';
+            const link=document.createElement('a');link.href='../../index.html';link.textContent='Zur Toolya-Anmeldung';gate.append(link);
         }
-
-        function saveData(data) {
-            if (!data || typeof data !== 'object' || !Array.isArray(data.pets)) return false;
-            if (localStorage.getItem('helferlein_cloud_owner_haustier-gesundheitspass') && !window.helferleinCloudBridge) {
-                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
-                return false;
-            }
-            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
-                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
-                return false;
-            }
-            const existing = localStorage.getItem('haustier_pass_pro_v5');
-            if (existing !== null) {
-                try { if (!Array.isArray(JSON.parse(existing).pets)) throw new Error('invalid'); }
-                catch (_) { alert('Vorhandene Daten sind beschädigt; Überschreiben gesperrt.'); return false; }
-            }
-            try {
-                localStorage.setItem('haustier_pass_pro_v5', JSON.stringify(data)); window.toolyaNotice?.('success','Änderungen auf diesem Gerät gespeichert.');
-                if (window.helferleinCloudBridge) void window.helferleinCloudBridge.changed(data).catch(console.error);
-                return true;
-            } catch (error) { console.error('Lokales Speichern fehlgeschlagen', error); return false; }
+        async function petCloudBoot(){
+            petCloudBlock('Toolya Cloud wird geladen …');
+            try{
+                const {prepareCloudTool}=await import('../../shared/toolya/cloud-tool-adapters.mjs');
+                const {data:auth,error}=await supabaseClient.auth.getUser();
+                if(error||!auth?.user?.id||auth.user.is_anonymous)throw Error('Registrierte Anmeldung erforderlich.');
+                const uid=auth.user.id;
+                const prepared=await prepareCloudTool({
+                    client:supabaseClient,tool:'haustier-gesundheitspass',storage:localStorage,
+                    confirmMigration:async()=>confirm('Lokale Haustierdaten nach Sicherung in die Cloud übernehmen?'),
+                    reviewExistingCloud:async()=>confirm('Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?'),
+                    exportBackup:async data=>{
+                        const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+                        const url=URL.createObjectURL(blob),a=document.createElement('a');
+                        a.href=url;a.download='toolya-haustiere-vor-cloud.json';a.click();
+                        setTimeout(()=>URL.revokeObjectURL(url),60000);
+                        return confirm('Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
+                    }
+                });
+                const {data:again,error:againError}=await supabaseClient.auth.getUser();
+                if(againError||again?.user?.id!==uid||again.user.is_anonymous)throw Error('Konto gewechselt.');
+                petCloudController=prepared.controller;petCloudUserId=uid;petCloudReady=true;
+                document.getElementById('toolya-cloud-gate')?.remove();
+                loadPetDropdowns();renderApp();await updateUserDisplay();
+            }catch(error){console.error(error);petCloudBlock('Toolya Cloud gesperrt: '+error.message);}
+        }
+        function getData(){
+            if(!petCloudReady||!petCloudController?.ready)return {pets:[],events:[],meds:[]};
+            return petCloudController.snapshot();
+        }
+        async function saveData(data){
+            if(!petCloudReady||!petCloudController?.ready){petCloudBlock('Cloud nicht bereit.');return false;}
+            try{
+                const {data:auth,error}=await supabaseClient.auth.getUser();
+                if(error||auth?.user?.id!==petCloudUserId||auth.user.is_anonymous)throw Error('Anmeldung nicht gültig.');
+                await petCloudController.replace(data);
+                window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');return true;
+            }catch(error){console.error(error);petCloudBlock('Cloud-Speicherung unbestätigt: '+error.message);return false;}
+        }
+        async function petImage(file){
+            if(!file)return '';
+            return Promise.race([
+                new Promise((resolve,reject)=>{try{compressImage(file,resolve);}catch(error){reject(error);}}),
+                new Promise((_,reject)=>setTimeout(()=>reject(Error('Bildverarbeitung fehlgeschlagen')),15000))
+            ]);
         }
 
         function updateEventFormFields() {
@@ -479,7 +507,7 @@
             }
         }
 
-        function savePet() {
+        async function savePet() {
             const name = document.getElementById('petName').value.trim();
             const species = document.getElementById('petSpecies').value.trim();
             const chip = document.getElementById('petChip').value.trim();
@@ -500,7 +528,7 @@
             let photoData = "";
             let passportData = "";
 
-            const processFiles = () => {
+            const processFiles = async () => {
                 let data = getData();
                 data.pets.push({ 
                     id: Date.now(), 
@@ -508,7 +536,7 @@
                     vet: { name: vetName, tel: vetTel, email: vetEmail, address: vetAddress },
                     tasso, photo: photoData, passport: passportData 
                 });
-                if (!saveData(data)) return;
+                if (!await saveData(data)) return;
 
                 document.getElementById('petName').value = "";
                 document.getElementById('petSpecies').value = "";
@@ -527,26 +555,11 @@
                 renderApp();
             };
 
-            if (photoInput.files && photoInput.files[0]) {
-                compressImage(photoInput.files[0], (compPhoto) => {
-                    photoData = compPhoto;
-                    if (passportInput.files && passportInput.files[0]) {
-                        compressImage(passportInput.files[0], (compPass) => {
-                            passportData = compPass;
-                            processFiles();
-                        });
-                    } else {
-                        processFiles();
-                    }
-                });
-            } else if (passportInput.files && passportInput.files[0]) {
-                compressImage(passportInput.files[0], (compPass) => {
-                    passportData = compPass;
-                    processFiles();
-                });
-            } else {
-                processFiles();
-            }
+            try{
+                photoData=await petImage(photoInput.files?.[0]);
+                passportData=await petImage(passportInput.files?.[0]);
+            }catch(error){alert('Bild konnte nicht verarbeitet werden. Nichts gespeichert.');return;}
+            await processFiles();
         }
 
         function compressImage(file, callback) {
@@ -577,17 +590,17 @@
             reader.readAsDataURL(file);
         }
 
-        function deletePet(id) {
+        async function deletePet(id) {
             if (!confirm("⚠️ Möchtest du dieses Haustier und alle zugehörigen Einträge wirklich löschen?")) return;
             let data = getData();
             data.pets = data.pets.filter(p => p.id !== id);
             data.events = data.events.filter(e => e.petId !== id);
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             loadPetDropdowns();
             renderApp();
         }
 
-        function saveMedication() {
+        async function saveMedication() {
             const name = document.getElementById('medName').value.trim();
             const stock = document.getElementById('medStock').value.trim();
             if (!name) return alert("Bitte Medikamenten-Namen angeben!");
@@ -595,21 +608,21 @@
             let data = getData();
             if (!data.meds) data.meds = [];
             data.meds.push({ id: Date.now(), name, stock: stock || '1 Packung' });
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
 
             document.getElementById('medName').value = "";
             document.getElementById('medStock').value = "";
             renderApp();
         }
 
-        function deleteMedication(id) {
+        async function deleteMedication(id) {
             let data = getData();
             data.meds = data.meds.filter(m => m.id !== id);
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             renderApp();
         }
 
-        function saveEvent() {
+        async function saveEvent() {
             const petId = document.getElementById('eventPetSelect').value;
             const type = document.getElementById('eventType').value;
             const date = document.getElementById('eventDate').value;
@@ -621,19 +634,16 @@
 
             if (!petId || !date || !title) return alert("Bitte Haustier, Datum und Bezeichnung angeben!");
 
-            if (receiptInput.files && receiptInput.files[0]) {
-                compressImage(receiptInput.files[0], (compressedReceipt) => {
-                    storeEventData(parseInt(petId), type, date, title, cost, weight, expiryDate, compressedReceipt);
-                });
-            } else {
-                storeEventData(parseInt(petId), type, date, title, cost, weight, expiryDate, "");
-            }
+            let receipt='';
+            try{receipt=await petImage(receiptInput.files?.[0]);}
+            catch(error){alert('Beleg konnte nicht verarbeitet werden. Nichts gespeichert.');return;}
+            await storeEventData(parseInt(petId),type,date,title,cost,weight,expiryDate,receipt);
         }
 
-        function storeEventData(petId, type, date, title, cost, weight, expiryDate, receipt) {
+        async function storeEventData(petId, type, date, title, cost, weight, expiryDate, receipt) {
             let data = getData();
             data.events.push({ id: Date.now(), petId, type, date, title, cost, weight, expiryDate, receipt });
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
 
             document.getElementById('eventDate').value = "";
             document.getElementById('eventTitle').value = "";
@@ -644,11 +654,11 @@
             renderApp();
         }
 
-        function deleteEvent(id) {
+        async function deleteEvent(id) {
             if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
             let data = getData();
             data.events = data.events.filter(e => e.id !== id);
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             renderApp();
         }
 
@@ -934,7 +944,7 @@
             setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
-        function importBackup(event) {
+        async function importBackup(event) {
             const input = event.target;
             const file = input.files[0];
             if (!file) return;
@@ -943,7 +953,7 @@
                 return alert("Backup zu groß (maximal 20 MB).");
             }
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 input.value = '';
                 try {
                     const parsed = JSON.parse(e.target.result);
@@ -954,7 +964,7 @@
                         return alert("Ungültiges Backup-Format.");
                     }
                     if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
-                    saveData(parsed);
+                    if(!await saveData({...parsed,meds:parsed.meds??[]}))return;
                     loadPetDropdowns();
                         renderApp();
                     alert("Backup erfolgreich importiert!");
