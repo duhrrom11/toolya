@@ -149,12 +149,11 @@ $('publishForm').onsubmit=async event=>{
  const url=safeAmazonListUrl($('amazonUrl').value);if(!url){status('publishStatus','Bitte einen gültigen öffentlichen Amazon-Wunschlisten-Link verwenden.');return}
  $('publishButton').disabled=true;
  try{
- const r=await db.from('wishlist_amazon_publications').insert({user_id:sessionUser.id,amazon_url:url}).select('id').single();
- if(r.error)throw r.error;
- status('publishStatus','Wunschliste veröffentlicht. Scraper wird gestartet …');
- const {data: scrapeResult,error}=await db.functions.invoke('amazon-wishlist-scrape',{body:{publication_id:r.data.id}});
- if(error||scrapeResult?.status==='failed')status('publishStatus','Wunschliste mit deinem Namen und Amazon-Link veröffentlicht. Produktdaten konnten derzeit nicht ausgelesen werden.');
- else status('publishStatus','Wunschliste veröffentlicht. Produktdaten werden aktualisiert.');
+ status('publishStatus','Öffentliche Amazon-Wunschliste wird vollständig geprüft und eingelesen …');
+ const {data: scrapeResult,error}=await db.functions.invoke('amazon-wishlist-scrape',{body:{action:'create',amazon_url:url}});
+ if(error)throw error;
+ if(scrapeResult?.status!=='success')throw new Error(scrapeResult?.error||'Amazon-Wunschliste nicht öffentlich erreichbar oder nicht vollständig lesbar. Es wurde nichts veröffentlicht.');
+ status('publishStatus','Wunschliste erfolgreich eingelesen und veröffentlicht – '+scrapeResult.product_count+' Produkte.');
  await refresh();
  }catch(error){status('publishStatus','Veröffentlichung fehlgeschlagen: '+error.message)}finally{$('publishButton').disabled=false}
 };
