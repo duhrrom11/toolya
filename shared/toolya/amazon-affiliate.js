@@ -108,7 +108,7 @@ function add(){
 // Do not inject generic Amazon searches: show only curated, concrete products.
 async function loadCatalog(){
  const tool=location.pathname.match(/\/tools\/([^/]+)\//)?.[1];
- if(!tool||tool==='wishes')return;
+ if(!tool||tool==='wishes'||tool==='estate')return;
  let catalog;
  try{const response=await fetch('/shared/toolya/amazon-catalog.json',{credentials:'omit'});if(!response.ok)return;catalog=await response.json()}catch{return}
  const products=Array.isArray(catalog[tool])?catalog[tool]:[];
