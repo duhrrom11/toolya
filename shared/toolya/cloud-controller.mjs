@@ -185,3 +185,13 @@ export function validateParkingSnapshot(data){
 export function createParkingCloudController(repository){
   return createCloudController({repository,validate:validateParkingSnapshot,initial:{sessions:[]}});
 }
+
+export function validatePetHealthSnapshot(data){
+  if(!data||typeof data!=='object'||Array.isArray(data)||
+     !['pets','events','meds'].every(key=>Array.isArray(data[key])&&data[key].every(x=>x&&typeof x==='object'&&!Array.isArray(x))))
+    throw Error('Ungültiger Haustier-Datenstand.');
+  return data;
+}
+export function createPetHealthCloudController(repository){
+  return createCloudController({repository,validate:validatePetHealthSnapshot,initial:{pets:[],events:[],meds:[]}});
+}
