@@ -408,8 +408,8 @@
         let loansCloudController=null,loansCloudUserId=null,loansCloudReady=false;
         function loansCloudBlock(message) {
             loansCloudReady=false;
-            window.toolyaConnectPanel?.dispose();
-            window.toolyaConnectPanel=null;
+            
+            
             loansCloudController?.invalidate();
             let gate=document.getElementById('toolya-cloud-gate');
             if(!gate){
@@ -447,14 +447,6 @@
                 document.getElementById('itemDate').valueAsDate=new Date();
                 loadDropdowns();renderInventory();renderApp();
                 await checkUserSession();
-                // Connect is mounted only after authenticated CloudOnly bootstrap.
-                const {mountConnectPanel}=await import('../../shared/toolya/connect-panel.mjs');
-                window.toolyaConnectPanel?.dispose();
-                window.toolyaConnectPanel=mountConnectPanel({
-                    controller:loansCloudController,
-                    host:document.querySelector('main')||document.body,
-                    onReload:()=>{loadDropdowns();renderInventory();renderApp();}
-                });
             }catch(error){console.error(error);loansCloudBlock('Toolya Cloud gesperrt: '+error.message);}
         }
         function getData() {
