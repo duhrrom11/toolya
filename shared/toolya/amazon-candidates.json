@@ -18,5 +18,10 @@
   "loans": [],
   "parking": [],
   "pet-health": [],
-  "plants": []
+  "plants": [
+    {
+      "asin": "B07NDF6987",
+      "label": "Gardena Classic Gartenschere B/S-M"
+    }
+  ]
 }
