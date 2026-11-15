@@ -522,3 +522,45 @@ test('wishlist: verified profile write uses cloud and no localStorage',async({pa
  expect(result.writes[0].table).toBe('wishlist_profiles');
  expect(result.keys).toEqual([]);
 });
+
+
+async function isolatedEstate(page,authenticated){
+ await page.route('**/*',async route=>{
+  const url=route.request().url();
+  if(url.startsWith(origin)){
+   if(new URL(url).pathname==='/assets/vendor/supabase-2.57.0.js')
+    return route.fulfill({status:200,contentType:'text/javascript',body:`
+     window.__estateMock={user:${authenticated?"{id:'owner',email:'owner@example.invalid',is_anonymous:false}":"null"},writes:[],conflict:false};
+     window.supabase={createClient(){const m=window.__estateMock;return {
+      auth:{async getUser(){return {data:{user:m.user},error:null}},async getSession(){return {data:{session:null}}},onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}},
+      from(table){if(table!=='vault_cloud_snapshots')throw Error('unexpected table');return {
+       select(){return this},eq(){return this},update(data){this.payload=data;return this},insert(data){this.payload=data;return this},
+       async maybeSingle(){return {data:null,error:null}},
+       then(resolve,reject){m.writes.push(this.payload);return Promise.resolve({data:m.conflict?[]:[{updated_at:'2026-11-15T10:00:00Z'}],error:null}).then(resolve,reject)}
+      }}
+     }}};
+    `});
+   return route.continue();
+  }
+  return route.abort();
+ });
+}
+test('estate: unauthenticated browser cannot write encrypted vault',async({page})=>{
+ await isolatedEstate(page,false);await page.goto(origin+'/tools/estate/index.html');
+ const result=await page.evaluate(async()=>{
+  try{await EstateCloudGuard.saveEncryptedSnapshot({client:supabase.createClient(),ownerId:'owner',vaultId:'v_123',expectedStamp:null,encryptedData:{ciphertext:'x'},encryptedConfig:{ciphertext:'x'},recoveryKey:{ciphertext:'x'}})}catch(e){return e.message}
+ });
+ expect(result).toBe('login_required');
+ expect(await page.evaluate(()=>window.__estateMock.writes.length)).toBe(0);
+});
+test('estate: encrypted cloud write confirmed, conflict blocks confirmation',async({page})=>{
+ await isolatedEstate(page,true);await page.goto(origin+'/tools/estate/index.html');
+ const result=await page.evaluate(async()=>{
+  const client=supabase.createClient(),args={client,ownerId:'owner',vaultId:'v_123',expectedStamp:null,encryptedData:{ciphertext:'x'},encryptedConfig:{ciphertext:'y'},recoveryKey:{ciphertext:'z'}};
+  const stamp=await EstateCloudGuard.saveEncryptedSnapshot(args);
+  window.__estateMock.conflict=true;
+  let conflict='';try{await EstateCloudGuard.saveEncryptedSnapshot(args)}catch(e){conflict=e.message}
+  return {stamp,conflict,writes:window.__estateMock.writes.length};
+ });
+ expect(result).toEqual({stamp:'2026-11-15T10:00:00Z',conflict:'conflict',writes:2});
+});
