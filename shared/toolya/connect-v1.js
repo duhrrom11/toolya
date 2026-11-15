@@ -44,7 +44,7 @@
         !Number.isSafeInteger(event.carId) || event.carId <= 0 ||
         typeof event.title !== 'string' || !event.title.trim() ||
         typeof event.date !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(event.date) ||
-        !Number.isFinite(new Date(event.date + 'T12:00:00').getTime()) ||
+        !Number.isFinite(new Date(event.date + 'T12:00:00').getTime()) ||\n        new Date(event.date + 'T12:00:00').toISOString().slice(0, 10) !== event.date ||
         typeof event.type !== 'string') throw Error('Unvollständiger Fahrzeugkosteneintrag.');
     return { sourceId: String(event.id), sourceCarId: String(event.carId),
       sourceRevision: JSON.stringify([event.date,event.title,event.type,event.cost]),
@@ -68,7 +68,7 @@
   async function importOne(sourceId, getEntries, saveEntries) {
     const uid = await identity();
     const rows = read(uid), row = rows.find(x => x.sourceId === sourceId);
-    if (!row || row.status !== 'pending') throw Error('Keine offene Übertragung vorhanden.');
+    if (!row || row.status !== 'pending') throw Error('Keine offene Übertragung vorhanden.');\n    const carData = parse(localStorage.getItem('kfz_tracker_pro_v3'));\n    if (!carData || !Array.isArray(carData.events)) throw Error('Autokosten-Quelldaten nicht verfügbar.');\n    const currentEvent = carData.events.find(e => String(e.id) === sourceId);\n    if (!currentEvent || normalize(currentEvent).sourceRevision !== row.sourceRevision)\n      throw Error('Fahrzeugausgabe wurde verändert oder gelöscht. Übertragung gesperrt.');
     if (typeof getEntries !== 'function' || typeof saveEntries !== 'function') throw Error('Haushaltsbuch nicht bereit.');
     const entries = getEntries();
     if (!Array.isArray(entries)) throw Error('Buchungen nicht lesbar.');
