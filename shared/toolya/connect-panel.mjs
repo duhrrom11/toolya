@@ -36,6 +36,14 @@ export function mountConnectPanel({controller,host,onReload,confirmReload=messag
     review=null;reload.hidden=true;status.textContent='Cloud-Datenstand hat sich geändert. Bitte erneut prüfen.';return;
    }
    await controller.load();
+   // A third device can write between the final check and the read.
+   // Never present a newer, unreviewed revision as user-approved.
+   if(controller.revision!==undefined && controller.revision!==fresh.remoteRevision){
+    controller.invalidate?.();
+    review=null;reload.hidden=true;
+    status.textContent='Cloud-Datenstand während des Ladens verändert. Bitte Seite neu laden und erneut prüfen.';
+    return;
+   }
    review=null;reload.hidden=true;status.textContent='Cloud-Datenstand nach Bestätigung geladen.';
    await onReload?.();
   }catch(error){if(!disposed)status.textContent='Cloud-Laden fehlgeschlagen. Bitte Seite neu laden.';}
