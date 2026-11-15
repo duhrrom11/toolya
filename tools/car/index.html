@@ -625,26 +625,16 @@ async function toolyaCloudBoot(tool) {
                 renderApp();
             };
 
+            // Await image processing and the confirmed cloud write in every path.
+            // Otherwise callers observe saveCar() as completed before the RPC finishes.
+            const compressFile = file => new Promise(resolve => compressImage(file, resolve));
             if (photoInput.files && photoInput.files[0]) {
-                compressImage(photoInput.files[0], (compPhoto) => {
-                    photoData = compPhoto;
-                    if (papersInput.files && papersInput.files[0]) {
-                        compressImage(papersInput.files[0], (compPapers) => {
-                            papersData = compPapers;
-                            processFiles();
-                        });
-                    } else {
-                        processFiles();
-                    }
-                });
-            } else if (papersInput.files && papersInput.files[0]) {
-                compressImage(papersInput.files[0], (compPapers) => {
-                    papersData = compPapers;
-                    processFiles();
-                });
-            } else {
-                return await processFiles();
+                photoData = await compressFile(photoInput.files[0]);
             }
+            if (papersInput.files && papersInput.files[0]) {
+                papersData = await compressFile(papersInput.files[0]);
+            }
+            return await processFiles();
         }
 
         async function updateCarKm(carId) {
