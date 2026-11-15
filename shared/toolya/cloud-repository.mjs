@@ -33,7 +33,7 @@ function assertResponse(result) {
 }
 export function createCloudRepository(client, tool) {
   assertTool(tool);
-  if (!client?.from || !client?.auth?.getUser) throw new Error('Supabase nicht verfügbar.');
+  if (!client?.from || !client?.rpc || !client?.auth?.getUser) throw new Error('Supabase nicht verfügbar.');
   async function currentUser() {
     const user = await requireVerifiedUser(client);
     return user.id;
@@ -41,41 +41,33 @@ export function createCloudRepository(client, tool) {
   async function read() {
     const uid = await currentUser();
     const row = assertResponse(await client.from('user_data')
-      .select('id,user_id,tool,data,updated_at')
+      .select('id,user_id,tool,data,revision')
       .eq('user_id', uid).eq('tool', tool).maybeSingle());
     if ((await currentUser()) !== uid) throw new Error('Konto während des Ladens gewechselt.');
     if (!row) return { exists: false, data: null, revision: null };
-    if (row.user_id !== uid || row.tool !== tool || !row.updated_at) {
+    if (row.user_id !== uid || row.tool !== tool || !Number.isSafeInteger(row.revision) || row.revision < 1) {
       throw new Error('Cloud-Antwort ist inkonsistent.');
     }
-    return { exists: true, data: assertSnapshot(row.data), revision: row.updated_at };
+    return { exists: true, data: assertSnapshot(row.data), revision: row.revision };
   }
   async function save(data, expectedRevision) {
     const payload = assertSnapshot(data);
     const uid = await currentUser();
-    if (expectedRevision !== null && (typeof expectedRevision !== 'string' || !expectedRevision)) {
-      throw new Error('Cloud-Version fehlt.');
+    if (expectedRevision !== null &&
+        (!Number.isSafeInteger(expectedRevision) || expectedRevision < 1)) {
+      throw new Error('Erwartete Cloud-Version ungültig.');
     }
     if (expectedRevision === undefined) throw new Error('Erwartete Cloud-Version erforderlich.');
-    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    if (typeof navigator !== 'undefined' && !navigator.onLine)
       throw new Error('Offline: Änderungen wurden nicht gespeichert.');
-    }
-    let result;
-    if (expectedRevision === null) {
-      result = await client.from('user_data')
-        .insert({ user_id: uid, tool, data: payload })
-        .select('id,user_id,tool,data,updated_at');
-    } else {
-      result = await client.from('user_data')
-        .update({ data: payload, updated_at: new Date().toISOString() })
-        .eq('user_id', uid).eq('tool', tool).eq('updated_at', expectedRevision)
-        .select('id,user_id,tool,data,updated_at');
-    }
-    if (result.error?.code === '23505') throw new Error('Cloud-Konflikt: Datensatz existiert bereits.');
+    // Atomic server-side compare-and-swap; no client timestamps or direct writes.
+    const result = await client.rpc('toolya_save_snapshot', {
+      p_tool: tool, p_data: payload, p_expected_revision: expectedRevision
+    });
+    if (result.error?.code === '40001') throw new Error('Cloud-Konflikt: Bitte neu laden.');
     const rows = assertResponse(result);
-    if (!Array.isArray(rows) || rows.length !== 1) {
-      throw new Error('Cloud-Konflikt oder unbestätigtes Speichern. Bitte neu laden.');
-    }
+    if (!Array.isArray(rows) || rows.length !== 1)
+      throw new Error('Cloud-Speicherung nicht bestätigt.');
     const row = rows[0];
     if ((await currentUser()) !== uid || row.user_id !== uid || row.tool !== tool ||
         !row.updated_at || !sameJson(row.data, payload)) {
