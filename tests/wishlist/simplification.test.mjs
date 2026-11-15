@@ -193,3 +193,10 @@ test('wish cloud extras clear only after confirmed insert or versioned update',(
  assert.ok(app.includes("if(changed.data?.length!==1)"));
  assert.ok(app.includes("if(result.error)"));
 });
+
+test('gift planner rejects blank amounts while allowing explicit zero',()=>{
+ const code=source('gift-planner.mjs');
+ assert.ok(code.includes("const raw=$(id).value.trim();if(raw==='')return null"));
+ assert.ok(code.includes("amount=number('budgetAmount')"));
+ assert.ok(code.includes("planned=number('planned')"));
+});
