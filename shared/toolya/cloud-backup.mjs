@@ -26,7 +26,14 @@ export async function confirmCloudReplacement({
   const original = controller.snapshot();
   const revision = controller.revision;
   const sessionGeneration = controller.sessionGeneration;
-  const next = validate(JSON.parse(JSON.stringify(incoming)));
+  let serialized;
+  try {
+    serialized = JSON.stringify(incoming);
+  } catch (_) {
+    throw new Error('Importdaten sind kein gültiges JSON.');
+  }
+  if (typeof serialized !== 'string') throw new Error('Importdaten sind kein gültiges JSON.');
+  const next = validate(JSON.parse(serialized));
   if (await confirm('Import ersetzt vorhandene Cloud-Daten. Zuerst eine Sicherung herunterladen?') !== true)
     return { status: 'cancelled' };
   const backedUp = await exportBackup(original);
