@@ -68,7 +68,7 @@ function card(list){
     const {data,error}=await db.functions.invoke('amazon-wishlist-scrape',{body:{publication_id:list.id}});
     if(error)throw error;
     if(data?.status!=='success')throw new Error('Amazon konnte die Liste derzeit nicht vollständig einlesen. Vorhandene Produkte bleiben erhalten.');
-    message.textContent='Liste aktualisiert. Im Amazon-Abruf erkannt: '+(data?.price_count??0)+' Preise und '+(data?.description_count??0)+' Beschreibungen. Fehlende Angaben werden von Amazon derzeit nicht bereitgestellt.';
+    message.textContent='Liste aktualisiert. Im Amazon-Abruf erkannt: '+(data?.price_count??0)+' Preise und '+(data?.description_count??0)+' Beschreibungen. Weitere Angaben konnten bei diesem Abruf nicht sicher ausgelesen werden.';
     await refresh(false);
    }catch(e){message.textContent=e.message||'Aktualisierung fehlgeschlagen. Bestehende Produkte bleiben erhalten.'}
    finally{update.disabled=false;remove.disabled=false}
