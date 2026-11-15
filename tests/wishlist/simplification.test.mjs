@@ -111,3 +111,13 @@ test('private gift dashboard is not hidden by simplification CSS',()=>{
  assert.ok(module.includes("$('homeGiftStart').hidden=false"));
  assert.ok(module.includes("$('homeGiftStart').hidden=true"));
 });
+
+test('Wishlist navigation has no dangling local anchors or duplicate ids',()=>{
+ const html=readFileSync(resolve(root,'tools/wishes/index.html'),'utf8');
+ const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(match=>match[1]);
+ const known=new Set(ids);
+ assert.equal(known.size,ids.length,'duplicate HTML ids');
+ for(const match of html.matchAll(/href="#([^"]+)"/g))
+  assert.ok(known.has(match[1]),'dangling anchor: '+match[1]);
+ assert.equal(html.includes('href="#community-heading"'),false);
+});
