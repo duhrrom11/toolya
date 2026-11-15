@@ -74,11 +74,13 @@ for(const item of tools){
     page.on('dialog',dialog=>{console.log('[UI dialog]',dialog.message());return dialog.dismiss();});
     if(item.tool==='autokosten-reifenwechsel'){
       await page.locator('#carName').fill('Nicht gespeichert');
+      await expect(page.locator('#carName')).toHaveValue(item.tool==='autokosten-reifenwechsel' && page ? /^(Nicht gespeichert|Mock-Fahrzeug)$/ : '');
       await page.evaluate(async()=>await saveCar());
     }else{
       await page.locator('#receiptTitle').fill('Nicht gespeichert');
       await page.locator('#receiptDate').fill('2026-11-15');
       await page.locator('#receiptPrice').fill('12.50');
+      await expect(page.locator('#receiptTitle')).toHaveValue(/^(Nicht gespeichert|Mock-Einkauf)$/);
       await page.evaluate(async()=>await saveReceipt());
     }
     console.log('[UI diagnostic]',item.tool,await page.evaluate(()=>({url:location.href,ready:toolyaCloudReady,online:navigator.onLine,revision:toolyaCloudController?.revision,writes:window.__toolyaMock.writes.length,gate:document.querySelector('#toolya-cloud-gate')?.textContent,form:document.querySelector('#receiptTitle')?.value,car:document.querySelector('#carName')?.value})));
@@ -93,11 +95,13 @@ for(const item of tools){
     await expect(page.locator(item.form)).toBeVisible();
     if(item.tool==='autokosten-reifenwechsel'){
       await page.locator('#carName').fill('Mock-Fahrzeug');
+      await expect(page.locator('#carName')).toHaveValue(item.tool==='autokosten-reifenwechsel' && page ? /^(Nicht gespeichert|Mock-Fahrzeug)$/ : '');
       await page.evaluate(async()=>await saveCar());
     }else{
       await page.locator('#receiptTitle').fill('Mock-Einkauf');
       await page.locator('#receiptDate').fill('2026-11-15');
       await page.locator('#receiptPrice').fill('12.50');
+      await expect(page.locator('#receiptTitle')).toHaveValue(/^(Nicht gespeichert|Mock-Einkauf)$/);
       await page.evaluate(async()=>await saveReceipt());
     }
     console.log('[UI diagnostic]',item.tool,await page.evaluate(()=>({ready:toolyaCloudReady,online:navigator.onLine,revision:toolyaCloudController?.revision,writes:window.__toolyaMock.writes.length,gate:document.querySelector('#toolya-cloud-gate')?.textContent,form:document.querySelector('#receiptTitle')?.value})));
