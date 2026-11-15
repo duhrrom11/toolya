@@ -3,6 +3,7 @@ DO $test$
 DECLARE
  owner uuid := '00000000-0000-4000-8000-000000000001';
  alarm_job uuid;
+ session_id uuid := '00000000-0000-4000-8000-000000000002';
  response jsonb;
  h1 text := repeat('a',64);
  h2 text := repeat('b',64);
@@ -32,11 +33,18 @@ BEGIN
  UPDATE estate_private.read_vaults SET alarm_started_at=now()-interval '25 hours',alarm_deadline=now()-interval '1 hour' WHERE owner_id=owner;
  response:=public.estate_release_v2('open',null,jsonb_build_object('hash',h1));
  IF response->'content' IS NULL THEN RAISE EXCEPTION 'single key denied after elapsed deadline: %',response; END IF;
- UPDATE estate_private.read_vaults SET alarm_canceled_at=now() WHERE owner_id=owner;
+ INSERT INTO auth.sessions(id,user_id) VALUES(session_id,owner);
+ response:=public.estate_release_v2('cancel',owner,jsonb_build_object('session',session_id));
+ IF response->>'status' IS DISTINCT FROM 'normal' THEN RAISE EXCEPTION 'owner cancellation did not reset status: %',response; END IF;
  response:=public.estate_release_v2('open',null,jsonb_build_object('hash',h1));
  IF response->>'error' IS DISTINCT FROM 'two_keys_required' THEN RAISE EXCEPTION 'canceled alarm still grants single-key access: %',response; END IF;
  response:=public.estate_release_v2('open',null,jsonb_build_object('hash',h1,'secondHash',h2));
  IF response->'content' IS NULL THEN RAISE EXCEPTION 'cancellation broke valid two-key access: %',response; END IF;
+ -- A stale delivery acknowledgement must never restart a canceled alarm.
+ PERFORM public.estate_release_v2('delivered',null,jsonb_build_object('id',alarm_job));
+ response:=public.estate_release_v2('trustee-status',null,jsonb_build_object('hash',h1));
+ IF response->>'status' IS DISTINCT FROM 'normal' THEN RAISE EXCEPTION 'stale callback revived canceled alarm: %',response; END IF;
+ IF EXISTS(SELECT 1 FROM estate_private.read_vaults WHERE owner_id=owner AND alarm_canceled_at IS NULL) THEN RAISE EXCEPTION 'cancellation marker was cleared'; END IF;
  RAISE NOTICE 'estate_release_v2 isolated integration assertions passed';
 END
 $test$;
