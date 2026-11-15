@@ -17,11 +17,11 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
  const cachedAtlas=await page.locator('.toolya-idle .ty-frame').evaluate(e=>{const previous=e.style.backgroundImage;e.style.backgroundImage='url("/assets/toolya/outfits.webp")';const resolved=getComputedStyle(e).backgroundImage;e.style.backgroundImage=previous;return resolved});
  assert(cachedAtlas.includes('outfits.webp?v=20261115-alpha'),'old cached module URL is replaced by versioned alpha artwork');
 
- // Persistent idle button works on touch and keyboard; no storage/user-data write needed.
- for(let i=0;i<5;i++)await page.locator('.toolya-idle').tap();
+ // The thematic header mascot replaces the removed idle strip for touch and keyboard.
+ for(let i=0;i<5;i++)await page.locator('.ty-tool-hero-mascot').tap();
  await page.waitForFunction(()=>document.querySelector('.tb-body').textContent.includes('kitzlig'));
  assert.equal(await page.evaluate(()=>toolyaBuddy.tickle()),false,'cooldown');
- await page.evaluate(()=>{toolyaBuddy.dismiss();toolyaBuddy.tickleCooldown=0});await page.locator('.toolya-idle').focus();for(let i=0;i<5;i++)await page.keyboard.press('Enter');
+ await page.evaluate(()=>{toolyaBuddy.dismiss();toolyaBuddy.tickleCooldown=0});await page.locator('.ty-tool-hero-mascot').focus();for(let i=0;i<5;i++)await page.keyboard.press('Enter');
  await page.waitForFunction(()=>document.querySelector('.tb-body').textContent.includes('Ohren'));
  assert.equal(await page.locator('.tb-avatar').evaluate(i=>i===document.activeElement),true);
  await page.evaluate(()=>{toolyaBuddy.show('warning','Wichtiger Hinweis');for(let i=0;i<5;i++)toolyaBuddy.tickle()});assert.equal(await page.locator('.tb-body').textContent(),'Wichtiger Hinweis');
