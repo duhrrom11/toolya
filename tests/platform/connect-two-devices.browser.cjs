@@ -23,7 +23,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
    const next={revision:(current??0)+1,data:payload.data};
    store.set(key,next);res.setHeader('Content-Type','application/json');res.end(JSON.stringify(next));return;
   }
-  const file=path.resolve(root,'.'+decodeURIComponent(url.pathname));
+  if(url.pathname==='/connect-test.html'){res.setHeader('Content-Type','text/html');res.end('<!doctype html><html><body></body></html>');return;}\n  const file=path.resolve(root,'.'+decodeURIComponent(url.pathname));
   if(!file.startsWith(root+path.sep)||!fs.existsSync(file)){res.writeHead(404);res.end();return;}
   res.setHeader('Content-Type',file.endsWith('.mjs')?'text/javascript':'text/html');
   res.end(fs.readFileSync(file));
@@ -33,7 +33,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome',args:['--no-sandbox']});
  async function makeDevice(){
   const context=await browser.newContext(),page=await context.newPage();
-  await page.goto(origin+'/index.html');
+  await page.goto(origin+'/connect-test.html');
   await page.evaluate(async()=>{
    const {createCloudController}=await import('/shared/toolya/cloud-controller.mjs');
    const {mountConnectPanel}=await import('/shared/toolya/connect-panel.mjs');
