@@ -97,3 +97,12 @@ test('estate first local recovery write refuses a vault created by another tab',
  assert.doesNotThrow(()=>assertLocalSnapshot(null,null));
  assert.throws(()=>assertLocalSnapshot(null,'{"version":2,"ciphertext":"other-tab"}'),/conflict/);
 });
+
+test('estate legacy merge rejects conflicting trustee keys and contact identities',()=>{
+ const guard=globalThis.EstateCloudGuard;
+ const local={entries:[],trusteeKeys:{p1:'local-key'}},cloud={entries:[],trusteeKeys:{p1:'cloud-key'}};
+ const contacts={alarmPersons:[{id:'p1',contact:'first@example.invalid'}]};
+ assert.throws(()=>guard.assertLegacyMergeSafe(local,contacts,cloud,contacts),/conflict/);
+ assert.throws(()=>guard.assertLegacyMergeSafe(local,contacts,{entries:[],trusteeKeys:{p1:'local-key'}},{alarmPersons:[{id:'p1',contact:'second@example.invalid'}]}),/conflict/);
+ assert.doesNotThrow(()=>guard.assertLegacyMergeSafe(local,contacts,{entries:[],trusteeKeys:{p2:'new-key'}},{alarmPersons:[{id:'p2',contact:'new@example.invalid'}]}));
+});
