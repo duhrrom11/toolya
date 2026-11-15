@@ -16,6 +16,7 @@ export async function prepareCloudTool({ client, tool, storage, confirmMigration
   const controller = factory(repository);
   const migration = createLegacyMigration({ client, repository, tool, storage });
   const review = await migration.inspect();
+  let reviewedCloudRevision = null;
   if (review.status === 'ready-for-review') {
     if (typeof confirmMigration !== 'function' || typeof exportBackup !== 'function')
       throw new Error('Migration erfordert Bestätigung und Backup.');
@@ -43,9 +44,14 @@ export async function prepareCloudTool({ client, tool, storage, confirmMigration
         !sameJson(checked.localKeys, review.localKeys) ||
         !sameJson(checked.local, review.local))
       throw Error('Cloud- oder Gerätedaten haben sich geändert. Bitte neu prüfen.');
+    reviewedCloudRevision = checked.cloudRevision;
   }
   // Existing cloud snapshots are authoritative. Local data remains untouched.
   await controller.load();
+  if (reviewedCloudRevision !== null && controller.revision !== reviewedCloudRevision) {
+    controller.invalidate();
+    throw Error('Cloud-Datenstand hat sich nach der Prüfung geändert. Bitte neu laden.');
+  }
   return Object.freeze({
     controller,
     async saveCar(data) {
