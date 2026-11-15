@@ -90,5 +90,5 @@ export async function scrape(raw,fetcher=fetch,options={}){const source=normaliz
  if(failed||(expected!==null&&expected!==products.size))complete=false;
  const items=[...products.values()].slice(0,500);
  // Enrichment is opt-in for the server-side public wishlist flow only.
- if(complete&&options.enrichMissing===true)await enrichMissingProductMetadata(items,fetcher,10);
+ if(complete&&options.enrichMissing===true&&items.length<=15)await enrichMissingProductMetadata(items,(url,request)=>fetcher(url,{...request,signal:AbortSignal.timeout(2500)}),2);
  return {kind:'list',title,products:items,complete,warnings:complete?[]:['Die Liste konnte nicht vollständig gelesen werden. Es wird nichts importiert.']};}
