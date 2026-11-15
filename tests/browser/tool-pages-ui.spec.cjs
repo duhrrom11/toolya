@@ -8,6 +8,7 @@ const tools=[
 async function isolated(page,authenticated){
   const outbound=[];
   page.on('pageerror',error=>console.log('[UI pageerror]',error.message));
+  page.on('console',msg=>{if(msg.text().includes('[mock rpc]'))console.log('[browser]',msg.text());});
   await page.route('**/*',async route=>{
     const url=route.request().url();
     if(url.startsWith('http://127.0.0.1:4173/')){
@@ -80,7 +81,7 @@ for(const item of tools){
       await page.locator('#receiptPrice').fill('12.50');
       await page.locator('#saveBtn').dispatchEvent('click');
     }
-    console.log('[UI diagnostic]',item.tool,await page.evaluate(()=>({url:location.href,ready:toolyaCloudReady,writes:window.__toolyaMock.writes.length,gate:document.querySelector('#toolya-cloud-gate')?.textContent,form:document.querySelector('#receiptTitle')?.value,car:document.querySelector('#carName')?.value})));
+    console.log('[UI diagnostic]',item.tool,await page.evaluate(()=>({url:location.href,ready:toolyaCloudReady,online:navigator.onLine,revision:toolyaCloudController?.revision,writes:window.__toolyaMock.writes.length,gate:document.querySelector('#toolya-cloud-gate')?.textContent,form:document.querySelector('#receiptTitle')?.value,car:document.querySelector('#carName')?.value})));
     await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
     expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   });
@@ -99,7 +100,7 @@ for(const item of tools){
       await page.locator('#receiptPrice').fill('12.50');
       await page.locator('#saveBtn').dispatchEvent('click');
     }
-    console.log('[UI diagnostic]',item.tool,await page.evaluate(()=>({ready:toolyaCloudReady,writes:window.__toolyaMock.writes.length,gate:document.querySelector('#toolya-cloud-gate')?.textContent,form:document.querySelector('#receiptTitle')?.value})));
+    console.log('[UI diagnostic]',item.tool,await page.evaluate(()=>({ready:toolyaCloudReady,online:navigator.onLine,revision:toolyaCloudController?.revision,writes:window.__toolyaMock.writes.length,gate:document.querySelector('#toolya-cloud-gate')?.textContent,form:document.querySelector('#receiptTitle')?.value})));
     await expect.poll(()=>page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
     const persisted=await page.evaluate(()=>window.__toolyaMock.writes[0].p_data);
     if(item.tool==='autokosten-reifenwechsel'){
