@@ -38,3 +38,29 @@ test('optional enrichment tolerates unavailable product details and keeps origin
  await enrichMissingProductMetadata([item],async()=>new Response('',{status:403}),10);
  assert.equal(item.title,'Unverändert');assert.equal(item.price,null);assert.equal(item.description,'');
 });
+
+test('wishlist parser recognizes alternate German price and comment selectors',async()=>{
+ const {parseList:parseWishlist}=await import('../../supabase/functions/amazon-wishlist-scrape/toolya-core.mjs');
+ const product='<li id="item_32" data-itemid="item32" data-price="19.95"><a id="itemName_32" href="/dp/'+asin+'">Produkt Test</a><div class="g-itemComment">Für das Gartenhaus</div></li>';
+ const result=parseWishlist(html(product),source);
+ assert.equal(result.products.length,1);assert.equal(result.products[0].price,19.95);
+ assert.equal(result.products[0].description,'Für das Gartenhaus');
+});
+test('product page reads priceToPay, split price, feature overview, and JSON-LD',async()=>{
+ const {parsePrice:parseWishlistPrice,parseProduct:parseWishlistProduct}=await import('../../supabase/functions/amazon-wishlist-scrape/toolya-core.mjs');
+ assert.equal(parseWishlistPrice('1.234,56 €'),1234.56);
+ assert.equal(parseWishlistPrice('1.234 €'),1234);
+ assert.equal(parseWishlistPrice('19.99'),19.99);
+ assert.equal(parseWishlistPrice('statt 29,99 €'),null);
+ const p=parseWishlistProduct(html('<span id="productTitle">Tolles Gartengerät</span><div class="priceToPay"><span class="a-price"><span class="a-price-whole">1.234</span><span class="a-price-fraction">56</span></span></div><div id="productOverview_feature_div">Leicht und stabil</div>'),asin);
+ assert.equal(p.price,1234.56);assert.equal(p.description,'Leicht und stabil');
+ const json={'@type':'Product',sku:asin,description:'Strukturierter Informationstext',offers:{price:'12.49',priceCurrency:'EUR'}};
+ const result=parseWishlistProduct(html('<span id="productTitle">Produkt</span><script type="application/ld+json">'+JSON.stringify(json)+'</script>'),asin);
+ assert.equal(result.price,12.49);assert.equal(result.description,'Strukturierter Informationstext');
+});
+test('structured data with different ASIN is not imported',async()=>{
+ const {parseProduct:parseWishlistProduct}=await import('../../supabase/functions/amazon-wishlist-scrape/toolya-core.mjs');
+ const json={'@type':'Product',sku:'B099999999',description:'Falsches Produkt',offers:{price:'999.99',priceCurrency:'EUR'}};
+ const product=parseWishlistProduct(html('<span id="productTitle">Richtiges Produkt</span><script type="application/ld+json">'+JSON.stringify(json)+'</script>'),asin);
+ assert.equal(product.price,null);assert.equal(product.description,'');
+});
