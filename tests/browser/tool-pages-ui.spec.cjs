@@ -634,3 +634,15 @@ test('estate: browser refuses changed local encrypted snapshot before emergency 
  });
  expect(result).toEqual({error:'conflict',preserved:'encrypted-other-tab'});
 });
+
+test('estate: browser detects concurrent first local vault write',async({page})=>{
+ await isolatedEstate(page,true);await page.goto(origin+'/tools/estate/index.html');
+ const result=await page.evaluate(()=>{
+  localStorage.removeItem('digital_estate_vault');
+  const initial=localStorage.getItem('digital_estate_vault');
+  localStorage.setItem('digital_estate_vault','other-tab-encrypted-vault');
+  try{EstateCloudGuard.assertLocalSnapshot(initial,localStorage.getItem('digital_estate_vault'));return 'unexpected'}
+  catch(e){return {error:e.message,preserved:localStorage.getItem('digital_estate_vault')}}
+ });
+ expect(result).toEqual({error:'conflict',preserved:'other-tab-encrypted-vault'});
+});
