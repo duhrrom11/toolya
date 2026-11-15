@@ -34,6 +34,16 @@ function validateBudget(value) {
   return copy(value);
 }
 const TOOLS = Object.freeze({
+  'parkplatz-merker-parkschein-timer': {
+    keys:['park_history_pro_v3'],
+    validate:value=>{
+      if(!value||typeof value!=='object'||Array.isArray(value)||!Array.isArray(value.sessions)||
+        !value.sessions.every(item=>item&&typeof item==='object'&&!Array.isArray(item)))
+        throw Error('Parkplatz-Bestand ist beschädigt.');
+      return copy(value);
+    },
+    build:values=>values[0]
+  },
   'pflanzenpflege-giessplan': {
     keys:['pflanzen_pass_v10'],
     validate:value=>{
