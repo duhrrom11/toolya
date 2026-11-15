@@ -88,7 +88,9 @@
   // Never mark the local recovery copy as synchronized until the remote ciphertext is readable.
   await EstateCloudGuard.verifyEncryptedBackup({
    client:db,ownerId:user.id,vaultId:config.vaultId,expectedStamp:confirmedStamp,
-   key,cryptoApi:C,validatePayload
+   key,cryptoApi:C,validatePayload,
+   expectedEncryptedData:record.encryptedData,expectedEncryptedConfig:record.encryptedConfig,
+   expectedRecoveryKey:record.recoveryKey
   });
   stamp=confirmedStamp;localWrite({...record,cloudStamp:stamp,pending:false});
   try{
