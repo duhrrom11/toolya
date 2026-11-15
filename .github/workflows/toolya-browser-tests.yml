@@ -17,6 +17,7 @@ on:
       - 'tools/plants/**'
       - 'tools/parking/**'
       - 'tools/pet-health/**'
+      - 'tools/baking/**'
       - 'shared/toolya/**'
       - 'assets/**'
       - 'package*.json'
