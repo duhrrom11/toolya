@@ -244,7 +244,7 @@ test('verliehene-gegenstaende: contact saved only after cloud confirmation',asyn
   }));
   expect(state).toMatchObject({writes:1,contact:'Anna',cleared:true});
   await page.evaluate(async()=>{
-    window.supabaseClient.rpc=async()=>({data:null,error:{code:'40001',message:'mock conflict'}});
+    supabaseClient.rpc=async()=>({data:null,error:{code:'40001',message:'mock conflict'}});
     document.querySelector('#contactName').value='Nicht gespeichert';
     await saveContact();
   });
