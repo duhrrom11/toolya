@@ -429,7 +429,8 @@ test('gift planner load ignores data returned for an earlier signed-in account',
  assert.ok(start>=0&&end>start);
  let finish;
  const pending=new Promise(resolve=>finish=resolve);
- const db={auth:{getUser:async()=>({data:{user:{id:'first'}},error:null})},from:()=>({select:()=>({eq:()=>({order:()=>({limit:()=>pending})})})})};
+ const chain={select(){return this},eq(){return this},order(){return this},limit(){return pending}};
+ const db={auth:{getUser:async()=>({data:{user:{id:'first'}},error:null})},from:()=>chain};
  const fields={login:{hidden:true},status:{textContent:'Neue Sitzung'}};
  const body="let user=null,occasions=[],gifts=[],collections=[],suggestions=[];const option=()=>{},choices=()=>{},render=()=>{},loadCoordination=async()=>{},importReservedWish=async()=>{};\n"+planner.slice(start,end)+"\nreturn {load,setUser:id=>user={id},getOccasions:()=>occasions};";
  const run=new Function('$','db',body)(id=>fields[id],db);
