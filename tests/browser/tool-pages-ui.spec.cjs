@@ -136,3 +136,24 @@ for(const item of tools){
     expect(outbound.every(u=>!u.startsWith(origin))).toBe(true);
   });
 }
+
+
+test('autokosten-reifenwechsel: attached images await confirmed cloud save',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/car/index.html');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined' && toolyaCloudReady && !!toolyaCloudController?.ready)).toBe(true);
+  await page.locator('#carPhotoInput').setInputFiles({name:'fixture.png',mimeType:'image/png',buffer:Buffer.from([137,80,78,71,13,10,26,10])});
+  await page.locator('#carPapersInput').setInputFiles({name:'paper.png',mimeType:'image/png',buffer:Buffer.from([137,80,78,71,13,10,26,10])});
+  const result=await page.evaluate(async()=>{
+    // Controlled asynchronous compressor: no image decoding or external assets.
+    compressImage=(file,callback)=>setTimeout(()=>callback('data:mock/'+file.name),10);
+    document.querySelector('#carName').value='Fahrzeug mit Anhängen';
+    await saveCar();
+    return {writes:window.__toolyaMock.writes.length,
+      car:window.__toolyaMock.writes[0]?.p_data?.cars?.[0],
+      cleared:document.querySelector('#carName').value===''};
+  });
+  expect(result.writes).toBe(1);
+  expect(result.car).toMatchObject({name:'Fahrzeug mit Anhängen',photo:'data:mock/fixture.png',papers:'data:mock/paper.png'});
+  expect(result.cleared).toBe(true);
+});
