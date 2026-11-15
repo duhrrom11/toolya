@@ -650,12 +650,24 @@ test('estate: browser detects concurrent first local vault write',async({page})=
 test('estate: browser blocks conflicting legacy trustee and emergency contacts',async({page})=>{
  await isolatedEstate(page,true);await page.goto(origin+'/tools/estate/index.html');
  const result=await page.evaluate(()=>{
-  const guard=EstateCloudGuard,local={entries:[],trusteeKeys:{p1:'local'}},cloud={entries:[],trusteeKeys:{p1:'remote'}};
+  const guard=EstateCloudGuard,local={entries:[],trusteeKeys:{p1:'a'.repeat(64)}},cloud={entries:[],trusteeKeys:{p1:'b'.repeat(64)}};
   const contacts={alarmPersons:[{id:'p1',contact:'first@example.invalid'}]};
   const check=(a,b,c,d)=>{try{guard.assertLegacyMergeSafe(a,b,c,d);return 'ok'}catch(e){return e.message}};
   return {key:check(local,contacts,cloud,contacts),
-   contact:check(local,contacts,{entries:[],trusteeKeys:{p1:'local'}},{alarmPersons:[{id:'p1',contact:'other@example.invalid'}]}),
-   addition:check(local,contacts,{entries:[],trusteeKeys:{p2:'new'}},{alarmPersons:[{id:'p2',contact:'new@example.invalid'}]})};
+   contact:check(local,contacts,{entries:[],trusteeKeys:{p1:'a'.repeat(64)}},{alarmPersons:[{id:'p1',contact:'other@example.invalid'}]}),
+   addition:check(local,contacts,{entries:[],trusteeKeys:{p2:'c'.repeat(64)}},{alarmPersons:[{id:'p2',contact:'new@example.invalid'}]})};
  });
  expect(result).toEqual({key:'conflict',contact:'conflict',addition:'ok'});
+});
+
+test('estate: browser rejects duplicate legacy emergency contact IDs',async({page})=>{
+ await isolatedEstate(page,true);await page.goto(origin+'/tools/estate/index.html');
+ const result=await page.evaluate(()=>{
+  const data={entries:[],trusteeKeys:{p1:'a'.repeat(64)}};
+  const people={alarmPersons:[{id:'p1',contact:'one@example.invalid'}]};
+  const duplicate={alarmPersons:[...people.alarmPersons,{id:'p1',contact:'two@example.invalid'}]};
+  try{EstateCloudGuard.assertLegacyMergeSafe(data,people,data,duplicate);return 'unexpected'}
+  catch(e){return e.message}
+ });
+ expect(result).toBe('conflict');
 });
