@@ -18,6 +18,7 @@ on:
       - 'tools/parking/**'
       - 'tools/pet-health/**'
       - 'tools/baking/**'
+      - 'tools/wishes/**'
       - 'shared/toolya/**'
       - 'assets/**'
       - 'package*.json'
