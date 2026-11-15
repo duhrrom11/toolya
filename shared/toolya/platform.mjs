@@ -102,7 +102,7 @@ function mountFooter(){
  const headerLogo=document.querySelector('.b3-hub-logo');
  const logo=headerLogo?headerLogo.cloneNode(true):document.createElement('a');
  logo.classList.add('b3-hub-logo');logo.href=new URL('../../index.html',import.meta.url).href;logo.removeAttribute('id');logo.setAttribute('aria-label','Toolya Startseite');
- if(!headerLogo)logo.textContent='Toolya';
+ if(!headerLogo){const mark=document.createElement('span');mark.className='b3-hub-logo-mark';mark.setAttribute('aria-hidden','true');mark.textContent='✳';logo.append(mark,document.createTextNode(' Toolya'));}
  brand.append(logo);const caption=document.createElement('small');caption.textContent='© '+new Date().getFullYear()+' Toolya · Dein smarter Tool-Begleiter';brand.append(caption);
  const links=document.createElement('nav');links.className='ty-footer-links';links.setAttribute('aria-label','Footer-Navigation');
  for(const [label,path] of [['Startseite','index.html'],['Tools','index.html#toolDiscovery'],['Datenschutz','privacy.html'],['Impressum','legal.html']]){
