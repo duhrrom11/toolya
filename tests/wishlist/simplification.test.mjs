@@ -184,3 +184,12 @@ test('dashboard preferences form reflects confirmed saved settings',()=>{
  const code=source('gift-start.mjs');
  assert.ok(code.includes('render(currentTasks,currentOccasions);restoreSettingsDraft(preferences)'));
 });
+
+test('wish cloud extras clear only after confirmed insert or versioned update',()=>{
+ const app=source('app.mjs');
+ assert.ok(app.includes("function clearSubmittedWishExtras()"));
+ assert.ok(app.includes("clearSubmittedWishExtras();feedback.textContent='Zusatzdaten privat in der Cloud gespeichert."));
+ assert.ok(app.includes("clearSubmittedWishExtras();feedback.textContent='Private Cloud-Zusatzdaten nach Bestätigung aktualisiert.'"));
+ assert.ok(app.includes("if(changed.data?.length!==1)"));
+ assert.ok(app.includes("if(result.error)"));
+});
