@@ -70,5 +70,8 @@
   return {key,payload,config:{...config,vaultId:remote.vault_id},
    recovery:remote.recovery_key,stamp:remote.updated_at,remote};
  }
- root.EstateCloudGuard={requireOwner,saveEncryptedSnapshot,verifyEncryptedBackup,assertRestoreCompatible,restoreCloudSnapshot};
+ function assertLocalSnapshot(expected,current){
+  if(expected!==current)throw Error('conflict');
+ }
+ root.EstateCloudGuard={requireOwner,saveEncryptedSnapshot,verifyEncryptedBackup,assertRestoreCompatible,restoreCloudSnapshot,assertLocalSnapshot};
 })(typeof window!=='undefined'?window:globalThis);
