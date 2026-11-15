@@ -579,6 +579,10 @@ async function toolyaCloudBoot(tool) {
   try {
     const {prepareCloudTool} = await import('../../shared/toolya/cloud-tool-adapters.mjs');
     const storage = localStorage;
+    const {data:initialAuth,error:initialAuthError}=await window.supabaseClient.auth.getUser();
+    const initialUserId=initialAuth?.user?.id;
+    if(initialAuthError || !initialUserId || initialAuth.user.is_anonymous)
+      throw Error('Registrierte Anmeldung erforderlich.');
     const prepared = await prepareCloudTool({
       client:window.supabaseClient,tool,storage,
       confirmMigration: async () => confirm('Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden niemals überschrieben. Auf gemeinsam genutzten Geräten bitte zuerst die Zugehörigkeit der Daten prüfen.'),
@@ -591,9 +595,11 @@ async function toolyaCloudBoot(tool) {
         return confirm('Sicherung wurde zum Download angeboten. Bitte erst nach erfolgreichem Speichern bestätigen.');
       }
     });
+    const {data:finalAuth,error:finalAuthError}=await window.supabaseClient.auth.getUser();
+    if(finalAuthError || finalAuth?.user?.id!==initialUserId || finalAuth.user.is_anonymous)
+      throw Error('Konto während des Cloud-Ladens gewechselt.');
     toolyaCloudController=prepared.controller;
-    toolyaCloudUserId=(await window.supabaseClient.auth.getUser()).data?.user?.id || null;
-    if(!toolyaCloudUserId) throw Error('Anmeldung während des Ladens verloren.');
+    toolyaCloudUserId=initialUserId;
     toolyaCloudReady=true;
     gate.remove();
     if(tool==='autokosten-reifenwechsel')loadCarDropdowns();
