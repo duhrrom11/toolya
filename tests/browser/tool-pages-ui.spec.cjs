@@ -38,6 +38,12 @@ async function isolated(page,authenticated){
       }
       return route.continue();
     }
+    // Chart.js is a display-only dependency. Replace its CDN script with a
+    // deterministic inert chart to keep the real budget UI executable offline.
+    if(url.startsWith('https://cdn.jsdelivr.net/npm/chart.js')){
+      return route.fulfill({status:200,contentType:'text/javascript',
+        body:'window.Chart=class{constructor(ctx,config){this.data=config.data;this.options=config.options}update(){}destroy(){}};'});
+    }
     outbound.push(url);
     return route.abort();
   });
