@@ -62,9 +62,20 @@ async function load(){
 $('budgetOccasion').addEventListener('change',()=>{$('budgetAmount').value=String(byId($('budgetOccasion').value)?.budget_amount||0);render()});
 $('filterOccasion').addEventListener('change',render);$('filterStatus').addEventListener('change',render);
 $('saveBudget').addEventListener('click',async()=>{const id=$('budgetOccasion').value,amount=number('budgetAmount');if(!id||amount===null||amount>9999999999){invalid(!id?'budgetOccasion':'budgetAmount','Bitte einen Anlass und gültiges Budget wählen.','budgetSaveFeedback');return}
- $('saveBudget').disabled=true;const {error}=await db.from('wishlist_occasions').update({budget_amount:amount,updated_at:new Date().toISOString()}).eq('id',id).eq('user_id',user.id);$('saveBudget').disabled=false;
- if(error){feedback('budgetSaveFeedback','Budget konnte nicht gespeichert werden.');return}
- const o=byId(id);if(o)o.budget_amount=amount;render();$('budgetAmount').value='';feedback('budgetSaveFeedback','Anlassbudget gespeichert.');
+ const ownerId=user?.id,submittedAmount=$('budgetAmount').value;
+ if(!ownerId){feedback('budgetSaveFeedback','Bitte zuerst anmelden.');return}
+ $('saveBudget').disabled=true;
+ try{
+  const {data,error}=await db.from('wishlist_occasions').update({budget_amount:amount,updated_at:new Date().toISOString()}).eq('id',id).eq('user_id',ownerId).select('id').single();
+  if(user?.id!==ownerId)return;
+  if(error||data?.id!==id){feedback('budgetSaveFeedback','Budget konnte nicht gespeichert werden.');return}
+  const o=byId(id);if(o)o.budget_amount=amount;
+  render();
+  if($('budgetOccasion').value===id&&$('budgetAmount').value===submittedAmount)$('budgetAmount').value='';
+  feedback('budgetSaveFeedback','Anlassbudget gespeichert.');
+ }catch{
+  if(user?.id===ownerId)feedback('budgetSaveFeedback','Budget konnte nicht gespeichert werden.');
+ }finally{$('saveBudget').disabled=false}
 });
 $('form').addEventListener('submit',async event=>{event.preventDefault();const occasionId=$('occasion').value,title=$('title').value.trim(),planned=number('planned'),actual=$('actual').value===''?null:number('actual');
  if(!user||!byId(occasionId)||!title||planned===null||planned>9999999999||(actual!==null&&(actual<0||actual>9999999999))){const invalidId=!byId(occasionId)?'occasion':!title?'title':(planned===null||planned>9999999999)?'planned':'actual';invalid(invalidId,'Bitte alle Beträge und Pflichtfelder prüfen.','giftFormFeedback');return}
