@@ -66,6 +66,8 @@ for(const item of tools){
   test(item.tool+': cloud write failure blocks UI and never claims saved',async({page})=>{
     await isolated(page,true);
     await page.goto(origin+item.path);
+    // The gate can be absent before async boot even starts. Wait for the real cloud-ready state.
+    await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady !== 'undefined' && toolyaCloudReady && !!toolyaCloudController?.ready)).toBe(true);
     await expect(page.locator('#toolya-cloud-gate')).toHaveCount(0);
     await page.evaluate(()=>{
       window.__toolyaMock.writes.length=0;
@@ -91,6 +93,8 @@ for(const item of tools){
     const outbound=await isolated(page,true);
     await page.goto(origin+item.path);
     await expect(page.locator('.b3-tool-title h1')).toContainText(item.title);
+    // The gate can be absent before async boot even starts. Wait for the real cloud-ready state.
+    await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady !== 'undefined' && toolyaCloudReady && !!toolyaCloudController?.ready)).toBe(true);
     await expect(page.locator('#toolya-cloud-gate')).toHaveCount(0);
     await expect(page.locator(item.form)).toBeVisible();
     if(item.tool==='autokosten-reifenwechsel'){
