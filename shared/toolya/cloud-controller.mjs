@@ -40,8 +40,11 @@ export function createCloudController({ repository, validate, initial }) {
       }
       const payload = validate(clone(next));
       busy = true;
+      const token = generation;
       try {
         const result = await repository.save(payload, revision);
+        if (token !== generation || !loaded)
+          throw new Error('Cloud-Sitzung während des Speicherns ungültig geworden.');
         state = clone(validate(result.data));
         revision = result.revision;
         return clone(state);
