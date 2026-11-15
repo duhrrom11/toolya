@@ -167,6 +167,7 @@ function mountToolHero(){
  const logo=document.createElement('a');logo.className='ty-tool-wordmark';logo.href=new URL('../../index.html',import.meta.url).href;logo.setAttribute('aria-label','Toolya Startseite');
  const mark=document.createElement('span');mark.className='b3-hub-logo-mark';mark.textContent='✳';mark.setAttribute('aria-hidden','true');logo.append(mark,document.createTextNode(' Toolya'));
  const actions=document.createElement('div');actions.className='ty-tool-hero-actions';
+ if(tool==='estate'){const trusteeLink=document.createElement('a');trusteeLink.className='ty-tool-hero-trustee';trusteeLink.href=new URL('../../tools/estate/heirs.html',import.meta.url).href;trusteeLink.textContent='👥 Zugang für Vertrauenspersonen';actions.append(trusteeLink);}
  const originalSettings=old.querySelector('.b3-settings-trigger,[aria-label="Einstellungen öffnen"]');
  if(originalSettings){actions.append(originalSettings);}
  else {
