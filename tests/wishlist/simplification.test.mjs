@@ -155,3 +155,22 @@ test('gift planner clears successful inputs and never links other users wishes',
  assert.ok(planner.includes(".eq('user_id',user.id).in('product_id',ids)"));
  assert.equal(planner.includes(".eq('visibility','public').in('product_id',ids)"),false);
 });
+
+test('Amazon import clears fields only after a confirmed save',()=>{
+ const code=source('amazon-import.mjs');
+ assert.ok(code.includes("snapshot=null;commit.hidden=true;input.value='';name.value=''"));
+ assert.ok(code.includes("visibility.value='private';results.replaceChildren()"));
+ assert.ok(code.includes("if(error)throw error"));
+});
+test('gift finder resets questions without clearing generated suggestions',()=>{
+ const code=source('gift-finder.mjs');
+ assert.ok(code.includes("search();$('giftFinderForm').reset()"));
+ assert.ok(code.includes("container.replaceChildren()"));
+});
+test('list editors reset on success and cancel, preserving error input',()=>{
+ const code=source('lists-dashboard.mjs');
+ assert.ok(code.includes("$('editListForm').hidden=true;$('editListForm').reset()"));
+ assert.ok(code.includes("$('listVisibility').value='private'"));
+ assert.ok(code.includes("$('listIcon').selectedIndex=0"));
+ assert.ok(code.includes("$('listColor').selectedIndex=0"));
+});
