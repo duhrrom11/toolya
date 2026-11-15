@@ -1,6 +1,6 @@
 import { createCloudRepository } from './cloud-repository.mjs';
 import { requireVerifiedUser } from './cloud-auth-gate.mjs';
-import { createCarCloudController, createBudgetCloudController, createMovingCloudController } from './cloud-controller.mjs';
+import { createCarCloudController, createBudgetCloudController, createMovingCloudController, createLoansCloudController } from './cloud-controller.mjs';
 import { createLegacyMigration, sameJson } from './legacy-cloud-migration.mjs';
 
 /**
@@ -10,6 +10,7 @@ import { createLegacyMigration, sameJson } from './legacy-cloud-migration.mjs';
 export async function prepareCloudTool({ client, tool, storage, confirmMigration, exportBackup, reviewExistingCloud }) {
   const factory = {
     'umzugskisten-inventar': createMovingCloudController,
+    'verliehene-gegenstaende-verwalten': createLoansCloudController,
     'autokosten-reifenwechsel': createCarCloudController,
     'haushaltsbuch-kassenbon': createBudgetCloudController
   }[tool];
@@ -68,6 +69,10 @@ export async function prepareCloudTool({ client, tool, storage, confirmMigration
   }
   return Object.freeze({
     controller,
+    async saveLoans(data) {
+      if (tool !== 'verliehene-gegenstaende-verwalten') throw new Error('Falscher Adapter.');
+      return controller.replace(data);
+    },
     async saveMoving(data) {
       if (tool !== 'umzugskisten-inventar') throw new Error('Falscher Adapter.');
       return controller.replace(data);
