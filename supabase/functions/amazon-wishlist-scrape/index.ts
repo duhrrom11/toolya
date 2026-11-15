@@ -96,14 +96,14 @@ export async function handleRequest(req: Request): Promise<Response> {
   if (claim !== 'claimed') { if (creating) await admin.from('wishlist_amazon_publications').delete().eq('id',list.id).eq('user_id',user.id); return json({error:'Already processed or in progress'},409); }
 
   let scrape_status = 'failed', scrape_error: string | null = 'Keine auslesbaren Produkte', title: string | null = null;
-  let productCount = 0;
+  let productCount = 0, priceCount = 0, descriptionCount = 0;
   try {
     // Reuse Toolya's deployed v17 parser, including wishlist pagination and completeness checks.
     // Only complete imports are persisted: never publish misleading partial product sets.
     if (!['amazon.de', 'www.amazon.de'].includes(target.hostname)) {
       throw new Error('Der bestehende Toolya-Importer unterstützt derzeit Amazon.de');
     }
-    const result = await scrape(target.href);
+    const result = await scrape(target.href, fetch, { enrichMissing: true });
     if (result.kind !== 'list' || !result.complete || !result.products.length) {
       throw new Error('Amazon-Wunschliste konnte nicht vollständig gelesen werden');
     }
@@ -119,6 +119,8 @@ export async function handleRequest(req: Request): Promise<Response> {
     });
     if (committed.error) throw new Error('Produktdaten konnten nicht gespeichert werden');
     productCount = committed.data;
+    priceCount = products.filter(p => p.price !== null).length;
+    descriptionCount = products.filter(p => p.description !== null).length;
     title = result.title?.slice(0, 200) || null;
     scrape_status = 'success';
     scrape_error = null;
@@ -130,7 +132,7 @@ export async function handleRequest(req: Request): Promise<Response> {
     .eq('id', list.id).eq('user_id', user.id).eq('scrape_status', 'processing');
   if (creating && scrape_status !== 'success') await admin.from('wishlist_amazon_publications').delete().eq('id',list.id).eq('user_id',user.id);
   if (saved.error) return json({ error: 'Scraper-Status konnte nicht gespeichert werden' }, 503);
-  return json({ status: scrape_status, product_count: productCount, ...(creating && scrape_status==='success' ? {publication_id:list.id} : {}), ...(creating && scrape_status==='failed' ? {error:'Die Amazon-Liste ist nicht öffentlich erreichbar oder konnte nicht vollständig gelesen werden'} : {}) });
+  return json({ status: scrape_status, product_count: productCount, price_count: priceCount, description_count: descriptionCount, ...(creating && scrape_status==='success' ? {publication_id:list.id} : {}), ...(creating && scrape_status==='failed' ? {error:'Die Amazon-Liste ist nicht öffentlich erreichbar oder konnte nicht vollständig gelesen werden'} : {}) });
 }
 
 if (import.meta.main) Deno.serve(handleRequest);
