@@ -9,14 +9,39 @@
       "label": "Brennenstuhl Primera-Line Energiemessgerät und REV Stromzähler"
     }
   ],
-  "car": [],
-  "moving": [],
-  "baking": [],
+  "car": [
+    {
+      "asin": "B07N5K2BQF",
+      "label": "GOODS+GADGETS Kofferraum Organizer"
+    }
+  ],
+  "moving": [
+    {
+      "asin": "B00UN62Q7Q",
+      "label": "Bosch Entfernungsmesser"
+    }
+  ],
+  "baking": [
+    {
+      "asin": "B00QNP4B5Q",
+      "label": "Dr. Oetker Springform"
+    }
+  ],
   "budget": [],
   "estate": [],
   "housemates": [],
-  "loans": [],
-  "parking": [],
+  "loans": [
+    {
+      "asin": "B0935DN1BN",
+      "label": "Apple AirTag"
+    }
+  ],
+  "parking": [
+    {
+      "asin": "B00PKJUI5S",
+      "label": "Needit Park Lite"
+    }
+  ],
   "pet-health": [],
   "plants": [
     {
