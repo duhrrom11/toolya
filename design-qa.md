@@ -59,3 +59,7 @@ final result: blocked
 - Revised platform job132644715988 passed on commit00a20d425d81d49156cd7abf3fb8ea38cf0fcc11; artifact14138908642 inspected. Desktop1440×2612, mobile351×4689. Source/desktop composite `/tmp/toolya-home-revised-comparison.png`.
 - Confirmed fixes: mobile headline, visible settings gear, neutral account button, clean rest-state characters, correct first four cards, main inset and header spacing.
 - [P2] Mobile card intrinsic minimum width still extended the full-page screenshot beyond the320px CSS viewport, despite root scrollWidth being clipped. Fixed card/link min-width and width constraints plus long German title wrapping. Added actual per-card bounding-box assertion instead of relying only on document scrollWidth. New screenshot comparison pending.
+
+## CI comparison, third iteration
+- Platform job132645256647 passed on commit1001f93ee0c0d565f279051de27d0799c12c83e4; artifact14138629369 inspected. Mobile is now exactly320px wide; all card boxes fit.
+- [P2] Fitting the former side-by-side layout caused awkward single-letter title wraps at320px. Switched mobile cards to a compact icon/title header with full-width descriptions and a top-right favorite control. Desktop remains unchanged. Final mobile evidence pending.
