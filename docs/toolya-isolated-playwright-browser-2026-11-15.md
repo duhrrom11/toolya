@@ -24,3 +24,7 @@ Playwright startet `scripts/home-preview.cjs` auf `127.0.0.1:4173`. Falls der Ch
 ## Nachweisstatus
 
 Tests wurden im Featurebranch erstellt, jedoch in dieser Sitzung **nicht** als Playwright-Lauf ausgeführt: Der verfügbare Container besitzt Chromium und Python-Playwright, aber weder eine lokale Kopie des privaten Toolya-Repositories noch die Node-Playwright-Abhängigkeit. Ein echter Playwright-Lauf gegen den vollständigen Featurebranch ist deshalb nicht möglich. Kein bestandener Browser-Test wird behauptet.
+
+## GitHub Actions
+
+Ein manueller Workflow unter `.github/workflows/toolya-isolated-browser.yml` richtet Node 22 und Chromium ein und führt die isolierten Browser-Tests aus. Er besitzt ausschließlich `contents: read`, verwendet keine Repository-Secrets und enthält keine Merge- oder Deployment-Schritte. Ein erfolgreicher Workflow-Lauf wurde bislang nicht nachgewiesen. Die GitHub-Connector-Funktionen bieten derzeit keinen Workflow-Dispatch-Aufruf; ein Start aus dieser Sitzung ist deshalb nicht möglich.
