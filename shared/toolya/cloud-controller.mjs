@@ -55,7 +55,10 @@ export function createCloudController({ repository, validate, initial }) {
       ensureReady();
       if (typeof transform !== 'function') throw new TypeError('Änderungsfunktion fehlt.');
       const next = clone(state);
-      const changed = transform(next);\n      if (changed && typeof changed.then === 'function') {\n        throw new Error('Asynchrone Mutationen sind nicht erlaubt.');\n      }
+      const changed = transform(next);
+      if (changed && typeof changed.then === 'function') {
+        throw new Error('Asynchrone Mutationen sind nicht erlaubt.');
+      }
       return api.replace(changed === undefined ? next : changed);
     },
     invalidate() { loaded = false; revision = null; ++generation; }
