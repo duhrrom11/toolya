@@ -174,3 +174,13 @@ test('list editors reset on success and cancel, preserving error input',()=>{
  assert.ok(code.includes("$('listIcon').selectedIndex=0"));
  assert.ok(code.includes("$('listColor').selectedIndex=0"));
 });
+
+test('gift finder explicit reset clears questions and results synchronously',()=>{
+ const code=source('gift-finder.mjs');
+ assert.ok(code.includes("$('giftFinderReset').addEventListener('click',()=>{$('giftFinderForm').reset()"));
+ assert.equal(code.includes('setTimeout(()=>'),false);
+});
+test('dashboard preferences form reflects confirmed saved settings',()=>{
+ const code=source('gift-start.mjs');
+ assert.ok(code.includes('render(currentTasks,currentOccasions);restoreSettingsDraft(preferences)'));
+});
