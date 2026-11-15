@@ -118,7 +118,9 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
   assert.equal(await page.locator('.toolya-settings').count(),0,route+' no standalone settings');
   // CloudOnly pages are intentionally blocked without a verified account.
   // Assert the real gate instead of bypassing it to click protected controls.
-  if(await page.locator('#toolya-cloud-gate').count()){
+  // Cloud initialization is asynchronous: wait briefly for a late gate before interacting.
+  await page.locator('#toolya-cloud-gate').waitFor({state:'visible',timeout:2500}).catch(()=>{});
+  if(await page.locator('#toolya-cloud-gate').isVisible()){
    assert.equal(await page.locator('#toolya-cloud-gate').getAttribute('role'),'alert',route+' authentication gate');
    assert(await page.locator('#toolya-cloud-gate').isVisible(),route+' gate remains visible');
    assert.equal(await page.evaluate(()=>{const gate=document.getElementById('toolya-cloud-gate');const r=gate.getBoundingClientRect();return document.elementFromPoint(Math.min(innerWidth-1,Math.max(0,r.left+r.width/2)),Math.min(innerHeight-1,Math.max(0,r.top+r.height/2)))?.closest('#toolya-cloud-gate')===gate}),true,route+' gate intercepts unauthenticated input');
