@@ -22,3 +22,19 @@ test('Amazon AJAX scroll continues only within the same wishlist and terminates 
  assert.throws(()=>wishlistContinuation('https://evil.test/hz/wishlist/slv/items?lid='+list,source));
  const p=parseList(html(row().replace('<li ', '<li data-price="17.47" ').replace('<span class="a-price"><span class="a-offscreen">1.234,56 €</span></span>','')),source);assert.equal(p.products[0].price,17.47);
 });
+
+test('optional detail enrichment fills missing metadata without overwriting wishlist title',async()=>{
+ const item={asin,title:'Wunschlisten-Titel',price:null,description:'',imageUrl:null};
+ const calls=[];
+ const {enrichMissingProductMetadata}=await import('../../supabase/functions/amazon-wishlist-scrape/toolya-core.mjs');
+ const good=html('<span id="productTitle">Produkt Detail</span><div id="feature-bullets">Wichtige Details</div><div id="corePrice_feature_div"><span class="a-price"><span class="a-offscreen">29,95 €</span></span></div>');
+ const n=await enrichMissingProductMetadata([item],async url=>{calls.push(url);return respond(good)},10);
+ assert.equal(n,1);assert.equal(item.price,29.95);assert.equal(item.description,'Wichtige Details');assert.equal(item.title,'Wunschlisten-Titel');
+ assert.deepEqual(calls,['https://www.amazon.de/dp/'+asin]);
+});
+test('optional enrichment tolerates unavailable product details and keeps original data',async()=>{
+ const {enrichMissingProductMetadata}=await import('../../supabase/functions/amazon-wishlist-scrape/toolya-core.mjs');
+ const item={asin,title:'Unverändert',price:null,description:'',imageUrl:null};
+ await enrichMissingProductMetadata([item],async()=>new Response('',{status:403}),10);
+ assert.equal(item.title,'Unverändert');assert.equal(item.price,null);assert.equal(item.description,'');
+});
