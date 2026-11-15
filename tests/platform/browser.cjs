@@ -7,9 +7,29 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
  const origin='http://127.0.0.1:'+server.address().port,staticHosts=new Set(['cdn.tailwindcss.com','unpkg.com','cdn.jsdelivr.net','cdnjs.cloudflare.com','www.gstatic.com','fonts.googleapis.com','fonts.gstatic.com']);
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome',args:['--no-sandbox']});fs.mkdirSync('test-results',{recursive:true});
  try{const context=await browser.newContext({viewport:{width:320,height:812},isMobile:true,hasTouch:true});let blockedWrites=0;const blockedWriteUrls=[];
- const guard=r=>{const u=new URL(r.request().url());if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(staticHosts.has(u.hostname)&&r.request().method()==='GET')return r.continue();if(r.request().method()!=='GET'&&(u.pathname.includes('/rest/v1/')||u.pathname.includes('/functions/v1/'))&&!u.pathname.endsWith('/rest/v1/rpc/search_public_amazon_wishlists')){blockedWrites++;blockedWriteUrls.push(r.request().method()+' '+u.hostname+u.pathname)}return r.abort()};await context.route('**/*',guard);
+ const guard=r=>{const u=new URL(r.request().url());
+ // Isolated registered user for the plant-page mascot interaction only.
+ // No Supabase request is ever sent; all snapshot reads are in-memory.
+ if(u.origin===origin&&u.pathname==='/assets/vendor/supabase-2.57.0.js'&&r.request().frame()?.url().includes('/tools/plants/')){
+  return r.fulfill({status:200,contentType:'text/javascript',body:`
+   window.supabase={createClient(){return {
+    auth:{
+     async getUser(){return {data:{user:{id:'mascot-fixture-user',is_anonymous:false}},error:null}},
+     async getSession(){return {data:{session:null},error:null}},
+     onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}},
+     async signOut(){return {error:null}}
+    },
+    from(table){if(table!=='user_data')throw Error('Unexpected table');return {
+     select(){return this},eq(){return this},
+     async maybeSingle(){return {data:null,error:null}}
+    }},
+    async rpc(){throw Error('Unexpected cloud write in mascot fixture')}
+   }}};
+  `});
+ }
+if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(staticHosts.has(u.hostname)&&r.request().method()==='GET')return r.continue();if(r.request().method()!=='GET'&&(u.pathname.includes('/rest/v1/')||u.pathname.includes('/functions/v1/'))&&!u.pathname.endsWith('/rest/v1/rpc/search_public_amazon_wishlists')){blockedWrites++;blockedWriteUrls.push(r.request().method()+' '+u.hostname+u.pathname)}return r.abort()};await context.route('**/*',guard);
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(origin+'/tools/plants/');await page.waitForFunction(()=>window.toolyaBuddy);await page.evaluate(()=>{toolyaBuddy.dismiss();toolyaBuddy.setMotion('off')});
+ await page.goto(origin+'/tools/plants/');await page.waitForFunction(()=>window.plantsCloudReady===true);await page.waitForFunction(()=>window.toolyaBuddy);await page.evaluate(()=>{toolyaBuddy.dismiss();toolyaBuddy.setMotion('off')});
  await page.waitForFunction(()=>{const f=document.querySelector('.toolya-idle .ty-frame');return f&&!f.hidden});
  assert.equal(await page.locator('.toolya-idle .ty-frame').evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)','sprite frame must not add a white image background');
  await page.addStyleTag({content:'.ty-frame{background-color:#fff}'});
