@@ -85,7 +85,7 @@ const delay=()=>new Promise(resolve=>setTimeout(resolve,80));
   assert.equal((await b.evaluate(()=>window.testDevice.state())).rendered,0,'stale review must not load');
   await b.locator('#toolya-connect-panel button').first().click();
   await b.locator('#toolya-connect-panel button').nth(1).click();
-  await b.waitForFunction(()=>window.testDevice&&document.querySelector('#toolya-connect-panel [role=status]').textContent.includes('bestätigt geladen'));
+  await b.waitForFunction(()=>window.testDevice&&document.querySelector('#toolya-connect-panel [role=status]').textContent.includes('nach Bestätigung geladen'),null,{timeout:5000}).catch(async error=>{throw Error('Connect confirmation: '+await b.locator('#toolya-connect-panel [role=status]').textContent()+'; '+error.message)});
   assert.deepEqual((await b.evaluate(()=>window.testDevice.state())).entries,[{id:'from-a'},{id:'newer-a'}]);
   await a.evaluate(()=>window.testDevice.add('third-a'));
   await assert.rejects(b.evaluate(()=>window.testDevice.add('conflict-b')),/revision conflict/);
