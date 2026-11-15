@@ -2,9 +2,10 @@ import {buddy,notify} from '../../shared/toolya/platform.mjs';
 import {wishSaveOutcome} from './wish-save-outcome.mjs';
 import {appendProductMetadata} from './product-card.mjs?v=20261114-mascot1';
 import {mountAmazonImport} from './amazon-import.mjs?v=20261114-mascot1';
+import {planWishExtrasImport} from './wish-extras-sync.mjs';
 import {mountListsDashboard} from './lists-dashboard.mjs?v=20261114-mascot1';
 import {parseAmazonUrl,affiliateUrl,sharedAmazonProductUrl} from './amazon-links.mjs';
-import {validateWishFields,validateHandle,validatePriority,isUniqueViolation,validateProfileFields,feedPage,validateCredentials,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink,priorityLabel} from './wishlist-utils.mjs';
+import {validateWishFields,validateHandle,validatePriority,isUniqueViolation,validateProfileFields,feedPage,validateCredentials,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink,priorityLabel,exportWishlistCsv,validateWishlistExportPage,exportWishlistJson,exportProgressText,previewWishlistBackup} from './wishlist-utils.mjs';
 import {db} from './toolya-client.mjs';
 const $=id=>document.getElementById(id);let user=null,profile=null,offset=0;let feedBusy=false;let feedRefreshPending=false;let feedRevision=0;let editingWishId=null;let editingWishBaseline=null;let editingWishExtrasBaseline=null;let editingWishFeedRevision=null;let authGeneration=0;let profileLoadGeneration=0;let wishEditorRevision=0;let wishSaveRunGeneration=0;const dashboard=mountListsDashboard(db,()=>user);const hiddenWishIds=new Set();let lastHiddenWishId=null;let renderedWishCount=0;const updateHiddenWishes=()=>{const count=hiddenWishIds.size;$('hiddenWishInfo').hidden=!count;$('restoreHiddenWishes').hidden=!count;$('undoHiddenWish').hidden=!count||lastHiddenWishId===null;$('hiddenWishInfo').textContent=count===1?'1 Wunsch für diese Sitzung ausgeblendet.':count+' Wünsche für diese Sitzung ausgeblendet.'};
 
@@ -97,6 +98,80 @@ for(const fieldId of ['url','productTitle','wishNote']){
 $('cancelEdit').onclick=()=>{resetWishEditor();$('saveWish').focus({preventScroll:true});$('saveWish').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'nearest'});report('Wunschbearbeitung abgebrochen.');};
 for(const id of ['url','productTitle','wishNote','priority','wishVisibility','wishImageUrl','wishTargetPrice','wishQuantity','wishStatus'])for(const type of ['input','change'])$(id).addEventListener(type,()=>{wishEditorRevision++});
 const run=fn=>async function(){const button=this instanceof HTMLButtonElement?this:null;if(button?.disabled)return;const isWishSave=button?.id==='saveWish',startedOwner=user?.id,startedRevision=wishEditorRevision,startedWish=editingWishId,saveRunGeneration=isWishSave?++wishSaveRunGeneration:null;if(button)button.disabled=true;if(isWishSave)$('wishSaveFeedback').textContent='';try{await fn()}catch(e){if(!isWishSave||(user?.id===startedOwner&&editingWishId===startedWish&&wishEditorRevision===startedRevision)){const message=wishlistErrorMessage(e);report(message);notify(isWishSave?'form-error':'error',message);if(isWishSave)$('wishSaveFeedback').textContent=message}}finally{if(button?.isConnected&&(!isWishSave||(user?.id===startedOwner&&saveRunGeneration===wishSaveRunGeneration)))button.disabled=false}};
+let pendingWishExtrasImport=null;
+let wishExtrasImportGeneration=0;
+let wishExtrasImportBusy=false;
+function clearWishExtrasImport(){
+ ++wishExtrasImportGeneration;
+ pendingWishExtrasImport=null;
+ $('wishExtrasImportPreview').hidden=true;
+ $('wishExtrasImportDetails').replaceChildren();
+ $('wishExtrasImportSummary').textContent='';
+}
+$('cancelWishExtrasImport').onclick=()=>{if(wishExtrasImportBusy)return;clearWishExtrasImport();$('wishExtrasImportFeedback').textContent='Import abgebrochen. Es wurde nichts übertragen.'};
+$('previewWishExtrasImport').onclick=run(async()=>{
+ if(wishExtrasImportBusy)return;
+ clearWishExtrasImport();
+ const generation=wishExtrasImportGeneration;
+ const ownerId=requireUser(),feedback=$('wishExtrasImportFeedback');
+ feedback.textContent='Eigene Wünsche und vorhandene Cloud-Einträge werden geprüft …';
+ let raw,local;
+ try{raw=localStorage.getItem(localWishExtrasKey(ownerId))}catch{feedback.textContent='Lokaler Speicher nicht lesbar. Kein Import.';return}
+ try{local=raw?JSON.parse(raw):{};if(!local||typeof local!=='object'||Array.isArray(local))throw Error()}catch{feedback.textContent='Lokale Zusatzdaten sind beschädigt. Es wurde nichts übertragen.';return}
+ const owned=[],remote={};
+ try{
+ for(let from=0;;from+=500){
+  const r=await db.from('wishlist_wishes').select('id').eq('user_id',ownerId).order('id',{ascending:true}).range(from,from+499);
+  if(user?.id!==ownerId||generation!==wishExtrasImportGeneration)return;
+  if(r.error){feedback.textContent='Eigene Wünsche konnten nicht vollständig geprüft werden. Kein Import.';return}
+  owned.push(...(r.data||[]).map(x=>String(x.id)));
+  if((r.data||[]).length<500)break;
+ }
+ for(let start=0;start<owned.length;start+=500){
+  const r=await db.from('wishlist_wish_extras').select('wish_id').eq('user_id',ownerId).in('wish_id',owned.slice(start,start+500));
+  if(user?.id!==ownerId||generation!==wishExtrasImportGeneration)return;
+  if(r.error){feedback.textContent='Cloud-Konflikte konnten nicht vollständig geprüft werden. Kein Import.';return}
+  for(const item of r.data||[])remote[String(item.wish_id)]=true;
+ }
+ if(user?.id!==ownerId||generation!==wishExtrasImportGeneration)return;
+ const plan=planWishExtrasImport(local,remote,owned);
+ const excluded=Object.keys(local).filter(id=>!owned.includes(id));
+ const entries=Object.entries(plan.toCreate);
+ const details=$('wishExtrasImportDetails');details.replaceChildren();
+ for(const [label,ids] of [['Für Import geeignet',entries.map(([id])=>id)],['Bereits in Cloud (Konflikt, wird übersprungen)',plan.conflicts],['Ungültig (wird übersprungen)',plan.invalid],['Nicht zu eigenen Wünschen zuordenbar (ausgeschlossen)',excluded]]){
+  const li=document.createElement('li');li.textContent=label+': '+ids.length+(ids.length?' (Wunsch-IDs: '+ids.join(', ')+')':'');details.append(li);
+ }
+ $('wishExtrasImportSummary').textContent=entries.length+' neue gültige Einträge; '+plan.conflicts.length+' Konflikte; '+plan.invalid.length+' ungültige; '+excluded.length+' ausgeschlossen. Keine vorhandenen Cloud-Daten werden überschrieben.';
+ $('confirmWishExtrasImport').disabled=!entries.length;
+ $('wishExtrasImportPreview').hidden=false;
+ pendingWishExtrasImport={ownerId,raw,entries};
+ feedback.textContent='Nur Vorschau: Noch keine Daten übertragen.';
+ }catch(error){if(user?.id===ownerId&&generation===wishExtrasImportGeneration){clearWishExtrasImport();feedback.textContent='Importvorschau wegen Verbindungs- oder Lesefehler fehlgeschlagen. Kein Import. '+wishlistErrorMessage(error)}}
+});
+$('confirmWishExtrasImport').onclick=run(async()=>{
+ if(wishExtrasImportBusy)return;
+ const preview=pendingWishExtrasImport,feedback=$('wishExtrasImportFeedback');
+ if(!preview||user?.id!==preview.ownerId){clearWishExtrasImport();feedback.textContent='Importvorschau abgelaufen. Bitte neu prüfen.';return}
+ let latestRaw;try{latestRaw=localStorage.getItem(localWishExtrasKey(preview.ownerId))}catch{clearWishExtrasImport();feedback.textContent='Lokaler Speicher nicht lesbar. Kein Import.';return}
+ if(latestRaw!==preview.raw){clearWishExtrasImport();feedback.textContent='Lokale Daten wurden seit der Vorschau geändert. Bitte erneut prüfen.';return}
+ if(!await buddy.confirm({title:'Cloud-Import bestätigen',message:preview.entries.length+' neue gültige Zusatzdatensätze privat in die Cloud übertragen? Vorhandene Cloud-Daten werden niemals überschrieben.',confirmLabel:'Importieren',danger:true}))return;
+ clearWishExtrasImport();
+ wishExtrasImportBusy=true;
+ $('previewWishExtrasImport').disabled=true;
+ $('confirmWishExtrasImport').disabled=true;
+ $('cancelWishExtrasImport').disabled=true;
+ let imported=0,conflicts=0,failed=0;
+ try{
+  for(const [wishId,extras] of preview.entries){
+   if(user?.id!==preview.ownerId){feedback.textContent='Import wegen Kontowechsel abgebrochen. Bereits übertragene Einträge bleiben bestehen.';return}
+   if(localStorage.getItem(localWishExtrasKey(preview.ownerId))!==preview.raw){feedback.textContent='Lokale Daten haben sich geändert. Import gestoppt. Bereits übertragene Einträge bleiben bestehen.';return}
+   const payload={wish_id:wishId,user_id:preview.ownerId,image_url:extras.imageUrl||null,target_price:extras.price,quantity:extras.quantity,wish_status:extras.status};
+   const r=await db.from('wishlist_wish_extras').insert(payload).select('wish_id').single();
+   if(r.error){if(r.error.code==='23505')conflicts++;else failed++}else imported++;
+  }
+  if(user?.id===preview.ownerId)feedback.textContent='Import beendet: '+imported+' neu übertragen, '+conflicts+' Cloud-Konflikte übersprungen, '+failed+' Fehler. Lokale Daten unverändert.';
+ }catch(error){if(user?.id===preview.ownerId)feedback.textContent='Import wegen Netzwerk- oder Speicherfehler gestoppt: '+imported+' neu übertragen, '+conflicts+' Konflikte übersprungen, '+failed+' Fehler. Bereits übertragene Einträge bleiben bestehen. '+wishlistErrorMessage(error)}finally{wishExtrasImportBusy=false;$('previewWishExtrasImport').disabled=false;$('confirmWishExtrasImport').disabled=false;$('cancelWishExtrasImport').disabled=false}
+});
 let wishExtrasCloudOperation=0;
 $('saveWishExtrasCloud').onclick=run(async()=>{
  const ownerId=requireUser(),wishId=editingWishId,revision=wishEditorRevision,operation=++wishExtrasCloudOperation;
@@ -146,6 +221,91 @@ $('signin').onclick=run(async()=>{let r;try{r=await db.auth.signInWithPassword(v
 $('signup').onclick=run(async()=>{let r;try{r=await db.auth.signUp({...validateCredentials($('email').value,$('password').value),options:{emailRedirectTo:new URL('./index.html',location.href).href}})}finally{$('password').value=''}if(r.error)throw r.error;$('email').value='';report('Registrierung gestartet; bitte E-Mail prüfen.');await auth()});
 $('logout').onclick=run(async()=>{let r;try{r=await db.auth.signOut()}finally{$('password').value=''}if(r.error)throw r.error;await auth();await refreshFeed()});
 $('saveProfile').onclick=run(async()=>{const ownerId=requireUser(),handle=validateHandle($('handle').value),{display_name,bio}=validateProfileFields($('displayName').value,$('bio').value);const avatarUrl=$('profileAvatarUrl').value.trim();if(avatarUrl&&(!/^https:\/\//i.test(avatarUrl)||avatarUrl.length>2048))throw Error('Profilbild benötigt eine gültige HTTPS-Adresse.');const r=await db.from('wishlist_profiles') .upsert({user_id:ownerId,handle,display_name,bio,avatar_url:avatarUrl||null},{onConflict:'user_id'});if(r.error){if(isUniqueViolation(r.error))throw Error('Dieser Benutzername ist bereits vergeben. Bitte einen anderen wählen.');throw r.error;}if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');await auth();if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');await refreshFeed();if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');for(const id of ['handle','displayName','bio','profileAvatarUrl'])$(id).value='';report('Profil gespeichert');notify('success','Profil gespeichert')});
+async function loadOwnWishesForExport(ownerId) {
+ const rows=[];
+ const pageSize=200;
+ for(let start=0;start<10000;start+=pageSize){
+  const r=await db.from('wishlist_wishes')
+   .select('priority,note,created_at,wishlist_products(asin,marketplace,title,image_url,price,description,scraped_at)')
+   .eq('user_id',ownerId).order('id',{ascending:true}).range(start,start+pageSize-1);
+  if(r.error)throw r.error;
+  if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert. Export abgebrochen.');
+  validateWishlistExportPage(r.data,pageSize);
+  rows.push(...r.data);
+  $('exportProgress').textContent=exportProgressText(rows.length);
+  if(r.data.length<pageSize)return rows;
+ }
+ throw Error('Zu viele Wünsche für einen Export. Bitte den Support kontaktieren.');
+}
+function downloadOwnBackup(data,mime,extension){
+ const blob=new Blob([data],{type:mime});
+ const objectUrl=URL.createObjectURL(blob);
+ try{
+  const a=document.createElement('a');
+  a.href=objectUrl;
+  a.download='meine-wunschliste-'+new Date().toISOString().slice(0,10)+'.'+extension;
+  document.body.append(a);
+  try{a.click()}finally{a.remove()}
+ }finally{setTimeout(()=>URL.revokeObjectURL(objectUrl),1000)}
+}
+async function runOwnExport(format){
+ const ownerId=requireUser();
+ $('exportProgress').textContent='Export wird vorbereitet …';
+ try{
+  const rows=await loadOwnWishesForExport(ownerId);
+  if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert. Export abgebrochen.');
+  if(format==='csv')downloadOwnBackup(exportWishlistCsv(rows),'text/csv;charset=utf-8','csv');
+  else if(format==='json')downloadOwnBackup(exportWishlistJson(rows,profile),'application/json;charset=utf-8','json');
+  else throw Error('Unbekanntes Exportformat');
+  $('exportProgress').textContent=rows.length+' Wünsche als '+format.toUpperCase()+' bereitgestellt.';
+  report(rows.length+' eigene Wünsche als '+format.toUpperCase()+' bereitgestellt.');
+ }catch(error){
+  $('exportProgress').textContent='Export fehlgeschlagen. Bitte erneut versuchen.';
+  throw error;
+ }
+}
+$('exportWishes').onclick=run(()=>runOwnExport('csv'));
+$('exportWishesJson').onclick=run(()=>runOwnExport('json'));
+$('backupFile').addEventListener('change',()=>{
+ $('backupPreview').replaceChildren();
+ $('backupPreviewStatus').textContent='';
+});
+$('previewBackup').onclick=run(async()=>{
+ const file=$('backupFile').files?.[0];
+ if(!file)throw Error('Bitte zuerst eine JSON-Sicherungsdatei auswählen.');
+ if(file.size>2_000_000)throw Error('Die Sicherungsdatei darf höchstens 2 MB groß sein.');
+ $('backupPreview').replaceChildren();
+ $('backupPreviewStatus').textContent='Sicherung wird lokal geprüft …';
+ try{
+  const data=previewWishlistBackup(await file.text());
+  const fragment=document.createDocumentFragment();
+  if(data.profile){
+   const heading=document.createElement('h4');
+   heading.textContent='Gesichertes Profil';
+   const summary=document.createElement('p');
+   summary.textContent=profileDisplayLabel(data.profile.display_name,data.profile.handle)+' · '+data.profile.bio;
+   fragment.append(heading,summary);
+  }
+  const heading=document.createElement('h4');
+  heading.textContent='Wünsche in der Sicherung ('+data.count+')';
+  fragment.append(heading);
+  for(const wish of data.wishes.slice(0,30)){
+   const p=document.createElement('p');
+   p.textContent=wish.title+' · '+wish.asin+' · '+priorityLabel(wish.priority)+(wish.note?' · '+wish.note:'');
+   fragment.append(p);
+  }
+  if(data.count>30){
+   const extra=document.createElement('p');
+   extra.textContent='Weitere '+(data.count-30)+' Wünsche werden in der Vorschau nicht angezeigt.';
+   fragment.append(extra);
+  }
+  $('backupPreview').replaceChildren(fragment);
+  $('backupPreviewStatus').textContent='Sicherung gültig: '+data.count+' Wünsche. Nur Vorschau – keine Daten wurden gespeichert.';
+ }catch(error){
+  $('backupPreviewStatus').textContent='Prüfung fehlgeschlagen. Es wurden keine Daten gespeichert.';
+  throw error;
+ }
+});
 $('saveWish').onclick=run(async()=>{const ownerId=requireUser();if(!profile)throw Error('Zuerst Profil speichern');const wishId=editingWishId;const editorRevision=wishEditorRevision;const targetList=wishId?null:dashboard.selectedList();const p=wishId?null:parseAmazonUrl($('url').value);if(!wishId&&(!p||p.marketplace!=='amazon.de'))invalidWishField($('url'),'Nur gültige Amazon.de-Produktlinks');let title,note;try{({title,note}=validateWishFields($('productTitle').value,$('wishNote').value))}catch(error){const message=wishlistErrorMessage(error);invalidWishField(message.startsWith('Notiz')?$('wishNote'):$('productTitle'),message)}const priority=validatePriority($('priority').value);const visibility=$('wishVisibility').value;if(!['public','private'].includes(visibility))throw Error('Ungültige Sichtbarkeit');const extras=readValidatedWishExtras();if(wishId){if(editingWishFeedRevision!==feedRevision)throw Error('Der Feed wurde seit dem Öffnen dieses Wunsches aktualisiert. Bitte Änderungen prüfen und den Wunsch aus dem aktuellen Feed erneut öffnen.');if(JSON.stringify(readWishExtras(ownerId,wishId))!==editingWishExtrasBaseline)throw Error('Zusatzdaten wurden in einem anderen Tab geändert. Bitte Wunsch erneut öffnen und Änderungen prüfen.');if(!editingWishBaseline||editingWishBaseline.id!==wishId)throw Error('Bearbeitungsstand ist veraltet. Bitte Wunsch erneut öffnen.');let wishUpdate=db.from('wishlist_wishes').update({note,priority,visibility}).eq('id',wishId).eq('user_id',ownerId);for(const field of ['note','priority','visibility']){const old=editingWishBaseline[field];wishUpdate=old===null?wishUpdate.is(field,null):wishUpdate.eq(field,old)}const changed=await wishUpdate.select('id');if(changed.error)throw changed.error;if(!changed.data?.length)throw Error('Der Wunsch wurde in einem anderen Tab geändert oder entfernt. Bitte Feed aktualisieren und erneut bearbeiten.');if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');const extrasSaved=saveWishExtras(ownerId,wishId,extras);let completionRevision=editorRevision;if(editingWishId===wishId&&wishEditorRevision===editorRevision){resetWishEditor();completionRevision=wishEditorRevision;}await refreshFeed();if(user?.id!==ownerId)return;await dashboard.refresh();if(user?.id!==ownerId)return;if(wishEditorRevision!==completionRevision||editingWishId!==null&&editingWishId!==wishId)return;const {type,message}=wishSaveOutcome({editing:true,extrasSaved});$('wishSaveFeedback').textContent=message;report(message);notify(type,message);return;}let r=await db.from('wishlist_products').select('id').eq('marketplace',p.marketplace).eq('asin',p.asin).maybeSingle();if(r.error)throw r.error;if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');let id=r.data?.id;if(!id){r=await db.from('wishlist_products').insert({...p,title}).select('id').single();if(r.error){if(!isUniqueViolation(r.error))throw r.error;const retry=await db.from('wishlist_products').select('id').eq('marketplace',p.marketplace).eq('asin',p.asin).single();if(retry.error)throw retry.error;id=retry.data.id}else id=r.data.id}if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');r=await db.from('wishlist_wishes').insert({user_id:ownerId,product_id:id,note,priority,visibility}).select('id').single();if(r.error){if(isUniqueViolation(r.error))throw Error('Dieses Produkt steht bereits auf deiner Wunschliste. Bitte den bestehenden Wunsch bearbeiten.');throw r.error;}if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');const extrasSaved=saveWishExtras(ownerId,r.data.id,extras);let assignmentError=null;if(targetList){try{await dashboard.assignWish(r.data.id,targetList,ownerId)}catch(e){assignmentError=e}}if(user?.id!==ownerId)return;let completionRevision=editorRevision;if(editingWishId===null&&wishEditorRevision===editorRevision){resetWishEditor();completionRevision=wishEditorRevision;}await refreshFeed();if(user?.id!==ownerId)return;await dashboard.refresh();if(user?.id!==ownerId)return;if(wishEditorRevision!==completionRevision||editingWishId!==null)return;const {type,message}=wishSaveOutcome({editing:false,extrasSaved,assignmentError:!!assignmentError});$('wishSaveFeedback').textContent=message;report(message);notify(type,message)});
 async function feed(){if(feedBusy){feedRefreshPending=true;return;}feedBusy=true;$('feed').setAttribute('aria-busy','true');const filter=$('feedFilter').value;const sort=$('feedSort').value;const feedUserId=user?.id;const revision=feedRevision;const requestedOffset=offset;const isStale=()=>isFeedRequestStale({offset:requestedOffset,revision,filter,sort,userId:feedUserId,profileId:null},{offset,revision:feedRevision,filter:$('feedFilter').value,sort:$('feedSort').value,userId:user?.id,profileId:null});try{if(!user){offset=0;$('feed').textContent='Bitte anmelden, um deine Wünsche zu sehen.';$('more').disabled=true;return;}const allowed=[user.id];let query=db.from('wishlist_wishes').select('id,user_id,priority,created_at,wishlist_products(asin,marketplace,title,image_url,price,description,scraped_at),wishlist_profiles(display_name,handle),note,visibility');if(sort==='priority')query=query.order('priority',{ascending:true});query=query.order('created_at',{ascending:false}).order('id',{ascending:false}).range(requestedOffset,requestedOffset+20);if(allowed)query=query.in('user_id',allowed);const r=await query;if(isStale()){feedRefreshPending=true;return;}if(r.error)throw r.error;const page=feedPage(r.data);
 // Fetch private extras only for wishes owned by the current account. Public cards
