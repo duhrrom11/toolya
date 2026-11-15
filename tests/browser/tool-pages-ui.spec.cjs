@@ -60,6 +60,27 @@ for(const item of tools){
     expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
     expect(outbound.every(u=>!u.startsWith(origin))).toBe(true);
   });
+  test(item.tool+': cloud write failure blocks UI and never claims saved',async({page})=>{
+    await isolated(page,true);
+    await page.goto(origin+item.path);
+    await expect(page.locator('#toolya-cloud-gate')).toHaveCount(0);
+    await page.evaluate(()=>{
+      window.__toolyaMock.writes.length=0;
+      window.supabaseClient.rpc=async()=>({data:null,error:{code:'40001',message:'mock conflict'}});
+    });
+    page.on('dialog',dialog=>dialog.dismiss());
+    if(item.tool==='autokosten-reifenwechsel'){
+      await page.locator('#carName').fill('Nicht gespeichert');
+      await page.getByRole('button',{name:'Fahrzeug speichern'}).click();
+    }else{
+      await page.locator('#receiptTitle').fill('Nicht gespeichert');
+      await page.locator('#receiptDate').fill('2026-11-15');
+      await page.locator('#receiptPrice').fill('12.50');
+      await page.locator('#saveBtn').click();
+    }
+    await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+    expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+  });
   test(item.tool+': authenticated UI loads real page with mock cloud',async({page})=>{
     const outbound=await isolated(page,true);
     await page.goto(origin+item.path);
