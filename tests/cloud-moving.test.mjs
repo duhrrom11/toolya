@@ -32,5 +32,5 @@ test('moving controller confirms writes and fails closed on conflict',async()=>{
 });
 test('moving controller rejects writes before load',async()=>{
   const controller=createMovingCloudController({read:async()=>({exists:false,revision:null,data:null}),save:async()=>{throw Error('unexpected')}});
-  await assert.rejects(controller.replace(changed));
+  await assert.rejects(controller.replace(changed), /Cloud-Daten noch nicht geladen/);
 });
