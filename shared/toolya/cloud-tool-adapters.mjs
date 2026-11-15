@@ -62,11 +62,6 @@ export async function prepareCloudTool({ client, tool, storage, confirmMigration
     async saveGoals(goals) {
       if (tool !== 'haushaltsbuch-kassenbon') throw new Error('Falscher Adapter.');
       return controller.mutate(snapshot => { snapshot.goals = goals; });
-    },
-    async importBackup(snapshot) {
-      // The caller must validate/preview the entire backup and obtain explicit
-      // consent before calling this method. No local writes are performed.
-      return controller.replace(snapshot);
     }
   });
 }
