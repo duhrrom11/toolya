@@ -73,3 +73,11 @@ body.b3-home[data-home-motion=off] *,body.b3-home[data-home-motion=off] *::befor
 .ty-duo-hidden .ty-hero-art,.ty-duo-hidden .ty-live-duo,.ty-duo-hidden .ty-mascot-hit{visibility:hidden}
 body.b3-home[data-home-motion=off] :is(button,a,.ty-tool-card):active{transform:none!important}
 @media(prefers-reduced-motion:reduce){body.b3-home :is(button,a,.ty-tool-card):active,body.b3-home .ty-tool-card:has(.ty-tool-link:active){transform:none!important}}
+/* Dedicated character cells preserve independently drawn gaze, eyelids and paws. */
+.ty-live-duo{align-items:stretch;justify-content:space-between;inset:2% 0 0;overflow:visible}
+.ty-hero-character{position:relative;z-index:2;flex:none;width:47%;height:94%;aspect-ratio:auto;background-size:400% 200%;background-repeat:no-repeat;mix-blend-mode:normal}
+.ty-hero-character[data-art=outfit]{height:auto;aspect-ratio:1;align-self:center;mix-blend-mode:multiply}
+.ty-hero-arch{position:absolute;z-index:1;width:38%;height:55%;object-fit:contain;left:31%;bottom:2%;pointer-events:none;filter:drop-shadow(0 12px 20px #8369b01a)}
+.ty-hero-stage[data-reaction=blink] .ty-hero-character{animation:none}
+
+.ty-hero-character[data-art=pose]{height:100%;width:auto;aspect-ratio:1/2;flex:0 0 auto}

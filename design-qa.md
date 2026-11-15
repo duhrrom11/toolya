@@ -29,9 +29,16 @@ final result: blocked
 
 ## Implementation details / remaining acceptance
 - Home-specific hover lift/glow, pointer tilt, press depression, star pop, finite reactions and category entrance transitions.
-- Duo uses existing independently drawn emotion/outfit atlas frames; these are frame illustrations and whole-character CSS motion, not skeletal animation or independently controlled gaze/limbs.
+- Duo now has dedicated 4×2 transparent pose atlases for both characters: neutral, blink, wave, point down-left, celebrate, laugh, gaze left and gaze right. Eyelids, gaze and paw positions are separately drawn states and independently selected per character. These are registered frame illustrations, not skeletal rigs. The arch is a separate transparent asset. Browser assessment of registration and transitions remains pending.
 - Category costumes: finance/bookkeeper, home/gardener, organization/planner, travel/mechanic, animals/pet helper. All resets to the approved hero duo.
 - Five taps within five seconds, 15-second cooldown, keyboard-native buttons, warning/dialog/quiet/hidden guards.
 - Reduced-motion, motion-off and hidden preferences integrated. No sound. Original runtime tools unchanged.
 - Follow-up: restore preview transport, visually compare same viewport and state, fix drift, exercise interactions and check console before release.
 - No merge, deployment or production data changes.
+
+## Continuation: 15 November 2026
+- GitHub run 43658283889 (Amazon) passed; estate-security job 132641657116 passed.
+- Platform job 132641656796 failed at the old `.toolya-idle` homepage locator: the redesign intentionally replaces that shortcut with the header duo. No application crash was reported in that failure.
+- Shared idle/keyboard/warning/dialog tests moved to the plants tool. Added real homepage touch/favorite persistence/category/settings/motion and desktop hover checks, with all production requests still blocked.
+- Dedicated character pose atlases, separate arch, offscreen pausing, cancellation of animations when settings/dialogs block motion, and back/forward-cache restoration implemented. New CI pending.
+- Cloud Browser local-preview transport retried and remains unavailable. No rendered visual acceptance claimed.
