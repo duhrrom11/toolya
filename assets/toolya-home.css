@@ -122,3 +122,39 @@ body.b3-home .b3-hub-hero::before{content:'';position:absolute;inset:0;z-index:-
 .ty-hero-stage .ty-hero-character{animation:none!important;transform:none!important}
 .ty-hero-stage .ty-live-duo{display:none!important}
 .ty-hero-stage .ty-hero-art{opacity:1!important;clip-path:none!important;transition:none}
+
+/* Make the eight formerly black tool pictograms colorful, like the first four illustrated cards. */
+body.b3-home .ty-tool-card .ty-tool-art[src$=".svg"]{
+ --icon-color:#327fb0;
+ width:76px;height:76px;margin:12px;
+ padding:13px;box-sizing:border-box;border-radius:23px;
+ background:color-mix(in srgb,var(--icon-color) 16%,white);
+ border:1px solid color-mix(in srgb,var(--icon-color) 25%,white);
+ filter:none!important;opacity:1;
+}
+/* Colored SVG glyphs are rendered using a themed CSS mask rather than the black SVG pixels. */
+body.b3-home .ty-tool-card .ty-tool-art[src$=".svg"]{visibility:hidden}
+body.b3-home .ty-tool-card .ty-tool-link:has(.ty-tool-art[src$=".svg"]){position:relative}
+body.b3-home .ty-tool-card .ty-tool-link:has(.ty-tool-art[src$=".svg"])::before{
+ content:"";position:absolute;left:12px;top:50%;transform:translateY(-50%);
+ width:76px;height:76px;border-radius:23px;
+ background:color-mix(in srgb,var(--icon-color) 16%,white);
+ border:1px solid color-mix(in srgb,var(--icon-color) 25%,white);
+ pointer-events:none;
+}
+body.b3-home .ty-tool-card .ty-tool-link:has(.ty-tool-art[src$=".svg"])::after{
+ content:"";position:absolute;left:29px;top:50%;transform:translateY(-50%);
+ width:42px;height:42px;background:var(--icon-color);
+ -webkit-mask:var(--icon-src) center/contain no-repeat;
+ mask:var(--icon-src) center/contain no-repeat;
+ pointer-events:none;
+}
+body.b3-home .ty-tool-card[data-id="wg-kasse"]{--icon-color:#d26a91;--icon-src:url("vendor/bootstrap-icons/house-heart.svg")}
+body.b3-home .ty-tool-card[data-id="notizen"]{--icon-color:#8363c8;--icon-src:url("vendor/bootstrap-icons/shield-lock.svg")}
+body.b3-home .ty-tool-card[data-id="kfz"]{--icon-color:#2d8bbf;--icon-src:url("vendor/bootstrap-icons/car-front.svg")}
+body.b3-home .ty-tool-card[data-id="haustier"]{--icon-color:#e57b76;--icon-src:url("vendor/bootstrap-icons/heart-pulse.svg")}
+body.b3-home .ty-tool-card[data-id="parken"]{--icon-color:#35a39c;--icon-src:url("vendor/bootstrap-icons/geo-alt.svg")}
+body.b3-home .ty-tool-card[data-id="verleih"]{--icon-color:#d28b38;--icon-src:url("vendor/bootstrap-icons/arrow-left-right.svg")}
+body.b3-home .ty-tool-card[data-id="energie"]{--icon-color:#e0a527;--icon-src:url("vendor/bootstrap-icons/lightning-charge.svg")}
+body.b3-home .ty-tool-card[data-id="backform"]{--icon-color:#b56bb0;--icon-src:url("vendor/bootstrap-icons/cake2.svg")}
+@media(max-width:370px){body.b3-home .ty-tool-card .ty-tool-link:has(.ty-tool-art[src$=".svg"])::before{left:10px;width:58px;height:58px;border-radius:17px}body.b3-home .ty-tool-card .ty-tool-link:has(.ty-tool-art[src$=".svg"])::after{left:23px;width:32px;height:32px}}
