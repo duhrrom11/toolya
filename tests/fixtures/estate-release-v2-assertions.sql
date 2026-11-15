@@ -33,6 +33,11 @@ BEGIN
  UPDATE estate_private.read_vaults SET alarm_started_at=now()-interval '25 hours',alarm_deadline=now()-interval '1 hour' WHERE owner_id=owner;
  response:=public.estate_release_v2('open',null,jsonb_build_object('hash',h1));
  IF response->'content' IS NULL THEN RAISE EXCEPTION 'single key denied after elapsed deadline: %',response; END IF;
+ -- A partially written alarm must never grant one-key access even with a missing deadline.
+ UPDATE estate_private.read_vaults SET alarm_deadline=NULL WHERE owner_id=owner;
+ response:=public.estate_release_v2('open',null,jsonb_build_object('hash',h1));
+ IF response->>'error' IS DISTINCT FROM 'two_keys_required' THEN RAISE EXCEPTION 'NULL deadline granted one-key access: %',response; END IF;
+ UPDATE estate_private.read_vaults SET alarm_deadline=now()-interval '1 hour' WHERE owner_id=owner;
  INSERT INTO auth.sessions(id,user_id) VALUES(session_id,owner);
  response:=public.estate_release_v2('cancel',owner,jsonb_build_object('session',session_id));
  IF response->>'status' IS DISTINCT FROM 'normal' THEN RAISE EXCEPTION 'owner cancellation did not reset status: %',response; END IF;
