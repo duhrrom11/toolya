@@ -80,16 +80,29 @@ async function renderTicker(){
 }
 async function loadProfile(){
  const {data:{user}}=await db.auth.getUser();sessionUser=user;
- $('profileForm').hidden=!user;status('profileStatus',user?'Angemeldet als '+user.email:'Bitte zuerst anmelden.');
+ $('profileForm').hidden=!user;$('auth').hidden=!!user;$('logoutPublic').hidden=!user;status('profileStatus',user?'Angemeldet als '+user.email:'Bitte zuerst anmelden.');
  if(!user){profile=null;return}
  const r=await db.from('wishlist_profiles').select('user_id,handle,display_name,first_name,last_name,country').eq('user_id',user.id).maybeSingle();
  if(r.error){status('profileStatus',r.error.message);return}
  profile=r.data;$('firstName').value=profile?.first_name||'';$('lastName').value=profile?.last_name||'';$('country').value=profile?.country||'';
 }
-$('login').onclick=async()=>{
- const email=$('email').value.trim();if(!email)return;
- const r=await db.auth.signInWithOtp({email,emailRedirectTo:location.href.split('#')[0]});status('profileStatus',r.error?r.error.message:'Prüfe deine E-Mails für den Anmeldelink.');
-};
+function credentials(){const email=$('email').value.trim(),password=$('password').value;if(!email||!password)throw new Error('Bitte E-Mail und Passwort eingeben.');return {email,password};}
+async function authenticate(mode){
+ const login=$('login'),signup=$('signup');login.disabled=true;signup.disabled=true;
+ try{
+  const values=credentials();
+  const r=mode==='signup'
+   ?await db.auth.signUp({...values,options:{emailRedirectTo:new URL('./index.html',location.href).href}})
+   :await db.auth.signInWithPassword(values);
+  if(r.error)throw r.error;
+  status('profileStatus',mode==='signup'&&!r.data.session?'Registrierung gestartet. Bitte bestätige deine E-Mail-Adresse.':'Erfolgreich angemeldet.');
+  await loadProfile();
+ }catch(error){status('profileStatus',error.message||'Anmeldung fehlgeschlagen.')}
+ finally{$('password').value='';login.disabled=false;signup.disabled=false}
+}
+$('login').onclick=()=>authenticate('signin');
+$('signup').onclick=()=>authenticate('signup');
+$('logoutPublic').onclick=async()=>{const r=await db.auth.signOut();if(r.error)status('profileStatus',r.error.message);else await loadProfile()};
 $('profileForm').onsubmit=async event=>{
  event.preventDefault();if(!sessionUser)return;
  const first_name=$('firstName').value.trim(),last_name=$('lastName').value.trim(),country=$('country').value.trim()||null;
