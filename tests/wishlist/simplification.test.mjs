@@ -380,3 +380,24 @@ test('invalid newer product search re-enables button while older request is pend
  await first;
  assert.equal(elements.searchProducts.disabled,false);
 });
+
+test('stale failed product search does not overwrite feedback for newer query',async()=>{
+ const planner=source('gift-planner.mjs');
+ const start=planner.indexOf('let productSearchRevision=0;');
+ const end=planner.indexOf("$('searchProducts').addEventListener",start);
+ assert.ok(start>=0&&end>start);
+ let finish;
+ const pending=new Promise(resolve=>finish=resolve);
+ const fields={productQuery:{value:'Geschenk'},productResults:{replaceChildren(){}},productSearchStatus:{textContent:''},searchProducts:{disabled:false}};
+ const db={from:()=>({select:()=>({ilike:()=>({order:()=>({limit:()=>pending})})})})};
+ const body="let user={id:'owner'},occasions=[],selectedProduct=null;const showProductSource=()=>{};\n"+planner.slice(start,end)+"\nreturn searchProducts;";
+ const search=new Function('$','db','document',body)(id=>fields[id],db,{createElement:()=>({})});
+ const request=search();
+ fields.productQuery.value='Neuer Begriff';
+ fields.productSearchStatus.textContent='Neue Eingabe';
+ finish({data:null,error:Error('offline')});
+ await request;
+ assert.equal(fields.productSearchStatus.textContent,'Neue Eingabe');
+ assert.equal(fields.productQuery.value,'Neuer Begriff');
+ assert.equal(fields.searchProducts.disabled,false);
+});
