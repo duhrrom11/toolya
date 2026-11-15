@@ -30,6 +30,7 @@ const listIdPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}
 const listUrl=id=>new URL('./public.html?list='+encodeURIComponent(id)+'#selectedList',location.href).href;
 async function renderSelectedList(){
  const id=new URL(location.href).searchParams.get('list');
+ document.body.classList.toggle('viewing-list',Boolean(id));
  const section=$('selectedList'),container=$('selectedListCard');
  if(!id){section.hidden=true;return}
  section.hidden=false;container.replaceChildren();
@@ -40,24 +41,65 @@ async function renderSelectedList(){
  if(error||!list){status('selectedListStatus','Diese Wunschliste ist nicht mehr öffentlich verfügbar.');return}
  const [owner,preview]=await Promise.all([
   db.from('wishlist_profiles').select('user_id,first_name,last_name,country').eq('user_id',list.user_id).maybeSingle(),
-  db.from('wishlist_amazon_publication_products').select('publication_id,title,description,product_url,image_url,asin,price').eq('publication_id',id).order('created_at',{ascending:false}).limit(10)
+  db.from('wishlist_amazon_publication_products').select('publication_id,title,description,product_url,image_url,asin,price').eq('publication_id',id).order('created_at',{ascending:false}).limit(500)
  ]);
  if(owner.error||preview.error){status('selectedListStatus','Die Wunschliste konnte nicht vollständig geladen werden.');return}
  const previousProfiles=profiles,previousProducts=products;
  try{
   profiles=[owner.data].filter(Boolean);
   products=preview.data||[];
-  container.append(card(list));
+  container.append(favoriteButton({...list,first_name:owner.data?.first_name,last_name:owner.data?.last_name}),detailCard(list));
  }finally{profiles=previousProfiles;products=previousProducts}
  status('selectedListStatus','');
 }
+
+const favKey='toolya-public-wishlist-favorites-v1';
+function loadFavorites(){try{const d=JSON.parse(localStorage.getItem(favKey)||'[]');return Array.isArray(d)?d.filter(x=>x&&listIdPattern.test(x.id)&&typeof x.title==='string'&&typeof x.name==='string').slice(0,100):[]}catch{return []}}
+let favorites=loadFavorites();
+const personName=list=>[list.first_name,list.last_name].filter(Boolean).join(' ')||[profiles.find(p=>p.user_id===list.user_id)?.first_name,profiles.find(p=>p.user_id===list.user_id)?.last_name].filter(Boolean).join(' ')||'Unbekanntes Profil';
+function renderFavorites(){
+ const wrap=$('favoriteItems');wrap.replaceChildren();
+ if(!favorites.length){const p=text('p','Noch keine Favoriten – markiere eine Wunschliste mit ☆.');wrap.append(p);return}
+ for(const item of favorites){const a=text('a',item.title);a.href=listUrl(item.id);a.title='von '+item.name;a.className='favorite-tile';wrap.append(a)}
+}
+function toggleFavorite(list){
+ const active=favorites.some(item=>item.id===list.id);
+ favorites=active?favorites.filter(item=>item.id!==list.id):[...favorites,{id:list.id,title:list.title||'Amazon-Wunschliste',name:personName(list)}];
+ try{localStorage.setItem(favKey,JSON.stringify(favorites))}catch{}
+ renderFavorites();
+ document.querySelectorAll('[data-favorite-id]').forEach(b=>{if(b.dataset.favoriteId!==list.id)return;b.textContent=active?'☆':'★';b.classList.toggle('active',!active);b.setAttribute('aria-pressed',String(!active));b.setAttribute('aria-label',active?'Als Favorit speichern':'Favorit entfernen')});
+}
+function favoriteButton(list){
+ const active=favorites.some(item=>item.id===list.id);
+ const b=text('button',active?'★':'☆');b.type='button';b.className='wishlist-favorite'+(active?' active':'');
+ b.dataset.favoriteId=list.id;b.setAttribute('aria-pressed',String(active));
+ b.setAttribute('aria-label',active?'Favorit entfernen':'Als Favorit speichern');
+ b.onclick=()=>toggleFavorite(list);return b;
+}
+function summaryCard(list){
+ const root=document.createElement('article');root.className='card wishlist-summary';root.id='list-'+list.id;
+ const content=document.createElement('div');content.className='wishlist-summary-content';
+ const heading=text('h3',list.title||'Amazon-Wunschliste'),by=text('p','von '+personName(list));
+ by.className='wishlist-by';
+ const link=text('a','Vollständige Liste bei Toolya öffnen →');link.href=listUrl(list.id);link.className='wishlist-open';
+ content.append(heading,by,link);root.append(content,favoriteButton(list));return root;
+}
+async function functionError(error){
+ const response=error?.context,code=response?.status;
+ if(code===546||code===504)return new Error('Der Amazon-Scraper hat sein Rechenzeitlimit erreicht. Die bisherige Liste bleibt erhalten.');
+ if(code===429)return new Error('Zu viele Aktualisierungen. Bitte später erneut versuchen.');
+ if(code===409)return new Error('Die Wunschliste wird bereits aktualisiert. Bitte später erneut versuchen.');
+ try{const data=await response?.json?.();if(typeof data?.error==='string')return new Error(data.error)}catch{}
+ return new Error(code?'Aktualisierung fehlgeschlagen (HTTP '+code+').':error?.message||'Aktualisierung fehlgeschlagen.');
+}
+
 function safeImageUrl(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&(/(^|\.)images-amazon\.com$/.test(u.hostname)||/(^|\.)ssl-images-amazon\.com$/.test(u.hostname)||/(^|\.)media-amazon\.com$/.test(u.hostname))?u.href:null}catch{return null}}
-function card(list){
+function detailCard(list){
  const person=profiles.find(p=>p.user_id===list.user_id);
  const name=[person?.first_name,person?.last_name].filter(Boolean).join(' ')||'Unbekanntes Profil';
- const root=document.createElement('article');root.className='card';root.id='list-'+list.id;
- root.append(text('h3',list.title||'Amazon-Wunschliste'),text('p',name+(person?.country?' · '+person.country:'')));
- const a=text('a','Amazon-Wunschliste öffnen');a.href=list.amazon_url;a.target='_blank';a.rel='noopener noreferrer nofollow';root.append(a);
+ const root=document.createElement('article');root.className='card detail-card';root.id='list-'+list.id;
+ root.append(text('h3',list.title||'Amazon-Wunschliste'),text('p','von '+name+(person?.country?' · '+person.country:'')));
+ const a=text('a','Original-Wunschliste bei Amazon öffnen');a.href=list.amazon_url;a.target='_blank';a.rel='noopener noreferrer nofollow';root.append(a);
  if(sessionUser?.id===list.user_id){
   const actions=document.createElement('div');actions.className='owner-actions';
   const message=text('span','');message.className='owner-message';message.setAttribute('role','status');
@@ -66,10 +108,11 @@ function card(list){
    update.disabled=true;remove.disabled=true;message.textContent='Amazon-Wunschliste wird erneut eingelesen …';
    try{
     const {data,error}=await db.functions.invoke('amazon-wishlist-scrape',{body:{publication_id:list.id}});
-    if(error)throw error;
+    if(error)throw await functionError(error);
     if(data?.status!=='success')throw new Error('Amazon konnte die Liste derzeit nicht vollständig einlesen. Vorhandene Produkte bleiben erhalten.');
     message.textContent='Liste aktualisiert. Im Amazon-Abruf erkannt: '+(data?.price_count??0)+' Preise und '+(data?.description_count??0)+' Beschreibungen. Weitere Angaben konnten bei diesem Abruf nicht sicher ausgelesen werden.';
     await refresh(false);
+    if(new URL(location.href).searchParams.get('list')===list.id)await renderSelectedList();
    }catch(e){message.textContent=e.message||'Aktualisierung fehlgeschlagen. Bestehende Produkte bleiben erhalten.'}
    finally{update.disabled=false;remove.disabled=false}
   };
@@ -87,7 +130,7 @@ function card(list){
   };
   actions.append(update,remove,message);root.append(actions);
  }
- const items=products.filter(p=>p.publication_id===list.id).slice(0,10);
+ const items=products.filter(p=>p.publication_id===list.id);
  if(items.length){const ul=document.createElement('ul');for(const p of items){const li=document.createElement('li');li.className='product-preview';const image=safeImageUrl(p.image_url);if(image){const img=document.createElement('img');img.src=image;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';li.append(img)}const details=document.createElement('span');details.append(text('strong',p.title||'Amazon-Produkt'));if(p.description)details.append(text('span',' – '+p.description));li.append(details);if(p.price!==null&&p.price!==undefined&&Number.isFinite(Number(p.price))){const price=text('span',' · '+new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(Number(p.price)));price.className='product-price';details.append(price)}if(p.product_url&&safeProductUrl(p.product_url)){const link=text('a',' Produkt ansehen');link.href=p.product_url;link.rel='noopener noreferrer';link.target='_blank';li.append(link)}ul.append(li)}root.append(ul);root.append(text('p','Produktvorschau – vollständige Liste bei Amazon öffnen.'))}
  else root.append(text('p',['pending','processing'].includes(list.scrape_status)?'Produktdaten werden geprüft …':'Produktdaten nicht verfügbar – Amazon-Link verwenden.'));
  return root;
@@ -106,20 +149,8 @@ async function refresh(reset=true){
  const rows=r.data||[];
  publications=rows.map(({first_name,last_name,country,...list})=>list);
  profiles=rows.map(x=>({user_id:x.user_id,first_name:x.first_name,last_name:x.last_name,country:x.country}));
- const ids=publications.map(x=>x.id);
- // Fetch each list's preview independently: a global limit can starve later lists.
- // Keep requests bounded (24 lists, 10 products each) and avoid exposing stale search results.
- const previews=await Promise.all(ids.map(async id=>{
-  const result=await db.from('wishlist_amazon_publication_products')
-   .select('publication_id,title,description,product_url,image_url,asin,price')
-   .eq('publication_id',id).order('created_at',{ascending:false}).limit(10);
-  return result;
- }));
- if(generation!==searchGeneration)return;
- products=previews.flatMap(result=>result.error?[]:result.data||[]);
- if(previews.some(result=>result.error))status('searchStatus','Einige Produktvorschauen sind derzeit nicht verfügbar.');
-
- const results=$('results');results.replaceChildren();for(const list of publications)results.append(card(list));
+ // Übersicht ohne Produktvorschauen: vollständige Produkte nur in der Detailansicht laden.
+ const results=$('results');results.replaceChildren();for(const list of publications)results.append(summaryCard(list));
  status('searchStatus',(rows.length?page*PAGE_SIZE+1:0)+'–'+(page*PAGE_SIZE+rows.length)+' Treffer'+(rows.length===PAGE_SIZE?' (weitere möglich)':'')+'.');
  $('prevPage').disabled=page===0;$('nextPage').disabled=rows.length<PAGE_SIZE;
  await renderTicker();
@@ -200,5 +231,7 @@ $('publishForm').onsubmit=async event=>{
 let debounce;$('search').addEventListener('input',()=>{clearTimeout(debounce);debounce=setTimeout(()=>refresh(true),250)});
 $('prevPage').onclick=()=>{if(page>0){page--;refresh(false)}};
 $('nextPage').onclick=()=>{page++;refresh(false)};
+window.addEventListener('storage',event=>{if(event.key===favKey){favorites=loadFavorites();renderFavorites()}});
 db.auth.onAuthStateChange(()=>setTimeout(loadProfile,0));
+renderFavorites();
 await loadProfile();await renderSelectedList();
