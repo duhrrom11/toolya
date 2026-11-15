@@ -69,7 +69,7 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
  await desktop.getByLabel('Animation',{exact:true}).selectOption('Normal');
  await desktop.locator('#cancelSettingsBtn').click();
  await desktop.locator('.ty-primary').hover();
- await desktop.waitForFunction(()=>document.querySelector('.ty-hero-stage').dataset.reaction==='point');
+ assert.equal(await desktop.locator('.ty-hero-stage').getAttribute('data-reaction'),null,'both header mascots remain static on hover');
  assert.equal(await desktop.locator('.ty-hero-character').count(),2,'both independent characters');
  await desktop.locator('.b3-hub-logo').hover();
  await desktop.waitForFunction(()=>!document.querySelector('.ty-hero-stage').dataset.reaction&&getComputedStyle(document.querySelector('.ty-hero-art')).opacity==='1'&&getComputedStyle(document.querySelector('.ty-live-duo')).opacity==='0');

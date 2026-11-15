@@ -16,6 +16,7 @@ jobs:
         with: {node-version: '22', cache: npm}
       - run: npm ci
       - run: node --test tests/mascot/*.test.mjs tests/platform/*.test.mjs tests/amazon/*.test.mjs
+      - run: node tests/platform/home-auth.cjs
       - run: node tests/platform/browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
