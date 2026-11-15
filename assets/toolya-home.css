@@ -107,3 +107,8 @@ body.b3-home .ty-tool-card{min-width:0;width:100%;max-width:100%;box-sizing:bord
  body.b3-home .ty-tool-card p{grid-column:1/-1;grid-row:2;margin:0;overflow-wrap:normal;font-size:15px!important;line-height:1.45}
  body.b3-home .ty-tool-card .fav-btn{top:20px;right:16px;translate:0 0;width:40px;height:40px}
 }
+/* Raster artwork supplies the quiet header waves and light points. */
+body.b3-home .b3-hub-hero{position:relative;isolation:isolate}
+body.b3-home .b3-hub-hero::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:url('./toolya/home/hero-atmosphere.webp') center bottom/100% 100% no-repeat;opacity:.7;animation:ty-atmosphere 3s ease-in-out 2}
+@keyframes ty-atmosphere{0%,100%{opacity:.7}50%{opacity:1}}
+@media(max-width:680px){body.b3-home .b3-hub-hero::before{background-size:auto 45%;opacity:.45}}

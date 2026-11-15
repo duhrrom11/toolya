@@ -63,3 +63,9 @@ final result: blocked
 ## CI comparison, third iteration
 - Platform job132645256647 passed on commit1001f93ee0c0d565f279051de27d0799c12c83e4; artifact14138629369 inspected. Mobile is now exactly320px wide; all card boxes fit.
 - [P2] Fitting the former side-by-side layout caused awkward single-letter title wraps at320px. Switched mobile cards to a compact icon/title header with full-width descriptions and a top-right favorite control. Desktop remains unchanged. Final mobile evidence pending.
+
+## Readable mobile cards confirmed
+- Commit674720c68c785b085b15ac0e2b7353600536922f: platform/estate-security run43659639470 and Amazon run43659639428 all passed. Artifact14139511964 inspected.
+- Mobile320×4603: long names now remain readable, descriptions use full card width, all favorite controls fit. Desktop1440×2612: stable hero, intended palette, favorites and first four card order confirmed. Composite `/tmp/toolya-home-readable-comparison.png` includes normalized source and actual CI screenshot in the same image.
+- Remaining design polish (P3): system sans-serif differs slightly from the illustrated mockup, auxiliary tool icons use the standard icon family, and quickstart labels wrap at320px. No remaining actionable P0/P1/P2 layout issue in these CI views.
+- Header atmosphere raster added afterward to complete the requested quiet blue/lavender waves and light points; final CI evidence to be checked next. Local-preview transport is still the sole handoff blocker.
