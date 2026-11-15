@@ -12,3 +12,6 @@
 .ty-footer-top{border:1px solid #a8dfe1;border-radius:30px;padding:9px 13px;background:#fff;color:#087a83;font:inherit;font-weight:700;cursor:pointer}
 .ty-footer-top:focus-visible{outline:3px solid #087a83;outline-offset:3px}
 @media(max-width:650px){.toolya-signature-footer{padding:14px;margin-top:24px}.ty-footer-inner{gap:12px}.ty-footer-mascot{width:56px;height:64px}.ty-footer-links{order:4;width:100%;margin:0;gap:12px}.ty-footer-top{margin-left:auto}}
+
+/* Match the existing homepage wordmark typography on tool pages too. */
+.ty-footer-brand .b3-hub-logo{font-size:32px;font-weight:900;letter-spacing:-1.4px;line-height:1.1}
