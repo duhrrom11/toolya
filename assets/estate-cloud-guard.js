@@ -25,7 +25,7 @@
   if(result.data?.length!==1||!result.data[0]?.updated_at)throw Error('conflict');
   return result.data[0].updated_at;
  }
- async function verifyEncryptedBackup({client,ownerId,vaultId,expectedStamp,key,cryptoApi,validatePayload}){
+ async function verifyEncryptedBackup({client,ownerId,vaultId,expectedStamp,key,cryptoApi,validatePayload,expectedEncryptedData,expectedEncryptedConfig,expectedRecoveryKey}){
   await requireOwner(client,ownerId);
   if(!key||!cryptoApi?.decrypt||typeof validatePayload!=='function')throw Error('invalid_vault');
   const {data:remote,error}=await client.from('vault_cloud_snapshots')
@@ -33,6 +33,11 @@
    .eq('owner_user_id',ownerId).single();
   if(error||!remote||remote.vault_id!==vaultId||remote.updated_at!==expectedStamp||
      !remote.recovery_key?.ciphertext)throw Error('backup_unverified');
+  // A matching revision alone does not prove that the just-written backup is intact.
+  if(expectedEncryptedData&&JSON.stringify(remote.encrypted_data)!==JSON.stringify(expectedEncryptedData)||
+     expectedEncryptedConfig&&JSON.stringify(remote.encrypted_config)!==JSON.stringify(expectedEncryptedConfig)||
+     expectedRecoveryKey&&JSON.stringify(remote.recovery_key)!==JSON.stringify(expectedRecoveryKey))
+   throw Error('backup_unverified');
   const payload=validatePayload(await cryptoApi.decrypt(remote.encrypted_data,key));
   await cryptoApi.decrypt(remote.encrypted_config,key);
   await requireOwner(client,ownerId);
