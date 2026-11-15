@@ -13,6 +13,7 @@ for(const [tool,items] of Object.entries(candidates)){
    const result=await scrape('https://www.amazon.de/dp/'+item.asin);
    const p=result.products?.[0];
    if(!result.complete||p?.asin!==item.asin||!p.title||!p.imageUrl)throw Error('Incomplete product');
+   if(item.label){const words=item.label.toLocaleLowerCase('de').split(/[^\\p{L}\\p{N}]+/u).filter(x=>x.length>=3);const title=p.title.toLocaleLowerCase('de');if(words.length&&!words.some(word=>title.includes(word)))throw Error('Product title does not match expected product');}
    const record={asin:p.asin,title:p.title,imageUrl:p.imageUrl,productUrl:p.productUrl,source:'amazon-scrape',scrapedAt:p.scrapedAt};
    const at=existing.findIndex(x=>x.asin===p.asin);
    if(at>=0)existing[at]=record;else existing.push(record);
