@@ -64,3 +64,12 @@ test('multibyte UTF-8 snapshots below conservative limit are accepted',async()=>
   assert.equal(result.revision,1);
   assert.equal(fake.calls,1);
 });
+
+test('cyclic and BigInt snapshots fail cleanly without contacting RPC',async()=>{
+  const fake=fakeClient(),repo=createCloudRepository(fake.client,'autokosten-reifenwechsel');
+  const cyclic={cars:[],events:[],tires:[]};
+  cyclic.self=cyclic;
+  await assert.rejects(repo.save(cyclic,null),/Cloud-Datenformat/);
+  await assert.rejects(repo.save({cars:[],events:[],tires:[],count:1n},null),/Cloud-Datenformat/);
+  assert.equal(fake.calls,0);
+});
