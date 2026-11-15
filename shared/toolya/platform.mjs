@@ -101,7 +101,6 @@ function mountFooter(){
  const old=document.querySelector('footer.b3-footer'),support=document.querySelector('footer.toolya-support');
  const footer=document.createElement('footer');footer.className='toolya-signature-footer';footer.setAttribute('aria-label','Toolya Seitenabschluss');
  const inner=document.createElement('div');inner.className='ty-footer-inner';
- const mascot=document.createElement('img');mascot.className='ty-footer-mascot';mascot.alt='Dein Toolya-Begleiter';mascot.width=76;mascot.height=86;mascot.loading='lazy';
  const brand=document.createElement('div');brand.className='ty-footer-brand';
  const headerLogo=document.querySelector('.b3-hub-logo');
  const logo=headerLogo?headerLogo.cloneNode(true):document.createElement('a');
@@ -113,9 +112,9 @@ function mountFooter(){
   const a=document.createElement('a');a.href=new URL('../../'+path,import.meta.url).href;a.textContent=label;links.append(a);
  }
  const top=document.createElement('button');top.className='ty-footer-top';top.type='button';top.textContent='↑ Nach oben';top.addEventListener('click',()=>window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}));
- inner.append(mascot,brand,links,top);footer.append(inner);
+ inner.append(brand,links,top);footer.append(inner);
  if(old)old.replaceWith(footer);else if(support)support.before(footer);else document.body.append(footer);
- syncFooterMascot();mountDonation();
+ mountDonation();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountFooter,{once:true});else mountFooter();
 
