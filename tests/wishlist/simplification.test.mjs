@@ -401,3 +401,23 @@ test('stale failed product search does not overwrite feedback for newer query',a
  assert.equal(fields.productQuery.value,'Neuer Begriff');
  assert.equal(fields.searchProducts.disabled,false);
 });
+
+test('reserved wish import ignores stale response after account switch',async()=>{
+ const planner=source('gift-planner.mjs');
+ const start=planner.indexOf('async function importReservedWish()');
+ const end=planner.indexOf('function showProductSource()',start);
+ assert.ok(start>=0&&end>start);
+ let finish;
+ const pending=new Promise(resolve=>finish=resolve);
+ const fields={status:{textContent:'Neue Sitzung'},title:{value:'Neu'},giftStatus:{value:'idea'},sourceList:{value:''},form:{scrollIntoView(){throw Error('stale form scroll')}}};
+ const location={search:'?reserved_wish=123',pathname:'/planner.html'};
+ const body="let user={id:'first'},occasions=[{id:'occasion'}],collections=[],selectedProduct=null;const showProductSource=()=>{};\n"+planner.slice(start,end)+"\nreturn {importReservedWish,setUser:id=>user={id},getProduct:()=>selectedProduct};";
+ const run=new Function('$','db','location','history','URLSearchParams',body)(id=>fields[id],{rpc:()=>pending},location,{replaceState(){throw Error('stale URL edit')}},URLSearchParams);
+ const request=run.importReservedWish();
+ run.setUser('second');
+ finish({data:[{wish_id:'123',product_id:'product',product_title:'Alt'}],error:null});
+ await request;
+ assert.equal(run.getProduct(),null);
+ assert.equal(fields.title.value,'Neu');
+ assert.equal(fields.status.textContent,'Neue Sitzung');
+});
