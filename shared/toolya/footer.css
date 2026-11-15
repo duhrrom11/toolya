@@ -4,7 +4,7 @@
 .ty-footer-inner{display:flex;align-items:center;gap:clamp(12px,2vw,28px);flex-wrap:wrap}
 .ty-footer-mascot{width:76px;height:86px;object-fit:contain;object-position:bottom;flex:none}
 .ty-footer-brand{display:flex;flex-direction:column;gap:4px;min-width:130px}
-.ty-footer-brand .b3-hub-logo{display:inline-flex;align-items:center;gap:6px;width:max-content;color:#076c75;text-decoration:none}
+.ty-footer-brand .ty-footer-wordmark{display:inline-flex;align-items:center;gap:6px;width:max-content;color:#076c75;text-decoration:none}
 .ty-footer-brand small{font-size:12px;color:#436474}
 .ty-footer-links{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;margin-left:auto}
 .ty-footer-links a{color:#19475a;font-size:14px;font-weight:600;text-decoration:none}
@@ -14,4 +14,4 @@
 @media(max-width:650px){.toolya-signature-footer{padding:14px;margin-top:24px}.ty-footer-inner{gap:12px}.ty-footer-mascot{width:56px;height:64px}.ty-footer-links{order:4;width:100%;margin:0;gap:12px}.ty-footer-top{margin-left:auto}}
 
 /* Match the existing homepage wordmark typography on tool pages too. */
-.ty-footer-brand .b3-hub-logo{font-size:32px;font-weight:900;letter-spacing:-1.4px;line-height:1.1}
+.ty-footer-brand .ty-footer-wordmark{font-size:32px;font-weight:900;letter-spacing:-1.4px;line-height:1.1}
