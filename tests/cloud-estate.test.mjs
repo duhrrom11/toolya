@@ -158,3 +158,13 @@ test('estate emergency replica maps distinct tokens to the same authenticated en
  const canonical=await C.readReplica(entries,[people[0]],{p1:first.toUpperCase()});
  assert.equal(canonical.guardians[0].hash,await C.hash(first));
 });
+
+test('estate emergency edge validates distinct trustee keys before RPC and restricts second key to open',()=>{
+ const source=readFileSync(new URL('../supabase/functions/estate-emergency/index.ts',import.meta.url),'utf8');
+ const duplicate=source.indexOf("b.secondKey===b.key");
+ const onlyOpen=source.indexOf("action!=='open'");
+ const rpcOpen=source.indexOf("const result=await rpc(action,null,{hash:keyHash");
+ assert.ok(duplicate>0&&onlyOpen>duplicate&&rpcOpen>onlyOpen,'invalid emergency key combinations must be rejected before RPC');
+ assert.match(source,/if\(action==='alarm'&&!mailReady\)return reply\(503,\{error:'notification_unavailable'\}\)/);
+ assert.match(source,/return reply\(result\.error\?403:200,result\)/);
+});
