@@ -168,3 +168,31 @@ test('estate emergency edge validates distinct trustee keys before RPC and restr
  assert.match(source,/if\(action==='alarm'&&!mailReady\)return reply\(503,\{error:'notification_unavailable'\}\)/);
  assert.match(source,/return reply\(result\.error\?403:200,result\)/);
 });
+
+test('estate release contract: two distinct trustees or confirmed 24h delivery required',()=>{
+ // Isolated state-machine contract mirroring the inspected estate_release_v2 SQL.
+ const canRead=({first,second,guardians,startedAt,deadline,canceledAt,now})=>{
+  if(!guardians.includes(first))return false;
+  if(second!==undefined)return second!==first&&guardians.includes(second);
+  return startedAt!==null&&deadline!==null&&deadline<=now&&canceledAt===null;
+ };
+ const base={first:'guardian-a',guardians:['guardian-a','guardian-b'],startedAt:null,deadline:null,canceledAt:null,now:100};
+ assert.equal(canRead(base),false,'an undelivered alarm must never grant one-key access');
+ assert.equal(canRead({...base,second:'guardian-a'}),false,'same key twice is not two people');
+ assert.equal(canRead({...base,second:'outsider'}),false,'second key must belong to this vault');
+ assert.equal(canRead({...base,second:'guardian-b'}),true,'two distinct registered people can read');
+ assert.equal(canRead({...base,startedAt:10,deadline:110}),false,'24-hour deadline must elapse');
+ assert.equal(canRead({...base,startedAt:10,deadline:100}),true,'delivered and elapsed alarm grants one key');
+ assert.equal(canRead({...base,startedAt:10,deadline:100,canceledAt:99}),false,'owner cancellation revokes one-key access');
+ assert.equal(canRead({...base,startedAt:10,deadline:null}),false,'missing deadline never releases');
+ assert.equal(canRead({...base,first:'unknown',startedAt:10,deadline:100}),false,'unregistered key never reads');
+});
+
+test('estate edge routes trustee access through service-role RPC without exposing raw tokens',()=>{
+ const source=readFileSync(new URL('../supabase/functions/estate-emergency/index.ts',import.meta.url),'utf8');
+ assert.match(source,/admin\.rpc\('estate_release_v2'/);
+ assert.match(source,/const keyHash=await hash\(b\.key\)/);
+ assert.match(source,/secondHash:await hash\(b\.secondKey\)/);
+ assert.match(source,/if\(action==='alarm'&&!result\.error\)\{await deliverOne\(\)/);
+ assert.doesNotMatch(source,/rpc\(action,null,\{[^}]*\bkey:b\.key/);
+});
