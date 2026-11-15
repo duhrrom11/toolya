@@ -107,6 +107,8 @@ export async function handler(req:Request):Promise<Response> {
    return reply(result.error?409:200,{...result,notifications:mailReady});
   }
   if(!['open','alarm','trustee-status'].includes(action)||typeof b.key!=='string'||!hex.test(b.key) || (b.secondKey!==undefined && (typeof b.secondKey!=='string'||!hex.test(b.secondKey))))return reply(400,{error:'invalid_keys'});
+  if(b.secondKey!==undefined && b.secondKey===b.key)return reply(400,{error:'invalid_keys'});
+  if(b.secondKey!==undefined && action!=='open')return reply(400,{error:'invalid_keys'});
   if(action==='alarm'&&!mailReady)return reply(503,{error:'notification_unavailable'});
   const keyHash=await hash(b.key);
   if(!(await rpc('limit',null,{bucket:'key:'+keyHash})).allowed)return reply(429,{error:'rate_limited'});

@@ -6,7 +6,7 @@
  const $=id=>document.getElementById(id);
  let user=null,key=null,payload=null,config=null,record=null,stamp=null,version=0,mailReady=false,busy=false,ownRaw=null,editId=null,idle=null;
  function message(text,error=false){$('message').hidden=false;$('message').textContent=text;$('message').classList.toggle('error',error);}
- const errors={conflict:'Der Tresor wurde auf einem anderen Gerät geändert. Nutze zunächst das Gerät mit dem aktuellen Stand. Deine Änderungen hier bleiben verschlüsselt erhalten.',login_required:'Bitte melde dich erneut an.',backup_required:'Bitte sichere zuerst deinen Tresor online.',rate_limited:'Zu viele Versuche. Bitte warte eine Minute.',notification_unavailable:'Die Alarm-E-Mail ist noch nicht eingerichtet. Es wurde kein Alarm gestartet.',reauthenticate:'Bitte bestätige dein Konto-Passwort erneut.'};
+ const errors={vault_mismatch:'Der Gerätetresor und die Online-Sicherung gehören zu unterschiedlichen Tresoren. Beide Stände bleiben unverändert. Bitte nutze ein anderes Browserprofil.',conflict:'Der Tresor wurde auf einem anderen Gerät geändert. Nutze zunächst das Gerät mit dem aktuellen Stand. Deine Änderungen hier bleiben verschlüsselt erhalten.',login_required:'Bitte melde dich erneut an.',backup_required:'Bitte sichere zuerst deinen Tresor online.',rate_limited:'Zu viele Versuche. Bitte warte eine Minute.',notification_unavailable:'Die Alarm-E-Mail ist noch nicht eingerichtet. Es wurde kein Alarm gestartet.',reauthenticate:'Bitte bestätige dein Konto-Passwort erneut.'};
  function errorText(e){return errors[e.message] || (e.message?.startsWith('Bitte ')||e.message?.startsWith('Deine ')||e.message?.startsWith('Dieser ')||e.message?.startsWith('Die ')||e.message?.startsWith('Vorhandene ')||e.message?.startsWith('Kein ') ? e.message : 'Das hat nicht geklappt. Prüfe deine Verbindung und deine Passwörter. Vorhandene Daten bleiben erhalten.');}
  async function run(fn){if(busy)return;busy=true;document.querySelectorAll('button').forEach(b=>{if(!b.closest('dialog'))b.disabled=true;});try{await fn();}catch(e){message(errorText(e),true);window.toolyaNotice?.('error',errorText(e),'concerned');}finally{busy=false;document.querySelectorAll('button').forEach(b=>b.disabled=false);}}
  function node(tag,text,cls){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(cls)el.className=cls;return el;}
@@ -22,8 +22,8 @@
  $('logout').onclick=()=>run(async()=>{lock();await db.auth.signOut();user=null;$('logout').hidden=true;$('account-label').textContent='';});
  window.addEventListener('storage',e=>{if(e.key===STORE&&key&&e.newValue!==ownRaw)lock('Der Tresor wurde in einem anderen Fenster geändert. Bitte melde dich erneut an.');});
  db.auth.onAuthStateChange((event,session)=>{if(user&&(!session||session.user.id!==user.id))lock('Das Konto wurde gewechselt. Bitte öffne deinen Tresor erneut.');});
- function localWrite(value){if(!key||!user||value?.version!==2||value.ownerId!==user.id||!value.encryptedData?.ciphertext||!value.encryptedConfig?.ciphertext||!value.recoveryKey?.ciphertext)throw Error('login_required');const raw=JSON.stringify(value);if(ownRaw!==null&&localStorage.getItem(STORE)!==ownRaw)throw Error('conflict');localStorage.setItem(STORE,raw);ownRaw=raw;record=value;}
- async function authenticated(){const {data,error}=await db.auth.getUser();if(error||!data.user||data.user.id!==user?.id)throw Error('login_required');return data.user;}
+ function localWrite(value){if(!key||!user||value?.version!==2||value.ownerId!==user.id||!value.encryptedData?.ciphertext||!value.encryptedConfig?.ciphertext||!value.recoveryKey?.ciphertext)throw Error('login_required');const raw=JSON.stringify(value);EstateCloudGuard.assertLocalSnapshot(ownRaw,localStorage.getItem(STORE));localStorage.setItem(STORE,raw);ownRaw=raw;record=value;}
+ async function authenticated(){return EstateCloudGuard.requireOwner(db,user?.id);}
  function validatePayload(p){if(!p||!Array.isArray(p.entries)||p.entries.length>10000)throw Error('invalid_vault');return p;}
  function normalizeConfig(c){const cfg={...c};delete cfg.masterKeyHex;delete cfg.encryptedData;delete cfg.recoveryKey;delete cfg.recovery_key;cfg.alarmPersons=Array.isArray(cfg.alarmPersons)?cfg.alarmPersons:[];cfg.checkInIntervalDays=[30,60,90].includes(Number(cfg.checkInIntervalDays))?Number(cfg.checkInIntervalDays):30;cfg.remindersEnabled=cfg.remindersEnabled===true;return cfg;}
  async function openOwner(account,password,vaultPassword){
@@ -32,6 +32,7 @@
   if(error)throw error;
   ownRaw=localStorage.getItem(STORE);let local=ownRaw?JSON.parse(ownRaw):null;
   if(local?.version===2&&local.ownerId!==user.id)throw Error('Dieser Gerätetresor gehört zu einem anderen Konto. Bitte verwende das passende Konto oder ein anderes Browserprofil.');
+  EstateCloudGuard.assertRestoreCompatible(local,remote);
   let workingKey,workingPayload,workingConfig,recovery,restore=false;
   if(local?.version===2){
    workingKey=await C.unwrap(local.recoveryKey,vaultPassword);workingPayload=validatePayload(await C.decrypt(local.encryptedData,workingKey));workingConfig=normalizeConfig(await C.decrypt(local.encryptedConfig,workingKey));recovery=local.recoveryKey;stamp=local.cloudStamp||null;
@@ -44,25 +45,34 @@
    if(local.ownerEmail&&local.ownerEmail.toLowerCase()!==user.email.toLowerCase()&&remote?.vault_id!==local.vaultId)throw Error('Dieser Gerätetresor nennt eine andere E-Mail-Adresse. Bitte melde dich mit dem dazugehörigen Konto an.');
    if(remote&&remote.vault_id!==local.vaultId)throw Error('Dieser Gerätetresor und deine Online-Sicherung sind unterschiedlich. Bitte öffne die Online-Sicherung in einem anderen Browserprofil. Beide Stände bleiben erhalten.');
    workingKey=local.masterKeyHex;workingPayload=validatePayload(await C.decrypt(local.encryptedData,workingKey));workingConfig=normalizeConfig(local);stamp=remote?.updated_at||null;
-   if(remote&&JSON.stringify(remote.encrypted_data)!==JSON.stringify(local.encryptedData)){
+   if(remote&&(JSON.stringify(remote.encrypted_data)!==JSON.stringify(local.encryptedData)||remote.encrypted_config)){
     const cloud=validatePayload(await C.decrypt(remote.encrypted_data,workingKey));
+    const cloudConfig=remote.encrypted_config?normalizeConfig(await C.decrypt(remote.encrypted_config,workingKey)):workingConfig;
+    EstateCloudGuard.assertLegacyMergeSafe(workingPayload,workingConfig,cloud,cloudConfig);
     // Preserve conflicting entry revisions instead of silently choosing one.
     for(const e of cloud.entries){const existing=workingPayload.entries.find(x=>String(x.id)===String(e.id));if(!existing)workingPayload.entries.push(e);else if(JSON.stringify(existing)!==JSON.stringify(e))workingPayload.entries.push({...e,id:crypto.randomUUID(),title:(e.title||'Unterlage')+' (Online-Stand)'});}
-    if(remote.encrypted_config){const cloudConfig=normalizeConfig(await C.decrypt(remote.encrypted_config,workingKey));for(const p of cloudConfig.alarmPersons){if(!workingConfig.alarmPersons.some(x=>String(x.id)===String(p.id)))workingConfig.alarmPersons.push(p);}}
+    if(remote.encrypted_config){for(const p of cloudConfig.alarmPersons){if(!workingConfig.alarmPersons.some(x=>String(x.id)===String(p.id)))workingConfig.alarmPersons.push(p);}}
     for(const [id,k]of Object.entries(cloud.trusteeKeys||{})){if(!workingPayload.trusteeKeys?.[id]){workingPayload.trusteeKeys||={};workingPayload.trusteeKeys[id]=k;}}
    }
    if(!await confirmAction('Bestehenden Tresor schützen','Deine Unterlagen und Kontakte bleiben erhalten. Der bisher ungeschützt auf diesem Gerät gespeicherte Hauptschlüssel wird jetzt mit deinem Tresorpasswort geschützt. Bewahre dieses Passwort gut auf.'))return;
    recovery=await C.wrap(workingKey,vaultPassword);
   }else if(remote){
-   if(!remote.recovery_key)throw Error('Deine Online-Sicherung braucht noch das ursprüngliche Gerät. Lege dort zuerst ein Passwort für den Gerätewechsel fest.');
-   workingKey=await C.unwrap(remote.recovery_key,vaultPassword);workingPayload=validatePayload(await C.decrypt(remote.encrypted_data,workingKey));workingConfig=normalizeConfig(remote.encrypted_config?await C.decrypt(remote.encrypted_config,workingKey):{});workingConfig.vaultId=remote.vault_id;recovery=remote.recovery_key;stamp=remote.updated_at;restore=true;
+   // Recover only an authenticated, decryptable cloud vault; keep all existing browser data intact.
+   const restored=await EstateCloudGuard.restoreCloudSnapshot({
+    client:db,ownerId:user.id,password:vaultPassword,cryptoApi:C,validatePayload
+   });
+   if(!restored||restored.remote.vault_id!==remote.vault_id||
+      restored.stamp!==remote.updated_at)throw Error('conflict');
+   workingKey=restored.key;workingPayload=restored.payload;
+   workingConfig=normalizeConfig(restored.config);
+   recovery=restored.recovery;stamp=restored.stamp;restore=true;
   }else{
    workingKey=C.random();workingPayload={entries:[],trusteeKeys:{}};workingConfig={vaultId:'v_'+C.random().slice(0,32),ownerName:'',ownerEmail:user.email,alarmPersons:[],trustees:[],checkInIntervalDays:30,lastCheckIn:new Date().toISOString(),remindersEnabled:false};recovery=await C.wrap(workingKey,vaultPassword);stamp=null;
   }
   if(workingConfig.alarmPersons.length>10)throw Error('Deine bisherigen Kontakte bleiben erhalten. Bitte reduziere die Kontaktliste zuerst im bisherigen Stand auf zehn Personen.');
   key=workingKey;payload=workingPayload;config=workingConfig;payload.trusteeKeys||={};
-  // Existing preparation keys remain valid; only contacts without a key receive one.
-  for(const p of config.alarmPersons){p.id=String(p.id||('p_'+C.random().slice(0,32)));if(!/^[a-f0-9]{64}$/.test(payload.trusteeKeys[p.id]||''))payload.trusteeKeys[p.id]=C.random();}
+  // Missing keys may be created, but an existing issued key must never be silently rotated.
+  for(const p of config.alarmPersons){p.id=String(p.id||('p_'+C.random().slice(0,32)));const existing=payload.trusteeKeys[p.id];if(existing!==undefined&&!(typeof existing==='string'&&/^[a-f0-9]{64}$/i.test(existing)))throw Error('conflict');if(existing===undefined)payload.trusteeKeys[p.id]=C.random();}
   config.ownerEmail=user.email;config.vaultId=local?.vaultId||remote?.vault_id||config.vaultId;
   const encryptedData=await C.encrypt(payload,key),encryptedConfig=await C.encrypt(config,key);
   // Check the replacement before atomically replacing the legacy plaintext-key record.
@@ -78,14 +88,25 @@
  async function persist(){if(!key)throw Error('login_required');await authenticated();const encryptedData=await C.encrypt(payload,key),encryptedConfig=await C.encrypt(config,key);if(JSON.stringify(encryptedData).length>1000000)throw Error('Deine Unterlagen sind zu groß für diesen Tresor. Bitte kürze den letzten Eintrag.');localWrite({...record,encryptedData,encryptedConfig,pending:true});render();await sync();}
  async function sync(){
   await authenticated();if(!record||!key)throw Error('login_required');
-  const snapshot=ownRaw;const {data:remote,error}=await db.from('vault_cloud_snapshots').select('vault_id,encrypted_data,encrypted_config,updated_at').eq('owner_user_id',user.id).maybeSingle();if(error)throw error;
-  if(remote&&(remote.vault_id!==config.vaultId||remote.updated_at!==stamp))throw Error('conflict');
-  const data={encrypted_data:record.encryptedData,encrypted_config:record.encryptedConfig,recovery_key:record.recoveryKey,updated_at:new Date().toISOString()};
-  let result;
-  if(remote)result=await db.from('vault_cloud_snapshots').update(data).eq('owner_user_id',user.id).eq('vault_id',config.vaultId).eq('updated_at',remote.updated_at).select('updated_at');
-  else result=await db.from('vault_cloud_snapshots').insert({...data,owner_user_id:user.id,vault_id:config.vaultId}).select('updated_at');
-  if(result.error)throw result.error;if(result.data?.length!==1)throw Error('conflict');if(snapshot!==localStorage.getItem(STORE))throw Error('conflict');
-  stamp=result.data[0].updated_at;localWrite({...record,cloudStamp:stamp,pending:false});
+  // Validate recipient IDs and key uniqueness before any cloud snapshot is written.
+  await C.readReplica([],config.alarmPersons,payload.trusteeKeys);
+  const snapshot=ownRaw;
+  const confirmedStamp=await EstateCloudGuard.saveEncryptedSnapshot({
+   client:db,ownerId:user.id,vaultId:config.vaultId,expectedStamp:stamp,
+   encryptedData:record.encryptedData,encryptedConfig:record.encryptedConfig,recoveryKey:record.recoveryKey
+  });
+  EstateCloudGuard.assertLocalSnapshot(snapshot,localStorage.getItem(STORE));
+  await authenticated();
+  // Never mark the local recovery copy as synchronized until the remote ciphertext is readable.
+  await EstateCloudGuard.verifyEncryptedBackup({
+   client:db,ownerId:user.id,vaultId:config.vaultId,expectedStamp:confirmedStamp,
+   key,cryptoApi:C,validatePayload,
+   expectedEncryptedData:record.encryptedData,expectedEncryptedConfig:record.encryptedConfig,
+   expectedRecoveryKey:record.recoveryKey
+  });
+  // A second tab may have changed the local encrypted snapshot during remote verification.
+  EstateCloudGuard.assertLocalSnapshot(snapshot,localStorage.getItem(STORE));
+  stamp=confirmedStamp;localWrite({...record,cloudStamp:stamp,pending:false});
   try{
    const replica=await C.readReplica([...payload.entries,...(payload.funeralWishes?[{id:'funeral-wishes',title:'Meine Bestattungswünsche',category:'Posthum',content:payload.funeralWishes}]:[])],config.alarmPersons,payload.trusteeKeys);
    replica.guardians=replica.guardians.map(g=>({...g,email:config.alarmPersons.find(p=>p.id===g.id).contact}));

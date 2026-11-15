@@ -1,0 +1,52 @@
+name: Isolated Toolya browser tests
+
+on:
+  push:
+    branches:
+      - feature/toolya-connect-phase-b
+    paths:
+      - '.github/workflows/toolya-browser-tests.yml'
+      - 'tests/browser/**'
+      - 'playwright.config.cjs'
+      - 'scripts/home-preview.cjs'
+      - 'tools/car/**'
+      - 'tools/budget/**'
+      - 'tools/moving/**'
+      - 'tools/loans/**'
+      - 'tools/meters/**'
+      - 'tools/plants/**'
+      - 'tools/parking/**'
+      - 'tools/pet-health/**'
+      - 'tools/baking/**'
+      - 'tools/wishes/**'
+      - 'tools/estate/**'
+      - 'shared/toolya/**'
+      - 'assets/**'
+      - 'package*.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-browser-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Run isolated Toolya cloud-only UI tests
+        run: npx playwright test tests/browser/tool-pages-ui.spec.cjs --reporter=line
+      - name: Upload Playwright diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: toolya-browser-test-results
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

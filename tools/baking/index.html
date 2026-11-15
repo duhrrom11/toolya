@@ -18,7 +18,7 @@
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
     <script>
-        tailwind.config = {
+        if (typeof tailwind !== 'undefined') tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
@@ -43,6 +43,7 @@
     <script src="../../shared/helferlein-cloud-migration.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
+        return; // disable local-first legacy bridge
         if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore || window.helferleinCloudBridge) return;
         if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
         window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
@@ -650,13 +651,15 @@
 
     <!-- JavaScript Logik -->
     <script>
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
 
         // Supabase Konfiguration & Instanz
         const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        supabaseClient.auth.onAuthStateChange(() => {
+        supabaseClient.auth.onAuthStateChange((event,session) => {
+            if(bakingCloudReady&&(!session?.user?.id||session.user.id!==bakingCloudUserId||session.user.is_anonymous))
+                bakingCloudBlock('Sitzung geändert. Bitte neu anmelden.');
             setTimeout(() => { checkUserSession().catch(() => {}); }, 0);
         });
 
@@ -910,39 +913,59 @@
             saveRecipeToStorage(name, rawText, factor);
         }
 
-        function persistRecipes(recipes) {
-            if (!Array.isArray(recipes) || recipes.some(r => !r || typeof r !== 'object' || Array.isArray(r))) {
-                alert('Ungültige Rezeptliste. Daten nicht gespeichert.');
-                return false;
-            }
-            if (localStorage.getItem('helferlein_cloud_owner_backform-umrechner') && !window.helferleinCloudBridge) {
-                alert('Cloud-Kontoschutz nicht geladen. Bitte Seite neu öffnen.');
-                return false;
-            }
-            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
-                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
-                return false;
-            }
-            try {
-                const existing = localStorage.getItem('helperly_recipes_pro');
-                if (existing !== null && !Array.isArray(JSON.parse(existing))) throw new Error('invalid recipes');
-                localStorage.setItem('helperly_recipes_pro', JSON.stringify(recipes)); window.toolyaNotice?.('success','Änderungen auf diesem Gerät gespeichert.');
-                if (window.helferleinCloudBridge) {
-                    void window.helferleinCloudBridge.changed({ recipes }).catch(error =>
-                        console.error('Rezept-Cloud-Synchronisierung ausstehend:', error));
-                }
-                return true;
-            } catch (error) {
-                console.error('Rezeptspeicherung fehlgeschlagen:', error);
-                alert('Rezepte konnten nicht gespeichert werden. Bestehende Daten bleiben erhalten.');
-                return false;
-            }
+        let bakingCloudReady=false,bakingCloudUserId=null,bakingCloudController=null;
+        function bakingCloudBlock(message){
+            bakingCloudReady=false;bakingCloudController?.invalidate();
+            let gate=document.getElementById('toolya-cloud-gate');
+            if(!gate){gate=document.createElement('div');gate.id='toolya-cloud-gate';gate.setAttribute('role','alert');
+                gate.style.cssText='position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
+                document.body.append(gate);}
+            gate.textContent=message+' ';
+            const link=document.createElement('a');link.href='../../index.html';link.textContent='Zur Toolya-Anmeldung';gate.append(link);
         }
-
-        function saveRecipeToStorage(name, text, factor) {
-            let recipes = JSON.parse(localStorage.getItem('helperly_recipes_pro') || '[]');
-            recipes.push({ name, text, factor, note: '', date: new Date().toLocaleDateString() });
-            if (!persistRecipes(recipes)) return;
+        async function bakingCloudBoot(){
+            bakingCloudBlock('Toolya Cloud wird geladen …');
+            try{
+                const {prepareCloudTool}=await import('../../shared/toolya/cloud-tool-adapters.mjs');
+                const {data:auth,error}=await supabaseClient.auth.getUser();
+                if(error||!auth?.user?.id||auth.user.is_anonymous)throw Error('Registrierte Anmeldung erforderlich.');
+                const uid=auth.user.id;
+                const prepared=await prepareCloudTool({
+                    client:supabaseClient,tool:'backform-umrechner',storage:localStorage,
+                    confirmMigration:async()=>confirm('Lokale Rezepte nach Sicherung in die Cloud übernehmen?'),
+                    reviewExistingCloud:async()=>confirm('Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?'),
+                    exportBackup:async data=>{
+                        const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+                        const url=URL.createObjectURL(blob),a=document.createElement('a');
+                        a.href=url;a.download='toolya-rezepte-vor-cloud.json';a.click();
+                        setTimeout(()=>URL.revokeObjectURL(url),60000);
+                        return confirm('Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
+                    }
+                });
+                const {data:again,error:againError}=await supabaseClient.auth.getUser();
+                if(againError||again?.user?.id!==uid||again.user.is_anonymous)throw Error('Konto gewechselt.');
+                bakingCloudController=prepared.controller;bakingCloudUserId=uid;bakingCloudReady=true;
+                document.getElementById('toolya-cloud-gate')?.remove();renderSavedRecipes();
+                await checkUserSession();
+            }catch(error){console.error(error);bakingCloudBlock('Toolya Cloud gesperrt: '+error.message);}
+        }
+        function getRecipes(){
+            if(!bakingCloudReady||!bakingCloudController?.ready)return [];
+            return bakingCloudController.snapshot().recipes;
+        }
+        async function persistRecipes(recipes){
+            if(!bakingCloudReady||!bakingCloudController?.ready){bakingCloudBlock('Cloud nicht bereit.');return false;}
+            try{
+                const {data:auth,error}=await supabaseClient.auth.getUser();
+                if(error||auth?.user?.id!==bakingCloudUserId||auth.user.is_anonymous)throw Error('Anmeldung nicht gültig.');
+                await bakingCloudController.replace({recipes});
+                window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');return true;
+            }catch(error){console.error(error);bakingCloudBlock('Cloud-Speicherung unbestätigt: '+error.message);return false;}
+        }
+        async function saveRecipeToStorage(name,text,factor){
+            const recipes=getRecipes();
+            recipes.push({name,text,factor,note:'',date:new Date().toLocaleDateString()});
+            if(!await persistRecipes(recipes))return;
             renderSavedRecipes();
         }
 
@@ -953,7 +976,7 @@
         }
 
         function renderSavedRecipes() {
-            let recipes = JSON.parse(localStorage.getItem('helperly_recipes_pro') || '[]');
+            let recipes = getRecipes();
             const container = document.getElementById('saved-recipes-list');
             if(recipes.length === 0) {
                 container.innerHTML = '<p class="text-xs text-slate-500">Noch keine Rezepte gespeichert.</p>';
@@ -978,16 +1001,16 @@
             container.innerHTML = html;
         }
 
-        function saveNote(idx, note) {
-            let recipes = JSON.parse(localStorage.getItem('helperly_recipes_pro') || '[]');
+        async function saveNote(idx, note) {
+            let recipes = getRecipes();
             recipes[idx].note = note;
-            if (!persistRecipes(recipes)) return;
+            if (!await persistRecipes(recipes)) return;
         }
 
-        function deleteRecipe(idx) {
-            let recipes = JSON.parse(localStorage.getItem('helperly_recipes_pro') || '[]');
+        async function deleteRecipe(idx) {
+            let recipes = getRecipes();
             recipes.splice(idx, 1);
-            if (!persistRecipes(recipes)) return;
+            if (!await persistRecipes(recipes)) return;
             renderSavedRecipes();
         }
 
@@ -1073,8 +1096,7 @@
         }
 
         // Initialisierung beim Laden
-        checkUserSession();
-        renderSavedRecipes();
+        void bakingCloudBoot();
         calculateAll();
     </script>
 </body>

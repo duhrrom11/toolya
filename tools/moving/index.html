@@ -55,6 +55,7 @@
     <script src="../../shared/helferlein-cloud-migration.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
+        return; // legacy local/cloud bridge disabled for cloud-only
         if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
         const client = window.supabaseClient;
         if (!client || window.helferleinCloudBridge) return;
@@ -442,14 +443,24 @@
         let activeSubItemsTemp = [];
 
         document.addEventListener('DOMContentLoaded', () => {
+            void movingCloudBoot();
+            // UI renders only after verified cloud snapshot is loaded.
+            return;
             loadLocationsDropdown();
             checkDeepLink();
             renderInventory();
             try { updateUserDisplay(); } catch(e){}
         });
 
-        supabaseClient.auth.onAuthStateChange(() => {
-            // Auth callbacks run while the SDK holds its session lock.
+        supabaseClient.auth.onAuthStateChange((event,session) => {
+            // Invalidate immediately: a previous user's in-memory snapshot must
+            // never remain usable across logout or account changes.
+            if (movingCloudReady &&
+                (!session?.user?.id || session.user.id !== movingCloudUserId ||
+                 session.user.is_anonymous)) {
+                movingCloudBlock('Toolya-Sitzung geändert. Bitte neu anmelden oder Seite laden.');
+            }
+            // Supabase auth callbacks hold the session lock; defer SDK calls.
             setTimeout(() => { updateUserDisplay().catch(() => {}); }, 0);
         });
 
@@ -465,34 +476,85 @@
             }
         }
 
-        function getData() {
+        let movingCloudController = null;
+        let movingCloudUserId = null;
+        let movingCloudReady = false;
+        function movingCloudBlock(message) {
+            movingCloudReady = false;
+            movingCloudController?.invalidate();
+            let gate = document.getElementById('toolya-cloud-gate');
+            if (!gate) {
+                gate = document.createElement('div');
+                gate.id = 'toolya-cloud-gate';
+                gate.setAttribute('role','alert');
+                gate.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
+                document.body.append(gate);
+            }
+            gate.textContent = message + ' ';
+            const link = document.createElement('a');
+            link.href = '../../index.html';
+            link.textContent = 'Zur Toolya-Anmeldung';
+            gate.append(link);
+        }
+        async function movingCloudBoot() {
+            movingCloudBlock('Toolya Cloud wird geladen …');
             try {
-                return JSON.parse(localStorage.getItem('mini_homebox_pro')) || { locations: [], boxes: [] };
-            } catch(e) {
-                return { locations: [], boxes: [] };
+                const {prepareCloudTool} = await import('../../shared/toolya/cloud-tool-adapters.mjs');
+                const {data:auth,error} = await window.supabaseClient.auth.getUser();
+                if (error || !auth?.user?.id || auth.user.is_anonymous)
+                    throw Error('Registrierte Anmeldung erforderlich.');
+                const uid = auth.user.id;
+                const prepared = await prepareCloudTool({
+                    client:window.supabaseClient,tool:'umzugskisten-inventar',storage:localStorage,
+                    confirmMigration:async()=>confirm('Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden nicht überschrieben.'),
+                    reviewExistingCloud:async()=>confirm('Cloud- und Gerätedaten vorhanden. Cloud-Daten behalten und Gerätedaten separat sichern?'),
+                    exportBackup:async data=>{
+                        const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+                        const url=URL.createObjectURL(blob),a=document.createElement('a');
+                        a.href=url;a.download='toolya-umzugskisten-vor-cloud.json';a.click();
+                        setTimeout(()=>URL.revokeObjectURL(url),60000);
+                        return confirm('Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.');
+                    }
+                });
+                const {data:again,error:againError}=await window.supabaseClient.auth.getUser();
+                if (againError || again?.user?.id!==uid || again.user.is_anonymous)
+                    throw Error('Konto während des Ladens gewechselt.');
+                movingCloudController=prepared.controller;
+                movingCloudUserId=uid;
+                movingCloudReady=true;
+                document.getElementById('toolya-cloud-gate')?.remove();
+                loadLocationsDropdown();
+                checkDeepLink();
+                renderInventory();
+                await updateUserDisplay();
+            } catch(error) {
+                console.error(error);
+                movingCloudBlock('Toolya Cloud gesperrt: '+error.message);
             }
         }
+        function getData() {
+            if (!movingCloudReady || !movingCloudController?.ready)
+                return {locations:[],boxes:[]};
+            return movingCloudController.snapshot();
+        }
 
-        function saveData(data) {
-            if (!data || typeof data !== 'object' || !Array.isArray(data.boxes)) return false;
-            if (localStorage.getItem('helferlein_cloud_owner_umzugskisten-inventar') && !window.helferleinCloudBridge) {
-                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+        async function saveData(data) {
+            if (!movingCloudReady || !movingCloudController?.ready) {
+                movingCloudBlock('Cloud nicht bereit. Bitte neu anmelden oder laden.');
                 return false;
-            }
-            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
-                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
-                return false;
-            }
-            const existing = localStorage.getItem('mini_homebox_pro');
-            if (existing !== null) {
-                try { if (!Array.isArray(JSON.parse(existing).boxes)) throw new Error('invalid'); }
-                catch (_) { alert('Vorhandene Daten sind beschädigt; Überschreiben gesperrt.'); return false; }
             }
             try {
-                localStorage.setItem('mini_homebox_pro', JSON.stringify(data)); window.toolyaNotice?.('success','Änderungen auf diesem Gerät gespeichert.');
-                if (window.helferleinCloudBridge) void window.helferleinCloudBridge.changed(data).catch(console.error);
+                const {data:auth,error}=await window.supabaseClient.auth.getUser();
+                if (error || !auth?.user?.id || auth.user.id!==movingCloudUserId || auth.user.is_anonymous)
+                    throw Error('Anmeldung nicht mehr gültig.');
+                await movingCloudController.replace(data);
+                window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');
                 return true;
-            } catch (error) { console.error('Lokales Speichern fehlgeschlagen', error); return false; }
+            } catch(error) {
+                console.error(error);
+                movingCloudBlock('Cloud-Speicherung unbestätigt: '+error.message);
+                return false;
+            }
         }
 
         function checkDeepLink() {
@@ -503,37 +565,37 @@
             }
         }
 
-        function saveLocation() {
+        async function saveLocation() {
             const name = document.getElementById('locName').value.trim();
             const icon = document.getElementById('locIcon').value;
             if (!name) return alert("Bitte Standort eingeben!");
             let data = getData();
             data.locations.push({ id: Date.now(), name, icon });
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             document.getElementById('locName').value = "";
             loadLocationsDropdown();
             renderInventory();
         }
 
-        function editLocation(locId) {
+        async function editLocation(locId) {
             let data = getData();
             let loc = data.locations.find(l => l.id === locId);
             if (!loc) return;
             let newName = prompt("Standort umbenennen:", loc.name);
             if (newName !== null && newName.trim() !== "") {
                 loc.name = newName.trim();
-                if (!saveData(data)) return;
+                if (!await saveData(data)) return;
                 loadLocationsDropdown();
                 renderInventory();
             }
         }
 
-        function deleteLocation(locId) {
+        async function deleteLocation(locId) {
             if (!confirm("⚠️ Möchtest du diesen Standort und ALLE Kisten darin wirklich löschen?")) return;
             let data = getData();
             data.locations = data.locations.filter(l => l.id !== locId);
             data.boxes = data.boxes.filter(b => b.locId !== locId);
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             loadLocationsDropdown();
             renderInventory();
         }
@@ -546,7 +608,7 @@
             document.getElementById('editBoxLocSelect').innerHTML = html;
         }
 
-        function saveBox() {
+        async function saveBox() {
             const locId = document.getElementById('boxLocationSelect').value;
             const name = document.getElementById('boxName').value.trim();
             const desc = document.getElementById('boxDesc').value.trim();
@@ -558,18 +620,24 @@
 
             if (!locId || !name) return alert("Bitte Standort und Kisten-Name angeben!");
 
+            let photo = "";
             if (photoInput.files && photoInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    storeBoxData(locId, name, desc, value, tag, barcode, expiry, "", [], e.target.result);
-                };
-                reader.readAsDataURL(photoInput.files[0]);
-            } else {
-                storeBoxData(locId, name, desc, value, tag, barcode, expiry, "", [], "");
+                try {
+                    photo = await new Promise((resolve,reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = () => reject(reader.error || Error('Bild konnte nicht gelesen werden.'));
+                        reader.readAsDataURL(photoInput.files[0]);
+                    });
+                } catch(error) {
+                    alert('Bild konnte nicht gelesen werden. Nichts gespeichert.');
+                    return;
+                }
             }
+            await storeBoxData(locId, name, desc, value, tag, barcode, expiry, "", [], photo);
         }
 
-        function storeBoxData(locId, name, desc, value, tag, barcode, expiry, lentTo, subItems, photo) {
+        async function storeBoxData(locId, name, desc, value, tag, barcode, expiry, lentTo, subItems, photo) {
             let data = getData();
             data.boxes.push({ 
                 id: Date.now(), 
@@ -584,7 +652,7 @@
                 subItems: subItems || [],
                 photo 
             });
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             document.getElementById('boxName').value = "";
             document.getElementById('boxDesc').value = "";
             document.getElementById('boxValue').value = "";
@@ -651,7 +719,7 @@
             renderSubItemsModal();
         }
 
-        function updateBox() {
+        async function updateBox() {
             const boxId = parseInt(document.getElementById('editBoxId').value);
             const locId = parseInt(document.getElementById('editBoxLocSelect').value);
             const name = document.getElementById('editBoxName').value.trim();
@@ -676,17 +744,17 @@
                 box.expiry = expiry;
                 box.lentTo = lentTo;
                 box.subItems = activeSubItemsTemp;
-                if (!saveData(data)) return;
+                if (!await saveData(data)) return;
             }
             closeEditBoxModal();
             renderInventory();
         }
 
-        function deleteBox(boxId) {
+        async function deleteBox(boxId) {
             if (!confirm("⚠️ Möchtest du diese Kiste wirklich löschen?")) return;
             let data = getData();
             data.boxes = data.boxes.filter(b => b.id !== boxId);
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             renderInventory();
         }
 
@@ -981,7 +1049,7 @@
                 return alert("Backup zu groß (maximal 20 MB).");
             }
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 input.value = '';
                 try {
                     const parsed = JSON.parse(e.target.result);
@@ -992,7 +1060,7 @@
                         return alert("Ungültiges Backup-Format.");
                     }
                     if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
-                    saveData(parsed);
+                    if (!await saveData(parsed)) return;
                     loadLocationsDropdown();
                         renderInventory();
                     alert("Backup erfolgreich importiert!");

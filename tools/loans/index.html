@@ -51,6 +51,7 @@
     <script src="../../shared/helferlein-cloud-migration.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
+        return; // legacy bridge disabled for cloud-only
         if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
         const client = supabaseClient;
         if (!client || window.helferleinCloudBridge) return;
@@ -337,7 +338,9 @@
         const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        supabaseClient.auth.onAuthStateChange(() => {
+        supabaseClient.auth.onAuthStateChange((event,session) => {
+            if (loansCloudReady && (!session?.user?.id || session.user.id!==loansCloudUserId || session.user.is_anonymous))
+                loansCloudBlock('Toolya-Sitzung geändert. Bitte neu anmelden.');
             setTimeout(() => { checkUserSession().catch(() => {}); }, 0);
         });
 
@@ -399,43 +402,70 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('itemDate').valueAsDate = new Date();
-            loadDropdowns();
-            renderInventory();
-            renderApp();
-            checkUserSession();
+            void loansCloudBoot();
         });
 
+        let loansCloudController=null,loansCloudUserId=null,loansCloudReady=false;
+        function loansCloudBlock(message) {
+            loansCloudReady=false;
+            loansCloudController?.invalidate();
+            let gate=document.getElementById('toolya-cloud-gate');
+            if(!gate){
+                gate=document.createElement('div');gate.id='toolya-cloud-gate';
+                gate.setAttribute('role','alert');
+                gate.style.cssText='position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
+                document.body.append(gate);
+            }
+            gate.textContent=message+' ';
+            const link=document.createElement('a');link.href='../../index.html';link.textContent='Zur Toolya-Anmeldung';gate.append(link);
+        }
+        async function loansCloudBoot() {
+            loansCloudBlock('Toolya Cloud wird geladen …');
+            try {
+                const {prepareCloudTool}=await import('../../shared/toolya/cloud-tool-adapters.mjs');
+                const {data:auth,error}=await supabaseClient.auth.getUser();
+                if(error||!auth?.user?.id||auth.user.is_anonymous)throw Error('Registrierte Anmeldung erforderlich.');
+                const uid=auth.user.id;
+                const prepared=await prepareCloudTool({
+                    client:supabaseClient,tool:'verliehene-gegenstaende-verwalten',storage:localStorage,
+                    confirmMigration:async()=>confirm('Bestehende Verleihdaten in dein Toolya-Konto übernehmen? Vorhandene Cloud-Daten werden nicht überschrieben.'),
+                    reviewExistingCloud:async()=>confirm('Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?'),
+                    exportBackup:async data=>{
+                        const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+                        const url=URL.createObjectURL(blob),a=document.createElement('a');
+                        a.href=url;a.download='toolya-verleih-vor-cloud.json';a.click();
+                        setTimeout(()=>URL.revokeObjectURL(url),60000);
+                        return confirm('Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
+                    }
+                });
+                const {data:again,error:againError}=await supabaseClient.auth.getUser();
+                if(againError||again?.user?.id!==uid||again.user.is_anonymous)throw Error('Konto während des Ladens gewechselt.');
+                loansCloudController=prepared.controller;loansCloudUserId=uid;loansCloudReady=true;
+                document.getElementById('toolya-cloud-gate')?.remove();
+                document.getElementById('itemDate').valueAsDate=new Date();
+                loadDropdowns();renderInventory();renderApp();
+                await checkUserSession();
+            }catch(error){console.error(error);loansCloudBlock('Toolya Cloud gesperrt: '+error.message);}
+        }
         function getData() {
-            try {
-                return JSON.parse(localStorage.getItem('verleih_tracker_pro_v3')) || { items: [], contacts: [], inventory: [] };
-            } catch(e) {
-                return { items: [], contacts: [], inventory: [] };
-            }
+            if(!loansCloudReady||!loansCloudController?.ready)return {items:[],contacts:[],inventory:[]};
+            return loansCloudController.snapshot();
         }
-
-        function saveData(data) {
-            if (!data || typeof data !== 'object' || !Array.isArray(data.items)) return false;
-            if (localStorage.getItem('helferlein_cloud_owner_verliehene-gegenstaende-verwalten') && !window.helferleinCloudBridge) {
-                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
-                return false;
-            }
-            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
-                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
-                return false;
-            }
-            const existing = localStorage.getItem('verleih_tracker_pro_v3');
-            if (existing !== null) {
-                try { if (!Array.isArray(JSON.parse(existing).items)) throw new Error('invalid'); }
-                catch (_) { alert('Vorhandene Daten sind beschädigt; Überschreiben gesperrt.'); return false; }
+        async function saveData(data) {
+            if(!loansCloudReady||!loansCloudController?.ready){
+                loansCloudBlock('Cloud nicht bereit. Bitte neu anmelden.');return false;
             }
             try {
-                localStorage.setItem('verleih_tracker_pro_v3', JSON.stringify(data)); window.toolyaNotice?.('success','Änderungen auf diesem Gerät gespeichert.');
-                if (window.helferleinCloudBridge) void window.helferleinCloudBridge.changed(data).catch(console.error);
+                const {data:auth,error}=await supabaseClient.auth.getUser();
+                if(error||auth?.user?.id!==loansCloudUserId||auth.user.is_anonymous)
+                    throw Error('Anmeldung nicht mehr gültig.');
+                await loansCloudController.replace(data);
+                window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');
                 return true;
-            } catch (error) { console.error('Lokales Speichern fehlgeschlagen', error); return false; }
+            }catch(error){console.error(error);loansCloudBlock('Cloud-Speicherung unbestätigt: '+error.message);return false;}
         }
 
-        function saveContact() {
+        async function saveContact() {
             const name = document.getElementById('contactName').value.trim();
             const phone = document.getElementById('contactPhone').value.trim();
             if (!name) return alert("Bitte einen Namen eingeben!");
@@ -443,7 +473,7 @@
             let data = getData();
             if(!data.contacts) data.contacts = [];
             data.contacts.push({ id: Date.now(), name, phone });
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
 
             document.getElementById('contactName').value = "";
             document.getElementById('contactPhone').value = "";
@@ -451,7 +481,7 @@
             alert("Gespeichert");
         }
 
-        function saveInventoryItem() {
+        async function saveInventoryItem() {
             const title = document.getElementById('invTitle').value.trim();
             const category = document.getElementById('invCategory').value;
             const serial = document.getElementById('invSerial').value.trim();
@@ -462,7 +492,7 @@
             let data = getData();
             if(!data.inventory) data.inventory = [];
             data.inventory.push({ id: Date.now(), title, category, serial, gpsLink });
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
 
             document.getElementById('invTitle').value = "";
             document.getElementById('invSerial').value = "";
@@ -472,11 +502,11 @@
             alert("Gespeichert");
         }
 
-        function deleteInventoryItem(id) {
+        async function deleteInventoryItem(id) {
             if (!confirm("Diesen Stamm-Gegenstand wirklich löschen?")) return;
             let data = getData();
             data.inventory = data.inventory.filter(i => i.id !== id);
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             loadDropdowns();
             renderInventory();
         }
@@ -528,7 +558,7 @@
             }
         }
 
-        function saveItem() {
+        async function saveItem() {
             const invSelect = document.getElementById('itemInventorySelect');
             let title = invSelect.value;
             let category = "Sonstiges";
@@ -558,13 +588,16 @@
 
             if (!person || !date) return alert("Bitte Person und Ausleihdatum angeben!");
 
-            if (photoInput.files && photoInput.files[0]) {
-                compressImage(photoInput.files[0], (compressedPhoto) => {
-                    storeData(title, category, serial, gpsLink, person, date, returnDate, deposit, note, compressedPhoto);
-                });
-            } else {
-                storeData(title, category, serial, gpsLink, person, date, returnDate, deposit, note, "");
+            let photo="";
+            if(photoInput.files && photoInput.files[0]){
+                try {
+                    photo=await new Promise((resolve,reject)=>{
+                        const timeout=setTimeout(()=>reject(Error('Bildverarbeitung fehlgeschlagen.')),15000);
+                        compressImage(photoInput.files[0],result=>{clearTimeout(timeout);resolve(result);});
+                    });
+                }catch(error){alert('Bild konnte nicht verarbeitet werden. Nichts gespeichert.');return;}
             }
+            await storeData(title,category,serial,gpsLink,person,date,returnDate,deposit,note,photo);
         }
 
         function compressImage(file, callback) {
@@ -595,10 +628,10 @@
             reader.readAsDataURL(file);
         }
 
-        function storeData(title, category, serial, gpsLink, person, date, returnDate, deposit, note, photo) {
+        async function storeData(title, category, serial, gpsLink, person, date, returnDate, deposit, note, photo) {
             let data = getData();
             data.items.push({ id: Date.now(), title, category, serial, gpsLink, person, date, returnDate, deposit, note, photo, status: 'active' });
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
 
             document.getElementById('itemInventorySelect').value = "";
             document.getElementById('itemPersonSelect').value = "";
@@ -614,34 +647,34 @@
             renderApp();
         }
 
-        function setStatus(id, newStatus) {
+        async function setStatus(id, newStatus) {
             let data = getData();
             let item = data.items.find(i => i.id === id);
             if (item) {
                 item.status = newStatus;
-                if (!saveData(data)) return;
+                if (!await saveData(data)) return;
                 renderApp();
             }
         }
 
-        function extendReturnDate(id, days) {
+        async function extendReturnDate(id, days) {
             let data = getData();
             let item = data.items.find(i => i.id === id);
             if (item) {
                 let baseDate = item.returnDate ? new Date(item.returnDate) : new Date();
                 baseDate.setDate(baseDate.getDate() + days);
                 item.returnDate = baseDate.toISOString().split('T')[0];
-                if (!saveData(data)) return;
+                if (!await saveData(data)) return;
                 renderApp();
                 alert(`Rückgabedatum um ${days} Tage verlängert!`);
             }
         }
 
-        function deleteItem(id) {
+        async function deleteItem(id) {
             if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
             let data = getData();
             data.items = data.items.filter(i => i.id !== id);
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             loadDropdowns();
             renderApp();
         }
@@ -665,7 +698,7 @@
             document.getElementById('editModal').classList.add('hidden');
         }
 
-        function updateItem() {
+        async function updateItem() {
             const id = parseInt(document.getElementById('editId').value);
             const title = document.getElementById('editTitle').value.trim();
             const person = document.getElementById('editPerson').value.trim();
@@ -685,7 +718,7 @@
                 item.returnDate = returnDate;
                 item.deposit = deposit;
                 item.note = note;
-                if (!saveData(data)) return;
+                if (!await saveData(data)) return;
             }
             closeEditModal();
             loadDropdowns();

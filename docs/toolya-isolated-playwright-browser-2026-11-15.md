@@ -1,0 +1,30 @@
+# Isolierte Playwright-Cloud-Prüfung
+
+Der Featurebranch enthält `tests/browser/cloud-isolated.spec.cjs` und `playwright.config.cjs`.
+
+## Ausführung
+
+Im Repository mit installierten Entwicklungsabhängigkeiten:
+
+```bash
+npx playwright test --config=playwright.config.cjs
+```
+
+Playwright startet `scripts/home-preview.cjs` auf `127.0.0.1:4173`. Falls der Chromium-Browser nicht durch Playwright installiert ist, `npx playwright install chromium` ausführen oder `TOOLYA_CHROMIUM_PATH` auf eine lokale Chromium-Binärdatei setzen.
+
+## Sicherheitsgrenzen
+
+- Browser-Anfragen außerhalb des lokalen Preview-Ursprungs werden abgebrochen. Die Navigation verwendet eine neutrale, im Test bereitgestellte HTML-Seite unter demselben Ursprung; echte Toolya-UI-Skripte werden dabei nicht ausgeführt.
+- Authentifizierung, Datenbankabfragen und RPC-Speicherung sind ausschließlich In-Memory-Mocks.
+- Kein Supabase-Projekt, kein Benutzerkonto und keine produktiven Datensätze werden angesprochen.
+- Beide Cloud-Adapter werden im echten Browser mit den unveränderten Shared-Modulen geladen.
+- Die Tests prüfen den Modulpfad, **nicht** die komplette Bedienoberfläche von Autokosten/Haushaltsbuch.
+- Kein Merge, kein Deployment.
+
+## Nachweisstatus
+
+Tests wurden im Featurebranch erstellt, jedoch in dieser Sitzung **nicht** als Playwright-Lauf ausgeführt: Der verfügbare Container besitzt Chromium und Python-Playwright, aber weder eine lokale Kopie des privaten Toolya-Repositories noch die Node-Playwright-Abhängigkeit. Ein echter Playwright-Lauf gegen den vollständigen Featurebranch ist deshalb nicht möglich. Kein bestandener Browser-Test wird behauptet.
+
+## GitHub Actions
+
+Ein manueller Workflow unter `.github/workflows/toolya-isolated-browser.yml` richtet Node 22 und Chromium ein und führt die isolierten Browser-Tests aus. Er besitzt ausschließlich `contents: read`, verwendet keine Repository-Secrets und enthält keine Merge- oder Deployment-Schritte. Ein erfolgreicher Workflow-Lauf wurde bislang nicht nachgewiesen. Die GitHub-Connector-Funktionen bieten derzeit keinen Workflow-Dispatch-Aufruf; ein Start aus dieser Sitzung ist deshalb nicht möglich.

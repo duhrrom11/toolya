@@ -1,0 +1,51 @@
+name: Isolated estate PostgreSQL integration
+on:
+  push:
+    branches:
+      - feature/toolya-connect-phase-b
+    paths:
+      - 'tests/fixtures/estate-release-v2-*.sql'
+      - 'tests/cloud-estate.test.mjs'
+      - 'supabase/migrations/*estate_release*.sql'
+      - '.github/workflows/estate-postgres-integration.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  estate-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: isolated_fixture_only
+          POSTGRES_DB: estate_fixture
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd 'pg_isready -U postgres -d estate_fixture'
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: isolated_fixture_only
+      PGDATABASE: estate_fixture
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify SQL migration parity and estate Node.js regression tests
+        run: node --test tests/cloud-estate.test.mjs
+      - name: Apply isolated schema and actual release RPC snapshot
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/fixtures/estate-release-v2-isolated.sql
+      - name: Apply pending migration to disposable PostgreSQL only
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261115195000_estate_release_null_deadline_guard.sql
+      - name: Execute PostgreSQL integration assertions
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/fixtures/estate-release-v2-assertions.sql
