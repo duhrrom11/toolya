@@ -82,7 +82,10 @@ $('form').addEventListener('submit',async event=>{event.preventDefault();const o
  const payload={occasion_id:occasionId,title,recipient_name:$('recipient').value.trim()||null,planned_amount:planned,actual_amount:actual,status:$('giftStatus').value,source_list_id:$('sourceList').value||null,source_wish_id:selectedProduct?.wish_id||null,source_product_id:selectedProduct?.product_id||null,notes:$('notes').value.trim()||null,updated_at:new Date().toISOString()};
  $('save').disabled=true;
  try{const fields='id,occasion_id,title,recipient_name,planned_amount,actual_amount,status,notes,source_list_id,source_wish_id,source_product_id,created_at';const r=editing?await db.from('wishlist_gift_plans').update(payload).eq('id',editing).eq('user_id',user.id).select(fields).single():await db.from('wishlist_gift_plans').insert({...payload,user_id:user.id}).select(fields).single();
- if(r.error)throw r.error;gifts=gifts.filter(x=>x.id!==r.data.id);gifts.push(r.data);if(r.data.source_wish_id)await loadCoordination();reset();render();feedback('giftFormFeedback','Geschenk gespeichert.');$('giftFormFeedback').focus({preventScroll:true});
+ if(r.error)throw r.error;
+ gifts=gifts.filter(x=>x.id!==r.data.id);gifts.push(r.data);
+ reset();render();feedback('giftFormFeedback','Geschenk gespeichert.');$('giftFormFeedback').focus({preventScroll:true});
+ if(r.data.source_wish_id){try{await loadCoordination()}catch{feedback('giftFormFeedback','Geschenk gespeichert. Die Abstimmung konnte nicht aktualisiert werden.');}}
  }catch{feedback('giftFormFeedback','Geschenk konnte nicht gespeichert werden.')}finally{$('save').disabled=false}
 });
 $('cancel').addEventListener('click',()=>{const origin=giftEditOrigin;reset();$('giftFormFeedback').textContent='';giftEditOrigin=null;feedback('giftFormFeedback','Bearbeitung abgebrochen.');if(origin?.isConnected)origin.focus({preventScroll:true});else $('giftFormFeedback').focus({preventScroll:true})});
