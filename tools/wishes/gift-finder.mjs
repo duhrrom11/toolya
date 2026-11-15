@@ -15,5 +15,5 @@ function search(){
  $('giftFinderStatus').textContent=results.length?results.length+' Ideen zu deinen Angaben gefunden.'+budgetNote:'Keine genaue Übereinstimmung. Wähle ein anderes Interesse oder einen anderen Anlass.'+budgetNote;
 }
 $('giftFinderForm').addEventListener('submit',event=>{event.preventDefault();search();$('giftFinderForm').reset()});
-$('giftFinderReset').addEventListener('click',()=>{setTimeout(()=>{$('giftFinderResults').replaceChildren();$('giftFinderStatus').textContent='Beantworte drei Fragen und entdecke allgemeine Geschenkideen.'},0)});
+$('giftFinderReset').addEventListener('click',()=>{$('giftFinderForm').reset();$('giftFinderResults').replaceChildren();$('giftFinderStatus').textContent='Beantworte drei Fragen und entdecke allgemeine Geschenkideen.'});
 $('giftFinderStatus').textContent='Beantworte drei Fragen und entdecke allgemeine Geschenkideen.';
