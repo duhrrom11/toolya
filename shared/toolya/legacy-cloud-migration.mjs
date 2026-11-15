@@ -11,6 +11,15 @@ function copy(value) {
   if (typeof bytes !== 'string') throw new Error('Ungültige Bestandsdaten.');
   return JSON.parse(bytes);
 }
+function canonicalJson(value) {
+  if (Array.isArray(value)) return value.map(canonicalJson);
+  if (value && typeof value === 'object')
+    return Object.fromEntries(Object.keys(value).sort().map(key => [key, canonicalJson(value[key])]));
+  return value;
+}
+function sameJson(a, b) {
+  return JSON.stringify(canonicalJson(a)) === JSON.stringify(canonicalJson(b));
+}
 function validateCar(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value) ||
       !Array.isArray(value.cars) || !Array.isArray(value.events) ||
@@ -94,13 +103,13 @@ export function createLegacyMigration({ client, repository, tool, storage = loca
     // Re-inspect immediately before writing; do not trust a stale preview.
     const again = await inspect();
     if (again.status !== 'ready-for-review' ||
-        JSON.stringify(again.local) !== JSON.stringify(review.local)) {
+        !sameJson(again.local, review.local)) {
       throw new Error('Daten wurden seit der Vorschau verändert. Bitte erneut prüfen.');
     }
     const saved = await repository.save(review.local, null);
     const confirmed = await repository.read();
     if (!confirmed.exists ||
-        JSON.stringify(confirmed.data) !== JSON.stringify(review.local) ||
+        !sameJson(confirmed.data, review.local) ||
         confirmed.revision !== saved.revision) {
       throw new Error('Cloud-Readback unklar. Lokale Daten bleiben erhalten.');
     }
