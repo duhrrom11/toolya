@@ -158,3 +158,11 @@ body.b3-home .ty-tool-card[data-id="verleih"]{--icon-color:#d28b38;--icon-src:ur
 body.b3-home .ty-tool-card[data-id="energie"]{--icon-color:#e0a527;--icon-src:url("vendor/bootstrap-icons/lightning-charge.svg")}
 body.b3-home .ty-tool-card[data-id="backform"]{--icon-color:#b56bb0;--icon-src:url("vendor/bootstrap-icons/cake2.svg")}
 @media(max-width:370px){body.b3-home .ty-tool-card .ty-tool-link:has(.ty-tool-art[src$=".svg"])::before{left:10px;width:58px;height:58px;border-radius:17px}body.b3-home .ty-tool-card .ty-tool-link:has(.ty-tool-art[src$=".svg"])::after{left:23px;width:32px;height:32px}}
+
+/* Keep welcome and status cards fully visible on mobile, outside sticky-header stacking. */
+@media(max-width:900px){
+ body.b3-home .toolya-buddy:has(.tb-message-box:not([hidden])){
+  position:fixed!important;z-index:10020!important;left:max(12px,env(safe-area-inset-left))!important;right:max(12px,env(safe-area-inset-right))!important;bottom:max(20px,env(safe-area-inset-bottom))!important;top:auto!important;width:auto!important;max-width:none!important;margin:0!important;transform:none!important;order:unset!important;
+ }
+ body.b3-home .toolya-buddy .tb-message-box{max-height:min(65dvh,420px);overflow-y:auto;box-shadow:0 14px 38px rgba(10,30,50,.24);align-items:flex-start}
+}
