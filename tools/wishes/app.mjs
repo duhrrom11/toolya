@@ -46,6 +46,11 @@ function fillWishExtras(owner,id){
  $('wishStatus').value=data.status||'open';
  updateWishExtrasPreview();
 }
+function clearSubmittedWishExtras(){
+ for(const id of ['wishImageUrl','wishTargetPrice'])$(id).value='';
+ $('wishQuantity').value='1';$('wishStatus').value='open';
+ updateWishExtrasPreview();
+}
 function updateWishExtrasPreview(){
  const url=$('wishImageUrl').value.trim();
  const img=$('wishPreviewImage');
@@ -107,7 +112,7 @@ $('saveWishExtrasCloud').onclick=run(async()=>{
   if(result.error.code==='23505'){feedback.textContent='Für diesen Wunsch existieren bereits Cloud-Daten. Sie wurden nicht überschrieben. Bitte zuerst den Cloud-Stand prüfen.';return}
   feedback.textContent='Cloud-Speicherung fehlgeschlagen. Lokale Zusatzdaten bleiben unverändert. '+wishlistErrorMessage(result.error);return;
  }
- feedback.textContent='Zusatzdaten privat in der Cloud gespeichert. Andere Geräte können sie beim Öffnen dieses Wunsches laden.';
+ clearSubmittedWishExtras();feedback.textContent='Zusatzdaten privat in der Cloud gespeichert. Andere Geräte können sie beim Öffnen dieses Wunsches laden.';
  report(feedback.textContent);
 });
 $('updateWishExtrasCloud').onclick=run(async()=>{
@@ -130,7 +135,7 @@ $('updateWishExtrasCloud').onclick=run(async()=>{
  if(user?.id!==ownerId||editingWishId!==wishId||wishEditorRevision!==revision||operation!==wishExtrasCloudOperation)return;
  if(changed.error){feedback.textContent='Cloud-Aktualisierung fehlgeschlagen. Lokale Daten unverändert. '+wishlistErrorMessage(changed.error);return}
  if(changed.data?.length!==1){feedback.textContent='Konflikt: Cloud-Daten wurden inzwischen geändert oder entfernt. Nichts überschrieben; bitte erneut prüfen.';return}
- feedback.textContent='Private Cloud-Zusatzdaten nach Bestätigung aktualisiert.';
+ clearSubmittedWishExtras();feedback.textContent='Private Cloud-Zusatzdaten nach Bestätigung aktualisiert.';
  report(feedback.textContent);
 });
 $('restoreHiddenWishes').onclick=run(async()=>{hiddenWishIds.clear();lastHiddenWishId=null;updateHiddenWishes();await refreshFeed();report('Ausgeblendete Wünsche werden wieder angezeigt.')});
