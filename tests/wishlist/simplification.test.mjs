@@ -121,3 +121,12 @@ test('Wishlist navigation has no dangling local anchors or duplicate ids',()=>{
   assert.ok(known.has(match[1]),'dangling anchor: '+match[1]);
  assert.equal(html.includes('href="#community-heading"'),false);
 });
+
+test('private feed retry remains accessible',()=>{
+ const html=readFileSync(resolve(root,'tools/wishes/index.html'),'utf8');
+ const style=html.match(/<style id="wishlist-simplification-stage1">([\s\S]*?)<\/style>/)?.[1]||'';
+ assert.match(html,/id="feed"[^>]*aria-label="Meine privaten Wünsche"/);
+ assert.match(html,/id="reloadFeed"/);
+ assert.equal(style.split(',').some(selector=>selector.trim()==='#reloadFeed'),false);
+ assert.match(source('app.mjs'),/\$\('reloadFeed'\)\.onclick/);
+});
