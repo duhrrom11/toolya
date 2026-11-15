@@ -2,6 +2,7 @@ import {buddy,notify} from '../../shared/toolya/platform.mjs';
 import {wishSaveOutcome} from './wish-save-outcome.mjs';
 import {appendProductMetadata} from './product-card.mjs?v=20261114-mascot1';
 import {mountAmazonImport} from './amazon-import.mjs?v=20261114-mascot1';
+import {mountAmazonBulkImport} from './amazon-bulk-import.mjs';
 import {planWishExtrasImport} from './wish-extras-sync.mjs';
 import {mountListsDashboard} from './lists-dashboard.mjs?v=20261114-mascot1';
 import {parseAmazonUrl,affiliateUrl,sharedAmazonProductUrl} from './amazon-links.mjs';
@@ -12,6 +13,7 @@ const updateHiddenProfiles=()=>{const count=hiddenProfileIds.size;$('hiddenProfi
 const report=(m)=>{$('status').textContent=m};
 const refreshFeed=async()=>{offset=0;renderedWishCount=0;$('feedCount').textContent='Wünsche werden geladen …';feedRevision++;$('more').disabled=true;await feed()};
 mountAmazonImport({db,getUser:()=>user,dashboard,refreshFeed});
+mountAmazonBulkImport({db,getUser:()=>user,dashboard,refreshFeed});
 const requireUser=()=>{if(!user)throw Error('Bitte zuerst anmelden');return user.id};
 
 const localWishExtrasKey=owner=>'helferlein-wish-extras:'+owner;
