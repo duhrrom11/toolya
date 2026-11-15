@@ -210,8 +210,8 @@ test('estate SQL migration and isolated RPC fixture fail closed on missing alarm
  const guard=/elsif v\.alarm_started_at is null or v\.alarm_deadline is null or v\.alarm_deadline>now\(\) or v\.alarm_canceled_at is not null then/;
  assert.match(fixture,guard);
  assert.match(migration,guard);
- assert.match(fixture,/end \\$function\\$;\\s*$/,'psql must receive a terminated CREATE FUNCTION statement');
- assert.match(migration,/end \\$function\\$;\\s*$/,'migration must terminate its CREATE FUNCTION statement');
+ assert.match(fixture,/end \$function\$;\s*$/,'psql must receive a terminated CREATE FUNCTION statement');
+ assert.match(migration,/end \$function\$;\s*$/,'migration must terminate its CREATE FUNCTION statement');
  assert.match(assertions,/NULL deadline granted one-key access/);
  assert.equal(migration.slice(migration.indexOf('CREATE OR REPLACE FUNCTION')),fixture.slice(fixture.indexOf('CREATE OR REPLACE FUNCTION')),'isolated fixture and pending migration must implement identical SQL');
 });
