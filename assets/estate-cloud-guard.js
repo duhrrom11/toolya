@@ -25,6 +25,16 @@
   if(result.data?.length!==1||!result.data[0]?.updated_at)throw Error('conflict');
   return result.data[0].updated_at;
  }
+ function sameEncryptedJson(left,right){
+  // JSONB can reorder object keys. Compare every value recursively without
+  // accepting missing/extra fields, altered ciphertext, or array reordering.
+  if(left===right)return true;
+  if(left===null||right===null||typeof left!=='object'||typeof right!=='object')return false;
+  if(Array.isArray(left)!==Array.isArray(right))return false;
+  const a=Object.keys(left),b=Object.keys(right);
+  if(a.length!==b.length)return false;
+  return a.every(key=>Object.prototype.hasOwnProperty.call(right,key)&&sameEncryptedJson(left[key],right[key]));
+ }
  async function verifyEncryptedBackup({client,ownerId,vaultId,expectedStamp,key,cryptoApi,validatePayload,expectedEncryptedData,expectedEncryptedConfig,expectedRecoveryKey}){
   await requireOwner(client,ownerId);
   if(!key||!cryptoApi?.decrypt||typeof validatePayload!=='function')throw Error('invalid_vault');
@@ -34,9 +44,9 @@
   if(error||!remote||remote.vault_id!==vaultId||remote.updated_at!==expectedStamp||
      !remote.recovery_key?.ciphertext)throw Error('backup_unverified');
   // A matching revision alone does not prove that the just-written backup is intact.
-  if(expectedEncryptedData&&JSON.stringify(remote.encrypted_data)!==JSON.stringify(expectedEncryptedData)||
-     expectedEncryptedConfig&&JSON.stringify(remote.encrypted_config)!==JSON.stringify(expectedEncryptedConfig)||
-     expectedRecoveryKey&&JSON.stringify(remote.recovery_key)!==JSON.stringify(expectedRecoveryKey))
+  if(expectedEncryptedData&&!sameEncryptedJson(remote.encrypted_data,expectedEncryptedData)||
+     expectedEncryptedConfig&&!sameEncryptedJson(remote.encrypted_config,expectedEncryptedConfig)||
+     expectedRecoveryKey&&!sameEncryptedJson(remote.recovery_key,expectedRecoveryKey))
    throw Error('backup_unverified');
   const payload=validatePayload(await cryptoApi.decrypt(remote.encrypted_data,key));
   await cryptoApi.decrypt(remote.encrypted_config,key);
