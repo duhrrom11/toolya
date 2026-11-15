@@ -29,3 +29,10 @@
 
 /* Keep the fallback gear compact even in tools with padded text buttons. */
 button.toolya-settings-trigger.helferlein-gear{width:46px;min-width:46px;max-width:46px;padding:0;flex:0 0 46px;line-height:1}
+
+/* The new thematic tool header already contains the selected mascot.
+   Remove the redundant persistent "Toolya · role" strip from tool pages;
+   preserve notification dialogs, warnings, and the homepage companion. */
+.toolya-buddy:not([data-tool="home"]) .toolya-idle,
+.toolya-buddy:not([data-tool="home"]) .toolya-context{display:none!important}
+.toolya-buddy:not([data-tool="home"]):not(:has(.tb-message-box:not([hidden]))){margin:0!important;padding:0!important;height:0!important;min-height:0!important}

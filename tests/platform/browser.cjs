@@ -17,11 +17,11 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
  const cachedAtlas=await page.locator('.toolya-idle .ty-frame').evaluate(e=>{const previous=e.style.backgroundImage;e.style.backgroundImage='url("/assets/toolya/outfits.webp")';const resolved=getComputedStyle(e).backgroundImage;e.style.backgroundImage=previous;return resolved});
  assert(cachedAtlas.includes('outfits.webp?v=20261115-alpha'),'old cached module URL is replaced by versioned alpha artwork');
 
- // Persistent idle button works on touch and keyboard; no storage/user-data write needed.
- for(let i=0;i<5;i++)await page.locator('.toolya-idle').tap();
+ // The thematic header mascot replaces the removed idle strip for touch and keyboard.
+ for(let i=0;i<5;i++)await page.locator('.ty-tool-hero-mascot').tap();
  await page.waitForFunction(()=>document.querySelector('.tb-body').textContent.includes('kitzlig'));
  assert.equal(await page.evaluate(()=>toolyaBuddy.tickle()),false,'cooldown');
- await page.evaluate(()=>{toolyaBuddy.dismiss();toolyaBuddy.tickleCooldown=0});await page.locator('.toolya-idle').focus();for(let i=0;i<5;i++)await page.keyboard.press('Enter');
+ await page.evaluate(()=>{toolyaBuddy.dismiss();toolyaBuddy.tickleCooldown=0});await page.locator('.ty-tool-hero-mascot').focus();for(let i=0;i<5;i++)await page.keyboard.press('Enter');
  await page.waitForFunction(()=>document.querySelector('.tb-body').textContent.includes('Ohren'));
  assert.equal(await page.locator('.tb-avatar').evaluate(i=>i===document.activeElement),true);
  await page.evaluate(()=>{toolyaBuddy.show('warning','Wichtiger Hinweis');for(let i=0;i<5;i++)toolyaBuddy.tickle()});assert.equal(await page.locator('.tb-body').textContent(),'Wichtiger Hinweis');
@@ -81,7 +81,7 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
   const measurement=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth,overflow:[...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();if(r.right<=321||r.width===0)return false;for(let p=e.parentElement;p;p=p.parentElement){if(/auto|scroll|hidden|clip/.test(getComputedStyle(p).overflowX)&&p.getBoundingClientRect().right<=321)return false}return true}).slice(0,20).map(e=>({tag:e.tagName,id:e.id,class:e.className,right:e.getBoundingClientRect().right}))}));
   if(route==='wishes')await page.screenshot({path:'test-results/mascot-wishes-mobile.png',fullPage:true});
   assert(measurement.scroll<=321,route+' overflow '+JSON.stringify(measurement));assert.equal(await page.evaluate(()=>toolyaBuddy.character),'purple');
-  assert.equal(await page.locator('.toolya-settings').count(),0,route+' no standalone settings');await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route+' single preferences panel');await page.keyboard.press('Escape');await page.screenshot({path:'test-results/mascot-'+route+'-mobile.png',fullPage:true});await page.locator('.toolya-buddy').screenshot({path:'test-results/mascot-'+route+'-detail.png'});
+  assert.equal(await page.locator('.toolya-settings').count(),0,route+' no standalone settings');await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route+' single preferences panel');await page.keyboard.press('Escape');await page.screenshot({path:'test-results/mascot-'+route+'-mobile.png',fullPage:true});assert.equal(await page.locator('.toolya-idle').isVisible(),false,route+' redundant strip hidden');await page.locator('.ty-tool-hero-mascot').screenshot({path:'test-results/mascot-'+route+'-detail.png'});
  }
  for(const route of ['/privacy.html','/legal.html','/mascots.html','/tools/wishes/dashboard.html','/tools/estate/heirs.html','/tools/estate/handover.html']){await page.goto(origin+route);await page.waitForFunction(()=>window.toolyaBuddy);assert.equal(await page.locator('.toolya-settings').count(),0,route);await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route);await page.keyboard.press('Escape');}
  await page.goto(origin+'/tools/wishes/');await page.waitForFunction(()=>document.querySelector('.wishes-navigation'));

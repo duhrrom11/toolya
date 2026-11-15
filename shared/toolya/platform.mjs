@@ -152,7 +152,7 @@ function mountToolHero(){
  const h=document.createElement('h1');const symbol=document.createElement('span');symbol.className='ty-tool-hero-icon';symbol.textContent=icon;symbol.setAttribute('aria-hidden','true');h.append(symbol,document.createTextNode(title));
  const p=document.createElement('p');p.textContent=description;
  copy.append(top,h,p);
- const img=document.createElement('img');img.className='ty-tool-hero-mascot';img.alt='Dein ausgewählter Toolya-Begleiter';img.width=185;img.height=190;img.decoding='async';
+ const img=document.createElement('img');img.className='ty-tool-hero-mascot';img.alt='Dein ausgewählter Toolya-Begleiter';img.width=185;img.height=190;img.decoding='async';img.setAttribute('role','button');img.setAttribute('tabindex','0');img.setAttribute('aria-label','Toolya-Maskottchen kitzeln');img.addEventListener('click',()=>buddy.tickle());img.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.repeat){e.preventDefault();if(buddy.tickle())buddy.host.querySelector('.tb-avatar')?.focus({preventScroll:true});}});
  inner.append(copy,img);hero.append(inner);
  old.before(hero);
  if(old.matches('.b3-header')){old.classList.add('ty-tool-original-header');heading?.setAttribute('aria-hidden','true');}

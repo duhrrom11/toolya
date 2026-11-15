@@ -23,3 +23,6 @@
 .ty-tool-original-header{display:none!important}
 @media(max-width:500px){.ty-tool-hero-inner{padding:14px;gap:6px;min-height:128px}.ty-tool-hero-mascot{flex-basis:84px;width:84px;height:110px}.ty-tool-hero h1{font-size:22px}.ty-tool-hero p{font-size:12px}.ty-tool-hero-top{margin-bottom:8px}.ty-tool-wordmark{font-size:22px}}
 @media(prefers-reduced-motion:reduce){.ty-tool-hero *{animation:none!important;transition:none!important}}
+
+.ty-tool-hero-mascot[role=button]{cursor:pointer;touch-action:manipulation}
+.ty-tool-hero-mascot:focus-visible{outline:3px solid var(--ty-accent);outline-offset:-4px;border-radius:16px}
