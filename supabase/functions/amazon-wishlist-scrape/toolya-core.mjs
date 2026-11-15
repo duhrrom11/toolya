@@ -1,4 +1,4 @@
-import {parseHTML} from 'npm:linkedom@0.18.12';
+import {parseHTML} from 'linkedom';
 export class ScrapeError extends Error {constructor(code,message){super(message);this.code=code;}}
 export function normalizeAmazonUrl(raw){
  let u;try{u=new URL(raw)}catch{throw new ScrapeError('INVALID_URL','Bitte einen gültigen Amazon.de-Link eingeben.');}
