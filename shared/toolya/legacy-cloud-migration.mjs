@@ -103,6 +103,8 @@ export function createLegacyMigration({ client, repository, tool, storage = loca
     // Re-inspect immediately before writing; do not trust a stale preview.
     const again = await inspect();
     if (again.status !== 'ready-for-review' ||
+        again.userId !== review.userId ||
+        !sameJson(again.localKeys, review.localKeys) ||
         !sameJson(again.local, review.local)) {
       throw new Error('Daten wurden seit der Vorschau verändert. Bitte erneut prüfen.');
     }
