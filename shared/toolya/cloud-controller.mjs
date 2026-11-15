@@ -195,3 +195,13 @@ export function validatePetHealthSnapshot(data){
 export function createPetHealthCloudController(repository){
   return createCloudController({repository,validate:validatePetHealthSnapshot,initial:{pets:[],events:[],meds:[]}});
 }
+
+export function validateBakingSnapshot(data){
+  if(!data||typeof data!=='object'||Array.isArray(data)||!Array.isArray(data.recipes)||
+     !data.recipes.every(x=>x&&typeof x==='object'&&!Array.isArray(x)))
+    throw Error('Ungültiger Rezept-Datenstand.');
+  return data;
+}
+export function createBakingCloudController(repository){
+  return createCloudController({repository,validate:validateBakingSnapshot,initial:{recipes:[]}});
+}
