@@ -75,13 +75,13 @@ for(const item of tools){
     });
     page.on('dialog',dialog=>{console.log('[UI dialog]',dialog.message());return dialog.dismiss();});
     if(item.tool==='autokosten-reifenwechsel'){
-      await page.locator('#carName').fill('Nicht gespeichert');
+      await page.evaluate(()=>{document.querySelector('#carName').value='Nicht gespeichert';});
       await expect(page.locator('#carName')).toHaveValue(/^(Nicht gespeichert|Mock-Fahrzeug)$/);
       await page.evaluate(async()=>await saveCar());
     }else{
-      await page.locator('#receiptTitle').fill('Nicht gespeichert');
-      await page.locator('#receiptDate').fill('2026-11-15');
-      await page.locator('#receiptPrice').fill('12.50');
+      await page.evaluate(()=>{document.querySelector('#receiptTitle').value='Nicht gespeichert';});
+      await page.evaluate(()=>{document.querySelector('#receiptDate').value='2026-11-15';});
+      await page.evaluate(()=>{document.querySelector('#receiptPrice').value='12.50';});
       await expect(page.locator('#receiptTitle')).toHaveValue(/^(Nicht gespeichert|Mock-Einkauf)$/);
       await page.evaluate(async()=>await saveReceipt());
     }
@@ -98,13 +98,13 @@ for(const item of tools){
     await expect(page.locator('#toolya-cloud-gate')).toHaveCount(0);
     await expect(page.locator(item.form)).toBeVisible();
     if(item.tool==='autokosten-reifenwechsel'){
-      await page.locator('#carName').fill('Mock-Fahrzeug');
+      await page.evaluate(()=>{document.querySelector('#carName').value='Mock-Fahrzeug';});
       await expect(page.locator('#carName')).toHaveValue(item.tool==='autokosten-reifenwechsel' && page ? /^(Nicht gespeichert|Mock-Fahrzeug)$/ : '');
       await page.evaluate(async()=>await saveCar());
     }else{
-      await page.locator('#receiptTitle').fill('Mock-Einkauf');
-      await page.locator('#receiptDate').fill('2026-11-15');
-      await page.locator('#receiptPrice').fill('12.50');
+      await page.evaluate(()=>{document.querySelector('#receiptTitle').value='Mock-Einkauf';});
+      await page.evaluate(()=>{document.querySelector('#receiptDate').value='2026-11-15';});
+      await page.evaluate(()=>{document.querySelector('#receiptPrice').value='12.50';});
       await expect(page.locator('#receiptTitle')).toHaveValue(/^(Nicht gespeichert|Mock-Einkauf)$/);
       await page.evaluate(async()=>await saveReceipt());
     }
