@@ -1,3 +1,4 @@
+import {requireWishlistWriter,guardedWishlistWrite} from './wishlist-auth.mjs';
 // Deployment must explicitly choose production or preview; never infer it from URL parameters.
 const PROD_PROJECT = 'yheogmeaosuigyaxkwth';
 const PROD_PUBLISHABLE_KEY = 'sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
@@ -80,7 +81,7 @@ async function renderTicker(){
  }
 }
 async function loadProfile(){
- const {data:{user}}=await db.auth.getUser();sessionUser=user;
+ const {data,error}=await db.auth.getUser();const user=!error&&!data?.user?.is_anonymous?data?.user:null;sessionUser=user;
  $('profileForm').hidden=!user;$('auth').hidden=!!user;$('logoutPublic').hidden=!user;status('profileStatus',user?'Angemeldet als '+user.email:'Bitte zuerst anmelden.');
  if(!user){profile=null;return}
  const r=await db.from('wishlist_profiles').select('user_id,handle,display_name,first_name,last_name,country').eq('user_id',user.id).maybeSingle();
@@ -110,7 +111,9 @@ $('profileForm').onsubmit=async event=>{
  if(!first_name||!last_name){status('profileStatus','Vorname und Nachname sind Pflicht.');return}
  if((first_name+' '+last_name).length>80){status('profileStatus','Vorname und Nachname dürfen zusammen höchstens 79 Zeichen haben.');return}
  const payload={user_id:sessionUser.id,first_name,last_name,country,display_name:first_name+' '+last_name,handle:profile?.handle||'amazon_'+crypto.randomUUID().slice(0,12)};
- const r=await db.from('wishlist_profiles').upsert(payload,{onConflict:'user_id'});
+ let r;
+ try{r=await guardedWishlistWrite(db,sessionUser.id,()=>db.from('wishlist_profiles').upsert(payload,{onConflict:'user_id'}));}
+ catch(error){status('profileStatus',error.message);return}
  if(r.error){status('profileStatus',r.error.message);return}
  profile={...profile,...payload};status('profileStatus','Profil gespeichert.');await refresh();
 };
@@ -120,7 +123,7 @@ $('publishForm').onsubmit=async event=>{
  const url=safeAmazonListUrl($('amazonUrl').value);if(!url){status('publishStatus','Bitte einen gültigen öffentlichen Amazon-Wunschlisten-Link verwenden.');return}
  $('publishButton').disabled=true;
  try{
- const r=await db.from('wishlist_amazon_publications').insert({user_id:sessionUser.id,amazon_url:url}).select('id').single();
+ const r=await guardedWishlistWrite(db,sessionUser.id,()=>db.from('wishlist_amazon_publications').insert({user_id:sessionUser.id,amazon_url:url}).select('id').single());
  if(r.error)throw r.error;
  status('publishStatus','Wunschliste veröffentlicht. Scraper wird gestartet …');
  const {data: scrapeResult,error}=await db.functions.invoke('amazon-wishlist-scrape',{body:{publication_id:r.data.id}});
