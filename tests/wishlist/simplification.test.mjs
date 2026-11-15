@@ -278,3 +278,11 @@ test('confirmed gift save stays successful when coordination refresh rejects',as
  assert.equal(elements.save.disabled,false);
  assert.equal(run.getGifts().length,1);
 });
+
+test('list creation preserves selections edited during pending save',()=>{
+ const code=source('lists-dashboard.mjs');
+ assert.ok(code.includes("submittedIcon=$('listIcon').value,submittedColor=$('listColor').value"));
+ assert.ok(code.includes("if($('listVisibility').value===visibility)$('listVisibility').value='private'"));
+ assert.ok(code.includes("if($('listIcon').value===submittedIcon)$('listIcon').selectedIndex=0"));
+ assert.ok(code.includes("if($('listColor').value===submittedColor)$('listColor').selectedIndex=0"));
+});
