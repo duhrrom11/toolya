@@ -47,9 +47,11 @@
    workingKey=local.masterKeyHex;workingPayload=validatePayload(await C.decrypt(local.encryptedData,workingKey));workingConfig=normalizeConfig(local);stamp=remote?.updated_at||null;
    if(remote&&JSON.stringify(remote.encrypted_data)!==JSON.stringify(local.encryptedData)){
     const cloud=validatePayload(await C.decrypt(remote.encrypted_data,workingKey));
+    const cloudConfig=remote.encrypted_config?normalizeConfig(await C.decrypt(remote.encrypted_config,workingKey)):workingConfig;
+    EstateCloudGuard.assertLegacyMergeSafe(workingPayload,workingConfig,cloud,cloudConfig);
     // Preserve conflicting entry revisions instead of silently choosing one.
     for(const e of cloud.entries){const existing=workingPayload.entries.find(x=>String(x.id)===String(e.id));if(!existing)workingPayload.entries.push(e);else if(JSON.stringify(existing)!==JSON.stringify(e))workingPayload.entries.push({...e,id:crypto.randomUUID(),title:(e.title||'Unterlage')+' (Online-Stand)'});}
-    if(remote.encrypted_config){const cloudConfig=normalizeConfig(await C.decrypt(remote.encrypted_config,workingKey));for(const p of cloudConfig.alarmPersons){if(!workingConfig.alarmPersons.some(x=>String(x.id)===String(p.id)))workingConfig.alarmPersons.push(p);}}
+    if(remote.encrypted_config){for(const p of cloudConfig.alarmPersons){if(!workingConfig.alarmPersons.some(x=>String(x.id)===String(p.id)))workingConfig.alarmPersons.push(p);}}
     for(const [id,k]of Object.entries(cloud.trusteeKeys||{})){if(!workingPayload.trusteeKeys?.[id]){workingPayload.trusteeKeys||={};workingPayload.trusteeKeys[id]=k;}}
    }
    if(!await confirmAction('Bestehenden Tresor schützen','Deine Unterlagen und Kontakte bleiben erhalten. Der bisher ungeschützt auf diesem Gerät gespeicherte Hauptschlüssel wird jetzt mit deinem Tresorpasswort geschützt. Bewahre dieses Passwort gut auf.'))return;
