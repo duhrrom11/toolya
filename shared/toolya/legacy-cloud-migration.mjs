@@ -39,9 +39,9 @@ const TOOLS = Object.freeze({
     validate:value=>{
       if(!Array.isArray(value)||!value.every(x=>x&&typeof x==='object'&&!Array.isArray(x)))
         throw Error('Rezept-Bestand ist beschädigt.');
-      return copy(value);
+      return {recipes:copy(value)};
     },
-    build:values=>({recipes:values[0]})
+    build:values=>values[0]
   },
   'haustier-gesundheitspass': {
     keys:['haustier_pass_pro_v5'],
