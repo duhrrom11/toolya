@@ -191,3 +191,32 @@ test('umzugskisten-inventar: cloud-confirmed location save and blocked failure',
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
   expect(await page.locator('#locName').inputValue()).toBe('Dachboden');
 });
+
+
+test('umzugskisten-inventar: box photo waits for confirmed cloud write',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/moving/index.html');
+  await expect.poll(()=>page.evaluate(()=>movingCloudReady && !!movingCloudController?.ready)).toBe(true);
+  await page.evaluate(async()=>{
+    await saveData({locations:[{id:1,name:'Keller'}],boxes:[]});
+    loadLocationsDropdown();
+    document.querySelector('#boxLocationSelect').value='1';
+    document.querySelector('#boxName').value='Fotokiste';
+  });
+  await page.locator('#boxPhotoInput').setInputFiles({
+    name:'kiste.png',mimeType:'image/png',buffer:Buffer.from([137,80,78,71,13,10,26,10])
+  });
+  const result=await page.evaluate(async()=>{
+    const OriginalReader=window.FileReader;
+    window.FileReader=class {
+      readAsDataURL(){setTimeout(()=>{this.result='data:image/png;base64,MOCK';this.onload?.()},15)}
+    };
+    try {await saveBox()} finally {window.FileReader=OriginalReader}
+    return {writes:window.__toolyaMock.writes.length,
+      photo:window.__toolyaMock.writes.at(-1)?.p_data?.boxes?.[0]?.photo,
+      cleared:document.querySelector('#boxName').value===''};
+  });
+  expect(result.writes).toBe(2);
+  expect(result.photo).toBe('data:image/png;base64,MOCK');
+  expect(result.cleared).toBe(true);
+});
