@@ -564,3 +564,22 @@ test('estate: encrypted cloud write confirmed, conflict blocks confirmation',asy
  });
  expect(result).toEqual({stamp:'2026-11-15T10:00:00Z',conflict:'conflict',writes:2});
 });
+
+test('estate: browser rejects stale encrypted backup revision',async({page})=>{
+ await isolatedEstate(page,true);await page.goto(origin+'/tools/estate/index.html');
+ const result=await page.evaluate(async()=>{
+  const client={auth:{async getUser(){return {data:{user:{id:'owner'}},error:null}}},from(){return {select(){return this},eq(){return this},async single(){return {data:{vault_id:'v',updated_at:'new',recovery_key:{ciphertext:'wrapped'}},error:null}}}}};
+  let decrypts=0;
+  try{await EstateCloudGuard.verifyEncryptedBackup({client,ownerId:'owner',vaultId:'v',expectedStamp:'old',key:'key',cryptoApi:{async decrypt(){decrypts++;return {entries:[]}}},validatePayload:x=>x})}
+  catch(e){return {error:e.message,decrypts}}
+ });
+ expect(result).toEqual({error:'backup_unverified',decrypts:0});
+});
+test('estate: browser refuses unreadable cloud backup',async({page})=>{
+ await isolatedEstate(page,true);await page.goto(origin+'/tools/estate/index.html');
+ const result=await page.evaluate(async()=>{
+  const client={auth:{async getUser(){return {data:{user:{id:'owner'}},error:null}}},from(){return {select(){return this},eq(){return this},async single(){return {data:{vault_id:'v',updated_at:'rev',recovery_key:{ciphertext:'wrapped'},encrypted_data:{ciphertext:'bad'},encrypted_config:{ciphertext:'bad'}},error:null}}}}};
+  try{await EstateCloudGuard.verifyEncryptedBackup({client,ownerId:'owner',vaultId:'v',expectedStamp:'rev',key:'key',cryptoApi:{async decrypt(){throw Error('decrypt_failed')}},validatePayload:x=>x})}catch(e){return e.message}
+ });
+ expect(result).toBe('decrypt_failed');
+});
