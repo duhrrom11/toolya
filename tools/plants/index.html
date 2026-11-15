@@ -390,6 +390,7 @@
     <script src="../../shared/helferlein-cloud-migration.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
+        return; // legacy local-first bridge disabled
         if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) { console.warn('Online-Sicherung nicht geladen'); return; }
         if (window.helferleinCloudBridge) return;
         window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
@@ -416,7 +417,9 @@
         const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        supabaseClient.auth.onAuthStateChange(() => {
+        supabaseClient.auth.onAuthStateChange((event,session) => {
+            if(plantsCloudReady&&(!session?.user?.id||session.user.id!==plantsCloudUserId||session.user.is_anonymous))
+                plantsCloudBlock('Sitzung geändert. Bitte neu anmelden.');
             setTimeout(() => { checkUserSession().catch(() => {}); }, 0);
         });
 
@@ -498,15 +501,7 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            const currentMonth = new Date().getMonth();
-            document.getElementById('calendarTodoText').innerText = gartenKalender[currentMonth] || "Pflege deine Pflanzen.";
-            document.getElementById('plantLastWatered').valueAsDate = new Date();
-            calculateWaterAmount();
-            loadLocationDropdown();
-            renderApp();
-            updateCisternDisplay();
-            checkFrostSeason(currentMonth);
-            checkUserSession();
+            void plantsCloudBoot();
         });
 
         function checkFrostSeason(month) {
@@ -580,7 +575,7 @@
             document.getElementById('cisternModal').classList.remove('hidden');
         }
         function closeCisternModal() { document.getElementById('cisternModal').classList.add('hidden'); }
-        function updateCisternCapacity() {
+        async function updateCisternCapacity() {
             const max = Number(document.getElementById('cisternMaxLiters').value);
             if (!Number.isFinite(max) || max <= 0) return alert('Bitte ein gültiges Fassungsvermögen größer als 0 eingeben.');
             let data = getData();
@@ -588,15 +583,15 @@
             if (data.cisternCurrent === undefined) data.cisternCurrent = max;
             const current = Number(data.cisternCurrent);
             data.cisternCurrent = Number.isFinite(current) ? Math.min(max, Math.max(0, current)) : max;
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             updateCisternDisplay();
         }
-        function refillCistern() {
+        async function refillCistern() {
             let data = getData();
             const capacity = Number(data.cisternMax);
             data.cisternMax = Number.isFinite(capacity) && capacity > 0 ? capacity : 500;
             data.cisternCurrent = data.cisternMax;
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             updateCisternDisplay();
             alert("Regentonne / Zisterne vollständig aufgefüllt!");
         }
@@ -632,7 +627,7 @@
             }).filter(Boolean).join('');
             document.getElementById('seedList').innerHTML = seedItems || `<p class="text-xs text-gray-400 text-center py-2">Kein Saatgut im Lager.</p>`;
         }
-        function addSeedItem() {
+        async function addSeedItem() {
             let name = document.getElementById('seedName').value.trim();
             const rawYear = document.getElementById('seedYear').value.trim();
             const year = rawYear === '' ? new Date().getFullYear() : Number(rawYear);
@@ -643,16 +638,16 @@
             let data = getData();
             if (!Array.isArray(data.seeds)) data.seeds = [];
             data.seeds.push({ name, year });
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             document.getElementById('seedName').value = ""; document.getElementById('seedYear').value = "";
             renderSeedList();
         }
-        function removeSeedItem(idx) {
+        async function removeSeedItem(idx) {
             let data = getData();
             if (!Number.isSafeInteger(idx) || idx < 0 || idx >= data.seeds.length) return;
             if (!data.seeds[idx] || typeof data.seeds[idx] !== 'object' || Array.isArray(data.seeds[idx])) return;
             data.seeds.splice(idx, 1);
-            if (saveData(data)) renderSeedList();
+            if (await saveData(data)) renderSeedList();
         }
 
         // Beet
@@ -665,7 +660,7 @@
                 return `<button type="button" onclick="assignToBeet(${index})" class="h-24 border-2 border-dashed border-emerald-300 rounded-xl p-2 flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 cursor-pointer text-center"><span class="text-[10px] text-emerald-600 font-bold">Feld ${index+1}</span><span class="text-xs font-bold text-emerald-900 mt-1">${p ? escapeHtml(p.name) : '+ Belegen'}</span></button>`;
             }).join('');
         }
-        function assignToBeet(slotIndex) {
+        async function assignToBeet(slotIndex) {
             let data = getData();
             if (!Number.isSafeInteger(slotIndex) || slotIndex < 0 || slotIndex >= data.beetSlots.length) return;
             let plantNames = data.plants.filter(p => p && typeof p === 'object' &&
@@ -688,7 +683,7 @@
             }
             if (data.beetSlots[slotIndex] === nextPlantId) return;
             data.beetSlots[slotIndex] = nextPlantId;
-            if (saveData(data)) renderBeetGrid();
+            if (await saveData(data)) renderBeetGrid();
         }
 
         // Lager & Nachbestellen mit Amazon Partner-ID
@@ -712,29 +707,29 @@
             }).filter(Boolean).join('');
             document.getElementById('inventoryList').innerHTML = inventoryItems || `<p class="text-xs text-gray-400 text-center py-2">Lager ist leer.</p>`;
         }
-        function addInventoryItem() {
+        async function addInventoryItem() {
             let name = document.getElementById('invItemName').value.trim();
             let qty = document.getElementById('invItemQty').value.trim();
             if(!name) return;
             let data = getData();
             if (!Array.isArray(data.inventory)) data.inventory = [];
             data.inventory.push({ name, qty: qty || '1 Stk' });
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             document.getElementById('invItemName').value = ""; document.getElementById('invItemQty').value = "";
             renderInventoryList();
         }
-        function removeInventoryItem(idx) {
+        async function removeInventoryItem(idx) {
             let data = getData();
             if (!Number.isSafeInteger(idx) || idx < 0 || idx >= data.inventory.length) return;
             if (!data.inventory[idx] || typeof data.inventory[idx] !== 'object' || Array.isArray(data.inventory[idx])) return;
             data.inventory.splice(idx, 1);
-            if (saveData(data)) renderInventoryList();
+            if (await saveData(data)) renderInventoryList();
         }
 
         // Ernte
         function openHarvestModal(plantId) { document.getElementById('harvestPlantId').value = plantId; document.getElementById('harvestWeightGrams').value = ""; document.getElementById('harvestModal').classList.remove('hidden'); }
         function closeHarvestModal() { document.getElementById('harvestModal').classList.add('hidden'); }
-        function saveHarvest() {
+        async function saveHarvest() {
             const rawId = document.getElementById('harvestPlantId').value;
             const plantId = Number(rawId);
             if (!/^\d+$/.test(rawId) || !Number.isSafeInteger(plantId)) return alert('Ungültige Pflanzen-ID.');
@@ -754,7 +749,7 @@
                 }
                 p.harvestLog.push({ date: new Date().toLocaleDateString('de-DE'), grams });
                 data.totalHarvestGrams = previousTotal + grams;
-                if (!saveData(data)) return;
+                if (!await saveData(data)) return;
                 closeHarvestModal(); renderApp();
             }
         }
@@ -770,13 +765,13 @@
             photos = photos.filter(img => typeof img === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(img));
             document.getElementById('galleryGrid').innerHTML = photos.map((img, idx) => `<div class="relative group border rounded-xl overflow-hidden bg-gray-100"><img src="${escapeHtml(img)}" class="w-full h-32 object-cover"><span class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-[9px] px-1.5 py-0.5 rounded">Foto ${idx+1}</span></div>`).join('') || `<p class="col-span-2 text-xs text-gray-400 text-center py-4">Keine Fotos.</p>`;
         }
-        function addGalleryPhoto() {
+        async function addGalleryPhoto() {
             const rawId = document.getElementById('galleryPlantId').value;
             const plantId = Number(rawId);
             if (!/^\d+$/.test(rawId) || !Number.isSafeInteger(plantId)) return alert('Ungültige Pflanzen-ID.');
             const fileInput = document.getElementById('newGalleryPhoto');
             if(!fileInput.files || !fileInput.files[0]) return;
-            compressImage(fileInput.files[0], (compressed) => {
+            compressImage(fileInput.files[0], async (compressed) => {
                 let data = getData();
                 let p = data.plants.find(item => item && typeof item === 'object' && item.id === plantId);
                 if(p) {
@@ -786,68 +781,66 @@
                         p.galleryPhotos.push(p.photo);
                     }
                     p.galleryPhotos.push(compressed);
-                    if (!saveData(data)) return;
+                    if (!await saveData(data)) return;
                     renderGalleryGrid(plantId); fileInput.value = "";
                 }
             });
         }
 
-        function getData() {
-            const defaults = { plants: [], monthWaterLiters: 0, totalHarvestGrams: 0, inventory: [{name: 'Tomatendünger Flüssig', qty: '1 L'}, {name: 'Bio Blumenerde', qty: '40 L'}], seeds: [], beetSlots: Array(16).fill(null), cisternMax: 500, cisternCurrent: 500 };
-            try {
-                const stored = JSON.parse(localStorage.getItem('pflanzen_pass_v10'));
-                if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return defaults;
-                if (!Array.isArray(stored.plants)) { console.warn('Ungültige Pflanzensammlung im lokalen Speicher'); return defaults; }
-                return {
-                    ...defaults,
-                    ...stored,
-                    plants: stored.plants.slice(),
-                    inventory: Array.isArray(stored.inventory) ? stored.inventory.slice() : defaults.inventory,
-                    seeds: Array.isArray(stored.seeds) ? stored.seeds.slice() : [],
-                    // Preserve extra legacy slots rather than silently deleting saved assignments.
-                    beetSlots: Array.isArray(stored.beetSlots)
-                        ? [...stored.beetSlots, ...Array(Math.max(0, 16 - stored.beetSlots.length)).fill(null)]
-                        : defaults.beetSlots
-                };
-            } catch (error) {
-                console.error('Pflanzendaten konnten nicht geladen werden:', error);
-                return defaults;
-            }
+        let plantsCloudReady=false,plantsCloudUserId=null,plantsCloudController=null;
+        function plantsCloudBlock(message){
+            plantsCloudReady=false;plantsCloudController?.invalidate();
+            let gate=document.getElementById('toolya-cloud-gate');
+            if(!gate){gate=document.createElement('div');gate.id='toolya-cloud-gate';
+                gate.setAttribute('role','alert');
+                gate.style.cssText='position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
+                document.body.append(gate);}
+            gate.textContent=message+' ';
+            const link=document.createElement('a');link.href='../../index.html';link.textContent='Zur Toolya-Anmeldung';gate.append(link);
         }
-
-        function saveData(data) {
-            try {
-                if (!data || typeof data !== 'object' || Array.isArray(data) || !Array.isArray(data.plants)) throw new Error('Ungültige Pflanzendaten');
-                if (localStorage.getItem('helferlein_cloud_owner_pflanzenpflege-giessplan') && !window.helferleinCloudBridge) {
-                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
-                return false;
-            }
-            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
-                    alert('Lokale Speicherung ist während eines Kontowechsels oder einer Cloud-Datenübernahme gesperrt. Bitte zuerst das ursprüngliche Konto anmelden.');
-                    return false;
-                }
-                // Never overwrite an unreadable existing backup with empty defaults.
-                const existing = localStorage.getItem('pflanzen_pass_v10');
-                if (existing !== null) {
-                    let parsed;
-                    try { parsed = JSON.parse(existing); } catch (_) { parsed = null; }
-                    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !Array.isArray(parsed.plants)) {
-                        alert('Vorhandene Pflanzendaten sind beschädigt. Speichern zum Schutz der Originaldaten blockiert.');
-                        return false;
+        async function plantsCloudBoot(){
+            plantsCloudBlock('Toolya Cloud wird geladen …');
+            try{
+                const {prepareCloudTool}=await import('../../shared/toolya/cloud-tool-adapters.mjs');
+                const {data:auth,error}=await supabaseClient.auth.getUser();
+                if(error||!auth?.user?.id||auth.user.is_anonymous)throw Error('Registrierte Anmeldung erforderlich.');
+                const uid=auth.user.id;
+                const prepared=await prepareCloudTool({
+                    client:supabaseClient,tool:'pflanzenpflege-giessplan',storage:localStorage,
+                    confirmMigration:async()=>confirm('Lokale Pflanzendaten nach Sicherung in die Cloud übernehmen?'),
+                    reviewExistingCloud:async()=>confirm('Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?'),
+                    exportBackup:async data=>{
+                        const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+                        const url=URL.createObjectURL(blob),a=document.createElement('a');
+                        a.href=url;a.download='toolya-pflanzen-vor-cloud.json';a.click();
+                        setTimeout(()=>URL.revokeObjectURL(url),60000);
+                        return confirm('Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
                     }
-                }
-                const serialized = JSON.stringify(data);
-                if (!serialized) throw new Error('Pflanzendaten nicht serialisierbar');
-                localStorage.setItem('pflanzen_pass_v10', serialized); window.toolyaNotice?.('success','Änderungen auf diesem Gerät gespeichert.');
-                if (window.helferleinCloudBridge) {
-                    void window.helferleinCloudBridge.changed(data).catch(error => console.error('Cloud-Übernahme ausstehend:', error));
-                }
-                return true;
-            } catch (error) {
-                console.error('Pflanzendaten konnten nicht gespeichert werden:', error);
-                alert('Speichern fehlgeschlagen. Bitte Browser-Speicherplatz prüfen; Eingaben nicht verwerfen.');
-                return false;
-            }
+                });
+                const {data:again,error:againError}=await supabaseClient.auth.getUser();
+                if(againError||again?.user?.id!==uid||again.user.is_anonymous)throw Error('Konto gewechselt.');
+                plantsCloudController=prepared.controller;plantsCloudUserId=uid;plantsCloudReady=true;
+                document.getElementById('toolya-cloud-gate')?.remove();
+                const month=new Date().getMonth();
+                document.getElementById('calendarTodoText').innerText=gartenKalender[month]||'Pflege deine Pflanzen.';
+                document.getElementById('plantLastWatered').valueAsDate=new Date();
+                calculateWaterAmount();loadLocationDropdown();renderApp();updateCisternDisplay();
+                checkFrostSeason(month);await checkUserSession();
+            }catch(error){console.error(error);plantsCloudBlock('Toolya Cloud gesperrt: '+error.message);}
+        }
+        function getData(){
+            if(!plantsCloudReady||!plantsCloudController?.ready)return {plants:[],monthWaterLiters:0,totalHarvestGrams:0,
+                inventory:[],seeds:[],beetSlots:Array(16).fill(null),cisternMax:500,cisternCurrent:500};
+            return plantsCloudController.snapshot();
+        }
+        async function saveData(data){
+            if(!plantsCloudReady||!plantsCloudController?.ready){plantsCloudBlock('Cloud nicht bereit.');return false;}
+            try{
+                const {data:auth,error}=await supabaseClient.auth.getUser();
+                if(error||auth?.user?.id!==plantsCloudUserId||auth.user.is_anonymous)throw Error('Anmeldung nicht gültig.');
+                await plantsCloudController.replace(data);
+                window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');return true;
+            }catch(error){console.error(error);plantsCloudBlock('Cloud-Speicherung unbestätigt: '+error.message);return false;}
         }
 
         function loadLocationDropdown() {
@@ -874,7 +867,7 @@
             return Number.isSafeInteger(value) && value >= 1 && value <= 3650 ? value : null;
         }
 
-        function savePlant() {
+        async function savePlant() {
             const name = document.getElementById('plantName').value.trim();
             const species = document.getElementById('plantSpecies').value.trim();
             const location = document.getElementById('plantLocation').value.trim();
@@ -891,13 +884,14 @@
             if (interval === null) return alert('Bitte ein Gießintervall zwischen 1 und 3650 Tagen eingeben.');
             if (propDate && !isValidCalendarDate(propDate)) return alert('Bitte ein gültiges Vermehrungsdatum eingeben.');
 
-            if (photoInput.files && photoInput.files[0]) {
-                compressImage(photoInput.files[0], (compressedPhoto) => {
-                    storePlant(name, species, location, light, potSize, interval, lastWatered, propagation, propDate, note, compressedPhoto);
-                });
-            } else {
-                storePlant(name, species, location, light, potSize, interval, lastWatered, propagation, propDate, note, "");
+            let photo='';
+            if(photoInput.files&&photoInput.files[0]){
+                try{photo=await new Promise((resolve,reject)=>{
+                    const timeout=setTimeout(()=>reject(Error('Bildverarbeitung fehlgeschlagen')),15000);
+                    compressImage(photoInput.files[0],value=>{clearTimeout(timeout);resolve(value);});
+                });}catch(error){alert('Pflanzenfoto konnte nicht verarbeitet werden. Nichts gespeichert.');return;}
             }
+            await storePlant(name,species,location,light,potSize,interval,lastWatered,propagation,propDate,note,photo);
         }
 
         function compressImage(file, callback) {
@@ -928,7 +922,7 @@
             reader.readAsDataURL(file);
         }
 
-        function storePlant(name, species, location, light, potSize, interval, lastWatered, propagation, propDate, note, photo) {
+        async function storePlant(name, species, location, light, potSize, interval, lastWatered, propagation, propDate, note, photo) {
             let data = getData();
             const existingIds = new Set(data.plants.filter(item => item && typeof item === 'object').map(item => String(item.id)));
             let newId = Date.now() * 1000 + Math.floor(Math.random() * 1000);
@@ -943,7 +937,7 @@
                 galleryPhotos: photo ? [photo] : [],
                 waterHistory: [lastWatered], diary: [], harvestLog: []
             });
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             document.getElementById('plantName').value = "";
             document.getElementById('plantSpecies').value = "";
             document.getElementById('plantLocation').value = "";
@@ -956,7 +950,7 @@
             alert("Gespeichert");
         }
 
-        function waterPlant(id) {
+        async function waterPlant(id) {
             let data = getData();
             let p = data.plants.find(item => item && typeof item === 'object' && item.id === id);
             if (p) {
@@ -976,7 +970,7 @@
                 const currentLiters = data.cisternCurrent === undefined ? maxLiters : Number(data.cisternCurrent);
                 const availableLiters = Number.isFinite(currentLiters) ? Math.min(maxLiters, Math.max(0, currentLiters)) : maxLiters;
                 data.cisternCurrent = Math.max(0, availableLiters - usedLiters);
-                if (!saveData(data)) return;
+                if (!await saveData(data)) return;
                 renderApp();
                 updateCisternDisplay();
             }
@@ -984,7 +978,7 @@
 
         function openDiaryModal(id) { document.getElementById('diaryPlantId').value = id; document.getElementById('diaryText').value = ""; document.getElementById('diaryModal').classList.remove('hidden'); }
         function closeDiaryModal() { document.getElementById('diaryModal').classList.add('hidden'); }
-        function saveDiaryEntry() {
+        async function saveDiaryEntry() {
             const rawId = document.getElementById('diaryPlantId').value;
             const id = Number(rawId);
             if (!/^\d+$/.test(rawId) || !Number.isSafeInteger(id)) return alert('Ungültige Pflanzen-ID.');
@@ -995,11 +989,11 @@
             if (!p) return;
             if (!Array.isArray(p.diary)) p.diary = [];
             p.diary.unshift({ date: new Date().toLocaleDateString('de-DE'), text: text });
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             closeDiaryModal(); renderApp();
         }
 
-        function deletePlant(id) {
+        async function deletePlant(id) {
             let data = getData();
             if (!data.plants.some(item => item && typeof item === 'object' && item.id === id)) {
                 return alert('Pflanze nicht gefunden. Es wurde nichts gelöscht.');
@@ -1007,7 +1001,7 @@
             if (!confirm("⚠️ Pflanze wirklich löschen?")) return;
             data.plants = data.plants.filter(item => !item || typeof item !== 'object' || item.id !== id);
             data.beetSlots = data.beetSlots.map(slotId => slotId === id ? null : slotId);
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             loadLocationDropdown(); renderApp();
         }
 
@@ -1026,7 +1020,7 @@
         }
         function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); }
 
-        function updatePlant() {
+        async function updatePlant() {
             const rawId = document.getElementById('editId').value;
             const id = Number(rawId);
             if (!/^\d+$/.test(rawId) || !Number.isSafeInteger(id)) {
@@ -1052,7 +1046,7 @@
                 }
                 p.lastWatered = editedLastWatered;
                 p.note = document.getElementById('editNote').value.trim();
-                if (!saveData(data)) return;
+                if (!await saveData(data)) return;
             closeEditModal(); loadLocationDropdown(); renderApp();
         }
 
