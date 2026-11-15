@@ -15,7 +15,12 @@ function assertSnapshot(data) {
     throw new Error('Ungültiges Cloud-Datenformat.');
   }
   // Reject accidental non-JSON values and cyclic structures.
-  const serialized = JSON.stringify(data);
+  let serialized;
+  try {
+    serialized = JSON.stringify(data);
+  } catch (_) {
+    throw new Error('Ungültiges Cloud-Datenformat: nicht als JSON darstellbar.');
+  }
   if (!serialized) throw new Error('Ungültige oder zu große Daten.');
   // PostgreSQL enforces octet_length(jsonb::text), not JS UTF-16 code units.
   // Use a conservative UTF-8 byte limit; canonical JSONB formatting may
