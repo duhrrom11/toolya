@@ -130,3 +130,12 @@ test('private feed retry remains accessible',()=>{
  assert.equal(style.split(',').some(selector=>selector.trim()==='#reloadFeed'),false);
  assert.match(source('app.mjs'),/\$\('reloadFeed'\)\.onclick/);
 });
+
+test('gift planner and Amazon import references resolve in their own pages',()=>{
+ for(const [page,module] of [['planner.html','gift-planner.mjs'],['index.html','amazon-import.mjs']]){
+  const html=readFileSync(resolve(root,'tools/wishes',page),'utf8');
+  const ids=new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(match=>match[1]));
+  for(const match of source(module).matchAll(/(?:getElementById|\$)\(['"]([^'"]+)['"]\)/g))
+   assert.ok(ids.has(match[1]),module+': missing #'+match[1]+' in '+page);
+ }
+});
