@@ -1,5 +1,6 @@
 import {ToolyaBuddy} from './buddy.mjs';
 const ASSETS=new URL('../../assets/toolya/',import.meta.url).href;
+const atlasURL=file=>ASSETS+file+'?v=20261115-alpha';
 for(const file of ['buddy.css','platform.css']){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL(file,import.meta.url).href;document.head.append(l)}
 export const EMOTIONS=['happy','proud','curious','thoughtful','surprised','concerned','sad','shy','cheeky','sleepy','laughing','grateful','motivated','puzzled','celebrating','affectionate'];
 export const TOOLS={wishes:{role:0,name:'Geschenkexperte',greeting:'Hier ist Platz für große und kleine Wünsche.'},budget:{role:1,name:'Buchhalter',greeting:'Deine Ausgaben gut im Blick.'},housemates:{role:2,name:'WG-Organisator',greeting:'Ein guter Plan macht den Alltag leichter.'},moving:{role:3,name:'Umzugshelfer',greeting:'Damit beim Umzug nichts verloren geht.'},estate:{role:4,name:'Vorsorgebegleiter',greeting:'In Ruhe das Wichtige ordnen.',serious:true},car:{role:5,name:'Mechaniker',greeting:'Dein Fahrzeug gut organisiert.'},'pet-health':{role:6,name:'Tierbegleiter',greeting:'Alles Wichtige für deine tierischen Freunde.',serious:true},parking:{role:7,name:'Parkhelfer',greeting:'Parkplatz und Parkzeit im Blick.'},loans:{role:8,name:'Verleih-Organisator',greeting:'Behalte verliehene Gegenstände im Blick.'},plants:{role:9,name:'Gärtner',greeting:'Ein guter Tag für deine grünen Freunde.'},meters:{role:10,name:'Energiehelfer',greeting:'Zählerstände einfach im Blick.'},baking:{role:11,name:'Backhelfer',greeting:'Die passende Form für deine Backidee.'},home:{role:12,name:'Alltagsbegleiter',greeting:'Was möchtest du heute erledigen?'}};
@@ -13,11 +14,11 @@ const stockImage=buddy.image.bind(buddy);
 const pixel='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
 const cache=new Map(), frames=new Set();
 let previousItem=null, sequence=0, currentEmotion='happy';
-function preload(file){if(!cache.has(file)){const i=new Image();const record={ready:false,failed:false,promise:null};record.promise=new Promise(resolve=>{i.onload=()=>{record.ready=true;resolve(true)};i.onerror=()=>{record.failed=true;resolve(false)};i.src=ASSETS+file});cache.set(file,record)}return cache.get(file)}
+function preload(file){if(!cache.has(file)){const i=new Image();const record={ready:false,failed:false,promise:null};record.promise=new Promise(resolve=>{i.onload=()=>{record.ready=true;resolve(true)};i.onerror=()=>{record.failed=true;resolve(false)};i.src=atlasURL(file)});cache.set(file,record)}return cache.get(file)}
 function cell(index){return {x:(index%8)*100/7,y:Math.floor(index/8)*100/3}}
 function paint(record,file,index,alternate=index,animate=false){
  const a=cell(index),b=cell(alternate);record.frame.style.setProperty('--ty-a',a.x+'%');record.frame.style.setProperty('--ty-b',b.x+'%');record.frame.style.setProperty('--ty-y',a.y+'%');record.frame.style.backgroundPosition=a.x+'% '+a.y+'%';
- const loaded=preload(file);record.frame.hidden=!loaded.ready;record.img.style.opacity=loaded.ready?'0':'1';record.frame.style.backgroundImage=`url("${ASSETS+file}")`;if(record.epoch!==buddy.noticeEpoch){record.frame.classList.remove('ty-animated');void record.frame.offsetWidth;record.epoch=buddy.noticeEpoch;}record.frame.classList.toggle('ty-animated',animate);
+ const loaded=preload(file);record.frame.hidden=!loaded.ready;record.img.style.opacity=loaded.ready?'0':'1';record.frame.style.backgroundImage=`url("${atlasURL(file)}")`;if(record.epoch!==buddy.noticeEpoch){record.frame.classList.remove('ty-animated');void record.frame.offsetWidth;record.epoch=buddy.noticeEpoch;}record.frame.classList.toggle('ty-animated',animate);
  if(loaded.failed){record.img.style.opacity='1';if(record.img.classList.contains('tb-avatar'))stockImage(record.img,buddy.current?.type||'welcome');else record.img.src=ASSETS+'originals/toolya_wishlist_'+buddy.character+'_welcome_1024.png'}
  if(!loaded.ready&&!loaded.failed)loaded.promise.then(()=>{if(record.img.isConnected)refreshFrames()});
 }

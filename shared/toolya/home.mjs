@@ -22,7 +22,7 @@ function rest(){
  delete stage.dataset.reaction;message.hidden=true;
  if(role===null){stage.dataset.live='false';return;}
  stage.dataset.live='true';
- characters.forEach((el,i)=>{const index=role*2+i;el.dataset.art='outfit';el.style.backgroundImage='url("assets/toolya/outfits.webp")';el.style.backgroundSize='800% 400%';el.style.backgroundPosition=`${index%8*100/7}% ${Math.floor(index/8)*100/3}%`;});
+ characters.forEach((el,i)=>{const index=role*2+i;el.dataset.art='outfit';el.style.backgroundImage='url("assets/toolya/outfits.webp?v=20261115-alpha")';el.style.backgroundSize='800% 400%';el.style.backgroundPosition=`${index%8*100/7}% ${Math.floor(index/8)*100/3}%`;});
 }
 function say(text){if(!text)return;message.textContent=text;message.hidden=false;}
 function react(kind,index,text='',duration=1800){
