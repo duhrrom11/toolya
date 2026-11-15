@@ -92,3 +92,8 @@ test('estate local encrypted backup revision remains unchanged through cloud ver
  assert.throws(()=>assertLocalSnapshot(encrypted,'{"version":2,"ciphertext":"other"}'),/conflict/);
  assert.throws(()=>assertLocalSnapshot(encrypted,null),/conflict/);
 });
+
+test('estate first local recovery write refuses a vault created by another tab',()=>{
+ assert.doesNotThrow(()=>assertLocalSnapshot(null,null));
+ assert.throws(()=>assertLocalSnapshot(null,'{"version":2,"ciphertext":"other-tab"}'),/conflict/);
+});
