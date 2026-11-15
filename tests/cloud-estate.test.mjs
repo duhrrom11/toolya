@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
+import {webcrypto} from 'node:crypto';
+import {TextEncoder,TextDecoder} from 'node:util';
 const ctx={};vm.runInNewContext(readFileSync(new URL('../assets/estate-cloud-guard.js',import.meta.url),'utf8'),ctx);
 const {requireOwner,saveEncryptedSnapshot,verifyEncryptedBackup,assertRestoreCompatible,restoreCloudSnapshot,assertLocalSnapshot}=ctx.EstateCloudGuard;
 const cipher={ciphertext:'encrypted'};
@@ -114,4 +116,25 @@ test('estate legacy merge rejects duplicate contacts and malformed issued keys',
  const duplicate={alarmPersons:[{id:'p1',contact:'one@example.invalid'},{id:'p1',contact:'two@example.invalid'}]};
  assert.throws(()=>guard.assertLegacyMergeSafe(local,people,local,duplicate),/conflict/);
  assert.throws(()=>guard.assertLegacyMergeSafe({entries:[],trusteeKeys:{p1:'invalid'}},people,local,people),/conflict/);
+});
+
+test('estate restores real AES-GCM/PBKDF2 encrypted snapshot without production services',async()=>{
+ const cryptoContext={crypto:webcrypto,TextEncoder,TextDecoder,Uint8Array,atob,btoa};
+ vm.runInNewContext(readFileSync(new URL('../assets/estate-crypto.js',import.meta.url),'utf8'),cryptoContext);
+ const C=cryptoContext.EstateCrypto,key=C.random(),password='isolated-fixture-password';
+ const payload={entries:[{id:'document-1',title:'Encrypted fixture'}],trusteeKeys:{p1:C.random()}};
+ const config={vaultId:'v_fixture',alarmPersons:[{id:'p1',contact:'fixture@example.invalid'}]};
+ const remote={vault_id:'v_fixture',updated_at:'revision-fixture',recovery_key:await C.wrap(key,password),
+  encrypted_data:await C.encrypt(payload,key),encrypted_config:await C.encrypt(config,key)};
+ const client={auth:{async getUser(){return {data:{user:{id:'fixture-owner',is_anonymous:false}},error:null}}},
+  from(){return {select(){return this},eq(){return this},async maybeSingle(){return {data:remote,error:null}}}}};
+ const options={client,ownerId:'fixture-owner',password,cryptoApi:C,validatePayload:p=>{if(!Array.isArray(p.entries))throw Error('invalid_vault');return p}};
+ const restored=await restoreCloudSnapshot(options);
+ assert.equal(restored.payload.entries[0].title,'Encrypted fixture');
+ assert.equal(restored.config.alarmPersons[0].contact,'fixture@example.invalid');
+ assert.equal(restored.payload.trusteeKeys.p1,payload.trusteeKeys.p1);
+ await assert.rejects(restoreCloudSnapshot({...options,password:'wrong-password'}));
+ const broken={...remote,encrypted_config:{...remote.encrypted_config,ciphertext:remote.encrypted_config.ciphertext.slice(0,-4)+'AAAA'}};
+ const brokenClient={...client,from(){return {select(){return this},eq(){return this},async maybeSingle(){return {data:broken,error:null}}}}};
+ await assert.rejects(restoreCloudSnapshot({...options,client:brokenClient}));
 });
