@@ -52,3 +52,15 @@ test('account switch after write rejects confirmation',async()=>{
   fake.client.rpc=async(...args)=>{const result=await rpc(...args);fake.setUser('other');return result;};
   await assert.rejects(repo.save({cars:[],events:[],tires:[]},null),/bestätigt/);
 });
+
+test('multibyte UTF-8 snapshots are rejected before RPC when oversized',async()=>{
+  const fake=fakeClient(),repo=createCloudRepository(fake.client,'autokosten-reifenwechsel');
+  await assert.rejects(repo.save({cars:[],events:[],tires:[],note:'😀'.repeat(1_000_001)},null),/zu große/);
+  assert.equal(fake.calls,0);
+});
+test('multibyte UTF-8 snapshots below conservative limit are accepted',async()=>{
+  const fake=fakeClient(),repo=createCloudRepository(fake.client,'autokosten-reifenwechsel');
+  const result=await repo.save({cars:[],events:[],tires:[],note:'😀'.repeat(100)},null);
+  assert.equal(result.revision,1);
+  assert.equal(fake.calls,1);
+});
