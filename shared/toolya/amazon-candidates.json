@@ -27,9 +27,24 @@
       "label": "Dr. Oetker Springform"
     }
   ],
-  "budget": [],
-  "estate": [],
-  "housemates": [],
+  "budget": [
+    {
+      "asin": "B015ZIYN0O",
+      "label": "Leitz Qualitäts-Ordner"
+    }
+  ],
+  "estate": [
+    {
+      "asin": "B015ZIYN0O",
+      "label": "Leitz Qualitäts-Ordner"
+    }
+  ],
+  "housemates": [
+    {
+      "asin": "B075QK53PP",
+      "label": "Vileda Turbo Wischmopp"
+    }
+  ],
   "loans": [
     {
       "asin": "B0935DN1BN",
