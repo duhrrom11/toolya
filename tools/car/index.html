@@ -722,8 +722,7 @@ async function toolyaCloudBoot(tool) {
                     consumption = (litres * 100) / drivenKm;
                 }
                 
-                let car = data.cars.find(c => c.id === parseInt(carId));
-                if (car) car.km = km.toString();
+                // Kilometerstand wird gemeinsam mit dem Tankereignis gespeichert.
             }
 
             if (receiptInput.files && receiptInput.files[0]) {
@@ -738,6 +737,10 @@ async function toolyaCloudBoot(tool) {
         async function storeEventData(carId, type, date, title, cost, tread, km, litres, consumption, receipt) {
             let data = getData();
             data.events.push({ id: Date.now(), carId, type, date, title, cost, tread, km, litres, consumption, receipt });
+            if (type === 'Tanken' && km) {
+                const car = data.cars.find(c => c.id === carId);
+                if (car) car.km = km.toString();
+            }
             if (!await saveData(data)) return;
 
             document.getElementById('eventDate').value = "";
