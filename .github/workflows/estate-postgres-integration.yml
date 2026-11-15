@@ -5,6 +5,7 @@ on:
       - feature/toolya-connect-phase-b
     paths:
       - 'tests/fixtures/estate-release-v2-*.sql'
+      - 'tests/cloud-estate.test.mjs'
       - 'supabase/migrations/*estate_release*.sql'
       - '.github/workflows/estate-postgres-integration.yml'
   workflow_dispatch:
