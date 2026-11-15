@@ -19,6 +19,14 @@ function assertSnapshot(data) {
   if (!bytes || bytes.length > 5_000_000) throw new Error('Ungültige oder zu große Daten.');
   return JSON.parse(bytes);
 }
+function canonical(value) {
+  if (Array.isArray(value)) return value.map(canonical);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])]));
+  }
+  return value;
+}
+function sameJson(a,b) { return JSON.stringify(canonical(a)) === JSON.stringify(canonical(b)); }
 function assertResponse(result) {
   if (result.error) throw result.error;
   return result.data;
@@ -70,7 +78,7 @@ export function createCloudRepository(client, tool) {
     }
     const row = rows[0];
     if ((await currentUser()) !== uid || row.user_id !== uid || row.tool !== tool ||
-        !row.updated_at || JSON.stringify(row.data) !== JSON.stringify(payload)) {
+        !row.updated_at || !sameJson(row.data, payload)) {
       throw new Error('Cloud-Speicherung nicht eindeutig bestätigt.');
     }
     return { revision: row.updated_at, data: assertSnapshot(row.data) };
