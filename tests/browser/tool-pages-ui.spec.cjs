@@ -595,3 +595,16 @@ test('estate: browser blocks emergency publish on mismatched recovery envelope',
  });
  expect(result).toEqual({error:'backup_unverified',decrypts:0});
 });
+
+test('estate: browser keeps existing vaults separate and refuses pending overwrite',async({page})=>{
+ await isolatedEstate(page,true);await page.goto(origin+'/tools/estate/index.html');
+ const result=await page.evaluate(()=>{
+  const check=(local,remote)=>{try{EstateCloudGuard.assertRestoreCompatible(local,remote);return 'ok'}catch(e){return e.message}};
+  return {
+   different:check({version:2,vaultId:'old',pending:false},{vault_id:'new',updated_at:'r2'}),
+   pending:check({version:2,vaultId:'same',pending:true,cloudStamp:'r1'},{vault_id:'same',updated_at:'r2'}),
+   newDevice:check(null,{vault_id:'same',updated_at:'r2'})
+  };
+ });
+ expect(result).toEqual({different:'vault_mismatch',pending:'conflict',newDevice:'ok'});
+});
