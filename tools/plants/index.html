@@ -58,7 +58,7 @@
               👤 <span id="header-user-email">Nicht angemeldet</span>
             </div>
             <div class="p-3 bg-gray-50 rounded-xl border text-xs space-y-1">
-                <div id="cloud-status-text" class="font-bold text-gray-700">Nicht angemeldet</div>
+                <div id="cloud-status-text" class="font-bold text-gray-700">Konto wird geprüft …</div>
                 <div id="cloud-user-display" class="text-lime-700 font-semibold"></div>
             </div>
 
@@ -416,6 +416,9 @@
         const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        supabaseClient.auth.onAuthStateChange(() => {
+            setTimeout(() => { checkUserSession().catch(() => {}); }, 0);
+        });
 
         function toggleSettingsModal() {
             document.getElementById('settingsModal').classList.toggle('hidden');

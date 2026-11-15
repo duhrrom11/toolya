@@ -559,7 +559,7 @@
             <!-- Cloud-Konto Status & Login -->
             <div class="space-y-3">
                 <div id="cloud-status-box" class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 flex items-center justify-between">
-                    <span id="cloud-status-text">Nicht angemeldet</span>
+                    <span id="cloud-status-text">Konto wird geprüft …</span>
                     <span id="cloud-user-email" class="font-bold text-slate-900"></span>
                 </div>
 
@@ -659,6 +659,9 @@
         const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        supabaseClient.auth.onAuthStateChange(() => {
+            setTimeout(() => { checkUserSession().catch(() => {}); }, 0);
+        });
 
         async function supabaseRegister() {
             const email = document.getElementById('auth-email').value;
