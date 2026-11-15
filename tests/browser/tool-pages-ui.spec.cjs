@@ -78,6 +78,12 @@ for(const item of tools){
     }
     await page.locator('#settingsBtn').click();
     await expect(page.locator('#settingsModal')).toBeVisible();
+    page.on('dialog',dialog=>dialog.dismiss());
+    await page.evaluate(async()=>{
+      await window.supabaseClient.auth.signOut();
+      await window.toolyaCloudSave({__test_only:true});
+    });
+    await expect(page.locator('#toolya-cloud-gate')).toBeVisible();
     expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
     expect(outbound.every(u=>!u.startsWith(origin))).toBe(true);
   });
