@@ -9,7 +9,10 @@ export const tool=parts.includes('tools')?parts[parts.indexOf('tools')+1]:'home'
 const context=TOOLS[tool]||TOOLS.home, key='helferlein-toolya-preferences-v1';
 const read=()=>{try{const p=JSON.parse(localStorage.getItem(key)||'{}');return p&&typeof p==='object'?p:{}}catch{return {}}};
 export const buddy=new ToolyaBuddy({root:document.querySelector('main')||document.body,assetBase:ASSETS+'originals/'});
-window.toolyaBuddy=buddy;(document.querySelector('main')||document.body).prepend(buddy.host);
+window.toolyaBuddy=buddy;
+// Home notices must live outside the main/header stacking contexts so the full card stays visible.
+if(document.body.classList.contains('b3-home'))document.body.append(buddy.host);
+else (document.querySelector('main')||document.body).prepend(buddy.host);
 const stockImage=buddy.image.bind(buddy);
 const pixel='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
 const cache=new Map(), frames=new Set();
