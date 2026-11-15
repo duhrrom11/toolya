@@ -128,3 +128,14 @@ test('invalid write acknowledgement locks controller until reload', async () => 
   await assert.rejects(controller.replace({cars:[],events:[],tires:[]}),/inkonsistent/);
   assert.equal(controller.ready,false);
 });
+
+test('write acknowledgement with different payload is rejected', async () => {
+  const repo = {
+    async read() { return {exists:false,data:null,revision:null}; },
+    async save() { return {data:{cars:[{id:'unexpected'}],events:[],tires:[]},revision:1}; }
+  };
+  const controller = createCarCloudController(repo);
+  await controller.load();
+  await assert.rejects(controller.replace({cars:[],events:[],tires:[]}),/inkonsistent/);
+  assert.equal(controller.ready,false);
+});
