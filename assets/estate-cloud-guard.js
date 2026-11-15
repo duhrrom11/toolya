@@ -25,5 +25,18 @@
   if(result.data?.length!==1||!result.data[0]?.updated_at)throw Error('conflict');
   return result.data[0].updated_at;
  }
- root.EstateCloudGuard={requireOwner,saveEncryptedSnapshot};
+ async function verifyEncryptedBackup({client,ownerId,vaultId,expectedStamp,key,cryptoApi,validatePayload}){
+  await requireOwner(client,ownerId);
+  if(!key||!cryptoApi?.decrypt||typeof validatePayload!=='function')throw Error('invalid_vault');
+  const {data:remote,error}=await client.from('vault_cloud_snapshots')
+   .select('vault_id,encrypted_data,encrypted_config,recovery_key,updated_at')
+   .eq('owner_user_id',ownerId).single();
+  if(error||!remote||remote.vault_id!==vaultId||remote.updated_at!==expectedStamp||
+     !remote.recovery_key?.ciphertext)throw Error('backup_unverified');
+  const payload=validatePayload(await cryptoApi.decrypt(remote.encrypted_data,key));
+  await cryptoApi.decrypt(remote.encrypted_config,key);
+  await requireOwner(client,ownerId);
+  return {entries:payload.entries.length,stamp:remote.updated_at};
+ }
+ root.EstateCloudGuard={requireOwner,saveEncryptedSnapshot,verifyEncryptedBackup};
 })(typeof window!=='undefined'?window:globalThis);
