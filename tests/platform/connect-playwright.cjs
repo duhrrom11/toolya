@@ -14,10 +14,11 @@ const server=http.createServer(async(req,res)=>{
   const user=req.headers['x-test-user'];
   if(!['account-a','account-b'].includes(user))return res.writeHead(401).end('unauthorized');
   const current=snapshots.get(user);
-  if(req.method==='GET')return res.writeHead(200,{'content-type':'application/json'}).end(JSON.stringify(current||{exists:false,revision:null,data:null}));
+  if(req.method==='GET')return res.writeHead(200,{'content-type':'application/json'}).end(JSON.stringify(snapshots.get(user)||{exists:false,revision:null,data:null}));
   if(req.method==='POST'){
    let body='';for await(const chunk of req)body+=chunk;
    const payload=JSON.parse(body),expected=payload.expectedRevision;
+   const current=snapshots.get(user); // CAS is evaluated after receiving the entire request.
    if((current?.revision??null)!==expected)return res.writeHead(409).end('conflict');
    const next={exists:true,revision:(current?.revision??0)+1,data:payload.data};
    snapshots.set(user,next);
@@ -36,7 +37,7 @@ const delay=()=>new Promise(resolve=>setTimeout(resolve,80));
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const origin='http://127.0.0.1:'+server.address().port;
- const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome',args:['--no-sandbox']});
+ const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||chromium.executablePath(),args:['--no-sandbox']});
  const contexts=[],pages=[];
  try{
   for(let i=0;i<2;i++){
