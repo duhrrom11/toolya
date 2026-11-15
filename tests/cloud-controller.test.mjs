@@ -4,7 +4,7 @@ import { test } from 'node:test';
 
 function fakeRepository(initial = null) {
   let current = initial ? structuredClone(initial) : null;
-  let revision = current ? 'r1' : null;
+  let revision = current ? 1 : null;
   let writes = 0, fail = false;
   return {
     get writes() { return writes; },
@@ -18,7 +18,7 @@ function fakeRepository(initial = null) {
       if (expected !== revision) throw Error('revision conflict');
       writes++;
       current = structuredClone(data);
-      revision = 'r' + (writes + 1);
+      revision = writes + 1;
       return { data: structuredClone(current), revision };
     }
   };
@@ -55,7 +55,7 @@ test('revision conflicts invalidate controller until reloaded', async () => {
   const repo = fakeRepository(), controller = createBudgetCloudController(repo);
   await controller.load();
   await assert.rejects(controller.replace({ entries: [], budgets: {}, goals: [] },
-    { expectedRevision: 'wrong' }), /Datenstand/);
+    { expectedRevision: 999 }), /Datenstand/);
   assert.equal(repo.writes, 0);
 });
 test('rejects invalid snapshot and async mutations', async () => {
