@@ -64,7 +64,7 @@ $('filterOccasion').addEventListener('change',render);$('filterStatus').addEvent
 $('saveBudget').addEventListener('click',async()=>{const id=$('budgetOccasion').value,amount=number('budgetAmount');if(!id||amount===null||amount>9999999999){invalid(!id?'budgetOccasion':'budgetAmount','Bitte einen Anlass und gültiges Budget wählen.','budgetSaveFeedback');return}
  $('saveBudget').disabled=true;const {error}=await db.from('wishlist_occasions').update({budget_amount:amount,updated_at:new Date().toISOString()}).eq('id',id).eq('user_id',user.id);$('saveBudget').disabled=false;
  if(error){feedback('budgetSaveFeedback','Budget konnte nicht gespeichert werden.');return}
- const o=byId(id);if(o)o.budget_amount=amount;render();feedback('budgetSaveFeedback','Anlassbudget gespeichert.');
+ const o=byId(id);if(o)o.budget_amount=amount;render();$('budgetAmount').value='';feedback('budgetSaveFeedback','Anlassbudget gespeichert.');
 });
 $('form').addEventListener('submit',async event=>{event.preventDefault();const occasionId=$('occasion').value,title=$('title').value.trim(),planned=number('planned'),actual=$('actual').value===''?null:number('actual');
  if(!user||!byId(occasionId)||!title||planned===null||planned>9999999999||(actual!==null&&(actual<0||actual>9999999999))){const invalidId=!byId(occasionId)?'occasion':!title?'title':(planned===null||planned>9999999999)?'planned':'actual';invalid(invalidId,'Bitte alle Beträge und Pflichtfelder prüfen.','giftFormFeedback');return}
@@ -121,15 +121,15 @@ async function searchProducts(){
   if(error)throw error;
   const ids=(products||[]).map(p=>p.id);
   let wishes=[];
-  if(ids.length){const result=await db.from('wishlist_wishes').select('id,product_id,priority').eq('visibility','public').in('product_id',ids).order('created_at',{ascending:false}).limit(200);if(result.error)throw result.error;wishes=result.data||[]}
+  if(ids.length){const result=await db.from('wishlist_wishes').select('id,product_id,priority').eq('user_id',user.id).in('product_id',ids).order('created_at',{ascending:false}).limit(200);if(result.error)throw result.error;wishes=result.data||[]}
   const wishByProduct=new Map();for(const w of wishes)if(!wishByProduct.has(String(w.product_id)))wishByProduct.set(String(w.product_id),w);
-  $('productSearchStatus').textContent=(products||[]).length+' Produkte gefunden · '+wishByProduct.size+' mit öffentlichen Wünschen. Die Suche zeigt höchstens 40 Produkte.';
-  if(!products?.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine passenden Produkte gefunden.';root.append(p)}
+  $('productSearchStatus').textContent=(products||[]).length+' Produkte gefunden · '+wishByProduct.size+' mit eigenen Wünschen. Die Suche zeigt höchstens 40 Produkte.';
+  $('productQuery').value='';if(!products?.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine passenden Produkte gefunden.';root.append(p)}
   for(const product of products||[]){
    const wish=wishByProduct.get(String(product.id));
    const card=document.createElement('article');card.className='product-result';
    const h=document.createElement('h3');h.textContent=product.title;
-   const info=document.createElement('p');info.textContent=wish?'🌟 Öffentlicher Wunsch vorhanden':'📦 Produkt aus dem Katalog';
+   const info=document.createElement('p');info.textContent=wish?'🌟 Eigener Wunsch vorhanden':'📦 Produkt aus dem Katalog';
    const button=document.createElement('button');button.type='button';button.textContent='Als Geschenk übernehmen';
    button.addEventListener('click',()=>{
     if(!occasions.length){$('status').textContent='Bitte zuerst einen Anlass anlegen.';return}
