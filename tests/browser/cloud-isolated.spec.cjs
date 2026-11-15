@@ -1,7 +1,7 @@
 // Browser-level cloud integration without network calls, real accounts or DB writes.
 // Run against the local read-only preview: npm run dev -- --host 127.0.0.1 --port 4173
 // Then: npx playwright test tests/browser/cloud-isolated.spec.cjs
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('playwright/test');
 
 const origin = 'http://127.0.0.1:4173';
 
