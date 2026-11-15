@@ -15,9 +15,14 @@ function assertSnapshot(data) {
     throw new Error('Ungültiges Cloud-Datenformat.');
   }
   // Reject accidental non-JSON values and cyclic structures.
-  const bytes = JSON.stringify(data);
-  if (!bytes || bytes.length > 5_000_000) throw new Error('Ungültige oder zu große Daten.');
-  return JSON.parse(bytes);
+  const serialized = JSON.stringify(data);
+  if (!serialized) throw new Error('Ungültige oder zu große Daten.');
+  // PostgreSQL enforces octet_length(jsonb::text), not JS UTF-16 code units.
+  // Use a conservative UTF-8 byte limit; canonical JSONB formatting may
+  // add whitespace, so leave headroom for server-side serialization.
+  const byteLength = new TextEncoder().encode(serialized).byteLength;
+  if (byteLength > 4_000_000) throw new Error('Ungültige oder zu große Daten.');
+  return JSON.parse(serialized);
 }
 function canonical(value) {
   if (Array.isArray(value)) return value.map(canonical);
