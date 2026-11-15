@@ -312,3 +312,28 @@ test('gift save ignores a delayed response after account switch',async()=>{
  assert.equal(elements.title.value,'Buch');
  assert.equal(elements.save.disabled,false);
 });
+
+test('coordination refresh errors cannot overwrite another account feedback',async()=>{
+ const planner=source('gift-planner.mjs');
+ const start=planner.indexOf("$('form').addEventListener('submit',async event=>");
+ const end=planner.indexOf("$('cancel').addEventListener",start);
+ assert.ok(start>=0&&end>start);
+ const handlers={},values={occasion:'occasion1',title:'Buch',planned:'15',actual:'',recipient:'',giftStatus:'idea',sourceList:'',notes:''};
+ const elements=Object.fromEntries(Object.entries(values).map(([id,value])=>[id,{value}]));
+ elements.form={addEventListener:(_,fn)=>handlers.submit=fn};
+ elements.save={disabled:false};
+ elements.giftFormFeedback={textContent:'',focus(){}};
+ let rejectRefresh;
+ const pendingRefresh=new Promise((_,reject)=>rejectRefresh=reject);
+ const db={from:()=>({insert:()=>({select:()=>({single:async()=>({data:{id:'gift1',source_wish_id:'wish1'},error:null})})})})};
+ const body="let user={id:'first'},editing=null,gifts=[],selectedProduct=null;\n"+planner.slice(start,end)+"\nreturn {submit:handlers.submit,setUser:id=>user={id}};";
+ const run=new Function('$','db','byId','number','invalid','feedback','reset','render','loadCoordination','handlers',body)(id=>elements[id],db,()=>({id:'occasion1'}),id=>Number(elements[id].value),()=>{},(id,message)=>elements[id].textContent=message,()=>{},()=>{},()=>pendingRefresh,handlers);
+ const request=run.submit({preventDefault(){}});
+ await Promise.resolve();
+ run.setUser('second');
+ elements.giftFormFeedback.textContent='Neue Sitzung';
+ rejectRefresh(Error('offline'));
+ await request;
+ assert.equal(elements.giftFormFeedback.textContent,'Neue Sitzung');
+ assert.equal(elements.save.disabled,false);
+});
