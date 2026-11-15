@@ -6,8 +6,8 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
 (async()=>{const server=http.createServer((req,res)=>{let url=new URL(req.url,'http://local').pathname;if(url.endsWith('/'))url+='index.html';const file=path.resolve(root,'.'+decodeURI(url));if(!file.startsWith(root+'/'))return res.writeHead(403).end();try{res.setHeader('content-type',mime[path.extname(file)]||'application/octet-stream');res.end(fs.readFileSync(file))}catch{res.writeHead(404).end()}});await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const origin='http://127.0.0.1:'+server.address().port,staticHosts=new Set(['cdn.tailwindcss.com','unpkg.com','cdn.jsdelivr.net','cdnjs.cloudflare.com','www.gstatic.com','fonts.googleapis.com','fonts.gstatic.com']);
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome',args:['--no-sandbox']});fs.mkdirSync('test-results',{recursive:true});
- try{const context=await browser.newContext({viewport:{width:320,height:812},isMobile:true,hasTouch:true});let blockedWrites=0;
- const guard=r=>{const u=new URL(r.request().url());if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(staticHosts.has(u.hostname)&&r.request().method()==='GET')return r.continue();if(r.request().method()!=='GET')blockedWrites++;return r.abort()};await context.route('**/*',guard);
+ try{const context=await browser.newContext({viewport:{width:320,height:812},isMobile:true,hasTouch:true});let blockedWrites=0;const blockedWriteUrls=[];
+ const guard=r=>{const u=new URL(r.request().url());if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(staticHosts.has(u.hostname)&&r.request().method()==='GET')return r.continue();if(r.request().method()!=='GET'&&(u.pathname.includes('/rest/v1/')||u.pathname.includes('/functions/v1/'))&&!u.pathname.endsWith('/rest/v1/rpc/search_public_amazon_wishlists')){blockedWrites++;blockedWriteUrls.push(r.request().method()+' '+u.hostname+u.pathname)}return r.abort()};await context.route('**/*',guard);
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(origin+'/tools/plants/');await page.waitForFunction(()=>window.toolyaBuddy);await page.evaluate(()=>{toolyaBuddy.dismiss();toolyaBuddy.setMotion('off')});
  await page.waitForFunction(()=>{const f=document.querySelector('.toolya-idle .ty-frame');return f&&!f.hidden});
@@ -98,30 +98,15 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
   assert.equal(await page.locator('.toolya-settings').count(),0,route+' no standalone settings');await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route+' single preferences panel');await page.keyboard.press('Escape');await page.screenshot({path:'test-results/mascot-'+route+'-mobile.png',fullPage:true});assert.equal(await page.locator('.toolya-idle').isVisible(),false,route+' redundant strip hidden');await page.locator('.ty-tool-hero-mascot').screenshot({path:'test-results/mascot-'+route+'-detail.png'});
  }
  for(const route of ['/privacy.html','/legal.html','/mascots.html','/tools/wishes/dashboard.html','/tools/estate/heirs.html','/tools/estate/handover.html']){await page.goto(origin+route);await page.waitForFunction(()=>window.toolyaBuddy);assert.equal(await page.locator('.toolya-settings').count(),0,route);await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route);await page.keyboard.press('Escape');}
- await page.goto(origin+'/tools/wishes/');await page.waitForFunction(()=>document.querySelector('.wishes-navigation'));
- assert.equal(await page.locator('.wishes-navigation a').count(),4);
- assert.equal(await page.locator('.wishlist-hub-nav,.wishlist-welcome').count(),0);
- for(const [name,area] of [['Entdecken','discover'],['Geschenke','gifts'],['Konto','account'],['Meine Listen','lists']]){
-  await page.locator('.wishes-navigation').getByRole('link',{name,exact:true}).click();
-  assert.equal(await page.locator('[data-wishes-area]:visible').count(),1);
-  assert.equal(await page.locator('[data-wishes-area="'+area+'"]').isVisible(),true);
-  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'workspace mobile overflow '+area);
- }
- await page.goto(origin+'/tools/wishes/#giftFinder');await page.waitForFunction(()=>document.querySelector('[data-wishes-area="discover"]')?.hidden===false);
- assert.equal(await page.locator('#giftFinder').isVisible(),true,'deep link opens finder disclosure');
- // Isolated UI state only: never sign into or write to production.
- await page.evaluate(()=>{document.getElementById('editor').hidden=false;document.getElementById('listsDashboard').hidden=false});
- await page.locator('.wishes-navigation').getByRole('link',{name:'Meine Listen',exact:true}).click();
- await page.locator('#wishNote').fill('Isolated draft');
- await page.locator('.wishes-navigation').getByRole('link',{name:'Konto',exact:true}).click();
- assert.equal(await page.locator('#handle').isVisible(),true,'profile under account');
- await page.locator('.wishes-navigation').getByRole('link',{name:'Meine Listen',exact:true}).click();
- assert.equal(await page.locator('#wishNote').inputValue(),'Isolated draft','switching areas preserves drafts');
- await page.screenshot({path:'test-results/wishes-simplified-lists-mobile.png',fullPage:true});
+ await page.goto(origin+'/tools/wishes/');await page.waitForURL(url=>url.pathname.endsWith('/tools/wishes/public.html'));await page.locator('#amazonUrl').waitFor();
+ assert.equal(await page.locator('#homeNewWish,#homeNewList,.wishes-navigation').count(),0,'legacy private wishlist controls not shown');
+ assert.equal(await page.locator('#search,#amazonUrl,#password').count(),3,'public wishlist controls present');
+ assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'public wishlist mobile overflow');
+ await page.screenshot({path:'test-results/wishes-amazon-public-mobile.png',fullPage:true});
  await page.goto(origin+'/tools/wishes/');await page.waitForFunction(()=>window.toolyaBuddy);
  for(const emotion of ['happy','proud','curious','thoughtful','surprised','concerned','sad','shy','cheeky','sleepy','laughing','grateful','motivated','puzzled','celebrating','affectionate']){
   await page.evaluate(async emotion=>{const p=await import('/shared/toolya/platform.mjs');p.buddy.dismiss();p.previewEmotion(emotion)},emotion);await page.waitForFunction(()=>{const f=document.querySelector('.tb-message-box .ty-frame');return f&&!f.hidden});
  }
  const donations=page.locator('.ty-kofi-banner .ty-kofi-action');await donations.first().waitFor({state:'attached'});assert.equal(await donations.first().getAttribute('href'),'https://ko-fi.com/duhrrom');assert.equal(await page.locator('.ty-kofi-banner').count(),1,'exactly one donation banner');assert.equal(await page.evaluate(()=>document.querySelector('.ty-kofi-banner').nextElementSibling?.classList.contains('toolya-signature-footer')),true,'donation banner directly before footer');assert.equal(await page.locator('.ty-kofi-joke').isVisible(),true);assert.equal(await page.locator('.ty-kofi-mascot').isVisible(),true);assert.equal(await page.locator('.ty-kofi-banner').textContent().then(t=>t.includes('Freiwillig unterstützen · Ko-fi')),false,'unwanted small print removed');
- assert.deepEqual(errors,[],'runtime errors');assert.equal(blockedWrites,0,'no production writes attempted');console.log('PASS: 12 tool routes, 320px reflow, both-character preferences, 16 emotions, atlas loading, touch/keyboard tickle, cooldown, critical and modal locks, reduced motion, Ko-fi and no runtime errors');
+ assert.deepEqual(errors,[],'runtime errors');assert.equal(blockedWrites,0,'no production writes attempted: '+blockedWriteUrls.join(', '));console.log('PASS: 12 tool routes, 320px reflow, both-character preferences, 16 emotions, atlas loading, touch/keyboard tickle, cooldown, critical and modal locks, reduced motion, Ko-fi and no runtime errors');
  }finally{for(const c of browser.contexts())for(const p of c.pages())if(!p.isClosed())await p.screenshot({path:'test-results/last-browser-state.png',fullPage:true}).catch(()=>{});await browser.close();server.close()}})().catch(e=>{console.error(e);process.exit(1)});

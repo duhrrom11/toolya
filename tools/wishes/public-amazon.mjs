@@ -25,6 +25,7 @@ function safeAmazonListUrl(value){
  }catch{return null}
 }
 const text=(tag,value)=>{const el=document.createElement(tag);el.textContent=value??'';return el};
+function safeImageUrl(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&(/(^|\.)images-amazon\.com$/.test(u.hostname)||/(^|\.)ssl-images-amazon\.com$/.test(u.hostname)||/(^|\.)media-amazon\.com$/.test(u.hostname))?u.href:null}catch{return null}}
 function card(list){
  const person=profiles.find(p=>p.user_id===list.user_id);
  const name=[person?.first_name,person?.last_name].filter(Boolean).join(' ')||'Unbekanntes Profil';
@@ -32,7 +33,7 @@ function card(list){
  root.append(text('h3',list.title||'Amazon-Wunschliste'),text('p',name+(person?.country?' · '+person.country:'')));
  const a=text('a','Amazon-Wunschliste öffnen');a.href=list.amazon_url;a.target='_blank';a.rel='noopener noreferrer nofollow';root.append(a);
  const items=products.filter(p=>p.publication_id===list.id).slice(0,10);
- if(items.length){const ul=document.createElement('ul');for(const p of items){const li=text('li',p.title+(p.description?' – '+p.description:''));if(p.product_url&&safeProductUrl(p.product_url)){const link=text('a',' Produkt ansehen');link.href=p.product_url;link.rel='noopener noreferrer';link.target='_blank';li.append(link)}ul.append(li)}root.append(ul);root.append(text('p','Produktvorschau – vollständige Liste bei Amazon öffnen.'))}
+ if(items.length){const ul=document.createElement('ul');for(const p of items){const li=document.createElement('li');li.className='product-preview';const image=safeImageUrl(p.image_url);if(image){const img=document.createElement('img');img.src=image;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';li.append(img)}const details=document.createElement('span');details.append(text('strong',p.title||'Amazon-Produkt'));if(p.description)details.append(text('span',' – '+p.description));li.append(details);if(p.product_url&&safeProductUrl(p.product_url)){const link=text('a',' Produkt ansehen');link.href=p.product_url;link.rel='noopener noreferrer';link.target='_blank';li.append(link)}ul.append(li)}root.append(ul);root.append(text('p','Produktvorschau – vollständige Liste bei Amazon öffnen.'))}
  else root.append(text('p',['pending','processing'].includes(list.scrape_status)?'Produktdaten werden geprüft …':'Produktdaten nicht verfügbar – Amazon-Link verwenden.'));
  return root;
 }
@@ -55,7 +56,7 @@ async function refresh(reset=true){
  // Keep requests bounded (24 lists, 10 products each) and avoid exposing stale search results.
  const previews=await Promise.all(ids.map(async id=>{
   const result=await db.from('wishlist_amazon_publication_products')
-   .select('publication_id,title,description,product_url,asin')
+   .select('publication_id,title,description,product_url,image_url,asin')
    .eq('publication_id',id).order('created_at',{ascending:false}).limit(10);
   return result;
  }));
