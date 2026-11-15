@@ -50,7 +50,7 @@
     <script src="../../shared/helferlein-cloud-migration.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
-        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
+        return; // legacy opt-in bridge disabled for cloud-only
         const client = window.supabaseClient;
         if (!client || window.helferleinCloudBridge) return;
         window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
@@ -354,6 +354,59 @@
 
     <!-- Script Logik -->
     <script>
+
+// Cloud-only: all private content is blocked until a verified cloud snapshot loads.
+let toolyaCloudReady = false;
+let toolyaCloudController = null;
+function toolyaCloudSnapshot() {
+  if (!toolyaCloudReady || !toolyaCloudController?.ready)
+    throw Error('Cloud nicht bereit. Bitte anmelden oder neu laden.');
+  return toolyaCloudController.snapshot();
+}
+async function toolyaCloudSave(patch) {
+  try {
+    if (!toolyaCloudReady) throw Error('Cloud nicht bereit.');
+    const next = toolyaCloudController.snapshot();
+    Object.assign(next, patch);
+    await toolyaCloudController.replace(next);
+    window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');
+    return true;
+  } catch(error) {
+    toolyaCloudReady = false;
+    alert('Cloud-Speicherung nicht bestätigt: '+error.message+'. Bitte Seite neu laden; Eingaben nicht als gespeichert betrachten.');
+    return false;
+  }
+}
+async function toolyaCloudBoot(tool) {
+  const gate = document.createElement('div');
+  gate.setAttribute('role','alert');gate.id='toolya-cloud-gate';
+  gate.style.cssText='position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
+  gate.textContent='Toolya Cloud wird geladen …';document.body.append(gate);
+  try {
+    const {prepareCloudTool} = await import('../../shared/toolya/cloud-tool-adapters.mjs');
+    const storage = localStorage;
+    const prepared = await prepareCloudTool({
+      client:window.supabaseClient,tool,storage,
+      confirmMigration: async () => confirm('Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden niemals überschrieben.'),
+      exportBackup: async (data) => {
+        const blob = new Blob([JSON.stringify(data)],{type:'application/json'});
+        const url = URL.createObjectURL(blob), link=document.createElement('a');
+        link.href=url;link.download='toolya-bestand-vor-cloud.json';link.click();
+        setTimeout(()=>URL.revokeObjectURL(url),60000);
+        return confirm('Sicherung wurde zum Download angeboten. Bitte erst nach erfolgreichem Speichern bestätigen.');
+      }
+    });
+    toolyaCloudController=prepared.controller;toolyaCloudReady=true;
+    gate.remove();
+    if(tool==='autokosten-reifenwechsel')loadCarDropdowns();
+    if(tool==='haushaltsbuch-kassenbon')initCharts();
+    renderApp();
+  } catch(error) {
+    gate.textContent='Toolya Cloud gesperrt: '+error.message+' Bitte anmelden und Seite neu laden.';
+    console.error(error);
+  }
+}
+
         // Supabase Konfiguration
         const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
@@ -438,12 +491,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadCarDropdowns();
-            renderApp();
+            void toolyaCloudBoot('autokosten-reifenwechsel');
             try { updateUserDisplay(); } catch(e){}
         });
 
-        supabaseClient.auth.onAuthStateChange(() => {
+        supabaseClient.auth.onAuthStateChange((event) => {
+            if(event==='SIGNED_OUT' || event==='SIGNED_IN'){toolyaCloudReady=false;toolyaCloudController?.invalidate();}
             // Auth callbacks run while the SDK holds its session lock.
             setTimeout(() => { updateUserDisplay().catch(() => {}); }, 0);
         });
@@ -460,35 +513,9 @@
             }
         }
 
-        function getData() {
-            try {
-                return JSON.parse(localStorage.getItem('kfz_tracker_pro_v3')) || { cars: [], events: [], tires: [] };
-            } catch(e) {
-                return { cars: [], events: [], tires: [] };
-            }
-        }
+        function getData(){return toolyaCloudSnapshot();}
 
-        function saveData(data) {
-            if (!data || typeof data !== 'object' || !Array.isArray(data.cars)) return false;
-            if (localStorage.getItem('helferlein_cloud_owner_autokosten-reifenwechsel') && !window.helferleinCloudBridge) {
-                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
-                return false;
-            }
-            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
-                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
-                return false;
-            }
-            const existing = localStorage.getItem('kfz_tracker_pro_v3');
-            if (existing !== null) {
-                try { if (!Array.isArray(JSON.parse(existing).cars)) throw new Error('invalid'); }
-                catch (_) { alert('Vorhandene Daten sind beschädigt; Überschreiben gesperrt.'); return false; }
-            }
-            try {
-                localStorage.setItem('kfz_tracker_pro_v3', JSON.stringify(data)); window.toolyaNotice?.('success','Änderungen auf diesem Gerät gespeichert.');
-                if (window.helferleinCloudBridge) void window.helferleinCloudBridge.changed(data).catch(console.error);
-                return true;
-            } catch (error) { console.error('Lokales Speichern fehlgeschlagen', error); return false; }
-        }
+        async function saveData(data){return toolyaCloudSave(data);}
 
         function updateEventFormFields() {
             const type = document.getElementById('eventType').value;
@@ -509,7 +536,7 @@
             }
         }
 
-        function saveCar() {
+        async function saveCar() {
             const name = document.getElementById('carName').value.trim();
             const plate = document.getElementById('carPlate').value.trim();
             const km = document.getElementById('carKm').value.trim();
@@ -523,10 +550,10 @@
             let photoData = "";
             let papersData = "";
 
-            const processFiles = () => {
+            const processFiles = async () => {
                 let data = getData();
                 data.cars.push({ id: Date.now(), name, plate, km, insurance, emergency, photo: photoData, papers: papersData });
-                if (!saveData(data)) return;
+                if (!await saveData(data)) return;
                 document.getElementById('carName').value = "";
                 document.getElementById('carPlate').value = "";
                 document.getElementById('carKm').value = "";
@@ -560,14 +587,14 @@
             }
         }
 
-        function updateCarKm(carId) {
+        async function updateCarKm(carId) {
             let data = getData();
             let car = data.cars.find(c => c.id === carId);
             if (!car) return;
             let newKm = prompt("Aktuellen Kilometerstand aktualisieren:", car.km || "");
             if (newKm !== null) {
                 car.km = newKm.trim();
-                if (!saveData(data)) return;
+                if (!await saveData(data)) return;
                 renderApp();
             }
         }
@@ -600,18 +627,18 @@
             reader.readAsDataURL(file);
         }
 
-        function deleteCar(id) {
+        async function deleteCar(id) {
             if (!confirm("⚠️ Möchtest du dieses Fahrzeug und alle zugehörigen Einträge wirklich unwiderruflich löschen?")) return;
             let data = getData();
             data.cars = data.cars.filter(c => c.id !== id);
             data.events = data.events.filter(e => e.carId !== id);
             data.tires = data.tires.filter(t => t.carId !== id);
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             loadCarDropdowns();
             renderApp();
         }
 
-        function saveTireSet() {
+        async function saveTireSet() {
             const carId = document.getElementById('tireCarSelect').value;
             const type = document.getElementById('tireType').value;
             const location = document.getElementById('tireLocation').value.trim();
@@ -623,17 +650,17 @@
             if (!data.tires) data.tires = [];
 
             data.tires.push({ id: Date.now(), carId: parseInt(carId), type, location, dot, tread });
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             document.getElementById('tireLocation').value = "";
             document.getElementById('tireDot').value = "";
             document.getElementById('tireTread').value = "";
             renderApp();
         }
 
-        function deleteTireSet(id) {
+        async function deleteTireSet(id) {
             let data = getData();
             data.tires = data.tires.filter(t => t.id !== id);
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             renderApp();
         }
 
@@ -676,10 +703,10 @@
             }
         }
 
-        function storeEventData(carId, type, date, title, cost, tread, km, litres, consumption, receipt) {
+        async function storeEventData(carId, type, date, title, cost, tread, km, litres, consumption, receipt) {
             let data = getData();
             data.events.push({ id: Date.now(), carId, type, date, title, cost, tread, km, litres, consumption, receipt });
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
 
             document.getElementById('eventDate').value = "";
             document.getElementById('eventTitle').value = "";
@@ -709,7 +736,7 @@
             document.getElementById('editModal').classList.add('hidden');
         }
 
-        function updateEvent() {
+        async function updateEvent() {
             const id = parseInt(document.getElementById('editId').value);
             const title = document.getElementById('editTitle').value.trim();
             const type = document.getElementById('editType').value;
@@ -727,17 +754,17 @@
                 ev.date = date;
                 ev.cost = cost;
                 ev.tread = tread;
-                if (!saveData(data)) return;
+                if (!await saveData(data)) return;
             }
             closeEditModal();
             renderApp();
         }
 
-        function deleteEvent(id) {
+        async function deleteEvent(id) {
             if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
             let data = getData();
             data.events = data.events.filter(e => e.id !== id);
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             renderApp();
         }
 
