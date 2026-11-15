@@ -139,3 +139,19 @@ test('gift planner and Amazon import references resolve in their own pages',()=>
    assert.ok(ids.has(match[1]),module+': missing #'+match[1]+' in '+page);
  }
 });
+
+test('successful profile and authentication submissions clear their inputs',()=>{
+ const app=source('app.mjs');
+ assert.ok(app.includes("$('email').value='';report('Angemeldet')"));
+ assert.ok(app.includes("$('email').value='';report('Registrierung gestartet"));
+ assert.ok(app.includes("for(const id of ['handle','displayName','bio','profileAvatarUrl'])$(id).value=''"));
+ assert.ok(app.includes("$('password').value=''"));
+});
+test('gift planner clears successful inputs and never links other users wishes',()=>{
+ const planner=source('gift-planner.mjs');
+ assert.ok(planner.includes("$('form').reset()"));
+ assert.ok(planner.includes("$('budgetAmount').value=''"));
+ assert.ok(planner.includes("$('productQuery').value=''"));
+ assert.ok(planner.includes(".eq('user_id',user.id).in('product_id',ids)"));
+ assert.equal(planner.includes(".eq('visibility','public').in('product_id',ids)"),false);
+});
