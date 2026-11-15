@@ -29,11 +29,11 @@ begin
  end if;
  if p_action='claim' then
   -- Reminder jobs never change alarm state. Consent is per owner, disabled by default.
-  for v in select * from estate_private.read_vaults where reminders_enabled and next_reminder<=now() for update skip locked limit 10 loop
+  for v in select * from estate_private.read_vaults where reminders_enabled and next_reminder<=now() limit 10 for update skip locked loop
    insert into estate_private.delivery_jobs(owner_id,kind) values(v.owner_id,'reminder');
    update estate_private.read_vaults set next_reminder=now()+make_interval(days=>reminder_days) where owner_id=v.owner_id;
   end loop;
-  select * into j from estate_private.delivery_jobs where delivered_at is null and attempts<20 and (leased_until is null or leased_until<now()) order by created_at for update skip locked limit 1;
+  select * into j from estate_private.delivery_jobs where delivered_at is null and attempts<20 and (leased_until is null or leased_until<now()) order by created_at limit 1 for update skip locked;
   if not found then return '{}'::jsonb; end if;
   update estate_private.delivery_jobs set attempts=attempts+1,leased_until=now()+interval '5 minutes' where id=j.id;
   select * into v from estate_private.read_vaults where owner_id=j.owner_id;
