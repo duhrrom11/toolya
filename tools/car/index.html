@@ -281,9 +281,9 @@
             <div>
                 <h3 class="font-bold text-sm text-gray-800 mb-2">☁️ Konto</h3>
                 <div class="space-y-3">
-                    <div id="userInfo" class="text-xs font-semibold mb-2" aria-live="polite">Nicht angemeldet</div>
+                    <div id="userInfo" class="text-xs font-semibold mb-2" aria-live="polite">Konto wird geprüft …</div>
                     <div id="cloudStatus" class="text-xs bg-gray-100 rounded-lg p-3 text-gray-700">
-                        Nicht angemeldet
+                        Konto wird geprüft …
                     </div>
 
                     <label class="helferlein-field" for="loginEmail"><span class="helferlein-field-label">E-Mail</span><input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
@@ -443,8 +443,9 @@
             try { updateUserDisplay(); } catch(e){}
         });
 
-        supabaseClient.auth.onAuthStateChange(async () => {
-            updateUserDisplay();
+        supabaseClient.auth.onAuthStateChange(() => {
+            // Auth callbacks run while the SDK holds its session lock.
+            setTimeout(() => { updateUserDisplay().catch(() => {}); }, 0);
         });
 
         function toggleHelp() {
