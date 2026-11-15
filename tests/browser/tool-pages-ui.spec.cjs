@@ -1,0 +1,68 @@
+// Real Toolya HTML UI in Chromium. No external network, real account or database.
+const {test,expect}=require('playwright/test');
+const origin='http://127.0.0.1:4173';
+const tools=[
+  {path:'/tools/car/index.html',title:'Autokosten-Rechner & Reifenwechsel',tool:'autokosten-reifenwechsel',form:'#carName'},
+  {path:'/tools/budget/index.html',title:'Haushaltsbuch mit Kassenbon-Scanner',tool:'haushaltsbuch-kassenbon',form:'#receiptTitle'}
+];
+async function isolated(page,authenticated){
+  const outbound=[];
+  await page.route('**/*',async route=>{
+    const url=route.request().url();
+    if(url.startsWith('http://127.0.0.1:4173/')){
+      if(new URL(url).pathname==='/assets/vendor/supabase-2.57.0.js'){
+        return route.fulfill({status:200,contentType:'text/javascript',body:`
+          window.__toolyaMock={writes:[],signedIn:${authenticated}};
+          window.supabase={createClient(){
+            const m=window.__toolyaMock;
+            return {
+              auth:{
+                async getUser(){return {data:{user:m.signedIn?{id:'ui-fixture-user',email:'mock@example.invalid',is_anonymous:false}:null},error:null}},
+                async getSession(){return {data:{session:null},error:null}},
+                onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}},
+                async signOut(){m.signedIn=false;return {error:null}},
+                async signInWithPassword(){m.signedIn=true;return {data:{user:{id:'ui-fixture-user'}},error:null}}
+              },
+              from(table){
+                if(table!=='user_data')throw Error('unexpected table '+table);
+                return {select(){return this},eq(){return this},async maybeSingle(){return {data:null,error:null}}};
+              },
+              async rpc(name,args){
+                if(name!=='toolya_save_snapshot')throw Error('unexpected RPC '+name);
+                m.writes.push(JSON.parse(JSON.stringify(args)));
+                return {data:[{data:args.p_data,revision:m.writes.length}],error:null};
+              }
+            };
+          }};
+        `});
+      }
+      return route.continue();
+    }
+    outbound.push(url);
+    return route.abort();
+  });
+  return outbound;
+}
+for(const item of tools){
+  test(item.tool+': unauthenticated UI remains blocked',async({page})=>{
+    const outbound=await isolated(page,false);
+    await page.goto(origin+item.path);
+    await expect(page.locator('h1')).toContainText(item.title);
+    await expect(page.locator('#toolya-cloud-gate')).toContainText('Registrierte Anmeldung erforderlich');
+    await expect(page.locator(item.form)).toHaveCount(1);
+    await expect(page.locator('#toolya-cloud-gate')).toBeVisible();
+    expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+    expect(outbound.every(u=>!u.startsWith(origin))).toBe(true);
+  });
+  test(item.tool+': authenticated UI loads real page with mock cloud',async({page})=>{
+    const outbound=await isolated(page,true);
+    await page.goto(origin+item.path);
+    await expect(page.locator('h1')).toContainText(item.title);
+    await expect(page.locator('#toolya-cloud-gate')).toHaveCount(0);
+    await expect(page.locator(item.form)).toBeVisible();
+    await page.locator('#settingsBtn').click();
+    await expect(page.locator('#settingsModal')).toBeVisible();
+    expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+    expect(outbound.every(u=>!u.startsWith(origin))).toBe(true);
+  });
+}
