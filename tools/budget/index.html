@@ -539,6 +539,22 @@ async function toolyaCloudSave(patch) {
     return false;
   }
 }
+
+async function toolyaSafeCloudImport(snapshot) {
+  const {confirmCloudReplacement,exportJsonBackup} = await import('../../shared/toolya/cloud-backup.mjs');
+  const {validateCarSnapshot,validateBudgetSnapshot} = await import('../../shared/toolya/cloud-controller.mjs');
+  const validator = validateBudgetSnapshot;
+  const result = await confirmCloudReplacement({
+    controller:toolyaCloudController,incoming:snapshot,validate:validator,
+    confirm:async message => window.confirm(message),
+    exportBackup:async previous => {
+      exportJsonBackup(previous,'toolya-cloud-vor-import-haushaltsbuch.json');
+      return window.confirm('Bitte bestätigen, dass die Cloud-Sicherung tatsächlich heruntergeladen und sicher gespeichert wurde.');
+    }
+  });
+  return result.status==='confirmed';
+}
+
 async function toolyaCloudBoot(tool) {
   const gate = document.createElement('div');
   gate.setAttribute('role','alert');gate.id='toolya-cloud-gate';
@@ -1829,7 +1845,7 @@ async function toolyaCloudBoot(tool) {
          snapshot[field]=next;
        }
        if(!confirm('Cloud-Backup-Import ersetzt diese Bereiche:\\n'+preview.join('\\n')+'\\nVorher Cloud-Backup exportieren. Fortsetzen?'))return;
-       if(!await toolyaCloudSave(snapshot))return;
+       if(!await toolyaSafeCloudImport(snapshot))return;
        renderApp();alert('Backup in Toolya Cloud gespeichert.');
      }catch(error){console.error(error);alert('Cloud-Import fehlgeschlagen: '+error.message);}
      finally{input.value='';}
