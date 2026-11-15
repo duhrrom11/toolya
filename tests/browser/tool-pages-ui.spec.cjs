@@ -269,3 +269,48 @@ test('verliehene-gegenstaende: photo compression awaited before write',async({pa
   });
   expect(result).toMatchObject({writes:1,photo:'data:mock/photo.png'});
 });
+
+
+test('zaehlerstaende-erfassen: unauthenticated browser cannot write',async({page})=>{
+  await isolated(page,false);
+  await page.goto(origin+'/tools/meters/index.html');
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Registrierte Anmeldung erforderlich');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+test('zaehlerstaende-erfassen: cloud confirmed tariff and blocked conflict',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/meters/index.html');
+  await expect.poll(()=>page.evaluate(()=>metersCloudReady && !!metersCloudController?.ready)).toBe(true);
+  page.on('dialog',dialog=>dialog.dismiss());
+  await page.evaluate(async()=>{
+    document.querySelector('#tariffStromPriceHT').value='0.32';
+    await saveTarifs();
+  });
+  const result=await page.evaluate(()=>({
+    writes:window.__toolyaMock.writes.length,
+    price:window.__toolyaMock.writes[0]?.p_data?.tarifs?.Strom?.priceHT
+  }));
+  expect(result).toMatchObject({writes:1,price:0.32});
+  await page.evaluate(async()=>{
+    supabaseClient.rpc=async()=>({data:null,error:{code:'40001',message:'mock conflict'}});
+    document.querySelector('#tariffStromPriceHT').value='0.44';
+    await saveTarifs();
+  });
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
+});
+test('zaehlerstaende-erfassen: photo processing precedes confirmed cloud write',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/meters/index.html');
+  await expect.poll(()=>page.evaluate(()=>metersCloudReady && !!metersCloudController?.ready)).toBe(true);
+  await page.locator('#meterPhotoInput').setInputFiles({name:'meter.png',mimeType:'image/png',buffer:Buffer.from([137,80,78,71,13,10,26,10])});
+  const result=await page.evaluate(async()=>{
+    compressImage=(file,callback)=>setTimeout(()=>callback('data:mock/'+file.name),15);
+    document.querySelector('#meterDate').value='2026-11-15';
+    document.querySelector('#meterValue').value='120';
+    await saveReading();
+    return {writes:window.__toolyaMock.writes.length,
+      photo:window.__toolyaMock.writes[0]?.p_data?.readings?.[0]?.photo};
+  });
+  expect(result).toMatchObject({writes:1,photo:'data:mock/meter.png'});
+});
