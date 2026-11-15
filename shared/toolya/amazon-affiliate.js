@@ -105,6 +105,28 @@ function add(){
  section.append(group);
  main.append(section);
 }
-// Do not inject generic Amazon searches: show only curated, concrete products.\nfunction start(){existing();}
+// Do not inject generic Amazon searches: show only curated, concrete products.\nasync function loadCatalog(){
+ const tool=location.pathname.match(/\/tools\/([^/]+)\//)?.[1];
+ if(!tool||tool==='wishes')return;
+ let catalog;
+ try{const response=await fetch('/shared/toolya/amazon-catalog.json',{credentials:'omit'});if(!response.ok)return;catalog=await response.json()}catch{return}
+ const products=Array.isArray(catalog[tool])?catalog[tool]:[];
+ const main=document.querySelector('main');
+ if(!main||!products.length)return;
+ const section=document.createElement('section');section.className='toolya-affiliate-suggestions';
+ const title=document.createElement('h2');title.textContent='Passende Produkte';section.append(title);
+ const group=document.createElement('div');group.className='toolya-affiliate-links';
+ for(const p of products){
+  if(!/^[A-Z0-9]{10}$/.test(p.asin||'')||typeof p.title!=='string'||!p.title.trim())continue;
+  const wrapper=document.createElement('div'),a=document.createElement('a');
+  a.href='https://www.amazon.de/dp/'+p.asin+'?tag='+TAG;a.target='_blank';
+  a.textContent=p.title+' bei Amazon ansehen ↗';
+  if(typeof p.imageUrl==='string')a.dataset.amazonImage=p.imageUrl;
+  wrapper.append(a);group.append(wrapper);
+ }
+ if(!group.children.length)return;
+ section.append(group);main.append(section);existing();
+}
+function start(){existing();loadCatalog();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
