@@ -122,5 +122,4 @@ begin
  elsif p_action<>'trustee-status' then return '{"error":"invalid_action"}';
  end if;
  return jsonb_build_object('status',case when v.alarm_id is null or v.alarm_canceled_at is not null then 'normal' when v.alarm_started_at is null then 'notifying' when v.alarm_deadline>now() then 'countdown' else 'released' end,'deadline',v.alarm_deadline,'serverTime',now());
-end $function$
-
+end $function$;
