@@ -7,7 +7,7 @@ const feedback=(id,message)=>{$(id).textContent=message;$('status').textContent=
 const invalid=(id,message,feedbackId)=>{const field=$(id);field.setAttribute('aria-invalid','true');field.setAttribute('aria-describedby',feedbackId);feedback(feedbackId,message);field.focus()};
 for(const id of ['budgetAmount','budgetOccasion','occasion','title','planned','actual'])for(const type of ['input','change'])$(id).addEventListener(type,()=>{$(id).removeAttribute('aria-invalid');$(id).removeAttribute('aria-describedby')});
 const byId=id=>occasions.find(x=>x.id===id);
-const number=id=>{const v=Number($(id).value);return Number.isFinite(v)&&v>=0?v:null};
+const number=id=>{const raw=$(id).value.trim();if(raw==='')return null;const v=Number(raw);return Number.isFinite(v)&&v>=0?v:null};
 function option(select,value,label){const el=document.createElement('option');el.value=value;el.textContent=label;select.append(el)}
 function choices(){
  for(const id of ['occasion','budgetOccasion','filterOccasion'])$(id).replaceChildren();
@@ -55,24 +55,42 @@ function render(){
 async function load(){
  const {data,error}=await db.auth.getUser();user=data?.user;
  if(error||!user){$('login').hidden=false;$('status').textContent='Bitte anmelden.';return}
+ const ownerId=user.id;
  const [o,g,publicLists,bookmarks]=await Promise.all([db.from('wishlist_occasions').select('id,title,person_name,budget_amount').eq('user_id',user.id).order('occasion_date').limit(1000),db.from('wishlist_gift_plans').select('id,occasion_id,title,recipient_name,planned_amount,actual_amount,status,notes,source_list_id,source_wish_id,source_product_id,created_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(1000),db.from('wishlist_lists').select('id,title,description,user_id').eq('visibility','public').eq('archived',false).order('created_at',{ascending:false}).limit(100),db.from('wishlist_collection_bookmarks').select('list_id').eq('user_id',user.id).limit(200)]);
+ if(user?.id!==ownerId)return;
  if(o.error||g.error)throw o.error||g.error;if(publicLists.error||bookmarks.error)throw publicLists.error||bookmarks.error;
- occasions=o.data||[];gifts=g.data||[];const saved=new Set((bookmarks.data||[]).map(x=>x.list_id));collections=(publicLists.data||[]).filter(x=>x.user_id===user.id||saved.has(x.id));const select=$('sourceList');for(const c of collections)option(select,c.id,c.title);suggestions=collections.slice();$('content').hidden=false;choices();await loadCoordination();render();$('status').textContent=occasions.length?'Deine Geschenkplanung ist aktuell.':'Lege zuerst einen Anlass in der Anlasszentrale an.';await importReservedWish();
+ occasions=o.data||[];gifts=g.data||[];const saved=new Set((bookmarks.data||[]).map(x=>x.list_id));collections=(publicLists.data||[]).filter(x=>x.user_id===user.id||saved.has(x.id));const select=$('sourceList');for(const c of collections)option(select,c.id,c.title);suggestions=collections.slice();$('content').hidden=false;choices();await loadCoordination();if(user?.id!==ownerId)return;render();$('status').textContent=occasions.length?'Deine Geschenkplanung ist aktuell.':'Lege zuerst einen Anlass in der Anlasszentrale an.';await importReservedWish();
 }
 $('budgetOccasion').addEventListener('change',()=>{$('budgetAmount').value=String(byId($('budgetOccasion').value)?.budget_amount||0);render()});
 $('filterOccasion').addEventListener('change',render);$('filterStatus').addEventListener('change',render);
 $('saveBudget').addEventListener('click',async()=>{const id=$('budgetOccasion').value,amount=number('budgetAmount');if(!id||amount===null||amount>9999999999){invalid(!id?'budgetOccasion':'budgetAmount','Bitte einen Anlass und gültiges Budget wählen.','budgetSaveFeedback');return}
- $('saveBudget').disabled=true;const {error}=await db.from('wishlist_occasions').update({budget_amount:amount,updated_at:new Date().toISOString()}).eq('id',id).eq('user_id',user.id);$('saveBudget').disabled=false;
- if(error){feedback('budgetSaveFeedback','Budget konnte nicht gespeichert werden.');return}
- const o=byId(id);if(o)o.budget_amount=amount;render();feedback('budgetSaveFeedback','Anlassbudget gespeichert.');
+ const ownerId=user?.id,submittedAmount=$('budgetAmount').value;
+ if(!ownerId){feedback('budgetSaveFeedback','Bitte zuerst anmelden.');return}
+ $('saveBudget').disabled=true;
+ try{
+  const {data,error}=await db.from('wishlist_occasions').update({budget_amount:amount,updated_at:new Date().toISOString()}).eq('id',id).eq('user_id',ownerId).select('id').single();
+  if(user?.id!==ownerId)return;
+  if(error||data?.id!==id){feedback('budgetSaveFeedback','Budget konnte nicht gespeichert werden.');return}
+  const o=byId(id);if(o)o.budget_amount=amount;
+  render();
+  if($('budgetOccasion').value===id&&$('budgetAmount').value===submittedAmount)$('budgetAmount').value='';
+  feedback('budgetSaveFeedback','Anlassbudget gespeichert.');
+ }catch{
+  if(user?.id===ownerId)feedback('budgetSaveFeedback','Budget konnte nicht gespeichert werden.');
+ }finally{$('saveBudget').disabled=false}
 });
 $('form').addEventListener('submit',async event=>{event.preventDefault();const occasionId=$('occasion').value,title=$('title').value.trim(),planned=number('planned'),actual=$('actual').value===''?null:number('actual');
  if(!user||!byId(occasionId)||!title||planned===null||planned>9999999999||(actual!==null&&(actual<0||actual>9999999999))){const invalidId=!byId(occasionId)?'occasion':!title?'title':(planned===null||planned>9999999999)?'planned':'actual';invalid(invalidId,'Bitte alle Beträge und Pflichtfelder prüfen.','giftFormFeedback');return}
+ const ownerId=user.id;
  const payload={occasion_id:occasionId,title,recipient_name:$('recipient').value.trim()||null,planned_amount:planned,actual_amount:actual,status:$('giftStatus').value,source_list_id:$('sourceList').value||null,source_wish_id:selectedProduct?.wish_id||null,source_product_id:selectedProduct?.product_id||null,notes:$('notes').value.trim()||null,updated_at:new Date().toISOString()};
  $('save').disabled=true;
- try{const fields='id,occasion_id,title,recipient_name,planned_amount,actual_amount,status,notes,source_list_id,source_wish_id,source_product_id,created_at';const r=editing?await db.from('wishlist_gift_plans').update(payload).eq('id',editing).eq('user_id',user.id).select(fields).single():await db.from('wishlist_gift_plans').insert({...payload,user_id:user.id}).select(fields).single();
- if(r.error)throw r.error;gifts=gifts.filter(x=>x.id!==r.data.id);gifts.push(r.data);if(r.data.source_wish_id)await loadCoordination();reset();render();feedback('giftFormFeedback','Geschenk gespeichert.');$('giftFormFeedback').focus({preventScroll:true});
- }catch{feedback('giftFormFeedback','Geschenk konnte nicht gespeichert werden.')}finally{$('save').disabled=false}
+ try{const fields='id,occasion_id,title,recipient_name,planned_amount,actual_amount,status,notes,source_list_id,source_wish_id,source_product_id,created_at';const r=editing?await db.from('wishlist_gift_plans').update(payload).eq('id',editing).eq('user_id',ownerId).select(fields).single():await db.from('wishlist_gift_plans').insert({...payload,user_id:ownerId}).select(fields).single();
+ if(user?.id!==ownerId)return;
+ if(r.error)throw r.error;
+ gifts=gifts.filter(x=>x.id!==r.data.id);gifts.push(r.data);
+ reset();render();feedback('giftFormFeedback','Geschenk gespeichert.');$('giftFormFeedback').focus({preventScroll:true});
+ if(r.data.source_wish_id){let coordinationOk=false;try{coordinationOk=await loadCoordination()}catch{}if(!coordinationOk&&user?.id===ownerId)feedback('giftFormFeedback','Geschenk gespeichert. Die Abstimmung konnte nicht aktualisiert werden.');}
+ }catch{if(user?.id===ownerId)feedback('giftFormFeedback','Geschenk konnte nicht gespeichert werden.')}finally{$('save').disabled=false}
 });
 $('cancel').addEventListener('click',()=>{const origin=giftEditOrigin;reset();$('giftFormFeedback').textContent='';giftEditOrigin=null;feedback('giftFormFeedback','Bearbeitung abgebrochen.');if(origin?.isConnected)origin.focus({preventScroll:true});else $('giftFormFeedback').focus({preventScroll:true})});
 
@@ -89,14 +107,25 @@ $('occasion').addEventListener('change',renderRecommendations);
 
 
 async function loadCoordination(){
- const {data,error}=await db.rpc('wishlist_my_gift_coordination',{p_limit:500});
- if(error){$('status').textContent='Reservierungsabgleich nicht verfügbar.';return}
- coordination=new Map((data||[]).map(row=>[row.plan_id,row.reservation_state]));
+ const ownerId=user?.id;
+ if(!ownerId)return false;
+ try{
+  const {data,error}=await db.rpc('wishlist_my_gift_coordination',{p_limit:500});
+  if(user?.id!==ownerId)return false;
+  if(error){$('status').textContent='Reservierungsabgleich nicht verfügbar.';return false}
+  coordination=new Map((data||[]).map(row=>[row.plan_id,row.reservation_state]));
+  return true;
+ }catch{
+  if(user?.id===ownerId)$('status').textContent='Reservierungsabgleich nicht verfügbar.';
+  return false;
+ }
 }
 async function importReservedWish(){
  const raw=new URLSearchParams(location.search).get('reserved_wish');
  if(!raw||!/^[0-9]{1,18}$/.test(raw))return;
+ const ownerId=user?.id;if(!ownerId)return;
  const {data,error}=await db.rpc('wishlist_my_reservation_for_plan',{p_wish_id:raw});
+ if(user?.id!==ownerId)return;
  if(error||!data?.length||!occasions.length){$('status').textContent='Reservierter Wunsch konnte nicht übernommen werden. Bitte prüfe Anmeldung, Öffentlichkeit und Anlässe.';return}
  const item=data[0];
  selectedProduct={wish_id:item.wish_id,product_id:item.product_id,title:item.product_title};showProductSource();
@@ -111,25 +140,30 @@ function showProductSource(){
  $('clearProduct').hidden=!selectedProduct;
 }
 $('clearProduct').addEventListener('click',()=>{selectedProduct=null;showProductSource()});
+let productSearchRevision=0;
 async function searchProducts(){
- const q=$('productQuery').value.trim(),root=$('productResults');root.replaceChildren();
- if(q.length<2){$('productSearchStatus').textContent='Bitte mindestens zwei Zeichen eingeben.';return}
+ const revision=++productSearchRevision,ownerId=user?.id;
+ const q=$('productQuery').value.trim(),root=$('productResults');
+ if(q.length<2){$('searchProducts').disabled=false;$('productSearchStatus').textContent='Bitte mindestens zwei Zeichen eingeben.';return}
+ if(!ownerId){$('searchProducts').disabled=false;$('productSearchStatus').textContent='Bitte zuerst anmelden.';return}
  $('searchProducts').disabled=true;$('productSearchStatus').textContent='Suche läuft …';
  try{
   const safe=q.replace(/[,%()]/g,' ').trim();if(safe.length<2)throw Error('Bitte einen Suchbegriff verwenden.');
   const {data:products,error}=await db.from('wishlist_products').select('id,title,asin').ilike('title','%'+safe+'%').order('created_at',{ascending:false}).limit(40);
+  if(revision!==productSearchRevision||user?.id!==ownerId||$('productQuery').value.trim()!==q)return;
   if(error)throw error;
   const ids=(products||[]).map(p=>p.id);
   let wishes=[];
-  if(ids.length){const result=await db.from('wishlist_wishes').select('id,product_id,priority').eq('visibility','public').in('product_id',ids).order('created_at',{ascending:false}).limit(200);if(result.error)throw result.error;wishes=result.data||[]}
+  if(ids.length){const result=await db.from('wishlist_wishes').select('id,product_id,priority') .eq('user_id',ownerId).in('product_id',ids).order('created_at',{ascending:false}).limit(200);if(result.error)throw result.error;wishes=result.data||[]}
+  if(revision!==productSearchRevision||user?.id!==ownerId||$('productQuery').value.trim()!==q)return;
   const wishByProduct=new Map();for(const w of wishes)if(!wishByProduct.has(String(w.product_id)))wishByProduct.set(String(w.product_id),w);
-  $('productSearchStatus').textContent=(products||[]).length+' Produkte gefunden · '+wishByProduct.size+' mit öffentlichen Wünschen. Die Suche zeigt höchstens 40 Produkte.';
-  if(!products?.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine passenden Produkte gefunden.';root.append(p)}
+  $('productSearchStatus').textContent=(products||[]).length+' Produkte gefunden · '+wishByProduct.size+' mit eigenen Wünschen. Die Suche zeigt höchstens 40 Produkte.';
+  root.replaceChildren();if($('productQuery').value.trim()===q)$('productQuery').value='';if(!products?.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine passenden Produkte gefunden.';root.append(p)}
   for(const product of products||[]){
    const wish=wishByProduct.get(String(product.id));
    const card=document.createElement('article');card.className='product-result';
    const h=document.createElement('h3');h.textContent=product.title;
-   const info=document.createElement('p');info.textContent=wish?'🌟 Öffentlicher Wunsch vorhanden':'📦 Produkt aus dem Katalog';
+   const info=document.createElement('p');info.textContent=wish?'🌟 Eigener Wunsch vorhanden':'📦 Produkt aus dem Katalog';
    const button=document.createElement('button');button.type='button';button.textContent='Als Geschenk übernehmen';
    button.addEventListener('click',()=>{
     if(!occasions.length){$('status').textContent='Bitte zuerst einen Anlass anlegen.';return}
@@ -141,8 +175,8 @@ async function searchProducts(){
    if(product.asin&&/^[A-Z0-9]{10}$/i.test(product.asin)){const a=document.createElement('a');a.href='https://www.amazon.de/dp/'+encodeURIComponent(product.asin);a.target='_blank';a.rel='noopener noreferrer';a.textContent='Produkt bei Amazon ansehen ↗';card.append(a)}
    card.append(button);root.append(card);
   }
- }catch{$('productSearchStatus').textContent='Suche fehlgeschlagen. Bitte erneut versuchen.'}
- finally{$('searchProducts').disabled=false}
+ }catch{if(revision===productSearchRevision&&user?.id===ownerId&&$('productQuery').value.trim()===q)$('productSearchStatus').textContent='Suche fehlgeschlagen. Bitte erneut versuchen.'}
+ finally{if(revision===productSearchRevision)$('searchProducts').disabled=false}
 }
 $('searchProducts').addEventListener('click',searchProducts);
 $('productQuery').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();searchProducts()}});

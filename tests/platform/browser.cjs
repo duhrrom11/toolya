@@ -33,7 +33,7 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
  await page.goto(origin+'/tools/wishes/');await page.waitForFunction(()=>document.querySelector('.wishes-navigation'));
  assert.equal(await page.locator('.wishes-navigation a').count(),4);
  assert.equal(await page.locator('.wishlist-hub-nav,.wishlist-welcome').count(),0);
- for(const [name,area] of [['Entdecken','discover'],['Geschenke','gifts'],['Konto','account'],['Meine Listen','lists']]){
+ for(const [name,area] of [['Geschenkideen','discover'],['Geschenkplanung','gifts'],['Konto','account'],['Meine Listen','lists']]){
   await page.locator('.wishes-navigation').getByRole('link',{name,exact:true}).click();
   assert.equal(await page.locator('[data-wishes-area]:visible').count(),1);
   assert.equal(await page.locator('[data-wishes-area="'+area+'"]').isVisible(),true);

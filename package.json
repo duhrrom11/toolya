@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "node --test tests/amazon/*.test.mjs"
+    "test": "node --test tests/amazon/*.test.mjs tests/wishlist/*.test.mjs"
   },
   "repository": {
     "type": "git",
