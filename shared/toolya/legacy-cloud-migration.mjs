@@ -34,6 +34,19 @@ function validateBudget(value) {
   return copy(value);
 }
 const TOOLS = Object.freeze({
+  'haustier-gesundheitspass': {
+    keys:['haustier_pass_pro_v5'],
+    validate:value=>{
+      if(!value||typeof value!=='object'||Array.isArray(value)||
+        !Array.isArray(value.pets)||!Array.isArray(value.events)||
+        !value.pets.every(x=>x&&typeof x==='object'&&!Array.isArray(x))||
+        !value.events.every(x=>x&&typeof x==='object'&&!Array.isArray(x))||
+        (value.meds!==undefined&&(!Array.isArray(value.meds)||!value.meds.every(x=>x&&typeof x==='object'&&!Array.isArray(x)))))
+        throw Error('Haustier-Bestand ist beschädigt.');
+      return copy({...value,meds:value.meds??[]});
+    },
+    build:values=>values[0]
+  },
   'parkplatz-merker-parkschein-timer': {
     keys:['park_history_pro_v3'],
     validate:value=>{
