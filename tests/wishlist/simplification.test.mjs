@@ -286,3 +286,29 @@ test('list creation preserves selections edited during pending save',()=>{
  assert.ok(code.includes("if($('listIcon').value===submittedIcon)$('listIcon').selectedIndex=0"));
  assert.ok(code.includes("if($('listColor').value===submittedColor)$('listColor').selectedIndex=0"));
 });
+
+test('gift save ignores a delayed response after account switch',async()=>{
+ const planner=source('gift-planner.mjs');
+ const start=planner.indexOf("$('form').addEventListener('submit',async event=>");
+ const end=planner.indexOf("$('cancel').addEventListener",start);
+ assert.ok(start>=0&&end>start);
+ const handlers={},values={occasion:'occasion1',title:'Buch',planned:'15',actual:'',recipient:'',giftStatus:'idea',sourceList:'',notes:''};
+ const elements=Object.fromEntries(Object.entries(values).map(([id,value])=>[id,{value}]));
+ elements.form={addEventListener:(_,fn)=>handlers.submit=fn};
+ elements.save={disabled:false};
+ elements.giftFormFeedback={textContent:'',focus(){}};
+ let finish;
+ const pending=new Promise(resolve=>finish=resolve);
+ const db={from:()=>({insert:()=>({select:()=>({single:()=>pending})})})};
+ let resets=0;
+ const body="let user={id:'first'},editing=null,gifts=[],selectedProduct=null;\n"+planner.slice(start,end)+"\nreturn {submit:handlers.submit,setUser:id=>user={id},getGifts:()=>gifts};";
+ const run=new Function('$','db','byId','number','invalid','feedback','reset','render','loadCoordination','handlers',body)(id=>elements[id],db,()=>({id:'occasion1'}),id=>Number(elements[id].value),()=>{},(id,message)=>elements[id].textContent=message,()=>{resets++},()=>{},async()=>{},handlers);
+ const request=run.submit({preventDefault(){}});
+ run.setUser('second');
+ finish({data:{id:'gift1',source_wish_id:null},error:null});
+ await request;
+ assert.equal(run.getGifts().length,0);
+ assert.equal(resets,0);
+ assert.equal(elements.title.value,'Buch');
+ assert.equal(elements.save.disabled,false);
+});
