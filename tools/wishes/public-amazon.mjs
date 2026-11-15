@@ -33,6 +33,35 @@ function card(list){
  const root=document.createElement('article');root.className='card';root.id='list-'+list.id;
  root.append(text('h3',list.title||'Amazon-Wunschliste'),text('p',name+(person?.country?' · '+person.country:'')));
  const a=text('a','Amazon-Wunschliste öffnen');a.href=list.amazon_url;a.target='_blank';a.rel='noopener noreferrer nofollow';root.append(a);
+ if(sessionUser?.id===list.user_id){
+  const actions=document.createElement('div');actions.className='owner-actions';
+  const message=text('span','');message.className='owner-message';message.setAttribute('role','status');
+  const update=text('button','↻ Liste aktualisieren');update.type='button';
+  update.onclick=async()=>{
+   update.disabled=true;remove.disabled=true;message.textContent='Amazon-Wunschliste wird erneut eingelesen …';
+   try{
+    const {data,error}=await db.functions.invoke('amazon-wishlist-scrape',{body:{publication_id:list.id}});
+    if(error)throw error;
+    if(data?.status!=='success')throw new Error('Amazon konnte die Liste derzeit nicht vollständig einlesen. Vorhandene Produkte bleiben erhalten.');
+    message.textContent='Liste und Produktbilder aktualisiert.';
+    await refresh(false);
+   }catch(e){message.textContent=e.message||'Aktualisierung fehlgeschlagen. Bestehende Produkte bleiben erhalten.'}
+   finally{update.disabled=false;remove.disabled=false}
+  };
+  const remove=text('button','Liste löschen');remove.type='button';remove.className='danger';
+  remove.onclick=async()=>{
+   if(!window.confirm('Diese veröffentlichte Wunschliste und ihre Produktvorschauen dauerhaft löschen?'))return;
+   update.disabled=true;remove.disabled=true;message.textContent='Liste wird gelöscht …';
+   try{
+    const {data,error}=await db.from('wishlist_amazon_publications').delete().eq('id',list.id).eq('user_id',sessionUser.id).select('id');
+    if(error)throw error;
+    if(data?.length!==1)throw new Error('Liste nicht gefunden oder keine Berechtigung.');
+    await refresh(true);
+   }catch(e){message.textContent=e.message||'Löschen fehlgeschlagen.'}
+   finally{update.disabled=false;remove.disabled=false}
+  };
+  actions.append(update,remove,message);root.append(actions);
+ }
  const items=products.filter(p=>p.publication_id===list.id).slice(0,10);
  if(items.length){const ul=document.createElement('ul');for(const p of items){const li=document.createElement('li');li.className='product-preview';const image=safeImageUrl(p.image_url);if(image){const img=document.createElement('img');img.src=image;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';li.append(img)}const details=document.createElement('span');details.append(text('strong',p.title||'Amazon-Produkt'));if(p.description)details.append(text('span',' – '+p.description));li.append(details);if(p.product_url&&safeProductUrl(p.product_url)){const link=text('a',' Produkt ansehen');link.href=p.product_url;link.rel='noopener noreferrer';link.target='_blank';li.append(link)}ul.append(li)}root.append(ul);root.append(text('p','Produktvorschau – vollständige Liste bei Amazon öffnen.'))}
  else root.append(text('p',['pending','processing'].includes(list.scrape_status)?'Produktdaten werden geprüft …':'Produktdaten nicht verfügbar – Amazon-Link verwenden.'));
@@ -83,10 +112,10 @@ async function renderTicker(){
 async function loadProfile(){
  const {data,error}=await db.auth.getUser();const user=!error&&!data?.user?.is_anonymous?data?.user:null;sessionUser=user;
  $('profileForm').hidden=!user;$('auth').hidden=!!user;$('logoutPublic').hidden=!user;status('profileStatus',user?'Angemeldet als '+user.email:'Bitte zuerst anmelden.');
- if(!user){profile=null;return}
+ if(!user){profile=null;await refresh();return}
  const r=await db.from('wishlist_profiles').select('user_id,handle,display_name,first_name,last_name,country').eq('user_id',user.id).maybeSingle();
  if(r.error){status('profileStatus',r.error.message);return}
- profile=r.data;$('firstName').value=profile?.first_name||'';$('lastName').value=profile?.last_name||'';$('country').value=profile?.country||'';
+ profile=r.data;await refresh();$('firstName').value=profile?.first_name||'';$('lastName').value=profile?.last_name||'';$('country').value=profile?.country||'';
 }
 function credentials(){const email=$('email').value.trim(),password=$('password').value;if(!email||!password)throw new Error('Bitte E-Mail und Passwort eingeben.');return {email,password};}
 async function authenticate(mode){
@@ -123,14 +152,12 @@ $('publishForm').onsubmit=async event=>{
  if(!profile?.first_name?.trim()||!profile?.last_name?.trim()){status('publishStatus','Bitte zuerst Vorname und Nachname im Profil speichern.');location.hash='#profile';return}
  const url=safeAmazonListUrl($('amazonUrl').value);if(!url){status('publishStatus','Bitte einen gültigen öffentlichen Amazon-Wunschlisten-Link verwenden.');return}
  $('publishButton').disabled=true;
- const writerId=sessionUser.id;
  try{
- const r=await guardedWishlistWrite(db,writerId,()=>db.from('wishlist_amazon_publications').insert({user_id:writerId,amazon_url:url}).select('id').single());
- if(r.error)throw r.error;
- status('publishStatus','Wunschliste veröffentlicht. Scraper wird gestartet …');
- const {data: scrapeResult,error}=await db.functions.invoke('amazon-wishlist-scrape',{body:{publication_id:r.data.id}});
- if(error||scrapeResult?.status==='failed')status('publishStatus','Wunschliste mit deinem Namen und Amazon-Link veröffentlicht. Produktdaten konnten derzeit nicht ausgelesen werden.');
- else status('publishStatus','Wunschliste veröffentlicht. Produktdaten werden aktualisiert.');
+ status('publishStatus','Öffentliche Amazon-Wunschliste wird vollständig geprüft und eingelesen …');
+ const {data: scrapeResult,error}=await db.functions.invoke('amazon-wishlist-scrape',{body:{action:'create',amazon_url:url}});
+ if(error)throw error;
+ if(scrapeResult?.status!=='success')throw new Error(scrapeResult?.error||'Amazon-Wunschliste nicht öffentlich erreichbar oder nicht vollständig lesbar. Es wurde nichts veröffentlicht.');
+ status('publishStatus','Wunschliste erfolgreich eingelesen und veröffentlicht – '+scrapeResult.product_count+' Produkte.');
  await refresh();
  }catch(error){status('publishStatus','Veröffentlichung fehlgeschlagen: '+error.message)}finally{$('publishButton').disabled=false}
 };
