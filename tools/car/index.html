@@ -1072,5 +1072,34 @@
             reader.readAsText(file);
         }
     </script>
+
+<script src="../../shared/toolya/connect-v1.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const anchor = document.querySelector('button[onclick="exportBackup()"]');
+  if (!anchor || !window.ToolyaConnect) return;
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.textContent = '🔗 Fahrzeugausgabe an Haushaltsbuch übergeben';
+  button.className = 'w-full mt-3 p-3 rounded-xl bg-indigo-700 text-white text-sm font-bold';
+  button.addEventListener('click', async () => {
+    try {
+      const data = getData();
+      const events = (data.events || []).filter(e => Number.isFinite(e.cost) && e.cost > 0);
+      if (!events.length) return alert('Keine Fahrzeugausgaben vorhanden.');
+      const options = events.map(e => e.id + ' | ' + e.date + ' | ' + e.title + ' | ' + e.cost + ' €').join('\\n');
+      const selected = prompt('ID der zu übergebenden Ausgabe eingeben:\\n' + options);
+      if (selected === null) return;
+      if (!/^\\d+$/.test(selected.trim())) throw Error('Ungültige Ereignis-ID.');
+      const event = events.find(e => String(e.id) === selected.trim());
+      if (!event) throw Error('Ereignis nicht gefunden.');
+      if (!confirm(event.title + ' (' + event.cost + ' €) für das Haushaltsbuch vormerken? Noch keine Buchung wird angelegt.')) return;
+      const added = await ToolyaConnect.enqueue(event);
+      alert(added ? 'Vorgemerkt. Bitte Haushaltsbuch öffnen und die Übernahme bestätigen.' : 'Dieser Eintrag ist bereits vorgemerkt.');
+    } catch (error) { alert('Toolya Connect: ' + error.message); }
+  });
+  anchor.parentElement.parentElement.appendChild(button);
+});
+</script>
 </body>
 </html>
