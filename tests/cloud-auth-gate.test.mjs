@@ -48,3 +48,20 @@ test('stale authorization result after dispose cannot reopen gate', async () => 
   await pending;
   assert.equal(authorized,0);
 });
+
+test('newer auth verification supersedes a late older response', async () => {
+  const pending = [];
+  const fixture = clientFor(() => new Promise(resolve => pending.push(resolve)));
+  const accepted = [];
+  const guard = createCloudOnlyGuard(fixture.client, {
+    onAuthorized: async user => accepted.push(user.id)
+  });
+  const first = guard.verify();
+  const second = guard.verify();
+  pending[1]({data:{user:{id:'new',is_anonymous:false}},error:null});
+  await second;
+  pending[0]({data:{user:{id:'old',is_anonymous:false}},error:null});
+  await first;
+  assert.deepEqual(accepted,['new']);
+  guard.dispose();
+});
