@@ -94,6 +94,42 @@ async function functionError(error){
 }
 
 function safeImageUrl(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&(/(^|\.)images-amazon\.com$/.test(u.hostname)||/(^|\.)ssl-images-amazon\.com$/.test(u.hostname)||/(^|\.)media-amazon\.com$/.test(u.hostname))?u.href:null}catch{return null}}
+
+const AUTO_ENRICH_LIMIT=10;
+// Called only after a successful owner-initiated publication or refresh.
+// Each product uses its own bounded Edge Function invocation; a failed item
+// cannot roll back a complete wishlist snapshot or exhaust one function's CPU.
+async function enrichWishlistAutomatically(publicationId,onProgress=()=>{}){
+ if(!sessionUser||!listIdPattern.test(publicationId))return {checked:0,improved:0,skipped:0,limited:false};
+ const query=await db.from('wishlist_amazon_publication_products')
+  .select('asin,price,description').eq('publication_id',publicationId)
+  .order('created_at',{ascending:false}).limit(500);
+ if(query.error)throw new Error('Produktdaten konnten zur Ergänzung nicht geladen werden.');
+ const missing=(query.data||[]).filter(p=>p.asin&&(p.price==null||!p.description?.trim()));
+ const candidates=missing.slice(0,AUTO_ENRICH_LIMIT);
+ let checked=0,improved=0,skipped=0,limited=false;
+ for(const product of candidates){
+  onProgress('Produktinformationen ergänzen: '+(checked+1)+' von '+candidates.length+' …');
+  try{
+   const {data,error}=await db.functions.invoke('amazon-wishlist-scrape',{
+    body:{action:'enrich-product',publication_id:publicationId,asin:product.asin}
+   });
+   if(error){
+    if(error.context?.status===429){
+     const body=await error.context.json().catch(()=>null);
+     if(body?.error?.includes('20 Produktabrufe')){limited=true;break}
+     skipped++;checked++;continue;
+    }
+    throw await functionError(error);
+   }
+   if(data?.status==='success')improved++;
+   else skipped++;
+  }catch{skipped++}
+  checked++;
+ }
+ return {checked,improved,skipped,limited,remaining:Math.max(0,missing.length-checked)};
+}
+
 function detailCard(list){
  const person=profiles.find(p=>p.user_id===list.user_id);
  const name=[person?.first_name,person?.last_name].filter(Boolean).join(' ')||'Unbekanntes Profil';
@@ -110,9 +146,19 @@ function detailCard(list){
     const {data,error}=await db.functions.invoke('amazon-wishlist-scrape',{body:{publication_id:list.id}});
     if(error)throw await functionError(error);
     if(data?.status!=='success')throw new Error('Amazon konnte die Liste derzeit nicht vollständig einlesen. Vorhandene Produkte bleiben erhalten.');
-    message.textContent='Liste aktualisiert. Im Amazon-Abruf erkannt: '+(data?.price_count??0)+' Preise und '+(data?.description_count??0)+' Beschreibungen. Weitere Angaben konnten bei diesem Abruf nicht sicher ausgelesen werden.';
+    message.textContent='Liste erfolgreich aktualisiert. Fehlende Preise und Beschreibungen werden jetzt automatisch ergänzt …';
+    let info;
+    try{info=await enrichWishlistAutomatically(list.id,value=>{message.textContent=value})}
+    catch(e){message.textContent='Liste aktualisiert. Automatische Produktanreicherung nicht verfügbar: '+e.message}
+    if(info)message.textContent='Liste aktualisiert. '+info.checked+' Produkte nachgeprüft, '+info.improved+' mit neuen Angaben.'+
+      (info.remaining?' Weitere Produkte können bei einer späteren Aktualisierung folgen.':'')+
+      (info.limited?' Stundenlimit erreicht.':'');
+    const finalMessage=message.textContent;
     await refresh(false);
-    if(new URL(location.href).searchParams.get('list')===list.id)await renderSelectedList();
+    if(new URL(location.href).searchParams.get('list')===list.id){
+     await renderSelectedList();
+     status('selectedListStatus',finalMessage);
+    }
    }catch(e){message.textContent=e.message||'Aktualisierung fehlgeschlagen. Bestehende Produkte bleiben erhalten.'}
    finally{update.disabled=false;remove.disabled=false}
   };
@@ -242,7 +288,12 @@ $('publishForm').onsubmit=async event=>{
  const {data: scrapeResult,error}=await db.functions.invoke('amazon-wishlist-scrape',{body:{action:'create',amazon_url:url}});
  if(error)throw error;
  if(scrapeResult?.status!=='success')throw new Error(scrapeResult?.error||'Amazon-Wunschliste nicht öffentlich erreichbar oder nicht vollständig lesbar. Es wurde nichts veröffentlicht.');
- status('publishStatus','Wunschliste erfolgreich eingelesen und veröffentlicht – '+scrapeResult.product_count+' Produkte.');
+ status('publishStatus','Wunschliste veröffentlicht – '+scrapeResult.product_count+' Produkte. Fehlende Produktangaben werden automatisch ergänzt …');
+ let result;
+ try{
+  result=await enrichWishlistAutomatically(scrapeResult.publication_id,value=>status('publishStatus',value));
+  status('publishStatus','Wunschliste veröffentlicht. '+result.checked+' Produkte nachgeprüft, '+result.improved+' ergänzt.'+(result.remaining?' Weitere Angaben können später ergänzt werden.':''));
+ }catch(e){status('publishStatus','Wunschliste veröffentlicht. Automatische Ergänzung nicht verfügbar: '+e.message)}
  await refresh();
  }catch(error){status('publishStatus','Veröffentlichung fehlgeschlagen: '+error.message)}finally{$('publishButton').disabled=false}
 };
