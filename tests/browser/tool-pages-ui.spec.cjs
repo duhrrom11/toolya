@@ -622,3 +622,15 @@ test('estate: new-device cloud recovery checks password and does not touch local
  });
  expect(result).toEqual({vault:'v',entries:1,local:'existing-backup'});
 });
+
+test('estate: browser refuses changed local encrypted snapshot before emergency publish',async({page})=>{
+ await isolatedEstate(page,true);await page.goto(origin+'/tools/estate/index.html');
+ const result=await page.evaluate(()=>{
+  localStorage.setItem('digital_estate_vault','encrypted-original');
+  const snapshot=localStorage.getItem('digital_estate_vault');
+  localStorage.setItem('digital_estate_vault','encrypted-other-tab');
+  try{EstateCloudGuard.assertLocalSnapshot(snapshot,localStorage.getItem('digital_estate_vault'));return 'unexpected'}
+  catch(e){return {error:e.message,preserved:localStorage.getItem('digital_estate_vault')}}
+ });
+ expect(result).toEqual({error:'conflict',preserved:'encrypted-other-tab'});
+});
