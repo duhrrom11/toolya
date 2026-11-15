@@ -75,15 +75,19 @@ for(const item of tools){
     });
     page.on('dialog',dialog=>{console.log('[UI dialog]',dialog.message());return dialog.dismiss();});
     if(item.tool==='autokosten-reifenwechsel'){
-      await page.evaluate(()=>{document.querySelector('#carName').value='Nicht gespeichert';});
-      await expect(page.locator('#carName')).toHaveValue(/^(Nicht gespeichert|Mock-Fahrzeug)$/);
-      await page.evaluate(async()=>await saveCar());
+      await page.evaluate(async()=>{
+        document.querySelector('#carName').value='Nicht gespeichert';
+        if(document.querySelector('#carName').value!=='Nicht gespeichert') throw Error('Vehicle fixture not set');
+        await saveCar();
+      });
     }else{
-      await page.evaluate(()=>{document.querySelector('#receiptTitle').value='Nicht gespeichert';});
-      await page.evaluate(()=>{document.querySelector('#receiptDate').value='2026-11-15';});
-      await page.evaluate(()=>{document.querySelector('#receiptPrice').value='12.50';});
-      await expect(page.locator('#receiptTitle')).toHaveValue(/^(Nicht gespeichert|Mock-Einkauf)$/);
-      await page.evaluate(async()=>await saveReceipt());
+      await page.evaluate(async()=>{
+        document.querySelector('#receiptTitle').value='Nicht gespeichert';
+        document.querySelector('#receiptDate').value='2026-11-15';
+        document.querySelector('#receiptPrice').value='12.50';
+        if(document.querySelector('#receiptTitle').value!=='Nicht gespeichert') throw Error('Receipt fixture not set');
+        await saveReceipt();
+      });
     }
     console.log('[UI diagnostic]',item.tool,await page.evaluate(()=>({url:location.href,ready:toolyaCloudReady,online:navigator.onLine,revision:toolyaCloudController?.revision,writes:window.__toolyaMock.writes.length,gate:document.querySelector('#toolya-cloud-gate')?.textContent,form:document.querySelector('#receiptTitle')?.value,car:document.querySelector('#carName')?.value})));
     await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
@@ -98,15 +102,19 @@ for(const item of tools){
     await expect(page.locator('#toolya-cloud-gate')).toHaveCount(0);
     await expect(page.locator(item.form)).toBeVisible();
     if(item.tool==='autokosten-reifenwechsel'){
-      await page.evaluate(()=>{document.querySelector('#carName').value='Mock-Fahrzeug';});
-      await expect(page.locator('#carName')).toHaveValue(item.tool==='autokosten-reifenwechsel' && page ? /^(Nicht gespeichert|Mock-Fahrzeug)$/ : '');
-      await page.evaluate(async()=>await saveCar());
+      await page.evaluate(async()=>{
+        document.querySelector('#carName').value='Mock-Fahrzeug';
+        if(document.querySelector('#carName').value!=='Mock-Fahrzeug') throw Error('Vehicle fixture not set');
+        await saveCar();
+      });
     }else{
-      await page.evaluate(()=>{document.querySelector('#receiptTitle').value='Mock-Einkauf';});
-      await page.evaluate(()=>{document.querySelector('#receiptDate').value='2026-11-15';});
-      await page.evaluate(()=>{document.querySelector('#receiptPrice').value='12.50';});
-      await expect(page.locator('#receiptTitle')).toHaveValue(/^(Nicht gespeichert|Mock-Einkauf)$/);
-      await page.evaluate(async()=>await saveReceipt());
+      await page.evaluate(async()=>{
+        document.querySelector('#receiptTitle').value='Mock-Einkauf';
+        document.querySelector('#receiptDate').value='2026-11-15';
+        document.querySelector('#receiptPrice').value='12.50';
+        if(document.querySelector('#receiptTitle').value!=='Mock-Einkauf') throw Error('Receipt fixture not set');
+        await saveReceipt();
+      });
     }
     console.log('[UI diagnostic]',item.tool,await page.evaluate(()=>({ready:toolyaCloudReady,online:navigator.onLine,revision:toolyaCloudController?.revision,writes:window.__toolyaMock.writes.length,gate:document.querySelector('#toolya-cloud-gate')?.textContent,form:document.querySelector('#receiptTitle')?.value})));
     await expect.poll(()=>page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
