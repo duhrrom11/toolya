@@ -220,3 +220,52 @@ test('umzugskisten-inventar: box photo waits for confirmed cloud write',async({p
   expect(result.photo).toBe('data:image/png;base64,MOCK');
   expect(result.cleared).toBe(true);
 });
+
+
+test('verliehene-gegenstaende: unauthenticated UI blocks writes',async({page})=>{
+  await isolated(page,false);
+  await page.goto(origin+'/tools/loans/index.html');
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Registrierte Anmeldung erforderlich');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+test('verliehene-gegenstaende: contact saved only after cloud confirmation',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/loans/index.html');
+  await expect.poll(()=>page.evaluate(()=>loansCloudReady && !!loansCloudController?.ready)).toBe(true);
+  page.on('dialog',dialog=>dialog.dismiss());
+  await page.evaluate(async()=>{
+    document.querySelector('#contactName').value='Anna';
+    await saveContact();
+  });
+  const state=await page.evaluate(()=>({
+    writes:window.__toolyaMock.writes.length,
+    contact:window.__toolyaMock.writes[0]?.p_data?.contacts?.[0]?.name,
+    cleared:document.querySelector('#contactName').value===''
+  }));
+  expect(state).toMatchObject({writes:1,contact:'Anna',cleared:true});
+  await page.evaluate(async()=>{
+    window.supabaseClient.rpc=async()=>({data:null,error:{code:'40001',message:'mock conflict'}});
+    document.querySelector('#contactName').value='Nicht gespeichert';
+    await saveContact();
+  });
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+  expect(await page.locator('#contactName').inputValue()).toBe('Nicht gespeichert');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
+});
+test('verliehene-gegenstaende: photo compression awaited before write',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/loans/index.html');
+  await expect.poll(()=>page.evaluate(()=>loansCloudReady && !!loansCloudController?.ready)).toBe(true);
+  await page.locator('#itemPhotoInput').setInputFiles({name:'photo.png',mimeType:'image/png',buffer:Buffer.from([137,80,78,71,13,10,26,10])});
+  const result=await page.evaluate(async()=>{
+    compressImage=(file,callback)=>setTimeout(()=>callback('data:mock/'+file.name),15);
+    document.querySelector('#itemInventorySelect').value='';
+    document.querySelector('#itemCustomPerson').value='Anna';
+    document.querySelector('#itemDate').value='2026-11-15';
+    const originalPrompt=window.prompt;window.prompt=()=> 'Bohrer';
+    try {await saveItem()} finally {window.prompt=originalPrompt}
+    return {writes:window.__toolyaMock.writes.length,
+      photo:window.__toolyaMock.writes[0]?.p_data?.items?.[0]?.photo};
+  });
+  expect(result).toMatchObject({writes:1,photo:'data:mock/photo.png'});
+});
