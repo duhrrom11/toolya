@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 const ctx={};vm.runInNewContext(readFileSync(new URL('../assets/estate-cloud-guard.js',import.meta.url),'utf8'),ctx);
-const {requireOwner,saveEncryptedSnapshot,verifyEncryptedBackup,assertRestoreCompatible,restoreCloudSnapshot}=ctx.EstateCloudGuard;
+const {requireOwner,saveEncryptedSnapshot,verifyEncryptedBackup,assertRestoreCompatible,restoreCloudSnapshot,assertLocalSnapshot}=ctx.EstateCloudGuard;
 const cipher={ciphertext:'encrypted'};
 function fixture(user={id:'owner',is_anonymous:false}){
  let row=null,writes=0,conflict=false;
@@ -84,4 +84,11 @@ test('estate refuses invalid new-device recovery and changed identity',async()=>
  await assert.rejects(restoreCloudSnapshot(base),/login_required/);
  user={id:'owner'};
  await assert.rejects(restoreCloudSnapshot({...base,cryptoApi:{async unwrap(){throw Error('wrong_password')},async decrypt(){return {entries:[]}}}}),/wrong_password/);
+});
+
+test('estate local encrypted backup revision remains unchanged through cloud verification',()=>{
+ const encrypted='{"version":2,"ciphertext":"original"}';
+ assert.doesNotThrow(()=>assertLocalSnapshot(encrypted,encrypted));
+ assert.throws(()=>assertLocalSnapshot(encrypted,'{"version":2,"ciphertext":"other"}'),/conflict/);
+ assert.throws(()=>assertLocalSnapshot(encrypted,null),/conflict/);
 });
