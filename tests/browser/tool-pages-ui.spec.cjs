@@ -354,3 +354,41 @@ test('pflanzenpflege-giessplan: plant photo awaits compression before cloud writ
   });
   expect(result).toMatchObject({writes:1,photo:'data:mock/plant.png'});
 });
+
+
+test('parkplatz-merker-parkschein-timer: unauthenticated browser cannot write',async({page})=>{
+  await isolated(page,false);
+  await page.goto(origin+'/tools/parking/index.html');
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Registrierte Anmeldung erforderlich');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+test('parkplatz-merker-parkschein-timer: confirmed parking save and blocked conflict',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/parking/index.html');
+  await expect.poll(()=>page.evaluate(()=>parkingCloudReady&&!!parkingCloudController?.ready)).toBe(true);
+  const result=await page.evaluate(async()=>{
+    const saved=await saveData({sessions:[{id:1,desc:'Bahnhof',cost:2,gps:null}]});
+    return {saved,writes:window.__toolyaMock.writes.length,desc:window.__toolyaMock.writes[0]?.p_data?.sessions?.[0]?.desc};
+  });
+  expect(result).toMatchObject({saved:true,writes:1,desc:'Bahnhof'});
+  await page.evaluate(async()=>{
+    supabaseClient.rpc=async()=>({data:null,error:{code:'40001',message:'conflict'}});
+    await saveData({sessions:[]});
+  });
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
+});
+test('parkplatz-merker-parkschein-timer: cloud-backed parking timer',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/parking/index.html');
+  await expect.poll(()=>page.evaluate(()=>parkingCloudReady&&!!parkingCloudController?.ready)).toBe(true);
+  const result=await page.evaluate(async()=>{
+    await startTimer(30);
+    const end=getData().activeEndTime;
+    await stopTimer();
+    return {end,writes:window.__toolyaMock.writes.length,stopped:getData().activeEndTime};
+  });
+  expect(result.end).toBeGreaterThan(Date.now());
+  expect(result.writes).toBe(2);
+  expect(result.stopped).toBeNull();
+});
