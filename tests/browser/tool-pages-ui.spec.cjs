@@ -683,7 +683,10 @@ test('estate: real browser crypto binds emergency envelopes to the correct trust
   try{await C.openReplica({content:replica.content,envelope:replica.guardians[0].envelope},b)}catch{swapped='rejected'}
   try{await C.readReplica([],people,{a,b:a})}catch(e){duplicate=e.message}
   const uppercase=await C.openReplica({content:replica.content,envelope:replica.guardians[0].envelope},a.toUpperCase());
-  return {opened:opened.entries[0].title,uppercase:uppercase.entries[0].title,swapped,duplicate,unique:replica.guardians[0].hash!==replica.guardians[1].hash};
+  const formatted=a.slice(0,32)+'-'+a.slice(32);
+  const formattedReplica=await C.readReplica([{id:'e',title:'Formatted fixture'}],[{id:'a'}],{a:formatted});
+  const formattedOpened=await C.openReplica({content:formattedReplica.content,envelope:formattedReplica.guardians[0].envelope},formatted);
+  return {opened:opened.entries[0].title,uppercase:uppercase.entries[0].title,formatted:formattedOpened.entries[0].title,swapped,duplicate,unique:replica.guardians[0].hash!==replica.guardians[1].hash};
  });
- expect(result).toEqual({opened:'Isolated fixture',uppercase:'Isolated fixture',swapped:'rejected',duplicate:'conflict',unique:true});
+ expect(result).toEqual({opened:'Isolated fixture',uppercase:'Isolated fixture',formatted:'Formatted fixture',swapped:'rejected',duplicate:'conflict',unique:true});
 });
