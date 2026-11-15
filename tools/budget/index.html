@@ -535,6 +535,7 @@ async function toolyaCloudSave(patch) {
     return true;
   } catch(error) {
     toolyaCloudReady = false;
+    toolyaCloudBlock('Cloud-Speicherung unbestätigt. Bitte Seite neu laden und den Cloud-Datenstand prüfen.');
     alert('Cloud-Speicherung nicht bestätigt: '+error.message+'. Bitte Seite neu laden; Eingaben nicht als gespeichert betrachten.');
     return false;
   }
@@ -553,6 +554,20 @@ async function toolyaSafeCloudImport(snapshot) {
     }
   });
   return result.status==='confirmed';
+}
+
+function toolyaCloudBlock(message) {
+  let gate=document.getElementById('toolya-cloud-gate');
+  if(!gate){
+    gate=document.createElement('div');
+    gate.id='toolya-cloud-gate';gate.setAttribute('role','alert');
+    gate.style.cssText='position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
+    document.body.append(gate);
+  }
+  gate.textContent=message+' ';
+  const link=document.createElement('a');link.href='../../index.html';
+  link.textContent='Zur Toolya-Anmeldung';link.style.cssText='display:block;color:#0369a1;text-decoration:underline';
+  gate.append(link);
 }
 
 async function toolyaCloudBoot(tool) {
@@ -695,7 +710,7 @@ async function toolyaCloudBoot(tool) {
         });
 
         supabaseClient.auth.onAuthStateChange((event) => {
-            if(event==='SIGNED_OUT' || event==='SIGNED_IN'){toolyaCloudReady=false;toolyaCloudController?.invalidate();}
+            if(event==='SIGNED_OUT' || event==='SIGNED_IN'){toolyaCloudReady=false;toolyaCloudController?.invalidate();if(document.readyState!=='loading' && toolyaCloudController)toolyaCloudBlock('Anmeldung hat sich geändert. Bitte Seite neu laden.');}
             // Auth callbacks run while the SDK holds its session lock.
             setTimeout(() => { updateUserDisplay().catch(() => {}); }, 0);
         });
