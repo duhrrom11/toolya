@@ -62,3 +62,20 @@ test('JSONB key reordering does not falsely fail confirmed migration',async()=>{
   assert.equal(result.status,'confirmed');
   assert.equal(writes,1);
 });
+
+test('legacy key-set changes during backup abort migration even if values match',async()=>{
+  const items=new Map([['kassenbon_data','[]']]);
+  const storage={getItem:key=>items.has(key)?items.get(key):null};
+  const client={auth:{getUser:async()=>({data:{user:{id:'user-a',is_anonymous:false}},error:null})}};
+  let writes=0;
+  const repository={
+    async read(){return {exists:false,data:null,revision:null};},
+    async save(){writes++;throw Error('must not write');}
+  };
+  const migration=createLegacyMigration({client,repository,tool:'haushaltsbuch-kassenbon',storage});
+  await assert.rejects(migration.migrate({
+    confirm:async()=>true,
+    exportBackup:async()=>{items.set('budgetbuch_goals','[]');return true;}
+  }),/verändert/);
+  assert.equal(writes,0);
+});
