@@ -138,3 +138,23 @@ test('estate restores real AES-GCM/PBKDF2 encrypted snapshot without production 
  const brokenClient={...client,from(){return {select(){return this},eq(){return this},async maybeSingle(){return {data:broken,error:null}}}}};
  await assert.rejects(restoreCloudSnapshot({...options,client:brokenClient}));
 });
+
+test('estate emergency replica maps distinct tokens to the same authenticated encrypted documents',async()=>{
+ const sandbox={crypto:webcrypto,TextEncoder,TextDecoder,Uint8Array,atob,btoa};
+ vm.runInNewContext(readFileSync(new URL('../assets/estate-crypto.js',import.meta.url),'utf8'),sandbox);
+ const C=sandbox.EstateCrypto,first=C.random(),second=C.random();
+ const entries=[{id:'e1',title:'Isolated confidential fixture'}];
+ const people=[{id:'p1',contact:'first@example.invalid'},{id:'p2',contact:'second@example.invalid'}];
+ const replica=await C.readReplica(entries,people,{p1:first,p2:second});
+ assert.equal(replica.guardians.length,2);
+ assert.notEqual(replica.guardians[0].hash,replica.guardians[1].hash);
+ for(const [i,token] of [first,second].entries()){
+  const opened=await C.openReplica({content:replica.content,envelope:replica.guardians[i].envelope},token);
+  assert.equal(opened.entries[0].title,entries[0].title);
+  await assert.rejects(C.openReplica({content:replica.content,envelope:replica.guardians[i].envelope},i===0?second:first));
+ }
+ await assert.rejects(C.readReplica(entries,people,{p1:first,p2:first}),/conflict/);
+ await assert.rejects(C.readReplica(entries,[people[0],people[0]],{p1:first}),/conflict/);
+ const canonical=await C.readReplica(entries,[people[0]],{p1:first.toUpperCase()});
+ assert.equal(canonical.guardians[0].hash,await C.hash(first));
+});
