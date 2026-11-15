@@ -30,7 +30,7 @@
   }
   return {content:await encrypt({entries},readKey),guardians};
  }
- async function openReplica(result,token){const {readKey}=await decrypt(result.envelope,await hash('Toolya read envelope v2:'+token));return decrypt(result.content,readKey);}
+ async function openReplica(result,token){const canonical=normalize(token);unhex(canonical);const {readKey}=await decrypt(result.envelope,await hash('Toolya read envelope v2:'+canonical));return decrypt(result.content,readKey);}
  root.EstateCrypto={random,encrypt,decrypt,hash,wrap,unwrap,normalize,readReplica,openReplica};
  if(typeof module!=='undefined')module.exports=root.EstateCrypto;
 })(globalThis);
