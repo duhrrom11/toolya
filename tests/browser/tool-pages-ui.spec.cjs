@@ -392,3 +392,40 @@ test('parkplatz-merker-parkschein-timer: cloud-backed parking timer',async({page
   expect(result.writes).toBe(2);
   expect(result.stopped).toBeNull();
 });
+
+
+test('haustier-gesundheitspass: unauthenticated browser cannot write',async({page})=>{
+  await isolated(page,false);
+  await page.goto(origin+'/tools/pet-health/index.html');
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Registrierte Anmeldung erforderlich');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+test('haustier-gesundheitspass: confirmed save and blocked conflict',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/pet-health/index.html');
+  await expect.poll(()=>page.evaluate(()=>petCloudReady&&!!petCloudController?.ready)).toBe(true);
+  const result=await page.evaluate(async()=>{
+    const saved=await saveData({pets:[{id:1,name:'Milo'}],events:[],meds:[]});
+    return {saved,writes:window.__toolyaMock.writes.length,name:window.__toolyaMock.writes[0]?.p_data?.pets?.[0]?.name};
+  });
+  expect(result).toMatchObject({saved:true,writes:1,name:'Milo'});
+  await page.evaluate(async()=>{
+    supabaseClient.rpc=async()=>({data:null,error:{code:'40001',message:'conflict'}});
+    await saveData({pets:[],events:[],meds:[]});
+  });
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
+});
+test('haustier-gesundheitspass: photo processing precedes confirmed cloud write',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/pet-health/index.html');
+  await expect.poll(()=>page.evaluate(()=>petCloudReady&&!!petCloudController?.ready)).toBe(true);
+  await page.locator('#petPhotoInput').setInputFiles({name:'pet.png',mimeType:'image/png',buffer:Buffer.from([137,80,78,71,13,10,26,10])});
+  const result=await page.evaluate(async()=>{
+    compressImage=(file,callback)=>setTimeout(()=>callback('data:mock/'+file.name),15);
+    document.querySelector('#petName').value='Milo';
+    await savePet();
+    return {writes:window.__toolyaMock.writes.length,photo:window.__toolyaMock.writes[0]?.p_data?.pets?.[0]?.photo};
+  });
+  expect(result).toMatchObject({writes:1,photo:'data:mock/pet.png'});
+});
