@@ -212,6 +212,11 @@ test('estate SQL migration and isolated RPC fixture fail closed on missing alarm
  assert.match(migration,guard);
  assert.match(fixture,/end \$function\$;\s*$/,'psql must receive a terminated CREATE FUNCTION statement');
  assert.match(migration,/end \$function\$;\s*$/,'migration must terminate its CREATE FUNCTION statement');
+ for(const sql of [fixture,migration]){
+  assert.match(sql,/limit 10 for update skip locked loop/,'reminder claim must use PostgreSQL SELECT clause order');
+  assert.match(sql,/order by created_at limit 1 for update skip locked;/,'delivery claim must use PostgreSQL SELECT clause order');
+  assert.doesNotMatch(sql,/for update skip locked limit/,'LIMIT must precede FOR UPDATE');
+ }
  assert.match(assertions,/NULL deadline granted one-key access/);
  assert.equal(migration.slice(migration.indexOf('CREATE OR REPLACE FUNCTION')),fixture.slice(fixture.indexOf('CREATE OR REPLACE FUNCTION')),'isolated fixture and pending migration must implement identical SQL');
 });
