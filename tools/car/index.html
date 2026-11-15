@@ -377,6 +377,22 @@ async function toolyaCloudSave(patch) {
     return false;
   }
 }
+
+async function toolyaSafeCloudImport(snapshot) {
+  const {confirmCloudReplacement,exportJsonBackup} = await import('../../shared/toolya/cloud-backup.mjs');
+  const {validateCarSnapshot,validateBudgetSnapshot} = await import('../../shared/toolya/cloud-controller.mjs');
+  const validator = validateCarSnapshot;
+  const result = await confirmCloudReplacement({
+    controller:toolyaCloudController,incoming:snapshot,validate:validator,
+    confirm:async message => window.confirm(message),
+    exportBackup:async previous => {
+      exportJsonBackup(previous,'toolya-cloud-vor-import-autokosten.json');
+      return window.confirm('Bitte bestätigen, dass die Cloud-Sicherung tatsächlich heruntergeladen und sicher gespeichert wurde.');
+    }
+  });
+  return result.status==='confirmed';
+}
+
 async function toolyaCloudBoot(tool) {
   const gate = document.createElement('div');
   gate.setAttribute('role','alert');gate.id='toolya-cloud-gate';
@@ -1083,8 +1099,7 @@ async function toolyaCloudBoot(tool) {
                         !parsed.events.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
                         return alert("Ungültiges Backup-Format.");
                     }
-                    if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
-                    if (!await saveData(parsed)) return;
+                    if (!await toolyaSafeCloudImport(parsed)) return;
                     loadCarDropdowns();
                         renderApp();
                     alert("Backup erfolgreich importiert!");
