@@ -6,7 +6,7 @@ import { createLegacyMigration } from './legacy-cloud-migration.mjs';
  * Cloud-only bootstrap for the two legacy tools. This is deliberately separate
  * from their synchronous UI code until every call site can await a save.
  */
-export async function prepareCloudTool({ client, tool, storage, confirmMigration, exportBackup }) {
+export async function prepareCloudTool({ client, tool, storage, confirmMigration, exportBackup, reviewExistingCloud }) {
   const factory = {
     'autokosten-reifenwechsel': createCarCloudController,
     'haushaltsbuch-kassenbon': createBudgetCloudController
@@ -24,6 +24,24 @@ export async function prepareCloudTool({ client, tool, storage, confirmMigration
       exportBackup
     });
     if (outcome.status !== 'confirmed') throw new Error('Migration abgebrochen; keine Daten gelöscht.');
+  }
+  if (review.status === 'cloud-already-exists') {
+    // No implicit merge or overwrite. Require explicit acknowledgement and local export.
+    if (typeof reviewExistingCloud !== 'function' || typeof exportBackup !== 'function')
+      throw Error('Cloud- und Gerätedaten müssen vor dem Fortfahren geprüft werden.');
+    const proceed = await reviewExistingCloud({
+      tool, localKeys: review.localKeys, cloudRevision: review.cloudRevision,
+      warning: 'Cloud-Daten haben Vorrang; Gerätedaten bleiben erhalten und werden nicht automatisch zusammengeführt.'
+    });
+    if (proceed !== true) throw Error('Datenabgleich abgebrochen.');
+    const exported = await exportBackup(review.local, tool);
+    if (exported !== true) throw Error('Gerätedaten-Sicherung nicht bestätigt.');
+    // Recheck account and cloud revision after the user interaction.
+    const checked = await migration.inspect();
+    if (checked.status !== 'cloud-already-exists' ||
+        checked.userId !== review.userId || checked.cloudRevision !== review.cloudRevision ||
+        JSON.stringify(checked.local) !== JSON.stringify(review.local))
+      throw Error('Cloud- oder Gerätedaten haben sich geändert. Bitte neu prüfen.');
   }
   // Existing cloud snapshots are authoritative. Local data remains untouched.
   await controller.load();
