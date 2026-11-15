@@ -121,7 +121,9 @@ async function loadCoordination(){
 async function importReservedWish(){
  const raw=new URLSearchParams(location.search).get('reserved_wish');
  if(!raw||!/^[0-9]{1,18}$/.test(raw))return;
+ const ownerId=user?.id;if(!ownerId)return;
  const {data,error}=await db.rpc('wishlist_my_reservation_for_plan',{p_wish_id:raw});
+ if(user?.id!==ownerId)return;
  if(error||!data?.length||!occasions.length){$('status').textContent='Reservierter Wunsch konnte nicht übernommen werden. Bitte prüfe Anmeldung, Öffentlichkeit und Anlässe.';return}
  const item=data[0];
  selectedProduct={wish_id:item.wish_id,product_id:item.product_id,title:item.product_title};showProductSource();
