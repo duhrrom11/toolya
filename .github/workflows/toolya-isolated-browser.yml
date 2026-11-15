@@ -2,6 +2,17 @@ name: Isolated Toolya browser tests
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - feature/toolya-connect-phase-b
+    paths:
+      - '.github/workflows/toolya-isolated-browser.yml'
+      - 'tests/browser/**'
+      - 'shared/toolya/**'
+      - 'playwright.config.cjs'
+      - 'scripts/home-preview.cjs'
+      - 'package.json'
+      - 'package-lock.json'
 
 permissions:
   contents: read
