@@ -646,3 +646,16 @@ test('estate: browser detects concurrent first local vault write',async({page})=
  });
  expect(result).toEqual({error:'conflict',preserved:'other-tab-encrypted-vault'});
 });
+
+test('estate: browser blocks conflicting legacy trustee and emergency contacts',async({page})=>{
+ await isolatedEstate(page,true);await page.goto(origin+'/tools/estate/index.html');
+ const result=await page.evaluate(()=>{
+  const guard=EstateCloudGuard,local={entries:[],trusteeKeys:{p1:'local'}},cloud={entries:[],trusteeKeys:{p1:'remote'}};
+  const contacts={alarmPersons:[{id:'p1',contact:'first@example.invalid'}]};
+  const check=(a,b,c,d)=>{try{guard.assertLegacyMergeSafe(a,b,c,d);return 'ok'}catch(e){return e.message}};
+  return {key:check(local,contacts,cloud,contacts),
+   contact:check(local,contacts,{entries:[],trusteeKeys:{p1:'local'}},{alarmPersons:[{id:'p1',contact:'other@example.invalid'}]}),
+   addition:check(local,contacts,{entries:[],trusteeKeys:{p2:'new'}},{alarmPersons:[{id:'p2',contact:'new@example.invalid'}]})};
+ });
+ expect(result).toEqual({key:'conflict',contact:'conflict',addition:'ok'});
+});
