@@ -682,7 +682,8 @@ test('estate: real browser crypto binds emergency envelopes to the correct trust
   let swapped='unexpected',duplicate='unexpected';
   try{await C.openReplica({content:replica.content,envelope:replica.guardians[0].envelope},b)}catch{swapped='rejected'}
   try{await C.readReplica([],people,{a,b:a})}catch(e){duplicate=e.message}
-  return {opened:opened.entries[0].title,swapped,duplicate,unique:replica.guardians[0].hash!==replica.guardians[1].hash};
+  const uppercase=await C.openReplica({content:replica.content,envelope:replica.guardians[0].envelope},a.toUpperCase());
+  return {opened:opened.entries[0].title,uppercase:uppercase.entries[0].title,swapped,duplicate,unique:replica.guardians[0].hash!==replica.guardians[1].hash};
  });
- expect(result).toEqual({opened:'Isolated fixture',swapped:'rejected',duplicate:'conflict',unique:true});
+ expect(result).toEqual({opened:'Isolated fixture',uppercase:'Isolated fixture',swapped:'rejected',duplicate:'conflict',unique:true});
 });
