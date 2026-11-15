@@ -37,6 +37,15 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
  // New homepage duo replaces the old idle shortcut. Existing shared buddy checks above
  // intentionally stay on a tool route where that shortcut remains part of the UI.
  await page.goto(origin);await page.waitForFunction(()=>window.toolyaHomeReady===true);await page.evaluate(()=>toolyaBuddy.dismiss());
+ // Regression: a visible homepage notice must stay fully within the viewport in mobile and desktop-layout widths.
+ for(const width of [320,390,900,960,1280]){
+  await page.setViewportSize({width,height:812});
+  await page.evaluate(()=>toolyaBuddy.show('warning','Willkommen bei Toolya'));
+  const rect=await page.locator('.tb-message-box').evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,viewportWidth:innerWidth,viewportHeight:innerHeight}});
+  assert(rect.left>=0&&rect.right<=rect.viewportWidth+1&&rect.top>=0&&rect.bottom<=rect.viewportHeight+1,'home notice clipped at '+width+': '+JSON.stringify(rect));
+  await page.evaluate(()=>toolyaBuddy.dismiss());
+ }
+ await page.setViewportSize({width:320,height:812});
  await page.emulateMedia({reducedMotion:'reduce'});
  assert.equal(await page.locator('.ty-hero-stage').getAttribute('data-poses-ready'),'true','pose assets loaded');
  const hero=page.locator('.ty-hero-stage'),tickleButton=page.getByRole('button',{name:'Türkisfarbenes Maskottchen kitzeln',exact:true});
