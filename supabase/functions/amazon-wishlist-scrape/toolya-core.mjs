@@ -31,7 +31,7 @@ export function parsePrice(raw){
  value=value.replace(/(?:EUR|€)/gi,'').replace(/\s/g,'');
  if(!/^\d{1,3}(?:[.\u2009]\d{3})*(?:,\d{1,2})?$/.test(value)&&!/^\d+(?:[.,]\d{1,2})?$/.test(value))return null;
  if(value.includes(','))value=value.replace(/[.\u2009]/g,'').replace(',','.');
- else if(/^\\d{1,3}(?:\\.\\d{3})+$/.test(value))value=value.replace(/\\./g,'');
+ else if(/^\d{1,3}(?:\.\d{3})+$/.test(value))value=value.replace(/\./g,'');
  const n=Number(value);return Number.isFinite(n)&&n>=0&&n<=999999?n:null;
 }
 function pricedAttributes(node){
