@@ -583,3 +583,15 @@ test('estate: browser refuses unreadable cloud backup',async({page})=>{
  });
  expect(result).toBe('decrypt_failed');
 });
+
+test('estate: browser blocks emergency publish on mismatched recovery envelope',async({page})=>{
+ await isolatedEstate(page,true);await page.goto(origin+'/tools/estate/index.html');
+ const result=await page.evaluate(async()=>{
+  const remote={vault_id:'v',updated_at:'rev',encrypted_data:{ciphertext:'data'},encrypted_config:{ciphertext:'config'},recovery_key:{ciphertext:'old'}};
+  const client={auth:{async getUser(){return {data:{user:{id:'owner'}},error:null}}},from(){return {select(){return this},eq(){return this},async single(){return {data:remote,error:null}}}}};
+  let decrypts=0;
+  try{await EstateCloudGuard.verifyEncryptedBackup({client,ownerId:'owner',vaultId:'v',expectedStamp:'rev',key:'key',expectedEncryptedData:remote.encrypted_data,expectedEncryptedConfig:remote.encrypted_config,expectedRecoveryKey:{ciphertext:'new'},cryptoApi:{async decrypt(){decrypts++;return {entries:[]}}},validatePayload:x=>x})}
+  catch(e){return {error:e.message,decrypts}}
+ });
+ expect(result).toEqual({error:'backup_unverified',decrypts:0});
+});
