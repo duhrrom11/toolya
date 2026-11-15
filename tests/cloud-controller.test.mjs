@@ -102,7 +102,11 @@ test('controller rejects inconsistent read revisions and remains blocked', async
     {exists:true,data:{cars:[],events:[],tires:[]},revision:null},
     {exists:true,data:{cars:[],events:[],tires:[]},revision:0},
     {exists:false,data:null,revision:2},
-    {exists:false,data:null,revision:undefined}
+    {exists:false,data:null,revision:undefined},
+    {exists:false,data:{cars:[],events:[],tires:[]},revision:null},
+    {exists:false,data:undefined,revision:null},
+    {exists:true,data:null,revision:1},
+    {exists:true,data:undefined,revision:1}
   ];
   for (const response of invalid) {
     const controller=createCarCloudController({
