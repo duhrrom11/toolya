@@ -17,3 +17,7 @@ body:has(.ty-tool-hero[data-tool="estate"]) nav button[aria-current=true]{backgr
 .ty-tool-hero[data-tool="estate"] .ty-tool-hero-trustee:focus-visible{outline:3px solid #bd7013;outline-offset:3px}
 @media(max-width:650px){.ty-tool-hero[data-tool="estate"] .ty-tool-hero-actions{flex-wrap:wrap;justify-content:flex-end}.ty-tool-hero[data-tool="estate"] .ty-tool-hero-trustee{font-size:.76rem;padding:8px 11px;max-width:210px}}
 @media(prefers-reduced-motion:reduce){body:has(.ty-tool-hero[data-tool="estate"]) button,.ty-tool-hero[data-tool="estate"] .ty-tool-hero-trustee{transition:none!important;transform:none!important}}
+
+/* Keep header actions above the decorative mascot on narrow viewports. */
+.ty-tool-hero[data-tool="estate"] .ty-tool-hero-copy{position:relative;z-index:3}
+.ty-tool-hero[data-tool="estate"] .ty-tool-hero-actions{position:relative;z-index:4}
