@@ -40,6 +40,7 @@ export async function prepareCloudTool({ client, tool, storage, confirmMigration
     const checked = await migration.inspect();
     if (checked.status !== 'cloud-already-exists' ||
         checked.userId !== review.userId || checked.cloudRevision !== review.cloudRevision ||
+        !sameJson(checked.localKeys, review.localKeys) ||
         !sameJson(checked.local, review.local))
       throw Error('Cloud- oder Gerätedaten haben sich geändert. Bitte neu prüfen.');
   }
