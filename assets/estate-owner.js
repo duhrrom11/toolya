@@ -91,7 +91,7 @@
    client:db,ownerId:user.id,vaultId:config.vaultId,expectedStamp:stamp,
    encryptedData:record.encryptedData,encryptedConfig:record.encryptedConfig,recoveryKey:record.recoveryKey
   });
-  if(snapshot!==localStorage.getItem(STORE))throw Error('conflict');
+  EstateCloudGuard.assertLocalSnapshot(snapshot,localStorage.getItem(STORE));
   await authenticated();
   // Never mark the local recovery copy as synchronized until the remote ciphertext is readable.
   await EstateCloudGuard.verifyEncryptedBackup({
@@ -101,7 +101,7 @@
    expectedRecoveryKey:record.recoveryKey
   });
   // A second tab may have changed the local encrypted snapshot during remote verification.
-  if(snapshot!==localStorage.getItem(STORE))throw Error('conflict');
+  EstateCloudGuard.assertLocalSnapshot(snapshot,localStorage.getItem(STORE));
   stamp=confirmedStamp;localWrite({...record,cloudStamp:stamp,pending:false});
   try{
    const replica=await C.readReplica([...payload.entries,...(payload.funeralWishes?[{id:'funeral-wishes',title:'Meine Bestattungswünsche',category:'Posthum',content:payload.funeralWishes}]:[])],config.alarmPersons,payload.trusteeKeys);
