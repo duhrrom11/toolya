@@ -613,15 +613,21 @@
 
             if (!locId || !name) return alert("Bitte Standort und Kisten-Name angeben!");
 
+            let photo = "";
             if (photoInput.files && photoInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    await storeBoxData(locId, name, desc, value, tag, barcode, expiry, "", [], e.target.result);
-                };
-                reader.readAsDataURL(photoInput.files[0]);
-            } else {
-                await storeBoxData(locId, name, desc, value, tag, barcode, expiry, "", [], "");
+                try {
+                    photo = await new Promise((resolve,reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = () => reject(reader.error || Error('Bild konnte nicht gelesen werden.'));
+                        reader.readAsDataURL(photoInput.files[0]);
+                    });
+                } catch(error) {
+                    alert('Bild konnte nicht gelesen werden. Nichts gespeichert.');
+                    return;
+                }
             }
+            await storeBoxData(locId, name, desc, value, tag, barcode, expiry, "", [], photo);
         }
 
         async function storeBoxData(locId, name, desc, value, tag, barcode, expiry, lentTo, subItems, photo) {
