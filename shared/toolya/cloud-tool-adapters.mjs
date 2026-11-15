@@ -1,4 +1,5 @@
 import { createCloudRepository } from './cloud-repository.mjs';
+import { requireVerifiedUser } from './cloud-auth-gate.mjs';
 import { createCarCloudController, createBudgetCloudController } from './cloud-controller.mjs';
 import { createLegacyMigration, sameJson } from './legacy-cloud-migration.mjs';
 
@@ -48,6 +49,18 @@ export async function prepareCloudTool({ client, tool, storage, confirmMigration
   }
   // Existing cloud snapshots are authoritative. Local data remains untouched.
   await controller.load();
+  // The account may change while the final snapshot is in flight.
+  let finalUser;
+  try {
+    finalUser = await requireVerifiedUser(client);
+  } catch (error) {
+    controller.invalidate();
+    throw error;
+  }
+  if (finalUser.id !== review.userId) {
+    controller.invalidate();
+    throw Error('Konto während des Cloud-Ladens gewechselt.');
+  }
   if (reviewedCloudRevision !== null && controller.revision !== reviewedCloudRevision) {
     controller.invalidate();
     throw Error('Cloud-Datenstand hat sich nach der Prüfung geändert. Bitte neu laden.');
