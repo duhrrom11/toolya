@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "node --test tests/amazon/*.test.mjs && node tests/platform/cloudonly-contract.cjs && node tests/platform/connect-panel.cjs",
+    "test": "node --test tests/amazon/*.test.mjs && node tests/platform/cloudonly-contract.cjs && node tests/platform/connect-panel.cjs && node tests/platform/connect-two-devices.cjs",
     "dev": "node scripts/home-preview.cjs"
   },
   "repository": {
