@@ -8,6 +8,18 @@ const url=process.env.ESTATE_TEST_DATABASE_URL;
 if(!url||!['127.0.0.1','localhost'].includes(new URL(url).hostname))throw Error('Loopback isolated database required');
 const root=path.resolve(__dirname,'../..');
 (async()=>{
+ // Regression: PostgreSQL JSONB key reordering is allowed, but altered
+ // ciphertext, extra keys and array ordering must fail closed.
+ require('../../assets/estate-cloud-guard.js');
+ const verify=globalThis.EstateCloudGuard.verifyEncryptedBackup;
+ const base={ciphertext:'synthetic-cipher',iv:'synthetic-iv',meta:{version:2,tags:['a','b']}};
+ const reversed={meta:{tags:['a','b'],version:2},iv:'synthetic-iv',ciphertext:'synthetic-cipher'};
+ const mockClient=remote=>({auth:{getUser:async()=>({data:{user:{id:'synthetic-owner',is_anonymous:false}}})},from:()=>({select(){return this},eq(){return this},async single(){return {data:remote,error:null}}})});
+ const verifyCase=remote=>verify({client:mockClient({vault_id:'synthetic-vault',updated_at:'synthetic-stamp',encrypted_data:remote,encrypted_config:reversed,recovery_key:reversed}),ownerId:'synthetic-owner',vaultId:'synthetic-vault',expectedStamp:'synthetic-stamp',key:'synthetic-key',cryptoApi:{decrypt:async()=>({entries:[]})},validatePayload:v=>v,expectedEncryptedData:base,expectedEncryptedConfig:base,expectedRecoveryKey:base});
+ await verifyCase(reversed);
+ for(const changed of [{...reversed,ciphertext:'changed'}, {...reversed,extra:true},{...reversed,meta:{version:2,tags:['b','a']}}])
+  await assert.rejects(verifyCase(changed),e=>e.message==='backup_unverified');
+ console.log('PASS: encrypted backup JSONB ordering accepted; ciphertext, extra fields and array changes rejected');
  const pg=new Client({connectionString:url});await pg.connect();
  await pg.query('alter table vault_cloud_snapshots add column if not exists encrypted_config jsonb, add column if not exists recovery_key jsonb, add column if not exists updated_at timestamptz default now()');
  const owner=crypto.randomUUID(),session=crypto.randomUUID(),password='Abcd1!',email='synthetic@example.invalid';
