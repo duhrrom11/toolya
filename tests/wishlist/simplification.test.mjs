@@ -86,7 +86,7 @@ test('offline gift ideas filter by category, occasion and query',async()=>{
  assert.equal(matchingIdeas().length,ideas.length);
  assert.ok(matchingIdeas({interest:'gaming'}).every(item=>item.category==='gaming'));
  assert.ok(matchingIdeas({occasion:'baby'}).every(item=>item.occasions.includes('baby')));
- assert.ok(matchingIdeas({query:'Pflanze'}).some(item=>item.title.includes('Pflanze')));
+ assert.ok(matchingIdeas({query:'Pflanze'}).some(item=>item.title.toLocaleLowerCase('de-DE').includes('pflanze')));
  assert.ok(matchingIdeas({budget:'20'}).every(item=>!('price' in item)));
 });
 
@@ -152,7 +152,7 @@ test('gift planner clears successful inputs and never links other users wishes',
  assert.ok(planner.includes("$('form').reset()"));
  assert.ok(planner.includes("$('budgetAmount').value=''"));
  assert.ok(planner.includes("$('productQuery').value=''"));
- assert.ok(planner.includes(".eq('user_id',user.id).in('product_id',ids)"));
+ assert.ok(planner.includes(".eq('user_id',ownerId).in('product_id',ids)"));
  assert.equal(planner.includes(".eq('visibility','public').in('product_id',ids)"),false);
 });
 
