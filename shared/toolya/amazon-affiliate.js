@@ -7,6 +7,7 @@ const suggestions={
  moving:{title:'Material für deinen Umzug',items:[['Umzugskartons','umzugskartons stabil'],['Klebeband & Abroller','paketklebeband abroller'],['Beschriftungsetiketten','umzug etiketten beschriften']]},
  'pet-health':{title:'Praktisches Zubehör für Haustiere',items:[['Transportboxen','tier transportbox'],['Fellpflege','fellpflege bürste hund katze'],['Reisenäpfe','faltbarer reisenapf hund']]},
  budget:{title:'Hilfen für deine Haushaltsorganisation',items:[['Belegordner','kassenbon beleg ordner'],['Dokumentenablage','dokumentenablage haushalt']]},
+ estate:{title:'Zubehör zur Dokumentenaufbewahrung',items:[['Feuerfeste Dokumententaschen','feuerfeste dokumententasche'],['Abschließbare Dokumentenboxen','abschliessbare dokumentenbox'],['Dokumentenordner & Register','dokumentenordner register']]},
  baking:{title:'Weiteres Backzubehör',items:[]}
 };
 function url(query){return 'https://www.amazon.de/s?k='+encodeURIComponent(query)+'&tag='+TAG;}
@@ -20,6 +21,37 @@ function normalize(href){
   return u.toString();
  }catch{return null;}
 }
+
+// Generic category illustrations are deliberately not presented as photos of specific Amazon products.
+const symbols=[
+ ['reifen','🛞'],['auto','🚗'],['kofferraum','🧰'],['karton','📦'],['umzug','📦'],
+ ['klebeband','📦'],['etikett','🏷️'],['transportbox','🐾'],['fell','🐕'],
+ ['napf','🥣'],['beleg','🗂️'],['dokument','📁'],['ordner','📁'],
+ ['tasche','🗃️'],['box','🗃️'],['springform','🎂'],['back','🥧'],
+ ['thermometer','🌡️'],['pflanz','🪴'],['samen','🌱'],['garten','🌿'],
+ ['wasser','💧'],['strom','🔌'],['energie','⚡'],['putz','🧹'],
+ ['haushalt','🏠'],['park','🅿️'],['tracker','📍'],['werkzeug','🧰'],
+ ['zucker','🍬'],['küche','🍳']
+];
+function illustration(label){
+ const name=label.toLocaleLowerCase('de');
+ const symbol=symbols.find(([key])=>name.includes(key))?.[1]||'🛍️';
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120"><rect width="160" height="120" rx="16" fill="#fff4e9"/><circle cx="80" cy="60" r="43" fill="#ffe0c7"/><text x="80" y="79" font-size="52" text-anchor="middle">'+symbol+'</text></svg>';
+ return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+function addIllustration(link){
+ if(link.querySelector('.toolya-affiliate-picture'))return;
+ const label=(link.textContent||'Zubehör').trim();
+ const picture=document.createElement('img');
+ picture.className='toolya-affiliate-picture';
+ picture.src=illustration(label);
+ picture.alt='Symbolbild: '+label;
+ picture.width=112;picture.height=84;
+ picture.loading='lazy';picture.decoding='async';
+ link.prepend(picture);
+ link.classList.add('toolya-affiliate-visual');
+}
+
 function mark(link){
  if(link.dataset.toolyaAffiliateMarked)return;
  link.dataset.toolyaAffiliateMarked='1';
@@ -29,6 +61,7 @@ function mark(link){
  mark.textContent='Anzeige';
  mark.setAttribute('aria-label','Werbelink');
  link.insertAdjacentElement('beforebegin',mark);
+ if(!link.closest('[data-user-content]'))addIllustration(link);
 }
 function existing(){
  document.querySelectorAll('a[href*="amazon.de"]').forEach(link=>{
