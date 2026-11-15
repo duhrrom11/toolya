@@ -172,3 +172,16 @@ export function createPlantsCloudController(repository) {
     seeds:[],beetSlots:Array(16).fill(null),cisternMax:500,cisternCurrent:500
   }});
 }
+
+export function validateParkingSnapshot(data){
+  if(!data||typeof data!=='object'||Array.isArray(data)||!Array.isArray(data.sessions)||
+     !data.sessions.every(item=>item&&typeof item==='object'&&!Array.isArray(item) &&
+       Number.isSafeInteger(item.id)&&item.id>=0 &&
+       typeof item.desc==='string'&&Number.isFinite(item.cost)&&item.cost>=0 &&
+       (item.gps==null||(Number.isFinite(item.gps.lat)&&Number.isFinite(item.gps.lng)))))
+    throw Error('Ungültiger Parkplatz-Datenstand.');
+  return data;
+}
+export function createParkingCloudController(repository){
+  return createCloudController({repository,validate:validateParkingSnapshot,initial:{sessions:[]}});
+}
