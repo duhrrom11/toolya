@@ -3,8 +3,14 @@
  * No localStorage persistence and no silent overwrite.
  */
 export function exportJsonBackup(snapshot, filename, doc = document) {
-  const json = JSON.stringify(snapshot);
-  if (!json) throw Error('Sicherung enthält keine Daten.');
+  let json;
+  try {
+    json = JSON.stringify(snapshot);
+  } catch (_) {
+    throw Error('Sicherung kann nicht als JSON erstellt werden.');
+  }
+  if (typeof json !== 'string' || json === 'null')
+    throw Error('Sicherung enthält keine gültigen Daten.');
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   try {
