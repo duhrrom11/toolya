@@ -105,6 +105,7 @@ function add(){
  section.append(group);
  main.append(section);
 }
-// Do not inject generic Amazon searches: show only curated, concrete products.\nfunction start(){existing();}
+// Do not inject generic Amazon searches: show only curated, concrete products.
+function start(){existing();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
