@@ -65,3 +65,27 @@ test('private Wishlist feed does not query follows or expose people search',()=>
  assert.match(app,/mountAmazonImport/);
  assert.match(app,/mountListsDashboard/);
 });
+
+test('gift discovery modules do not depend on community feed',()=>{
+ for(const file of ['gift-finder.mjs','wish-worlds.mjs']){
+  const code=source(file);
+  assert.ok(code.includes('gift-ideas.mjs'));
+  for(const forbidden of ['getCandidates','readPublicWishes','wishlist_follows','db.from(',"('feed')"])
+   assert.equal(code.includes(forbidden),false,file+': '+forbidden);
+ }
+ const html=readFileSync(resolve(root,'tools/wishes/index.html'),'utf8');
+ for(const required of ['giftFinderForm','wishWorldsTopics'])
+  assert.ok(html.includes('id="'+required+'"'));
+ for(const removed of ['giftFinderSurprise','wishWorldsShuffle'])
+  assert.equal(html.includes('id="'+removed+'"'),false);
+});
+test('offline gift ideas filter by category, occasion and query',async()=>{
+ const {ideas,categories,matchingIdeas}=await import('../../tools/wishes/gift-ideas.mjs');
+ assert.ok(ideas.length>=6);
+ assert.ok(categories.length>=6);
+ assert.equal(matchingIdeas().length,ideas.length);
+ assert.ok(matchingIdeas({interest:'gaming'}).every(item=>item.category==='gaming'));
+ assert.ok(matchingIdeas({occasion:'baby'}).every(item=>item.occasions.includes('baby')));
+ assert.ok(matchingIdeas({query:'Pflanze'}).some(item=>item.title.includes('Pflanze')));
+ assert.ok(matchingIdeas({budget:'20'}).every(item=>!('price' in item)));
+});
