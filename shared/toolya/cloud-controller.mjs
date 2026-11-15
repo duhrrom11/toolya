@@ -22,6 +22,11 @@ export function createCloudController({ repository, validate, initial }) {
       const token = ++generation;
       try {
         const result = await repository.read();
+        if (!result || typeof result.exists !== 'boolean' ||
+            (result.exists && (!Number.isSafeInteger(result.revision) || result.revision < 1)) ||
+            (!result.exists && result.revision !== null)) {
+          throw new Error('Cloud-Leseantwort ist inkonsistent.');
+        }
         const next = validate(result.exists ? result.data : initial);
         if (token !== generation) throw new Error('Ladevorgang wurde überholt.');
         state = clone(next);
