@@ -564,7 +564,7 @@ async function toolyaCloudBoot(tool) {
     if(tool==='haushaltsbuch-kassenbon')initCharts();
     renderApp();
   } catch(error) {
-    gate.textContent='Toolya Cloud gesperrt: '+error.message+' Bitte anmelden und Seite neu laden.';
+    gate.textContent='Toolya Cloud gesperrt: '+error.message+' '; const link=document.createElement('a');link.href='../../index.html';link.textContent='Zur Anmeldung auf der Startseite';link.style.cssText='display:block;color:#0369a1;text-decoration:underline';gate.append(link);
     console.error(error);
   }
 }
@@ -1813,68 +1813,30 @@ async function toolyaCloudBoot(tool) {
         }
 
         function importBackup(event) {
-            const input = event.target;
-            const file = input.files[0];
-            if (!file) return;
-            if (file.size > 20 * 1024 * 1024) {
-                alert("Backup zu groß (maximal 20 MB).");
-                input.value = '';
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const changes = validateHaushaltsbuchBackup(JSON.parse(e.target.result));
-                    const sectionLabels = {
-                        kassenbon_data: 'Buchungen',
-                        budgetbuch_budgets: 'Budgets',
-                        budgetbuch_goals: 'Sparziele'
-                    };
-                    const countBackupEntries = item => Array.isArray(item) ? item.length :
-                        item && typeof item === 'object' ? Object.keys(item).length : 0;
-                    const emptiedSections = [];
-                    const preview = changes.map(([key, value]) => {
-                        const incoming = JSON.parse(value);
-                        let existing;
-                        try { existing = JSON.parse(localStorage.getItem(key)); } catch (_) { existing = null; }
-                        const existingCount = countBackupEntries(existing);
-                        const incomingCount = countBackupEntries(incoming);
-                        if (existingCount > 0 && incomingCount === 0) emptiedSections.push(sectionLabels[key]);
-                        return sectionLabels[key] + ': ' + existingCount + ' vorhanden → ' + incomingCount + ' im Backup';
-                    });
-                    if (!confirm('Backup-Datei prüfen:\n\n' + preview.join('\n') +
-                        '\n\nNur diese Bereiche werden vollständig ersetzt. Andere Bereiche bleiben unverändert.\nBitte vorher ein Sicherung herunterladen.\n\nImport fortsetzen?')) return;
-                    if (emptiedSections.length && !confirm('ACHTUNG: Das Backup enthält keine Einträge für: ' +
-                        emptiedSections.join(', ') + '.\n\nAlle derzeit vorhandenen Einträge in diesen Bereichen werden gelöscht.\n\nTrotzdem importieren?')) return;
-                    const previous = changes.map(([key]) => [key, localStorage.getItem(key)]);
-                    try {
-                        for (const [key, value] of changes) localStorage.setItem(key, value);
-                    } catch (writeError) {
-                        for (const [key, value] of previous) {
-                            try {
-                                if (value === null) localStorage.removeItem(key);
-                                else localStorage.setItem(key, value);
-                            } catch (rollbackError) {
-                                console.error('Wiederherstellung eines Backup-Bereichs fehlgeschlagen:', key, rollbackError);
-                            }
-                        }
-                        throw new Error('Speicherplatz reicht nicht aus. Bitte vorhandene Daten prüfen und erneut versuchen.');
-                    }
-                    renderApp();
-                    alert("Backup erfolgreich importiert!");
-                } catch(err) {
-                    console.error("Haushaltsbuch-Import fehlgeschlagen:", err);
-                    alert("Import fehlgeschlagen: " + (err.message || "Ungültige Datei"));
-                } finally {
-                    input.value = '';
-                }
-            };
-            reader.onerror = () => {
-                alert("Die Backup-Datei konnte nicht gelesen werden.");
-                input.value = '';
-            };
-            reader.readAsText(file);
-        }
+   const input=event.target, file=input.files?.[0];if(!file)return;
+   if(file.size>20*1024*1024){alert('Backup zu groß (maximal 20 MB).');input.value='';return;}
+   const reader=new FileReader();
+   reader.onload=async e=>{
+     try {
+       const changes=validateHaushaltsbuchBackup(JSON.parse(e.target.result));
+       const snapshot=toolyaCloudSnapshot();
+       const map={kassenbon_data:'entries',budgetbuch_budgets:'budgets',budgetbuch_goals:'goals'};
+       const preview=[];
+       for(const [key,json] of changes){
+         const next=JSON.parse(json),field=map[key];
+         const before=snapshot[field],count=x=>Array.isArray(x)?x.length:Object.keys(x||{}).length;
+         preview.push(field+': '+count(before)+' → '+count(next));
+         snapshot[field]=next;
+       }
+       if(!confirm('Cloud-Backup-Import ersetzt diese Bereiche:\\n'+preview.join('\\n')+'\\nVorher Cloud-Backup exportieren. Fortsetzen?'))return;
+       if(!await toolyaCloudSave(snapshot))return;
+       renderApp();alert('Backup in Toolya Cloud gespeichert.');
+     }catch(error){console.error(error);alert('Cloud-Import fehlgeschlagen: '+error.message);}
+     finally{input.value='';}
+   };
+   reader.onerror=()=>{input.value='';alert('Backup-Datei konnte nicht gelesen werden.');};
+   reader.readAsText(file);
+ }
 
         function exportPDF() {
             const { jsPDF } = window.jspdf;
