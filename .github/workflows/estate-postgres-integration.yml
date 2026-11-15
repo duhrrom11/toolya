@@ -39,5 +39,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
       - name: Apply isolated schema and actual release RPC snapshot
         run: psql -X -v ON_ERROR_STOP=1 -f tests/fixtures/estate-release-v2-isolated.sql
+      - name: Apply pending migration to disposable PostgreSQL only
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261115195000_estate_release_null_deadline_guard.sql
       - name: Execute PostgreSQL integration assertions
         run: psql -X -v ON_ERROR_STOP=1 -f tests/fixtures/estate-release-v2-assertions.sql
