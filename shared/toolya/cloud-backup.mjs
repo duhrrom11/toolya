@@ -25,6 +25,7 @@ export async function confirmCloudReplacement({
       typeof exportBackup !== 'function') throw Error('Sicherheitsprüfungen fehlen.');
   const original = controller.snapshot();
   const revision = controller.revision;
+  const sessionGeneration = controller.sessionGeneration;
   const next = validate(JSON.parse(JSON.stringify(incoming)));
   if (await confirm('Import ersetzt vorhandene Cloud-Daten. Zuerst eine Sicherung herunterladen?') !== true)
     return { status: 'cancelled' };
@@ -32,7 +33,8 @@ export async function confirmCloudReplacement({
   if (backedUp !== true) throw Error('Cloud-Sicherung nicht bestätigt. Import abgebrochen.');
   if (await confirm('Sicherung kontrolliert? Vorhandene Cloud-Daten jetzt wirklich ersetzen?') !== true)
     return { status: 'cancelled' };
-  if (!controller.ready || controller.revision !== revision)
+  if (!controller.ready || controller.revision !== revision ||
+      controller.sessionGeneration !== sessionGeneration)
     throw Error('Cloud-Sitzung oder Datenstand hat sich geändert.');
   const data = await controller.replace(next, { expectedRevision: revision });
   return { status: 'confirmed', data };
