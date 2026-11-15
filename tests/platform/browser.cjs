@@ -43,6 +43,8 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
  assert.equal(await page.locator('.fav-btn[aria-pressed="true"]').count(),4,'favorite state preserved across reload');
  assert.equal(await page.locator('#b3-quickstart-list a').count(),3);
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'home mobile overflow');
+ assert(await page.locator('.ty-hero-copy h1').evaluate(e=>e.getBoundingClientRect().right<=innerWidth&&e.scrollWidth<=e.clientWidth+1),'hero text fits mobile width');
+ assert(await page.locator('#settingsBtn img').isVisible(),'mobile gear icon visible');
  await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();
  await page.getByLabel('Animation',{exact:true}).selectOption('Aus');
  await page.getByLabel('Begleiter ausblenden',{exact:true}).check();
@@ -63,7 +65,7 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
  await desktop.waitForFunction(()=>document.querySelector('.ty-hero-stage').dataset.reaction==='point');
  assert.equal(await desktop.locator('.ty-hero-character').count(),2,'both independent characters');
  await desktop.locator('.b3-hub-logo').hover();
- await desktop.waitForFunction(()=>!document.querySelector('.ty-hero-stage').dataset.reaction);
+ await desktop.waitForFunction(()=>!document.querySelector('.ty-hero-stage').dataset.reaction&&getComputedStyle(document.querySelector('.ty-hero-art')).opacity==='1'&&getComputedStyle(document.querySelector('.ty-live-duo')).opacity==='0');
  await desktop.screenshot({path:'test-results/mascot-home-desktop.png',fullPage:true});
  await desktop.locator('.ty-tool-card[data-id="wishlist"]').hover();
  await desktop.screenshot({path:'test-results/mascot-home-hover.png'});await desktopContext.close();

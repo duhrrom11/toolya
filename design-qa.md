@@ -42,3 +42,15 @@ final result: blocked
 - Shared idle/keyboard/warning/dialog tests moved to the plants tool. Added real homepage touch/favorite persistence/category/settings/motion and desktop hover checks, with all production requests still blocked.
 - Dedicated character pose atlases, separate arch, offscreen pausing, cancellation of animations when settings/dialogs block motion, and back/forward-cache restoration implemented. New CI pending.
 - Cloud Browser local-preview transport retried and remains unavailable. No rendered visual acceptance claimed.
+
+## CI-rendered comparison, first iteration
+- Exact checked commit: dabb96b1a726bb1090c40e60a353893f6e9ce859. Platform and estate-security passed in run 43658954489; Amazon passed in run 43658954502.
+- Real Chromium screenshots from artifact 14139074509: desktop 1440×2766 pixels (CSS viewport1440×1024, density1), mobile367×4862 pixels (CSS viewport320×812, density1).
+- Opened the actual source and CI screenshots. Full-view comparison `/tmp/toolya-home-comparison.png`: source normalized from1487×1058 to1440×1024 and compared with the screenshot's first1024 pixels. Mobile screenshot separately inspected at readable scale.
+- [P1] Mobile headline had no whitespace at the hidden line break and exceeded its container. Fixed source whitespace, restored explicit mobile line breaks and reduced responsive font size. Added h1 client/scroll-width assertion.
+- [P1] Mobile settings gear invisible because the old text-only button was hidden by font-size0. Added actual vendored gear icon and visible-icon assertion; shortened the sign-in label while preserving its accessible registration label.
+- [P2] Old high-specificity orange account styles overrode the chosen palette. Added equally specific cyan/ivory overrides.
+- [P2] Desktop capture occurred during opacity crossfade, producing temporary doubled figures. Screenshot now waits for both illustration layers' final computed opacity.
+- [P2] Legacy main max-width/margins created excessive inset and vertical gaps. Matched intended1440px main width and500px desktop hero, removed redundant spacing utilities.
+- [P2] Tool order counted HTML comments when placing the plant card. Explicit canonical card order now matches the approved four-card arrangement.
+- Corrections are awaiting the next CI screenshot comparison. Local Cloud Browser transport remains unavailable; `final result: blocked` still applies. No local interactive preview handoff or publication claimed.
