@@ -112,7 +112,7 @@ function showProductSource(){
 }
 $('clearProduct').addEventListener('click',()=>{selectedProduct=null;showProductSource()});
 async function searchProducts(){
- const q=$('productQuery').value.trim(),root=$('productResults');root.replaceChildren();
+ const q=$('productQuery').value.trim(),root=$('productResults');
  if(q.length<2){$('productSearchStatus').textContent='Bitte mindestens zwei Zeichen eingeben.';return}
  $('searchProducts').disabled=true;$('productSearchStatus').textContent='Suche läuft …';
  try{
@@ -124,7 +124,7 @@ async function searchProducts(){
   if(ids.length){const result=await db.from('wishlist_wishes').select('id,product_id,priority').eq('user_id',user.id).in('product_id',ids).order('created_at',{ascending:false}).limit(200);if(result.error)throw result.error;wishes=result.data||[]}
   const wishByProduct=new Map();for(const w of wishes)if(!wishByProduct.has(String(w.product_id)))wishByProduct.set(String(w.product_id),w);
   $('productSearchStatus').textContent=(products||[]).length+' Produkte gefunden · '+wishByProduct.size+' mit eigenen Wünschen. Die Suche zeigt höchstens 40 Produkte.';
-  $('productQuery').value='';if(!products?.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine passenden Produkte gefunden.';root.append(p)}
+  root.replaceChildren();$('productQuery').value='';if(!products?.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine passenden Produkte gefunden.';root.append(p)}
   for(const product of products||[]){
    const wish=wishByProduct.get(String(product.id));
    const card=document.createElement('article');card.className='product-result';
