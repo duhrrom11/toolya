@@ -270,22 +270,8 @@ test('confirmed gift save stays successful when coordination refresh rejects',as
  elements.save={disabled:false};
  elements.giftFormFeedback={textContent:'',focus(){}};
  const db={from:()=>({insert:()=>({select:()=>({single:async()=>({data:{id:'gift1',source_wish_id:'wish1'},error:null})})})})};
- const run=new Function('
-  let user={id:'owner'},editing=null,gifts=[],selectedProduct={wish_id:'wish1',product_id:'product1'};
-  ${planner.slice(start,end)}
-  return {submit:handlers.submit,getGifts:()=>gifts};
- `)(id=>elements[id],db,()=>({id:'occasion1'}),id=>Number(elements[id].value),()=>{},(id,message)=>elements[id].textContent=message,()=>{elements.title.value=''},()=>{},async()=>{throw Error('offline')},handlers);
- await run.submit({preventDefault(){}});
- assert.equal(elements.giftFormFeedback.textContent,'Geschenk gespeichert. Die Abstimmung konnte nicht aktualisiert werden.');
- assert.equal(elements.title.value,'');
- assert.equal(elements.save.disabled,false);
- assert.equal(run.getGifts().length,1);
-});
-,'db','byId','number','invalid','feedback','reset','render','loadCoordination','handlers',`
-  let user={id:'owner'},editing=null,gifts=[],selectedProduct={wish_id:'wish1',product_id:'product1'};
-  ${planner.slice(start,end)}
-  return {submit:handlers.submit,getGifts:()=>gifts};
- `)(id=>elements[id],db,()=>({id:'occasion1'}),id=>Number(elements[id].value),()=>{},(id,message)=>elements[id].textContent=message,()=>{elements.title.value=''},()=>{},async()=>{throw Error('offline')});
+ const body="let user={id:'owner'},editing=null,gifts=[],selectedProduct={wish_id:'wish1',product_id:'product1'};\n"+planner.slice(start,end)+"\nreturn {submit:handlers.submit,getGifts:()=>gifts};";
+ const run=new Function('$','db','byId','number','invalid','feedback','reset','render','loadCoordination','handlers',body)(id=>elements[id],db,()=>({id:'occasion1'}),id=>Number(elements[id].value),()=>{},(id,message)=>elements[id].textContent=message,()=>{elements.title.value=''},()=>{},async()=>{throw Error('offline')},handlers);
  await run.submit({preventDefault(){}});
  assert.equal(elements.giftFormFeedback.textContent,'Geschenk gespeichert. Die Abstimmung konnte nicht aktualisiert werden.');
  assert.equal(elements.title.value,'');
