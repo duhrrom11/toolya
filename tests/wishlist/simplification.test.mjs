@@ -200,3 +200,14 @@ test('gift planner rejects blank amounts while allowing explicit zero',()=>{
  assert.ok(code.includes("amount=number('budgetAmount')"));
  assert.ok(code.includes("planned=number('planned')"));
 });
+
+test('failed product searches retain previous results and query',()=>{
+ const planner=source('gift-planner.mjs');
+ const start=planner.indexOf('async function searchProducts()');
+ const end=planner.indexOf("$('searchProducts').addEventListener",start);
+ assert.ok(start>=0&&end>start);
+ const search=planner.slice(start,end);
+ assert.equal(search.includes("root.replaceChildren();\n if(q.length<2)"),false);
+ assert.ok(search.includes("root.replaceChildren();$('productQuery').value='';if(!products?.length)"));
+ assert.ok(search.includes("}catch{$('productSearchStatus').textContent='Suche fehlgeschlagen."));
+});
