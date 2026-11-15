@@ -20,3 +20,19 @@
 .toolya-signature-footer{box-sizing:border-box;max-width:calc(100% - 24px);min-width:0}
 .ty-footer-inner,.ty-footer-brand,.ty-footer-links{min-width:0}
 .ty-footer-links{overflow-wrap:anywhere}
+
+/* Animated Ko-fi invitation directly before the unchanged signature footer. */
+.ty-kofi-banner{position:relative;isolation:isolate;display:flex;align-items:center;gap:clamp(12px,2.5vw,28px);box-sizing:border-box;width:min(100% - 24px,1440px);max-width:calc(100% - 24px);min-height:132px;margin:32px auto 0;padding:15px clamp(16px,3vw,34px);border:2px solid #3cf4e9;border-radius:30px;background:linear-gradient(115deg,#043e51,#047d89 56%,#034e60);color:white;box-shadow:0 0 0 3px #34e5e71f,0 8px 28px #0ba8b744;animation:ty-kofi-glow 3.8s ease-in-out infinite;overflow:hidden}
+.ty-kofi-banner:after{content:'♥';position:absolute;right:22%;top:9px;font-size:20px;color:#ff91b7;opacity:.85;pointer-events:none;animation:ty-kofi-heart 4.4s ease-in-out infinite}
+.ty-kofi-mascot{width:116px;height:116px;object-fit:contain;flex:none;filter:drop-shadow(0 4px 8px #001e2d80);animation:ty-kofi-wave 3.6s ease-in-out infinite;transform-origin:50% 85%}
+.ty-kofi-copy{flex:1;min-width:0}.ty-kofi-copy h2{font-size:clamp(20px,2.5vw,31px);line-height:1.12;margin:0 0 8px;font-weight:900;color:white}.ty-kofi-joke{font-size:clamp(14px,1.5vw,18px);line-height:1.4;margin:0;color:#e5ffff}
+.ty-kofi-action{display:inline-flex;justify-content:center;align-items:center;flex:none;min-height:58px;padding:10px 24px;border:2px solid #8cfff4;border-radius:999px;background:linear-gradient(130deg,#00a7b6,#005b70);box-shadow:0 0 18px #43f9e880;color:white!important;text-decoration:none!important;font-size:clamp(18px,2vw,24px);font-weight:900;white-space:nowrap;animation:ty-kofi-cta 3s ease-in-out infinite}
+.ty-kofi-action:hover{background:#007e8b;transform:translateY(-2px)}.ty-kofi-action:focus-visible{outline:3px solid #fff;outline-offset:4px}
+.ty-kofi-banner+.toolya-signature-footer{margin-top:12px}
+@keyframes ty-kofi-glow{0%,100%{box-shadow:0 0 0 3px #34e5e71f,0 8px 28px #0ba8b744}50%{box-shadow:0 0 0 5px #34e5e74d,0 8px 38px #0be0dd88}}
+@keyframes ty-kofi-wave{0%,78%,100%{transform:rotate(0)}85%{transform:rotate(-5deg)}93%{transform:rotate(4deg)}}
+@keyframes ty-kofi-heart{0%,100%{transform:translateY(0);opacity:.2}45%{transform:translateY(-10px);opacity:1}}
+@keyframes ty-kofi-cta{0%,100%{box-shadow:0 0 10px #43f9e855}50%{box-shadow:0 0 23px #43f9e8bb}}
+@media(max-width:650px){.ty-kofi-banner{flex-wrap:wrap;gap:10px;padding:14px;min-height:0}.ty-kofi-mascot{width:70px;height:80px}.ty-kofi-copy{flex:1 1 calc(100% - 90px)}.ty-kofi-action{width:100%;min-height:48px;padding:8px}.ty-kofi-banner:after{right:18px}}
+@media(prefers-reduced-motion:reduce){.ty-kofi-banner,.ty-kofi-banner:after,.ty-kofi-mascot,.ty-kofi-action{animation:none!important}}
+@media(forced-colors:active){.ty-kofi-banner,.ty-kofi-action{border:2px solid CanvasText}}
