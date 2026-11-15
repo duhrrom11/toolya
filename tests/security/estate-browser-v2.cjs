@@ -24,7 +24,7 @@ const root=path.resolve(__dirname,'../..');
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
  const browser=await chromium.launch({headless:true,executablePath:process.env.ESTATE_CHROMIUM||undefined,args:['--no-sandbox']});
  const context=await browser.newContext();const errors=[];
- context.on('page',p=>{p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error'&&!m.text().includes('status of 4'))errors.push(m.text());});});
+ context.on('page',p=>{p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error'&&!m.text().includes('status of 4'))errors.push(m.text());});p.on('domcontentloaded',()=>p.evaluate(()=>document.addEventListener('securitypolicyviolation',e=>console.warn('CSP-DETAIL',e.sourceFile,e.lineNumber,e.columnNumber,e.violatedDirective))).catch(()=>{}));});
  await context.addInitScript(()=>{window.print=()=>{document.body.dataset.printReady='true';};});
  await context.route('https://yheogmeaosuigyaxkwth.supabase.co/**',async route=>{
   const req=route.request(),u=new URL(req.url()),method=req.method(),body=req.postDataJSON();
