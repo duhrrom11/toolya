@@ -211,3 +211,11 @@ test('failed product searches retain previous results and query',()=>{
  assert.ok(search.includes("root.replaceChildren();$('productQuery').value='';if(!products?.length)"));
  assert.ok(search.includes("}catch{$('productSearchStatus').textContent='Suche fehlgeschlagen."));
 });
+
+test('budget saves preserve newer edits and handle rejected requests',()=>{
+ const planner=source('gift-planner.mjs');
+ assert.ok(planner.includes("const ownerId=user?.id,submittedAmount=$('budgetAmount').value"));
+ assert.ok(planner.includes("if($('budgetOccasion').value===id&&$('budgetAmount').value===submittedAmount)$('budgetAmount').value=''"));
+ assert.ok(planner.includes("}catch{\n  if(user?.id===ownerId)feedback('budgetSaveFeedback','Budget konnte nicht gespeichert werden.');"));
+ assert.ok(planner.includes("}finally{$('saveBudget').disabled=false}"));
+});
