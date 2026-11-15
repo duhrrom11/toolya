@@ -17,7 +17,7 @@ function canonicalJson(value) {
     return Object.fromEntries(Object.keys(value).sort().map(key => [key, canonicalJson(value[key])]));
   return value;
 }
-function sameJson(a, b) {
+export function sameJson(a, b) {
   return JSON.stringify(canonicalJson(a)) === JSON.stringify(canonicalJson(b));
 }
 function validateCar(value) {
