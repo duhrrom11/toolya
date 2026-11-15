@@ -1,0 +1,8 @@
+/* Discrete affiliate search links; explanatory disclosure lives in legal/privacy pages. */
+.toolya-affiliate-suggestions{grid-column:1/-1;margin:1.25rem 0;padding:1.1rem;border:1px solid #e5e7eb;border-radius:16px;background:#fff;color:#334155}
+.toolya-affiliate-suggestions h2{font-size:1rem;font-weight:700;margin:0 0 .8rem}
+.toolya-affiliate-links{display:flex;flex-wrap:wrap;gap:.65rem}
+.toolya-affiliate-links>div{display:flex;align-items:center;gap:.35rem}
+.toolya-affiliate-links a{display:inline-block;padding:.6rem .8rem;border-radius:10px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-weight:600;font-size:.85rem;text-decoration:none}
+.toolya-affiliate-links a:hover{background:#ffedd5}
+.toolya-affiliate-label{display:inline-block;font-size:.67rem;font-weight:700;letter-spacing:.03em;color:#92400e;margin:.2rem .35rem .2rem 0;vertical-align:middle}
