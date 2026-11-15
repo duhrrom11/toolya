@@ -1118,9 +1118,11 @@ async function toolyaCloudBoot(tool) {
                         !parsed.events.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
                         return alert("Ungültiges Backup-Format.");
                     }
+                    if (parsed.tires === undefined) parsed.tires = []; // ältere Sicherungen ohne Reifendaten
+                    if (!Array.isArray(parsed.tires)) return alert('Ungültige Reifendaten im Backup.');
                     if (!await toolyaSafeCloudImport(parsed)) return;
                     loadCarDropdowns();
-                        renderApp();
+                    renderApp();
                     alert("Backup erfolgreich importiert!");
                 } catch (err) {
                     alert("Cloud-Import fehlgeschlagen: " + err.message);
