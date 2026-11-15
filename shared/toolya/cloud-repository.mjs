@@ -69,11 +69,10 @@ export function createCloudRepository(client, tool) {
     if (!Array.isArray(rows) || rows.length !== 1)
       throw new Error('Cloud-Speicherung nicht bestätigt.');
     const row = rows[0];
-    if ((await currentUser()) !== uid || row.user_id !== uid || row.tool !== tool ||
-        !row.updated_at || !sameJson(row.data, payload)) {
+    if ((await currentUser()) !== uid || !Number.isSafeInteger(row.revision) || row.revision < 1 || !sameJson(row.data, payload)) {
       throw new Error('Cloud-Speicherung nicht eindeutig bestätigt.');
     }
-    return { revision: row.updated_at, data: assertSnapshot(row.data) };
+    return { revision: row.revision, data: assertSnapshot(row.data) };
   }
   return Object.freeze({ read, save });
 }
