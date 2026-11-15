@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+<style>html.toolya-auth-pending body{visibility:hidden!important}</style>
+<script>document.documentElement.classList.add('toolya-auth-pending')</script>
     <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
     <script>
       try { if (localStorage.getItem('helferlein_cloud_owner_autokosten-reifenwechsel')) document.documentElement.classList.add('helferlein-account-check'); }
@@ -17,6 +19,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
+<script src="../../shared/toolya/auth-page-gate.js"></script>
     <link rel="stylesheet" href="../../assets/helferlein-b3.css">
     <link rel="stylesheet" href="../../assets/helferlein-b3-autokosten.css">
     <script>
