@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- SEO Meta-Daten -->
-    <title>✨ Kostenlose Online-Tools & clevere Rechner ✨ | Toolya</title>
+    <title>✨ Kostenlose Online-Tools &amp; clevere Rechner ✨ | Toolya</title>
     <meta name="description" content="Entdecke 12 kostenlose Online-Rechner und Apps: Haushaltsbuch, Zählerstände, Backform-Umrechner, WG-Planer und mehr. Direkt im Browser.">
     <link rel="canonical" href="https://toolya.app/index.html">
     <meta name="robots" content="index,follow">
 
     <!-- Open Graph / Social Media Sharing -->
-    <meta property="og:title" content="Kostenlose Online-Tools & clevere Rechner | Toolya">
-    <meta property="og:description" content="Entdecke 12 praktische Web-Apps für Auto, Haushalt & Finanzen – ohne Anmeldung nutzbar, mit optionalem Konto.">
+    <meta property="og:title" content="Kostenlose Online-Tools &amp; clevere Rechner | Toolya">
+    <meta property="og:description" content="Entdecke 12 praktische Web-Apps für Auto, Haushalt &amp; Finanzen – ohne Anmeldung nutzbar, mit optionalem Konto.">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="de_DE">
     <meta property="og:url" content="https://toolya.app/index.html">
@@ -69,7 +69,9 @@
     <link rel="stylesheet" href="assets/helferlein-accessibility.css?v=20261112-3">
     <script src="assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="assets/helferlein-dialogs.js"></script>
-<script type="module" src="shared/toolya/platform.mjs"></script></head>
+<link rel="stylesheet" href="assets/toolya-home.css">
+<script type="module" src="shared/toolya/platform.mjs"></script>
+<script type="module" src="shared/toolya/home.mjs"></script></head>
 <body class="b3-home bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
 
@@ -79,25 +81,28 @@
   <a class="b3-hub-logo" href="index.html" aria-label="Toolya Startseite"><span class="b3-hub-logo-mark" aria-hidden="true">✳</span> Toolya</a>
   <nav class="b3-hub-nav" aria-label="Hauptnavigation">
    <a href="#toolsGrid">Alle Tools</a>
-   <button type="button" id="userInfo" class="b3-hub-account b3-auth-status b3-auth-signed-out" aria-controls="settingsModal" aria-haspopup="dialog" aria-label="Anmelden oder registrieren">Anmelden/Registrieren</button>
-   <button type="button" id="settingsBtn" aria-haspopup="dialog" aria-controls="settingsModal" aria-label="Einstellungen öffnen">⚙ Einstellungen</button>
+   <button type="button" id="userInfo" class="b3-hub-account b3-auth-status b3-auth-signed-out" aria-controls="settingsModal" aria-haspopup="dialog" aria-label="Anmelden oder registrieren">Anmelden</button>
+   <button type="button" id="settingsBtn" aria-haspopup="dialog" aria-controls="settingsModal" aria-label="Einstellungen öffnen"><img class="ty-settings-icon" src="assets/vendor/bootstrap-icons/gear.svg" width="22" height="22" alt=""><span class="ty-settings-label">Einstellungen</span></button>
   </nav>
  </div>
  <div class="b3-hub-hero">
-  <div>
-   <span class="b3-hero-eyebrow">✦ Dein digitaler Werkzeugkasten</span>
-   <h1>Mehr Alltag.<br><span>Weniger Aufwand.</span></h1>
-   <p>Zwölf praktische Helfer für Finanzen, Zuhause, Organisation und unterwegs.</p>
-   <p class="b3-hero-status">✓ 12 kostenlose Web-Apps &nbsp;·&nbsp; ✓ Ohne Installation</p>
+  <div class="ty-hero-copy">
+   <h1>Dein Alltag.<br><span>Ein bisschen <br>leichter.</span></h1>
+   <p>Praktische, kostenlose Online-Tools für Finanzen, Zuhause, Organisation und unterwegs.</p>
+   <a class="ty-primary" href="#toolDiscovery">Tools entdecken <span aria-hidden="true">→</span></a>
   </div>
-  <aside class="b3-hero-preview" aria-label="Dein Schnellstart">
-   <div class="b3-preview-heading">⭐ Mein Schnellstart</div>
-   <div class="b3-preview-list" id="b3-quickstart-list" aria-live="polite">
-    <p class="b3-quickstart-empty">Markiere unten ein Tool mit ⭐, damit es hier erscheint.</p>
-   </div>
-   <p class="b3-preview-hint">Hier erscheinen deine ersten drei Favoriten.</p>
-  </aside>
+  <div class="ty-hero-stage" aria-label="Unsere beiden Toolya-Maskottchen">
+   <img class="ty-hero-art" src="assets/toolya/home/hero-duo.webp" width="900" height="650" alt="Unsere türkisfarbene und lilafarbene Begleiter lehnen fröhlich auf einem Lavendelbogen." fetchpriority="high">
+   <div class="ty-live-duo" aria-hidden="true"><span class="ty-hero-character" data-character="turquoise"></span><span class="ty-hero-character" data-character="purple"></span></div>
+   <button class="ty-mascot-hit ty-hit-left" type="button" aria-label="Türkisfarbenes Maskottchen kitzeln"></button>
+   <button class="ty-mascot-hit ty-hit-right" type="button" aria-label="Lilafarbenes Maskottchen kitzeln"></button>
+   <p class="ty-duo-message" role="status" aria-live="polite" hidden></p>
+  </div>
  </div>
+ <aside class="b3-hero-preview" aria-label="Dein Schnellstart">
+  <h2 class="b3-preview-heading"><span aria-hidden="true">★</span> Deine Favoriten</h2>
+  <div class="b3-preview-list" id="b3-quickstart-list" aria-live="polite"><p class="b3-quickstart-empty">Markiere ein Tool mit dem Stern. Deine ersten drei Favoriten erscheinen hier.</p></div>
+ </aside>
 </header>
 
 <!-- Main Content -->
@@ -106,7 +111,7 @@
         <!-- B3 Kategorie- und Suchbereich: rein lokale Filterung der vorhandenen Karten -->
 <section class="b3-discovery" id="toolDiscovery" aria-label="Werkzeugfinder">
  <div class="b3-discovery-top">
-  <div><h2 class="b3-section-heading">Finde dein Toolya</h2>
+  <div><h2 class="b3-section-heading">Tools entdecken</h2>
     <p class="b3-section-subtitle" id="b3-result-count" role="status" aria-live="polite">12 von 12 Tools</p></div>
  </div>
  <div class="b3-categories" role="group" aria-label="Tool-Kategorien">
@@ -124,222 +129,18 @@
         <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
             <!-- Wishlist -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="wishlist" data-category="organisation" data-name="wishlist wunschlisten wünsche geschenke geschenkplanung amazon merkliste geburtstag hochzeit ideen">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl font-bold border border-rose-200 shadow-inner" aria-hidden="true">♡</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('wishlist', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="wishlist" aria-label="Wishlist zu Favoriten hinzufügen oder entfernen">⭐</button>
-                            </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Wishlist – Wunschlisten &amp; Geschenke</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Erstelle persönliche Wunschlisten, teile deine Wünsche mit Familie und Freunden, entdecke Geschenkideen und plane Geschenke für Geburtstage und andere Anlässe.</p>
-                </div>
-                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
-                    <a href="tools/wishes/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
-                </div>
-            </div>
-
             <!-- Tool 1 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kassenbon" data-category="finanzen" data-name="haushaltsbuch ausgaben budget kassenbon scanner belege garantie rechner">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-bold border border-emerald-200 shadow-inner" aria-hidden="true">🧾</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('kassenbon', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kassenbon">⭐</button>
-                            </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Haushaltsbuch mit Kassenbon-Scanner</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Behalte dein Geld im Blick: Erfasse Einnahmen und Ausgaben, plane Budgets, scanne Kassenbons und finde wichtige Belege oder Garantiefristen schnell wieder.</p>
-
-                </div>
-                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
-                    <a href="tools/budget/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
-                </div>
-            </div>
-
             <!-- Tool 2 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kisten" data-category="zuhause" data-name="umzugskisten app inventarliste inventar kisten qr code umzug lager">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl font-bold border border-blue-200 shadow-inner" aria-hidden="true">📦</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('kisten', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kisten">⭐</button>
-                            </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Umzugskisten-App & Inventarliste</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Behalte beim Umzug oder im Lager den Überblick: Erfasse den Inhalt jeder Kiste, suche nach Gegenständen und finde mit QR-Code-Etiketten alles leichter wieder.</p>
-
-                </div>
-                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
-                    <a href="tools/moving/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
-                </div>
-            </div>
-
             <!-- Tool 3 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="wg-kasse" data-category="finanzen" data-name="wg organisator wg ausgaben aufteilen wg haushaltsbuch putzplan kalender">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl font-bold border border-amber-200 shadow-inner" aria-hidden="true">💶</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('wg-kasse', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="wg-kasse">⭐</button>
-                            </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">WG-Organisator mit Haushaltsbuch</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Organisiert euren gemeinsamen Alltag: Teilt Ausgaben gerecht auf, führt ein Haushaltsbuch und verwaltet Putzplan, Kalender und Notizen an einem Ort.</p>
-
-                </div>
-                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
-                    <a href="tools/housemates/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
-                </div>
-            </div>
-
             <!-- Tool 4 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="notizen" data-category="organisation" data-name="digitaler nachlass nachlassverwalter dokumente vorsorge sicherheitsprüfung">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl font-bold border border-purple-200 shadow-inner" aria-hidden="true">🔐</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('notizen', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="notizen">⭐</button>
-
-                        </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Digitaler Nachlassverwalter</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Sammle wichtige Informationen für deine Angehörigen und lege Vertrauenspersonen fest. Die Notfallfreigabe wird noch eingerichtet – bitte noch keine Passwörter oder PINs hinterlegen.</p>
-
-                </div>
-                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
-                    <a href="tools/estate/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
-                </div>
-            </div>
-
             <!-- Tool 5 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kfz" data-category="unterwegs" data-name="autokosten rechner tankbuch reifenwechsel tüv fahrzeugkosten wartung">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center text-xl font-bold border border-red-200 shadow-inner" aria-hidden="true">🚗</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('kfz', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kfz">⭐</button>
-                            </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Autokosten-Rechner & Reifenwechsel</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Tankkosten, Reparaturen, TÜV-Termine und Reifenwechsel dokumentieren. Fahrzeugkosten im Blick behalten.</p>
-
-                </div>
-                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
-                    <a href="tools/car/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
-                </div>
-            </div>
-
             <!-- Tool 6 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="haustier" data-category="tiere" data-name="impfpass hund impfpass katze haustier gesundheitspass tierarzt impfungen">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center text-xl font-bold border border-teal-200 shadow-inner" aria-hidden="true">🐾</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('haustier', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="haustier">⭐</button>
-                            </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Digitaler Impfpass für Hund & Katze</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Impfungen, Tierarztbesuche, Medikamente, Gewicht und Kosten im digitalen Haustier-Gesundheitspass erfassen.</p>
-
-                </div>
-                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
-                    <a href="tools/pet-health/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
-                </div>
-            </div>
-
             <!-- Tool 7 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="parken" data-category="unterwegs" data-name="parkplatz merken parkschein timer parkzeit gps auto wiederfinden">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl font-bold border border-sky-200 shadow-inner" aria-hidden="true">🅿️</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('parken', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="parken">⭐</button>
-                            </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Parkplatz-Merker & Parkschein-Timer</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Parkplatz per GPS merken, Parkzeit im Blick behalten und Parkgebühren und Parkvorgänge verwalten.</p>
-
-                </div>
-                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
-                    <a href="tools/parking/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
-                </div>
-            </div>
-
             <!-- Tool 8 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="verleih" data-category="organisation" data-name="verliehene gegenstände verwalten werkzeug verleihen leihgaben kaution">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold border border-indigo-200 shadow-inner" aria-hidden="true">🤝</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('verleih', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="verleih">⭐</button>
-                            </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Verliehene Gegenstände verwalten</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Werkzeuge, Bücher und andere Leihgaben erfassen, Rückgaben verfolgen und Erinnerungen vorbereiten.</p>
-
-                </div>
-                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
-                    <a href="tools/loans/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
-                </div>
-            </div>
-
             <!-- Tool 9 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="pflanzen" data-category="zuhause" data-name="pflanzenpflege app gießplan pflanzen gießen erinnerung düngeplan">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-lime-50 text-lime-600 rounded-xl flex items-center justify-center text-xl font-bold border border-lime-200 shadow-inner" aria-hidden="true">🌱</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('pflanzen', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="pflanzen">⭐</button>
-                            </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Pflanzenpflege-App mit Gießplan</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Zimmer- und Gartenpflanzen organisieren, Gießintervalle und Düngen dokumentieren und Pflege planen.</p>
-
-                </div>
-                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
-                    <a href="tools/plants/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
-                </div>
-            </div>
-
             <!-- Tool 10 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="energie" data-category="finanzen" data-name="zählerstände erfassen stromzähler wasserzähler gaszähler verbrauch kosten">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-xl font-bold border border-orange-200 shadow-inner" aria-hidden="true">⚡</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('energie', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="energie">⭐</button>
-                            </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Zählerstände erfassen: Strom, Gas & Wasser</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Strom-, Wasser- und Gaszählerstände dokumentieren, Verbrauch auswerten und Kosten vergleichen.</p>
-
-                </div>
-                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
-                    <a href="tools/meters/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
-                </div>
-            </div>
-
             <!-- Tool 11 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="backform" data-category="zuhause" data-name="backform umrechnen backform rechner rezeptrechner zutaten teigmenge backzeit">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-pink-50 text-pink-600 rounded-xl flex items-center justify-center text-xl font-bold border border-pink-200 shadow-inner" aria-hidden="true">🍰</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('backform', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="backform">⭐</button>
-                            </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Backform-Umrechner & Rezeptrechner</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Du hast eine andere Backform als im Rezept? Rechne Zutaten und Teigmengen passend um und erhalte eine Orientierung für die neue Backzeit.</p>
-
-                </div>
-                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
-                    <a href="tools/baking/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
-                </div>
-            </div>
-
-        </div>
+            <div class="tool-card ty-tool-card" data-id="wishlist" data-category="organisation" data-icon="bag-heart"><a href="tools/wishes/index.html" class="ty-tool-link"><img src="assets/toolya/home/wishlist.webp" alt="" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Wishlist</h3><p>Wünsche sammeln und Geschenke entspannt planen.</p></span></a><button type="button" class="fav-btn" data-id="wishlist" onclick="toggleFavorite('wishlist', event)" aria-label="Wishlist zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="kassenbon" data-category="finanzen" data-icon="coin"><a href="tools/budget/index.html" class="ty-tool-link"><img src="assets/toolya/home/budget.webp" alt="" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Haushaltsbuch</h3><p>Einnahmen, Ausgaben und Belege einfach im Blick.</p></span></a><button type="button" class="fav-btn" data-id="kassenbon" onclick="toggleFavorite('kassenbon', event)" aria-label="Haushaltsbuch zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="kisten" data-category="zuhause" data-icon="box-seam"><a href="tools/moving/index.html" class="ty-tool-link"><img src="assets/toolya/home/moving.webp" alt="" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Umzugskisten</h3><p>Kisten planen, beschriften und den Überblick behalten.</p></span></a><button type="button" class="fav-btn" data-id="kisten" onclick="toggleFavorite('kisten', event)" aria-label="Umzugskisten zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="pflanzen" data-category="zuhause" data-icon="flower2"><a href="tools/plants/index.html" class="ty-tool-link"><img src="assets/toolya/home/plants.webp" alt="" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Pflanzenpflege</h3><p>Pflege, Gießen und Umtopfen passend planen.</p></span></a><button type="button" class="fav-btn" data-id="pflanzen" onclick="toggleFavorite('pflanzen', event)" aria-label="Pflanzenpflege zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="wg-kasse" data-category="finanzen" data-icon="house-heart"><a href="tools/housemates/index.html" class="ty-tool-link"><img src="assets/vendor/bootstrap-icons/house-heart.svg" alt="" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>WG-Organisator</h3><p>Ausgaben teilen und euren Alltag organisieren.</p></span></a><button type="button" class="fav-btn" data-id="wg-kasse" onclick="toggleFavorite('wg-kasse', event)" aria-label="WG-Organisator zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="notizen" data-category="organisation" data-icon="shield-lock"><a href="tools/estate/index.html" class="ty-tool-link"><img src="assets/vendor/bootstrap-icons/shield-lock.svg" alt="" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Digitaler Nachlass</h3><p>Wichtige Informationen für deine Angehörigen ordnen.</p></span></a><button type="button" class="fav-btn" data-id="notizen" onclick="toggleFavorite('notizen', event)" aria-label="Digitaler Nachlass zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="kfz" data-category="unterwegs" data-icon="car-front"><a href="tools/car/index.html" class="ty-tool-link"><img src="assets/vendor/bootstrap-icons/car-front.svg" alt="" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Autokosten</h3><p>Fahrzeugkosten, Wartung und Termine im Blick.</p></span></a><button type="button" class="fav-btn" data-id="kfz" onclick="toggleFavorite('kfz', event)" aria-label="Autokosten zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="haustier" data-category="tiere" data-icon="heart-pulse"><a href="tools/pet-health/index.html" class="ty-tool-link"><img src="assets/vendor/bootstrap-icons/heart-pulse.svg" alt="" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Tiergesundheit</h3><p>Impfungen und Tierarztbesuche gut organisiert.</p></span></a><button type="button" class="fav-btn" data-id="haustier" onclick="toggleFavorite('haustier', event)" aria-label="Tiergesundheit zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="parken" data-category="unterwegs" data-icon="geo-alt"><a href="tools/parking/index.html" class="ty-tool-link"><img src="assets/vendor/bootstrap-icons/geo-alt.svg" alt="" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Parkplatz-Merker</h3><p>Parkplatz wiederfinden und Parkzeit merken.</p></span></a><button type="button" class="fav-btn" data-id="parken" onclick="toggleFavorite('parken', event)" aria-label="Parkplatz-Merker zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="verleih" data-category="organisation" data-icon="arrow-left-right"><a href="tools/loans/index.html" class="ty-tool-link"><img src="assets/vendor/bootstrap-icons/arrow-left-right.svg" alt="" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Verliehene Dinge</h3><p>Leihgaben und Rückgaben im Blick behalten.</p></span></a><button type="button" class="fav-btn" data-id="verleih" onclick="toggleFavorite('verleih', event)" aria-label="Verliehene Dinge zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="energie" data-category="finanzen" data-icon="lightning-charge"><a href="tools/meters/index.html" class="ty-tool-link"><img src="assets/vendor/bootstrap-icons/lightning-charge.svg" alt="" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Zählerstände</h3><p>Verbrauch von Strom, Gas und Wasser verfolgen.</p></span></a><button type="button" class="fav-btn" data-id="energie" onclick="toggleFavorite('energie', event)" aria-label="Zählerstände zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="backform" data-category="zuhause" data-icon="cake2"><a href="tools/baking/index.html" class="ty-tool-link"><img src="assets/vendor/bootstrap-icons/cake2.svg" alt="" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Backform-Rechner</h3><p>Zutaten für deine Backform einfach umrechnen.</p></span></a><button type="button" class="fav-btn" data-id="backform" onclick="toggleFavorite('backform', event)" aria-label="Backform-Rechner zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div></div>
     </main>
 
     <!-- FAQ-Sektion -->
@@ -388,7 +189,7 @@
                     ⚙️ Einstellungen
                 </h3>
                 <button type="button" id="closeSettingsBtn" aria-label="Einstellungen schließen" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">
-                    &times;
+                    ×
                 </button>
             </div>
 
@@ -429,7 +230,7 @@
 
             <!-- DATENSICHERUNG -->
             <div class="border-t border-gray-200 pt-4">
-                <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Datensicherung (Backup & Wiederherstellung)</label>
+                <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Datensicherung (Backup &amp; Wiederherstellung)</label>
 
                 <div class="flex gap-2">
                     <button type="button" title="Empfohlen: Lokale Browserdaten als passwortgeschützte, verschlüsselte JSON-Datei exportieren" onclick="exportGlobalBackup(true)" aria-label="Backup verschlüsselt exportieren" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">🔐 Verschlüsselt</button>
@@ -617,7 +418,7 @@
             if (headerInfo) {
                 headerInfo.classList.toggle("b3-auth-signed-in", Boolean(user));
                 headerInfo.classList.toggle("b3-auth-signed-out", !user);
-                headerInfo.textContent = user ? "Angemeldet" : "Anmelden/Registrieren";
+                headerInfo.textContent = user ? "Angemeldet" : "Anmelden";
                 headerInfo.setAttribute("aria-label", user
                     ? "Angemeldet – Kontoeinstellungen öffnen"
                     : "Anmelden oder registrieren");
@@ -677,6 +478,7 @@
             try { localStorage.setItem('hub_favorites', JSON.stringify(favs)); }
             catch (_) { alert('Favoriten konnten nicht gespeichert werden.'); return; }
             initFavorites();
+            window.dispatchEvent(new CustomEvent('toolya:favorite', {detail:{id:toolId, active:favs.includes(toolId)}}));
         }
 
         function initFavorites() {
@@ -699,7 +501,7 @@
                         const icon = document.createElement('span');
                         icon.className = 'b3-preview-icon';
                         icon.setAttribute('aria-hidden', 'true');
-                        icon.textContent = card.firstElementChild?.firstElementChild?.firstElementChild?.textContent?.trim() || '⭐';
+                        const image = document.createElement('img'); image.src = 'assets/vendor/bootstrap-icons/' + (card.dataset.icon || 'star') + '.svg'; image.alt = ''; image.width = 24; image.height = 24; icon.append(image); link.dataset.toolId = card.dataset.id;
                         const text = document.createElement('span');
                         text.textContent = card.querySelector('h3')?.textContent?.trim() || 'Mein Tool';
                         link.append(icon, text);
@@ -711,7 +513,7 @@
                 const btn = c.querySelector('.fav-btn');
                 if (btn) {
                     const active = favs.includes(c.getAttribute('data-id'));
-                    btn.style.color = active ? '#f59e0b' : '#d1d5db';
+                    btn.style.color = active ? '#bc7900' : '#687083'; const star = btn.querySelector('img'); if (star) star.src = 'assets/vendor/bootstrap-icons/' + (active ? 'star-fill' : 'star') + '.svg';
                     btn.setAttribute('aria-pressed', String(active));
                     btn.setAttribute('aria-label', active ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen');
                 }

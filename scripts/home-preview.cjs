@@ -1,0 +1,7 @@
+// Read-only static development preview; no application APIs or writes.
+const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
+const root=process.cwd(),args=process.argv.slice(2);
+const value=(flag,fallback)=>{const i=args.indexOf(flag);return i<0?fallback:args[i+1]};
+const port=Number(value('--port','4173')),host=value('--host','0.0.0.0');
+const types={'.html':'text/html; charset=utf-8','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png','.json':'application/json','.woff2':'font/woff2'};
+http.createServer((req,res)=>{if(!['GET','HEAD'].includes(req.method)){res.writeHead(405);return res.end()};let target;try{target=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://preview').pathname));}catch{res.writeHead(400);return res.end()};if(target!==root&&!target.startsWith(root+path.sep)){res.writeHead(403);return res.end()};if(fs.existsSync(target)&&fs.statSync(target).isDirectory())target=path.join(target,'index.html');fs.stat(target,(error,stat)=>{if(error||!stat.isFile()){res.writeHead(404);return res.end()};res.writeHead(200,{'Content-Type':types[path.extname(target)]||'application/octet-stream','Cache-Control':'no-store'});if(req.method==='HEAD')return res.end();fs.createReadStream(target).pipe(res);});}).listen(port,host,()=>console.log(`Read-only preview listening on port ${port}`));
