@@ -605,6 +605,14 @@ async function toolyaCloudBoot(tool) {
     if(tool==='autokosten-reifenwechsel')loadCarDropdowns();
     if(tool==='haushaltsbuch-kassenbon')initCharts();
     renderApp();
+    // Manual Connect controls appear only after verified CloudOnly bootstrap.
+    const {mountConnectPanel}=await import('../../shared/toolya/connect-panel.mjs');
+    const connectHost=document.querySelector('main')||document.body;
+    window.toolyaConnectPanel?.dispose();
+    window.toolyaConnectPanel=mountConnectPanel({
+      controller:toolyaCloudController,host:connectHost,
+      onReload:()=>{initCharts();renderApp();}
+    });
   } catch(error) {
     gate.textContent='Toolya Cloud gesperrt: '+error.message+' '; const link=document.createElement('a');link.href='../../index.html';link.textContent='Zur Anmeldung auf der Startseite';link.style.cssText='display:block;color:#0369a1;text-decoration:underline';gate.append(link);
     console.error(error);
