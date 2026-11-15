@@ -67,7 +67,7 @@ export async function fetchAmazon(url,fetcher=fetch,expectedList=null){const sou
 // Enrich only a small bounded number of missing previews with their actual Amazon product page.
 // Never replace wishlist data with ambiguous or blocked product responses.
 export async function enrichMissingProductMetadata(items,fetcher=fetch,maxItems=10){
- const candidates=items.filter(p=>p&&!p.price&&(!p.description||!p.description.trim())).slice(0,maxItems);
+ const candidates=items.filter(p=>p&&(p.price==null||!p.description?.trim())).slice(0,maxItems);
  let next=0,enriched=0;
  await Promise.all(Array.from({length:Math.min(3,candidates.length)},async()=>{
   while(next<candidates.length){
