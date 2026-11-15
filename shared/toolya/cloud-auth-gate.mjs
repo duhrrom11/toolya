@@ -6,7 +6,8 @@
 export async function requireVerifiedUser(client) {
   if (!client?.auth?.getUser) throw new Error('Toolya-Anmeldung nicht verfügbar.');
   const { data, error } = await client.auth.getUser();
-  if (error || !data?.user?.id) throw new Error('Bitte bei Toolya anmelden.');
+  if (error) throw new Error('Toolya-Anmeldung konnte nicht geprüft werden.', { cause: error });
+  if (!data?.user?.id) throw new Error('Bitte bei Toolya anmelden.');
   if (data.user.is_anonymous) throw new Error('Ein registriertes Toolya-Konto ist erforderlich.');
   return data.user;
 }
