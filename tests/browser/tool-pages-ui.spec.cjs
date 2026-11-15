@@ -314,3 +314,43 @@ test('zaehlerstaende-erfassen: photo processing precedes confirmed cloud write',
   });
   expect(result).toMatchObject({writes:1,photo:'data:mock/meter.png'});
 });
+
+
+test('pflanzenpflege-giessplan: unauthenticated browser blocks writes',async({page})=>{
+  await isolated(page,false);
+  await page.goto(origin+'/tools/plants/index.html');
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Registrierte Anmeldung erforderlich');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+test('pflanzenpflege-giessplan: confirmed save and cloud conflict',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/plants/index.html');
+  await expect.poll(()=>page.evaluate(()=>plantsCloudReady&&!!plantsCloudController?.ready)).toBe(true);
+  const result=await page.evaluate(async()=>{
+    const data=getData();data.plants.push({id:1,name:'Rose'});
+    const saved=await saveData(data);
+    return {saved,writes:window.__toolyaMock.writes.length,plant:window.__toolyaMock.writes[0]?.p_data?.plants?.[0]?.name};
+  });
+  expect(result).toMatchObject({saved:true,writes:1,plant:'Rose'});
+  await page.evaluate(async()=>{
+    supabaseClient.rpc=async()=>({data:null,error:{code:'40001',message:'conflict'}});
+    await saveData({...getData(),plants:[]});
+  });
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
+});
+test('pflanzenpflege-giessplan: plant photo awaits compression before cloud write',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/plants/index.html');
+  await expect.poll(()=>page.evaluate(()=>plantsCloudReady&&!!plantsCloudController?.ready)).toBe(true);
+  await page.locator('#plantPhotoInput').setInputFiles({name:'plant.png',mimeType:'image/png',buffer:Buffer.from([137,80,78,71,13,10,26,10])});
+  const result=await page.evaluate(async()=>{
+    compressImage=(file,callback)=>setTimeout(()=>callback('data:mock/'+file.name),15);
+    document.querySelector('#plantName').value='Rose';
+    document.querySelector('#plantLastWatered').value='2026-11-15';
+    document.querySelector('#plantInterval').value='7';
+    await savePlant();
+    return {writes:window.__toolyaMock.writes.length,photo:window.__toolyaMock.writes[0]?.p_data?.plants?.[0]?.photo};
+  });
+  expect(result).toMatchObject({writes:1,photo:'data:mock/plant.png'});
+});
