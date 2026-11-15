@@ -34,6 +34,15 @@ function validateBudget(value) {
   return copy(value);
 }
 const TOOLS = Object.freeze({
+  'backform-umrechner': {
+    keys:['helperly_recipes_pro'],
+    validate:value=>{
+      if(!Array.isArray(value)||!value.every(x=>x&&typeof x==='object'&&!Array.isArray(x)))
+        throw Error('Rezept-Bestand ist beschädigt.');
+      return copy(value);
+    },
+    build:values=>({recipes:values[0]})
+  },
   'haustier-gesundheitspass': {
     keys:['haustier_pass_pro_v5'],
     validate:value=>{
