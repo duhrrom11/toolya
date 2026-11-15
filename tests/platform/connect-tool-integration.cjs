@@ -1,17 +1,15 @@
-// Static safety contract for CloudOnly Connect entry points; no accounts or network.
+// Static regression: no production access or test accounts.
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
-for(const [tool,controller,refresh] of [
- ['car','toolyaCloudController','renderApp'],
- ['budget','toolyaCloudController','renderApp'],
- ['moving','movingCloudController','renderInventory'],
- ['loans','loansCloudController','renderInventory']
-]){
+const home=fs.readFileSync('index.html','utf8');
+assert.match(home,/\.ty-tool-link/);
+assert.match(home,/supabaseClient\.auth\.getUser\(\)/);
+assert.match(home,/openSettings\(\)/);
+for(const [tool,controller] of [['car','toolyaCloudController'],['budget','toolyaCloudController'],['moving','movingCloudController'],['loans','loansCloudController']]){
  const html=fs.readFileSync('tools/'+tool+'/index.html','utf8');
- assert.match(html,/mountConnectPanel\s*\(/,'Connect panel missing: '+tool);
- assert.ok(html.includes('controller:'+controller),'wrong CloudOnly controller: '+tool);
- assert.ok(html.includes('onReload:'),'manual reload callback missing: '+tool);
- assert.ok(html.includes(refresh),'UI refresh missing: '+tool);
- assert.ok(html.includes('toolyaConnectPanel?.dispose()'),'panel cleanup missing: '+tool);
+ assert.ok(html.includes(controller),'CloudOnly controller missing: '+tool);
+ assert.ok(!html.includes('mountConnectPanel'),'Connect check must not appear: '+tool);
+ assert.ok(!html.includes('toolyaConnectPanel'),'orphaned Connect panel: '+tool);
+ assert.ok(html.includes('Cloud'),'CloudOnly gate missing: '+tool);
 }
-console.log('PASS: four CloudOnly tools mount Connect with reload and cleanup');
+console.log('PASS: account-gated home links and four CloudOnly tools without Connect panel');
