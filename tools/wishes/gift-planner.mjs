@@ -132,12 +132,12 @@ async function searchProducts(){
  try{
   const safe=q.replace(/[,%()]/g,' ').trim();if(safe.length<2)throw Error('Bitte einen Suchbegriff verwenden.');
   const {data:products,error}=await db.from('wishlist_products').select('id,title,asin').ilike('title','%'+safe+'%').order('created_at',{ascending:false}).limit(40);
-  if(revision!==productSearchRevision||user?.id!==ownerId)return;
+  if(revision!==productSearchRevision||user?.id!==ownerId||$('productQuery').value.trim()!==q)return;
   if(error)throw error;
   const ids=(products||[]).map(p=>p.id);
   let wishes=[];
   if(ids.length){const result=await db.from('wishlist_wishes').select('id,product_id,priority') .eq('user_id',ownerId).in('product_id',ids).order('created_at',{ascending:false}).limit(200);if(result.error)throw result.error;wishes=result.data||[]}
-  if(revision!==productSearchRevision||user?.id!==ownerId)return;
+  if(revision!==productSearchRevision||user?.id!==ownerId||$('productQuery').value.trim()!==q)return;
   const wishByProduct=new Map();for(const w of wishes)if(!wishByProduct.has(String(w.product_id)))wishByProduct.set(String(w.product_id),w);
   $('productSearchStatus').textContent=(products||[]).length+' Produkte gefunden · '+wishByProduct.size+' mit eigenen Wünschen. Die Suche zeigt höchstens 40 Produkte.';
   root.replaceChildren();if($('productQuery').value.trim()===q)$('productQuery').value='';if(!products?.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine passenden Produkte gefunden.';root.append(p)}
