@@ -34,6 +34,18 @@ function validateBudget(value) {
   return copy(value);
 }
 const TOOLS = Object.freeze({
+  'zaehlerstaende-erfassen': {
+    keys: ['energie_tracker_pro_v8'],
+    validate: value => {
+      if (!value || typeof value !== 'object' || Array.isArray(value) ||
+          !Array.isArray(value.readings) ||
+          !value.readings.every(item => item && typeof item === 'object' && !Array.isArray(item)) ||
+          (value.tarifs !== undefined && (!value.tarifs || typeof value.tarifs !== 'object' || Array.isArray(value.tarifs))))
+        throw new Error('Zählerstände-Bestand ist beschädigt.');
+      return copy({...value,tarifs:value.tarifs || {}});
+    },
+    build: values => values[0]
+  },
   'verliehene-gegenstaende-verwalten': {
     keys: ['verleih_tracker_pro_v3'],
     validate: value => {
