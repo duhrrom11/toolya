@@ -14,7 +14,7 @@ Playwright startet `scripts/home-preview.cjs` auf `127.0.0.1:4173`. Falls der Ch
 
 ## Sicherheitsgrenzen
 
-- Browser-Anfragen außerhalb des lokalen Preview-Ursprungs werden abgebrochen.
+- Browser-Anfragen außerhalb des lokalen Preview-Ursprungs werden abgebrochen. Die Navigation verwendet eine neutrale, im Test bereitgestellte HTML-Seite unter demselben Ursprung; echte Toolya-UI-Skripte werden dabei nicht ausgeführt.
 - Authentifizierung, Datenbankabfragen und RPC-Speicherung sind ausschließlich In-Memory-Mocks.
 - Kein Supabase-Projekt, kein Benutzerkonto und keine produktiven Datensätze werden angesprochen.
 - Beide Cloud-Adapter werden im echten Browser mit den unveränderten Shared-Modulen geladen.
@@ -23,4 +23,4 @@ Playwright startet `scripts/home-preview.cjs` auf `127.0.0.1:4173`. Falls der Ch
 
 ## Nachweisstatus
 
-Tests wurden im Featurebranch erstellt, jedoch in dieser Sitzung **nicht** als Playwright-Lauf ausgeführt: Der verfügbare Container besitzt zwar Chromium und Python-Playwright, aber weder eine lokale Kopie des privaten Toolya-Repositories noch die Node-Playwright-Abhängigkeit. Kein bestandener Browser-Test wird behauptet.
+Tests wurden im Featurebranch erstellt, jedoch in dieser Sitzung **nicht** als Playwright-Lauf ausgeführt: Der verfügbare Container besitzt Chromium und Python-Playwright, aber weder eine lokale Kopie des privaten Toolya-Repositories noch die Node-Playwright-Abhängigkeit. Ein echter Playwright-Lauf gegen den vollständigen Featurebranch ist deshalb nicht möglich. Kein bestandener Browser-Test wird behauptet.
