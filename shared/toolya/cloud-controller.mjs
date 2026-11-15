@@ -118,3 +118,16 @@ export function createBudgetCloudController(repository) {
   return createCloudController({ repository, validate: validateBudgetSnapshot,
     initial: { entries: [], budgets: {}, goals: [] } });
 }
+
+export function validateMovingSnapshot(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data) ||
+      !Array.isArray(data.locations) || !Array.isArray(data.boxes) ||
+      ![...data.locations,...data.boxes].every(item =>
+        item && typeof item === 'object' && !Array.isArray(item)))
+    throw new Error('Ungültiger Umzugskisten-Datenstand.');
+  return data;
+}
+export function createMovingCloudController(repository) {
+  return createCloudController({ repository, validate: validateMovingSnapshot,
+    initial: { locations: [], boxes: [] } });
+}
