@@ -22,14 +22,20 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   throw Error('Unexpected synthetic auth request '+u.pathname);
  });
  await page.goto(origin);await page.waitForFunction(()=>window.supabaseClient);
+ // An empty session must settle, not recursively emit SIGNED_OUT.
+ await page.evaluate(()=>{window.__signedOutEvents=0;supabaseClient.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')window.__signedOutEvents++})});
+ await page.waitForTimeout(200);
+ assert(await page.evaluate(()=>window.__signedOutEvents<3),'guest status must not create a SIGNED_OUT loop');
  await page.locator('#userInfo').click();await page.locator('#loginEmail').fill(user.email);await page.locator('#loginPassword').fill('synthetic-only-password');
- await page.evaluate(()=>{window.__loginDone=false;loginUser().then(()=>window.__loginDone=true)});
- await page.waitForFunction(()=>window.__loginDone,{},{timeout:5000});
+ await page.locator('#loginSubmit').click();
+ await page.waitForFunction(()=>document.querySelector('#settingsModal').classList.contains('hidden'),{},{timeout:5000});
  await page.waitForFunction(()=>document.querySelector('#userInfo').textContent==='Angemeldet',{},{timeout:5000});
  await page.reload();await page.waitForFunction(()=>document.querySelector('#userInfo').textContent==='Angemeldet',{},{timeout:5000});
- await page.evaluate(()=>{window.__logoutDone=false;logoutUser().then(()=>window.__logoutDone=true)});
+ await page.evaluate(()=>{window.__signedOutEvents=0;supabaseClient.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')window.__signedOutEvents++});window.__logoutDone=false;logoutUser().then(()=>window.__logoutDone=true)});
  await page.waitForFunction(()=>window.__logoutDone&&document.querySelector('#userInfo').textContent==='Anmelden',{},{timeout:5000});
  await page.waitForFunction(()=>document.querySelector('#cloudStatus').textContent==='Nicht angemeldet',{},{timeout:5000});
+ await page.waitForTimeout(200);
+ assert(await page.evaluate(()=>window.__signedOutEvents<3),'logout must settle without recursive Auth events');
  assert(requests>=3);console.log('PASS real SDK: sign-in completes, verified display, reload, sign-out, normal guest status; no production requests');
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exit(1)});

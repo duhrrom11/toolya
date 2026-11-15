@@ -69,10 +69,10 @@
     <link rel="stylesheet" href="assets/helferlein-accessibility.css?v=20261112-3">
     <script src="assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="assets/helferlein-dialogs.js"></script>
-<link rel="stylesheet" href="assets/toolya-home.css?v=20261115-static-duo-auth">
+<link rel="stylesheet" href="assets/toolya-home.css?v=20261115-auth-loop-fixed">
 <link rel="stylesheet" href="shared/toolya/alpha.css?v=20261115-alpha">
 <script type="module" src="shared/toolya/platform.mjs"></script>
-<script type="module" src="shared/toolya/home.mjs?v=20261115-static-duo-auth"></script></head>
+<script type="module" src="shared/toolya/home.mjs?v=20261115-auth-loop-fixed"></script></head>
 <body class="b3-home bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
 
@@ -215,11 +215,12 @@
                         <button type="button" onclick="saveRecoveredPassword()" class="rounded-lg bg-teal-700 px-3 py-2 text-white text-xs font-semibold">Neues Passwort speichern</button>
                         <p id="recoveryStatus" role="status" aria-live="polite" class="text-xs text-teal-900"></p>
                     </div>
+                    <p id="loginMessage" role="status" aria-live="polite" class="text-xs"></p>
                     <div class="grid grid-cols-3 gap-2">
                         <button type="button" onclick="registerUser()" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold">
                             👤 Registrieren
                         </button>
-                        <button type="button" onclick="loginUser()" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-semibold">
+                        <button type="button" id="loginSubmit" onclick="loginUser()" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-semibold">
                             🔑 Anmelden
                         </button>
                         <button type="button" onclick="logoutUser()" class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-semibold">
@@ -316,18 +317,30 @@
                 return;
             }
 
-            let error;
-            try { ({ error } = await window.supabaseClient.auth.signInWithPassword({ email, password })); }
-            catch (_) { document.getElementById("loginPassword").value = ""; alert("Anmeldung momentan nicht erreichbar."); return; }
-            if (error) {
+            const button = document.getElementById("loginSubmit");
+            const status = document.getElementById("loginMessage");
+            if (button.disabled) return;
+            button.disabled = true;
+            button.textContent = "Wird angemeldet …";
+            status.textContent = "Anmeldung wird geprüft …";
+            const slow = setTimeout(() => { status.textContent = "Die Anmeldung dauert länger. Bitte schließe ältere Toolya-Tabs und lade diese Seite neu, falls sie hängen bleibt."; }, 12000);
+            try {
+                const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                if (!data?.user || !data?.session?.access_token) throw new Error("Keine bestätigte Anmeldung erhalten.");
+                // This identity comes directly from the successful password response.
+                ++authStatusRequestId;
+                renderUserDisplay(data.user);
+                status.textContent = "Erfolgreich angemeldet.";
+                closeSettings();
+            } catch (error) {
+                status.textContent = error?.message || "Anmeldung momentan nicht erreichbar.";
+            } finally {
+                clearTimeout(slow);
                 document.getElementById("loginPassword").value = "";
-                alert(error.message);
-                return;
+                button.disabled = false;
+                button.textContent = "🔑 Anmelden";
             }
-
-            document.getElementById("loginPassword").value = "";
-            updateUserDisplay();
-            closeSettings();
         }
 
         // Recovery link uses Supabase's one-time token; never put passwords into URLs.
@@ -401,11 +414,11 @@
         }
 
         let authStatusRequestId = 0;
-        async function updateUserDisplay() {
+        async function updateUserDisplay(accessToken) {
             const requestId = ++authStatusRequestId;
             let data, error;
             try {
-                ({ data, error } = await window.supabaseClient.auth.getUser());
+                ({ data, error } = await window.supabaseClient.auth.getUser(accessToken));
                 // No stored session is the normal guest state, not a network failure.
                 if (error?.name === "AuthSessionMissingError") error = null;
             } catch (_) {
@@ -415,7 +428,10 @@
             // Ignore responses from older requests (e.g. a slow sign-in finishing after sign-out).
             if (requestId !== authStatusRequestId) return;
             const user = error ? null : (data?.user ?? null);
+            renderUserDisplay(user, error);
+        }
 
+        function renderUserDisplay(user, error = null) {
             const headerInfo = document.getElementById("userInfo");
             const cloudStatus = document.getElementById("cloudStatus");
             if (headerInfo) {
@@ -908,13 +924,20 @@
             });
         });
 
-        supabaseClient.auth.onAuthStateChange((event) => {
+        supabaseClient.auth.onAuthStateChange((event, session) => {
             if (event === "PASSWORD_RECOVERY") {
                 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", showPasswordRecovery, { once: true });
                 else showPasswordRecovery();
             }
-            // Leave the SDK auth lock before making another Auth API request.
-            setTimeout(() => { updateUserDisplay().catch(() => {}); }, 0);
+            // Empty-session events need no follow-up Auth request. Render signed-out
+            // state directly so status checks cannot contend with a new login.
+            if (!session) {
+                ++authStatusRequestId;
+                renderUserDisplay(null);
+                return;
+            }
+            // Verify this event's token directly, without waiting on the session lock.
+            setTimeout(() => { updateUserDisplay(session.access_token).catch(() => {}); }, 0);
         });
     </script>
 </body>
