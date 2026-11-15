@@ -25,7 +25,7 @@ const root=path.resolve(__dirname,'../..');
  const browser=await chromium.launch({headless:true,executablePath:process.env.ESTATE_CHROMIUM||undefined,args:['--no-sandbox']});
  const context=await browser.newContext();const errors=[];
  context.on('page',p=>{p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error'&&!m.text().includes('status of 4'))errors.push(m.text());});});
- await context.addInitScript(()=>{window.print=()=>{document.body.dataset.printReady='true';};});
+ await context.addInitScript(()=>{window.print=()=>{document.body.dataset.printReady='true';};document.addEventListener('securitypolicyviolation',e=>console.warn('CSP-SOURCE',e.sourceFile,e.lineNumber,e.columnNumber,e.violatedDirective,e.sample));});
  await context.route('https://yheogmeaosuigyaxkwth.supabase.co/**',async route=>{
   const req=route.request(),u=new URL(req.url()),method=req.method(),body=req.postDataJSON();
   const fulfill=async(status,obj)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(obj)});
