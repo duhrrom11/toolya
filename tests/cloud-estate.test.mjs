@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 const ctx={};vm.runInNewContext(readFileSync(new URL('../assets/estate-cloud-guard.js',import.meta.url),'utf8'),ctx);
-const {requireOwner,saveEncryptedSnapshot,verifyEncryptedBackup}=ctx.EstateCloudGuard;
+const {requireOwner,saveEncryptedSnapshot,verifyEncryptedBackup,assertRestoreCompatible}=ctx.EstateCloudGuard;
 const cipher={ciphertext:'encrypted'};
 function fixture(user={id:'owner',is_anonymous:false}){
  let row=null,writes=0,conflict=false;
@@ -56,4 +56,14 @@ test('estate backup refuses mismatched ciphertext or recovery envelope even with
  assert.equal((await verifyEncryptedBackup(base)).entries,0);
  for(const changed of [{expectedEncryptedData:{ciphertext:'other'}},{expectedEncryptedConfig:{ciphertext:'other'}},{expectedRecoveryKey:{ciphertext:'other'}}])
   await assert.rejects(verifyEncryptedBackup({...base,...changed}),/backup_unverified/);
+});
+
+test('estate restoration preserves different local and remote vaults',()=>{
+ assert.throws(()=>assertRestoreCompatible({version:2,vaultId:'local',pending:false},{vault_id:'remote',updated_at:'rev'}),/vault_mismatch/);
+ assert.doesNotThrow(()=>assertRestoreCompatible(null,{vault_id:'remote'}));
+ assert.doesNotThrow(()=>assertRestoreCompatible({version:2,vaultId:'same',pending:false},{vault_id:'same',updated_at:'rev'}));
+});
+test('estate restoration refuses newer cloud revision when unsynced local changes exist',()=>{
+ assert.throws(()=>assertRestoreCompatible({version:2,vaultId:'same',pending:true,cloudStamp:'old'},{vault_id:'same',updated_at:'new'}),/conflict/);
+ assert.doesNotThrow(()=>assertRestoreCompatible({version:2,vaultId:'same',pending:true,cloudStamp:'same'},{vault_id:'same',updated_at:'same'}));
 });
