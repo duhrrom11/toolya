@@ -25,6 +25,11 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
  await page.waitForFunction(()=>document.querySelector('.tb-body').textContent.includes('Ohren'));
  assert.equal(await page.locator('.tb-avatar').evaluate(i=>i===document.activeElement),true);
  await page.evaluate(()=>{toolyaBuddy.show('warning','Wichtiger Hinweis');for(let i=0;i<5;i++)toolyaBuddy.tickle()});assert.equal(await page.locator('.tb-body').textContent(),'Wichtiger Hinweis');
+ // Notices must remain centered in the current viewport, even after scrolling.
+ const centered=async()=>page.locator('.tb-message-box').evaluate(el=>{const r=el.getBoundingClientRect();return {dx:Math.abs((r.left+r.right)/2-innerWidth/2),dy:Math.abs((r.top+r.bottom)/2-innerHeight/2),visible:r.width>0&&r.height>0}});
+ let pos=await centered();assert(pos.visible&&pos.dx<3&&pos.dy<3,'notice centered at initial scroll '+JSON.stringify(pos));
+ await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));pos=await centered();assert(pos.visible&&pos.dx<3&&pos.dy<3,'notice follows viewport after scrolling '+JSON.stringify(pos));
+
  await page.evaluate(()=>{window.confirmed=toolyaBuddy.confirm({message:'Sicher bestätigen?'})});assert.equal(await page.evaluate(()=>toolyaBuddy.tickle()),false);await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>window.confirmed),false);
  await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('.tb-message-box .ty-frame').evaluate(e=>getComputedStyle(e).animationName),'none');
  await page.evaluate(()=>{toolyaBuddy.dismiss();toolyaBuddy.setCharacter('purple')});await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).selectOption('purple');
