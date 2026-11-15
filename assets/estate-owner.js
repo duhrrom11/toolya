@@ -71,8 +71,8 @@
   }
   if(workingConfig.alarmPersons.length>10)throw Error('Deine bisherigen Kontakte bleiben erhalten. Bitte reduziere die Kontaktliste zuerst im bisherigen Stand auf zehn Personen.');
   key=workingKey;payload=workingPayload;config=workingConfig;payload.trusteeKeys||={};
-  // Existing preparation keys remain valid; only contacts without a key receive one.
-  for(const p of config.alarmPersons){p.id=String(p.id||('p_'+C.random().slice(0,32)));if(!/^[a-f0-9]{64}$/.test(payload.trusteeKeys[p.id]||''))payload.trusteeKeys[p.id]=C.random();}
+  // Missing keys may be created, but an existing issued key must never be silently rotated.
+  for(const p of config.alarmPersons){p.id=String(p.id||('p_'+C.random().slice(0,32)));const existing=payload.trusteeKeys[p.id];if(existing!==undefined&&!(typeof existing==='string'&&/^[a-f0-9]{64}$/i.test(existing)))throw Error('conflict');if(existing===undefined)payload.trusteeKeys[p.id]=C.random();}
   config.ownerEmail=user.email;config.vaultId=local?.vaultId||remote?.vault_id||config.vaultId;
   const encryptedData=await C.encrypt(payload,key),encryptedConfig=await C.encrypt(config,key);
   // Check the replacement before atomically replacing the legacy plaintext-key record.
