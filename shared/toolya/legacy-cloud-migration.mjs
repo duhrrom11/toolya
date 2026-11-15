@@ -34,6 +34,19 @@ function validateBudget(value) {
   return copy(value);
 }
 const TOOLS = Object.freeze({
+  'pflanzenpflege-giessplan': {
+    keys:['pflanzen_pass_v10'],
+    validate:value=>{
+      if(!value||typeof value!=='object'||Array.isArray(value)||!Array.isArray(value.plants)||
+        !value.plants.every(x=>x&&typeof x==='object'&&!Array.isArray(x)))
+        throw Error('Pflanzen-Bestand ist beschädigt.');
+      return copy({...value,
+        inventory:Array.isArray(value.inventory)?value.inventory:[{name:'Tomatendünger Flüssig',qty:'1 L'},{name:'Bio Blumenerde',qty:'40 L'}],
+        seeds:Array.isArray(value.seeds)?value.seeds:[],
+        beetSlots:Array.isArray(value.beetSlots)?value.beetSlots:Array(16).fill(null)});
+    },
+    build:values=>values[0]
+  },
   'zaehlerstaende-erfassen': {
     keys: ['energie_tracker_pro_v8'],
     validate: value => {
