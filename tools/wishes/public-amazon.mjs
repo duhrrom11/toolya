@@ -131,7 +131,25 @@ function detailCard(list){
   actions.append(update,remove,message);root.append(actions);
  }
  const items=products.filter(p=>p.publication_id===list.id);
- if(items.length){const ul=document.createElement('ul');for(const p of items){const li=document.createElement('li');li.className='product-preview';const image=safeImageUrl(p.image_url);if(image){const img=document.createElement('img');img.src=image;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';li.append(img)}const details=document.createElement('span');details.append(text('strong',p.title||'Amazon-Produkt'));if(p.description)details.append(text('span',' – '+p.description));li.append(details);if(p.price!==null&&p.price!==undefined&&Number.isFinite(Number(p.price))){const price=text('span',' · '+new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(Number(p.price)));price.className='product-price';details.append(price)}if(p.product_url&&safeProductUrl(p.product_url)){const link=text('a',' Produkt ansehen');link.href=p.product_url;link.rel='noopener noreferrer';link.target='_blank';li.append(link)}ul.append(li)}root.append(ul);root.append(text('p','Produktvorschau – vollständige Liste bei Amazon öffnen.'))}
+ if(items.length){const ul=document.createElement('ul');for(const p of items){const li=document.createElement('li');li.className='product-preview';const image=safeImageUrl(p.image_url);if(image){const img=document.createElement('img');img.src=image;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';li.append(img)}const details=document.createElement('span');details.append(text('strong',p.title||'Amazon-Produkt'));if(p.description)details.append(text('span',' – '+p.description));li.append(details);if(p.price!==null&&p.price!==undefined&&Number.isFinite(Number(p.price))){const price=text('span',' · '+new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(Number(p.price)));price.className='product-price';details.append(price)}if(p.product_url&&safeProductUrl(p.product_url)){const link=text('a',' Produkt ansehen');link.href=p.product_url;link.rel='noopener noreferrer';link.target='_blank';li.append(link)}
+ if(sessionUser?.id===list.user_id&&(p.price==null||!p.description?.trim())){
+  const enrich=text('button','ⓘ Produktangaben ergänzen');enrich.type='button';enrich.className='enrich-product';
+  const feedback=text('span','');feedback.className='enrich-feedback';feedback.setAttribute('role','status');
+  enrich.onclick=async()=>{
+   enrich.disabled=true;feedback.textContent='Amazon-Produktdaten werden einzeln geprüft …';
+   try{
+    const {data,error}=await db.functions.invoke('amazon-wishlist-scrape',{body:{action:'enrich-product',publication_id:list.id,asin:p.asin}});
+    if(error)throw await functionError(error);
+    if(data?.status==='success'){
+     await renderSelectedList();
+     status('selectedListStatus','Produktangaben wurden aktualisiert.');
+    }else feedback.textContent='Amazon hat für dieses Produkt keine weiteren verlässlichen Angaben geliefert.';
+   }catch(e){feedback.textContent=e.message||'Produktdaten konnten nicht ergänzt werden.'}
+   finally{enrich.disabled=false}
+  };
+  li.append(enrich,feedback);
+ }
+ ul.append(li)}root.append(ul);root.append(text('p','Weitere Daten können bei Bedarf pro Produkt ergänzt werden.'))}
  else root.append(text('p',['pending','processing'].includes(list.scrape_status)?'Produktdaten werden geprüft …':'Produktdaten nicht verfügbar – Amazon-Link verwenden.'));
  return root;
 }
