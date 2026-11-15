@@ -74,3 +74,25 @@ test('session invalidation during confirmation blocks cloud import', async () =>
   assert.equal(repo.writes,0);
   assert.equal(controller.ready,false);
 });
+
+test('logout and reload at identical revision cannot authorize stale backup import', async () => {
+  const repo=repository({cars:[],events:[],tires:[]});
+  const controller=createCarCloudController(repo);
+  await controller.load();
+  let confirmations=0;
+  await assert.rejects(confirmCloudReplacement({
+    controller,incoming:{cars:[{id:9}],events:[],tires:[]},validate:x=>x,
+    confirm:async()=>{
+      confirmations++;
+      if (confirmations===2) {
+        controller.invalidate();
+        await controller.load();
+      }
+      return true;
+    },
+    exportBackup:async()=>true
+  }),/Cloud-Sitzung/);
+  assert.equal(repo.writes,0);
+  assert.equal(controller.ready,true);
+  assert.equal(controller.revision,1);
+});
