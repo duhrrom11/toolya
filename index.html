@@ -403,6 +403,16 @@
                     <label class="helferlein-field" for="loginEmail"><span class="helferlein-field-label">E-Mail-Adresse</span><input type="email" id="loginEmail" required aria-label="E-Mail-Adresse" autocomplete="email" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
                     <label class="helferlein-field" for="loginPassword"><span class="helferlein-field-label">Passwort</span><input type="password" id="loginPassword" required minlength="6" aria-label="Passwort" autocomplete="current-password" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
 
+                    <button type="button" onclick="requestPasswordReset()" class="text-xs text-teal-700 underline hover:text-teal-900">Passwort vergessen?</button>
+                    <div id="passwordRecoveryPanel" hidden class="rounded-lg border border-teal-200 bg-teal-50 p-3 space-y-2">
+                        <p class="text-xs font-semibold text-teal-900">Neues Passwort festlegen</p>
+                        <label for="recoveryPassword" class="block text-xs">Neues Passwort (mindestens 8 Zeichen)</label>
+                        <input id="recoveryPassword" type="password" minlength="8" autocomplete="new-password" class="w-full border rounded-lg px-3 py-2 text-xs">
+                        <label for="recoveryPasswordConfirm" class="block text-xs">Passwort wiederholen</label>
+                        <input id="recoveryPasswordConfirm" type="password" minlength="8" autocomplete="new-password" class="w-full border rounded-lg px-3 py-2 text-xs">
+                        <button type="button" onclick="saveRecoveredPassword()" class="rounded-lg bg-teal-700 px-3 py-2 text-white text-xs font-semibold">Neues Passwort speichern</button>
+                        <p id="recoveryStatus" role="status" aria-live="polite" class="text-xs text-teal-900"></p>
+                    </div>
                     <div class="grid grid-cols-3 gap-2">
                         <button type="button" onclick="registerUser()" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold">
                             👤 Registrieren
@@ -516,6 +526,66 @@
             document.getElementById("loginPassword").value = "";
             updateUserDisplay();
             closeSettings();
+        }
+
+        // Recovery link uses Supabase's one-time token; never put passwords into URLs.
+        let passwordRecoveryActive = false;
+        async function requestPasswordReset() {
+            const input = document.getElementById("loginEmail");
+            const email = input.value.trim().toLowerCase();
+            if (!email || !input.checkValidity()) {
+                alert("Bitte zuerst eine gültige E-Mail-Adresse eingeben.");
+                input.focus();
+                return;
+            }
+            try {
+                const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
+                    redirectTo: "https://toolya.app/index.html"
+                });
+                if (error) throw error;
+                alert("Falls ein Konto für diese E-Mail-Adresse existiert, erhältst du einen Link zum Zurücksetzen des Passworts.");
+            } catch (_) {
+                alert("Die Anfrage konnte gerade nicht verarbeitet werden. Bitte versuche es später erneut.");
+            }
+        }
+
+        function showPasswordRecovery() {
+            passwordRecoveryActive = true;
+            const panel = document.getElementById("passwordRecoveryPanel");
+            if (!panel) return;
+            panel.hidden = false;
+            // Open account settings so the user can complete the recovery immediately.
+            if (typeof openSettings === "function") openSettings();
+            document.getElementById("recoveryPassword").focus();
+        }
+
+        async function saveRecoveredPassword() {
+            const status = document.getElementById("recoveryStatus");
+            if (!passwordRecoveryActive) {
+                status.textContent = "Bitte öffne zuerst den Link aus deiner Passwort-E-Mail.";
+                return;
+            }
+            const first = document.getElementById("recoveryPassword");
+            const second = document.getElementById("recoveryPasswordConfirm");
+            if (first.value.length < 8 || first.value !== second.value) {
+                status.textContent = "Bitte zwei identische Passwörter mit mindestens 8 Zeichen eingeben.";
+                return;
+            }
+            const newPassword = first.value;
+            try {
+                const { error } = await window.supabaseClient.auth.updateUser({ password: newPassword });
+                if (error) throw error;
+                first.value = "";
+                second.value = "";
+                passwordRecoveryActive = false;
+                document.getElementById("passwordRecoveryPanel").hidden = true;
+                status.textContent = "";
+                alert("Dein Passwort wurde geändert. Du kannst dich jetzt damit anmelden.");
+                await window.supabaseClient.auth.signOut();
+                updateUserDisplay();
+            } catch (_) {
+                status.textContent = "Passwort konnte nicht geändert werden. Bitte fordere gegebenenfalls einen neuen Link an.";
+            }
         }
 
         async function logoutUser() {
@@ -1013,6 +1083,8 @@
         window.registerUser = registerUser;
         window.loginUser = loginUser;
         window.logoutUser = logoutUser;
+        window.requestPasswordReset = requestPasswordReset;
+        window.saveRecoveredPassword = saveRecoveredPassword;
 
         document.addEventListener('DOMContentLoaded', () => {
             try {
@@ -1031,7 +1103,11 @@
             });
         });
 
-        supabaseClient.auth.onAuthStateChange(async () => {
+        supabaseClient.auth.onAuthStateChange(async (event) => {
+            if (event === "PASSWORD_RECOVERY") {
+                if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", showPasswordRecovery, { once: true });
+                else showPasswordRecovery();
+            }
             updateUserDisplay().catch(() => {});
         });
     </script>
