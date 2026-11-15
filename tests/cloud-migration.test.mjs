@@ -42,3 +42,23 @@ test('foreign device ownership blocks migration',async()=>{
   await assert.rejects(ctx.migration.inspect(),/anderen Konto/);
   assert.equal(ctx.writes,0);
 });
+
+test('JSONB key reordering does not falsely fail confirmed migration',async()=>{
+  const local={cars:[{id:1,name:'Demo'}],events:[],tires:[]};
+  const storage={getItem:key=>key==='kfz_tracker_pro_v3'?JSON.stringify(local):null};
+  const client={auth:{getUser:async()=>({data:{user:{id:'user-a',is_anonymous:false}},error:null})}};
+  let cloud=null, writes=0;
+  const repository={
+    async read(){return {exists:cloud!==null,data:cloud,revision:cloud?1:null};},
+    async save(data,revision){
+      assert.equal(revision,null);
+      writes++;
+      cloud={tires:data.tires,events:data.events,cars:data.cars.map(c=>({name:c.name,id:c.id}))};
+      return {data:cloud,revision:1};
+    }
+  };
+  const migration=createLegacyMigration({client,repository,tool:'autokosten-reifenwechsel',storage});
+  const result=await migration.migrate({confirm:async()=>true,exportBackup:async()=>true});
+  assert.equal(result.status,'confirmed');
+  assert.equal(writes,1);
+});
