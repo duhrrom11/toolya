@@ -379,7 +379,7 @@
                             <div id="sugar-result" class="px-3 py-2 rounded-xl bg-orange-50 border border-orange-100 text-sm font-bold text-orange-600">200g</div>
                         </div>
                     </div>
-                    <p id="sugar-tip" class="text-xs text-slate-500">Hinweis: Xylit/Erythrit hat einen leichten Frische-Effekt auf der Zunge.</p>
+                    <p id="sugar-tip" class="text-xs text-slate-500">Richtwerte: Süßkraft und Backeigenschaften hängen vom Produkt und Rezept ab.</p>
                 </div>
             </div>
 
@@ -468,8 +468,8 @@
 
         </div>
 
-        <!-- Right Column: Results & Output Sidebar -->
-        <div class="space-y-6">
+        <!-- Results only while calculating -->
+        <div id="b3-baking-results" class="space-y-6">
             
             <!-- Umgerechnet & Analyse -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5 sticky top-24">
@@ -716,6 +716,7 @@
         }
 
         function openTab(tabId) {
+            document.body.dataset.bakingView = tabId;
             ['rechner', 'finder', 'substanz', 'tools', 'rezepte'].forEach(id => {
                 document.getElementById('tab-' + id).classList.add('hidden');
                 document.getElementById('btn-tab-' + id)?.classList.remove('bg-orange-50', 'text-orange-600');
