@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 const ctx={};vm.runInNewContext(readFileSync(new URL('../assets/estate-cloud-guard.js',import.meta.url),'utf8'),ctx);
-const {requireOwner,saveEncryptedSnapshot,verifyEncryptedBackup,assertRestoreCompatible}=ctx.EstateCloudGuard;
+const {requireOwner,saveEncryptedSnapshot,verifyEncryptedBackup,assertRestoreCompatible,restoreCloudSnapshot}=ctx.EstateCloudGuard;
 const cipher={ciphertext:'encrypted'};
 function fixture(user={id:'owner',is_anonymous:false}){
  let row=null,writes=0,conflict=false;
@@ -66,4 +66,22 @@ test('estate restoration preserves different local and remote vaults',()=>{
 test('estate restoration refuses newer cloud revision when unsynced local changes exist',()=>{
  assert.throws(()=>assertRestoreCompatible({version:2,vaultId:'same',pending:true,cloudStamp:'old'},{vault_id:'same',updated_at:'new'}),/conflict/);
  assert.doesNotThrow(()=>assertRestoreCompatible({version:2,vaultId:'same',pending:true,cloudStamp:'same'},{vault_id:'same',updated_at:'same'}));
+});
+
+test('estate restores encrypted cloud snapshot on new device without local storage',async()=>{
+ let calls=0;const remote={vault_id:'v_1',updated_at:'rev1',recovery_key:{ciphertext:'wrapped'},encrypted_data:{ciphertext:'data'},encrypted_config:{ciphertext:'config'}};
+ const client={auth:{async getUser(){calls++;return {data:{user:{id:'owner'}},error:null}}},from(){return {select(){return this},eq(){return this},async maybeSingle(){return {data:remote,error:null}}}}};
+ const restored=await restoreCloudSnapshot({client,ownerId:'owner',password:'password',cryptoApi:{
+  async unwrap(envelope,password){assert.equal(envelope,remote.recovery_key);assert.equal(password,'password');return 'secret'},
+  async decrypt(encrypted,key){assert.equal(key,'secret');return encrypted===remote.encrypted_data?{entries:[{id:'entry'}]}:{ownerName:'Test'}}
+ },validatePayload:p=>p});
+ assert.equal(restored.payload.entries.length,1);assert.equal(restored.config.vaultId,'v_1');assert.equal(restored.stamp,'rev1');assert.equal(calls,2);
+});
+test('estate refuses invalid new-device recovery and changed identity',async()=>{
+ let user={id:'owner'};const remote={vault_id:'v_1',updated_at:'rev1',recovery_key:{ciphertext:'wrapped'},encrypted_data:{ciphertext:'data'},encrypted_config:{ciphertext:'config'}};
+ const client={auth:{async getUser(){return {data:{user},error:null}}},from(){return {select(){return this},eq(){return this},async maybeSingle(){return {data:remote,error:null}}}}};
+ const base={client,ownerId:'owner',password:'password',cryptoApi:{async unwrap(){return 'key'},async decrypt(v){user={id:'other'};return v===remote.encrypted_data?{entries:[]}:{vaultId:'v_1'}}},validatePayload:p=>p};
+ await assert.rejects(restoreCloudSnapshot(base),/login_required/);
+ user={id:'owner'};
+ await assert.rejects(restoreCloudSnapshot({...base,cryptoApi:{async unwrap(){throw Error('wrong_password')}}}),/wrong_password/);
 });
