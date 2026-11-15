@@ -223,7 +223,7 @@ test('budget saves preserve newer edits and handle rejected requests',()=>{
 test('product search ignores stale session responses and preserves newer query edits',()=>{
  const planner=source('gift-planner.mjs');
  assert.ok(planner.includes('const revision=++productSearchRevision,ownerId=user?.id'));
- assert.ok(planner.includes('if(revision!==productSearchRevision||user?.id!==ownerId)return'));
+ assert.ok(planner.includes("if(revision!==productSearchRevision||user?.id!==ownerId||$('productQuery').value.trim()!==q)return"));
  assert.ok(planner.includes("if($('productQuery').value.trim()===q)$('productQuery').value=''"));
  assert.ok(planner.includes('if(revision===productSearchRevision)$(' + "'searchProducts'" + ').disabled=false'));
 });
