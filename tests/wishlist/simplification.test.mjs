@@ -89,3 +89,14 @@ test('offline gift ideas filter by category, occasion and query',async()=>{
  assert.ok(matchingIdeas({query:'Pflanze'}).some(item=>item.title.includes('Pflanze')));
  assert.ok(matchingIdeas({budget:'20'}).every(item=>!('price' in item)));
 });
+
+test('social profile state and obsolete profile controls are absent',()=>{
+ const app=source('app.mjs');
+ const html=readFileSync(resolve(root,'tools/wishes/index.html'),'utf8');
+ for(const state of ['hiddenProfileIds','selectedProfileId','updateHiddenProfiles'])
+  assert.equal(app.includes(state),false,state);
+ for(const id of ['restoreHiddenProfiles','hiddenProfileInfo','copyMyProfile'])
+  assert.equal(html.includes('id="'+id+'"'),false,id);
+ assert.match(app,/\$\('saveProfile'\)\.onclick/);
+ assert.match(app,/const allowed=\[user\.id\]/);
+});
