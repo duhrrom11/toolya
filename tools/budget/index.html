@@ -565,7 +565,8 @@ async function toolyaCloudBoot(tool) {
     const storage = localStorage;
     const prepared = await prepareCloudTool({
       client:window.supabaseClient,tool,storage,
-      confirmMigration: async () => confirm('Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden niemals überschrieben.'),
+      confirmMigration: async () => confirm('Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden niemals überschrieben. Auf gemeinsam genutzten Geräten bitte zuerst die Zugehörigkeit der Daten prüfen.'),
+      reviewExistingCloud: async () => confirm('Es gibt sowohl Cloud-Daten als auch Gerätedaten. Die Cloud bleibt maßgeblich; lokale Daten werden nicht zusammengeführt oder gelöscht. Lokale Daten jetzt sichern und ausschließlich die Cloud-Daten verwenden?'),
       exportBackup: async (data) => {
         const blob = new Blob([JSON.stringify(data)],{type:'application/json'});
         const url = URL.createObjectURL(blob), link=document.createElement('a');
