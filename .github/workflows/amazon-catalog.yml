@@ -1,5 +1,11 @@
 name: Refresh curated Amazon product catalog
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'shared/toolya/amazon-candidates.json'
+      - 'scripts/amazon-catalog-bulk.mjs'
+      - 'scripts/amazon-catalog-import.mjs'
   schedule:
     - cron: '23 4 * * 1'
   workflow_dispatch:
