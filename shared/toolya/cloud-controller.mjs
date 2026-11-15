@@ -131,3 +131,16 @@ export function createMovingCloudController(repository) {
   return createCloudController({ repository, validate: validateMovingSnapshot,
     initial: { locations: [], boxes: [] } });
 }
+
+export function validateLoansSnapshot(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data) ||
+      !['items','contacts','inventory'].every(key =>
+        Array.isArray(data[key]) && data[key].every(item =>
+          item && typeof item === 'object' && !Array.isArray(item))))
+    throw new Error('Ungültiger Verleih-Datenstand.');
+  return data;
+}
+export function createLoansCloudController(repository) {
+  return createCloudController({repository,validate:validateLoansSnapshot,
+    initial:{items:[],contacts:[],inventory:[]}});
+}
