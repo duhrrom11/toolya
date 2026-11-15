@@ -37,6 +37,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify SQL migration parity and estate Node.js regression tests
+        run: node --test tests/cloud-estate.test.mjs
       - name: Apply isolated schema and actual release RPC snapshot
         run: psql -X -v ON_ERROR_STOP=1 -f tests/fixtures/estate-release-v2-isolated.sql
       - name: Apply pending migration to disposable PostgreSQL only
