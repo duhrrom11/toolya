@@ -63,32 +63,6 @@
    link.href=ROOT;link.textContent='Zur Toolya-Startseite';
    section.append(title,note,link);surface.append(section);
  }
- const hasTheme=surface.querySelector('[data-b3-theme],#b3-backform-theme,#b3-hub-theme');
- if(!hasTheme && !isEstate && !isWishlist){
-   const section=document.createElement('section');section.className='helferlein-common-section';
-   const heading=document.createElement('h3');heading.textContent='🎨 Darstellung';
-   const label=document.createElement('label');label.textContent='Designmodus ';
-   const select=document.createElement('select');select.setAttribute('aria-label','Designmodus');
-   for(const [value,text] of [['auto','Automatisch'],['light','Hell'],['dark','Dunkel']]){
-     const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);
-   }
-   const storageKey='helferlein_ui_theme_v1';
-   const prefers=window.matchMedia('(prefers-color-scheme: dark)');
-   const valid=value=>['auto','light','dark'].includes(value)?value:'auto';
-   let value='auto';try{value=valid(localStorage.getItem(storageKey))}catch{}
-   select.value=value;
-   const update=()=>{
-     const dark=value==='dark'||(value==='auto'&&prefers.matches);
-     document.body.classList.toggle('b3-dark',dark);
-     document.documentElement.style.colorScheme=dark?'dark':'light';
-   };
-   select.addEventListener('change',()=>{
-     value=valid(select.value);
-     try{localStorage.setItem(storageKey,value)}catch{select.value='auto';value='auto'}
-     update();
-   });
-   prefers.addEventListener?.('change',update);
-   label.append(select);section.append(heading,label);surface.append(section);
-   update();
- }
+ document.body.classList.remove('b3-dark');
+ document.documentElement.style.colorScheme='light';
 })();
