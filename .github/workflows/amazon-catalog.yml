@@ -4,11 +4,16 @@ on:
     - cron: '23 4 * * 1'
   workflow_dispatch:
     inputs:
-      tool:
-        description: 'Tool slug (e.g. meters, moving, car)'
-        required: false
+      mode:
+        description: 'Import mode'
+        required: true
         type: choice
-        options: [baking, budget, car, estate, housemates, loans, meters, moving, parking, pet-health, plants]
+        default: bulk
+        options: [bulk, single]
+      tool:
+        description: 'Tool slug (only for single mode)'
+        required: false
+        type: string
       product_url:
         description: 'Direct Amazon.de product URL (/dp/ASIN)'
         required: false
@@ -18,7 +23,7 @@ permissions:
 jobs:
   import:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,8 +37,10 @@ jobs:
         env:
           TOOL: ${{ inputs.tool }}
           PRODUCT_URL: ${{ inputs.product_url }}
+          MODE: ${{ inputs.mode }}
         run: |
-          if [ -n "$TOOL" ] && [ -n "$PRODUCT_URL" ]; then
+          if [ "$MODE" = "single" ]; then
+            if [ -z "$TOOL" ] || [ -z "$PRODUCT_URL" ]; then echo "Single mode requires tool and product_url" >&2; exit 2; fi
             node scripts/amazon-catalog-import.mjs "$TOOL" "$PRODUCT_URL"
           else
             node scripts/amazon-catalog-bulk.mjs
