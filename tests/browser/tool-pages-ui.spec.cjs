@@ -671,3 +671,18 @@ test('estate: browser rejects duplicate legacy emergency contact IDs',async({pag
  });
  expect(result).toBe('conflict');
 });
+
+test('estate: real browser crypto binds emergency envelopes to the correct trustee',async({page})=>{
+ await isolatedEstate(page,true);await page.goto(origin+'/tools/estate/index.html');
+ const result=await page.evaluate(async()=>{
+  const C=EstateCrypto,a=C.random(),b=C.random();
+  const people=[{id:'a',contact:'a@example.invalid'},{id:'b',contact:'b@example.invalid'}];
+  const replica=await C.readReplica([{id:'entry',title:'Isolated fixture'}],people,{a,b});
+  const opened=await C.openReplica({content:replica.content,envelope:replica.guardians[0].envelope},a);
+  let swapped='unexpected',duplicate='unexpected';
+  try{await C.openReplica({content:replica.content,envelope:replica.guardians[0].envelope},b)}catch{swapped='rejected'}
+  try{await C.readReplica([],people,{a,b:a})}catch(e){duplicate=e.message}
+  return {opened:opened.entries[0].title,swapped,duplicate,unique:replica.guardians[0].hash!==replica.guardians[1].hash};
+ });
+ expect(result).toEqual({opened:'Isolated fixture',swapped:'rejected',duplicate:'conflict',unique:true});
+});
