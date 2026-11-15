@@ -402,7 +402,7 @@ async function toolyaCloudBoot(tool) {
     if(tool==='haushaltsbuch-kassenbon')initCharts();
     renderApp();
   } catch(error) {
-    gate.textContent='Toolya Cloud gesperrt: '+error.message+' Bitte anmelden und Seite neu laden.';
+    gate.textContent='Toolya Cloud gesperrt: '+error.message+' '; const link=document.createElement('a');link.href='../../index.html';link.textContent='Zur Anmeldung auf der Startseite';link.style.cssText='display:block;color:#0369a1;text-decoration:underline';gate.append(link);
     console.error(error);
   }
 }
@@ -1073,7 +1073,7 @@ async function toolyaCloudBoot(tool) {
                 return alert("Backup zu groß (maximal 20 MB).");
             }
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 input.value = '';
                 try {
                     const parsed = JSON.parse(e.target.result);
@@ -1084,12 +1084,12 @@ async function toolyaCloudBoot(tool) {
                         return alert("Ungültiges Backup-Format.");
                     }
                     if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
-                    saveData(parsed);
+                    if (!await saveData(parsed)) return;
                     loadCarDropdowns();
                         renderApp();
                     alert("Backup erfolgreich importiert!");
                 } catch (err) {
-                    alert("Fehler beim Lesen der Datei.");
+                    alert("Cloud-Import fehlgeschlagen: " + err.message);
                 }
             };
             reader.onerror = () => {
