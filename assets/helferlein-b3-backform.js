@@ -33,7 +33,7 @@ function applyTheme(){
 function paint(arr){
  for(const [index,x] of arr.entries()){
  const button=document.getElementById('btn-tab-'+x.id);
- if(button)button.style.order=String(index);
+ // Navigation remains in a fixed, predictable order; saved layout only affects density.
  document.getElementById('tab-'+x.id)?.setAttribute('data-b3-size',x.size);
  }
 }
@@ -76,13 +76,26 @@ function editorRender(){
 function init(){
  document.body.classList.add('b3','b3-backform');
  document.getElementById('main-content')?.classList.add('b3-backform-main');
+ // Keep the existing calculator functions and field IDs; regroup only the visible cards.
+ const calculator=document.getElementById('tab-rechner');
+ const helpers=document.getElementById('tab-substanz');
+ const glaze=document.getElementById('glaze-result');
+ const slices=document.getElementById('slice-info');
+ if(calculator&&helpers&&glaze&&slices){
+  const extras=glaze.closest('.grid.grid-cols-1.sm\\:grid-cols-2');
+  if(extras&&extras.parentElement===calculator){
+   extras.classList.add('b3-helper-extras');
+   helpers.append(extras);
+  }
+ }
  const editor=document.getElementById('b3-backform-editor');
  const edit=document.getElementById('b3-backform-edit');
  if(editor&&edit){
  edit.addEventListener('click',()=>{draft=clone(layout);edit.disabled=true;editor.hidden=false;paint(draft);editorRender();editor.scrollIntoView({block:'nearest',behavior:'smooth'})});
  }
- // Original openTab() stays the only controller for recipe, finder and cost views.
+ // Original openTab() remains the controller for all five internal views.
  paint(layout);applyTheme();
+ document.body.dataset.bakingView='rechner';
 
  window.addEventListener('storage',e=>{
  if(e.key===L&&!draft){layout=load();paint(layout)}
