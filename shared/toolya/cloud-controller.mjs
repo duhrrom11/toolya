@@ -54,12 +54,24 @@ export function createCloudController({ repository, validate, initial }) {
     async mutate(transform) {
       ensureReady();
       if (typeof transform !== 'function') throw new TypeError('Änderungsfunktion fehlt.');
-      const next = clone(state);
-      const changed = transform(next);
-      if (changed && typeof changed.then === 'function') {
-        throw new Error('Asynchrone Mutationen sind nicht erlaubt.');
+      // Reserve the controller synchronously so nested/reentrant mutations
+      // cannot observe the same revision and race against one another.
+      busy = true;
+      let next;
+      try {
+        next = clone(state);
+        const changed = transform(next);
+        if (changed && typeof changed.then === 'function')
+          throw new Error('Asynchrone Mutationen sind nicht erlaubt.');
+        next = validate(clone(changed === undefined ? next : changed));
+      } catch (error) {
+        busy = false;
+        throw error;
       }
-      return api.replace(changed === undefined ? next : changed);
+      busy = false;
+      // No await occurs between releasing the reservation and replace(),
+      // whose synchronous prelude reserves the controller for the write.
+      return api.replace(next);
     },
     invalidate() { loaded = false; revision = null; ++generation; }
   };
