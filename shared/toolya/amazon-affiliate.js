@@ -127,6 +127,13 @@ async function loadCatalog(){
  }
  if(!group.children.length)return;
  section.append(group);main.append(section);existing();
+ // Once curated products are present, remove generic editorial search links for this tool.
+ document.querySelectorAll('a[href*="amazon.de/s?"]').forEach(a=>{
+  if(a.closest('[data-user-content],#wishlist-root'))return;
+  const label=a.previousElementSibling;
+  if(label?.classList.contains('toolya-affiliate-label'))label.remove();
+  a.remove();
+ });
 }
 function start(){existing();loadCatalog();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
