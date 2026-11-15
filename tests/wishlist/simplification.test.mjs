@@ -421,3 +421,23 @@ test('reserved wish import ignores stale response after account switch',async()=
  assert.equal(fields.title.value,'Neu');
  assert.equal(fields.status.textContent,'Neue Sitzung');
 });
+
+test('gift planner load ignores data returned for an earlier signed-in account',async()=>{
+ const planner=source('gift-planner.mjs');
+ const start=planner.indexOf('async function load(){');
+ const end=planner.indexOf("$('budgetOccasion').addEventListener",start);
+ assert.ok(start>=0&&end>start);
+ let finish;
+ const pending=new Promise(resolve=>finish=resolve);
+ const db={auth:{getUser:async()=>({data:{user:{id:'first'}},error:null})},from:()=>({select:()=>({eq:()=>({order:()=>({limit:()=>pending})})})})};
+ const fields={login:{hidden:true},status:{textContent:'Neue Sitzung'}};
+ const body="let user=null,occasions=[],gifts=[],collections=[],suggestions=[];const option=()=>{},choices=()=>{},render=()=>{},loadCoordination=async()=>{},importReservedWish=async()=>{};\n"+planner.slice(start,end)+"\nreturn {load,setUser:id=>user={id},getOccasions:()=>occasions};";
+ const run=new Function('$','db',body)(id=>fields[id],db);
+ const request=run.load();
+ await Promise.resolve();
+ run.setUser('second');
+ finish({data:[{id:'old'}],error:null});
+ await request;
+ assert.equal(run.getOccasions().length,0);
+ assert.equal(fields.status.textContent,'Neue Sitzung');
+});
