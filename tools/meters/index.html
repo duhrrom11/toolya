@@ -374,6 +374,7 @@
     <script src="../../shared/helferlein-cloud-migration.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
+        return; // legacy local-first bridge disabled
         if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) { console.warn('Online-Sicherung nicht geladen'); return; }
         if (window.helferleinCloudBridge) return;
         window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
@@ -480,15 +481,13 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('meterDate').valueAsDate = new Date();
-            loadTarifs();
-            renderApp();
-            checkReadingAlarm();
-            try { updateUserDisplay(); } catch(e){}
+            void metersCloudBoot();
         });
 
         // Auth State Listener
-        supabaseClient.auth.onAuthStateChange(() => {
+        supabaseClient.auth.onAuthStateChange((event,session) => {
+            if(metersCloudReady && (!session?.user?.id || session.user.id!==metersCloudUserId || session.user.is_anonymous))
+                metersCloudBlock('Toolya-Sitzung geändert. Bitte neu anmelden.');
             // Auth callbacks run while the SDK holds its session lock.
             setTimeout(() => { updateUserDisplay().catch(() => {}); }, 0);
         });
@@ -528,61 +527,63 @@
             a.click();
         }
 
-        function getData() {
-            try {
-                if (!window.localStorage) throw new Error('Lokaler Speicher nicht verfügbar');
-                const stored = JSON.parse(localStorage.getItem('energie_tracker_pro_v8'));
-                if (!stored || !Array.isArray(stored.readings)) return { readings: [], tarifs: {} };
-                if (stored.readings.some(item => !item || typeof item !== 'object' || Array.isArray(item))) { console.warn('Ungültige Zählerdatensätze'); return { readings: [], tarifs: {} }; }
-                return {
-                    ...stored,
-                    readings: stored.readings.slice(),
-                    tarifs: stored.tarifs && typeof stored.tarifs === 'object' && !Array.isArray(stored.tarifs)
-                        ? { ...stored.tarifs } : {}
-                };
-            } catch(e) {
-                console.error('Zählerdaten konnten nicht geladen werden:', e);
-                return { readings: [], tarifs: {} };
+        let metersCloudController=null,metersCloudUserId=null,metersCloudReady=false;
+        function metersCloudBlock(message) {
+            metersCloudReady=false;
+            metersCloudController?.invalidate();
+            let gate=document.getElementById('toolya-cloud-gate');
+            if(!gate){
+                gate=document.createElement('div');gate.id='toolya-cloud-gate';
+                gate.setAttribute('role','alert');
+                gate.style.cssText='position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
+                document.body.append(gate);
             }
+            gate.textContent=message+' ';
+            const link=document.createElement('a');link.href='../../index.html';link.textContent='Zur Toolya-Anmeldung';gate.append(link);
         }
-
-        function saveData(data, allowCorruptOverwrite = false) {
+        async function metersCloudBoot() {
+            metersCloudBlock('Toolya Cloud wird geladen …');
             try {
-                if (!data || typeof data !== 'object' || Array.isArray(data) || !Array.isArray(data.readings)) throw new Error('Ungültige Zählerdaten');
-                if (localStorage.getItem('helferlein_cloud_owner_zaehlerstaende-erfassen') && !window.helferleinCloudBridge) {
-                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
-                return false;
-            }
-            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
-                    alert('Lokale Speicherung ist während eines Kontowechsels oder einer Cloud-Datenübernahme gesperrt. Bitte zuerst das ursprüngliche Konto anmelden.');
-                    return false;
-                }
-                if (data.readings.some(item => !item || typeof item !== 'object' || Array.isArray(item))) throw new Error('Ungültige Zählereinträge');
-                // Keep the original bytes available if stored readings cannot be parsed.
-                const existing = localStorage.getItem('energie_tracker_pro_v8');
-                if (existing !== null) {
-                    let parsed;
-                    try { parsed = JSON.parse(existing); } catch (_) { parsed = null; }
-                    if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.readings)) {
-                        if (!allowCorruptOverwrite) {
-                            alert('Vorhandene Zählerdaten sind beschädigt. Speichern zum Schutz der Originaldaten blockiert.');
-                            return false;
-                        }
-                        if (!confirm('Die vorhandenen Zählerdaten sind beschädigt. Durch Wiederherstellen des geprüften Backups werden sie endgültig überschrieben. Fortfahren?')) return false;
+                const {prepareCloudTool}=await import('../../shared/toolya/cloud-tool-adapters.mjs');
+                const {data:auth,error}=await supabaseClient.auth.getUser();
+                if(error||!auth?.user?.id||auth.user.is_anonymous)throw Error('Registrierte Anmeldung erforderlich.');
+                const uid=auth.user.id;
+                const prepared=await prepareCloudTool({
+                    client:supabaseClient,tool:'zaehlerstaende-erfassen',storage:localStorage,
+                    confirmMigration:async()=>confirm('Bestehende Zählerstände nach Sicherung in Toolya Cloud übernehmen?'),
+                    reviewExistingCloud:async()=>confirm('Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?'),
+                    exportBackup:async data=>{
+                        const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+                        const url=URL.createObjectURL(blob),a=document.createElement('a');
+                        a.href=url;a.download='toolya-zaehler-vor-cloud.json';a.click();
+                        setTimeout(()=>URL.revokeObjectURL(url),60000);
+                        return confirm('Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
                     }
-                }
-                const serialized = JSON.stringify(data);
-                if (!serialized) throw new Error('Zählerdaten nicht serialisierbar');
-                localStorage.setItem('energie_tracker_pro_v8', serialized); window.toolyaNotice?.('success','Änderungen auf diesem Gerät gespeichert.');
-                if (window.helferleinCloudBridge) {
-                    void window.helferleinCloudBridge.changed(data).catch(error => console.error('Cloud-Übernahme ausstehend:', error));
-                }
-                return true;
-            } catch (error) {
-                console.error('Zählerstände konnten nicht gespeichert werden:', error);
-                alert('Speichern fehlgeschlagen. Bitte Browser-Speicherplatz prüfen; die Eingaben nicht verwerfen.');
-                return false;
+                });
+                const {data:again,error:againError}=await supabaseClient.auth.getUser();
+                if(againError||again?.user?.id!==uid||again.user.is_anonymous)throw Error('Konto während des Ladens gewechselt.');
+                metersCloudController=prepared.controller;metersCloudUserId=uid;metersCloudReady=true;
+                document.getElementById('toolya-cloud-gate')?.remove();
+                document.getElementById('meterDate').valueAsDate=new Date();
+                loadTarifs();renderApp();checkReadingAlarm();await updateUserDisplay();
+            }catch(error){console.error(error);metersCloudBlock('Toolya Cloud gesperrt: '+error.message);}
+        }
+        function getData() {
+            if(!metersCloudReady||!metersCloudController?.ready)return {readings:[],tarifs:{}};
+            return metersCloudController.snapshot();
+        }
+        async function saveData(data) {
+            if(!metersCloudReady||!metersCloudController?.ready){
+                metersCloudBlock('Cloud nicht bereit. Bitte neu anmelden.');return false;
             }
+            try {
+                const {data:auth,error}=await supabaseClient.auth.getUser();
+                if(error||auth?.user?.id!==metersCloudUserId||auth.user.is_anonymous)
+                    throw Error('Anmeldung nicht mehr gültig.');
+                await metersCloudController.replace(data);
+                window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');
+                return true;
+            }catch(error){console.error(error);metersCloudBlock('Cloud-Speicherung unbestätigt: '+error.message);return false;}
         }
 
         function loadTarifs() {
@@ -605,7 +606,7 @@
             }
         }
 
-        function saveTarifs() {
+        async function saveTarifs() {
             const readAmount = (id, fallback = 0) => {
                 const raw = document.getElementById(id).value.trim();
                 const value = raw === '' ? fallback : Number(raw);
@@ -625,12 +626,12 @@
             }
             let data = getData();
             data.tarifs = tarifs;
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
             alert("Gespeichert");
             renderApp();
         }
 
-        function saveReading() {
+        async function saveReading() {
             const type = document.getElementById('meterType').value;
             const name = document.getElementById('meterName').value.trim() || type + " Zähler";
             const location = document.getElementById('meterLocation').value;
@@ -675,18 +676,21 @@
                 }
             }
 
-            if (photoInput.files && photoInput.files[0]) {
-                compressImage(photoInput.files[0], (compressedPhoto) => {
-                    storeReadingRecord(type, name, location, date, value, note, isExchange, compressedPhoto);
-                });
-            } else {
-                storeReadingRecord(type, name, location, date, value, note, isExchange, "");
+            let photo='';
+            if(photoInput.files && photoInput.files[0]){
+                try {
+                    photo=await new Promise((resolve,reject)=>{
+                        const timeout=setTimeout(()=>reject(Error('Bildverarbeitung fehlgeschlagen')),15000);
+                        compressImage(photoInput.files[0],result=>{clearTimeout(timeout);resolve(result);});
+                    });
+                }catch(error){alert('Zählerfoto konnte nicht verarbeitet werden. Nichts gespeichert.');return;}
             }
+            await storeReadingRecord(type,name,location,date,value,note,isExchange,photo);
         }
 
         function compressImage(file, callback) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
@@ -718,7 +722,7 @@
             reader.readAsDataURL(file);
         }
 
-        function storeReadingRecord(type, name, location, date, value, note, isExchange, photo) {
+        async function storeReadingRecord(type, name, location, date, value, note, isExchange, photo) {
             let data = getData();
             const existingIds = new Set(data.readings.filter(item => item && typeof item === 'object').map(item => item.id));
             let newId = Date.now() * 1000 + Math.floor(Math.random() * 1000);
@@ -741,7 +745,7 @@
                 return (Number.isFinite(bTime) ? bTime : -Infinity) -
                     (Number.isFinite(aTime) ? aTime : -Infinity);
             });
-            if (!saveData(data)) return;
+            if (!await saveData(data)) return;
 
             document.getElementById('meterValue').value = "";
             document.getElementById('meterNote').value = "";
@@ -752,11 +756,11 @@
             renderApp();
         }
 
-        function deleteReading(id) {
+        async function deleteReading(id) {
             if (!confirm("⚠️ Diesen Zählerstand wirklich löschen?")) return;
             let data = getData();
             data.readings = data.readings.filter(item => !item || typeof item !== 'object' || item.id !== id);
-            if (saveData(data)) renderApp();
+            if (await saveData(data)) renderApp();
         }
 
         function openPhotoModal(url) {
@@ -1063,7 +1067,7 @@
             setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
-        function importBackup(event) {
+        async function importBackup(event) {
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
@@ -1085,7 +1089,7 @@
                         throw new Error('Ungültiges Zählerstände-Backup');
                     }
                     if (!confirm('Backup importieren? Vorhandene Zählerstände und Tarife werden ersetzt.')) return;
-                    if (!saveData({ ...parsed, tarifs: parsed.tarifs || {} }, true)) return;
+                    if (!await saveData({ ...parsed, tarifs: parsed.tarifs || {} })) return;
                     loadTarifs();
                     renderApp();
                     alert("Backup erfolgreich importiert!");
