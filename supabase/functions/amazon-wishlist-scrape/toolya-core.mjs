@@ -64,8 +64,31 @@ export function parseList(html,source){
  return {title,expected,products:[...products.values()],next,incomplete:!terminal&&!next&&!!(continuation||scroll?.lastEvaluatedKey),failed};
 }
 export async function fetchAmazon(url,fetcher=fetch,expectedList=null){const source=expectedList||(normalizeAmazonUrl(url));if(expectedList)url=wishlistContinuation(url,expectedList);const target=new URL(url);if(source.kind==='product'&&target.pathname!==`/dp/${source.id}`)url=source.url;const response=await fetcher(url,{redirect:'manual',signal:AbortSignal.timeout(15000),headers:{'accept-language':'de-DE,de;q=0.9','accept':'text/html','user-agent':'ToolyaWishlistImporter/1.0',...(new URL(url).pathname==='/hz/wishlist/slv/items'?{'x-requested-with':'XMLHttpRequest'}:{})}});if(response.status>=300&&response.status<400)throw new ScrapeError('REDIRECT','Amazon verlangt eine Weiterleitung. Bitte den vollständigen direkten Listen- oder Produktlink verwenden.');if(!response.ok)throw new ScrapeError('AMAZON_ERROR',`Amazon-Abruf fehlgeschlagen (${response.status}).`);if(!response.headers.get('content-type')?.includes('text/html'))throw new ScrapeError('BAD_RESPONSE','Amazon hat keine Produktseite geliefert.');const reader=response.body.getReader();let bytes=0;const chunks=[];try{while(true){const {done,value}=await reader.read();if(done)break;bytes+=value.length;if(bytes>3000000)throw new ScrapeError('TOO_LARGE','Amazon-Antwort ist zu groß.');chunks.push(value)}}finally{await reader.cancel()}const joined=new Uint8Array(bytes);let i=0;for(const c of chunks){joined.set(c,i);i+=c.length}return new TextDecoder().decode(joined);}
-export async function scrape(raw,fetcher=fetch){const source=normalizeAmazonUrl(raw);if(source.kind==='product'){const p=parseProduct(await fetchAmazon(source.url,fetcher),source.id);return {kind:'product',title:p.title,products:[p],complete:true,warnings:[]};}
+// Enrich only a small bounded number of missing previews with their actual Amazon product page.
+// Never replace wishlist data with ambiguous or blocked product responses.
+export async function enrichMissingProductMetadata(items,fetcher=fetch,maxItems=10){
+ const candidates=items.filter(p=>p&&!p.price&&(!p.description||!p.description.trim())).slice(0,maxItems);
+ let next=0,enriched=0;
+ await Promise.all(Array.from({length:Math.min(3,candidates.length)},async()=>{
+  while(next<candidates.length){
+   const item=candidates[next++];
+   try{
+    const html=await fetchAmazon('https://www.amazon.de/dp/'+item.asin,fetcher);
+    const detail=parseProduct(html,item.asin);
+    if(detail.asin!==item.asin)continue;
+    if(item.price==null&&detail.price!=null){item.price=detail.price;enriched++;}
+    if(!item.description?.trim()&&detail.description?.trim()){item.description=detail.description;}
+    if(!item.imageUrl&&detail.imageUrl)item.imageUrl=detail.imageUrl;
+   }catch{/* A single unavailable Amazon product must not invalidate a complete wishlist. */}
+  }
+ }));
+ return enriched;
+}
+export async function scrape(raw,fetcher=fetch,options={}){const source=normalizeAmazonUrl(raw);if(source.kind==='product'){const p=parseProduct(await fetchAmazon(source.url,fetcher),source.id);return {kind:'product',title:p.title,products:[p],complete:true,warnings:[]};}
  const products=new Map(),visited=new Set();let url=source.url,title='Amazon-Wunschliste',failed=0,complete=true,expected=null;
  while(url){if(visited.has(url)||visited.size>=20){complete=false;break}visited.add(url);const page=parseList(await fetchAmazon(url,fetcher,source),source);title=page.title||title;expected=page.expected??expected;failed+=page.failed;for(const p of page.products)products.set(p.asin,p);if(products.size>500){complete=false;break}if(page.incomplete)complete=false;url=page.next;}
  if(failed||(expected!==null&&expected!==products.size))complete=false;
- return {kind:'list',title,products:[...products.values()].slice(0,500),complete,warnings:complete?[]:['Die Liste konnte nicht vollständig gelesen werden. Es wird nichts importiert.']};}
+ const items=[...products.values()].slice(0,500);
+ // Enrichment is opt-in for the server-side public wishlist flow only.
+ if(complete&&options.enrichMissing===true)await enrichMissingProductMetadata(items,fetcher,10);
+ return {kind:'list',title,products:items,complete,warnings:complete?[]:['Die Liste konnte nicht vollständig gelesen werden. Es wird nichts importiert.']};}
