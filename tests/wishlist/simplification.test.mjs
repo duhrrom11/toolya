@@ -100,3 +100,14 @@ test('social profile state and obsolete profile controls are absent',()=>{
  assert.match(app,/\$\('saveProfile'\)\.onclick/);
  assert.match(app,/const allowed=\[user\.id\]/);
 });
+
+test('private gift dashboard is not hidden by simplification CSS',()=>{
+ const html=readFileSync(resolve(root,'tools/wishes/index.html'),'utf8');
+ const style=html.match(/<style id="wishlist-simplification-stage1">([\s\S]*?)<\/style>/)?.[1]||'';
+ assert.ok(style);
+ assert.equal(style.split(',').some(selector=>selector.trim()==='#homeGiftStart'),false);
+ assert.match(html,/id="homeGiftStart"/);
+ const module=source('gift-start.mjs');
+ assert.ok(module.includes("$('homeGiftStart').hidden=false"));
+ assert.ok(module.includes("$('homeGiftStart').hidden=true"));
+});
