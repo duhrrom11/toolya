@@ -22,8 +22,8 @@
   for(const person of people){
    const id=person?.id==null?'':String(person.id),token=keys[id];
    if(!id||ids.has(id)||typeof token!=='string')throw Error('conflict');
-   unhex(token);
-   const canonical=token.toLowerCase();
+   const canonical=normalize(token);
+   unhex(canonical);
    if(tokens.has(canonical))throw Error('conflict');
    ids.add(id);tokens.add(canonical);
    guardians.push({id,hash:await hash(canonical),envelope:await encrypt({readKey},await hash('Toolya read envelope v2:'+canonical))});
