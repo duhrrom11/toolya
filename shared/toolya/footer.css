@@ -1,0 +1,14 @@
+/* Shared Toolya signature footer. Header and page content remain untouched. */
+.toolya-signature-footer{position:relative;isolation:isolate;margin:40px auto 0;padding:20px clamp(16px,3vw,40px);width:min(100% - 24px,1440px);border:1px solid #cce6e8;border-radius:24px;background:linear-gradient(125deg,#f8fcff 0%,#effbfc 55%,#d7f5f2 100%);box-shadow:0 8px 22px rgba(25,74,94,.10);color:#16374a;overflow:hidden}
+.toolya-signature-footer:after{content:"";position:absolute;inset:auto 0 0;height:24px;background:linear-gradient(90deg,#b4eeec,#d7f8f4,#a4e6e3);opacity:.6;z-index:-1}
+.ty-footer-inner{display:flex;align-items:center;gap:clamp(12px,2vw,28px);flex-wrap:wrap}
+.ty-footer-mascot{width:76px;height:86px;object-fit:contain;object-position:bottom;flex:none}
+.ty-footer-brand{display:flex;flex-direction:column;gap:4px;min-width:130px}
+.ty-footer-brand .b3-hub-logo{display:inline-flex;align-items:center;gap:6px;width:max-content;color:#076c75;text-decoration:none}
+.ty-footer-brand small{font-size:12px;color:#436474}
+.ty-footer-links{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;margin-left:auto}
+.ty-footer-links a{color:#19475a;font-size:14px;font-weight:600;text-decoration:none}
+.ty-footer-links a:hover,.ty-footer-links a:focus-visible{text-decoration:underline}
+.ty-footer-top{border:1px solid #a8dfe1;border-radius:30px;padding:9px 13px;background:#fff;color:#087a83;font:inherit;font-weight:700;cursor:pointer}
+.ty-footer-top:focus-visible{outline:3px solid #087a83;outline-offset:3px}
+@media(max-width:650px){.toolya-signature-footer{padding:14px;margin-top:24px}.ty-footer-inner{gap:12px}.ty-footer-mascot{width:56px;height:64px}.ty-footer-links{order:4;width:100%;margin:0;gap:12px}.ty-footer-top{margin-left:auto}}
