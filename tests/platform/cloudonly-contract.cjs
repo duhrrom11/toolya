@@ -34,7 +34,7 @@ const path=require('node:path');
  assert.equal(c.ready,false,'conflict must block further writes until explicit reload');
  await c.load();assert.deepEqual(c.snapshot().entries,[{id:2}]);
  const first=c.snapshot();first.entries.push({id:999});
- assert.deepEqual(c.snapshot().entries,[{id:1}],'read cache must be cloned');
+ assert.deepEqual(c.snapshot().entries,[{id:2}],'read cache must be cloned');
  await assert.rejects(c.replace({entries:[]},{expectedRevision:0}),/Datenstand/);
  assert.equal(c.revision,2);
  repository.save=async()=>{throw Error('write outcome unknown')};
