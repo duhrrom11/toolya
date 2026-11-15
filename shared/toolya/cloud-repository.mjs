@@ -1,6 +1,6 @@
 /**
  * Cloud-only, version-checked JSON snapshot repository.
- * Not yet wired to tool UIs. No localStorage fallback and no implicit insert/upsert.
+ * Wired on feature branch only. Requires isolated revision RPC schema before use.
  * A verified user is required for every operation; RLS is the authorization boundary.
  */
 import { requireVerifiedUser } from './cloud-auth-gate.mjs';
@@ -69,7 +69,10 @@ export function createCloudRepository(client, tool) {
     if (!Array.isArray(rows) || rows.length !== 1)
       throw new Error('Cloud-Speicherung nicht bestätigt.');
     const row = rows[0];
-    if ((await currentUser()) !== uid || !Number.isSafeInteger(row.revision) || row.revision < 1 || !sameJson(row.data, payload)) {
+    if ((await currentUser()) !== uid || !Number.isSafeInteger(row.revision) || row.revision < 1 ||
+        (expectedRevision !== null && row.revision !== expectedRevision + 1) ||
+        (expectedRevision === null && row.revision !== 1) ||
+        !sameJson(row.data, payload)) {
       throw new Error('Cloud-Speicherung nicht eindeutig bestätigt.');
     }
     return { revision: row.revision, data: assertSnapshot(row.data) };
