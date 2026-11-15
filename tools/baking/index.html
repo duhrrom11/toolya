@@ -77,16 +77,15 @@
     <!-- B3 Navigation: original tab buttons still call openTab() -->
 <nav class="b3-backform-nav" aria-label="Backform-Werkzeuge">
  <div class="b3-backform-tabs">
-  <button type="button" class="b3-tab bg-orange-50" onclick="openTab('rechner')" id="btn-tab-rechner">🧮 Rechner</button>
-  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('finder')" id="btn-tab-finder">⭕ Formen-Finder</button>
-  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('substanz')" id="btn-tab-substanz">🥄 Ersatz & Zucker</button>
-  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('tools')" id="btn-tab-tools">💶 Extras & Kosten</button>
-  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('rezepte')" id="btn-tab-rezepte">📚 Gespeicherte Rezepte</button>
+  <button type="button" class="b3-tab bg-orange-50" onclick="openTab('rechner')" id="btn-tab-rechner">🧮 Backform-Rechner</button>
+  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('rezepte')" id="btn-tab-rezepte">📚 Meine Rezepte</button>
+  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('substanz')" id="btn-tab-substanz">🥄 Backhelfer</button>
+  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('tools')" id="btn-tab-tools">💶 Kosten & Planung</button>
  </div>
- <details class="b3-more" id="b3-backform-more"><summary>☷ Weitere Tools</summary>
+ <details class="b3-more" id="b3-backform-more"><summary>☷ Mehr</summary>
  <div class="b3-more-content">
-  <button class="b3-more-item" type="button" onclick="document.getElementById('b3-backform-more').open=false;openCookMode()">⏱️ Kochmodus & Multi-Timer</button>
-  <button class="b3-more-item" type="button" onclick="document.getElementById('b3-backform-more').open=false;openTab('rezepte')">📚 Gespeicherte Rezepte öffnen</button>
+  <button class="b3-more-item" type="button" onclick="document.getElementById('b3-backform-more').open=false;openTab('finder')">⭕ Formen-Finder</button>
+  <button class="b3-more-item" type="button" onclick="document.getElementById('b3-backform-more').open=false;openCookMode()">⏱️ Backtimer</button>
   <button class="b3-more-item" type="button" onclick="document.getElementById('b3-backform-more').open=false;openSettings();toggleHelp()">📖 Hilfe & Anleitung</button>
  </div></details>
 </nav>
@@ -99,86 +98,13 @@
 
             <!-- TAB: RECHNER -->
             <div id="tab-rechner" class="space-y-6">
+<div class="b3-subview-link"><button type="button" onclick="openTab('finder')">⭕ Welche Backform passt? Formen-Finder öffnen</button></div>
                 
-                <!-- 1. Basis, Ofenmodus & Temperatur -->
+                <div class="b3-workflow-intro"><strong>In 3 Schritten zum passenden Backrezept</strong><p>Wähle zuerst deine Backformen, füge bei Bedarf Zutaten hinzu und passe anschließend die Backbedingungen an. Die Ergebnisse werden automatisch berechnet.</p></div>
+<!-- Schritt 1: Original- und Zielform -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="sliders" class="w-5 h-5 text-orange-500"></i> Backzeit, Ofenmodus & Temperatur
-                    </h2>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                            <label for="base-time" class="block text-xs font-medium text-slate-600 mb-1">Zeit laut Rezept (Min.)</label>
-                            <input type="number" id="base-time" value="45" oninput="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
-                        </div>
-                        <div>
-                            <label for="base-temp" class="block text-xs font-medium text-slate-600 mb-1">Temperatur laut Rezept (°C)</label>
-                            <input type="number" id="base-temp" value="180" oninput="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
-                        </div>
-                        <div>
-                            <label for="oven-mode" class="block text-xs font-medium text-slate-600 mb-1">Ofen-Modus</label>
-                            <select id="oven-mode" onchange="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
-                                <option value="unterhitze" selected>Ober-/Unterhitze</option>
-                                <option value="heissluft">Heißluft / Umluft (-20°C)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                        <div>
-                            <label for="recipe-material" class="block text-xs font-medium text-slate-600 mb-1">Rezept gilt für Material der Zielform</label>
-                            <select id="recipe-material" onchange="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm">
-                                <option value="silikon">Silikon</option>
-                                <option value="blech" selected>Metall / Blech</option>
-                                <option value="glas">Glas / Keramik</option>
-                            </select>
-                        </div>
-                        <div class="flex flex-col justify-end">
-                            <label class="flex items-center space-x-3 cursor-pointer py-2">
-                                <input type="checkbox" id="keep-recipe-amount" onchange="calculateAll()" class="w-4 h-4 text-orange-600 rounded border-slate-300">
-                                <span class="text-xs font-medium text-slate-700">Rezeptmenge beibehalten (keine Skalierung)</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <input type="checkbox" id="use-oven-factor" checked class="w-4 h-4 text-orange-600 rounded border-slate-300" onchange="toggleOvenFactor()" aria-label="Meinen Ofenfaktor nutzen">
-                            <span class="text-xs font-medium text-slate-700">Meinen Ofenfaktor nutzen</span>
-                        </div>
-                        <div class="text-xs font-semibold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-lg">
-                            Faktor für alle Zutaten: <span id="factor-display">× 1.00</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. Rezept einfügen & Einheit-Umschalter -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                            <i data-lucide="file-text" class="w-5 h-5 text-orange-500"></i> Rezept einfügen & Einheiten
-                        </h2>
-                        <div>
-                            <label for="unit-system" class="text-xs font-medium text-slate-600 mr-2">Einheit:</label>
-                            <select id="unit-system" onchange="calculateRecipe()" class="px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-medium">
-                                <option value="metric" selected>Metrisch (g / ml)</option>
-                                <option value="imperial">US Cups / Ounces</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="helferlein-field" for="recipe-name"><span class="helferlein-field-label">Name des Rezepts</span><input type="text" id="recipe-name" placeholder="Name des Rezepts (z.B. Omas Apfelkuchen)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm mb-3" aria-label="Name des Rezepts (z.B. Omas Apfelkuchen)"></label>
-                        <label class="helferlein-field" for="recipe-input"><span class="helferlein-field-label">Zutaten des Rezepts</span><textarea id="recipe-input" rows="4" placeholder="Füge hier deine Zutaten ein (z.B. &#10;250g Mehl&#10;200g Zucker&#10;3 Eier&#10;100ml Milch)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-mono" aria-label="Zutaten des Rezepts"></textarea></label>
-                    </div>
-                    <button onclick="calculateRecipe()" class="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl transition shadow-md shadow-orange-500/20 text-sm flex items-center justify-center gap-2">
-                        <i data-lucide="calculator" class="w-4 h-4"></i> Rezept umrechnen & Analysieren
-                    </button>
-                </div>
-
-                <!-- 3. Form-Vergleich & Formen-Kombinator -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="maximize" class="w-5 h-5 text-orange-500"></i> Formen-Vergleich & Kombinator
+                        <i data-lucide="maximize" class="w-5 h-5 text-orange-500"></i> 1. Backformen auswählen
                     </h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <!-- Original -->
@@ -261,6 +187,81 @@
                     </div>
                 </div>
 
+                <!-- Schritt 2: Rezept -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="file-text" class="w-5 h-5 text-orange-500"></i> 2. Rezept & Zutaten
+                        </h2>
+                        <div>
+                            <label for="unit-system" class="text-xs font-medium text-slate-600 mr-2">Einheit:</label>
+                            <select id="unit-system" onchange="calculateRecipe()" class="px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-medium">
+                                <option value="metric" selected>Metrisch (g / ml)</option>
+                                <option value="imperial">US Cups / Ounces</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="helferlein-field" for="recipe-name"><span class="helferlein-field-label">Name des Rezepts</span><input type="text" id="recipe-name" placeholder="Name des Rezepts (z.B. Omas Apfelkuchen)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm mb-3" aria-label="Name des Rezepts (z.B. Omas Apfelkuchen)"></label>
+                        <label class="helferlein-field" for="recipe-input"><span class="helferlein-field-label">Zutaten des Rezepts</span><textarea id="recipe-input" rows="4" placeholder="Füge hier deine Zutaten ein (z.B. &#10;250g Mehl&#10;200g Zucker&#10;3 Eier&#10;100ml Milch)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-mono" aria-label="Zutaten des Rezepts"></textarea></label>
+                    </div>
+                    <button onclick="calculateRecipe()" class="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl transition shadow-md shadow-orange-500/20 text-sm flex items-center justify-center gap-2">
+                        <i data-lucide="calculator" class="w-4 h-4"></i> Rezept umrechnen & Analysieren
+                    </button>
+                </div>
+
+                <!-- Schritt 3: Backbedingungen -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-5 h-5 text-orange-500"></i> 3. Backbedingungen
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label for="base-time" class="block text-xs font-medium text-slate-600 mb-1">Zeit laut Rezept (Min.)</label>
+                            <input type="number" id="base-time" value="45" oninput="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
+                        </div>
+                        <div>
+                            <label for="base-temp" class="block text-xs font-medium text-slate-600 mb-1">Temperatur laut Rezept (°C)</label>
+                            <input type="number" id="base-temp" value="180" oninput="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
+                        </div>
+                        <div>
+                            <label for="oven-mode" class="block text-xs font-medium text-slate-600 mb-1">Ofen-Modus</label>
+                            <select id="oven-mode" onchange="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
+                                <option value="unterhitze" selected>Ober-/Unterhitze</option>
+                                <option value="heissluft">Heißluft / Umluft (-20°C)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <div>
+                            <label for="recipe-material" class="block text-xs font-medium text-slate-600 mb-1">Rezept gilt für Material der Zielform</label>
+                            <select id="recipe-material" onchange="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm">
+                                <option value="silikon">Silikon</option>
+                                <option value="blech" selected>Metall / Blech</option>
+                                <option value="glas">Glas / Keramik</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col justify-end">
+                            <label class="flex items-center space-x-3 cursor-pointer py-2">
+                                <input type="checkbox" id="keep-recipe-amount" onchange="calculateAll()" class="w-4 h-4 text-orange-600 rounded border-slate-300">
+                                <span class="text-xs font-medium text-slate-700">Rezeptmenge beibehalten (keine Skalierung)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="use-oven-factor" checked class="w-4 h-4 text-orange-600 rounded border-slate-300" onchange="toggleOvenFactor()" aria-label="Meinen Ofenfaktor nutzen">
+                            <span class="text-xs font-medium text-slate-700">Meinen Ofenfaktor nutzen</span>
+                        </div>
+                        <div class="text-xs font-semibold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-lg">
+                            Faktor für alle Zutaten: <span id="factor-display">× 1.00</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 4. Zusätzliche Tools -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
@@ -302,6 +303,7 @@
 
             <!-- TAB: FORMEN-FINDER -->
             <div id="tab-finder" class="hidden space-y-6">
+<div class="b3-subview-back"><button type="button" onclick="openTab('rechner')">← Zurück zum Backform-Rechner</button></div>
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
                         <i data-lucide="search" class="w-5 h-5 text-orange-500"></i> Formen-Finder („Welche Form passt zu meinem Teig?“)
@@ -333,7 +335,7 @@
             <div id="tab-substanz" class="hidden space-y-6">
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="refresh-cw" class="w-5 h-5 text-orange-500"></i> Substitutions-Helfer (Zutaten-Ersatz)
+                        <i data-lucide="refresh-cw" class="w-5 h-5 text-orange-500"></i> Zutaten ersetzen
                     </h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
@@ -357,7 +359,7 @@
 
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="candy" class="w-5 h-5 text-orange-500"></i> Zucker- & Süßungs-Umrechner
+                        <i data-lucide="candy" class="w-5 h-5 text-orange-500"></i> Zucker & Süßungsmittel umrechnen
                     </h2>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
@@ -367,7 +369,7 @@
                         <div>
                             <label for="sugar-type" class="block text-xs font-medium text-slate-600 mb-1">Alternative</label>
                             <select id="sugar-type" onchange="calculateSugar()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
-                                <option value="xylit">Erythrit / Xylit (1:1)</option>
+                                <option value="xylit">Xylit (ungefähr 1:1)</option><option value="erythrit">Erythrit (weniger süß)</option>
                                 <option value="honey">Honig / Ahornsirup</option>
                                 <option value="stevia">Stevia (Konzentrat)</option>
                             </select>
@@ -385,7 +387,7 @@
             <div id="tab-tools" class="hidden space-y-6">
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="euro" class="w-5 h-5 text-orange-500"></i> Zutaten-Preis-Kalkulator
+                        <i data-lucide="euro" class="w-5 h-5 text-orange-500"></i> Zutatenkosten berechnen
                     </h2>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <div>
@@ -422,7 +424,7 @@
 
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                         <h3 class="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                            <i data-lucide="thermometer" class="w-4 h-4 text-orange-500"></i> Teig-Klimatologie & Raumtemperatur
+                            <i data-lucide="thermometer" class="w-4 h-4 text-orange-500"></i> Raumtemperatur & Teig
                         </h3>
                         <div>
                             <label for="room-temp" class="block text-xs font-medium text-slate-600 mb-1">Aktuelle Raumtemperatur (°C)</label>
@@ -456,7 +458,7 @@
             <div id="tab-rezepte" class="hidden space-y-6">
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="bookmark" class="w-5 h-5 text-orange-500"></i> Gespeicherte Rezepte & Geling-Protokoll
+                        <i data-lucide="bookmark" class="w-5 h-5 text-orange-500"></i> Meine gespeicherten Rezepte
                     </h2>
                     <div id="saved-recipes-list" class="space-y-4">
                         <p class="text-xs text-slate-500">Noch keine Rezepte gespeichert.</p>
@@ -482,7 +484,7 @@
                         <span id="res-factor" class="text-base font-bold text-slate-900">1.00</span>
                     </div>
                     <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                        <span class="block text-[10px] font-semibold text-slate-500 uppercase">Backzeit</span>
+                        <span class="block text-[10px] font-semibold text-slate-500 uppercase">Backzeit (ca.)</span>
                         <span id="res-time" class="text-base font-bold text-slate-900">45 Min.</span>
                     </div>
                     <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
@@ -504,7 +506,7 @@
                 <!-- Makros & Nährwerte -->
                 <div class="p-3 rounded-xl bg-emerald-50/60 border border-emerald-100 text-xs text-emerald-900 space-y-1">
                     <strong class="block font-semibold">Nährwert-Schätzer (pro Stück):</strong>
-                    <p id="macro-text">Ca. 280 kcal | 4g Eiweiß | 12g Fett | 38g Kohlenhydrate</p>
+                    <p id="macro-text">Schätzung erst nach Rezepteingabe verfügbar</p>
                 </div>
 
                 <!-- Umgerechnete Zutaten / Rezeptkarte -->
@@ -586,7 +588,7 @@
                 <button onclick="closeSettings()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition">Schließen</button>
             </div>
 <section id="b3-backform-preferences" aria-label="Darstellung und Dashboard">
-  <h3>🎨 Darstellung & Dashboard</h3>
+  <h3>⚙ Dashboard anpassen</h3>
 <button type="button" id="b3-backform-edit">✎ Dashboard bearbeiten</button>
   <div id="b3-backform-editor" hidden aria-label="Dashboard-Einstellungen"></div>
   <p class="text-xs">Alle Rechenwerkzeuge bleiben erreichbar. Hier kannst du Reihenfolge und Kartendichte anpassen.</p>
@@ -832,7 +834,10 @@
 
             if (type === 'xylit') {
                 res.innerText = g + 'g';
-                tip.innerText = 'Erythrit/Xylit wird 1:1 dosiert. Leichter Kühleffekt.';
+                tip.innerText = 'Xylit ist ungefähr so süß wie Zucker; beim Backen kann sich die Textur ändern.';
+            } else if (type === 'erythrit') {
+                res.innerText = Math.round(g * 1.4) + 'g (grober Richtwert)';
+                tip.innerText = 'Erythrit süßt weniger stark als Zucker. Größere Mengen können Textur und Verträglichkeit verändern.';
             } else if (type === 'honey') {
                 res.innerText = Math.round(g * 0.8) + 'g (Flüssigkeit im Teig um 20ml reduzieren)';
                 tip.innerText = 'Honig süßt stärker und bringt Feuchtigkeit mit.';
