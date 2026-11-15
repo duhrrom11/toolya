@@ -106,10 +106,19 @@ async function enrichWishlistAutomatically(publicationId,onProgress=()=>{}){
   .order('created_at',{ascending:false}).limit(500);
  if(query.error)throw new Error('Produktdaten konnten zur Ergänzung nicht geladen werden.');
  const missing=(query.data||[]).filter(p=>p.asin&&(p.price==null||!p.description?.trim()));
- const candidates=missing.slice(0,AUTO_ENRICH_LIMIT);
+ // Avoid repeatedly probing the same first products across successive manual refreshes.
+ // The database independently enforces authorization, hourly limits and a cooldown.
+ const cacheKey='toolya-wishlist-enrichment-recent-v1';
+ let recent={};
+ try{const saved=JSON.parse(localStorage.getItem(cacheKey)||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))recent=saved}catch{}
+ const now=Date.now(),cooldown=10*60*1000;
+ recent=Object.fromEntries(Object.entries(recent).filter(([,at])=>typeof at==='number'&&now-at<cooldown).slice(-200));
+ const candidates=missing.filter(p=>!(recent[publicationId+':'+p.asin]>now-cooldown)).slice(0,AUTO_ENRICH_LIMIT);
  let checked=0,improved=0,skipped=0,limited=false;
  for(const product of candidates){
   onProgress('Produktinformationen ergänzen: '+(checked+1)+' von '+candidates.length+' …');
+  recent[publicationId+':'+product.asin]=Date.now();
+  try{localStorage.setItem(cacheKey,JSON.stringify(recent))}catch{}
   try{
    const {data,error}=await db.functions.invoke('amazon-wishlist-scrape',{
     body:{action:'enrich-product',publication_id:publicationId,asin:product.asin}
