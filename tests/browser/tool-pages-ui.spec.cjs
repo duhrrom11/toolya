@@ -465,3 +465,60 @@ test('backform-umrechner: save and delete recipe await cloud confirmation',async
   expect(result.writes).toBe(2);
   expect(result.recipes).toEqual([]);
 });
+
+
+async function isolatedWishlist(page,authenticated){
+ await page.route('**/*',async route=>{
+  const url=route.request().url();
+  if(url.startsWith(origin))return route.continue();
+  if(url.includes('supabase.min.js'))return route.fulfill({status:200,contentType:'text/javascript',body:`
+   window.__wishlistMock={user:${authenticated?"{id:'owner',email:'owner@example.invalid',is_anonymous:false}":"null"},writes:[],reads:0};
+   window.supabase={createClient(){const m=window.__wishlistMock;return {
+    auth:{
+     async getUser(){m.reads++;return {data:{user:m.user},error:null}},
+     onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}},
+     async signOut(){m.user=null;return {error:null}}
+    },
+    rpc(){return Promise.resolve({data:[],error:null})},
+    from(table){return {
+     select(){return this},eq(){return this},order(){return this},limit(){return this},
+     async maybeSingle(){return {data:null,error:null}},
+     upsert(payload){m.writes.push({table,payload});return Promise.resolve({error:null})},
+     insert(payload){m.writes.push({table,payload});return {select(){return this},async single(){return {data:{id:'new-id'},error:null}}}}
+    }},
+    functions:{async invoke(){return {data:{status:'failed'},error:null}}}
+   }}};
+  `});
+  return route.abort();
+ });
+}
+test('wishlist: public discovery works without authentication and no private writes',async({page})=>{
+ await isolatedWishlist(page,false);
+ await page.goto(origin+'/tools/wishes/public.html');
+ await expect(page.locator('#profileStatus')).toContainText('Bitte zuerst anmelden');
+ expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
+});
+test('wishlist: account switch blocks profile write before network mutation',async({page})=>{
+ await isolatedWishlist(page,true);
+ await page.goto(origin+'/tools/wishes/public.html');
+ await expect(page.locator('#profileForm')).toBeVisible();
+ await page.locator('#firstName').fill('Anna');
+ await page.locator('#lastName').fill('Muster');
+ await page.evaluate(()=>{window.__wishlistMock.user={id:'other',email:'other@example.invalid'}});
+ await page.locator('#profileForm button').click();
+ await expect(page.locator('#profileStatus')).toContainText('Konto gewechselt');
+ expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
+});
+test('wishlist: verified profile write uses cloud and no localStorage',async({page})=>{
+ await isolatedWishlist(page,true);
+ await page.goto(origin+'/tools/wishes/public.html');
+ await expect(page.locator('#profileForm')).toBeVisible();
+ await page.locator('#firstName').fill('Anna');
+ await page.locator('#lastName').fill('Muster');
+ await page.locator('#profileForm button').click();
+ await expect(page.locator('#profileStatus')).toContainText('Profil gespeichert');
+ const result=await page.evaluate(()=>({writes:window.__wishlistMock.writes,keys:Object.keys(localStorage)}));
+ expect(result.writes).toHaveLength(1);
+ expect(result.writes[0].table).toBe('wishlist_profiles');
+ expect(result.keys).toEqual([]);
+});
