@@ -1985,5 +1985,34 @@
             doc.save(`finanz-bericht-${new Date().toISOString().split('T')[0]}.pdf`);
         }
     </script>
+
+<script src="../../shared/toolya/connect-v1.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (!window.ToolyaConnect) return;
+  const anchor = document.getElementById('saveBtn');
+  if (!anchor) return;
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.textContent = '🔗 Vorgemerkte Autokosten übernehmen';
+  button.className = 'w-full mt-3 p-3 rounded-xl bg-indigo-700 text-white text-sm font-bold';
+  button.addEventListener('click', async () => {
+    try {
+      const rows = await ToolyaConnect.pending();
+      if (!rows.length) return alert('Keine vorgemerkten Fahrzeugausgaben.');
+      const options = rows.map(r => r.sourceId + ' | ' + r.date + ' | ' + r.title + ' | ' + (r.amountCents / 100).toFixed(2) + ' €').join('\\n');
+      const selected = prompt('ID der zu übernehmenden Ausgabe eingeben:\\n' + options);
+      if (selected === null) return;
+      const row = rows.find(r => r.sourceId === selected.trim());
+      if (!row) throw Error('Übertragung nicht gefunden.');
+      if (!confirm(row.title + ' (' + (row.amountCents / 100).toFixed(2) + ' €) als Ausgabe importieren? Zahlungsart bitte anschließend prüfen.')) return;
+      const result = await ToolyaConnect.importOne(row.sourceId, getData, saveData);
+      renderApp();
+      alert(result === 'already-present' ? 'Die Buchung ist bereits vorhanden.' : 'Lokal gespeichert. Cloud-Synchronisation kann noch ausstehen.');
+    } catch (error) { alert('Toolya Connect: ' + error.message); }
+  });
+  anchor.insertAdjacentElement('afterend', button);
+});
+</script>
 </body>
 </html>
