@@ -56,3 +56,21 @@ test('changing revision during backup aborts import', async () => {
   }),/geändert/);
   assert.equal(repo.writes,1);assert.deepEqual(repo.data.cars,[{id:2}]);
 });
+
+test('session invalidation during confirmation blocks cloud import', async () => {
+  const repo=repository({cars:[],events:[],tires:[]});
+  const controller=createCarCloudController(repo);
+  await controller.load();
+  let confirmations=0;
+  await assert.rejects(confirmCloudReplacement({
+    controller,incoming:{cars:[{id:7}],events:[],tires:[]},validate:x=>x,
+    confirm:async()=>{
+      confirmations++;
+      if (confirmations===2) controller.invalidate();
+      return true;
+    },
+    exportBackup:async()=>true
+  }),/Cloud-Sitzung/);
+  assert.equal(repo.writes,0);
+  assert.equal(controller.ready,false);
+});
