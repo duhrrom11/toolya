@@ -20,3 +20,21 @@
 .toolya-signature-footer{box-sizing:border-box;max-width:calc(100% - 24px);min-width:0}
 .ty-footer-inner,.ty-footer-brand,.ty-footer-links{min-width:0}
 .ty-footer-links{overflow-wrap:anywhere}
+
+/* Animated donation strip above (not inside) the unchanged Toolya footer. */
+.ty-kofi-banner{position:relative;isolation:isolate;box-sizing:border-box;display:flex;align-items:center;gap:clamp(12px,2vw,26px);width:min(100% - 24px,1440px);margin:32px auto 0;padding:16px clamp(18px,3vw,36px);min-height:142px;border:2px solid #42f5ef;border-radius:32px;background:linear-gradient(112deg,#064e60,#078b95 62%,#064b65);color:#fff;box-shadow:0 0 0 4px #3ff5e52a,0 10px 30px #005b7190;overflow:hidden}
+.ty-kofi-banner:before{content:"";position:absolute;inset:-100% auto -100% -45%;width:35%;transform:rotate(24deg);background:linear-gradient(90deg,transparent,#ffffff30,transparent);animation:ty-kofi-shine 8s ease-in-out infinite;pointer-events:none}
+.ty-kofi-mascot{position:relative;z-index:1;width:116px;height:116px;object-fit:contain;flex:none;filter:drop-shadow(0 6px 8px #002e4988);animation:ty-kofi-bob 4s ease-in-out infinite}
+.ty-kofi-copy{position:relative;z-index:1;display:flex;flex:1;min-width:0;flex-direction:column;gap:6px}
+.ty-kofi-copy strong{font:900 clamp(23px,3vw,37px)/1.12 system-ui,sans-serif;letter-spacing:-.6px;color:#fff}
+.ty-kofi-joke{font:600 clamp(14px,1.65vw,19px)/1.45 system-ui,sans-serif;color:#d7ffff;min-height:2.7em}
+.ty-kofi-cta{position:relative;z-index:2;display:inline-flex;align-items:center;justify-content:center;flex:none;padding:15px 22px;border-radius:999px;border:2px solid #affff7;background:linear-gradient(120deg,#faffff,#bafbf5);color:#065363!important;font:800 17px/1.25 system-ui,sans-serif;text-decoration:none!important;box-shadow:0 4px 20px #34ffe6a0;transition:transform .2s,box-shadow .2s;white-space:normal;text-align:center}
+.ty-kofi-cta:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 7px 28px #34ffe6}
+.ty-kofi-cta:focus-visible{outline:4px solid #fff;outline-offset:4px}
+.ty-kofi-hearts{position:absolute;left:104px;top:8px;color:#ff8da8;font-size:27px;text-shadow:0 2px 10px #ff517e;animation:ty-kofi-heart 4.5s ease-in-out infinite;pointer-events:none}
+.ty-kofi-banner+.toolya-signature-footer{margin-top:14px}
+@keyframes ty-kofi-bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
+@keyframes ty-kofi-heart{0%,100%{transform:translateY(5px) scale(.9);opacity:.4}40%{transform:translateY(-8px) scale(1.15);opacity:1}70%{transform:translateY(-17px) scale(.9);opacity:.3}}
+@keyframes ty-kofi-shine{0%,65%{left:-45%}95%,100%{left:130%}}
+@media(max-width:720px){.ty-kofi-banner{flex-wrap:wrap;padding:14px 16px;gap:10px;border-radius:24px}.ty-kofi-mascot{width:78px;height:90px}.ty-kofi-copy{flex-basis:calc(100% - 100px)}.ty-kofi-cta{width:100%;box-sizing:border-box}.ty-kofi-hearts{left:65px}.ty-kofi-joke{min-height:0}}
+@media(prefers-reduced-motion:reduce){.ty-kofi-banner:before,.ty-kofi-mascot,.ty-kofi-hearts{animation:none!important}.ty-kofi-cta{transition:none}}
