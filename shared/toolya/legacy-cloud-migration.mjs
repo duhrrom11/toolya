@@ -34,6 +34,17 @@ function validateBudget(value) {
   return copy(value);
 }
 const TOOLS = Object.freeze({
+  'umzugskisten-inventar': {
+    keys: ['mini_homebox_pro'],
+    validate: value => {
+      if (!value || typeof value !== 'object' || Array.isArray(value) ||
+          !Array.isArray(value.locations) || !Array.isArray(value.boxes) ||
+          ![...value.locations,...value.boxes].every(item => item && typeof item === 'object' && !Array.isArray(item)))
+        throw new Error('Umzugskisten-Bestand ist beschädigt.');
+      return copy(value);
+    },
+    build: values => values[0]
+  },
   'autokosten-reifenwechsel': {
     keys: ['kfz_tracker_pro_v3'],
     validate: validateCar,
