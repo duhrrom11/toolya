@@ -1,6 +1,6 @@
 import { createCloudRepository } from './cloud-repository.mjs';
 import { createCarCloudController, createBudgetCloudController } from './cloud-controller.mjs';
-import { createLegacyMigration } from './legacy-cloud-migration.mjs';
+import { createLegacyMigration, sameJson } from './legacy-cloud-migration.mjs';
 
 /**
  * Cloud-only bootstrap for the two legacy tools. This is deliberately separate
@@ -40,7 +40,7 @@ export async function prepareCloudTool({ client, tool, storage, confirmMigration
     const checked = await migration.inspect();
     if (checked.status !== 'cloud-already-exists' ||
         checked.userId !== review.userId || checked.cloudRevision !== review.cloudRevision ||
-        JSON.stringify(checked.local) !== JSON.stringify(review.local))
+        !sameJson(checked.local, review.local))
       throw Error('Cloud- oder Gerätedaten haben sich geändert. Bitte neu prüfen.');
   }
   // Existing cloud snapshots are authoritative. Local data remains untouched.
