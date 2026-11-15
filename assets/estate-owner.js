@@ -100,6 +100,8 @@
    expectedEncryptedData:record.encryptedData,expectedEncryptedConfig:record.encryptedConfig,
    expectedRecoveryKey:record.recoveryKey
   });
+  // A second tab may have changed the local encrypted snapshot during remote verification.
+  if(snapshot!==localStorage.getItem(STORE))throw Error('conflict');
   stamp=confirmedStamp;localWrite({...record,cloudStamp:stamp,pending:false});
   try{
    const replica=await C.readReplica([...payload.entries,...(payload.funeralWishes?[{id:'funeral-wishes',title:'Meine Bestattungswünsche',category:'Posthum',content:payload.funeralWishes}]:[])],config.alarmPersons,payload.trusteeKeys);
