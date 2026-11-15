@@ -22,7 +22,71 @@ export function wishlistContinuation(raw,source){
 }
 const text=(node,max=250)=>Array.from(node?.textContent?.replace(/\s+/g,' ').trim()||'').slice(0,max).join('');
 export function safeImage(raw){try{const u=new URL(raw);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&['m.media-amazon.com','images-eu.ssl-images-amazon.com','images-na.ssl-images-amazon.com','images.ssl-images-amazon.com'].includes(u.hostname)?u.href:null}catch{return null}}
-export function parsePrice(raw){if(!raw)return null;let s=raw.replace(/[^\d,.]/g,'');if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');else if(/^\d{1,3}(\.\d{3})+$/.test(s))s=s.replace(/\./g,'');const n=Number(s);return s&&Number.isFinite(n)&&n>=0&&n<=999999?n:null;}
+// Strict parsing prevents prices from quantities, crossed-out offers, or unrelated text.
+export function parsePrice(raw){
+ if(typeof raw==='number')return Number.isFinite(raw)&&raw>=0&&raw<=999999?raw:null;
+ if(typeof raw!=='string')return null;
+ let value=raw.replace(/\u00a0/g,' ').trim();
+ if(!/[0-9]/.test(value)||/\b(?:ab|statt|uvp|pro\s+stück)\b/i.test(value))return null;
+ value=value.replace(/(?:EUR|€)/gi,'').replace(/\s/g,'');
+ if(!/^\d{1,3}(?:[.\u2009]\d{3})*(?:,\d{1,2})?$/.test(value)&&!/^\d+(?:[.,]\d{1,2})?$/.test(value))return null;
+ if(value.includes(','))value=value.replace(/[.\u2009]/g,'').replace(',','.');
+ const n=Number(value);return Number.isFinite(n)&&n>=0&&n<=999999?n:null;
+}
+function pricedAttributes(node){
+ for(const key of ['data-price','data-item-price','data-price-amount']){
+  const value=node?.getAttribute?.(key);
+  if(value!=null){const price=parsePrice(value);if(price!=null)return price;}
+ }
+ return null;
+}
+function priceFromMarkup(root){
+ for(const selector of [
+  '.priceToPay .a-offscreen','#corePriceDisplay_desktop_feature_div .priceToPay .a-offscreen',
+  '#corePrice_feature_div .a-price:not(.a-text-price) .a-offscreen',
+  '#corePriceDisplay_desktop_feature_div .a-price:not(.a-text-price) .a-offscreen',
+  '.a-price:not(.a-text-price) .a-offscreen',
+  '[id^="itemPrice"] .a-offscreen','[id^="itemPrice"]',
+  '#priceblock_ourprice','#priceblock_dealprice'
+ ]){
+  for(const node of root.querySelectorAll(selector)){
+   const parsed=parsePrice(text(node,80));if(parsed!==null)return parsed;
+  }
+ }
+ for(const node of root.querySelectorAll('.priceToPay,.a-price:not(.a-text-price)')){
+  const whole=text(node.querySelector('.a-price-whole'),40).replace(/[.,]$/,'');
+  const fraction=text(node.querySelector('.a-price-fraction'),5);
+  if(whole&&/^\d{1,3}(?:\.\d{3})*$|^\d+$/.test(whole)&&/^\d{2}$/.test(fraction)){
+   const parsed=parsePrice(whole+','+fraction);if(parsed!==null)return parsed;
+  }
+ }
+ return pricedAttributes(root);
+}
+function flattenJsonLd(node){
+ if(Array.isArray(node))return node.flatMap(flattenJsonLd).slice(0,32);
+ if(node&&typeof node==='object')return [node,...flattenJsonLd(node['@graph']||[])].slice(0,32);
+ return [];
+}
+function productStructuredData(document,asin){
+ for(const script of [...document.querySelectorAll('script[type="application/ld+json"]')].slice(0,8)){
+  let parsed;try{if((script.textContent||'').length>80000)continue;parsed=JSON.parse(script.textContent)}catch{continue}
+  for(const node of flattenJsonLd(parsed)){
+   const type=Array.isArray(node['@type'])?node['@type']:[node['@type']];
+   if(!type.some(t=>typeof t==='string'&&/(^|\/)Product$/i.test(t)))continue;
+   const explicitId=[node.asin,node.sku,node.productID].filter(Boolean);
+   if(explicitId.length&&!explicitId.some(x=>String(x).toUpperCase()===asin))continue;
+   const offers=Array.isArray(node.offers)?node.offers:[node.offers];
+   let price=null;
+   for(const offer of offers){
+    if(!offer||typeof offer!=='object'||(offer.priceCurrency&&offer.priceCurrency!=='EUR'))continue;
+    price=parsePrice(offer.price??offer.lowPrice);if(price!==null)break;
+   }
+   const description=typeof node.description==='string'?node.description.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,1000):'';
+   return {price,description};
+  }
+ }
+ return {price:null,description:''};
+}
 function doc(html){if(typeof html!=='string'||html.length>3000000)throw new ScrapeError('TOO_LARGE','Amazon-Antwort ist zu groß.');const {document:d}=parseHTML(/<html\b/i.test(html)?html:'<html><body>'+html+'</body></html>');if(d.querySelector('form[action*="validateCaptcha"],#captchacharacters')||/robot check|automatisierte zugriffe|enter the characters you see/i.test(text(d.body,10000)))throw new ScrapeError('BLOCKED','Amazon blockiert den Abruf oder verlangt eine Prüfung. Bitte später erneut versuchen.');return d;}
 const pick=(root,selectors)=>selectors.split(',').map(selector=>root.querySelector(selector)).find(Boolean)||null;
 function productData(root,asin){
@@ -31,14 +95,16 @@ function productData(root,asin){
  const img=pick(root,'#landingImage,#imgBlkFront,img[data-a-dynamic-image],.g-itemImage img,img');
  let imageUrl=safeImage(img?.getAttribute('data-old-hires'))||safeImage(img?.getAttribute('data-src'))||safeImage(img?.getAttribute('src'));
  if(!imageUrl)try{imageUrl=Object.keys(JSON.parse(img?.getAttribute('data-a-dynamic-image')||'{}')).map(safeImage).find(Boolean)||null}catch{}
- const priceNode=pick(root,'#corePriceDisplay_desktop_feature_div .a-price:not(.a-text-price) .a-offscreen,#corePrice_feature_div .a-price .a-offscreen,.a-price:not(.a-text-price) .a-offscreen,[id^="itemPrice"],#priceblock_ourprice,#priceblock_dealprice');
- const rawPrice=root.getAttribute?.('data-price');const attributePrice=typeof rawPrice==='string'&&/^\d+(?:\.\d{1,2})?$/.test(rawPrice)?Number(rawPrice):null;
- const price=parsePrice(text(priceNode,100))??(attributePrice!==null&&attributePrice<=999999?attributePrice:null);
- const description=text(pick(root,'#feature-bullets,#productDescription,[id^="itemComment"],[id^="itemDescription"],.g-item-comment,.g-itemComment,.item-comment,.item-description,[data-item-description]'),1000) || text({textContent:root.getAttribute?.('data-item-description')||''},1000);
+ const price=priceFromMarkup(root);
+ const description=text(pick(root,'#feature-bullets,#featurebullets_feature_div,#productDescription,#productOverview_feature_div,[id^="itemComment"],[id^="itemDescription"],.g-item-comment,.g-itemComment,.item-comment,.item-description,[data-item-description]'),1000) || text({textContent:root.getAttribute?.('data-item-description')||''},1000);
  const quantityNode=pick(root,'[id^="itemRequestedQty"],[id^="itemRequested_"],[data-quantity]');const quantityText=quantityNode?.getAttribute('data-quantity')||text(quantityNode,100);const quantityMatch=quantityText?.match(/\d+/);const quantity=quantityMatch?Math.min(999,Math.max(1,Number(quantityMatch[0]))):1;
  return title?{asin,marketplace:'amazon.de',title,imageUrl,price,currency:'EUR',description,quantity,productUrl:`https://www.amazon.de/dp/${asin}?tag=duhrrom-21`,scrapedAt:new Date().toISOString()}:null;
 }
-export function parseProduct(html,asin){const d=doc(html);const canonical=d.querySelector('link[rel="canonical"]')?.getAttribute('href');if(canonical){let c;try{c=normalizeAmazonUrl(canonical)}catch{}if(c?.kind==='product'&&c.id!==asin)throw new ScrapeError('MISMATCH','Amazon hat ein anderes Produkt geliefert.');}const p=productData(d,asin);if(!p||!d.querySelector('#productTitle'))throw new ScrapeError('UNAVAILABLE','Produktdaten konnten nicht eindeutig gelesen werden.');return p;}
+export function parseProduct(html,asin){const d=doc(html);const canonical=d.querySelector('link[rel="canonical"]')?.getAttribute('href');if(canonical){let c;try{c=normalizeAmazonUrl(canonical)}catch{}if(c?.kind==='product'&&c.id!==asin)throw new ScrapeError('MISMATCH','Amazon hat ein anderes Produkt geliefert.');}const p=productData(d,asin);if(!p||!d.querySelector('#productTitle'))throw new ScrapeError('UNAVAILABLE','Produktdaten konnten nicht eindeutig gelesen werden.');
+ const structured=productStructuredData(d,asin);
+ if(p.price===null)p.price=structured.price;
+ if(!p.description&&structured.description)p.description=structured.description;
+ return p;}
 export function parseList(html,source){
  const d=doc(html),products=new Map();let failed=0;
  const rows=[...d.querySelectorAll('[id^="item_"][data-itemid],li[data-itemid],.g-item-sortable')];
@@ -90,5 +156,7 @@ export async function scrape(raw,fetcher=fetch,options={}){const source=normaliz
  if(failed||(expected!==null&&expected!==products.size))complete=false;
  const items=[...products.values()].slice(0,500);
  // Enrichment is opt-in for the server-side public wishlist flow only.
- if(complete&&options.enrichMissing===true&&items.length<=15)await enrichMissingProductMetadata(items,(url,request)=>fetcher(url,{...request,signal:AbortSignal.timeout(2500)}),2);
+ // Product-detail enrichment runs outside the wishlist transaction to avoid
+ // large-list CPU exhaustion. A separate authenticated request handles one ASIN.
+ if(complete&&options.enrichMissing===true&&items.length<=4)await enrichMissingProductMetadata(items,(url,request)=>fetcher(url,{...request,signal:AbortSignal.timeout(2000)}),1);
  return {kind:'list',title,products:items,complete,warnings:complete?[]:['Die Liste konnte nicht vollständig gelesen werden. Es wird nichts importiert.']};}
