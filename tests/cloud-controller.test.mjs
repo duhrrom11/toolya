@@ -96,3 +96,20 @@ test('late cloud confirmation after logout cannot restore controller state', asy
   assert.equal(controller.revision,null);
   assert.throws(() => controller.snapshot(), /noch nicht geladen/);
 });
+
+test('controller rejects inconsistent read revisions and remains blocked', async () => {
+  const invalid = [
+    {exists:true,data:{cars:[],events:[],tires:[]},revision:null},
+    {exists:true,data:{cars:[],events:[],tires:[]},revision:0},
+    {exists:false,data:null,revision:2},
+    {exists:false,data:null,revision:undefined}
+  ];
+  for (const response of invalid) {
+    const controller=createCarCloudController({
+      read:async()=>response,
+      save:async()=>{throw Error('must not save');}
+    });
+    await assert.rejects(controller.load(),/inkonsistent/);
+    assert.equal(controller.ready,false);
+  }
+});
