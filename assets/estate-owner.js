@@ -23,7 +23,7 @@
  window.addEventListener('storage',e=>{if(e.key===STORE&&key&&e.newValue!==ownRaw)lock('Der Tresor wurde in einem anderen Fenster geändert. Bitte melde dich erneut an.');});
  db.auth.onAuthStateChange((event,session)=>{if(user&&(!session||session.user.id!==user.id))lock('Das Konto wurde gewechselt. Bitte öffne deinen Tresor erneut.');});
  function localWrite(value){if(!key||!user||value?.version!==2||value.ownerId!==user.id||!value.encryptedData?.ciphertext||!value.encryptedConfig?.ciphertext||!value.recoveryKey?.ciphertext)throw Error('login_required');const raw=JSON.stringify(value);if(ownRaw!==null&&localStorage.getItem(STORE)!==ownRaw)throw Error('conflict');localStorage.setItem(STORE,raw);ownRaw=raw;record=value;}
- async function authenticated(){const {data,error}=await db.auth.getUser();if(error||!data.user||data.user.id!==user?.id)throw Error('login_required');return data.user;}
+ async function authenticated(){return EstateCloudGuard.requireOwner(db,user?.id);}
  function validatePayload(p){if(!p||!Array.isArray(p.entries)||p.entries.length>10000)throw Error('invalid_vault');return p;}
  function normalizeConfig(c){const cfg={...c};delete cfg.masterKeyHex;delete cfg.encryptedData;delete cfg.recoveryKey;delete cfg.recovery_key;cfg.alarmPersons=Array.isArray(cfg.alarmPersons)?cfg.alarmPersons:[];cfg.checkInIntervalDays=[30,60,90].includes(Number(cfg.checkInIntervalDays))?Number(cfg.checkInIntervalDays):30;cfg.remindersEnabled=cfg.remindersEnabled===true;return cfg;}
  async function openOwner(account,password,vaultPassword){
@@ -78,14 +78,14 @@
  async function persist(){if(!key)throw Error('login_required');await authenticated();const encryptedData=await C.encrypt(payload,key),encryptedConfig=await C.encrypt(config,key);if(JSON.stringify(encryptedData).length>1000000)throw Error('Deine Unterlagen sind zu groß für diesen Tresor. Bitte kürze den letzten Eintrag.');localWrite({...record,encryptedData,encryptedConfig,pending:true});render();await sync();}
  async function sync(){
   await authenticated();if(!record||!key)throw Error('login_required');
-  const snapshot=ownRaw;const {data:remote,error}=await db.from('vault_cloud_snapshots').select('vault_id,encrypted_data,encrypted_config,updated_at').eq('owner_user_id',user.id).maybeSingle();if(error)throw error;
-  if(remote&&(remote.vault_id!==config.vaultId||remote.updated_at!==stamp))throw Error('conflict');
-  const data={encrypted_data:record.encryptedData,encrypted_config:record.encryptedConfig,recovery_key:record.recoveryKey,updated_at:new Date().toISOString()};
-  let result;
-  if(remote)result=await db.from('vault_cloud_snapshots').update(data).eq('owner_user_id',user.id).eq('vault_id',config.vaultId).eq('updated_at',remote.updated_at).select('updated_at');
-  else result=await db.from('vault_cloud_snapshots').insert({...data,owner_user_id:user.id,vault_id:config.vaultId}).select('updated_at');
-  if(result.error)throw result.error;if(result.data?.length!==1)throw Error('conflict');if(snapshot!==localStorage.getItem(STORE))throw Error('conflict');
-  stamp=result.data[0].updated_at;localWrite({...record,cloudStamp:stamp,pending:false});
+  const snapshot=ownRaw;
+  const confirmedStamp=await EstateCloudGuard.saveEncryptedSnapshot({
+   client:db,ownerId:user.id,vaultId:config.vaultId,expectedStamp:stamp,
+   encryptedData:record.encryptedData,encryptedConfig:record.encryptedConfig,recoveryKey:record.recoveryKey
+  });
+  if(snapshot!==localStorage.getItem(STORE))throw Error('conflict');
+  await authenticated();
+  stamp=confirmedStamp;localWrite({...record,cloudStamp:stamp,pending:false});
   try{
    const replica=await C.readReplica([...payload.entries,...(payload.funeralWishes?[{id:'funeral-wishes',title:'Meine Bestattungswünsche',category:'Posthum',content:payload.funeralWishes}]:[])],config.alarmPersons,payload.trusteeKeys);
    replica.guardians=replica.guardians.map(g=>({...g,email:config.alarmPersons.find(p=>p.id===g.id).contact}));
