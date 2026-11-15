@@ -98,26 +98,11 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
   assert.equal(await page.locator('.toolya-settings').count(),0,route+' no standalone settings');await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route+' single preferences panel');await page.keyboard.press('Escape');await page.screenshot({path:'test-results/mascot-'+route+'-mobile.png',fullPage:true});assert.equal(await page.locator('.toolya-idle').isVisible(),false,route+' redundant strip hidden');await page.locator('.ty-tool-hero-mascot').screenshot({path:'test-results/mascot-'+route+'-detail.png'});
  }
  for(const route of ['/privacy.html','/legal.html','/mascots.html','/tools/wishes/dashboard.html','/tools/estate/heirs.html','/tools/estate/handover.html']){await page.goto(origin+route);await page.waitForFunction(()=>window.toolyaBuddy);assert.equal(await page.locator('.toolya-settings').count(),0,route);await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route);await page.keyboard.press('Escape');}
- await page.goto(origin+'/tools/wishes/');await page.waitForFunction(()=>document.querySelector('.wishes-navigation'));
- assert.equal(await page.locator('.wishes-navigation a').count(),4);
- assert.equal(await page.locator('.wishlist-hub-nav,.wishlist-welcome').count(),0);
- for(const [name,area] of [['Entdecken','discover'],['Geschenke','gifts'],['Konto','account'],['Meine Listen','lists']]){
-  await page.locator('.wishes-navigation').getByRole('link',{name,exact:true}).click();
-  assert.equal(await page.locator('[data-wishes-area]:visible').count(),1);
-  assert.equal(await page.locator('[data-wishes-area="'+area+'"]').isVisible(),true);
-  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'workspace mobile overflow '+area);
- }
- await page.goto(origin+'/tools/wishes/#giftFinder');await page.waitForFunction(()=>document.querySelector('[data-wishes-area="discover"]')?.hidden===false);
- assert.equal(await page.locator('#giftFinder').isVisible(),true,'deep link opens finder disclosure');
- // Isolated UI state only: never sign into or write to production.
- await page.evaluate(()=>{document.getElementById('editor').hidden=false;document.getElementById('listsDashboard').hidden=false});
- await page.locator('.wishes-navigation').getByRole('link',{name:'Meine Listen',exact:true}).click();
- await page.locator('#wishNote').fill('Isolated draft');
- await page.locator('.wishes-navigation').getByRole('link',{name:'Konto',exact:true}).click();
- assert.equal(await page.locator('#handle').isVisible(),true,'profile under account');
- await page.locator('.wishes-navigation').getByRole('link',{name:'Meine Listen',exact:true}).click();
- assert.equal(await page.locator('#wishNote').inputValue(),'Isolated draft','switching areas preserves drafts');
- await page.screenshot({path:'test-results/wishes-simplified-lists-mobile.png',fullPage:true});
+ await page.goto(origin+'/tools/wishes/');await page.waitForURL(/\\/tools\\/wishes\\/public\\.html/);await page.locator('#amazonUrl').waitFor();
+ assert.equal(await page.locator('#homeNewWish,#homeNewList,.wishes-navigation').count(),0,'legacy private wishlist controls not shown');
+ assert.equal(await page.locator('#search,#amazonUrl,#password').count(),3,'public wishlist controls present');
+ assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'public wishlist mobile overflow');
+ await page.screenshot({path:'test-results/wishes-amazon-public-mobile.png',fullPage:true});
  await page.goto(origin+'/tools/wishes/');await page.waitForFunction(()=>window.toolyaBuddy);
  for(const emotion of ['happy','proud','curious','thoughtful','surprised','concerned','sad','shy','cheeky','sleepy','laughing','grateful','motivated','puzzled','celebrating','affectionate']){
   await page.evaluate(async emotion=>{const p=await import('/shared/toolya/platform.mjs');p.buddy.dismiss();p.previewEmotion(emotion)},emotion);await page.waitForFunction(()=>{const f=document.querySelector('.tb-message-box .ty-frame');return f&&!f.hidden});
