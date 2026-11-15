@@ -15,6 +15,7 @@ export function createCloudController({ repository, validate, initial }) {
   const api = {
     get ready() { return loaded && !busy; },
     get revision() { return revision; },
+    get sessionGeneration() { return generation; },
     snapshot() { ensureReady(); return clone(state); },
     async load() {
       if (busy) throw new Error('Speichern läuft bereits.');
