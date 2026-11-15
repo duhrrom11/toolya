@@ -261,6 +261,13 @@
 
         window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         // Client initialisiert; die tatsächliche Erreichbarkeit wird bei Auth-Anfragen geprüft.
+        if(new URLSearchParams(location.search).get('auth')==='required'){
+            document.addEventListener('DOMContentLoaded',()=>{
+                openSettings();
+                document.getElementById('loginEmail')?.focus();
+                history.replaceState(null,'',location.pathname+location.hash);
+            },{once:true});
+        }
         // Tool access is checked on every navigation, not inferred from cached UI state.
         // Keep the home page visible; show the existing login/register dialog instead of a loading screen.
         document.addEventListener('click', async event => {
