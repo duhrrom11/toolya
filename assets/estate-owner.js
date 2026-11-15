@@ -6,7 +6,7 @@
  const $=id=>document.getElementById(id);
  let user=null,key=null,payload=null,config=null,record=null,stamp=null,version=0,mailReady=false,busy=false,ownRaw=null,editId=null,idle=null;
  function message(text,error=false){$('message').hidden=false;$('message').textContent=text;$('message').classList.toggle('error',error);}
- const errors={conflict:'Der Tresor wurde auf einem anderen Gerät geändert. Nutze zunächst das Gerät mit dem aktuellen Stand. Deine Änderungen hier bleiben verschlüsselt erhalten.',login_required:'Bitte melde dich erneut an.',backup_required:'Bitte sichere zuerst deinen Tresor online.',rate_limited:'Zu viele Versuche. Bitte warte eine Minute.',notification_unavailable:'Die Alarm-E-Mail ist noch nicht eingerichtet. Es wurde kein Alarm gestartet.',reauthenticate:'Bitte bestätige dein Konto-Passwort erneut.'};
+ const errors={vault_mismatch:'Der Gerätetresor und die Online-Sicherung gehören zu unterschiedlichen Tresoren. Beide Stände bleiben unverändert. Bitte nutze ein anderes Browserprofil.',conflict:'Der Tresor wurde auf einem anderen Gerät geändert. Nutze zunächst das Gerät mit dem aktuellen Stand. Deine Änderungen hier bleiben verschlüsselt erhalten.',login_required:'Bitte melde dich erneut an.',backup_required:'Bitte sichere zuerst deinen Tresor online.',rate_limited:'Zu viele Versuche. Bitte warte eine Minute.',notification_unavailable:'Die Alarm-E-Mail ist noch nicht eingerichtet. Es wurde kein Alarm gestartet.',reauthenticate:'Bitte bestätige dein Konto-Passwort erneut.'};
  function errorText(e){return errors[e.message] || (e.message?.startsWith('Bitte ')||e.message?.startsWith('Deine ')||e.message?.startsWith('Dieser ')||e.message?.startsWith('Die ')||e.message?.startsWith('Vorhandene ')||e.message?.startsWith('Kein ') ? e.message : 'Das hat nicht geklappt. Prüfe deine Verbindung und deine Passwörter. Vorhandene Daten bleiben erhalten.');}
  async function run(fn){if(busy)return;busy=true;document.querySelectorAll('button').forEach(b=>{if(!b.closest('dialog'))b.disabled=true;});try{await fn();}catch(e){message(errorText(e),true);window.toolyaNotice?.('error',errorText(e),'concerned');}finally{busy=false;document.querySelectorAll('button').forEach(b=>b.disabled=false);}}
  function node(tag,text,cls){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(cls)el.className=cls;return el;}
@@ -32,6 +32,7 @@
   if(error)throw error;
   ownRaw=localStorage.getItem(STORE);let local=ownRaw?JSON.parse(ownRaw):null;
   if(local?.version===2&&local.ownerId!==user.id)throw Error('Dieser Gerätetresor gehört zu einem anderen Konto. Bitte verwende das passende Konto oder ein anderes Browserprofil.');
+  EstateCloudGuard.assertRestoreCompatible(local,remote);
   let workingKey,workingPayload,workingConfig,recovery,restore=false;
   if(local?.version===2){
    workingKey=await C.unwrap(local.recoveryKey,vaultPassword);workingPayload=validatePayload(await C.decrypt(local.encryptedData,workingKey));workingConfig=normalizeConfig(await C.decrypt(local.encryptedConfig,workingKey));recovery=local.recoveryKey;stamp=local.cloudStamp||null;
