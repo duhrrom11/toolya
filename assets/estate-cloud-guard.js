@@ -70,8 +70,29 @@
   return {key,payload,config:{...config,vaultId:remote.vault_id},
    recovery:remote.recovery_key,stamp:remote.updated_at,remote};
  }
+ function assertLegacyMergeSafe(localPayload,localConfig,cloudPayload,cloudConfig){
+  if(!Array.isArray(localPayload?.entries)||!Array.isArray(cloudPayload?.entries)||
+     !Array.isArray(localConfig?.alarmPersons)||!Array.isArray(cloudConfig?.alarmPersons))
+   throw Error('invalid_vault');
+  const localKeys=localPayload.trusteeKeys||{},cloudKeys=cloudPayload.trusteeKeys||{};
+  for(const [id,remoteKey] of Object.entries(cloudKeys)){
+   if(Object.prototype.hasOwnProperty.call(localKeys,id)&&localKeys[id]!==remoteKey)
+    throw Error('conflict');
+  }
+  const localPeople=new Map(localConfig.alarmPersons.map(person=>[String(person.id),person]));
+  for(const person of cloudConfig.alarmPersons){
+   const existing=localPeople.get(String(person.id));
+   if(existing&&JSON.stringify(existing)!==JSON.stringify(person))throw Error('conflict');
+  }
+  const cloudPeople=new Map(cloudConfig.alarmPersons.map(person=>[String(person.id),person]));
+  for(const person of localConfig.alarmPersons){
+   const existing=cloudPeople.get(String(person.id));
+   if(existing&&JSON.stringify(existing)!==JSON.stringify(person))throw Error('conflict');
+  }
+  return true;
+ }
  function assertLocalSnapshot(expected,current){
   if(expected!==current)throw Error('conflict');
  }
- root.EstateCloudGuard={requireOwner,saveEncryptedSnapshot,verifyEncryptedBackup,assertRestoreCompatible,restoreCloudSnapshot,assertLocalSnapshot};
+ root.EstateCloudGuard={requireOwner,saveEncryptedSnapshot,verifyEncryptedBackup,assertRestoreCompatible,restoreCloudSnapshot,assertLocalSnapshot,assertLegacyMergeSafe};
 })(typeof window!=='undefined'?window:globalThis);
