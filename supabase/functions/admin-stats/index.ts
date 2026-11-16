@@ -80,7 +80,25 @@ async function ga4Metrics(days:number):Promise<Metric[]>{
  const row=report.rows?.[0]?.metricValues;
  if(!Array.isArray(row)||row.length!==4)throw Error('GA4 report has no usable values');
  const labels=['Aktive Nutzer','Sitzungen','Seitenaufrufe','Ereignisse'];
- return labels.map((label,i)=>({label,value:Number(row[i].value),detail:'Google Analytics 4 · letzte '+days+' Tage'}));
+ const totals=labels.map((label,i)=>({label,value:Number(row[i].value),detail:'Google Analytics 4 · letzte '+days+' Tage'}));
+ // Aggregate popular pages; only page paths and counts, never user IDs or raw events.
+ const pagesResponse=await fetch('https://analyticsdata.googleapis.com/v1beta/properties/'+property+':runReport',{
+  method:'POST',headers:{Authorization:'Bearer '+tokenData.access_token,'Content-Type':'application/json'},
+  body:JSON.stringify({dateRanges:[{startDate:(days-1)+'daysAgo',endDate:'today'}],
+   dimensions:[{name:'pagePath'}],metrics:[{name:'screenPageViews'}],
+   orderBys:[{metric:{metricName:'screenPageViews'},desc:true}],limit:'10'}),
+  signal:AbortSignal.timeout(10000)
+ });
+ if(!pagesResponse.ok)return totals;
+ const pages=await pagesResponse.json();
+ const top=(Array.isArray(pages.rows)?pages.rows:[]).slice(0,10).flatMap((entry:unknown)=>{
+  const item=entry as {dimensionValues?:{value?:string}[],metricValues?:{value?:string}[]};
+  const path=item.dimensionValues?.[0]?.value||'';
+  const value=Number(item.metricValues?.[0]?.value);
+  if(!path.startsWith('/')||path.length>150||!Number.isFinite(value))return [];
+  return [{label:'Seite: '+path,value,detail:'GA4 Seitenaufrufe · letzte '+days+' Tage'}];
+ });
+ return [...totals,...top];
 }
 Deno.serve(async(req:Request)=>{
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
