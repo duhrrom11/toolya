@@ -19,11 +19,13 @@ async function load(){
   const payload=await response.json();
   if(!payload||!Array.isArray(payload.sources)||!Array.isArray(payload.metrics))throw Error('Ungültiges Datenformat');
   const metrics=payload.metrics;
+  const diagnostic=metrics.find(m=>m.label==='Tool-Ranking-Diagnose');
+  $('ranking-diagnostic').textContent=diagnostic?.detail||'Ranking-Diagnose derzeit nicht verfügbar.';
   const toolStarts=metrics.filter(m=>m.label.startsWith('Tool-Start: '));
   const pages=metrics.filter(m=>m.label.startsWith('Seite: '));
   const events=metrics.filter(m=>m.label.startsWith('Ereignis: '));
   const daily=metrics.filter(m=>/^Tag: \d{8}$/.test(m.label)).sort((a,b)=>a.label.localeCompare(b.label));
-  $('summary').replaceChildren(...metrics.filter(m=>!m.label.startsWith('Seite: ')&&!m.label.startsWith('Tool-Start: ')&&!m.label.startsWith('Ereignis: ')&&!m.label.startsWith('Tag: ')).map(m=>tile(m.label,Number(m.value).toLocaleString('de-DE'),m.detail||'')));
+  $('summary').replaceChildren(...metrics.filter(m=>m.label!=='Tool-Ranking-Diagnose'&&!m.label.startsWith('Seite: ')&&!m.label.startsWith('Tool-Start: ')&&!m.label.startsWith('Ereignis: ')&&!m.label.startsWith('Tag: ')).map(m=>tile(m.label,Number(m.value).toLocaleString('de-DE'),m.detail||'')));
   const bars=(id,items,prefix)=>{const host=$(id);host.replaceChildren();if(!items.length){host.textContent='Noch keine erfassten Daten für diesen Zeitraum.';return}
    const max=Math.max(1,...items.map(m=>Number(m.value)));
    for(const m of items){const row=document.createElement('div');row.className='bar-row';const label=document.createElement('span');label.textContent=m.label.slice(prefix.length);const value=document.createElement('strong');value.textContent=Number(m.value).toLocaleString('de-DE');const track=document.createElement('div');track.className='bar-track';const fill=document.createElement('div');fill.className='bar-fill';fill.style.width=Math.max(0,Math.min(100,Number(m.value)/max*100))+'%';track.append(fill);row.append(label,value,track);host.append(row)}

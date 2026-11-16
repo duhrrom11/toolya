@@ -124,8 +124,8 @@ async function ga4Metrics(days:number):Promise<Metric[]>{
    }
   }catch{/* Optional breakdown must not invalidate confirmed totals. */}
  }
- // This custom dimension must first be registered in GA4 (event parameter: tool_name).
- // The API returns only real recorded tool_open events; never infer clicks from page views.
+ // Diagnostic status is fixed and sanitized; no Google error bodies or credentials exposed.
+ let rankingStatus='GA4-Ranking: Abfrage noch nicht erfolgreich';
  try{
   const rankingResponse=await fetch('https://analyticsdata.googleapis.com/v1beta/properties/'+property+':runReport',{
    method:'POST',headers:{Authorization:'Bearer '+tokenData.access_token,'Content-Type':'application/json'},
@@ -135,17 +135,25 @@ async function ga4Metrics(days:number):Promise<Metric[]>{
     orderBys:[{metric:{metricName:'eventCount'},desc:true}],limit:'12'}),
    signal:AbortSignal.timeout(10000)
   });
-  if(rankingResponse.ok){
+  if(!rankingResponse.ok){
+   rankingStatus=rankingResponse.status===400?'GA4-Ranking: Dimension noch nicht abfragbar (HTTP 400)':rankingResponse.status===403?'GA4-Ranking: Berechtigung verweigert (HTTP 403)':'GA4-Ranking: Abfrage fehlgeschlagen (HTTP '+rankingResponse.status+')';
+  }else{
    const ranking=await rankingResponse.json();
    const allowed=new Set(['wishes','budget','moving','plants','housemates','estate','car','pet-health','parking','loans','meters','baking']);
-   for(const item of (Array.isArray(ranking.rows)?ranking.rows:[])){
+   const rows=Array.isArray(ranking.rows)?ranking.rows:[];
+   let accepted=0;
+   for(const item of rows){
     const name=item.dimensionValues?.[0]?.value;
     const value=Number(item.metricValues?.[0]?.value);
-    if(allowed.has(name)&&Number.isFinite(value)&&value>=0)
+    if(allowed.has(name)&&Number.isFinite(value)&&value>=0){
      additional.push({label:'Tool-Start: '+name,value,detail:'GA4 tool_open · letzte '+days+' Tage'});
+     accepted++;
+    }
    }
+   rankingStatus=accepted?'GA4-Ranking: '+accepted+' Tools mit erfassten Starts':rows.length?'GA4-Ranking: Ereignisse ohne gültige Tool-Kennung':'GA4-Ranking: Abfrage erfolgreich, noch keine tool_open-Daten';
   }
- }catch{/* Missing GA4 custom dimension must not affect existing analytics. */}
+ }catch{rankingStatus='GA4-Ranking: Zeitüberschreitung oder Netzwerkfehler'}
+ additional.push({label:'Tool-Ranking-Diagnose',value:0,detail:rankingStatus});
  return [...totals,...top,...additional];
 }
 Deno.serve(async(req:Request)=>{
