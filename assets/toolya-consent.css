@@ -1,0 +1,9 @@
+#toolya-consent-panel{position:fixed;bottom:12px;left:12px;z-index:2147483000;max-width:390px;width:calc(100% - 24px);box-sizing:border-box;background:#fff;color:#172033;border:1px solid #dbe3ed;border-radius:14px;padding:15px;box-shadow:0 6px 28px #12253a29;font:14px/1.5 system-ui,sans-serif}
+#toolya-consent-panel[hidden]{display:none!important}
+#toolya-consent-panel p{margin:6px 0 12px}
+#toolya-consent-panel .actions{display:flex;gap:8px;flex-wrap:wrap}
+#toolya-consent-panel button{flex:1;min-width:125px;cursor:pointer;border-radius:9px;padding:9px 12px;font:600 14px system-ui,sans-serif;border:1px solid #0f766e;background:#fff;color:#115e59}
+#toolya-consent-panel button.accept{background:#0f766e;color:#fff}
+#toolya-consent-panel a{color:#075985;text-decoration:underline}
+#toolya-consent-settings{cursor:pointer}
+.toolya-consent-settings-link{display:inline-block;margin:8px 12px;font:13px system-ui,sans-serif;text-decoration:underline;color:inherit}
