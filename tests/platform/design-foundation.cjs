@@ -11,7 +11,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   const context=await browser.newContext({reducedMotion:'reduce'});
   await context.route('**/*',route=>{const u=new URL(route.request().url());return u.origin===origin||(u.hostname==='cdn.tailwindcss.com'&&route.request().method()==='GET')?route.continue():route.abort()});
   const page=await context.newPage();fs.mkdirSync('test-results',{recursive:true});
-  for(const route of ['/index.html','/privacy.html','/legal.html']){
+  for(const route of ['/index.html','/privacy.html','/legal.html','/tools/wishes/public.html']){
    for(const width of [320,768,1440]){
     await page.setViewportSize({width,height:900});await page.goto(origin+route);
     await page.locator('.toolya-signature-footer .ty-footer-links #toolya-consent-settings').waitFor();
@@ -27,7 +27,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
     if(layout.scroll>width+1){await page.screenshot({path:'test-results/design-failure.png',fullPage:true});throw Error(route+' fits '+width+': '+JSON.stringify(layout));}
     const footer=page.locator('.toolya-signature-footer');await footer.scrollIntoViewIfNeeded();
     assert(await footer.evaluate(el=>{const r=el.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+1}),'footer fits viewport');
-    await page.screenshot({path:'test-results/design-'+route.slice(1,-5)+'-'+width+'.png',fullPage:false});
+    await page.screenshot({path:'test-results/design-'+route.slice(1,-5).replaceAll('/','-')+'-'+width+'.png',fullPage:false});
    }
   }
   // Force the opposite initialization order: shared footer exists before consent.
@@ -41,6 +41,6 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
    await page.reload();await page.locator('.ty-footer-mascot').waitFor();
    assert((await page.locator('.ty-footer-mascot').getAttribute('src')).includes(character),'footer follows '+character);
   }
-  console.log('Design foundation: 3 routes × 3 widths; both consent initialization orders; both characters passed. Production application/analytics requests blocked.');
+  console.log('Design foundation: 4 routes × 3 widths; both consent initialization orders; both characters passed. Production application/analytics requests blocked.');
  }finally{await browser?.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1});

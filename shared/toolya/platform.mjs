@@ -140,7 +140,7 @@ function mountToolHero(){
  const heading=old.querySelector('h1');
  const title=heading?.textContent?.trim()||document.title.split('|')[0].trim();
  const description=old.querySelector('.b3-tool-title p')?.textContent?.trim()||context.greeting;
- const icon=old.querySelector('.b3-tool-icon')?.textContent?.trim()||'✦';
+ const icon=old.querySelector('.b3-tool-icon')?.textContent?.trim()||'';
  const hero=document.createElement('section');hero.className='ty-tool-hero';hero.dataset.tool=tool;hero.setAttribute('aria-label','Toolya Themen-Header');
  const inner=document.createElement('div');inner.className='ty-tool-hero-inner';
  const copy=document.createElement('div');copy.className='ty-tool-hero-copy';

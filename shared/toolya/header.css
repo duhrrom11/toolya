@@ -1,5 +1,5 @@
 /* Tool-specific A2/B2 header, without altering the homepage. */
-.ty-tool-hero{--ty-accent:#087e85;--ty-soft:#d7f5f2;position:relative;isolation:isolate;box-sizing:border-box;width:min(100% - 24px,1440px);max-width:calc(100% - 24px);margin:12px auto 16px;border-radius:26px;overflow:hidden;background:linear-gradient(115deg,#f7ffff 0%,var(--ty-soft) 100%);border:1px solid color-mix(in srgb,var(--ty-accent) 24%,white);box-shadow:0 9px 28px #16445618;color:#193c4b;font-family:system-ui,-apple-system,sans-serif}
+.ty-tool-hero{--ty-accent:#087e85;--ty-soft:#d7f5f2;position:relative;isolation:isolate;box-sizing:border-box;width:min(100% - 24px,1440px);max-width:calc(100% - 24px);margin:12px auto 16px;padding:0;border-radius:26px;overflow:hidden;background:linear-gradient(115deg,#f7ffff 0%,var(--ty-soft) 100%);border:1px solid color-mix(in srgb,var(--ty-accent) 24%,white);box-shadow:0 9px 28px #16445618;color:#193c4b;font-family:system-ui,-apple-system,sans-serif}
 .ty-tool-hero[data-theme=purple]{--ty-accent:#7954a9;--ty-soft:#f0e7fa}
 .ty-tool-hero[data-tool=budget],.ty-tool-hero[data-tool=meters],.ty-tool-hero[data-tool=loans]{--ty-accent:#2d78a6;--ty-soft:#e0f0fb}
 .ty-tool-hero[data-tool=plants],.ty-tool-hero[data-tool=pet-health]{--ty-accent:var(--ty-color-primary);--ty-soft:var(--ty-color-soft)}
