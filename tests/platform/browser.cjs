@@ -160,7 +160,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  await desktop.locator('.ty-tool-card[data-id="wishlist"]').hover();
  await desktop.screenshot({path:'test-results/mascot-home-hover.png'});await desktopContext.close();
 
- for(const route of routes){await page.goto(origin+'/tools/'+route+'/');await page.waitForFunction(()=>window.toolyaBuddy);await verifyClipboard('tools/'+route);assert.equal(await page.locator('.toolya-buddy').count(),1,route);await page.evaluate(()=>toolyaBuddy.dismiss());await page.waitForFunction(()=>{const f=document.querySelector('.toolya-idle .ty-frame');return f&&!f.hidden});
+ for(const route of routes){await page.goto(origin+'/tools/'+route+'/');await page.waitForFunction(()=>window.toolyaBuddy);await verifyClipboard('tools/'+route);await page.locator('.toolya-signature-footer .ty-footer-mascot').waitFor();assert.equal(await page.locator('.toolya-signature-footer .ty-footer-mascot').count(),1,route+' selected mascot appears in footer');assert.equal(await page.locator('.toolya-buddy').count(),1,route);await page.evaluate(()=>toolyaBuddy.dismiss());await page.waitForFunction(()=>{const f=document.querySelector('.toolya-idle .ty-frame');return f&&!f.hidden});
   const measurement=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth,overflow:[...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();if(r.right<=321||r.width===0)return false;for(let p=e.parentElement;p;p=p.parentElement){if(/auto|scroll|hidden|clip/.test(getComputedStyle(p).overflowX)&&p.getBoundingClientRect().right<=321)return false}return true}).slice(0,20).map(e=>({tag:e.tagName,id:e.id,class:e.className,right:e.getBoundingClientRect().right}))}));
   if(route==='wishes')await page.screenshot({path:'test-results/mascot-wishes-mobile.png',fullPage:true});
   assert(measurement.scroll<=322,route+' overflow '+JSON.stringify(measurement));assert.equal(await page.evaluate(()=>toolyaBuddy.character),'purple');
@@ -178,7 +178,41 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
   if(await page.locator('#settingsModal[aria-modal="true"]').isVisible().catch(()=>false))await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route+' single preferences panel');await page.keyboard.press('Escape');await page.screenshot({path:'test-results/mascot-'+route+'-mobile.png',fullPage:true});assert.equal(await page.locator('.toolya-idle').isVisible(),false,route+' redundant strip hidden');if(await page.locator('.ty-tool-hero-mascot').count())await page.locator('.ty-tool-hero-mascot').screenshot({path:'test-results/mascot-'+route+'-detail.png'});
  }
- await page.goto(origin+'/dashboard/');await page.locator('#welcome-heading').waitFor();await verifyClipboard('dashboard');await verifyRealFormClipboard('dashboard','#task-text','#reminder-text','Aufgabe kopieren');
+ await page.goto(origin+'/dashboard/');await page.locator('#welcome-heading').waitFor();
+ await page.locator('.toolya-signature-footer .ty-footer-mascot').waitFor();
+ assert.equal(await page.locator('footer').count(),1,'dashboard has only the shared footer');
+ assert.equal(await page.locator('.ty-footer-wordmark').textContent(),await page.locator('.b3-hub-logo').textContent(),'dashboard header/footer use identical wordmark');
+ const footerMascot=await page.locator('.ty-footer-mascot').getAttribute('src');
+ assert.match(footerMascot,/toolya_wishlist_(purple|turquoise)_welcome_1024\.png$/,'footer uses selected character artwork');
+ await verifyClipboard('dashboard');await verifyRealFormClipboard('dashboard','#task-text','#reminder-text','Aufgabe kopieren');
+ // Storage-limit regression: the 151st entry must be rejected with a visible message,
+ // and the typed input must remain available. All data stays in this CI browser.
+ await page.evaluate(()=>{
+  localStorage.setItem('toolya_dashboard_tasks_v1',JSON.stringify(Array.from({length:150},(_,i)=>({id:'task-'+i,text:'Aufgabe '+i,done:false}))));
+  localStorage.setItem('toolya_dashboard_reminders_v1',JSON.stringify(Array.from({length:150},(_,i)=>({id:'reminder-'+i,text:'Erinnerung '+i,due:'2099-01-01T12:00:00.000Z',done:false}))));
+ });
+ await page.reload();await page.locator('#task-count').waitFor();
+ await page.locator('#task-text').fill('Wichtige neue Aufgabe');
+ await page.locator('#task-form button[type=submit]').click();
+ assert.match(await page.locator('#notice').textContent(),/Maximal 150 Aufgaben/,'task limit is explained');
+ assert.equal(await page.locator('#task-text').inputValue(),'Wichtige neue Aufgabe','task text remains after rejection');
+ assert.equal(await page.locator('#task-count').textContent(),'150');
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('toolya_dashboard_tasks_v1')).length),150);
+ await page.locator('#reminder-text').fill('Wichtige neue Erinnerung');
+ await page.locator('#reminder-date').fill('2099-01-02T12:00');
+ await page.locator('#reminder-form button[type=submit]').click();
+ assert.match(await page.locator('#notice').textContent(),/Maximal 150 Erinnerungen/,'reminder limit is explained');
+ assert.equal(await page.locator('#reminder-text').inputValue(),'Wichtige neue Erinnerung','reminder text remains after rejection');
+ assert.equal(await page.locator('#reminder-count').textContent(),'150');
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('toolya_dashboard_reminders_v1')).length),150);
+ await page.evaluate(()=>{localStorage.removeItem('toolya_dashboard_tasks_v1');localStorage.removeItem('toolya_dashboard_reminders_v1')});
+ await page.reload();await page.locator('#welcome-heading').waitFor();
+ await page.setViewportSize({width:390,height:844});
+ await page.screenshot({path:'test-results/dashboard-ux-mobile.png',fullPage:true});
+ assert.equal(await page.locator('.ty-footer-mascot').isVisible(),true,'dashboard footer mascot visible on mobile');
+ assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'dashboard mobile horizontal overflow');
+ await page.setViewportSize({width:320,height:812});
+
  for(const route of ['/privacy.html','/legal.html','/mascots.html','/tools/wishes/dashboard.html','/tools/estate/heirs.html','/tools/estate/handover.html']){await page.goto(origin+route);await page.waitForFunction(()=>window.toolyaBuddy);await verifyClipboard(route);assert.equal(await page.locator('.toolya-settings').count(),0,route);await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route);await page.keyboard.press('Escape');}
  await page.goto(origin+'/tools/wishes/');assert(['/', '/index.html', '/tools/wishes/', '/tools/wishes/index.html', '/tools/wishes/public.html'].includes(new URL(page.url()).pathname),'wishlist entry stays within approved routes');await page.goto(origin+'/tools/wishes/public.html');await page.locator('#amazonUrl').waitFor();await verifyRealFormClipboard('public wishlist','#search','#amazonUrl','https://example.org/list');
  assert.equal(await page.locator('#homeNewWish,#homeNewList,.wishes-navigation').count(),0,'legacy private wishlist controls not shown');
