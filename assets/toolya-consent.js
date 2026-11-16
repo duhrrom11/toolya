@@ -1,8 +1,27 @@
+(function () {
+if (window.__toolyaConsentInitialized) return;
+window.__toolyaConsentInitialized = true;
 // Toolya GA4 consent: no Google requests until explicit opt-in.
 const KEY = 'toolya.analytics.consent.v1';
 const GA_ID = 'G-11L9Y8YK7B';
-let choice = null;
-try { const v = localStorage.getItem(KEY); if (v === 'yes' || v === 'no') choice = v; } catch {}
+// A first-party consent cookie is a fallback when mobile browsers block localStorage.
+const COOKIE_KEY = 'toolya_analytics_consent';
+function readCookieChoice() {
+  const match = document.cookie.split(';').map(v => v.trim()).find(v => v.startsWith(COOKIE_KEY + '='));
+  const value = match ? match.slice(COOKIE_KEY.length + 1) : null;
+  return value === 'yes' || value === 'no' ? value : null;
+}
+function persistChoice(value) {
+  try { localStorage.setItem(KEY, value); } catch {}
+  document.cookie = COOKIE_KEY + '=' + value + '; Max-Age=15552000; Path=/; SameSite=Lax; Secure';
+}
+function readChoice() {
+  // The cookie is authoritative when present, including after cross-tab updates.
+  const cookie = readCookieChoice();
+  if (cookie !== null) return cookie;
+  try { const value = localStorage.getItem(KEY); return value === 'yes' || value === 'no' ? value : null; } catch { return null; }
+}
+let choice = readChoice();
 // Remove first-party GA identifiers when consent is withdrawn. This cannot erase data already sent.
 function clearAnalyticsCookies() {
   const names = document.cookie.split(';').map(part => part.trim().split('=')[0]).filter(name => /^(_ga(?:_|$)|_gid$|_gat(?:_|$))/.test(name));
@@ -54,7 +73,7 @@ function init() {
   document.body.appendChild(panel);
   function decide(value) {
     choice = value;
-    try { localStorage.setItem(KEY, value); } catch {}
+    persistChoice(value);
     panel.hidden = true;
     if (value === 'yes' && analyticsAllowed) enableAnalytics();
     else if (loaded) {
@@ -84,11 +103,13 @@ function init() {
     observer.observe(document.body, { childList: true, subtree: true });
   }
   // Respect changes made in another tab, including withdrawal.
+  window.addEventListener('pageshow', () => { const latest = readChoice(); if (latest !== choice) { choice = latest; if (loaded && choice !== 'yes') { clearAnalyticsCookies(); location.reload(); } else panel.hidden = choice !== null; } });
   window.addEventListener('storage', event => {
     if (event.key !== KEY && event.key !== null) return;
     const next = event.key === null ? null : event.newValue;
     if (next === choice) return;
     choice = next === 'yes' || next === 'no' ? next : null;
+    if (choice !== null) persistChoice(choice);
     if (loaded && choice !== 'yes') clearAnalyticsCookies();
     if (loaded || choice === 'yes') location.reload();
     else panel.hidden = choice !== null;
@@ -96,3 +117,5 @@ function init() {
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
 else init();
+
+})();
