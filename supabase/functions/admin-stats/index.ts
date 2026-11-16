@@ -10,6 +10,8 @@ const catalog=[
 ];
 type Metric={label:string,value:number,detail:string};
 type Source={id:string,label:string,status:string,detail:string};
+type SeoPoint={date:string,clicks:number,impressions:number};
+type SeoSeries={source:'google'|'bing',points:SeoPoint[]};
 const fetchJson=async(url:string,headers:Record<string,string>={})=>{
  const response=await fetch(url,{headers:{Accept:'application/vnd.github+json',...headers},signal:AbortSignal.timeout(7500)});
  if(!response.ok)throw Error('Provider HTTP '+response.status);
@@ -175,7 +177,7 @@ async function ga4Metrics(days:number):Promise<Metric[]>{
 }
 // Direct, free Search Console API. Uses an existing server-side Google service account;
 // Google Search Console must grant this service account access to the Toolya property.
-async function searchConsoleMetrics(days:number):Promise<Metric[]>{
+async function searchConsoleMetrics(days:number,series:SeoSeries[]):Promise<Metric[]>{
  const serviceAccountJson=Deno.env.get('TOOLYA_STATS_GOOGLE_SERVICE_ACCOUNT_JSON')||'';
  if(!serviceAccountJson)throw Error('GSC credentials unavailable');
  let account:{client_email:string,private_key:string};
@@ -206,6 +208,26 @@ async function searchConsoleMetrics(days:number):Promise<Metric[]>{
  });
  if(!response.ok)throw Error('GSC API HTTP '+response.status);
  const data=await response.json();
+ // Daily data is optional: an unavailable trend must not invalidate verified totals.
+ try{
+  const dailyResponse=await fetch('https://searchconsole.googleapis.com/webmasters/v3/sites/'+encodeURIComponent(site)+'/searchAnalytics/query',{
+   method:'POST',headers:{Authorization:'Bearer '+token.access_token,'Content-Type':'application/json'},
+   body:JSON.stringify({startDate:iso(start),endDate:iso(end),type:'web',dimensions:['date'],rowLimit:100}),
+   signal:AbortSignal.timeout(10000)
+  });
+  if(dailyResponse.ok){
+   const daily=await dailyResponse.json();
+   if(Array.isArray(daily.rows)){
+    const points:SeoPoint[]=daily.rows.flatMap((r:unknown)=>{
+     const v=r as {keys?:unknown[],clicks?:unknown,impressions?:unknown};
+     const date=v.keys?.[0],clicks=Number(v.clicks),impressions=Number(v.impressions);
+     return typeof date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(date)&&date>=iso(start)&&date<=iso(end)&&
+      Number.isFinite(clicks)&&Number.isFinite(impressions)&&clicks>=0&&impressions>=0?[{date,clicks,impressions}]:[];
+    });
+    series.push({source:'google',points});
+   }
+  }
+ }catch{/* Optional chart only. */}
  const row=data.rows?.[0];
  if(!row)return [{label:'GSC Klicks',value:0,detail:'Keine Suchdaten · '+iso(start)+' bis '+iso(end)},{label:'GSC Impressionen',value:0,detail:'Keine Suchdaten · '+iso(start)+' bis '+iso(end)}];
  const clicks=Number(row.clicks),impressions=Number(row.impressions),ctr=Number(row.ctr),position=Number(row.position);
@@ -214,7 +236,7 @@ async function searchConsoleMetrics(days:number):Promise<Metric[]>{
  return [{label:'GSC Klicks',value:clicks,detail},{label:'GSC Impressionen',value:impressions,detail},{label:'GSC CTR (%)',value:Math.round(ctr*10000)/100,detail},{label:'GSC Ø Position',value:Math.round(position*100)/100,detail}];
 }
 // Bing Webmaster read-only JSON API. API key is a Supabase secret, never sent to browsers.
-async function bingWebmasterMetrics(days:number):Promise<Metric[]>{
+async function bingWebmasterMetrics(days:number,series:SeoSeries[]):Promise<Metric[]>{
  const key=(Deno.env.get('TOOLYA_STATS_BING_WEBMASTER_API_KEY')||'').trim();
  if(!key)throw Error('BING_NOT_CONFIGURED');
  const site=(Deno.env.get('TOOLYA_STATS_BING_SITE_URL')||'https://toolya.app/').trim();
@@ -231,6 +253,7 @@ async function bingWebmasterMetrics(days:number):Promise<Metric[]>{
  if(!Array.isArray(data?.d))throw Error('BING_INVALID_RESPONSE');
  const cutoff=Date.now()-days*86400000;
  let clicks=0,impressions=0,observations=0;
+ const points:SeoPoint[]=[];
  for(const row of data.d){
   // Bing JSON API dates use /Date(milliseconds-offset)/.
   const match=typeof row?.Date==='string'?row.Date.match(/^\\?\/Date\((-?\d+)(?:[+-]\d{4})?\)\\?\/$/):null;
@@ -240,7 +263,9 @@ async function bingWebmasterMetrics(days:number):Promise<Metric[]>{
   const c=Number(row.Clicks),i=Number(row.Impressions);
   if(!Number.isFinite(c)||!Number.isFinite(i)||c<0||i<0)continue;
   clicks+=c;impressions+=i;observations++;
+  points.push({date:new Date(time).toISOString().slice(0,10),clicks:c,impressions:i});
  }
+ series.push({source:'bing',points:points.sort((a,b)=>a.date.localeCompare(b.date))});
  const detail='Bing Webmaster Tools · letzte '+days+' Tage · '+observations+' Datensätze';
  return [{label:'Bing Klicks',value:clicks,detail},{label:'Bing Impressionen',value:impressions,detail},
   {label:'Bing CTR (%)',value:impressions?Math.round(clicks/impressions*10000)/100:0,detail}];
@@ -265,13 +290,14 @@ Deno.serve(async(req:Request)=>{
  const days=Number(new URL(req.url).searchParams.get('days')||30);
  if(![7,30,90].includes(days))return reply(400,{error:'Invalid period'});
  const metrics:Metric[]=[];
+ const seoTrends:SeoSeries[]=[];
  const sources:Source[]=catalog.map(([id,label])=>({id,label,status:'not_connected',detail:'API-Datenquelle noch nicht eingerichtet'}));
  const tasks=[
   {id:'github',run:()=>githubMetrics(days)},
   {id:'supabase',run:()=>supabaseMetrics(url)},
   {id:'ga4',run:()=>ga4Metrics(days)},
-  {id:'search-console',run:()=>searchConsoleMetrics(days)},
-  {id:'bing-webmaster',run:()=>bingWebmasterMetrics(days)}
+  {id:'search-console',run:()=>searchConsoleMetrics(days,seoTrends)},
+  {id:'bing-webmaster',run:()=>bingWebmasterMetrics(days,seoTrends)}
  ];
  await Promise.all(tasks.map(async({id,run})=>{
   const source=sources.find(s=>s.id===id)!;
@@ -296,5 +322,5 @@ Deno.serve(async(req:Request)=>{
    source.detail=id==='bing-webmaster'?(message==='BING_NOT_CONFIGURED'?'Bing: API-Schlüssel noch nicht als Supabase-Secret hinterlegt':message==='BING_FORBIDDEN'?'Bing: API-Schlüssel ungültig oder Website nicht freigegeben':message==='BING_SITE_INVALID'?'Bing: Website-Konfiguration ungültig':'Bing: Datenabruf derzeit nicht möglich'):id==='search-console'?(message==='GSC credentials unavailable'?'GSC: Google-Dienstkonto nicht eingerichtet':message==='GSC API HTTP 403'?'GSC: Dienstkonto hat keinen Zugriff auf die Search-Console-Property':message==='GSC API HTTP 404'?'GSC: Property nicht gefunden oder nicht freigegeben':'GSC: Datenabruf derzeit nicht möglich'):id==='ga4'?(ga4Codes[message]||(/GA4 Data API HTTP (401|403|404|429|500|503)/.test(message)?'GA4: '+message:'GA4: API-Abfrage fehlgeschlagen')):'Datenabruf fehlgeschlagen oder API-Zugang fehlt';
   }
  }));
- return reply(200,{generatedAt:new Date().toISOString(),days,metrics,sources});
+ return reply(200,{generatedAt:new Date().toISOString(),days,metrics,sources,seoTrends});
 });
