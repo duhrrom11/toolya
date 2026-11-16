@@ -74,6 +74,8 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  assert(cachedAtlas.includes('outfits.webp?v=20261115-alpha'),'old cached module URL is replaced by versioned alpha artwork');
 
  // The thematic header mascot replaces the removed idle strip for touch and keyboard.
+ // Reset interaction state: other mascot checks can leave a cooldown or rotate the reaction text.
+ await page.evaluate(()=>{toolyaBuddy.dismiss();toolyaBuddy.tickleTaps=[];toolyaBuddy.tickleCooldown=0;toolyaBuddy.tickleVariant=0});
  for(let i=0;i<5;i++)await page.locator('.ty-tool-hero-mascot').tap();
  await page.waitForFunction(()=>document.querySelector('.tb-body').textContent.includes('kitzlig'));
  assert.equal(await page.evaluate(()=>toolyaBuddy.tickle()),false,'cooldown');
