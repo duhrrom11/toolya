@@ -52,8 +52,8 @@ function enableAnalytics() {
   tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_ID);
   document.head.appendChild(tag);
 }
-// Sensitive estate routes must never send analytics, even after a prior opt-in.
-const analyticsAllowed = !/^\/tools\/estate(?:\/|$)/.test(location.pathname);
+// Consent-gated GA4 also covers estate pages; never send vault contents or form values.
+const analyticsAllowed = true;
 if (choice === 'yes' && analyticsAllowed) enableAnalytics();
 function init() {
   if (document.getElementById('toolya-consent-panel')) return;
