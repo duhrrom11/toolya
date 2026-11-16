@@ -82,6 +82,7 @@
   <a class="b3-hub-logo" href="index.html" aria-label="Toolya Startseite"><span class="b3-hub-logo-mark" aria-hidden="true">✳</span> Toolya</a>
   <nav class="b3-hub-nav" aria-label="Hauptnavigation">
    <a href="#toolsGrid">Alle Tools</a>
+   <a href="dashboard/" aria-label="Mein persönliches Dashboard öffnen">Mein Dashboard</a>
    <button type="button" id="userInfo" class="b3-hub-account b3-auth-status b3-auth-signed-out" aria-controls="settingsModal" aria-haspopup="dialog" aria-label="Anmelden oder registrieren">Konto wird geprüft …</button>
    <button type="button" id="settingsBtn" aria-haspopup="dialog" aria-controls="settingsModal" aria-label="Einstellungen öffnen"><img class="ty-settings-icon" src="assets/vendor/bootstrap-icons/gear.svg" width="22" height="22" alt=""><span class="ty-settings-label">Einstellungen</span></button>
   </nav>
@@ -956,5 +957,20 @@
             setTimeout(() => { updateUserDisplay(session.access_token).catch(() => {}); }, 0);
         });
     </script>
+<script>
+/* Dashboard v1: track tool navigation only; no account or cloud changes. */
+document.addEventListener('click', function(event) {
+  const link=event.target.closest('#toolsGrid .tool-card a.ty-tool-link');
+  if(!link)return;
+  const id=link.closest('.tool-card')?.dataset.id;
+  if(!id)return;
+  try {
+    const key='toolya_recent_tools_v1';
+    const saved=JSON.parse(localStorage.getItem(key)||'[]');
+    const previous=Array.isArray(saved)?saved.filter(x=>typeof x==='string'&&x!==id):[];
+    localStorage.setItem(key,JSON.stringify([id,...previous].slice(0,8)));
+  } catch (_) {}
+}, {capture:true});
+</script>
 </body>
 </html>
