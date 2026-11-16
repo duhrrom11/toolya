@@ -32,3 +32,6 @@ body:has(.ty-tool-hero[data-tool="estate"]) nav button[data-tab][aria-current=tr
 .estate-access-actions > :is(button,a.button):focus-visible{outline:3px solid #bd7013;outline-offset:3px}
 @media(max-width:760px){.estate-access-actions{grid-template-columns:1fr}.estate-access-actions > button,.estate-access-actions > a.button{min-height:54px}}
 @media(prefers-reduced-motion:reduce){.estate-access-actions > :is(button,a.button){transition:none!important}.estate-access-actions > :is(button,a.button):hover{transform:none!important}}
+
+/* Keep long tab labels readable instead of breaking words on narrow phones. */
+@media(max-width:380px){#owner-app>nav{grid-template-columns:1fr}#owner-app>nav button{font-size:1rem;padding:12px 16px}}

@@ -112,3 +112,5 @@ D06 wird ohne Gewichtserhöhung in D06a (Nachlass Besitzer/Erben, Gewicht 1) und
 Unabhängige Codeprüfung: keine CSP-/Auth-/Schlüssel-/Freigabeänderung; Hinweistext erhalten. `handover.html` und `print-key.html` sind von diesem Paket ausgenommen und unverändert. Die eigenständige Übergabeseite folgt separat, weil ihr CSP externes CSS und Netzwerkzugriffe sperrt.
 
 Die Bildprüfung des geöffneten synthetischen Tresors zeigte außerdem kurzzeitig schlechten Tab-Kontrast während des Hintergrund-Farbwechsels. Die Nav-Farben wechseln nun sofort; Schatten-/Druckeffekte bleiben erhalten. Die isolierte Prüfung misst nach jedem der vier Tabwechsel den tatsächlichen Kontrast aller Navigationsbuttons. Cookie-Overlay und vorangegangene Speichermeldung werden nur in der synthetischen Bildschirmaufnahme entfernt, damit die Oberfläche erkennbar ist.
+
+Bei 320 px zeigten die Bilder außerdem mitten im Wort umgebrochene Reiterbeschriftungen. Bis 380 px stehen die vier Nachlass-Reiter deshalb untereinander; die übrigen Breiten behalten die vorhandene Anordnung. Die bestehenden 320/375/768/1280/1440-px-Prüfungen kontrollieren den Umbruch.
