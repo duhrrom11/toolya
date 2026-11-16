@@ -1,0 +1,44 @@
+name: Toolya dashboard live health
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 7 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'dashboard/**'
+      - 'CNAME'
+      - '.github/workflows/dashboard-live-health.yml'
+permissions:
+  contents: read
+jobs:
+  dashboard-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check DNS, HTTPS, dashboard and static assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "## Toolya dashboard live health"
+            echo ""
+            echo "Checked: https://toolya.app/dashboard/"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "DNS records:"
+          dig +time=3 +tries=2 +short toolya.app A | tee /tmp/toolya-dns.txt
+          if ! grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' /tmp/toolya-dns.txt; then
+            echo "::error::toolya.app has no resolvable IPv4 A record"
+            exit 1
+          fi
+          for resource in / /dashboard/ /dashboard/dashboard.js /dashboard/dashboard.css; do
+            url="https://toolya.app${resource}"
+            echo "Checking ${url}"
+            curl --fail --show-error --silent --location --retry 2 --retry-delay 2 --connect-timeout 10 --max-time 25 --output /tmp/toolya-response --write-out "HTTP %{http_code} URL %{url_effective}\n" "${url}"
+            if [[ "${resource}" == "/dashboard/" ]]; then
+              grep -q 'id="welcome-heading"' /tmp/toolya-response || { echo "::error::Dashboard response is not the expected page"; exit 1; }
+              grep -q 'dashboard.js' /tmp/toolya-response || { echo "::error::Dashboard JavaScript reference missing"; exit 1; }
+            fi
+            echo "- OK: ${resource}" >> "$GITHUB_STEP_SUMMARY"
+          done
