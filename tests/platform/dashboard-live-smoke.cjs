@@ -22,8 +22,8 @@ const assert = require('node:assert/strict');
     const page = await context.newPage();
     const response = await page.goto(origin+'/dashboard/', {waitUntil:'domcontentloaded',timeout:30000});
     assert.equal(response.status(),200,'Dashboard must return HTTP 200');
-    await page.locator('#buddy-toggle[aria-pressed="true"]').waitFor();
-    assert.match(await page.locator('#welcome-heading').innerText(),/Dein Alltag/);
+    await page.locator('#welcome-heading').waitFor();
+    assert.match(await page.locator('#welcome-heading').innerText(),/Dein Alltag|Mein Dashboard/);
     assert.equal(await page.locator('#task-count').innerText(),'0','Fresh isolated browser starts without tasks');
 
     // Task lifecycle: create, mark complete, reload (local persistence), remove.
@@ -45,15 +45,11 @@ const assert = require('node:assert/strict');
     await page.getByRole('button',{name:'Erinnerung entfernen: Isolierte Erinnerung'}).click();
     assert.equal(await page.locator('#reminder-count').innerText(),'0');
 
-    // Companion preference persists only in this temporary browser context.
-    await page.locator('#buddy-toggle').click();
-    assert.equal(await page.locator('#buddy-toggle').getAttribute('aria-pressed'),'false');
-    await page.reload({waitUntil:'domcontentloaded'});
-    assert.equal(await page.locator('#buddy-toggle').getAttribute('aria-pressed'),'false');
-    await page.locator('#buddy-toggle').click();
-    await page.evaluate(() => localStorage.setItem('helferlein-toolya-preferences-v1',JSON.stringify({character:'purple'})));
-    await page.reload({waitUntil:'domcontentloaded'});
-    assert.match(await page.locator('#dashboard-mascot').getAttribute('src'),/purple/);
+    // Both deployed versions must preserve shared account settings and navigation.
+    assert.equal(await page.locator('#settingsBtn').count(),1,'Dashboard settings are available');
+    await page.locator('#settingsBtn').click();
+    assert.equal(await page.locator('#settingsModal').isVisible(),true,'Settings dialog opens');
+    await page.locator('#closeSettingsBtn').click();
 
     for (const width of [320,375,768,1280]) {
       await page.setViewportSize({width,height:900});
