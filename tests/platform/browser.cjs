@@ -57,6 +57,19 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  // New homepage duo replaces the old idle shortcut. Existing shared buddy checks above
  // intentionally stay on a tool route where that shortcut remains part of the UI.
  await page.goto(origin);await page.waitForFunction(()=>window.toolyaHomeReady===true);await page.evaluate(()=>toolyaBuddy.dismiss());
+ // Regression: Swiss-French AltGr+2 and native paste must work in the account email field.
+ await page.setViewportSize({width:1280,height:812});
+ await page.locator('#settingsBtn').click();
+ const email=page.locator('#loginEmail');await email.waitFor({state:'visible'});await email.fill('romi');
+ await email.focus();await page.keyboard.insertText('@');
+ assert.equal(await email.inputValue(),'romi@','native text insertion supports @');
+ // Keyboard layout translation is OS-specific; test the produced @ input separately.
+ await email.evaluate(el=>el.dispatchEvent(new InputEvent('beforeinput',{data:'@',inputType:'insertText',bubbles:true,cancelable:true})));
+ await page.evaluate(async()=>{const field=document.getElementById('loginEmail');field.focus();const dt=new DataTransfer();dt.setData('text/plain','@example.ch');const ev=new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true});window.__loginPasteAllowed=field.dispatchEvent(ev)});
+ assert.equal(await page.evaluate(()=>window.__loginPasteAllowed),true,'login must not cancel native paste');
+ assert.equal(await email.inputValue(),'romi@','synthetic clipboard event does not insert data');
+ await email.fill('romi@example.ch');assert.equal(await email.inputValue(),'romi@example.ch','login accepts @');
+ await page.keyboard.press('Escape');
  // Regression: a visible homepage notice must stay fully within the viewport in mobile and desktop-layout widths.
  for(const width of [320,390,900,960,1280]){
   await page.setViewportSize({width,height:812});

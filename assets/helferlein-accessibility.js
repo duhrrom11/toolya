@@ -38,6 +38,14 @@
           button.classList.add('helferlein-dialog-close');
         }
       }
+      // Keep native editing shortcuts (including Swiss-French AltGr+2 and Ctrl+V)
+      // inside the account form instead of passing them to page-level shortcuts.
+      if (settings) dialog.addEventListener('keydown', event => {
+        if (!event.target.closest('input,textarea,[contenteditable="true"]')) return;
+        if (event.ctrlKey || event.altKey || event.metaKey) {
+          if (event.key !== 'Tab' && event.key !== 'Escape') event.stopPropagation();
+        }
+      });
       records.push({dialog, close, open:false, returns:[]});
     }
     if (!records.length) return;
