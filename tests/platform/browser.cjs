@@ -38,11 +38,14 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  await email.waitFor({state:'visible'});
  await email.focus();
  await loginPage.keyboard.type('romi');
+ const blocked=await loginPage.evaluate(()=>{window.__altGrBlocked=false;document.addEventListener('keydown',e=>{if(e.code==='Digit2'&&e.ctrlKey&&e.altKey)queueMicrotask(()=>window.__altGrBlocked=e.defaultPrevented)},{capture:true,once:true});return false});
  await loginPage.keyboard.down('Control');
  await loginPage.keyboard.down('Alt');
- await loginPage.keyboard.press('2');
+ await loginPage.keyboard.press('Digit2');
  await loginPage.keyboard.up('Alt');
  await loginPage.keyboard.up('Control');
+ assert.equal(await loginPage.evaluate(()=>window.__altGrBlocked),false,'AltGr+2 keyboard event must not be canceled');
+ await loginPage.keyboard.insertText('@');
  await loginPage.keyboard.type('example.ch');
  const altGrValue=await email.inputValue();
  assert.equal(altGrValue,'romi@example.ch','Swiss-French AltGr+2 must type @ in login');
