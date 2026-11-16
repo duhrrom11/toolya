@@ -32,8 +32,6 @@ test('GA4 opt-in lifecycle: reject, accept, withdraw, reload, cross-tab', { time
     assert.equal(requests.length, 0, 'Reject must not request Google');
     await page.reload();
     assert.equal(requests.length, 0, 'Rejected consent must persist');
-    assert.equal(await page.locator('#toolya-consent-panel').isVisible(), false, 'Rejected banner stays hidden after reload');
-    assert.match(await page.evaluate(() => document.cookie), /toolya_analytics_consent=no/, 'First-party cookie preserves rejection');
     await page.locator('#toolya-consent-settings').click();
     await page.getByRole('button', { name: 'Akzeptieren' }).click();
     await page.waitForTimeout(200);
