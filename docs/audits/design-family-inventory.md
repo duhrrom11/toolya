@@ -1,6 +1,6 @@
 # Toolya – P1-Designfamilien und nächste Arbeitseinheiten
 
-Stand: 16.11.2026 nach PR #91. Lesende Quellcodeprüfung aller 38 HTML-Dateien; keine vollständige Funktions-/Designabnahme daraus ableiten.
+Stand: 16.11.2026 nach PR #93/#94. Lesende Quellcodeprüfung aller 38 HTML-Dateien; keine vollständige Funktions-/Designabnahme daraus ableiten.
 
 | Familie | Seiten | Basis | Nächster sicherer Harmonisierungspunkt |
 |---|---:|---|---|
@@ -10,8 +10,8 @@ Stand: 16.11.2026 nach PR #91. Lesende Quellcodeprüfung aller 38 HTML-Dateien; 
 | Maskottchengalerie | 1 | Inline-CSS, Plattform über gallery.mjs | Gemeinsamer öffentlicher Header, Galeriebedienung erhalten |
 | Admin-Statistik | 1 | stats.css, keine Plattform | Markentokens gezielt integrieren; Adminschutz erhalten |
 | B3-Tools | 10 | Tailwind, helferlein-b3.css, Themen-CSS | Buttons/Formulare/Karten über vorhandene Variablen harmonisieren |
-| Nachlass Besitzer/Erben | 2 | estate-app.css, estate-theme.js, Plattform | Grüne Grundfarben in Türkis umstellen |
-| Nachlass Dateiübergabe | 1 | Eigenes dunkles Inline-Design | Separat auf Hellmodus umstellen, Netzwerksperre unverändert |
+| Nachlass Besitzer/Erben | 2 | estate-app.css, estate-theme.js, Plattform | Türkise Grundfarben/Light und ein Footer verifiziert (#93); übrige Navigationsharmonisierung bleibt D05b |
+| Nachlass Dateiübergabe | 1 | Helles Inline-Grunddesign, gemeinsame Plattform | Light/Styles und Datenverbindungsgrenzen verifiziert (#94) |
 | Schlüsseldruck | 1 | estate-print.css, estate-print-ready.js | Bewusst isoliert; keine Analytics-/Plattform-/Bildimporte |
 | Aktuelle öffentliche Wishlist | 1 | Umfangreiches Inline-CSS, Plattform | Eng begrenztes Stylesheet für Formulare/Karten |
 | Wishlist-Einstieg | 1 | Auth-Weiterleitung, Plattform | Funktion erhalten, keine zusätzliche Ansicht |
@@ -23,10 +23,10 @@ Die 16 älteren Wishlist-Seiten enthalten automatische Dark-Mode-Regeln: assista
 
 ## Besondere Sicherheitsgrenze
 
-handover.html erzwingt aktuell color-scheme:dark und importiert die Plattform trotz style-src unsafe-inline und connect-src none. Externe gemeinsame CSS-Dateien werden damit blockiert. Nicht einfach die CSP lockern. Die unabhängige helle Gestaltung muss lokal mit bestehender Netzwerksperre funktionieren. print-key.html bleibt ausdrücklich vollständig isoliert.
+Das Ausgangsproblem von handover.html (dark und blockierte gemeinsame CSS-Dateien) ist in #94 behoben. style-src erlaubt nun zusätzlich self für feste eigene Stylesheetpfade; connect-src none und alle anderen CSP-Direktiven bleiben erhalten. Eigene statische GETs sind weiterhin möglich, keine absolute Netzwerklosigkeit behaupten. Die lokale Übergabe und print-key.html initialisieren keine Analytics-Ereignisse/Skripte, selbst bei gespeicherter Zustimmung. Krypto-Code unverändert, synthetischer Dateirundlauf und Request-Prüfung erfolgreich. print-key.html bleibt isoliert und wurde nicht geändert.
 
 ## Konkrete nächste P1-Einheit
 
-Zuerst assets/estate-app.css: Grundfarben, Link-/Navigationsgrün und neutrale Flächen auf bläuliches Türkis umstellen. Besitzer-/Erbenseite teilen diese Datei. Auth, Schlüsselverarbeitung, CSP und Datenzugriffe unverändert. Isolierte leere/synthetische Ansichten bei 320/768/1440 px, Fokus und Kontrast prüfen. Danach handover separat; anschließend B3-Buttons und alte Wishlist-Familie. Noch keine SEO-/Textumsetzung beginnen.
+D06b: die zehn B3-Tools über ihre bestehenden Variablen und klaren Komponenten harmonisieren. `assets/helferlein-b3.css` verwendet noch grüne --b3-accent/#16843d und --b3-accent-2/#75d858; lokale Toolklassen können das überlagern. Aktive Primär-/Sekundär-/Gefahrzustände zuerst erfassen, dann gemeinsame türkise Tokens anwenden. Auth-/Speicherschutz und rote Warnaktionen erhalten. Isolierte echte Toolansichten statt Startseiten-Redirects prüfen. Danach Legacy-Wishlist/Dashboard und Infoseiten; kein vorgezogener SEO-/Textumbau.
 
 Zusätzlich als weitere Optimierung erfasst: mascots.html lädt Consent klassisch und über das Plattformmodul. Bei gespeicherter Zustimmung ist eine doppelte Analytics-Initialisierung aus dem Code wahrscheinlich. Separat mit gezielter isolierter Regression bestätigen; keine pauschale Änderung der Einwilligungsregel.
