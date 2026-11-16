@@ -124,6 +124,28 @@ async function ga4Metrics(days:number):Promise<Metric[]>{
    }
   }catch{/* Optional breakdown must not invalidate confirmed totals. */}
  }
+ // This custom dimension must first be registered in GA4 (event parameter: tool_name).
+ // The API returns only real recorded tool_open events; never infer clicks from page views.
+ try{
+  const rankingResponse=await fetch('https://analyticsdata.googleapis.com/v1beta/properties/'+property+':runReport',{
+   method:'POST',headers:{Authorization:'Bearer '+tokenData.access_token,'Content-Type':'application/json'},
+   body:JSON.stringify({dateRanges:[{startDate:(days-1)+'daysAgo',endDate:'today'}],
+    dimensions:[{name:'customEvent:tool_name'}],metrics:[{name:'eventCount'}],
+    dimensionFilter:{filter:{fieldName:'eventName',stringFilter:{value:'tool_open',matchType:'EXACT'}}},
+    orderBys:[{metric:{metricName:'eventCount'},desc:true}],limit:'12'}),
+   signal:AbortSignal.timeout(10000)
+  });
+  if(rankingResponse.ok){
+   const ranking=await rankingResponse.json();
+   const allowed=new Set(['wishes','budget','moving','plants','housemates','estate','car','pet-health','parking','loans','meters','baking']);
+   for(const item of (Array.isArray(ranking.rows)?ranking.rows:[])){
+    const name=item.dimensionValues?.[0]?.value;
+    const value=Number(item.metricValues?.[0]?.value);
+    if(allowed.has(name)&&Number.isFinite(value)&&value>=0)
+     additional.push({label:'Tool-Start: '+name,value,detail:'GA4 tool_open · letzte '+days+' Tage'});
+   }
+  }
+ }catch{/* Missing GA4 custom dimension must not affect existing analytics. */}
  return [...totals,...top,...additional];
 }
 Deno.serve(async(req:Request)=>{
