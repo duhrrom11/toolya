@@ -36,8 +36,11 @@ test('GA4 opt-in lifecycle: reject, accept, withdraw, reload, cross-tab', { time
     await page.getByRole('button', { name: 'Akzeptieren' }).click();
     await page.waitForTimeout(200);
     assert.ok(requests.some(x => x.includes('gtag/js?id=G-11L9Y8YK7B')), 'Accept must request GA tag');
+    await page.evaluate(() => { document.cookie = '_ga=GA1.1.test; path=/'; document.cookie = '_ga_TEST=test; path=/'; });
     await page.locator('#toolya-consent-settings').click();
     await Promise.all([page.waitForNavigation(), page.getByRole('button', { name: 'Ablehnen' }).click()]);
+    assert.equal(await page.evaluate(() => document.cookie.includes('_ga=')), false, 'Withdrawal removes GA cookies');
+    assert.equal(await page.evaluate(() => document.cookie.includes('_ga_TEST=')), false, 'Withdrawal removes GA property cookies');
     const before = requests.length;
     await page.reload();
     assert.equal(requests.length, before, 'Withdrawal must prevent further Google requests');
@@ -52,6 +55,10 @@ test('GA4 opt-in lifecycle: reject, accept, withdraw, reload, cross-tab', { time
     const beforeSensitive = requests.length;
     await sensitive.reload();
     assert.equal(requests.length, beforeSensitive, 'Sensitive estate pages must never request Google, even with opt-in');
+    await sensitive.goto(url + 'tools/estate');
+    const beforeExact = requests.length;
+    await sensitive.reload();
+    assert.equal(requests.length, beforeExact, 'Exact estate route must never request Google');
     await sensitive.close();
     await second.close();
     await page.close();
