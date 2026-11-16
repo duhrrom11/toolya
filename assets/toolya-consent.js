@@ -52,6 +52,21 @@ function enableAnalytics() {
   tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_ID);
   document.head.appendChild(tag);
 }
+// Only aggregate navigation to a known tool. No form fields, URLs, accounts or user IDs.
+const TOOL_IDS = new Set(['wishes','budget','moving','plants','housemates','estate','car','pet-health','parking','loans','meters','baking']);
+document.addEventListener('click', event => {
+  if (choice !== 'yes' || !loaded || typeof window.gtag !== 'function') return;
+  const link = event.target.closest?.('a[href]');
+  if (!link) return;
+  let destination;
+  try { destination = new URL(link.href, location.href); } catch { return; }
+  if (destination.origin !== location.origin) return;
+  const match = destination.pathname.match(/^\\/tools\\/([a-z-]+)\\/(?:index\\.html)?$/);
+  const toolId = match?.[1];
+  if (!TOOL_IDS.has(toolId)) return;
+  window.gtag('event', 'tool_open', { tool_name: toolId, transport_type: 'beacon' });
+}, { capture: true });
+
 // Consent-gated GA4 also covers estate pages; never send vault contents or form values.
 const analyticsAllowed = true;
 if (choice === 'yes' && analyticsAllowed) enableAnalytics();
