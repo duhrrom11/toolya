@@ -179,6 +179,30 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
   await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route+' single preferences panel');await page.keyboard.press('Escape');await page.screenshot({path:'test-results/mascot-'+route+'-mobile.png',fullPage:true});assert.equal(await page.locator('.toolya-idle').isVisible(),false,route+' redundant strip hidden');if(await page.locator('.ty-tool-hero-mascot').count())await page.locator('.ty-tool-hero-mascot').screenshot({path:'test-results/mascot-'+route+'-detail.png'});
  }
  await page.goto(origin+'/dashboard/');await page.locator('#welcome-heading').waitFor();
+ // Real keyboard navigation must survive dashboard list rerenders.
+ await page.locator('#task-text').fill('Tastaturfokus Aufgabe');
+ await page.locator('#task-form button[type="submit"]').click();
+ const taskCheckbox=page.getByRole('checkbox',{name:'Aufgabe Tastaturfokus Aufgabe erledigt'});
+ await taskCheckbox.focus();await page.keyboard.press('Space');
+ assert.equal(await taskCheckbox.isChecked(),true,'Space marks task complete');
+ assert.equal(await taskCheckbox.evaluate(el=>el===document.activeElement),true,'task checkbox retains focus after completion');
+ await page.keyboard.press('Space');
+ assert.equal(await taskCheckbox.isChecked(),false,'second Space reopens same task');
+ assert.equal(await taskCheckbox.evaluate(el=>el===document.activeElement),true,'task checkbox retains focus after reopening');
+ await page.getByRole('button',{name:'Aufgabe entfernen: Tastaturfokus Aufgabe'}).click();
+ assert.equal(await page.locator('#task-text').evaluate(el=>el===document.activeElement),true,'task input receives focus after last task removed');
+ await page.locator('#reminder-text').fill('Tastaturfokus Erinnerung');
+ await page.locator('#reminder-date').fill(new Date(Date.now()+86400000).toISOString().slice(0,16));
+ await page.locator('#reminder-form button[type="submit"]').click();
+ const reminderCheckbox=page.getByRole('checkbox',{name:'Erinnerung Tastaturfokus Erinnerung erledigt'});
+ await reminderCheckbox.focus();await page.keyboard.press('Space');
+ assert.equal(await reminderCheckbox.isChecked(),true,'Space marks reminder complete');
+ assert.equal(await reminderCheckbox.evaluate(el=>el===document.activeElement),true,'reminder checkbox retains focus after completion');
+ await page.keyboard.press('Space');
+ assert.equal(await reminderCheckbox.isChecked(),false,'second Space reopens reminder');
+ assert.equal(await reminderCheckbox.evaluate(el=>el===document.activeElement),true,'reminder checkbox retains focus after reopening');
+ await page.getByRole('button',{name:'Erinnerung entfernen: Tastaturfokus Erinnerung'}).click();
+ assert.equal(await page.locator('#reminder-text').evaluate(el=>el===document.activeElement),true,'reminder input receives focus after last reminder removed');
  await page.locator('.toolya-signature-footer .ty-footer-mascot').waitFor();
  assert.equal(await page.locator('footer').count(),1,'dashboard has only the shared footer');
  assert.equal(await page.locator('.ty-footer-wordmark').textContent(),await page.locator('.b3-hub-logo').textContent(),'dashboard header/footer use identical wordmark');
