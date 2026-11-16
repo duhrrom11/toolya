@@ -1,6 +1,11 @@
 name: Isolated Toolya browser tests
 
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/toolya-browser-tests.yml'
+      - 'tests/browser/**'
+      - 'shared/toolya/**'
   push:
     branches:
       - main
