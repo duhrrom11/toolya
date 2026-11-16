@@ -60,6 +60,5 @@
 @media(prefers-reduced-motion:reduce){.ty-kofi-banner,.ty-kofi-banner:after,.ty-kofi-mascot,.ty-kofi-action{animation:none!important}}
 @media(forced-colors:active){.ty-kofi-banner,.ty-kofi-action{border:2px solid CanvasText}}
 
-/* Keep the Ko-fi companion visually separate from the mascot-free footer. */
-.toolya-signature-footer .ty-footer-mascot{display:none!important}
+/* The compact selected companion also belongs in the signature footer. */
 .ty-kofi-banner+.toolya-signature-footer{margin-top:30px!important}
