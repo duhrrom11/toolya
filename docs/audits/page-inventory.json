@@ -1,0 +1,347 @@
+{
+  "base_commit": "28f73ac3181f823cb5fc867ba8673c8461ea3fa9",
+  "pages": [
+    {
+      "path": "admin-stats-dashboard/index.html",
+      "bytes": 2763,
+      "platform_module": false,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": true,
+      "footer_count_source": 0
+    },
+    {
+      "path": "dashboard/index.html",
+      "bytes": 6080,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": true,
+      "footer_count_source": 0
+    },
+    {
+      "path": "index.html",
+      "bytes": 68485,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": true,
+      "noindex": false,
+      "footer_count_source": 1
+    },
+    {
+      "path": "legal.html",
+      "bytes": 4915,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": true,
+      "noindex": false,
+      "footer_count_source": 1
+    },
+    {
+      "path": "mascots.html",
+      "bytes": 2130,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "privacy.html",
+      "bytes": 12338,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": true,
+      "noindex": false,
+      "footer_count_source": 1
+    },
+    {
+      "path": "tools/baking/index.html",
+      "bytes": 72736,
+      "platform_module": true,
+      "auth_gate": true,
+      "canonical": true,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/budget/index.html",
+      "bytes": 116154,
+      "platform_module": true,
+      "auth_gate": true,
+      "canonical": true,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/car/index.html",
+      "bytes": 70798,
+      "platform_module": true,
+      "auth_gate": true,
+      "canonical": true,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/estate/handover.html",
+      "bytes": 5248,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/estate/heirs.html",
+      "bytes": 3734,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 1
+    },
+    {
+      "path": "tools/estate/index.html",
+      "bytes": 10103,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/estate/print-key.html",
+      "bytes": 695,
+      "platform_module": false,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/housemates/index.html",
+      "bytes": 160207,
+      "platform_module": true,
+      "auth_gate": true,
+      "canonical": true,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/loans/index.html",
+      "bytes": 64292,
+      "platform_module": true,
+      "auth_gate": true,
+      "canonical": true,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/meters/index.html",
+      "bytes": 69768,
+      "platform_module": true,
+      "auth_gate": true,
+      "canonical": true,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/moving/index.html",
+      "bytes": 64743,
+      "platform_module": true,
+      "auth_gate": true,
+      "canonical": true,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/parking/index.html",
+      "bytes": 38151,
+      "platform_module": true,
+      "auth_gate": true,
+      "canonical": true,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/pet-health/index.html",
+      "bytes": 62020,
+      "platform_module": true,
+      "auth_gate": true,
+      "canonical": true,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/plants/index.html",
+      "bytes": 86713,
+      "platform_module": true,
+      "auth_gate": true,
+      "canonical": true,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/wishes/assistant.html",
+      "bytes": 8328,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/wishes/bookmarks.html",
+      "bytes": 6120,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 1
+    },
+    {
+      "path": "tools/wishes/cockpit.html",
+      "bytes": 4094,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/wishes/collection.html",
+      "bytes": 5407,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 1
+    },
+    {
+      "path": "tools/wishes/dashboard.html",
+      "bytes": 6189,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 1
+    },
+    {
+      "path": "tools/wishes/discover.html",
+      "bytes": 6329,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 1
+    },
+    {
+      "path": "tools/wishes/feed.html",
+      "bytes": 6918,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 1
+    },
+    {
+      "path": "tools/wishes/gift-analytics.html",
+      "bytes": 3737,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/wishes/gift-tasks.html",
+      "bytes": 4818,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/wishes/index.html",
+      "bytes": 892,
+      "platform_module": true,
+      "auth_gate": true,
+      "canonical": true,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/wishes/notifications.html",
+      "bytes": 5569,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 1
+    },
+    {
+      "path": "tools/wishes/occasions.html",
+      "bytes": 7272,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 1
+    },
+    {
+      "path": "tools/wishes/planner.html",
+      "bytes": 12329,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 1
+    },
+    {
+      "path": "tools/wishes/profile.html",
+      "bytes": 5423,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 1
+    },
+    {
+      "path": "tools/wishes/public.html",
+      "bytes": 12658,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": true,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/wishes/report.html",
+      "bytes": 4901,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 0
+    },
+    {
+      "path": "tools/wishes/reservations.html",
+      "bytes": 4300,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 1
+    },
+    {
+      "path": "tools/wishes/social.html",
+      "bytes": 5354,
+      "platform_module": true,
+      "auth_gate": false,
+      "canonical": false,
+      "noindex": false,
+      "footer_count_source": 1
+    }
+  ]
+}

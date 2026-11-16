@@ -2,7 +2,7 @@ import '../../assets/toolya-consent.js?v=20261116-local-debug';
 import {ToolyaBuddy} from './buddy.mjs';
 const ASSETS=new URL('../../assets/toolya/',import.meta.url).href;
 const atlasURL=file=>ASSETS+file+'?v=20261115-alpha';
-for(const file of ['buddy.css','platform.css','footer.css','header.css']){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL(file,import.meta.url).href;document.head.append(l)}
+for(const file of ['tokens.css','buddy.css','platform.css','footer.css','header.css']){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL(file,import.meta.url).href;document.head.append(l)}
 export const EMOTIONS=['happy','proud','curious','thoughtful','surprised','concerned','sad','shy','cheeky','sleepy','laughing','grateful','motivated','puzzled','celebrating','affectionate'];
 export const TOOLS={wishes:{role:0,name:'Geschenkexperte',greeting:'Hier ist Platz für große und kleine Wünsche.'},budget:{role:1,name:'Buchhalter',greeting:'Deine Ausgaben gut im Blick.'},housemates:{role:2,name:'WG-Organisator',greeting:'Ein guter Plan macht den Alltag leichter.'},moving:{role:3,name:'Umzugshelfer',greeting:'Damit beim Umzug nichts verloren geht.'},estate:{role:4,name:'Vorsorgebegleiter',greeting:'In Ruhe das Wichtige ordnen.',serious:true},car:{role:5,name:'Mechaniker',greeting:'Dein Fahrzeug gut organisiert.'},'pet-health':{role:6,name:'Tierbegleiter',greeting:'Alles Wichtige für deine tierischen Freunde.',serious:true},parking:{role:7,name:'Parkhelfer',greeting:'Parkplatz und Parkzeit im Blick.'},loans:{role:8,name:'Verleih-Organisator',greeting:'Behalte verliehene Gegenstände im Blick.'},plants:{role:9,name:'Gärtner',greeting:'Ein guter Tag für deine grünen Freunde.'},meters:{role:10,name:'Energiehelfer',greeting:'Zählerstände einfach im Blick.'},baking:{role:11,name:'Backhelfer',greeting:'Die passende Form für deine Backidee.'},home:{role:12,name:'Alltagsbegleiter',greeting:'Was möchtest du heute erledigen?'}};
 const parts=decodeURI(location.pathname).split('/').filter(Boolean);
@@ -102,14 +102,11 @@ function syncFooterMascot(){
 }
 function mountFooter(){
  if(document.querySelector('.toolya-signature-footer'))return;
- const old=document.querySelector('footer.b3-footer'),support=document.querySelector('footer.toolya-support');
+ const old=document.querySelector('footer.b3-footer') || (/\/(?:privacy|legal)\.html$/.test(location.pathname)?document.querySelector('body > footer:not(.toolya-support)'):null),support=document.querySelector('footer.toolya-support');
  const footer=document.createElement('footer');footer.className='toolya-signature-footer';footer.setAttribute('aria-label','Toolya Seitenabschluss');
  const inner=document.createElement('div');inner.className='ty-footer-inner';
  const brand=document.createElement('div');brand.className='ty-footer-brand';
- const headerLogo=document.querySelector('.b3-hub-logo');
- const logo=headerLogo?headerLogo.cloneNode(true):document.createElement('a');
- logo.classList.remove('b3-hub-logo');logo.classList.add('ty-footer-wordmark');logo.href=new URL('../../index.html',import.meta.url).href;logo.removeAttribute('id');logo.setAttribute('aria-label','Toolya Startseite');
- if(!headerLogo){const mark=document.createElement('span');mark.className='b3-hub-logo-mark';mark.setAttribute('aria-hidden','true');mark.textContent='✳';logo.append(mark,document.createTextNode(' Toolya'));}
+ const logo=document.createElement('a');logo.className='ty-footer-wordmark';logo.href=new URL('../../index.html',import.meta.url).href;logo.setAttribute('aria-label','Toolya Startseite');logo.textContent='Toolya';
  const mascot=document.createElement('img');mascot.className='ty-footer-mascot';mascot.alt='Dein ausgewählter Toolya-Begleiter';mascot.width=76;mascot.height=86;mascot.loading='lazy';
  brand.append(logo);const caption=document.createElement('small');caption.textContent='© '+new Date().getFullYear()+' Toolya · Dein smarter Tool-Begleiter';brand.append(caption);
  const links=document.createElement('nav');links.className='ty-footer-links';links.setAttribute('aria-label','Footer-Navigation');
@@ -117,32 +114,14 @@ function mountFooter(){
   const a=document.createElement('a');a.href=new URL('../../'+path,import.meta.url).href;a.textContent=label;links.append(a);
  }
  const top=document.createElement('button');top.className='ty-footer-top';top.type='button';top.textContent='↑ Nach oben';top.addEventListener('click',()=>window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}));
+ const consentLink=document.getElementById('toolya-consent-settings');if(consentLink)links.append(consentLink);
  inner.append(mascot,brand,links,top);footer.append(inner);
  if(old)old.replaceWith(footer);else if(support)support.before(footer);else document.body.append(footer);
  syncFooterMascot();mountDonation();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountFooter,{once:true});else mountFooter();
 
-function mountKofiBanner(){
- const footer=document.querySelector('.toolya-signature-footer');
- if(!footer||document.querySelector('.ty-kofi-banner'))return;
- document.querySelectorAll('footer.toolya-support').forEach(el=>el.remove());
- const banner=document.createElement('aside');banner.className='ty-kofi-banner';banner.setAttribute('aria-label','Toolya auf Ko-fi unterstützen');
- const mascot=document.createElement('img');mascot.className='ty-kofi-mascot';mascot.alt='';mascot.loading='lazy';mascot.width=116;mascot.height=116;
- const copy=document.createElement('div');copy.className='ty-kofi-copy';
- const title=document.createElement('strong');title.textContent='Toolya unterstützen';
- const joke=document.createElement('span');joke.className='ty-kofi-joke';joke.textContent=donationLines[donationIndex];
- copy.append(title,joke);
- const link=document.createElement('a');link.className='ty-kofi-cta';link.href='https://ko-fi.com/duhrrom';link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label','Toolya auf Ko-fi unterstützen');link.textContent='☕ Auf Ko-fi unterstützen ♥';
- const hearts=document.createElement('span');hearts.className='ty-kofi-hearts';hearts.setAttribute('aria-hidden','true');hearts.textContent='♥';
- banner.append(mascot,copy,link,hearts);footer.before(banner);
- const sync=()=>{const character=read().character==='purple'?'purple':'turquoise';mascot.src=ASSETS+'originals/toolya_wishlist_'+character+'_welcome_1024.png'};
- sync();window.addEventListener('storage',e=>{if(e.key==='helferlein-toolya-preferences-v1')sync()});
- if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-  window.setInterval(()=>{if(document.hidden)return;donationIndex=(donationIndex+1)%donationLines.length;joke.textContent=donationLines[donationIndex]},8500);
- }
-}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountKofiBanner,{once:true});else mountKofiBanner();
+
 window.addEventListener('storage',e=>{if(e.key==='helferlein-toolya-preferences-v1'){syncFooterMascot();syncDonationMascot()}});
 
 /* Thematic tool headers: retain original settings handlers and tool-specific navigation. */
