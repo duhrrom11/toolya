@@ -73,3 +73,30 @@ OpenSEO-Projekt Toolya (6eddcfc6-d4a2-403b-a689-d02bc761a969) ist verbunden, sei
 Der neue responsive Test zeigte auf privacy.html eine Dokumentbreite von 354 px bei 320 px Viewport: der Zurück-Link ragte rechts aus der nicht umbrechenden Headerzeile. Datenschutz und Impressum erhalten einen umbrechenden Header mit Abstand. Das ist eine gezielte Korrektur im P1-Paket; Inhalt/Rechtsaussagen bleiben unverändert. Nachweis: CI 43926412098, platform-Job 133506951996.
 
 Der nachfolgende Test fand auf Impressum zusätzlich das untrennbare Wort Verbraucherstreitbeilegung (337 px Dokumentbreite bei 320 px). Beide Rechtstextspalten erhalten Wortumbruch. Die dortige Viewport-Sperre gegen Benutzerzoom wird entfernt; Textinhalt bleibt unverändert. Fehlerbild aus Runner-Artefakt 14257311127 visuell bestätigt.
+
+## Verifizierter Abschluss des ersten P1-Pakets
+
+PR [#91](https://github.com/duhrrom11/toolya/pull/91) gemergt. Releasecommit `1b611811afddef8bd0da78da00ba50c66cd896ea`. Alle sechs Checks am PR-Head `33180514506ad8fd73992935182d8a28c06143bf` erfolgreich: estate-security, platform, isolated, browser, privacy, isolated-browser-tests. Plattform-/Nachlasslauf [43927647192](https://github.com/duhrrom11/toolya/actions/runs/43927647192). Pages [43928099016](https://github.com/duhrrom11/toolya/actions/runs/43928099016) erfolgreich.
+
+Die sieben geänderten Produktdateien wurden live per GET auf Bytegleichheit geprüft: Consent, Plattformmodul, Tokens, Footer-CSS, Header-CSS, Datenschutz und Impressum – alle identisch. Live-Browser bestätigt einen Footer auf Startseite/Datenschutz/Impressum, Cookie-Link in gemeinsamer Footernavigation, echtes erneutes Öffnen/Ablehnen der Statistikeinstellungen und identische berechnete Schriftfamilie in Header/Footer. Beide Charaktere und vier Seiten bei 320/768/1440 px im isolierten Runner geprüft; Original-PNGs unverändert. Nachlass-Sicherheitsprüfungen unverändert erfolgreich. Keine produktiven Daten geändert.
+
+### Aktuelle Fortschrittswerte
+
+Sieben von 22 übergeordneten Aufgaben verifiziert; 15 noch offen oder in Arbeit. Bestandsaufnahme 5/8 Gewichtspunkte = 62,5 %, P1 7/17 = 41,2 %, P2 0/9, P3 0/8, weitere Optimierungen 0/10. Nicht alle privaten Toolzustände live geprüft; kein Gesamtabnahmeversprechen. Zusätzlicher wahrscheinlicher Analytics-Doppelladungsbefund X05 ergänzt; die Änderung des Nenners ist transparent in der Roadmap erfasst.
+
+### Visueller Nachweis
+
+1. Startseite – gemeinsame Marke/Toolkarten erhalten; Footer und Cookie-Link korrigiert. Status: geprüft im Umfang des ersten Pakets.
+2. Datenschutz/Impressum – jeweils ein Footer, 320-px-Umbruch und freier Browserzoom. Status: Darstellung geprüft; Inhalts-/Rechtsprüfung offen.
+3. Öffentliche Wishlist – gemeinsame Headerabstände korrigiert; drei Breiten isoliert geprüft. Status: Darstellung des Pakets geprüft; vollständige Such-/Import-/Kontoflüsse nicht abgenommen.
+4. Haushaltsbuch ausgeloggt – Direktaufruf führt zur Startseite. Status: Auth-Umleitung beobachtet, private Oberfläche nicht als live geprüft gezählt.
+
+![Startseite vor dem Paket](evidence/01-home-before.jpg)
+
+![Datenschutz vor dem Paket](evidence/02-privacy-before.jpg)
+
+![Veröffentlichter gemeinsamer Footer mit Cookie-Einstellungen](evidence/04-home-footer-live.jpg)
+
+Die ursprünglichen Zwischenstände weiter oben beschreiben den Weg bis zur Verifikation. Dieser Abschluss ist für PR #91 maßgeblich. Die [Designfamilienmatrix](design-family-inventory.md) beschreibt die nächste konkrete P1-Einheit. Design, SEO und Inhalte bleiben getrennte, noch nicht vollständig abgeschlossene Phasen.
+
+Auch die main-Läufe nach dem Merge sind erfolgreich: Plattform/Nachlass 43928099143, Amazon 43928099197, isolierte Browser 43928099189.
