@@ -153,7 +153,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  await desktop.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();
  await desktop.getByLabel('Animation',{exact:true}).selectOption('Normal');
  await desktop.locator('#cancelSettingsBtn').click();
- await desktop.locator('.ty-primary').hover();
+ await desktop.locator('.b3-hub-nav a').first().hover();
  assert.equal(await desktop.locator('.ty-hero-stage').getAttribute('data-reaction'),null,'both header mascots remain static on hover');
  assert.equal(await desktop.locator('.ty-hero-character').count(),2,'both independent characters');
  await desktop.locator('.b3-hub-logo').hover();
