@@ -28,6 +28,30 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
   `});
  }
 if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(staticHosts.has(u.hostname)&&r.request().method()==='GET')return r.continue();if(r.request().method()!=='GET'&&(u.pathname.includes('/rest/v1/')||u.pathname.includes('/functions/v1/'))&&!u.pathname.endsWith('/rest/v1/rpc/search_public_amazon_wishlists')){blockedWrites++;blockedWriteUrls.push(r.request().method()+' '+u.hostname+u.pathname)}return r.abort()};await context.route('**/*',guard);
+ // Desktop regression: Swiss-French AltGr+2 and Ctrl+V must reach the login email field.
+ const desktop=await browser.newContext({viewport:{width:1280,height:800},permissions:['clipboard-read','clipboard-write']});
+ await desktop.route('**/*',guard);
+ const loginPage=await desktop.newPage();
+ await loginPage.goto(origin+'/');
+ await loginPage.locator('#settingsBtn').click();
+ const email=loginPage.locator('#loginEmail');
+ await email.waitFor({state:'visible'});
+ await email.focus();
+ await loginPage.keyboard.type('romi');
+ await loginPage.keyboard.down('Control');
+ await loginPage.keyboard.down('Alt');
+ await loginPage.keyboard.press('2');
+ await loginPage.keyboard.up('Alt');
+ await loginPage.keyboard.up('Control');
+ await loginPage.keyboard.type('example.ch');
+ const altGrValue=await email.inputValue();
+ assert.equal(altGrValue,'romi@example.ch','Swiss-French AltGr+2 must type @ in login');
+ await email.fill('');
+ await loginPage.evaluate(async()=>navigator.clipboard.writeText('paste@example.ch'));
+ await email.focus();
+ await loginPage.keyboard.press('Control+v');
+ assert.equal(await email.inputValue(),'paste@example.ch','Ctrl+V must paste into login email');
+ await desktop.close();
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(origin+'/tools/plants/');await page.waitForFunction(()=>document.getElementById('toolya-cloud-gate')===null,null,{timeout:10000}).catch(async e=>{console.error('PLANTS FIXTURE DIAGNOSTIC',await page.evaluate(()=>({gate:document.getElementById('toolya-cloud-gate')?.textContent?.slice(0,180)||null,ready:typeof plantsCloudReady!=='undefined'?plantsCloudReady:null})));throw e;});await page.waitForFunction(()=>window.toolyaBuddy);await page.evaluate(()=>{toolyaBuddy.dismiss();toolyaBuddy.setMotion('off')});
  await page.waitForFunction(()=>{const f=document.querySelector('.toolya-idle .ty-frame');return f&&!f.hidden});
