@@ -41,8 +41,10 @@ export function notify(type,message,emotion){return buddy.show(type,message,EMOT
 window.toolyaNotice=notify;
 window.addEventListener('toolya:notice',e=>{const d=e.detail;if(d&&typeof d.message==='string')notify(d.type,d.message,d.emotion)});
 buddy.host.dataset.tool=tool;buddy.host.setAttribute('aria-label','Toolya · '+context.name);
+if (!/^\/dashboard(?:\/|$)/.test(location.pathname)) {
 const badge=document.createElement('span');badge.className='toolya-context';badge.textContent=context.name;badge.setAttribute('aria-hidden','true');buddy.host.prepend(badge);
 const idle=document.createElement('button');idle.type='button';idle.className='toolya-idle';idle.setAttribute('aria-label','Toolya · '+context.name);const idleImage=document.createElement('img');idleImage.alt='';idleImage.width=84;idleImage.height=84;idleImage.src=pixel;const idleLabel=document.createElement('span');idleLabel.textContent='Toolya · '+context.name;idle.append(idleImage,idleLabel);buddy.host.prepend(idle);attach(idleImage);idle.onclick=()=>{const keyboard=document.activeElement===idle;if(buddy.tickle()&&keyboard)buddy.host.querySelector('.tb-avatar').focus({preventScroll:true})};
+}
 function apply(){const p=read();buddy.setCharacter(['turquoise','purple'].includes(p.character)?p.character:'turquoise');buddy.setMotion(['off','calm','normal','lively'].includes(p.motion)?p.motion:'normal');buddy.setQuiet(p.quiet===true);buddy.setTips(p.tips!==false);buddy.setHidden(p.hidden===true);refreshFrames()}
 function persist(){try{localStorage.setItem(key,JSON.stringify({character:buddy.character,motion:buddy.motion,quiet:buddy.quiet,tips:buddy.tips,hidden:buddy.hidden}))}catch{}refreshFrames()}
 apply();
