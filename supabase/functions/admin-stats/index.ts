@@ -98,7 +98,33 @@ async function ga4Metrics(days:number):Promise<Metric[]>{
   if(!path.startsWith('/')||path.length>150||!Number.isFinite(value))return [];
   return [{label:'Seite: '+path,value,detail:'GA4 Seitenaufrufe · letzte '+days+' Tage'}];
  });
- return [...totals,...top];
+ // Aggregate observed GA4 events, not hypothetical click counts.
+ const additional:Metric[]=[];
+ const reports=[
+  {dimensions:[{name:'eventName'}],metrics:[{name:'eventCount'}],orderBys:[{metric:{metricName:'eventCount'},desc:true}],limit:'15'},
+  {dimensions:[{name:'date'}],metrics:[{name:'screenPageViews'}],orderBys:[{dimension:{dimensionName:'date'}}],limit:'100'}
+ ];
+ for(let i=0;i<reports.length;i++){
+  try{
+   const response=await fetch('https://analyticsdata.googleapis.com/v1beta/properties/'+property+':runReport',{
+    method:'POST',headers:{Authorization:'Bearer '+tokenData.access_token,'Content-Type':'application/json'},
+    body:JSON.stringify({dateRanges:[{startDate:(days-1)+'daysAgo',endDate:'today'}],...reports[i]}),
+    signal:AbortSignal.timeout(10000)
+   });
+   if(!response.ok)continue;
+   const data=await response.json();
+   for(const entry of (Array.isArray(data.rows)?data.rows:[])){
+    const key=entry.dimensionValues?.[0]?.value;
+    const value=Number(entry.metricValues?.[0]?.value);
+    if(typeof key!=='string'||!Number.isFinite(value)||value<0)continue;
+    if(i===0&&/^[a-zA-Z][a-zA-Z0-9_]{0,60}$/.test(key))
+     additional.push({label:'Ereignis: '+key,value,detail:'GA4 Ereignisanzahl · letzte '+days+' Tage'});
+    if(i===1&&/^\\d{8}$/.test(key))
+     additional.push({label:'Tag: '+key,value,detail:'GA4 Seitenaufrufe pro Tag'});
+   }
+  }catch{/* Optional breakdown must not invalidate confirmed totals. */}
+ }
+ return [...totals,...top,...additional];
 }
 Deno.serve(async(req:Request)=>{
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
