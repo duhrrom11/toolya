@@ -115,9 +115,20 @@ Deno.serve(async(req:Request)=>{
    if(values.some(m=>!Number.isFinite(m.value)))throw Error('Invalid provider response');
    metrics.push(...values);
    source.status='connected';source.detail='Live-Daten · '+new Date().toISOString();
-  }catch{
-   source.status=id==='ga4'&&!Deno.env.get('TOOLYA_STATS_GOOGLE_SERVICE_ACCOUNT_JSON')?'not_connected':'error';
-   source.detail=source.status==='not_connected'?'Google Analytics API-Zugang noch nicht eingerichtet':'Datenabruf fehlgeschlagen oder API-Zugang fehlt';
+  }catch(err){
+   const message=err instanceof Error?err.message:'';
+   const ga4Missing=id==='ga4'&&message==='GA4 service account not configured';
+   source.status=ga4Missing?'not_connected':'error';
+   // Only expose fixed, non-sensitive diagnostics to the authenticated owner.
+   const ga4Codes:Record<string,string>={
+    'GA4 service account not configured':'GA4: Property-ID oder Dienstkonto-Secret fehlt',
+    'Invalid service account configuration':'GA4: Dienstkonto-JSON ist ungültig',
+    'Invalid service account':'GA4: Dienstkonto-Daten unvollständig',
+    'Google service account authorization failed':'GA4: Google OAuth hat die Anmeldung abgelehnt',
+    'Google access token missing':'GA4: Kein Google-Zugriffstoken erhalten',
+    'GA4 report has no usable values':'GA4: Bericht ohne auswertbare Kennzahlen'
+   };
+   source.detail=id==='ga4'?(ga4Codes[message]||(/GA4 Data API HTTP (401|403|404|429|500|503)/.test(message)?'GA4: '+message:'GA4: API-Abfrage fehlgeschlagen')):'Datenabruf fehlgeschlagen oder API-Zugang fehlt';
   }
  }));
  return reply(200,{generatedAt:new Date().toISOString(),days,metrics,sources});
