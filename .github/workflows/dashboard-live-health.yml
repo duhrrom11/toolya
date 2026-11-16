@@ -3,18 +3,24 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '17 7 * * *'
+  pull_request:
+    paths:
+      - 'dashboard/**'
+      - 'tests/platform/dashboard-live-smoke.cjs'
+      - '.github/workflows/dashboard-live-health.yml'
   push:
     branches: [main]
     paths:
       - 'dashboard/**'
       - 'CNAME'
       - '.github/workflows/dashboard-live-health.yml'
+      - 'tests/platform/dashboard-live-smoke.cjs'
 permissions:
   contents: read
 jobs:
   dashboard-live:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - name: Check DNS, HTTPS, dashboard and static assets
         shell: bash
@@ -42,3 +48,16 @@ jobs:
             fi
             echo "- OK: ${resource}" >> "$GITHUB_STEP_SUMMARY"
           done
+      - name: Check out browser smoke test
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked test dependencies
+        run: npm ci --ignore-scripts
+      - name: Verify live dashboard interactions without server writes
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: node tests/platform/dashboard-live-smoke.cjs
