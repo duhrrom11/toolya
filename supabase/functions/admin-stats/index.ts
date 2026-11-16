@@ -124,6 +124,23 @@ async function ga4Metrics(days:number):Promise<Metric[]>{
    }
   }catch{/* Optional breakdown must not invalidate confirmed totals. */}
  }
+ // Query tool_open explicitly: the top-15 event-name report can omit rare events.
+ // Keep this diagnostic independent of the custom dimension and do not fabricate counts.
+ try{
+  const eventResponse=await fetch('https://analyticsdata.googleapis.com/v1beta/properties/'+property+':runReport',{
+   method:'POST',headers:{Authorization:'Bearer '+tokenData.access_token,'Content-Type':'application/json'},
+   body:JSON.stringify({dateRanges:[{startDate:(days-1)+'daysAgo',endDate:'today'}],
+    metrics:[{name:'eventCount'}],
+    dimensionFilter:{filter:{fieldName:'eventName',stringFilter:{value:'tool_open',matchType:'EXACT'}}}}),
+   signal:AbortSignal.timeout(10000)
+  });
+  if(eventResponse.ok){
+   const eventData=await eventResponse.json();
+   const count=Number(eventData.rows?.[0]?.metricValues?.[0]?.value??0);
+   if(Number.isFinite(count)&&count>=0)
+    additional.push({label:'GA4-Tool-Open-Gesamt',value:count,detail:'Exakte GA4-Abfrage für tool_open · letzte '+days+' Tage'});
+  }
+ }catch{/* A failed optional diagnostic must not break other reports. */}
  // Diagnostic status is fixed and sanitized; no Google error bodies or credentials exposed.
  let rankingStatus='GA4-Ranking: Abfrage noch nicht erfolgreich';
  try{

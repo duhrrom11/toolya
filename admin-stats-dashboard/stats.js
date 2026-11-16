@@ -20,9 +20,9 @@ async function load(){
   if(!payload||!Array.isArray(payload.sources)||!Array.isArray(payload.metrics))throw Error('Ungültiges Datenformat');
   const metrics=payload.metrics;
   const diagnostic=metrics.find(m=>m.label==='Tool-Ranking-Diagnose');
-  const eventCount=metrics.find(m=>m.label==='Ereignis: tool_open');
+  const eventCount=metrics.find(m=>m.label==='GA4-Tool-Open-Gesamt');
   const diagnosis=diagnostic?.detail||'Ranking-Diagnose derzeit nicht verfügbar.';
-  $('ranking-diagnostic').textContent=diagnosis+(eventCount?' · GA4 meldet '+Number(eventCount.value).toLocaleString('de-DE')+' tool_open-Ereignisse im gewählten Zeitraum.':diagnosis.includes('noch keine tool_open-Daten')?' · Auch im Ereignisbericht sind derzeit keine tool_open-Ereignisse nachgewiesen.':'');
+  $('ranking-diagnostic').textContent=diagnosis+(eventCount?' · GA4 meldet '+Number(eventCount.value).toLocaleString('de-DE')+' tool_open-Ereignisse im gewählten Zeitraum.':diagnosis.includes('noch keine tool_open-Daten')?' · Exakte Ereignisabfrage derzeit nicht verfügbar.':'');
   const toolStarts=metrics.filter(m=>m.label.startsWith('Tool-Start: '));
   const pages=metrics.filter(m=>m.label.startsWith('Seite: '));
   const events=metrics.filter(m=>m.label.startsWith('Ereignis: '));
