@@ -117,14 +117,19 @@ function init() {
   link.className = 'toolya-consent-settings-link';
   link.addEventListener('click', e => { e.preventDefault(); panel.hidden = false; panel.querySelector('.reject').focus(); });
   footer.appendChild(link);
-  // The shared Toolya footer may be inserted after DOMContentLoaded.
-  // Move the link into it when available without duplicating the link.
-  if (!document.querySelector('footer')) {
-    const observer = new MutationObserver(() => {
-      const actualFooter = document.querySelector('footer');
-      if (actualFooter) { actualFooter.appendChild(link); observer.disconnect(); }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+  // A legacy footer can be replaced after consent initializes. Preserve
+  // the original link and click handler even if it becomes detached.
+  const observer = new MutationObserver(() => {
+    const signature = document.querySelector('.toolya-signature-footer');
+    const target = signature?.querySelector('.ty-footer-links') || signature || document.querySelector('footer');
+    if (target && link.parentElement !== target) target.appendChild(link);
+    if (signature) observer.disconnect();
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+  const signature = document.querySelector('.toolya-signature-footer');
+  if (signature) {
+    (signature.querySelector('.ty-footer-links') || signature).appendChild(link);
+    observer.disconnect();
   }
   // Respect changes made in another tab, including withdrawal.
   window.addEventListener('storage', event => {
