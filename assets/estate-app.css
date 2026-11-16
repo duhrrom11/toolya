@@ -10,8 +10,8 @@ body > header:has(#account-label:not(:empty)){justify-content:flex-end}
 body:has(.ty-tool-hero[data-tool="estate"]) button:not(.ty-tool-hero-settings),body:has(.ty-tool-hero[data-tool="estate"]) .button{border-radius:15px;font-weight:700;letter-spacing:.005em;box-shadow:0 3px 10px rgba(12,65,94,.12);transition:background-color .18s ease,box-shadow .18s ease,transform .18s ease,border-color .18s ease}
 body:has(.ty-tool-hero[data-tool="estate"]) button:not(.ty-tool-hero-settings):not(:disabled):hover{transform:translateY(-2px);box-shadow:0 7px 18px rgba(12,65,94,.18)}
 body:has(.ty-tool-hero[data-tool="estate"]) button:not(.ty-tool-hero-settings):active{transform:translateY(0);box-shadow:0 2px 7px rgba(12,65,94,.13)}
-body:has(.ty-tool-hero[data-tool="estate"]) nav button{background:#edf6fc;color:#23566d;border-color:#c8deeb;border-radius:15px}
-body:has(.ty-tool-hero[data-tool="estate"]) nav button[aria-current=true]{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 5px 15px rgba(0,126,159,.24)}
+body:has(.ty-tool-hero[data-tool="estate"]) nav button[data-tab]{background:#edf6fc;color:#23566d;border-color:#c8deeb;border-radius:15px;transition:box-shadow .18s ease,transform .18s ease,border-color .18s ease}
+body:has(.ty-tool-hero[data-tool="estate"]) nav button[data-tab][aria-current=true]{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 5px 15px rgba(0,126,159,.24)}
 .ty-tool-hero[data-tool="estate"] .ty-tool-hero-trustee{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 16px;border:1px solid rgba(255,255,255,.65);border-radius:999px;background:rgba(255,255,255,.92);color:#164f68;font-size:.88rem;font-weight:750;line-height:1.25;text-align:center;text-decoration:none;box-shadow:0 4px 14px rgba(10,38,43,.14);transition:transform .18s ease,box-shadow .18s ease}
 .ty-tool-hero[data-tool="estate"] .ty-tool-hero-trustee:hover{transform:translateY(-2px);box-shadow:0 7px 18px rgba(10,38,43,.2)}
 .ty-tool-hero[data-tool="estate"] .ty-tool-hero-trustee:focus-visible{outline:3px solid #bd7013;outline-offset:3px}
