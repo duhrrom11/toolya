@@ -84,8 +84,6 @@ if(footer.previousElementSibling!==banner)footer.before(banner);syncDonationMasc
 window.setInterval(()=>{const joke=document.querySelector('.ty-kofi-joke');if(!joke||document.hidden)return;donationIndex=(donationIndex+1)%donationLines.length;joke.textContent=donationLines[donationIndex]},9000);
 let scheduled=false;const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;mountPreferences();donations()})});observer.observe(document.body,{childList:true,subtree:true});donations();
 document.addEventListener('invalid',e=>{if(e.target.validationMessage)notify('form-error',e.target.validationMessage)},true);
-let seen=true;try{seen=sessionStorage.getItem('toolya-welcome:'+tool)==='1';sessionStorage.setItem('toolya-welcome:'+tool,'1')}catch{}
-if(!seen)notify('welcome',context.greeting);
 // A small public, data-free way to inspect every approved emotion and outfit.
 export function previewEmotion(emotion){if(!EMOTIONS.includes(emotion))return false;return notify('tip','Toolya zeigt: '+emotion,emotion)}
 export function previewOutfit(role){if(!Number.isInteger(role)||role<0||role>15)return false;for(const r of frames)if(r.img===idleImage)r.role=role;buddy.dismiss();refreshFrames();return true}
