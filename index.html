@@ -262,7 +262,7 @@
 
         window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         // Client initialisiert; die tatsächliche Erreichbarkeit wird bei Auth-Anfragen geprüft.
-        if(new URLSearchParams(location.search).get('auth')==='required'){
+        if(new URLSearchParams(location.search).get('auth')==='required'||new URLSearchParams(location.search).get('settings')==='1'){
             document.addEventListener('DOMContentLoaded',()=>{
                 openSettings();
                 document.getElementById('loginEmail')?.focus();
