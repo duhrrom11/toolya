@@ -50,17 +50,17 @@ async function ga4Metrics(days:number):Promise<Metric[]>{
  let account:{client_email:string,private_key:string,token_uri?:string};
  try{account=JSON.parse(serviceAccountJson)}catch{throw Error('Invalid service account configuration')}
  if(!account.client_email?.endsWith('.gserviceaccount.com')||!account.private_key?.includes('PRIVATE KEY'))throw Error('Invalid service account');
- const enc=(value:unknown)=>btoa(JSON.stringify(value)).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'');
+ const enc=(value:unknown)=>btoa(JSON.stringify(value)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
  const now=Math.floor(Date.now()/1000);
  const header=enc({alg:'RS256',typ:'JWT'});
  const claim=enc({iss:account.client_email,scope:'https://www.googleapis.com/auth/analytics.readonly',
   aud:'https://oauth2.googleapis.com/token',iat:now,exp:now+3600});
- const keyBytes=Uint8Array.from(atob(account.private_key.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\\s/g,'')),c=>c.charCodeAt(0));
+ const keyBytes=Uint8Array.from(atob(account.private_key.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g,'')),c=>c.charCodeAt(0));
  const privateKey=await crypto.subtle.importKey('pkcs8',keyBytes,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['sign']);
  const signingInput=header+'.'+claim;
  const signature=await crypto.subtle.sign('RSASSA-PKCS1-v1_5',privateKey,new TextEncoder().encode(signingInput));
  const signed=Array.from(new Uint8Array(signature),b=>String.fromCharCode(b)).join('');
- const assertion=signingInput+'.'+btoa(signed).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'');
+ const assertion=signingInput+'.'+btoa(signed).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
  const tokenResponse=await fetch('https://oauth2.googleapis.com/token',{
   method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
   body:new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:jwt-bearer',assertion}),
