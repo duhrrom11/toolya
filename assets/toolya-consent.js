@@ -15,7 +15,9 @@ function enableAnalytics() {
   });
   window.gtag('consent', 'update', { analytics_storage: 'granted' });
   window.gtag('js', new Date());
-  window.gtag('config', GA_ID, { allow_google_signals: false, allow_ad_personalization_signals: false, page_location: location.origin + location.pathname, page_referrer: '' });
+  window.gtag('config', GA_ID, { allow_google_signals: false, allow_ad_personalization_signals: false, send_page_view: false });
+  // Never send URL query strings, fragments, referrers or sensitive tool interactions.
+  window.gtag('event', 'page_view', { page_location: location.origin + location.pathname, page_referrer: '', page_title: document.title });
   const tag = document.createElement('script');
   tag.async = true;
   tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_ID);
@@ -50,7 +52,7 @@ function init() {
     if (value === 'yes') enableAnalytics();
     else if (loaded) {
       window.gtag?.('consent', 'update', { analytics_storage: 'denied' });
-      // A reload prevents further tracking on this page after withdrawal.
+      // Reload removes the loaded Google script and all active GA listeners.
       location.reload();
     }
   }
@@ -73,6 +75,15 @@ function init() {
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
+  // Respect changes made in another tab, including withdrawal.
+  window.addEventListener('storage', event => {
+    if (event.key !== KEY && event.key !== null) return;
+    const next = event.key === null ? null : event.newValue;
+    if (next === choice) return;
+    choice = next === 'yes' || next === 'no' ? next : null;
+    if (loaded || choice === 'yes') location.reload();
+    else panel.hidden = choice !== null;
+  });
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
 else init();
