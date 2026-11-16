@@ -173,6 +173,46 @@ async function ga4Metrics(days:number):Promise<Metric[]>{
  additional.push({label:'Tool-Ranking-Diagnose',value:0,detail:rankingStatus});
  return [...totals,...top,...additional];
 }
+// Direct, free Search Console API. Uses an existing server-side Google service account;
+// Google Search Console must grant this service account access to the Toolya property.
+async function searchConsoleMetrics(days:number):Promise<Metric[]>{
+ const serviceAccountJson=Deno.env.get('TOOLYA_STATS_GOOGLE_SERVICE_ACCOUNT_JSON')||'';
+ if(!serviceAccountJson)throw Error('GSC credentials unavailable');
+ let account:{client_email:string,private_key:string};
+ try{account=JSON.parse(serviceAccountJson)}catch{throw Error('GSC credentials invalid')}
+ if(!account.client_email?.endsWith('.gserviceaccount.com')||!account.private_key?.includes('PRIVATE KEY'))throw Error('GSC credentials invalid');
+ const encode=(v:unknown)=>btoa(JSON.stringify(v)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+ const now=Math.floor(Date.now()/1000);
+ const input=encode({alg:'RS256',typ:'JWT'})+'.'+encode({iss:account.client_email,scope:'https://www.googleapis.com/auth/webmasters.readonly',aud:'https://oauth2.googleapis.com/token',iat:now,exp:now+3600});
+ const bytes=Uint8Array.from(atob(account.private_key.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g,'')),c=>c.charCodeAt(0));
+ const key=await crypto.subtle.importKey('pkcs8',bytes,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['sign']);
+ const sig=await crypto.subtle.sign('RSASSA-PKCS1-v1_5',key,new TextEncoder().encode(input));
+ const jwt=input+'.'+btoa(Array.from(new Uint8Array(sig),b=>String.fromCharCode(b)).join('')).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+ const tokenResponse=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:jwt-bearer',assertion:jwt}),signal:AbortSignal.timeout(8000)});
+ if(!tokenResponse.ok)throw Error('GSC authorization failed');
+ const token=await tokenResponse.json();
+ if(typeof token.access_token!=='string')throw Error('GSC token unavailable');
+ // Explicitly configured verified property only; no property discovery or arbitrary URL input.
+ const site=(Deno.env.get('TOOLYA_STATS_GSC_SITE_URL')||'sc-domain:toolya.app').trim();
+ if(site!=='sc-domain:toolya.app'&&site!=='https://toolya.app/')throw Error('GSC property not allowed');
+ // Search Console data is often delayed by 2–3 days. Use complete dates in UTC as a conservative boundary.
+ const end=new Date(Date.now()-3*86400000);
+ const start=new Date(end.getTime()-(days-1)*86400000);
+ const iso=(d:Date)=>d.toISOString().slice(0,10);
+ const response=await fetch('https://searchconsole.googleapis.com/webmasters/v3/sites/'+encodeURIComponent(site)+'/searchAnalytics/query',{
+  method:'POST',headers:{Authorization:'Bearer '+token.access_token,'Content-Type':'application/json'},
+  body:JSON.stringify({startDate:iso(start),endDate:iso(end),type:'web',rowLimit:1}),
+  signal:AbortSignal.timeout(10000)
+ });
+ if(!response.ok)throw Error('GSC API HTTP '+response.status);
+ const data=await response.json();
+ const row=data.rows?.[0];
+ if(!row)return [{label:'GSC Klicks',value:0,detail:'Keine Suchdaten · '+iso(start)+' bis '+iso(end)},{label:'GSC Impressionen',value:0,detail:'Keine Suchdaten · '+iso(start)+' bis '+iso(end)}];
+ const clicks=Number(row.clicks),impressions=Number(row.impressions),ctr=Number(row.ctr),position=Number(row.position);
+ if(![clicks,impressions,ctr,position].every(Number.isFinite))throw Error('GSC invalid values');
+ const detail='Google Search Console · '+iso(start)+' bis '+iso(end);
+ return [{label:'GSC Klicks',value:clicks,detail},{label:'GSC Impressionen',value:impressions,detail},{label:'GSC CTR (%)',value:Math.round(ctr*10000)/100,detail},{label:'GSC Ø Position',value:Math.round(position*100)/100,detail}];
+}
 Deno.serve(async(req:Request)=>{
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
  if(req.method!=='GET')return reply(405,{error:'Method not allowed'});
@@ -197,7 +237,8 @@ Deno.serve(async(req:Request)=>{
  const tasks=[
   {id:'github',run:()=>githubMetrics(days)},
   {id:'supabase',run:()=>supabaseMetrics(url)},
-  {id:'ga4',run:()=>ga4Metrics(days)}
+  {id:'ga4',run:()=>ga4Metrics(days)},
+  {id:'search-console',run:()=>searchConsoleMetrics(days)}
  ];
  await Promise.all(tasks.map(async({id,run})=>{
   const source=sources.find(s=>s.id===id)!;
@@ -219,7 +260,7 @@ Deno.serve(async(req:Request)=>{
     'Google access token missing':'GA4: Kein Google-Zugriffstoken erhalten',
     'GA4 report has no usable values':'GA4: Bericht ohne auswertbare Kennzahlen'
    };
-   source.detail=id==='ga4'?(ga4Codes[message]||(/GA4 Data API HTTP (401|403|404|429|500|503)/.test(message)?'GA4: '+message:'GA4: API-Abfrage fehlgeschlagen')):'Datenabruf fehlgeschlagen oder API-Zugang fehlt';
+   source.detail=id==='search-console'?(message==='GSC credentials unavailable'?'GSC: Google-Dienstkonto nicht eingerichtet':message==='GSC API HTTP 403'?'GSC: Dienstkonto hat keinen Zugriff auf die Search-Console-Property':message==='GSC API HTTP 404'?'GSC: Property nicht gefunden oder nicht freigegeben':'GSC: Datenabruf derzeit nicht möglich'):id==='ga4'?(ga4Codes[message]||(/GA4 Data API HTTP (401|403|404|429|500|503)/.test(message)?'GA4: '+message:'GA4: API-Abfrage fehlgeschlagen')):'Datenabruf fehlgeschlagen oder API-Zugang fehlt';
   }
  }));
  return reply(200,{generatedAt:new Date().toISOString(),days,metrics,sources});
