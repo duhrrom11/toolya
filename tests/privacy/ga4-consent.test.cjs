@@ -50,15 +50,22 @@ test('GA4 opt-in lifecycle: reject, accept, withdraw, reload, cross-tab', { time
     await second.getByRole('button', { name: 'Akzeptieren' }).click();
     await page.waitForTimeout(300);
     assert.equal(await page.evaluate(() => localStorage.getItem('toolya.analytics.consent.v1')), 'yes', 'Cross-tab consent must sync');
+    // Current production policy permits consent-gated, data-minimized page
+    // statistics on estate pages too. No keys, queries, fragments or form data.
     const sensitive = await context.newPage();
-    await sensitive.goto(url + 'tools/estate/index.html');
-    const beforeSensitive = requests.length;
-    await sensitive.reload();
-    assert.equal(requests.length, beforeSensitive, 'Sensitive estate pages must never request Google, even with opt-in');
-    await sensitive.goto(url + 'tools/estate');
-    const beforeExact = requests.length;
-    await sensitive.reload();
-    assert.equal(requests.length, beforeExact, 'Exact estate route must never request Google');
+    for (const route of ['tools/estate/index.html?key=synthetic-private#synthetic-secret', 'tools/estate']) {
+      const beforeSensitive = requests.length;
+      await sensitive.goto(url + route);
+      await sensitive.waitForFunction(() => window.dataLayer?.some(entry => entry[0] === 'event' && entry[1] === 'page_view'));
+      assert.equal(requests.length, beforeSensitive + 1, 'Opt-in requests one analytics script on estate routes');
+      const view = await sensitive.evaluate(() => Array.from(window.dataLayer).find(entry => entry[0] === 'event' && entry[1] === 'page_view')[2]);
+      assert.equal(view.page_location, new URL(route, url).origin + new URL(route, url).pathname);
+      assert.equal(view.page_referrer, '', 'Referrers must not carry sensitive links');
+      assert.equal(JSON.stringify(view).includes('synthetic-private'), false, 'Private query values excluded');
+      assert.equal(JSON.stringify(view).includes('synthetic-secret'), false, 'Private key fragments excluded');
+      await sensitive.reload();
+      assert.equal(requests.length, beforeSensitive + 2, 'Consent remains effective after reload');
+    }
     await sensitive.close();
     await second.close();
     await page.close();

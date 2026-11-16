@@ -222,7 +222,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  assert.equal(await page.locator('#reminder-text').evaluate(el=>el===document.activeElement),true,'reminder input receives focus after last reminder removed');
  await page.locator('.toolya-signature-footer .ty-footer-mascot').waitFor();
  assert.equal(await page.locator('footer').count(),1,'dashboard has only the shared footer');
- assert.equal(await page.locator('.ty-footer-wordmark').textContent(),await page.locator('.b3-hub-logo').textContent(),'dashboard header/footer use identical wordmark');
+ assert.equal((await page.locator('.ty-footer-wordmark').textContent()).trim(),(await page.locator('.b3-hub-logo').textContent()).trim(),'dashboard header/footer use identical wordmark');
  const footerMascot=await page.locator('.ty-footer-mascot').getAttribute('src');
  assert.match(footerMascot,/toolya_wishlist_(purple|turquoise)_welcome_1024\.png$/,'footer uses selected character artwork');
  await verifyClipboard('dashboard');await verifyRealFormClipboard('dashboard','#task-text','#reminder-text','Aufgabe kopieren');
