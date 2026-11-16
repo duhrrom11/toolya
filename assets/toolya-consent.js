@@ -23,21 +23,15 @@ function enableAnalytics() {
   tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_ID);
   document.head.appendChild(tag);
 }
-if (choice === 'yes') enableAnalytics();
+// Sensitive estate routes must never send analytics, even after a prior opt-in.
+const analyticsAllowed = !location.pathname.startsWith('/tools/estate/');
+if (choice === 'yes' && analyticsAllowed) enableAnalytics();
 function init() {
   if (document.getElementById('toolya-consent-panel')) return;
-  const style = document.createElement('style');
-  style.textContent = `
-#toolya-consent-panel{position:fixed;bottom:12px;left:12px;z-index:2147483000;max-width:390px;width:calc(100% - 24px);box-sizing:border-box;background:#fff;color:#172033;border:1px solid #dbe3ed;border-radius:14px;padding:15px;box-shadow:0 6px 28px #12253a29;font:14px/1.5 system-ui,sans-serif}
-#toolya-consent-panel[hidden]{display:none!important}
-#toolya-consent-panel p{margin:6px 0 12px}
-#toolya-consent-panel .actions{display:flex;gap:8px;flex-wrap:wrap}
-#toolya-consent-panel button{flex:1;min-width:125px;cursor:pointer;border-radius:9px;padding:9px 12px;font:600 14px system-ui,sans-serif;border:1px solid #0f766e;background:#fff;color:#115e59}
-#toolya-consent-panel button.accept{background:#0f766e;color:#fff}
-#toolya-consent-panel a{color:#075985;text-decoration:underline}
-#toolya-consent-settings{cursor:pointer}
-`;
-  document.head.appendChild(style);
+  const stylesheet = document.createElement('link');
+  stylesheet.rel = 'stylesheet';
+  stylesheet.href = '/assets/toolya-consent.css';
+  document.head.appendChild(stylesheet);
   const panel = document.createElement('section');
   panel.id = 'toolya-consent-panel';
   panel.setAttribute('role', 'dialog');
@@ -49,7 +43,7 @@ function init() {
     choice = value;
     try { localStorage.setItem(KEY, value); } catch {}
     panel.hidden = true;
-    if (value === 'yes') enableAnalytics();
+    if (value === 'yes' && analyticsAllowed) enableAnalytics();
     else if (loaded) {
       window.gtag?.('consent', 'update', { analytics_storage: 'denied' });
       // Reload removes the loaded Google script and all active GA listeners.
@@ -63,7 +57,7 @@ function init() {
   link.id = 'toolya-consent-settings';
   link.href = '#cookie-einstellungen';
   link.textContent = 'Cookie-Einstellungen';
-  link.style.cssText = 'display:inline-block;margin:8px 12px;font:13px system-ui,sans-serif;text-decoration:underline;color:inherit';
+  link.className = 'toolya-consent-settings-link';
   link.addEventListener('click', e => { e.preventDefault(); panel.hidden = false; panel.querySelector('.reject').focus(); });
   footer.appendChild(link);
   // The shared Toolya footer may be inserted after DOMContentLoaded.
