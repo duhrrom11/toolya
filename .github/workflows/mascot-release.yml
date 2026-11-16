@@ -20,6 +20,9 @@ jobs:
       - run: node tests/platform/browser.cjs
       - run: node tests/platform/design-foundation.cjs
       - run: node tests/security/estate-handover-design.cjs
+      - name: Verify public B3 delivery after Pages release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: node scripts/verify-b3-release.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
