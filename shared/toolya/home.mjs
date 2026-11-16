@@ -25,10 +25,6 @@ function react(kind,index,text='',duration=1800){
 }
 // Both approved hero characters remain in the original static illustration.
 window.toolyaHomeReady=true;stage.dataset.posesReady='true';rest();
-const cta=document.querySelector('.ty-primary');
-cta.addEventListener('pointerenter',()=>{if(finePointer.matches&&mayMove())react('point',3);});
-cta.addEventListener('focus',()=>{if(mayMove())react('point',3);});
-cta.addEventListener('click',()=>react('point',3,'Los geht’s – such dir deinen Helfer aus.',1800));
 document.querySelectorAll('[data-b3-category-filter]').forEach(button=>button.addEventListener('click',()=>{
  const category=button.dataset.b3CategoryFilter;role=roles[category]??null;clear();rest();
  if(!blocked()&&copy[category]){say(copy[category]);later(()=>message.hidden=true,2600);}

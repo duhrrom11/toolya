@@ -6,21 +6,29 @@
 <title>Mein Dashboard | Toolya</title>
 <meta name="description" content="Deine persönliche Toolya-Alltagszentrale.">
 <link rel="stylesheet" href="./dashboard.css">
+<script src="../assets/vendor/supabase-2.57.0.js" defer></script>
+<script src="./account-settings.js" defer></script>
 <script type="module" src="../shared/toolya/platform.mjs"></script>
 <script src="./dashboard.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Direkt zum Inhalt</a>
-<header class="topbar">
-<a class="brand b3-hub-logo" href="../index.html" aria-label="Toolya Startseite"><span class="b3-hub-logo-mark" aria-hidden="true">✳</span> Toolya</a>
-<nav aria-label="Navigation"><a href="../index.html#toolDiscovery">Alle Tools</a><a class="active" href="./" aria-current="page">Mein Dashboard</a></nav>
+<header class="b3-hub-header">
+ <div class="b3-hub-topbar">
+  <a class="b3-hub-logo" href="../index.html" aria-label="Toolya Startseite"><span class="b3-hub-logo-mark" aria-hidden="true">✳</span> Toolya</a>
+  <nav class="b3-hub-nav" aria-label="Hauptnavigation">
+   <a href="../index.html#toolDiscovery">Alle Tools</a>
+   <a href="./" aria-current="page">Mein Dashboard</a>
+   <button type="button" id="userInfo" class="b3-hub-account b3-auth-status b3-auth-signed-out" aria-controls="settingsModal" aria-haspopup="dialog" aria-label="Anmelden oder registrieren">Konto wird geprüft …</button>
+   <button type="button" id="settingsBtn" aria-haspopup="dialog" aria-controls="settingsModal" aria-label="Einstellungen öffnen"><img class="ty-settings-icon" src="../assets/vendor/bootstrap-icons/gear.svg" width="22" height="22" alt=""><span class="ty-settings-label">Einstellungen</span></button>
+  </nav>
+ </div>
 </header>
 <main id="main">
 <section class="welcome" aria-labelledby="welcome-heading">
 <div><p class="eyebrow">DEIN PERSÖNLICHER BEREICH</p><h1 id="welcome-heading">Dein Alltag. Dein Überblick.</h1><p>Deine Lieblingshelfer, Aufgaben und Termine – alles an einem Ort.</p><p class="privacy"><span aria-hidden="true">🔒</span> Diese Dashboard-Daten werden zunächst nur in diesem Browser gespeichert.</p></div>
 <div class="welcome-art"><img id="dashboard-mascot" src="../assets/toolya/originals/toolya_wishlist_turquoise_welcome_1024.png" width="225" height="225" alt="Dein ausgewählter Toolya-Begleiter"></div>
 </section>
-<section class="buddy-panel" aria-label="Dein Toolya-Begleiter"><p id="buddy-message">Dein Begleiter ist bereit. Was möchtest du heute erledigen?</p><button id="buddy-toggle" type="button" aria-pressed="true">Begleiter-Tipps ausschalten</button></section>
 <div id="notice" role="status" aria-live="polite" class="notice" hidden></div>
 <section class="stats" aria-label="Deine Übersicht">
 <div class="stat"><span>★ Favoriten</span><strong id="fav-count">0</strong></div>
@@ -51,4 +59,25 @@
 </div>
 <!-- Shared Toolya footer is mounted by platform.mjs after the main content. -->
 </main>
+<div id="settingsModal" class="dashboard-settings" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
+ <div class="dashboard-settings-panel">
+  <div class="dashboard-settings-head"><h2 id="settingsTitle">⚙️ Einstellungen</h2><button type="button" id="closeSettingsBtn" aria-label="Einstellungen schließen">×</button></div>
+  <section aria-label="Cloud-Konto">
+   <h3>☁️ Cloud-Konto</h3>
+   <p id="cloudStatus" role="status" aria-live="polite" tabindex="-1">Konto wird geprüft …</p>
+   <label for="loginEmail">E-Mail-Adresse<input type="email" id="loginEmail" autocomplete="email" placeholder="E-Mail-Adresse"></label>
+   <label for="loginPassword">Passwort<input type="password" id="loginPassword" autocomplete="current-password" minlength="6" placeholder="Passwort"></label>
+   <button type="button" id="forgotPassword" class="settings-text-button">Passwort vergessen?</button>
+   <div id="passwordRecoveryPanel" hidden>
+    <label for="recoveryPassword">Neues Passwort (mindestens 8 Zeichen)<input type="password" id="recoveryPassword" minlength="8" autocomplete="new-password"></label>
+    <label for="recoveryPasswordConfirm">Passwort wiederholen<input type="password" id="recoveryPasswordConfirm" minlength="8" autocomplete="new-password"></label>
+    <button type="button" id="saveRecovery">Neues Passwort speichern</button>
+   </div>
+   <p id="loginMessage" role="status" aria-live="polite"></p>
+   <div class="dashboard-account-actions"><button type="button" id="registerUser">👤 Registrieren</button><button type="button" id="loginSubmit">🔑 Anmelden</button><button type="button" id="logoutUser">🚪 Abmelden</button></div>
+  </section>
+  <section class="dashboard-backup"><h3>💾 Datensicherung</h3><p>Deine globalen Backup- und Wiederherstellungsfunktionen findest du in den gemeinsamen Einstellungen der Hauptseite.</p><a href="../index.html?settings=1">Backup und Wiederherstellung öffnen</a></section>
+  <div class="dashboard-settings-close"><button type="button" id="cancelSettingsBtn">Schließen</button></div>
+ </div>
+</div>
 </body></html>
