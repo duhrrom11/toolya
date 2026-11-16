@@ -109,15 +109,16 @@ function mountFooter(){
  const logo=headerLogo?headerLogo.cloneNode(true):document.createElement('a');
  logo.classList.remove('b3-hub-logo');logo.classList.add('ty-footer-wordmark');logo.href=new URL('../../index.html',import.meta.url).href;logo.removeAttribute('id');logo.setAttribute('aria-label','Toolya Startseite');
  if(!headerLogo){const mark=document.createElement('span');mark.className='b3-hub-logo-mark';mark.setAttribute('aria-hidden','true');mark.textContent='✳';logo.append(mark,document.createTextNode(' Toolya'));}
+ const mascot=document.createElement('img');mascot.className='ty-footer-mascot';mascot.alt='Dein ausgewählter Toolya-Begleiter';mascot.width=76;mascot.height=86;mascot.loading='lazy';
  brand.append(logo);const caption=document.createElement('small');caption.textContent='© '+new Date().getFullYear()+' Toolya · Dein smarter Tool-Begleiter';brand.append(caption);
  const links=document.createElement('nav');links.className='ty-footer-links';links.setAttribute('aria-label','Footer-Navigation');
  for(const [label,path] of [['Startseite','index.html'],['Tools','index.html#toolDiscovery'],['Datenschutz','privacy.html'],['Impressum','legal.html']]){
   const a=document.createElement('a');a.href=new URL('../../'+path,import.meta.url).href;a.textContent=label;links.append(a);
  }
  const top=document.createElement('button');top.className='ty-footer-top';top.type='button';top.textContent='↑ Nach oben';top.addEventListener('click',()=>window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}));
- inner.append(brand,links,top);footer.append(inner);
+ inner.append(mascot,brand,links,top);footer.append(inner);
  if(old)old.replaceWith(footer);else if(support)support.before(footer);else document.body.append(footer);
- mountDonation();
+ syncFooterMascot();mountDonation();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountFooter,{once:true});else mountFooter();
 
