@@ -255,3 +255,8 @@ body.b3:not(.b3-dark) button.b3-action.b3-outline:not(:disabled):hover{
 body.b3:not(.b3-dark) .b3-action:focus-visible{
  outline:3px solid var(--b3-control-accent);outline-offset:3px;
 }
+
+/* Equal action typography; long labels wrap at spaces rather than inside words. */
+body.b3:not(.b3-dark) button.b3-action{
+ font-size:.875rem;font-weight:700;line-height:1.35;overflow-wrap:normal;word-break:normal;
+}

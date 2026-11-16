@@ -764,7 +764,14 @@ for(const item of tools){
     expect(await contrast(button)).toBeGreaterThanOrEqual(4.5);
     expect(await button.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
    }
+   await expect(primary).toHaveCSS('font-weight','700');
    if(isCar){
+    const heading=page.locator('.b3-car-card-heading').first();
+    for(const button of await heading.locator('button').all()){
+     expect(await button.evaluate(e=>{const a=e.getBoundingClientRect(),b=e.closest('.b3-car-card-heading').getBoundingClientRect();return a.left>=b.left-1&&a.right<=b.right+1})).toBe(true);
+    }
+    const km=heading.locator('button[onclick="updateCarKm(1)"]');
+    expect(await km.evaluate(e=>{const r=document.createRange();r.selectNodeContents(e);return r.getBoundingClientRect().height<=parseFloat(getComputedStyle(e).lineHeight)+1})).toBe(true);
     const cols=await page.locator('.b3-car-form-grid').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length);
     expect(cols).toBe(width<1280?1:2);
     if(width===768)expect(await page.locator('#carPlate').evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThan(290);
@@ -798,6 +805,11 @@ for(const item of tools){
    expect(await contrast(modalSave)).toBeGreaterThanOrEqual(4.5);
    await modal.locator('input:not([type=hidden])').first().focus();await page.keyboard.press('Tab');
    expect(await page.evaluate(()=>parseFloat(getComputedStyle(document.activeElement).outlineWidth))).toBeGreaterThanOrEqual(3);
+   if(isCar){
+    for(const button of await modal.locator('.b3-car-dialog-actions .b3-action').all()){
+     expect(await button.evaluate(e=>{const r=document.createRange();r.selectNodeContents(e);return r.getBoundingClientRect().height<=parseFloat(getComputedStyle(e).lineHeight)+1})).toBe(true);
+    }
+   }
    await reviewImage(page,'app-'+item.tool+'-dialog-'+width);
    await modal.getByRole('button',{name:'Abbrechen',exact:true}).click();
    await expect(modal).toBeHidden();

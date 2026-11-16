@@ -256,7 +256,7 @@
                 <div><label for="editCost" class="block text-xs font-semibold text-gray-600 mb-1">Kosten (€):</label><input type="text" id="editCost" class="w-full p-3 border rounded-xl text-sm"></div>
                 <div><label for="editTread" class="block text-xs font-semibold text-gray-600 mb-1">Profiltiefe (mm):</label><input type="text" id="editTread" class="w-full p-3 border rounded-xl text-sm"></div>
             </div>
-            <div class="flex justify-end space-x-2 pt-2">
+            <div class="flex flex-wrap justify-end gap-2 pt-2 b3-car-dialog-actions">
                 <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm b3-action b3-outline">Abbrechen</button>
                 <button onclick="updateEvent()" class="px-5 py-2 bg-red-600 text-white rounded-xl text-sm font-bold b3-action">Speichern</button>
             </div>
@@ -880,15 +880,15 @@ async function toolyaCloudBoot(tool) {
 
                     return `
                         <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
-                            <div class="flex items-center justify-between gap-3">
-                                <div class="flex items-center space-x-3">
+                            <div class="flex items-center justify-between gap-3 b3-car-card-heading">
+                                <div class="flex items-center space-x-3 b3-car-card-identity">
                                     ${c.photo ? `<img src="${c.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage('${c.photo}')" title="Foto vergrößern">` : defaultCarIcon}
                                     <div>
                                         <h4 class="font-bold text-sm text-red-800">${c.name}</h4>
                                         <p class="text-xs text-gray-600">${c.plate || 'k.Kennzeichen'} ${c.km ? '| ' + c.km + ' km' : ''}</p>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-1.5">
+                                <div class="flex items-center gap-1.5 b3-car-card-actions">
                                     <button onclick="updateCarKm(${c.id})" class="px-2.5 py-1 bg-red-50 text-red-700 hover:bg-red-100 rounded-xl text-xs font-semibold b3-action b3-outline" title="KM aktualisieren">⚡ KM</button>
                                     <button onclick="deleteCar(${c.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
                                 </div>

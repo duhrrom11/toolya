@@ -45,3 +45,11 @@ body.b3-autokosten.b3-dark #settingsModal button[onclick="logoutUser()"]{backgro
  body.b3-autokosten main.b3-dashboard .b3-car-form-grid,
  body.b3-autokosten main.b3-dashboard .b3-car-record-grid{grid-template-columns:minmax(0,1fr)}
 }
+
+body.b3-autokosten .b3-car-card-heading{flex-wrap:wrap;align-items:flex-start}
+body.b3-autokosten .b3-car-card-identity{flex:1 1 200px;min-width:0}
+body.b3-autokosten .b3-car-card-identity>div:last-child{min-width:0}
+body.b3-autokosten .b3-car-card-identity :is(h4,p){overflow-wrap:anywhere}
+body.b3-autokosten .b3-car-card-actions{flex:0 0 auto;gap:.5rem}
+body.b3-autokosten .b3-car-card-actions .b3-action{white-space:nowrap}
+body.b3-autokosten .b3-car-dialog-actions .b3-action{flex:1 1 100px;min-width:100px}
