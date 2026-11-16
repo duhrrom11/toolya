@@ -111,14 +111,15 @@ async function enrichWishlistAutomatically(publicationId,onProgress=()=>{}){
  const cacheKey='toolya-wishlist-enrichment-recent-v1';
  let recent={};
  try{const saved=JSON.parse(localStorage.getItem(cacheKey)||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))recent=saved}catch{}
+ const adminUnlimited=sessionUser.email?.trim().toLowerCase()==='info@toolya.app';
  const now=Date.now(),cooldown=10*60*1000;
  recent=Object.fromEntries(Object.entries(recent).filter(([,at])=>typeof at==='number'&&now-at<cooldown).slice(-200));
- const candidates=missing.filter(p=>!(recent[publicationId+':'+p.asin]>now-cooldown)).slice(0,AUTO_ENRICH_LIMIT);
+ const candidates=missing.filter(p=>adminUnlimited||!(recent[publicationId+':'+p.asin]>now-cooldown)).slice(0,adminUnlimited?missing.length:AUTO_ENRICH_LIMIT);
  let checked=0,improved=0,skipped=0,limited=false;
  for(const product of candidates){
   onProgress('Produktinformationen ergänzen: '+(checked+1)+' von '+candidates.length+' …');
-  recent[publicationId+':'+product.asin]=Date.now();
-  try{localStorage.setItem(cacheKey,JSON.stringify(recent))}catch{}
+  if(!adminUnlimited){recent[publicationId+':'+product.asin]=Date.now();
+   try{localStorage.setItem(cacheKey,JSON.stringify(recent))}catch{}}
   try{
    const {data,error}=await db.functions.invoke('amazon-wishlist-scrape',{
     body:{action:'enrich-product',publication_id:publicationId,asin:product.asin}
