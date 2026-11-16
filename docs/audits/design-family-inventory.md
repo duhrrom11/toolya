@@ -30,3 +30,7 @@ Das Ausgangsproblem von handover.html (dark und blockierte gemeinsame CSS-Dateie
 D06b: die zehn B3-Tools über ihre bestehenden Variablen und klaren Komponenten harmonisieren. `assets/helferlein-b3.css` verwendet noch grüne --b3-accent/#16843d und --b3-accent-2/#75d858; lokale Toolklassen können das überlagern. Aktive Primär-/Sekundär-/Gefahrzustände zuerst erfassen, dann gemeinsame türkise Tokens anwenden. Auth-/Speicherschutz und rote Warnaktionen erhalten. Isolierte echte Toolansichten statt Startseiten-Redirects prüfen. Danach Legacy-Wishlist/Dashboard und Infoseiten; kein vorgezogener SEO-/Textumbau.
 
 Zusätzlich als weitere Optimierung erfasst: mascots.html lädt Consent klassisch und über das Plattformmodul. Bei gespeicherter Zustimmung ist eine doppelte Analytics-Initialisierung aus dem Code wahrscheinlich. Separat mit gezielter isolierter Regression bestätigen; keine pauschale Änderung der Einwilligungsregel.
+
+### B3-Teilabnahme #96 (17.11.2026)
+
+Gemeinsame Navigation/Editor-Aktionen und Eingabegeometrie an Marken-Tokens angeschlossen; zwölf tatsächliche Auto-/Haushaltsbuchansichten bei 320/768/1440 gesichtet, kein Blocker in diesem Umfang. 47 Browserprüfungen und fünf Checks auf a292421 erfolgreich. Bilder: `evidence/pr96-*.jpg`. Gewöhnliche App-Speicherbuttons, weitere acht B3-Ansichten und tiefere Toolabschnitte bleiben offen. Diagramme synthetisch ersetzt, keine Produktionsdiagrammprüfung. D06b weiterhin In Arbeit; Produktionsstatus nach Merge separat prüfen.

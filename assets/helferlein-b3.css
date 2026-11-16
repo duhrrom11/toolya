@@ -1,6 +1,6 @@
 /* Toolya B3 pilot: visual layer only; no business data changes. */
 :root{color-scheme:light}
-body.b3{--b3-ink:#102b45;--b3-bg:#eff7f9;--b3-surface:#fff;--b3-line:#cde3e8;--b3-accent:#16843d;--b3-accent-2:#75d858;background:var(--b3-bg);color:var(--b3-ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+body.b3{--b3-ink:#102b45;--b3-bg:#eff7f9;--b3-surface:#fff;--b3-line:#cde3e8;--b3-accent:#16843d;--b3-accent-2:#75d858;background:var(--b3-bg);color:var(--b3-ink);font-family:var(--ty-font-brand,Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)}
 body.b3 .b3-header{background:linear-gradient(112deg,#075132 0%,#138b46 56%,#7bd854 100%);color:white;box-shadow:0 6px 20px #064e3b25;padding:1rem clamp(1rem,3vw,2.25rem);text-align:left}
 .b3-header-inner{max-width:1320px;margin:auto;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
 .b3-brand{display:inline-flex;align-items:center;gap:.5rem;font-size:1.25rem;font-weight:850;color:white;text-decoration:none}
@@ -192,3 +192,55 @@ body.b3-dark #settingsModal button.bg-lime-600,
 body.b3-dark #settingsModal button[onclick="supabaseLogin()"]{background:#246b3f!important;color:#fff!important}
 body.b3-dark #settingsModal button[onclick="supabaseRegister()"]{background:#31495f!important;color:#f7fbff!important}
 body.b3-dark #settingsModal button[onclick="supabaseLogout()"]{background:#4b2934!important;color:#ffdce1!important}
+
+/* Shared light-mode controls. Header themes and semantic warning colours remain independent. */
+body.b3:not(.b3-dark){
+ --b3-control-accent:var(--ty-color-primary,#007e9f);
+ --b3-control-soft:var(--ty-color-soft,#e1f3fa);
+}
+body.b3:not(.b3-dark) .b3-nav-links>a:first-child,
+body.b3:not(.b3-dark) .b3-nav>a:first-child,
+body.b3:not(.b3-dark) .b3-action:not(.b3-outline),
+body.b3:not(.b3-dark) .b3-more[open]>summary{
+ background:var(--b3-control-accent);color:#fff;
+}
+body.b3:not(.b3-dark) .b3-nav a:not(:first-child):hover,
+body.b3:not(.b3-dark) .b3-nav a:not(:first-child):focus-visible{
+ background:var(--b3-control-soft);color:var(--b3-ink);
+}
+body.b3:not(.b3-dark) .b3-action,
+body.b3:not(.b3-dark) .b3-more>summary,
+body.b3:not(.b3-dark) .b3-more-item,
+body.b3:not(.b3-dark) .b3-nav-links>a{
+ min-height:44px;border-radius:12px;
+}
+body.b3:not(.b3-dark) .b3-action{
+ transition:transform .18s ease,box-shadow .18s ease;
+ white-space:normal;overflow-wrap:anywhere;
+}
+body.b3:not(.b3-dark) .b3-action:not(:disabled):hover{
+ transform:translateY(-2px);box-shadow:0 6px 16px #163b5426;
+}
+body.b3:not(.b3-dark) .b3-action:not(:disabled):active{
+ transform:translateY(0);box-shadow:0 2px 5px #163b5426;
+}
+body.b3:not(.b3-dark) .b3-action:disabled{
+ cursor:not-allowed;opacity:.5;transform:none;box-shadow:none;
+}
+body.b3:not(.b3-dark) :is(main.b3-dashboard,#settingsModal,#helpModal) :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]):not([type=file]),select,textarea){
+ font-family:inherit;border-radius:12px;min-height:44px;
+}
+body.b3:not(.b3-dark) :is(main.b3-dashboard,#settingsModal,#helpModal,.b3-nav) :is(input,select,textarea,button,a,summary):focus-visible{
+ outline:3px solid var(--b3-control-accent);outline-offset:3px;
+}
+body.b3:not(.b3-dark) .b3-editor{
+ border-color:var(--b3-control-accent);
+}
+body.b3:not(.b3-dark) .b3-more-item:hover,
+body.b3:not(.b3-dark) .b3-more-item:focus-visible{
+ background:var(--b3-control-soft);outline-color:var(--b3-control-accent);
+}
+@media(prefers-reduced-motion:reduce){
+ body.b3:not(.b3-dark) .b3-action{transition:none}
+ body.b3:not(.b3-dark) .b3-action:not(:disabled):hover,body.b3:not(.b3-dark) .b3-action:not(:disabled):active{transform:none}
+}

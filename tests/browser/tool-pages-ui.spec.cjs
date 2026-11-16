@@ -5,7 +5,7 @@ const tools=[
   {path:'/tools/car/index.html',title:'Autokosten-Rechner & Reifenwechsel',tool:'autokosten-reifenwechsel',form:'#carName'},
   {path:'/tools/budget/index.html',title:'Haushaltsbuch mit Kassenbon-Scanner',tool:'haushaltsbuch-kassenbon',form:'#receiptTitle'}
 ];
-async function isolated(page,authenticated){
+async function isolated(page,authenticated,displayCss=false){
   const outbound=[];
   page.on('pageerror',error=>console.log('[UI pageerror]',error.message));
   page.on('console',msg=>{if(msg.text().includes('[mock rpc]'))console.log('[browser]',msg.text());});
@@ -41,6 +41,8 @@ async function isolated(page,authenticated){
       }
       return route.continue();
     }
+    // Only design checks allow the existing display-only Tailwind CDN; application traffic stays intercepted.
+    if(displayCss && new URL(url).hostname==='cdn.tailwindcss.com' && route.request().method()==='GET')return route.continue();
     // Chart.js is a display-only dependency. Replace its CDN script with a
     // deterministic inert chart to keep the real budget UI executable offline.
     if(url.startsWith('https://cdn.jsdelivr.net/npm/chart.js')){
@@ -704,3 +706,62 @@ test('estate: real browser crypto binds emergency envelopes to the correct trust
  });
  expect(result).toEqual({opened:'Isolated fixture',uppercase:'Isolated fixture',formatted:'Formatted fixture',swapped:'rejected',duplicate:'conflict',unique:true});
 });
+
+// Optional compact review images for isolated draft-PR checks when local image access is unavailable.
+// Only the two synthetic, intercepted tool fixtures below call this helper.
+async function reviewImage(page,id){
+ if(process.env.TOOLYA_VISUAL_LOGS!=='1')return;
+ const data=(await page.screenshot({type:'jpeg',quality:42,fullPage:false})).toString('base64');
+ const size=10000,total=Math.ceil(data.length/size);
+ for(let i=0;i<total;i++)console.log('TOOLYA_REVIEW|'+id+'|'+i+'|'+total+'|'+data.slice(i*size,(i+1)*size));
+}
+
+for(const item of tools){
+ test(item.tool+': shared controls on the real authenticated page at three widths',async({page},testInfo)=>{
+  await isolated(page,true,true);
+  await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
+  await page.goto(origin+item.path);
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  await expect(page.locator(item.form)).toBeVisible();
+  // This gate confirms the actual display CSS, rather than accepting unstyled HTML.
+  await expect.poll(()=>page.locator('#settingsModal').evaluate(e=>getComputedStyle(e).display)).toBe('none');
+  if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+  const contrast=async locator=>locator.evaluate(e=>{
+   const c=getComputedStyle(e),lum=v=>v.match(/[\d.]+/g).slice(0,3).map(Number).map(x=>{x/=255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4}).reduce((s,x,i)=>s+x*[.2126,.7152,.0722][i],0);
+   const a=lum(c.color),b=lum(c.backgroundColor);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+  });
+  for(const width of [320,768,1440]){
+   await page.setViewportSize({width,height:1000});
+   expect(new URL(page.url()).pathname).toBe(item.path);
+   expect(await page.locator('html').evaluate(e=>getComputedStyle(e).colorScheme)).toBe('light');
+   const nav=page.locator('.b3-nav-links>a').first();
+   await expect(nav).toHaveCSS('background-color','rgb(0, 126, 159)');
+   expect(await contrast(nav)).toBeGreaterThanOrEqual(4.5);
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+   await page.locator(item.form).focus();await page.keyboard.press('Tab');
+   expect(await page.evaluate(()=>parseFloat(getComputedStyle(document.activeElement).outlineWidth))).toBeGreaterThanOrEqual(3);
+   await page.locator('.ty-tool-hero').scrollIntoViewIfNeeded();
+   await page.screenshot({path:testInfo.outputPath('b3-'+item.tool+'-'+width+'.png'),fullPage:true});
+   await reviewImage(page,item.tool+'-page-'+width);
+   await page.locator('#settingsBtn').click();
+   await expect(page.locator('#settingsModal')).toBeVisible();
+   await page.locator('#b3-edit-open').click();
+   await expect(page.locator('#b3-editor')).toBeVisible();
+   const save=page.locator('#b3-editor .b3-action:not(.b3-outline)').first();
+   await expect(save).toHaveCSS('background-color','rgb(0, 126, 159)');
+   expect(await contrast(save)).toBeGreaterThanOrEqual(4.5);
+   await save.hover();await expect(save).toHaveCSS('transform','none');
+   await expect(page.locator('#b3-editor button[disabled]').first()).toBeDisabled();
+   await page.screenshot({path:testInfo.outputPath('b3-editor-'+item.tool+'-'+width+'.png'),fullPage:true});
+   await reviewImage(page,item.tool+'-editor-'+width);
+   await page.locator('#b3-editor').getByRole('button',{name:'Abbrechen',exact:true}).click();
+   await expect(page.locator('#b3-editor')).toBeHidden();
+  }
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+  // Existing account warning actions retain their red treatment.
+  await page.locator('#settingsBtn').click();
+  const logout=page.locator('#settingsModal button[onclick="logoutUser()"]');
+  const colour=await logout.evaluate(e=>getComputedStyle(e).backgroundColor);
+  const channels=colour.match(/[\d.]+/g).map(Number);expect(channels[0]).toBeGreaterThan(channels[1]);
+ });
+}
