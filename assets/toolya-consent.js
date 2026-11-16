@@ -16,6 +16,21 @@ function clearAnalyticsCookies() {
     }
   }
 }
+// Opt-in, tab-scoped GA4 diagnostics. The URL switch is removed before any GA request.
+// Session storage is isolated per tab and disappears when the tab session ends.
+const DEBUG_KEY = 'toolya.ga.debug.tab.v1';
+let debugEnabled = false;
+try {
+  const url = new URL(location.href);
+  const requested = url.searchParams.get('toolya_ga_debug');
+  if (requested === '1' || requested === '0') {
+    if (requested === '1') sessionStorage.setItem(DEBUG_KEY, '1');
+    else sessionStorage.removeItem(DEBUG_KEY);
+    url.searchParams.delete('toolya_ga_debug');
+    history.replaceState(history.state, '', url.pathname + url.search + url.hash);
+  }
+  debugEnabled = sessionStorage.getItem(DEBUG_KEY) === '1';
+} catch { /* Blocked storage or history: regular GA behavior remains unchanged. */ }
 let loaded = false;
 function enableAnalytics() {
   if (loaded) return;
@@ -27,10 +42,11 @@ function enableAnalytics() {
     ad_user_data: 'denied', ad_personalization: 'denied'
   });
   window.gtag('consent', 'update', { analytics_storage: 'granted' });
+  if (debugEnabled) window.gtag('set', 'debug_mode', true);
   window.gtag('js', new Date());
   window.gtag('config', GA_ID, { allow_google_signals: false, allow_ad_personalization_signals: false, send_page_view: false });
   // Never send URL query strings, fragments, referrers or sensitive tool interactions.
-  window.gtag('event', 'page_view', { page_location: location.origin + location.pathname, page_referrer: '', page_title: document.title });
+  window.gtag('event', 'page_view', { page_location: location.origin + location.pathname, page_referrer: '', page_title: document.title, ...(debugEnabled ? { debug_mode: true } : {}) });
   const tag = document.createElement('script');
   tag.async = true;
   tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_ID);
