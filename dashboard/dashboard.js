@@ -3,13 +3,6 @@ const tools=[
 ['wishlist','Wishlist','wishes','wishlist.webp'],['kassenbon','Haushaltsbuch','budget','budget.webp'],['kisten','Umzugskisten','moving','moving.webp'],['pflanzen','Pflanzenpflege','plants','plants.webp'],['wg-kasse','WG-Organisator','housemates','wg-organisator.webp'],['notizen','Digitaler Nachlass','estate','digitaler-nachlass.webp'],['kfz','Autokosten','car','autokosten.webp'],['haustier','Tiergesundheit','pet-health','tiergesundheit.webp'],['parken','Parkplatz-Merker','parking','parkplatz-merker.webp'],['verleih','Verliehene Dinge','loans','verliehene-dinge.webp'],['energie','Zählerstände','meters','zaehlerstaende.webp'],['backform','Backform-Rechner','baking','backform-rechner.webp']
 ].map(([id,name,route,img])=>({id,name,url:'../tools/'+route+'/',img:'../assets/toolya/home/'+img}));
 const byId=new Map(tools.map(t=>[t.id,t]));
-const preferencesKey='helferlein-toolya-preferences-v1';
-function selectedCharacter(){try{return JSON.parse(localStorage.getItem(preferencesKey)||'{}').character==='purple'?'purple':'turquoise'}catch{return 'turquoise'}}
-function renderCompanion(){
- const img=$('dashboard-mascot');
- img.src='../assets/toolya/originals/toolya_wishlist_'+selectedCharacter()+'_welcome_1024.png';
-}
-
 const keys={favorites:'hub_favorites',recent:'toolya_recent_tools_v1',tasks:'toolya_dashboard_tasks_v1',reminders:'toolya_dashboard_reminders_v1'};
 const $=id=>document.getElementById(id);
 function read(key){try{const value=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(value)?value:[]}catch{return []}}
@@ -32,6 +25,6 @@ const remindHost=$('reminders');remindHost.replaceChildren();if(!reminders.lengt
 }
 $('task-form').addEventListener('submit',e=>{e.preventDefault();const input=$('task-text'),text=input.value.trim();if(!text)return;if(addItem(keys.tasks,{id:id(),text,done:false})){input.value=''}input.focus()});
 $('reminder-form').addEventListener('submit',e=>{e.preventDefault();const text=$('reminder-text').value.trim(),due=$('reminder-date').value;if(!text||!due||Number.isNaN(Date.parse(due)))return;if(addItem(keys.reminders,{id:id(),text,due:new Date(due).toISOString(),done:false})){$('reminder-text').value='';$('reminder-date').value=''}});
-window.addEventListener('storage',e=>{if(Object.values(keys).includes(e.key)||e.key===null){renderTools();renderItems()}if(e.key===preferencesKey||e.key===null)renderCompanion()});
-renderTools();renderItems();renderCompanion();
+window.addEventListener('storage',e=>{if(Object.values(keys).includes(e.key)||e.key===null){renderTools();renderItems()}});
+renderTools();renderItems();
 })();
