@@ -40,6 +40,33 @@ async function supabaseMetrics(url:string):Promise<Metric[]>{
  }));
  return results;
 }
+async function ga4Metrics(days:number):Promise<Metric[]>{
+ const property=(Deno.env.get('TOOLYA_STATS_GA4_PROPERTY_ID')||'').trim();
+ const clientId=Deno.env.get('TOOLYA_STATS_GOOGLE_CLIENT_ID')||'';
+ const clientSecret=Deno.env.get('TOOLYA_STATS_GOOGLE_CLIENT_SECRET')||'';
+ const refreshToken=Deno.env.get('TOOLYA_STATS_GOOGLE_REFRESH_TOKEN')||'';
+ if(!/^\d+$/.test(property)||!clientId||!clientSecret||!refreshToken)throw Error('GA4 credentials not configured');
+ const tokenResponse=await fetch('https://oauth2.googleapis.com/token',{
+  method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+  body:new URLSearchParams({client_id:clientId,client_secret:clientSecret,refresh_token:refreshToken,grant_type:'refresh_token'}),
+  signal:AbortSignal.timeout(8000)
+ });
+ if(!tokenResponse.ok)throw Error('Google OAuth failed');
+ const tokenData=await tokenResponse.json();
+ if(typeof tokenData.access_token!=='string')throw Error('Google OAuth token missing');
+ const reportResponse=await fetch('https://analyticsdata.googleapis.com/v1beta/properties/'+property+':runReport',{
+  method:'POST',headers:{Authorization:'Bearer '+tokenData.access_token,'Content-Type':'application/json'},
+  body:JSON.stringify({dateRanges:[{startDate:(days-1)+'daysAgo',endDate:'today'}],
+   metrics:[{name:'activeUsers'},{name:'sessions'},{name:'screenPageViews'},{name:'eventCount'}]}),
+  signal:AbortSignal.timeout(10000)
+ });
+ if(!reportResponse.ok)throw Error('GA4 Data API HTTP '+reportResponse.status);
+ const report=await reportResponse.json();
+ const row=report.rows?.[0]?.metricValues;
+ if(!Array.isArray(row)||row.length!==4)throw Error('GA4 report has no usable values');
+ const labels=['Aktive Nutzer','Sitzungen','Seitenaufrufe','Ereignisse'];
+ return labels.map((label,i)=>({label,value:Number(row[i].value),detail:'Google Analytics 4 · letzte '+days+' Tage'}));
+}
 Deno.serve(async(req:Request)=>{
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
  if(req.method!=='GET')return reply(405,{error:'Method not allowed'});
@@ -63,7 +90,8 @@ Deno.serve(async(req:Request)=>{
  const sources:Source[]=catalog.map(([id,label])=>({id,label,status:'not_connected',detail:'API-Datenquelle noch nicht eingerichtet'}));
  const tasks=[
   {id:'github',run:()=>githubMetrics()},
-  {id:'supabase',run:()=>supabaseMetrics(url)}
+  {id:'supabase',run:()=>supabaseMetrics(url)},
+  {id:'ga4',run:()=>ga4Metrics(days)}
  ];
  await Promise.all(tasks.map(async({id,run})=>{
   const source=sources.find(s=>s.id===id)!;
@@ -73,7 +101,8 @@ Deno.serve(async(req:Request)=>{
    metrics.push(...values);
    source.status='connected';source.detail='Live-Daten · '+new Date().toISOString();
   }catch{
-   source.status='error';source.detail='Datenabruf fehlgeschlagen oder API-Zugang fehlt';
+   source.status=id==='ga4'&&!Deno.env.get('TOOLYA_STATS_GOOGLE_REFRESH_TOKEN')?'not_connected':'error';
+   source.detail=source.status==='not_connected'?'Google Analytics API-Zugang noch nicht eingerichtet':'Datenabruf fehlgeschlagen oder API-Zugang fehlt';
   }
  }));
  return reply(200,{generatedAt:new Date().toISOString(),days,metrics,sources});
