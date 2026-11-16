@@ -15,7 +15,7 @@ function enableAnalytics() {
   });
   window.gtag('consent', 'update', { analytics_storage: 'granted' });
   window.gtag('js', new Date());
-  window.gtag('config', GA_ID, { allow_google_signals: false, allow_ad_personalization_signals: false });
+  window.gtag('config', GA_ID, { allow_google_signals: false, allow_ad_personalization_signals: false, page_location: location.origin + location.pathname, page_referrer: '' });
   const tag = document.createElement('script');
   tag.async = true;
   tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_ID);
@@ -64,6 +64,15 @@ function init() {
   link.style.cssText = 'display:inline-block;margin:8px 12px;font:13px system-ui,sans-serif;text-decoration:underline;color:inherit';
   link.addEventListener('click', e => { e.preventDefault(); panel.hidden = false; panel.querySelector('.reject').focus(); });
   footer.appendChild(link);
+  // The shared Toolya footer may be inserted after DOMContentLoaded.
+  // Move the link into it when available without duplicating the link.
+  if (!document.querySelector('footer')) {
+    const observer = new MutationObserver(() => {
+      const actualFooter = document.querySelector('footer');
+      if (actualFooter) { actualFooter.appendChild(link); observer.disconnect(); }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
 else init();
