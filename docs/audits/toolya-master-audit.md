@@ -1,12 +1,12 @@
 # Toolya – Master-Audit und Produktionsoptimierung
 
-Stand: 16.11.2026. Ausgangscommit: `28f73ac3181f823cb5fc867ba8673c8461ea3fa9`.
+Stand: 17.11.2026. Ausgangscommit: `28f73ac3181f823cb5fc867ba8673c8461ea3fa9`.
 
 ## Management-Zusammenfassung
 
 Toolya ist eine statische GitHub-Pages-Plattform mit zwölf Tool-Einstiegen, einem persönlichen Dashboard, eigenem Supabase-Backend und gemeinsamen Maskottchen-/Layoutmodulen. Der erfasste Ausgangsbestand enthält 38 HTML-Seiten und 93 Remote-Branches (zuzüglich origin/HEAD). Drei alte PRs sind offen (#13, #26, #47); sie werden nicht ungeprüft integriert. Die letzten Plattform-, Amazon- und Pages-Läufe für den Ausgangscommit sind erfolgreich (43921114382, 43921114304, 43921113071).
 
-Die wesentlichen Befunde der Ausgangsaufnahme – verlorener Cookie-Link, doppelte Footer auf Rechtsseiten, unterschiedliche Markenschriften und grüne Tool-Header – sind in PR #91 korrigiert und live geprüft. PR #93 vereinheitlicht die Nachlass-Ansichten für Besitzer/Vertrauenspersonen; PR #94 die lokale Dateiübergabe. Alle drei Nachlass-Ansichten sind jetzt hell mit türkisen Bedienelementen, die überprüften Sicherheits-/Verschlüsselungsabläufe bestehen. 9 von 24 Aufgaben sind verifiziert, P1 erreicht 9/17 Gewichtspunkte (52,9 %). Die gesamte Designabnahme ist weiterhin offen, insbesondere bei B3-Tools, älteren Wishlist-Seiten und Infoseitenheadern.
+Die wesentlichen Befunde der Ausgangsaufnahme – verlorener Cookie-Link, doppelte Footer auf Rechtsseiten, unterschiedliche Markenschriften und grüne Tool-Header – sind in PR #91 korrigiert und live geprüft. PR #93 vereinheitlicht die Nachlass-Ansichten für Besitzer/Vertrauenspersonen; PR #94 die lokale Dateiübergabe. Alle drei Nachlass-Ansichten sind jetzt hell mit türkisen Bedienelementen, die überprüften Sicherheits-/Verschlüsselungsabläufe bestehen. 9 von 24 Aufgaben sind verifiziert, P1 erreicht 9/17 Gewichtspunkte (52,9 %). PR #96 ergänzt die geprüfte und veröffentlichte gemeinsame B3-Navigation, Editor-Aktionen und Formulargeometrie; zwölf isolierte Ansichten wurden tatsächlich gesichtet, Live-CSS bytegleich bestätigt. Die gesamte Designabnahme ist weiterhin offen, insbesondere bei gewöhnlichen App-Buttons, übrigen B3-Ansichten, älteren Wishlist-Seiten und Infoseitenheadern.
 
 FAQ und Datenschutz enthalten nachweislich veraltete Aussagen zu Anmeldung, lokaler Speicherung und Firebase. Inhaltliche Änderungen folgen erst nach P1/P2, ausgenommen kritische Funktions-/Sicherheitskorrekturen. Rechtstexte sind nicht juristisch freigegeben.
 
@@ -168,3 +168,15 @@ Die Diagrammbibliothek bleibt in dieser synthetischen Prüfung inert; leere Diag
 **Weiter offen:** Allgemeine App-Speicherbuttons sind noch uneinheitlich (Auto grau/rot, Haushaltsbuch teils grün). Diese gehörten nicht zu den gemeinsamen b3-action-Komponenten dieses Pakets. D06b bleibt In Arbeit, ebenso vollständige Prüfung der anderen acht B3-Tools und Wishlist/Dashboard; D05b bleibt offen. Keine Gesamt-WCAG-Abnahme oder produktive angemeldete Live-Abnahme behauptet.
 
 Bildnachweise: `docs/audits/evidence/pr96-*.jpg` (zwölf Ansichten). Lokale Laufzeit bleibt nicht verfügbar; die vorherige Blockade der Bildsichtung wurde durch ausschließlich synthetische CI-Bilddiagnostik überwunden. Nächste Aktion: finalen Dokumentations-/Bildcommit prüfen; danach PR #96 mergen, Pages und ausgeliefertes CSS kontrollieren. Bis zum erfolgreichen Deployment ist dieses Paket noch nicht veröffentlicht. Fortschritt bleibt 9/17 (52,9 %), 9/24 Aufgaben verifiziert.
+
+## Veröffentlichungsabschluss PR #96 – 17.11.2026
+
+**Veröffentlicht und statisch live verifiziert.** Release `5ab8a9334692acbd7206553f9d8f7b3fa376cfbe`, PR [#96](https://github.com/duhrrom11/toolya/pull/96). Finale fünf PR-Checks auf `25cca1b516fec0b33bcd79b84f0c50fcf4771f5b` erfolgreich. GitHub Pages [43979209858](https://github.com/duhrrom11/toolya/actions/runs/43979209858) erfolgreich; main Plattform/Nachlass [43979210725](https://github.com/duhrrom11/toolya/actions/runs/43979210725), isolierte Browser [43979211283](https://github.com/duhrrom11/toolya/actions/runs/43979211283) und Amazon [43979210728](https://github.com/duhrrom11/toolya/actions/runs/43979210728) erfolgreich.
+
+Schreibfreie Live-Prüfung am **17.11.2026, 00:27 Uhr Europe/Berlin** (UTC 2026-11-16T23:27:20.263Z): B3-CSS beim ersten Versuch bytegleich; SHA-256 `1631571945fd0555983ece99196d06ccc4ec126ad69eb12c6d3516f259e740ac`. Auto-/Haushaltsbuch-HTML jeweils HTTP 200 und Verweis auf gemeinsames Stylesheet bestätigt. Maschineller Nachweis: [pr96-live-delivery.json](pr96-live-delivery.json). Ausschließlich öffentliche statische GETs; keine Anmeldung, keine produktiven Daten oder privaten API-Aufrufe.
+
+Die zwölf tatsächlich gesichteten isolierten Bildausschnitte sind dauerhaft unter `evidence/pr96-*.jpg` gespeichert. Das begrenzte gemeinsame Komponentenpaket ist abgenommen. **D06b bleibt In Arbeit**: normale App-Buttons, weitere Tool-Overrides, Karten, Wishlist/Dashboard und Prüfung der anderen acht B3-Tools stehen aus. Fortschritt weiterhin 9/17 = 52,9 %, insgesamt 9/24 verifiziert; keine künstliche Aufwertung durch Teilarbeit.
+
+Nächste konkrete Aktion: normale Speicher-/Bearbeiten-Aktionen zunächst auf Auto/Haushaltsbuch anhand ihres Zwecks klassifizieren und harmonisieren (Speichern nicht mit Löschen/Alarm gleichsetzen). Auf 768 px sind die verschachtelten Auto-Formulare eng; breitere Eingaben/Unterteilung prüfen (D05b). Danach dieselben tatsächlichen Auth-Fixtures auf die übrigen B3-Tools erweitern. Keine reguläre SEO-/Textphase vor P1-Abschluss.
+
+Rollback: gezielter Revert des obigen Releasecommits; keine Migration oder Datenrücksetzung erforderlich. Lokale Laufzeit/interaktiver Browser weiter nicht verfügbar, Bildsichtung über synthetische CI-Diagnostik möglich. Private Live-Zustände bleiben nicht vollständig verifiziert. Die vorherigen Abschnitte mit ausstehender Abnahme/Veröffentlichung dokumentieren historische Zwischenstände; dieser Abschluss ist für PR #96 maßgeblich.
