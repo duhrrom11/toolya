@@ -1,5 +1,5 @@
 // Regression coverage for footer replacement, consent withdrawal access and shared branding.
-// All application/analytics traffic outside the local fixture is blocked.
+// Application/analytics traffic is blocked; only the existing display CSS CDN is allowed.
 const {chromium}=require('playwright');
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 (async()=>{
@@ -9,7 +9,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  let browser;
  try{browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
   const context=await browser.newContext({reducedMotion:'reduce'});
-  await context.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+  await context.route('**/*',route=>{const u=new URL(route.request().url());return u.origin===origin||(u.hostname==='cdn.tailwindcss.com'&&route.request().method()==='GET')?route.continue():route.abort()});
   const page=await context.newPage();fs.mkdirSync('test-results',{recursive:true});
   for(const route of ['/index.html','/privacy.html','/legal.html']){
    for(const width of [320,768,1440]){
@@ -23,7 +23,8 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
     const brand=await page.locator('.ty-footer-wordmark').evaluate(el=>({font:getComputedStyle(el).fontFamily,weight:getComputedStyle(el).fontWeight,text:el.textContent}));
     assert(brand.font.startsWith('Inter'),'shared existing brand font');assert.equal(brand.weight,'900');assert.equal(brand.text,'Toolya');
     if(route==='/index.html')assert.equal(await page.locator('.b3-hub-logo').evaluate(el=>getComputedStyle(el).fontFamily),brand.font,'home and footer font match');
-    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),route+' fits '+width);
+    const layout=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,overflow:[...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.right>innerWidth+1&&getComputedStyle(e).position!=='fixed'}).slice(0,8).map(e=>({tag:e.tagName,id:e.id,class:e.className}))}));
+    if(layout.scroll>width+1){await page.screenshot({path:'test-results/design-failure.png',fullPage:true});throw Error(route+' fits '+width+': '+JSON.stringify(layout));}
     const footer=page.locator('.toolya-signature-footer');await footer.scrollIntoViewIfNeeded();
     assert(await footer.evaluate(el=>{const r=el.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+1}),'footer fits viewport');
     await page.screenshot({path:'test-results/design-'+route.slice(1,-5)+'-'+width+'.png',fullPage:false});
@@ -40,6 +41,6 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
    await page.reload();await page.locator('.ty-footer-mascot').waitFor();
    assert((await page.locator('.ty-footer-mascot').getAttribute('src')).includes(character),'footer follows '+character);
   }
-  console.log('Design foundation: 3 routes × 3 widths; both consent initialization orders; both characters passed. Production requests blocked.');
+  console.log('Design foundation: 3 routes × 3 widths; both consent initialization orders; both characters passed. Production application/analytics requests blocked.');
  }finally{await browser?.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1});
