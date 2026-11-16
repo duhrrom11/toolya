@@ -79,8 +79,8 @@ function recordToolOpen() {
     ...(debugEnabled ? { debug_mode: true } : {})
   });
 }
-// Consent-gated GA4 also covers estate pages; never send vault contents or form values.
-const analyticsAllowed = true;
+// Regular estate pages remain consent-gated; local handover and key printing never collect analytics.
+const analyticsAllowed = !/^\/tools\/estate\/(?:handover|print-key)\.html$/.test(location.pathname);
 if (choice === 'yes' && analyticsAllowed) enableAnalytics();
 function init() {
   if (document.getElementById('toolya-consent-panel')) return;

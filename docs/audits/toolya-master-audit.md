@@ -114,3 +114,17 @@ Unabhängige Codeprüfung: keine CSP-/Auth-/Schlüssel-/Freigabeänderung; Hinwe
 Die Bildprüfung des geöffneten synthetischen Tresors zeigte außerdem kurzzeitig schlechten Tab-Kontrast während des Hintergrund-Farbwechsels. Die Nav-Farben wechseln nun sofort; Schatten-/Druckeffekte bleiben erhalten. Die isolierte Prüfung misst nach jedem der vier Tabwechsel den tatsächlichen Kontrast aller Navigationsbuttons. Cookie-Overlay und vorangegangene Speichermeldung werden nur in der synthetischen Bildschirmaufnahme entfernt, damit die Oberfläche erkennbar ist.
 
 Bei 320 px zeigten die Bilder außerdem mitten im Wort umgebrochene Reiterbeschriftungen. Bis 380 px stehen die vier Nachlass-Reiter deshalb untereinander; die übrigen Breiten behalten die vorhandene Anordnung. Die bestehenden 320/375/768/1280/1440-px-Prüfungen kontrollieren den Umbruch.
+
+### D06a veröffentlicht und bestätigt
+
+PR #93 gemergt, Release `384d5856578e578934a82168639969b2bfa41eb7`. Alle vier Checks am Head `798634c581e7a4fb3c554efa89b2517da348e436` erfolgreich, Lauf 43932478466. Pages 43933043137 erfolgreich. Live-DOM: helles Farbschema, Primärbutton #007e9f, je ein Footer, Schlüsselhinweis im main, private Besitzeroberfläche ohne Anmeldung verborgen. Beide Produktdateien live bytegleich. Screenshots des geöffneten Tresors stammen ausschließlich aus synthetischer isolierter DB; Screenshots 07/08 zeigen den tatsächlichen öffentlichen Live-Einstieg.
+
+## D05a – eigenständige Dateiübergabe in Hellmodus
+
+Ausgangslage live erfasst: dunkles Farbschema und unvollständig gestaltete gemeinsame Komponenten. Plan nach gezielter Sicherheitsprüfung angepasst: style-src erhält zusätzlich self, um ausschließlich eigene Stylesheets zu laden. Alle anderen CSP-Direktiven bleiben identisch, insbesondere connect-src none, script-src self, img-src self data und form-action none. Eigene statische Ressourcen bleiben Netzwerk-GETs; eine absolute Behauptung keinerlei Netzwerk wäre falsch. Ziel ist, keine Schlüssel, Passwörter oder Inhalte zu übertragen.
+
+Der Krypto-Code assets/heir-e2ee-handoff.js ist unverändert. Ein statischer Vergleich bestätigt alle elf ursprünglichen input-/button-Elemente identisch. Neue Darstellung verwendet bestehende Marken-Tokens, gemeinsamen Header/Footer und helles lesbares Inline-Grunddesign. referrer=no-referrer verhindert die Weitergabe der Seitenadresse als Referrer. Nur die exakten lokalen Routen handover.html und print-key.html werden von Analytics ausgeschlossen; normale Nachlassseiten bleiben bei Einwilligung erfasst. Die Druckseite selbst bleibt unverändert und ohne Plattformimporte.
+
+Neue isolierte Browserprüfung: drei Breiten, dunkle OS-Einstellung mit hellem Ergebnis, Fokus, erlaubte feste Assetpfade, gespeicherte Analytics-Zustimmung ohne dataLayer/Google-Script, unveränderte CSP-Datengrenzen, Passwortgeschützter Schlüssel-Download, öffentliche Schlüsseldatei, ausdrücklich bestätigter Export, realer RSA/AES-Dateirundlauf, falsches Passwort, textContent statt HTML sowie Kontrolle aller Requests auf synthetische Geheimnisse. Keine echten Dateien oder Nutzerkonten. 75 bestehende Node-Tests erneut erfolgreich; Browser-/Produktionsverifikation noch offen.
+
+D05 ist ohne Gewichtsänderung in D05a (1) und D05b (4) geteilt. Aktuell 24 Aufgaben, 8 verifiziert; P1 8/17 = 47,1 %. Historische Zwischenstände oben bleiben als Nachweise bestehen.

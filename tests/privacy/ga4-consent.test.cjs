@@ -66,6 +66,14 @@ test('GA4 opt-in lifecycle: reject, accept, withdraw, reload, cross-tab', { time
       await sensitive.reload();
       assert.equal(requests.length, beforeSensitive + 2, 'Consent remains effective after reload');
     }
+    for (const route of ['tools/estate/handover.html', 'tools/estate/print-key.html']) {
+      const beforeLocal = requests.length;
+      await sensitive.goto(url + route);
+      await sensitive.reload();
+      assert.equal(requests.length, beforeLocal, 'Local handover/print must not request Google with stored opt-in');
+      assert.equal(await sensitive.evaluate(() => typeof window.dataLayer), 'undefined', 'No analytics events on local-only pages');
+      assert.equal(await sensitive.locator('script[src*="googletagmanager"]').count(), 0);
+    }
     await sensitive.close();
     await second.close();
     await page.close();
