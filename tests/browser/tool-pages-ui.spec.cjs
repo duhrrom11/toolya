@@ -58,7 +58,8 @@ for(const item of tools){
     await page.goto(origin+item.path);
     // The current verified-account gate redirects unauthenticated users home.
     // Old inline #toolya-cloud-gate assertions predate auth-page-gate.js.
-    await expect(page).toHaveURL(/\/index\.html\?auth=required$/);
+    await expect(page).toHaveURL(/\/index\.html$/);
+  await expect(page.locator('#settingsModal')).toBeVisible();
     await expect(page.locator(item.form)).toHaveCount(0);
     expect(outbound.every(u=>!u.startsWith(origin))).toBe(true);
   });
@@ -161,7 +162,8 @@ test('autokosten-reifenwechsel: attached images await confirmed cloud save',asyn
 test('umzugskisten-inventar: unauthenticated browser cannot write',async({page})=>{
   await isolated(page,false);
   await page.goto(origin+'/tools/moving/index.html');
-  await expect(page).toHaveURL(/\/index\.html\?auth=required$/);
+  await expect(page).toHaveURL(/\/index\.html$/);
+  await expect(page.locator('#settingsModal')).toBeVisible();
   // The protected tool has navigated away; no authenticated cloud UI is available.
   await expect(page.locator('#toolya-cloud-gate')).toHaveCount(0);
 });
@@ -225,7 +227,8 @@ test('umzugskisten-inventar: box photo waits for confirmed cloud write',async({p
 test('verliehene-gegenstaende: unauthenticated UI blocks writes',async({page})=>{
   await isolated(page,false);
   await page.goto(origin+'/tools/loans/index.html');
-  await expect(page).toHaveURL(/\/index\.html\?auth=required$/);
+  await expect(page).toHaveURL(/\/index\.html$/);
+  await expect(page.locator('#settingsModal')).toBeVisible();
   // The protected tool has navigated away; no authenticated cloud UI is available.
   await expect(page.locator('#toolya-cloud-gate')).toHaveCount(0);
 });
@@ -275,7 +278,8 @@ test('verliehene-gegenstaende: photo compression awaited before write',async({pa
 test('zaehlerstaende-erfassen: unauthenticated browser cannot write',async({page})=>{
   await isolated(page,false);
   await page.goto(origin+'/tools/meters/index.html');
-  await expect(page).toHaveURL(/\/index\.html\?auth=required$/);
+  await expect(page).toHaveURL(/\/index\.html$/);
+  await expect(page.locator('#settingsModal')).toBeVisible();
   // The protected tool has navigated away; no authenticated cloud UI is available.
   await expect(page.locator('#toolya-cloud-gate')).toHaveCount(0);
 });
@@ -321,7 +325,8 @@ test('zaehlerstaende-erfassen: photo processing precedes confirmed cloud write',
 test('pflanzenpflege-giessplan: unauthenticated browser blocks writes',async({page})=>{
   await isolated(page,false);
   await page.goto(origin+'/tools/plants/index.html');
-  await expect(page).toHaveURL(/\/index\.html\?auth=required$/);
+  await expect(page).toHaveURL(/\/index\.html$/);
+  await expect(page.locator('#settingsModal')).toBeVisible();
   // The protected tool has navigated away; no authenticated cloud UI is available.
   await expect(page.locator('#toolya-cloud-gate')).toHaveCount(0);
 });
@@ -362,7 +367,8 @@ test('pflanzenpflege-giessplan: plant photo awaits compression before cloud writ
 test('parkplatz-merker-parkschein-timer: unauthenticated browser cannot write',async({page})=>{
   await isolated(page,false);
   await page.goto(origin+'/tools/parking/index.html');
-  await expect(page).toHaveURL(/\/index\.html\?auth=required$/);
+  await expect(page).toHaveURL(/\/index\.html$/);
+  await expect(page.locator('#settingsModal')).toBeVisible();
   // The protected tool has navigated away; no authenticated cloud UI is available.
   await expect(page.locator('#toolya-cloud-gate')).toHaveCount(0);
 });
@@ -401,7 +407,8 @@ test('parkplatz-merker-parkschein-timer: cloud-backed parking timer',async({page
 test('haustier-gesundheitspass: unauthenticated browser cannot write',async({page})=>{
   await isolated(page,false);
   await page.goto(origin+'/tools/pet-health/index.html');
-  await expect(page).toHaveURL(/\/index\.html\?auth=required$/);
+  await expect(page).toHaveURL(/\/index\.html$/);
+  await expect(page.locator('#settingsModal')).toBeVisible();
   // The protected tool has navigated away; no authenticated cloud UI is available.
   await expect(page.locator('#toolya-cloud-gate')).toHaveCount(0);
 });
@@ -439,7 +446,8 @@ test('haustier-gesundheitspass: photo processing precedes confirmed cloud write'
 test('backform-umrechner: unauthenticated browser blocks recipe writes',async({page})=>{
   await isolated(page,false);
   await page.goto(origin+'/tools/baking/index.html');
-  await expect(page).toHaveURL(/\/index\.html\?auth=required$/);
+  await expect(page).toHaveURL(/\/index\.html$/);
+  await expect(page.locator('#settingsModal')).toBeVisible();
   // The protected tool has navigated away; no authenticated cloud UI is available.
   await expect(page.locator('#toolya-cloud-gate')).toHaveCount(0);
 });
