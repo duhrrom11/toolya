@@ -11,7 +11,7 @@ const catalog=[
 type Metric={label:string,value:number,detail:string};
 type Source={id:string,label:string,status:string,detail:string};
 type SeoPoint={date:string,clicks:number,impressions:number};
-type SeoSeries={source:'google'|'bing',points:SeoPoint[]};
+type SeoSeries={source:'google'|'bing',points:SeoPoint[],status:'ok'|'empty'|'unavailable'};
 const fetchJson=async(url:string,headers:Record<string,string>={})=>{
  const response=await fetch(url,{headers:{Accept:'application/vnd.github+json',...headers},signal:AbortSignal.timeout(7500)});
  if(!response.ok)throw Error('Provider HTTP '+response.status);
@@ -209,6 +209,7 @@ async function searchConsoleMetrics(days:number,series:SeoSeries[]):Promise<Metr
  if(!response.ok)throw Error('GSC API HTTP '+response.status);
  const data=await response.json();
  // Daily data is optional: an unavailable trend must not invalidate verified totals.
+ let dailyStatus:'ok'|'empty'|'unavailable'='unavailable';
  try{
   const dailyResponse=await fetch('https://searchconsole.googleapis.com/webmasters/v3/sites/'+encodeURIComponent(site)+'/searchAnalytics/query',{
    method:'POST',headers:{Authorization:'Bearer '+token.access_token,'Content-Type':'application/json'},
@@ -224,10 +225,12 @@ async function searchConsoleMetrics(days:number,series:SeoSeries[]):Promise<Metr
      return typeof date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(date)&&date>=iso(start)&&date<=iso(end)&&
       Number.isFinite(clicks)&&Number.isFinite(impressions)&&clicks>=0&&impressions>=0?[{date,clicks,impressions}]:[];
     });
-    series.push({source:'google',points});
+    dailyStatus=points.length?'ok':'empty';
+    series.push({source:'google',points,status:dailyStatus});
    }
   }
  }catch{/* Optional chart only. */}
+ if(dailyStatus==='unavailable')series.push({source:'google',points:[],status:'unavailable'});
  const row=data.rows?.[0];
  if(!row)return [{label:'GSC Klicks',value:0,detail:'Keine Suchdaten · '+iso(start)+' bis '+iso(end)},{label:'GSC Impressionen',value:0,detail:'Keine Suchdaten · '+iso(start)+' bis '+iso(end)}];
  const clicks=Number(row.clicks),impressions=Number(row.impressions),ctr=Number(row.ctr),position=Number(row.position);
@@ -265,7 +268,9 @@ async function bingWebmasterMetrics(days:number,series:SeoSeries[]):Promise<Metr
   clicks+=c;impressions+=i;observations++;
   points.push({date:new Date(time).toISOString().slice(0,10),clicks:c,impressions:i});
  }
- series.push({source:'bing',points:points.sort((a,b)=>a.date.localeCompare(b.date))});
+ const grouped=new Map<string,SeoPoint>();
+ for(const point of points){const prev=grouped.get(point.date);grouped.set(point.date,{date:point.date,clicks:(prev?.clicks||0)+point.clicks,impressions:(prev?.impressions||0)+point.impressions})}
+ series.push({source:'bing',points:[...grouped.values()].sort((a,b)=>a.date.localeCompare(b.date)),status:observations?'ok':'empty'});
  const detail='Bing Webmaster Tools · letzte '+days+' Tage · '+observations+' Datensätze';
  return [{label:'Bing Klicks',value:clicks,detail},{label:'Bing Impressionen',value:impressions,detail},
   {label:'Bing CTR (%)',value:impressions?Math.round(clicks/impressions*10000)/100:0,detail}];
