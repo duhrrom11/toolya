@@ -204,7 +204,9 @@
                     </div>
 
                     <label class="helferlein-field" for="loginEmail"><span class="helferlein-field-label">E-Mail-Adresse</span><input type="email" id="loginEmail" required aria-label="E-Mail-Adresse" autocomplete="email" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
+                    <div class="flex flex-wrap gap-2"><button type="button" id="loginInsertAt" class="text-xs rounded-lg border border-teal-300 px-3 py-2 text-teal-800" aria-label="@ in E-Mail-Adresse einfügen">@ einfügen</button><button type="button" id="loginPasteEmail" class="text-xs rounded-lg border border-gray-300 px-3 py-2" aria-label="Zwischenablage in E-Mail-Adresse einfügen">E-Mail einfügen</button></div>
                     <label class="helferlein-field" for="loginPassword"><span class="helferlein-field-label">Passwort</span><input type="password" id="loginPassword" required minlength="6" aria-label="Passwort" autocomplete="current-password" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
+                    <button type="button" id="loginPastePassword" class="text-xs rounded-lg border border-gray-300 px-3 py-2" aria-label="Zwischenablage in Passwortfeld einfügen">Passwort einfügen</button>
 
                     <button type="button" onclick="requestPasswordReset()" class="text-xs text-teal-700 underline hover:text-teal-900">Passwort vergessen?</button>
                     <div id="passwordRecoveryPanel" hidden class="rounded-lg border border-teal-200 bg-teal-50 p-3 space-y-2">
@@ -971,6 +973,49 @@ document.addEventListener('click', function(event) {
     localStorage.setItem(key,JSON.stringify([id,...previous].slice(0,8)));
   } catch (_) {}
 }, {capture:true});
+</script>
+<script>
+/* Login-only keyboard and clipboard compatibility, including Swiss-French AltGr+2.
+   Clipboard reads happen exclusively after an explicit user click. */
+(() => {
+  const getField = id => document.getElementById(id);
+  const insert = (field, value) => {
+    if (!field || field.disabled || field.readOnly) return;
+    field.focus();
+    const start = field.selectionStart ?? field.value.length;
+    const end = field.selectionEnd ?? start;
+    field.setRangeText(value, start, end, 'end');
+    field.dispatchEvent(new Event('input', {bubbles:true}));
+  };
+  window.addEventListener('keydown', event => {
+    if (event.target !== getField('loginEmail') && event.target !== getField('loginPassword')) return;
+    const altGraph = event.getModifierState?.('AltGraph') || (event.ctrlKey && event.altKey && !event.metaKey);
+    if (altGraph && (event.code === 'Digit2' || event.key === '@')) {
+      // If the browser already translated AltGr+2 to @, keep native insertion.
+      if (event.key !== '@') {event.preventDefault();insert(event.target,'@');}
+      event.stopImmediatePropagation();
+    } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v') {
+      // Do not preventDefault: native paste remains authoritative.
+      event.stopImmediatePropagation();
+    }
+  }, true);
+  getField('loginInsertAt')?.addEventListener('click', () => insert(getField('loginEmail'), '@'));
+  const paste = async id => {
+    const field = getField(id);
+    try {
+      if (!navigator.clipboard?.readText) throw new Error('clipboard-unavailable');
+      const value = await navigator.clipboard.readText();
+      if (value) insert(field, value);
+      else field?.focus();
+    } catch (_) {
+      field?.focus();
+      const status = getField('loginMessage');
+      if (status) status.textContent = 'Zwischenablage-Zugriff nicht erlaubt. Bitte Strg+V verwenden oder die Browser-Berechtigung erteilen.';
+    }
+  };
+  getField('loginPasteEmail')?.addEventListener('click', () => paste('loginEmail'));
+  getField('loginPastePassword')?.addEventListener('click', () => paste('loginPassword'));
+})();
 </script>
 </body>
 </html>
