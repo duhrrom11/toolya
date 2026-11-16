@@ -190,6 +190,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  assert.equal(await taskCheckbox.isChecked(),false,'second Space reopens same task');
  assert.equal(await taskCheckbox.evaluate(el=>el===document.activeElement),true,'task checkbox retains focus after reopening');
  await page.getByRole('button',{name:'Aufgabe entfernen: Tastaturfokus Aufgabe'}).click();
+ assert.equal(await page.locator('#task-text').evaluate(el=>el===document.activeElement),true,'task input receives focus after last task removed');
  await page.locator('#reminder-text').fill('Tastaturfokus Erinnerung');
  await page.locator('#reminder-date').fill(new Date(Date.now()+86400000).toISOString().slice(0,16));
  await page.locator('#reminder-form button[type="submit"]').click();
@@ -201,6 +202,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  assert.equal(await reminderCheckbox.isChecked(),false,'second Space reopens reminder');
  assert.equal(await reminderCheckbox.evaluate(el=>el===document.activeElement),true,'reminder checkbox retains focus after reopening');
  await page.getByRole('button',{name:'Erinnerung entfernen: Tastaturfokus Erinnerung'}).click();
+ assert.equal(await page.locator('#reminder-text').evaluate(el=>el===document.activeElement),true,'reminder input receives focus after last reminder removed');
  await page.locator('.toolya-signature-footer .ty-footer-mascot').waitFor();
  assert.equal(await page.locator('footer').count(),1,'dashboard has only the shared footer');
  assert.equal(await page.locator('.ty-footer-wordmark').textContent(),await page.locator('.b3-hub-logo').textContent(),'dashboard header/footer use identical wordmark');
