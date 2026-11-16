@@ -45,7 +45,7 @@ async function ga4Metrics(days:number):Promise<Metric[]>{
  const clientId=Deno.env.get('TOOLYA_STATS_GOOGLE_CLIENT_ID')||'';
  const clientSecret=Deno.env.get('TOOLYA_STATS_GOOGLE_CLIENT_SECRET')||'';
  const refreshToken=Deno.env.get('TOOLYA_STATS_GOOGLE_REFRESH_TOKEN')||'';
- if(!/^\\d+$/.test(property)||!clientId||!clientSecret||!refreshToken)throw Error('GA4 credentials not configured');
+ if(!/^\d+$/.test(property)||!clientId||!clientSecret||!refreshToken)throw Error('GA4 credentials not configured');
  const tokenResponse=await fetch('https://oauth2.googleapis.com/token',{
   method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
   body:new URLSearchParams({client_id:clientId,client_secret:clientSecret,refresh_token:refreshToken,grant_type:'refresh_token'}),
