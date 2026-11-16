@@ -242,5 +242,5 @@ body.b3:not(.b3-dark) .b3-more-item:focus-visible{
 }
 @media(prefers-reduced-motion:reduce){
  body.b3:not(.b3-dark) .b3-action{transition:none}
- body.b3:not(.b3-dark) .b3-action:hover,body.b3:not(.b3-dark) .b3-action:active{transform:none}
+ body.b3:not(.b3-dark) .b3-action:not(:disabled):hover,body.b3:not(.b3-dark) .b3-action:not(:disabled):active{transform:none}
 }
