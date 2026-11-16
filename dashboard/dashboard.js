@@ -4,17 +4,10 @@ const tools=[
 ].map(([id,name,route,img])=>({id,name,url:'../tools/'+route+'/',img:'../assets/toolya/home/'+img}));
 const byId=new Map(tools.map(t=>[t.id,t]));
 const preferencesKey='helferlein-toolya-preferences-v1';
-const companionKey='toolya_dashboard_companion_v1';
-function companionEnabled(){try{return localStorage.getItem(companionKey)!=='off'}catch{return true}}
 function selectedCharacter(){try{return JSON.parse(localStorage.getItem(preferencesKey)||'{}').character==='purple'?'purple':'turquoise'}catch{return 'turquoise'}}
 function renderCompanion(){
- const enabled=companionEnabled(),img=$('dashboard-mascot'),toggle=$('buddy-toggle');
+ const img=$('dashboard-mascot');
  img.src='../assets/toolya/originals/toolya_wishlist_'+selectedCharacter()+'_welcome_1024.png';
- img.hidden=!enabled;toggle.setAttribute('aria-pressed',String(enabled));toggle.textContent=enabled?'Begleiter-Tipps ausschalten':'Begleiter-Tipps einschalten';
- $('buddy-message').textContent=enabled?'Dein Toolya-Begleiter ist da. Deine Aufgaben und Termine hast du hier im Blick.':'Begleiter-Tipps sind ausgeschaltet.';
-}
-function companionTip(message){
- if(companionEnabled())$('buddy-message').textContent=message;
 }
 
 const keys={favorites:'hub_favorites',recent:'toolya_recent_tools_v1',tasks:'toolya_dashboard_tasks_v1',reminders:'toolya_dashboard_reminders_v1'};
@@ -28,8 +21,8 @@ function recordRecent(id){const items=read(keys.recent).filter(x=>typeof x==='st
 function renderTools(){const fav=[...new Set(read(keys.favorites))].map(id=>byId.get(id)).filter(Boolean),recent=[...new Set(read(keys.recent))].map(id=>byId.get(id)).filter(Boolean);$('fav-count').textContent=fav.length;$('recent-count').textContent=recent.length;listTools('favorites',fav,'Du hast noch keine Favoriten. Markiere deine Lieblings-Tools auf der Startseite mit einem Stern.');listTools('recent',recent,'Noch keine letzten Tools gespeichert. Öffne ein Tool über die Startseite oder hier im Dashboard.')}
 const MAX_ITEMS=150;
 function validItems(key){return read(key).filter(x=>x&&typeof x.id==='string'&&typeof x.text==='string'&&x.text.length<=160).slice(0,MAX_ITEMS)}
-function addItem(key,entry){const items=validItems(key);if(items.length>=MAX_ITEMS){show('Maximal '+MAX_ITEMS+' '+(key===keys.tasks?'Aufgaben':'Erinnerungen')+' möglich. Entferne zuerst einen Eintrag.');return false}items.push(entry);if(!save(key,items))return false;renderItems();companionTip(key===keys.tasks?'Prima, deine Aufgabe ist notiert!':'Deine Erinnerung ist gespeichert. Du siehst sie hier, wenn du das Dashboard öffnest.');return true}
-function removeItem(key,id){const isTask=key===keys.tasks,host=$(isTask?'tasks':'reminders');const buttons=[...host.querySelectorAll('button[data-entry-id]')];const index=buttons.findIndex(button=>button.dataset.entryId===id),restoreFocus=host.contains(document.activeElement);if(save(key,validItems(key).filter(x=>x.id!==id))){renderItems();if(restoreFocus){const remaining=[...host.querySelectorAll('button[data-entry-id]')];(remaining[Math.min(index,remaining.length-1)]||$(isTask?'task-text':'reminder-text')).focus()}companionTip('Eintrag entfernt. Weiter geht’s!')}}
+function addItem(key,entry){const items=validItems(key);if(items.length>=MAX_ITEMS){show('Maximal '+MAX_ITEMS+' '+(key===keys.tasks?'Aufgaben':'Erinnerungen')+' möglich. Entferne zuerst einen Eintrag.');return false}items.push(entry);if(!save(key,items))return false;renderItems();return true}
+function removeItem(key,id){const isTask=key===keys.tasks,host=$(isTask?'tasks':'reminders');const buttons=[...host.querySelectorAll('button[data-entry-id]')];const index=buttons.findIndex(button=>button.dataset.entryId===id),restoreFocus=host.contains(document.activeElement);if(save(key,validItems(key).filter(x=>x.id!==id))){renderItems();if(restoreFocus){const remaining=[...host.querySelectorAll('button[data-entry-id]')];(remaining[Math.min(index,remaining.length-1)]||$(isTask?'task-text':'reminder-text')).focus()}}}
 function id(){return globalThis.crypto?.randomUUID?.()||String(Date.now())+'-'+Math.random().toString(36).slice(2)}
 function restoreCheckboxFocus(host,id){for(const control of host.querySelectorAll('input[type="checkbox"]')){if(control.dataset.entryId===id){control.focus();return}}}
 function renderItems(){
@@ -39,7 +32,6 @@ const remindHost=$('reminders');remindHost.replaceChildren();if(!reminders.lengt
 }
 $('task-form').addEventListener('submit',e=>{e.preventDefault();const input=$('task-text'),text=input.value.trim();if(!text)return;if(addItem(keys.tasks,{id:id(),text,done:false})){input.value=''}input.focus()});
 $('reminder-form').addEventListener('submit',e=>{e.preventDefault();const text=$('reminder-text').value.trim(),due=$('reminder-date').value;if(!text||!due||Number.isNaN(Date.parse(due)))return;if(addItem(keys.reminders,{id:id(),text,due:new Date(due).toISOString(),done:false})){$('reminder-text').value='';$('reminder-date').value=''}});
-window.addEventListener('storage',e=>{if(Object.values(keys).includes(e.key)||e.key===null){renderTools();renderItems()}if(e.key===preferencesKey||e.key===companionKey||e.key===null)renderCompanion()});
-$('buddy-toggle').addEventListener('click',()=>{try{localStorage.setItem(companionKey,companionEnabled()?'off':'on')}catch{show('Diese Einstellung konnte nicht gespeichert werden.')}renderCompanion()});
+window.addEventListener('storage',e=>{if(Object.values(keys).includes(e.key)||e.key===null){renderTools();renderItems()}if(e.key===preferencesKey||e.key===null)renderCompanion()});
 renderTools();renderItems();renderCompanion();
 })();
