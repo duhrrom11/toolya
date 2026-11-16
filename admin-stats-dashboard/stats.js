@@ -21,7 +21,7 @@ async function load(){
   const metrics=payload.metrics;
   const pages=metrics.filter(m=>m.label.startsWith('Seite: '));
   const events=metrics.filter(m=>m.label.startsWith('Ereignis: '));
-  const daily=metrics.filter(m=>/^Tag: \\d{8}$/.test(m.label)).sort((a,b)=>a.label.localeCompare(b.label));
+  const daily=metrics.filter(m=>/^Tag: \d{8}$/.test(m.label)).sort((a,b)=>a.label.localeCompare(b.label));
   $('summary').replaceChildren(...metrics.filter(m=>!m.label.startsWith('Seite: ')&&!m.label.startsWith('Ereignis: ')&&!m.label.startsWith('Tag: ')).map(m=>tile(m.label,Number(m.value).toLocaleString('de-DE'),m.detail||'')));
   const bars=(id,items,prefix)=>{const host=$(id);host.replaceChildren();if(!items.length){host.textContent='Noch keine erfassten Daten für diesen Zeitraum.';return}
    const max=Math.max(1,...items.map(m=>Number(m.value)));
