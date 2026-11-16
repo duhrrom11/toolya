@@ -156,3 +156,15 @@ Aktueller Fortschritt: 24 Aufgaben, 9 verifiziert, 15 nicht abgeschlossen. P1 9/
 ![Veröffentlichte helle Dateiübergabe](evidence/09-handover-live.jpg)
 
 Die Vorher-/Nachherbilder der Dateiübergabe wurden zusammen bei identischem Desktop-Viewport gesichtet. Wesentliche globale Designabweichungen anderer Familien bleiben offen, insbesondere B3-Buttons, Legacy-Wishlist-Dark-Regeln und Infoseitenheader. Der Masterauftrag ist nicht abgeschlossen; keine Ranking-, juristische oder vollständige Sicherheitsfreigabe.
+
+## P1 – visuelle Abnahme des gemeinsamen B3-Pakets, 17.11.2026
+
+PR [#96](https://github.com/duhrrom11/toolya/pull/96): gemeinsame Navigation, Editor-Aktionen, Formulargeometrie und Fokuszustände. Produkt-CSS seit `a74b535a4b745145215eb9225de12808e7079dca` unverändert; `a292421f8030bd64d3c01a54926c89c21910bc90` ergänzt ausschließlich isolierte Bilddiagnostik und Dokumentation.
+
+**Nachweislich geprüft:** Browserlauf [43978267219](https://github.com/duhrrom11/toolya/actions/runs/43978267219), 47/47 erfolgreich. Alle fünf Checks auf a292421 erfolgreich. Reale lokale Auto-/Haushaltsbuch-HTML-Seiten mit abgefangener Anmeldung/Cloud, bestehendem Tailwind-Darstellungs-CSS, ohne produktive Konten oder Daten. Je Tool drei Breiten (320/768/1440), je normale Seite und geöffneter Dashboard-Editor: alle zwölf JPEG-Ansichten tatsächlich gesichtet. Gemeinsame türkise Navigation, Editor-Primäraktion, weiße Sekundäraktionen, Umbruch, Fokus und deaktivierte Zustände ohne visuellen Blocker für dieses begrenzte Paket. Kontrast der geprüften primären Bedienelemente >=4,5, kein horizontaler Dokumentüberlauf und null Cloud-Schreibvorgänge automatisiert bestätigt. Bewegungsreduktion nach Korrektur der Hover-Spezifität bestanden.
+
+Die Diagrammbibliothek bleibt in dieser synthetischen Prüfung inert; leere Diagrammflächen sind kein Nachweis eines Produktionsfehlers. Browser-Standardsprache erzeugt englische Datei-/Datums-Controls; keine Lokalisierungsabnahme daraus ableiten. Begrenzte Bildschirmhöhe: keine vollständige Sichtprüfung aller tieferen Toolabschnitte behauptet. Die vollständigen PNGs liegen im Actions-Artefakt; hier archivierte kompakte JPEGs zeigen die tatsächlich gesichteten Ausschnitte.
+
+**Weiter offen:** Allgemeine App-Speicherbuttons sind noch uneinheitlich (Auto grau/rot, Haushaltsbuch teils grün). Diese gehörten nicht zu den gemeinsamen b3-action-Komponenten dieses Pakets. D06b bleibt In Arbeit, ebenso vollständige Prüfung der anderen acht B3-Tools und Wishlist/Dashboard; D05b bleibt offen. Keine Gesamt-WCAG-Abnahme oder produktive angemeldete Live-Abnahme behauptet.
+
+Bildnachweise: `docs/audits/evidence/pr96-*.jpg` (zwölf Ansichten). Lokale Laufzeit bleibt nicht verfügbar; die vorherige Blockade der Bildsichtung wurde durch ausschließlich synthetische CI-Bilddiagnostik überwunden. Nächste Aktion: finalen Dokumentations-/Bildcommit prüfen; danach PR #96 mergen, Pages und ausgeliefertes CSS kontrollieren. Bis zum erfolgreichen Deployment ist dieses Paket noch nicht veröffentlicht. Fortschritt bleibt 9/17 (52,9 %), 9/24 Aufgaben verifiziert.
