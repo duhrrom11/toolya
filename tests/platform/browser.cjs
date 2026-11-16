@@ -61,12 +61,13 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  await page.setViewportSize({width:1280,height:812});
  await page.locator('#settingsBtn').click();
  const email=page.locator('#loginEmail');await email.waitFor({state:'visible'});await email.fill('romi');
- await email.focus();await page.keyboard.down('Control');await page.keyboard.down('Alt');await page.keyboard.press('2');await page.keyboard.up('Alt');await page.keyboard.up('Control');
+ await email.focus();await page.keyboard.insertText('@');
+ assert.equal(await email.inputValue(),'romi@','native text insertion supports @');
  // Keyboard layout translation is OS-specific; test the produced @ input separately.
  await email.evaluate(el=>el.dispatchEvent(new InputEvent('beforeinput',{data:'@',inputType:'insertText',bubbles:true,cancelable:true})));
  await page.evaluate(async()=>{const field=document.getElementById('loginEmail');field.focus();const dt=new DataTransfer();dt.setData('text/plain','@example.ch');const ev=new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true});window.__loginPasteAllowed=field.dispatchEvent(ev)});
  assert.equal(await page.evaluate(()=>window.__loginPasteAllowed),true,'login must not cancel native paste');
- assert.equal(await email.inputValue(),'romi','synthetic clipboard event does not insert data');
+ assert.equal(await email.inputValue(),'romi@','synthetic clipboard event does not insert data');
  await email.fill('romi@example.ch');assert.equal(await email.inputValue(),'romi@example.ch','login accepts @');
  await page.keyboard.press('Escape');
  // Regression: a visible homepage notice must stay fully within the viewport in mobile and desktop-layout widths.
