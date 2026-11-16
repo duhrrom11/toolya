@@ -40,7 +40,7 @@ function init() {
   panel.id = 'toolya-consent-panel';
   panel.setAttribute('role', 'dialog');
   panel.setAttribute('aria-label', 'Statistik-Einstellungen');
-  panel.innerHTML = '<strong>Statistik bei Toolya</strong><p>Dürfen wir mit Google Analytics anonymisierte Nutzungsstatistiken erstellen? Ohne Zustimmung wird Google Analytics nicht geladen. <a href="/privacy.html">Datenschutz</a></p><div class="actions"><button type="button" class="reject">Ablehnen</button><button type="button" class="accept">Akzeptieren</button></div>';
+  panel.innerHTML = '<strong>Statistik bei Toolya</strong><p>Dürfen wir mit Google Analytics Nutzungsstatistiken erstellen? Ohne Zustimmung wird Google Analytics nicht geladen. <a href="/privacy.html">Datenschutz</a></p><div class="actions"><button type="button" class="reject">Ablehnen</button><button type="button" class="accept">Akzeptieren</button></div>';
   panel.hidden = choice !== null;
   document.body.appendChild(panel);
   function decide(value) {
