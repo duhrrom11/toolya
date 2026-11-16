@@ -3,7 +3,7 @@ const origin='https://toolya.app';
 const cors={'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'authorization,apikey,content-type','Access-Control-Allow-Methods':'GET,OPTIONS','Vary':'Origin'};
 const reply=(status:number,body:unknown)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}});
 const catalog=[
- ['ga4','Google Analytics 4'],['github','GitHub'],['supabase','Supabase'],['brevo','Brevo'],
+ ['ga4','Google Analytics 4'],['bing-webmaster','Bing Webmaster Tools'],['github','GitHub'],['supabase','Supabase'],['brevo','Brevo'],
  ['sav','Sav.com'],['kofi','Ko-fi'],['search-console','Google Search Console'],
  ['ahrefs','Ahrefs'],['openseo','OpenSEO'],['amplitude','Amplitude'],
  ['hosting','Hosting & Verfügbarkeit'],['affiliate','Affiliate & Amazon']
@@ -213,6 +213,38 @@ async function searchConsoleMetrics(days:number):Promise<Metric[]>{
  const detail='Google Search Console · '+iso(start)+' bis '+iso(end);
  return [{label:'GSC Klicks',value:clicks,detail},{label:'GSC Impressionen',value:impressions,detail},{label:'GSC CTR (%)',value:Math.round(ctr*10000)/100,detail},{label:'GSC Ø Position',value:Math.round(position*100)/100,detail}];
 }
+// Bing Webmaster read-only JSON API. API key is a Supabase secret, never sent to browsers.
+async function bingWebmasterMetrics(days:number):Promise<Metric[]>{
+ const key=(Deno.env.get('TOOLYA_STATS_BING_WEBMASTER_API_KEY')||'').trim();
+ if(!key)throw Error('BING_NOT_CONFIGURED');
+ const site=(Deno.env.get('TOOLYA_STATS_BING_SITE_URL')||'https://toolya.app/').trim();
+ if(site!=='https://toolya.app/'&&site!=='https://toolya.app')throw Error('BING_SITE_INVALID');
+ const url=new URL('https://ssl.bing.com/webmaster/api.svc/json/GetRankAndTrafficStats');
+ url.searchParams.set('siteUrl',site);
+ url.searchParams.set('apikey',key);
+ let response:Response;
+ try{response=await fetch(url,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(10000),redirect:'error'});}
+ catch{throw Error('BING_NETWORK')}
+ if(response.status===401||response.status===403)throw Error('BING_FORBIDDEN');
+ if(!response.ok)throw Error('BING_HTTP_'+response.status);
+ const data=await response.json();
+ if(!Array.isArray(data?.d))throw Error('BING_INVALID_RESPONSE');
+ const cutoff=Date.now()-days*86400000;
+ let clicks=0,impressions=0,observations=0;
+ for(const row of data.d){
+  // Bing JSON API dates use /Date(milliseconds-offset)/.
+  const match=typeof row?.Date==='string'?row.Date.match(/^\\?\/Date\((-?\d+)(?:[+-]\d{4})?\)\\?\/$/):null;
+  if(!match)continue;
+  const time=Number(match[1]);
+  if(!Number.isFinite(time)||time<cutoff||time>Date.now()+86400000)continue;
+  const c=Number(row.Clicks),i=Number(row.Impressions);
+  if(!Number.isFinite(c)||!Number.isFinite(i)||c<0||i<0)continue;
+  clicks+=c;impressions+=i;observations++;
+ }
+ const detail='Bing Webmaster Tools · letzte '+days+' Tage · '+observations+' Datensätze';
+ return [{label:'Bing Klicks',value:clicks,detail},{label:'Bing Impressionen',value:impressions,detail},
+  {label:'Bing CTR (%)',value:impressions?Math.round(clicks/impressions*10000)/100:0,detail}];
+}
 Deno.serve(async(req:Request)=>{
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
  if(req.method!=='GET')return reply(405,{error:'Method not allowed'});
@@ -238,7 +270,8 @@ Deno.serve(async(req:Request)=>{
   {id:'github',run:()=>githubMetrics(days)},
   {id:'supabase',run:()=>supabaseMetrics(url)},
   {id:'ga4',run:()=>ga4Metrics(days)},
-  {id:'search-console',run:()=>searchConsoleMetrics(days)}
+  {id:'search-console',run:()=>searchConsoleMetrics(days)},
+  {id:'bing-webmaster',run:()=>bingWebmasterMetrics(days)}
  ];
  await Promise.all(tasks.map(async({id,run})=>{
   const source=sources.find(s=>s.id===id)!;
@@ -250,7 +283,7 @@ Deno.serve(async(req:Request)=>{
   }catch(err){
    const message=err instanceof Error?err.message:'';
    const ga4Missing=id==='ga4'&&message==='GA4 service account not configured';
-   source.status=ga4Missing?'not_connected':'error';
+   source.status=ga4Missing||id==='bing-webmaster'&&message==='BING_NOT_CONFIGURED'?'not_connected':'error';
    // Only expose fixed, non-sensitive diagnostics to the authenticated owner.
    const ga4Codes:Record<string,string>={
     'GA4 service account not configured':'GA4: Property-ID oder Dienstkonto-Secret fehlt',
@@ -260,7 +293,7 @@ Deno.serve(async(req:Request)=>{
     'Google access token missing':'GA4: Kein Google-Zugriffstoken erhalten',
     'GA4 report has no usable values':'GA4: Bericht ohne auswertbare Kennzahlen'
    };
-   source.detail=id==='search-console'?(message==='GSC credentials unavailable'?'GSC: Google-Dienstkonto nicht eingerichtet':message==='GSC API HTTP 403'?'GSC: Dienstkonto hat keinen Zugriff auf die Search-Console-Property':message==='GSC API HTTP 404'?'GSC: Property nicht gefunden oder nicht freigegeben':'GSC: Datenabruf derzeit nicht möglich'):id==='ga4'?(ga4Codes[message]||(/GA4 Data API HTTP (401|403|404|429|500|503)/.test(message)?'GA4: '+message:'GA4: API-Abfrage fehlgeschlagen')):'Datenabruf fehlgeschlagen oder API-Zugang fehlt';
+   source.detail=id==='bing-webmaster'?(message==='BING_NOT_CONFIGURED'?'Bing: API-Schlüssel noch nicht als Supabase-Secret hinterlegt':message==='BING_FORBIDDEN'?'Bing: API-Schlüssel ungültig oder Website nicht freigegeben':message==='BING_SITE_INVALID'?'Bing: Website-Konfiguration ungültig':'Bing: Datenabruf derzeit nicht möglich'):id==='search-console'?(message==='GSC credentials unavailable'?'GSC: Google-Dienstkonto nicht eingerichtet':message==='GSC API HTTP 403'?'GSC: Dienstkonto hat keinen Zugriff auf die Search-Console-Property':message==='GSC API HTTP 404'?'GSC: Property nicht gefunden oder nicht freigegeben':'GSC: Datenabruf derzeit nicht möglich'):id==='ga4'?(ga4Codes[message]||(/GA4 Data API HTTP (401|403|404|429|500|503)/.test(message)?'GA4: '+message:'GA4: API-Abfrage fehlgeschlagen')):'Datenabruf fehlgeschlagen oder API-Zugang fehlt';
   }
  }));
  return reply(200,{generatedAt:new Date().toISOString(),days,metrics,sources});
