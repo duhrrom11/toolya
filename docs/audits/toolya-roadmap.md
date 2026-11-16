@@ -16,10 +16,10 @@ Gewicht = relative Arbeitsgröße (1 klein, 2 mittel, 3 groß, 5 sehr groß), ke
 | D02 | P1 – Design | 2 | Wortmarke/Token | Schriftfamilie wird seitenabhängig geerbt | Identische Markenfamilie/Gewicht/Abstände | Gemeinsame Tokens aus bestehender Startseite übernehmen | 1 h | platform/header/footer CSS | niedrig | Verifiziert | Live computed styles Inter vs ui-sans |
 | D03 | P1 – Design | 1 | Pflanzen/Tier-Header | Grüne Themenfarben | Bläuliches Türkis unabhängig von Charakter | Nur vorhandene Themenvariablen korrigieren | 0,5 h | header.css | niedrig | Verifiziert | header.css data-tool=plants/pet-health |
 | D04 | P1 – Design | 2 | Ko-fi/Footer-CSS | Doppelte konkurrierende Regeln/Keyframes | Eine wartbare aktive Definition | Aktuelles Rendering erhalten, Altdefinition entfernen | 1 h | footer.css; platform.mjs | mittel | Verifiziert | Zwei ty-kofi-banner-Regelgruppen |
-| D05a | P1 – Design | 1 | Lokale verschlüsselte Dateiübergabe | Dunkles Inline-Design und gemeinsame CSS durch CSP nicht nutzbar | Helle gemeinsame Gestaltung mit erhaltenen Daten-/Kryptogrenzen | Nur eigene Stylesheets erlauben; lokale Übergabe von Analytics ausschließen; synthetischen Dateirundlauf prüfen | 3 h | CSP-Prüfung; bestehende Krypto | mittel | In Arbeit | handover.html; Live-Ausgangsansicht; Security-Codeprüfung |
+| D05a | P1 – Design | 1 | Lokale verschlüsselte Dateiübergabe | Dunkles Inline-Design und gemeinsame CSS durch CSP nicht nutzbar | Helle gemeinsame Gestaltung mit erhaltenen Daten-/Kryptogrenzen | Nur eigene Stylesheets erlauben; lokale Übergabe von Analytics ausschließen; synthetischen Dateirundlauf prüfen | 3 h | CSP-Prüfung; bestehende Krypto | mittel | Verifiziert | PR #94; CI 43933662418; Pages 43934169905; Live-DOM/Styles und Bytegleichheit bestätigt |
 | D05b | P1 – Design | 4 | Übrige Seiten/responsive | Nicht vollständig visuell geprüft; Legacy-Wishlist/Dark-CSS | Gemeinsame Marke, keine Überläufe, Hellmodus | Ansichten 320/768/1440 und Tastatur systematisch prüfen | 1–2 Tage | I03; isolierte Auth-Fixtures | mittel | Offen | page-inventory.json; Legacy-Seiten |
 | D06a | P1 – Design | 1 | Nachlass Besitzer/Vertrauenspersonen | Grüne UI-Flächen und inaktive Dark-CSS-Reste, zusätzlicher alter Footer bei Erben | Gemeinsame türkise Bedienelemente im Hellmodus, ein Footer mit erhaltenem Schlüsselhinweis | Estate-CSS mit vorhandenen Tokens verbinden; Footerhinweis in main erhalten | 2–4 h | D02; isolierte Nachlass-Prüfung | mittel | Verifiziert | PR #93; CI 43932478466; Pages 43933043137; Live-Farben/Footer und Bytegleichheit bestätigt |
-| D06b | P1 – Design | 2 | B3/Wishlist/Dashboard Formulare/Karten/Dialoge | Weitere historisch getrennte UI-Systeme | Konsistente Zustände und Eingaben | Übrige bestehende UI schrittweise mit Tokens verbinden | 1–2 Tage | D05b | mittel | Offen | B3, Wishlist, Dashboard Styles |
+| D06b | P1 – Design | 2 | B3/Wishlist/Dashboard Formulare/Karten/Dialoge | Weitere historisch getrennte UI-Systeme | Konsistente Zustände und Eingaben | Übrige bestehende UI schrittweise mit Tokens verbinden | 1–2 Tage | D02; echte Ansichten/isolierte Fixtures | mittel | Offen | B3, Wishlist, Dashboard Styles |
 | D07 | P1 – Design | 2 | Öffentliche Infoseiten | Eigener Header und zusätzliche Begleiterkarte | Einheitliche gemeinsame Navigation/Marke | Rechtsseiten/Galerie an vorhandene Komponenten anschließen | 2 h | D02 | niedrig | Offen | Screenshot 02-privacy-before |
 | S01 | P2 – SEO | 3 | Indexierung/Metadaten | Private Legacy-Seiten teils ohne noindex/canonical | Bewusste Indexierungsstrategie je Route | robots/sitemap/canonical und Auth-/Public-Seiten abgleichen | 3 h | P1-Abnahme | mittel | Offen | SEO-Inventur |
 | S02 | P2 – SEO | 3 | 12 Tools/Suchintention | Keine aktuelle vollständige Zuordnung | Eindeutige Themen und sinnvolle verlinkte Erklärungen | Keyword-/Seitenmatrix auf vorhandene Funktionen stützen | 4 h | P1; verfügbare SEO-Daten | niedrig | Offen | SEO-Fachanhang in Erstellung |
@@ -46,12 +46,12 @@ Gewicht = relative Arbeitsgröße (1 klein, 2 mittel, 3 groß, 5 sehr groß), ke
 | Bereich | Verifiziert/Gesamtgewicht | Fortschritt | Status |
 |---|---:|---:|---|
 | Bestandsaufnahme | 5/8 | 62,5 % | In Arbeit |
-| P1 – Design-Konsistenz | 8/17 | 47,1 % | In Arbeit |
+| P1 – Design-Konsistenz | 9/17 | 52,9 % | In Arbeit |
 | P2 – SEO | 0/9 | 0 % | Offen |
 | P3 – Inhalte & Rechtstexte | 0/8 | 0 % | Offen |
 | Weitere Optimierungen | 0/10 | 0 % | In Arbeit |
 
-24 übergeordnete Aufgaben: 8 verifiziert, 16 nicht abgeschlossen. Die Aufteilungen D05 → D05a (1) + D05b (4) und D06 → D06a (1) + D06b (2) verändern das Gesamtgewicht nicht. Keine globale Prozentzahl für den noch wachsenden Prüfumfang.
+24 übergeordnete Aufgaben: 9 verifiziert, 15 nicht abgeschlossen. Die Aufteilungen D05 → D05a (1) + D05b (4) und D06 → D06a (1) + D06b (2) verändern das Gesamtgewicht nicht. Keine globale Prozentzahl für den noch wachsenden Prüfumfang.
 
 ## Fortsetzungsstand
 
@@ -59,9 +59,11 @@ Aktuelle Phase: P1 – Designharmonisierung. Bestandsaufnahme läuft hinsichtlic
 
 D06a abgeschlossen: PR [#93](https://github.com/duhrrom11/toolya/pull/93), Release `384d5856578e578934a82168639969b2bfa41eb7`, erfolgreicher PR-Lauf 43932478466 und Pages 43933043137. Farben, Light-Mode, ein Footer und erhaltener Schlüsselhinweis live bestätigt; CSS und heirs.html bytegleich. Geöffnete Oberflächen ausschließlich synthetisch geprüft.
 
-Aktuell D05a: Branch `audit/estate-handover-light-20261116`, helles Design der Dateiübergabe. Nach unabhängiger Sicherheitsprüfung wird ausschließlich style-src um self ergänzt, damit bereits eingebundene eigene CSS-Dateien funktionieren. script/connect/img/form/object/base bleiben unverändert; connect-src none bleibt bestehen. Lokale Übergabe/Schlüsseldruck erhalten unabhängig von gespeicherter Zustimmung keine Analytics-Initialisierung. Krypto-JS und alle elf Bedienelemente unverändert. Nächste Aktion: neue isolierte Layout-/Dateirundlauf-/Netzwerk-/Consent-CI und Bilder auswerten, erst danach integrieren und live prüfen.
+D05a abgeschlossen: PR [#94](https://github.com/duhrrom11/toolya/pull/94), Release `d055c155e00a02e74ae5804d6066820dd9106ed1`, erfolgreiche PR-CI 43933662418 und Pages 43934169905. main-CI 43934172697, Amazon 43934172716 und isolierte Browser 43934172711 ebenfalls erfolgreich. Helles Design, ein gemeinsamer Footer, eigener Stylesheetzugriff und keine Analytics-Initialisierung live bestätigt; Consent-JS/handover.html live bytegleich. Alle elf Krypto-Bedienelemente und assets/heir-e2ee-handoff.js unverändert. Realer Dateirundlauf ausschließlich mit synthetischen Dateien im isolierten Runner geprüft.
 
-Danach D05b/D06b/D07 fortsetzen. Die [Designfamilienmatrix](design-family-inventory.md) nennt die verbleibenden Familien. Noch keine reguläre SEO-/Textumsetzung beginnen.
+Nächste konkrete P1-Einheit: D06b/B3 – `assets/helferlein-b3.css` und die überlagernden Tool-Styles der zehn regulären B3-Tools auf bestehende Marken-Tokens, Buttons/Formulare/Karten und Fokuszustände abstimmen. Vor Änderungen aktive grüne Klassen und dynamische Auswahlzustände erfassen; rote Warn-/Löschaktionen bewahren. Mit gezielten authentifizierten Fixtures tatsächliche Toolansichten prüfen, keine Startseiten-Redirects als Toolabnahme zählen. Danach übrige Wishlist-/Dashboard-Stile und D07/Infoseiten. D05b enthält weiterhin die vollständige responsive Abnahme sowie die sekundäre doppelte Wortmarke auf der Erbenseite. Noch keine reguläre SEO-/Textumsetzung beginnen.
+
+Die [Designfamilienmatrix](design-family-inventory.md) ist fortgeschrieben. Zwei veröffentlichte Produktpakete dieser Fortsetzung: #93 und #94. Rollback jeweils per gezieltem Revert des Releasecommits; keine Datenbankmigration in beiden Paketen.
 
 Private Live-Flows sind mangels bestätigter Anmeldesitzung nicht vollständig abgenommen; isolierte/synthetische Prüfungen sind kein Ersatz für alle produktiven Ansichten. Alte Wishlist-Seiten nicht ungeprüft entfernen. Keine juristische Freigabe. Keine produktiven Nutzerdaten geändert.
 

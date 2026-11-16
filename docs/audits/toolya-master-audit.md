@@ -4,9 +4,9 @@ Stand: 16.11.2026. Ausgangscommit: `28f73ac3181f823cb5fc867ba8673c8461ea3fa9`.
 
 ## Management-Zusammenfassung
 
-Toolya ist eine statische GitHub-Pages-Plattform mit zwölf Tool-Einstiegen, einem persönlichen Dashboard, eigenem Supabase-Backend und gemeinsamen Maskottchen-/Layoutmodulen. Der aktuelle Quellcode enthält 38 HTML-Seiten und 93 Remote-Branches (zuzüglich origin/HEAD). Drei alte PRs sind offen (#13, #26, #47); sie werden nicht ungeprüft integriert. Die letzten Plattform-, Amazon- und Pages-Läufe für den Ausgangscommit sind erfolgreich (43921114382, 43921114304, 43921113071).
+Toolya ist eine statische GitHub-Pages-Plattform mit zwölf Tool-Einstiegen, einem persönlichen Dashboard, eigenem Supabase-Backend und gemeinsamen Maskottchen-/Layoutmodulen. Der erfasste Ausgangsbestand enthält 38 HTML-Seiten und 93 Remote-Branches (zuzüglich origin/HEAD). Drei alte PRs sind offen (#13, #26, #47); sie werden nicht ungeprüft integriert. Die letzten Plattform-, Amazon- und Pages-Läufe für den Ausgangscommit sind erfolgreich (43921114382, 43921114304, 43921113071).
 
-Die Live-Startseite besitzt bereits die beschlossenen Originalmaskottchen und den gemeinsamen Footer. Ein Verlust des Cookie-Einstellungen-Links nach Footerersetzung ist live bestätigt. Die Datenschutzseite zeigt zwei Footer und eine zusätzliche Begleiterkarte. Wortmarken erben je nach Seite verschiedene Schriftfamilien; Pflanzen-/Tier-Header verwenden trotz Markenpräferenz Grün. Die Footer-CSS enthält zwei konkurrierende Ko-fi-Definitionen. Eine vollständige Designabnahme liegt noch nicht vor.
+Die wesentlichen Befunde der Ausgangsaufnahme – verlorener Cookie-Link, doppelte Footer auf Rechtsseiten, unterschiedliche Markenschriften und grüne Tool-Header – sind in PR #91 korrigiert und live geprüft. PR #93 vereinheitlicht die Nachlass-Ansichten für Besitzer/Vertrauenspersonen; PR #94 die lokale Dateiübergabe. Alle drei Nachlass-Ansichten sind jetzt hell mit türkisen Bedienelementen, die überprüften Sicherheits-/Verschlüsselungsabläufe bestehen. 9 von 24 Aufgaben sind verifiziert, P1 erreicht 9/17 Gewichtspunkte (52,9 %). Die gesamte Designabnahme ist weiterhin offen, insbesondere bei B3-Tools, älteren Wishlist-Seiten und Infoseitenheadern.
 
 FAQ und Datenschutz enthalten nachweislich veraltete Aussagen zu Anmeldung, lokaler Speicherung und Firebase. Inhaltliche Änderungen folgen erst nach P1/P2, ausgenommen kritische Funktions-/Sicherheitskorrekturen. Rechtstexte sind nicht juristisch freigegeben.
 
@@ -22,7 +22,7 @@ P1 Design → P2 SEO → P3 Texte/Recht → weitere Optimierungen. Kritische Sic
 - **Wahrscheinlich:** Ursache im Code erkennbar; relevante End-to-End-Funktion noch nicht nachgewiesen.
 - **Nicht prüfbar:** fehlender Sitzungskontext, echte Zustellung oder rechtliche Angaben fehlen.
 
-Live-Browser: Startseite und Datenschutz bei ca. 1348 px; ausgeloggter Direktaufruf Haushaltsbuch führt auf die Startseite zurück. Keine echte Anmeldung und keine private Datenmutation. Keine Behauptung vollständiger WCAG-Konformität, realer Mobilgeräteabnahme oder gemessener Core Web Vitals.
+Initiale Live-Aufnahme: Startseite und Datenschutz bei ca. 1348 px; ausgeloggter Direktaufruf Haushaltsbuch führt auf die Startseite zurück. Keine echte Anmeldung und keine private Datenmutation. Keine Behauptung vollständiger WCAG-Konformität, realer Mobilgeräteabnahme oder gemessener Core Web Vitals.
 
 ## Maßnahmenkatalog und Fortschritt
 
@@ -32,13 +32,13 @@ Die vollständige erfasste Maßnahmenliste mit IDs, Gewichten, Ist/Soll, Aufwand
 
 | Bereich | Nachvollziehbare Bewertung | Grenze |
 |---|---|---|
-| Markenassets | Zwei bestehende Identitäten, Originale mit Prüfsummen vorhanden | Hashprüfung vor Integration erforderlich |
-| Gemeinsame Komponenten | Header/Footer zentral vorhanden; Footer-Montage nachweislich inkonsistent | Private Tool-Inhalte nicht live abgenommen |
+| Markenassets | Zwei Identitäten erhalten; Original-Prüfsummen in den Integrationschecks erfolgreich | Keine neuen Originalgrafiken ersetzt |
+| Gemeinsame Komponenten | Footer-/Markenpaket und drei Nachlassansichten verifiziert | Übrige Familien und private Live-Zustände noch nicht vollständig abgenommen |
 | Veröffentlichung | CI und Pages für Ausgangscommit erfolgreich | Jeder Folgecommit separat prüfen |
 | Zugriffsschutz | Haushaltsbuch-Direktaufruf ausgeloggt umgeleitet; RLS auf 32 public-Tabellen aktiv | Kein vollständiger Funktions-/Angriffsnachweis |
 | SEO | Inventar mit canonical/noindex vorhanden | Indexabdeckung, Rankings, CWV nicht gemessen |
 | Inhalte | FAQ-/Datenschutzwidersprüche bestätigt | Juristische Freigabe offen |
-| Analytics | Opt-in-Oberfläche vorhanden, Widerrufslink auf Startseite verloren | Tatsächliche GA4-Auswertung nicht Teil dieses Pakets |
+| Analytics | Widerrufslink wieder erreichbar; lokale Übergabe ohne Initialisierung | Galerie-Doppelladung X05 offen; keine vollständige GA4-Datenabnahme |
 
 ## Bildschirmnachweise – Ausgangslage
 
@@ -80,7 +80,7 @@ PR [#91](https://github.com/duhrrom11/toolya/pull/91) gemergt. Releasecommit `1b
 
 Die sieben geänderten Produktdateien wurden live per GET auf Bytegleichheit geprüft: Consent, Plattformmodul, Tokens, Footer-CSS, Header-CSS, Datenschutz und Impressum – alle identisch. Live-Browser bestätigt einen Footer auf Startseite/Datenschutz/Impressum, Cookie-Link in gemeinsamer Footernavigation, echtes erneutes Öffnen/Ablehnen der Statistikeinstellungen und identische berechnete Schriftfamilie in Header/Footer. Beide Charaktere und vier Seiten bei 320/768/1440 px im isolierten Runner geprüft; Original-PNGs unverändert. Nachlass-Sicherheitsprüfungen unverändert erfolgreich. Keine produktiven Daten geändert.
 
-### Aktuelle Fortschrittswerte
+### Fortschritt nach PR #91 (historisch)
 
 Sieben von 22 übergeordneten Aufgaben verifiziert; 15 noch offen oder in Arbeit. Bestandsaufnahme 5/8 Gewichtspunkte = 62,5 %, P1 7/17 = 41,2 %, P2 0/9, P3 0/8, weitere Optimierungen 0/10. Nicht alle privaten Toolzustände live geprüft; kein Gesamtabnahmeversprechen. Zusätzlicher wahrscheinlicher Analytics-Doppelladungsbefund X05 ergänzt; die Änderung des Nenners ist transparent in der Roadmap erfasst.
 
@@ -128,3 +128,31 @@ Der Krypto-Code assets/heir-e2ee-handoff.js ist unverändert. Ein statischer Ver
 Neue isolierte Browserprüfung: drei Breiten, dunkle OS-Einstellung mit hellem Ergebnis, Fokus, erlaubte feste Assetpfade, gespeicherte Analytics-Zustimmung ohne dataLayer/Google-Script, unveränderte CSP-Datengrenzen, Passwortgeschützter Schlüssel-Download, öffentliche Schlüsseldatei, ausdrücklich bestätigter Export, realer RSA/AES-Dateirundlauf, falsches Passwort, textContent statt HTML sowie Kontrolle aller Requests auf synthetische Geheimnisse. Keine echten Dateien oder Nutzerkonten. 75 bestehende Node-Tests erneut erfolgreich; Browser-/Produktionsverifikation noch offen.
 
 D05 ist ohne Gewichtsänderung in D05a (1) und D05b (4) geteilt. Aktuell 24 Aufgaben, 8 verifiziert; P1 8/17 = 47,1 %. Historische Zwischenstände oben bleiben als Nachweise bestehen.
+
+### D05a veröffentlicht und bestätigt – Abschluss dieser Fortsetzung
+
+PR [#94](https://github.com/duhrrom11/toolya/pull/94) gemergt; Release `d055c155e00a02e74ae5804d6066820dd9106ed1`. Alle fünf Checks am Head `aeae7d3d373ec4e3f39867f74c7f06783bab1ca4` erfolgreich: platform, privacy, browser, estate-security, isolated. Die neue Handover-Prüfung im Lauf [43933662418](https://github.com/duhrrom11/toolya/actions/runs/43933662418) bestätigt den echten synthetischen RSA/AES-Dateirundlauf und 18 ausschließlich feste statische GETs. In den protokollierten URLs/Headers/Bodies tauchen weder synthetischer Inhaltsmarker noch Passwort oder Master-Key auf. Kein vollständiger Timing-/Kodierungs-Exfiltrationsnachweis behauptet. CSP-vorher-blockierte Versuche müssen nicht im Routing erscheinen; Analytics wird zusätzlich auf dataLayer und Google-Script im DOM geprüft.
+
+Pages [43934169905](https://github.com/duhrrom11/toolya/actions/runs/43934169905) erfolgreich. Auch alle main-Läufe erfolgreich: Plattform/Nachlass 43934172697, isolierte Browser 43934172711, Amazon 43934172716. Live-Browser bestätigt light, #f3f7fb, regulär gestalteten gemeinsamen Header (26 px Rundung), einen Footer, dataLayer undefined, keine Google-Skripte und no-referrer. style-src self/unsafe-inline; alle anderen CSP-Direktiven wie zuvor. Consent-JS und Handover-HTML live bytegleich.
+
+Ein Quellvergleich gegen den Stand vor dieser Fortsetzung zeigt keine Änderungen an estate-crypto.js, estate-owner.js, estate-heirs.js, estate-cloud-guard.js, heir-e2ee-handoff.js oder print-key.html. Keine produktiven Nutzer-/Datenbankdaten geändert; keine echten Schlüssel erzeugt oder reale Nachlassdateien geöffnet/exportiert. Die Originalmaskottchen-Prüfsummen bestehen.
+
+Aktueller Fortschritt: 24 Aufgaben, 9 verifiziert, 15 nicht abgeschlossen. P1 9/17 = 52,9 %. Bestandsaufnahme 5/8 = 62,5 %. P2/P3/weitere Optimierungen weiterhin 0 % abgeschlossen. D05/D06 wurden nur feiner aufgeteilt, ohne Gewichtserhöhung. Die Roadmap enthält die genaue nächste P1-Einheit.
+
+### Bildschirmfolge dieser Fortsetzung
+
+1. Besitzer-Einstieg: grünliche Ausgangsansicht → gemeinsame türkise Bedienelemente und Hellmodus. Öffentlich live geprüft; geöffneter Tresor zusätzlich in isolierter synthetischer DB bei 320/375/768/1280/1440 px geprüft.
+2. Vertrauenspersonen: türkiser Öffnen-Button, rote Notfallaktion bewahrt, ein Footer, Schlüsselhinweis sichtbar im main. Öffentlich live und drei Breiten isoliert geprüft; keine produktiven Schlüssel eingegeben.
+3. Dateiübergabe: dunkle unvollständige Gestaltung → heller gemeinsamer Themenheader und Formulare. Drei Breiten und synthetische Funktionsfolge isoliert, leere echte Seite live geprüft. Keine produktiven Dateien benutzt.
+
+![Besitzeransicht vor der Anpassung](evidence/05-estate-before.jpg)
+
+![Veröffentlichte türkise Besitzeransicht](evidence/07-estate-owner-live.jpg)
+
+![Veröffentlichter Vertrauenspersonenzugang](evidence/08-estate-trustee-live.jpg)
+
+![Dateiübergabe vor der Anpassung](evidence/06-handover-before.jpg)
+
+![Veröffentlichte helle Dateiübergabe](evidence/09-handover-live.jpg)
+
+Die Vorher-/Nachherbilder der Dateiübergabe wurden zusammen bei identischem Desktop-Viewport gesichtet. Wesentliche globale Designabweichungen anderer Familien bleiben offen, insbesondere B3-Buttons, Legacy-Wishlist-Dark-Regeln und Infoseitenheader. Der Masterauftrag ist nicht abgeschlossen; keine Ranking-, juristische oder vollständige Sicherheitsfreigabe.
