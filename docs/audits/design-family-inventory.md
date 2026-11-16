@@ -31,6 +31,6 @@ D06b: die zehn B3-Tools über ihre bestehenden Variablen und klaren Komponenten 
 
 Zusätzlich als weitere Optimierung erfasst: mascots.html lädt Consent klassisch und über das Plattformmodul. Bei gespeicherter Zustimmung ist eine doppelte Analytics-Initialisierung aus dem Code wahrscheinlich. Separat mit gezielter isolierter Regression bestätigen; keine pauschale Änderung der Einwilligungsregel.
 
-### B3-Teilabnahme #96 (17.11.2026)
+### Release #96 abgeschlossen
 
-Gemeinsame Navigation/Editor-Aktionen und Eingabegeometrie an Marken-Tokens angeschlossen; zwölf tatsächliche Auto-/Haushaltsbuchansichten bei 320/768/1440 gesichtet, kein Blocker in diesem Umfang. 47 Browserprüfungen und fünf Checks auf a292421 erfolgreich. Bilder: `evidence/pr96-*.jpg`. Gewöhnliche App-Speicherbuttons, weitere acht B3-Ansichten und tiefere Toolabschnitte bleiben offen. Diagramme synthetisch ersetzt, keine Produktionsdiagrammprüfung. D06b weiterhin In Arbeit; Produktionsstatus nach Merge separat prüfen.
+Gemeinsame B3-Komponenten am 17.11.2026 veröffentlicht, Release `5ab8a9334692acbd7206553f9d8f7b3fa376cfbe`. Zwölf isolierte Ansichten tatsächlich gesichtet; Pages und alle main-Checks erfolgreich. Öffentlich ausgeliefertes CSS bytegleich, Auto/Budget liefern HTTP 200 mit Stylesheetverweis. Details: `pr96-live-delivery.json` und Master-Audit. Gewöhnliche App-Buttons, übrige B3-/Wishlist-/Dashboard-Ansichten und volle responsive/private Live-Abnahme bleiben offen.

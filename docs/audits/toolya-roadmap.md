@@ -1,6 +1,6 @@
 # Toolya – gewichtete Roadmap
 
-Stand: 16.11.2026. Status: Offen → In Arbeit → Umgesetzt → Verifiziert; Blockiert benennt konkrete fehlende Voraussetzungen.
+Stand: 17.11.2026. Status: Offen → In Arbeit → Umgesetzt → Verifiziert; Blockiert benennt konkrete fehlende Voraussetzungen.
 
 Gewicht = relative Arbeitsgröße (1 klein, 2 mittel, 3 groß, 5 sehr groß), keine Qualitätsnote. Fortschritt = Summe der Gewichte **verifizierter** Aufgaben / Summe aller erfassten Gewichte des Bereichs. In Arbeit/Umgesetzt zählen noch nicht. Unteraufgaben werden nicht doppelt gezählt.
 
@@ -61,7 +61,7 @@ D06a abgeschlossen: PR [#93](https://github.com/duhrrom11/toolya/pull/93), Relea
 
 D05a abgeschlossen: PR [#94](https://github.com/duhrrom11/toolya/pull/94), Release `d055c155e00a02e74ae5804d6066820dd9106ed1`, erfolgreiche PR-CI 43933662418 und Pages 43934169905. main-CI 43934172697, Amazon 43934172716 und isolierte Browser 43934172711 ebenfalls erfolgreich. Helles Design, ein gemeinsamer Footer, eigener Stylesheetzugriff und keine Analytics-Initialisierung live bestätigt; Consent-JS/handover.html live bytegleich. Alle elf Krypto-Bedienelemente und assets/heir-e2ee-handoff.js unverändert. Realer Dateirundlauf ausschließlich mit synthetischen Dateien im isolierten Runner geprüft.
 
-Nächste konkrete P1-Einheit: D06b/B3 – `assets/helferlein-b3.css` und die überlagernden Tool-Styles der zehn regulären B3-Tools auf bestehende Marken-Tokens, Buttons/Formulare/Karten und Fokuszustände abstimmen. Vor Änderungen aktive grüne Klassen und dynamische Auswahlzustände erfassen; rote Warn-/Löschaktionen bewahren. Mit gezielten authentifizierten Fixtures tatsächliche Toolansichten prüfen, keine Startseiten-Redirects als Toolabnahme zählen. Danach übrige Wishlist-/Dashboard-Stile und D07/Infoseiten. D05b enthält weiterhin die vollständige responsive Abnahme sowie die sekundäre doppelte Wortmarke auf der Erbenseite. Noch keine reguläre SEO-/Textumsetzung beginnen.
+Historischer Plan vor PR #96: D06b/B3 – `assets/helferlein-b3.css` und die überlagernden Tool-Styles der zehn regulären B3-Tools auf bestehende Marken-Tokens, Buttons/Formulare/Karten und Fokuszustände abstimmen. Vor Änderungen aktive grüne Klassen und dynamische Auswahlzustände erfassen; rote Warn-/Löschaktionen bewahren. Mit gezielten authentifizierten Fixtures tatsächliche Toolansichten prüfen, keine Startseiten-Redirects als Toolabnahme zählen. Danach übrige Wishlist-/Dashboard-Stile und D07/Infoseiten. D05b enthält weiterhin die vollständige responsive Abnahme sowie die sekundäre doppelte Wortmarke auf der Erbenseite. Noch keine reguläre SEO-/Textumsetzung beginnen.
 
 Die [Designfamilienmatrix](design-family-inventory.md) ist fortgeschrieben. Zwei veröffentlichte Produktpakete dieser Fortsetzung: #93 und #94. Rollback jeweils per gezieltem Revert des Releasecommits; keine Datenbankmigration in beiden Paketen.
 
@@ -92,3 +92,19 @@ Die Diagrammbibliothek bleibt in dieser synthetischen Prüfung inert; leere Diag
 **Weiter offen:** Allgemeine App-Speicherbuttons sind noch uneinheitlich (Auto grau/rot, Haushaltsbuch teils grün). Diese gehörten nicht zu den gemeinsamen b3-action-Komponenten dieses Pakets. D06b bleibt In Arbeit, ebenso vollständige Prüfung der anderen acht B3-Tools und Wishlist/Dashboard; D05b bleibt offen. Keine Gesamt-WCAG-Abnahme oder produktive angemeldete Live-Abnahme behauptet.
 
 Bildnachweise: `docs/audits/evidence/pr96-*.jpg` (zwölf Ansichten). Lokale Laufzeit bleibt nicht verfügbar; die vorherige Blockade der Bildsichtung wurde durch ausschließlich synthetische CI-Bilddiagnostik überwunden. Nächste Aktion: finalen Dokumentations-/Bildcommit prüfen; danach PR #96 mergen, Pages und ausgeliefertes CSS kontrollieren. Bis zum erfolgreichen Deployment ist dieses Paket noch nicht veröffentlicht. Fortschritt bleibt 9/17 (52,9 %), 9/24 Aufgaben verifiziert.
+
+## Veröffentlichungsabschluss PR #96 – 17.11.2026
+
+**Veröffentlicht und statisch live verifiziert.** Release `5ab8a9334692acbd7206553f9d8f7b3fa376cfbe`, PR [#96](https://github.com/duhrrom11/toolya/pull/96). Finale fünf PR-Checks auf `25cca1b516fec0b33bcd79b84f0c50fcf4771f5b` erfolgreich. GitHub Pages [43979209858](https://github.com/duhrrom11/toolya/actions/runs/43979209858) erfolgreich; main Plattform/Nachlass [43979210725](https://github.com/duhrrom11/toolya/actions/runs/43979210725), isolierte Browser [43979211283](https://github.com/duhrrom11/toolya/actions/runs/43979211283) und Amazon [43979210728](https://github.com/duhrrom11/toolya/actions/runs/43979210728) erfolgreich.
+
+Schreibfreie Live-Prüfung am **17.11.2026, 00:27 Uhr Europe/Berlin** (UTC 2026-11-16T23:27:20.263Z): B3-CSS beim ersten Versuch bytegleich; SHA-256 `1631571945fd0555983ece99196d06ccc4ec126ad69eb12c6d3516f259e740ac`. Auto-/Haushaltsbuch-HTML jeweils HTTP 200 und Verweis auf gemeinsames Stylesheet bestätigt. Maschineller Nachweis: [pr96-live-delivery.json](pr96-live-delivery.json). Ausschließlich öffentliche statische GETs; keine Anmeldung, keine produktiven Daten oder privaten API-Aufrufe.
+
+Die zwölf tatsächlich gesichteten isolierten Bildausschnitte sind dauerhaft unter `evidence/pr96-*.jpg` gespeichert. Das begrenzte gemeinsame Komponentenpaket ist abgenommen. **D06b bleibt In Arbeit**: normale App-Buttons, weitere Tool-Overrides, Karten, Wishlist/Dashboard und Prüfung der anderen acht B3-Tools stehen aus. Fortschritt weiterhin 9/17 = 52,9 %, insgesamt 9/24 verifiziert; keine künstliche Aufwertung durch Teilarbeit.
+
+Nächste konkrete Aktion: normale Speicher-/Bearbeiten-Aktionen zunächst auf Auto/Haushaltsbuch anhand ihres Zwecks klassifizieren und harmonisieren (Speichern nicht mit Löschen/Alarm gleichsetzen). Auf 768 px sind die verschachtelten Auto-Formulare eng; breitere Eingaben/Unterteilung prüfen (D05b). Danach dieselben tatsächlichen Auth-Fixtures auf die übrigen B3-Tools erweitern. Keine reguläre SEO-/Textphase vor P1-Abschluss.
+
+Rollback: gezielter Revert des obigen Releasecommits; keine Migration oder Datenrücksetzung erforderlich. Lokale Laufzeit/interaktiver Browser weiter nicht verfügbar, Bildsichtung über synthetische CI-Diagnostik möglich. Private Live-Zustände bleiben nicht vollständig verifiziert. Die vorherigen Abschnitte mit ausstehender Abnahme/Veröffentlichung dokumentieren historische Zwischenstände; dieser Abschluss ist für PR #96 maßgeblich.
+
+### CI-Zeitfehler beim Abschlussprotokoll
+
+Der erste Dokumentationslauf 43979589098 scheiterte an `core.test.mjs`, v8 Charakterwechsel: zwei Date.now()-Aufrufe in render(true) können die unveränderte Ablauffrist geringfügig verlängern. Im selben PR wird die absolute Frist erhalten und pro Render nur einmal die Zeit abgelesen. Der bestehende Test verwendet eine kontrolliert bei jedem Aufruf fortschreitende Uhr und verlangt exakt gleiche Frist; die Prüfung wird nicht gelockert. Zusätzlich prüft der schreibfreie main-Releasecheck das ausgelieferte buddy.mjs bytegenau. Keine Auth-/Datenlogik geändert. PR #96 bleibt erfolgreich veröffentlicht; dieser begrenzte Begleiter-Fix wird separat per PR #97 integriert und geprüft.

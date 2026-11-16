@@ -95,9 +95,10 @@ test('v7: normaler Animationsmodus bleibt kompatibel',()=>{
  const b=new ToolyaBuddy({root:document.body});
  try{b.setMotion('normal');assert.equal(b.host.attrs['data-motion'],'on');b.setMotion('calm');assert.equal(b.host.attrs['data-motion'],'calm')}finally{b.destroy()}
 });
-test('v8: Charakterwechsel startet die Meldefrist nicht neu',()=>{
+test('v8: Charakterwechsel startet die Meldefrist nicht neu',t=>{
+ let clock=100000;t.mock.method(Date,'now',()=>clock++);
  const b=new ToolyaBuddy({root:document.body});
- try{b.show('tip','Zeitlich begrenzt');const deadline=b.deadline;assert.ok(deadline>Date.now());b.setCharacter('purple');assert.ok(b.deadline<=deadline);b.dismiss();assert.equal(b.deadline,0)}finally{b.destroy()}
+ try{b.show('tip','Zeitlich begrenzt');const deadline=b.deadline;assert.ok(deadline>Date.now());b.setCharacter('purple');assert.equal(b.deadline,deadline);b.dismiss();assert.equal(b.deadline,0)}finally{b.destroy()}
 });
 test('v8: wichtige Meldungen haben keine automatische Ablauffrist',()=>{
  const b=new ToolyaBuddy({root:document.body});
