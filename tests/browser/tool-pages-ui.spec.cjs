@@ -707,6 +707,15 @@ test('estate: real browser crypto binds emergency envelopes to the correct trust
  expect(result).toEqual({opened:'Isolated fixture',uppercase:'Isolated fixture',formatted:'Formatted fixture',swapped:'rejected',duplicate:'conflict',unique:true});
 });
 
+// Optional compact review images for isolated draft-PR checks when local image access is unavailable.
+// Only the two synthetic, intercepted tool fixtures below call this helper.
+async function reviewImage(page,id){
+ if(process.env.TOOLYA_VISUAL_LOGS!=='1')return;
+ const data=(await page.screenshot({type:'jpeg',quality:42,fullPage:false})).toString('base64');
+ const size=10000,total=Math.ceil(data.length/size);
+ for(let i=0;i<total;i++)console.log('TOOLYA_REVIEW|'+id+'|'+i+'|'+total+'|'+data.slice(i*size,(i+1)*size));
+}
+
 for(const item of tools){
  test(item.tool+': shared controls on the real authenticated page at three widths',async({page},testInfo)=>{
   await isolated(page,true,true);
@@ -731,7 +740,9 @@ for(const item of tools){
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
    await page.locator(item.form).focus();await page.keyboard.press('Tab');
    expect(await page.evaluate(()=>parseFloat(getComputedStyle(document.activeElement).outlineWidth))).toBeGreaterThanOrEqual(3);
+   await page.locator('.ty-tool-hero').scrollIntoViewIfNeeded();
    await page.screenshot({path:testInfo.outputPath('b3-'+item.tool+'-'+width+'.png'),fullPage:true});
+   await reviewImage(page,item.tool+'-page-'+width);
    await page.locator('#settingsBtn').click();
    await expect(page.locator('#settingsModal')).toBeVisible();
    await page.locator('#b3-edit-open').click();
@@ -742,6 +753,7 @@ for(const item of tools){
    await save.hover();await expect(save).toHaveCSS('transform','none');
    await expect(page.locator('#b3-editor button[disabled]').first()).toBeDisabled();
    await page.screenshot({path:testInfo.outputPath('b3-editor-'+item.tool+'-'+width+'.png'),fullPage:true});
+   await reviewImage(page,item.tool+'-editor-'+width);
    await page.locator('#b3-editor').getByRole('button',{name:'Abbrechen',exact:true}).click();
    await expect(page.locator('#b3-editor')).toBeHidden();
   }
