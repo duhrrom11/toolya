@@ -3,6 +3,19 @@ const KEY = 'toolya.analytics.consent.v1';
 const GA_ID = 'G-11L9Y8YK7B';
 let choice = null;
 try { const v = localStorage.getItem(KEY); if (v === 'yes' || v === 'no') choice = v; } catch {}
+// Remove first-party GA identifiers when consent is withdrawn. This cannot erase data already sent.
+function clearAnalyticsCookies() {
+  const names = document.cookie.split(';').map(part => part.trim().split('=')[0]).filter(name => /^(_ga(?:_|$)|_gid$|_gat(?:_|$))/.test(name));
+  const parts = location.hostname.split('.');
+  const domains = ['', location.hostname, ...parts.slice(1).map((_, i) => parts.slice(i + 1).join('.'))];
+  for (const name of names) {
+    for (const domain of new Set(domains)) {
+      for (const path of ['/', location.pathname]) {
+        document.cookie = name + '=; Max-Age=0; path=' + path + '; SameSite=Lax' + (domain ? '; domain=' + domain : '');
+      }
+    }
+  }
+}
 let loaded = false;
 function enableAnalytics() {
   if (loaded) return;
@@ -24,7 +37,7 @@ function enableAnalytics() {
   document.head.appendChild(tag);
 }
 // Sensitive estate routes must never send analytics, even after a prior opt-in.
-const analyticsAllowed = !location.pathname.startsWith('/tools/estate/');
+const analyticsAllowed = !/^\/tools\/estate(?:\/|$)/.test(location.pathname);
 if (choice === 'yes' && analyticsAllowed) enableAnalytics();
 function init() {
   if (document.getElementById('toolya-consent-panel')) return;
@@ -46,6 +59,7 @@ function init() {
     if (value === 'yes' && analyticsAllowed) enableAnalytics();
     else if (loaded) {
       window.gtag?.('consent', 'update', { analytics_storage: 'denied' });
+      clearAnalyticsCookies();
       // Reload removes the loaded Google script and all active GA listeners.
       location.reload();
     }
@@ -75,6 +89,7 @@ function init() {
     const next = event.key === null ? null : event.newValue;
     if (next === choice) return;
     choice = next === 'yes' || next === 'no' ? next : null;
+    if (loaded && choice !== 'yes') clearAnalyticsCookies();
     if (loaded || choice === 'yes') location.reload();
     else panel.hidden = choice !== null;
   });
