@@ -47,6 +47,12 @@ test('GA4 opt-in lifecycle: reject, accept, withdraw, reload, cross-tab', { time
     await second.getByRole('button', { name: 'Akzeptieren' }).click();
     await page.waitForTimeout(300);
     assert.equal(await page.evaluate(() => localStorage.getItem('toolya.analytics.consent.v1')), 'yes', 'Cross-tab consent must sync');
+    const sensitive = await context.newPage();
+    await sensitive.goto(url + 'tools/estate/index.html');
+    const beforeSensitive = requests.length;
+    await sensitive.reload();
+    assert.equal(requests.length, beforeSensitive, 'Sensitive estate pages must never request Google, even with opt-in');
+    await sensitive.close();
     await second.close();
     await page.close();
   } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
