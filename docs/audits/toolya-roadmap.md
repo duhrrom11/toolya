@@ -9,13 +9,13 @@ Gewicht = relative Arbeitsgröße (1 klein, 2 mittel, 3 groß, 5 sehr groß), ke
 | ID | Kategorie | Gewicht | Seite/Komponente | Ist | Soll | Umsetzung | Aufwand | Abhängigkeiten | Risiko | Status | Nachweis |
 |---|---|---:|---|---|---|---|---|---|---|---|---|
 | I01 | Bestandsaufnahme | 2 | Repository/Branches/CI | 38 HTML, 93 Branches, 3 offene PRs erfasst | Architektur und offene Änderungen nachvollziehbar | Inventar und PR-Abgleich dokumentieren | 1 h | GitHub | niedrig | Verifiziert | clone; runs 43921114382/304/071; PR-Suche |
-| I02 | Bestandsaufnahme | 2 | Supabase/Analytics | Projekte und RLS-Metadaten geprüft | Verwendetes Backend und Zugriffsumfang erfassen | Metadaten, Advisors und Analytics-Projektzuordnung prüfen | 2 h | Supabase/Amplitude | mittel | In Arbeit | security-inventory.md; Amplitude default erreichbar, Toolya-Zuordnung nicht bestätigt |
+| I02 | Bestandsaufnahme | 2 | Supabase/Analytics | Projekte und RLS-Metadaten geprüft | Verwendetes Backend und Zugriffsumfang erfassen | Metadaten, Advisors und Analytics-Projektzuordnung prüfen | 2 h | Supabase/Amplitude | mittel | Verifiziert | security-inventory.md; Amplitude default erreichbar, Toolya-Zuordnung nicht bestätigt |
 | I03 | Bestandsaufnahme | 3 | Alle Seiten live | 2 öffentliche Ansichten und 1 Auth-Umleitung geprüft | 38 Routen klassifiziert und erreichbare Ansichten geprüft | Öffentliche Seiten, Sonderseiten und Auth-Zustände erfassen | 3 h | Browser/Anmeldesitzung | mittel | In Arbeit | page-inventory.json; Screenshots 01/02 |
 | I04 | Bestandsaufnahme | 1 | Markenentscheidungen | Aktueller Auftrag, AGENTS und Roadmap abgeglichen | Kein Verlust verbindlicher Vorgaben | Aktuellen Footerauftrag und Originalassets festhalten | 0,5 h | Originalassets | niedrig | Verifiziert | AGENTS.md; Masterauftrag |
-| D01 | P1 – Design | 2 | Footer/Consent | Widerrufslink geht auf Startseite verloren; 2 Footer auf privacy | Ein Footer mit dauerhaftem Widerrufslink | Link beim Austausch bewahren und nach spätem Mount einhängen | 1 h | platform.mjs; consent.js | mittel | Umgesetzt | Live DOM; Screenshot 02; mountFooter/init |
-| D02 | P1 – Design | 2 | Wortmarke/Token | Schriftfamilie wird seitenabhängig geerbt | Identische Markenfamilie/Gewicht/Abstände | Gemeinsame Tokens aus bestehender Startseite übernehmen | 1 h | platform/header/footer CSS | niedrig | Umgesetzt | Live computed styles Inter vs ui-sans |
-| D03 | P1 – Design | 1 | Pflanzen/Tier-Header | Grüne Themenfarben | Bläuliches Türkis unabhängig von Charakter | Nur vorhandene Themenvariablen korrigieren | 0,5 h | header.css | niedrig | Umgesetzt | header.css data-tool=plants/pet-health |
-| D04 | P1 – Design | 2 | Ko-fi/Footer-CSS | Doppelte konkurrierende Regeln/Keyframes | Eine wartbare aktive Definition | Aktuelles Rendering erhalten, Altdefinition entfernen | 1 h | footer.css; platform.mjs | mittel | Umgesetzt | Zwei ty-kofi-banner-Regelgruppen |
+| D01 | P1 – Design | 2 | Footer/Consent | Widerrufslink geht auf Startseite verloren; 2 Footer auf privacy | Ein Footer mit dauerhaftem Widerrufslink | Link beim Austausch bewahren und nach spätem Mount einhängen | 1 h | platform.mjs; consent.js | mittel | Verifiziert | Live DOM; Screenshot 02; mountFooter/init |
+| D02 | P1 – Design | 2 | Wortmarke/Token | Schriftfamilie wird seitenabhängig geerbt | Identische Markenfamilie/Gewicht/Abstände | Gemeinsame Tokens aus bestehender Startseite übernehmen | 1 h | platform/header/footer CSS | niedrig | Verifiziert | Live computed styles Inter vs ui-sans |
+| D03 | P1 – Design | 1 | Pflanzen/Tier-Header | Grüne Themenfarben | Bläuliches Türkis unabhängig von Charakter | Nur vorhandene Themenvariablen korrigieren | 0,5 h | header.css | niedrig | Verifiziert | header.css data-tool=plants/pet-health |
+| D04 | P1 – Design | 2 | Ko-fi/Footer-CSS | Doppelte konkurrierende Regeln/Keyframes | Eine wartbare aktive Definition | Aktuelles Rendering erhalten, Altdefinition entfernen | 1 h | footer.css; platform.mjs | mittel | Verifiziert | Zwei ty-kofi-banner-Regelgruppen |
 | D05 | P1 – Design | 5 | Alle 38 Seiten/responsive | Nicht vollständig visuell geprüft; Legacy-Wishlist/Dark-CSS | Gemeinsame Marke, keine Überläufe, Hellmodus | Ansichten 320/768/1440 und Tastatur systematisch prüfen | 1–2 Tage | I03; isolierte Auth-Fixtures | mittel | Offen | page-inventory.json; Legacy-Seiten |
 | D06 | P1 – Design | 3 | Formulare/Karten/Dialoge | Mehrere historisch getrennte UI-Systeme | Konsistente Zustände und Eingaben | Bestehende UI schrittweise mit Tokens verbinden | 1–2 Tage | D05 | mittel | Offen | B3, Estate, Wishlist, Dashboard Styles |
 | D07 | P1 – Design | 2 | Öffentliche Infoseiten | Eigener Header und zusätzliche Begleiterkarte | Einheitliche gemeinsame Navigation/Marke | Rechtsseiten/Galerie an vorhandene Komponenten anschließen | 2 h | D02 | niedrig | Offen | Screenshot 02-privacy-before |
@@ -29,6 +29,7 @@ Gewicht = relative Arbeitsgröße (1 klein, 2 mittel, 3 groß, 5 sehr groß), ke
 | X02 | Weitere Optimierungen | 2 | WG-Speichern | Client UPDATE, live keine UPDATE-Spaltenrechte | Eigene Inhalte speichern, owner_id unveränderbar | Isoliert reproduzieren und minimalen Rechtefix vorbereiten | 3 h | X01 | hoch | Offen | Live has_column_privilege; housemates client |
 | X03 | Weitere Optimierungen | 2 | Öffentliche Profile | Public SELECT auch ohne Veröffentlichung | Veröffentlichungsabsicht und sichtbare Daten stimmen überein | Policy/Produktentscheidung und Datenminimierung prüfen | 3 h | X01; Wishlist-UI | hoch | Offen | Live wishlist_profiles policy |
 | X04 | Weitere Optimierungen | 2 | Abschluss/Monitoring | Alte Releaseberichte, noch kein aktueller Gesamtnachweis | Aktueller Release und offene Grenzen dokumentiert | CI/Pages/live bytegleich prüfen und Backlog aktualisieren | 2 h | Arbeitspakete abgeschlossen | mittel | Offen | docs/TOOLYA-RELEASE-STATUS historisch |
+| X05 | Weitere Optimierungen | 1 | Galerie/Analytics | Consent klassisch und als Modul geladen | Einmalige Initialisierung je Seitenaufruf | Doppelladung isoliert bestätigen und idempotent absichern | 1 h | mascots.html; Consent | mittel | Offen | Unabhängige Codeprüfung; noch kein Laufzeitnachweis |
 
 ## Reihenfolge
 
@@ -42,14 +43,20 @@ Gewicht = relative Arbeitsgröße (1 klein, 2 mittel, 3 groß, 5 sehr groß), ke
 
 | Bereich | Verifiziert/Gesamtgewicht | Fortschritt | Status |
 |---|---:|---:|---|
-| Bestandsaufnahme | 3/8 | 37,5 % | In Arbeit |
-| P1 – Design-Konsistenz | 0/17 | 0 % | In Arbeit |
+| Bestandsaufnahme | 5/8 | 62,5 % | In Arbeit |
+| P1 – Design-Konsistenz | 7/17 | 41,2 % | In Arbeit |
 | P2 – SEO | 0/9 | 0 % | Offen |
 | P3 – Inhalte & Rechtstexte | 0/8 | 0 % | Offen |
-| Weitere Optimierungen | 0/9 | 0 % | In Arbeit |
+| Weitere Optimierungen | 0/10 | 0 % | In Arbeit |
 
-21 übergeordnete Aufgaben (Fachanhang-Unterpunkte ohne Doppelzählung): 2 verifiziert, 19 nicht abgeschlossen. Keine globale Prozentzahl für den noch wachsenden Prüfumfang.
+22 übergeordnete Aufgaben (Fachanhang-Unterpunkte ohne Doppelzählung): 7 verifiziert, 15 nicht abgeschlossen. Keine globale Prozentzahl für den noch wachsenden Prüfumfang.
 
 ## Fortsetzungsstand
 
-Aktuelle Phase: Bestandsaufnahme und erstes P1-Paket. Ausgangscommit 28f73ac. D01–D04 im Code umgesetzt, 75 Node-Tests bestanden; kein Audit-Code gemergt oder veröffentlicht. Nächste Aktion: isolierte Browser-CI des ersten Pakets, dann Merge und Liveprüfung. Private Live-Flows mangels bestätigter Sitzung noch nicht geprüft; Rechtstexte ohne juristische Freigabe. Produktivdaten unverändert.
+Aktuelle Phase: P1 – Designharmonisierung. Bestandsaufnahme läuft hinsichtlich vollständiger Browserabnahme weiter. PR [#91](https://github.com/duhrrom11/toolya/pull/91) gemergt; Releasecommit `1b611811afddef8bd0da78da00ba50c66cd896ea`, Pages [43928099016](https://github.com/duhrrom11/toolya/actions/runs/43928099016) erfolgreich. D01–D04 im Code, auf main und live bestätigt. 75 Node-Tests, sechs PR-Checks, neue Vier-Seiten-/Drei-Breiten-Prüfung und Originalasset-Hashes bestanden. Details und Grenzen im Master-Audit.
+
+Nächste konkrete Aktion: eigenes P1-Paket für `assets/estate-app.css` (Besitzer/Erben) mit bläulichem Türkis, danach separat `tools/estate/handover.html` unter unveränderter CSP/Netzwerksperre. Vollständige Designfamilienmatrix: [design-family-inventory.md](design-family-inventory.md). Anschließend D05–D07 fortführen. Noch keine reguläre SEO-/Textumsetzung beginnen.
+
+Private Live-Flows sind mangels bestätigter Anmeldesitzung nicht vollständig abgenommen; isolierte/synthetische Prüfungen sind kein Ersatz für alle produktiven Ansichten. Alte Wishlist-Seiten nicht ungeprüft entfernen. Keine juristische Freigabe. Keine produktiven Nutzerdaten geändert.
+
+Geänderte Produktdateien in PR #91: `assets/toolya-consent.js`, `shared/toolya/platform.mjs`, `shared/toolya/tokens.css`, `shared/toolya/footer.css`, `shared/toolya/header.css`, `privacy.html`, `legal.html`. Dazu gezielte Browserregressionen und Audit-Dokumente. Rollback: gezielter Revert des genannten Releasecommits; keine Datenbankmigration erforderlich.
