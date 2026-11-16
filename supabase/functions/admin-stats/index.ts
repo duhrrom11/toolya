@@ -119,7 +119,7 @@ async function ga4Metrics(days:number):Promise<Metric[]>{
     if(typeof key!=='string'||!Number.isFinite(value)||value<0)continue;
     if(i===0&&/^[a-zA-Z][a-zA-Z0-9_]{0,60}$/.test(key))
      additional.push({label:'Ereignis: '+key,value,detail:'GA4 Ereignisanzahl · letzte '+days+' Tage'});
-    if(i===1&&/^\\d{8}$/.test(key))
+    if(i===1&&/^\d{8}$/.test(key))
      additional.push({label:'Tag: '+key,value,detail:'GA4 Seitenaufrufe pro Tag'});
    }
   }catch{/* Optional breakdown must not invalidate confirmed totals. */}
