@@ -73,14 +73,14 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  // Login regression: Swiss-French AltGr+2, native Ctrl+V and explicit clipboard controls.
  await page.setViewportSize({width:1280,height:812});
  await page.locator('#settingsBtn').click();
- const email=page.locator('#loginEmail');await email.waitFor({state:'visible'});await email.fill('test');
- await email.evaluate(el=>el.dispatchEvent(new KeyboardEvent('keydown',{key:'2',code:'Digit2',ctrlKey:true,altKey:true,bubbles:true,cancelable:true})));
- assert.equal(await email.inputValue(),'test@','AltGr+2 fallback inserts @');
- await page.locator('#loginInsertAt').click();assert.equal(await email.inputValue(),'test@@','accessible @ control inserts character');
+ const emailSwiss=page.locator('#loginEmail');await emailSwiss.waitFor({state:'visible'});await emailSwiss.fill('test');
+ await emailSwiss.evaluate(el=>el.dispatchEvent(new KeyboardEvent('keydown',{key:'2',code:'Digit2',ctrlKey:true,altKey:true,bubbles:true,cancelable:true})));
+ assert.equal(await emailSwiss.inputValue(),'test@','AltGr+2 fallback inserts @');
+ await page.locator('#loginInsertAt').click();assert.equal(await emailSwiss.inputValue(),'test@@','accessible @ control inserts character');
  await page.evaluate(()=>{window.__nativePasteNotBlocked=true;const el=document.getElementById('loginEmail');el.focus();const e=new KeyboardEvent('keydown',{key:'v',code:'KeyV',ctrlKey:true,bubbles:true,cancelable:true});window.__nativePasteNotBlocked=el.dispatchEvent(e)});
  assert.equal(await page.evaluate(()=>window.__nativePasteNotBlocked),true,'Ctrl+V must preserve native default');
  await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{readText:async()=> 'example.ch'}}));
- await email.fill('user@');await page.locator('#loginPasteEmail').click();
+ await emailSwiss.fill('user@');await page.locator('#loginPasteEmail').click();
  await page.waitForFunction(()=>document.getElementById('loginEmail').value==='user@example.ch');
  await page.locator('#loginPastePassword').click();
  await page.waitForFunction(()=>document.getElementById('loginPassword').value==='example.ch');
