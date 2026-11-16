@@ -1,0 +1,21 @@
+name: GA4 consent browser checks
+on:
+  pull_request:
+    paths:
+      - 'assets/toolya-consent.js'
+      - 'tests/privacy/**'
+      - '.github/workflows/ga4-consent.yml'
+  workflow_dispatch:
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.62.1
+      - run: npx playwright install --with-deps chromium
+      - run: node --test tests/privacy/ga4-consent.test.cjs
