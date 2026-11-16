@@ -8,8 +8,8 @@ const state=$('state'),panel=$('panel');
 const show=(msg)=>{state.textContent=msg;state.hidden=false;panel.hidden=true};
 const tile=(title,value,detail)=>{const e=document.createElement('article');e.className='tile';const h=document.createElement('h3');h.textContent=title;const v=document.createElement('strong');v.textContent=value;const p=document.createElement('p');p.className='meta';p.textContent=detail;e.append(h,v,p);return e};
 const renderSeo=(host,series)=>{host.replaceChildren();const points=Array.isArray(series?.points)?series.points.filter(p=>/^\d{4}-\d{2}-\d{2}$/.test(p.date)&&Number.isFinite(p.clicks)&&Number.isFinite(p.impressions)&&p.clicks>=0&&p.impressions>=0).sort((a,b)=>a.date.localeCompare(b.date)):[];
- if(!points.length){host.textContent='Keine täglichen Suchdaten für diesen Zeitraum verfügbar.';return}
- const legend=document.createElement('p');legend.className='seo-legend';legend.textContent='● Klicks     ● Impressionen';host.append(legend);
+ if(!points.length){host.textContent=series?.status==='unavailable'?'Tagesdaten konnten nicht abgerufen werden. Die Gesamtkennzahlen bleiben verfügbar.':series?.status==='empty'?'Die API lieferte für diesen Zeitraum keine auswertbaren Tageswerte.':'Keine Tagesdaten verfügbar oder Datenquelle nicht verbunden.';return}
+ const legend=document.createElement('p');legend.className='seo-legend';legend.textContent='Klicks und Impressionen · getrennte Skalen';host.append(legend);
  for(const [key,label,color] of [['clicks','Klicks','#087a8b'],['impressions','Impressionen','#d97706']]){
   const heading=document.createElement('h4');heading.textContent=label;host.append(heading);
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 640 160');svg.setAttribute('preserveAspectRatio','none');svg.setAttribute('role','img');svg.setAttribute('aria-label',label+' vom '+points[0].date+' bis '+points[points.length-1].date);
