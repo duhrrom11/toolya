@@ -29,6 +29,28 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
  }
 if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(staticHosts.has(u.hostname)&&r.request().method()==='GET')return r.continue();if(r.request().method()!=='GET'&&(u.pathname.includes('/rest/v1/')||u.pathname.includes('/functions/v1/'))&&!u.pathname.endsWith('/rest/v1/rpc/search_public_amazon_wishlists')){blockedWrites++;blockedWriteUrls.push(r.request().method()+' '+u.hostname+u.pathname)}return r.abort()};await context.route('**/*',guard);
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ // Verify real native keyboard copy, paste and cut without injecting clipboard handlers.
+ // The browser runs against the local static server; no production accounts or data.
+ await context.grantPermissions(['clipboard-read','clipboard-write'],{origin});
+ async function verifyClipboard(route){
+  await page.evaluate(()=>{
+   for(const [id,value] of [['toolya-clipboard-source','Toolya Zwischenablage ✓'],['toolya-clipboard-target','']]){
+    const field=document.createElement('textarea');field.id=id;field.value=value;
+    field.setAttribute('aria-label',id);field.style.cssText='position:fixed;top:0;left:0;width:250px;height:50px;z-index:2147483647;background:white;color:black';
+    document.body.append(field);
+   }
+  });
+  const source=page.locator('#toolya-clipboard-source'),target=page.locator('#toolya-clipboard-target');
+  await source.focus();await source.selectText();await page.keyboard.press('ControlOrMeta+C');
+  await target.focus();await page.keyboard.press('ControlOrMeta+V');
+  assert.equal(await target.inputValue(),'Toolya Zwischenablage ✓',route+' native copy/paste');
+  await target.selectText();await page.keyboard.press('ControlOrMeta+X');
+  assert.equal(await target.inputValue(),'',route+' native cut');
+  await page.keyboard.press('ControlOrMeta+V');
+  assert.equal(await target.inputValue(),'Toolya Zwischenablage ✓',route+' paste after cut');
+  await page.evaluate(()=>{document.getElementById('toolya-clipboard-source').remove();document.getElementById('toolya-clipboard-target').remove()});
+ }
+
  await page.goto(origin+'/tools/plants/');await page.waitForFunction(()=>document.getElementById('toolya-cloud-gate')===null,null,{timeout:10000}).catch(async e=>{console.error('PLANTS FIXTURE DIAGNOSTIC',await page.evaluate(()=>({gate:document.getElementById('toolya-cloud-gate')?.textContent?.slice(0,180)||null,ready:typeof plantsCloudReady!=='undefined'?plantsCloudReady:null})));throw e;});await page.waitForFunction(()=>window.toolyaBuddy);await page.evaluate(()=>{toolyaBuddy.dismiss();toolyaBuddy.setMotion('off')});
  await page.waitForFunction(()=>{const f=document.querySelector('.toolya-idle .ty-frame');return f&&!f.hidden});
  assert.equal(await page.locator('.toolya-idle .ty-frame').evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)','sprite frame must not add a white image background');
@@ -56,7 +78,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  assert.equal(await page.locator('.toolya-settings').count(),0);assert.equal(await page.locator('#settingsModal .toolya-preferences').count(),1);await page.keyboard.press('Escape');
  // New homepage duo replaces the old idle shortcut. Existing shared buddy checks above
  // intentionally stay on a tool route where that shortcut remains part of the UI.
- await page.goto(origin);await page.waitForFunction(()=>window.toolyaHomeReady===true);await page.evaluate(()=>toolyaBuddy.dismiss());
+ await page.goto(origin);await page.waitForFunction(()=>window.toolyaHomeReady===true);await page.evaluate(()=>toolyaBuddy.dismiss());await verifyClipboard('home');
  // Regression: Swiss-French AltGr+2 and native paste must work in the account email field.
  await page.setViewportSize({width:1280,height:812});
  await page.locator('#settingsBtn').click();
@@ -124,7 +146,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  await desktop.locator('.ty-tool-card[data-id="wishlist"]').hover();
  await desktop.screenshot({path:'test-results/mascot-home-hover.png'});await desktopContext.close();
 
- for(const route of routes){await page.goto(origin+'/tools/'+route+'/');await page.waitForFunction(()=>window.toolyaBuddy);assert.equal(await page.locator('.toolya-buddy').count(),1,route);await page.evaluate(()=>toolyaBuddy.dismiss());await page.waitForFunction(()=>{const f=document.querySelector('.toolya-idle .ty-frame');return f&&!f.hidden});
+ for(const route of routes){await page.goto(origin+'/tools/'+route+'/');await page.waitForFunction(()=>window.toolyaBuddy);await verifyClipboard('tools/'+route);assert.equal(await page.locator('.toolya-buddy').count(),1,route);await page.evaluate(()=>toolyaBuddy.dismiss());await page.waitForFunction(()=>{const f=document.querySelector('.toolya-idle .ty-frame');return f&&!f.hidden});
   const measurement=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth,overflow:[...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();if(r.right<=321||r.width===0)return false;for(let p=e.parentElement;p;p=p.parentElement){if(/auto|scroll|hidden|clip/.test(getComputedStyle(p).overflowX)&&p.getBoundingClientRect().right<=321)return false}return true}).slice(0,20).map(e=>({tag:e.tagName,id:e.id,class:e.className,right:e.getBoundingClientRect().right}))}));
   if(route==='wishes')await page.screenshot({path:'test-results/mascot-wishes-mobile.png',fullPage:true});
   assert(measurement.scroll<=322,route+' overflow '+JSON.stringify(measurement));assert.equal(await page.evaluate(()=>toolyaBuddy.character),'purple');
@@ -142,7 +164,8 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
   if(await page.locator('#settingsModal[aria-modal="true"]').isVisible().catch(()=>false))await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route+' single preferences panel');await page.keyboard.press('Escape');await page.screenshot({path:'test-results/mascot-'+route+'-mobile.png',fullPage:true});assert.equal(await page.locator('.toolya-idle').isVisible(),false,route+' redundant strip hidden');if(await page.locator('.ty-tool-hero-mascot').count())await page.locator('.ty-tool-hero-mascot').screenshot({path:'test-results/mascot-'+route+'-detail.png'});
  }
- for(const route of ['/privacy.html','/legal.html','/mascots.html','/tools/wishes/dashboard.html','/tools/estate/heirs.html','/tools/estate/handover.html']){await page.goto(origin+route);await page.waitForFunction(()=>window.toolyaBuddy);assert.equal(await page.locator('.toolya-settings').count(),0,route);await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route);await page.keyboard.press('Escape');}
+ await page.goto(origin+'/dashboard/');await page.locator('#welcome-heading').waitFor();await verifyClipboard('dashboard');
+ for(const route of ['/privacy.html','/legal.html','/mascots.html','/tools/wishes/dashboard.html','/tools/estate/heirs.html','/tools/estate/handover.html']){await page.goto(origin+route);await page.waitForFunction(()=>window.toolyaBuddy);await verifyClipboard(route);assert.equal(await page.locator('.toolya-settings').count(),0,route);await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route);await page.keyboard.press('Escape');}
  await page.goto(origin+'/tools/wishes/');assert(['/', '/index.html', '/tools/wishes/', '/tools/wishes/index.html', '/tools/wishes/public.html'].includes(new URL(page.url()).pathname),'wishlist entry stays within approved routes');await page.goto(origin+'/tools/wishes/public.html');await page.locator('#amazonUrl').waitFor();
  assert.equal(await page.locator('#homeNewWish,#homeNewList,.wishes-navigation').count(),0,'legacy private wishlist controls not shown');
  assert.equal(await page.locator('#search,#amazonUrl,#password').count(),3,'public wishlist controls present');
