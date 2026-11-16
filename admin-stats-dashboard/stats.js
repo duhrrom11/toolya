@@ -7,6 +7,19 @@ const client=window.supabase?.createClient(URL,KEY);
 const state=$('state'),panel=$('panel');
 const show=(msg)=>{state.textContent=msg;state.hidden=false;panel.hidden=true};
 const tile=(title,value,detail)=>{const e=document.createElement('article');e.className='tile';const h=document.createElement('h3');h.textContent=title;const v=document.createElement('strong');v.textContent=value;const p=document.createElement('p');p.className='meta';p.textContent=detail;e.append(h,v,p);return e};
+const renderSeo=(host,series)=>{host.replaceChildren();const points=Array.isArray(series?.points)?series.points.filter(p=>/^\d{4}-\d{2}-\d{2}$/.test(p.date)&&Number.isFinite(p.clicks)&&Number.isFinite(p.impressions)&&p.clicks>=0&&p.impressions>=0).sort((a,b)=>a.date.localeCompare(b.date)):[];
+ if(!points.length){host.textContent='Keine täglichen Suchdaten für diesen Zeitraum verfügbar.';return}
+ const legend=document.createElement('p');legend.className='seo-legend';legend.textContent='● Klicks     ● Impressionen';host.append(legend);
+ for(const [key,label,color] of [['clicks','Klicks','#087a8b'],['impressions','Impressionen','#d97706']]){
+  const heading=document.createElement('h4');heading.textContent=label;host.append(heading);
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 640 160');svg.setAttribute('preserveAspectRatio','none');svg.setAttribute('role','img');svg.setAttribute('aria-label',label+' vom '+points[0].date+' bis '+points[points.length-1].date);
+  const max=Math.max(1,...points.map(p=>p[key]));const minTime=Date.parse(points[0].date+'T00:00:00Z'),maxTime=Date.parse(points[points.length-1].date+'T00:00:00Z');
+  const coords=points.map((p,i)=>{const x=maxTime===minTime?320:12+(Date.parse(p.date+'T00:00:00Z')-minTime)/(maxTime-minTime)*616;return [x,145-p[key]/max*130]});
+  const poly=document.createElementNS('http://www.w3.org/2000/svg','polyline');poly.setAttribute('points',coords.map(v=>v.join(',')).join(' '));poly.setAttribute('fill','none');poly.setAttribute('stroke',color);poly.setAttribute('stroke-width','3');poly.setAttribute('stroke-linecap','round');poly.setAttribute('stroke-linejoin','round');svg.append(poly);
+  for(let i=0;i<points.length;i++){const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.setAttribute('cx',coords[i][0]);dot.setAttribute('cy',coords[i][1]);dot.setAttribute('r','3');dot.setAttribute('fill',color);const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=points[i].date+': '+points[i][key].toLocaleString('de-DE')+' '+label;dot.append(title);svg.append(dot)}
+  host.append(svg);const dates=document.createElement('p');dates.className='seo-dates';dates.textContent=points[0].date+' – '+points[points.length-1].date+' · Maximum '+max.toLocaleString('de-DE');host.append(dates);
+ }
+};
 async function load(){
  if(!client){show('Die Anmeldung konnte nicht geladen werden.');return}
  show('Administratorzugriff wird geprüft …');
@@ -19,6 +32,10 @@ async function load(){
   const payload=await response.json();
   if(!payload||!Array.isArray(payload.sources)||!Array.isArray(payload.metrics))throw Error('Ungültiges Datenformat');
   const metrics=payload.metrics;
+  const seo=Array.isArray(payload.seoTrends)?payload.seoTrends:[];
+  renderSeo($('seo-google'),seo.find(x=>x.source==='google'));
+  renderSeo($('seo-bing'),seo.find(x=>x.source==='bing'));
+  $('seo').hidden=false;
   const diagnostic=metrics.find(m=>m.label==='Tool-Ranking-Diagnose');
   const eventCount=metrics.find(m=>m.label==='GA4-Tool-Open-Gesamt');
   const diagnosis=diagnostic?.detail||'Ranking-Diagnose derzeit nicht verfügbar.';
