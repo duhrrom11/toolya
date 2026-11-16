@@ -32,6 +32,20 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  // Verify real native keyboard copy, paste and cut without injecting clipboard handlers.
  // The browser runs against the local static server; no production accounts or data.
  await context.grantPermissions(['clipboard-read','clipboard-write'],{origin});
+ async function verifyRealFormClipboard(route,sourceSelector,targetSelector,value){
+  const source=page.locator(sourceSelector),target=page.locator(targetSelector);
+  await source.waitFor({state:'visible'});
+  await target.waitFor({state:'visible'});
+  await source.fill(value);await target.fill('');
+  await source.focus();await source.selectText();await page.keyboard.press('ControlOrMeta+C');
+  await target.focus();await page.keyboard.press('ControlOrMeta+V');
+  assert.equal(await target.inputValue(),value,route+' paste into real form field '+targetSelector);
+  await source.focus();await source.selectText();await page.keyboard.press('ControlOrMeta+X');
+  assert.equal(await source.inputValue(),'',route+' cut from real form field '+sourceSelector);
+  await page.keyboard.press('ControlOrMeta+V');
+  assert.equal(await source.inputValue(),value,route+' paste after cut '+sourceSelector);
+  await source.fill('');await target.fill('');
+ }
  async function verifyClipboard(route){
   await page.evaluate(()=>{
    for(const [id,value] of [['toolya-clipboard-source','Toolya Zwischenablage ✓'],['toolya-clipboard-target','']]){
@@ -82,7 +96,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  // Regression: Swiss-French AltGr+2 and native paste must work in the account email field.
  await page.setViewportSize({width:1280,height:812});
  await page.locator('#settingsBtn').click();
- const email=page.locator('#loginEmail');await email.waitFor({state:'visible'});await email.fill('romi');
+ const email=page.locator('#loginEmail');await email.waitFor({state:'visible'});await verifyRealFormClipboard('login','#loginEmail','#loginPassword','clipboard@example.ch');await email.fill('romi');
  await email.focus();await page.keyboard.insertText('@');
  assert.equal(await email.inputValue(),'romi@','native text insertion supports @');
  // Keyboard layout translation is OS-specific; test the produced @ input separately.
@@ -164,9 +178,9 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
   if(await page.locator('#settingsModal[aria-modal="true"]').isVisible().catch(()=>false))await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route+' single preferences panel');await page.keyboard.press('Escape');await page.screenshot({path:'test-results/mascot-'+route+'-mobile.png',fullPage:true});assert.equal(await page.locator('.toolya-idle').isVisible(),false,route+' redundant strip hidden');if(await page.locator('.ty-tool-hero-mascot').count())await page.locator('.ty-tool-hero-mascot').screenshot({path:'test-results/mascot-'+route+'-detail.png'});
  }
- await page.goto(origin+'/dashboard/');await page.locator('#welcome-heading').waitFor();await verifyClipboard('dashboard');
+ await page.goto(origin+'/dashboard/');await page.locator('#welcome-heading').waitFor();await verifyClipboard('dashboard');await verifyRealFormClipboard('dashboard','#task-text','#reminder-text','Aufgabe kopieren');
  for(const route of ['/privacy.html','/legal.html','/mascots.html','/tools/wishes/dashboard.html','/tools/estate/heirs.html','/tools/estate/handover.html']){await page.goto(origin+route);await page.waitForFunction(()=>window.toolyaBuddy);await verifyClipboard(route);assert.equal(await page.locator('.toolya-settings').count(),0,route);await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route);await page.keyboard.press('Escape');}
- await page.goto(origin+'/tools/wishes/');assert(['/', '/index.html', '/tools/wishes/', '/tools/wishes/index.html', '/tools/wishes/public.html'].includes(new URL(page.url()).pathname),'wishlist entry stays within approved routes');await page.goto(origin+'/tools/wishes/public.html');await page.locator('#amazonUrl').waitFor();
+ await page.goto(origin+'/tools/wishes/');assert(['/', '/index.html', '/tools/wishes/', '/tools/wishes/index.html', '/tools/wishes/public.html'].includes(new URL(page.url()).pathname),'wishlist entry stays within approved routes');await page.goto(origin+'/tools/wishes/public.html');await page.locator('#amazonUrl').waitFor();await verifyRealFormClipboard('public wishlist','#search','#amazonUrl','https://example.org/list');
  assert.equal(await page.locator('#homeNewWish,#homeNewList,.wishes-navigation').count(),0,'legacy private wishlist controls not shown');
  assert.equal(await page.locator('#search,#amazonUrl,#password').count(),3,'public wishlist controls present');
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'public wishlist mobile overflow');
