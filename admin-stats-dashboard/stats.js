@@ -18,7 +18,20 @@ async function load(){
   if(!response.ok){show('Statistikdienst noch nicht verfügbar (HTTP '+response.status+').');return}
   const payload=await response.json();
   if(!payload||!Array.isArray(payload.sources)||!Array.isArray(payload.metrics))throw Error('Ungültiges Datenformat');
-  $('summary').replaceChildren(...payload.metrics.map(m=>tile(m.label,String(m.value),m.detail||'')));
+  const metrics=payload.metrics;
+  const pages=metrics.filter(m=>m.label.startsWith('Seite: '));
+  const events=metrics.filter(m=>m.label.startsWith('Ereignis: '));
+  const daily=metrics.filter(m=>/^Tag: \d{8}$/.test(m.label)).sort((a,b)=>a.label.localeCompare(b.label));
+  $('summary').replaceChildren(...metrics.filter(m=>!m.label.startsWith('Seite: ')&&!m.label.startsWith('Ereignis: ')&&!m.label.startsWith('Tag: ')).map(m=>tile(m.label,Number(m.value).toLocaleString('de-DE'),m.detail||'')));
+  const bars=(id,items,prefix)=>{const host=$(id);host.replaceChildren();if(!items.length){host.textContent='Noch keine erfassten Daten für diesen Zeitraum.';return}
+   const max=Math.max(1,...items.map(m=>Number(m.value)));
+   for(const m of items){const row=document.createElement('div');row.className='bar-row';const label=document.createElement('span');label.textContent=m.label.slice(prefix.length);const value=document.createElement('strong');value.textContent=Number(m.value).toLocaleString('de-DE');const track=document.createElement('div');track.className='bar-track';const fill=document.createElement('div');fill.className='bar-fill';fill.style.width=Math.max(0,Math.min(100,Number(m.value)/max*100))+'%';track.append(fill);row.append(label,value,track);host.append(row)}
+  };
+  bars('pages',pages,'Seite: ');bars('events',events,'Ereignis: ');
+  const trend=$('trend');trend.replaceChildren();
+  if(daily.length){const max=Math.max(1,...daily.map(m=>Number(m.value)));for(const m of daily){const col=document.createElement('div');col.className='chart-col';const bar=document.createElement('div');bar.className='chart-bar';bar.style.height=Math.max(2,Number(m.value)/max*100)+'%';const date=m.label.slice(5);col.title=date.slice(6,8)+'.'+date.slice(4,6)+'.'+date.slice(0,4)+': '+m.value+' Seitenaufrufe';col.setAttribute('aria-label',col.title);col.append(bar);trend.append(col)}}
+  else trend.textContent='Noch keine Tageswerte verfügbar.';
+  $('analytics').hidden=!payload.sources.some(s=>s.id==='ga4'&&s.status==='connected');
   $('sources').replaceChildren(...payload.sources.map(s=>{const e=tile(s.label,s.status==='connected'?'Verbunden':s.status==='error'?'Fehler':'Nicht verbunden',s.detail||'Noch keine verifizierten Daten');return e}));
   panel.hidden=false;state.hidden=true;
  }catch{show('Statistikdienst nicht erreichbar. Es werden keine Schätzwerte angezeigt.')}
