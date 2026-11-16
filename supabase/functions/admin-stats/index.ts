@@ -52,9 +52,11 @@ Deno.serve(async(req:Request)=>{
  const client=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
  const {data,error}=await client.auth.getUser(token);
  if(error||!data.user)return reply(401,{error:'Invalid session'});
- // Fail closed until administrator IDs are explicitly configured as a server secret.
- const allowed=(Deno.env.get('TOOLYA_STATS_ADMIN_USER_IDS')||'').split(',').map(v=>v.trim()).filter(Boolean);
- if(!allowed.length||!allowed.includes(data.user.id))return reply(403,{error:'Administrator authorization required'});
+ // App metadata is server-managed (unlike user_metadata). Require all three
+ // properties, including the fixed owner identity, to fail closed.
+ const ownerId='53d185ba-d248-4e8e-899e-836e4090e87f';
+ if(data.user.id!==ownerId||data.user.email?.toLowerCase()!=='info@toolya.app'||data.user.app_metadata?.toolya_stats_admin!==true)
+  return reply(403,{error:'Administrator authorization required'});
  const days=Number(new URL(req.url).searchParams.get('days')||30);
  if(![7,30,90].includes(days))return reply(400,{error:'Invalid period'});
  const metrics:Metric[]=[];
