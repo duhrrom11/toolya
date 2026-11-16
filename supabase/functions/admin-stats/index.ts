@@ -15,24 +15,27 @@ const fetchJson=async(url:string,headers:Record<string,string>={})=>{
  if(!response.ok)throw Error('Provider HTTP '+response.status);
  return response.json();
 };
-async function githubMetrics():Promise<Metric[]>{
+async function githubMetrics(days:number):Promise<Metric[]>{
  const headers:Record<string,string>={};
  const githubToken=Deno.env.get('TOOLYA_STATS_GITHUB_TOKEN');
  if(githubToken)headers.Authorization='Bearer '+githubToken;
  const repo=await fetchJson('https://api.github.com/repos/duhrrom11/toolya',headers);
  const prs=await fetchJson('https://api.github.com/search/issues?q=repo%3Aduhrrom11%2Ftoolya+type%3Apr+is%3Aopen&per_page=1',headers);
+ const since=new Date(Date.now()-days*86400000).toISOString();
+ const commits=await fetchJson('https://api.github.com/repos/duhrrom11/toolya/commits?since='+encodeURIComponent(since)+'&per_page=100',headers);
  return [
   {label:'GitHub Sterne',value:Number(repo.stargazers_count),detail:'Aktueller Gesamtstand · Repository duhrrom11/toolya'},
   {label:'GitHub Forks',value:Number(repo.forks_count),detail:'Repository duhrrom11/toolya'},
   {label:'Offene Issues',value:Number(repo.open_issues_count),detail:'GitHub-Zählung einschließlich Pull Requests'},
-  {label:'Offene Pull Requests',value:Number(prs.total_count),detail:'Aktueller GitHub-Stand'}
+  {label:'Offene Pull Requests',value:Number(prs.total_count),detail:'Aktueller GitHub-Stand'},
+  {label:'Commits (erste 100)',value:commits.length,detail:'Letzte '+days+' Tage · maximal 100, weitere Seiten nicht enthalten'}
  ];
 }
 async function supabaseMetrics(url:string):Promise<Metric[]>{
  const secret=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
  if(!secret)throw Error('Supabase server key not configured');
  const admin=createClient(url,secret,{auth:{persistSession:false,autoRefreshToken:false}});
- const tables=[['Gespeicherte Nutzer-Datensätze','user_data'],['Wunschlisten','wishlist_lists'],['Wunschlisten-Einträge','wishlist_list_items'],['Amazon-Vorschauen','toolya_amazon_previews']];
+ const tables=[['Gespeicherte Nutzer-Datensätze','user_data'],['Wunschlisten','wishlist_lists'],['Wunschlisten-Einträge','wishlist_list_items'],['Amazon-Vorschauen','toolya_amazon_previews'],['Wünsche','wishlist_wishes'],['Produkte','wishlist_products'],['Amazon-Veröffentlichungen','wishlist_amazon_publications'],['Amazon-Scrape-Versuche','wishlist_amazon_scrape_attempts']];
  const results=await Promise.all(tables.map(async([label,table])=>{
   const {count,error}=await admin.from(table).select('*',{count:'exact',head:true});
   if(error||count===null)throw Error('Supabase count unavailable');
@@ -89,7 +92,7 @@ Deno.serve(async(req:Request)=>{
  const metrics:Metric[]=[];
  const sources:Source[]=catalog.map(([id,label])=>({id,label,status:'not_connected',detail:'API-Datenquelle noch nicht eingerichtet'}));
  const tasks=[
-  {id:'github',run:()=>githubMetrics()},
+  {id:'github',run:()=>githubMetrics(days)},
   {id:'supabase',run:()=>supabaseMetrics(url)},
   {id:'ga4',run:()=>ga4Metrics(days)}
  ];
