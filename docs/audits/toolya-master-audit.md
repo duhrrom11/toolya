@@ -100,3 +100,13 @@ Sieben von 22 übergeordneten Aufgaben verifiziert; 15 noch offen oder in Arbeit
 Die ursprünglichen Zwischenstände weiter oben beschreiben den Weg bis zur Verifikation. Dieser Abschluss ist für PR #91 maßgeblich. Die [Designfamilienmatrix](design-family-inventory.md) beschreibt die nächste konkrete P1-Einheit. Design, SEO und Inhalte bleiben getrennte, noch nicht vollständig abgeschlossene Phasen.
 
 Auch die main-Läufe nach dem Merge sind erfolgreich: Plattform/Nachlass 43928099143, Amazon 43928099197, isolierte Browser 43928099189.
+
+## Zweites P1-Paket – Nachlass Besitzer und Vertrauenspersonen
+
+Ausgangscommit `80247443ab3120342bfc07faef3fc4b438172f76`, Branch `audit/estate-design-turquoise-20261116`. Aktuelle Live-Besitzeransicht bestätigt grünliche UI-Flächen. Die Vertrauenspersonenseite besitzt zusätzlich zum gemeinsamen Footer einen eigenen Footer mit Schlüsselhinweis. Dieser wichtige Hinweis wird in main bewahrt, sodass nur der gemeinsame Footer bleibt.
+
+D06 wird ohne Gewichtserhöhung in D06a (Nachlass Besitzer/Erben, Gewicht 1) und D06b (übrige Formulare/Karten, Gewicht 2) geteilt. 23 Aufgaben, weiterhin 7 verifiziert; noch kein neuer Fortschritt vor Browserprüfung. CSS greift auf die bestehenden Markenfont-/Primärfarb-Tokens zurück, grüne Flächen werden bläulich, inaktive Dark-Mode-Overrides entfernt. Rot bleibt für kritische Aktionen erhalten. Hover-/Druckbewegung bleibt erhalten; die kontrastsenkende Helligkeitsfilterung entfällt. Rechnerischer Weißtext-Kontrast auf #007e9f: 4,68:1; Browserkontrast wird zusätzlich geprüft. Keine vollständige WCAG-Zertifizierung behauptet.
+
+75 bestehende Node-Tests lokal bestanden. Bestehende responsive Prüfung wird um Besitzer-Login und Vertrauenspersonenzugang bei 320/768/1440 px erweitert, einschließlich Hellmodus bei dunkler Systemeinstellung, Tastaturfokus, Primärbutton-Kontrast und erhaltenem Schlüsselhinweis. Die echte isolierte Nachlass-Sicherheitsprüfung deckt weiter Anmeldung, Verschlüsselung, Zwei-Schlüssel-Regel, 24h-Frist, Entwarnung und Sperren ab und speichert zusätzliche Bilder des geöffneten synthetischen Tresors. Keine Testdaten oder Alarme in Produktion.
+
+Unabhängige Codeprüfung: keine CSP-/Auth-/Schlüssel-/Freigabeänderung; Hinweistext erhalten. `handover.html` und `print-key.html` sind von diesem Paket ausgenommen und unverändert. Die eigenständige Übergabeseite folgt separat, weil ihr CSP externes CSS und Netzwerkzugriffe sperrt.
