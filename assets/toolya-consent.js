@@ -61,7 +61,7 @@ document.addEventListener('click', event => {
   let destination;
   try { destination = new URL(link.href, location.href); } catch { return; }
   if (destination.origin !== location.origin) return;
-  const match = destination.pathname.match(/^\\/tools\\/([a-z-]+)\\/(?:index\\.html)?$/);
+  const match = destination.pathname.match(/^\/tools\/([a-z-]+)\/(?:index\.html)?$/);
   const toolId = match?.[1];
   if (!TOOL_IDS.has(toolId)) return;
   window.gtag('event', 'tool_open', { tool_name: toolId, transport_type: 'beacon' });
