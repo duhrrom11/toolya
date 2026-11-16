@@ -47,26 +47,24 @@ function enableAnalytics() {
   window.gtag('config', GA_ID, { allow_google_signals: false, allow_ad_personalization_signals: false, send_page_view: false });
   // Never send URL query strings, fragments, referrers or sensitive tool interactions.
   window.gtag('event', 'page_view', { page_location: location.origin + location.pathname, page_referrer: '', page_title: document.title, ...(debugEnabled ? { debug_mode: true } : {}) });
+  recordToolOpen();
   const tag = document.createElement('script');
   tag.async = true;
   tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_ID);
   document.head.appendChild(tag);
 }
-// Only aggregate navigation to a known tool. No form fields, URLs, accounts or user IDs.
+// Record a tool opening on the destination page, not during navigation.
+// Only known tool paths; no URL, query string, user identifier or form content.
 const TOOL_IDS = new Set(['wishes','budget','moving','plants','housemates','estate','car','pet-health','parking','loans','meters','baking']);
-document.addEventListener('click', event => {
-  if (choice !== 'yes' || !loaded || typeof window.gtag !== 'function') return;
-  const link = event.target.closest?.('a[href]');
-  if (!link) return;
-  let destination;
-  try { destination = new URL(link.href, location.href); } catch { return; }
-  if (destination.origin !== location.origin) return;
-  const match = destination.pathname.match(/^\/tools\/([a-z-]+)\/(?:index\.html)?$/);
-  const toolId = match?.[1];
-  if (!TOOL_IDS.has(toolId)) return;
-  window.gtag('event', 'tool_open', { tool_name: toolId, transport_type: 'beacon' });
-}, { capture: true });
-
+const toolMatch = location.pathname.match(/^\/tools\/([a-z-]+)\/(?:index\.html)?$/);
+const currentTool = toolMatch?.[1];
+function recordToolOpen() {
+  if (choice !== 'yes' || !loaded || !TOOL_IDS.has(currentTool)) return;
+  window.gtag('event', 'tool_open', {
+    tool_name: currentTool,
+    ...(debugEnabled ? { debug_mode: true } : {})
+  });
+}
 // Consent-gated GA4 also covers estate pages; never send vault contents or form values.
 const analyticsAllowed = true;
 if (choice === 'yes' && analyticsAllowed) enableAnalytics();

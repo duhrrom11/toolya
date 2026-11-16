@@ -1,4 +1,4 @@
-import '../../assets/toolya-consent.js?v=20261116-tool-open';
+import '../../assets/toolya-consent.js?v=20261116-tool-arrival';
 import {ToolyaBuddy} from './buddy.mjs';
 const ASSETS=new URL('../../assets/toolya/',import.meta.url).href;
 const atlasURL=file=>ASSETS+file+'?v=20261115-alpha';
