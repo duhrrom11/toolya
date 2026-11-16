@@ -114,7 +114,7 @@
         </div>
 
         <!-- Erfassung: Auto & Wartungs-Eintrag -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-b3-panel="create" id="b3-create">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 b3-car-form-grid" data-b3-panel="create" id="b3-create">
             <!-- 1. Fahrzeug anlegen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">🚗 1. Fahrzeug-Profil & Bordmappe</h2>
@@ -137,7 +137,7 @@
                         <input type="file" id="carPapersInput" accept="image/*" class="w-full text-[11px] p-1.5 border rounded-xl file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-gray-100 file:text-gray-700">
                     </div>
                 </div>
-                <button onclick="saveCar()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Fahrzeug speichern</button>
+                <button onclick="saveCar()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm b3-action">Fahrzeug speichern</button>
             </div>
 
             <!-- 2. Wartung / Tanken / Reifen erfassen -->
@@ -174,12 +174,12 @@
                     <input type="file" id="eventReceiptInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-700">
                 </div>
 
-                <button onclick="saveEvent()" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Eintrag speichern</button>
+                <button onclick="saveEvent()" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm b3-action">Eintrag speichern</button>
             </div>
         </div>
 
         <!-- Listen-Ansicht & Reifenlager -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" data-b3-panel="records" id="b3-records">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 b3-car-record-grid" data-b3-panel="records" id="b3-records">
             <!-- Fahrzeug-Profile & Reifenlager -->
             <div class="space-y-6">
                 <!-- Meine Fahrzeuge -->
@@ -206,7 +206,7 @@
                         <label class="helferlein-field" for="tireDot"><span class="helferlein-field-label">DOT / Jahr</span><input type="text" id="tireDot" placeholder="DOT / Jahr (z.B. 2223)" class="p-2.5 border rounded-xl text-xs" aria-label="DOT / Jahr (z.B. 2223)"></label>
                         <label class="helferlein-field" for="tireTread"><span class="helferlein-field-label">Profil mm</span><input type="text" id="tireTread" placeholder="Profil mm" class="p-2.5 border rounded-xl text-xs" aria-label="Profil mm"></label>
                     </div>
-                    <button onclick="saveTireSet()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 rounded-xl text-xs">Reifensatz speichern</button>
+                    <button onclick="saveTireSet()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 rounded-xl text-xs b3-action">Reifensatz speichern</button>
                     <div id="tiresList" class="space-y-2 pt-2"></div>
                 </div>
             </div>
@@ -256,9 +256,9 @@
                 <div><label for="editCost" class="block text-xs font-semibold text-gray-600 mb-1">Kosten (€):</label><input type="text" id="editCost" class="w-full p-3 border rounded-xl text-sm"></div>
                 <div><label for="editTread" class="block text-xs font-semibold text-gray-600 mb-1">Profiltiefe (mm):</label><input type="text" id="editTread" class="w-full p-3 border rounded-xl text-sm"></div>
             </div>
-            <div class="flex justify-end space-x-2 pt-2">
-                <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button>
-                <button onclick="updateEvent()" class="px-5 py-2 bg-red-600 text-white rounded-xl text-sm font-bold">Speichern</button>
+            <div class="flex flex-wrap justify-end gap-2 pt-2 b3-car-dialog-actions">
+                <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm b3-action b3-outline">Abbrechen</button>
+                <button onclick="updateEvent()" class="px-5 py-2 bg-red-600 text-white rounded-xl text-sm font-bold b3-action">Speichern</button>
             </div>
         </div>
     </div>
@@ -880,16 +880,16 @@ async function toolyaCloudBoot(tool) {
 
                     return `
                         <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
-                            <div class="flex items-center justify-between gap-3">
-                                <div class="flex items-center space-x-3">
+                            <div class="flex items-center justify-between gap-3 b3-car-card-heading">
+                                <div class="flex items-center space-x-3 b3-car-card-identity">
                                     ${c.photo ? `<img src="${c.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage('${c.photo}')" title="Foto vergrößern">` : defaultCarIcon}
                                     <div>
                                         <h4 class="font-bold text-sm text-red-800">${c.name}</h4>
                                         <p class="text-xs text-gray-600">${c.plate || 'k.Kennzeichen'} ${c.km ? '| ' + c.km + ' km' : ''}</p>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-1.5">
-                                    <button onclick="updateCarKm(${c.id})" class="px-2.5 py-1 bg-red-50 text-red-700 hover:bg-red-100 rounded-xl text-xs font-semibold" title="KM aktualisieren">⚡ KM</button>
+                                <div class="flex items-center gap-1.5 b3-car-card-actions">
+                                    <button onclick="updateCarKm(${c.id})" class="px-2.5 py-1 bg-red-50 text-red-700 hover:bg-red-100 rounded-xl text-xs font-semibold b3-action b3-outline" title="KM aktualisieren">⚡ KM</button>
                                     <button onclick="deleteCar(${c.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
                                 </div>
                             </div>
@@ -897,7 +897,7 @@ async function toolyaCloudBoot(tool) {
                             <div class="text-[11px] flex flex-wrap gap-2 text-gray-600 pt-1">
                                 ${c.insurance ? `<span>🛡️ ${c.insurance}</span>` : ''}
                                 ${c.emergency ? `<a href="tel:${c.emergency}" class="text-red-700 font-bold hover:underline">📞 Notruf: ${c.emergency}</a>` : ''}
-                                ${c.papers ? `<button onclick="zoomImage('${c.papers}')" class="text-blue-600 font-semibold underline">📄 Fahrzeugschein anzeigen</button>` : ''}
+                                ${c.papers ? `<button onclick="zoomImage('${c.papers}')" class="text-blue-600 font-semibold underline b3-action b3-outline">📄 Fahrzeugschein anzeigen</button>` : ''}
                             </div>
                             ${kmPrognoseText}
                             ${costPerKm ? `<div class="text-[11px] bg-white p-2 border rounded-xl flex justify-between text-gray-600"><span>Gesamtkosten: <b>${carTotalCost.toFixed(2).replace('.', ',')} €</b></span><span class="text-red-700 font-semibold">TCO: ${costPerKm.replace('.', ',')} € / km</span></div>` : ''}
@@ -1002,14 +1002,14 @@ async function toolyaCloudBoot(tool) {
                         if (e.km) tankBadge += `<span class="text-[10px] bg-gray-100 text-gray-800 font-semibold px-2 py-0.5 rounded-full">📍 ${e.km} km</span>`;
                     }
 
-                    let receiptBtn = e.receipt ? `<button onclick="zoomImage('${e.receipt}')" class="px-2 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-100" title="Beleg anzeigen">🧾 Beleg</button>` : '';
+                    let receiptBtn = e.receipt ? `<button onclick="zoomImage('${e.receipt}')" class="px-2 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-100 b3-action b3-outline" title="Beleg anzeigen">🧾 Beleg</button>` : '';
 
                     let calendarButtons = "";
                     if (!['Reifentiefe', 'Tanken', 'Reparatur'].includes(e.type)) {
                         let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title + ' (' + carName + ')')}&dates=${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('KFZ-Termin für ' + carName)}`;
                         calendarButtons = `
                             <a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
-                            <button onclick="downloadICS('${e.title} (${carName})', '${e.date}')" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Apple / ICS Kalender">📥 ICS</button>
+                            <button onclick="downloadICS('${e.title} (${carName})', '${e.date}')" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="Apple / ICS Kalender">📥 ICS</button>
                         `;
                     }
 
@@ -1029,7 +1029,7 @@ async function toolyaCloudBoot(tool) {
                             <div class="flex items-center gap-2 self-end sm:self-center flex-wrap">
                                 ${receiptBtn}
                                 ${calendarButtons}
-                                <button onclick="openEditModal(${e.id})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
+                                <button onclick="openEditModal(${e.id})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="Bearbeiten">✏️</button>
                                 <button onclick="deleteEvent(${e.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>

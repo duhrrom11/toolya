@@ -37,3 +37,9 @@ body.b3-haushaltsbuch.b3-dark #settingsModal button[onclick="loginUser()"]{backg
 body.b3-haushaltsbuch.b3-dark #settingsModal button[onclick="logoutUser()"]{background:#962d3b!important;color:white!important}
 body.b3-haushaltsbuch.b3-dark .b3-finance-guide .b3-guide-content{background:#23394a;color:#edf8ff;border-color:#527084}
 body.b3-haushaltsbuch.b3-dark .b3-finance-guide :is(.bg-emerald-900\/70,.bg-emerald-950){background:#304858;color:#e7f5ff}
+
+/* Financial details remain three readable fields per row on larger screens. */
+@media(min-width:768px){
+ body.b3-haushaltsbuch main.b3-dashboard .b3-finance-details{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+body.b3-haushaltsbuch .b3-budget-form-heading{flex-wrap:wrap;gap:.75rem}

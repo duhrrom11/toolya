@@ -5,7 +5,7 @@ const tools=[
   {path:'/tools/car/index.html',title:'Autokosten-Rechner & Reifenwechsel',tool:'autokosten-reifenwechsel',form:'#carName'},
   {path:'/tools/budget/index.html',title:'Haushaltsbuch mit Kassenbon-Scanner',tool:'haushaltsbuch-kassenbon',form:'#receiptTitle'}
 ];
-async function isolated(page,authenticated,displayCss=false){
+async function isolated(page,authenticated,displayCss=false,initialSnapshot=null){
   const outbound=[];
   page.on('pageerror',error=>console.log('[UI pageerror]',error.message));
   page.on('console',msg=>{if(msg.text().includes('[mock rpc]'))console.log('[browser]',msg.text());});
@@ -14,7 +14,7 @@ async function isolated(page,authenticated,displayCss=false){
     if(url.startsWith('http://127.0.0.1:4173/')){
       if(new URL(url).pathname==='/assets/vendor/supabase-2.57.0.js'){
         return route.fulfill({status:200,contentType:'text/javascript',body:`
-          window.__toolyaMock={writes:[],signedIn:${authenticated}};
+          window.__toolyaMock={writes:[],signedIn:${authenticated},fixture:${JSON.stringify(initialSnapshot)}};
           window.supabase={createClient(){
             const m=window.__toolyaMock;
             return {
@@ -27,7 +27,7 @@ async function isolated(page,authenticated,displayCss=false){
               },
               from(table){
                 if(table!=='user_data')throw Error('unexpected table '+table);
-                return {select(){return this},eq(){return this},async maybeSingle(){return {data:null,error:null}}};
+                return {select(){return this},eq(key,value){if(key==='tool')this.tool=value;return this},async maybeSingle(){return {data:m.fixture?{id:1,user_id:'ui-fixture-user',tool:this.tool,data:m.fixture,revision:1}:null,error:null}}};
               },
               async rpc(name,args){
                 if(name!=='toolya_save_snapshot')throw Error('unexpected RPC '+name);
@@ -718,7 +718,10 @@ async function reviewImage(page,id){
 
 for(const item of tools){
  test(item.tool+': shared controls on the real authenticated page at three widths',async({page},testInfo)=>{
-  await isolated(page,true,true);
+  const fixture=item.tool==='autokosten-reifenwechsel'
+   ?{cars:[{id:1,name:'Isoliertes Testfahrzeug',plate:'TEST',km:1000}],events:[{id:2,carId:1,title:'Isolierte Wartung',type:'Inspektion',date:'2026-11-17',cost:42}],tires:[]}
+   :{entries:[{id:2,title:'Isolierter Testbeleg',entryType:'ausgabe',date:'2026-11-17',price:42,category:'Lebensmittel',photos:[]}],budgets:{Lebensmittel:100},goals:[{id:3,title:'Isoliertes Sparziel',target:100,current:20}]};
+  await isolated(page,true,true,fixture);
   await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
   await page.goto(origin+item.path);
   await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
@@ -742,7 +745,6 @@ for(const item of tools){
    expect(await page.evaluate(()=>parseFloat(getComputedStyle(document.activeElement).outlineWidth))).toBeGreaterThanOrEqual(3);
    await page.locator('.ty-tool-hero').scrollIntoViewIfNeeded();
    await page.screenshot({path:testInfo.outputPath('b3-'+item.tool+'-'+width+'.png'),fullPage:true});
-   await reviewImage(page,item.tool+'-page-'+width);
    await page.locator('#settingsBtn').click();
    await expect(page.locator('#settingsModal')).toBeVisible();
    await page.locator('#b3-edit-open').click();
@@ -753,9 +755,69 @@ for(const item of tools){
    await save.hover();await expect(save).toHaveCSS('transform','none');
    await expect(page.locator('#b3-editor button[disabled]').first()).toBeDisabled();
    await page.screenshot({path:testInfo.outputPath('b3-editor-'+item.tool+'-'+width+'.png'),fullPage:true});
-   await reviewImage(page,item.tool+'-editor-'+width);
    await page.locator('#b3-editor').getByRole('button',{name:'Abbrechen',exact:true}).click();
    await expect(page.locator('#b3-editor')).toBeHidden();
+   const isCar=item.tool==='autokosten-reifenwechsel';
+   const primary=page.locator(isCar?'button[onclick="saveCar()"]':'#saveBtn');
+   for(const button of await page.locator('main.b3-dashboard button.b3-action:not(.b3-outline):visible').all()){
+    await expect(button).toHaveCSS('background-color','rgb(0, 126, 159)');
+    expect(await contrast(button)).toBeGreaterThanOrEqual(4.5);
+    expect(await button.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+   }
+   await expect(primary).toHaveCSS('font-weight','700');
+   if(isCar){
+    const heading=page.locator('.b3-car-card-heading').first();
+    for(const button of await heading.locator('button').all()){
+     expect(await button.evaluate(e=>{const a=e.getBoundingClientRect(),b=e.closest('.b3-car-card-heading').getBoundingClientRect();return a.left>=b.left-1&&a.right<=b.right+1})).toBe(true);
+    }
+    const km=heading.locator('button[onclick="updateCarKm(1)"]');
+    expect(await km.evaluate(e=>{const r=document.createRange();r.selectNodeContents(e);return r.getBoundingClientRect().height<=parseFloat(getComputedStyle(e).lineHeight)+1})).toBe(true);
+    const cols=await page.locator('.b3-car-form-grid').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length);
+    expect(cols).toBe(width<1280?1:2);
+    if(width===768)expect(await page.locator('#carPlate').evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThan(290);
+   }else{
+    expect(await page.locator('.b3-finance-details').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length)).toBe(width<768?1:3);
+    await page.locator('button[onclick="editReceipt(2)"]').click();
+    await expect(page.locator('#cancelEditBtn')).toBeVisible();
+   }
+   await page.locator(isCar?'#b3-create':'#formCard').evaluate(e=>e.scrollIntoView({block:'start'}));
+   await reviewImage(page,'app-'+item.tool+'-form-'+width);
+   await primary.scrollIntoViewIfNeeded();
+   if(width===1440){
+    await page.emulateMedia({reducedMotion:'no-preference'});
+    await primary.hover();await expect(primary).toHaveCSS('transform','matrix(1, 0, 0, 1, 0, -2)');
+    await page.mouse.down();
+    try{await expect(primary).toHaveCSS('transform','matrix(1, 0, 0, 1, 0, 0)')}
+    finally{await page.mouse.move(0,0);await page.mouse.up();await page.emulateMedia({reducedMotion:'reduce'})}
+   }
+   if(isCar)await page.locator('#eventCarSelect').evaluate(e=>e.parentElement.closest('div.bg-white').scrollIntoView({block:'start'}));
+   else await primary.scrollIntoViewIfNeeded();
+   await reviewImage(page,'app-'+item.tool+'-actions-'+width);
+   if(isCar)await page.locator('button[onclick="openEditModal(2)"]').click();
+   else{
+    await page.locator('#cancelEditBtn').click();
+    await page.locator('button[onclick="openBudgetModal()"]').click();
+   }
+   const modal=page.locator(isCar?'#editModal':'#budgetModal');
+   await expect(modal).toBeVisible();
+   const modalSave=modal.locator('button.b3-action:not(.b3-outline)');
+   await expect(modalSave).toHaveCSS('background-color','rgb(0, 126, 159)');
+   expect(await contrast(modalSave)).toBeGreaterThanOrEqual(4.5);
+   await modal.locator('input:not([type=hidden])').first().focus();await page.keyboard.press('Tab');
+   expect(await page.evaluate(()=>parseFloat(getComputedStyle(document.activeElement).outlineWidth))).toBeGreaterThanOrEqual(3);
+   if(isCar){
+    for(const button of await modal.locator('.b3-car-dialog-actions .b3-action').all()){
+     expect(await button.evaluate(e=>{const r=document.createRange();r.selectNodeContents(e);return r.getBoundingClientRect().height<=parseFloat(getComputedStyle(e).lineHeight)+1})).toBe(true);
+    }
+   }
+   await reviewImage(page,'app-'+item.tool+'-dialog-'+width);
+   await modal.getByRole('button',{name:'Abbrechen',exact:true}).click();
+   await expect(modal).toBeHidden();
+   const danger=page.locator(isCar?'button[onclick="deleteEvent(2)"]':'button[onclick="deleteReceipt(2)"]');
+   await expect(danger).not.toHaveClass(/b3-action/);
+   const red=await danger.evaluate(e=>getComputedStyle(e).color.match(/[\d.]+/g).map(Number));
+   expect(red[0]).toBeGreaterThan(red[1]);
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   }
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   // Existing account warning actions retain their red treatment.

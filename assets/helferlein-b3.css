@@ -227,10 +227,10 @@ body.b3:not(.b3-dark) .b3-action:not(:disabled):active{
 body.b3:not(.b3-dark) .b3-action:disabled{
  cursor:not-allowed;opacity:.5;transform:none;box-shadow:none;
 }
-body.b3:not(.b3-dark) :is(main.b3-dashboard,#settingsModal,#helpModal) :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]):not([type=file]),select,textarea){
+body.b3:not(.b3-dark) :is(main.b3-dashboard,#settingsModal,#helpModal,#editModal,#budgetModal,#savingsModal) :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]):not([type=file]),select,textarea){
  font-family:inherit;border-radius:12px;min-height:44px;
 }
-body.b3:not(.b3-dark) :is(main.b3-dashboard,#settingsModal,#helpModal,.b3-nav) :is(input,select,textarea,button,a,summary):focus-visible{
+body.b3:not(.b3-dark) :is(main.b3-dashboard,#settingsModal,#helpModal,#editModal,#budgetModal,#savingsModal,.b3-nav) :is(input,select,textarea,button,a,summary):focus-visible{
  outline:3px solid var(--b3-control-accent);outline-offset:3px;
 }
 body.b3:not(.b3-dark) .b3-editor{
@@ -243,4 +243,20 @@ body.b3:not(.b3-dark) .b3-more-item:focus-visible{
 @media(prefers-reduced-motion:reduce){
  body.b3:not(.b3-dark) .b3-action{transition:none}
  body.b3:not(.b3-dark) .b3-action:not(:disabled):hover,body.b3:not(.b3-dark) .b3-action:not(:disabled):active{transform:none}
+}
+
+/* Explicit secondary application actions share the editor's readable surface. */
+body.b3:not(.b3-dark) button.b3-action.b3-outline{
+ background:var(--b3-surface);color:var(--b3-ink);border:1px solid var(--b3-line);
+}
+body.b3:not(.b3-dark) button.b3-action.b3-outline:not(:disabled):hover{
+ background:var(--b3-control-soft);color:var(--b3-ink);
+}
+body.b3:not(.b3-dark) .b3-action:focus-visible{
+ outline:3px solid var(--b3-control-accent);outline-offset:3px;
+}
+
+/* Equal action typography; long labels wrap at spaces rather than inside words. */
+body.b3:not(.b3-dark) button.b3-action{
+ font-size:.875rem;font-weight:700;line-height:1.35;overflow-wrap:normal;word-break:normal;
 }

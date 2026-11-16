@@ -34,3 +34,8 @@ Zusätzlich als weitere Optimierung erfasst: mascots.html lädt Consent klassisc
 ### Release #96 abgeschlossen
 
 Gemeinsame B3-Komponenten am 17.11.2026 veröffentlicht, Release `5ab8a9334692acbd7206553f9d8f7b3fa376cfbe`. Zwölf isolierte Ansichten tatsächlich gesichtet; Pages und alle main-Checks erfolgreich. Öffentlich ausgeliefertes CSS bytegleich, Auto/Budget liefern HTTP 200 mit Stylesheetverweis. Details: `pr96-live-delivery.json` und Master-Audit. Gewöhnliche App-Buttons, übrige B3-/Wishlist-/Dashboard-Ansichten und volle responsive/private Live-Abnahme bleiben offen.
+
+
+### Auto/Haushaltsbuch – Teilabnahme #98 (17.11.2026)
+
+Normale App-Aktionen verwenden gemeinsame Primär-/Sekundärklassen und Schrift. Auto-Erfassungs-/Listenraster bis 1279 px untereinander; Haushaltsbuch-Finanzdetails ab 768 px in drei Spalten. Mobile KM-Karte und Auto-Dialogbuttons korrigiert. 18 tatsächliche Bildausschnitte gesichtet, 47 Browserprüfungen und sechs Checks auf a4494d15308eae996766cdf323ac21255b9a910c erfolgreich. Nachweise: `pr98-visual-review.json`, `evidence/pr98-*.jpg`; Veröffentlichungsstatus und Live-Hashes in PR [#98](https://github.com/duhrrom11/toolya/pull/98). D06b/D05b bleiben In Arbeit; nächste Tools Umzugskisten/Verleih, danach restliche Familien. Keine vollständige private Live-/Diagrammabnahme.
