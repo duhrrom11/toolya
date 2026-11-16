@@ -45,18 +45,30 @@ async function supabaseMetrics(url:string):Promise<Metric[]>{
 }
 async function ga4Metrics(days:number):Promise<Metric[]>{
  const property=(Deno.env.get('TOOLYA_STATS_GA4_PROPERTY_ID')||'').trim();
- const clientId=Deno.env.get('TOOLYA_STATS_GOOGLE_CLIENT_ID')||'';
- const clientSecret=Deno.env.get('TOOLYA_STATS_GOOGLE_CLIENT_SECRET')||'';
- const refreshToken=Deno.env.get('TOOLYA_STATS_GOOGLE_REFRESH_TOKEN')||'';
- if(!/^\d+$/.test(property)||!clientId||!clientSecret||!refreshToken)throw Error('GA4 credentials not configured');
+ const serviceAccountJson=Deno.env.get('TOOLYA_STATS_GOOGLE_SERVICE_ACCOUNT_JSON')||'';
+ if(!/^\d+$/.test(property)||!serviceAccountJson)throw Error('GA4 service account not configured');
+ let account:{client_email:string,private_key:string,token_uri?:string};
+ try{account=JSON.parse(serviceAccountJson)}catch{throw Error('Invalid service account configuration')}
+ if(!account.client_email?.endsWith('.gserviceaccount.com')||!account.private_key?.includes('PRIVATE KEY'))throw Error('Invalid service account');
+ const enc=(value:unknown)=>btoa(JSON.stringify(value)).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'');
+ const now=Math.floor(Date.now()/1000);
+ const header=enc({alg:'RS256',typ:'JWT'});
+ const claim=enc({iss:account.client_email,scope:'https://www.googleapis.com/auth/analytics.readonly',
+  aud:'https://oauth2.googleapis.com/token',iat:now,exp:now+3600});
+ const keyBytes=Uint8Array.from(atob(account.private_key.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\\s/g,'')),c=>c.charCodeAt(0));
+ const privateKey=await crypto.subtle.importKey('pkcs8',keyBytes,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['sign']);
+ const signingInput=header+'.'+claim;
+ const signature=await crypto.subtle.sign('RSASSA-PKCS1-v1_5',privateKey,new TextEncoder().encode(signingInput));
+ const signed=Array.from(new Uint8Array(signature),b=>String.fromCharCode(b)).join('');
+ const assertion=signingInput+'.'+btoa(signed).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'');
  const tokenResponse=await fetch('https://oauth2.googleapis.com/token',{
   method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
-  body:new URLSearchParams({client_id:clientId,client_secret:clientSecret,refresh_token:refreshToken,grant_type:'refresh_token'}),
+  body:new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:jwt-bearer',assertion}),
   signal:AbortSignal.timeout(8000)
  });
- if(!tokenResponse.ok)throw Error('Google OAuth failed');
+ if(!tokenResponse.ok)throw Error('Google service account authorization failed');
  const tokenData=await tokenResponse.json();
- if(typeof tokenData.access_token!=='string')throw Error('Google OAuth token missing');
+ if(typeof tokenData.access_token!=='string')throw Error('Google access token missing');
  const reportResponse=await fetch('https://analyticsdata.googleapis.com/v1beta/properties/'+property+':runReport',{
   method:'POST',headers:{Authorization:'Bearer '+tokenData.access_token,'Content-Type':'application/json'},
   body:JSON.stringify({dateRanges:[{startDate:(days-1)+'daysAgo',endDate:'today'}],
@@ -104,7 +116,7 @@ Deno.serve(async(req:Request)=>{
    metrics.push(...values);
    source.status='connected';source.detail='Live-Daten · '+new Date().toISOString();
   }catch{
-   source.status=id==='ga4'&&!Deno.env.get('TOOLYA_STATS_GOOGLE_REFRESH_TOKEN')?'not_connected':'error';
+   source.status=id==='ga4'&&!Deno.env.get('TOOLYA_STATS_GOOGLE_SERVICE_ACCOUNT_JSON')?'not_connected':'error';
    source.detail=source.status==='not_connected'?'Google Analytics API-Zugang noch nicht eingerichtet':'Datenabruf fehlgeschlagen oder API-Zugang fehlt';
   }
  }));
