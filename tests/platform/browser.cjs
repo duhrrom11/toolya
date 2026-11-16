@@ -181,6 +181,14 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
   await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route+' single preferences panel');await page.keyboard.press('Escape');await page.screenshot({path:'test-results/mascot-'+route+'-mobile.png',fullPage:true});assert.equal(await page.locator('.toolya-idle').isVisible(),false,route+' redundant strip hidden');if(await page.locator('.ty-tool-hero-mascot').count())await page.locator('.ty-tool-hero-mascot').screenshot({path:'test-results/mascot-'+route+'-detail.png'});
  }
  await page.goto(origin+'/dashboard/');await page.locator('#welcome-heading').waitFor();
+ assert.equal(await page.locator('.buddy-panel').count(),0,'dashboard has no duplicate companion card');
+ assert.equal(await page.locator('.b3-hub-header .b3-hub-nav #settingsBtn').count(),1,'dashboard shares homepage header settings layout');
+ assert.equal(await page.locator('#settingsModal #loginSubmit').count(),1,'dashboard has account sign-in inside settings');
+ await page.locator('#settingsBtn').click();
+ assert.equal(await page.locator('#settingsModal').isVisible(),true,'dashboard settings open');
+ assert.equal(await page.locator('#loginEmail').isVisible(),true,'dashboard login email visible');
+ await page.locator('#closeSettingsBtn').click();
+ assert.equal(await page.locator('#settingsModal').isVisible(),false,'dashboard settings close');
  // Real keyboard navigation must survive dashboard list rerenders.
  await page.locator('#task-text').fill('Tastaturfokus Aufgabe');
  await page.locator('#task-form button[type="submit"]').click();
