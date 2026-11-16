@@ -48,8 +48,8 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Run isolated Toolya cloud-only UI tests
         run: npx playwright test tests/browser/tool-pages-ui.spec.cjs tests/browser/cloud-isolated.spec.cjs --reporter=line
-      - name: Upload Playwright diagnostics on failure
-        if: failure()
+      - name: Upload isolated browser evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: toolya-browser-test-results
