@@ -101,7 +101,8 @@ Deno.serve(async(req:Request)=>{
    metrics.push(...values);
    source.status='connected';source.detail='Live-Daten · '+new Date().toISOString();
   }catch{
-   source.status='error';source.detail='Datenabruf fehlgeschlagen oder API-Zugang fehlt';
+   source.status=id==='ga4'&&!Deno.env.get('TOOLYA_STATS_GOOGLE_REFRESH_TOKEN')?'not_connected':'error';
+   source.detail=source.status==='not_connected'?'Google Analytics API-Zugang noch nicht eingerichtet':'Datenabruf fehlgeschlagen oder API-Zugang fehlt';
   }
  }));
  return reply(200,{generatedAt:new Date().toISOString(),days,metrics,sources});
