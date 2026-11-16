@@ -38,7 +38,7 @@ const root=path.resolve(__dirname,'../..');
  const context=await browser.newContext();const errors=[];
  context.on('page',p=>{p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error'&&!m.text().includes('status of 4'))errors.push(m.text());});});
  // No analytics or consent overlay in this synthetic security/layout fixture.
- await context.addInitScript(()=>{localStorage.setItem('toolya.analytics.consent.v1','no');window.print=()=>{document.body.dataset.printReady='true';};document.addEventListener('securitypolicyviolation',e=>console.warn('CSP-SOURCE',e.sourceFile,e.lineNumber,e.columnNumber,e.violatedDirective,e.sample));});
+ await context.addInitScript(()=>{try{localStorage.setItem('toolya.analytics.consent.v1','no')}catch{/* Opaque initial print-popup document has no storage. */}window.print=()=>{document.body.dataset.printReady='true';};document.addEventListener('securitypolicyviolation',e=>console.warn('CSP-SOURCE',e.sourceFile,e.lineNumber,e.columnNumber,e.violatedDirective,e.sample));});
  // Test-only instrumentation: expose a fixed error category, never exception text,
  // encrypted snapshots, credentials, JWTs, request bodies or personal data.
  await context.route(origin+'/assets/estate-owner.js',async route=>{
