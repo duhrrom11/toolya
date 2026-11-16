@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Mein Dashboard | Toolya</title>
+<meta name="description" content="Deine persönliche Toolya-Alltagszentrale.">
+<link rel="stylesheet" href="./dashboard.css">
+<script type="module" src="../shared/toolya/platform.mjs"></script>
+<script src="./dashboard.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Direkt zum Inhalt</a>
+<header class="topbar">
+<a class="brand" href="../index.html" aria-label="Toolya Startseite">✳ Toolya</a>
+<nav aria-label="Navigation"><a href="../index.html#toolDiscovery">Alle Tools</a><a class="active" href="./" aria-current="page">Mein Dashboard</a></nav>
+</header>
+<main id="main">
+<section class="welcome" aria-labelledby="welcome-heading">
+<div><p class="eyebrow">DEIN PERSÖNLICHER BEREICH</p><h1 id="welcome-heading">Dein Alltag. Dein Überblick.</h1><p>Deine Lieblingshelfer, Aufgaben und Termine – alles an einem Ort.</p><p class="privacy"><span aria-hidden="true">🔒</span> Diese Dashboard-Daten werden zunächst nur in diesem Browser gespeichert.</p></div>
+<div class="welcome-art" aria-hidden="true"><img src="../assets/toolya/home/hero-duo.webp" width="300" height="216" alt=""></div>
+</section>
+<div id="notice" role="status" aria-live="polite" class="notice" hidden></div>
+<section class="stats" aria-label="Deine Übersicht">
+<div class="stat"><span>★ Favoriten</span><strong id="fav-count">0</strong></div>
+<div class="stat"><span>↗ Zuletzt genutzt</span><strong id="recent-count">0</strong></div>
+<div class="stat"><span>✓ Offene Aufgaben</span><strong id="task-count">0</strong></div>
+<div class="stat"><span>◷ Anstehende Termine</span><strong id="reminder-count">0</strong></div>
+</section>
+<div class="columns">
+<section class="panel" aria-labelledby="fav-heading"><div class="panel-head"><h2 id="fav-heading">★ Deine Favoriten</h2><a href="../index.html#toolDiscovery">Tools entdecken</a></div><div id="favorites" class="tool-list"></div></section>
+<section class="panel" aria-labelledby="recent-heading"><div class="panel-head"><h2 id="recent-heading">↗ Zuletzt verwendet</h2><a href="../index.html#toolDiscovery">Alle Tools</a></div><div id="recent" class="tool-list"></div></section>
+</div>
+<div class="columns">
+<section class="panel" aria-labelledby="tasks-heading">
+<div class="panel-head"><h2 id="tasks-heading">✓ Meine Aufgaben</h2><span class="hint">Nur hier gespeichert</span></div>
+<form id="task-form" class="entry"><label class="sr" for="task-text">Neue Aufgabe</label><input id="task-text" maxlength="160" autocomplete="off" placeholder="Was möchtest du erledigen?" required><button type="submit">Hinzufügen</button></form>
+<ul id="tasks" class="items"></ul>
+</section>
+<section class="panel" aria-labelledby="reminders-heading">
+<div class="panel-head"><h2 id="reminders-heading">◷ Erinnerungen</h2><span class="hint">Keine Push-Nachrichten</span></div>
+<p class="hint">Fällige Termine erscheinen hier, sobald du dein Dashboard öffnest. Es werden noch keine automatischen Benachrichtigungen versendet.</p>
+<form id="reminder-form" class="reminder-form">
+<label>Woran möchtest du denken?<input id="reminder-text" maxlength="160" required placeholder="z. B. Pflanzen gießen"></label>
+<label>Datum und Uhrzeit<input id="reminder-date" type="datetime-local" required></label>
+<button type="submit">Erinnerung speichern</button>
+</form>
+<ul id="reminders" class="items"></ul>
+</section>
+</div>
+<footer class="bottom"><a href="../index.html">← Zur Toolya-Startseite</a><span>Dein Toolya-Dashboard · Version 1</span></footer>
+</main>
+</body></html>
