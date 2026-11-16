@@ -39,3 +39,9 @@ body.b3-autokosten.b3-dark #settingsModal button[onclick="logoutUser()"]{backgro
  body.b3-autokosten [data-b3-panel="records"] input,
  body.b3-autokosten [data-b3-panel="records"] select{max-width:100%;min-width:0}
 }
+
+/* Keep full vehicle/event cards on tablets; nested fields retain useful width. */
+@media(max-width:1279px){
+ body.b3-autokosten main.b3-dashboard .b3-car-form-grid,
+ body.b3-autokosten main.b3-dashboard .b3-car-record-grid{grid-template-columns:minmax(0,1fr)}
+}
