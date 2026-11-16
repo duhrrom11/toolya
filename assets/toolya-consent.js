@@ -51,6 +51,20 @@ function enableAnalytics() {
   const tag = document.createElement('script');
   tag.async = true;
   tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_ID);
+  if (debugEnabled) {
+    const status = document.createElement('aside');
+    status.id = 'toolya-ga-local-debug';
+    status.setAttribute('role', 'status');
+    status.style.cssText = 'position:fixed;bottom:12px;right:12px;z-index:2147483647;max-width:340px;padding:12px;border:2px solid #167b79;border-radius:10px;background:#fff;color:#172b30;font:13px/1.5 system-ui;box-shadow:0 3px 16px #0003';
+    const consentState = choice === 'yes' ? 'erteilt' : 'nicht erteilt';
+    const toolState = TOOL_IDS.has(currentTool) ? currentTool : 'keine Tool-Seite';
+    status.textContent = 'GA4 lokal · Einwilligung: ' + consentState + ' · Tool: ' + toolState + ' · Ereignis: ' + (TOOL_IDS.has(currentTool) ? 'tool_open eingereiht' : 'nicht zutreffend') + ' · Google-Skript: wird geladen';
+    const attach = () => document.body?.appendChild(status);
+    if (document.body) attach();
+    else document.addEventListener('DOMContentLoaded', attach, { once: true });
+    tag.addEventListener('load', () => { status.textContent = status.textContent.replace('wird geladen', 'geladen (kein Nachweis der Annahme durch GA4)'); });
+    tag.addEventListener('error', () => { status.textContent = status.textContent.replace('wird geladen', 'blockiert oder nicht erreichbar'); });
+  }
   document.head.appendChild(tag);
 }
 // Record a tool opening on the destination page, not during navigation.
