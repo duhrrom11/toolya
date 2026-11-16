@@ -1,4 +1,4 @@
-import '../../assets/toolya-consent.js?v=20261116-estate-coverage';
+import '../../assets/toolya-consent.js?v=20261116-tool-open';
 import {ToolyaBuddy} from './buddy.mjs';
 const ASSETS=new URL('../../assets/toolya/',import.meta.url).href;
 const atlasURL=file=>ASSETS+file+'?v=20261115-alpha';
