@@ -1416,6 +1416,11 @@ for(const routeName of ['assistant','bookmarks','cockpit','collection','dashboar
  for(const width of [320,768,1440]){
   await page.setViewportSize({width,height:1000});await expect(page.locator('html')).toHaveCSS('color-scheme','light');
   await expect(page.locator('body')).toHaveCSS('background-color','rgb(243, 247, 251)');
+  await expect(page.locator('footer')).toHaveCount(1);
+  const settings=page.locator('.ty-tool-hero .toolya-settings-trigger');expect(await settings.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  for(const link of await page.locator('.wishes-navigation a:not([aria-current])').all()){await expect(link).toHaveCSS('background-color','rgb(255, 255, 255)');await expect(link).toHaveCSS('color','rgb(16, 43, 69)');if(width===320)expect(await link.evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThanOrEqual(100);}
+  for(const panel of await page.locator('main>section:visible,main .metric:visible').all())await expect(panel).toHaveCSS('background-color','rgb(255, 255, 255)');
+  for(const link of await page.locator('main .nav a:visible').all()){await expect(link).toHaveCSS('background-color','rgb(0, 126, 159)');await expect(link).toHaveCSS('color','rgb(255, 255, 255)');}
   await expect(page.locator('h1:visible')).toHaveCount(1);await expect(page.locator('body>header')).toBeHidden();await expect(page.locator('.toolya-idle')).toBeHidden();
   for(const panel of await page.locator('main .panel:visible,main .hero:visible,main .card:visible').all()){
    expect(await panel.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);await expect(panel).toHaveCSS('background-color','rgb(255, 255, 255)');
