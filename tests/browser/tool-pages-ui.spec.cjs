@@ -1309,6 +1309,10 @@ test('dashboard: shared actions, task rows and account dialog at three widths',a
    expect(await panel.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);await capture('dashboard-'+id.slice(1)+'-'+width);
   }
   for(const b of await page.locator('main button:visible').all())expect(await b.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  if(width===320)for(const row of await page.locator('#tasks li,#reminders li').all()){
+   const textBox=await row.locator('span').first().boundingBox();const removeBox=await row.locator('button').boundingBox();
+   expect(textBox.width).toBeGreaterThanOrEqual(150);expect(removeBox.y).toBeGreaterThanOrEqual(textBox.y+textBox.height);
+  }
   const checkbox=page.locator('#tasks input[type=checkbox]');expect(await checkbox.evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThanOrEqual(16);
   await page.locator('#task-text').focus();await page.keyboard.press('Tab');expect(await page.evaluate(()=>parseFloat(getComputedStyle(document.activeElement).outlineWidth))).toBeGreaterThanOrEqual(3);
   await page.locator('#settingsBtn').click();const modal=page.locator('#settingsModal');await expect(modal).toBeVisible();
