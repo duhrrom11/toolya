@@ -41,3 +41,14 @@ test('existing wishlist safety controls remain in place',()=>{
  assert.match(ui,/JSON\.parse\(text\)/);
  assert.match(ui,/api\('publish'/);
 });
+
+test('discovery includes first-person Amazon wish-list phrases without doubling all country-topic combinations',()=>{
+ for(const phrase of ['unsere Amazon Wunschliste','meine Amazon Wunschliste','unsere Amazon-Wunschliste','meine Amazon-Wunschliste','unsere Wunschliste bei Amazon','meine Wunschliste bei Amazon','unser Amazon Wunschzettel','mein Amazon Wunschzettel','Amazon Wunschliste Sachspenden','Amazon Wunschliste Tierheim','notre liste de souhaits Amazon']){
+  assert.ok(edge.includes(phrase),'missing phrase: '+phrase);
+ }
+ assert.match(edge,/for\(const phrase of directPhrases\)seeds\.push/);
+ assert.match(edge,/for\(const \[phrase,lang\] of multilingualPhrases\)seeds\.push/);
+ assert.match(edge,/exclude_domains:\['amazon\.de','amazon\.com','amazon\.fr'\]/);
+ assert.match(edge,/wishlist_tavily_quota',\{claim:true\}/);
+ assert.match(edge,/upsert\(seeds,\{onConflict:'query,country,lang',ignoreDuplicates:true\}\)/);
+});
