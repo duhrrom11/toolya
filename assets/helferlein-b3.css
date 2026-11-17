@@ -302,3 +302,8 @@ body.b3:not(.b3-dark) .b3-inline-help>div:first-child{gap:.75rem;flex-wrap:wrap}
 body.b3:not(.b3-dark) .b3-inline-help button{min-height:44px;min-width:44px;flex-shrink:0}
 body.b3:not(.b3-dark) :is(#helpBox,#guideSection,#settingsModal) .b3-action.b3-outline{background:var(--b3-surface);color:var(--b3-ink);border:1px solid var(--b3-line)}
 @media(max-width:640px){body.b3:not(.b3-dark) .b3-backup-actions{grid-template-columns:minmax(0,1fr)}}
+
+/* Help cards use the available reading width, including inside narrow dialogs. */
+body.b3:not(.b3-dark) #helpBox.b3-inline-help .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:1023px){body.b3:not(.b3-dark) #guideSection.b3-inline-help .grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){body.b3:not(.b3-dark) :is(#helpBox,#guideSection).b3-inline-help .grid{grid-template-columns:minmax(0,1fr)}}

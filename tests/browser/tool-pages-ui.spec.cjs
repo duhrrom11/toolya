@@ -1349,6 +1349,7 @@ for(const kind of ['car','budget'])test(kind+': help and backup controls stay re
   await expect(help).toHaveCSS('background-color','rgb(255, 255, 255)');
   for(const title of await help.locator('.text-red-200,.text-emerald-200,.text-white').all())await expect(title).toHaveCSS('color','rgb(16, 43, 69)');
   expect(await help.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
+  for(const card of await help.locator('.grid>div').all())expect(await card.evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThanOrEqual(120);
   await page.screenshot({path:testInfo.outputPath('help-'+kind+'-'+width+'.png')});
   await help.locator('button').click();await expect(help).toBeHidden();
   if(kind==='car')await page.evaluate(()=>closeSettings());
