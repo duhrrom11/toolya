@@ -66,9 +66,29 @@ Deno.serve(async(req:Request)=>{
    must(await db.from('wishlist_discovery_candidates').update(edited).eq('id',body.id).eq('status','new'));return reply(200,{ok:true});
   }
   if(body.action==='withdraw'){
-   const existing=must(await db.from('wishlist_discovery_candidates').select('list_key').eq('id',body.id).eq('status','published').single());
-   must(await db.from('wishlist_imported_entries').delete().eq('list_key',existing.list_key));
-   must(await db.from('wishlist_discovery_candidates').update({status:'new'}).eq('id',body.id));return reply(200,{ok:true});
+   // Fail closed: a matching list key alone does not establish that this row
+   // still represents the entry originally published by the finder.
+   if(typeof body.id!=='string'||!/^[0-9a-f-]{36}$/i.test(body.id))return reply(400,{error:'Ungültige Auswahl.'});
+   const existing=must(await db.from('wishlist_discovery_candidates')
+    .select('id,list_key,name,logo_url,wishlist_url,source_url,country,found_at')
+    .eq('id',body.id).eq('status','published').single());
+   const matching=must(await db.from('wishlist_imported_entries')
+    .select('id,created_at').eq('list_key',existing.list_key)
+    .eq('display_name',existing.name).eq('logo_url',existing.logo_url)
+    .eq('wishlist_url',existing.wishlist_url).eq('source_url',existing.source_url)
+    .eq('country',existing.country).limit(2));
+   if(matching.length!==1||new Date(matching[0].created_at).getTime()<new Date(existing.found_at).getTime())
+    return reply(409,{error:'Veröffentlichung wurde zwischenzeitlich verändert oder stammt nicht eindeutig aus diesem Finder. Kein Eintrag gelöscht.'});
+   const removed=must(await db.from('wishlist_imported_entries')
+    .delete().eq('id',matching[0].id).eq('list_key',existing.list_key)
+    .eq('display_name',existing.name).eq('logo_url',existing.logo_url)
+    .eq('wishlist_url',existing.wishlist_url).eq('source_url',existing.source_url)
+    .eq('country',existing.country).select('id'));
+   if(removed.length!==1)return reply(409,{error:'Veröffentlichung nicht unverändert gefunden. Kein weiterer Eintrag gelöscht.'});
+   const updated=must(await db.from('wishlist_discovery_candidates')
+    .update({status:'new'}).eq('id',body.id).eq('status','published').select('id'));
+   if(updated.length!==1)return reply(409,{error:'Veröffentlichung entfernt; Finderstatus konnte nicht aktualisiert werden. Bitte Administrator prüfen lassen.'});
+   return reply(200,{ok:true});
   }
   if(body.action==='dismiss'){if(!Array.isArray(body.ids)||body.ids.length>200)return reply(400,{error:'Ungültige Auswahl.'});must(await db.from('wishlist_discovery_candidates').update({status:'dismissed'}).in('id',body.ids).eq('status','new'));return reply(200,{ok:true})}
   if(body.action==='crawl'){
