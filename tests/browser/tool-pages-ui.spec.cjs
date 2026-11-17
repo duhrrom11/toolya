@@ -1325,3 +1325,33 @@ test('dashboard: shared actions, task rows and account dialog at three widths',a
  }
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);expect(errors).toEqual([]);
 });
+
+for(const kind of ['car','budget'])test(kind+': help and backup controls stay readable and keyboard accessible',async({page},testInfo)=>{
+ test.setTimeout(60000);await isolated(page,true,true);
+ await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
+ await page.goto(origin+'/tools/'+kind+'/index.html');await page.locator('.toolya-signature-footer').waitFor();
+ if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+ for(const width of [320,768,1440]){
+  await page.setViewportSize({width,height:1000});await page.evaluate(()=>openSettings());
+  const actions=page.locator('.b3-backup-actions'),picker=actions.locator('.b3-backup-picker'),input=picker.locator('input');
+  await actions.scrollIntoViewIfNeeded();
+  for(const control of [actions.locator('button'),picker]){
+   await expect(control).toHaveCSS('background-color','rgb(255, 255, 255)');
+   expect(await control.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  }
+  await actions.locator('button').focus();await page.keyboard.press('Tab');await expect(input).toBeFocused();
+  expect(await picker.evaluate(e=>parseFloat(getComputedStyle(e).outlineWidth))).toBeGreaterThanOrEqual(3);
+  expect(await actions.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
+  await page.screenshot({path:testInfo.outputPath('backup-'+kind+'-'+width+'.png')});
+  if(kind==='car')await page.locator('#helpToggleBtn').click();
+  else{await page.evaluate(()=>closeSettings());await page.evaluate(()=>toggleGuide())}
+  const help=page.locator(kind==='car'?'#helpBox':'#guideSection');await expect(help).toBeVisible();await help.scrollIntoViewIfNeeded();
+  await expect(help).toHaveCSS('background-color','rgb(255, 255, 255)');
+  for(const title of await help.locator('.text-red-200,.text-emerald-200,.text-white').all())await expect(title).toHaveCSS('color','rgb(16, 43, 69)');
+  expect(await help.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
+  await page.screenshot({path:testInfo.outputPath('help-'+kind+'-'+width+'.png')});
+  await help.locator('button').click();await expect(help).toBeHidden();
+  if(kind==='car')await page.evaluate(()=>closeSettings());
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
