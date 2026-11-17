@@ -34,7 +34,7 @@ export function mountCarBudgetConnect({host,controller,client,userId}) {
       for (const event of controller.snapshot().events || []) {
         const price = Number(event?.cost);
         if (!Number.isSafeInteger(event?.id) || event.id < 0 ||
-            !Number.isFinite(price) || price <= 0 || Math.round(price * 100) !== price * 100) continue;
+            !Number.isFinite(price) || price <= 0 || Math.abs(Math.round(price * 100) - price * 100) > 1e-7) continue;
         const option = document.createElement('option');
         option.value = String(event.id);
         option.textContent = String(event.date || '') + ' · ' + String(event.title || '').slice(0,80) +
