@@ -36,3 +36,27 @@ body.b3-haustiere.b3-dark #helpBox .bg-teal-800\/50{background:#44334a;color:#ff
 body.b3-haustiere.b3-dark #settingsModal button[onclick="registerUser()"]{background:#236b42!important;color:#fff!important}
 body.b3-haustiere.b3-dark #settingsModal button[onclick="loginUser()"]{background:#165d8c!important;color:#fff!important}
 body.b3-haustiere.b3-dark #settingsModal button[onclick="logoutUser()"]{background:#9d2d3b!important;color:#fff!important}
+
+/* P1: reuse shared actions and keep profile, event and medication inputs readable. */
+body.b3.b3-haustiere :is(.b3-pet-create-grid,.b3-pet-records-grid){grid-template-columns:minmax(0,1fr)}
+body.b3.b3-haustiere :is(.b3-pet-create-grid,.b3-pet-records-grid)>div{min-width:0}
+body.b3.b3-haustiere #petTasso{flex-shrink:0;min-width:16px;min-height:16px}
+body.b3.b3-haustiere #b3-medication>div:first-child{flex-direction:column;align-items:stretch}
+body.b3.b3-haustiere .b3-pet-med-fields{display:grid;grid-template-columns:minmax(0,1fr);width:100%;align-items:end}
+body.b3.b3-haustiere .b3-pet-med-fields label{display:grid;grid-template-rows:1fr auto;min-width:0}
+body.b3.b3-haustiere .b3-pet-med-fields input{width:100%;min-width:0}
+body.b3.b3-haustiere :is(.b3-pet-med-card,.b3-pet-profile-heading){flex-wrap:wrap}
+body.b3.b3-haustiere :is(.b3-pet-med-card,.b3-pet-profile-identity)>div{min-width:0;overflow-wrap:anywhere}
+body.b3.b3-haustiere .b3-pet-profile-identity{min-width:0;max-width:100%;flex:1 1 180px;align-items:flex-start}
+body.b3.b3-haustiere .b3-pet-profile-identity>img,body.b3.b3-haustiere .b3-pet-profile-identity>div:first-child{flex-shrink:0}
+body.b3.b3-haustiere .b3-pet-vet-contacts{flex-wrap:wrap}
+body.b3.b3-haustiere .b3-pet-event-card{flex-direction:column;align-items:stretch}
+body.b3.b3-haustiere .b3-pet-event-card>div{min-width:0;overflow-wrap:anywhere}
+body.b3.b3-haustiere .b3-pet-event-actions{align-self:flex-start;max-width:100%;gap:.5rem}
+body.b3.b3-haustiere :is(.b3-pet-profile-heading,.b3-pet-med-card,.b3-pet-event-actions) button{min-width:44px;min-height:44px;flex-shrink:0}
+body.b3.b3-haustiere .b3-pet-event-actions a.b3-action{display:inline-flex;align-items:center;font-size:.875rem;font-weight:700;background:var(--b3-surface);color:var(--b3-ink);border:1px solid var(--b3-line)}
+body.b3.b3-haustiere .b3-pet-event-actions a.b3-action:hover{background:var(--b3-control-soft)}
+body.b3.b3-haustiere .b3-pet-help button.b3-action.b3-outline{background:var(--b3-surface);color:var(--b3-ink);border:1px solid var(--b3-line)}
+@media(min-width:768px){body.b3.b3-haustiere .b3-pet-med-fields{grid-template-columns:minmax(0,1fr) minmax(120px,.45fr) auto}}
+@media(min-width:1280px){body.b3.b3-haustiere :is(.b3-pet-create-grid,.b3-pet-records-grid){grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){body.b3.b3-haustiere .b3-pet-records-grid>div>div:first-child{align-items:stretch}}

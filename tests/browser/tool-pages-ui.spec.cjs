@@ -924,7 +924,7 @@ for(const kind of ['meters','plants']){
   if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
   const capture=async id=>{
    await page.screenshot({path:testInfo.outputPath('care-'+kind+'-'+id+'.png')});
-   await reviewImage(page,'care-'+kind+'-'+id);
+   await page.screenshot({path:testInfo.outputPath('care-'+kind+'-'+id+'.jpg'),type:'jpeg',quality:42});
   };
   const fits=async loc=>loc.evaluate(e=>e.scrollWidth<=e.clientWidth+1);
   const controls=async loc=>{
@@ -980,6 +980,96 @@ for(const kind of ['meters','plants']){
    await surface.evaluate(e=>e.scrollTop=0);await capture(id+'-320');
    if(['beetModal','energyTipsModal'].includes(id)){await surface.evaluate(e=>e.scrollTop=e.scrollHeight);await capture(id+'-end-320');}
    await page.evaluate(close=>window[close](),close);await expect(modal).toBeHidden();
+  }
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+  expect(errors).toEqual([]);
+ });
+}
+
+// P1 parking/pet design fixtures: real HTML and read-only synthetic cloud snapshots.
+for(const kind of ['parking','pet-health']){
+ test(kind+': coherent actions and responsive forms at three widths',async({page},testInfo)=>{
+  test.setTimeout(60000);
+  const parking=kind==='parking',errors=[];page.on('pageerror',e=>errors.push(e.message));
+  const pixel='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJ1sAAAAASUVORK5CYII=';
+  const snapshot=parking
+   ?{sessions:[{id:2,desc:'Isoliertes Testparkhaus',sector:'Testdeck B / Platz 42',date:'17.11.2026',timestamp:'2026-11-17T12:00:00Z',cost:4.5,gps:{lat:0,lng:0},photo:pixel}],activeEndTime:null}
+   :{pets:[{id:1,name:'Isoliertes Testtier',species:'Test-Rasse',chip:'TEST-123',food:'Isoliertes Futter',allergies:'Synthetischer Hinweis',tasso:true,photo:'',passport:pixel,vet:{name:'Isolierte Testpraxis',tel:'000',email:'fixture@example.invalid',address:'Synthetische Adresse'}}],events:[{id:2,petId:1,type:'Impfung',title:'Isolierter Testeintrag',date:'2026-11-17',expiryDate:'2027-11-17',cost:42,receipt:pixel}],meds:[{id:3,name:'Isolierter Vorrat',stock:'3 Packungen'},{id:4,name:'Isolierter Warnvorrat',stock:'fast leer'}]};
+  await isolated(page,true,true,snapshot);
+  await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
+  const route='/tools/'+kind+'/index.html';await page.goto(origin+route);
+  await expect.poll(()=>page.evaluate(parking=>parking
+   ?typeof parkingCloudReady!=='undefined'&&parkingCloudReady&&!!parkingCloudController?.ready
+   :typeof petCloudReady!=='undefined'&&petCloudReady&&!!petCloudController?.ready,parking)).toBe(true);
+  await page.locator('.toolya-signature-footer').waitFor();
+  await expect.poll(()=>page.locator('#settingsModal').evaluate(e=>getComputedStyle(e).display)).toBe('none');
+  if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+  const capture=async id=>{await page.screenshot({path:testInfo.outputPath('mobility-'+kind+'-'+id+'.png')});await reviewImage(page,'mobility-'+kind+'-'+id)};
+  const fits=async loc=>loc.evaluate(e=>e.scrollWidth<=e.clientWidth+1);
+  const inspectActions=async loc=>{
+   for(const b of await loc.locator('button.b3-action:visible').all()){
+    expect(await b.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+    await expect(b).toHaveCSS('font-weight','700');
+    if(!(await b.getAttribute('class')).includes('b3-outline')){
+     await expect(b).toHaveCSS('background-color','rgb(0, 126, 159)');
+     expect(await b.evaluate(e=>{
+      const c=getComputedStyle(e),lum=v=>v.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
+      const a=lum(c.color),b=lum(c.backgroundColor);return(Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+     })).toBeGreaterThanOrEqual(4.5);
+    }
+   }
+  };
+  for(const width of [320,768,1440]){
+   await page.setViewportSize({width,height:1000});
+   expect(new URL(page.url()).pathname).toBe(route);await expect(page.locator('html')).toHaveCSS('color-scheme','light');
+   await inspectActions(page.locator('main.b3-dashboard'));
+   const grid=page.locator(parking?'.b3-park-form-grid':'.b3-pet-create-grid');
+   expect(await grid.evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length)).toBe(width<1280?1:2);
+   if(width===768)expect(await page.locator(parking?'#parkDesc':'#petName').evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThan(600);
+   await grid.evaluate(e=>e.scrollIntoView({block:'start'}));await capture('form-'+width);
+   if(parking){
+    await page.locator('button[onclick="setFavorite(\'⭐ Bahnhof\')"]').click();
+    await expect(page.locator('#parkDesc')).toHaveValue('⭐ Bahnhof');
+    await grid.locator(':scope>div').nth(1).evaluate(e=>e.scrollIntoView({block:'start'}));await capture('entry-'+width);
+    await page.locator('#b3-history').evaluate(e=>e.scrollIntoView({block:'start'}));expect(await fits(page.locator('#b3-history'))).toBe(true);await capture('list-'+width);
+   }else{
+    expect(await page.locator('#petTasso').evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThanOrEqual(16);
+    await page.locator('#petVetName').evaluate(e=>e.closest('div.border-t').scrollIntoView({block:'start'}));await capture('profile-end-'+width);
+    await page.locator('#eventPetSelect').selectOption('1');
+    await page.locator('#eventType').selectOption('Impfung');await expect(page.locator('#vaccineExpiryBox')).toBeVisible();
+    await grid.locator(':scope>div').nth(1).evaluate(e=>e.scrollIntoView({block:'start'}));await capture('event-'+width);
+    await page.locator('#eventType').selectOption('Gewicht');await expect(page.locator('#eventWeight')).toBeVisible();await expect(page.locator('#vaccineExpiryBox')).toBeHidden();
+    if(width===320)await capture('weight-'+width);
+    await page.locator('#b3-medication').evaluate(e=>e.scrollIntoView({block:'start'}));
+    expect(await fits(page.locator('#b3-medication'))).toBe(true);
+    for(const input of await page.locator('.b3-pet-med-fields input').all())expect(await input.evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThanOrEqual(width<768?200:120);
+    const affiliate=await page.locator('#medList a').first().getAttribute('href');
+    expect(new URL(affiliate).searchParams.get('tag')).toBe('duhrrom-21');
+    await expect(page.locator('#medList')).toContainText('Fast leer!');
+    await capture('medication-'+width);
+    await page.locator('#b3-records').evaluate(e=>e.scrollIntoView({block:'start'}));await capture('profiles-'+width);
+    await page.locator('#eventsList').evaluate(e=>e.closest('div.bg-white').scrollIntoView({block:'start'}));await capture('events-'+width);
+   }
+   const danger=page.locator(parking?'button[onclick="deleteSession(2)"]':'button[onclick="deleteEvent(2)"]');
+   await expect(danger).not.toHaveClass(/b3-action/);
+   expect(await danger.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+   const red=await danger.evaluate(e=>getComputedStyle(e).color.match(/[\d.]+/g).map(Number));expect(red[0]).toBeGreaterThan(red[1]);
+   const form=page.locator(parking?'#parkDesc':'#petName');await form.focus();await page.keyboard.press('Tab');
+   expect(await page.evaluate(()=>parseFloat(getComputedStyle(document.activeElement).outlineWidth))).toBeGreaterThanOrEqual(3);
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  }
+  await page.setViewportSize({width:320,height:1000});
+  if(parking){
+   await page.evaluate(()=>toggleHelpModal());await expect(page.locator('#helpModal')).toBeVisible();
+   expect(await fits(page.locator('#helpModal>div'))).toBe(true);
+   await capture('help-320');await page.locator('#helpModal>div').evaluate(e=>e.scrollTop=e.scrollHeight);await capture('help-end-320');
+   await page.evaluate(()=>toggleHelpModal());
+  }else{
+   await page.locator('#settingsBtn').click();
+   await page.locator('#helpToggleBtn').click();await expect(page.locator('#helpBox')).toBeVisible();
+   expect(await fits(page.locator('#settingsModal>div'))).toBe(true);
+   await page.locator('#helpBox').evaluate(e=>e.scrollIntoView({block:'start'}));await capture('help-320');
+   await page.evaluate(()=>closeSettings());
   }
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   expect(errors).toEqual([]);

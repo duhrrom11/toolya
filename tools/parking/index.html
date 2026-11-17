@@ -115,11 +115,11 @@
     </div>
 
     <!-- MODAL: Hilfe & Ausklappbare Anleitungen -->
-    <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleHelpModal()">
+    <div id="helpModal" class="b3-tool-dialog fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleHelpModal()">
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-amber-900">📖 Hilfe & Anleitungen</h3>
-                <button onclick="toggleHelpModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleHelpModal()" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             <div class="space-y-3 text-xs">
                 <details class="bg-gray-50 border rounded-xl p-3">
@@ -141,7 +141,7 @@
                     </p>
                 </details>
             </div>
-            <button onclick="toggleHelpModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="toggleHelpModal()" class="b3-action b3-outline w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
         </div>
     </div>
 
@@ -165,21 +165,21 @@
         </div>
 
         <!-- Timer & Erfassung -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-b3-panel="timer" id="b3-timer">
+        <div class="b3-park-form-grid grid grid-cols-1 md:grid-cols-2 gap-4" data-b3-panel="timer" id="b3-timer">
             <!-- Aktiver Timer / Starten & Parkscheibe -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4 text-center flex flex-col justify-between">
                 <div>
                     <h2 class="text-lg font-bold mb-2">⏱️ Park-Timer & Parkscheibe</h2>
                     <div class="flex justify-center gap-1.5 mb-3 flex-wrap">
-                        <button onclick="startTimer(30)" class="px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">30 Min</button>
-                        <button onclick="startTimer(60)" class="px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">1 Std</button>
-                        <button onclick="startTimer(120)" class="px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">2 Std</button>
-                        <button onclick="startParkscheibe()" class="px-2.5 py-1.5 bg-blue-100 text-blue-800 font-bold rounded-xl text-xs" title="Rundet auf die nächste halbe Stunde auf (Parkscheiben-Regel)">🔵 Parkscheibe</button>
+                        <button onclick="startTimer(30)" class="b3-action px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">30 Min</button>
+                        <button onclick="startTimer(60)" class="b3-action px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">1 Std</button>
+                        <button onclick="startTimer(120)" class="b3-action px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">2 Std</button>
+                        <button onclick="startParkscheibe()" class="b3-action b3-outline px-2.5 py-1.5 bg-blue-100 text-blue-800 font-bold rounded-xl text-xs" title="Rundet auf die nächste halbe Stunde auf (Parkscheiben-Regel)">🔵 Parkscheibe</button>
                     </div>
                     <div id="timerDisplay" class="text-3xl font-bold text-amber-600 my-2">00:00:00</div>
                     <p id="timerStatus" class="text-xs text-gray-500">Kein aktiver Parkschein-Timer</p>
                 </div>
-                <button onclick="stopTimer()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 rounded-xl text-xs">Timer stoppen / zurücksetzen</button>
+                <button onclick="stopTimer()" class="b3-action b3-outline w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 rounded-xl text-xs">Timer stoppen / zurücksetzen</button>
             </div>
 
             <!-- Parkplatz-Details & Favoriten -->
@@ -190,9 +190,9 @@
                 <div class="space-y-1">
                     <p class="text-[11px] font-semibold text-gray-500">Stamm-Parkplatz wählen:</p>
                     <div class="flex gap-1.5 flex-wrap">
-                        <button onclick="setFavorite('⭐ Bahnhof')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium">⭐ Bahnhof</button>
-                        <button onclick="setFavorite('⭐ Arbeit / Büro')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium">⭐ Arbeit</button>
-                        <button onclick="setFavorite('⭐ Supermarkt')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium">⭐ Supermarkt</button>
+                        <button onclick="setFavorite('⭐ Bahnhof')" class="b3-action b3-outline px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium">⭐ Bahnhof</button>
+                        <button onclick="setFavorite('⭐ Arbeit / Büro')" class="b3-action b3-outline px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium">⭐ Arbeit</button>
+                        <button onclick="setFavorite('⭐ Supermarkt')" class="b3-action b3-outline px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium">⭐ Supermarkt</button>
                     </div>
                 </div>
 
@@ -204,7 +204,7 @@
                     <label class="helferlein-field" for="parkCost"><span class="helferlein-field-label">Gebühr in €</span><input type="text" id="parkCost" placeholder="Gebühr in € (z.B. 2.50)" class="p-2.5 border rounded-xl text-sm" aria-label="Gebühr in € (z.B. 2.50)"></label>
                     <label class="helferlein-field" for="parkPhotoInput"><span class="helferlein-field-label">Parkplatzfoto auswählen</span><input type="file" id="parkPhotoInput" accept="image/*" capture="environment" class="text-xs p-1.5 border rounded-xl file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Parkplatzfoto auswählen"></label>
                 </div>
-                <button onclick="saveParkingSession()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">GPS-Standort ermitteln & speichern</button>
+                <button onclick="saveParkingSession()" class="b3-action w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">GPS-Standort ermitteln & speichern</button>
             </div>
         </div>
 
@@ -547,8 +547,8 @@
             }
 
             list.innerHTML = filteredSessions.map(s => `
-                <div class="p-4 bg-gray-50 border rounded-2xl flex items-center justify-between shadow-sm gap-3">
-                    <div class="flex items-center space-x-3">
+                <div class="b3-park-card p-4 bg-gray-50 border rounded-2xl flex items-center justify-between shadow-sm gap-3">
+                    <div class="b3-park-card-identity flex items-center space-x-3">
                         ${s.photo ? `<img src="${s.photo}" onclick="zoomImage('${s.photo}')" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80">` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Beleg</div>'}
                         <div>
                             <h4 class="font-bold text-sm">📍 ${s.desc}</h4>
@@ -557,8 +557,8 @@
                             ${s.gps ? `<p class="text-[10px] text-blue-600 mt-0.5">GPS: ${Number(s.gps.lat).toFixed(4)}, ${Number(s.gps.lng).toFixed(4)}</p>` : ''}
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        ${s.gps ? `<a href="https://www.google.com/maps/search/?api=1&query=${s.gps.lat},${s.gps.lng}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold">🧭 Route</a>` : ''}
+                    <div class="b3-park-card-actions flex items-center gap-2">
+                        ${s.gps ? `<a href="https://www.google.com/maps/search/?api=1&query=${s.gps.lat},${s.gps.lng}" target="_blank" rel="noopener noreferrer" class="b3-action b3-outline px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold">🧭 Route</a>` : ''}
                         <button onclick="deleteSession(${s.id})" class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                     </div>
                 </div>

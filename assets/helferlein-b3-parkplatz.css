@@ -33,3 +33,17 @@ body.b3-parkplatz.b3-dark #helpModal :is(.text-gray-600,.text-amber-700,.text-am
  body.b3-parkplatz main.b3-dashboard [data-b3-panel="timer"]{grid-template-columns:minmax(0,1fr)}
  body.b3-parkplatz main.b3-dashboard [data-b3-panel="timer"] .grid-cols-2{grid-template-columns:minmax(0,1fr)}
 }
+
+/* P1 app controls, wide tablet forms and wrapping history actions. */
+body.b3.b3-parkplatz .b3-park-form-grid{grid-template-columns:minmax(0,1fr)}
+body.b3.b3-parkplatz .b3-park-form-grid label{min-width:0}
+body.b3.b3-parkplatz .b3-park-card{flex-wrap:wrap}
+body.b3.b3-parkplatz .b3-park-card-identity{min-width:0;max-width:100%;flex:1 1 240px;align-items:flex-start}
+body.b3.b3-parkplatz .b3-park-card-identity>img,body.b3.b3-parkplatz .b3-park-card-identity>div:first-child{flex-shrink:0}
+body.b3.b3-parkplatz .b3-park-card-identity>div:last-child{min-width:0;overflow-wrap:anywhere}
+body.b3.b3-parkplatz .b3-park-card-actions{flex-wrap:wrap;max-width:100%}
+body.b3.b3-parkplatz .b3-park-card-actions :is(button,a){min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center}
+body.b3.b3-parkplatz .b3-park-card-actions a.b3-action{font-size:.875rem;font-weight:700;background:var(--b3-surface);color:var(--b3-ink);border:1px solid var(--b3-line)}
+body.b3.b3-parkplatz .b3-park-card-actions a.b3-action:hover{background:var(--b3-control-soft)}
+@media(min-width:1280px){body.b3.b3-parkplatz .b3-park-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){body.b3.b3-parkplatz #b3-history>div:first-child{align-items:stretch}}
