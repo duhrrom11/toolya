@@ -34,7 +34,7 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
   const select=document.querySelector('#toolya-connect-car-budget select');
   const button=document.querySelector('#toolya-connect-car-budget button');
   assert.equal(select.querySelectorAll('option').length,2,'zero amounts excluded');
-  select.value='5';button.click();await tick();await tick();
+  Object.defineProperty(select,'value',{value:'5',writable:true,configurable:true});button.click();await tick();await tick();
   assert.equal(calls,1);
   assert.match(document.querySelector('[role=status]').textContent,/bestätigt/);
   status='already_imported';button.click();await tick();await tick();
