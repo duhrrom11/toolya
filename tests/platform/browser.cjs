@@ -27,7 +27,7 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
    }}};
   `});
  }
-if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(staticHosts.has(u.hostname)&&r.request().method()==='GET')return r.continue();if(r.request().method()!=='GET'&&(u.pathname.includes('/rest/v1/')||u.pathname.includes('/functions/v1/'))&&!['/rest/v1/rpc/search_public_amazon_wishlists','/rest/v1/rpc/search_wishlist_profiles','/rest/v1/rpc/wishlist_profile_filters'].includes(u.pathname)){blockedWrites++;blockedWriteUrls.push(r.request().method()+' '+u.hostname+u.pathname)}return r.abort()};await context.route('**/*',guard);
+if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(staticHosts.has(u.hostname)&&r.request().method()==='GET')return r.continue();if(r.request().method()!=='GET'&&(u.pathname.includes('/rest/v1/')||u.pathname.includes('/functions/v1/'))&&!['/rest/v1/rpc/search_public_amazon_wishlists','/rest/v1/rpc/search_wishlist_profiles','/rest/v1/rpc/wishlist_profile_filters','/rest/v1/rpc/search_wishlist_directory','/rest/v1/rpc/wishlist_directory_filters'].includes(u.pathname)){blockedWrites++;blockedWriteUrls.push(r.request().method()+' '+u.hostname+u.pathname)}return r.abort()};await context.route('**/*',guard);
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  // Verify real native keyboard copy, paste and cut without injecting clipboard handlers.
  // The browser runs against the local static server; no production accounts or data.
