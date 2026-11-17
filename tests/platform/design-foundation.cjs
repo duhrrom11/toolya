@@ -10,8 +10,8 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  try{browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
   const context=await browser.newContext({reducedMotion:'reduce'});
   await context.route('**/*',route=>{const u=new URL(route.request().url());return u.origin===origin||(u.hostname==='cdn.tailwindcss.com'&&route.request().method()==='GET')?route.continue():route.abort()});
-  const page=await context.newPage();fs.mkdirSync('test-results',{recursive:true});
-  for(const route of ['/index.html','/privacy.html','/legal.html','/tools/wishes/public.html','/tools/estate/index.html','/tools/estate/heirs.html']){
+  const page=await context.newPage();const galleryErrors=[];page.on('pageerror',e=>{if(new URL(page.url()).pathname==='/mascots.html')galleryErrors.push(e.message)});fs.mkdirSync('test-results',{recursive:true});
+  for(const route of ['/index.html','/privacy.html','/legal.html','/mascots.html','/tools/wishes/public.html','/tools/estate/index.html','/tools/estate/heirs.html']){
    for(const width of [320,768,1440]){
     await page.setViewportSize({width,height:900});await page.emulateMedia({colorScheme:route.includes('/estate/')?'dark':'light'});await page.goto(origin+route);
     await page.locator('.toolya-signature-footer .ty-footer-links #toolya-consent-settings').waitFor();
@@ -23,6 +23,33 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
     const brand=await page.locator('.ty-footer-wordmark').evaluate(el=>({font:getComputedStyle(el).fontFamily,weight:getComputedStyle(el).fontWeight,text:el.textContent}));
     assert(brand.font.startsWith('Inter'),'shared existing brand font');assert.equal(brand.weight,'900');assert.equal(brand.text,'Toolya');
     if(route==='/index.html')assert.equal(await page.locator('.b3-hub-logo').evaluate(el=>getComputedStyle(el).fontFamily),brand.font,'home and footer font match');
+    if(['/privacy.html','/legal.html','/mascots.html'].includes(route)){
+     assert.equal(await page.locator('.ty-info-header').count(),1,'shared information header');
+     assert.equal(await page.locator('h1').count(),1,'single main title');
+     assert.equal(await page.locator('.ty-info-header [aria-current=page]').count(),1,'current page marked');
+     assert.equal(await page.locator('.ty-info-brand').evaluate(el=>getComputedStyle(el).fontFamily),brand.font,'header/footer brand match');
+     for(const a of await page.locator('.ty-info-header nav a').all())assert((await a.boundingBox()).height>=44);
+     const infoContrasts=await page.locator('.ty-info-header nav a').evaluateAll(links=>{
+      const rgb=s=>s.match(/[\d.]+/g).map(Number),lum=v=>v.slice(0,3).map(x=>{x/=255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4}).reduce((n,x,i)=>n+x*[.2126,.7152,.0722][i],0);
+      const stops=getComputedStyle(document.querySelector('.ty-info-header')).backgroundImage.match(/rgba?\([^)]+\)/g).map(rgb);
+      return links.map(a=>{const c=getComputedStyle(a),fg=lum(rgb(c.color)),overlay=rgb(c.backgroundColor),alpha=overlay[3]??1;
+       return Math.min(...stops.map(stop=>{const bg=lum(stop.map((x,i)=>x*(1-alpha)+overlay[i]*alpha));return (Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05)}));});
+     });assert(infoContrasts.every(r=>r>=4.5),'information navigation contrast '+JSON.stringify(infoContrasts));
+
+     if(route!=='/mascots.html')assert.equal(await page.locator('.toolya-idle').isVisible(),false,'no separate companion card on legal text pages');
+     assert((await page.locator('.toolya-settings-trigger').boundingBox()).height>=44);
+     assert.equal(await page.locator('.ty-info-controls>.toolya-settings-trigger').count(),1,'settings button uses the information navigation slot');
+     await page.locator('.toolya-settings-trigger').click();assert(await page.locator('#toolya-display-settings').isVisible());
+     await page.getByRole('button',{name:'Einstellungen schließen',exact:true}).click();
+     if(route==='/mascots.html'){
+      assert.equal(await page.locator('#feelings button').count(),16);
+      await page.locator('#feelings button').first().click();assert(await page.locator('.tb-message-box').isVisible(),'gallery emotion preview still works');
+      await page.locator('#outfit').selectOption('5');assert.equal(await page.locator('#outfit').inputValue(),'5');
+      await page.waitForFunction(()=>document.querySelector('.toolya-buddy')?.dataset.pose==='idle');
+      assert(await page.locator('.toolya-idle').isVisible(),'outfit preview returns to visible companion');assert.deepEqual(galleryErrors,[],'gallery previews have no JavaScript errors');
+     }
+     await page.locator('#info-main h1').click();await page.screenshot({path:'test-results/info-'+route.slice(1,-5)+'-'+width+'.png'});
+    }
     if(route.includes('/estate/')){
      assert.equal(await page.locator('html').evaluate(el=>getComputedStyle(el).colorScheme),'light','estate stays light with dark OS preference');
      assert(await page.locator(route.endsWith('heirs.html')?'#access-panel':'#login-panel').isVisible(),'actual estate route rendered');
@@ -58,6 +85,6 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
    await page.reload();await page.locator('.ty-footer-mascot').waitFor();
    assert((await page.locator('.ty-footer-mascot').getAttribute('src')).includes(character),'footer follows '+character);
   }
-  console.log('Design foundation: 6 routes × 3 widths; both consent initialization orders; both characters passed. Production application/analytics requests blocked.');
+  console.log('Design foundation: 7 routes × 3 widths; both consent initialization orders; both characters passed. Production application/analytics requests blocked.');
  }finally{await browser?.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1});

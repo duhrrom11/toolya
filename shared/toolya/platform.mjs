@@ -65,7 +65,7 @@ function mountPreferences(){
    const title=document.createElement('h2');title.id='toolya-settings-title';title.textContent='Einstellungen';
    const close=document.createElement('button');close.type='button';close.textContent='Schließen';close.setAttribute('aria-label','Einstellungen schließen');close.onclick=()=>fallbackDialog.close();fallbackDialog.append(title,close);document.body.append(fallbackDialog);
    fallbackTrigger=document.createElement('button');fallbackTrigger.type='button';fallbackTrigger.className='toolya-settings-trigger helferlein-gear';const gear=document.createElement('span');gear.className='helferlein-gear-symbol';gear.setAttribute('aria-hidden','true');gear.textContent='⚙';fallbackTrigger.append(gear);fallbackTrigger.setAttribute('aria-label','Einstellungen öffnen');fallbackTrigger.setAttribute('aria-haspopup','dialog');fallbackTrigger.setAttribute('aria-controls',fallbackDialog.id);fallbackTrigger.onclick=()=>fallbackDialog.showModal();
-   const header=document.querySelector('.wishlist-header-controls,header .row,header,nav');
+   const header=document.querySelector('body[data-toolya-info] .ty-info-controls')||document.querySelector('.wishlist-header-controls,header .row,header,nav');
    if(header)header.append(fallbackTrigger);else (document.querySelector('main')||document.body).prepend(fallbackTrigger);
   }
   surface=fallbackDialog;
@@ -89,7 +89,7 @@ let scheduled=false;const observer=new MutationObserver(()=>{if(scheduled)return
 document.addEventListener('invalid',e=>{if(e.target.validationMessage)notify('form-error',e.target.validationMessage)},true);
 // A small public, data-free way to inspect every approved emotion and outfit.
 export function previewEmotion(emotion){if(!EMOTIONS.includes(emotion))return false;return notify('tip','Toolya zeigt: '+emotion,emotion)}
-export function previewOutfit(role){if(!Number.isInteger(role)||role<0||role>15)return false;for(const r of frames)if(r.img===idleImage)r.role=role;buddy.dismiss();refreshFrames();return true}
+export function previewOutfit(role){if(!Number.isInteger(role)||role<0||role>15)return false;const target=buddy.host.querySelector('.toolya-idle img');for(const r of frames)if(r.img===target)r.role=role;buddy.dismiss();refreshFrames();return true}
 
 document.addEventListener('visibilitychange',()=>{buddy.host.toggleAttribute('data-page-hidden',document.hidden)});
 
