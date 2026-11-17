@@ -848,7 +848,7 @@ for(const kind of ['moving','loans']){
   if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
   const capture=async(id)=>{
    await page.screenshot({path:testInfo.outputPath('inventory-'+kind+'-'+id+'.png'),fullPage:false});
-   await reviewImage(page,'inventory-'+kind+'-'+id);
+   await page.screenshot({path:testInfo.outputPath('inventory-'+kind+'-'+id+'.jpg'),type:'jpeg',quality:42});
   };
   const fits=async locator=>locator.evaluate(e=>e.scrollWidth<=e.clientWidth+1);
   for(const width of [320,768,1440]){
@@ -898,6 +898,85 @@ for(const kind of ['moving','loans']){
    await expect(danger).not.toHaveClass(/b3-action/);
    const rgb=await danger.evaluate(e=>getComputedStyle(e).color.match(/[\d.]+/g).map(Number));expect(rgb[0]).toBeGreaterThan(rgb[1]);
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  }
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+  expect(errors).toEqual([]);
+ });
+}
+
+// P1 real-page review: read-only synthetic snapshots, including existing auxiliary dialogs.
+for(const kind of ['meters','plants']){
+ test(kind+': shared actions and readable care forms at three widths',async({page},testInfo)=>{
+  test.setTimeout(60000);
+  const meters=kind==='meters',errors=[];page.on('pageerror',e=>errors.push(e.message));
+  const pixel='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJ1sAAAAASUVORK5CYII=';
+  const snapshot=meters
+   ?{readings:[{id:2,type:'Strom',name:'Isolierter Hauptzähler',location:'Hauptwohnung',date:'2026-11-17',value:142,photo:pixel,note:'Synthetische Prüfansicht'},{id:1,type:'Strom',name:'Isolierter Hauptzähler',location:'Hauptwohnung',date:'2026-10-17',value:100}],tarifs:{stromHT:0.38,stromNT:0.28,stromAbschlag:80,wasser:4.5,wasserAbschlag:30,gas:0.12,gasAbschlag:100,gasCalib:11.2}}
+   :{plants:[{id:2,name:'Isolierte Testpflanze',species:'Tomate',location:'Testzimmer',light:'half',potSize:15,interval:7,lastWatered:'2026-11-17',propagation:'Standard',note:'Synthetische Prüfansicht',diary:[{date:'2026-11-17',text:'Isolierte Notiz'}],harvestLog:[],galleryPhotos:[]}],monthWaterLiters:0,totalHarvestGrams:0,inventory:[{name:'Isolierter Lagerartikel',qty:'1 L'}],seeds:[{name:'Isoliertes Saatgut',year:2026}],beetSlots:[2,...Array(15).fill(null)],cisternMax:500,cisternCurrent:400};
+  await isolated(page,true,true,snapshot);
+  await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
+  const route='/tools/'+kind+'/index.html';await page.goto(origin+route);
+  await expect.poll(()=>page.evaluate(meters=>meters
+   ?typeof metersCloudReady!=='undefined'&&metersCloudReady&&!!metersCloudController?.ready
+   :typeof plantsCloudReady!=='undefined'&&plantsCloudReady&&!!plantsCloudController?.ready,meters)).toBe(true);
+  await page.locator('.toolya-signature-footer').waitFor();
+  await expect.poll(()=>page.locator('#settingsModal').evaluate(e=>getComputedStyle(e).display)).toBe('none');
+  if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+  const capture=async id=>{
+   await page.screenshot({path:testInfo.outputPath('care-'+kind+'-'+id+'.png')});
+   await reviewImage(page,'care-'+kind+'-'+id);
+  };
+  const fits=async loc=>loc.evaluate(e=>e.scrollWidth<=e.clientWidth+1);
+  const controls=async loc=>{
+   for(const b of await loc.locator('button.b3-action:visible').all()){
+    expect(await b.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+    await expect(b).toHaveCSS('font-weight','700');
+    if(!(await b.getAttribute('class')).includes('b3-outline')){
+     await expect(b).toHaveCSS('background-color','rgb(0, 126, 159)');
+     expect(await b.evaluate(e=>{
+      const c=getComputedStyle(e),lum=v=>v.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
+      const a=lum(c.color),b=lum(c.backgroundColor);return(Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+     })).toBeGreaterThanOrEqual(4.5);
+    }
+   }
+  };
+  for(const width of [320,768,1440]){
+   await page.setViewportSize({width,height:1000});expect(new URL(page.url()).pathname).toBe(route);
+   await expect(page.locator('html')).toHaveCSS('color-scheme','light');
+   await controls(page.locator('main.b3-dashboard'));
+   const grid=page.locator(meters?'.b3-meter-identity-grid':'.b3-plant-care-grid');
+   expect(await grid.evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length)).toBe(width<768?1:width<1280?2:4);
+   if(width===768)expect(await page.locator(meters?'#meterName':'#plantLight').evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThan(280);
+   await page.locator(meters?'#b3-tariffs':'#b3-create').evaluate(e=>e.scrollIntoView({block:'start'}));await capture('form-'+width);
+   await page.locator(meters?'#b3-create':'button[onclick="savePlant()"]').evaluate(e=>e.scrollIntoView({block:'start'}));await capture('entry-'+width);
+   const list=page.locator(meters?'#b3-history':'#b3-plants');
+   await list.evaluate(e=>e.scrollIntoView({block:'start'}));expect(await fits(list)).toBe(true);await capture('list-'+width);
+   const danger=page.locator(meters?'button[onclick="deleteReading(2)"]':'button[onclick="deletePlant(2)"]');
+   await expect(danger).not.toHaveClass(/b3-action/);
+   const red=await danger.evaluate(e=>getComputedStyle(e).color.match(/[\d.]+/g).map(Number));expect(red[0]).toBeGreaterThan(red[1]);
+   if(!meters){
+    await page.locator('button[onclick="openEditModal(2)"]').click();
+    const modal=page.locator('#editModal'),surface=modal.locator(':scope>div');
+    await expect(modal).toBeVisible();expect(await fits(surface)).toBe(true);await controls(modal);
+    await modal.locator('#editName').focus();await page.keyboard.press('Tab');
+    expect(await page.evaluate(()=>parseFloat(getComputedStyle(document.activeElement).outlineWidth))).toBeGreaterThanOrEqual(3);
+    await surface.evaluate(e=>e.scrollTop=0);await capture('edit-'+width);
+    await modal.locator('button[onclick="updatePlant()"]').scrollIntoViewIfNeeded();await capture('edit-actions-'+width);
+    await modal.getByRole('button',{name:'Abbrechen',exact:true}).click();
+   }
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  }
+  // Mobile is the narrowest surface for all other modified dialogs. Open real read-only handlers.
+  await page.setViewportSize({width:320,height:1000});
+  const dialogs=meters
+   ?[['energyTipsModal','openEnergyTipsModal','closeEnergyTipsModal'],['photoModal','openPhotoModal','closePhotoModal']]
+   :[['inventoryModal','openInventoryModal','closeInventoryModal'],['seedsModal','openSeedsModal','closeSeedsModal'],['roiModal','openRoiModal','closeRoiModal'],['cisternModal','openCisternModal','closeCisternModal'],['beetModal','openBeetModal','closeBeetModal'],['harvestModal','openHarvestModal','closeHarvestModal'],['diaryModal','openDiaryModal','closeDiaryModal'],['galleryModal','openGalleryModal','closeGalleryModal'],['helpModal','toggleHelpModal','toggleHelpModal'],['settingsModal','toggleSettingsModal','toggleSettingsModal']];
+  for(const [id,open,close] of dialogs){
+   await page.evaluate(({open,pixel})=>window[open](open==='openPhotoModal'?pixel:2),{open,pixel});
+   const modal=page.locator('#'+id);await expect(modal).toBeVisible();
+   const surface=modal.locator(':scope>div');expect(await fits(surface)).toBe(true);await controls(modal);
+   await surface.evaluate(e=>e.scrollTop=0);await capture(id+'-320');
+   await page.evaluate(close=>window[close](),close);await expect(modal).toBeHidden();
   }
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   expect(errors).toEqual([]);
