@@ -110,7 +110,7 @@ begin
   v_entry := jsonb_build_object(
     'id', v_new_id, 'title', v_title,
     'store', 'Autokosten', 'date', v_date, 'price', v_cost,
-    'category', 'Auto & Verkehr', 'paymentMethod', 'Bargeld',
+    'category', 'Auto', 'paymentMethod', 'Bargeld',
     'warrantyMonths', 0, 'returnDays', 0, 'lifespan', 1,
     'sn', '', 'location', '', 'isFixkosten', false, 'isTax', false,
     'note', 'Aus Toolya Connect importiert – Zahlungsart prüfen',
