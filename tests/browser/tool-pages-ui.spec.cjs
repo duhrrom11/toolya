@@ -1289,3 +1289,35 @@ test('wishlist: public cards and five-list form remain usable at three widths',a
  for(const a of await page.locator('#previewContent .list-links a').all())expect(new URL(await a.getAttribute('href')).searchParams.get('tag')).toBe('duhrrom-21');
  await page.locator('#closePreview').click();expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
 });
+
+test('dashboard: shared actions, task rows and account dialog at three widths',async({page},testInfo)=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));await isolated(page,true,true);
+ await page.addInitScript(()=>{
+  localStorage.setItem('toolya_dashboard_tasks_v1',JSON.stringify([{id:'fixture-task',text:'Isolierte Aufgabe mit langem Text für die Prüfung der mobilen Bedienfläche und der Schaltfläche zum Entfernen',done:false}]));
+  localStorage.setItem('toolya_dashboard_reminders_v1',JSON.stringify([{id:'fixture-reminder',text:'Isolierte Erinnerung mit langem Text',due:'2030-01-01T12:00:00Z',done:false}]));
+  localStorage.setItem('hub_favorites',JSON.stringify(['wishlist','kassenbon']));
+  localStorage.setItem('toolya_recent_tools_v1',JSON.stringify(['kfz']));
+ });
+ await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
+ await page.goto(origin+'/dashboard/');await page.locator('.toolya-signature-footer').waitFor();
+ await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+ const capture=async name=>{await page.screenshot({path:testInfo.outputPath(name+'.png')});await reviewImage(page,name)};
+ for(const width of [320,768,1440]){
+  await page.setViewportSize({width,height:1000});await expect(page.locator('html')).toHaveCSS('color-scheme','light');
+  for(const id of ['#favorites','#task-form','#reminder-form']){
+   const panel=page.locator(id);await panel.evaluate(e=>e.closest('section').scrollIntoView({block:'start'}));
+   expect(await panel.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);await capture('dashboard-'+id.slice(1)+'-'+width);
+  }
+  for(const b of await page.locator('main button:visible').all())expect(await b.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  const checkbox=page.locator('#tasks input[type=checkbox]');expect(await checkbox.evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThanOrEqual(16);
+  await page.locator('#task-text').focus();await page.keyboard.press('Tab');expect(await page.evaluate(()=>parseFloat(getComputedStyle(document.activeElement).outlineWidth))).toBeGreaterThanOrEqual(3);
+  await page.locator('#settingsBtn').click();const modal=page.locator('#settingsModal');await expect(modal).toBeVisible();
+  for(const b of await modal.locator('button:visible').all())expect(await b.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  await expect(page.locator('#registerUser')).toHaveCSS('background-color','rgb(255, 255, 255)');
+  await expect(page.locator('#loginSubmit')).toHaveCSS('background-color','rgb(0, 126, 159)');
+  expect(await page.locator('.dashboard-settings-panel').evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);await capture('dashboard-account-'+width);
+  await page.locator('#closeSettingsBtn').click();await expect(modal).toBeHidden();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);expect(errors).toEqual([]);
+});

@@ -44,3 +44,24 @@
 
 /* Dashboard starts directly with the overview; no second hero card below the header. */
 .dashboard-heading{font-size:clamp(24px,3vw,32px);letter-spacing:-.035em;margin:0 0 8px;color:#234d59}
+
+/* P1 shared controls: same turquoise primary and white secondary actions as the tools. */
+:root{--dashboard-control-accent:var(--ty-color-primary,#007e9f);--dashboard-control-soft:var(--ty-color-soft,#e1f3fa)}
+button{background:var(--dashboard-control-accent);min-height:44px;transition:transform .18s ease,box-shadow .18s ease}
+button:hover{background:var(--dashboard-control-accent);transform:translateY(-2px);box-shadow:0 6px 16px #163b5426}
+button:active{transform:translateY(0);box-shadow:0 2px 5px #163b5426}
+button:disabled{cursor:not-allowed;opacity:.5;transform:none;box-shadow:none}
+input:not([type=checkbox]){min-height:44px;border-radius:12px}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--dashboard-control-accent);outline-offset:3px}
+.b3-hub-nav a,.b3-hub-nav button{min-height:44px}
+.dashboard-account-actions #registerUser{background:#fff;color:#102b45;border:1px solid #cbdde6}
+.dashboard-account-actions #registerUser:hover{background:var(--dashboard-control-soft)}
+.dashboard-settings-head button{min-width:44px;flex-shrink:0}
+.dashboard-settings-head h2{min-width:0}
+.dashboard-settings-panel{max-height:90dvh}
+.dashboard-settings-panel input{max-width:100%}
+.items li button{flex-shrink:0}
+@media(prefers-reduced-motion:reduce){
+ button{transition:none}
+ button:hover,button:active{transform:none}
+}
