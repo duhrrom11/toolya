@@ -65,3 +65,9 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(-
  button{transition:none}
  button:hover,button:active{transform:none}
 }
+
+@media(max-width:500px){
+ .items li{display:grid;grid-template-columns:18px minmax(0,1fr);align-items:start}
+ .items li span{min-width:0}
+ .items li button{grid-column:2;justify-self:end}
+}
