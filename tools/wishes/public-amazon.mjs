@@ -1,7 +1,7 @@
 import {guardedWishlistWrite} from './wishlist-auth.mjs';
 // Deployment must explicitly choose production or preview; never infer it from URL parameters.
-const PROD_PROJECT = 'yheogmeaosuigyaxkwth';
-const PROD_PUBLISHABLE_KEY = 'sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
+const PROD_PROJECT = 'avapuibsidubuzxjtyld';
+const PROD_PUBLISHABLE_KEY = 'sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC';
 const configured = window.HELPERLEIN_SUPABASE_CONFIG;
 const valid = configured && typeof configured.url === 'string' &&
   typeof configured.publishableKey === 'string' &&
