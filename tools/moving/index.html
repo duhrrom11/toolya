@@ -126,11 +126,11 @@
         </div>
 
         <!-- Erfassung: Standort & Kiste -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-b3-panel="create" id="b3-create">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 b3-moving-form-grid" data-b3-panel="create" id="b3-create">
             <!-- Standort anlegen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">📍 1. Standort anlegen</h2>
-                <div class="flex gap-2">
+                <div class="flex gap-2 b3-moving-location-fields">
                     <label class="helferlein-field" for="locIcon"><span class="helferlein-field-label">Symbol des Standorts</span><select id="locIcon" class="p-3 border rounded-xl text-sm bg-white" aria-label="Symbol des Standorts">
                         <option value="📦">📦 Karton</option>
                         <option value="🏠">🏠 Haus</option>
@@ -142,7 +142,7 @@
                     </select></label>
                     <label class="helferlein-field" for="locName"><span class="helferlein-field-label">Standort Name</span><input type="text" id="locName" placeholder="Standort Name" class="w-full p-3 border rounded-xl text-sm" aria-label="Standort Name"></label>
                 </div>
-                <button onclick="saveLocation()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Standort speichern</button>
+                <button onclick="saveLocation()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm b3-action">Standort speichern</button>
             </div>
 
             <!-- Kiste hinzufügen -->
@@ -171,15 +171,15 @@
                     </select></label>
                     <label class="helferlein-field" for="boxPhotoInput"><span class="helferlein-field-label">Foto der Kiste auswählen</span><input type="file" id="boxPhotoInput" accept="image/*" capture="environment" class="text-xs p-2 border rounded-xl file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Foto der Kiste auswählen"></label>
                 </div>
-                <button onclick="saveBox()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Kiste speichern & QR-Code</button>
+                <button onclick="saveBox()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm b3-action">Kiste speichern & QR-Code</button>
             </div>
         </div>
 
         <!-- Suche, Filter & Inventar -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="inventory" id="b3-inventory">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-3 b3-moving-inventory-heading">
                 <h3 class="font-bold text-lg">🗄️ Vollständiges Inventar</h3>
-                <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                <div class="flex flex-wrap gap-2 w-full md:w-auto b3-moving-filters">
                     <label class="helferlein-field" for="tagFilter"><span class="helferlein-field-label">Inventar nach Kennzeichnung filtern</span><select id="tagFilter" onchange="renderInventory()" class="p-2 border rounded-xl text-sm bg-white" aria-label="Inventar nach Kennzeichnung filtern">
                         <option value="">Alle Tags</option>
                         <option value="Standard">Standard</option>
@@ -227,16 +227,16 @@
             <div class="border-t pt-3 space-y-2">
                 <label class="block text-xs font-bold text-gray-700">🔎 Unterartikel in dieser Kiste:</label>
                 <div id="subItemsContainer" class="space-y-2 max-h-36 overflow-y-auto pr-1"></div>
-                <div class="flex gap-2 pt-1">
+                <div class="flex gap-2 pt-1 b3-moving-subitem-form">
                     <input type="text" id="newSubItemName" placeholder="Artikel-Name (z.B. Bohrhammer)" class="p-2 border rounded-xl text-xs flex-grow">
                     <input type="text" id="newSubItemVal" placeholder="Wert €" class="p-2 border rounded-xl text-xs w-20">
-                    <button onclick="addSubItem()" class="px-3 py-2 bg-gray-800 text-white rounded-xl text-xs font-bold">+ Hinzufügen</button>
+                    <button onclick="addSubItem()" class="px-3 py-2 bg-gray-800 text-white rounded-xl text-xs font-bold b3-action">+ Hinzufügen</button>
                 </div>
             </div>
 
-            <div class="flex justify-end space-x-2 pt-3 border-t">
-                <button onclick="closeEditBoxModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button>
-                <button onclick="updateBox()" class="px-5 py-2 bg-amber-600 text-white rounded-xl text-sm font-bold">Speichern</button>
+            <div class="flex flex-wrap justify-end gap-2 pt-3 border-t b3-dialog-actions">
+                <button onclick="closeEditBoxModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm b3-action b3-outline">Abbrechen</button>
+                <button onclick="updateBox()" class="px-5 py-2 bg-amber-600 text-white rounded-xl text-sm font-bold b3-action">Speichern</button>
             </div>
         </div>
     </div>
@@ -248,7 +248,7 @@
             <div id="qrcode" class="flex justify-center p-2 bg-white border rounded-xl"></div>
             <p id="qrLinkInfo" class="text-[11px] text-indigo-600 font-mono break-all"></p>
             <p class="text-xs text-gray-500">Drucke diesen Code aus. Beim Scannen öffnet sich die Kiste direkt in der App!</p>
-            <button onclick="closeQrModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="closeQrModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline">Schließen</button>
         </div>
     </div>
 
@@ -258,7 +258,7 @@
             <h3 class="font-bold text-lg">🔍 Live Scanner</h3>
             <div id="reader" class="w-full rounded-xl overflow-hidden border"></div>
             <div id="scanResult" class="text-xs font-semibold text-amber-700 bg-amber-50 p-2 rounded-xl hidden"></div>
-            <button onclick="closeScannerModal()" class="px-5 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Scanner schließen</button>
+            <button onclick="closeScannerModal()" class="px-5 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold b3-action b3-outline">Scanner schließen</button>
         </div>
     </div>
 
@@ -838,10 +838,10 @@
 
                 return `
                     <div class="border rounded-2xl p-4 bg-gray-50 space-y-3">
-                        <div class="flex justify-between items-center border-b pb-2">
+                        <div class="flex justify-between items-center border-b pb-2 b3-moving-location-heading">
                             <h4 class="font-bold text-md text-amber-800">${loc.icon || '📍'} Standort: ${loc.name}</h4>
                             <div class="flex gap-3">
-                                <button onclick="editLocation(${loc.id})" class="text-xs text-blue-600 hover:underline">✏️ Bearbeiten</button>
+                                <button onclick="editLocation(${loc.id})" class="text-xs text-blue-600 hover:underline b3-action b3-outline">✏️ Bearbeiten</button>
                                 <button onclick="deleteLocation(${loc.id})" class="text-xs text-red-500 hover:underline">🗑️ Löschen</button>
                             </div>
                         </div>
@@ -852,8 +852,8 @@
                                 const subItemsText = b.subItems && b.subItems.length > 0 ? b.subItems.map(s => `• ${s.name}`).join(' | ') : '';
 
                                 return `
-                                    <div class="bg-white p-3 border rounded-xl flex items-center justify-between shadow-sm gap-3 ${isExpired ? 'border-red-400 bg-red-50/30' : ''}">
-                                        <div class="flex items-center space-x-3">
+                                    <div class="bg-white p-3 border rounded-xl flex items-center justify-between shadow-sm gap-3 b3-moving-box-card ${isExpired ? 'border-red-400 bg-red-50/30' : ''}">
+                                        <div class="flex items-center space-x-3 b3-moving-box-identity">
                                             ${b.photo ? `<img src="${b.photo}" onclick="zoomImage('${b.photo}')" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80">` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Kein Bild</div>'}
                                             <div>
                                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
@@ -864,16 +864,16 @@
                                                 </div>
                                                 <p class="text-xs text-gray-600 mt-0.5">${b.desc || 'Keine Beschreibung'}</p>
                                                 ${subItemsText ? `<p class="text-[11px] text-indigo-600 font-medium mt-0.5">Inhalt: ${subItemsText}</p>` : ''}
-                                                <div class="flex gap-3 text-[11px] text-gray-500 mt-0.5">
+                                                <div class="flex gap-3 text-[11px] text-gray-500 mt-0.5 b3-moving-box-meta">
                                                     <span class="font-semibold text-green-600">Wert: ${(b.value || 0).toFixed(2).replace('.', ',')} €</span>
                                                     ${b.barcode ? `<span class="font-mono text-gray-400">EAN: ${b.barcode}</span>` : ''}
                                                     ${b.expiry ? `<span>Ablauf: ${b.expiry.split('-').reverse().join('.')}</span>` : ''}
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="flex items-center gap-1">
-                                            <button onclick="showQrCode(${b.id}, '${b.name}', '${b.desc}')" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100" title="QR-Code & Deep-Link">🖨️</button>
-                                            <button onclick="openEditBoxModal(${b.id})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200" title="Bearbeiten">✏️</button>
+                                        <div class="flex items-center gap-1 b3-moving-box-actions">
+                                            <button onclick="showQrCode(${b.id}, '${b.name}', '${b.desc}')" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100 b3-action b3-outline" title="QR-Code & Deep-Link">🖨️</button>
+                                            <button onclick="openEditBoxModal(${b.id})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 b3-action b3-outline" title="Bearbeiten">✏️</button>
                                             <button onclick="deleteBox(${b.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="Löschen">✕</button>
                                         </div>
                                     </div>

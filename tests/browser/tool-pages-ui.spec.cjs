@@ -781,7 +781,7 @@ for(const item of tools){
     await expect(page.locator('#cancelEditBtn')).toBeVisible();
    }
    await page.locator(isCar?'#b3-create':'#formCard').evaluate(e=>e.scrollIntoView({block:'start'}));
-   await reviewImage(page,'app-'+item.tool+'-form-'+width);
+   await page.screenshot({path:testInfo.outputPath('app-'+item.tool+'-form-'+width+'.jpg'),type:'jpeg',quality:42});
    await primary.scrollIntoViewIfNeeded();
    if(width===1440){
     await page.emulateMedia({reducedMotion:'no-preference'});
@@ -792,7 +792,7 @@ for(const item of tools){
    }
    if(isCar)await page.locator('#eventCarSelect').evaluate(e=>e.parentElement.closest('div.bg-white').scrollIntoView({block:'start'}));
    else await primary.scrollIntoViewIfNeeded();
-   await reviewImage(page,'app-'+item.tool+'-actions-'+width);
+   await page.screenshot({path:testInfo.outputPath('app-'+item.tool+'-actions-'+width+'.jpg'),type:'jpeg',quality:42});
    if(isCar)await page.locator('button[onclick="openEditModal(2)"]').click();
    else{
     await page.locator('#cancelEditBtn').click();
@@ -810,7 +810,7 @@ for(const item of tools){
      expect(await button.evaluate(e=>{const r=document.createRange();r.selectNodeContents(e);return r.getBoundingClientRect().height<=parseFloat(getComputedStyle(e).lineHeight)+1})).toBe(true);
     }
    }
-   await reviewImage(page,'app-'+item.tool+'-dialog-'+width);
+   await page.screenshot({path:testInfo.outputPath('app-'+item.tool+'-dialog-'+width+'.jpg'),type:'jpeg',quality:42});
    await modal.getByRole('button',{name:'Abbrechen',exact:true}).click();
    await expect(modal).toBeHidden();
    const danger=page.locator(isCar?'button[onclick="deleteEvent(2)"]':'button[onclick="deleteReceipt(2)"]');
@@ -825,5 +825,81 @@ for(const item of tools){
   const logout=page.locator('#settingsModal button[onclick="logoutUser()"]');
   const colour=await logout.evaluate(e=>getComputedStyle(e).backgroundColor);
   const channels=colour.match(/[\d.]+/g).map(Number);expect(channels[0]).toBeGreaterThan(channels[1]);
+ });
+}
+
+
+// Real inventory UIs with synthetic cloud snapshots; no production accounts or writes.
+for(const kind of ['moving','loans']){
+ test(kind+': inventory actions, forms and edit dialog at three widths',async({page},testInfo)=>{
+  const moving=kind==='moving',errors=[];
+  page.on('pageerror',e=>errors.push(e.message));
+  const snapshot=moving
+   ?{locations:[{id:1,name:'Isolierter Lagerort',icon:'📦'}],boxes:[{id:2,locId:1,name:'Isolierte Kiste',desc:'Synthetische Prüfansicht',value:42,tag:'Standard',barcode:'1234567890123',expiry:'2027-01-17',lentTo:'',subItems:[{name:'Isolierter Artikel',value:5}]}]}
+   :{contacts:[{id:1,name:'Isolierter Kontakt',phone:''}],inventory:[{id:3,title:'Isolierter Gegenstand',category:'Werkzeug',serial:'TEST'}],items:[{id:2,title:'Isolierter Testgegenstand',person:'Isolierter Kontakt',date:'2026-11-17',returnDate:'2026-12-17',category:'Werkzeug',status:'active',deposit:42,note:'Synthetische Prüfansicht',photo:''}]};
+  await isolated(page,true,true,snapshot);
+  await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
+  const route='/tools/'+kind+'/index.html';await page.goto(origin+route);
+  await expect.poll(()=>page.evaluate(moving=>moving
+   ?typeof movingCloudReady!=='undefined'&&movingCloudReady&&!!movingCloudController?.ready
+   :typeof loansCloudReady!=='undefined'&&loansCloudReady&&!!loansCloudController?.ready,moving)).toBe(true);
+  await page.locator('.toolya-signature-footer').waitFor();
+  await expect.poll(()=>page.locator('#settingsModal').evaluate(e=>getComputedStyle(e).display)).toBe('none');
+  if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+  const capture=async(id)=>{
+   await page.screenshot({path:testInfo.outputPath('inventory-'+kind+'-'+id+'.png'),fullPage:false});
+   await reviewImage(page,'inventory-'+kind+'-'+id);
+  };
+  const fits=async locator=>locator.evaluate(e=>e.scrollWidth<=e.clientWidth+1);
+  for(const width of [320,768,1440]){
+   await page.setViewportSize({width,height:1000});
+   expect(new URL(page.url()).pathname).toBe(route);
+   await expect(page.locator('html')).toHaveCSS('color-scheme','light');
+   const grid=page.locator(moving?'.b3-moving-form-grid':'.b3-loan-form-grid');
+   expect(await grid.evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length)).toBe(width<1280?1:moving?2:3);
+   for(const button of await page.locator('main.b3-dashboard button.b3-action:not(.b3-outline):visible').all()){
+    await expect(button).toHaveCSS('background-color','rgb(0, 126, 159)');
+    await expect(button).toHaveCSS('font-weight','700');
+    expect(await button.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+    expect(await button.evaluate(e=>{
+     const c=getComputedStyle(e),lum=v=>v.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
+     const a=lum(c.color),b=lum(c.backgroundColor);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+    })).toBeGreaterThanOrEqual(4.5);
+   }
+   await grid.evaluate(e=>e.scrollIntoView({block:'start'}));await capture('setup-'+width);
+   await grid.locator(':scope>div').nth(1).evaluate(e=>e.scrollIntoView({block:'start'}));await capture('entry-'+width);
+   const list=page.locator(moving?'#b3-inventory':'#b3-loans');
+   await list.evaluate(e=>e.scrollIntoView({block:'start'}));
+   expect(await fits(list)).toBe(true);
+   if(moving){
+    for(const input of await page.locator('.b3-moving-filters input,.b3-moving-filters select').all()){
+     expect(await input.evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThan(180);
+    }
+   }else if(width===768){
+    const top=await page.locator('.b3-loan-setup>div').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().top));
+    expect(Math.abs(top[0]-top[1])).toBeLessThan(1);
+   }
+   await capture('list-'+width);
+   const edit=page.locator(moving?'button[onclick="openEditBoxModal(2)"]':'button[data-loan-action="edit"]');
+   await expect(edit).toHaveClass(/b3-outline/);await edit.click();
+   const modal=page.locator(moving?'#editBoxModal':'#editModal'),surface=modal.locator(':scope>div');
+   await expect(modal).toBeVisible();expect(await fits(surface)).toBe(true);
+   await modal.locator('input:not([type=hidden]),select').first().focus();await page.keyboard.press('Tab');
+   expect(await page.evaluate(()=>parseFloat(getComputedStyle(document.activeElement).outlineWidth))).toBeGreaterThanOrEqual(3);
+   await surface.evaluate(e=>e.scrollTop=0);await capture('dialog-'+width);
+   const save=modal.locator('button.b3-action:not(.b3-outline)').last();
+   await expect(save).toHaveCSS('background-color','rgb(0, 126, 159)');
+   await save.scrollIntoViewIfNeeded();await capture('dialog-actions-'+width);
+   for(const button of await modal.locator('.b3-dialog-actions .b3-action').all()){
+    expect(await button.evaluate(e=>{const r=document.createRange();r.selectNodeContents(e);return r.getBoundingClientRect().height<=parseFloat(getComputedStyle(e).lineHeight)+1})).toBe(true);
+   }
+   await modal.getByRole('button',{name:'Abbrechen',exact:true}).click();await expect(modal).toBeHidden();
+   const danger=page.locator(moving?'button[onclick="deleteBox(2)"]':'button[data-loan-action="delete"]');
+   await expect(danger).not.toHaveClass(/b3-action/);
+   const rgb=await danger.evaluate(e=>getComputedStyle(e).color.match(/[\d.]+/g).map(Number));expect(rgb[0]).toBeGreaterThan(rgb[1]);
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  }
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+  expect(errors).toEqual([]);
  });
 }
