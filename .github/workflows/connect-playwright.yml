@@ -6,6 +6,9 @@ on:
       - '.github/workflows/connect-playwright.yml'
       - 'tests/platform/connect-playwright.cjs'
       - 'tests/platform/connect-tool-integration.cjs'
+      - 'tests/platform/connect-car-budget.cjs'
+      - 'shared/toolya/connect-car-budget.mjs'
+      - 'supabase/migrations/20261117180000_toolya_connect_car_budget.sql'
       - 'tools/car/index.html'
       - 'tools/budget/index.html'
       - 'tools/moving/index.html'
@@ -29,6 +32,9 @@ on:
       - '.github/workflows/connect-playwright.yml'
       - 'tests/platform/connect-playwright.cjs'
       - 'tests/platform/connect-tool-integration.cjs'
+      - 'tests/platform/connect-car-budget.cjs'
+      - 'shared/toolya/connect-car-budget.mjs'
+      - 'supabase/migrations/20261117180000_toolya_connect_car_budget.sql'
       - 'tools/car/index.html'
       - 'tools/budget/index.html'
       - 'tools/moving/index.html'
@@ -67,5 +73,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: CloudOnly tool integration contract
         run: node tests/platform/connect-tool-integration.cjs
+      - name: Car to budget isolated contract
+        run: node tests/platform/connect-car-budget.cjs
       - name: Two-device browser regression (blocking)
         run: npm run test:connect:browser
