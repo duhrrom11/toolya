@@ -723,7 +723,11 @@ async function toolyaCloudBoot(tool) {
             renderApp();
         }
 
+        // Reserve the form before asynchronous receipt compression or Cloud writes.
+        // A second click must never create another event from the same form values.
+        let carEventSaveInProgress = false;
         function saveEvent() {
+            if (carEventSaveInProgress) return;
             const carId = document.getElementById('eventCarSelect').value;
             const type = document.getElementById('eventType').value;
             const date = document.getElementById('eventDate').value;
@@ -736,35 +740,46 @@ async function toolyaCloudBoot(tool) {
 
             if (!carId || !date || !title) return alert("Bitte Fahrzeug, Datum und Bezeichnung angeben!");
 
-            let data = getData();
-
+            const data = getData();
             let consumption = null;
             if (type === 'Tanken' && km && litres) {
-                let lastTankEvent = data.events
+                const lastTankEvent = data.events
                     .filter(e => e.carId === parseInt(carId) && e.type === 'Tanken' && e.km)
                     .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
-                
                 if (lastTankEvent && km > lastTankEvent.km) {
-                    let drivenKm = km - lastTankEvent.km;
-                    consumption = (litres * 100) / drivenKm;
+                    consumption = (litres * 100) / (km - lastTankEvent.km);
                 }
-                
-                // Kilometerstand wird gemeinsam mit dem Tankereignis gespeichert.
             }
 
+            // Capture consent at the instant the user clicks Save, not later in a FileReader callback.
+            const connectRequested = Boolean(window.toolyaCarConnectPanel?.selected);
+            const saveButton = document.querySelector('[onclick="saveEvent()"]');
+            carEventSaveInProgress = true;
+            if (saveButton) saveButton.disabled = true;
+            const persist = async receipt => {
+                try {
+                    await storeEventData(parseInt(carId), type, date, title, cost, tread, km,
+                        litres, consumption, receipt, connectRequested);
+                } catch(error) {
+                    console.error('Autokosten-Eintrag konnte nicht abgeschlossen werden', error);
+                    alert('Eintrag nicht bestätigt. Bitte den Cloud-Datenstand prüfen, bevor du es erneut versuchst.');
+                } finally {
+                    carEventSaveInProgress = false;
+                    if (saveButton) saveButton.disabled = false;
+                }
+            };
             if (receiptInput.files && receiptInput.files[0]) {
-                compressImage(receiptInput.files[0], (compressedReceipt) => {
-                    storeEventData(parseInt(carId), type, date, title, cost, tread, km, litres, consumption, compressedReceipt);
-                });
+                compressImage(receiptInput.files[0], compressedReceipt => { void persist(compressedReceipt); });
             } else {
-                storeEventData(parseInt(carId), type, date, title, cost, tread, km, litres, consumption, "");
+                void persist("");
             }
         }
 
-        async function storeEventData(carId, type, date, title, cost, tread, km, litres, consumption, receipt) {
-            let data = getData();
-            const newEventId = Date.now();
-            const connectRequested = Boolean(window.toolyaCarConnectPanel?.selected);
+        async function storeEventData(carId, type, date, title, cost, tread, km, litres, consumption, receipt, connectRequested = false) {
+            const data = getData();
+            // Date.now() IDs match the existing format; ensure uniqueness even for same-ms saves.
+            const newEventId = Math.max(Date.now(), 1 + data.events.reduce((max,e) =>
+                Number.isSafeInteger(e?.id) ? Math.max(max,e.id) : max, 0));
             data.events.push({ id: newEventId, carId, type, date, title, cost, tread, km, litres, consumption, receipt });
             if (type === 'Tanken' && km) {
                 const car = data.cars.find(c => c.id === carId);
@@ -780,7 +795,7 @@ async function toolyaCloudBoot(tool) {
             document.getElementById('eventLitres').value = "";
             document.getElementById('eventReceiptInput').value = "";
             renderApp();
-            // Only after the source save succeeded, and only on explicit opt-in.
+            // The source is now confirmed. Transfer only the specifically saved event.
             if (connectRequested) await window.toolyaCarConnectPanel?.transferEvent(newEventId);
         }
 
