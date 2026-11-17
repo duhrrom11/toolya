@@ -489,7 +489,7 @@ test('backform-umrechner: save and delete recipe await cloud confirmation',async
 });
 
 
-async function isolatedWishlist(page,authenticated){
+async function isolatedWishlist(page,authenticated,profiles=[]){
  await page.route('**/*',async route=>{
   const url=route.request().url();
   if(url.startsWith(origin)&&!url.endsWith('/assets/vendor/supabase-2.57.0.js'))return route.continue();
@@ -501,7 +501,7 @@ async function isolatedWishlist(page,authenticated){
      onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}},
      async signOut(){m.user=null;return {error:null}}
     },
-    rpc(){return Promise.resolve({data:[],error:null})},
+    rpc(name){return Promise.resolve({data:name==='search_wishlist_profiles'?${JSON.stringify(profiles)}:[],error:null})},
     from(table){return {
      select(){return this},eq(){return this},order(){return this},limit(){return this},
      async maybeSingle(){return {data:null,error:null}},
@@ -1220,7 +1220,22 @@ for(const kind of ['housemates','baking']){
  });
 }
 
-
+test('wishlist: removing and adding lists keeps numbers and the first URL unique',async({page})=>{
+ await isolatedWishlist(page,true);await page.goto(origin+'/tools/wishes/public.html');
+ await expect(page.locator('#profileForm')).toBeVisible();
+ for(let n=0;n<4;n++)await page.locator('#addList').click();
+ await page.locator('#listFields fieldset').nth(1).getByRole('button',{name:'Diese Liste entfernen',exact:true}).click();
+ await page.locator('#addList').click();
+ await expect(page.locator('#listFields legend')).toHaveText(['Wunschliste 1','Wunschliste 2','Wunschliste 3','Wunschliste 4','Wunschliste 5']);
+ await page.locator('#listFields fieldset').first().getByRole('button',{name:'Diese Liste entfernen',exact:true}).click();
+ await expect(page.locator('#amazonUrl')).toHaveCount(1);
+ await expect(page.locator('#listFields fieldset').first().locator('[name=url]')).toHaveAttribute('id','amazonUrl');
+ for(let n=0;n<3;n++)await page.locator('#listFields fieldset').last().getByRole('button',{name:'Diese Liste entfernen',exact:true}).click();
+ await page.locator('#listFields fieldset').first().getByRole('button',{name:'Diese Liste entfernen',exact:true}).click();
+ await expect(page.locator('#listFields fieldset')).toHaveCount(1);
+ await expect(page.locator('#profileStatus')).toContainText('mindestens eine');
+ expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
+});
 // Read-only account layout acceptance; no credential submission or production access.
 for(const kind of ["car","budget","moving","loans","meters","plants","parking","pet-health","housemates","baking"]){
  test(kind+': account actions are consistent and usable at three widths',async({page},testInfo)=>{
@@ -1246,3 +1261,28 @@ for(const kind of ["car","budget","moving","loans","meters","plants","parking","
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);expect(errors).toEqual([]);
  });
 }
+
+test('wishlist: public cards and five-list form remain usable at three widths',async({page},testInfo)=>{
+ const profile={user_id:'11111111-1111-4111-8111-111111111111',display_name:'Isoliertes Wunschprofil mit langem Anzeigenamen',country:'Schweiz',city:'Isolierter Ort',bio:'Synthetische Prüfansicht für Bücher, Garten und gemeinsame Geschenkideen.',interests:['Bücher','Garten'],lists:[{name:'Geburtstagswünsche',url:'https://www.amazon.de/hz/wishlist/ls/ABC123',occasion:'Geburtstag'}]};
+ await isolatedWishlist(page,true,[profile]);await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto(origin+'/tools/wishes/public.html');
+ await expect(page.locator('#profileForm')).toBeVisible();await expect(page.locator('#results .profile-card')).toHaveCount(1);
+ await page.locator('#displayName').fill(profile.display_name);await page.locator('#country').fill(profile.country);await page.locator('#bio').fill(profile.bio);
+ for(let i=0;i<4;i++)await page.locator('#addList').click();
+ for(const [i,fs]of (await page.locator('#listFields fieldset').all()).entries()){
+  await fs.locator('[name=name]').fill('Isolierte Wunschliste '+(i+1));await fs.locator('[name=url]').fill('https://www.amazon.de/hz/wishlist/ls/ABC'+i);
+ }
+ for(const width of [320,768,1440]){
+  await page.setViewportSize({width,height:1000});
+  for(const [name,selector]of [['card','#results'],['form','#profileForm'],['actions','#profileForm .actions']]){
+   const panel=page.locator(selector);await panel.evaluate(e=>e.scrollIntoView({block:'start'}));
+   expect(await panel.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+   await page.screenshot({path:testInfo.outputPath('wishlist-'+name+'-'+width+'.png')});await reviewImage(page,'wishlist-'+name+'-'+width);
+  }
+ }
+ await page.locator('#previewProfile').click();await expect(page.locator('#previewDialog')).toBeVisible();
+ await expect(page.locator('#previewContent .list-links a')).toHaveCount(5);
+ for(const a of await page.locator('#previewContent .list-links a').all())expect(new URL(await a.getAttribute('href')).searchParams.get('tag')).toBe('duhrrom-21');
+ await page.locator('#closePreview').click();expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
+});
