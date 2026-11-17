@@ -220,7 +220,7 @@ async function searchConsoleMetrics(days:number,series:SeoSeries[]):Promise<Metr
   if(!dailyResponse.ok)dailyDetail='Google-Tagesabfrage: HTTP '+dailyResponse.status;
   if(dailyResponse.ok){
    const daily=await dailyResponse.json();
-   if(daily.rows===undefined||Array.isArray(daily.rows)){
+   if(daily&&(!('rows' in daily)||daily.rows==null||Array.isArray(daily.rows))){
     const points:SeoPoint[]=(daily.rows||[]).flatMap((r:unknown)=>{
      const v=r as {keys?:unknown[],clicks?:unknown,impressions?:unknown};
      const date=v.keys?.[0],clicks=Number(v.clicks),impressions=Number(v.impressions);
@@ -230,9 +230,12 @@ async function searchConsoleMetrics(days:number,series:SeoSeries[]):Promise<Metr
     dailyStatus=points.length?'ok':'empty';
     dailyDetail=points.length?'Google-Tagesabfrage: '+points.length+' gültige Tage':'Google-Tagesabfrage: keine Tageszeilen';
     series.push({source:'google',points,status:dailyStatus,detail:dailyDetail});
-   }
+   }else dailyDetail='Google-Tagesabfrage: Antwortformat nicht erkannt';
   }
- }catch{/* Optional chart only. */}
+ }catch(error){
+  const e=error instanceof Error?error:null;
+  dailyDetail=e?.name==='TimeoutError'||e?.name==='AbortError'?'Google-Tagesabfrage: Zeitüberschreitung':e instanceof SyntaxError?'Google-Tagesabfrage: ungültige JSON-Antwort':e instanceof TypeError?'Google-Tagesabfrage: Netzwerk- oder Verarbeitungsfehler':'Google-Tagesabfrage: unerwarteter Fehler';
+ }
  if(dailyStatus==='unavailable')series.push({source:'google',points:[],status:'unavailable',detail:dailyDetail});
  const row=data.rows?.[0];
  if(!row)return [{label:'GSC Klicks',value:0,detail:'Keine Suchdaten · '+iso(start)+' bis '+iso(end)},{label:'GSC Impressionen',value:0,detail:'Keine Suchdaten · '+iso(start)+' bis '+iso(end)}];
