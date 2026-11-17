@@ -6,7 +6,8 @@ const path=require('node:path');
 (async()=>{
   const {document}=parseHTML('<html><body><main><button onclick="saveEvent()">Eintrag speichern</button></main></body></html>');
   global.document=document;
-  global.window={confirm:()=>true};
+  let accepted=true;
+  global.window={confirm:()=>accepted};
   const {mountCarBudgetConnect}=await import(pathToFileURL(path.resolve('shared/toolya/connect-car-budget.mjs')).href);
   const data={events:[
     {id:5,title:'Tanken',cost:45.25,date:'2026-11-01'},
@@ -39,9 +40,16 @@ const path=require('node:path');
   assert.equal(calls,1);
   assert.match(document.querySelector('[role=status]').textContent,/bestätigt/);
   assert.equal(Boolean(choice.checked),false,'successful transfer clears opt-in');
+  accepted=false;
+  assert.equal(await panel.transferEvent(5),false);
+  const retry=document.querySelector('#toolya-connect-car-budget button');
+  assert.equal(retry.hidden,false,'cancelled Connect can be retried from the same expense');
+  assert.equal(calls,1,'cancel must not call RPC');
+  accepted=true;
   status='already_imported';
   await panel.transferEvent(5);
   assert.equal(calls,2);
+  assert.equal(retry.hidden,true,'confirmed transfer hides retry');
   assert.match(document.querySelector('[role=status]').textContent,/keine Doppelbuchung/);
   current='user-b';
   assert.equal(await panel.transferEvent(5),false);
@@ -67,5 +75,8 @@ const path=require('node:path');
   assert.match(html,/mountCarBudgetConnect/);
   assert.match(html,/connectRequested/);
   assert.match(html,/transferEvent\(newEventId\)/);
+  assert.match(html,/carEventSaveInProgress/);
+  assert.match(html,/const connectRequested = Boolean\(window\.toolyaCarConnectPanel\?\.selected\)/);
+  assert.match(html,/Beleg konnte nicht verarbeitet werden/);
   console.log('PASS: isolated explicit Connect UI, account guard, RPC contract, migration structural checks');
 })().catch(error=>{console.error(error);process.exitCode=1});
