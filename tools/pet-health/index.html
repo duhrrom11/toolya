@@ -116,7 +116,7 @@
         </div>
 
         <!-- Erfassung: Haustier & Gesundheits-Eintrag -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-b3-panel="create" id="b3-create">
+        <div class="b3-pet-create-grid grid grid-cols-1 md:grid-cols-2 gap-4" data-b3-panel="create" id="b3-create">
             <!-- 1. Haustier anlegen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">🐕 1. Haustier-Profil & Tierarzt-Praxis</h2>
@@ -155,7 +155,7 @@
                         <input type="file" id="petPassportInput" accept="image/*" class="w-full text-[11px] p-1.5 border rounded-xl file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-gray-100 file:text-gray-700">
                     </div>
                 </div>
-                <button onclick="savePet()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Haustier speichern</button>
+                <button onclick="savePet()" class="b3-action w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Haustier speichern</button>
             </div>
 
             <!-- 2. Gesundheits-Eintrag hinzufügen -->
@@ -193,7 +193,7 @@
                     <input type="file" id="eventReceiptInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700">
                 </div>
 
-                <button onclick="saveEvent()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Eintrag speichern</button>
+                <button onclick="saveEvent()" class="b3-action w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Eintrag speichern</button>
             </div>
         </div>
 
@@ -201,10 +201,10 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="medication" id="b3-medication">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                 <h3 class="font-bold text-lg">💊 Haustier-Apotheke & Medikamenten-Vorrat</h3>
-                <div class="flex gap-2 w-full sm:w-auto">
+                <div class="b3-pet-med-fields flex gap-2 w-full sm:w-auto">
                     <label class="helferlein-field" for="medName"><span class="helferlein-field-label">Medikament / Vorrat</span><input type="text" id="medName" placeholder="Medikament / Vorrat (z.B. Zeckenschutz)" class="p-2 border rounded-xl text-xs" aria-label="Medikament / Vorrat (z.B. Zeckenschutz)"></label>
                     <label class="helferlein-field" for="medStock"><span class="helferlein-field-label">Stück / Packung</span><input type="text" id="medStock" placeholder="Stück / Packung (z.B. 2)" class="p-2 border rounded-xl text-xs w-28" aria-label="Stück / Packung (z.B. 2)"></label>
-                    <button onclick="saveMedication()" class="px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl text-xs">Hinzufügen</button>
+                    <button onclick="saveMedication()" class="b3-action px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl text-xs">Hinzufügen</button>
                 </div>
             </div>
             <div id="medList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -213,7 +213,7 @@
         </div>
 
         <!-- Listen-Ansicht & Filter -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" data-b3-panel="records" id="b3-records">
+        <div class="b3-pet-records-grid grid grid-cols-1 md:grid-cols-2 gap-6" data-b3-panel="records" id="b3-records">
             <!-- Haustier-Profile -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
                 <h3 class="font-bold text-lg">🐾 Meine Haustiere</h3>
@@ -293,14 +293,14 @@
 
             <div class="b3-pet-help"><!-- Ausklappbarer Anleitung-Container -->
         <div class="max-w-4xl mx-auto space-y-2 pt-1">
-            <button onclick="toggleHelp()" id="helpToggleBtn" class="px-4 py-1.5 bg-teal-700/90 hover:bg-teal-700 text-teal-100 rounded-xl text-xs font-semibold border border-teal-500/40 shadow-sm transition-all flex items-center gap-1.5 mx-auto">
+            <button onclick="toggleHelp()" id="helpToggleBtn" class="b3-action b3-outline px-4 py-1.5 bg-teal-700/90 hover:bg-teal-700 text-teal-100 rounded-xl text-xs font-semibold border border-teal-500/40 shadow-sm transition-all flex items-center gap-1.5 mx-auto">
                 📖 <span>Hilfe & Anleitung anzeigen</span>
             </button>
 
             <div id="helpBox" class="bg-teal-700/90 border border-teal-500/40 rounded-2xl p-4 text-left text-xs text-teal-50 space-y-2 shadow-inner hidden">
                 <div class="font-bold text-sm flex items-center justify-between border-b border-teal-600 pb-1.5 text-white">
                     <span>📖 Kurzanleitung – So funktioniert's:</span>
-                    <button onclick="toggleHelp()" class="text-teal-200 hover:text-white text-xs px-1.5 py-0.5 rounded">✕ Schließen</button>
+                    <button onclick="toggleHelp()" class="b3-action b3-outline text-teal-200 hover:text-white text-xs px-1.5 py-0.5 rounded">✕ Schließen</button>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
                     <div class="bg-teal-800/50 p-2.5 rounded-xl border border-teal-600/30">
@@ -710,7 +710,7 @@
                         vetHtml = `<div class="text-[11px] text-teal-700 mt-1 bg-white p-2 border rounded-xl space-y-0.5">
                             <p class="font-bold">🏥 ${p.vet.name || 'Tierarzt'}</p>
                             ${p.vet.address ? `<p class="text-gray-500">${p.vet.address}</p>` : ''}
-                            <div class="flex gap-3 pt-0.5">
+                            <div class="b3-pet-vet-contacts flex gap-3 pt-0.5">
                                 ${p.vet.tel ? `<a href="tel:${p.vet.tel}" class="font-bold hover:underline">📞 ${p.vet.tel}</a>` : ''}
                                 ${p.vet.email ? `<a href="mailto:${p.vet.email}" class="text-blue-600 hover:underline">✉️ E-Mail</a>` : ''}
                             </div>
@@ -719,8 +719,8 @@
 
                     return `
                         <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
-                            <div class="flex items-center justify-between gap-3">
-                                <div class="flex items-center space-x-3">
+                            <div class="b3-pet-profile-heading flex items-center justify-between gap-3">
+                                <div class="b3-pet-profile-identity flex items-center space-x-3">
                                     ${p.photo ? `<img src="${p.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage('${p.photo}')" title="Foto vergrößern">` : defaultPetIcon}
                                     <div>
                                         <h4 class="font-bold text-sm text-teal-800">${p.name}</h4>
@@ -733,7 +733,7 @@
                                 ${p.tasso ? `<span class="bg-teal-100 text-teal-800 font-semibold px-2 py-0.5 rounded-full">🛡️ TASSO / Register</span>` : `<span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">Nicht registriert</span>`}
                                 ${p.food ? `<span>🥣 ${p.food}</span>` : ''}
                                 ${p.allergies ? `<span class="text-red-700 font-semibold">⚠️ Allergie: ${p.allergies}</span>` : ''}
-                                ${p.passport ? `<button onclick="zoomImage('${p.passport}')" class="text-blue-600 font-semibold underline">📄 EU-Ausweis anzeigen</button>` : ''}
+                                ${p.passport ? `<button onclick="zoomImage('${p.passport}')" class="b3-action b3-outline text-blue-600 font-semibold underline">📄 EU-Ausweis anzeigen</button>` : ''}
                             </div>
                             ${vetHtml}
                         </div>
@@ -749,7 +749,7 @@
                     let stockBg = isLowStock ? "bg-red-50 border-red-200 text-red-900" : "bg-teal-50 border-teal-100 text-teal-900";
                     
                     return `
-                        <div class="p-3 border rounded-xl flex justify-between items-center text-xs ${stockBg}">
+                        <div class="b3-pet-med-card p-3 border rounded-xl flex justify-between items-center text-xs ${stockBg}">
                             <div>
                                 <p class="font-bold">${m.name}</p>
                                 <p class="text-[11px] ${isLowStock ? 'text-red-600 font-bold' : 'text-gray-600'}">Vorrat: ${m.stock} ${isLowStock ? '⚠️ Fast leer!' : ''}</p>
@@ -837,12 +837,12 @@
                         weightBadge = `<span class="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">${trendIcon} ${e.weight} kg</span>`;
                     }
 
-                    let receiptBtn = e.receipt ? `<button onclick="zoomImage('${e.receipt}')" class="px-2 py-1 bg-teal-50 text-teal-700 rounded-lg text-xs font-semibold hover:bg-teal-100" title="Beleg anzeigen">🧾 Beleg</button>` : '';
+                    let receiptBtn = e.receipt ? `<button onclick="zoomImage('${e.receipt}')" class="b3-action b3-outline px-2 py-1 bg-teal-50 text-teal-700 rounded-lg text-xs font-semibold hover:bg-teal-100" title="Beleg anzeigen">🧾 Beleg</button>` : '';
 
                     let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title + ' (' + petName + ')')}&dates=${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('Haustier-Termin für ' + petName)}`;
                     
                     return `
-                        <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        <div class="b3-pet-event-card p-4 bg-gray-50 border rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <div>
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="text-[10px] bg-teal-100 text-teal-800 font-semibold px-2 py-0.5 rounded-full">${e.type}</span>
@@ -854,9 +854,9 @@
                                 <p class="text-xs text-gray-500">Datum: ${d.toLocaleDateString('de-DE')}</p>
                                 ${e.expiryDate ? `<p class="text-[11px] text-teal-700 mt-0.5">📅 Gültig bis: ${new Date(e.expiryDate).toLocaleDateString('de-DE')}</p>` : ''}
                             </div>
-                            <div class="flex items-center gap-2 self-end sm:self-center flex-wrap">
+                            <div class="b3-pet-event-actions flex items-center gap-2 self-end sm:self-center flex-wrap">
                                 ${receiptBtn}
-                                ${e.type !== 'Tagebuch' ? `<a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a><button onclick="downloadICS('${e.title} (${petName})', '${e.date}')" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Kalender">📥 ICS</button>` : ''}
+                                ${e.type !== 'Tagebuch' ? `<a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="b3-action b3-outline px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a><button onclick="downloadICS('${e.title} (${petName})', '${e.date}')" class="b3-action b3-outline px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Kalender">📥 ICS</button>` : ''}
                                 <button onclick="deleteEvent(${e.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
