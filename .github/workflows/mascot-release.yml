@@ -18,6 +18,7 @@ jobs:
       - run: node --test tests/mascot/*.test.mjs tests/platform/*.test.mjs tests/amazon/*.test.mjs
       - run: node tests/platform/home-auth.cjs
       - run: node tests/platform/browser.cjs
+      - run: node tests/platform/wishlist-finder-browser.cjs
       - run: node tests/platform/design-foundation.cjs
       - run: node tests/security/estate-handover-design.cjs
       - name: Verify public B3 delivery after Pages release

@@ -10,8 +10,8 @@ test('all local HTML imports and references resolve within the published root',(
  const missing=[];for(const file of pages)for(const m of read(file).matchAll(/(?:src|href)=["']([^"']+)["']/g)){const raw=m[1];if(raw.includes('${')||/^(?:[a-z]+:|#|\/\/)/i.test(raw))continue;const path=decodeURI(raw.split(/[?#]/)[0]);if(!path)continue;const target=resolve(path.startsWith('/')?root:dirname(resolve(file)),'.'+(path.startsWith('/')?path:'/'+path));if(!existsSync(target))missing.push(file+' -> '+raw)}assert.deepEqual(missing,[]);
 });
 test('the release keeps explicit Supabase identities and Toolya routes',()=>{
- for(const p of [...pages,...files('assets').filter(p=>/\.(?:m?js|css)$/.test(p)),...files('shared')]){const content=read(p).replace("legacyLink.href='https://duhrrom11.github.io/Helferlein/';",'');assert.doesNotMatch(content,/duhrrom11\.github\.io\/Helferlein/,'Old route in '+p);if(p!=='tools/wishes/public.html')assert.doesNotMatch(content,/avapuibsidubuzxjtyld/,'Unexpected project change in '+p)}
- assert.match(read('tools/wishes/public.html'),/mode:"production",url:"https:\/\/avapuibsidubuzxjtyld\.supabase\.co"/);
+ for(const p of [...pages,...files('assets').filter(p=>/\.(?:m?js|css)$/.test(p)),...files('shared')]){const content=read(p).replace("legacyLink.href='https://duhrrom11.github.io/Helferlein/';",'');assert.doesNotMatch(content,/duhrrom11\.github\.io\/Helferlein/,'Old route in '+p);assert.doesNotMatch(content,/avapuibsidubuzxjtyld/,'Unexpected project change in '+p)}
+ assert.match(read('tools/wishes/public.html'),/mode:"production",url:"https:\/\/yheogmeaosuigyaxkwth\.supabase\.co"/);
  assert.match(read('tools/wishes/app.mjs'),/mountAmazonImport/);assert.match(read('tools/wishes/toolya-client.mjs'),/yheogmeaosuigyaxkwth/);
  assert.match(read('index.html'),/tools\/wishes\/index.html/);assert.equal(read('CNAME').trim(),'toolya.app');
 });

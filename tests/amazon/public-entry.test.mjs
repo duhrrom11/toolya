@@ -12,8 +12,8 @@ test('public discovery entry does not require staging authentication', () => {
 });
 
 test('public profile frontend uses production Supabase with bundled client', () => {
-  assert.match(page, /mode:"production",url:"https:\/\/avapuibsidubuzxjtyld\.supabase\.co"/);
-  assert.match(app, /const PROD_PROJECT = 'avapuibsidubuzxjtyld'/);
+  assert.match(page, /mode:"production",url:"https:\/\/yheogmeaosuigyaxkwth\.supabase\.co"/);
+  assert.match(app, /const PROD_PROJECT = 'yheogmeaosuigyaxkwth'/);
   assert.match(page, /assets\/vendor\/supabase-2\.57\.0\.js/);
   assert.doesNotMatch(page, /cdn\.jsdelivr\.net\/npm\/@supabase/);
 });
