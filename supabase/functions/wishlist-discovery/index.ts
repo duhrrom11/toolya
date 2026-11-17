@@ -102,6 +102,45 @@ Deno.serve(async(req:Request)=>{
    const seeds=[];for(const topic of topics)for(const [country,lang,extra] of [['DE','de','Deutschland'],['AT','de','Österreich'],['CH','de','Schweiz'],['ALL','de','Liechtenstein'],['ALL','de','Luxemburg'],['ALL','fr','Luxembourg'],['ALL','fr','Lëtzebuerg'],['ALL','de','']])seeds.push({query:`${topic} ${extra} "Amazon" "Wunschliste" -site:amazon.de -site:amazon.com -site:amazon.fr`,country,lang});
    // French/Luxembourg terms supplement German queries, not just German translations.
    for(const term of ['"liste de souhaits"','"liste d’envies"','"Wonschlëscht"','"wishlist"'])seeds.push({query:`Amazon ${term} Luxembourg -site:amazon.fr -site:amazon.de -site:amazon.com`,country:'ALL',lang:'fr'});
+   // Search for the wording used on organizations' own pages and personal blogs.
+   // Do not multiply these phrases by every topic/country: one focused query costs one Tavily credit.
+   const directPhrases=[
+    '"unsere Amazon Wunschliste"',
+    '"meine Amazon Wunschliste"',
+    '"unsere Amazon-Wunschliste"',
+    '"meine Amazon-Wunschliste"',
+    '"unsere Wunschliste bei Amazon"',
+    '"meine Wunschliste bei Amazon"',
+    '"unser Amazon Wunschzettel"',
+    '"mein Amazon Wunschzettel"',
+    '"unser Wunschzettel bei Amazon"',
+    '"mein Wunschzettel bei Amazon"',
+    '"Amazon Wunschliste unterstützen"',
+    '"Amazon-Wunschliste unterstützen"',
+    '"Amazon Wunschliste Sachspenden"',
+    '"Amazon Wunschliste Spenden"',
+    '"Amazon Wunschliste Tierheim"',
+    '"Amazon Wunschliste Tierschutz"',
+    '"Amazon Wunschliste Kinderhilfe"',
+    '"Amazon Wunschliste Verein"',
+    '"Amazon Wunschliste für unser Tierheim"',
+    '"hier ist unsere Amazon Wunschliste"',
+    '"hier findet ihr unsere Amazon Wunschliste"',
+    '"Amazon Wunschliste für uns"',
+    '"wünscht euch etwas von unserer Amazon Wunschliste"',
+    '"Amazon wishlist" "support us"'
+   ];
+   for(const phrase of directPhrases)seeds.push({query:phrase+' -site:amazon.de -site:amazon.com -site:amazon.fr',country:'ALL',lang:'de'});
+   const multilingualPhrases=[
+    ['"notre liste de souhaits Amazon"','fr'],
+    ['"ma liste de souhaits Amazon"','fr'],
+    ['"notre liste d’envies Amazon"','fr'],
+    ['"ma liste d’envies Amazon"','fr'],
+    ['"Amazon Wunschliste" Luxembourg','de'],
+    ['"eis Amazon Wonschlëscht"','de']
+   ];
+   for(const [phrase,lang] of multilingualPhrases)seeds.push({query:phrase+' -site:amazon.de -site:amazon.com -site:amazon.fr',country:'ALL',lang});
+
    must(await db.from('wishlist_discovery_queries').upsert(seeds,{onConflict:'query,country,lang',ignoreDuplicates:true}));
    const q=must(await db.from('wishlist_discovery_queries').select('*').lt('page',10).order('page').order('query').limit(1))[0];if(!q)return reply(200,{done:true,message:'Suchplan abgeschlossen. Es besteht keine Vollständigkeitsgarantie.'});
    // Tavily does not expose Brave-style pagination: each seed is queried only once.
