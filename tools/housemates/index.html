@@ -136,11 +136,11 @@
     </div>
 
     <!-- MODAL: Hilfe & Ausklappbare Anleitungen -->
-    <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleHelpModal()">
+    <div id="helpModal" class="b3-tool-dialog fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleHelpModal()">
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-emerald-900">📖 Hilfe & WG-Handbuch</h3>
-                <button onclick="toggleHelpModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleHelpModal()" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             <div class="space-y-3 text-xs">
                 <details class="bg-gray-50 border rounded-xl p-3">
@@ -168,7 +168,7 @@
                     </p>
                 </details>
             </div>
-            <button onclick="toggleHelpModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="toggleHelpModal()" class="b3-action b3-outline w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
         </div>
     </div>
 
@@ -214,7 +214,7 @@
                     <h3 class="font-bold text-base text-gray-900">📌 Digitale WG-Pinnwand & Sticky Notes</h3>
                     <p class="text-xs text-gray-500">Nachrichten, Hinweise oder Einkaufs-Zettel für die Küche anpinnen</p>
                 </div>
-                <button onclick="openNoteModal()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5">
+                <button onclick="openNoteModal()" class="b3-action px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5">
                     ✏️ Neue Sticky Note
                 </button>
             </div>
@@ -230,7 +230,7 @@
                     <h3 class="font-bold text-base text-gray-900">ℹ️ WG-Stammdaten</h3>
                     <div class="flex gap-1.5">
                         <button onclick="openWLANQRModal()" class="px-2.5 py-1 bg-sky-700 hover:bg-sky-800 text-white rounded-lg text-xs font-bold">📶 WLAN QR</button>
-                        <button onclick="openInfoboardModal()" class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">✏️ Edit</button>
+                        <button onclick="openInfoboardModal()" class="b3-action b3-outline px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">✏️ Edit</button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 border rounded-2xl text-xs">
@@ -263,7 +263,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
                     <h3 class="font-bold text-base text-gray-900">🎯 Monats-Budgets & Limits</h3>
-                    <button onclick="openBudgetModal()" class="px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold">⚙️ Anpassen</button>
+                    <button onclick="openBudgetModal()" class="b3-action b3-outline px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold">⚙️ Anpassen</button>
                 </div>
                 <div id="budgetProgressList" class="space-y-2.5 max-h-52 overflow-y-auto pr-1">
                     <p class="text-xs text-gray-400 text-center py-4">Lade Budgets...</p>
@@ -275,7 +275,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="goals" id="b3-goals">
             <div class="flex justify-between items-center border-b pb-2">
                 <h3 class="font-bold text-base text-gray-900">🐷 Sparschwein & Sparziele</h3>
-                <button onclick="openAddGoalModal()" class="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-sm">+ Neues Sparziel</button>
+                <button onclick="openAddGoalModal()" class="b3-action px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-sm">+ Neues Sparziel</button>
             </div>
             <div id="savingsGoalsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <p class="text-xs text-gray-400 text-center col-span-3 py-2">Noch keine Sparziele angelegt.</p>
@@ -284,9 +284,9 @@
 
         <!-- FORMULAR: BUCHUNG / OCR -->
         <div id="formCard" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="expenses">
-            <div class="flex justify-between items-center border-b pb-3">
+            <div class="b3-wg-form-heading flex justify-between items-center border-b pb-3">
                 <h2 id="formTitle" class="text-lg font-bold text-gray-900">✍️ Buchung / WG-Kassenbon erfassen</h2>
-                <button id="cancelEditBtn" onclick="cancelEdit()" class="hidden px-3 py-1 bg-gray-200 hover:bg-gray-300 text-xs font-bold rounded-lg text-gray-700">✕ Abbrechen</button>
+                <button id="cancelEditBtn" onclick="cancelEdit()" class="b3-action b3-outline hidden px-3 py-1 bg-gray-200 hover:bg-gray-300 text-xs font-bold rounded-lg text-gray-700">✕ Abbrechen</button>
             </div>
 
             <div class="flex gap-3">
@@ -313,7 +313,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+            <div class="b3-wg-finance-grid grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
                 <div>
                     <label for="receiptPrice" class="block font-semibold text-gray-600 mb-1">Betrag (€) *:</label>
                     <input type="number" step="0.01" id="receiptPrice" placeholder="29.90" required class="w-full p-2.5 border rounded-xl font-bold">
@@ -381,14 +381,14 @@
                 <div class="space-y-2">
                     <div class="flex justify-between items-center">
                         <label class="block font-bold text-emerald-900">📷 Belegfoto & OCR Scanner</label>
-                        <button type="button" onclick="runOCR()" class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">🔍 Texterkennung</button>
+                        <button type="button" onclick="runOCR()" class="b3-action b3-outline px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">🔍 Texterkennung</button>
                     </div>
                     <label class="helferlein-field" for="receiptPhotoInput"><span class="helferlein-field-label">Belegfoto auswählen</span><input type="file" id="receiptPhotoInput" accept="image/*" class="text-xs p-1.5 border rounded-xl bg-white w-full" aria-label="Belegfoto auswählen"></label>
                     <p id="ocrStatus" class="text-emerald-800 font-semibold hidden"></p>
                 </div>
             </div>
 
-            <button id="saveBtn" onclick="saveReceipt()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl text-sm shadow-md transition-colors">Buchung / Kassenbon speichern</button>
+            <button id="saveBtn" onclick="saveReceipt()" class="b3-action w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl text-sm shadow-md transition-colors">Buchung / Kassenbon speichern</button>
         </div>
 
         <!-- SCHULDENMINIMIERER -->
@@ -396,7 +396,7 @@
             <div class="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-3 lg:col-span-1">
                 <div class="flex justify-between items-center">
                     <h3 class="font-bold text-sm text-emerald-900">🧮 Optimaler WG-Schuldenausgleich</h3>
-                    <button onclick="settleAllDebts()" class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">✓ Ausgleichshinweis</button>
+                    <button onclick="settleAllDebts()" class="b3-action b3-outline px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">✓ Ausgleichshinweis</button>
                 </div>
                 <div id="settlementList" class="space-y-1.5 text-xs text-gray-700">
                     <p class="text-gray-400">Berechne Ausgleich...</p>
@@ -442,7 +442,7 @@
                     <h3 class="font-bold text-base text-gray-900">📦 WG-Inventar & Auszugs-Restwert-Rechner</h3>
                     <p class="text-xs text-gray-500">Berechnet den fairen Zeitwert & Auszahlungsanspruch bei Auszug.</p>
                 </div>
-                <button onclick="openAddInventoryModal()" class="px-3 py-1 bg-emerald-700 text-white hover:bg-emerald-800 rounded-lg text-xs font-bold shadow-sm">+ Gegenstand erfassen</button>
+                <button onclick="openAddInventoryModal()" class="b3-action px-3 py-1 bg-emerald-700 text-white hover:bg-emerald-800 rounded-lg text-xs font-bold shadow-sm">+ Gegenstand erfassen</button>
             </div>
             <div id="inventoryList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto pr-1"></div>
         </div>
@@ -454,7 +454,7 @@
                     <h3 class="font-bold text-base text-gray-900">📅 WG-Kalender & Slots</h3>
                     <p class="text-xs text-gray-500">Wasch-Slots, Gäste-Übernachtungen & Events</p>
                 </div>
-                <button onclick="openAddEventModal()" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm">+ Slot / Termin</button>
+                <button onclick="openAddEventModal()" class="b3-action px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm">+ Slot / Termin</button>
             </div>
             <div id="eventList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-56 overflow-y-auto pr-1">
                 <p class="text-xs text-gray-400 text-center col-span-3 py-4">Keine anstehenden Termine oder Slots.</p>
@@ -467,8 +467,8 @@
                 <div class="flex justify-between items-center border-b pb-2">
                     <h3 class="font-bold text-base text-gray-900">🧹 Rotierender Putzplan</h3>
                     <div class="flex gap-2">
-                        <button onclick="rotateCleaningPlan()" class="px-3 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg text-xs font-bold">🔄 Rotieren</button>
-                        <button onclick="openAddCleanTaskModal()" class="px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold">+ Aufgabe</button>
+                        <button onclick="rotateCleaningPlan()" class="b3-action b3-outline px-3 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg text-xs font-bold">🔄 Rotieren</button>
+                        <button onclick="openAddCleanTaskModal()" class="b3-action px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold">+ Aufgabe</button>
                     </div>
                 </div>
                 <div id="cleaningPlanList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
@@ -481,7 +481,7 @@
                 </div>
                 <div class="flex gap-2">
                     <label class="helferlein-field" for="newShoppingItem"><span class="helferlein-field-label">z. B. Hafermilch, Spülmittel, Tabs</span><input type="text" id="newShoppingItem" placeholder="z. B. Hafermilch, Spülmittel, Tabs" class="flex-grow p-2.5 border rounded-xl text-xs" aria-label="z. B. Hafermilch, Spülmittel, Tabs"></label>
-                    <button onclick="addShoppingItem()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-sm">Hinzufügen</button>
+                    <button onclick="addShoppingItem()" class="b3-action px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-sm">Hinzufügen</button>
                 </div>
                 <div id="shoppingList" class="space-y-2 max-h-52 overflow-y-auto pr-1"></div>
             </div>
@@ -492,7 +492,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
                     <h3 class="font-bold text-base text-gray-900">🍲 Wochenkochplaner</h3>
-                    <button onclick="openCookingModal()" class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold">⚙️ Anpassen</button>
+                    <button onclick="openCookingModal()" class="b3-action b3-outline px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold">⚙️ Anpassen</button>
                 </div>
                 <div id="cookingPlanList" class="space-y-2 max-h-60 overflow-y-auto pr-1 text-xs"></div>
             </div>
@@ -500,7 +500,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
                     <h3 class="font-bold text-base text-gray-900">🥦 Ernährungs- & Allergie-Matrix</h3>
-                    <button onclick="openDietModal()" class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold">✏️ Bearbeiten</button>
+                    <button onclick="openDietModal()" class="b3-action b3-outline px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold">✏️ Bearbeiten</button>
                 </div>
                 <div id="dietMatrixList" class="space-y-2 text-xs"></div>
             </div>
@@ -510,7 +510,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="contracts" id="b3-contracts">
             <div class="flex justify-between items-center border-b pb-2">
                 <h3 class="font-bold text-base text-gray-900">📜 WG-Verträge & Abo-Manager</h3>
-                <button onclick="openContractModal()" class="px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold">+ Vertrag</button>
+                <button onclick="openContractModal()" class="b3-action px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold">+ Vertrag</button>
             </div>
             <div id="contractList" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
         </div>
@@ -549,11 +549,11 @@
     <!-- MODALS -->
 
     <!-- Modal: Sticky Note -->
-    <div id="noteModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="noteModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 id="noteModalTitle" class="text-lg font-bold">✏️ Neue Sticky Note</h3>
-                <button onclick="closeNoteModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeNoteModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div class="space-y-3 text-xs">
                 <div>
@@ -587,19 +587,19 @@
                     </label>
                 </div>
             </div>
-            <div class="flex justify-end gap-2 pt-2 border-t">
-                <button onclick="closeNoteModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveNote()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-md">Speichern</button>
+            <div class="b3-dialog-actions flex justify-end gap-2 pt-2 border-t">
+                <button onclick="closeNoteModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveNote()" class="b3-action px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-md">Speichern</button>
             </div>
         </div>
     </div>
 
     <!-- Modal: Termin -->
-    <div id="eventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="eventModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold">📅 Termin / Slot buchen</h3>
-                <button onclick="closeAddEventModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeAddEventModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div class="space-y-3 text-xs">
                 <div>
@@ -635,19 +635,19 @@
                     <select id="eventOwner" class="w-full p-2.5 border rounded-xl bg-white"></select>
                 </div>
             </div>
-            <div class="flex justify-end gap-2 pt-2 border-t">
-                <button onclick="closeAddEventModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveEvent()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+            <div class="b3-dialog-actions flex justify-end gap-2 pt-2 border-t">
+                <button onclick="closeAddEventModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveEvent()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
             </div>
         </div>
     </div>
 
     <!-- Modal: Inventar -->
-    <div id="inventoryModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="inventoryModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold">📦 WG-Inventar erfassen</h3>
-                <button onclick="closeAddInventoryModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeAddInventoryModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div class="space-y-3 text-xs">
                 <div>
@@ -669,49 +669,49 @@
                     <input type="number" id="invLifespan" value="5" class="w-full p-2.5 border rounded-xl">
                 </div>
             </div>
-            <div class="flex justify-end gap-2 pt-2 border-t">
-                <button onclick="closeAddInventoryModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveInventoryItem()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Erfassen</button>
+            <div class="b3-dialog-actions flex justify-end gap-2 pt-2 border-t">
+                <button onclick="closeAddInventoryModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveInventoryItem()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Erfassen</button>
             </div>
         </div>
     </div>
 
     <!-- Modal: Ernährungs-Matrix -->
-    <div id="dietModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="dietModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold">🥦 Ernährungs- & Allergie-Matrix</h3>
-                <button onclick="closeDietModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeDietModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div id="dietInputContainer" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
-            <div class="flex justify-end gap-2 pt-3 border-t">
-                <button onclick="closeDietModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveDietMatrix()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+            <div class="b3-dialog-actions flex justify-end gap-2 pt-3 border-t">
+                <button onclick="closeDietModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveDietMatrix()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
             </div>
         </div>
     </div>
 
     <!-- Modal: Monats-Budgets -->
-    <div id="budgetModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="budgetModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold">⚙️ Monats-Budgets festlegen</h3>
-                <button onclick="closeBudgetModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeBudgetModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div id="budgetInputList" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
-            <div class="flex justify-end gap-2 pt-3 border-t">
-                <button onclick="closeBudgetModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveBudgetsFromModal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md">Speichern</button>
+            <div class="b3-dialog-actions flex justify-end gap-2 pt-3 border-t">
+                <button onclick="closeBudgetModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveBudgetsFromModal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md">Speichern</button>
             </div>
         </div>
     </div>
 
     <!-- Modal: Sparziel -->
-    <div id="savingsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="savingsModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold">🐷 Neues Sparziel anlegen</h3>
-                <button onclick="closeSavingsModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeSavingsModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div class="space-y-3 text-xs">
                 <div>
@@ -727,19 +727,19 @@
                     <input type="number" step="0.01" id="goalCurrent" value="0" class="w-full p-2.5 border rounded-xl">
                 </div>
             </div>
-            <div class="flex justify-end gap-2 pt-3 border-t">
-                <button onclick="closeSavingsModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveSavingsGoal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Anlegen</button>
+            <div class="b3-dialog-actions flex justify-end gap-2 pt-3 border-t">
+                <button onclick="closeSavingsModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveSavingsGoal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Anlegen</button>
             </div>
         </div>
     </div>
 
     <!-- Modal: WLAN QR-Code -->
-    <div id="wlanQrModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="wlanQrModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 text-center">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold">📶 Gäste-WLAN QR-Code</h3>
-                <button onclick="closeWLANQRModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeWLANQRModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <p class="text-xs text-gray-600">Mit Smartphone-Kamera scannen für Sofort-Verbindung:</p>
             <div id="wlanQrcode" class="flex justify-center p-3 bg-white border rounded-2xl shadow-inner min-h-[160px] items-center"></div>
@@ -748,11 +748,11 @@
     </div>
 
     <!-- Modal: Infoboard -->
-    <div id="infoboardModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="infoboardModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold">📌 WG-Stammdaten bearbeiten</h3>
-                <button onclick="closeInfoboardModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeInfoboardModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div class="space-y-3 text-xs">
                 <div>
@@ -772,19 +772,19 @@
                     <input type="text" id="editTrash" class="w-full p-2.5 border rounded-xl">
                 </div>
             </div>
-            <div class="flex justify-end gap-2 pt-2 border-t">
-                <button onclick="closeInfoboardModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveInfoboardFromModal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+            <div class="b3-dialog-actions flex justify-end gap-2 pt-2 border-t">
+                <button onclick="closeInfoboardModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveInfoboardFromModal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
             </div>
         </div>
     </div>
 
     <!-- ERWEITERTES MODAL: MITGLIEDER & KONTAKTE (INKL. HANDY-ADRESSBUCH SYNC) -->
-    <div id="mitbewohnerModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="mitbewohnerModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold text-gray-900">👥 Mitglieder- & Kontaktverwaltung</h3>
-                <button onclick="closeMitbewohnerModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeMitbewohnerModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
 
             <!-- Toolbar für Import -->
@@ -793,7 +793,7 @@
                     <span class="font-bold text-emerald-900">📇 Smartphone-Kontakte importieren:</span>
                     <p class="text-[11px] text-emerald-700">Übernimmt Name & Telefonnummer direkt aus deinem Handy-Adressbuch.</p>
                 </div>
-                <button onclick="importPhoneContacts()" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-sm">
+                <button onclick="importPhoneContacts()" class="b3-action b3-outline px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-sm">
                     📇 Aus Handy importieren
                 </button>
             </div>
@@ -810,27 +810,27 @@
                     <input type="text" id="mateInsta" placeholder="Instagram (@handle)" class="p-2 border rounded-xl bg-white">
                     <input type="text" id="mateFb" placeholder="Facebook Profile URL / Name" class="p-2 border rounded-xl bg-white">
                 </div>
-                <div class="flex justify-end gap-2">
-                    <button onclick="resetMateForm()" id="mateCancelBtn" class="hidden px-3 py-1.5 bg-gray-200 rounded-xl font-semibold">Abbrechen</button>
-                    <button onclick="saveFlatmateContact()" class="px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl">Mitglied speichern</button>
+                <div class="b3-dialog-actions flex justify-end gap-2">
+                    <button onclick="resetMateForm()" id="mateCancelBtn" class="b3-action b3-outline hidden px-3 py-1.5 bg-gray-200 rounded-xl font-semibold">Abbrechen</button>
+                    <button onclick="saveFlatmateContact()" class="b3-action px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl">Mitglied speichern</button>
                 </div>
             </div>
 
             <!-- Liste der gespeicherten Mitglieder -->
             <div id="flatmateList" class="space-y-2.5 flex-grow overflow-y-auto pr-1 text-xs"></div>
 
-            <div class="flex justify-end pt-2 border-t">
-                <button onclick="closeMitbewohnerModal()" class="px-5 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-xl text-xs font-bold">Fertig & Schließen</button>
+            <div class="b3-dialog-actions flex justify-end pt-2 border-t">
+                <button onclick="closeMitbewohnerModal()" class="b3-action b3-outline px-5 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-xl text-xs font-bold">Fertig & Schließen</button>
             </div>
         </div>
     </div>
 
     <!-- Modal: Putzaufgabe -->
-    <div id="cleanTaskModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="cleanTaskModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold">🧹 Neue Putzaufgabe</h3>
-                <button onclick="closeAddCleanTaskModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeAddCleanTaskModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div class="space-y-3 text-xs">
                 <div>
@@ -842,34 +842,34 @@
                     <select id="cleanTaskAssignee" class="w-full p-2.5 border rounded-xl bg-white"></select>
                 </div>
             </div>
-            <div class="flex justify-end gap-2 pt-2 border-t">
-                <button onclick="closeAddCleanTaskModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveCleanTask()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Erstellen</button>
+            <div class="b3-dialog-actions flex justify-end gap-2 pt-2 border-t">
+                <button onclick="closeAddCleanTaskModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveCleanTask()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Erstellen</button>
             </div>
         </div>
     </div>
 
     <!-- Modal: Kochplaner -->
-    <div id="cookingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="cookingModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold">🍲 Wochenkochplan bearbeiten</h3>
-                <button onclick="closeCookingModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeCookingModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div id="cookingInputList" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
-            <div class="flex justify-end gap-2 pt-3 border-t">
-                <button onclick="closeCookingModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveCookingPlanFromModal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+            <div class="b3-dialog-actions flex justify-end gap-2 pt-3 border-t">
+                <button onclick="closeCookingModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveCookingPlanFromModal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
             </div>
         </div>
     </div>
 
     <!-- Modal: Vertrag -->
-    <div id="contractModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="contractModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold">📜 Vertrag / Abo eintragen</h3>
-                <button onclick="closeContractModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeContractModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div class="space-y-3 text-xs">
                 <div>
@@ -889,9 +889,9 @@
                     <input type="date" id="contractNoticeDate" class="w-full p-2.5 border rounded-xl bg-white">
                 </div>
             </div>
-            <div class="flex justify-end gap-2 pt-2 border-t">
-                <button onclick="closeContractModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveContract()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+            <div class="b3-dialog-actions flex justify-end gap-2 pt-2 border-t">
+                <button onclick="closeContractModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveContract()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
             </div>
         </div>
     </div>
@@ -1772,7 +1772,7 @@
                         <span>👤 ${escapeUserHtml(n.author)} (${escapeUserHtml(n.date || 'Heute')})</span>
                         <div class="flex items-center gap-1">
                             <button onclick="togglePinNote(${safeInlineId(n.id)})" class="p-0.5">${n.pinned ? '📌' : '📍'}</button>
-                            <button onclick="editNote(${safeInlineId(n.id)})" class="p-0.5">✏️</button>
+                            <button onclick="editNote(${safeInlineId(n.id)})" class="b3-action b3-outline p-0.5">✏️</button>
                             <button onclick="deleteNote(${safeInlineId(n.id)})" class="text-red-700 font-bold p-0.5">&times;</button>
                         </div>
                     </div>
@@ -1994,7 +1994,7 @@
                             </div>
                         </div>
                         <div class="flex gap-1">
-                            <button onclick="editReceipt(${safeInlineId(r.id)})" class="px-2 py-1 bg-amber-50 text-amber-700 rounded text-xs font-bold">✏️</button>
+                            <button onclick="editReceipt(${safeInlineId(r.id)})" class="b3-action b3-outline px-2 py-1 bg-amber-50 text-amber-700 rounded text-xs font-bold">✏️</button>
                             <button onclick="deleteReceipt(${safeInlineId(r.id)})" class="px-2 py-1 bg-red-50 text-red-600 rounded text-xs font-bold">✕</button>
                         </div>
                     </div>
@@ -2080,7 +2080,7 @@
                         <div class="flex justify-between font-bold text-emerald-900"><span>${escapeUserHtml(g.title)}</span><button onclick="deleteSavingsGoal(${safeInlineId(g.id)})" class="text-red-500">✕</button></div>
                         <div class="flex justify-between text-[11px]"><span>Gespart: <strong>${g.current.toFixed(2)} €</strong></span><span>Ziel: ${g.target.toFixed(2)} €</span></div>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden"><div class="bg-emerald-600 h-2 transition-all" style="width: ${percent}%"></div></div>
-                        <button onclick="depositGoal(${safeInlineId(g.id)})" class="w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">+ Einzahlen</button>
+                        <button onclick="depositGoal(${safeInlineId(g.id)})" class="b3-action w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">+ Einzahlen</button>
                     </div>
                 `;
             }).join('');
@@ -2143,7 +2143,7 @@
                     <span class="font-medium text-gray-800">${escapeUserHtml(item.title)}</span>
                     <div class="flex gap-1.5">
                         <a href="https://www.amazon.de/s?k=${encodeURIComponent(item.title)}&tag=${AMAZON_AFFILIATE_TAG}" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded font-bold text-[10px]">📦 Amazon</a>
-                        <button onclick="transferShoppingToExpense(${safeInlineId(item.id)})" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">🧾 Buchen</button>
+                        <button onclick="transferShoppingToExpense(${safeInlineId(item.id)})" class="b3-action b3-outline px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">🧾 Buchen</button>
                         <button onclick="deleteShoppingItem(${safeInlineId(item.id)})" class="text-gray-400 hover:text-red-500 font-bold px-1">&times;</button>
                     </div>
                 </div>
@@ -2169,7 +2169,7 @@
             document.getElementById('cookingPlanList').innerHTML = getCookingPlan().map((p, idx) => `
                 <div class="p-2 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
                     <div><span class="font-bold">${escapeUserHtml(p.day)}:</span> <span class="text-emerald-800">${escapeUserHtml(p.dish || 'Frei')}</span> ${p.chef !== 'Frei' ? `<span class="bg-purple-100 text-purple-800 font-bold px-1 rounded text-[10px]">${escapeUserHtml(p.chef)}</span>` : ''}</div>
-                    ${p.ingredients ? `<button onclick="syncIngredientsToShopping(${idx})" class="px-2 py-0.5 bg-amber-50 text-amber-800 border rounded text-[10px] font-bold">🛒 Zutaten</button>` : ''}
+                    ${p.ingredients ? `<button onclick="syncIngredientsToShopping(${idx})" class="b3-action b3-outline px-2 py-0.5 bg-amber-50 text-amber-800 border rounded text-[10px] font-bold">🛒 Zutaten</button>` : ''}
                 </div>
             `).join('');
         }
@@ -2300,7 +2300,7 @@
                         </div>
                     </div>
                     <div class="flex gap-1.5 self-end sm:self-center">
-                        <button onclick="editFlatmateContact(${idx})" class="px-2.5 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg font-bold">✏️</button>
+                        <button onclick="editFlatmateContact(${idx})" class="b3-action b3-outline px-2.5 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg font-bold">✏️</button>
                         <button onclick="removeFlatmateContact(${idx})" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg font-bold">✕ Löschen</button>
                     </div>
                 </div>

@@ -56,3 +56,22 @@ body.b3-wg.b3-dark .b3-wg-onboarding>div>div{background:#1b2d42;color:#f0f6fc;bo
 body.b3-wg.b3-dark .b3-wg-onboarding :is(.text-gray-900,.text-gray-500){color:#e8f2fc!important}
 body.b3-wg.b3-dark .b3-wg-onboarding button.bg-emerald-700{background:#246b46!important;color:#fff!important}
 body.b3-wg #header-user-badge:not(.hidden){display:flex}
+
+/* P1 WG controls: reuse explicit actions; keep warning and note colours meaningful. */
+body.b3.b3-wg .b3-wg-form-heading{flex-wrap:wrap;gap:.75rem}
+body.b3.b3-wg .b3-wg-finance-grid{grid-template-columns:minmax(0,1fr)}
+body.b3.b3-wg .b3-wg-finance-grid>div{display:grid;grid-template-rows:1fr auto;min-width:0}
+body.b3.b3-wg .b3-tool-dialog :is(input,select,textarea){min-width:0;max-width:100%}
+body.b3.b3-wg .b3-tool-dialog>div>div:first-child{gap:.75rem;flex-wrap:wrap}
+body.b3.b3-wg #budgetInputList>div{flex-wrap:wrap;gap:.5rem}
+body.b3.b3-wg #cookingInputList .flex{flex-wrap:wrap;gap:.5rem}
+body.b3.b3-wg #stickyNotesGrid button{min-height:44px;min-width:44px}
+@media(min-width:768px){body.b3.b3-wg .b3-wg-finance-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:640px){
+ body.b3.b3-wg .b3-tool-dialog :is(.grid-cols-2,.grid-cols-3){grid-template-columns:minmax(0,1fr)}
+ body.b3.b3-wg #b3-info{grid-template-columns:minmax(0,1fr)}
+ body.b3.b3-wg main.b3-dashboard [data-b3-panel]>div:first-child{flex-wrap:wrap;gap:.75rem}
+}
+
+body.b3.b3-wg #stickyNotesGrid>div>div:last-child{flex-wrap:wrap;gap:.5rem}
+body.b3.b3-wg #b3-info{grid-column:1/-1!important}

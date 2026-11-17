@@ -26,6 +26,12 @@ async function isolated(page,authenticated,displayCss=false,initialSnapshot=null
                 async signInWithPassword(){m.signedIn=true;return {data:{user:{id:'ui-fixture-user'}},error:null}}
               },
               from(table){
+                if(table==='wg_spaces'&&m.fixture?.__wg){
+                  return {select(){return this},eq(){return this},async single(){m.wgReads=(m.wgReads||0)+1;return {data:m.fixture.__wg,error:null}},
+                   update(){m.writes.push({table,operation:'update'});throw Error('Unexpected WG design-fixture write')},
+                   insert(){m.writes.push({table,operation:'insert'});throw Error('Unexpected WG design-fixture write')},
+                   delete(){m.writes.push({table,operation:'delete'});throw Error('Unexpected WG design-fixture write')}};
+                }
                 if(table!=='user_data')throw Error('unexpected table '+table);
                 return {select(){return this},eq(key,value){if(key==='tool')this.tool=value;return this},async maybeSingle(){return {data:m.fixture?{id:1,user_id:'ui-fixture-user',tool:this.tool,data:m.fixture,revision:1}:null,error:null}}};
               },
@@ -1004,7 +1010,7 @@ for(const kind of ['parking','pet-health']){
   await page.locator('.toolya-signature-footer').waitFor();
   await expect.poll(()=>page.locator('#settingsModal').evaluate(e=>getComputedStyle(e).display)).toBe('none');
   if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
-  const capture=async id=>{await page.screenshot({path:testInfo.outputPath('mobility-'+kind+'-'+id+'.png')});await reviewImage(page,'mobility-'+kind+'-'+id)};
+  const capture=async id=>{await page.screenshot({path:testInfo.outputPath('mobility-'+kind+'-'+id+'.png')});await page.screenshot({path:testInfo.outputPath('mobility-'+kind+'-'+id+'.jpg'),type:'jpeg',quality:42})};
   const fits=async loc=>loc.evaluate(e=>e.scrollWidth<=e.clientWidth+1);
   const inspectActions=async loc=>{
    for(const b of await loc.locator('button.b3-action:visible').all()){
@@ -1085,5 +1091,99 @@ for(const kind of ['parking','pet-health']){
   }
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   expect(errors).toEqual([]);
+ });
+}
+
+// P1 WG/baking: real pages, cloud responses fully intercepted, no production accounts.
+for(const kind of ['housemates','baking']){
+ test(kind+': shared controls across actual tool sections and dialogs',async({page},testInfo)=>{
+  test.setTimeout(90000);
+  const wg=kind==='housemates',errors=[];page.on('pageerror',e=>errors.push(e.message));
+  const fixture=wg?{__wg:{id:'00000000-0000-4000-8000-000000000109',updated_at:'2026-11-17T00:00:00Z',payload:{
+   flatmates:[{vorname:'Mia',nachname:'Test'},{vorname:'Ben',nachname:'Test'}],
+   notes:[{id:1,title:'Isolierte Notiz',content:'Synthetische Prüfansicht',author:'Mia Test',date:'17.11.2026',color:'yellow',pinned:true}],
+   data:[{id:2,title:'Isolierter Kassenbon',price:42,payer:'Mia Test',date:'2026-11-17',category:'Lebensmittel',entryType:'ausgabe',splitWith:['Mia Test','Ben Test'],photos:[]}],
+   budgets:{Lebensmittel:100},goals:[{id:3,title:'Isoliertes Sparziel',target:100,current:20}],
+   events:[],inventory:[],diets:{},cleaning:[],shopping:[],contracts:[],
+   cooking:['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'].map(day=>({day,chef:'Frei',dish:'',ingredients:''})),
+   infoboard:{wifi:'Synthetisches WLAN',landlord:'Isolierte Prüfansicht',caretaker:'',trash:''}
+  }}}:{recipes:[{name:'Isoliertes Rezept',text:'250g Mehl',factor:1,date:'17.11.2026',note:'Synthetische Prüfansicht'}]};
+  await isolated(page,true,true,fixture);
+  await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
+  const route='/tools/'+kind+'/index.html';
+  await page.goto(origin+route+(wg?'?id=secure_00000000-0000-4000-8000-000000000109':''));
+  await expect.poll(()=>page.evaluate(wg=>wg?typeof secureWgRevision!=='undefined'&&!!secureWgRevision:typeof bakingCloudReady!=='undefined'&&bakingCloudReady&&!!bakingCloudController?.ready,wg)).toBeTruthy();
+  await page.locator('.toolya-signature-footer').waitFor();
+  const settings=page.locator(wg?'#settingsModal':'#settings-modal');
+  await expect.poll(()=>settings.evaluate(e=>getComputedStyle(e).display)).toBe('none');
+  if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+  const capture=async id=>{await page.screenshot({path:testInfo.outputPath('living-'+kind+'-'+id+'.png')});await reviewImage(page,'living-'+kind+'-'+id)};
+  const fits=async loc=>loc.evaluate(e=>e.scrollWidth<=e.clientWidth+1);
+  const inspect=async loc=>{
+   for(const b of await loc.locator('button.b3-action:visible').all()){
+    expect(await b.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+    await expect(b).toHaveCSS('font-weight','700');
+    if(!(await b.getAttribute('class')).includes('b3-outline')){
+     await expect(b).toHaveCSS('background-color','rgb(0, 126, 159)');
+     expect(await b.evaluate(e=>{
+      const lum=v=>v.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
+      const c=getComputedStyle(e),a=lum(c.color),d=lum(c.backgroundColor);return(Math.max(a,d)+.05)/(Math.min(a,d)+.05);
+     })).toBeGreaterThanOrEqual(4.5);
+    }
+   }
+  };
+  for(const width of [320,768,1440]){
+   await page.setViewportSize({width,height:1000});expect(new URL(page.url()).pathname).toBe(route);
+   await expect(page.locator('html')).toHaveCSS('color-scheme','light');
+   if(wg){
+    for(const id of ['#b3-notes','#b3-info','#formCard']){
+     const panel=page.locator(id);await panel.evaluate(e=>e.scrollIntoView({block:'start'}));expect(await fits(panel)).toBe(true);await inspect(panel);await capture(id.slice(1)+'-'+width);
+    }
+    expect(await page.locator('.b3-wg-finance-grid').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length)).toBe(width<768?1:3);
+    await page.locator('button[onclick="editReceipt(2)"]').click();
+    await expect(page.locator('#cancelEditBtn')).toBeVisible();await page.locator('#cancelEditBtn').click();
+    await page.locator('button[onclick="openNoteModal()"]').click();
+    await expect(page.locator('#noteModal')).toBeVisible();await inspect(page.locator('#noteModal'));
+    expect(await fits(page.locator('#noteModal>div'))).toBe(true);
+    await page.locator('#noteTitleInput').focus();await page.keyboard.press('Tab');
+    expect(await page.evaluate(()=>parseFloat(getComputedStyle(document.activeElement).outlineWidth))).toBeGreaterThanOrEqual(3);
+    await capture('note-dialog-'+width);await page.evaluate(()=>closeNoteModal());
+    await expect(page.locator('button[onclick="deleteReceipt(2)"]')).not.toHaveClass(/b3-action/);
+   }else{
+    await page.locator('#btn-tab-rechner').click();
+    await page.locator('#tab-rechner').evaluate(e=>e.scrollIntoView({block:'start'}));await inspect(page.locator('main'));await capture('calculator-'+width);
+    expect(await page.locator('main.b3-backform-main').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length)).toBe(width<1280?1:3);
+    await page.locator('#recipe-input').fill('250g Mehl');
+    await page.locator('#orig-d').fill('26');await page.locator('#target-d').fill('20');
+    expect(Number(await page.locator('#res-factor').innerText())).toBeCloseTo(400/676,2);
+    await page.locator('#recipe-input').focus();await page.keyboard.press('Tab');
+    expect(await page.evaluate(()=>parseFloat(getComputedStyle(document.activeElement).outlineWidth))).toBeGreaterThanOrEqual(3);
+    await page.locator('#recipe-input').evaluate(e=>e.scrollIntoView({block:'start'}));await capture('recipe-'+width);
+    await page.locator('#b3-baking-results').evaluate(e=>e.scrollIntoView({block:'start'}));expect(await fits(page.locator('#b3-baking-results'))).toBe(true);await capture('results-'+width);
+    for(const tab of ['substanz','tools','rezepte','finder']){
+     if(tab==='finder')await page.evaluate(()=>openTab('finder'));else await page.locator('#btn-tab-'+tab).click();
+     await expect(page.locator('#tab-'+tab)).toBeVisible();await page.locator('#tab-'+tab).evaluate(e=>e.scrollIntoView({block:'start'}));
+     await inspect(page.locator('#tab-'+tab));expect(await fits(page.locator('#tab-'+tab))).toBe(true);await capture(tab+'-'+width);
+    }
+    await page.evaluate(()=>openCookMode());await expect(page.locator('#cook-modal')).toBeVisible();await inspect(page.locator('#cook-modal'));expect(await fits(page.locator('#cook-modal>div'))).toBe(true);await capture('timer-'+width);await page.evaluate(()=>closeCookMode());
+    await page.evaluate(()=>openSettings());await page.locator('#b3-backform-edit').click();await expect(page.locator('#b3-backform-editor')).toBeVisible();
+    await inspect(page.locator('#b3-backform-editor'));await page.locator('#b3-backform-editor').evaluate(e=>e.scrollIntoView({block:'start'}));await capture('editor-'+width);
+    await page.locator('#b3-backform-editor').getByRole('button',{name:'Abbrechen',exact:true}).click();await page.evaluate(()=>closeSettings());
+    await expect(page.locator('button[onclick="deleteRecipe(0)"]')).not.toHaveClass(/b3-action/);
+   }
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  }
+  if(wg){
+   await page.setViewportSize({width:320,height:1000});
+   const dialogs=[['eventModal','openAddEventModal','closeAddEventModal'],['inventoryModal','openAddInventoryModal','closeAddInventoryModal'],['dietModal','openDietModal','closeDietModal'],['budgetModal','openBudgetModal','closeBudgetModal'],['savingsModal','openAddGoalModal','closeSavingsModal'],['infoboardModal','openInfoboardModal','closeInfoboardModal'],['mitbewohnerModal','openMitbewohnerModal','closeMitbewohnerModal'],['cleanTaskModal','openAddCleanTaskModal','closeAddCleanTaskModal'],['cookingModal','openCookingModal','closeCookingModal'],['contractModal','openContractModal','closeContractModal'],['helpModal','toggleHelpModal','toggleHelpModal']];
+   for(const[id,open,close]of dialogs){
+    await page.evaluate(fn=>window[fn](),open);const modal=page.locator('#'+id);await expect(modal).toBeVisible();expect(await fits(modal.locator(':scope>div'))).toBe(true);await inspect(modal);
+    await modal.locator(':scope>div').evaluate(e=>e.scrollTop=0);await capture(id+'-320');
+    if(['mitbewohnerModal','cookingModal','budgetModal'].includes(id)){await modal.locator(':scope>div').evaluate(e=>e.scrollTop=e.scrollHeight);await capture(id+'-end-320')}
+    await page.evaluate(fn=>window[fn](),close);await expect(modal).toBeHidden();
+   }
+   expect(await page.evaluate(()=>window.__toolyaMock.wgReads)).toBeGreaterThan(0);
+  }
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);expect(errors).toEqual([]);
  });
 }
