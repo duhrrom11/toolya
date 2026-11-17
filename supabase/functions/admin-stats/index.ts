@@ -11,7 +11,7 @@ const catalog=[
 type Metric={label:string,value:number,detail:string};
 type Source={id:string,label:string,status:string,detail:string};
 type SeoPoint={date:string,clicks:number,impressions:number};
-type SeoSeries={source:'google'|'bing',points:SeoPoint[],status:'ok'|'empty'|'unavailable'};
+type SeoSeries={source:'google'|'bing',points:SeoPoint[],status:'ok'|'empty'|'unavailable',detail?:string};
 const fetchJson=async(url:string,headers:Record<string,string>={})=>{
  const response=await fetch(url,{headers:{Accept:'application/vnd.github+json',...headers},signal:AbortSignal.timeout(7500)});
  if(!response.ok)throw Error('Provider HTTP '+response.status);
@@ -210,27 +210,33 @@ async function searchConsoleMetrics(days:number,series:SeoSeries[]):Promise<Metr
  const data=await response.json();
  // Daily data is optional: an unavailable trend must not invalidate verified totals.
  let dailyStatus:'ok'|'empty'|'unavailable'='unavailable';
+ let dailyDetail='Tagesabfrage nicht erfolgreich';
  try{
   const dailyResponse=await fetch('https://searchconsole.googleapis.com/webmasters/v3/sites/'+encodeURIComponent(site)+'/searchAnalytics/query',{
    method:'POST',headers:{Authorization:'Bearer '+token.access_token,'Content-Type':'application/json'},
    body:JSON.stringify({startDate:iso(start),endDate:iso(end),type:'web',dimensions:['date'],rowLimit:100}),
    signal:AbortSignal.timeout(10000)
   });
+  if(!dailyResponse.ok)dailyDetail='Google-Tagesabfrage: HTTP '+dailyResponse.status;
   if(dailyResponse.ok){
    const daily=await dailyResponse.json();
-   if(Array.isArray(daily.rows)){
-    const points:SeoPoint[]=daily.rows.flatMap((r:unknown)=>{
+   if(daily&&(!('rows' in daily)||daily.rows==null||Array.isArray(daily.rows))){
+    const points:SeoPoint[]=(daily.rows||[]).flatMap((r:unknown)=>{
      const v=r as {keys?:unknown[],clicks?:unknown,impressions?:unknown};
      const date=v.keys?.[0],clicks=Number(v.clicks),impressions=Number(v.impressions);
      return typeof date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(date)&&date>=iso(start)&&date<=iso(end)&&
       Number.isFinite(clicks)&&Number.isFinite(impressions)&&clicks>=0&&impressions>=0?[{date,clicks,impressions}]:[];
     });
     dailyStatus=points.length?'ok':'empty';
-    series.push({source:'google',points,status:dailyStatus});
-   }
+    dailyDetail=points.length?'Google-Tagesabfrage: '+points.length+' gültige Tage':'Google-Tagesabfrage: keine Tageszeilen';
+    series.push({source:'google',points,status:dailyStatus,detail:dailyDetail});
+   }else dailyDetail='Google-Tagesabfrage: Antwortformat nicht erkannt';
   }
- }catch{/* Optional chart only. */}
- if(dailyStatus==='unavailable')series.push({source:'google',points:[],status:'unavailable'});
+ }catch(error){
+  const e=error instanceof Error?error:null;
+  dailyDetail=e?.name==='TimeoutError'||e?.name==='AbortError'?'Google-Tagesabfrage: Zeitüberschreitung':e instanceof SyntaxError?'Google-Tagesabfrage: ungültige JSON-Antwort':e instanceof TypeError?'Google-Tagesabfrage: Netzwerk- oder Verarbeitungsfehler':'Google-Tagesabfrage: unerwarteter Fehler';
+ }
+ if(dailyStatus==='unavailable')series.push({source:'google',points:[],status:'unavailable',detail:dailyDetail});
  const row=data.rows?.[0];
  if(!row)return [{label:'GSC Klicks',value:0,detail:'Keine Suchdaten · '+iso(start)+' bis '+iso(end)},{label:'GSC Impressionen',value:0,detail:'Keine Suchdaten · '+iso(start)+' bis '+iso(end)}];
  const clicks=Number(row.clicks),impressions=Number(row.impressions),ctr=Number(row.ctr),position=Number(row.position);
@@ -256,21 +262,23 @@ async function bingWebmasterMetrics(days:number,series:SeoSeries[]):Promise<Metr
  if(!Array.isArray(data?.d))throw Error('BING_INVALID_RESPONSE');
  const cutoff=Date.now()-days*86400000;
  let clicks=0,impressions=0,observations=0;
+ let invalidDate=0,invalidMetrics=0,outsidePeriod=0;
  const points:SeoPoint[]=[];
  for(const row of data.d){
   // Bing JSON API dates use /Date(milliseconds-offset)/.
-  const match=typeof row?.Date==='string'?row.Date.match(/^\\?\/Date\((-?\d+)(?:[+-]\d{4})?\)\\?\/$/):null;
-  if(!match)continue;
-  const time=Number(match[1]);
-  if(!Number.isFinite(time)||time<cutoff||time>Date.now()+86400000)continue;
+  const rawDate=row?.Date;
+  const match=typeof rawDate==='string'?rawDate.match(/^\\?\/Date\((-?\d+)(?:[+-]\d{4})?\)\\?\/$/):null;
+  const time=match?Number(match[1]):typeof rawDate==='string'&&/^\d{4}-\d{2}-\d{2}(?:T.*)?$/.test(rawDate)?Date.parse(rawDate):NaN;
+  if(!Number.isFinite(time)){invalidDate++;continue}
+  if(time<cutoff||time>Date.now()+86400000){outsidePeriod++;continue}
   const c=Number(row.Clicks),i=Number(row.Impressions);
-  if(!Number.isFinite(c)||!Number.isFinite(i)||c<0||i<0)continue;
+  if(!Number.isFinite(c)||!Number.isFinite(i)||c<0||i<0){invalidMetrics++;continue}
   clicks+=c;impressions+=i;observations++;
   points.push({date:new Date(time).toISOString().slice(0,10),clicks:c,impressions:i});
  }
  const grouped=new Map<string,SeoPoint>();
  for(const point of points){const prev=grouped.get(point.date);grouped.set(point.date,{date:point.date,clicks:(prev?.clicks||0)+point.clicks,impressions:(prev?.impressions||0)+point.impressions})}
- series.push({source:'bing',points:[...grouped.values()].sort((a,b)=>a.date.localeCompare(b.date)),status:observations?'ok':'empty'});
+ series.push({source:'bing',points:[...grouped.values()].sort((a,b)=>a.date.localeCompare(b.date)),status:observations?'ok':'empty',detail:'Bing API: '+data.d.length+' Zeilen, '+observations+' gültig, '+outsidePeriod+' außerhalb des Zeitraums, '+invalidDate+' ungültige Datumswerte, '+invalidMetrics+' ungültige Kennzahlen'});
  const detail='Bing Webmaster Tools · letzte '+days+' Tage · '+observations+' Datensätze';
  return [{label:'Bing Klicks',value:clicks,detail},{label:'Bing Impressionen',value:impressions,detail},
   {label:'Bing CTR (%)',value:impressions?Math.round(clicks/impressions*10000)/100:0,detail}];
