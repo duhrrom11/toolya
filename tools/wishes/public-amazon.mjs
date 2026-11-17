@@ -16,301 +16,40 @@ if (!production && !preview) {
   throw new Error('Supabase-Konfiguration gesperrt: expliziter Modus und passende Projektkonfiguration erforderlich.');
 }
 const db = window.supabase.createClient(configured.url, configured.publishableKey);
-const $=id=>document.getElementById(id);
-let sessionUser=null,profile=null,publications=[],products=[],profiles=[];
+import {amazonListUrl,amazonSearchUrl,splitInterests,rankProducts} from './public-profile-model.mjs';
+const $=id=>document.getElementById(id), text=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value??'';if(cls)e.className=cls;return e};
 const status=(id,value)=>$(id).textContent=value;
-function safeAmazonListUrl(value){
- try{const u=new URL(value);const host=u.hostname.toLowerCase();if(u.protocol!=='https:'||u.username||u.password||u.port||!/^(www\.)?amazon\.de$/.test(host))return null;
- if(!/^\/(?:hz\/wishlist\/ls|gp\/registry\/wishlist|registry\/wishlist)\/[A-Z0-9]+\/?$/i.test(u.pathname))return null;
- u.hash='';u.search='';return u.href;
- }catch{return null}
+const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+let user=null,own=null,page=0,generation=0,authGeneration=0,catalog=[];
+const key='toolya-public-profile-favorites-v1';
+function readFavorites(){try{const a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a.filter(p=>uuid.test(p.user_id)&&typeof p.display_name==='string').slice(0,100):[]}catch{return []}}
+let favorites=readFavorites();
+const profileUrl=id=>new URL('./public.html?profile='+encodeURIComponent(id)+'#selectedProfile',location.href).href;
+function affiliateLink(label,url){const a=text('a',label,'button');a.href=url;a.target='_blank';a.rel='noopener noreferrer sponsored';return a}
+function amazonSearch(root,name,query=''){
+ const f=document.createElement('form');f.className='amazon-search';f.action='https://www.amazon.de/s';f.method='get';f.target='_blank';f.rel='noopener noreferrer';
+ const label=text('label',name),input=document.createElement('input');input.type='search';input.name='k';input.value=query;input.required=true;input.maxLength=200;label.append(input);
+ const tag=document.createElement('input');tag.type='hidden';tag.name='tag';tag.value='duhrrom-21';const b=text('button','Bei Amazon suchen ↗');b.type='submit';f.append(label,tag,b);root.append(f);
 }
-const text=(tag,value)=>{const el=document.createElement(tag);el.textContent=value??'';return el};
-const listIdPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const listUrl=id=>new URL('./public.html?list='+encodeURIComponent(id)+'#selectedList',location.href).href;
-async function renderSelectedList(){
- const id=new URL(location.href).searchParams.get('list');
- document.body.classList.toggle('viewing-list',Boolean(id));
- const section=$('selectedList'),container=$('selectedListCard');
- if(!id){section.hidden=true;return}
- section.hidden=false;container.replaceChildren();
- if(!listIdPattern.test(id)){status('selectedListStatus','Dieser Wunschlisten-Link ist ungültig.');return}
- status('selectedListStatus','Wunschliste wird geladen …');
- const {data:list,error}=await db.from('wishlist_amazon_publications')
-  .select('id,user_id,amazon_url,title,scrape_status').eq('id',id).eq('scrape_status','success').maybeSingle();
- if(error||!list){status('selectedListStatus','Diese Wunschliste ist nicht mehr öffentlich verfügbar.');return}
- const [owner,preview]=await Promise.all([
-  db.from('wishlist_profiles').select('user_id,first_name,last_name,country').eq('user_id',list.user_id).maybeSingle(),
-  db.from('wishlist_amazon_publication_products').select('publication_id,title,description,product_url,image_url,asin,price').eq('publication_id',id).order('created_at',{ascending:false}).limit(500)
- ]);
- if(owner.error||preview.error){status('selectedListStatus','Die Wunschliste konnte nicht vollständig geladen werden.');return}
- const previousProfiles=profiles,previousProducts=products;
- try{
-  profiles=[owner.data].filter(Boolean);
-  products=preview.data||[];
-  container.append(favoriteButton({...list,first_name:owner.data?.first_name,last_name:owner.data?.last_name}),detailCard(list));
- }finally{profiles=previousProfiles;products=previousProducts}
- status('selectedListStatus','');
+function renderFavorites(){const wrap=$('favoriteItems');wrap.replaceChildren();if(!favorites.length){wrap.append(text('p','Merke dir Profile mit dem Herz.'));return}for(const p of favorites){const a=text('a',p.display_name);a.href=profileUrl(p.user_id);wrap.append(a)}}
+function favorite(p){const b=text('button','♡','secondary favorite');b.type='button';const sync=()=>{const on=favorites.some(x=>x.user_id===p.user_id);b.textContent=on?'♥':'♡';b.setAttribute('aria-label',(on?'Profil nicht mehr merken: ':'Profil merken: ')+p.display_name);b.setAttribute('aria-pressed',String(on))};sync();b.onclick=()=>{favorites=favorites.some(x=>x.user_id===p.user_id)?favorites.filter(x=>x.user_id!==p.user_id):[...favorites,{user_id:p.user_id,display_name:p.display_name}].slice(-100);try{localStorage.setItem(key,JSON.stringify(favorites))}catch{}document.querySelectorAll('[data-profile-favorite="'+p.user_id+'"]').forEach(x=>{x.textContent=favorites.some(y=>y.user_id===p.user_id)?'♥':'♡';x.setAttribute('aria-pressed',String(favorites.some(y=>y.user_id===p.user_id)))});sync();renderFavorites()};b.dataset.profileFavorite=p.user_id;return b}
+function card(p,detail=false,preview=false){
+ const root=text('article','','profile-card');const person=text('div','','person'),avatar=text('span',p.display_name.split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase(),'avatar');avatar.setAttribute('aria-hidden','true');const info=document.createElement('div'),heading=text(detail?'h2':'h3',p.display_name);info.append(heading,text('p',[p.city,p.country].filter(Boolean).join(' · '),'location'));person.append(avatar,info);if(!preview)person.append(favorite(p));root.append(person);if(p.bio)root.append(text('p',p.bio));const chips=text('div','','chips');for(const i of p.interests||[])chips.append(text('span',i,'chip'));root.append(chips);
+ if(detail||preview){root.append(text('h3','Meine Wunschlisten'));const lists=text('div','','list-links');for(const l of p.lists||[]){const url=amazonListUrl(l.url);if(url)lists.append(affiliateLink('🎁 '+l.name+' · Bei Amazon öffnen ↗',url))}root.append(lists);if(!preview){const ideas=document.createElement('div');root.append(ideas);renderIdeas(ideas,p);amazonSearch(root,'Ein Geschenk für '+p.display_name+' finden',p.interests?.[0]||'Geschenkideen');root.append(text('p','Anzeige · Als Amazon-Partner verdiene ich an qualifizierten Verkäufen.','muted'))}}
+ else{root.append(text('p',(p.lists||[]).map(x=>x.name).join(' · '),'muted'));const a=text('a','Wunschprofil ansehen →','button');a.href=profileUrl(p.user_id);root.append(a)}return root;
 }
-
-const favKey='toolya-public-wishlist-favorites-v1';
-function loadFavorites(){try{const d=JSON.parse(localStorage.getItem(favKey)||'[]');return Array.isArray(d)?d.filter(x=>x&&listIdPattern.test(x.id)&&typeof x.title==='string'&&typeof x.name==='string').slice(0,100):[]}catch{return []}}
-let favorites=loadFavorites();
-const personName=list=>[list.first_name,list.last_name].filter(Boolean).join(' ')||[profiles.find(p=>p.user_id===list.user_id)?.first_name,profiles.find(p=>p.user_id===list.user_id)?.last_name].filter(Boolean).join(' ')||'Unbekanntes Profil';
-function renderFavorites(){
- const wrap=$('favoriteItems');wrap.replaceChildren();
- if(!favorites.length){const p=text('p','Noch keine Favoriten – markiere eine Wunschliste mit ☆.');wrap.append(p);return}
- for(const item of favorites){const a=text('a',item.title);a.href=listUrl(item.id);a.title='von '+item.name;a.className='favorite-tile';wrap.append(a)}
-}
-function toggleFavorite(list){
- const active=favorites.some(item=>item.id===list.id);
- favorites=active?favorites.filter(item=>item.id!==list.id):[...favorites,{id:list.id,title:list.title||'Amazon-Wunschliste',name:personName(list)}];
- try{localStorage.setItem(favKey,JSON.stringify(favorites))}catch{}
- renderFavorites();
- document.querySelectorAll('[data-favorite-id]').forEach(b=>{if(b.dataset.favoriteId!==list.id)return;b.textContent=active?'☆':'★';b.classList.toggle('active',!active);b.setAttribute('aria-pressed',String(!active));b.setAttribute('aria-label',active?'Als Favorit speichern':'Favorit entfernen')});
-}
-function favoriteButton(list){
- const active=favorites.some(item=>item.id===list.id);
- const b=text('button',active?'★':'☆');b.type='button';b.className='wishlist-favorite'+(active?' active':'');
- b.dataset.favoriteId=list.id;b.setAttribute('aria-pressed',String(active));
- b.setAttribute('aria-label',active?'Favorit entfernen':'Als Favorit speichern');
- b.onclick=()=>toggleFavorite(list);return b;
-}
-function summaryCard(list){
- const root=document.createElement('article');root.className='card wishlist-summary';root.id='list-'+list.id;
- const content=document.createElement('div');content.className='wishlist-summary-content';
- const heading=text('h3',list.title||'Amazon-Wunschliste'),by=text('p','von '+personName(list));
- by.className='wishlist-by';
- const link=text('a','Vollständige Liste bei Toolya öffnen →');link.href=listUrl(list.id);link.className='wishlist-open';
- content.append(heading,by,link);root.append(content,favoriteButton(list));return root;
-}
-async function functionError(error){
- const response=error?.context,code=response?.status;
- if(code===546||code===504)return new Error('Der Amazon-Scraper hat sein Rechenzeitlimit erreicht. Die bisherige Liste bleibt erhalten.');
- if(code===429)return new Error('Zu viele Aktualisierungen. Bitte später erneut versuchen.');
- if(code===409)return new Error('Die Wunschliste wird bereits aktualisiert. Bitte später erneut versuchen.');
- try{const data=await response?.json?.();if(typeof data?.error==='string')return new Error(data.error)}catch{}
- return new Error(code?'Aktualisierung fehlgeschlagen (HTTP '+code+').':error?.message||'Aktualisierung fehlgeschlagen.');
-}
-
-function safeImageUrl(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&(/(^|\.)images-amazon\.com$/.test(u.hostname)||/(^|\.)ssl-images-amazon\.com$/.test(u.hostname)||/(^|\.)media-amazon\.com$/.test(u.hostname))?u.href:null}catch{return null}}
-
-const AUTO_ENRICH_LIMIT=10;
-// Called only after a successful owner-initiated publication or refresh.
-// Each product uses its own bounded Edge Function invocation; a failed item
-// cannot roll back a complete wishlist snapshot or exhaust one function's CPU.
-async function enrichWishlistAutomatically(publicationId,onProgress=()=>{}){
- if(!sessionUser||!listIdPattern.test(publicationId))return {checked:0,improved:0,skipped:0,limited:false};
- const query=await db.from('wishlist_amazon_publication_products')
-  .select('asin,price,description').eq('publication_id',publicationId)
-  .order('created_at',{ascending:false}).limit(500);
- if(query.error)throw new Error('Produktdaten konnten zur Ergänzung nicht geladen werden.');
- const missing=(query.data||[]).filter(p=>p.asin&&(p.price==null||!p.description?.trim()));
- // Avoid repeatedly probing the same first products across successive manual refreshes.
- // The database independently enforces authorization, hourly limits and a cooldown.
- const cacheKey='toolya-wishlist-enrichment-recent-v1';
- let recent={};
- try{const saved=JSON.parse(localStorage.getItem(cacheKey)||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))recent=saved}catch{}
- const adminUnlimited=sessionUser.email?.trim().toLowerCase()==='info@toolya.app';
- const now=Date.now(),cooldown=10*60*1000;
- recent=Object.fromEntries(Object.entries(recent).filter(([,at])=>typeof at==='number'&&now-at<cooldown).slice(-200));
- const candidates=missing.filter(p=>adminUnlimited||!(recent[publicationId+':'+p.asin]>now-cooldown)).slice(0,adminUnlimited?missing.length:AUTO_ENRICH_LIMIT);
- let checked=0,improved=0,skipped=0,limited=false;
- for(const product of candidates){
-  onProgress('Produktinformationen ergänzen: '+(checked+1)+' von '+candidates.length+' …');
-  if(!adminUnlimited){recent[publicationId+':'+product.asin]=Date.now();
-   try{localStorage.setItem(cacheKey,JSON.stringify(recent))}catch{}}
-  try{
-   const {data,error}=await db.functions.invoke('amazon-wishlist-scrape',{
-    body:{action:'enrich-product',publication_id:publicationId,asin:product.asin}
-   });
-   if(error){
-    if(error.context?.status===429){
-     const body=await error.context.json().catch(()=>null);
-     if(body?.error?.includes('20 Produktabrufe')){limited=true;break}
-     skipped++;checked++;continue;
-    }
-    throw await functionError(error);
-   }
-   if(data?.status==='success')improved++;
-   else skipped++;
-  }catch{skipped++}
-  checked++;
- }
- return {checked,improved,skipped,limited,remaining:Math.max(0,missing.length-checked)};
-}
-
-function detailCard(list){
- const person=profiles.find(p=>p.user_id===list.user_id);
- const name=[person?.first_name,person?.last_name].filter(Boolean).join(' ')||'Unbekanntes Profil';
- const root=document.createElement('article');root.className='card detail-card';root.id='list-'+list.id;
- root.append(text('h3',list.title||'Amazon-Wunschliste'),text('p','von '+name+(person?.country?' · '+person.country:'')));
- const a=text('a','Original-Wunschliste bei Amazon öffnen');a.href=list.amazon_url;a.target='_blank';a.rel='noopener noreferrer nofollow';root.append(a);
- if(sessionUser?.id===list.user_id){
-  const actions=document.createElement('div');actions.className='owner-actions';
-  const message=text('span','');message.className='owner-message';message.setAttribute('role','status');
-  const update=text('button','↻ Liste aktualisieren');update.type='button';
-  update.onclick=async()=>{
-   update.disabled=true;remove.disabled=true;message.textContent='Amazon-Wunschliste wird erneut eingelesen …';
-   try{
-    const {data,error}=await db.functions.invoke('amazon-wishlist-scrape',{body:{publication_id:list.id}});
-    if(error)throw await functionError(error);
-    if(data?.status!=='success')throw new Error('Amazon konnte die Liste derzeit nicht vollständig einlesen. Vorhandene Produkte bleiben erhalten.');
-    message.textContent='Liste erfolgreich aktualisiert. Fehlende Preise und Beschreibungen werden jetzt automatisch ergänzt …';
-    let info;
-    try{info=await enrichWishlistAutomatically(list.id,value=>{message.textContent=value})}
-    catch(e){message.textContent='Liste aktualisiert. Automatische Produktanreicherung nicht verfügbar: '+e.message}
-    if(info)message.textContent='Liste aktualisiert. '+info.checked+' Produkte nachgeprüft, '+info.improved+' mit neuen Angaben.'+
-      (info.remaining?' Weitere Produkte können bei einer späteren Aktualisierung folgen.':'')+
-      (info.limited?' Stundenlimit erreicht.':'');
-    const finalMessage=message.textContent;
-    await refresh(false);
-    if(new URL(location.href).searchParams.get('list')===list.id){
-     await renderSelectedList();
-     status('selectedListStatus',finalMessage);
-    }
-   }catch(e){message.textContent=e.message||'Aktualisierung fehlgeschlagen. Bestehende Produkte bleiben erhalten.'}
-   finally{update.disabled=false;remove.disabled=false}
-  };
-  const remove=text('button','Liste löschen');remove.type='button';remove.className='danger';
-  remove.onclick=async()=>{
-   if(!window.confirm('Diese veröffentlichte Wunschliste und ihre Produktvorschauen dauerhaft löschen?'))return;
-   update.disabled=true;remove.disabled=true;message.textContent='Liste wird gelöscht …';
-   try{
-    const {data,error}=await db.from('wishlist_amazon_publications').delete().eq('id',list.id).eq('user_id',sessionUser.id).select('id');
-    if(error)throw error;
-    if(data?.length!==1)throw new Error('Liste nicht gefunden oder keine Berechtigung.');
-    await refresh(true);
-   }catch(e){message.textContent=e.message||'Löschen fehlgeschlagen.'}
-   finally{update.disabled=false;remove.disabled=false}
-  };
-  actions.append(update,remove,message);root.append(actions);
- }
- const items=products.filter(p=>p.publication_id===list.id);
- if(items.length){const ul=document.createElement('ul');for(const p of items){const li=document.createElement('li');li.className='product-preview';const image=safeImageUrl(p.image_url);if(image){const img=document.createElement('img');img.src=image;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';li.append(img)}const details=document.createElement('span');details.append(text('strong',p.title||'Amazon-Produkt'));if(p.description)details.append(text('span',' – '+p.description));li.append(details);if(p.price!==null&&p.price!==undefined&&Number.isFinite(Number(p.price))){const price=text('span',' · '+new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(Number(p.price)));price.className='product-price';details.append(price)}if(p.product_url&&safeProductUrl(p.product_url)){const link=text('a',' Produkt ansehen');link.href=p.product_url;link.rel='noopener noreferrer';link.target='_blank';li.append(link)}
- if(sessionUser?.id===list.user_id&&(p.price==null||!p.description?.trim())){
-  const enrich=text('button','ⓘ Produktangaben ergänzen');enrich.type='button';enrich.className='enrich-product';
-  const feedback=text('span','');feedback.className='enrich-feedback';feedback.setAttribute('role','status');
-  enrich.onclick=async()=>{
-   enrich.disabled=true;feedback.textContent='Amazon-Produktdaten werden einzeln geprüft …';
-   try{
-    const {data,error}=await db.functions.invoke('amazon-wishlist-scrape',{body:{action:'enrich-product',publication_id:list.id,asin:p.asin}});
-    if(error)throw await functionError(error);
-    if(data?.status==='success'){
-     await renderSelectedList();
-     status('selectedListStatus','Produktangaben wurden aktualisiert.');
-    }else feedback.textContent='Amazon hat für dieses Produkt keine weiteren verlässlichen Angaben geliefert.';
-   }catch(e){feedback.textContent=e.message||'Produktdaten konnten nicht ergänzt werden.'}
-   finally{enrich.disabled=false}
-  };
-  li.append(enrich,feedback);
- }
- ul.append(li)}root.append(ul);root.append(text('p','Weitere Daten können bei Bedarf pro Produkt ergänzt werden.'))}
- else root.append(text('p',['pending','processing'].includes(list.scrape_status)?'Produktdaten werden geprüft …':'Produktdaten nicht verfügbar – Amazon-Link verwenden.'));
- return root;
-}
-function safeProductUrl(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&/^(www\.)?amazon\.de$/.test(u.hostname.toLowerCase())}catch{return false}}
-let page=0,searchGeneration=0;const PAGE_SIZE=24;
-async function refresh(reset=true){
- if(reset)page=0;
- const generation=++searchGeneration;
- const term=$('search').value.trim();
- if(term.length>150){searchGeneration++;status('searchStatus','Bitte höchstens 150 Zeichen eingeben.');return}
- status('searchStatus','Suche läuft …');
- const r=await db.rpc('search_public_amazon_wishlists',{search_term:term,page_limit:PAGE_SIZE,page_offset:page*PAGE_SIZE});
- if(generation!==searchGeneration)return;
- if(r.error){status('searchStatus','Suche derzeit nicht verfügbar: '+r.error.message);return}
- const rows=r.data||[];
- publications=rows.map(({first_name,last_name,country,...list})=>list);
- profiles=rows.map(x=>({user_id:x.user_id,first_name:x.first_name,last_name:x.last_name,country:x.country}));
- // Übersicht ohne Produktvorschauen: vollständige Produkte nur in der Detailansicht laden.
- const results=$('results');results.replaceChildren();for(const list of publications)results.append(summaryCard(list));
- status('searchStatus',(rows.length?page*PAGE_SIZE+1:0)+'–'+(page*PAGE_SIZE+rows.length)+' Treffer'+(rows.length===PAGE_SIZE?' (weitere möglich)':'')+'.');
- $('prevPage').disabled=page===0;$('nextPage').disabled=rows.length<PAGE_SIZE;
- await renderTicker();
-}
-async function renderTicker(){
- const r=await db.rpc('search_public_amazon_wishlists',{search_term:'',page_limit:10,page_offset:0});
- if(r.error)return;
- const track=$('tickerTrack');track.replaceChildren();const newest=r.data||[];
- if(!newest.length){const empty=text('span','Noch keine Wunschlisten veröffentlicht.');empty.className='ticker-empty';track.append(empty);return}
- // Duplicate groups create a continuous loop; the second copy is only visual.
- for(let n=0;n<2;n++){
-  const group=document.createElement('div');group.className='ticker-group';
-  if(n===1){group.setAttribute('aria-hidden','true');group.inert=true}
-  for(const list of newest){
-   const name=[list.first_name,list.last_name].filter(Boolean).join(' ')||'Toolya-Mitglied';
-   const a=document.createElement('a');a.href=listUrl(list.id);
-   a.setAttribute('aria-label','Wunschliste '+(list.title||'Amazon-Wunschliste')+' von '+name+' auf Toolya ansehen');
-   const avatar=text('span','♡');avatar.className='ticker-avatar';avatar.setAttribute('aria-hidden','true');
-   const label=text('span',name+' · '+(list.title||'Amazon-Wunschliste'));label.className='ticker-label';
-   const arrow=text('span','↗');arrow.className='ticker-arrow';arrow.setAttribute('aria-hidden','true');
-   a.append(avatar,label,arrow);group.append(a);
-  }
-  track.append(group);
- }
-}
-async function loadProfile(){
- const {data,error}=await db.auth.getUser();const user=!error&&!data?.user?.is_anonymous?data?.user:null;sessionUser=user;
- $('profileForm').hidden=!user;$('auth').hidden=!!user;$('logoutPublic').hidden=!user;status('profileStatus',user?'Angemeldet als '+user.email:'Bitte zuerst anmelden.');
- if(!user){profile=null;await refresh();return}
- const r=await db.from('wishlist_profiles').select('user_id,handle,display_name,first_name,last_name,country').eq('user_id',user.id).maybeSingle();
- if(r.error){status('profileStatus',r.error.message);return}
- profile=r.data;await refresh();$('firstName').value=profile?.first_name||'';$('lastName').value=profile?.last_name||'';$('country').value=profile?.country||'';
-}
-function credentials(){const email=$('email').value.trim(),password=$('password').value;if(!email||!password)throw new Error('Bitte E-Mail und Passwort eingeben.');return {email,password};}
-async function authenticate(mode){
- const login=$('login'),signup=$('signup');login.disabled=true;signup.disabled=true;
- try{
-  const values=credentials();
-  const r=mode==='signup'
-   ?await db.auth.signUp({...values,options:{emailRedirectTo:new URL('./index.html',location.href).href}})
-   :await db.auth.signInWithPassword(values);
-  if(r.error)throw r.error;
-  status('profileStatus',mode==='signup'&&!r.data.session?'Registrierung gestartet. Bitte bestätige deine E-Mail-Adresse.':'Erfolgreich angemeldet.');
-  await loadProfile();
- }catch(error){status('profileStatus',error.message||'Anmeldung fehlgeschlagen.')}
- finally{$('password').value='';login.disabled=false;signup.disabled=false}
-}
-$('login').onclick=()=>authenticate('signin');
-$('signup').onclick=()=>authenticate('signup');
-$('logoutPublic').onclick=async()=>{const r=await db.auth.signOut();if(r.error)status('profileStatus',r.error.message);else await loadProfile()};
-$('profileForm').onsubmit=async event=>{
- event.preventDefault();if(!sessionUser)return;
- const first_name=$('firstName').value.trim(),last_name=$('lastName').value.trim(),country=$('country').value.trim()||null;
- if(!first_name||!last_name){status('profileStatus','Vorname und Nachname sind Pflicht.');return}
- if((first_name+' '+last_name).length>80){status('profileStatus','Vorname und Nachname dürfen zusammen höchstens 79 Zeichen haben.');return}
- const writerId=sessionUser.id;
- const payload={user_id:writerId,first_name,last_name,country,display_name:first_name+' '+last_name,handle:profile?.handle||'amazon_'+crypto.randomUUID().slice(0,12)};
- let r;
- try{r=await guardedWishlistWrite(db,writerId,()=>db.from('wishlist_profiles').upsert(payload,{onConflict:'user_id'}));}
- catch(error){status('profileStatus',error.message);return}
- if(r.error){status('profileStatus',r.error.message);return}
- profile={...profile,...payload};status('profileStatus','Profil gespeichert.');await refresh();
-};
-$('publishForm').onsubmit=async event=>{
- event.preventDefault();if(!sessionUser){status('publishStatus','Bitte zuerst anmelden und dein Profil erstellen.');location.hash='#profile';return}
- if(!profile?.first_name?.trim()||!profile?.last_name?.trim()){status('publishStatus','Bitte zuerst Vorname und Nachname im Profil speichern.');location.hash='#profile';return}
- const url=safeAmazonListUrl($('amazonUrl').value);if(!url){status('publishStatus','Bitte einen gültigen öffentlichen Amazon-Wunschlisten-Link verwenden.');return}
- $('publishButton').disabled=true;
- try{
- status('publishStatus','Öffentliche Amazon-Wunschliste wird vollständig geprüft und eingelesen …');
- const {data: scrapeResult,error}=await db.functions.invoke('amazon-wishlist-scrape',{body:{action:'create',amazon_url:url}});
- if(error)throw error;
- if(scrapeResult?.status!=='success')throw new Error(scrapeResult?.error||'Amazon-Wunschliste nicht öffentlich erreichbar oder nicht vollständig lesbar. Es wurde nichts veröffentlicht.');
- status('publishStatus','Wunschliste veröffentlicht – '+scrapeResult.product_count+' Produkte. Fehlende Produktangaben werden automatisch ergänzt …');
- let result;
- try{
-  result=await enrichWishlistAutomatically(scrapeResult.publication_id,value=>status('publishStatus',value));
-  status('publishStatus','Wunschliste veröffentlicht. '+result.checked+' Produkte nachgeprüft, '+result.improved+' ergänzt.'+(result.remaining?' Weitere Angaben können später ergänzt werden.':''));
- }catch(e){status('publishStatus','Wunschliste veröffentlicht. Automatische Ergänzung nicht verfügbar: '+e.message)}
- await refresh();
- }catch(error){status('publishStatus','Veröffentlichung fehlgeschlagen: '+error.message)}finally{$('publishButton').disabled=false}
-};
-let debounce;$('search').addEventListener('input',()=>{clearTimeout(debounce);debounce=setTimeout(()=>refresh(true),250)});
-$('prevPage').onclick=()=>{if(page>0){page--;refresh(false)}};
-$('nextPage').onclick=()=>{page++;refresh(false)};
-window.addEventListener('storage',event=>{if(event.key===favKey){favorites=loadFavorites();renderFavorites()}});
-db.auth.onAuthStateChange(()=>setTimeout(loadProfile,0));
-renderFavorites();
-await loadProfile();await renderSelectedList();
+function renderIdeas(root,p){const products=rankProducts(catalog,p).slice(0,3);root.append(text('h3','Vielleicht interessiert dich …'));if(!products.length){root.append(text('p','Entdecke passende Geschenkideen bei Amazon.','muted'));const cats=text('div','','categories');for(const term of (p.interests?.length?p.interests:['Bücher','Wohnen','Geschenke']).slice(0,3))cats.append(affiliateLink(term+' ↗',amazonSearchUrl(term)));root.append(cats);return}const grid=text('div','','products');for(const product of products){const e=text('article','','product');if(product.image_url&&/^https:\/\/(?:[a-z0-9-]+\.)?(?:media-amazon|images-amazon)\.com\//i.test(product.image_url)){const img=document.createElement('img');img.src=product.image_url;img.alt=product.title;img.loading='lazy';img.referrerPolicy='no-referrer';e.append(img)}e.append(text('h3',product.title),affiliateLink('Bei Amazon ansehen ↗','https://www.amazon.de/dp/'+product.asin+'?tag=duhrrom-21'));grid.append(e)}root.append(grid)}
+async function search(){const g=++generation;status('searchStatus','Profile werden gesucht …');const r=await db.rpc('search_wishlist_profiles',{search_term:$('search').value.trim(),country_filter:$('countryFilter').value,occasion_filter:$('occasionFilter').value,interest_filter:$('interestFilter').value,page_offset:page*24});if(g!==generation)return;if(r.error){$('results').replaceChildren();status('searchStatus','Die Profile konnten gerade nicht geladen werden. Bitte erneut versuchen.');return}const rows=r.data||[];$('results').replaceChildren(...rows.slice(0,24).map(p=>card(p)));status('searchStatus',rows.length?Math.min(rows.length,24)+' Profile auf dieser Seite.':'Keine passenden Profile gefunden. Probiere andere Suchbegriffe oder Filter.');$('prevPage').disabled=page===0;$('nextPage').disabled=rows.length<=24}
+async function filters(){const r=await db.rpc('wishlist_profile_filters');if(r.error)return;for(const [id,prop]of[['countryFilter','countries'],['occasionFilter','occasions'],['interestFilter','interests']]){const s=$(id),value=s.value;s.replaceChildren(s.options[0]);for(const v of r.data?.[prop]||[]){const o=text('option',v);o.value=v;s.append(o)}s.value=value}}
+async function detail(){const params=new URL(location.href).searchParams;let id=params.get('profile');if(!id&&params.get('list')&&uuid.test(params.get('list'))){const legacy=await db.from('wishlist_amazon_publications').select('user_id').eq('id',params.get('list')).maybeSingle();id=legacy.data?.user_id}if(!id&&!params.has('list'))return;$('selectedProfile').hidden=false;if(!uuid.test(id||'')){status('detailStatus','Dieses Wunschprofil ist nicht verfügbar.');return}const r=await db.from('wishlist_public_profiles').select('*').eq('user_id',id).maybeSingle();if(r.error||!r.data){status('detailStatus','Dieses Wunschprofil ist nicht mehr verfügbar.');return}document.title=r.data.display_name+' – öffentliche Amazon-Wunschlisten | Toolya';document.querySelector('meta[name="description"]').content='Entdecke die öffentlichen Amazon-Wunschlisten von '+r.data.display_name+'.';document.querySelector('link[rel="canonical"]').href=new URL('?profile='+id,location.href).href;$('profileDetail').replaceChildren(card(r.data,true));status('detailStatus','')}
+function listField(value={}){const fields=$('listFields');if(fields.children.length>=5)return;const index=fields.children.length,fs=document.createElement('fieldset');fs.append(text('legend','Wunschliste '+(index+1)));for(const [name,label,type,max]of[['name','Name der Wunschliste *','text',100],['url','Amazon-Wunschlisten-Link *','url',2048],['occasion','Anlass (freiwillig)','text',80]]){const l=text('label',label),i=document.createElement('input');i.type=type;i.name=name;i.required=name!=='occasion';i.maxLength=max;i.value=value[name]||'';if(name==='url'&&index===0)i.id='amazonUrl';if(name==='occasion'){i.placeholder='Geburtstag, Hochzeit, Baby …';}l.append(i);fs.append(l)}const remove=text('button','Diese Liste entfernen','secondary');remove.type='button';remove.onclick=()=>{if(fields.children.length===1){status('profileStatus','Bitte mindestens eine Wunschliste eintragen.');return}fs.remove();$('addList').disabled=false};fs.append(remove);fields.append(fs);$('addList').disabled=fields.children.length>=5}
+function payload(){if(!$('profileForm').reportValidity())return null;const lists=[...$('listFields').children].map(fs=>({name:fs.querySelector('[name=name]').value.trim(),url:amazonListUrl(fs.querySelector('[name=url]').value),occasion:fs.querySelector('[name=occasion]').value.trim()}));if(lists.some(l=>!l.url||!l.name))throw new Error('Bitte gültige Amazon-Wunschlisten-Links und Listennamen eingeben.');return {display_name:$('displayName').value.trim(),country:$('country').value.trim(),city:$('city').value.trim(),bio:$('bio').value.trim(),interests:splitInterests($('interests').value),lists}}
+async function loadProfile(){const g=++authGeneration;const r=await db.auth.getUser();if(g!==authGeneration)return;user=!r.error&&!r.data?.user?.is_anonymous?r.data?.user:null;$('auth').hidden=!!user;$('profileForm').hidden=!user;$('logoutPublic').hidden=!user;own=null;$('listFields').replaceChildren();if(!user){listField();status('profileStatus','');return}const result=await db.from('wishlist_public_profiles').select('*').eq('user_id',user.id).maybeSingle();if(g!==authGeneration)return;if(result.error){status('profileStatus','Dein Profil konnte nicht geladen werden. Bitte lade die Seite erneut.');$('profileForm').hidden=true;return}own=result.data;for(const [id,prop]of[['displayName','display_name'],['country','country'],['city','city'],['bio','bio']])$(id).value=own?.[prop]||'';$('interests').value=own?.interests?.join(', ')||'';for(const l of own?.lists||[{}])listField(l);$('deleteProfile').hidden=!own;status('profileStatus',own?'Dein gespeichertes Profil ist öffentlich sichtbar.':'Dein Profil wird beim Speichern öffentlich sichtbar.')}
+$('profileForm').onsubmit=async e=>{e.preventDefault();if(!user)return;const b=$('saveProfile');b.disabled=true;try{const p=payload();if(!p)return;const writer=user.id;const r=await guardedWishlistWrite(db,writer,()=>db.from('wishlist_public_profiles').upsert({user_id:writer,...p},{onConflict:'user_id'}).select('user_id').single());if(r.error)throw r.error;own=p;$('deleteProfile').hidden=false;status('profileStatus','Gespeichert. Dein Wunschprofil ist jetzt öffentlich sichtbar.');await filters();await search();await detail()}catch(e){status('profileStatus',e.message||'Speichern fehlgeschlagen.')}finally{b.disabled=false}};
+$('deleteProfile').onclick=async()=>{if(!user||!confirm('Dein öffentliches Wunschprofil mit allen verlinkten Listen löschen? Die Original-Listen bei Amazon bleiben erhalten.'))return;const b=$('deleteProfile');b.disabled=true;try{const writer=user.id;const r=await guardedWishlistWrite(db,writer,()=>db.from('wishlist_public_profiles').delete().eq('user_id',writer).select('user_id'));if(r.error||r.data?.length!==1)throw new Error('Das Profil konnte nicht gelöscht werden.');await loadProfile();status('profileStatus','Dein öffentliches Profil wurde gelöscht.');$('profileDetail').replaceChildren();await filters();await search();await detail()}catch(e){status('profileStatus',e.message)}finally{b.disabled=false}};
+async function authenticate(signup){$('login').disabled=$('signup').disabled=true;try{const email=$('email').value.trim(),password=$('password').value;if(!email||!password)throw new Error('Bitte E-Mail und Passwort eingeben.');const r=signup?await db.auth.signUp({email,password,options:{emailRedirectTo:new URL('./public.html#profile',location.href).href}}):await db.auth.signInWithPassword({email,password});if(r.error)throw r.error;await loadProfile();if(signup&&!r.data.session)status('profileStatus','Bitte bestätige deine E-Mail-Adresse, bevor du dein Profil erstellst.')}catch(e){status('profileStatus',e.message)}finally{$('password').value='';$('login').disabled=$('signup').disabled=false}}
+$('login').onclick=()=>authenticate(false);$('signup').onclick=()=>authenticate(true);$('logoutPublic').onclick=async()=>{const r=await db.auth.signOut();if(r.error)status('profileStatus','Abmelden fehlgeschlagen.');else await loadProfile()};$('addList').onclick=()=>listField();$('previewProfile').onclick=()=>{try{const p=payload();if(!p)return;$('previewContent').replaceChildren(card(p,true,true));$('previewDialog').showModal()}catch(e){status('profileStatus',e.message)}};$('closePreview').onclick=()=>$('previewDialog').close();
+let debounce;$('search').oninput=()=>{clearTimeout(debounce);debounce=setTimeout(()=>{page=0;search()},250)};for(const id of['countryFilter','occasionFilter','interestFilter'])$(id).onchange=()=>{page=0;search()};$('resetFilters').onclick=()=>{$('search').value='';for(const id of['countryFilter','occasionFilter','interestFilter'])$(id).value='';page=0;search()};$('prevPage').onclick=()=>{page=Math.max(0,page-1);search()};$('nextPage').onclick=()=>{page++;search()};
+amazonSearch($('mainAmazonSearch'),'Bei Amazon nach Geschenkideen suchen');for(const [icon,name,term]of[['📚','Bücher','Geschenke Bücherfans'],['🌻','Garten','Gartenzubehör'],['🍼','Baby','Babygeschenke'],['💍','Hochzeit','Hochzeitsgeschenke']]){const a=text('a','','category');a.append(text('span',icon),document.createTextNode(name+' ↗'));a.href=amazonSearchUrl(term);a.target='_blank';a.rel='noopener noreferrer sponsored';$('categories').append(a)}
+try{const r=await fetch('./public-products.json');if(r.ok)catalog=await r.json()}catch{}
+renderFavorites();db.auth.onAuthStateChange(event=>{if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event))setTimeout(loadProfile,0)});window.addEventListener('storage',e=>{if(e.key===key){favorites=readFavorites();renderFavorites()}});await Promise.all([loadProfile(),filters(),search(),detail()]);
