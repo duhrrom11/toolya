@@ -10,7 +10,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  try{browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
   const context=await browser.newContext({reducedMotion:'reduce'});
   await context.route('**/*',route=>{const u=new URL(route.request().url());return u.origin===origin||(u.hostname==='cdn.tailwindcss.com'&&route.request().method()==='GET')?route.continue():route.abort()});
-  const page=await context.newPage();fs.mkdirSync('test-results',{recursive:true});
+  const page=await context.newPage();const galleryErrors=[];page.on('pageerror',e=>{if(new URL(page.url()).pathname==='/mascots.html')galleryErrors.push(e.message)});fs.mkdirSync('test-results',{recursive:true});
   for(const route of ['/index.html','/privacy.html','/legal.html','/mascots.html','/tools/wishes/public.html','/tools/estate/index.html','/tools/estate/heirs.html']){
    for(const width of [320,768,1440]){
     await page.setViewportSize({width,height:900});await page.emulateMedia({colorScheme:route.includes('/estate/')?'dark':'light'});await page.goto(origin+route);
@@ -30,12 +30,15 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
      assert.equal(await page.locator('.ty-info-brand').evaluate(el=>getComputedStyle(el).fontFamily),brand.font,'header/footer brand match');
      for(const a of await page.locator('.ty-info-header nav a').all())assert((await a.boundingBox()).height>=44);
      if(route!=='/mascots.html')assert.equal(await page.locator('.toolya-idle').isVisible(),false,'no separate companion card on legal text pages');
+     assert((await page.locator('.toolya-settings-trigger').boundingBox()).height>=44);
      await page.locator('.toolya-settings-trigger').click();assert(await page.locator('#toolya-display-settings').isVisible());
      await page.getByRole('button',{name:'Einstellungen schließen',exact:true}).click();
      if(route==='/mascots.html'){
       assert.equal(await page.locator('#feelings button').count(),16);
       await page.locator('#feelings button').first().click();assert(await page.locator('.tb-message-box').isVisible(),'gallery emotion preview still works');
       await page.locator('#outfit').selectOption('5');assert.equal(await page.locator('#outfit').inputValue(),'5');
+      await page.waitForFunction(()=>document.querySelector('.toolya-buddy')?.dataset.pose==='idle');
+      assert(await page.locator('.toolya-idle').isVisible(),'outfit preview returns to visible companion');assert.deepEqual(galleryErrors,[],'gallery previews have no JavaScript errors');
      }
      await page.locator('#info-main h1').click();await page.screenshot({path:'test-results/info-'+route.slice(1,-5)+'-'+width+'.png'});
     }

@@ -23,3 +23,8 @@ body[data-toolya-info] .feelings button:hover{background:var(--ty-color-soft,#e1
 .ty-info-skip{position:absolute;left:-10000px}
 .ty-info-skip:focus{left:16px;top:8px;z-index:100;background:#fff;color:#102b45;padding:12px}
 @media(max-width:700px){.ty-info-topbar{padding:12px 16px;gap:10px}.ty-info-header nav{order:3;flex-basis:100%;margin:0}.ty-info-topbar>.toolya-settings-trigger{margin-left:auto}.ty-info-header nav a{padding:9px 10px}body[data-toolya-info] main{margin:16px auto}}
+
+.ty-info-controls{display:flex;align-items:center}
+.ty-info-header .toolya-settings-trigger{display:inline-grid;place-items:center;width:44px;min-width:44px;height:44px;padding:8px;border:1px solid #ffffff69;border-radius:12px;background:#ffffff1c;color:#fff;font-size:22px;line-height:1;cursor:pointer}
+.ty-info-header .toolya-settings-trigger:hover{background:#ffffff33}
+body[data-toolya-info] main section h2{text-transform:none;letter-spacing:normal;font-size:1.125rem;font-weight:750;hyphens:auto}

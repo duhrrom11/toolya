@@ -89,7 +89,7 @@ let scheduled=false;const observer=new MutationObserver(()=>{if(scheduled)return
 document.addEventListener('invalid',e=>{if(e.target.validationMessage)notify('form-error',e.target.validationMessage)},true);
 // A small public, data-free way to inspect every approved emotion and outfit.
 export function previewEmotion(emotion){if(!EMOTIONS.includes(emotion))return false;return notify('tip','Toolya zeigt: '+emotion,emotion)}
-export function previewOutfit(role){if(!Number.isInteger(role)||role<0||role>15)return false;for(const r of frames)if(r.img===idleImage)r.role=role;buddy.dismiss();refreshFrames();return true}
+export function previewOutfit(role){if(!Number.isInteger(role)||role<0||role>15)return false;const target=buddy.host.querySelector('.toolya-idle img');for(const r of frames)if(r.img===target)r.role=role;buddy.dismiss();refreshFrames();return true}
 
 document.addEventListener('visibilitychange',()=>{buddy.host.toggleAttribute('data-page-hidden',document.hidden)});
 
