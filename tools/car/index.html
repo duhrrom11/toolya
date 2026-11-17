@@ -763,7 +763,9 @@ async function toolyaCloudBoot(tool) {
 
         async function storeEventData(carId, type, date, title, cost, tread, km, litres, consumption, receipt) {
             let data = getData();
-            data.events.push({ id: Date.now(), carId, type, date, title, cost, tread, km, litres, consumption, receipt });
+            const newEventId = Date.now();
+            const connectRequested = Boolean(window.toolyaCarConnectPanel?.selected);
+            data.events.push({ id: newEventId, carId, type, date, title, cost, tread, km, litres, consumption, receipt });
             if (type === 'Tanken' && km) {
                 const car = data.cars.find(c => c.id === carId);
                 if (car) car.km = km.toString();
@@ -778,6 +780,8 @@ async function toolyaCloudBoot(tool) {
             document.getElementById('eventLitres').value = "";
             document.getElementById('eventReceiptInput').value = "";
             renderApp();
+            // Only after the source save succeeded, and only on explicit opt-in.
+            if (connectRequested) await window.toolyaCarConnectPanel?.transferEvent(newEventId);
         }
 
         function openEditModal(id) {
