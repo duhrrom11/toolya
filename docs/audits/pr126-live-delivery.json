@@ -1,0 +1,388 @@
+{
+  "revision": "53882d68fd5ebacebef71be2d943e03d162f153a",
+  "checkedAt": "2026-11-17T23:46:42.300Z",
+  "attempt": 2,
+  "css": {
+    "url": "https://toolya.app/assets/helferlein-b3.css?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+    "expectedSha256": "2b33834a1c42fb2da2862f3042af54942549ebfdf665849615e59837491a196f",
+    "actualSha256": "2b33834a1c42fb2da2862f3042af54942549ebfdf665849615e59837491a196f",
+    "byteIdentical": true
+  },
+  "buddy": {
+    "url": "https://toolya.app/shared/toolya/buddy.mjs?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+    "expectedSha256": "0633021349dcbb58530a38d8f5eed37f4535327b27bae4ccb62b96dfae9c499f",
+    "actualSha256": "0633021349dcbb58530a38d8f5eed37f4535327b27bae4ccb62b96dfae9c499f",
+    "byteIdentical": true
+  },
+  "themeStyles": [
+    {
+      "url": "https://toolya.app/assets/helferlein-b3-autokosten.css?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "145845f2558f51fef5515e9737e264e33e763650ba4c5f4df0fcfb9128c046c5",
+      "actualSha256": "145845f2558f51fef5515e9737e264e33e763650ba4c5f4df0fcfb9128c046c5",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/assets/helferlein-b3-haushaltsbuch.css?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "11dc45131fab556c22d2a81af8ee9fae0f9dcd56d3add8e84c22b58df79f5e73",
+      "actualSha256": "11dc45131fab556c22d2a81af8ee9fae0f9dcd56d3add8e84c22b58df79f5e73",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/assets/helferlein-b3-umzugskisten.css?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "07a1c11f1c6ae952ba43fa59e94d75353adba13a781e2b464934254b7407f113",
+      "actualSha256": "07a1c11f1c6ae952ba43fa59e94d75353adba13a781e2b464934254b7407f113",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/assets/helferlein-b3-verleih.css?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "53ac1d2c9e78e23729e529c46f0d6bbdc28ed9957d88f4badbba902375557701",
+      "actualSha256": "53ac1d2c9e78e23729e529c46f0d6bbdc28ed9957d88f4badbba902375557701",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/assets/helferlein-b3-zaehler.css?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "e95339e90f93e7f67d58db5eda564333cdbb79e0c5d5d2e5dbd1e84c1a8a251b",
+      "actualSha256": "e95339e90f93e7f67d58db5eda564333cdbb79e0c5d5d2e5dbd1e84c1a8a251b",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/assets/helferlein-b3-pflanzen.css?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "85b3513a10eeee27ca9fd63634f73995432b5f7be189371353eda96f22d1f994",
+      "actualSha256": "85b3513a10eeee27ca9fd63634f73995432b5f7be189371353eda96f22d1f994",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/assets/helferlein-b3-parkplatz.css?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "3762cfa361d03bc65dc5a342dba632f5a136cd6dc29a4b6ddc67f4c4e4c23036",
+      "actualSha256": "3762cfa361d03bc65dc5a342dba632f5a136cd6dc29a4b6ddc67f4c4e4c23036",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/assets/helferlein-b3-haustiere.css?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "33bfc944da3f4777509d44ce3cd17b090d4de734aa062e0f61a149560679969f",
+      "actualSha256": "33bfc944da3f4777509d44ce3cd17b090d4de734aa062e0f61a149560679969f",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/assets/helferlein-b3-wg.css?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "3e06871c9d571f5141386fa0aea3134941d21076590669b542d473b76eaa3634",
+      "actualSha256": "3e06871c9d571f5141386fa0aea3134941d21076590669b542d473b76eaa3634",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/assets/helferlein-b3-backform.css?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "ad587040e0a2bfcdd6083378de208bffe9bda86da7c125b1aca059651d7271c7",
+      "actualSha256": "ad587040e0a2bfcdd6083378de208bffe9bda86da7c125b1aca059651d7271c7",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/assets/helferlein-b3-backform.js?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "71c23ae6b570191eec973a10ca4f8f159c8bdf330254e11c34752754d69a53bf",
+      "actualSha256": "71c23ae6b570191eec973a10ca4f8f159c8bdf330254e11c34752754d69a53bf",
+      "byteIdentical": true
+    }
+  ],
+  "pages": [
+    {
+      "url": "https://toolya.app/tools/car/index.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "sharedStylesheet": true,
+      "byteIdentical": true,
+      "expectedSha256": "4e466ee4da3d7dd2bff3fdc492539709cec1e932f112fc18cd743177da6d7900",
+      "actualSha256": "4e466ee4da3d7dd2bff3fdc492539709cec1e932f112fc18cd743177da6d7900"
+    },
+    {
+      "url": "https://toolya.app/tools/budget/index.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "sharedStylesheet": true,
+      "byteIdentical": true,
+      "expectedSha256": "7aaa923b1e7ff9947ac33633e1073331b9f0816907b221362c9703731463ba4d",
+      "actualSha256": "7aaa923b1e7ff9947ac33633e1073331b9f0816907b221362c9703731463ba4d"
+    },
+    {
+      "url": "https://toolya.app/tools/moving/index.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "sharedStylesheet": true,
+      "byteIdentical": true,
+      "expectedSha256": "d2ea4e4b81d9d4e50068c62ded86e3593ea5d599a834d939eb5dc7c9e8a7321a",
+      "actualSha256": "d2ea4e4b81d9d4e50068c62ded86e3593ea5d599a834d939eb5dc7c9e8a7321a"
+    },
+    {
+      "url": "https://toolya.app/tools/loans/index.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "sharedStylesheet": true,
+      "byteIdentical": true,
+      "expectedSha256": "ac1253b94b09d2982892a11bfb7da267f731fccc016aa81b0a9e4d115f99cef0",
+      "actualSha256": "ac1253b94b09d2982892a11bfb7da267f731fccc016aa81b0a9e4d115f99cef0"
+    },
+    {
+      "url": "https://toolya.app/tools/meters/index.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "sharedStylesheet": true,
+      "byteIdentical": true,
+      "expectedSha256": "5a9b16c0a412dd56c789ed4be928cad550a70c6c734dc750103f47184ee473b6",
+      "actualSha256": "5a9b16c0a412dd56c789ed4be928cad550a70c6c734dc750103f47184ee473b6"
+    },
+    {
+      "url": "https://toolya.app/tools/plants/index.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "sharedStylesheet": true,
+      "byteIdentical": true,
+      "expectedSha256": "18cd3fabd3e9d591da74af93a55b00fd77c6b707d52beaa2ed8fdf95a8a3f777",
+      "actualSha256": "18cd3fabd3e9d591da74af93a55b00fd77c6b707d52beaa2ed8fdf95a8a3f777"
+    },
+    {
+      "url": "https://toolya.app/tools/parking/index.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "sharedStylesheet": true,
+      "byteIdentical": true,
+      "expectedSha256": "3a0e920829b5774a426170e22649b41ba4095a9e71ca4cc994437f5139b6784e",
+      "actualSha256": "3a0e920829b5774a426170e22649b41ba4095a9e71ca4cc994437f5139b6784e"
+    },
+    {
+      "url": "https://toolya.app/tools/pet-health/index.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "sharedStylesheet": true,
+      "byteIdentical": true,
+      "expectedSha256": "5a6aa2259329d035c17a5497b38ac564a580449ac7a1445240fd1e7c8ea8cc41",
+      "actualSha256": "5a6aa2259329d035c17a5497b38ac564a580449ac7a1445240fd1e7c8ea8cc41"
+    },
+    {
+      "url": "https://toolya.app/tools/housemates/index.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "sharedStylesheet": true,
+      "byteIdentical": true,
+      "expectedSha256": "b5bd552e701ebf4f61bc457a83a36ed683c5eb7a95a3fb67caad17f5273be7d0",
+      "actualSha256": "b5bd552e701ebf4f61bc457a83a36ed683c5eb7a95a3fb67caad17f5273be7d0"
+    },
+    {
+      "url": "https://toolya.app/tools/baking/index.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "sharedStylesheet": true,
+      "byteIdentical": true,
+      "expectedSha256": "030bf0c9ab42f3e852f28013540a889de1e302946a34cacb47d01e49950e8b7d",
+      "actualSha256": "030bf0c9ab42f3e852f28013540a889de1e302946a34cacb47d01e49950e8b7d"
+    }
+  ],
+  "wishlist": [
+    {
+      "url": "https://toolya.app/tools/wishes/public.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "8c38449f707426cbbfb88ca7410790efb395519b014462dcba6afd688e5ad9f3",
+      "actualSha256": "8c38449f707426cbbfb88ca7410790efb395519b014462dcba6afd688e5ad9f3",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/public-profiles.css?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "89a85c0a1e64882076b17ea14d5573c2da8939973ad2c70f7a34cd1e0f82ee2a",
+      "actualSha256": "89a85c0a1e64882076b17ea14d5573c2da8939973ad2c70f7a34cd1e0f82ee2a",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/public-amazon.mjs?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "43f18993134d3400ab17abc923a3bd24ddf5cf11463aef0ff5197ab785093cdf",
+      "actualSha256": "43f18993134d3400ab17abc923a3bd24ddf5cf11463aef0ff5197ab785093cdf",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/public-profile-model.mjs?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "6981930e69d41f699730f035900e306ab46e6c42059efd1fb2783839835ac6fa",
+      "actualSha256": "6981930e69d41f699730f035900e306ab46e6c42059efd1fb2783839835ac6fa",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/public-products.json?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "expectedSha256": "f4404c1780c841b4ee3cd2a2a389b2a6c3cac111e5c0ea67cf64c068c99c6c72",
+      "actualSha256": "f4404c1780c841b4ee3cd2a2a389b2a6c3cac111e5c0ea67cf64c068c99c6c72",
+      "byteIdentical": true
+    }
+  ],
+  "estate": [
+    {
+      "url": "https://toolya.app/assets/estate-app.css?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "9a3b5cd897b822960e1ee36a6bb00f0a3e151cf993ffac7185151a2fffa35240",
+      "actualSha256": "9a3b5cd897b822960e1ee36a6bb00f0a3e151cf993ffac7185151a2fffa35240",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/estate/index.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "b93894354d366ddb0be79140bf806319475921a90f9ce7edfa213f13a010ce03",
+      "actualSha256": "b93894354d366ddb0be79140bf806319475921a90f9ce7edfa213f13a010ce03",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/estate/heirs.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "fd2897151fb68c777ba1f0a1d9790d22863118bd89a4f908bd16646972b30c3c",
+      "actualSha256": "fd2897151fb68c777ba1f0a1d9790d22863118bd89a4f908bd16646972b30c3c",
+      "byteIdentical": true
+    }
+  ],
+  "info": [
+    {
+      "url": "https://toolya.app/legal.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "7841c508c37c1c740a5786c155d291638dfce2d217a9ee17c5ae63d22c37904a",
+      "actualSha256": "7841c508c37c1c740a5786c155d291638dfce2d217a9ee17c5ae63d22c37904a",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/privacy.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "3bdf7f9ec5f6b41f6d53b21774d98f5e52e79662fb9051c96cae0612436ab7bc",
+      "actualSha256": "3bdf7f9ec5f6b41f6d53b21774d98f5e52e79662fb9051c96cae0612436ab7bc",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/mascots.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "c853dbeea2ef81e50063a83a8e58819aeceb71a0bc2a5711377757212f1ed39d",
+      "actualSha256": "c853dbeea2ef81e50063a83a8e58819aeceb71a0bc2a5711377757212f1ed39d",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/shared/toolya/info-pages.css?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "759ba53ac713810750c31f6a87957c4e925706506b637de657082a68d9589855",
+      "actualSha256": "759ba53ac713810750c31f6a87957c4e925706506b637de657082a68d9589855",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/shared/toolya/platform.mjs?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "34d0360b39862b3a632b2ed985aa3809c26ff3a37342ef254cb509d60357c63d",
+      "actualSha256": "34d0360b39862b3a632b2ed985aa3809c26ff3a37342ef254cb509d60357c63d",
+      "byteIdentical": true
+    }
+  ],
+  "legacy": [
+    {
+      "url": "https://toolya.app/tools/wishes/assistant.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "1664afd3e6001e4eb4d63f57da114c79cf6d07ae0b928c592d807f166651ab54",
+      "actualSha256": "1664afd3e6001e4eb4d63f57da114c79cf6d07ae0b928c592d807f166651ab54",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/bookmarks.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "29ec1629fcd440a92c6491f2be97a55ce43dcc762a53359ec979fd8f80ad1b38",
+      "actualSha256": "29ec1629fcd440a92c6491f2be97a55ce43dcc762a53359ec979fd8f80ad1b38",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/cockpit.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "315910ca61ab0877c91c4ee1c263ae82da548c87e25458390b3db1ff1d41dace",
+      "actualSha256": "315910ca61ab0877c91c4ee1c263ae82da548c87e25458390b3db1ff1d41dace",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/collection.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "94f7c7cba95fb0fb8eae90ea0dea872e7be0fdc1abc6b3a2993d19307dfb8103",
+      "actualSha256": "94f7c7cba95fb0fb8eae90ea0dea872e7be0fdc1abc6b3a2993d19307dfb8103",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/dashboard.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "93494f6441a694867dd65bd7890f113782e025a9ba4d7818c0e21ea3f036b7ae",
+      "actualSha256": "93494f6441a694867dd65bd7890f113782e025a9ba4d7818c0e21ea3f036b7ae",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/discover.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "b817b58d53e3702acc97faa9ddec074419c8f56c94b02f06865c983d5e489b07",
+      "actualSha256": "b817b58d53e3702acc97faa9ddec074419c8f56c94b02f06865c983d5e489b07",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/feed.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "d855e49a801a1a753c2d0c9180ae7e3e4832afe684e32afac00dcf6e26137dce",
+      "actualSha256": "d855e49a801a1a753c2d0c9180ae7e3e4832afe684e32afac00dcf6e26137dce",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/gift-analytics.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "0be588bff2a171f6f47308e232656a48583aa0d3defeddb3a0b673285b2c26bb",
+      "actualSha256": "0be588bff2a171f6f47308e232656a48583aa0d3defeddb3a0b673285b2c26bb",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/gift-tasks.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "e9f8628e13f95d1185a83a5f1e10dbce6493763862869f80c6af1de3575aa526",
+      "actualSha256": "e9f8628e13f95d1185a83a5f1e10dbce6493763862869f80c6af1de3575aa526",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/notifications.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "dc631dc447aa3380baf11791c4aa29de8a877be01c52d4bf40516d8660c9cd56",
+      "actualSha256": "dc631dc447aa3380baf11791c4aa29de8a877be01c52d4bf40516d8660c9cd56",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/occasions.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "1f17a87da7529460efe6e6a74a982f563aa2cb8cb22209b47fc6cb51a26fe433",
+      "actualSha256": "1f17a87da7529460efe6e6a74a982f563aa2cb8cb22209b47fc6cb51a26fe433",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/planner.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "e2d2ef8c07ad92ef49ad994c0d82980cd93b9adddc7bf73101a6b02393a1f3e2",
+      "actualSha256": "e2d2ef8c07ad92ef49ad994c0d82980cd93b9adddc7bf73101a6b02393a1f3e2",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/profile.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "79944bf4463adb094f1d82501f15da7fc05734adc782fa4284678f3389616065",
+      "actualSha256": "79944bf4463adb094f1d82501f15da7fc05734adc782fa4284678f3389616065",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/report.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "363599a96d88bc03155f8e0d06a03622deaeef3e3659f55ea55108a293006142",
+      "actualSha256": "363599a96d88bc03155f8e0d06a03622deaeef3e3659f55ea55108a293006142",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/reservations.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "b91c7a77b430c6cc8a1efad1763f506500f70c775cee8cc8b8ce2788d6989e8d",
+      "actualSha256": "b91c7a77b430c6cc8a1efad1763f506500f70c775cee8cc8b8ce2788d6989e8d",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/social.html?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "c2bee191765ee73e90493bac0dc6fd55da558a8f1cbb2e6df3228ba96c96ccc6",
+      "actualSha256": "c2bee191765ee73e90493bac0dc6fd55da558a8f1cbb2e6df3228ba96c96ccc6",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/legacy-design.css?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "d2fd9da03453aded6be4a070babe5c5ccfc4190b3daf6ae07117912ce6c3ece0",
+      "actualSha256": "d2fd9da03453aded6be4a070babe5c5ccfc4190b3daf6ae07117912ce6c3ece0",
+      "byteIdentical": true
+    },
+    {
+      "url": "https://toolya.app/tools/wishes/discover.mjs?release=53882d68fd5ebacebef71be2d943e03d162f153a",
+      "status": 200,
+      "expectedSha256": "3bf7f6ebd7c919a2b002c8477528c3983ac5dd7de2593810967f59de2b5a8e77",
+      "actualSha256": "3bf7f6ebd7c919a2b002c8477528c3983ac5dd7de2593810967f59de2b5a8e77",
+      "byteIdentical": true
+    }
+  ],
+  "scope": "Public static delivery only; authenticated production UI and private flows are not verified by this check."
+}
