@@ -1046,6 +1046,10 @@ for(const kind of ['parking','pet-health']){
     const affiliate=await page.locator('#medList a').first().getAttribute('href');
     expect(new URL(affiliate).searchParams.get('tag')).toBe('duhrrom-21');
     await expect(page.locator('#medList')).toContainText('Fast leer!');
+    if(width===768)expect(await page.locator('.b3-pet-med-card').first().evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThan(300);
+    for(const card of await page.locator('.b3-pet-med-card').all()){
+     expect(await card.locator('button').evaluate(e=>{const a=e.getBoundingClientRect(),b=e.parentElement.getBoundingClientRect();return a.top-b.top<15&&b.right-a.right<15})).toBe(true);
+    }
     await capture('medication-'+width);
     await page.locator('#b3-records').evaluate(e=>e.scrollIntoView({block:'start'}));await capture('profiles-'+width);
     await page.locator('#eventsList').evaluate(e=>e.closest('div.bg-white').scrollIntoView({block:'start'}));await capture('events-'+width);
@@ -1068,6 +1072,14 @@ for(const kind of ['parking','pet-health']){
    await page.locator('#settingsBtn').click();
    await page.locator('#helpToggleBtn').click();await expect(page.locator('#helpBox')).toBeVisible();
    expect(await fits(page.locator('#settingsModal>div'))).toBe(true);
+   for(const title of await page.locator('#helpBox .text-white,#helpBox .text-teal-200').all()){
+    await expect(title).toHaveCSS('color','rgb(16, 43, 69)');
+    expect(await title.evaluate(e=>{
+     const c=getComputedStyle(e),bg=getComputedStyle(e.closest('.grid')?e.closest('.grid').firstElementChild:e.closest('#helpBox')).backgroundColor;
+     const lum=v=>v.match(/[\\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
+     const a=lum(c.color),b=lum(bg);return(Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+    })).toBeGreaterThanOrEqual(4.5);
+   }
    await page.locator('#helpBox').evaluate(e=>e.scrollIntoView({block:'start'}));await capture('help-320');
    await page.evaluate(()=>closeSettings());
   }

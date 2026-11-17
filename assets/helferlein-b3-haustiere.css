@@ -60,3 +60,14 @@ body.b3.b3-haustiere .b3-pet-help button.b3-action.b3-outline{background:var(--b
 @media(min-width:768px){body.b3.b3-haustiere .b3-pet-med-fields{grid-template-columns:minmax(0,1fr) minmax(120px,.45fr) auto}}
 @media(min-width:1280px){body.b3.b3-haustiere :is(.b3-pet-create-grid,.b3-pet-records-grid){grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){body.b3.b3-haustiere .b3-pet-records-grid>div>div:first-child{align-items:stretch}}
+
+/* Visual review fixes: steady medication actions and legible light-mode help. */
+body.b3.b3-haustiere #medList{grid-template-columns:minmax(0,1fr)}
+body.b3.b3-haustiere .b3-pet-med-card{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:start;gap:.75rem}
+body.b3.b3-haustiere .b3-pet-help #helpBox{background:var(--b3-control-soft);color:var(--b3-ink);border-color:var(--b3-line)}
+body.b3.b3-haustiere .b3-pet-help #helpBox :is(.text-white,.text-teal-200){color:var(--b3-ink)}
+body.b3.b3-haustiere .b3-pet-help #helpBox .grid>div{background:var(--b3-surface);color:var(--b3-ink);border-color:var(--b3-line)}
+body.b3.b3-haustiere .b3-pet-help #helpBox>div:first-child{flex-wrap:wrap;align-items:flex-start;gap:.75rem}
+body.b3.b3-haustiere .b3-pet-help #helpBox>div:first-child>span{flex:1 1 140px;min-width:0}
+@media(min-width:768px){body.b3.b3-haustiere #medList{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1280px){body.b3.b3-haustiere #medList{grid-template-columns:repeat(3,minmax(0,1fr))}}
