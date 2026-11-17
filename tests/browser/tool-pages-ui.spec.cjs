@@ -501,7 +501,7 @@ async function isolatedWishlist(page,authenticated,profiles=[]){
      onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}},
      async signOut(){m.user=null;return {error:null}}
     },
-    rpc(name){return Promise.resolve({data:name==='search_wishlist_profiles'?${JSON.stringify(profiles)}:[],error:null})},
+    rpc(name){return Promise.resolve({data:['search_wishlist_profiles','search_wishlist_directory'].includes(name)?${JSON.stringify(profiles)}:(name==='wishlist_directory_filters'?{countries:[],occasions:[],interests:[]}:[]),error:null})},
     from(table){return {
      select(){return this},eq(){return this},order(){return this},limit(){return this},
      async maybeSingle(){return {data:null,error:null}},

@@ -1,25 +1,31 @@
-# Toolya Connect – Phase B (development only)
+# Toolya Connect – integrierte Ausgabe (Stand 2026-11-17)
 
-Branch: `feature/toolya-connect-phase-b`. No production database changes or deployment.
+## Produktentscheidung
+Toolya Connect erhält **keinen eigenen Bereich**. Verbindungen erscheinen nur dort, wo
+Nutzerinnen und Nutzer einen passenden Datensatz erstellen oder eine Ausgabe auslösen:
+als optionale, standardmäßig ausgeschaltete Auswahl direkt an der Speichern-/Ausgabe-Aktion.
 
-## Implemented
-- Explicit handoff of positive car expenses to the household budget, in the same browser.
-- Both tools must have verified same-user cloud ownership and enabled cloud backup.
-- The target uses its existing `saveData` function and cloud bridge; no direct writes to `public.user_data`.
-- Source revision check, persistent source reference (`toolyaConnectSource`), and duplicate recognition.
-- Import status `local` means **only locally persisted**; it does not imply cloud confirmation.
+Das Muster gilt für alle künftigen fachlich passenden Werkzeuge und Bereiche.
+Es werden **keine** funktionslosen Verbindungsoptionen für noch nicht unterstützte Ziele angezeigt.
 
-## Known limitations – do not deploy
-1. Transfer queue is browser-local and not transactionally synchronized across devices/tabs.
-2. No server-side transfer journal, RLS-protected rules, or atomic idempotency enforcement.
-3. Import does not verify a confirmed cloud revision. Errors after local save may require reconciliation.
-4. No automatic update/delete propagation. Attachments are intentionally excluded.
-5. No end-to-end runtime, concurrency, offline, or browser integration tests have been run.
-6. Payment method defaults to Bargeld and must be reviewed by the user.
-7. The tool UI uses native prompt/confirm as a temporary development interaction.
+## Erste produktive Verbindung: Autokosten → Haushaltsbuch
+- Beim Anlegen eines Autokosten-Eintrags steht direkt vor „Eintrag speichern“
+  „Diese Ausgabe auch ins Haushaltsbuch übernehmen“.
+- Der Autokosten-Eintrag wird zuerst regulär in Toolya Cloud gespeichert.
+- Nur bei ausdrücklicher Auswahl folgt eine Bestätigung und die serverseitige Übertragung.
+- Die RPC `toolya_connect_car_to_budget` prüft Identität, Quell-/Zielrevision,
+  positive Ausgabe und Duplikate. Der Zielstand wird atomar aktualisiert.
+- Kein Belegtransfer. Die Zahlungsart muss im Haushaltsbuch geprüft werden.
+- Bei fehlgeschlagenem Transfer bleibt der erfolgreich gespeicherte Autokosten-Eintrag
+  bestehen; die Oberfläche meldet ausdrücklich, dass keine Übertragung bestätigt ist.
 
-## Required before release
-- Create migration using the Supabase CLI `supabase migration new ...` (not applied to production), then define RLS-protected connect rules/transfers with unique (user,source,action) identity.
-- Introduce server-authoritative transfer states and target-side idempotent reconciliation that respects the existing cloud revision/pending queue.
-- Validate cross-tab/account switching, stale source, interrupted local save, duplicate import, and remote sync conflicts in an isolated test environment.
-- Review the generated migration and run security advisors before any release.
+## Weitere Verbindungen
+Erst nach Definition einer sicheren Datenzuordnung, Consent, Idempotenz und
+serverseitiger atomarer Speicherung je Zielwerkzeug sichtbar machen. Keine
+allgemeine Connect-Seite, keine stillen Hintergrundübertragungen.
+
+## Qualität und Betrieb
+Die Cloud-RPC und Migration existieren bereits im Repository. Tests verwenden
+isolierte Daten und dürfen keine produktiven Datensätze anlegen.
+GitHub-Actions-Status und GitHub-Pages-Deployment sind für jeden Release separat
+zu prüfen.
