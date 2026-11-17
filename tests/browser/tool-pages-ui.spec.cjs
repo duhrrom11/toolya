@@ -1292,6 +1292,7 @@ test('wishlist: public cards and five-list form remain usable at three widths',a
   expect(await dialog.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
   expect(await dialog.evaluate(e=>e.getBoundingClientRect().height<=innerHeight*.91)).toBe(true);
   await dialog.evaluate(e=>e.scrollTop=0);await page.screenshot({path:testInfo.outputPath('wishlist-preview-'+width+'.png')});
+  await dialog.evaluate(e=>e.scrollTop=e.scrollHeight);await page.screenshot({path:testInfo.outputPath('wishlist-preview-bottom-'+width+'.png')});
  }
  await page.locator('#closePreview').click();await expect(page.locator('#previewDialog')).toBeHidden();
  await page.locator('#amazonUrl').fill('https://example.invalid/not-amazon');await page.locator('#previewProfile').click();
@@ -1461,9 +1462,10 @@ test('wishlist: public detail and search states stay usable without writes',asyn
  await buttons.first().click();for(const b of await buttons.all()){await expect(b).toHaveAttribute('aria-pressed','true');await expect(b).toHaveAttribute('aria-label','Profil nicht mehr merken: '+profile.display_name);}
  await buttons.last().click();for(const b of await buttons.all()){await expect(b).toHaveAttribute('aria-pressed','false');await expect(b).toHaveAttribute('aria-label','Profil merken: '+profile.display_name);}
  for(const width of [320,768,1440]){
-  await page.setViewportSize({width,height:1000});const panel=page.locator('#selectedProfile');await panel.scrollIntoViewIfNeeded();
+  await page.setViewportSize({width,height:1000});const panel=page.locator('#selectedProfile');await panel.evaluate(e=>e.scrollIntoView({block:'start'}));
   expect(await panel.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('wishlist-detail-'+width+'.png')});
+  await panel.evaluate(e=>e.scrollIntoView({block:'end'}));await page.screenshot({path:testInfo.outputPath('wishlist-detail-bottom-'+width+'.png')});
  }
  for(const [state,message]of [['empty','Keine passenden Profile'],['searchError','gerade nicht geladen'],['recovery','1 Profile auf dieser Seite']]){
   await page.evaluate(state=>{window.__wishlistMock.empty=state==='empty';window.__wishlistMock.searchError=state==='searchError'},state);await page.locator('#resetFilters').click();await expect(page.locator('#searchStatus')).toContainText(message);
