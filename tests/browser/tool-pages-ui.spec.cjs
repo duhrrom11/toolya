@@ -505,7 +505,7 @@ async function isolatedWishlist(page,authenticated){
     from(table){return {
      select(){return this},eq(){return this},order(){return this},limit(){return this},
      async maybeSingle(){return {data:null,error:null}},
-     upsert(payload){m.writes.push({table,payload});return Promise.resolve({error:null})},
+     upsert(payload){m.writes.push({table,payload});return {select(){return this},async single(){return {data:{user_id:'owner'},error:null}}}},
      insert(payload){m.writes.push({table,payload});return {select(){return this},async single(){return {data:{id:'new-id'},error:null}}}}
     }},
     functions:{async invoke(){return {data:{status:'failed'},error:null}}}
@@ -517,17 +517,19 @@ async function isolatedWishlist(page,authenticated){
 test('wishlist: public discovery works without authentication and no private writes',async({page})=>{
  await isolatedWishlist(page,false);
  await page.goto(origin+'/tools/wishes/public.html');
- await expect(page.locator('#profileStatus')).toContainText('Bitte zuerst anmelden');
+ await expect(page.locator('#profileStatus')).toHaveText('');
  expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
 });
 test('wishlist: account switch blocks profile write before network mutation',async({page})=>{
  await isolatedWishlist(page,true);
  await page.goto(origin+'/tools/wishes/public.html');
  await expect(page.locator('#profileForm')).toBeVisible();
- await page.locator('#firstName').fill('Anna');
- await page.locator('#lastName').fill('Muster');
+ await page.locator('#displayName').fill('Anna Muster');
+ await page.locator('#country').fill('Deutschland');
+ await page.locator('#listFields [name=name]').fill('Meine Wünsche');
+ await page.locator('#amazonUrl').fill('https://www.amazon.de/hz/wishlist/ls/ABC123');
  await page.evaluate(()=>{window.__wishlistMock.user={id:'other',email:'other@example.invalid'}});
- await page.locator('#profileForm button').click();
+ await page.locator('#saveProfile').click();
  await expect(page.locator('#profileStatus')).toContainText('Konto gewechselt');
  expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
 });
@@ -535,14 +537,36 @@ test('wishlist: verified profile write uses cloud and no localStorage',async({pa
  await isolatedWishlist(page,true);
  await page.goto(origin+'/tools/wishes/public.html');
  await expect(page.locator('#profileForm')).toBeVisible();
- await page.locator('#firstName').fill('Anna');
- await page.locator('#lastName').fill('Muster');
- await page.locator('#profileForm button').click();
- await expect(page.locator('#profileStatus')).toContainText('Profil gespeichert');
+ await page.locator('#displayName').fill('Anna Muster');
+ await page.locator('#country').fill('Deutschland');
+ await page.locator('#listFields [name=name]').fill('Meine Wünsche');
+ await page.locator('#amazonUrl').fill('https://www.amazon.de/hz/wishlist/ls/ABC123');
+ await page.locator('#saveProfile').click();
+ await expect(page.locator('#profileStatus')).toContainText('Gespeichert');
  const result=await page.evaluate(()=>({writes:window.__wishlistMock.writes,keys:Object.keys(localStorage)}));
  expect(result.writes).toHaveLength(1);
- expect(result.writes[0].table).toBe('wishlist_profiles');
+ expect(result.writes[0].table).toBe('wishlist_public_profiles');
  expect(result.keys).toEqual([]);
+});
+
+
+test('wishlist: public preview, five named lists and affiliate attribution',async({page})=>{
+ await isolatedWishlist(page,true);
+ await page.goto(origin+'/tools/wishes/public.html');
+ await expect(page.locator('#profileForm')).toBeVisible();
+ await expect(page.locator('#profile .public-notice')).toContainText('Alle Angaben sind öffentlich sichtbar');
+ await page.locator('#displayName').fill('Anna Muster');
+ await page.locator('#country').fill('Schweiz');
+ await page.locator('#listFields [name=name]').fill('Meine Wünsche');
+ await page.locator('#amazonUrl').fill('https://www.amazon.de/hz/wishlist/ls/ABC123?tag=other-21');
+ await page.locator('#previewProfile').click();
+ await expect(page.locator('#previewDialog')).toBeVisible();
+ await expect(page.locator('#previewContent a')).toHaveAttribute('href','https://www.amazon.de/hz/wishlist/ls/ABC123?tag=duhrrom-21');
+ expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
+ await page.locator('#closePreview').click();
+ for(let n=0;n<4;n++)await page.locator('#addList').click();
+ await expect(page.locator('#listFields fieldset')).toHaveCount(5);
+ await expect(page.locator('#addList')).toBeDisabled();
 });
 
 

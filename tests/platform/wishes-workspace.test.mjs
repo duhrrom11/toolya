@@ -7,6 +7,6 @@ test('wishlist entry redirects to public Amazon-only experience without legacy c
  assert.ok(entry.includes('location.replace(new URL("./public.html"'), 'redirect should preserve query and hash');
  assert.match(entry,/shared\/toolya\/platform\.mjs/);
  assert.doesNotMatch(entry,/id="homeNewWish"|id="homeNewList"|id="editor"/);
- for(const id of ['discover','profile','publish','amazonUrl','tickerTrack','search'])assert.match(page,new RegExp('id="'+id+'"'));
+ for(const id of ['discover','profile','listFields','search','countryFilter','occasionFilter'])assert.match(page,new RegExp('id="'+id+'"'));
  assert.match(page,/public-amazon\.mjs/);
 });

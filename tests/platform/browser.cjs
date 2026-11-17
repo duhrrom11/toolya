@@ -27,7 +27,7 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
    }}};
   `});
  }
-if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(staticHosts.has(u.hostname)&&r.request().method()==='GET')return r.continue();if(r.request().method()!=='GET'&&(u.pathname.includes('/rest/v1/')||u.pathname.includes('/functions/v1/'))&&!u.pathname.endsWith('/rest/v1/rpc/search_public_amazon_wishlists')){blockedWrites++;blockedWriteUrls.push(r.request().method()+' '+u.hostname+u.pathname)}return r.abort()};await context.route('**/*',guard);
+if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(staticHosts.has(u.hostname)&&r.request().method()==='GET')return r.continue();if(r.request().method()!=='GET'&&(u.pathname.includes('/rest/v1/')||u.pathname.includes('/functions/v1/'))&&!['/rest/v1/rpc/search_public_amazon_wishlists','/rest/v1/rpc/search_wishlist_profiles','/rest/v1/rpc/wishlist_profile_filters'].includes(u.pathname)){blockedWrites++;blockedWriteUrls.push(r.request().method()+' '+u.hostname+u.pathname)}return r.abort()};await context.route('**/*',guard);
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  // Verify real native keyboard copy, paste and cut without injecting clipboard handlers.
  // The browser runs against the local static server; no production accounts or data.
@@ -255,9 +255,9 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  await page.setViewportSize({width:320,height:812});
 
  for(const route of ['/privacy.html','/legal.html','/mascots.html','/tools/wishes/dashboard.html','/tools/estate/heirs.html','/tools/estate/handover.html']){await page.goto(origin+route);await page.waitForFunction(()=>window.toolyaBuddy);await verifyClipboard(route);assert.equal(await page.locator('.toolya-settings').count(),0,route);await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route);await page.keyboard.press('Escape');}
- await page.goto(origin+'/tools/wishes/');assert(['/', '/index.html', '/tools/wishes/', '/tools/wishes/index.html', '/tools/wishes/public.html'].includes(new URL(page.url()).pathname),'wishlist entry stays within approved routes');await page.goto(origin+'/tools/wishes/public.html');await page.locator('#amazonUrl').waitFor();await verifyRealFormClipboard('public wishlist','#search','#amazonUrl','https://example.org/list');
+ await page.goto(origin+'/tools/wishes/');assert(['/', '/index.html', '/tools/wishes/', '/tools/wishes/index.html', '/tools/wishes/public.html'].includes(new URL(page.url()).pathname),'wishlist entry stays within approved routes');await page.goto(origin+'/tools/wishes/public.html');await page.locator('#search').waitFor();await verifyRealFormClipboard('public wishlist','#search','#email','example@example.invalid');
  assert.equal(await page.locator('#homeNewWish,#homeNewList,.wishes-navigation').count(),0,'legacy private wishlist controls not shown');
- assert.equal(await page.locator('#search,#amazonUrl,#password').count(),3,'public wishlist controls present');
+ assert.equal(await page.locator('#search,#email,#password').count(),3,'public wishlist controls present');
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'public wishlist mobile overflow');
  await page.screenshot({path:'test-results/wishes-amazon-public-mobile.png',fullPage:true});
  await page.goto(origin+'/tools/wishes/');await page.waitForFunction(()=>window.toolyaBuddy);

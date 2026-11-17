@@ -1,9 +1,8 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
-test('public wishlist creation is scraper-only',()=>{
- const js=readFileSync('tools/wishes/public-amazon.mjs','utf8');
- const html=readFileSync('tools/wishes/public.html','utf8');
- assert.match(js,/action:'create',amazon_url:url/);
- assert.doesNotMatch(js,/\.insert\(\{user_id:sessionUser\.id,amazon_url:url\}\)/);
- assert.match(js,/scrapeResult\?\.status!=='success'/);
- assert.match(html,/Private, leere oder nicht lesbare Listen werden nicht veröffentlicht/);
+test('public profiles explicitly disclose publication and use no scraper',()=>{
+ const js=readFileSync('tools/wishes/public-amazon.mjs','utf8'),html=readFileSync('tools/wishes/public.html','utf8');
+ assert.doesNotMatch(js,/functions\.invoke|amazon-wishlist-scrape/);
+ assert.match(html,/Alle Angaben sind öffentlich sichtbar/);
+ assert.doesNotMatch(html,/type="checkbox"/);
+ assert.match(js,/guardedWishlistWrite/);
 });
