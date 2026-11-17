@@ -1,7 +1,7 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.57.0';
 import {parseHTML} from 'npm:linkedom@0.18.12';
 import ipaddr from 'npm:ipaddr.js@2.2.0';
-import {AMAZON,canonicalList,publicUrl,candidate} from './model.mjs';
+import {AMAZON,canonicalList,publicUrl,candidate,robotsAllowed} from './model.mjs';
 const cors={'Access-Control-Allow-Origin':'https://toolya.app','Access-Control-Allow-Headers':'authorization,apikey,content-type','Access-Control-Allow-Methods':'POST,OPTIONS','Vary':'Origin'};
 const reply=(status:number,body:unknown)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
 const must=(r:any)=>{if(r.error)throw Error('Datenbankabfrage fehlgeschlagen.');return r.data};
@@ -18,7 +18,6 @@ async function safeFetch(value:string,limit=600000):Promise<{html:string,url:str
  }
  throw Error('Zu viele Weiterleitungen.');
 }
-function robotsAllowed(body:string,path:string){let relevant=false;const rules:{path:string,allow:boolean}[]=[];for(const raw of body.split(/\r?\n/)){const line=raw.split('#')[0].trim(),m=line.match(/^([^:]+):\s*(.*)$/);if(!m)continue;const k=m[1].toLowerCase(),v=m[2].trim();if(k==='user-agent')relevant=v==='*'||/toolyawishlistfinder/i.test(v);else if(relevant&&(k==='allow'||k==='disallow')&&v){const escaped=v.replace(/[.+?^${}()|[\]\\]/g,'\\$&').replaceAll('*','.*');if(new RegExp('^'+escaped).test(path))rules.push({path:v,allow:k==='allow'})}}rules.sort((a,b)=>b.path.length-a.path.length||Number(b.allow)-Number(a.allow));return !rules.length||rules[0].allow}
 async function permitted(url:string){try{const u=new URL(url);const robot=await safeFetch(u.origin+'/robots.txt',100000);return robotsAllowed(robot.html,u.pathname+u.search)}catch(e){return e instanceof Error&&e.message==='Webseite HTTP 404'}}
 async function collect(db:any,url:string,country:string){
  const source=publicUrl(url);if(!source||AMAZON.test(new URL(source).hostname))return {added:0,skipped:1};
@@ -29,7 +28,7 @@ async function collect(db:any,url:string,country:string){
   const result=await safeFetch(source);const {document}=parseHTML(result.html);const resolve=(v:string)=>{try{return new URL(v,result.url).href}catch{return ''}};
   const name=(document.querySelector('meta[property="og:site_name"]')?.getAttribute('content')||document.querySelector('title')?.textContent||document.querySelector('h1')?.textContent||new URL(source).hostname).trim().slice(0,160);
   const logo=resolve(document.querySelector('[itemprop="logo"]')?.getAttribute('src')||document.querySelector('header img[alt*="Logo" i]')?.getAttribute('src')||document.querySelector('meta[property="og:image"]')?.getAttribute('content')||'');
-  const email=(document.querySelector('a[href^="mailto:"]')?.getAttribute('href')||'').replace(/^mailto:/i,'').split('?')[0];
+  const email=(document.querySelector('a[href^="mailto:"]')?.getAttribute('href')||'').replace(/^mailto:/i,'').split('?')[0]||(document.body?.textContent||'').match(/[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+/)?.[0]||'';
   let added=0;const links=new Set<string>();for(const a of document.querySelectorAll('a[href]')){const value=resolve(a.getAttribute('href')||'');if(canonicalList(value))links.add(value)}
   for(const link of links){const c=candidate({name,logo_url:logo,wishlist_url:link,email,source_url:source,country});const r=await db.from('wishlist_discovery_candidates').upsert(c,{onConflict:'list_key',ignoreDuplicates:true}).select('id,status');must(r);added+=r.data.filter((x:any)=>x.status==='new').length}
   must(await db.from('wishlist_discovery_sources').update({status:'checked'}).eq('source_url',source));return {added,skipped:0};
