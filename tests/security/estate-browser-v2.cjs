@@ -122,6 +122,8 @@ const root=path.resolve(__dirname,'../..');
    for(const name of ['people','alarm','settings']){
     await page.locator('[data-tab='+name+']').click();
     const section=page.locator('#'+name);await section.locator(name==='people'?'#person-form':name==='alarm'?'h2':'h2').first().scrollIntoViewIfNeeded();
+    await page.mouse.move(0,0);
+    await page.waitForFunction(name=>Array.from(document.querySelectorAll('#'+name+' button.secondary')).filter(e=>e.getClientRects().length).every(e=>getComputedStyle(e).backgroundColor==='rgb(255, 255, 255)'),name);
     for(const b of await section.locator('button.secondary:visible').all()){
      assert.equal(await b.evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(255, 255, 255)');
      assert((await b.boundingBox()).height>=44);
