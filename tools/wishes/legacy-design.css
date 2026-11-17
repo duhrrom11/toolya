@@ -40,3 +40,14 @@ body[data-toolya-legacy-wishes] main :is(.cover,.avatar,.badge){background:var(-
 body[data-toolya-legacy-wishes] main .card-body p{color:#526975}
 body[data-toolya-legacy-wishes] main .card-body a:not(.primary){color:#006780;background:transparent}
 body[data-toolya-legacy-wishes]>.ty-legacy-note a{color:#006780}
+
+/* Give long German page titles the full phone width beside the compact brand row. */
+body[data-toolya-legacy-wishes] :is(.ty-tool-hero h1,main h2,main h3){hyphens:auto;word-break:normal}
+@media(max-width:500px){
+ body[data-toolya-legacy-wishes] .ty-tool-hero-inner{display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:8px 12px}
+ body[data-toolya-legacy-wishes] .ty-tool-hero-copy{display:contents}
+ body[data-toolya-legacy-wishes] .ty-tool-hero-top{grid-column:1;grid-row:1;margin:0}
+ body[data-toolya-legacy-wishes] .ty-tool-hero-mascot{grid-column:2;grid-row:1;height:84px;width:84px}
+ body[data-toolya-legacy-wishes] .ty-tool-hero h1{grid-column:1/-1;grid-row:2}
+ body[data-toolya-legacy-wishes] .ty-tool-hero-copy>p{grid-column:1/-1;grid-row:3;margin:0}
+}
