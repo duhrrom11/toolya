@@ -34,3 +34,26 @@ body.b3-umzugskisten.b3-dark #helpBox .bg-amber-800\/50{background:#3b365b;color
 body.b3-umzugskisten.b3-dark #settingsModal button[onclick="registerUser()"]{background:#246b3f!important;color:#fff!important}
 body.b3-umzugskisten.b3-dark #settingsModal button[onclick="loginUser()"]{background:#175b8f!important;color:#fff!important}
 body.b3-umzugskisten.b3-dark #settingsModal button[onclick="logoutUser()"]{background:#982d3a!important;color:#fff!important}
+
+@media(max-width:1279px){
+ body.b3-umzugskisten main.b3-dashboard .b3-moving-form-grid{grid-template-columns:minmax(0,1fr)}
+}
+body.b3-umzugskisten .b3-moving-location-heading{flex-wrap:wrap;gap:.75rem}
+body.b3-umzugskisten .b3-moving-location-heading>h4{overflow-wrap:anywhere}
+body.b3-umzugskisten .b3-moving-location-heading>div{flex-wrap:wrap;max-width:100%}
+body.b3-umzugskisten .b3-moving-box-card{flex-wrap:wrap;align-items:flex-start;min-width:0}
+body.b3-umzugskisten .b3-moving-box-identity{flex:1 1 200px;min-width:0}
+body.b3-umzugskisten .b3-moving-box-identity>div:last-child{min-width:0;overflow-wrap:anywhere}
+body.b3-umzugskisten .b3-moving-box-identity>img,
+body.b3-umzugskisten .b3-moving-box-identity>div:first-child{flex-shrink:0}
+body.b3-umzugskisten .b3-moving-box-meta,
+body.b3-umzugskisten .b3-moving-box-actions{flex-wrap:wrap;max-width:100%}
+body.b3-umzugskisten #editBoxModal>div{max-height:90dvh}
+body.b3-umzugskisten .b3-moving-subitem-form{display:grid;grid-template-columns:minmax(0,1fr) 80px auto}
+body.b3-umzugskisten .b3-moving-subitem-form>input{min-width:0;width:100%}
+@media(max-width:640px){
+ body.b3-umzugskisten .b3-moving-location-fields{flex-direction:column}
+ body.b3-umzugskisten #editBoxModal :is(.grid-cols-2,.grid-cols-3){grid-template-columns:minmax(0,1fr)}
+ body.b3-umzugskisten .b3-moving-subitem-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.b3-umzugskisten #newSubItemName{grid-column:1/-1}
+}

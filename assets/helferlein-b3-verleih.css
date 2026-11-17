@@ -34,3 +34,23 @@ body.b3-verleih.b3-dark #helpModal :is(.text-gray-600,.text-indigo-700,.text-ind
  body.b3-verleih main.b3-dashboard [data-b3-panel="create"]{grid-template-columns:minmax(0,1fr)}
  body.b3-verleih main.b3-dashboard [data-b3-panel="create"] :is(.grid-cols-2,.grid-cols-3){grid-template-columns:minmax(0,1fr)}
 }
+
+@media(max-width:1279px){
+ body.b3-verleih main.b3-dashboard .b3-loan-form-grid{grid-template-columns:minmax(0,1fr)}
+ body.b3-verleih .b3-loan-form-grid>div{grid-column:auto}
+ body.b3-verleih .b3-loan-card{flex-direction:column;align-items:stretch}
+}
+@media(min-width:768px) and (max-width:1279px){
+ body.b3-verleih .b3-loan-setup{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+ body.b3-verleih .b3-loan-setup>div{margin-top:0}
+}
+body.b3-verleih .b3-loan-card-identity{min-width:0;flex:1 1 auto}
+body.b3-verleih .b3-loan-card-identity>div:last-child{min-width:0;overflow-wrap:anywhere}
+body.b3-verleih .b3-loan-card-identity>img,
+body.b3-verleih .b3-loan-card-identity>div:first-child{flex-shrink:0}
+body.b3-verleih .b3-loan-card-actions{min-width:0;max-width:100%;align-self:stretch}
+body.b3-verleih .b3-loan-extend{flex-wrap:wrap}
+body.b3-verleih #editModal>div{max-height:90dvh;overflow-y:auto}
+@media(max-width:640px){
+ body.b3-verleih #editModal .grid-cols-2{grid-template-columns:minmax(0,1fr)}
+}
