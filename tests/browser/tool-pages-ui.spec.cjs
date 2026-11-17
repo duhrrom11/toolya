@@ -1386,6 +1386,7 @@ for(const kind of ['meters','baking'])test(kind+': inline help remains readable 
   await page.setViewportSize({width,height:1000});
   if(kind==='baking')await page.evaluate(()=>{openSettings();toggleHelp()});else await page.locator('#b3-faq>button').click();
   const help=page.locator(kind==='baking'?'#help-box':'#accordionContent');await expect(help).toBeVisible();await help.scrollIntoViewIfNeeded();
+  if(kind==='baking'){const editor=page.locator('#b3-backform-edit');expect(await editor.evaluate(e=>e.getBoundingClientRect().right<=e.parentElement.getBoundingClientRect().right+1)).toBe(true);}
   expect(await help.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
   for(const card of await help.locator('.grid>div').all())expect(await card.evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThanOrEqual(120);
   await page.screenshot({path:testInfo.outputPath('help-'+kind+'-'+width+'.png')});
