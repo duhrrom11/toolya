@@ -1,0 +1,295 @@
+{
+  "date": "2026-11-17",
+  "pullRequest": "https://github.com/duhrrom11/toolya/pull/99",
+  "reviewedSourceCommit": "8589dca643e8d8f69754475295aaaf0e7d40a001",
+  "baseline": "ea91589862bceca00b2fc8a496827b1a90f25a94",
+  "browserRun": 43989548520,
+  "browserTestsPassed": 49,
+  "widths": [
+    320,
+    768,
+    1440
+  ],
+  "viewportHeight": 1000,
+  "tools": [
+    "moving",
+    "loans"
+  ],
+  "contexts": [
+    "setup",
+    "entry",
+    "list",
+    "dialog",
+    "dialog-actions"
+  ],
+  "capturedFrames": 30,
+  "uniquePayloads": 28,
+  "allUniquePayloadsVisuallyReviewed": true,
+  "designFixtureCloudWrites": 0,
+  "productionDataUsed": false,
+  "productionDataModified": false,
+  "evidence": [
+    {
+      "captures": [
+        "inventory-moving-setup-320"
+      ],
+      "blob": "d9224cdc5d4debeca3440465ebc160f2c2ebb491",
+      "paths": [
+        "evidence/pr99-moving-setup-320.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-moving-entry-320"
+      ],
+      "blob": "b227cd9a387ed8336de45c9b44be1c73dc7054ee",
+      "paths": [
+        "evidence/pr99-moving-entry-320.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-moving-list-320"
+      ],
+      "blob": "8e0998b5525d01227ad03c2a05de70c472d2b4dd",
+      "paths": [
+        "evidence/pr99-moving-list-320.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-moving-dialog-320"
+      ],
+      "blob": "55707aa38afa54e3f9e211cefc7245e08d93d1e2",
+      "paths": [
+        "evidence/pr99-moving-dialog-320.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-moving-dialog-actions-320"
+      ],
+      "blob": "133f78686dda22d7a609e48880ae767413ebd26e",
+      "paths": [
+        "evidence/pr99-moving-dialog-actions-320.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-moving-setup-768"
+      ],
+      "blob": "820d472f18d4dc1f6d6c94f0ce76922c6cc9f5b3",
+      "paths": [
+        "evidence/pr99-moving-setup-768.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-moving-entry-768"
+      ],
+      "blob": "6eec5a0871f957c4257971bcdaea7ee8756fcc7e",
+      "paths": [
+        "evidence/pr99-moving-entry-768.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-moving-list-768"
+      ],
+      "blob": "d3f1e05ab2fa7f4c5426bc8be304f9a6c6650ae9",
+      "paths": [
+        "evidence/pr99-moving-list-768.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-moving-dialog-768"
+      ],
+      "blob": "d9ddab721c8f559af16c3b9835d2eb54f8af5230",
+      "paths": [
+        "evidence/pr99-moving-dialog-768.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-moving-dialog-actions-768"
+      ],
+      "blob": "f0fc52b7d3e4b96b14e7239e64fbb5daf802d67e",
+      "paths": [
+        "evidence/pr99-moving-dialog-actions-768.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-moving-setup-1440",
+        "inventory-moving-entry-1440"
+      ],
+      "blob": "f0a264250c570d9e7b89e2496a24b5234c46ab95",
+      "paths": [
+        "evidence/pr99-moving-setup-1440.jpg",
+        "evidence/pr99-moving-entry-1440.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-moving-list-1440"
+      ],
+      "blob": "968de32151b3ab8ea7e4cbe3bd4b9c4af56673bb",
+      "paths": [
+        "evidence/pr99-moving-list-1440.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-moving-dialog-1440"
+      ],
+      "blob": "8fab575e6fb2fc99249e371f6501893d526b85b5",
+      "paths": [
+        "evidence/pr99-moving-dialog-1440.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-moving-dialog-actions-1440"
+      ],
+      "blob": "e6e886c0c0c74061f4d4e88f49ea2025bffc7bdc",
+      "paths": [
+        "evidence/pr99-moving-dialog-actions-1440.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-loans-setup-320"
+      ],
+      "blob": "0769d40f349e36d802fd7810559b76b30bd4bbe0",
+      "paths": [
+        "evidence/pr99-loans-setup-320.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-loans-entry-320"
+      ],
+      "blob": "ae5a8fa657f2bf1b9f649e23a40ae3a66d4835f1",
+      "paths": [
+        "evidence/pr99-loans-entry-320.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-loans-list-320"
+      ],
+      "blob": "c7d28515d5c3864322e52c8d5b151d59557edac5",
+      "paths": [
+        "evidence/pr99-loans-list-320.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-loans-dialog-320"
+      ],
+      "blob": "427d9c3a7ca0b9e038ec447e79bde657a50be276",
+      "paths": [
+        "evidence/pr99-loans-dialog-320.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-loans-dialog-actions-320"
+      ],
+      "blob": "d9e876bc2f949adcd0d82058d1ae7b84f046e3f5",
+      "paths": [
+        "evidence/pr99-loans-dialog-actions-320.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-loans-setup-768"
+      ],
+      "blob": "72f5c2b16917cb9eb5b854ebf89252f2d5f555e5",
+      "paths": [
+        "evidence/pr99-loans-setup-768.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-loans-entry-768"
+      ],
+      "blob": "4b08bb9713eeb5b4cf468c2522f275219db8be1c",
+      "paths": [
+        "evidence/pr99-loans-entry-768.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-loans-list-768"
+      ],
+      "blob": "407b8a713cd300a9d51c753f6df03c77a9c75ada",
+      "paths": [
+        "evidence/pr99-loans-list-768.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-loans-dialog-768"
+      ],
+      "blob": "efbcbc64cd4003f79cdedf6ea396fbfe82b0ade8",
+      "paths": [
+        "evidence/pr99-loans-dialog-768.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-loans-dialog-actions-768"
+      ],
+      "blob": "f0f3403e75c9e7d51002f89a96e10113b5ec65da",
+      "paths": [
+        "evidence/pr99-loans-dialog-actions-768.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-loans-setup-1440",
+        "inventory-loans-entry-1440"
+      ],
+      "blob": "ba224343511b545d522bb586fa2989b64ad9ddb1",
+      "paths": [
+        "evidence/pr99-loans-setup-1440.jpg",
+        "evidence/pr99-loans-entry-1440.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-loans-list-1440"
+      ],
+      "blob": "ee31d2acb16807846aec2da4e4b533d9676a7112",
+      "paths": [
+        "evidence/pr99-loans-list-1440.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-loans-dialog-1440"
+      ],
+      "blob": "a11217ce770e5aa032aecbb1788aba2bb24cce37",
+      "paths": [
+        "evidence/pr99-loans-dialog-1440.jpg"
+      ]
+    },
+    {
+      "captures": [
+        "inventory-loans-dialog-actions-1440"
+      ],
+      "blob": "fe244498523cf630c2914cc78dc198ab944855cf",
+      "paths": [
+        "evidence/pr99-loans-dialog-actions-1440.jpg"
+      ]
+    }
+  ],
+  "limitations": [
+    "Isolated synthetic authenticated snapshots; not private live acceptance",
+    "No camera/QR/calendar/GPS end-to-end acceptance",
+    "No full WCAG certification",
+    "Deployment proof maintained in PR #99 after release"
+  ]
+}
