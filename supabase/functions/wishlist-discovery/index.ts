@@ -99,7 +99,7 @@ Deno.serve(async(req:Request)=>{
    if(!key)return reply(503,{error:'Bitte zuerst einen Tavily-API-Schlüssel hinterlegen.'});
    if(quota.remaining<=0)return reply(200,{done:true,message:'Kostenloses Tavily-Monatslimit (900 Credits) erreicht. Suche pausiert bis zum nächsten UTC-Monat.',quota});
    const topics=['Tierheim','Tierschutzverein','Obdachlosenhilfe','Kinderhilfe','Schule','Verein','Privatperson','Blog','Initiative','Bibliothek','Frauenhaus','Wildtierhilfe'];
-   const seeds=[];for(const topic of topics)for(const [country,lang,extra] of [['DE','de',''],['AT','de',''],['CH','de',''],['ALL','de','Liechtenstein'],['ALL','de','Luxemburg'],['ALL','fr','Luxembourg'],['ALL','fr','Lëtzebuerg'],['ALL','de','']])seeds.push({query:`${topic} ${extra} "Amazon" "Wunschliste" -site:amazon.de -site:amazon.com -site:amazon.fr`,country,lang});
+   const seeds=[];for(const topic of topics)for(const [country,lang,extra] of [['DE','de','Deutschland'],['AT','de','Österreich'],['CH','de','Schweiz'],['ALL','de','Liechtenstein'],['ALL','de','Luxemburg'],['ALL','fr','Luxembourg'],['ALL','fr','Lëtzebuerg'],['ALL','de','']])seeds.push({query:`${topic} ${extra} "Amazon" "Wunschliste" -site:amazon.de -site:amazon.com -site:amazon.fr`,country,lang});
    // French/Luxembourg terms supplement German queries, not just German translations.
    for(const term of ['"liste de souhaits"','"liste d’envies"','"Wonschlëscht"','"wishlist"'])seeds.push({query:`Amazon ${term} Luxembourg -site:amazon.fr -site:amazon.de -site:amazon.com`,country:'ALL',lang:'fr'});
    must(await db.from('wishlist_discovery_queries').upsert(seeds,{onConflict:'query,country,lang',ignoreDuplicates:true}));
