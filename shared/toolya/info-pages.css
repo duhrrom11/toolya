@@ -1,0 +1,25 @@
+/* Public information pages share Toolya navigation and typography. */
+body[data-toolya-info]{margin:0;background:#f3f7fb;color:#102b45;font-family:var(--ty-font-brand,Inter,ui-sans-serif,system-ui,sans-serif);line-height:1.6}
+body[data-toolya-info] *{box-sizing:border-box}
+.ty-info-header{position:relative;background:linear-gradient(116deg,#0a344c,#0c6577 54%,#19b1a7);color:#fff;box-shadow:0 6px 24px #17475a25}
+.ty-info-topbar{width:min(1200px,100%);margin:auto;padding:16px 24px;display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.ty-info-brand{display:inline-flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-size:24px;font-weight:900;white-space:nowrap}
+.ty-info-brand .b3-hub-logo-mark{display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px}
+.ty-info-brand .ty-sprite-wrap{width:44px;height:44px;flex-basis:44px}
+.ty-info-header nav{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-left:auto}
+.ty-info-header nav a{display:inline-flex;align-items:center;min-height:44px;padding:10px 12px;border-radius:12px;color:#fff;font-size:14px;font-weight:700;text-decoration:none}
+.ty-info-header nav a:hover,.ty-info-header nav a[aria-current=page]{background:#ffffff24}
+body[data-toolya-info] main{width:min(960px,calc(100% - 32px));max-width:960px;margin:24px auto;padding:clamp(20px,4vw,36px);background:#fff;border:1px solid #cde3e8;border-radius:20px;box-shadow:0 4px 20px #153d4b08;overflow-wrap:anywhere;font-size:16px}
+body[data-toolya-info] main :is(h1,h2,h3){color:#102b45;line-height:1.35;overflow-wrap:anywhere}
+body[data-toolya-info] .ty-info-title{font-size:clamp(26px,4vw,36px);font-weight:800;margin:0 0 24px;letter-spacing:-.025em}
+body[data-toolya-info] main section+section{margin-top:24px}
+body[data-toolya-info] main a{color:#006780;text-underline-offset:3px}
+body[data-toolya-info] :is(a,button,select,input,summary):focus-visible{outline:3px solid var(--ty-color-primary,#007e9f);outline-offset:3px}
+.ty-info-header :is(a,button):focus-visible{outline-color:#fff}
+body[data-toolya-info]:not([data-toolya-info=mascots]) .toolya-idle{display:none}
+body[data-toolya-info] .toolya-settings-dialog{width:min(560px,calc(100% - 32px));max-height:90dvh;overflow:auto}
+body[data-toolya-info] .feelings button{background:#fff;color:#102b45;border:1px solid #cbdde6;border-radius:12px;font-weight:700}
+body[data-toolya-info] .feelings button:hover{background:var(--ty-color-soft,#e1f3fa)}
+.ty-info-skip{position:absolute;left:-10000px}
+.ty-info-skip:focus{left:16px;top:8px;z-index:100;background:#fff;color:#102b45;padding:12px}
+@media(max-width:700px){.ty-info-topbar{padding:12px 16px;gap:10px}.ty-info-header nav{order:3;flex-basis:100%;margin:0}.ty-info-topbar>.toolya-settings-trigger{margin-left:auto}.ty-info-header nav a{padding:9px 10px}body[data-toolya-info] main{margin:16px auto}}
