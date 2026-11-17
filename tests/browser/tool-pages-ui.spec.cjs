@@ -1395,3 +1395,35 @@ for(const kind of ['meters','baking'])test(kind+': inline help remains readable 
  }
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
 });
+
+// Retained wishlist subpages: signed-out appearance only, all application traffic intercepted.
+for(const routeName of ['assistant','bookmarks','cockpit','collection','dashboard','discover','feed','gift-analytics','gift-tasks','notifications','occasions','planner','profile','report','reservations','social'])test('legacy wishes '+routeName+': signed-out light layout at three widths',async({page},testInfo)=>{
+ test.setTimeout(60000);const errors=[];page.on('pageerror',e=>errors.push(e.message));await isolated(page,false);
+ await page.addInitScript(()=>document.addEventListener('DOMContentLoaded',()=>document.body.classList.add('wishlist-dark')));
+ await page.route('**/tools/wishes/toolya-client.mjs',route=>route.fulfill({contentType:'text/javascript',body:`
+ window.__legacyMock={reads:[],writes:[],authReads:0};
+ const result=()=>({data:[],error:null});
+ function query(table){const q={then(resolve){resolve(result())},async single(){return {data:null,error:null}},async maybeSingle(){return {data:null,error:null}}};
+ for(const method of ['select','eq','neq','is','in','or','not','contains','order','limit','range','gte','lte','gt','lt','match','ilike'])q[method]=()=>q;
+ for(const method of ['insert','update','upsert','delete'])q[method]=()=>{window.__legacyMock.writes.push({table,method});throw Error('Unexpected legacy fixture write')};return q;}
+ export const db={auth:{async getUser(){window.__legacyMock.authReads++;return {data:{user:null},error:null}},async getSession(){window.__legacyMock.authReads++;return {data:{session:null},error:null}},onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}},
+ from(table){window.__legacyMock.reads.push(table);return query(table)},async rpc(name){window.__legacyMock.writes.push({rpc:name});throw Error('Unexpected legacy fixture RPC')}};
+ `}));
+ await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
+ await page.goto(origin+'/tools/wishes/'+routeName+'.html');await page.locator('.toolya-signature-footer').waitFor();await page.waitForLoadState('networkidle');
+ if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+ await page.waitForFunction(()=>!!window.__legacyMock);
+ for(const width of [320,768,1440]){
+  await page.setViewportSize({width,height:1000});await expect(page.locator('html')).toHaveCSS('color-scheme','light');
+  await expect(page.locator('body')).toHaveCSS('background-color','rgb(243, 247, 251)');
+  await expect(page.locator('h1:visible')).toHaveCount(1);await expect(page.locator('body>header')).toBeHidden();await expect(page.locator('.toolya-idle')).toBeHidden();
+  for(const panel of await page.locator('main .panel:visible,main .hero:visible,main .card:visible').all()){
+   expect(await panel.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);await expect(panel).toHaveCSS('background-color','rgb(255, 255, 255)');
+  }
+  for(const b of await page.locator('main button:visible').all())expect(await b.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  const tab=page.locator('.wishes-navigation a').first();await tab.focus();expect(await tab.evaluate(e=>parseFloat(getComputedStyle(e).outlineWidth))).toBeGreaterThanOrEqual(3);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:testInfo.outputPath('legacy-'+routeName+'-'+width+'.png')});
+ }
+ expect(await page.evaluate(()=>window.__legacyMock.writes)).toEqual([]);expect(errors).toEqual([]);
+});
