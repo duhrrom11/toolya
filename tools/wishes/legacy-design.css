@@ -11,8 +11,8 @@ body[data-toolya-legacy-wishes] main :is(h2,h3,h4,strong,.eyebrow){color:#102b45
 body[data-toolya-legacy-wishes] main .ty-legacy-title{font-size:clamp(24px,4vw,36px);font-weight:800;line-height:1.3;margin:4px 0 16px;overflow-wrap:anywhere}
 body[data-toolya-legacy-wishes] main :is(.muted,.handle,.meta){color:#526975}
 body[data-toolya-legacy-wishes] main a{color:#006780}
-body[data-toolya-legacy-wishes] main :is(button,.actions a,.nav a){min-height:44px;max-width:100%;padding:10px 14px;border:1px solid transparent;border-radius:12px;background:var(--ty-color-primary,#007e9f);color:#fff;font:inherit;font-weight:700;white-space:normal;overflow-wrap:anywhere}
-body[data-toolya-legacy-wishes] main :is(button,.actions a,.nav a):hover{filter:brightness(.95)}
+body[data-toolya-legacy-wishes] main :is(button,.actions a,.nav a,.card-body a.primary){min-height:44px;max-width:100%;padding:10px 14px;border:1px solid transparent;border-radius:12px;background:var(--ty-color-primary,#007e9f);color:#fff;font:inherit;font-weight:700;white-space:normal;overflow-wrap:anywhere}
+body[data-toolya-legacy-wishes] main :is(button,.actions a,.nav a,.card-body a.primary):hover{filter:brightness(.95)}
 body[data-toolya-legacy-wishes] main :is(button.secondary,button.ghost){background:#fff;color:#102b45;border-color:#cbdde6}
 body[data-toolya-legacy-wishes] main button:is(.danger,.delete,.remove,[data-danger]){background:#fff0eb;color:#8e321f;border-color:#e1beb2}
 body[data-toolya-legacy-wishes] main :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea){font:inherit;max-width:100%;min-width:0;min-height:44px;border:1px solid #7892a3;border-radius:12px;padding:10px 12px;background:#fff;color:#102b45}
@@ -35,3 +35,8 @@ body[data-toolya-legacy-wishes] main :is(.chips,.filters,.tabs) button[aria-pres
 html body[data-toolya-legacy-wishes] main .wishes-gift-links a{background:#fff;color:#102b45;border-color:#cde3e8}
 html body[data-toolya-legacy-wishes] main .wishes-gift-links span{color:#526975}
 @media(max-width:650px){html body[data-toolya-legacy-wishes]>.wishes-navigation{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+body[data-toolya-legacy-wishes] main :is(.cover,.avatar,.badge){background:var(--ty-color-soft,#e1f3fa);color:#102b45}
+body[data-toolya-legacy-wishes] main .card-body p{color:#526975}
+body[data-toolya-legacy-wishes] main .card-body a:not(.primary){color:#006780;background:transparent}
+body[data-toolya-legacy-wishes]>.ty-legacy-note a{color:#006780}

@@ -51,9 +51,9 @@ async function load(){
  }
  viewer=await currentUser(db);const ids=(lists||[]).map(l=>l.id);[counts,reactions]=await Promise.all([likeCounts(db,ids),myReactions(db,viewer,ids)]);
  const byOwner=new Map(profiles.map(p=>[p.user_id,p]));
- const counts=new Map();
- for(const f of follows)counts.set(f.followed_id,(counts.get(f.followed_id)||0)+1);
- all=(lists||[]).map(item=>({...item,owner:byOwner.get(item.user_id),followers:counts.get(item.user_id)||0}));
+ const followerCounts=new Map();
+ for(const f of follows)followerCounts.set(f.followed_id,(followerCounts.get(f.followed_id)||0)+1);
+ all=(lists||[]).map(item=>({...item,owner:byOwner.get(item.user_id),followers:followerCounts.get(item.user_id)||0}));
  render();
 }
 $('savedOnly').addEventListener('change',event=>{onlySaved=event.target.checked;render()});$('search').addEventListener('input',render);$('sort').addEventListener('change',render);renderTopics();

@@ -1402,17 +1402,25 @@ for(const routeName of ['assistant','bookmarks','cockpit','collection','dashboar
  await page.addInitScript(()=>document.addEventListener('DOMContentLoaded',()=>document.body.classList.add('wishlist-dark')));
  await page.route('**/tools/wishes/toolya-client.mjs',route=>route.fulfill({contentType:'text/javascript',body:`
  window.__legacyMock={reads:[],writes:[],authReads:0};
- const result=()=>({data:[],error:null});
- function query(table){const q={then(resolve){resolve(result())},async single(){return {data:null,error:null}},async maybeSingle(){return {data:null,error:null}}};
+ const discovery=${routeName==='discover'};
+ const listId='00000000-0000-4000-8000-000000000001';
+ const result=table=>({data:discovery?(table==='wishlist_lists'?[{id:listId,user_id:'synthetic-owner',title:'Isolierte Sammlung',description:'Nur im abgefangenen Browser sichtbar',icon:'🎁',created_at:'2030-01-01T00:00:00Z'}]:table==='wishlist_profiles'?[{user_id:'synthetic-owner',handle:'isoliert',display_name:'Isolierte Person'}]:table==='wishlist_follows'?[{followed_id:'synthetic-owner'},{followed_id:'synthetic-owner'}]:[]):[],error:null});
+ function query(table){const q={then(resolve){resolve(result(table))},async single(){return {data:null,error:null}},async maybeSingle(){return {data:null,error:null}}};
  for(const method of ['select','eq','neq','is','in','or','not','contains','order','limit','range','gte','lte','gt','lt','match','ilike'])q[method]=()=>q;
  for(const method of ['insert','update','upsert','delete'])q[method]=()=>{window.__legacyMock.writes.push({table,method});throw Error('Unexpected legacy fixture write')};return q;}
  export const db={auth:{async getUser(){window.__legacyMock.authReads++;return {data:{user:null},error:null}},async getSession(){window.__legacyMock.authReads++;return {data:{session:null},error:null}},onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}},
- from(table){window.__legacyMock.reads.push(table);return query(table)},async rpc(name){window.__legacyMock.writes.push({rpc:name});throw Error('Unexpected legacy fixture RPC')}};
+ from(table){window.__legacyMock.reads.push(table);return query(table)},async rpc(name){if(name==='wishlist_collection_like_counts'){window.__legacyMock.reads.push(name);return {data:[{list_id:listId,like_count:3}],error:null}}window.__legacyMock.writes.push({rpc:name});throw Error('Unexpected legacy fixture RPC')}};
  `}));
  await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
  await page.goto(origin+'/tools/wishes/'+routeName+'.html');await page.locator('.toolya-signature-footer').waitFor();await page.waitForLoadState('networkidle');
  if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
  await page.waitForFunction(()=>!!window.__legacyMock);
+ if(routeName==='discover'){
+  await expect(page.locator('#status')).toContainText('1 öffentliche Sammlungen gefunden');
+  await expect(page.locator('#grid .badge')).toContainText('3 Likes · 👥 2 Profil-Follower');
+  await page.locator('#search').fill('Keine synthetische Übereinstimmung');await expect(page.locator('#grid .empty')).toContainText('Keine passenden Sammlungen');
+  await page.locator('#search').fill('');await expect(page.locator('#grid .card')).toHaveCount(1);
+ }
  for(const width of [320,768,1440]){
   await page.setViewportSize({width,height:1000});await expect(page.locator('html')).toHaveCSS('color-scheme','light');
   await expect(page.locator('body')).toHaveCSS('background-color','rgb(243, 247, 251)');
