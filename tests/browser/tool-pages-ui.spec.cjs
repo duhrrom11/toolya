@@ -492,8 +492,8 @@ test('backform-umrechner: save and delete recipe await cloud confirmation',async
 async function isolatedWishlist(page,authenticated){
  await page.route('**/*',async route=>{
   const url=route.request().url();
-  if(url.startsWith(origin))return route.continue();
-  if(url.includes('supabase.min.js'))return route.fulfill({status:200,contentType:'text/javascript',body:`
+  if(url.startsWith(origin)&&!url.endsWith('/assets/vendor/supabase-2.57.0.js'))return route.continue();
+  if(url.includes('supabase.min.js')||url.endsWith('/assets/vendor/supabase-2.57.0.js'))return route.fulfill({status:200,contentType:'text/javascript',body:`
    window.__wishlistMock={user:${authenticated?"{id:'owner',email:'owner@example.invalid',is_anonymous:false}":"null"},writes:[],reads:0};
    window.supabase={createClient(){const m=window.__wishlistMock;return {
     auth:{
