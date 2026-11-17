@@ -75,3 +75,8 @@ body.b3.b3-wg #stickyNotesGrid button{min-height:44px;min-width:44px}
 
 body.b3.b3-wg #stickyNotesGrid>div>div:last-child{flex-wrap:wrap;gap:.5rem}
 body.b3.b3-wg #b3-info{grid-column:1/-1!important}
+
+@media(max-width:640px){
+ body.b3.b3-wg :is(#b3-debts,#b3-cleaning,#b3-cooking)>div>div:first-child{flex-wrap:wrap;gap:.75rem}
+ body.b3.b3-wg :is(#b3-debts,#b3-cleaning,#b3-cooking)>div>div:first-child>.flex{flex-wrap:wrap;gap:.5rem}
+}

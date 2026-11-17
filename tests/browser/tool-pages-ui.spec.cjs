@@ -1139,6 +1139,9 @@ for(const kind of ['housemates','baking']){
     for(const id of ['#b3-notes','#b3-info','#formCard']){
      const panel=page.locator(id);await panel.evaluate(e=>e.scrollIntoView({block:'start'}));expect(await fits(panel)).toBe(true);await inspect(panel);await capture(id.slice(1)+'-'+width);
     }
+    if(width===320)for(const id of ['#b3-debts','#b3-cleaning','#b3-cooking']){
+     const panel=page.locator(id);await panel.evaluate(e=>e.scrollIntoView({block:'start'}));expect(await fits(panel)).toBe(true);await capture(id.slice(1)+'-'+width);
+    }
     expect(await page.locator('.b3-wg-finance-grid').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length)).toBe(width<768?1:3);
     await page.locator('button[onclick="editReceipt(2)"]').click();
     await expect(page.locator('#cancelEditBtn')).toBeVisible();await page.locator('#cancelEditBtn').click();

@@ -108,4 +108,4 @@ body.b3.b3-backform :is(#keep-recipe-amount,#use-oven-factor,#glaze-sides){flex-
  body.b3.b3-backform main.b3-backform-main>div:first-child{grid-column:span 2}
 }
 
-body.b3.b3-backform:not(.b3-dark) button.b3-action:not(.b3-outline){background:var(--b3-control-accent);color:#fff}
+body.b3.b3-backform:not(.b3-dark) :is(main,#settings-modal,#cook-modal) button.b3-action:not(.b3-outline){background:var(--b3-control-accent);color:#fff}
