@@ -38,6 +38,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
 
      if(route!=='/mascots.html')assert.equal(await page.locator('.toolya-idle').isVisible(),false,'no separate companion card on legal text pages');
      assert((await page.locator('.toolya-settings-trigger').boundingBox()).height>=44);
+     assert.equal(await page.locator('.ty-info-controls>.toolya-settings-trigger').count(),1,'settings button uses the information navigation slot');
      await page.locator('.toolya-settings-trigger').click();assert(await page.locator('#toolya-display-settings').isVisible());
      await page.getByRole('button',{name:'Einstellungen schließen',exact:true}).click();
      if(route==='/mascots.html'){
