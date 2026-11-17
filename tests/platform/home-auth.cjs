@@ -42,7 +42,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  }
  for(const tool of ['wishes','estate']){
   console.log('CHECK account navigation:',tool);await page.goto(origin+'/tools/'+tool+'/');
-  await page.waitForFunction(tool=>tool==='wishes'?location.pathname.endsWith('/tools/wishes/public.html')&&!!document.querySelector('#amazonUrl'):document.querySelector('#account-label')?.textContent.includes('@'),tool,{timeout:7000});
+  await page.waitForFunction(tool=>tool==='wishes'?location.pathname.endsWith('/tools/wishes/public.html')&&!!document.querySelector('#search'):document.querySelector('#account-label')?.textContent.includes('@'),tool,{timeout:7000});
  }
  await page.goto(origin);
  await page.waitForFunction(()=>document.querySelector('#userInfo').textContent==='Angemeldet',{},{timeout:5000});

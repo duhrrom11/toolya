@@ -1,11 +1,11 @@
-import test from 'node:test';import assert from 'node:assert/strict';import{readFileSync}from'node:fs';
-const js=readFileSync('tools/wishes/public-amazon.mjs','utf8');
-const html=readFileSync('tools/wishes/public.html','utf8');
-test('owner controls require authenticated matching user and confirmed deletion',()=>{
- assert.match(js,/sessionUser\?\.id===list\.user_id/);
- assert.match(js,/window\.confirm\(/);
- assert.match(js,/\.delete\(\)\.eq\('id',list\.id\)\.eq\('user_id',sessionUser\.id\)/);
- assert.match(js,/Liste aktualisieren/);assert.match(js,/Liste löschen/);
- assert.match(js,/functions\.invoke\('amazon-wishlist-scrape'/);
- assert.match(html,/owner-actions/);
+import test from 'node:test';import assert from 'node:assert/strict';import {amazonListUrl,amazonSearchUrl,splitInterests,rankProducts} from '../../tools/wishes/public-profile-model.mjs';
+test('wishlist URLs reject deceptive destinations and replace affiliate IDs',()=>{
+ for(const url of ['https://evil.test/hz/wishlist/ls/ABC','https://amazon.de.evil.test/hz/wishlist/ls/ABC','http://amazon.de/hz/wishlist/ls/ABC','https://user@amazon.de/hz/wishlist/ls/ABC','https://amazon.de:444/hz/wishlist/ls/ABC','https://amazon.de/dp/B012345678'])assert.equal(amazonListUrl(url),null);
+ const u=new URL(amazonListUrl('https://www.amazon.de/hz/wishlist/ls/ABC?tag=other-21#fragment'));assert.equal(u.search,'?tag=duhrrom-21');assert.equal(u.hash,'');
+ assert.equal(new URL(amazonSearchUrl('Bücher & Tee')).searchParams.get('k'),'Bücher & Tee');
+});
+test('interests are bounded; product matching does not invent products',()=>{
+ assert.deepEqual(splitInterests('Bücher, Garten, Bücher'),['Bücher','Garten']);assert.throws(()=>splitInterests(Array.from({length:13},(_,i)=>'Interest'+i).join(',')));
+ const products=[{asin:'B012345678',title:'Lampe',keywords:['Bücher']},{asin:'bad',title:'Invalid',keywords:['Bücher']}];
+ assert.equal(rankProducts(products,{bio:'Ich liebe Bücher'}).length,1);assert.equal(rankProducts(products,{bio:'Garten'}).length,0);
 });

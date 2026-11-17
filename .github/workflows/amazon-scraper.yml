@@ -47,3 +47,7 @@ jobs:
         run: |
           docker exec -i ${{ job.services.postgres.id }} psql -U postgres -v ON_ERROR_STOP=1 < tests/amazon/live-policy-schema.sql
           docker exec -i ${{ job.services.postgres.id }} psql -U postgres -v ON_ERROR_STOP=1 < tests/amazon/privacy-rollback.sql
+      - name: Verify public profile migration and owner permissions in isolated database
+        run: |
+          docker exec ${{ job.services.postgres.id }} createdb -U postgres wishlist_profiles_test
+          cat tests/amazon/public-profiles-bootstrap.sql supabase/migrations/20261117100000_public_wishlist_profiles.sql tests/amazon/public-profiles-assertions.sql | docker exec -i ${{ job.services.postgres.id }} psql -U postgres -d wishlist_profiles_test -v ON_ERROR_STOP=1
