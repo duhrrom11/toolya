@@ -84,7 +84,7 @@ begin
   v_title := nullif(btrim(v_event->>'title'),'');
   v_date := v_event->>'date';
   if v_title is null or length(v_title)>160 or
-     v_date !~ '^\\d{4}-\\d{2}-\\d{2}$' then
+     v_date !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' then
     raise exception 'Invalid source entry' using errcode='22023';
   end if;
   begin
