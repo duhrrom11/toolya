@@ -489,7 +489,7 @@ test('backform-umrechner: save and delete recipe await cloud confirmation',async
 });
 
 
-async function isolatedWishlist(page,authenticated){
+async function isolatedWishlist(page,authenticated,profiles=[]){
  await page.route('**/*',async route=>{
   const url=route.request().url();
   if(url.startsWith(origin)&&!url.endsWith('/assets/vendor/supabase-2.57.0.js'))return route.continue();
@@ -501,7 +501,7 @@ async function isolatedWishlist(page,authenticated){
      onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}},
      async signOut(){m.user=null;return {error:null}}
     },
-    rpc(){return Promise.resolve({data:[],error:null})},
+    rpc(name){return Promise.resolve({data:name==='search_wishlist_profiles'?${JSON.stringify(profiles)}:[],error:null})},
     from(table){return {
      select(){return this},eq(){return this},order(){return this},limit(){return this},
      async maybeSingle(){return {data:null,error:null}},
@@ -1235,4 +1235,57 @@ test('wishlist: removing and adding lists keeps numbers and the first URL unique
  await expect(page.locator('#listFields fieldset')).toHaveCount(1);
  await expect(page.locator('#profileStatus')).toContainText('mindestens eine');
  expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
+});
+// Read-only account layout acceptance; no credential submission or production access.
+for(const kind of ["car","budget","moving","loans","meters","plants","parking","pet-health","housemates","baking"]){
+ test(kind+': account actions are consistent and usable at three widths',async({page},testInfo)=>{
+  test.setTimeout(60000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await isolated(page,true,true);await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
+  await page.goto(origin+'/tools/'+kind+'/index.html');await page.locator('.toolya-signature-footer').waitFor();
+  if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+  for(const width of [320,768,1440]){
+   await page.setViewportSize({width,height:1000});
+   await page.evaluate(()=>{if(typeof openSettings==='function')openSettings();else toggleSettingsModal()});
+   const modal=page.locator('#settingsModal,#settings-modal');await expect(modal).toBeVisible();
+   const surface=modal.locator(':scope>div');await surface.evaluate(e=>e.scrollTop=0);
+   for(const b of await modal.locator('button:visible').all())expect(await b.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+   expect(await surface.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
+   for(const button of await modal.locator('button[onclick="supabaseLogin()"],button[onclick="loginUser()"],button[onclick="supabaseRegister()"],button[onclick="registerUser()"]').all()){
+    await expect(button).toHaveClass(/b3-action/);expect(await button.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+    await expect(button).toHaveCSS('font-weight','700');
+    if(!((await button.getAttribute('class')).includes('b3-outline')))await expect(button).toHaveCSS('background-color','rgb(0, 126, 159)');
+    await button.focus();expect(await button.evaluate(e=>parseFloat(getComputedStyle(e).outlineWidth))).toBeGreaterThanOrEqual(3);
+   }
+   await surface.evaluate(e=>e.scrollTop=0);await page.screenshot({path:testInfo.outputPath('account-'+kind+'-'+width+'.png')});await reviewImage(page,'account-'+kind+'-'+width);
+   await page.evaluate(()=>{if(typeof closeSettings==='function')closeSettings();else toggleSettingsModal()});await expect(modal).toBeHidden();
+  }
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);expect(errors).toEqual([]);
+ });
+}
+
+test('wishlist: public cards and five-list form remain usable at three widths',async({page},testInfo)=>{
+ const profile={user_id:'11111111-1111-4111-8111-111111111111',display_name:'Isoliertes Wunschprofil mit langem Anzeigenamen',country:'Schweiz',city:'Isolierter Ort',bio:'Synthetische Prüfansicht für Bücher, Garten und gemeinsame Geschenkideen.',interests:['Bücher','Garten'],lists:[{name:'Geburtstagswünsche',url:'https://www.amazon.de/hz/wishlist/ls/ABC123',occasion:'Geburtstag'}]};
+ await isolatedWishlist(page,true,[profile]);await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto(origin+'/tools/wishes/public.html');
+ await expect(page.locator('#profileForm')).toBeVisible();await expect(page.locator('#results .profile-card')).toHaveCount(1);
+ await page.locator('.toolya-signature-footer').waitFor();await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+ await page.locator('#displayName').fill(profile.display_name);await page.locator('#country').fill(profile.country);await page.locator('#bio').fill(profile.bio);
+ for(let i=0;i<4;i++)await page.locator('#addList').click();
+ for(const [i,fs]of (await page.locator('#listFields fieldset').all()).entries()){
+  await fs.locator('[name=name]').fill('Isolierte Wunschliste '+(i+1));await fs.locator('[name=url]').fill('https://www.amazon.de/hz/wishlist/ls/ABC'+i);
+ }
+ for(const width of [320,768,1440]){
+  await page.setViewportSize({width,height:1000});
+  if(width<900)expect(await page.locator('#results .person>div').evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThan(200);
+  for(const [name,selector]of [['card','#results'],['form','#profileForm'],['actions','#profileForm .actions']]){
+   const panel=page.locator(selector);await panel.evaluate(e=>e.scrollIntoView({block:'start'}));
+   expect(await panel.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+   await page.screenshot({path:testInfo.outputPath('wishlist-'+name+'-'+width+'.png')});await reviewImage(page,'wishlist-'+name+'-'+width);
+  }
+ }
+ await page.locator('#previewProfile').click();await expect(page.locator('#previewDialog')).toBeVisible();
+ await expect(page.locator('#previewContent .list-links a')).toHaveCount(5);
+ for(const a of await page.locator('#previewContent .list-links a').all())expect(new URL(await a.getAttribute('href')).searchParams.get('tag')).toBe('duhrrom-21');
+ await page.locator('#closePreview').click();expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
 });

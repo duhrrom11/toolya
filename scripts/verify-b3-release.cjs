@@ -30,7 +30,13 @@ async function get(path){
     assert.equal(hash(page.body),hash(expectedPage),'Tool HTML must match this release byte for byte');
     pages.push({url:page.url,status:200,sharedStylesheet:true,byteIdentical:true,expectedSha256:hash(expectedPage),actualSha256:hash(page.body)});
    }
-   result={revision,checkedAt:new Date().toISOString(),attempt,css:{url:css.url,expectedSha256:hash(expected),actualSha256:hash(css.body),byteIdentical:true},buddy:{url:buddy.url,expectedSha256:hash(expectedBuddy),actualSha256:hash(buddy.body),byteIdentical:true},themeStyles,pages,scope:'Public static delivery only; authenticated production UI and private flows are not verified by this check.'};
+   const wishlist=[];
+   for(const path of ['/tools/wishes/public.html','/tools/wishes/public-profiles.css','/tools/wishes/public-amazon.mjs','/tools/wishes/public-profile-model.mjs','/tools/wishes/public-products.json']){
+    const asset=await get(path),expectedAsset=fs.readFileSync(path.slice(1));
+    assert.equal(hash(asset.body),hash(expectedAsset),'Public wishlist asset must match release byte for byte');
+    wishlist.push({url:asset.url,expectedSha256:hash(expectedAsset),actualSha256:hash(asset.body),byteIdentical:true});
+   }
+   result={revision,checkedAt:new Date().toISOString(),attempt,css:{url:css.url,expectedSha256:hash(expected),actualSha256:hash(css.body),byteIdentical:true},buddy:{url:buddy.url,expectedSha256:hash(expectedBuddy),actualSha256:hash(buddy.body),byteIdentical:true},themeStyles,pages,wishlist,scope:'Public static delivery only; authenticated production UI and private flows are not verified by this check.'};
    break;
   }catch(error){lastError=error;if(attempt<6)await new Promise(r=>setTimeout(r,10000));}
  }

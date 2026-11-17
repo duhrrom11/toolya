@@ -1,0 +1,171 @@
+{
+  "sourceSha": "7168f65915b41e2e68b5399ad27eae1116e202a3",
+  "browserRun": 44075360098,
+  "job": 134011833727,
+  "widths": [
+    320,
+    768,
+    1440
+  ],
+  "images": [
+    {
+      "path": "docs/audits/evidence/pr112-account-car-320.jpg",
+      "blobSha": "1abd766b644692264eb5cc683d85b35375d7f60a"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-car-768.jpg",
+      "blobSha": "b777ef0c6acf06edfbdb5fd737c9ea9944688d32"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-car-1440.jpg",
+      "blobSha": "a88dbc1fbcd0f8e28b77a9d1b58822d18df1f160"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-budget-320.jpg",
+      "blobSha": "0ac7c7ea84e7a85e58d22f9dfb2538a24959773a"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-budget-768.jpg",
+      "blobSha": "05b12cc0f9f4291ff9b15565f949bdb7e81b3d59"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-budget-1440.jpg",
+      "blobSha": "ff158534b831ef4ab20e10a355bc07351551292f"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-moving-320.jpg",
+      "blobSha": "45c1f21cc37ac4ad9fed90f3f94650f7072d0442"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-moving-768.jpg",
+      "blobSha": "71b423c7ca8daaedd4ed55d5c43059db6ec479ac"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-moving-1440.jpg",
+      "blobSha": "68cb8035200c2f40a712e2ff03e9d2da7f283207"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-loans-320.jpg",
+      "blobSha": "0f8ebc1260ea37691e52fc65129f42641d3aff5f"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-loans-768.jpg",
+      "blobSha": "a5f3d43c80986d609f466f84315c5d277551ad68"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-loans-1440.jpg",
+      "blobSha": "48d08322d73f3984a410408be9801f4d9f79dca8"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-meters-320.jpg",
+      "blobSha": "3b49e9e2774a3029d3dfb4fe95968d22db019347"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-meters-768.jpg",
+      "blobSha": "a1284030302020bb149ca097bc7c5f7aa793f91e"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-meters-1440.jpg",
+      "blobSha": "65d3c5b1dcfe1e5afba8e87d80e0d70d28744ad6"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-plants-320.jpg",
+      "blobSha": "0a9cca2b19ff9ca8789c6afc3fa3185a3acad57a"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-plants-768.jpg",
+      "blobSha": "8dbf13b6e39cc9066dd498414f8945ce95be1f7f"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-plants-1440.jpg",
+      "blobSha": "c661e5c5b489072eed06f20eb2e594bab362771b"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-parking-320.jpg",
+      "blobSha": "520f8cded6448206008c32f5f401dfedc855d95b"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-parking-768.jpg",
+      "blobSha": "5d9a247c48587c6b0924855addc7d4e8e3b40199"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-parking-1440.jpg",
+      "blobSha": "44ad40a234ae7ea585c8c0d4bafa14bc7eef5105"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-pet-health-320.jpg",
+      "blobSha": "86a7f808847008adb0f31566a80523f3e66a8979"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-pet-health-768.jpg",
+      "blobSha": "c671d73584ae8bf13650e14f420b93d25ef687af"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-pet-health-1440.jpg",
+      "blobSha": "abd043ce232511367ae1328c0a9dc61c11320ad3"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-housemates-320.jpg",
+      "blobSha": "b87395cd06bfa4b6207f5e8b35b73215e179b97f"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-housemates-768.jpg",
+      "blobSha": "fc60b2f29b1a33c360e97dc30002e5d9ce723ab7"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-housemates-1440.jpg",
+      "blobSha": "d55fff9c1703ccc2d03d7173b05c0ccf1e47e52a"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-baking-320.jpg",
+      "blobSha": "c89a5563c6ec1571e0eaf31fa5a3c362b1c2c42e"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-baking-768.jpg",
+      "blobSha": "13439ffa6b6dce5eeb67b8f0809b39b4440da427"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-account-baking-1440.jpg",
+      "blobSha": "7d745bfbf2c927bbfa3ecf83e4857633ba2774d1"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-wishlist-card-320.jpg",
+      "blobSha": "6950f9a06475ad27916e25609b26edd0146a8929"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-wishlist-form-320.jpg",
+      "blobSha": "911b1e89a00cf204edb9e8594f4038303bc779cd"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-wishlist-actions-320.jpg",
+      "blobSha": "6134f6a34c9eb4190d81c0436635cba1853d1a48"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-wishlist-card-768.jpg",
+      "blobSha": "94d8dca4a36cea5b039ff9e4cd366a603efd45b0"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-wishlist-form-768.jpg",
+      "blobSha": "aaf0512637879a30a7fb13b6feb072ff1dd939d3"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-wishlist-actions-768.jpg",
+      "blobSha": "3be466faaaa239324ac85fbc11f99081a35656bf"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-wishlist-card-1440.jpg",
+      "blobSha": "dd52cdd5f40ab6e81eb4aac2fd1e66c4b5ce591a"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-wishlist-form-1440.jpg",
+      "blobSha": "60179369f2026354d98b02321ce192ddd6781d99"
+    },
+    {
+      "path": "docs/audits/evidence/pr112-wishlist-actions-1440.jpg",
+      "blobSha": "794fdb9bf614b6b3de51bd356747934f43552359"
+    }
+  ],
+  "captures": 39,
+  "reviewed": true,
+  "scope": "Ten B3 account layouts and public wishlist card/form/actions; synthetic isolated cloud only; zero writes. No real auth or production mutation, no backup/restore acceptance."
+}
