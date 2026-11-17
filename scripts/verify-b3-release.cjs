@@ -17,13 +17,13 @@ async function get(path){
    const buddy=await get('/shared/toolya/buddy.mjs'),expectedBuddy=fs.readFileSync('shared/toolya/buddy.mjs');
    assert.equal(hash(buddy.body),hash(expectedBuddy),'Live buddy module must match this release byte for byte');
    const themeStyles=[];
-   for(const path of ['/assets/helferlein-b3-autokosten.css','/assets/helferlein-b3-haushaltsbuch.css','/assets/helferlein-b3-umzugskisten.css','/assets/helferlein-b3-verleih.css']){
+   for(const path of ['/assets/helferlein-b3-autokosten.css','/assets/helferlein-b3-haushaltsbuch.css','/assets/helferlein-b3-umzugskisten.css','/assets/helferlein-b3-verleih.css','/assets/helferlein-b3-zaehler.css','/assets/helferlein-b3-pflanzen.css']){
     const asset=await get(path),expectedAsset=fs.readFileSync(path.slice(1));
     assert.equal(hash(asset.body),hash(expectedAsset),'Live theme CSS must match this release byte for byte');
     themeStyles.push({url:asset.url,expectedSha256:hash(expectedAsset),actualSha256:hash(asset.body),byteIdentical:true});
    }
    const pages=[];
-   for(const route of ['/tools/car/index.html','/tools/budget/index.html','/tools/moving/index.html','/tools/loans/index.html']){
+   for(const route of ['/tools/car/index.html','/tools/budget/index.html','/tools/moving/index.html','/tools/loans/index.html','/tools/meters/index.html','/tools/plants/index.html']){
     const page=await get(route);
     assert.match(page.body.toString('utf8'),/href=["'][^"']*assets\/helferlein-b3\.css["']/,'Tool retains the shared stylesheet');
     const expectedPage=fs.readFileSync(route.slice(1));
@@ -37,5 +37,5 @@ async function get(path){
  if(!result)throw lastError;
  fs.mkdirSync('test-results',{recursive:true});fs.writeFileSync('test-results/b3-live-delivery.json',JSON.stringify(result,null,2)+'\n');
  console.log('B3_LIVE_DELIVERY '+JSON.stringify(result));
- if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'### B3 public delivery\n\nShared/theme CSS, tool HTML and buddy module byte-identical to '+revision+'; Car, Budget, Moving and Loans HTML reference the shared stylesheet. No authenticated production UI check.\n');
+ if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'### B3 public delivery\n\nShared/theme CSS, tool HTML and buddy module byte-identical to '+revision+'; Car, Budget, Moving, Loans, Meters and Plants HTML reference the shared stylesheet. No authenticated production UI check.\n');
 })().catch(error=>{console.error(error);process.exitCode=1});

@@ -34,3 +34,17 @@ body.b3-zaehler.b3-dark #settingsModal button[onclick="logoutUser()"]{background
  body.b3-zaehler main.b3-dashboard [data-b3-panel="create"] :is(.grid-cols-2,.grid-cols-3,.grid-cols-4),
  body.b3-zaehler main.b3-dashboard [data-b3-panel="tariffs"] :is(.grid-cols-2,.grid-cols-3){grid-template-columns:minmax(0,1fr)}
 }
+
+/* P1 application actions and readable form widths. */
+body.b3.b3-zaehler .b3-meter-tariff-heading{flex-wrap:wrap;gap:.75rem}
+body.b3.b3-zaehler .b3-meter-identity-grid{grid-template-columns:minmax(0,1fr)}
+body.b3.b3-zaehler .b3-meter-identity-grid>div{display:grid;grid-template-rows:1fr auto;min-width:0}
+body.b3.b3-zaehler .b3-meter-card-identity{min-width:0;max-width:100%;align-items:flex-start}
+body.b3.b3-zaehler .b3-meter-card-identity>div:first-child,body.b3.b3-zaehler .b3-meter-card-identity>img{flex-shrink:0}
+body.b3.b3-zaehler .b3-meter-card-identity>div:last-child{min-width:0;overflow-wrap:anywhere}
+@media(min-width:768px){body.b3.b3-zaehler .b3-meter-identity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1280px){body.b3.b3-zaehler .b3-meter-identity-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+body.b3.b3-zaehler #meterExchangeCheck{flex-shrink:0;min-width:16px;min-height:16px;width:16px;height:16px}
+body.b3.b3-zaehler .b3-meter-card-actions{flex-shrink:0}
+body.b3.b3-zaehler .b3-meter-card-actions button{min-height:44px;white-space:nowrap}
