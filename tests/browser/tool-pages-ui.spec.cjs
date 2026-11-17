@@ -1076,7 +1076,7 @@ for(const kind of ['parking','pet-health']){
     await expect(title).toHaveCSS('color','rgb(16, 43, 69)');
     expect(await title.evaluate(e=>{
      const c=getComputedStyle(e),bg=getComputedStyle(e.closest('.grid')?e.closest('.grid').firstElementChild:e.closest('#helpBox')).backgroundColor;
-     const lum=v=>v.match(/[\\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
+     const lum=v=>v.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
      const a=lum(c.color),b=lum(bg);return(Math.max(a,b)+.05)/(Math.min(a,b)+.05);
     })).toBeGreaterThanOrEqual(4.5);
    }
