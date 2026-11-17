@@ -37,7 +37,7 @@ body:has(.ty-tool-hero[data-tool="estate"]) nav button[data-tab][aria-current=tr
 @media(max-width:380px){#owner-app>nav{grid-template-columns:1fr}#owner-app>nav button{font-size:1rem;padding:12px 16px}}
 
 /* Shared Toolya controls inside the vault; entry cards and safety colours retain their roles. */
-:is(#owner-app,#access-panel,#read-panel,#confirm-dialog,#alarm-confirm) button{border-radius:12px;font-weight:700;max-width:100%;white-space:normal;overflow-wrap:normal}
+:is(#owner-app,#access-panel,#read-panel,#confirm-dialog,#alarm-confirm) button{border-radius:12px;font-weight:700;max-width:100%;white-space:normal;overflow-wrap:anywhere;hyphens:auto}
 #owner-app button.secondary,#access-panel button.secondary,#read-panel button.secondary,dialog button.secondary{background:#fff;color:#102b45;border-color:#cbdde6}
 #owner-app button.secondary:hover,#access-panel button.secondary:hover,#read-panel button.secondary:hover,dialog button.secondary:hover{background:var(--ty-color-soft,#e1f3fa)}
 #owner-app :is(input:not([type=checkbox]):not([type=hidden]),select,textarea),#access-panel textarea,dialog input{min-height:44px;border-radius:12px}
