@@ -29,6 +29,13 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
      assert.equal(await page.locator('.ty-info-header [aria-current=page]').count(),1,'current page marked');
      assert.equal(await page.locator('.ty-info-brand').evaluate(el=>getComputedStyle(el).fontFamily),brand.font,'header/footer brand match');
      for(const a of await page.locator('.ty-info-header nav a').all())assert((await a.boundingBox()).height>=44);
+     const infoContrasts=await page.locator('.ty-info-header nav a').evaluateAll(links=>{
+      const rgb=s=>s.match(/[\d.]+/g).map(Number),lum=v=>v.slice(0,3).map(x=>{x/=255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4}).reduce((n,x,i)=>n+x*[.2126,.7152,.0722][i],0);
+      const stops=getComputedStyle(document.querySelector('.ty-info-header')).backgroundImage.match(/rgba?\([^)]+\)/g).map(rgb);
+      return links.map(a=>{const c=getComputedStyle(a),fg=lum(rgb(c.color)),overlay=rgb(c.backgroundColor),alpha=overlay[3]??1;
+       return Math.min(...stops.map(stop=>{const bg=lum(stop.map((x,i)=>x*(1-alpha)+overlay[i]*alpha));return (Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05)}));});
+     });assert(infoContrasts.every(r=>r>=4.5),'information navigation contrast '+JSON.stringify(infoContrasts));
+
      if(route!=='/mascots.html')assert.equal(await page.locator('.toolya-idle').isVisible(),false,'no separate companion card on legal text pages');
      assert((await page.locator('.toolya-settings-trigger').boundingBox()).height>=44);
      await page.locator('.toolya-settings-trigger').click();assert(await page.locator('#toolya-display-settings').isVisible());
