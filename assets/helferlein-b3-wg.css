@@ -80,3 +80,15 @@ body.b3.b3-wg #b3-info{grid-column:1/-1!important}
  body.b3.b3-wg :is(#b3-debts,#b3-cleaning,#b3-cooking)>div>div:first-child{flex-wrap:wrap;gap:.75rem}
  body.b3.b3-wg :is(#b3-debts,#b3-cleaning,#b3-cooking)>div>div:first-child>.flex{flex-wrap:wrap;gap:.5rem}
 }
+
+/* Readable WG cards and scrollable member management at narrow widths. */
+body.b3.b3-wg #savingsGoalsGrid{grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+body.b3.b3-wg #savingsGoalsGrid .flex{flex-wrap:wrap;gap:.5rem}
+body.b3.b3-wg .b3-tool-dialog>div>div:first-child>h3{flex:1 1 120px;min-width:0}
+body.b3.b3-wg #mitbewohnerModal>div{display:block}
+body.b3.b3-wg .b3-wg-identity-grid>div{display:grid;grid-template-rows:1fr auto;min-width:0}
+@media(max-width:640px){
+ body.b3.b3-wg .b3-wg-shopping-fields{display:grid;grid-template-columns:minmax(0,1fr)}
+ body.b3.b3-wg .b3-wg-shopping-fields>*,body.b3.b3-wg .b3-wg-shopping-fields input{width:100%;min-width:0}
+ body.b3.b3-wg .b3-wg-contact-import{flex-direction:column;align-items:stretch;gap:.75rem}
+}
