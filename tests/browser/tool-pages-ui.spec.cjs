@@ -1248,6 +1248,7 @@ for(const kind of ["car","budget","moving","loans","meters","plants","parking","
    await page.evaluate(()=>{if(typeof openSettings==='function')openSettings();else toggleSettingsModal()});
    const modal=page.locator('#settingsModal,#settings-modal');await expect(modal).toBeVisible();
    const surface=modal.locator(':scope>div');await surface.evaluate(e=>e.scrollTop=0);
+   for(const b of await modal.locator('button:visible').all())expect(await b.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
    expect(await surface.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
    for(const button of await modal.locator('button[onclick="supabaseLogin()"],button[onclick="loginUser()"],button[onclick="supabaseRegister()"],button[onclick="registerUser()"]').all()){
     await expect(button).toHaveClass(/b3-action/);expect(await button.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
@@ -1267,6 +1268,7 @@ test('wishlist: public cards and five-list form remain usable at three widths',a
  await isolatedWishlist(page,true,[profile]);await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto(origin+'/tools/wishes/public.html');
  await expect(page.locator('#profileForm')).toBeVisible();await expect(page.locator('#results .profile-card')).toHaveCount(1);
+ await page.locator('.toolya-signature-footer').waitFor();await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
  await page.locator('#displayName').fill(profile.display_name);await page.locator('#country').fill(profile.country);await page.locator('#bio').fill(profile.bio);
  for(let i=0;i<4;i++)await page.locator('#addList').click();
  for(const [i,fs]of (await page.locator('#listFields fieldset').all()).entries()){
@@ -1274,6 +1276,7 @@ test('wishlist: public cards and five-list form remain usable at three widths',a
  }
  for(const width of [320,768,1440]){
   await page.setViewportSize({width,height:1000});
+  if(width<900)expect(await page.locator('#results .person>div').evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThan(200);
   for(const [name,selector]of [['card','#results'],['form','#profileForm'],['actions','#profileForm .actions']]){
    const panel=page.locator(selector);await panel.evaluate(e=>e.scrollIntoView({block:'start'}));
    expect(await panel.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
