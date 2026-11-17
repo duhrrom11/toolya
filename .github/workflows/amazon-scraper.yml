@@ -51,3 +51,6 @@ jobs:
         run: |
           docker exec ${{ job.services.postgres.id }} createdb -U postgres wishlist_profiles_test
           cat tests/amazon/public-profiles-bootstrap.sql supabase/migrations/20261117100000_public_wishlist_profiles.sql tests/amazon/public-profiles-assertions.sql | docker exec -i ${{ job.services.postgres.id }} psql -U postgres -d wishlist_profiles_test -v ON_ERROR_STOP=1
+      - name: Verify isolated admin discovery permissions, deduplication and public directory
+        run: |
+          cat tests/amazon/wishlist-discovery-bootstrap.sql supabase/migrations/20261117173000_wishlist_discovery.sql tests/amazon/wishlist-discovery-assertions.sql | docker exec -i ${{ job.services.postgres.id }} psql -U postgres -d wishlist_profiles_test -v ON_ERROR_STOP=1
