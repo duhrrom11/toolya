@@ -1171,6 +1171,7 @@ for(const kind of ['housemates','baking']){
     await page.locator('#b3-backform-editor').getByRole('button',{name:'Abbrechen',exact:true}).click();await page.evaluate(()=>closeSettings());
     await expect(page.locator('button[onclick="deleteRecipe(0)"]')).not.toHaveClass(/b3-action/);
    }
+   if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1))console.log('WG_BAKING_OVERFLOW',JSON.stringify(await page.evaluate(()=>[...document.querySelectorAll('body *')].map(e=>({id:e.id,tag:e.tagName,cls:typeof e.className==='string'?e.className.slice(0,110):'',right:Math.round(e.getBoundingClientRect().right),width:Math.round(e.getBoundingClientRect().width)})).filter(x=>x.width>0&&x.right>innerWidth+1).slice(0,35))));
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   }
   if(wg){
