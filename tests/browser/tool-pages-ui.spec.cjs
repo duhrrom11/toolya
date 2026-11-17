@@ -544,6 +544,26 @@ test('wishlist: verified profile write uses cloud and no localStorage',async({pa
 });
 
 
+test('wishlist: public preview, five named lists and affiliate attribution',async({page})=>{
+ await isolatedWishlist(page,true);
+ await page.goto(origin+'/tools/wishes/public.html');
+ await expect(page.locator('#profileForm')).toBeVisible();
+ await expect(page.locator('#profile .public-notice')).toContainText('Alle Angaben sind öffentlich sichtbar');
+ await page.locator('#displayName').fill('Anna Muster');
+ await page.locator('#country').fill('Schweiz');
+ await page.locator('#listFields [name=name]').fill('Meine Wünsche');
+ await page.locator('#amazonUrl').fill('https://www.amazon.de/hz/wishlist/ls/ABC123?tag=other-21');
+ await page.locator('#previewProfile').click();
+ await expect(page.locator('#previewDialog')).toBeVisible();
+ await expect(page.locator('#previewContent a')).toHaveAttribute('href','https://www.amazon.de/hz/wishlist/ls/ABC123?tag=duhrrom-21');
+ expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
+ await page.locator('#closePreview').click();
+ for(let n=0;n<4;n++)await page.locator('#addList').click();
+ await expect(page.locator('#listFields fieldset')).toHaveCount(5);
+ await expect(page.locator('#addList')).toBeDisabled();
+});
+
+
 async function isolatedEstate(page,authenticated){
  await page.route('**/*',async route=>{
   const url=route.request().url();

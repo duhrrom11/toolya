@@ -18,7 +18,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   assert.equal(await page.locator('#search').count(),1);assert.equal(await page.locator('#profileForm').count(),1);assert.match(fs.readFileSync('tools/wishes/public-amazon.mjs','utf8'),/image_url/);
   assert.equal(await page.locator('#countryFilter').count(),1);
   assert.equal(await page.locator('#results .profile-card').count(),1);
-  assert.equal(await page.locator('input[type=checkbox]').count(),0);
+  assert.equal(await page.locator('#profile input[type=checkbox]').count(),0);
   assert.equal(await page.locator('#mainAmazonSearch input[name=tag]').inputValue(),'duhrrom-21');
   for(const width of [320,375,768]){await page.setViewportSize({width,height:900});const dims=await page.evaluate(()=>({w:innerWidth,s:document.documentElement.scrollWidth}));assert.ok(dims.s<=dims.w+1,'Public wishlist overflow '+JSON.stringify(dims))}
   assert.equal(await page.locator('#email').count(),1);assert.equal(await page.locator('#password').count(),1);assert.equal(await page.locator('#login').count(),1);assert.equal(await page.locator('#signup').count(),1);
