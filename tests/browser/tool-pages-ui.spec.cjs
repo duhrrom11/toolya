@@ -1219,3 +1219,30 @@ for(const kind of ['housemates','baking']){
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);expect(errors).toEqual([]);
  });
 }
+
+
+// Read-only account layout acceptance; no credential submission or production access.
+for(const kind of ["car","budget","moving","loans","meters","plants","parking","pet-health","housemates","baking"]){
+ test(kind+': account actions are consistent and usable at three widths',async({page},testInfo)=>{
+  test.setTimeout(60000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await isolated(page,true,true);await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
+  await page.goto(origin+'/tools/'+kind+'/index.html');await page.locator('.toolya-signature-footer').waitFor();
+  if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+  for(const width of [320,768,1440]){
+   await page.setViewportSize({width,height:1000});
+   await page.evaluate(()=>{if(typeof openSettings==='function')openSettings();else toggleSettingsModal()});
+   const modal=page.locator('#settingsModal,#settings-modal');await expect(modal).toBeVisible();
+   const surface=modal.locator(':scope>div');await surface.evaluate(e=>e.scrollTop=0);
+   expect(await surface.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
+   for(const button of await modal.locator('button[onclick="supabaseLogin()"],button[onclick="loginUser()"],button[onclick="supabaseRegister()"],button[onclick="registerUser()"]').all()){
+    await expect(button).toHaveClass(/b3-action/);expect(await button.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+    await expect(button).toHaveCSS('font-weight','700');
+    if(!((await button.getAttribute('class')).includes('b3-outline')))await expect(button).toHaveCSS('background-color','rgb(0, 126, 159)');
+    await button.focus();expect(await button.evaluate(e=>parseFloat(getComputedStyle(e).outlineWidth))).toBeGreaterThanOrEqual(3);
+   }
+   await surface.evaluate(e=>e.scrollTop=0);await page.screenshot({path:testInfo.outputPath('account-'+kind+'-'+width+'.png')});await reviewImage(page,'account-'+kind+'-'+width);
+   await page.evaluate(()=>{if(typeof closeSettings==='function')closeSettings();else toggleSettingsModal()});await expect(modal).toBeHidden();
+  }
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);expect(errors).toEqual([]);
+ });
+}

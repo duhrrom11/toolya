@@ -271,7 +271,7 @@
     <div id="hiddenQrContainer" class="hidden"></div>
 
     <!-- Einstellungs-Modal mit Supabase Auth -->
-    <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="settingsModal" class="b3-tool-dialog fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors space-y-5">
             <div class="flex justify-between items-center border-b border-gray-200 pb-3">
                 <h3 class="text-lg font-bold text-gray-900">
@@ -295,10 +295,10 @@
                     <label class="helferlein-field" for="loginPassword"><span class="helferlein-field-label">Passwort</span><input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
 
                     <div class="grid grid-cols-3 gap-2">
-                        <button type="button" onclick="registerUser()" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold">
+                        <button type="button" onclick="registerUser()" class="b3-action b3-outline px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold">
                             👤 Registrieren
                         </button>
-                        <button type="button" onclick="loginUser()" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-semibold">
+                        <button type="button" onclick="loginUser()" class="b3-action px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-semibold">
                             🔑 Anmelden
                         </button>
                         <button type="button" onclick="logoutUser()" class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-semibold">

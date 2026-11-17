@@ -86,7 +86,7 @@
 </div></header>
 
     <!-- MODAL: Einstellungen & Supabase Auth -->
-    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleSettingsModal()">
+    <div id="settingsModal" class="b3-tool-dialog fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleSettingsModal()">
         <div class="bg-white p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-indigo-900">⚙️ Einstellungen und Konto</h3>
@@ -109,8 +109,8 @@
                     <input type="password" id="auth-password" placeholder="••••••••" class="w-full p-2.5 rounded-xl border text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div class="grid grid-cols-2 gap-2 pt-1">
-                    <button onclick="supabaseLogin()" class="py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-sm">Anmelden</button>
-                    <button onclick="supabaseRegister()" class="py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl transition shadow-sm">Registrieren</button>
+                    <button onclick="supabaseLogin()" class="b3-action py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-sm">Anmelden</button>
+                    <button onclick="supabaseRegister()" class="b3-action b3-outline py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl transition shadow-sm">Registrieren</button>
                 </div>
                 <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-xl transition">Abmelden</button>
             </div>
