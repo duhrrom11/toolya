@@ -44,3 +44,7 @@ body.b3.b3-zaehler .b3-meter-card-identity>div:first-child,body.b3.b3-zaehler .b
 body.b3.b3-zaehler .b3-meter-card-identity>div:last-child{min-width:0;overflow-wrap:anywhere}
 @media(min-width:768px){body.b3.b3-zaehler .b3-meter-identity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:1280px){body.b3.b3-zaehler .b3-meter-identity-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+body.b3.b3-zaehler #meterExchangeCheck{flex-shrink:0;min-width:16px;min-height:16px;width:16px;height:16px}
+body.b3.b3-zaehler .b3-meter-card-actions{flex-shrink:0}
+body.b3.b3-zaehler .b3-meter-card-actions button{min-height:44px;white-space:nowrap}

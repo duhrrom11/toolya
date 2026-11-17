@@ -33,3 +33,6 @@ body.b3.b3-plants .b3-tool-dialog :is(input,select,textarea){max-width:100%;min-
 
 body.b3.b3-plants .b3-plant-store-row{flex-wrap:wrap;gap:.75rem}
 body.b3.b3-plants .b3-plant-store-row>div{min-width:0;max-width:100%;overflow-wrap:anywhere}
+
+body.b3.b3-plants #editModal .grid{gap:.75rem}
+body.b3.b3-plants .b3-plant-card-actions button{min-width:44px;min-height:44px}

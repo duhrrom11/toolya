@@ -815,6 +815,7 @@ for(const item of tools){
    await expect(modal).toBeHidden();
    const danger=page.locator(isCar?'button[onclick="deleteEvent(2)"]':'button[onclick="deleteReceipt(2)"]');
    await expect(danger).not.toHaveClass(/b3-action/);
+   expect(await danger.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
    const red=await danger.evaluate(e=>getComputedStyle(e).color.match(/[\d.]+/g).map(Number));
    expect(red[0]).toBeGreaterThan(red[1]);
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
@@ -942,13 +943,14 @@ for(const kind of ['meters','plants']){
   };
   for(const width of [320,768,1440]){
    await page.setViewportSize({width,height:1000});expect(new URL(page.url()).pathname).toBe(route);
+   if(meters)expect(await page.locator('#meterExchangeCheck').evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThanOrEqual(16);
    await expect(page.locator('html')).toHaveCSS('color-scheme','light');
    await controls(page.locator('main.b3-dashboard'));
    const grid=page.locator(meters?'.b3-meter-identity-grid':'.b3-plant-care-grid');
    expect(await grid.evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length)).toBe(width<768?1:width<1280?2:4);
    if(width===768)expect(await page.locator(meters?'#meterName':'#plantLight').evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThan(280);
    await page.locator(meters?'#b3-tariffs':'#b3-create').evaluate(e=>e.scrollIntoView({block:'start'}));await capture('form-'+width);
-   await page.locator(meters?'#b3-create':'button[onclick="savePlant()"]').evaluate(e=>e.scrollIntoView({block:'start'}));await capture('entry-'+width);
+   await page.locator(meters?'#b3-create':'#waterMlHint').evaluate(e=>e.scrollIntoView({block:'start'}));await capture('entry-'+width);
    const list=page.locator(meters?'#b3-history':'#b3-plants');
    await list.evaluate(e=>e.scrollIntoView({block:'start'}));expect(await fits(list)).toBe(true);await capture('list-'+width);
    const danger=page.locator(meters?'button[onclick="deleteReading(2)"]':'button[onclick="deletePlant(2)"]');
@@ -976,6 +978,7 @@ for(const kind of ['meters','plants']){
    const modal=page.locator('#'+id);await expect(modal).toBeVisible();
    const surface=modal.locator(':scope>div');expect(await fits(surface)).toBe(true);await controls(modal);
    await surface.evaluate(e=>e.scrollTop=0);await capture(id+'-320');
+   if(['beetModal','energyTipsModal'].includes(id)){await surface.evaluate(e=>e.scrollTop=e.scrollHeight);await capture(id+'-end-320');}
    await page.evaluate(close=>window[close](),close);await expect(modal).toBeHidden();
   }
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
