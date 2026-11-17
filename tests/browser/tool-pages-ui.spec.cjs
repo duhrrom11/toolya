@@ -1158,7 +1158,7 @@ for(const kind of ['housemates','baking']){
     await page.locator('#btn-tab-rechner').click();
     await page.locator('#tab-rechner').evaluate(e=>e.scrollIntoView({block:'start'}));await inspect(page.locator('main'));await capture('calculator-'+width);
     expect(await page.locator('main.b3-backform-main').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length)).toBe(width<1280?1:3);
-    console.log('BAKING_MAIN',JSON.stringify(await page.locator('main.b3-backform-main').evaluate(e=>({width:innerWidth,children:[...e.children].map(x=>({tag:x.tagName,cls:x.className,style:x.getAttribute('style'),column:getComputedStyle(x).gridColumn,width:x.getBoundingClientRect().width})),columns:getComputedStyle(e).gridTemplateColumns}))));
+    if(width===1440)expect(await page.locator('.b3-baking-calculator-column').evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThan(750);
     await page.locator('#recipe-input').fill('250g Mehl');
     await page.locator('#orig-d').fill('26');await page.locator('#target-d').fill('20');
     expect(Number(await page.locator('#res-factor').innerText())).toBeCloseTo(400/676,2);
@@ -1169,7 +1169,6 @@ for(const kind of ['housemates','baking']){
     for(const tab of ['substanz','tools','rezepte','finder']){
      if(tab==='finder')await page.evaluate(()=>openTab('finder'));else await page.locator('#btn-tab-'+tab).click();
      await expect(page.locator('#tab-'+tab)).toBeVisible();await page.locator('#tab-'+tab).evaluate(e=>e.scrollIntoView({block:'start'}));
-     if(tab==='tools')console.log('BAKING_GEOMETRY',JSON.stringify(await page.locator('#tab-tools h2').first().evaluate(e=>{const r=document.createRange();r.selectNodeContents(e);const box=x=>{const r=x.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}};return{text:e.textContent,html:e.innerHTML,rect:box(e),range:box(r),scroll:e.scrollWidth,client:e.clientWidth,css:{display:getComputedStyle(e).display,overflow:getComputedStyle(e).overflow,textIndent:getComputedStyle(e).textIndent},ancestors:[e.parentElement,e.parentElement.parentElement].map(x=>({rect:box(x),scroll:x.scrollWidth,client:x.clientWidth,scrollLeft:x.scrollLeft}))}})));
      await inspect(page.locator('#tab-'+tab));expect(await fits(page.locator('#tab-'+tab))).toBe(true);await capture(tab+'-'+width);
     }
     await page.evaluate(()=>openCookMode());await expect(page.locator('#cook-modal')).toBeVisible();await inspect(page.locator('#cook-modal'));expect(await fits(page.locator('#cook-modal>div'))).toBe(true);await capture('timer-'+width);await page.evaluate(()=>closeCookMode());
