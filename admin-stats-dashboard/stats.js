@@ -20,6 +20,16 @@ const renderSeo=(host,series)=>{host.replaceChildren();const points=Array.isArra
   host.append(svg);const dates=document.createElement('p');dates.className='seo-dates';dates.textContent=points[0].date+' – '+points[points.length-1].date+' · Maximum '+max.toLocaleString('de-DE');host.append(dates);
  }
 };
+const indexingPages=[["Autokosten-Rechner","car/index.html"],["Backform-Rechner","baking/index.html"],["Haushaltsbuch","budget/index.html"],["Haustier-Gesundheit","pet-health/index.html"],["Parkplatz-Merker","parking/index.html"],["Pflanzenpflege","plants/index.html"],["Umzugskisten-Planer","moving/index.html"],["Verleihverwaltung","loans/index.html"],["WG-Organisator","housemates/index.html"],["Zählerstände","meters/index.html"],["Öffentliche Wunschlisten","wishes/public.html"]];
+function renderIndexing(){
+ const summary=$('indexing-summary');summary.replaceChildren(tile('Google · beantragt','11 / 11','Betreiberangabe vom 17.11.2026'),tile('Bing · beantragt','11 / 11','Betreiberangabe vom 17.11.2026'),tile('Indexierung bestätigt','Unbekannt','Keine verifizierten URL-Inspektionsdaten'));
+ const rows=$('indexing-rows');rows.replaceChildren();
+ for(const [name,path] of indexingPages){
+  const tr=document.createElement('tr'),nameCell=document.createElement('td'),link=document.createElement('a');link.href='https://toolya.app/tools/'+path;link.textContent=name;link.target='_blank';link.rel='noopener noreferrer';nameCell.append(link);tr.append(nameCell);
+  for(const value of ['Beantragt','Beantragt','Nicht verifiziert']){const td=document.createElement('td');td.textContent=value;tr.append(td)}
+  rows.append(tr);
+ }
+}
 async function load(){
  if(!client){show('Die Anmeldung konnte nicht geladen werden.');return}
  show('Administratorzugriff wird geprüft …');
@@ -36,6 +46,7 @@ async function load(){
   renderSeo($('seo-google'),seo.find(x=>x.source==='google'));
   renderSeo($('seo-bing'),seo.find(x=>x.source==='bing'));
   $('seo').hidden=false;
+  renderIndexing();
   const diagnostic=metrics.find(m=>m.label==='Tool-Ranking-Diagnose');
   const eventCount=metrics.find(m=>m.label==='GA4-Tool-Open-Gesamt');
   const diagnosis=diagnostic?.detail||'Ranking-Diagnose derzeit nicht verfügbar.';
