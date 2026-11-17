@@ -1,0 +1,42 @@
+/* Retained wishlist subpages: shared light Toolya surfaces, no business logic changes. */
+html:has(body[data-toolya-legacy-wishes]){color-scheme:light;background:#f3f7fb}
+body[data-toolya-legacy-wishes]{min-height:100vh;background:#f3f7fb;color:#102b45;font-family:var(--ty-font-brand,Inter,ui-sans-serif,system-ui,sans-serif);line-height:1.55}
+body[data-toolya-legacy-wishes] *{box-sizing:border-box}
+body[data-toolya-legacy-wishes]>header{display:none}
+body[data-toolya-legacy-wishes] .toolya-idle{display:none}
+body[data-toolya-legacy-wishes] main{width:min(1100px,calc(100% - 32px));max-width:1100px;margin:20px auto;padding:0 0 48px;color:#102b45;min-width:0;overflow-wrap:anywhere}
+body[data-toolya-legacy-wishes] main :is(.hero,.panel,.card,.summary,.empty,section:not(.error):not(.warning),.metric,.notice:not(.error):not(.warning),.wishes-signin,.wishes-account-panel,.wishes-disclosure){background:#fff;color:#102b45;border-color:#cde3e8;border-radius:16px;min-width:0}
+body[data-toolya-legacy-wishes] main .hero{padding:clamp(20px,4vw,36px);border:1px solid #cde3e8}
+body[data-toolya-legacy-wishes] main :is(h2,h3,h4,strong,.eyebrow){color:#102b45}
+body[data-toolya-legacy-wishes] main .ty-legacy-title{font-size:clamp(24px,4vw,36px);font-weight:800;line-height:1.3;margin:4px 0 16px;overflow-wrap:anywhere}
+body[data-toolya-legacy-wishes] main :is(.muted,.handle,.meta){color:#526975}
+body[data-toolya-legacy-wishes] main a{color:#006780}
+body[data-toolya-legacy-wishes] main :is(button,.actions a,.nav a,.card-body a.primary){min-height:44px;max-width:100%;padding:10px 14px;border:1px solid transparent;border-radius:12px;background:var(--ty-color-primary,#007e9f);color:#fff;font:inherit;font-weight:700;white-space:normal;overflow-wrap:anywhere}
+body[data-toolya-legacy-wishes] main :is(button,.actions a,.nav a,.card-body a.primary):hover{filter:brightness(.95)}
+body[data-toolya-legacy-wishes] main :is(button.secondary,button.ghost){background:#fff;color:#102b45;border-color:#cbdde6}
+body[data-toolya-legacy-wishes] main button:is(.danger,.delete,.remove,[data-danger]){background:#fff0eb;color:#8e321f;border-color:#e1beb2}
+body[data-toolya-legacy-wishes] main :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea){font:inherit;max-width:100%;min-width:0;min-height:44px;border:1px solid #7892a3;border-radius:12px;padding:10px 12px;background:#fff;color:#102b45}
+body[data-toolya-legacy-wishes] main :is(input[type=checkbox],input[type=radio]){min-width:18px;min-height:18px;accent-color:var(--ty-color-primary,#007e9f)}
+body[data-toolya-legacy-wishes] :is(button,a,input,select,textarea,summary):focus-visible{outline:3px solid var(--ty-color-primary,#007e9f);outline-offset:3px}
+body[data-toolya-legacy-wishes] main summary{min-height:44px;align-content:center}
+html body[data-toolya-legacy-wishes]>.wishes-navigation{width:min(1100px,calc(100% - 32px));margin:16px auto;background:#fff;border:1px solid #cde3e8;border-radius:16px;flex-wrap:wrap}
+html body[data-toolya-legacy-wishes]>.wishes-navigation a{min-height:44px;align-content:center;background:#fff;color:#102b45;border-color:#cde3e8}
+html body[data-toolya-legacy-wishes]>.wishes-navigation a[aria-current]{background:var(--ty-color-primary,#007e9f);color:#fff}
+body[data-toolya-legacy-wishes] main :is(.card,.panel,.hero) img{max-width:100%}
+@media(max-width:650px){body[data-toolya-legacy-wishes] main .actions{display:grid;grid-template-columns:minmax(0,1fr)}body[data-toolya-legacy-wishes] main .actions>*{width:100%}body[data-toolya-legacy-wishes] main .panel{padding:18px}}
+
+/* Visual review: neutral links, readable former dark notices and responsive navigation. */
+html body[data-toolya-legacy-wishes]>.wishes-navigation a:not([aria-current]){background:#fff;color:#102b45;border-color:#cde3e8}
+body[data-toolya-legacy-wishes] .ty-tool-hero .toolya-settings-trigger{display:grid;place-items:center;min-width:44px;min-height:44px;padding:8px;border:1px solid #cbdde6;border-radius:12px;background:var(--ty-color-primary,#007e9f);color:#fff;font-size:22px;line-height:1;font-weight:700}
+body[data-toolya-legacy-wishes]>.ty-legacy-note{width:min(1100px,calc(100% - 32px));margin:24px auto;color:#526975;font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+body[data-toolya-legacy-wishes] main .metric{border:1px solid #cde3e8}
+body[data-toolya-legacy-wishes] main :is(.chips,.filters,.tabs) button{background:#fff;color:#102b45;border-color:#cbdde6}
+body[data-toolya-legacy-wishes] main :is(.chips,.filters,.tabs) button[aria-pressed=true]{background:var(--ty-color-primary,#007e9f);color:#fff;border-color:var(--ty-color-primary,#007e9f)}
+html body[data-toolya-legacy-wishes] main .wishes-gift-links a{background:#fff;color:#102b45;border-color:#cde3e8}
+html body[data-toolya-legacy-wishes] main .wishes-gift-links span{color:#526975}
+@media(max-width:650px){html body[data-toolya-legacy-wishes]>.wishes-navigation{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+body[data-toolya-legacy-wishes] main :is(.cover,.avatar,.badge){background:var(--ty-color-soft,#e1f3fa);color:#102b45}
+body[data-toolya-legacy-wishes] main .card-body p{color:#526975}
+body[data-toolya-legacy-wishes] main .card-body a:not(.primary){color:#006780;background:transparent}
+body[data-toolya-legacy-wishes]>.ty-legacy-note a{color:#006780}

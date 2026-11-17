@@ -1,0 +1,391 @@
+{
+  "sourceCommit": "656043899e0aed7301924a040d4c646e9c769a72",
+  "workflowRun": 44200119964,
+  "scope": "16 retained wishlist pages; signed-out, invalid link, empty and synthetic discovery states only. No authenticated production acceptance. Four contact sheets visually reviewed. Long German heading wrapping still requires typography follow-up.",
+  "screenshots": [
+    {
+      "file": "legacy-planner-1440.png",
+      "sha256": "4663d86b757894846662cebb493a26fdf7065131290c3876b4af5dedc78ca6dc",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-planner-320.png",
+      "sha256": "fd622d965b46baaaf5680c0f43fd2925c6bada793006dd5f89780c9f2cbe5628",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-planner-768.png",
+      "sha256": "38a16852fdb75b9d81db6a285583eb64008c85d834c0afb1c643a2543f539c98",
+      "size": [
+        768,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-assistant-1440.png",
+      "sha256": "7ed926f33bdd191f0656bdb34fbed9226f880667bc475be3406ef6aa1510b5c0",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-assistant-320.png",
+      "sha256": "be5643368ef37c36472b973619a3e776a746a020628908d7242ed5195121d34f",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-assistant-768.png",
+      "sha256": "5b56c2a29f09d1e0f54e6d15d49c5698fb31907da7ca83671b2cec319889c2a6",
+      "size": [
+        768,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-social-1440.png",
+      "sha256": "3d13f70c516aa20540e55aba64d30b75577cf7f7eec6af76892a5c440cc817dd",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-social-320.png",
+      "sha256": "a3d802cc84e63bc8793ac5031cdaee49d76a73b97d1e2102373af216728a14f8",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-social-768.png",
+      "sha256": "49623f260cc2fbc8614ab7fad15689fd7e3a6f9c6a43f37e15e8f801babb6b3b",
+      "size": [
+        768,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-bookmarks-1440.png",
+      "sha256": "589e3c85e71ca95b3cba7e27af236429500fd7a63c8820387d533a8a8f68fac0",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-bookmarks-320.png",
+      "sha256": "64bd933d2a1e9af712ee28c6a1130367a26be95db275f089f9d33f5443ca0a1a",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-bookmarks-768.png",
+      "sha256": "e001903420605e3729848a9dbcbc9c7931ca03bbb6a5c850688a59975797c3b5",
+      "size": [
+        768,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-cockpit-1440.png",
+      "sha256": "d533a93fd771573a129ebbc43115fbab7e4d232baa9f05bfb247dfcbde657aa1",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-cockpit-320.png",
+      "sha256": "6579a3b320b866928f5d359d1d70d211c4b6b84bccd388a4c2d966b7192dacaf",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-cockpit-768.png",
+      "sha256": "31457b925838ff75c4fa508efc6f7eb853c95a395f71f309a84e881d5c96f307",
+      "size": [
+        768,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-collection-1440.png",
+      "sha256": "6f629fa2889677e856da76d0d02b6becf60e82dbeccd76232dd04ffa026a7e2c",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-collection-320.png",
+      "sha256": "04d289eef593979c4693e86b0b2620e581475373e3496d6f860a799d49bed15e",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-collection-768.png",
+      "sha256": "1a38a37eb92c31daed8a3f8e148920f4e41cffa670b8df5532c313d997c075c4",
+      "size": [
+        768,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-profile-1440.png",
+      "sha256": "4e500a37921be9b3f5de913516d4e55e454ea27c507be9f2fbc06a46b5f6a326",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-profile-320.png",
+      "sha256": "e59d93220c7a0c51011fd367418dacb07120f057bc117304d79ff51b7220d685",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-profile-768.png",
+      "sha256": "9cea374bb42c1a0f8bf8a23ea0058770468c4fd4763e86531dbcc555a853812b",
+      "size": [
+        768,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-dashboard-1440.png",
+      "sha256": "b1b1734e28b0ee920da3efaef8a2c75a9dd3ce973dbef6749a15053cbda35e75",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-dashboard-320.png",
+      "sha256": "68399c4f3e032e54843fca0959be9659c4c5acc0e8d27a59ef70629e3a4b6fac",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-dashboard-768.png",
+      "sha256": "3464e6db56988f10f34a9df9acd45978679810609fdcc238fcc1fa1f85acb8db",
+      "size": [
+        768,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-gift-tasks-1440.png",
+      "sha256": "13757881639195a69090d10df12756e41472902889741e6966c1523384d2c585",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-gift-tasks-320.png",
+      "sha256": "bb7287a07cd66c0ae6f551fdb9e54eccaaead78ab8572b6738299f9b4ada12dd",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-gift-tasks-768.png",
+      "sha256": "ac8bcbfb19a7b9143264917fbbbf1c3a1632878ac462d74d61da2d7d3bc92bc7",
+      "size": [
+        768,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-gift-analytics-1440.png",
+      "sha256": "8b51b44a77304294faa962774b4c4a2e0e66634784363e1b31e0aede078dc907",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-gift-analytics-320.png",
+      "sha256": "76c1ac894b7bacd7abcc74f21ea8cc27a40bb94e0c71a37640b317f8327c3cb9",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-gift-analytics-768.png",
+      "sha256": "f05fb8bf923f7aeda85c378448615c33e99892411ad6500236f68a9829a4062b",
+      "size": [
+        768,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-report-1440.png",
+      "sha256": "37e8ce9a81f0d72b82bd1c78410c29b9c37e54f56f8d356488837d8639216658",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-report-320.png",
+      "sha256": "453b7dd5a99774558f6273ee3b0209a1b091362b3e75f3283c1daed74aa3ab4b",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-report-768.png",
+      "sha256": "326714145d4b01be66c66f47ba9710dc3bb765ee47b4b955c8dd88906fcc2b3d",
+      "size": [
+        768,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-feed-1440.png",
+      "sha256": "fdaeb2c66e1d2dce968710307f34330e5b71132b1fd120b865661950ce28929c",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-feed-320.png",
+      "sha256": "486dfc63f79fc86e0d8cadc978f70d10514b55960857321a31a6397c78a5c719",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-feed-768.png",
+      "sha256": "81f3321650836c51ea61669e9a5bcc760d41fbabf4b562e008291b7f97751868",
+      "size": [
+        768,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-discover-1440.png",
+      "sha256": "a53a8cfce1913b2cdb485fcf7890941a79811b1587209f5f45aebca62dc07d3e",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-discover-320.png",
+      "sha256": "22025b2bc7d156619d0327f58bb4619ce98a96ec06a34bd870c9e6ea52d4bfe9",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-discover-768.png",
+      "sha256": "3a763b043c9eae804e7a4e47f432f4c2cbe2f54eb1805e03fdd0d1ae3e46ee98",
+      "size": [
+        768,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-occasions-1440.png",
+      "sha256": "b1d3196ff08dcafc8a9f7f014d66d6dd215145a358489bdb815f7cae47fd838e",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-occasions-320.png",
+      "sha256": "4b1259c01bc11d7759cd88b18f1395c6b0723329b8be8249f8727283193e2c0c",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-occasions-768.png",
+      "sha256": "37cfebbb3a2eb84b0a2da7aec4c01ced8c2c14e9d07b74f7909bc7715d895c15",
+      "size": [
+        768,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-notifications-1440.png",
+      "sha256": "4786d08de6bf5500c1c11d501c56ab72423836ffaa682ca5d46cd7268ab0d5f5",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-notifications-320.png",
+      "sha256": "d4b411507cc474876636a03b0786f3972b40fdd669e3d079fd1c7099ab2c6392",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-notifications-768.png",
+      "sha256": "7c47a3f4395d1305b2cc106a646ede1dc68a37942f7edbbf5d181d8ec95a5061",
+      "size": [
+        768,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-reservations-1440.png",
+      "sha256": "db3d4145c5ff7d90f7087d4fa1f7209edd41b69aa6dc5823f86d5d42dd7e1f45",
+      "size": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-reservations-320.png",
+      "sha256": "8a53308002060873f030f5a7dc245c06f7caf60f51315e0801e0b8a4a54ffea0",
+      "size": [
+        320,
+        1000
+      ]
+    },
+    {
+      "file": "legacy-reservations-768.png",
+      "sha256": "6303aa1fbdb0a8613dc6e690562739a8953fee0e31ca7dba3dd9262f08b06f29",
+      "size": [
+        768,
+        1000
+      ]
+    }
+  ]
+}
