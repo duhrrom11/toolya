@@ -50,3 +50,5 @@ dialog{max-height:90dvh;overflow-y:auto}
  #owner-app .row>button,#access-panel .row>button,#read-panel .row>button,dialog .row>button{width:100%}
  #settings .card>button{width:100%;margin-inline:0}
 }
+/* German compound headings must also fit inside a 288px mobile content column. */
+:is(#owner-app,#access-panel,#read-panel,#confirm-dialog,#alarm-confirm) :is(h2,h3){overflow-wrap:anywhere;hyphens:auto}
