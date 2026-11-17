@@ -218,8 +218,8 @@ async function searchConsoleMetrics(days:number,series:SeoSeries[]):Promise<Metr
   });
   if(dailyResponse.ok){
    const daily=await dailyResponse.json();
-   if(Array.isArray(daily.rows)){
-    const points:SeoPoint[]=daily.rows.flatMap((r:unknown)=>{
+   if(daily.rows===undefined||Array.isArray(daily.rows)){
+    const points:SeoPoint[]=(daily.rows||[]).flatMap((r:unknown)=>{
      const v=r as {keys?:unknown[],clicks?:unknown,impressions?:unknown};
      const date=v.keys?.[0],clicks=Number(v.clicks),impressions=Number(v.impressions);
      return typeof date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(date)&&date>=iso(start)&&date<=iso(end)&&
@@ -259,9 +259,9 @@ async function bingWebmasterMetrics(days:number,series:SeoSeries[]):Promise<Metr
  const points:SeoPoint[]=[];
  for(const row of data.d){
   // Bing JSON API dates use /Date(milliseconds-offset)/.
-  const match=typeof row?.Date==='string'?row.Date.match(/^\\?\/Date\((-?\d+)(?:[+-]\d{4})?\)\\?\/$/):null;
-  if(!match)continue;
-  const time=Number(match[1]);
+  const rawDate=row?.Date;
+  const match=typeof rawDate==='string'?rawDate.match(/^\\?\/Date\((-?\d+)(?:[+-]\d{4})?\)\\?\/$/):null;
+  const time=match?Number(match[1]):typeof rawDate==='string'&&/^\d{4}-\d{2}-\d{2}(?:T.*)?$/.test(rawDate)?Date.parse(rawDate):NaN;
   if(!Number.isFinite(time)||time<cutoff||time>Date.now()+86400000)continue;
   const c=Number(row.Clicks),i=Number(row.Impressions);
   if(!Number.isFinite(c)||!Number.isFinite(i)||c<0||i<0)continue;
