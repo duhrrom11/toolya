@@ -1,0 +1,364 @@
+{
+  "date": "2026-11-17",
+  "pullRequest": "https://github.com/duhrrom11/toolya/pull/100",
+  "baseline": "31831d6ac7ac1f87dc4823931fd1346856a6a853",
+  "reviewedProductCommit": "b334bd985091c6d7869398261a61630d9c26c1f1",
+  "browserRun": 44021701264,
+  "browserTestsPassed": 51,
+  "widths": [
+    320,
+    768,
+    1440
+  ],
+  "viewportHeight": 1000,
+  "tools": [
+    "meters",
+    "plants"
+  ],
+  "capturedFrames": 38,
+  "uniquePayloads": 36,
+  "allFinalPayloadsReviewed": true,
+  "byteIdenticalToEarlierReviewedImages": 15,
+  "finalChangedPayloadsReviewed": 21,
+  "cloudWritesInDesignFixtures": 0,
+  "productionDataUsed": false,
+  "productionDataModified": false,
+  "evidence": [
+    {
+      "captures": [
+        "care-meters-form-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-meters-form-320.jpg"
+      ],
+      "blob": "4d37d1600f237be88d67b8c5461c8aa891e1afda"
+    },
+    {
+      "captures": [
+        "care-meters-entry-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-meters-entry-320.jpg"
+      ],
+      "blob": "90c5ca8bced339a89baf78d46a5e1db7bb4bfb4f"
+    },
+    {
+      "captures": [
+        "care-meters-list-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-meters-list-320.jpg"
+      ],
+      "blob": "af16509454540af3470dca4231d25e4b18b2c61e"
+    },
+    {
+      "captures": [
+        "care-meters-form-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-meters-form-768.jpg"
+      ],
+      "blob": "344c9fed9da51ed66317527e8183407d24515eff"
+    },
+    {
+      "captures": [
+        "care-meters-entry-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-meters-entry-768.jpg"
+      ],
+      "blob": "a7937818782e22c63fe4829253af6d4037446e22"
+    },
+    {
+      "captures": [
+        "care-meters-list-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-meters-list-768.jpg"
+      ],
+      "blob": "d34640ffcbb27150c362f1cc0f896ef1ea56b1a0"
+    },
+    {
+      "captures": [
+        "care-meters-form-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-meters-form-1440.jpg"
+      ],
+      "blob": "402883b94c7d02b340c730be6826d18f54953c7a"
+    },
+    {
+      "captures": [
+        "care-meters-entry-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-meters-entry-1440.jpg"
+      ],
+      "blob": "543f20d3cb0ea7c0a1e1b571f24a85f0242661cf"
+    },
+    {
+      "captures": [
+        "care-meters-list-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-meters-list-1440.jpg"
+      ],
+      "blob": "65680e74f6f96d13930c70d3899a8af013ebb42b"
+    },
+    {
+      "captures": [
+        "care-meters-energyTipsModal-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-meters-energyTipsModal-320.jpg"
+      ],
+      "blob": "61dd269e654f0c172b0d5c36a08d16b095fb477c"
+    },
+    {
+      "captures": [
+        "care-meters-energyTipsModal-end-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-meters-energyTipsModal-end-320.jpg"
+      ],
+      "blob": "f82778ceba3801ad3e6ef0e6a6f259c20cfb22f4"
+    },
+    {
+      "captures": [
+        "care-meters-photoModal-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-meters-photoModal-320.jpg"
+      ],
+      "blob": "53f77b5ab2efc35bfdeb7a6a06056d241762022b"
+    },
+    {
+      "captures": [
+        "care-plants-form-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-form-320.jpg"
+      ],
+      "blob": "008ef6cbe216203cbabb475bdbaaa86ba13c0306"
+    },
+    {
+      "captures": [
+        "care-plants-entry-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-entry-320.jpg"
+      ],
+      "blob": "16a3f840c37e7a169a5761753d632bb488b4a015"
+    },
+    {
+      "captures": [
+        "care-plants-list-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-list-320.jpg"
+      ],
+      "blob": "08f867df4ade78d39768c35ec384c3dcd4a72ce7"
+    },
+    {
+      "captures": [
+        "care-plants-edit-320",
+        "care-plants-edit-actions-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-edit-320.jpg",
+        "docs/audits/evidence/pr100-plants-edit-actions-320.jpg"
+      ],
+      "blob": "48f53195d9773e4f5e45fba4b8d95529efeee4e2"
+    },
+    {
+      "captures": [
+        "care-plants-form-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-form-768.jpg"
+      ],
+      "blob": "2c77eb9db099b4f6a62a201d87cfa26d35ed8d1a"
+    },
+    {
+      "captures": [
+        "care-plants-entry-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-entry-768.jpg"
+      ],
+      "blob": "ad0c1c21899bddae5449545f0a1e8a6b5f55ea0a"
+    },
+    {
+      "captures": [
+        "care-plants-list-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-list-768.jpg"
+      ],
+      "blob": "e487a9dba5ae588f37569a2868bc777b6755e1ff"
+    },
+    {
+      "captures": [
+        "care-plants-edit-768",
+        "care-plants-edit-actions-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-edit-768.jpg",
+        "docs/audits/evidence/pr100-plants-edit-actions-768.jpg"
+      ],
+      "blob": "ba37c40f49d40523ae0ca8b81a64d54cd4f19f6d"
+    },
+    {
+      "captures": [
+        "care-plants-form-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-form-1440.jpg"
+      ],
+      "blob": "cbed601a8f9ae4831d97999cf7f3c56ac6b4aecb"
+    },
+    {
+      "captures": [
+        "care-plants-entry-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-entry-1440.jpg"
+      ],
+      "blob": "7cdc9868089f84fb4bfd2b23c5be8ecabb5fea1e"
+    },
+    {
+      "captures": [
+        "care-plants-list-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-list-1440.jpg"
+      ],
+      "blob": "98bd04e57ce93b3dbf5c2f938dba8d55b85d602f"
+    },
+    {
+      "captures": [
+        "care-plants-edit-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-edit-1440.jpg"
+      ],
+      "blob": "006cb757a6776df4348bd69e2ef9b8fe4c8fd4bd"
+    },
+    {
+      "captures": [
+        "care-plants-edit-actions-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-edit-actions-1440.jpg"
+      ],
+      "blob": "e127510f6a82899feaf36dd925251b25db51fc4b"
+    },
+    {
+      "captures": [
+        "care-plants-inventoryModal-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-inventoryModal-320.jpg"
+      ],
+      "blob": "7c23c8116be681b4c0510d860732c85a2287e10d"
+    },
+    {
+      "captures": [
+        "care-plants-seedsModal-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-seedsModal-320.jpg"
+      ],
+      "blob": "7e003cf8b9c9c4b8cc85b9647e9d84c1a6301f20"
+    },
+    {
+      "captures": [
+        "care-plants-roiModal-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-roiModal-320.jpg"
+      ],
+      "blob": "39a263b5a8e2ff7a467ae4c99aab8c7d0d139779"
+    },
+    {
+      "captures": [
+        "care-plants-cisternModal-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-cisternModal-320.jpg"
+      ],
+      "blob": "89f75fca83a810e7e915264dd29f18e33290392c"
+    },
+    {
+      "captures": [
+        "care-plants-beetModal-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-beetModal-320.jpg"
+      ],
+      "blob": "7f5e5191b176fc68eac3afdf62147f7bcf8fca6b"
+    },
+    {
+      "captures": [
+        "care-plants-beetModal-end-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-beetModal-end-320.jpg"
+      ],
+      "blob": "ce360f639e925752d396960a6328398080d05107"
+    },
+    {
+      "captures": [
+        "care-plants-harvestModal-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-harvestModal-320.jpg"
+      ],
+      "blob": "322013118adc4ae6f9586d60a1ea075ca55b144f"
+    },
+    {
+      "captures": [
+        "care-plants-diaryModal-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-diaryModal-320.jpg"
+      ],
+      "blob": "f8a3dfa043ee1ce32771ca7006e8f72f1ed7067f"
+    },
+    {
+      "captures": [
+        "care-plants-galleryModal-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-galleryModal-320.jpg"
+      ],
+      "blob": "0254f844822675facc55789d9dc9464ac40d97b4"
+    },
+    {
+      "captures": [
+        "care-plants-helpModal-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-helpModal-320.jpg"
+      ],
+      "blob": "33c707e68cbfbac6e0c44d522203879f8456ca08"
+    },
+    {
+      "captures": [
+        "care-plants-settingsModal-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr100-plants-settingsModal-320.jpg"
+      ],
+      "blob": "65d464e628af469ca1a200156471f1e43720894a"
+    }
+  ],
+  "limitations": [
+    "Synthetic cloud snapshots, intercepted authentication; not private live acceptance",
+    "Auxiliary dialogs reviewed on mobile, primary forms/lists and plant editor at three widths",
+    "QR, PDF, real import/export/camera not accepted by this package",
+    "Photo zoom uses synthetic single-pixel image; no image quality acceptance",
+    "Account actions and small auxiliary delete controls remain separate D06b follow-up",
+    "Release evidence maintained permanently in PR #100 after merge"
+  ]
+}
