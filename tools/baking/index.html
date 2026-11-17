@@ -98,7 +98,7 @@
     <main id="main-content" tabindex="-1" class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         <!-- Left / Main Column -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="b3-baking-calculator-column lg:col-span-2 space-y-6">
 
             <!-- TAB: RECHNER -->
             <div id="tab-rechner" class="space-y-6">
@@ -209,7 +209,7 @@
                         <label class="helferlein-field" for="recipe-name"><span class="helferlein-field-label">Name des Rezepts</span><input type="text" id="recipe-name" placeholder="Name des Rezepts (z.B. Omas Apfelkuchen)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm mb-3" aria-label="Name des Rezepts (z.B. Omas Apfelkuchen)"></label>
                         <label class="helferlein-field" for="recipe-input"><span class="helferlein-field-label">Zutaten des Rezepts</span><textarea id="recipe-input" rows="4" placeholder="Füge hier deine Zutaten ein (z.B. &#10;250g Mehl&#10;200g Zucker&#10;3 Eier&#10;100ml Milch)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-mono" aria-label="Zutaten des Rezepts"></textarea></label>
                     </div>
-                    <button onclick="calculateRecipe()" class="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl transition shadow-md shadow-orange-500/20 text-sm flex items-center justify-center gap-2">
+                    <button onclick="calculateRecipe()" class="b3-action w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl transition shadow-md shadow-orange-500/20 text-sm flex items-center justify-center gap-2">
                         <i data-lucide="calculator" class="w-4 h-4"></i> Rezept umrechnen & Analysieren
                     </button>
                 </div>
@@ -325,7 +325,7 @@
                                 <option value="rect30">Kastenform 30 cm</option>
                                 <option value="bundt">Gugelhupfform 22 cm</option>
                             </select>
-                            <button onclick="runFormFinder()" class="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-sm transition">Passende Formen finden</button>
+                            <button onclick="runFormFinder()" class="b3-action px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-sm transition">Passende Formen finden</button>
                         </div>
                     </div>
 
@@ -517,7 +517,7 @@
                 <div class="space-y-2 pt-2">
                     <div class="flex items-center justify-between">
                         <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Zutaten & Einkaufsliste</h3>
-                        <button onclick="window.print()" class="text-xs text-orange-600 hover:text-orange-700 font-medium flex items-center gap-1">
+                        <button onclick="window.print()" class="b3-action b3-outline text-xs text-orange-600 hover:text-orange-700 font-medium flex items-center gap-1">
                             <i data-lucide="printer" class="w-3.5 h-3.5"></i> Drucken
                         </button>
                     </div>
@@ -536,7 +536,7 @@
                 </div>
 
                 <!-- Kochmodus & Multi-Timer -->
-                <button onclick="openCookMode()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl transition text-xs flex items-center justify-center gap-2 shadow-md">
+                <button onclick="openCookMode()" class="b3-action w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl transition text-xs flex items-center justify-center gap-2 shadow-md">
                     <i data-lucide="timer" class="w-4 h-4 text-orange-400"></i> Kochmodus & Multi-Timer starten
                 </button>
 
@@ -553,13 +553,13 @@
     </main>
 
     <!-- Einstellungs-Modal mit Supabase Auth -->
-    <div id="settings-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div id="settings-modal" class="b3-tool-dialog fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white max-w-md w-full p-6 rounded-3xl shadow-2xl space-y-5">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
                     <i data-lucide="settings" class="w-5 h-5 text-orange-500"></i> Einstellungen & Cloud-Konto
                 </h3>
-                <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+                <button onclick="closeSettings()" class="b3-action b3-outline text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
             </div>
 
             <!-- Cloud-Konto Status & Login -->
@@ -588,19 +588,19 @@
             </div>
 
             <div class="border-t border-slate-100 pt-3 flex justify-end gap-2">
-                <button onclick="saveSettings()" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-xs transition">Speichern</button>
-                <button onclick="closeSettings()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition">Schließen</button>
+                <button onclick="saveSettings()" class="b3-action px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-xs transition">Speichern</button>
+                <button onclick="closeSettings()" class="b3-action b3-outline px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition">Schließen</button>
             </div>
 <section id="b3-backform-preferences" aria-label="Darstellung und Dashboard">
   <h3>⚙ Dashboard anpassen</h3>
-<button type="button" id="b3-backform-edit">✎ Dashboard bearbeiten</button>
+<button type="button" id="b3-backform-edit" class="b3-action">✎ Dashboard bearbeiten</button>
   <div id="b3-backform-editor" hidden aria-label="Dashboard-Einstellungen"></div>
   <p class="text-xs">Alle Rechenwerkzeuge bleiben erreichbar. Hier kannst du Reihenfolge und Kartendichte anpassen.</p>
   <div class="b3-backform-help"><div id="help-box" class="hidden border-t border-slate-100 bg-orange-50/40 px-4 sm:px-8 py-4">
             <div class="max-w-4xl mx-auto space-y-2">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-orange-900">Kurzanleitung – So funktioniert's:</h3>
-                    <button onclick="toggleHelp()" class="text-slate-400 hover:text-slate-600 text-xs">Schließen ✕</button>
+                    <button onclick="toggleHelp()" class="b3-action b3-outline text-slate-400 hover:text-slate-600 text-xs">Schließen ✕</button>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs text-slate-600">
                     <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
@@ -631,7 +631,7 @@
     </div>
 
     <!-- Kochmodus & Multi-Timer Modal -->
-    <div id="cook-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div id="cook-modal" class="b3-tool-dialog fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white max-w-md w-full p-8 rounded-3xl shadow-2xl text-center space-y-6">
             <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">
                 <i data-lucide="timer" class="w-8 h-8"></i>
@@ -643,12 +643,12 @@
             <div id="timer-display" class="text-5xl font-mono font-bold text-slate-800 tracking-wider">
                 45:00
             </div>
-            <div class="flex justify-center gap-3">
-                <button onclick="startTimer()" class="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-sm transition">Start</button>
-                <button onclick="pauseTimer()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-medium rounded-xl text-sm transition">Pause</button>
-                <button onclick="nextTimerPhase()" class="px-5 py-2.5 bg-slate-900 text-white font-medium rounded-xl text-sm transition">Nächste Phase</button>
+            <div class="b3-dialog-actions flex justify-center gap-3">
+                <button onclick="startTimer()" class="b3-action px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-sm transition">Start</button>
+                <button onclick="pauseTimer()" class="b3-action b3-outline px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-medium rounded-xl text-sm transition">Pause</button>
+                <button onclick="nextTimerPhase()" class="b3-action b3-outline px-5 py-2.5 bg-slate-900 text-white font-medium rounded-xl text-sm transition">Nächste Phase</button>
             </div>
-            <button onclick="closeCookMode()" class="text-xs text-slate-400 hover:text-slate-600 underline pt-2">Schließen</button>
+            <button onclick="closeCookMode()" class="b3-action b3-outline text-xs text-slate-400 hover:text-slate-600 underline pt-2">Schließen</button>
         </div>
     </div>
 

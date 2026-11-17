@@ -48,8 +48,8 @@ function editorRender(){
  [draft[i],draft[j]]=[draft[j],draft[i]];
  draft.forEach((p,n)=>p.order=n);paint(draft);editorRender();
  };
- const up=node('button',{type:'button','aria-label':item.id+' nach oben'},'↑');
- const down=node('button',{type:'button','aria-label':item.id+' nach unten'},'↓');
+ const up=node('button',{type:'button',class:'b3-action b3-outline','aria-label':item.id+' nach oben'},'↑');
+ const down=node('button',{type:'button',class:'b3-action b3-outline','aria-label':item.id+' nach unten'},'↓');
  up.disabled=i===0;down.disabled=i===draft.length-1;
  up.addEventListener('click',()=>move(-1));down.addEventListener('click',()=>move(1));
  row.append(up,down);
@@ -63,11 +63,11 @@ function editorRender(){
  draft=null;host.hidden=true;
  document.getElementById('b3-backform-edit').disabled=false;
  };
- const btn=(label,handler)=>{
- const el=node('button',{type:'button'},label);el.addEventListener('click',handler);return el;
+ const btn=(label,handler,primary=false)=>{
+ const el=node('button',{type:'button',class:primary?'b3-action':'b3-action b3-outline'},label);el.addEventListener('click',handler);return el;
  };
  actions.append(
- btn('Speichern',()=>{if(!save(L,JSON.stringify(draft))){alert('Layout konnte nicht gespeichert werden.');return;}layout=clone(draft);done();}),
+ btn('Speichern',()=>{if(!save(L,JSON.stringify(draft))){alert('Layout konnte nicht gespeichert werden.');return;}layout=clone(draft);done();},true),
  btn('Abbrechen',()=>{paint(layout);done();}),
  btn('Standardlayout',()=>{draft=defaults();paint(draft);editorRender();})
  );

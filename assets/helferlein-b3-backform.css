@@ -90,3 +90,22 @@ body.b3-backform .b3-helper-extras{margin-top:1rem}
  body.b3-backform .b3-more{align-self:center}
  body.b3-backform .b3-workflow-intro{padding:.9rem}
 }
+
+/* P1: same turquoise controls, focus and input geometry as the other B3 tools. */
+body.b3.b3-backform .b3-backform-nav .b3-tab.bg-orange-50{background:var(--b3-control-accent)!important;color:#fff!important}
+body.b3.b3-backform .b3-backform-nav .b3-tab:hover{background:var(--b3-control-soft)}
+body.b3.b3-backform .b3-backform-nav :is(button,summary):focus-visible{outline:3px solid var(--b3-control-accent);outline-offset:3px}
+body.b3.b3-backform #b3-backform-edit,
+body.b3.b3-backform .b3-backform-editor-actions button.b3-action:not(.b3-outline){background:var(--b3-control-accent);color:#fff}
+body.b3.b3-backform #b3-backform-editor button.b3-action{min-height:44px}
+body.b3.b3-backform :is(.b3-subview-link,.b3-subview-back) button{background:var(--b3-surface);color:var(--b3-ink);border-color:var(--b3-line);min-height:44px}
+body.b3.b3-backform main.b3-backform-main{grid-template-columns:minmax(0,1fr)}
+body.b3.b3-backform main.b3-backform-main>div{grid-column:auto}
+body.b3.b3-backform #cook-modal .b3-dialog-actions{justify-content:center}
+body.b3.b3-backform :is(#keep-recipe-amount,#use-oven-factor,#glaze-sides){flex-shrink:0;min-width:16px;min-height:16px}
+@media(min-width:1280px){
+ body.b3.b3-backform main.b3-backform-main{grid-template-columns:repeat(3,minmax(0,1fr))}
+ body.b3.b3-backform main.b3-backform-main>.b3-baking-calculator-column{grid-column:span 2}
+}
+
+body.b3.b3-backform:not(.b3-dark) :is(main,#settings-modal,#cook-modal) button.b3-action:not(.b3-outline){background:var(--b3-control-accent);color:#fff}
