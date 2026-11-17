@@ -57,3 +57,10 @@ body.b3-umzugskisten .b3-moving-subitem-form>input{min-width:0;width:100%}
  body.b3-umzugskisten .b3-moving-subitem-form{grid-template-columns:repeat(2,minmax(0,1fr))}
  body.b3-umzugskisten #newSubItemName{grid-column:1/-1}
 }
+
+body.b3-umzugskisten .b3-moving-inventory-heading{flex-direction:column;align-items:stretch}
+body.b3-umzugskisten .b3-moving-filters{display:grid;grid-template-columns:minmax(0,1fr);width:100%}
+body.b3-umzugskisten .b3-moving-filters .helferlein-field{display:grid;grid-template-rows:1fr auto}
+@media(min-width:768px){
+ body.b3-umzugskisten .b3-moving-filters{grid-template-columns:repeat(3,minmax(0,1fr))}
+}

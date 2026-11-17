@@ -871,6 +871,14 @@ for(const kind of ['moving','loans']){
    const list=page.locator(moving?'#b3-inventory':'#b3-loans');
    await list.evaluate(e=>e.scrollIntoView({block:'start'}));
    expect(await fits(list)).toBe(true);
+   if(moving){
+    for(const input of await page.locator('.b3-moving-filters input,.b3-moving-filters select').all()){
+     expect(await input.evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThan(180);
+    }
+   }else if(width===768){
+    const top=await page.locator('.b3-loan-setup>div').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().top));
+    expect(Math.abs(top[0]-top[1])).toBeLessThan(1);
+   }
    await capture('list-'+width);
    const edit=page.locator(moving?'button[onclick="openEditBoxModal(2)"]':'button[data-loan-action="edit"]');
    await expect(edit).toHaveClass(/b3-outline/);await edit.click();

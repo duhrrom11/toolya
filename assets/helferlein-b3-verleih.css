@@ -42,7 +42,7 @@ body.b3-verleih.b3-dark #helpModal :is(.text-gray-600,.text-indigo-700,.text-ind
 }
 @media(min-width:768px) and (max-width:1279px){
  body.b3-verleih .b3-loan-setup{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
- body.b3-verleih .b3-loan-setup>div{margin-top:0}
+ body.b3.b3-verleih .b3-loan-setup>div{margin-top:0}
 }
 body.b3-verleih .b3-loan-card-identity{min-width:0;flex:1 1 auto}
 body.b3-verleih .b3-loan-card-identity>div:last-child{min-width:0;overflow-wrap:anywhere}

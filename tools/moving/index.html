@@ -177,9 +177,9 @@
 
         <!-- Suche, Filter & Inventar -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="inventory" id="b3-inventory">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-3 b3-moving-inventory-heading">
                 <h3 class="font-bold text-lg">🗄️ Vollständiges Inventar</h3>
-                <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                <div class="flex flex-wrap gap-2 w-full md:w-auto b3-moving-filters">
                     <label class="helferlein-field" for="tagFilter"><span class="helferlein-field-label">Inventar nach Kennzeichnung filtern</span><select id="tagFilter" onchange="renderInventory()" class="p-2 border rounded-xl text-sm bg-white" aria-label="Inventar nach Kennzeichnung filtern">
                         <option value="">Alle Tags</option>
                         <option value="Standard">Standard</option>
