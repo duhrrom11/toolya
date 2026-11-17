@@ -22,23 +22,44 @@ export function mountCarBudgetConnect({host,controller,client,userId}) {
   const status = document.createElement('p');
   status.setAttribute('role','status');
   status.style.cssText = 'margin:7px 0 0';
-  root.append(label,help,status);
+  const retry = document.createElement('button');
+  retry.type = 'button';
+  retry.textContent = 'Übernahme erneut versuchen';
+  retry.hidden = true;
+  retry.style.cssText = 'margin-top:8px;padding:8px 12px;border:1px solid #007e9f;border-radius:8px;background:white;color:#005b75;cursor:pointer';
+  root.append(label,help,status,retry);
   saveButton.parentNode.insertBefore(root,saveButton);
-  let busy=false,disposed=false;
+  let busy=false,disposed=false,lastFailedId=null;
+  retry.addEventListener('click', () => {
+    if (!busy && lastFailedId !== null) void transferEvent(lastFailedId);
+  });
   async function transferEvent(id) {
     if (busy || disposed || !controller.ready) return false;
+    retry.hidden=true;
     const selected=String(id);
-    const event=controller.snapshot().events?.find(item=>String(item?.id)===selected);
+    let event;
+    try {
+      event=controller.snapshot().events?.find(item=>String(item?.id)===selected);
+    } catch(error) {
+      status.textContent='Cloud-Datenstand nicht verfügbar. Bitte neu laden.';
+      return false;
+    }
     const price=Number(event?.cost);
     if (!Number.isSafeInteger(event?.id) || event.id<0 || !Number.isFinite(price) ||
         price<=0 || Math.abs(Math.round(price*100)-price*100)>1e-7) {
       status.textContent='Nur positive Ausgaben mit gültigem Centbetrag können übernommen werden.';
+      lastFailedId=null;
       return false;
     }
     const accepted=window.confirm('Ausgabe auch ins Haushaltsbuch übertragen?\n\n'+
       String(event.title)+'\n'+price.toFixed(2).replace('.',',')+' € · '+String(event.date)+
       '\n\nBelege werden nicht übertragen. Zahlungsart anschließend prüfen.');
-    if (!accepted) {status.textContent='Ausgabe gespeichert; Übernahme ins Haushaltsbuch abgebrochen.';return false;}
+    if (!accepted) {
+      status.textContent='Ausgabe gespeichert; Übernahme ins Haushaltsbuch abgebrochen.';
+      lastFailedId=selected;
+      retry.hidden=false;
+      return false;
+    }
     busy=true;checkbox.disabled=true;status.textContent='Übertragung wird von Toolya Cloud geprüft …';
     try {
       const {data:auth,error:authError}=await client.auth.getUser();
@@ -63,9 +84,13 @@ export function mountCarBudgetConnect({host,controller,client,userId}) {
         ? 'Bereits übertragen – keine Doppelbuchung erstellt.'
         : 'Übertragung in Toolya Cloud bestätigt. Zahlungsart im Haushaltsbuch prüfen.';
       checkbox.checked=false;
+      lastFailedId=null;
+      retry.hidden=true;
       return true;
     } catch(error) {
       status.textContent='Ausgabe gespeichert, aber keine bestätigte Übertragung. Cloud-Datenstand beider Tools prüfen, bevor du erneut überträgst.';
+      lastFailedId=selected;
+      retry.hidden=false;
       console.error('Toolya Connect',error);
       return false;
     } finally {
