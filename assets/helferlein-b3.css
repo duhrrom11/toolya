@@ -289,3 +289,21 @@ body.b3 :is(#settingsModal,#settings-modal) button{min-height:44px}
 body.b3 :is(#settingsModal,#settings-modal)>div>div:first-child>button{min-width:44px;flex-shrink:0}
 body.b3 :is(#settingsModal,#settings-modal) :is(#cloud-status-box,#header-user-badge){flex-wrap:wrap;gap:.5rem}
 body.b3 :is(#settingsModal,#settings-modal) :is(#cloud-user-email,#header-user-email){overflow-wrap:anywhere;min-width:0}
+
+/* Help and backup controls: shared secondary actions, keyboard-accessible file picker. */
+body.b3:not(.b3-dark) .b3-backup-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}
+body.b3:not(.b3-dark) .b3-backup-picker{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;margin:0}
+body.b3 .b3-backup-input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+body.b3 .b3-backup-picker:focus-within{outline:3px solid var(--b3-control-accent);outline-offset:3px}
+body.b3:not(.b3-dark) :is(#helpBox,#guideSection).b3-inline-help{background:var(--b3-surface);color:var(--b3-ink);border:1px solid var(--b3-line);border-radius:14px}
+body.b3:not(.b3-dark) .b3-inline-help :is(.text-white,.text-red-200,.text-emerald-200){color:var(--b3-ink)}
+body.b3:not(.b3-dark) .b3-inline-help :is(.bg-red-800\/50,.bg-emerald-900\/70){background:var(--b3-bg);border-color:var(--b3-line)}
+body.b3:not(.b3-dark) .b3-inline-help>div:first-child{gap:.75rem;flex-wrap:wrap}
+body.b3:not(.b3-dark) .b3-inline-help button{min-height:44px;min-width:44px;flex-shrink:0}
+body.b3:not(.b3-dark) :is(#helpBox,#guideSection,#settingsModal) .b3-action.b3-outline{background:var(--b3-surface);color:var(--b3-ink);border:1px solid var(--b3-line)}
+@media(max-width:640px){body.b3:not(.b3-dark) .b3-backup-actions{grid-template-columns:minmax(0,1fr)}}
+
+/* Help cards use the available reading width, including inside narrow dialogs. */
+body.b3:not(.b3-dark) #helpBox.b3-inline-help .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:1023px){body.b3:not(.b3-dark) #guideSection.b3-inline-help .grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){body.b3:not(.b3-dark) :is(#helpBox,#guideSection).b3-inline-help .grid{grid-template-columns:minmax(0,1fr)}}

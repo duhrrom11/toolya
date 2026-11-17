@@ -309,24 +309,24 @@
             <!-- DATENSICHERUNG -->
             <div class="border-t border-gray-200 pt-4">
                 <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Daten sichern und wiederherstellen</label>
-                <div class="flex gap-2">
-                    <button type="button" onclick="exportBackup()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Sicherung</button>
-                    <label class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">
-                        📤 Restore <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
+                <div class="b3-backup-actions flex gap-2">
+                    <button type="button" onclick="exportBackup()" class="b3-action b3-outline flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Sicherung</button>
+                    <label class="b3-backup-picker b3-action b3-outline flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">
+                        📤 Wiederherstellen <input type="file" accept=".json" onchange="importBackup(event)" class="b3-backup-input">
                     </label>
                 </div>
             </div>
 
             <div class="b3-car-help"><!-- Ausklappbarer Anleitung-Container -->
         <div class="max-w-4xl mx-auto space-y-2">
-            <button onclick="toggleHelp()" id="helpToggleBtn" class="px-4 py-1.5 bg-red-700/90 hover:bg-red-700 text-red-100 rounded-xl text-xs font-semibold border border-red-500/40 shadow-sm transition-all flex items-center gap-1.5 mx-auto">
+            <button onclick="toggleHelp()" id="helpToggleBtn" class="b3-action b3-outline px-4 py-1.5 bg-red-700/90 hover:bg-red-700 text-red-100 rounded-xl text-xs font-semibold border border-red-500/40 shadow-sm transition-all flex items-center gap-1.5 mx-auto">
                 📖 <span>Hilfe & Anleitung anzeigen</span>
             </button>
 
-            <div id="helpBox" class="bg-red-700/90 border border-red-500/40 rounded-2xl p-4 text-left text-xs text-red-50 space-y-2 shadow-inner hidden">
+            <div id="helpBox" class="b3-inline-help bg-red-700/90 border border-red-500/40 rounded-2xl p-4 text-left text-xs text-red-50 space-y-2 shadow-inner hidden">
                 <div class="font-bold text-sm flex items-center justify-between border-b border-red-600 pb-1.5 text-white">
                     <span>📖 Kurzanleitung – So funktioniert's:</span>
-                    <button onclick="toggleHelp()" class="text-red-200 hover:text-white text-xs px-1.5 py-0.5 rounded">✕ Schließen</button>
+                    <button onclick="toggleHelp()" class="b3-action b3-outline text-red-200 hover:text-white text-xs px-1.5 py-0.5 rounded">✕ Schließen</button>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
                     <div class="bg-red-800/50 p-2.5 rounded-xl border border-red-600/30">
