@@ -1,0 +1,296 @@
+{
+  "date": "2026-11-17",
+  "pullRequest": "https://github.com/duhrrom11/toolya/pull/109",
+  "baseline": "2b18eff0e20b6d6d852e4e88c6db786d79fd7cd0",
+  "reviewedProductCommit": "3bf77832b26b9da7696c31030e188a4f220bbb20",
+  "browserRun": 44034255003,
+  "browserTestsPassed": 53,
+  "widths": [
+    320,
+    768,
+    1440
+  ],
+  "viewportHeight": 1000,
+  "capturedFrames": 31,
+  "uniquePayloads": 29,
+  "allFinalPayloadsReviewed": true,
+  "byteIdenticalToEarlierReviewedImages": 17,
+  "finalChangedPayloadsReviewed": 12,
+  "cloudWritesInDesignFixtures": 0,
+  "productionDataUsed": false,
+  "productionDataModified": false,
+  "evidence": [
+    {
+      "captures": [
+        "mobility-parking-form-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-parking-form-320.jpg"
+      ],
+      "blob": "002d4a399929c2a6ff960af4a667b282b8f71e97"
+    },
+    {
+      "captures": [
+        "mobility-parking-entry-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-parking-entry-320.jpg"
+      ],
+      "blob": "90c015f3a886468ab2e61c428d68639d303ba99a"
+    },
+    {
+      "captures": [
+        "mobility-parking-list-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-parking-list-320.jpg"
+      ],
+      "blob": "538d450a6f169b7301e8c52ffdd330f66f92d797"
+    },
+    {
+      "captures": [
+        "mobility-parking-form-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-parking-form-768.jpg"
+      ],
+      "blob": "cee6b0b77af66531cd329afd2eeca2c2c7732e9e"
+    },
+    {
+      "captures": [
+        "mobility-parking-entry-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-parking-entry-768.jpg"
+      ],
+      "blob": "5e37c0abf5f0c665cb9bcef16582eaf29f8999a8"
+    },
+    {
+      "captures": [
+        "mobility-parking-list-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-parking-list-768.jpg"
+      ],
+      "blob": "b5ca26dd0a5f69725acc49c5ef8a673933f050d8"
+    },
+    {
+      "captures": [
+        "mobility-parking-form-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-parking-form-1440.jpg"
+      ],
+      "blob": "2ab675934aaf0f4757863df809326e78d899e484"
+    },
+    {
+      "captures": [
+        "mobility-parking-entry-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-parking-entry-1440.jpg"
+      ],
+      "blob": "caf0e7f0f95c1d1bdf5d062efb7e5ea372f19975"
+    },
+    {
+      "captures": [
+        "mobility-parking-list-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-parking-list-1440.jpg"
+      ],
+      "blob": "eebab2aaffb3dee6a776bb9cfd86999f669a89db"
+    },
+    {
+      "captures": [
+        "mobility-parking-help-320",
+        "mobility-parking-help-end-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-parking-help-320.jpg",
+        "docs/audits/evidence/pr109-parking-help-end-320.jpg"
+      ],
+      "blob": "7d319a1325a375259c1840cfdc081bcbc5d045f3"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-form-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-form-320.jpg"
+      ],
+      "blob": "e8553970dd34b22b6482daa0a4f57246ce381031"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-profile-end-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-profile-end-320.jpg"
+      ],
+      "blob": "dcd20fdacb8052e2dd9eeab759b58705fc9abbf4"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-event-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-event-320.jpg"
+      ],
+      "blob": "95aa6a65ce1e01a979707d8b0db2e88d9213e43a"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-weight-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-weight-320.jpg"
+      ],
+      "blob": "ff83a1dbd33da901f95e28617f2e48805440dc91"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-medication-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-medication-320.jpg"
+      ],
+      "blob": "275b5cafd84d5d8ced11b91fb24c2f28d99c061e"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-profiles-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-profiles-320.jpg"
+      ],
+      "blob": "d7c563bbc1d7329433fe5a92da8992bf0ab5f7f3"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-events-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-events-320.jpg"
+      ],
+      "blob": "ae60e5181aca0e14f0a98253a59f3458570cdc97"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-form-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-form-768.jpg"
+      ],
+      "blob": "5c297b9b689b2e4fe8cbf63125e2861d2c3dc1f4"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-profile-end-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-profile-end-768.jpg"
+      ],
+      "blob": "382d2189c7f8e10a4e8f079ef4cbf48659c5d6ea"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-event-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-event-768.jpg"
+      ],
+      "blob": "0a17ddc0d22c33814371c6d197f9d541dd84aafc"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-medication-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-medication-768.jpg"
+      ],
+      "blob": "b4d77b9d1d97881ba6cf8bf4d34250c24b47d85a"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-profiles-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-profiles-768.jpg"
+      ],
+      "blob": "b2dec4982733dea619ce3ec2a6a1bab6dbde3099"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-events-768"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-events-768.jpg"
+      ],
+      "blob": "6c7f2ad7bd010046135251d9233650b98e6ff1e1"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-form-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-form-1440.jpg"
+      ],
+      "blob": "e8ba42680a8fb8e5ec13971f1823f90386f26ad5"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-profile-end-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-profile-end-1440.jpg"
+      ],
+      "blob": "99c4be183d54273e8fb6fee14577ccbae72d7ab6"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-event-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-event-1440.jpg"
+      ],
+      "blob": "e1438be18c412d453e896d03e43536981e605eb2"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-medication-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-medication-1440.jpg"
+      ],
+      "blob": "c5c55a2fecb446120645c6ace1649d2e82dde5f8"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-profiles-1440",
+        "mobility-pet-health-events-1440"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-profiles-1440.jpg",
+        "docs/audits/evidence/pr109-pet-health-events-1440.jpg"
+      ],
+      "blob": "47ea06312ab78cb567b45c2a402b29883e1755c3"
+    },
+    {
+      "captures": [
+        "mobility-pet-health-help-320"
+      ],
+      "paths": [
+        "docs/audits/evidence/pr109-pet-health-help-320.jpg"
+      ],
+      "blob": "aa9a37f1d3f076c7b340f3768aa74a49ccf8d88b"
+    }
+  ],
+  "limitations": [
+    "Synthetic authenticated snapshots; no private production UI acceptance",
+    "No timer writes, GPS/location, push, calendar, import/export/PDF functional acceptance",
+    "Image placeholders use synthetic single-pixel image; no document/image-quality acceptance",
+    "No medical content review or full WCAG certification",
+    "Actual release status maintained permanently in PR #109 after merge"
+  ]
+}
