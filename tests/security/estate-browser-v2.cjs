@@ -126,8 +126,8 @@ const root=path.resolve(__dirname,'../..');
      assert.equal(await b.evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(255, 255, 255)');
      assert((await b.boundingBox()).height>=44);
     }
-    assert(await section.evaluate(e=>e.scrollWidth<=e.clientWidth+1));
     await page.screenshot({path:'test-results/estate-design-'+name+'-'+width+'.png'});
+    assert(await section.evaluate(e=>e.scrollWidth<=e.clientWidth+1),'section overflow '+name+' '+width+' '+JSON.stringify(await section.evaluate(e=>({width:e.clientWidth,scroll:e.scrollWidth,children:Array.from(e.querySelectorAll('*')).filter(x=>x.getBoundingClientRect().right>e.getBoundingClientRect().right+1).slice(0,12).map(x=>({tag:x.tagName,id:x.id,class:x.className,right:x.getBoundingClientRect().right}))}))));
    }
    const summary=page.locator('#settings summary');await summary.focus();await page.keyboard.press('Enter');
    assert.equal(await page.evaluate(()=>document.activeElement.tagName),'SUMMARY');
