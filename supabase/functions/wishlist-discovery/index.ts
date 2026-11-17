@@ -46,11 +46,12 @@ Deno.serve(async(req:Request)=>{
  try{
   if(Number(req.headers.get('content-length')||0)>1500000)return reply(413,{error:'Datei zu groß.'});
   const raw=await req.text();if(raw.length>1500000)return reply(413,{error:'Datei zu groß.'});const body=JSON.parse(raw);
-  if(body.action==='configure'){must(await db.rpc('wishlist_discovery_key',{new_key:String(body.key||'').trim()}));return reply(200,{configured:true})}
-  const key=Deno.env.get('BRAVE_SEARCH_API_KEY')||must(await db.rpc('wishlist_discovery_key'));
+  if(body.action==='configure'){must(await db.rpc('wishlist_tavily_key',{new_key:String(body.key||'').trim()}));return reply(200,{configured:true})}
+  const key=must(await db.rpc('wishlist_tavily_key'));
+  const quota=must(await db.rpc('wishlist_tavily_quota',{claim:false}));
   if(body.action==='list'){
    const offset=Math.max(0,Math.min(100000,Number(body.offset)||0));const rows=must(await db.from('wishlist_discovery_candidates').select('*').order('found_at',{ascending:false}).order('id').range(offset,offset+199));
-   return reply(200,{rows,configured:!!key,offset});
+   return reply(200,{rows,configured:!!key,offset,quota,searchProvider:'Tavily'});
   }
   if(body.action==='stage'){
    if(!Array.isArray(body.rows)||body.rows.length>200)return reply(400,{error:'Maximal 200 Einträge pro Stapel.'});
@@ -95,21 +96,31 @@ Deno.serve(async(req:Request)=>{
    if(!Array.isArray(body.urls)||body.urls.length>3)return reply(400,{error:'Maximal drei Quellseiten pro Durchlauf.'});const results=[];for(const url of body.urls){const normalized=publicUrl(String(url));if(normalized)must(await db.from('wishlist_discovery_sources').delete().eq('source_url',normalized).eq('status','failed'));results.push(await collect(db,String(url),''))}return reply(200,{results});
   }
   if(body.action==='search'){
-   if(!key)return reply(503,{error:'Bitte zuerst einen Brave-Search-API-Schlüssel hinterlegen.'});
+   if(!key)return reply(503,{error:'Bitte zuerst einen Tavily-API-Schlüssel hinterlegen.'});
+   if(quota.remaining<=0)return reply(200,{done:true,message:'Kostenloses Tavily-Monatslimit (900 Credits) erreicht. Suche pausiert bis zum nächsten UTC-Monat.',quota});
    const topics=['Tierheim','Tierschutzverein','Obdachlosenhilfe','Kinderhilfe','Schule','Verein','Privatperson','Blog','Initiative','Bibliothek','Frauenhaus','Wildtierhilfe'];
-   const seeds=[];for(const topic of topics)for(const [country,lang,extra] of [['DE','de',''],['AT','de',''],['CH','de',''],['ALL','de','Liechtenstein'],['ALL','de','Luxemburg'],['ALL','fr','Luxembourg'],['ALL','fr','Lëtzebuerg'],['ALL','de','']])seeds.push({query:`${topic} ${extra} "Amazon" "Wunschliste" -site:amazon.de -site:amazon.com -site:amazon.fr`,country,lang});
+   const seeds=[];for(const topic of topics)for(const [country,lang,extra] of [['DE','de','Deutschland'],['AT','de','Österreich'],['CH','de','Schweiz'],['ALL','de','Liechtenstein'],['ALL','de','Luxemburg'],['ALL','fr','Luxembourg'],['ALL','fr','Lëtzebuerg'],['ALL','de','']])seeds.push({query:`${topic} ${extra} "Amazon" "Wunschliste" -site:amazon.de -site:amazon.com -site:amazon.fr`,country,lang});
    // French/Luxembourg terms supplement German queries, not just German translations.
    for(const term of ['"liste de souhaits"','"liste d’envies"','"Wonschlëscht"','"wishlist"'])seeds.push({query:`Amazon ${term} Luxembourg -site:amazon.fr -site:amazon.de -site:amazon.com`,country:'ALL',lang:'fr'});
    must(await db.from('wishlist_discovery_queries').upsert(seeds,{onConflict:'query,country,lang',ignoreDuplicates:true}));
    const q=must(await db.from('wishlist_discovery_queries').select('*').lt('page',10).order('page').order('query').limit(1))[0];if(!q)return reply(200,{done:true,message:'Suchplan abgeschlossen. Es besteht keine Vollständigkeitsgarantie.'});
-   const u=new URL('https://api.search.brave.com/res/v1/web/search');for(const [k,v] of Object.entries({q:q.query,country:q.country,search_lang:q.lang,count:'10',offset:String(q.page)}))u.searchParams.set(k,String(v));
-   const response=await fetch(u,{headers:{'X-Subscription-Token':key,Accept:'application/json'},signal:AbortSignal.timeout(12000)});if(!response.ok)return reply(response.status===429?429:502,{error:'Suchdienst HTTP '+response.status+'. Suchfortschritt bleibt erhalten.'});
-   const found=await response.json();const urls=(found.web?.results||[]).map((r:any)=>publicUrl(r.url)).filter((s:any)=>s&&!AMAZON.test(new URL(s).hostname));
+   // Tavily does not expose Brave-style pagination: each seed is queried only once.
+   const credit=must(await db.rpc('wishlist_tavily_quota',{claim:true}));
+   if(!credit.allowed)return reply(200,{done:true,message:'Kostenloses Tavily-Monatslimit erreicht. Keine Anfrage versendet.',quota:credit});
+   const response=await fetch('https://api.tavily.com/search',{
+    method:'POST',
+    headers:{Authorization:'Bearer '+key,'Content-Type':'application/json',Accept:'application/json'},
+    body:JSON.stringify({query:q.query,search_depth:'basic',max_results:20,topic:'general',include_answer:false,include_raw_content:false,exclude_domains:['amazon.de','amazon.com','amazon.fr']}),
+    signal:AbortSignal.timeout(12000)
+   });
+   if(!response.ok)return reply(response.status===429?429:502,{error:'Tavily-Suche HTTP '+response.status+'. Suchfortschritt bleibt erhalten; ein Credit wurde vorsorglich reserviert.'});
+   const found=await response.json();
+   const urls=(Array.isArray(found.results)?found.results:[]).map((r:any)=>publicUrl(r.url)).filter((s:any)=>s&&!AMAZON.test(new URL(s).hostname));
    // Store search hits before advancing the cursor; crawl separate bounded requests.
    // Candidate source claims remain separate from pending URLs.
    must(await db.from('wishlist_discovery_pending').upsert(urls.map((source_url:string)=>({source_url,country:q.country==='ALL'?'':({DE:'Deutschland',AT:'Österreich',CH:'Schweiz'} as any)[q.country]})),{onConflict:'source_url',ignoreDuplicates:true}));
-   must(await db.from('wishlist_discovery_queries').update({page:urls.length?q.page+1:10}).eq('query',q.query).eq('country',q.country).eq('lang',q.lang));
-   return reply(200,{query:q.query,pages:q.page+1,found:urls.length});
+   must(await db.from('wishlist_discovery_queries').update({page:10}).eq('query',q.query).eq('country',q.country).eq('lang',q.lang));
+   return reply(200,{query:q.query,pages:1,found:urls.length,quota:credit});
   }
   if(body.action==='next'){
    const pending=must(await db.from('wishlist_discovery_pending').select('*').order('created_at').limit(2));const results=[];
