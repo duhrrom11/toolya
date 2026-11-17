@@ -658,11 +658,14 @@ async function toolyaCloudBoot(tool) {
             }
         }
 
-        function compressImage(file, callback) {
+        function compressImage(file, callback, onError = () => alert('Bild konnte nicht verarbeitet werden.')) {
             const reader = new FileReader();
+            reader.onerror = () => onError(reader.error || new Error('FileReader fehlgeschlagen'));
             reader.onload = function(e) {
                 const img = new Image();
+                img.onerror = () => onError(new Error('Bild ist nicht lesbar'));
                 img.onload = function() {
+                    try {
                     const canvas = document.createElement('canvas');
                     const MAX_WIDTH = 500;
                     const MAX_HEIGHT = 500;
@@ -680,6 +683,7 @@ async function toolyaCloudBoot(tool) {
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
                     callback(canvas.toDataURL('image/jpeg', 0.75));
+                    } catch(error) { onError(error); }
                 };
                 img.src = e.target.result;
             };
@@ -769,7 +773,18 @@ async function toolyaCloudBoot(tool) {
                 }
             };
             if (receiptInput.files && receiptInput.files[0]) {
-                compressImage(receiptInput.files[0], compressedReceipt => { void persist(compressedReceipt); });
+                try {
+                    compressImage(receiptInput.files[0], compressedReceipt => { void persist(compressedReceipt); }, error => {
+                        console.error('Beleg konnte nicht verarbeitet werden', error);
+                        carEventSaveInProgress = false;
+                        if (saveButton) saveButton.disabled = false;
+                        alert('Beleg konnte nicht verarbeitet werden. Bitte eine andere Bilddatei wählen oder ohne Beleg speichern.');
+                    });
+                } catch(error) {
+                    carEventSaveInProgress = false;
+                    if (saveButton) saveButton.disabled = false;
+                    alert('Beleg konnte nicht verarbeitet werden. Bitte erneut versuchen.');
+                }
             } else {
                 void persist("");
             }
