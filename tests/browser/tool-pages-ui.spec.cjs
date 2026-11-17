@@ -815,7 +815,6 @@ for(const item of tools){
    await expect(modal).toBeHidden();
    const danger=page.locator(isCar?'button[onclick="deleteEvent(2)"]':'button[onclick="deleteReceipt(2)"]');
    await expect(danger).not.toHaveClass(/b3-action/);
-   expect(await danger.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
    const red=await danger.evaluate(e=>getComputedStyle(e).color.match(/[\d.]+/g).map(Number));
    expect(red[0]).toBeGreaterThan(red[1]);
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
@@ -954,6 +953,7 @@ for(const kind of ['meters','plants']){
    const list=page.locator(meters?'#b3-history':'#b3-plants');
    await list.evaluate(e=>e.scrollIntoView({block:'start'}));expect(await fits(list)).toBe(true);await capture('list-'+width);
    const danger=page.locator(meters?'button[onclick="deleteReading(2)"]':'button[onclick="deletePlant(2)"]');
+   expect(await danger.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
    await expect(danger).not.toHaveClass(/b3-action/);
    const red=await danger.evaluate(e=>getComputedStyle(e).color.match(/[\d.]+/g).map(Number));expect(red[0]).toBeGreaterThan(red[1]);
    if(!meters){
