@@ -1326,7 +1326,7 @@ test('dashboard: shared actions, task rows and account dialog at three widths',a
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);expect(errors).toEqual([]);
 });
 
-for(const kind of ['car','budget'])test(kind+': help and backup controls stay readable and keyboard accessible',async({page},testInfo)=>{
+for(const kind of ['car','budget','moving','meters','pet-health'])test(kind+': help and backup controls stay readable and keyboard accessible',async({page},testInfo)=>{
  test.setTimeout(60000);await isolated(page,true,true);
  await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
  await page.goto(origin+'/tools/'+kind+'/index.html');await page.locator('.toolya-signature-footer').waitFor();
@@ -1343,16 +1343,54 @@ for(const kind of ['car','budget'])test(kind+': help and backup controls stay re
   expect(await picker.evaluate(e=>parseFloat(getComputedStyle(e).outlineWidth))).toBeGreaterThanOrEqual(3);
   expect(await actions.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('backup-'+kind+'-'+width+'.png')});
-  if(kind==='car')await page.locator('#helpToggleBtn').click();
+  if(kind==='meters'){await page.evaluate(()=>closeSettings());continue;}
+  if(kind!=='budget')await page.locator('#helpToggleBtn').click();
   else{await page.evaluate(()=>closeSettings());await page.evaluate(()=>toggleGuide())}
-  const help=page.locator(kind==='car'?'#helpBox':'#guideSection');await expect(help).toBeVisible();await help.scrollIntoViewIfNeeded();
+  const help=page.locator(kind!=='budget'?'#helpBox':'#guideSection');await expect(help).toBeVisible();await help.scrollIntoViewIfNeeded();
   await expect(help).toHaveCSS('background-color','rgb(255, 255, 255)');
-  for(const title of await help.locator('.text-red-200,.text-emerald-200,.text-white').all())await expect(title).toHaveCSS('color','rgb(16, 43, 69)');
+  for(const title of await help.locator('.text-red-200,.text-emerald-200,.text-white,.text-amber-200,.text-teal-200').all())await expect(title).toHaveCSS('color','rgb(16, 43, 69)');
   expect(await help.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
   for(const card of await help.locator('.grid>div').all())expect(await card.evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThanOrEqual(120);
   await page.screenshot({path:testInfo.outputPath('help-'+kind+'-'+width+'.png')});
   await help.locator('button').click();await expect(help).toBeHidden();
-  if(kind==='car')await page.evaluate(()=>closeSettings());
+  if(kind!=='budget')await page.evaluate(()=>closeSettings());
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+
+for(const kind of ['loans','plants','parking','housemates'])test(kind+': help disclosures and close controls at three widths',async({page},testInfo)=>{
+ test.setTimeout(60000);await isolated(page,true,true);await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
+ await page.goto(origin+'/tools/'+kind+'/index.html');await page.locator('.toolya-signature-footer').waitFor();
+ if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+ for(const width of [320,768,1440]){
+  await page.setViewportSize({width,height:1000});await page.evaluate(()=>toggleHelpModal());const help=page.locator('#helpModal');await expect(help).toBeVisible();
+  const surface=help.locator(':scope>div');
+  for(const b of await help.locator('button').all()){
+   expect(await b.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+   await b.focus();expect(await b.evaluate(e=>parseFloat(getComputedStyle(e).outlineWidth))).toBeGreaterThanOrEqual(3);
+  }
+  const summary=help.locator('summary').first();await summary.focus();await page.keyboard.press('Enter');await expect(help.locator('details').first()).toHaveAttribute('open','');
+  expect(await summary.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  expect(await surface.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
+  await surface.evaluate(e=>e.scrollTop=0);await page.screenshot({path:testInfo.outputPath('help-'+kind+'-'+width+'.png')});
+  await help.locator('button').first().click();await expect(help).toBeHidden();await page.evaluate(()=>document.querySelector('#helpModal details').open=false);
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+
+for(const kind of ['meters','baking'])test(kind+': inline help remains readable at three widths',async({page},testInfo)=>{
+ test.setTimeout(60000);await isolated(page,true,true);await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
+ await page.goto(origin+'/tools/'+kind+'/index.html');await page.locator('.toolya-signature-footer').waitFor();
+ if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+ for(const width of [320,768,1440]){
+  await page.setViewportSize({width,height:1000});
+  if(kind==='baking')await page.evaluate(()=>{openSettings();toggleHelp()});else await page.locator('#b3-faq>button').click();
+  const help=page.locator(kind==='baking'?'#help-box':'#accordionContent');await expect(help).toBeVisible();await help.scrollIntoViewIfNeeded();
+  expect(await help.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
+  for(const card of await help.locator('.grid>div').all())expect(await card.evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThanOrEqual(120);
+  await page.screenshot({path:testInfo.outputPath('help-'+kind+'-'+width+'.png')});
+  if(kind==='baking'){await help.locator('button').click();await page.evaluate(()=>closeSettings())}else await page.locator('#b3-faq>button').click();
+  await expect(help).toBeHidden();
  }
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
 });

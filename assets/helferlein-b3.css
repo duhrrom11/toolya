@@ -296,8 +296,8 @@ body.b3:not(.b3-dark) .b3-backup-picker{position:relative;display:flex;align-ite
 body.b3 .b3-backup-input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 body.b3 .b3-backup-picker:focus-within{outline:3px solid var(--b3-control-accent);outline-offset:3px}
 body.b3:not(.b3-dark) :is(#helpBox,#guideSection).b3-inline-help{background:var(--b3-surface);color:var(--b3-ink);border:1px solid var(--b3-line);border-radius:14px}
-body.b3:not(.b3-dark) .b3-inline-help :is(.text-white,.text-red-200,.text-emerald-200){color:var(--b3-ink)}
-body.b3:not(.b3-dark) .b3-inline-help :is(.bg-red-800\/50,.bg-emerald-900\/70){background:var(--b3-bg);border-color:var(--b3-line)}
+body.b3:not(.b3-dark) .b3-inline-help :is(.text-white,.text-red-200,.text-emerald-200,.text-amber-200,.text-teal-200){color:var(--b3-ink)}
+body.b3:not(.b3-dark) .b3-inline-help :is(.bg-red-800\/50,.bg-emerald-900\/70,.bg-amber-800\/50,.bg-teal-800\/50){background:var(--b3-bg);border-color:var(--b3-line)}
 body.b3:not(.b3-dark) .b3-inline-help>div:first-child{gap:.75rem;flex-wrap:wrap}
 body.b3:not(.b3-dark) .b3-inline-help button{min-height:44px;min-width:44px;flex-shrink:0}
 body.b3:not(.b3-dark) :is(#helpBox,#guideSection,#settingsModal) .b3-action.b3-outline{background:var(--b3-surface);color:var(--b3-ink);border:1px solid var(--b3-line)}
@@ -307,3 +307,13 @@ body.b3:not(.b3-dark) :is(#helpBox,#guideSection,#settingsModal) .b3-action.b3-o
 body.b3:not(.b3-dark) #helpBox.b3-inline-help .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:1023px){body.b3:not(.b3-dark) #guideSection.b3-inline-help .grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){body.b3:not(.b3-dark) :is(#helpBox,#guideSection).b3-inline-help .grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Shared help dialogs: comfortable headings, disclosure rows and close controls. */
+body.b3:not(.b3-dark) #helpModal>div>div:first-child{gap:.75rem}
+body.b3:not(.b3-dark) #helpModal>div>div:first-child h3{min-width:0;color:var(--b3-ink)}
+body.b3:not(.b3-dark) #helpModal button{min-height:44px;min-width:44px;flex-shrink:0}
+body.b3:not(.b3-dark) #helpModal summary{min-height:44px;align-content:center;color:var(--b3-ink);overflow-wrap:anywhere}
+body.b3:not(.b3-dark) #settingsModal #helpBox.b3-inline-help{background:var(--b3-surface);color:var(--b3-ink);border-color:var(--b3-line)}
+body.b3:not(.b3-dark) #settingsModal #helpBox.b3-inline-help .grid>div{background:var(--b3-bg);color:var(--b3-ink);border-color:var(--b3-line)}
+body.b3:not(.b3-dark) #settings-modal #help-box .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:640px){body.b3:not(.b3-dark) #settings-modal #help-box .grid{grid-template-columns:minmax(0,1fr)}}
