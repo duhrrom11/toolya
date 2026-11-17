@@ -1429,6 +1429,7 @@ for(const routeName of ['assistant','bookmarks','cockpit','collection','dashboar
   for(const link of await page.locator('.wishes-navigation a:not([aria-current])').all()){await expect(link).toHaveCSS('background-color','rgb(255, 255, 255)');await expect(link).toHaveCSS('color','rgb(16, 43, 69)');if(width===320)expect(await link.evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThanOrEqual(100);}
   for(const panel of await page.locator('main>section:visible,main .metric:visible').all())await expect(panel).toHaveCSS('background-color','rgb(255, 255, 255)');
   for(const link of await page.locator('main .nav a:visible').all()){await expect(link).toHaveCSS('background-color','rgb(0, 126, 159)');await expect(link).toHaveCSS('color','rgb(255, 255, 255)');}
+  if(width===320){const title=page.locator('.ty-tool-hero h1');expect(await title.evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThan(250);await expect(title).toHaveCSS('hyphens','auto');}
   await expect(page.locator('h1:visible')).toHaveCount(1);await expect(page.locator('body>header')).toBeHidden();await expect(page.locator('.toolya-idle')).toBeHidden();
   for(const panel of await page.locator('main .panel:visible,main .hero:visible,main .card:visible').all()){
    expect(await panel.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);await expect(panel).toHaveCSS('background-color','rgb(255, 255, 255)');
