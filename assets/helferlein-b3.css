@@ -268,3 +268,8 @@ body.b3:not(.b3-dark) .b3-dialog-actions>.b3-action{flex:1 1 100px;min-width:100
 body.b3 .b3-tool-dialog>div{max-height:90dvh;overflow-y:auto;min-width:0}
 body.b3 .b3-dialog-actions{display:flex;flex-wrap:wrap;gap:.5rem}
 body.b3 .b3-dialog-actions>button{margin-left:0!important;margin-right:0!important}
+
+/* Shared explicit actions take precedence over legacy colour-utility dialog rules. */
+body.b3:not(.b3-dark) .b3-tool-dialog button.b3-action:not(.b3-outline){background:var(--b3-control-accent);color:#fff}
+body.b3:not(.b3-dark) .b3-tool-dialog button.b3-action.b3-outline{background:var(--b3-surface);color:var(--b3-ink);border:1px solid var(--b3-line)}
+body.b3:not(.b3-dark) .b3-tool-dialog button.b3-action.b3-outline:hover{background:var(--b3-control-soft);color:var(--b3-ink)}
