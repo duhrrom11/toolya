@@ -36,7 +36,13 @@ async function get(path){
     assert.equal(hash(asset.body),hash(expectedAsset),'Public wishlist asset must match release byte for byte');
     wishlist.push({url:asset.url,expectedSha256:hash(expectedAsset),actualSha256:hash(asset.body),byteIdentical:true});
    }
-   result={revision,checkedAt:new Date().toISOString(),attempt,css:{url:css.url,expectedSha256:hash(expected),actualSha256:hash(css.body),byteIdentical:true},buddy:{url:buddy.url,expectedSha256:hash(expectedBuddy),actualSha256:hash(buddy.body),byteIdentical:true},themeStyles,pages,wishlist,scope:'Public static delivery only; authenticated production UI and private flows are not verified by this check.'};
+   const estate=[];
+   for(const path of ['/assets/estate-app.css','/tools/estate/index.html','/tools/estate/heirs.html']){
+    const asset=await get(path),expectedAsset=fs.readFileSync(path.slice(1));
+    assert.equal(hash(asset.body),hash(expectedAsset),'Estate public asset must match release byte for byte');
+    estate.push({url:asset.url,status:200,expectedSha256:hash(expectedAsset),actualSha256:hash(asset.body),byteIdentical:true});
+   }
+   result={revision,checkedAt:new Date().toISOString(),attempt,css:{url:css.url,expectedSha256:hash(expected),actualSha256:hash(css.body),byteIdentical:true},buddy:{url:buddy.url,expectedSha256:hash(expectedBuddy),actualSha256:hash(buddy.body),byteIdentical:true},themeStyles,pages,wishlist,estate,scope:'Public static delivery only; authenticated production UI and private flows are not verified by this check.'};
    break;
   }catch(error){lastError=error;if(attempt<6)await new Promise(r=>setTimeout(r,10000));}
  }

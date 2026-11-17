@@ -113,6 +113,40 @@ const root=path.resolve(__dirname,'../..');
  const lum=text=>text.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
  return buttons.map(button=>{const c=getComputedStyle(button),fg=lum(c.color),bg=lum(c.backgroundColor);return {label:button.dataset.tab,ratio:(Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05)}});
  });assert(contrasts.every(c=>c.ratio>=4.5),'navigation contrast after '+name+': '+JSON.stringify(contrasts));assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'overflow '+name+' '+width+' '+JSON.stringify(await page.evaluate(()=>Array.from(document.querySelectorAll('body *')).filter(e=>e.getBoundingClientRect().right>innerWidth+1).slice(0,8).map(e=>({tag:e.tagName,id:e.id,class:e.className,right:e.getBoundingClientRect().right})))));}await page.locator('[data-tab=documents]').click();if(await page.locator('.tb-close').isVisible())await page.locator('.tb-close').click();await page.locator('#documents h2').first().click();fs.mkdirSync('test-results',{recursive:true});await page.screenshot({path:'test-results/estate-design-owner-synthetic-'+width+'.png',fullPage:false});await trustee.setViewportSize({width,height:900});assert(await trustee.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));}
+  // Additional design acceptance uses only the existing isolated PostgreSQL/Edge fixture.
+  // Capture forms and cancelled dialogs without performing additional writes or deliveries.
+  const designRecordBefore=await pg.query('select * from vault_cloud_snapshots where owner_user_id=$1',[owner]);
+  const designMailCount=mails.length;
+  for(const width of [320,768,1440]){
+   await page.setViewportSize({width,height:1000});await trustee.setViewportSize({width,height:1000});
+   for(const name of ['people','alarm','settings']){
+    await page.locator('[data-tab='+name+']').click();
+    const section=page.locator('#'+name);await section.locator(name==='people'?'#person-form':name==='alarm'?'h2':'h2').first().scrollIntoViewIfNeeded();
+    for(const b of await section.locator('button.secondary:visible').all()){
+     assert.equal(await b.evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(255, 255, 255)');
+     assert((await b.boundingBox()).height>=44);
+    }
+    assert(await section.evaluate(e=>e.scrollWidth<=e.clientWidth+1));
+    await page.screenshot({path:'test-results/estate-design-'+name+'-'+width+'.png'});
+   }
+   const summary=page.locator('#settings summary');await summary.focus();await page.keyboard.press('Enter');
+   assert.equal(await page.evaluate(()=>document.activeElement.tagName),'SUMMARY');
+   assert.equal(await summary.evaluate(e=>getComputedStyle(e).outlineColor),'rgb(0, 126, 159)');
+   await page.locator('#new-vault-password').scrollIntoViewIfNeeded();
+   await page.screenshot({path:'test-results/estate-design-password-'+width+'.png'});await summary.click();
+   await page.locator('[data-tab=documents]').click();await page.locator('#new-entry').click();await page.locator('#entry-form').scrollIntoViewIfNeeded();
+   assert(await page.locator('#entry-form').evaluate(e=>e.scrollWidth<=e.clientWidth+1));
+   await page.screenshot({path:'test-results/estate-design-entry-'+width+'.png'});await page.locator('#cancel-entry').click();
+   await page.locator('[data-tab=alarm]').click();await page.locator('#check-in').click();await page.locator('#confirm-dialog[open]').waitFor();
+   assert(await page.locator('#confirm-dialog').evaluate(e=>e.scrollWidth<=e.clientWidth+1));
+   await page.screenshot({path:'test-results/estate-design-confirm-'+width+'.png'});await page.locator('#confirm-dialog button[value=cancel]').click();
+   await trustee.locator('#access-panel').scrollIntoViewIfNeeded();await trustee.screenshot({path:'test-results/estate-design-trustee-'+width+'.png'});
+   await trustee.locator('#alarm-button').click();await trustee.locator('#alarm-confirm[open]').waitFor();
+   await trustee.screenshot({path:'test-results/estate-design-trustee-confirm-'+width+'.png'});await trustee.locator('#alarm-confirm button[value=cancel]').click();
+   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert(await trustee.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  }
+  assert.deepEqual((await pg.query('select * from vault_cloud_snapshots where owner_user_id=$1',[owner])).rows,designRecordBefore.rows,'design captures preserve encrypted cloud record');
+  assert.equal(mails.length,designMailCount,'cancelled design dialogs trigger no deliveries');
   await page.setViewportSize({width:1280,height:950});await page.locator('[data-tab=people]').click();await page.screenshot({path:'/tmp/estate-owner-isolated.png',fullPage:true});await trustee.screenshot({path:'/tmp/estate-trustee-isolated.png',fullPage:true});
   assert.deepEqual(errors,[]);
   console.log('PASS: Chromium actual owner/trustee UI, legacy data/key preservation, password-protected local storage, local QR, per-person mail/WhatsApp, A4 print, two-key open, one-key refusal, alarm mail, 24h gate, authenticated cancellation, edit persistence, lock, 320/375/768/1280/1440px');
