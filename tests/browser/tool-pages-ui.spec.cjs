@@ -911,7 +911,7 @@ for(const kind of ['meters','plants']){
   const meters=kind==='meters',errors=[];page.on('pageerror',e=>errors.push(e.message));
   const pixel='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJ1sAAAAASUVORK5CYII=';
   const snapshot=meters
-   ?{readings:[{id:2,type:'Strom',name:'Isolierter Hauptzähler',location:'Hauptwohnung',date:'2026-11-17',value:142,photo:pixel,note:'Synthetische Prüfansicht'},{id:1,type:'Strom',name:'Isolierter Hauptzähler',location:'Hauptwohnung',date:'2026-10-17',value:100}],tarifs:{stromHT:0.38,stromNT:0.28,stromAbschlag:80,wasser:4.5,wasserAbschlag:30,gas:0.12,gasAbschlag:100,gasCalib:11.2}}
+   ?{readings:[{id:2,type:'Strom',name:'Isolierter Hauptzähler',location:'Hauptwohnung',date:'2026-11-17',value:142,photo:pixel,note:'Synthetische Prüfansicht'},{id:1,type:'Strom',name:'Isolierter Hauptzähler',location:'Hauptwohnung',date:'2026-10-17',value:100}],tarifs:{Strom:{priceHT:0.38,priceNT:0.28,abschlag:80},Wasser:{price:4.5,abschlag:30},Gas:{price:0.12,abschlag:100,calib:11.2}}}
    :{plants:[{id:2,name:'Isolierte Testpflanze',species:'Tomate',location:'Testzimmer',light:'half',potSize:15,interval:7,lastWatered:'2026-11-17',propagation:'Standard',note:'Synthetische Prüfansicht',diary:[{date:'2026-11-17',text:'Isolierte Notiz'}],harvestLog:[],galleryPhotos:[]}],monthWaterLiters:0,totalHarvestGrams:0,inventory:[{name:'Isolierter Lagerartikel',qty:'1 L'}],seeds:[{name:'Isoliertes Saatgut',year:2026}],beetSlots:[2,...Array(15).fill(null)],cisternMax:500,cisternCurrent:400};
   await isolated(page,true,true,snapshot);
   await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
