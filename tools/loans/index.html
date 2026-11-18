@@ -12,6 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verliehene Gegenstände verwalten | Toolya</title>
     <meta name="description" content="Verliehene Gegenstände einfach verwalten: Werkzeug, Bücher und andere Leihgaben dokumentieren, Rückgaben verfolgen und Erinnerungen vorbereiten.">
+    <meta name="robots" content="noindex, follow">
     <link rel="canonical" href="https://toolya.app/tools/loans/index.html">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -81,7 +82,7 @@
     <header class="b3-header"><div class="b3-header-inner">
  <a class="b3-brand" href="../../index.html" aria-label="Toolya Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Toolya</a>
  <span class="b3-tool-icon" aria-hidden="true">🤝</span>
- <div class="b3-tool-title"><h1>Verliehene Gegenstände verwalten</h1><p>Werkzeuge und Gegenstände verleihen, Rückgaben und Kautionen organisieren</p></div>
+ <div class="b3-tool-title"><h1>Verliehene Gegenstände verwalten</h1><p>Verliehene Gegenstände erfassen und Rückgabetermine und Kautionen im Blick behalten</p></div>
  <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()">⚙</button>
 </div></header>
 
@@ -129,7 +130,7 @@
                 <details class="bg-gray-50 border rounded-xl p-3">
                     <summary class="font-bold cursor-pointer text-indigo-700">Wie verwalte ich Leihgaben und Kontakte?</summary>
                     <p class="mt-2 text-gray-600 leading-relaxed">
-                        Lege zuerst Kontakte und Stamm-Gegenstände an. Bei der Erfassung eines Verleihs wählst du den Gegenstand und den Ausleiher aus, hinterlegst Kautionen oder Fristen und kannst direkt WhatsApp-Erinnerungen versenden.
+                        Wähle einen Gegenstand und einen Kontakt aus oder gib die Namen für diesen Verleih direkt ein. Du kannst eine Rückgabefrist und eine Kaution hinterlegen. Für gespeicherte Kontakte mit Telefonnummer kannst du eine Nachricht in WhatsApp vorbereiten.
                     </p>
                 </details>
                 <details class="bg-gray-50 border rounded-xl p-3">
@@ -145,6 +146,7 @@
                     </p>
                 </details>
             </div>
+            <p class="text-sm"><a href="/verliehene-dinge/" class="text-indigo-700 underline">Schritt-für-Schritt-Anleitung für verliehene Dinge</a></p>
             <button onclick="toggleHelpModal()" class="b3-action b3-outline w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
         </div>
     </div>
@@ -160,7 +162,7 @@
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-red-50 text-red-600 rounded-xl font-bold">⏰</div>
-                <div><p class="text-[11px] text-gray-500">Überfällig (&gt;30T)</p><h3 id="statOverdue" class="text-base font-bold">0</h3></div>
+                <div><p class="text-[11px] text-gray-500">Über 30 Tage verliehen</p><h3 id="statOverdue" class="text-base font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-amber-50 text-amber-700 rounded-xl font-bold">⚠️</div>
@@ -880,7 +882,7 @@
                         badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">⚠️ Verloren / Defekt</span>`;
                     } else if (diff > 30) {
                         overdueCount++;
-                        badge = `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Überfällig (${diff}T)</span>`;
+                        badge = `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Seit ${diff} Tagen verliehen</span>`;
                     } else {
                         badge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">🟢 aktiv (${diff}T)</span>`;
                     }
