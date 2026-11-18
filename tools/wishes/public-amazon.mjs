@@ -105,11 +105,85 @@ function payload(){if(!$('profileForm').reportValidity())return null;
   }
  }
  const lists=[...$('listFields').children].map(fs=>({name:fs.querySelector('[name=name]').value.trim(),url:amazonListUrl(fs.querySelector('[name=url]').value),occasion:fs.querySelector('[name=occasion]').value.trim()}));if(lists.some(l=>!l.url||!l.name))throw new Error('Bitte gültige Amazon-Wunschlisten-Links und Listennamen eingeben.');return {display_name:$('displayName').value.trim(),country:$('country').value.trim(),city:$('city').value.trim(),bio:own?.bio||'',interests:own?.interests||[],lists}}
-async function loadProfile(){const g=++authGeneration;const r=await db.auth.getUser();if(g!==authGeneration)return;user=!r.error&&!r.data?.user?.is_anonymous?r.data?.user:null;$('auth').hidden=!!user;$('profileForm').hidden=!user;$('logoutPublic').hidden=!user;own=null;$('listFields').replaceChildren();if(!user){listField();status('profileStatus','');return}const result=await db.from('wishlist_public_profiles').select('*').eq('user_id',user.id).maybeSingle();if(g!==authGeneration)return;if(result.error){status('profileStatus','Dein Profil konnte nicht geladen werden. Bitte lade die Seite erneut.');$('profileForm').hidden=true;return}own=result.data;for(const [id,prop]of[['displayName','display_name'],['country','country'],['city','city']])$(id).value=own?.[prop]||'';for(const l of own?.lists||[{}])listField(l);$('deleteProfile').hidden=!own;status('profileStatus',own?'Dein gespeichertes Profil ist öffentlich sichtbar.':'Dein Profil wird beim Speichern öffentlich sichtbar.')}
+async function loadProfile(){const g=++authGeneration;const r=await db.auth.getUser();if(g!==authGeneration)return;user=!r.error&&!r.data?.user?.is_anonymous?r.data?.user:null;syncSettingsAccount();$('auth').hidden=!!user;$('profileForm').hidden=!user;$('logoutPublic').hidden=!user;own=null;$('listFields').replaceChildren();if(!user){listField();status('profileStatus','');return}const result=await db.from('wishlist_public_profiles').select('*').eq('user_id',user.id).maybeSingle();if(g!==authGeneration)return;if(result.error){status('profileStatus','Dein Profil konnte nicht geladen werden. Bitte lade die Seite erneut.');$('profileForm').hidden=true;return}own=result.data;for(const [id,prop]of[['displayName','display_name'],['country','country'],['city','city']])$(id).value=own?.[prop]||'';for(const l of own?.lists||[{}])listField(l);$('deleteProfile').hidden=!own;status('profileStatus',own?'Dein gespeichertes Profil ist öffentlich sichtbar.':'Dein Profil wird beim Speichern öffentlich sichtbar.')}
 $('profileForm').onsubmit=async e=>{e.preventDefault();if(!user)return;const b=$('saveProfile');b.disabled=true;try{const p=payload();if(!p)return;const writer=user.id;const r=await guardedWishlistWrite(db,writer,()=>db.from('wishlist_public_profiles').upsert({user_id:writer,...p},{onConflict:'user_id'}).select('user_id').single());if(r.error)throw r.error;own=p;$('deleteProfile').hidden=false;status('profileStatus','Gespeichert. Dein Wunschprofil ist jetzt öffentlich sichtbar.');await filters();await search();await detail()}catch(e){status('profileStatus',e.message||'Speichern fehlgeschlagen.')}finally{b.disabled=false}};
 $('deleteProfile').onclick=async()=>{if(!user||!confirm('Dein öffentliches Wunschprofil mit allen verlinkten Listen löschen? Die Original-Listen bei Amazon bleiben erhalten.'))return;const b=$('deleteProfile');b.disabled=true;try{const writer=user.id;const r=await guardedWishlistWrite(db,writer,()=>db.from('wishlist_public_profiles').delete().eq('user_id',writer).select('user_id'));if(r.error||r.data?.length!==1)throw new Error('Das Profil konnte nicht gelöscht werden.');await loadProfile();status('profileStatus','Dein öffentliches Profil wurde gelöscht.');$('profileDetail').replaceChildren();await filters();await search();await detail()}catch(e){status('profileStatus',e.message)}finally{b.disabled=false}};
-async function authenticate(signup){$('login').disabled=$('signup').disabled=true;try{const email=$('email').value.trim(),password=$('password').value;if(!email||!password)throw new Error('Bitte E-Mail und Passwort eingeben.');const r=signup?await db.auth.signUp({email,password,options:{emailRedirectTo:new URL('./public.html#profile',location.href).href}}):await db.auth.signInWithPassword({email,password});if(r.error)throw r.error;await loadProfile();if(signup&&!r.data.session)status('profileStatus','Bitte bestätige deine E-Mail-Adresse, bevor du dein Profil erstellst.')}catch(e){status('profileStatus',e.message)}finally{$('password').value='';$('login').disabled=$('signup').disabled=false}}
-$('login').onclick=()=>authenticate(false);$('signup').onclick=()=>authenticate(true);$('logoutPublic').onclick=async()=>{const r=await db.auth.signOut();if(r.error)status('profileStatus','Abmelden fehlgeschlagen.');else await loadProfile()};$('addList').onclick=()=>listField()?.querySelector('[name=name]').focus();$('previewProfile').onclick=()=>{try{const p=payload();if(!p)return;$('previewContent').replaceChildren(card(p,true,true));$('previewDialog').showModal()}catch(e){status('profileStatus',e.message)}};$('closePreview').onclick=()=>$('previewDialog').close();
+function syncSettingsAccount(){
+ const signedIn=Boolean(user);
+ $('settingsAccountStatus').textContent=signedIn?'Angemeldet als '+(user.email||'Toolya-Nutzer'):'Nicht angemeldet. Melde dich mit deinem Toolya-Konto an.';
+ $('settingsAuthFields').hidden=signedIn;
+ $('settingsLogin').hidden=signedIn;
+ $('settingsSignup').hidden=signedIn;
+ $('settingsLogout').hidden=!signedIn;
+}
+async function authenticate(signup,source='profile'){
+ const modal=source==='settings';
+ const emailField=$(modal?'settingsEmail':'email'),passwordField=$(modal?'settingsPassword':'password');
+ const feedback=$(modal?'settingsAuthMessage':'profileStatus');
+ const controls=modal?[$('settingsLogin'),$('settingsSignup')]:[$('login'),$('signup')];
+ for(const button of controls)button.disabled=true;
+ try{
+  const email=emailField.value.trim(),password=passwordField.value;
+  if(!email||!password)throw new Error('Bitte E-Mail und Passwort eingeben.');
+  const r=signup
+   ?await db.auth.signUp({email,password,options:{emailRedirectTo:new URL('./public.html#profile',location.href).href}})
+   :await db.auth.signInWithPassword({email,password});
+  if(r.error)throw r.error;
+  await loadProfile();
+  feedback.textContent=signup&&!r.data?.session?'Bitte bestätige deine E-Mail-Adresse, bevor du dich anmeldest.':'Du bist angemeldet.';
+ }catch(e){feedback.textContent=e.message||'Anmeldung fehlgeschlagen.'}
+ finally{passwordField.value='';for(const button of controls)button.disabled=false}
+}
+async function signOut(){
+ const r=await db.auth.signOut();
+ if(r.error){
+  $('profileStatus').textContent='Abmelden fehlgeschlagen.';
+  $('settingsAuthMessage').textContent=r.error.message||'Abmelden fehlgeschlagen.';
+ }else{
+  await loadProfile();
+  $('settingsAuthMessage').textContent='Du bist abgemeldet.';
+ }
+}
+$('login').onclick=()=>authenticate(false);
+$('signup').onclick=()=>authenticate(true);
+$('logoutPublic').onclick=signOut;
+$('settingsLogin').onclick=()=>authenticate(false,'settings');
+$('settingsSignup').onclick=()=>authenticate(true,'settings');
+$('settingsLogout').onclick=signOut;
+$('settingsForgotPassword').onclick=async()=>{
+ const email=$('settingsEmail').value.trim(),message=$('settingsAuthMessage');
+ if(!email){message.textContent='Bitte gib zuerst deine E-Mail-Adresse ein.';$('settingsEmail').focus();return}
+ const button=$('settingsForgotPassword');button.disabled=true;
+ try{
+  const r=await db.auth.resetPasswordForEmail(email,{redirectTo:new URL('./public.html#profile',location.href).href});
+  if(r.error)throw r.error;
+  message.textContent='Falls für diese E-Mail-Adresse ein Konto existiert, erhältst du eine E-Mail zum Zurücksetzen des Passworts.';
+ }catch(e){message.textContent=e.message||'Die Anfrage konnte nicht gesendet werden.'}
+ finally{button.disabled=false}
+};
+$('settingsSaveNewPassword').onclick=async()=>{
+ const password=$('settingsNewPassword').value,confirmation=$('settingsConfirmPassword').value;
+ const message=$('settingsAuthMessage');
+ if(password.length<8){message.textContent='Bitte ein Passwort mit mindestens acht Zeichen verwenden.';return}
+ if(password!==confirmation){message.textContent='Die Passwörter stimmen nicht überein.';return}
+ const button=$('settingsSaveNewPassword');button.disabled=true;
+ try{
+  const r=await db.auth.updateUser({password});
+  if(r.error)throw r.error;
+  message.textContent='Dein neues Passwort wurde gespeichert.';
+  $('settingsRecoveryPanel').hidden=true;
+  $('settingsNewPassword').value='';$('settingsConfirmPassword').value='';
+  await loadProfile();
+ }catch(e){message.textContent=e.message||'Das neue Passwort konnte nicht gespeichert werden.'}
+ finally{button.disabled=false}
+};
+const settingsModal=$('settingsModal');
+const openSettings=()=>{syncSettingsAccount();settingsModal.showModal()};
+$('wishlistSettingsBtn').onclick=openSettings;
+$('closeSettingsBtn').onclick=() => settingsModal.close();
+$('cancelSettingsBtn').onclick=() => settingsModal.close();
+$('settingsToProfile').onclick=() => settingsModal.close();
+$('addList').onclick=()=>listField()?.querySelector('[name=name]').focus();$('previewProfile').onclick=()=>{try{const p=payload();if(!p)return;$('previewContent').replaceChildren(card(p,true,true));$('previewDialog').showModal()}catch(e){status('profileStatus',e.message)}};$('closePreview').onclick=()=>$('previewDialog').close();
 $('retrySearch').onclick=search;
 let debounce;
 $('search').oninput=()=>{
@@ -125,4 +199,11 @@ $('search').oninput=()=>{
 $('submitSearch').onclick=()=>{page=0;search()};$('refreshCloud').onclick=()=>{if(!hasSearchCriteria()){page=0;search()}else{$('search').focus()}};
 for(const id of['countryFilter','occasionFilter'])$(id).onchange=()=>{page=0;search()};$('resetFilters').onclick=()=>{$('search').value='';for(const id of['countryFilter','occasionFilter'])$(id).value='';page=0;search()};$('prevPage').onclick=()=>{page=Math.max(0,page-1);search()};$('nextPage').onclick=()=>{page++;search()};
 try{const r=await fetch('./public-products.json');if(r.ok)catalog=await r.json()}catch{}
-renderFavorites();db.auth.onAuthStateChange(event=>{if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event))setTimeout(loadProfile,0)});window.addEventListener('storage',e=>{if(e.key===key){favorites=readFavorites();renderFavorites()}});await Promise.all([loadProfile(),filters(),search(),detail()]);
+renderFavorites();db.auth.onAuthStateChange(event=>{
+ if(event==='PASSWORD_RECOVERY'){
+  $('settingsRecoveryPanel').hidden=false;
+  if(!settingsModal.open)settingsModal.showModal();
+  $('settingsNewPassword').focus();
+ }
+ if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event))setTimeout(loadProfile,0);
+});window.addEventListener('storage',e=>{if(e.key===key){favorites=readFavorites();renderFavorites()}});await Promise.all([loadProfile(),filters(),search(),detail()]);
