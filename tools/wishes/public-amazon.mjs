@@ -161,6 +161,22 @@ $('settingsForgotPassword').onclick=async()=>{
  }catch(e){message.textContent=e.message||'Die Anfrage konnte nicht gesendet werden.'}
  finally{button.disabled=false}
 };
+$('settingsSaveNewPassword').onclick=async()=>{
+ const password=$('settingsNewPassword').value,confirmation=$('settingsConfirmPassword').value;
+ const message=$('settingsAuthMessage');
+ if(password.length<8){message.textContent='Bitte ein Passwort mit mindestens acht Zeichen verwenden.';return}
+ if(password!==confirmation){message.textContent='Die Passwörter stimmen nicht überein.';return}
+ const button=$('settingsSaveNewPassword');button.disabled=true;
+ try{
+  const r=await db.auth.updateUser({password});
+  if(r.error)throw r.error;
+  message.textContent='Dein neues Passwort wurde gespeichert.';
+  $('settingsRecoveryPanel').hidden=true;
+  $('settingsNewPassword').value='';$('settingsConfirmPassword').value='';
+  await loadProfile();
+ }catch(e){message.textContent=e.message||'Das neue Passwort konnte nicht gespeichert werden.'}
+ finally{button.disabled=false}
+};
 const settingsModal=$('settingsModal');
 const openSettings=()=>{syncSettingsAccount();settingsModal.showModal()};
 $('wishlistSettingsBtn').onclick=openSettings;
@@ -183,4 +199,11 @@ $('search').oninput=()=>{
 $('submitSearch').onclick=()=>{page=0;search()};$('refreshCloud').onclick=()=>{if(!hasSearchCriteria()){page=0;search()}else{$('search').focus()}};
 for(const id of['countryFilter','occasionFilter'])$(id).onchange=()=>{page=0;search()};$('resetFilters').onclick=()=>{$('search').value='';for(const id of['countryFilter','occasionFilter'])$(id).value='';page=0;search()};$('prevPage').onclick=()=>{page=Math.max(0,page-1);search()};$('nextPage').onclick=()=>{page++;search()};
 try{const r=await fetch('./public-products.json');if(r.ok)catalog=await r.json()}catch{}
-renderFavorites();db.auth.onAuthStateChange(event=>{if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event))setTimeout(loadProfile,0)});window.addEventListener('storage',e=>{if(e.key===key){favorites=readFavorites();renderFavorites()}});await Promise.all([loadProfile(),filters(),search(),detail()]);
+renderFavorites();db.auth.onAuthStateChange(event=>{
+ if(event==='PASSWORD_RECOVERY'){
+  $('settingsRecoveryPanel').hidden=false;
+  settingsModal.showModal?.();
+  $('settingsNewPassword').focus();
+ }
+ if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event))setTimeout(loadProfile,0);
+});window.addEventListener('storage',e=>{if(e.key===key){favorites=readFavorites();renderFavorites()}});await Promise.all([loadProfile(),filters(),search(),detail()]);
