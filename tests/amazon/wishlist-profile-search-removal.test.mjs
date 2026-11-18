@@ -11,6 +11,6 @@ test('profile cards never embed the general Amazon product search',()=>{
   assert.match(card,/Original bei Amazon öffnen/,'original Amazon wishlist links remain');
 });
 
-test('main discovery section keeps its separate gift-idea search',()=>{
-  assert.match(src,/amazonSearch\(\$\('mainAmazonSearch'\)/);
+test('general Amazon product-search form is absent from the entire Wishlist page',()=>{
+  assert.doesNotMatch(src,/amazonSearch\(/);
 });

@@ -69,11 +69,19 @@ const assert = require('node:assert/strict');
       if (url.pathname.endsWith('/admin-stats')) return route.fulfill({ headers, json: { sources: [], metrics: [] } });
       const body = JSON.parse(route.request().postData() || '{}');
       calls.push(body);
+      if (body.action === 'dismiss') {
+        status = 'dismissed';
+        return route.fulfill({ headers, json: { ok: true, dismissed: 1 } });
+      }
+      if (body.action === 'restore') {
+        status = 'new';
+        return route.fulfill({ headers, json: { ok: true } });
+      }
       if (body.action === 'publish') {
         status = 'published';
         return route.fulfill({ headers, json: { published: 1, duplicates: 0 } });
       }
-      return route.fulfill({ headers, json: { configured: false, rows: [{ ...row, status }], health: { total: 66, http_reachable: 4, review: 1, unknown: 2, not_checked: 59 }, healthReview: [{ profile_id: row.id, name: 'Isolierter Verein', http_status: 404 }] } });
+      return route.fulfill({ headers, json: { configured: false, rows: body.status === status || body.status === 'all' && status !== 'dismissed' ? [{ ...row, status }] : [], health: { total: 66, http_reachable: 4, review: 1, unknown: 2, not_checked: 59 }, healthReview: [{ profile_id: row.id, name: 'Isolierter Verein', http_status: 404 }] } });
     });
 
     const checkNavigation = async (linkName, evidence, extraLinkName) => {
@@ -105,8 +113,19 @@ const assert = require('node:assert/strict');
     assert.match(await page.locator('#healthStatus').innerText(), /66 erfasst.*1 zur manuellen Prüfung/);
     assert.match(await page.locator('#healthReview a').innerText(), /Isolierter Verein.*HTTP 404/);
     assert.equal(await page.locator('#start').isDisabled(), true);
-    assert.match(await page.locator('.finder-row img').getAttribute('src'), /toolya_wishlist_turquoise/);
+    await page.waitForFunction(() => {
+      const src = document.querySelector('.finder-row img')?.getAttribute('src') || '';
+      return src.includes('toolya_wishlist_turquoise');
+    });
     await checkNavigation('← Admin-Dashboard', 'finder-navigation', 'Quelle ↗');
+    await page.getByRole('button', {name:'Fund ausblenden: Isolierter Verein'}).click();
+    await page.locator('.finder-row').waitFor({state:'detached'});
+    assert.equal(calls.filter(call => call.action === 'dismiss').length,1);
+    await page.locator('#filter').selectOption('dismissed');
+    await page.getByRole('button', {name:'Fund wieder anzeigen: Isolierter Verein'}).click();
+    await page.locator('#filter').selectOption('new');
+    await page.locator('.finder-row').waitFor({state:'visible'});
+    assert.equal(calls.filter(call => call.action === 'restore').length,1);
     await page.locator('#publish').click();
     assert.match(await page.locator('#result').innerText(), /Noch keine Wunschlisten ausgewählt/);
     await page.locator('#selectAll').click();

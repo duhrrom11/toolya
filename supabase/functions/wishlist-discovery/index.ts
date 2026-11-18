@@ -1,7 +1,7 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.57.0';
 import {parseHTML} from 'npm:linkedom@0.18.12';
 import ipaddr from 'npm:ipaddr.js@2.2.0';
-import {AMAZON,canonicalList,publicUrl,candidate,robotsAllowed} from './model.mjs';
+import {AMAZON,canonicalList,publicUrl,candidate,robotsAllowed,sourceFavicon} from './model.mjs';
 const cors={'Access-Control-Allow-Origin':'https://toolya.app','Access-Control-Allow-Headers':'authorization,apikey,content-type','Access-Control-Allow-Methods':'POST,OPTIONS','Vary':'Origin'};
 const reply=(status:number,body:unknown)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
 const must=(r:any)=>{if(r.error)throw Error('Datenbankabfrage fehlgeschlagen.');return r.data};
@@ -33,10 +33,11 @@ async function collect(db:any,url:string,country:string){
     const match=label.match(/(?:amazon[- ]?)?(?:wunschliste|wunschzettel|wishlist|wish list|lista de deseos|lista de regalos|lista dei desideri|liste de souhaits|liste d[’']envies|verlanglijst)\s+(?:von|of|de|di|van)\s+([\p{L}\p{N}][\p{L}\p{N} .&'’-]{2,75})/iu);
     return match?.[1]?.trim().replace(/[.,;\s]+$/,'').slice(0,80)||null;
   };
-  const logo=resolve(document.querySelector('[itemprop="logo"]')?.getAttribute('src')||document.querySelector('header img[alt*="Logo" i]')?.getAttribute('src')||document.querySelector('meta[property="og:image"]')?.getAttribute('content')||'');
+  const iconHref=document.querySelector('link[rel="icon"],link[rel="shortcut icon"]')?.getAttribute('href')||'';
+  const favicon=sourceFavicon(source,iconHref);
   const email=(document.querySelector('a[href^="mailto:"]')?.getAttribute('href')||'').replace(/^mailto:/i,'').split('?')[0]||(document.body?.textContent||'').match(/[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+/)?.[0]||'';
   let added=0;const links=new Map<string,{url:string,name:string}>();for(const a of document.querySelectorAll('a[href]')){const value=resolve(a.getAttribute('href')||'');const canonical=canonicalList(value);if(canonical){const suggested=explicitOwner(a);const previous=links.get(canonical.key);if(!previous||previous.name===fallbackName)links.set(canonical.key,{url:value,name:suggested||fallbackName})}}
-  for(const item of links.values()){const c=candidate({name:item.name,logo_url:logo,wishlist_url:item.url,email,source_url:source,country});const r=await db.from('wishlist_discovery_candidates').upsert(c,{onConflict:'list_key',ignoreDuplicates:true}).select('id,status');must(r);added+=r.data.filter((x:any)=>x.status==='new').length}
+  for(const item of links.values()){const c=candidate({name:item.name,favicon_url:favicon,wishlist_url:item.url,email,source_url:source,country});const r=await db.from('wishlist_discovery_candidates').upsert(c,{onConflict:'list_key',ignoreDuplicates:true}).select('id,status');must(r);added+=r.data.filter((x:any)=>x.status==='new').length}
   must(await db.from('wishlist_discovery_sources').update({status:'checked'}).eq('source_url',source));return {added,skipped:0};
  }catch(e){must(await db.from('wishlist_discovery_sources').update({status:'failed'}).eq('source_url',source));return {added:0,skipped:0,error:e instanceof Error?e.message:'Seite konnte nicht gelesen werden.'}}
 }
@@ -56,7 +57,11 @@ Deno.serve(async(req:Request)=>{
   const key=must(await db.rpc('wishlist_tavily_key'));
   const quota=must(await db.rpc('wishlist_tavily_quota',{claim:false}));
   if(body.action==='list'){
-   const offset=Math.max(0,Math.min(100000,Number(body.offset)||0));const rows=must(await db.from('wishlist_discovery_candidates').select('*').order('found_at',{ascending:false}).order('id').range(offset,offset+199));
+   const offset=Math.max(0,Math.min(100000,Number(body.offset)||0));
+   const status=['new','published','duplicate','dismissed'].includes(body.status)?body.status:'all';
+   let listing=db.from('wishlist_discovery_candidates').select('*');
+   listing=status==='all'?listing.neq('status','dismissed'):listing.eq('status',status);
+   const rows=must(await listing.order('found_at',{ascending:false}).order('id').range(offset,offset+199));
    const health=must(await db.rpc('wishlist_link_health_summary'));
    const healthReview=must(await db.rpc('wishlist_link_health_review'));
    return reply(200,{rows,configured:!!key,offset,quota,searchProvider:'Tavily',health,healthReview});
@@ -99,7 +104,17 @@ Deno.serve(async(req:Request)=>{
    if(updated.length!==1)return reply(409,{error:'Veröffentlichung entfernt; Finderstatus konnte nicht aktualisiert werden. Bitte Administrator prüfen lassen.'});
    return reply(200,{ok:true});
   }
-  if(body.action==='dismiss'){if(!Array.isArray(body.ids)||body.ids.length>200)return reply(400,{error:'Ungültige Auswahl.'});must(await db.from('wishlist_discovery_candidates').update({status:'dismissed'}).in('id',body.ids).eq('status','new'));return reply(200,{ok:true})}
+  if(body.action==='dismiss'){
+   if(!Array.isArray(body.ids)||body.ids.length<1||body.ids.length>200||body.ids.some((id:any)=>typeof id!=='string'||!/^[0-9a-f-]{36}$/i.test(id)))return reply(400,{error:'Ungültige Auswahl.'});
+   const updated=must(await db.from('wishlist_discovery_candidates').update({status:'dismissed'}).in('id',body.ids).in('status',['new','duplicate']).select('id'));
+   return reply(200,{ok:true,dismissed:updated.length});
+  }
+  if(body.action==='restore'){
+   if(typeof body.id!=='string'||!/^[0-9a-f-]{36}$/i.test(body.id))return reply(400,{error:'Ungültige Auswahl.'});
+   const updated=must(await db.from('wishlist_discovery_candidates').update({status:'new'}).eq('id',body.id).eq('status','dismissed').select('id'));
+   if(updated.length!==1)return reply(409,{error:'Eintrag ist nicht mehr ausgeblendet.'});
+   return reply(200,{ok:true});
+  }
   if(body.action==='crawl'){
    if(!Array.isArray(body.urls)||body.urls.length>3)return reply(400,{error:'Maximal drei Quellseiten pro Durchlauf.'});const results=[];for(const url of body.urls){const normalized=publicUrl(String(url));if(normalized)must(await db.from('wishlist_discovery_sources').delete().eq('source_url',normalized).eq('status','failed'));results.push(await collect(db,String(url),''))}return reply(200,{results});
   }
@@ -173,6 +188,47 @@ Deno.serve(async(req:Request)=>{
    ];
    for(const [phrase,lang] of multilingualPhrases)seeds.push({query:phrase+' -site:amazon.de -site:amazon.com -site:amazon.fr',country:'ALL',lang});
 
+   // International coverage across languages and regions; all candidates remain staged for review.
+   const worldwidePhrases=[
+    ['"Amazon lista de desejos"','pt'],['"minha lista de desejos Amazon"','pt'],['"nossa lista de desejos Amazon"','pt'],
+    ['"Amazon lista de presentes"','pt'],['"Amazon wishlist" "Brasil"','pt'],
+    ['"Amazon wish list" "India"','en'],['"Amazon wishlist" "Nigeria"','en'],
+    ['"Amazon wishlist" "Kenya"','en'],['"Amazon wishlist" "South Africa"','en'],
+    ['"Amazon wishlist" "New Zealand"','en'],['"Amazon wishlist" "Philippines"','en'],
+    ['"Amazon wishlist" "Pakistan"','en'],['"Amazon wishlist" "Ireland"','en'],
+    ['"Amazon wishlist" "Singapore"','en'],['"Amazon wishlist" "Malaysia"','en'],
+    ['"Amazon wishlist" "United Kingdom"','en'],['"Amazon wishlist" "United States"','en'],
+    ['"Amazon listă de dorințe"','ro'],['"lista mea de dorințe Amazon"','ro'],
+    ['"Amazon seznam přání"','cs'],['"můj seznam přání Amazon"','cs'],
+    ['"Amazon kívánságlista"','hu'],['"Amazon kívánságlistám"','hu'],
+    ['"Amazon ønskeliste"','da'],['"Amazon ønskeliste" "Norge"','no'],
+    ['"Amazon toivelista"','fi'],['"Amazon önskelista" "Finland"','sv'],
+    ['"Amazon lista de deseos" "México"','es'],['"Amazon lista de deseos" "Argentina"','es'],
+    ['"Amazon lista de deseos" "Colombia"','es'],['"Amazon lista de deseos" "Chile"','es'],
+    ['"Amazon lista de deseos" "Perú"','es'],['"Amazon lista de deseos" "España"','es'],
+    ['"Amazon dilek listesi"','tr'],['"Amazon istek listesi"','tr'],
+    ['"Amazon список желаний"','ru'],['"мой список желаний Amazon"','ru'],
+    ['"Amazon список бажань"','uk'],['"мій список бажань Amazon"','uk'],
+    ['"Amazon λίστα επιθυμιών"','el'],['"η λίστα μου Amazon"','el'],
+    ['"Amazon قائمة الأمنيات"','ar'],['"قائمة رغبات أمازون"','ar'],
+    ['"Amazon רשימת משאלות"','he'],
+    ['"Amazon इच्छा सूची"','hi'],['"अमेज़न विशलिस्ट"','hi'],
+    ['"Amazon ইচ্ছা তালিকা"','bn'],['"Amazon خواہشات کی فہرست"','ur'],
+    ['"Amazon 欲しいものリスト"','ja'],['"私のAmazonほしい物リスト"','ja'],
+    ['"Amazon 愿望清单"','zh'],['"亚马逊心愿单"','zh'],
+    ['"Amazon 위시리스트"','ko'],['"아마존 위시리스트"','ko'],
+    ['"Amazon daftar keinginan"','id'],['"daftar keinginan Amazon"','id'],
+    ['"Amazon senarai hajat"','ms'],['"senarai keinginan Amazon"','ms'],
+    ['"Amazon รายการสิ่งที่อยากได้"','th'],['"Amazon ของขวัญ wishlist"','th'],
+    ['"Amazon danh sách mong muốn"','vi'],['"danh sách yêu thích Amazon"','vi'],
+    ['"Amazon orodha ya matamanio"','sw'],['"Amazon wishlist" "Tanzania"','sw'],
+    ['"Amazon wishlist" "Ghana"','en'],['"Amazon wishlist" "Uganda"','en'],
+    ['"Amazon wishlist" "UAE"','en'],['"Amazon wishlist" "Saudi Arabia"','en']
+   ];
+   for(const [phrase,lang] of worldwidePhrases)
+    seeds.push({query:phrase+' -site:amazon.com -site:amazon.de -site:amazon.fr',country:'ALL',lang});
+
+
    must(await db.from('wishlist_discovery_queries').upsert(seeds,{onConflict:'query,country,lang',ignoreDuplicates:true}));
    const q=must(await db.from('wishlist_discovery_queries').select('*').lt('page',10).order('page').order('query').limit(1))[0];if(!q)return reply(200,{done:true,message:'Suchplan abgeschlossen. Es besteht keine Vollständigkeitsgarantie.'});
    // Tavily does not expose Brave-style pagination: each seed is queried only once.
@@ -181,7 +237,7 @@ Deno.serve(async(req:Request)=>{
    const response=await fetch('https://api.tavily.com/search',{
     method:'POST',
     headers:{Authorization:'Bearer '+key,'Content-Type':'application/json',Accept:'application/json'},
-    body:JSON.stringify({query:q.query,search_depth:'basic',max_results:20,topic:'general',include_answer:false,include_raw_content:false,exclude_domains:['amazon.de','amazon.com','amazon.fr']}),
+    body:JSON.stringify({query:q.query,search_depth:'basic',max_results:20,topic:'general',include_answer:false,include_raw_content:false,exclude_domains:['amazon.de','amazon.com','amazon.fr','amazon.co.uk','amazon.es','amazon.it','amazon.nl','amazon.pl','amazon.se','amazon.co.jp','amazon.ca','amazon.com.au','amazon.com.be']}),
     signal:AbortSignal.timeout(12000)
    });
    if(!response.ok)return reply(response.status===429?429:502,{error:'Tavily-Suche HTTP '+response.status+'. Suchfortschritt bleibt erhalten; ein Credit wurde vorsorglich reserviert.'});
