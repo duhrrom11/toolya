@@ -57,7 +57,11 @@ Deno.serve(async(req:Request)=>{
   const key=must(await db.rpc('wishlist_tavily_key'));
   const quota=must(await db.rpc('wishlist_tavily_quota',{claim:false}));
   if(body.action==='list'){
-   const offset=Math.max(0,Math.min(100000,Number(body.offset)||0));const rows=must(await db.from('wishlist_discovery_candidates').select('*').order('found_at',{ascending:false}).order('id').range(offset,offset+199));
+   const offset=Math.max(0,Math.min(100000,Number(body.offset)||0));
+   const status=['new','published','duplicate','dismissed'].includes(body.status)?body.status:'all';
+   let listing=db.from('wishlist_discovery_candidates').select('*');
+   listing=status==='all'?listing.neq('status','dismissed'):listing.eq('status',status);
+   const rows=must(await listing.order('found_at',{ascending:false}).order('id').range(offset,offset+199));
    const health=must(await db.rpc('wishlist_link_health_summary'));
    const healthReview=must(await db.rpc('wishlist_link_health_review'));
    return reply(200,{rows,configured:!!key,offset,quota,searchProvider:'Tavily',health,healthReview});
@@ -100,7 +104,17 @@ Deno.serve(async(req:Request)=>{
    if(updated.length!==1)return reply(409,{error:'Veröffentlichung entfernt; Finderstatus konnte nicht aktualisiert werden. Bitte Administrator prüfen lassen.'});
    return reply(200,{ok:true});
   }
-  if(body.action==='dismiss'){if(!Array.isArray(body.ids)||body.ids.length>200)return reply(400,{error:'Ungültige Auswahl.'});must(await db.from('wishlist_discovery_candidates').update({status:'dismissed'}).in('id',body.ids).eq('status','new'));return reply(200,{ok:true})}
+  if(body.action==='dismiss'){
+   if(!Array.isArray(body.ids)||body.ids.length<1||body.ids.length>200||body.ids.some((id:any)=>typeof id!=='string'||!/^[0-9a-f-]{36}$/i.test(id)))return reply(400,{error:'Ungültige Auswahl.'});
+   const updated=must(await db.from('wishlist_discovery_candidates').update({status:'dismissed'}).in('id',body.ids).eq('status','new').select('id'));
+   return reply(200,{ok:true,dismissed:updated.length});
+  }
+  if(body.action==='restore'){
+   if(typeof body.id!=='string'||!/^[0-9a-f-]{36}$/i.test(body.id))return reply(400,{error:'Ungültige Auswahl.'});
+   const updated=must(await db.from('wishlist_discovery_candidates').update({status:'new'}).eq('id',body.id).eq('status','dismissed').select('id'));
+   if(updated.length!==1)return reply(409,{error:'Eintrag ist nicht mehr ausgeblendet.'});
+   return reply(200,{ok:true});
+  }
   if(body.action==='crawl'){
    if(!Array.isArray(body.urls)||body.urls.length>3)return reply(400,{error:'Maximal drei Quellseiten pro Durchlauf.'});const results=[];for(const url of body.urls){const normalized=publicUrl(String(url));if(normalized)must(await db.from('wishlist_discovery_sources').delete().eq('source_url',normalized).eq('status','failed'));results.push(await collect(db,String(url),''))}return reply(200,{results});
   }
