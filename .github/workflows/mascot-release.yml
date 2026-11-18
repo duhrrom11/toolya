@@ -54,6 +54,7 @@ jobs:
       - run: npm install --prefix /tmp/estate-ci pg@8.16.3 esbuild@0.25.12 playwright@1.62.1
       - run: node tests/security/estate-mail-v2.test.cjs
       - run: node tests/security/estate-release-v2.test.cjs
+      - run: node tests/security/wg-save-permissions.test.cjs
       - run: node tests/security/estate-browser-v2.cjs
       - uses: actions/upload-artifact@v4
         if: always()

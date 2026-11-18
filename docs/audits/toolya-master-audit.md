@@ -327,3 +327,13 @@ P1 11/17=64,7 %, 10/24 Hauptaufgaben verifiziert; D05b/D06b weiter In Arbeit. N�
 - Die verbundene OpenSEO-Organisation enthält ein Toolya-Projekt. Sie meldet aktuell kein verbundenes Search-Console-Konto. Ahrefs verweigert die Projektabfrage für den aktuellen Tarif. Daraus lässt sich kein Indexierungsstatus ableiten. Das vorhandene Admin-Dashboard erfasst Anträge für elf Seiten anhand der Betreiberangabe und kennzeichnet Bestätigung separat.
 - Die im offenen Issue #119 als fehlend beschriebene serverseitige Autokosten-Übertragung ist inzwischen als RPC auf dem aktiven Backend vorhanden und für angemeldete Konten ausführbar. Anonyme Konten dürfen sie laut Katalog nicht ausführen. Der lokale Connect-Vertragstest ist erfolgreich. Noch offen ist der Abgleich übriger Connect-Szenarien. Kein Produktionstransfer ausgelöst.
 - Der isolierte Zwei-Geräte-Test war auf dem Ausgangsstand reproduzierbar rot, weil die letzte Assertion vor dem zweiten simulierten Lesevorgang lief. Test wartet jetzt auf beendeten Panelzustand und besteht lokal. Die Produktlogik wird durch diese Testkorrektur nicht geändert.
+
+### Weitere P1-Releases – Admin und Nachlass
+
+[PR #129](https://github.com/duhrrom11/toolya/pull/129) gleicht Wortmarke, Bedienhöhen und Tastaturfokus der beiden Admin-Seiten an. Der Browsertest bestätigte den zuvor reproduzierten Überlauf des Statistik-Dashboards bei 320 px und anschließend den korrigierten Umbruch. Sechs finale Ansichten gesichtet, verweigerten Adminzugriff und synthetische Finder-Veröffentlichung geprüft. Die vier geänderten Admin-Dateien werden bytegleich ausgeliefert. Keine echten Suchanfragen oder Veröffentlichungsvorgänge in den Browserprüfungen.
+
+[PR #130](https://github.com/duhrrom11/toolya/pull/130) zeigt im Nachlass einen gemeinsamen Header mit genau einer sichtbaren Startseiten-Wortmarke. Der neutrale Seitentitel und der separat erreichbare eigene Tresor wurden in Chromium geprüft. Die vorhandenen Schlüssel-, Freigabe- und Alarmprüfungen laufen weiter in isoliertem PostgreSQL und mit abgefangenem Versand.
+
+### Vorgezogener Stabilitätsbefund – WG-Organisator
+
+Nachgewiesen sind die produktive Browserabfrage für die Spalten `payload` und `updated_at` sowie fehlende UPDATE-Spaltenrechte für die Anwendungsrolle. Die vorhandenen RLS-Regeln sehen Schreibzugriff für Besitzer und Mitglieder vor. Die vorbereitete Migration ist auf die beiden benötigten Spalten beschränkt. ID, Eigentümer und anonymer Zugriff bleiben gesperrt. Ein isoliertes PostgreSQL-Szenario prüft Besitzer, Mitglied, unbeteiligtes Konto, anonymen Zugriff, veralteten Stand und Rücknahme der Freigabe. Keine produktive Schreibprobe. Der operative Nachweis wird im Veröffentlichungs-Prüfprotokoll des Migrations-PR ergänzt.
