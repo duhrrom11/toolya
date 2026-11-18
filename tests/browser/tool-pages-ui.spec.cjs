@@ -1251,7 +1251,9 @@ test('wishlist: removing and adding lists keeps numbers and the first URL unique
  await isolatedWishlist(page,true);await page.goto(origin+'/tools/wishes/public.html');
  await expect(page.locator('#profileForm')).toBeVisible();
  for(let n=0;n<4;n++)await page.locator('#addList').click();
+ await expect(page.locator('#listFields fieldset').last().locator('[name=name]')).toBeFocused();
  await page.locator('#listFields fieldset').nth(1).getByRole('button',{name:'Diese Liste entfernen',exact:true}).click();
+ await expect(page.locator('#listFields fieldset').nth(1).locator('[name=name]')).toBeFocused();
  await page.locator('#addList').click();
  await expect(page.locator('#listFields legend')).toHaveText(['Wunschliste 1','Wunschliste 2','Wunschliste 3','Wunschliste 4','Wunschliste 5']);
  await page.locator('#listFields fieldset').first().getByRole('button',{name:'Diese Liste entfernen',exact:true}).click();
