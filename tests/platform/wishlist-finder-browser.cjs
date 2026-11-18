@@ -109,6 +109,10 @@ const assert = require('node:assert/strict');
     assert.match(await page.locator('#result').innerText(), /Noch keine Wunschlisten ausgewählt/);
     await page.locator('#selectAll').click();
     assert.match(await page.locator('#selection').innerText(), /1 von 1 sichtbaren neuen Wunschlisten ausgewählt/);
+    page.once('dialog', async dialog => {
+      assert.match(dialog.message(), /Namens-\/Organisationszuordnung/);
+      await dialog.accept();
+    });
     await page.locator('#publish').click();
     await page.waitForFunction(() => document.getElementById('result').textContent.includes('1 Wunschlisten veröffentlicht'));
     assert.equal(calls.filter(call => call.action === 'publish').length, 1);
