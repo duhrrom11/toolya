@@ -82,8 +82,8 @@ function mountPreferences(){
   appearance=document.createElement('details');appearance.className='ty-settings-group toolya-appearance';
   const summary=document.createElement('summary');summary.textContent='Maskottchen';appearance.append(summary);
   const close=surface.querySelector('.b3-hub-settings-footer,.dashboard-settings-close,.wishlist-settings-footer,#cancelSettingsBtn');
-  if(close)close.closest('.b3-hub-settings-footer,.dashboard-settings-close,.wishlist-settings-footer')?.before(appearance);
-  if(!appearance.isConnected){if(close)close.before(appearance);else surface.append(appearance)}
+  const closeContainer=close?.closest('.b3-hub-settings-footer,.dashboard-settings-close,.wishlist-settings-footer')||(close?.id==='cancelSettingsBtn'?close.parentElement:close);
+  if(closeContainer)closeContainer.before(appearance);else surface.append(appearance);
  }
  let content=appearance.querySelector('.ty-settings-content');
  if(!content){content=document.createElement('div');content.className='ty-settings-content';appearance.append(content)}
