@@ -202,7 +202,7 @@ try{const r=await fetch('./public-products.json');if(r.ok)catalog=await r.json()
 renderFavorites();db.auth.onAuthStateChange(event=>{
  if(event==='PASSWORD_RECOVERY'){
   $('settingsRecoveryPanel').hidden=false;
-  settingsModal.showModal?.();
+  if(!settingsModal.open)settingsModal.showModal();
   $('settingsNewPassword').focus();
  }
  if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event))setTimeout(loadProfile,0);
