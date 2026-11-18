@@ -31,7 +31,12 @@
       <div id="settingsAuthFields">
         <label for="settingsEmail">E-Mail-Adresse<input id="settingsEmail" type="email" autocomplete="email" placeholder="E-Mail" maxlength="254"></label>
         <label for="settingsPassword">Passwort<input id="settingsPassword" type="password" autocomplete="current-password" placeholder="Passwort" minlength="8"></label>
-        <button id="settingsForgotPassword" class="wishlist-text-action" type="button">Passwort vergessen?</button>
+        <button id="settingsForgotPassword" class="wishlist-text-action" type="button">Passwort vergessen?</button><div id="settingsRecoveryPanel" hidden class="wishlist-recovery-panel">
+          <p>Neues Passwort festlegen</p>
+          <label for="settingsNewPassword">Neues Passwort (mindestens 8 Zeichen)<input id="settingsNewPassword" type="password" minlength="8" autocomplete="new-password"></label>
+          <label for="settingsConfirmPassword">Passwort wiederholen<input id="settingsConfirmPassword" type="password" minlength="8" autocomplete="new-password"></label>
+          <button id="settingsSaveNewPassword" type="button">Neues Passwort speichern</button>
+        </div>
       </div>
       <p id="settingsAuthMessage" role="status" aria-live="polite" class="muted"></p>
       <div class="wishlist-account-actions">
