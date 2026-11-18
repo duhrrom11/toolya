@@ -54,7 +54,13 @@ async function get(path){
     assert.equal(hash(asset.body),hash(expectedAsset),'Legacy wishlist resource must match release byte for byte');
     legacy.push({url:asset.url,status:200,expectedSha256:hash(expectedAsset),actualSha256:hash(asset.body),byteIdentical:true});
    }
-   result={revision,checkedAt:new Date().toISOString(),attempt,css:{url:css.url,expectedSha256:hash(expected),actualSha256:hash(css.body),byteIdentical:true},buddy:{url:buddy.url,expectedSha256:hash(expectedBuddy),actualSha256:hash(buddy.body),byteIdentical:true},themeStyles,pages,wishlist,estate,info,legacy,scope:'Public static delivery only; authenticated production UI and private flows are not verified by this check.'};
+   const admin=[];
+   for(const path of ['/admin-stats-dashboard/index.html','/admin-stats-dashboard/wishlist-finder.html','/admin-stats-dashboard/stats.css','/admin-stats-dashboard/wishlist-finder.css']){
+    const asset=await get(path),expectedAsset=fs.readFileSync(path.slice(1));
+    assert.equal(hash(asset.body),hash(expectedAsset),'Admin static resource must match release byte for byte');
+    admin.push({url:asset.url,status:200,expectedSha256:hash(expectedAsset),actualSha256:hash(asset.body),byteIdentical:true});
+   }
+   result={revision,checkedAt:new Date().toISOString(),attempt,css:{url:css.url,expectedSha256:hash(expected),actualSha256:hash(css.body),byteIdentical:true},buddy:{url:buddy.url,expectedSha256:hash(expectedBuddy),actualSha256:hash(buddy.body),byteIdentical:true},themeStyles,pages,wishlist,estate,info,legacy,admin,scope:'Public static delivery only; authenticated production UI and private flows are not verified by this check.'};
    break;
   }catch(error){lastError=error;if(attempt<6)await new Promise(r=>setTimeout(r,10000));}
  }

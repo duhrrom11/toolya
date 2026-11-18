@@ -317,3 +317,13 @@ P1 11/17=64,7 %, 10/24 Hauptaufgaben verifiziert; D05b/D06b weiter In Arbeit. N�
 | Analytics und Designreferenzen | Das erreichbare Amplitude-Projekt `default` lieferte eine leere Ereignisliste. Eine Toolya-Zuordnung und Conversion-Werte lassen sich daraus nicht ableiten. Für den Designabgleich sind die vorhandenen Komponenten, Originalassets und aktuellen Browseransichten die geprüften Referenzen. |
 
 **Prüfgrenzen.** Datenbankabfragen betrafen ausschließlich Katalog, Projektmetadaten und Advisors. Private Produktionsabläufe, externe Such-/Versanddienste, eine vollständige Tastatur- und Kontrastprüfung sowie die juristische Prüfung bleiben offen. Die lokal installierte Chromium-Ausführung scheitert beim Start am gesperrten Socket. Die gezielte Layoutprüfung läuft deshalb über CI. Der neue Release ist erst nach Merge, Pages und Live-Abgleich bestätigt.
+
+### P1-Release der öffentlichen Wunschlisten-Navigation
+
+[PR #128](https://github.com/duhrrom11/toolya/pull/128) ist als `7ea5b58` veröffentlicht. Fünf PR-Prüfungen erfolgreich. Im isolierten Chromium waren beide Sprungziele per Tastatur bzw. Klick erreichbar. Auf den gesichteten Aufnahmen bei 320, 768 und 1440 px sind die Links mindestens 44 px hoch und der Fokus gut sichtbar. Bei 320 px stehen die Links untereinander. Das öffentliche HTML und CSS waren zusammen mit insgesamt 54 Ressourcen bytegleich zu GitHub. [Browserlauf](https://github.com/duhrrom11/toolya/actions/runs/44310047480) · [Pages](https://github.com/duhrrom11/toolya/actions/runs/44310630950) · [Live-Prüfung](https://github.com/duhrrom11/toolya/actions/runs/44310632274)
+
+### Ergänzende Befunde
+
+- Die verbundene OpenSEO-Organisation enthält ein Toolya-Projekt. Sie meldet aktuell kein verbundenes Search-Console-Konto. Ahrefs verweigert die Projektabfrage für den aktuellen Tarif. Daraus lässt sich kein Indexierungsstatus ableiten. Das vorhandene Admin-Dashboard erfasst Anträge für elf Seiten anhand der Betreiberangabe und kennzeichnet Bestätigung separat.
+- Die im offenen Issue #119 als fehlend beschriebene serverseitige Autokosten-Übertragung ist inzwischen als RPC auf dem aktiven Backend vorhanden und für angemeldete Konten ausführbar. Anonyme Konten dürfen sie laut Katalog nicht ausführen. Der lokale Connect-Vertragstest ist erfolgreich. Noch offen ist der Abgleich übriger Connect-Szenarien. Kein Produktionstransfer ausgelöst.
+- Der isolierte Zwei-Geräte-Test war auf dem Ausgangsstand reproduzierbar rot, weil die letzte Assertion vor dem zweiten simulierten Lesevorgang lief. Test wartet jetzt auf beendeten Panelzustand und besteht lokal. Die Produktlogik wird durch diese Testkorrektur nicht geändert.
