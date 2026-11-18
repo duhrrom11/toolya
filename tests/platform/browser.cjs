@@ -105,6 +105,12 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  // Regression: Swiss-French AltGr+2 and native paste must work in the account email field.
  await page.setViewportSize({width:1280,height:812});
  await page.locator('#settingsBtn').click();
+ assert.equal(await page.locator('#settingsModal details.toolya-appearance').count(),1,'home uses one mascot accordion');
+ assert.equal(await page.locator('#settingsModal details.toolya-appearance').evaluate(e=>e.open),false,'mascot settings initially collapsed');
+ assert.equal(await page.locator('#settingsModal').textContent().then(s=>s.includes('Entdecke mehr Toolya')),false,'discovery settings link removed');
+ assert.equal(await page.locator('#settingsModal .ty-settings-kofi-button').count(),1,'one Ko-fi button in settings');
+ assert.equal(await page.locator('#settingsModal .ty-settings-kofi-button').getAttribute('href'),'https://ko-fi.com/duhrrom');
+ assert.equal(await page.locator('#settingsModal .ty-settings-kofi-button').evaluate(e=>e.parentElement.lastElementChild===e),true,'Ko-fi is the last setting');
  const email=page.locator('#loginEmail');await email.waitFor({state:'visible'});await verifyRealFormClipboard('login','#loginEmail','#loginPassword','clipboard@example.ch');await email.fill('romi');
  await email.focus();await page.keyboard.insertText('@');
  assert.equal(await email.inputValue(),'romi@','native text insertion supports @');
