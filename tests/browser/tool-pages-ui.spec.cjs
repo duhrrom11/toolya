@@ -2,7 +2,7 @@
 const {test,expect}=require('playwright/test');
 const origin='http://127.0.0.1:4173';
 const tools=[
-  {path:'/tools/car/index.html',title:'Autokosten-Rechner & Reifenwechsel',tool:'autokosten-reifenwechsel',form:'#carName'},
+  {path:'/tools/car/index.html',title:'Autokosten-Rechner',tool:'autokosten-reifenwechsel',form:'#carName'},
   {path:'/tools/budget/index.html',title:'Haushaltsbuch mit Kassenbon-Scanner',tool:'haushaltsbuch-kassenbon',form:'#receiptTitle'}
 ];
 async function isolated(page,authenticated,displayCss=false,initialSnapshot=null){
