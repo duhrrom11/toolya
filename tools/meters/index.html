@@ -16,6 +16,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zählerstände erfassen: Strom, Gas & Wasser | Toolya</title>
     <meta name="description" content="Strom-, Wasser- und Gaszählerstände online erfassen: Verbrauch auswerten, Kosten vergleichen und Zählerstände für Strom, Wasser und Gas dokumentieren.">
+    <meta name="robots" content="noindex, follow">
     <link rel="canonical" href="https://toolya.app/tools/meters/index.html">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -115,7 +116,7 @@
                     </div>
                     <div class="p-4 bg-orange-50/50 rounded-xl border border-orange-100 space-y-2">
                         <h4 class="font-bold text-orange-900 text-sm">♨️ Gas</h4>
-                        <p>Ziffern vor dem Komma in m³. Umrechnung in kWh erfolgt automatisch über den Brennwert.</p>
+                        <p>Gaszählerstand in m³ eintragen. Für die Kostenschätzung verwendet Toolya den hinterlegten Umrechnungsfaktor in kWh/m³.</p>
                         <a href="https://www.amazon.de/s?k=gasmesser+detektor+smart&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2">🛒 Gas-Detektoren auf Amazon</a>
                     </div>
                 </div>
@@ -226,7 +227,7 @@
             <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center space-x-3">
                 <input type="checkbox" id="meterExchangeCheck" class="w-4 h-4 text-amber-600 rounded">
                 <label for="meterExchangeCheck" class="text-xs font-semibold text-amber-900 cursor-pointer">
-                    🔄 Neuer Zähler / Zählerwechsel (Startstand bei 0 für korrekte Differenz)
+                    🔄 Neuer Zähler / Zählerwechsel (tatsächlichen Startstand eintragen)
                 </label>
             </div>
 
@@ -354,6 +355,8 @@
                     </div>
                 </div>
             </div>
+
+            <p class="text-sm"><a href="/zaehlerstaende/" class="text-sky-700 underline">Schritt-für-Schritt-Anleitung zur Zählerstandserfassung</a></p>
 
             <!-- DATENSICHERUNG -->
             <div class="border-t border-gray-200 pt-4">
@@ -795,7 +798,7 @@
                 if (!latest[key] || r.date > latest[key].date) latest[key] = r;
             });
             for (const r of Object.values(latest)) {
-                let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
+                let unit = r.type.includes('Strom') ? 'kWh' : 'm³';
                 text += `- ${r.type} (${r.name}): ${r.value} ${unit} (vom ${r.date})\n`;
             }
             if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
@@ -857,7 +860,7 @@
                         const previousValue = Number(prev.value);
                         diff = Number.isFinite(currentValue) && Number.isFinite(previousValue)
                             ? (currentValue - previousValue).toFixed(2) : null;
-                        let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
+                        let unit = r.type.includes('Strom') ? 'kWh' : 'm³';
                         if (diff !== null) {
                             let badgeColor = diff >= 0 ? 'bg-sky-100 text-sky-800' : 'bg-red-100 text-red-800';
                             diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${escapeHtml(prev.date)})</span>`;
@@ -872,7 +875,7 @@
                 if (r.type.toLowerCase().includes('wasser')) icon = '💧';
                 if (r.type === 'Gas') icon = '♨️';
 
-                let unitLabel = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
+                let unitLabel = r.type.includes('Strom') ? 'kWh' : 'm³';
                 return `
                     <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                         <div class="b3-meter-card-identity flex items-center space-x-3">
@@ -986,16 +989,19 @@
                         const rawAbschlag = tarif?.abschlag;
                         const hasAbschlag = rawAbschlag !== undefined && rawAbschlag !== null && rawAbschlag !== '' &&
                             Number.isFinite(Number(rawAbschlag)) && Number(rawAbschlag) >= 0;
-                        const yearlyCost = hasPrice ? Number(yearlyEst) * Number(rawPrice) : null;
+                        const conversionFactor = t === 'Gas' ? Number(tarif?.calib) : 1;
+                        const hasConversionFactor = Number.isFinite(conversionFactor) && conversionFactor > 0;
+                        const yearlyCost = hasPrice && hasConversionFactor
+                            ? Number(yearlyEst) * conversionFactor * Number(rawPrice) : null;
                         const yearlyAbschlag = hasAbschlag ? Number(rawAbschlag) * 12 : null;
-                        const unit = t === 'Strom' || t === 'Gas' ? 'kWh' : 'm³';
+                        const unit = t === 'Strom' ? 'kWh' : 'm³';
 
                         html += `
                             <div class="p-4 bg-gray-50 border rounded-xl space-y-1.5">
                                 <h4 class="font-bold text-sm">${t} Prognose & Live-Kosten</h4>
                                 <p class="text-xs">Hochrechnung / Jahr: <strong>${yearlyEst} ${unit}</strong></p>
                                 ${yearlyCost === null
-                                    ? '<p class="text-xs text-amber-700">Kostenprognose nicht verfügbar: gültigen Tarifpreis hinterlegen.</p>'
+                                    ? '<p class="text-xs text-amber-700">Für die Kostenprognose bitte Tarifpreis und bei Gas auch den Umrechnungsfaktor hinterlegen.</p>'
                                     : `<p class="text-xs">Tages-Schnitt: <strong class="text-sky-700">${(yearlyCost / 365).toFixed(2)} € / Tag</strong></p>
                                        <p class="text-xs">Kosten: <strong>${yearlyCost.toFixed(2)} €</strong>${yearlyAbschlag === null ? ' (Abschlag nicht hinterlegt)' : ` (Bezahlt: ${yearlyAbschlag.toFixed(2)} €)`}</p>
                                        ${yearlyAbschlag === null ? '' : `<p class="text-xs font-bold ${yearlyCost > yearlyAbschlag ? 'text-red-600' : 'text-emerald-600'}">
@@ -1031,7 +1037,7 @@
 
             let y = 48;
             data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string').forEach((r, idx) => {
-                const unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
+                const unit = r.type.includes('Strom') ? 'kWh' : 'm³';
                 const lines = [
                     ...doc.splitTextToSize(`${idx + 1}. [${r.type}] ${r.name} (${r.location || 'Haupt'})`, 180),
                     ...doc.splitTextToSize(`Ablesedatum: ${r.date} | Zählerstand: ${r.value} ${unit}`, 180),
@@ -1123,7 +1129,7 @@
                 doc.text("Keine Zählerstände erfasst.", 14, y);
             }
             readings.forEach((r) => {
-                const unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
+                const unit = r.type.includes('Strom') ? 'kWh' : 'm³';
                 const line = `${r.date} | ${r.type} (${r.name} - ${r.location || 'Haupt'}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`;
                 const lines = doc.splitTextToSize(line, 180);
                 lines.forEach(textLine => {
