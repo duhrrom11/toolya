@@ -73,7 +73,7 @@ const assert = require('node:assert/strict');
         status = 'published';
         return route.fulfill({ headers, json: { published: 1, duplicates: 0 } });
       }
-      return route.fulfill({ headers, json: { configured: false, rows: [{ ...row, status }] } });
+      return route.fulfill({ headers, json: { configured: false, rows: [{ ...row, status }], health: { total: 66, http_reachable: 4, review: 1, unknown: 2, not_checked: 59 } } });
     });
 
     const checkNavigation = async (linkName, evidence, extraLinkName) => {
@@ -102,6 +102,7 @@ const assert = require('node:assert/strict');
 
     await page.goto(origin + '/admin-stats-dashboard/wishlist-finder.html');
     await page.locator('#finder').waitFor({ state: 'visible' });
+    assert.match(await page.locator('#healthStatus').innerText(), /66 erfasst.*1 zur manuellen Prüfung/);
     assert.equal(await page.locator('#start').isDisabled(), true);
     assert.match(await page.locator('.finder-row img').getAttribute('src'), /toolya_wishlist_turquoise/);
     await checkNavigation('← Admin-Dashboard', 'finder-navigation', 'Quelle ↗');
