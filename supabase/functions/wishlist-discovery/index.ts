@@ -58,7 +58,8 @@ Deno.serve(async(req:Request)=>{
   if(body.action==='list'){
    const offset=Math.max(0,Math.min(100000,Number(body.offset)||0));const rows=must(await db.from('wishlist_discovery_candidates').select('*').order('found_at',{ascending:false}).order('id').range(offset,offset+199));
    const health=must(await db.rpc('wishlist_link_health_summary'));
-   return reply(200,{rows,configured:!!key,offset,quota,searchProvider:'Tavily',health});
+   const healthReview=must(await db.rpc('wishlist_link_health_review'));
+   return reply(200,{rows,configured:!!key,offset,quota,searchProvider:'Tavily',health,healthReview});
   }
   if(body.action==='stage'){
    if(!Array.isArray(body.rows)||body.rows.length>200)return reply(400,{error:'Maximal 200 Einträge pro Stapel.'});
