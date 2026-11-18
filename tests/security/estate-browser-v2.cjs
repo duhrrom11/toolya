@@ -95,7 +95,17 @@ const root=path.resolve(__dirname,'../..');
   await page.locator('.person').nth(1).getByRole('button',{name:'Schlüssel per WhatsApp'}).click();await page.waitForFunction(()=>window.__links.length===2);link=await page.evaluate(()=>window.__links[1]);assert(decodeURIComponent(link).includes(second));assert(!link.includes(preparationKey));
   const popupPromise=context.waitForEvent('page');await page.locator('#print-selected').click();const popup=await popupPromise;await popup.waitForFunction(()=>document.body.dataset.printReady==='true');assert.equal(await popup.locator('.page').count(),2);assert.equal(await popup.locator('.page').nth(0).locator('code').count(),1);assert.equal((await popup.locator('code').nth(0).textContent()).replace(/\s/g,''),preparationKey);assert.equal((await popup.locator('code').nth(1).textContent()).replace(/\s/g,''),second);assert((await popup.locator('img').first().getAttribute('src')).startsWith('data:image/png'));await popup.pdf({path:'/tmp/estate-keys-isolated.pdf',preferCSSPageSize:true});await popup.close();
   // Real browser -> actual Edge handler -> PostgreSQL gate -> browser AES-GCM.
-  const trustee=await context.newPage();await trustee.goto(origin+'/tools/estate/heirs.html');await trustee.locator('#first-key').fill(preparationKey);await trustee.locator('#open-form button').click();await trustee.waitForFunction(()=>document.getElementById('message').textContent.includes('zweiten Vertrauensperson'));
+  const trustee=await context.newPage();
+  await trustee.goto(origin+'/tools/estate/heirs.html');
+  await trustee.locator('.ty-tool-hero[data-tool="estate"]').waitFor();
+  assert.equal(await trustee.locator('.ty-tool-hero h1').innerText(),'Zugang für Vertrauenspersonen');
+  assert.equal(await trustee.locator('.estate-trustee-home').isHidden(),true);
+  assert.equal(await trustee.locator('.ty-tool-hero a[aria-label="Toolya Startseite"]').isVisible(),true);
+  const ownerLink=trustee.getByRole('link',{name:'Mein eigener Tresor'});
+  assert.equal(await ownerLink.getAttribute('href'),'index.html');
+  assert.ok((await ownerLink.boundingBox()).height>=44);
+  await trustee.screenshot({path:'test-results/estate-design-trustee-header.png'});
+  await trustee.locator('#first-key').fill(preparationKey);await trustee.locator('#open-form button').click();await trustee.waitForFunction(()=>document.getElementById('message').textContent.includes('zweiten Vertrauensperson'));
   await trustee.locator('#second-key').fill(preparationKey);await trustee.locator('#open-form button').click();await trustee.waitForFunction(()=>document.getElementById('message').textContent.includes('passen nicht'));
   await trustee.locator('#second-key').fill(second);await trustee.locator('#open-form button').click();await trustee.locator('#read-panel').waitFor({state:'visible'});assert((await trustee.locator('#read-entries').textContent()).includes('Original content'));assert.equal(await trustee.locator('#read-entries button').count(),0);await trustee.locator('#close-vault').click();
   await trustee.locator('#first-key').fill(preparationKey);await trustee.locator('#alarm-button').click();await trustee.locator('#alarm-confirm[open]').waitFor();await trustee.locator('#alarm-confirm button[value=ok]').click();await trustee.waitForFunction(()=>document.getElementById('message').textContent.includes('Frist läuft'));assert.equal(mails.length,1);assert.equal(mails[0].to[0].email,email);assert(!JSON.stringify(mails).includes(preparationKey));

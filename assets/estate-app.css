@@ -52,3 +52,20 @@ dialog{max-height:90dvh;overflow-y:auto}
 }
 /* German compound headings must also fit inside a 288px mobile content column. */
 :is(#owner-app,#access-panel,#read-panel,#confirm-dialog,#alarm-confirm) :is(h2,h3){overflow-wrap:anywhere;hyphens:auto}
+
+/* The themed header supplies the home link once the platform has mounted. */
+.ty-tool-hero[data-tool="estate"] + .estate-trustee-nav .estate-trustee-home {
+ display: none;
+}
+.ty-tool-hero[data-tool="estate"] + .estate-trustee-nav {
+ justify-content: flex-end;
+}
+.estate-trustee-nav > a {
+ display: inline-flex;
+ align-items: center;
+ min-height: 44px;
+}
+.estate-trustee-nav > a:focus-visible {
+ outline: var(--ty-focus-ring, 3px solid #007e9f);
+ outline-offset: 3px;
+}
