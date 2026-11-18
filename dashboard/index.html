@@ -6,6 +6,7 @@
 <title>Mein Dashboard | Toolya</title>
 <meta name="description" content="Öffne deine Lieblings-Tools und verwalte Aufgaben und Erinnerungen in deinem Browser.">
 <link rel="stylesheet" href="./dashboard.css">
+<link rel="stylesheet" href="../assets/toolya-settings.css">
 <script src="../assets/vendor/supabase-2.57.0.js" defer></script>
 <script src="./account-settings.js" defer></script>
 <script type="module" src="../shared/toolya/platform.mjs"></script>
@@ -58,23 +59,28 @@
 <!-- Shared Toolya footer is mounted by platform.mjs after the main content. -->
 </main>
 <dialog id="settingsModal" class="dashboard-settings" aria-labelledby="settingsTitle">
- <div class="dashboard-settings-panel">
+ <div class="dashboard-settings-panel ty-settings-panel">
   <div class="dashboard-settings-head"><h2 id="settingsTitle">⚙️ Einstellungen</h2><button type="button" id="closeSettingsBtn" aria-label="Einstellungen schließen">×</button></div>
-  <section aria-label="Cloud-Konto">
-   <h3>☁️ Cloud-Konto</h3>
+  <details id="accountSettings" class="ty-settings-group">
+   <summary>Toolya-Konto</summary>
+   <div class="ty-settings-content">
    <p id="cloudStatus" role="status" aria-live="polite" tabindex="-1">Konto wird geprüft …</p>
+   <div id="signedOutControls" hidden>
    <label for="loginEmail">E-Mail-Adresse<input type="email" id="loginEmail" autocomplete="email" placeholder="E-Mail-Adresse"></label>
    <label for="loginPassword">Passwort<input type="password" id="loginPassword" autocomplete="current-password" minlength="6" placeholder="Passwort"></label>
    <button type="button" id="forgotPassword" class="settings-text-button">Passwort vergessen?</button>
+   <div class="ty-settings-actions"><button type="button" id="registerUser">👤 Registrieren</button><button type="button" id="loginSubmit">🔑 Anmelden</button></div>
+   </div>
    <div id="passwordRecoveryPanel" hidden>
     <label for="recoveryPassword">Neues Passwort (mindestens 8 Zeichen)<input type="password" id="recoveryPassword" minlength="8" autocomplete="new-password"></label>
     <label for="recoveryPasswordConfirm">Passwort wiederholen<input type="password" id="recoveryPasswordConfirm" minlength="8" autocomplete="new-password"></label>
     <button type="button" id="saveRecovery">Neues Passwort speichern</button>
    </div>
    <p id="loginMessage" role="status" aria-live="polite"></p>
-   <div class="dashboard-account-actions"><button type="button" id="registerUser">👤 Registrieren</button><button type="button" id="loginSubmit">🔑 Anmelden</button><button type="button" id="logoutUser">🚪 Abmelden</button></div>
-  </section>
-  <section class="dashboard-backup"><h3>💾 Datensicherung</h3><p>Deine globalen Backup- und Wiederherstellungsfunktionen findest du in den gemeinsamen Einstellungen der Hauptseite.</p><a href="../index.html?settings=1">Backup und Wiederherstellung öffnen</a></section>
+   <button type="button" id="logoutUser" hidden>🚪 Abmelden</button>
+   </div>
+  </details>
+  <details class="ty-settings-group"><summary>Datensicherung</summary><div class="ty-settings-content"><p>Deine Backups findest du in den Einstellungen der Startseite.</p><a href="../index.html?settings=1#datensicherung">Backup und Wiederherstellung öffnen</a></div></details>
   <div class="dashboard-settings-close"><button type="button" id="cancelSettingsBtn">Schließen</button></div>
  </div>
 </dialog>

@@ -28,11 +28,21 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  await page.evaluate(()=>{window.__signedOutEvents=0;supabaseClient.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')window.__signedOutEvents++})});
  await page.waitForTimeout(200);
  assert(await page.evaluate(()=>window.__signedOutEvents<3),'guest status must not create a SIGNED_OUT loop');
- await page.locator('#userInfo').click();await page.locator('#loginEmail').fill(user.email);await page.locator('#loginPassword').fill('synthetic-only-password');
+ await page.locator('#userInfo').click();
+ assert(await page.locator('#logoutSubmit').isHidden(),'guests see no sign-out action');
+ const backup=page.locator('#datensicherung');
+ await backup.locator('summary').click();
+ assert(await backup.locator('input[type=file]').isVisible(),'backup options expand');
+ await backup.locator('summary').click();
+ await page.locator('#loginEmail').fill(user.email);await page.locator('#loginPassword').fill('synthetic-only-password');
  await page.locator('#loginSubmit').click();
  await page.waitForFunction(()=>document.querySelector('#settingsModal').classList.contains('hidden'),{},{timeout:5000});
  await page.waitForFunction(()=>document.querySelector('#userInfo').textContent==='Angemeldet',{},{timeout:5000});
  await page.reload();await page.waitForFunction(()=>document.querySelector('#userInfo').textContent==='Angemeldet',{},{timeout:5000});
+ await page.locator('#userInfo').click();
+ assert(await page.locator('#loginEmail').isHidden(),'signed-in users see no login form');
+ assert(await page.locator('#logoutSubmit').isVisible(),'signed-in users get a sign-out button');
+ await page.keyboard.press('Escape');
  // One login must survive navigation through every legacy tool and back home.
  for(const tool of ['budget','moving','car','pet-health','meters','plants','parking','loans','baking','housemates']){
   console.log('CHECK account navigation:',tool);await page.goto(origin+'/tools/'+tool+'/');
@@ -53,7 +63,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  assert(refreshes>0,'expired persisted session must use the refresh endpoint');
 
  await page.evaluate(()=>{window.__signedOutEvents=0;supabaseClient.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')window.__signedOutEvents++});window.__logoutDone=false;logoutUser().then(()=>window.__logoutDone=true)});
- await page.waitForFunction(()=>window.__logoutDone&&document.querySelector('#userInfo').textContent==='Anmelden',{},{timeout:5000});
+ await page.waitForFunction(()=>window.__logoutDone&&document.querySelector('#userInfo').textContent==='Nicht angemeldet',{},{timeout:5000});
  await page.waitForFunction(()=>document.querySelector('#cloudStatus').textContent==='Nicht angemeldet',{},{timeout:5000});
  await page.waitForTimeout(200);
  assert(await page.evaluate(()=>window.__signedOutEvents<3),'logout must settle without recursive Auth events');
