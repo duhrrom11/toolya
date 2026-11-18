@@ -22,7 +22,20 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
     await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
     const brand=await page.locator('.ty-footer-wordmark').evaluate(el=>({font:getComputedStyle(el).fontFamily,weight:getComputedStyle(el).fontWeight,text:el.textContent}));
     assert(brand.font.startsWith('Inter'),'shared existing brand font');assert.equal(brand.weight,'900');assert.equal(brand.text,'Toolya');
-    if(route==='/index.html')assert.equal(await page.locator('.b3-hub-logo').evaluate(el=>getComputedStyle(el).fontFamily),brand.font,'home and footer font match');
+    if(route==='/index.html'){
+     assert.equal(await page.locator('.b3-hub-logo').evaluate(el=>getComputedStyle(el).fontFamily),brand.font,'home and footer font match');
+     const guides=page.locator('#anleitungen .ty-guide-card');
+     assert.equal(await guides.count(),13,'all public guides are visible as links');
+     const boxes=await guides.evaluateAll(links=>links.map(link=>{
+      const bounds=link.getBoundingClientRect();
+      return {left:bounds.left,right:bounds.right,height:bounds.height};
+     }));
+     assert(boxes.every(box=>box.left>=0&&box.right<=width+1&&box.height>=44),'guide cards fit the viewport and have large tap targets');
+     assert.equal(boxes[0].left===boxes[1].left,width===320,'guide grid adapts to the viewport');
+     await guides.first().focus();
+     await page.keyboard.press('Tab');
+     assert.equal(await guides.nth(1).evaluate(link=>document.activeElement===link&&getComputedStyle(link).outlineStyle!=='none'),true,'guide links show keyboard focus');
+    }
     if(['/privacy.html','/legal.html','/mascots.html'].includes(route)){
      assert.equal(await page.locator('.ty-info-header').count(),1,'shared information header');
      assert.equal(await page.locator('h1').count(),1,'single main title');

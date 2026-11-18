@@ -43,7 +43,7 @@ body.b3-home #toolsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr
 body.b3-home .ty-tool-card{--tile:#e6e0fa;--glow:#b79ce8;--card-accent:#7b4bb4;display:flex!important;flex-direction:row;align-items:center;position:relative;background:var(--tile)!important;border:1px solid transparent!important;border-radius:26px;padding:0;box-shadow:none!important;min-height:145px;overflow:visible;transform-style:preserve-3d;transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s,border-color .28s}
 body.b3-home .ty-tool-card[style*="display: none"]{display:none!important}
 body.b3-home .ty-tool-card::before{display:none}
-.ty-tool-card[data-id=wishlist]{--tile:#ffe2eb!important;--glow:#ed91af;--card-accent:#ba456c}.ty-tool-card[data-id=kassenbon]{--tile:#dfedff!important;--glow:#8ab8ee;--card-accent:#297bb2}.ty-tool-card[data-id=kisten]{--tile:#eadffd!important}.ty-tool-card[data-id=pflanzen]{--tile:#ffe8d5!important;--glow:#edb17f;--card-accent:#ad6430}.ty-tool-card[data-id=kfz],.ty-tool-card[data-id=parken]{--tile:#fff0d8!important;--glow:#e7c48b}.ty-tool-card[data-id=haustier],.ty-tool-card[data-id=backform]{--tile:#fbe1ee!important;--glow:#ecb5d1}.ty-tool-card[data-id=energie],.ty-tool-card[data-id=verleih],.ty-tool-card[data-id=wg-kasse]{--tile:#e0edfa!important;--glow:#9ebedf}
+:is(.ty-tool-card,.ty-guide-card)[data-id=wishlist]{--tile:#ffe2eb!important;--glow:#ed91af;--card-accent:#ba456c}:is(.ty-tool-card,.ty-guide-card)[data-id=kassenbon]{--tile:#dfedff!important;--glow:#8ab8ee;--card-accent:#297bb2}:is(.ty-tool-card,.ty-guide-card)[data-id=kisten]{--tile:#eadffd!important}:is(.ty-tool-card,.ty-guide-card)[data-id=pflanzen]{--tile:#ffe8d5!important;--glow:#edb17f;--card-accent:#ad6430}:is(.ty-tool-card,.ty-guide-card)[data-id=kfz],:is(.ty-tool-card,.ty-guide-card)[data-id=parken]{--tile:#fff0d8!important;--glow:#e7c48b}:is(.ty-tool-card,.ty-guide-card)[data-id=haustier],:is(.ty-tool-card,.ty-guide-card)[data-id=backform]{--tile:#fbe1ee!important;--glow:#ecb5d1}:is(.ty-tool-card,.ty-guide-card)[data-id=energie],:is(.ty-tool-card,.ty-guide-card)[data-id=verleih],:is(.ty-tool-card,.ty-guide-card)[data-id=wg-kasse]{--tile:#e0edfa!important;--glow:#9ebedf}
 .ty-tool-link{display:flex;gap:22px;align-items:center;text-decoration:none;padding:22px 78px 22px 22px;flex:1;min-height:145px;color:var(--hub-ink);border-radius:inherit}
 .ty-tool-art{width:100px;height:100px;object-fit:contain;flex-shrink:0;transition:transform .35s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 4px 2px #44344e08)}
 .ty-tool-art[src^='assets/vendor/bootstrap-icons/']{width:68px;height:68px;margin:16px;opacity:.8}
@@ -149,14 +149,14 @@ body.b3-home .ty-tool-card .ty-tool-link:has(.ty-tool-art[src$=".svg"])::after{
  mask:var(--icon-src) center/contain no-repeat;
  pointer-events:none;
 }
-body.b3-home .ty-tool-card[data-id="wg-kasse"]{--icon-color:#d26a91;--icon-src:url("vendor/bootstrap-icons/house-heart.svg")}
-body.b3-home .ty-tool-card[data-id="notizen"]{--icon-color:#8363c8;--icon-src:url("vendor/bootstrap-icons/shield-lock.svg")}
-body.b3-home .ty-tool-card[data-id="kfz"]{--icon-color:#2d8bbf;--icon-src:url("vendor/bootstrap-icons/car-front.svg")}
-body.b3-home .ty-tool-card[data-id="haustier"]{--icon-color:#e57b76;--icon-src:url("vendor/bootstrap-icons/heart-pulse.svg")}
-body.b3-home .ty-tool-card[data-id="parken"]{--icon-color:#35a39c;--icon-src:url("vendor/bootstrap-icons/geo-alt.svg")}
-body.b3-home .ty-tool-card[data-id="verleih"]{--icon-color:#d28b38;--icon-src:url("vendor/bootstrap-icons/arrow-left-right.svg")}
-body.b3-home .ty-tool-card[data-id="energie"]{--icon-color:#e0a527;--icon-src:url("vendor/bootstrap-icons/lightning-charge.svg")}
-body.b3-home .ty-tool-card[data-id="backform"]{--icon-color:#b56bb0;--icon-src:url("vendor/bootstrap-icons/cake2.svg")}
+body.b3-home :is(.ty-tool-card,.ty-guide-card)[data-id="wg-kasse"]{--icon-color:#d26a91;--icon-src:url("vendor/bootstrap-icons/house-heart.svg")}
+body.b3-home :is(.ty-tool-card,.ty-guide-card)[data-id="notizen"]{--icon-color:#8363c8;--icon-src:url("vendor/bootstrap-icons/shield-lock.svg")}
+body.b3-home :is(.ty-tool-card,.ty-guide-card)[data-id="kfz"]{--icon-color:#2d8bbf;--icon-src:url("vendor/bootstrap-icons/car-front.svg")}
+body.b3-home :is(.ty-tool-card,.ty-guide-card)[data-id="haustier"]{--icon-color:#e57b76;--icon-src:url("vendor/bootstrap-icons/heart-pulse.svg")}
+body.b3-home :is(.ty-tool-card,.ty-guide-card)[data-id="parken"]{--icon-color:#35a39c;--icon-src:url("vendor/bootstrap-icons/geo-alt.svg")}
+body.b3-home :is(.ty-tool-card,.ty-guide-card)[data-id="verleih"]{--icon-color:#d28b38;--icon-src:url("vendor/bootstrap-icons/arrow-left-right.svg")}
+body.b3-home :is(.ty-tool-card,.ty-guide-card)[data-id="energie"]{--icon-color:#e0a527;--icon-src:url("vendor/bootstrap-icons/lightning-charge.svg")}
+body.b3-home :is(.ty-tool-card,.ty-guide-card)[data-id="backform"]{--icon-color:#b56bb0;--icon-src:url("vendor/bootstrap-icons/cake2.svg")}
 @media(max-width:370px){body.b3-home .ty-tool-card .ty-tool-link:has(.ty-tool-art[src$=".svg"])::before{left:10px;width:58px;height:58px;border-radius:17px}body.b3-home .ty-tool-card .ty-tool-link:has(.ty-tool-art[src$=".svg"])::after{left:23px;width:32px;height:32px}}
 
 /* Keep welcome and status cards fully visible on mobile, outside sticky-header stacking. */
@@ -171,3 +171,63 @@ body.b3-home .ty-tool-card[data-id="backform"]{--icon-color:#b56bb0;--icon-src:u
    Keep visible companion notices viewport-fixed at every breakpoint. */
 body.b3-home .toolya-buddy:has(.tb-message-box:not([hidden])){position:fixed!important;z-index:10020!important;left:max(12px,env(safe-area-inset-left))!important;right:max(12px,env(safe-area-inset-right))!important;bottom:max(20px,env(safe-area-inset-bottom))!important;top:auto!important;width:auto!important;max-width:min(680px,calc(100vw - 24px))!important;margin:0 auto!important;transform:none!important;order:unset!important;}
 body.b3-home .toolya-buddy:has(.tb-message-box:not([hidden])) .tb-message-box{box-sizing:border-box;max-height:min(65dvh,420px);overflow-y:auto;box-shadow:0 14px 38px rgba(10,30,50,.24);}
+
+/* Startseite: kompakter Einstieg in die Anleitungen */
+.ty-guides {
+  margin-top: 2rem;
+}
+.ty-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: .85rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ty-guide-card {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .7rem;
+  min-height: 5.25rem;
+  height: 100%;
+  padding: .75rem;
+  border: 1px solid transparent;
+  border-radius: 1.125rem;
+  background: var(--tile, #e6e0fa);
+  color: var(--hub-ink, #35153a);
+  text-decoration: none;
+}
+.ty-guide-icon {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+}
+.ty-guide-icon img {
+  max-width: 100%;
+  object-fit: contain;
+}
+.ty-guide-copy {
+  display: grid;
+  gap: .15rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.ty-guide-copy strong {
+  font-weight: 800;
+}
+.ty-guide-copy > span {
+  font-size: .875rem;
+}
+.ty-guide-arrow {
+  font-weight: 800;
+}
+.ty-guide-card:hover,
+.ty-guide-card:focus-visible {
+  border-color: currentColor;
+}
+.ty-guide-card:focus-visible {
+  outline: 3px solid var(--hub-primary, #12647b);
+  outline-offset: 3px;
+}
