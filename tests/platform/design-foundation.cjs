@@ -24,6 +24,15 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
     assert(brand.font.startsWith('Inter'),'shared existing brand font');assert.equal(brand.weight,'900');assert.equal(brand.text,'Toolya');
     if(route==='/index.html'){
      assert.equal(await page.locator('.b3-hub-logo').evaluate(el=>getComputedStyle(el).fontFamily),brand.font,'home and footer font match');
+     const dashboardLink=page.locator('.b3-hub-nav .b3-dashboard-link');
+     assert.equal(await dashboardLink.getAttribute('href'),'dashboard/','dashboard points to actual personal dashboard');
+     if(width<=790){
+      assert(await dashboardLink.isVisible(),'mobile Dashboard link must be visible at '+width);
+      const dashboardRect=await dashboardLink.boundingBox();
+      assert(dashboardRect&&dashboardRect.height>=44&&dashboardRect.width>=100,'Dashboard has a large mobile tap target at '+width);
+      assert(dashboardRect.x>=0&&dashboardRect.x+dashboardRect.width<=width+1,'Dashboard link fits mobile width '+width);
+     }
+
      const guides=page.locator('#anleitungen .ty-guide-card');
      assert.equal(await guides.count(),13,'all public guides are visible as links');
      const boxes=await guides.evaluateAll(links=>links.map(link=>{
