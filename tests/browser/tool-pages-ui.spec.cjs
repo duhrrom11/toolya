@@ -1522,7 +1522,11 @@ test('wishlist: public detail and search states stay usable without writes',asyn
   await panel.evaluate(e=>e.scrollIntoView({block:'end'}));await page.screenshot({path:testInfo.outputPath('wishlist-detail-bottom-'+width+'.png')});
  }
  for(const [state,message]of [['empty','Keine passenden Profile'],['searchError','gerade nicht geladen'],['recovery','1 Profile auf dieser Seite']]){
-  await page.evaluate(state=>{window.__wishlistMock.empty=state==='empty';window.__wishlistMock.searchError=state==='searchError'},state);await page.locator('#resetFilters').click();await expect(page.locator('#searchStatus')).toContainText(message);
+  await page.evaluate(state=>{window.__wishlistMock.empty=state==='empty';window.__wishlistMock.searchError=state==='searchError'},state);
+  if(state==='recovery')await page.locator('#retrySearch').click();
+  else await page.locator('#resetFilters').click();
+  await expect(page.locator('#searchStatus')).toContainText(message);
+  if(state==='searchError')await expect(page.locator('#nextPage')).toBeDisabled();
   for(const width of [320,768,1440]){await page.setViewportSize({width,height:1000});await page.locator('#discover').scrollIntoViewIfNeeded();await page.screenshot({path:testInfo.outputPath('wishlist-'+state+'-'+width+'.png')});}
  }
  expect(await page.evaluate(()=>window.__wishlistMock.writes)).toEqual([]);expect(errors).toEqual([]);
