@@ -7,9 +7,10 @@
     <script>try { if (localStorage.getItem('helferlein_cloud_owner_parkplatz-merker-parkschein-timer')) document.documentElement.classList.add('helferlein-account-check'); } catch (_) { document.documentElement.classList.add('helferlein-account-check'); }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parkplatz-Merker & Parkschein-Timer | Toolya</title>
+    <title>Parkplatz-Merker | Toolya</title>
     <meta name="description" content="Parkplatz wiederfinden und Parkzeit überwachen: Kostenloser Parkplatz-Merker mit GPS, Parkschein-Timer und Übersicht über Parkgebühren.">
     <link rel="canonical" href="https://toolya.app/tools/parking/index.html">
+    <meta name="robots" content="noindex,follow">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF für den PDF-Report-Export -->
@@ -22,11 +23,11 @@
     <script>
       window.HELFERLEIN_B3 = {
         key:'parkplatz',
-        name:'Parkplatz-Merker & Parkschein-Timer',
+        name:'Parkplatz-Merker',
         panels:[
           {id:'stats',name:'Parkstatistiken',size:'l'},
           {id:'timer',name:'Parkschein-Timer & Parkplatz erfassen',size:'l',locked:true},
-          {id:'history',name:'Parkhistorie & Standorte',size:'l'},
+          {id:'history',name:'Gespeicherte Parkplätze und Gebühren',size:'l'},
           {id:'recommendations',name:'Parkzubehör',size:'m'}
         ],
         navigation:[
@@ -37,7 +38,7 @@
           ['📋','Parkhistorie','#b3-history']
         ],
         extra:[
-          {label:'🔔 Push-Alarm aktivieren',handler:'requestNotificationPermission'},
+          {label:'🔔 Browser-Benachrichtigung erlauben',handler:'requestNotificationPermission'},
           {label:'📄 Parkbericht (PDF)',handler:'exportPDF'}
         ],
         helpId:'helpModal',
@@ -74,8 +75,8 @@
     <header class="b3-header"><div class="b3-header-inner">
   <a class="b3-brand" href="../../index.html" aria-label="Toolya Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Toolya</a>
   <span class="b3-tool-icon" aria-hidden="true">🅿️</span>
-  <div class="b3-tool-title"><h1>Parkplatz-Merker & Parkschein-Timer</h1>
-    <p>Parkplatz per GPS merken, Parkzeit im Blick behalten und Parkkosten erfassen</p></div>
+  <div class="b3-tool-title"><h1>Parkplatz-Merker</h1>
+    <p>Speichere deinen Parkplatz mit Standort, Notiz oder Foto. Behalte Parkzeit und Gebühren im Blick.</p></div>
   <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()">⚙</button>
 </div></header>
 
@@ -122,22 +123,23 @@
                 <button onclick="toggleHelpModal()" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             <div class="space-y-3 text-xs">
+                <p><a href="/parkplatz-merker/" class="underline">Öffentliche Schritt-für-Schritt-Anleitung zum Parkplatz-Merker</a></p>
                 <details class="bg-gray-50 border rounded-xl p-3">
-                    <summary class="font-bold cursor-pointer text-amber-700">Wie funktioniert die Parkscheiben-Funktion?</summary>
+                    <summary class="font-bold cursor-pointer text-amber-700">Wie funktioniert der Parkscheiben-Modus?</summary>
                     <p class="mt-2 text-gray-600 leading-relaxed">
-                        Die Parkscheiben-Automatik rundet deine aktuelle Uhrzeit gemäß den gesetzlichen Vorschriften automatisch auf die nächste halbe Stunde auf (z.B. 14:12 Uhr wird zu 14:30 Uhr) und addiert standardmäßig 2 Stunden Parkzeit hinzu.
+                        Der Parkscheiben-Modus setzt einen Timer von zwei Stunden ab der berechneten halben Stunde. Um 14:12 Uhr endet er zum Beispiel um 16:30 Uhr. Prüfe zuerst die erlaubte Parkdauer auf dem Schild.
                     </p>
                 </details>
                 <details class="bg-gray-50 border rounded-xl p-3">
                     <summary class="font-bold cursor-pointer text-amber-700">Wie nutze ich den GPS-Standort & die Navigation?</summary>
                     <p class="mt-2 text-gray-600 leading-relaxed">
-                        Klicke auf „GPS-Standort ermitteln & speichern“, um die Koordinaten zu sichern. In der Historie führt dich der blaue **„🧭 Route“**-Button direkt per Google Maps zu deinem Fahrzeug zurück.
+                        Tippe auf „Parkplatz speichern“ und erlaube den Standortzugriff, wenn du GPS nutzen möchtest. Mit gespeicherten Koordinaten öffnet „Route“ die Position in Google Maps. Im Parkhaus helfen dir Etage, Sektor und Foto.
                     </p>
                 </details>
                 <details class="bg-gray-50 border rounded-xl p-3">
                     <summary class="font-bold cursor-pointer text-amber-700">Wie nutze ich den PDF-Report?</summary>
                     <p class="mt-2 text-gray-600 leading-relaxed">
-                        Mit dem Button **„📄 PDF-Report“** erstellst du jederzeit eine übersichtliche Abrechnung aller Parkvorgänge und Gebühren für deine Unterlagen.
+                        Über „PDF-Report“ erstellst du eine Übersicht deiner Parkvorgänge und Gebühren.
                     </p>
                 </details>
             </div>
@@ -169,7 +171,7 @@
             <!-- Aktiver Timer / Starten & Parkscheibe -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4 text-center flex flex-col justify-between">
                 <div>
-                    <h2 class="text-lg font-bold mb-2">⏱️ Park-Timer & Parkscheibe</h2>
+                    <h2 class="text-lg font-bold mb-2">⏱️ Parkzeit im Blick behalten</h2>
                     <div class="flex justify-center gap-1.5 mb-3 flex-wrap">
                         <button onclick="startTimer(30)" class="b3-action px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">30 Min</button>
                         <button onclick="startTimer(60)" class="b3-action px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">1 Std</button>
@@ -184,7 +186,7 @@
 
             <!-- Parkplatz-Details & Favoriten -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
-                <h2 class="text-lg font-bold">📝 Parkplatz & Tiefgarage</h2>
+                <h2 class="text-lg font-bold">📝 Parkplatz speichern</h2>
                 
                 <!-- Stamm-Parkplatz Favoriten -->
                 <div class="space-y-1">
@@ -204,14 +206,14 @@
                     <label class="helferlein-field" for="parkCost"><span class="helferlein-field-label">Gebühr in €</span><input type="text" id="parkCost" placeholder="Gebühr in € (z.B. 2.50)" class="p-2.5 border rounded-xl text-sm" aria-label="Gebühr in € (z.B. 2.50)"></label>
                     <label class="helferlein-field" for="parkPhotoInput"><span class="helferlein-field-label">Parkplatzfoto auswählen</span><input type="file" id="parkPhotoInput" accept="image/*" capture="environment" class="text-xs p-1.5 border rounded-xl file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Parkplatzfoto auswählen"></label>
                 </div>
-                <button onclick="saveParkingSession()" class="b3-action w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">GPS-Standort ermitteln & speichern</button>
+                <button onclick="saveParkingSession()" class="b3-action w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Parkplatz speichern</button>
             </div>
         </div>
 
         <!-- Historie mit Filter -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="history" id="b3-history">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
-                <h3 class="font-bold text-lg">📋 Parkhistorie & Standorte</h3>
+                <h3 class="font-bold text-lg">📋 Gespeicherte Parkplätze und Gebühren</h3>
                 <label class="helferlein-field" for="timeFilter"><span class="helferlein-field-label">Parkhistorie nach Zeitraum filtern</span><select id="timeFilter" onchange="renderParkingList()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Parkhistorie nach Zeitraum filtern">
                     <option value="all">Gesamte Historie anzeigen</option>
                     <option value="month">Aktueller Monat</option>
@@ -385,7 +387,7 @@
         function requestNotificationPermission() {
             if ("Notification" in window) {
                 Notification.requestPermission().then(permission => {
-                    if (permission === "granted") alert("Push-Benachrichtigungen aktiviert!");
+                    if (permission === "granted") alert("Browser-Benachrichtigungen erlaubt. Lass diese Seite für den Timer geöffnet.");
                 });
             } else {
                 alert("Dein Browser unterstützt keine Benachrichtigungen.");
