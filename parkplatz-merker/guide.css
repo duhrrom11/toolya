@@ -5,7 +5,7 @@
   background: #f2f8fb;
   line-height: 1.6;
 }
-body { margin: 0; }
+body { margin: 0; overflow-wrap: anywhere; }
 header, main, footer { max-width: 54rem; margin-inline: auto; padding: 1.25rem; }
 header, footer, nav { display: flex; gap: .75rem 1.5rem; align-items: center; flex-wrap: wrap; }
 header { justify-content: space-between; }
@@ -21,13 +21,38 @@ h1 { font-size: clamp(2rem, 6vw, 3.4rem); margin: 0; }
   padding: clamp(1rem, 4vw, 2rem);
 }
 .intro { display: flex; align-items: flex-start; gap: 1.25rem; background: #e3f5fa; }
+.intro > div { min-inline-size: 0; }
 .intro img { object-fit: contain; }
 .button { display: inline-flex; align-items: center; min-height: 44px; background: #00647d; color: white; padding: .25rem 1rem; border-radius: .6rem; font-weight: 700; }
 .note { margin-bottom: 0; }
 nav { margin: 1.25rem 0; }
 main > section + section { margin-top: 1.25rem; }
-.steps { padding-inline-start: 1.5rem; display: grid; gap: .75rem; }
+.steps { padding-inline-start: 1.5rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem; }
 .steps li::marker { font-weight: 800; color: #075b72; }
 .steps h3 { margin-top: 0; }
 aside { background: #e3f5fa; padding: .8rem; border-radius: .6rem; }
 @media (max-width: 34rem) { .intro { flex-wrap: wrap; } }
+
+.guide-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: .75rem; }
+.guide-calculator fieldset { min-inline-size: 0; margin-inline: 0; border: 1px solid #d4e4ea; border-radius: .6rem; }
+.guide-calculator label { display: grid; grid-template-columns: minmax(0, 1fr); gap: .35rem; margin-block: .5rem; }
+.guide-calculator [hidden] { display: none; }
+.guide-calculator :is(input, select) { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; padding: .35rem; font: inherit; }
+.guide-calculator button { border: 0; font: inherit; cursor: pointer; }
+.guide-calculator output { display: block; margin-block: .6rem; font-weight: 700; }
+.guide-table { border-collapse: collapse; width: 100%; }
+.guide-table th, .guide-table td { border-bottom: 1px solid #d4e4ea; padding: .4rem; text-align: start; }
+@media print {
+  body:has(.guide-print) :is(header, nav, footer, main > :not(.guide-print)) { display: none; }
+  body:has(.guide-print) { background: white; }
+  .guide-print { break-inside: avoid; }
+}
+
+.guide-table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.guide-table-scroll th {
+  white-space: nowrap;
+}

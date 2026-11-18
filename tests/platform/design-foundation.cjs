@@ -104,6 +104,17 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
     await page.screenshot({path:'test-results/design-'+route.slice(1,-5).replaceAll('/','-')+'-'+width+'.png',fullPage:false});
    }
   }
+  await page.setViewportSize({width:320,height:900});
+  await page.goto(origin+'/backform-rechner/');
+  const calculator=page.locator('#pan-calculator');
+  await calculator.getByRole('button',{name:'Menge umrechnen'}).click();
+  assert.match(await calculator.locator('output').textContent(),/1,1598.*231,95/);
+  await calculator.locator('[name=targetShape]').selectOption('rect');
+  await calculator.locator('[name=targetSize]').fill('25');
+  await calculator.locator('[name=targetWidth]').fill('20');
+  await calculator.getByRole('button',{name:'Menge umrechnen'}).click();
+  assert.match(await calculator.locator('output').textContent(),/0,9417.*188,35/);
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'public calculator fits a narrow viewport');
   // Force the opposite initialization order: shared footer exists before consent.
   await page.route('**/assets/toolya-consent.js*',route=>route.fulfill({contentType:'text/javascript',body:''}));
   await page.goto(origin+'/index.html');await page.locator('.toolya-signature-footer').waitFor();await page.unroute('**/assets/toolya-consent.js*');
