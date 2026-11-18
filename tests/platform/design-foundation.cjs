@@ -106,6 +106,10 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   }
   await page.setViewportSize({width:320,height:900});
   await page.goto(origin+'/backform-rechner/');
+  await page.keyboard.press('Tab');
+  assert(await page.locator('.guide-skip').evaluate(link => link === document.activeElement));
+  await page.keyboard.press('Enter');
+  assert(await page.locator('main').evaluate(main => main === document.activeElement));
   const calculator=page.locator('#pan-calculator');
   await calculator.getByRole('button',{name:'Menge umrechnen'}).click();
   assert.match(await calculator.locator('output').textContent(),/1,1598.*231,95/);
