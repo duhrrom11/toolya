@@ -28,11 +28,6 @@ function readFavorites(){try{const a=JSON.parse(localStorage.getItem(key)||'[]')
 let favorites=readFavorites();
 const profileUrl=id=>new URL('./public.html?profile='+encodeURIComponent(id)+'#selectedProfile',location.href).href;
 function affiliateLink(label,url){const a=text('a',label,'button');a.href=url;a.target='_blank';a.rel='noopener noreferrer sponsored';return a}
-function amazonSearch(root,name,query=''){
- const f=document.createElement('form');f.className='amazon-search';f.action='https://www.amazon.de/s';f.method='get';f.target='_blank';f.rel='noopener noreferrer';
- const label=text('label',name),input=document.createElement('input');input.type='search';input.name='k';input.value=query;input.required=true;input.maxLength=200;label.append(input);
- const tag=document.createElement('input');tag.type='hidden';tag.name='tag';tag.value='duhrrom-21';const b=text('button','Bei Amazon suchen ↗');b.type='submit';f.append(label,tag,b);root.append(f);
-}
 function renderFavorites(){const wrap=$('favoriteItems');wrap.replaceChildren();if(!favorites.length){wrap.append(text('p','Merke dir Profile mit dem Herz.'));return}for(const p of favorites){const a=text('a',p.display_name);a.href=profileUrl(p.user_id);wrap.append(a)}}
 function favorite(p){const b=text('button','♡','secondary favorite');b.type='button';const sync=()=>{const on=favorites.some(x=>x.user_id===p.user_id);b.textContent=on?'♥':'♡';b.setAttribute('aria-label',(on?'Profil nicht mehr merken: ':'Profil merken: ')+p.display_name);b.setAttribute('aria-pressed',String(on))};sync();b.onclick=()=>{favorites=favorites.some(x=>x.user_id===p.user_id)?favorites.filter(x=>x.user_id!==p.user_id):[...favorites,{user_id:p.user_id,display_name:p.display_name}].slice(-100);try{localStorage.setItem(key,JSON.stringify(favorites))}catch{}document.querySelectorAll('[data-profile-favorite="'+p.user_id+'"]').forEach(x=>{x.textContent=favorites.some(y=>y.user_id===p.user_id)?'♥':'♡';x.setAttribute('aria-pressed',String(favorites.some(y=>y.user_id===p.user_id)));x.setAttribute('aria-label',(favorites.some(y=>y.user_id===p.user_id)?'Profil nicht mehr merken: ':'Profil merken: ')+p.display_name)});sync();renderFavorites()};b.dataset.profileFavorite=p.user_id;return b}
 function card(p,detail=false,preview=false){
