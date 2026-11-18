@@ -80,7 +80,15 @@ const assert = require('node:assert/strict');
       const backLink = page.getByRole('link', { name: linkName, exact: true });
       for (const width of [320, 768, 1440]) {
         await page.setViewportSize({ width, height: 1000 });
-        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+        const layout = await page.evaluate(() => ({
+          width: innerWidth,
+          scrollWidth: document.documentElement.scrollWidth,
+          overflowing: [...document.querySelectorAll('body *')]
+            .filter(element => !element.closest('.indexing-scroll') && element.getBoundingClientRect().right > innerWidth + 1)
+            .slice(0, 10)
+            .map(element => element.id || element.className || element.tagName)
+        }));
+        assert.ok(layout.scrollWidth <= width, evidence + ': ' + JSON.stringify(layout));
         assert.ok((await backLink.boundingBox()).height >= 44, 'admin navigation has a 44 px target');
         if (extraLinkName) {
           const source = page.getByRole('link', { name: extraLinkName, exact: true });
