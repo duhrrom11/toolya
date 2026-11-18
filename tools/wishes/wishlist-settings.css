@@ -95,3 +95,11 @@ body.wishlist-redesign .wishlist-settings-dialog [hidden]{display:none!important
  body.wishlist-redesign .wishlist-account-actions #settingsLogout{grid-column:1/-1}
 }
 @media(prefers-reduced-motion:reduce){body.wishlist-redesign .wishlist-settings-dialog *{transition:none!important}}
+
+
+body.wishlist-redesign .wishlist-recovery-panel{
+ margin:14px 0;padding:14px;border:1px solid #aee3df;border-radius:14px;
+ background:#effdfb;
+}
+body.wishlist-redesign .wishlist-recovery-panel>p{font-weight:750;margin-top:0}
+body.wishlist-redesign .wishlist-recovery-panel button{min-height:44px}
