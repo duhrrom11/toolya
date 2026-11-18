@@ -1,7 +1,7 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.57.0';
 import {parseHTML} from 'npm:linkedom@0.18.12';
 import ipaddr from 'npm:ipaddr.js@2.2.0';
-import {AMAZON,canonicalList,publicUrl,candidate,robotsAllowed} from './model.mjs';
+import {AMAZON,canonicalList,publicUrl,candidate,robotsAllowed,sourceFavicon} from './model.mjs';
 const cors={'Access-Control-Allow-Origin':'https://toolya.app','Access-Control-Allow-Headers':'authorization,apikey,content-type','Access-Control-Allow-Methods':'POST,OPTIONS','Vary':'Origin'};
 const reply=(status:number,body:unknown)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
 const must=(r:any)=>{if(r.error)throw Error('Datenbankabfrage fehlgeschlagen.');return r.data};
@@ -33,10 +33,11 @@ async function collect(db:any,url:string,country:string){
     const match=label.match(/(?:amazon[- ]?)?(?:wunschliste|wunschzettel|wishlist|wish list|lista de deseos|lista de regalos|lista dei desideri|liste de souhaits|liste d[’']envies|verlanglijst)\s+(?:von|of|de|di|van)\s+([\p{L}\p{N}][\p{L}\p{N} .&'’-]{2,75})/iu);
     return match?.[1]?.trim().replace(/[.,;\s]+$/,'').slice(0,80)||null;
   };
-  const logo=resolve(document.querySelector('[itemprop="logo"]')?.getAttribute('src')||document.querySelector('header img[alt*="Logo" i]')?.getAttribute('src')||document.querySelector('meta[property="og:image"]')?.getAttribute('content')||'');
+  const iconHref=document.querySelector('link[rel="icon"],link[rel="shortcut icon"]')?.getAttribute('href')||'';
+  const favicon=sourceFavicon(source,iconHref);
   const email=(document.querySelector('a[href^="mailto:"]')?.getAttribute('href')||'').replace(/^mailto:/i,'').split('?')[0]||(document.body?.textContent||'').match(/[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+/)?.[0]||'';
   let added=0;const links=new Map<string,{url:string,name:string}>();for(const a of document.querySelectorAll('a[href]')){const value=resolve(a.getAttribute('href')||'');const canonical=canonicalList(value);if(canonical){const suggested=explicitOwner(a);const previous=links.get(canonical.key);if(!previous||previous.name===fallbackName)links.set(canonical.key,{url:value,name:suggested||fallbackName})}}
-  for(const item of links.values()){const c=candidate({name:item.name,logo_url:logo,wishlist_url:item.url,email,source_url:source,country});const r=await db.from('wishlist_discovery_candidates').upsert(c,{onConflict:'list_key',ignoreDuplicates:true}).select('id,status');must(r);added+=r.data.filter((x:any)=>x.status==='new').length}
+  for(const item of links.values()){const c=candidate({name:item.name,favicon_url:favicon,wishlist_url:item.url,email,source_url:source,country});const r=await db.from('wishlist_discovery_candidates').upsert(c,{onConflict:'list_key',ignoreDuplicates:true}).select('id,status');must(r);added+=r.data.filter((x:any)=>x.status==='new').length}
   must(await db.from('wishlist_discovery_sources').update({status:'checked'}).eq('source_url',source));return {added,skipped:0};
  }catch(e){must(await db.from('wishlist_discovery_sources').update({status:'failed'}).eq('source_url',source));return {added:0,skipped:0,error:e instanceof Error?e.message:'Seite konnte nicht gelesen werden.'}}
 }
