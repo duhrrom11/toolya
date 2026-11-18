@@ -19,7 +19,7 @@
     "name": "Zählerstände erfassen für Strom, Gas und Wasser",
     "url": "https://toolya.app/zaehlerstaende/",
     "inLanguage": "de",
-    "isPartOf": {"@type": "WebSite", "name": "Toolya", "url": "https://toolya.app/"},
+    "isPartOf": {"@type": "WebSite", "@id": "https://toolya.app/#website", "name": "Toolya", "url": "https://toolya.app/"},
     "about": {"@type": "WebApplication", "name": "Toolya Zählerstände"}
   }
   </script>
@@ -51,6 +51,17 @@
       <p>Die Verbrauchsdifferenz ist der neue Zählerstand abzüglich des vorherigen Stands desselben Zählers. Bei Strom wird sie in Kilowattstunden (kWh), bei Gas und Wasser im Zählerverlauf in Kubikmetern (m³) angegeben. Eine erste Ablesung liefert den Ausgangswert für den nächsten Vergleich.</p>
       <p>Bei einer Wohnungsübergabe kannst du Datum, Zählernummer und Zählerstand notieren sowie ein Foto anhängen. Über <strong>Übergabebericht (PDF)</strong> kannst du die Ablesungen als Dokument ausgeben.</p>
     </section>
+    <section id="uebergabe" class="guide-print">
+      <h2>Muster für die Zählerstände bei der Wohnungsübergabe</h2>
+      <p>Halte Datum, Zählernummer, Stand und Einheit fest. Beispielwerte für den 1. Juni:</p>
+      <table class="guide-table">
+        <thead><tr><th scope="col">Zähler</th><th scope="col">Beispielnummer</th><th scope="col">Stand</th></tr></thead>
+        <tbody><tr><td>Strom</td><td>S-123</td><td>12.520 kWh</td></tr><tr><td>Gas</td><td>G-456</td><td>816 m³</td></tr><tr><td>Kaltwasser</td><td>W-789</td><td>126 m³</td></tr></tbody>
+      </table>
+      <h3>Wie wird aus dem Gasverbrauch in m³ ein Wert in kWh?</h3>
+      <p>Multipliziere die Differenz der Zählerstände mit dem Umrechnungsfaktor in kWh/m³ aus deiner Rechnung. Beispiel: 816 m³ − 800 m³ = 16 m³. Bei einem angenommenen Faktor von 10,5 kWh/m³ ergeben sich 168 kWh. Verwende für deine Schätzung den Faktor deines Versorgers.</p>
+    </section>
+    <p>Für gepackte Kartons hilft die <a href="/umzugskisten/#musteretikett">Vorlage für Umzugskisten</a>.</p>
     <section id="fragen">
       <h2>Häufige Fragen zu Zählerständen in Toolya</h2>
       <h3>Warum sehe ich noch keine Verbrauchsdifferenz?</h3><p>Für den Vergleich braucht Toolya eine frühere Ablesung mit demselben Zählertyp und Namen. Prüfe, ob beide Einträge dieselbe Bezeichnung und unterschiedliche Ablesedaten haben.</p>
