@@ -34,6 +34,10 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   assert.equal(await page.locator('#settingsAccountTitle').textContent(),'☁️ Mein Konto');
   assert.equal(await page.locator('#settingsBackupTitle').textContent(),'💾 Datensicherung');
   assert.equal(await page.locator('#settingsModal .toolya-preferences').count(),1);
+  assert.equal(await page.locator('#settingsModal details.toolya-appearance').count(),1,'one collapsible mascot section');
+  assert.equal(await page.locator('#settingsModal details.toolya-appearance').evaluate(e=>e.open),false,'mascot section collapsed by default');
+  assert.equal(await page.locator('#settingsModal .ty-settings-kofi-button').count(),1,'Ko-fi at end of settings');
+  assert.equal(await page.locator('#settingsModal .ty-settings-kofi-button').getAttribute('href'),'https://ko-fi.com/duhrrom');
   assert.equal(await page.locator('#settingsAuthFields').isVisible(),true);
   await page.locator('#settingsForgotPassword').click();
   assert.match(await page.locator('#settingsAuthMessage').textContent(),/E-Mail-Adresse/);
@@ -45,6 +49,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   assert.equal(await page.locator('#settingsLogout').isVisible(),true);
   await page.locator('#settingsLogout').click();
   await page.waitForFunction(()=>document.querySelector('#settingsAccountStatus')?.textContent?.includes('Nicht angemeldet'));
+  await page.locator('details.toolya-appearance summary').click();
   await page.getByLabel('Begleiter',{exact:true}).selectOption('purple');
   await page.waitForFunction(()=>document.querySelector('.ty-tool-hero-mascot')?.getAttribute('src')?.includes('_purple_'));
   await page.locator('#cancelSettingsBtn').click();

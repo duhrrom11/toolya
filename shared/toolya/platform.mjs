@@ -70,10 +70,33 @@ function mountPreferences(){
   }
   surface=fallbackDialog;
  }
- if(surface.contains(panel))return;
- let appearance=[...surface.querySelectorAll('section')].find(s=>[...s.querySelectorAll('h2,h3,h4')].some(h=>/Darstellung/.test(h.textContent)));
- if(!appearance){appearance=document.createElement('section');appearance.className='toolya-appearance';appearance.setAttribute('aria-label','Darstellung');const h=document.createElement('h3');h.textContent='Darstellung';appearance.append(h);surface.append(appearance)}
- appearance.append(panel);panel.onclick=e=>e.stopPropagation();
+ // One accordion for all tools, matching Konto and Datensicherung.
+ let appearance=surface.querySelector('.toolya-appearance');
+ if(appearance&&appearance.tagName!=='DETAILS'){
+  const replacement=document.createElement('details');replacement.className='ty-settings-group toolya-appearance';
+  const summary=document.createElement('summary');summary.textContent='Maskottchen';replacement.append(summary);
+  for(const child of [...appearance.children])if(!child.matches('h2,h3,h4'))replacement.append(child);
+  appearance.replaceWith(replacement);appearance=replacement;
+ }
+ if(!appearance){
+  appearance=document.createElement('details');appearance.className='ty-settings-group toolya-appearance';
+  const summary=document.createElement('summary');summary.textContent='Maskottchen';appearance.append(summary);
+  const close=surface.querySelector('.b3-hub-settings-footer,.dashboard-settings-close,.wishlist-settings-footer,#cancelSettingsBtn');
+  const closeContainer=close?.closest('.b3-hub-settings-footer,.dashboard-settings-close,.wishlist-settings-footer')||(close?.id==='cancelSettingsBtn'?close.parentElement:close);
+  if(closeContainer)closeContainer.before(appearance);else surface.append(appearance);
+ }
+ let content=appearance.querySelector('.ty-settings-content');
+ if(!content){content=document.createElement('div');content.className='ty-settings-content';appearance.append(content)}
+ if(!content.contains(panel)){content.append(panel);panel.onclick=e=>e.stopPropagation()}
+ // The optional Ko-fi action is always the last setting, not part of the footer.
+ let support=surface.querySelector('.ty-settings-kofi-button');
+ if(!support){
+  support=document.createElement('a');support.className='ty-settings-kofi-button';
+  support.href='https://ko-fi.com/duhrrom';support.target='_blank';support.rel='noopener noreferrer';
+  support.textContent='☕ Ko-fi ♥ Toolya unterstützen';
+  support.setAttribute('aria-label','Toolya freiwillig auf Ko-fi unterstützen (öffnet in neuem Tab)');
+ }
+ if(surface.lastElementChild!==support)surface.append(support);
  if(modal&&fallbackDialog){fallbackDialog.remove();fallbackTrigger.remove();fallbackDialog=null;fallbackTrigger=null}
 }
 mountPreferences();window.addEventListener('storage',e=>{if(e.key===key||e.key===null)apply()});
@@ -87,7 +110,7 @@ const buttonCopy=document.createElement('span');buttonCopy.className='ty-kofi-bu
 const hearts=document.createElement('span');hearts.className='ty-kofi-button-hearts';hearts.setAttribute('aria-hidden','true');
 for(let i=0;i<3;i++){const heart=document.createElement('span');heart.textContent='♥';hearts.append(heart)}
 link.append(mini,buttonCopy,hearts);banner.append(copy,link);banner.addEventListener('animationend',()=>{}, {once:true});}
-if(footer.previousElementSibling!==banner)footer.before(banner);const mascot=banner.querySelector('.ty-kofi-button-mascot');if(mascot){const character=read().character==='purple'?'purple':'turquoise';const src=ASSETS+'originals/toolya_wishlist_'+character+'_welcome_1024.png';if(mascot.getAttribute('src')!==src)mascot.src=src}for(const old of document.querySelectorAll('footer.toolya-support'))old.remove();for(const a of document.querySelectorAll('#settingsModal a[href="https://ko-fi.com/duhrrom"],#settings-modal a[href="https://ko-fi.com/duhrrom"],.toolya-settings-dialog a[href="https://ko-fi.com/duhrrom"]')){if(/kaffee|spend|unterstütz/i.test(a.textContent))a.remove()}}
+if(footer.previousElementSibling!==banner)footer.before(banner);const mascot=banner.querySelector('.ty-kofi-button-mascot');if(mascot){const character=read().character==='purple'?'purple':'turquoise';const src=ASSETS+'originals/toolya_wishlist_'+character+'_welcome_1024.png';if(mascot.getAttribute('src')!==src)mascot.src=src}for(const old of document.querySelectorAll('footer.toolya-support'))old.remove();for(const a of document.querySelectorAll('#settingsModal a[href="https://ko-fi.com/duhrrom"],#settings-modal a[href="https://ko-fi.com/duhrrom"],.toolya-settings-dialog a[href="https://ko-fi.com/duhrrom"]')){if(!a.classList.contains('ty-settings-kofi-button')&&/kaffee|spend|unterstütz/i.test(a.textContent))a.remove()}}
 window.addEventListener('storage',event=>{if(event.key==='helferlein-toolya-preferences-v1')mountDonation()});
 window.setInterval(()=>{const joke=document.querySelector('.ty-kofi-joke');if(!joke||document.hidden)return;donationIndex=(donationIndex+1)%donationLines.length;joke.textContent=donationLines[donationIndex]},9000);
 let scheduled=false;const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;mountPreferences();donations()})});observer.observe(document.body,{childList:true,subtree:true});donations();
