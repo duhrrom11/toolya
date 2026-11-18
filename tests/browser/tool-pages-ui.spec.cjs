@@ -1380,8 +1380,9 @@ test('dashboard: shared actions, task rows and account dialog at three widths',a
   await page.locator('#task-text').focus();await page.keyboard.press('Tab');expect(await page.evaluate(()=>parseFloat(getComputedStyle(document.activeElement).outlineWidth))).toBeGreaterThanOrEqual(3);
   await page.locator('#settingsBtn').click();const modal=page.locator('#settingsModal');await expect(modal).toBeVisible();
   for(const b of await modal.locator('button:visible').all())expect(await b.evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
-  await expect(page.locator('#registerUser')).toBeVisible(); // Registration styling follows the existing dashboard theme.
-  await expect(page.locator('#loginSubmit')).toHaveCSS('background-color','rgb(0, 126, 159)');
+  await expect(page.locator('#registerUser')).toBeHidden(); // Existing authenticated dashboard hides sign-up.
+  await expect(page.locator('#loginSubmit')).toBeHidden();
+  await expect(page.locator('#logoutUser')).toBeVisible();
   expect(await page.locator('.dashboard-settings-panel').evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);await capture('dashboard-account-'+width);
   await page.locator('#closeSettingsBtn').click();await expect(modal).toBeHidden();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
