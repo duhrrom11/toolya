@@ -5,7 +5,7 @@
   background: #f2f8fb;
   line-height: 1.6;
 }
-body { margin: 0; }
+body { margin: 0; overflow-wrap: anywhere; }
 header, main, footer { max-width: 54rem; margin-inline: auto; padding: 1.25rem; }
 header, footer, nav { display: flex; gap: .75rem 1.5rem; align-items: center; flex-wrap: wrap; }
 header { justify-content: space-between; }
@@ -21,12 +21,13 @@ h1 { font-size: clamp(2rem, 6vw, 3.4rem); margin: 0; }
   padding: clamp(1rem, 4vw, 2rem);
 }
 .intro { display: flex; align-items: flex-start; gap: 1.25rem; background: #e3f5fa; }
+.intro > div { min-inline-size: 0; }
 .intro img { object-fit: contain; }
 .button { display: inline-flex; align-items: center; min-height: 44px; background: #00647d; color: white; padding: .25rem 1rem; border-radius: .6rem; font-weight: 700; }
 .note { margin-bottom: 0; }
 nav { margin: 1.25rem 0; }
 main > section + section { margin-top: 1.25rem; }
-.steps { padding-inline-start: 1.5rem; display: grid; gap: .75rem; }
+.steps { padding-inline-start: 1.5rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem; }
 .steps li::marker { font-weight: 800; color: #075b72; }
 .steps h3 { margin-top: 0; }
 aside { background: #e3f5fa; padding: .8rem; border-radius: .6rem; }
