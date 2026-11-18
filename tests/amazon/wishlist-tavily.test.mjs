@@ -48,7 +48,9 @@ test('discovery includes first-person Amazon wish-list phrases without doubling 
  }
  assert.match(edge,/for\(const phrase of directPhrases\)seeds\.push/);
  assert.match(edge,/for\(const \[phrase,lang\] of multilingualPhrases\)seeds\.push/);
- assert.match(edge,/exclude_domains:\['amazon\.de','amazon\.com','amazon\.fr'\]/);
+ assert.match(edge,/exclude_domains:\['amazon\.de','amazon\.com','amazon\.fr',/);
+ assert.match(edge,/worldwidePhrases/);
+ for(const phrase of ['Amazon lista de desejos','Amazon список желаний','Amazon 欲しいものリスト','Amazon قائمة الأمنيات','Amazon daftar keinginan'])assert.ok(edge.includes(phrase));
  assert.match(edge,/wishlist_tavily_quota',\{claim:true\}/);
  assert.match(edge,/upsert\(seeds,\{onConflict:'query,country,lang',ignoreDuplicates:true\}\)/);
 });
