@@ -103,3 +103,18 @@ body.wishlist-redesign .wishlist-recovery-panel{
 }
 body.wishlist-redesign .wishlist-recovery-panel>p{font-weight:750;margin-top:0}
 body.wishlist-redesign .wishlist-recovery-panel button{min-height:44px}
+
+
+/* Align Wishlist's old free-form appearance section with shared settings accordions. */
+body.wishlist-redesign .wishlist-settings-panel details.toolya-appearance{
+ margin:12px 0;padding:0;border:1px solid #d1e2e8;border-radius:13px;
+ background:#f7fbfd;
+}
+body.wishlist-redesign .wishlist-settings-panel details.toolya-appearance>summary{
+ display:list-item;min-height:44px;padding:12px 16px;
+ font-size:1rem;font-weight:750;cursor:pointer;color:#163b51;
+}
+body.wishlist-redesign .wishlist-settings-panel details.toolya-appearance>.ty-settings-content{
+ padding:12px 15px 16px;
+}
+body.wishlist-redesign .wishlist-settings-panel>.ty-settings-kofi-button{margin-top:16px}
