@@ -30,7 +30,7 @@ async function collect(db:any,url:string,country:string){
   // Explicit link labels provide *suggestions*, never verified identities.
   const explicitOwner=(anchor:any)=>{
     const label=[anchor.getAttribute('aria-label')||'',anchor.getAttribute('title')||'',anchor.textContent||''].join(' ').replace(/\s+/g,' ').trim().slice(0,350);
-    const match=label.match(/(?:amazon[- ]?)?(?:wunschliste|wunschzettel|wishlist|wish list)\s+(?:von|of|de)\s+([\p{L}\p{N}][\p{L}\p{N} .&'’-]{2,75})/iu);
+    const match=label.match(/(?:amazon[- ]?)?(?:wunschliste|wunschzettel|wishlist|wish list|lista de deseos|lista de regalos|lista dei desideri|liste de souhaits|liste d[’']envies|verlanglijst)\s+(?:von|of|de|di|van)\s+([\p{L}\p{N}][\p{L}\p{N} .&'’-]{2,75})/iu);
     return match?.[1]?.trim().replace(/[.,;\s]+$/,'').slice(0,80)||null;
   };
   const logo=resolve(document.querySelector('[itemprop="logo"]')?.getAttribute('src')||document.querySelector('header img[alt*="Logo" i]')?.getAttribute('src')||document.querySelector('meta[property="og:image"]')?.getAttribute('content')||'');
