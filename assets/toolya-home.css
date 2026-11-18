@@ -231,3 +231,22 @@ body.b3-home .toolya-buddy:has(.tb-message-box:not([hidden])) .tb-message-box{bo
   outline: 3px solid var(--hub-primary, #12647b);
   outline-offset: 3px;
 }
+
+
+/* Keep the Dashboard entry visible and easy to tap on phones/tablets.
+   The legacy home stylesheet hides all nav anchors below 791px. */
+@media(max-width:790px){
+ body.b3-home .b3-hub-topbar{flex-wrap:wrap!important}
+ body.b3-home .b3-hub-nav{display:flex;flex:1 1 100%;width:100%;max-width:100%;justify-content:flex-start;flex-wrap:wrap;gap:8px}
+ body.b3-home .b3-hub-nav>a.b3-dashboard-link{
+  display:inline-flex!important;flex:1 1 100%;max-width:none;
+  align-items:center;justify-content:center;min-height:46px;
+  border:1px solid #b6dfe6!important;border-radius:13px;
+  background:#e7f9fb!important;color:#095b6b!important;
+  font-size:15px!important;font-weight:850!important;
+  box-shadow:0 3px 10px #064a6414!important;text-decoration:none
+ }
+ body.b3-home .b3-hub-nav>a.b3-dashboard-link:focus-visible{
+  outline:3px solid #0a8497;outline-offset:3px
+ }
+}
