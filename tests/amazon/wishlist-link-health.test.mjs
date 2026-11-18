@@ -35,7 +35,7 @@ test('international finder still stages records for manual publication', () => {
   }
   assert.match(edge, /explicitOwner\(a\)/);
   assert.match(edge, /links=new Map/);
-  assert.match(edge, /status:'new'/);
+  assert.match(edge, /\.eq\('status','new'\)/);
   assert.match(edge, /action==='publish'/);
   assert.match(edge, /candidate\(\{name:item\.name/);
 });
