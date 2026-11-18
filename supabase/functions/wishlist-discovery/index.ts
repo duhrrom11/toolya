@@ -26,11 +26,17 @@ async function collect(db:any,url:string,country:string){
  try{
   if(!await permitted(source))throw Error('robots.txt nicht freigegeben oder nicht erreichbar.');
   const result=await safeFetch(source);const {document}=parseHTML(result.html);const resolve=(v:string)=>{try{return new URL(v,result.url).href}catch{return ''}};
-  const name=(document.querySelector('meta[property="og:site_name"]')?.getAttribute('content')||document.querySelector('title')?.textContent||document.querySelector('h1')?.textContent||new URL(source).hostname).trim().slice(0,160);
+  const fallbackName=(document.querySelector('meta[property="og:site_name"]')?.getAttribute('content')||document.querySelector('title')?.textContent||document.querySelector('h1')?.textContent||new URL(source).hostname).trim().slice(0,160);
+  // Explicit link labels provide *suggestions*, never verified identities.
+  const explicitOwner=(anchor:any)=>{
+    const label=[anchor.getAttribute('aria-label')||'',anchor.getAttribute('title')||'',anchor.textContent||''].join(' ').replace(/\s+/g,' ').trim().slice(0,350);
+    const match=label.match(/(?:amazon[- ]?)?(?:wunschliste|wunschzettel|wishlist|wish list|lista de deseos|lista de regalos|lista dei desideri|liste de souhaits|liste d[’']envies|verlanglijst)\s+(?:von|of|de|di|van)\s+([\p{L}\p{N}][\p{L}\p{N} .&'’-]{2,75})/iu);
+    return match?.[1]?.trim().replace(/[.,;\s]+$/,'').slice(0,80)||null;
+  };
   const logo=resolve(document.querySelector('[itemprop="logo"]')?.getAttribute('src')||document.querySelector('header img[alt*="Logo" i]')?.getAttribute('src')||document.querySelector('meta[property="og:image"]')?.getAttribute('content')||'');
   const email=(document.querySelector('a[href^="mailto:"]')?.getAttribute('href')||'').replace(/^mailto:/i,'').split('?')[0]||(document.body?.textContent||'').match(/[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+/)?.[0]||'';
-  let added=0;const links=new Set<string>();for(const a of document.querySelectorAll('a[href]')){const value=resolve(a.getAttribute('href')||'');if(canonicalList(value))links.add(value)}
-  for(const link of links){const c=candidate({name,logo_url:logo,wishlist_url:link,email,source_url:source,country});const r=await db.from('wishlist_discovery_candidates').upsert(c,{onConflict:'list_key',ignoreDuplicates:true}).select('id,status');must(r);added+=r.data.filter((x:any)=>x.status==='new').length}
+  let added=0;const links=new Map<string,{url:string,name:string}>();for(const a of document.querySelectorAll('a[href]')){const value=resolve(a.getAttribute('href')||'');const canonical=canonicalList(value);if(canonical){const suggested=explicitOwner(a);const previous=links.get(canonical.key);if(!previous||previous.name===fallbackName)links.set(canonical.key,{url:value,name:suggested||fallbackName})}}
+  for(const item of links.values()){const c=candidate({name:item.name,logo_url:logo,wishlist_url:item.url,email,source_url:source,country});const r=await db.from('wishlist_discovery_candidates').upsert(c,{onConflict:'list_key',ignoreDuplicates:true}).select('id,status');must(r);added+=r.data.filter((x:any)=>x.status==='new').length}
   must(await db.from('wishlist_discovery_sources').update({status:'checked'}).eq('source_url',source));return {added,skipped:0};
  }catch(e){must(await db.from('wishlist_discovery_sources').update({status:'failed'}).eq('source_url',source));return {added:0,skipped:0,error:e instanceof Error?e.message:'Seite konnte nicht gelesen werden.'}}
 }
@@ -51,7 +57,9 @@ Deno.serve(async(req:Request)=>{
   const quota=must(await db.rpc('wishlist_tavily_quota',{claim:false}));
   if(body.action==='list'){
    const offset=Math.max(0,Math.min(100000,Number(body.offset)||0));const rows=must(await db.from('wishlist_discovery_candidates').select('*').order('found_at',{ascending:false}).order('id').range(offset,offset+199));
-   return reply(200,{rows,configured:!!key,offset,quota,searchProvider:'Tavily'});
+   const health=must(await db.rpc('wishlist_link_health_summary'));
+   const healthReview=must(await db.rpc('wishlist_link_health_review'));
+   return reply(200,{rows,configured:!!key,offset,quota,searchProvider:'Tavily',health,healthReview});
   }
   if(body.action==='stage'){
    if(!Array.isArray(body.rows)||body.rows.length>200)return reply(400,{error:'Maximal 200 Einträge pro Stapel.'});
@@ -137,6 +145,30 @@ Deno.serve(async(req:Request)=>{
     ['"notre liste d’envies Amazon"','fr'],
     ['"ma liste d’envies Amazon"','fr'],
     ['"Amazon Wunschliste" Luxembourg','de'],
+    ['"my Amazon wishlist"','en'],
+    ['"our Amazon wishlist"','en'],
+    ['"Amazon wishlist" "charity"','en'],
+    ['"Amazon wishlist" "animal rescue"','en'],
+    ['"Amazon wishlist" "school supplies"','en'],
+    ['"my Amazon wish list"','en'],
+    ['"our Amazon wish list"','en'],
+    ['"lista de deseos de Amazon"','es'],
+    ['"mi lista de deseos Amazon"','es'],
+    ['"nuestra lista de deseos Amazon"','es'],
+    ['"lista de regalos Amazon"','es'],
+    ['"lista dei desideri Amazon"','it'],
+    ['"la mia lista desideri Amazon"','it'],
+    ['"lista desideri Amazon" "associazione"','it'],
+    ['"liste de souhaits Amazon"','fr'],
+    ['"notre liste Amazon"','fr'],
+    ['"ma liste Amazon"','fr'],
+    ['"Amazon verlanglijst"','nl'],
+    ['"mijn Amazon verlanglijst"','nl'],
+    ['"Amazon önskelista"','sv'],
+    ['"Amazon lista życzeń"','pl'],
+    ['"Amazon ほしい物リスト"','ja'],
+    ['"Amazon wish list" "Canada"','en'],
+    ['"Amazon wishlist" "Australia"','en'],
     ['"eis Amazon Wonschlëscht"','de']
    ];
    for(const [phrase,lang] of multilingualPhrases)seeds.push({query:phrase+' -site:amazon.de -site:amazon.com -site:amazon.fr',country:'ALL',lang});
