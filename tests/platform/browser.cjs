@@ -97,7 +97,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
 
  await page.evaluate(()=>{window.confirmed=toolyaBuddy.confirm({message:'Sicher bestätigen?'})});assert.equal(await page.evaluate(()=>toolyaBuddy.tickle()),false);await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>window.confirmed),false);
  await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('.tb-message-box .ty-frame').evaluate(e=>getComputedStyle(e).animationName),'none');
- await page.evaluate(()=>{toolyaBuddy.dismiss();toolyaBuddy.setCharacter('purple')});await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.locator('details.toolya-appearance summary').click();await page.getByLabel('Begleiter',{exact:true}).selectOption('purple');
+ await page.evaluate(()=>{toolyaBuddy.dismiss();toolyaBuddy.setCharacter('purple')});await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.locator('details.toolya-appearance').evaluate(e=>{e.open=true});await page.getByLabel('Begleiter',{exact:true}).selectOption('purple');
  assert.equal(await page.locator('.toolya-settings').count(),0);assert.equal(await page.locator('#settingsModal .toolya-preferences').count(),1);await page.keyboard.press('Escape');
  // New homepage duo replaces the old idle shortcut. Existing shared buddy checks above
  // intentionally stay on a tool route where that shortcut remains part of the UI.
@@ -147,7 +147,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  assert(await page.locator('#settingsBtn img').isVisible(),'mobile gear icon visible');
  await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();
  await page.getByLabel('Animation',{exact:true}).selectOption('Aus');
- await page.locator('details.toolya-appearance summary').click();await page.getByLabel('Begleiter ausblenden',{exact:true}).check();
+ await page.locator('details.toolya-appearance').evaluate(e=>{e.open=true});await page.getByLabel('Begleiter ausblenden',{exact:true}).check();
  await page.locator('#cancelSettingsBtn').click();
  assert(await hero.evaluate(e=>e.classList.contains('ty-duo-hidden')),'duo honors hidden preference');
  await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();
@@ -187,7 +187,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
    continue;
   }
   if(await page.locator('#settingsModal[aria-modal="true"]').isVisible().catch(()=>false))await page.keyboard.press('Escape');
-  await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.locator('details.toolya-appearance summary').click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route+' single preferences panel');await page.keyboard.press('Escape');await page.screenshot({path:'test-results/mascot-'+route+'-mobile.png',fullPage:true});assert.equal(await page.locator('.toolya-idle').isVisible(),false,route+' redundant strip hidden');if(await page.locator('.ty-tool-hero-mascot').count())await page.locator('.ty-tool-hero-mascot').screenshot({path:'test-results/mascot-'+route+'-detail.png'});
+  await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.locator('details.toolya-appearance').evaluate(e=>{e.open=true});await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route+' single preferences panel');await page.keyboard.press('Escape');await page.screenshot({path:'test-results/mascot-'+route+'-mobile.png',fullPage:true});assert.equal(await page.locator('.toolya-idle').isVisible(),false,route+' redundant strip hidden');if(await page.locator('.ty-tool-hero-mascot').count())await page.locator('.ty-tool-hero-mascot').screenshot({path:'test-results/mascot-'+route+'-detail.png'});
  }
  await page.goto(origin+'/dashboard/');await page.locator('#welcome-heading').waitFor();
  assert.equal(await page.locator('.buddy-panel').count(),0,'dashboard has no duplicate companion card');
@@ -260,7 +260,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'dashboard mobile horizontal overflow');
  await page.setViewportSize({width:320,height:812});
 
- for(const route of ['/privacy.html','/legal.html','/mascots.html','/tools/wishes/dashboard.html','/tools/estate/heirs.html','/tools/estate/handover.html']){await page.goto(origin+route);await page.waitForFunction(()=>window.toolyaBuddy);await verifyClipboard(route);assert.equal(await page.locator('.toolya-settings').count(),0,route);await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.locator('details.toolya-appearance summary').click();await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route);await page.keyboard.press('Escape');}
+ for(const route of ['/privacy.html','/legal.html','/mascots.html','/tools/wishes/dashboard.html','/tools/estate/heirs.html','/tools/estate/handover.html']){await page.goto(origin+route);await page.waitForFunction(()=>window.toolyaBuddy);await verifyClipboard(route);assert.equal(await page.locator('.toolya-settings').count(),0,route);await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.locator('details.toolya-appearance').evaluate(e=>{e.open=true});await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route);await page.keyboard.press('Escape');}
  await page.goto(origin+'/tools/wishes/');assert(['/', '/index.html', '/tools/wishes/', '/tools/wishes/index.html', '/tools/wishes/public.html'].includes(new URL(page.url()).pathname),'wishlist entry stays within approved routes');await page.goto(origin+'/tools/wishes/public.html');await page.locator('#search').waitFor();await verifyRealFormClipboard('public wishlist','#search','#email','example@example.invalid');
  assert.equal(await page.locator('#homeNewWish,#homeNewList,.wishes-navigation').count(),0,'legacy private wishlist controls not shown');
  assert.equal(await page.locator('#search,#email,#password').count(),3,'public wishlist controls present');
