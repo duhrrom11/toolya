@@ -194,8 +194,13 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  await page.locator('#settingsBtn').click();
  assert.equal(await page.locator('#settingsModal').isVisible(),true,'dashboard settings open');
  assert.equal(await page.locator('#loginEmail').isVisible(),true,'dashboard login email visible');
- await page.locator('#closeSettingsBtn').click();
- assert.equal(await page.locator('#settingsModal').isVisible(),false,'dashboard settings close');
+ for(let i=0;i<18;i++){
+  await page.keyboard.press('Tab');
+  assert.equal(await page.evaluate(()=>document.activeElement===document.body||document.activeElement.closest('#settingsModal')!==null),true,'dashboard dialog prevents background focus');
+ }
+ await page.keyboard.press('Escape');
+ await page.locator('#settingsModal').waitFor({state:'hidden'});
+ await page.waitForFunction(()=>document.activeElement.id==='settingsBtn');
  // Real keyboard navigation must survive dashboard list rerenders.
  await page.locator('#task-text').fill('Tastaturfokus Aufgabe');
  await page.locator('#task-form button[type="submit"]').click();

@@ -56,7 +56,7 @@
 </div>
 <!-- Shared Toolya footer is mounted by platform.mjs after the main content. -->
 </main>
-<div id="settingsModal" class="dashboard-settings" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
+<dialog id="settingsModal" class="dashboard-settings" aria-labelledby="settingsTitle">
  <div class="dashboard-settings-panel">
   <div class="dashboard-settings-head"><h2 id="settingsTitle">⚙️ Einstellungen</h2><button type="button" id="closeSettingsBtn" aria-label="Einstellungen schließen">×</button></div>
   <section aria-label="Cloud-Konto">
@@ -76,5 +76,5 @@
   <section class="dashboard-backup"><h3>💾 Datensicherung</h3><p>Deine globalen Backup- und Wiederherstellungsfunktionen findest du in den gemeinsamen Einstellungen der Hauptseite.</p><a href="../index.html?settings=1">Backup und Wiederherstellung öffnen</a></section>
   <div class="dashboard-settings-close"><button type="button" id="cancelSettingsBtn">Schließen</button></div>
  </div>
-</div>
+</dialog>
 </body></html>

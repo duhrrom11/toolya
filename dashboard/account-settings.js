@@ -26,16 +26,21 @@ async function refresh(token){
  }catch{if(request===authRequest)renderUser(null,true)}
 }
 function openSettings(){
+ const dialog=$('settingsModal');
+ if(dialog.open)return;
  lastFocus=document.activeElement;
- $('settingsModal').hidden=false;
+ dialog.showModal();
  document.body.classList.add('dashboard-modal-open');
  ($('userInfo').classList.contains('b3-auth-signed-in')?$('cloudStatus'):$('loginEmail')).focus();
 }
 function closeSettings(){
- $('settingsModal').hidden=true;
+ $('settingsModal').close();
+}
+$('settingsModal').addEventListener('close',()=>{
+ if($('settingsModal').open)return;
  document.body.classList.remove('dashboard-modal-open');
  (lastFocus?.isConnected?lastFocus:$('settingsBtn')).focus();
-}
+});
 window.openSettings=openSettings;
 window.closeSettings=closeSettings;
 function credentials(){
@@ -96,7 +101,6 @@ $('userInfo').addEventListener('click',openSettings);
 $('closeSettingsBtn').addEventListener('click',closeSettings);
 $('cancelSettingsBtn').addEventListener('click',closeSettings);
 $('settingsModal').addEventListener('click',e=>{if(e.target===$('settingsModal'))closeSettings()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('settingsModal').hidden)closeSettings()});
 $('loginSubmit').addEventListener('click',login);
 $('registerUser').addEventListener('click',register);
 $('logoutUser').addEventListener('click',logout);
