@@ -61,7 +61,7 @@ async function get(path){
     admin.push({url:asset.url,status:200,expectedSha256:hash(expectedAsset),actualSha256:hash(asset.body),byteIdentical:true});
    }
    const otherRoutes=[];
-   for(const route of ['/', '/pflanzenpflege/', '/haushaltsbuch/', '/umzugskisten/', '/autokosten/', '/parkplatz-merker/', '/parkplatz-merker/guide.css', '/dashboard/', '/tools/wishes/index.html','/tools/estate/handover.html','/tools/estate/print-key.html','/dashboard/dashboard.css','/dashboard/account-settings.js']){
+   for(const route of ['/', '/wg-organisator/', '/pflanzenpflege/', '/haushaltsbuch/', '/umzugskisten/', '/autokosten/', '/parkplatz-merker/', '/parkplatz-merker/guide.css', '/dashboard/', '/tools/wishes/index.html','/tools/estate/handover.html','/tools/estate/print-key.html','/dashboard/dashboard.css','/dashboard/account-settings.js']){
     const page=await get(route);
     const file=route.endsWith('/')?route.slice(1)+'index.html':route.slice(1);
     const expectedPage=fs.readFileSync(file);
