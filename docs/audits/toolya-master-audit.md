@@ -1,351 +1,291 @@
-# Toolya – Master-Audit und Produktionsoptimierung
+# Toolya – konsolidiertes Master-Audit SEO, GEO, Technik, Content, Datenschutz und Sichtbarkeit
 
-Stand: 17.11.2026. Ausgangscommit: `28f73ac3181f823cb5fc867ba8673c8461ea3fa9`.
+**Stand:** 18. November 2026  
+**Projekt:** https://toolya.app · Repository: `duhrrom11/toolya` · Standardbranch `main` · Hosting: GitHub Pages  
+**Status:** Konsolidierung von drei Audits; **keine** Umsetzung oder Veröffentlichung mit diesem Dokument.  
+**Quellenkennzeichnung:** `[A1]` = vollständig im aktuellen Chat gelieferter „SEO- & GEO-Audit toolya.app“; `[A2]` = im aktuellen Chat gelieferter Abschnitt **4. Priorisierter Umsetzungsplan** des zweiten Audits (die Abschnitte 1–3 liegen hier nicht vor); `[A3]` = Markdown-Datei `Toolya-SEO-GEO-Audit-2026-11-18.md` aus „SEO Toolya Gesamt“ (Git-Referenz `43f8664`). `[G]` = zusätzlicher lesender GitHub-Abgleich des aktuellen `main` am 18.11.2026. `[E]` = ergänzende fachliche Einordnung aus offiziellen Google-Richtlinien.  
+**Beweiskategorien:** **Bestätigt** = im A3-Bericht technisch geprüft oder per lesendem GitHub-Abgleich bestätigt; **Hinweis** = aus A1/A2 ohne technische Gegenprüfung; **Offen** = echte Produktentscheidung, juristische Prüfung, GSC-/Bing-/Analytics-Messung oder noch nicht nachgewiesener Fehler. Ein Audit-Befund ist nicht automatisch ein noch offenes Ticket.
 
-## Management-Zusammenfassung
+## 1. Ergebnis in Kürze
 
-Toolya ist eine statische GitHub-Pages-Plattform mit zwölf Tool-Einstiegen, einem persönlichen Dashboard, eigenem Supabase-Backend und gemeinsamen Maskottchen-/Layoutmodulen. Der erfasste Ausgangsbestand enthält 38 HTML-Seiten und 93 Remote-Branches (zuzüglich origin/HEAD). Drei alte PRs sind offen (#13, #26, #47); sie werden nicht ungeprüft integriert. Die letzten Plattform-, Amazon- und Pages-Läufe für den Ausgangscommit sind erfolgreich (43921114382, 43921114304, 43921113071).
+Toolya besitzt eine solide indexierbare Basis, aber SEO und GEO werden vor allem durch fehlende direkt nutzbare öffentliche Funktionen, wenig eigenständige Vergleichs-/Recheninhalte, schwache externe Autorität und unklare öffentliche/geschützte URL-Grenzen gebremst. Die dringendsten technischen Risikofelder sind 16 alte Wunschlisten-Unterseiten mit HTTP 200 ohne `noindex`, drei operative Nachlass-Hilfsseiten ohne `noindex` sowie parameterbasierte öffentliche Wunschprofile, deren Canonical auf die Verzeichnissuche verweist. **Datenschutz und Zugriffsschutz sind wichtiger als Reichweitensteigerung.**
 
-Die wesentlichen Befunde der Ausgangsaufnahme sind in PR #91 korrigiert und live geprüft. Weitere Designpakete für Nachlass, B3-Tools, Wunschprofile und Dashboard sind über PR #93 bis #117 dokumentiert. D07 (öffentliche Infoseiten) ist in PR #124 auf Quellstand e922776 visuell und automatisiert verifiziert: gemeinsame Navigation und Wortmarke, zugängliche Einstellungen sowie reparierte Galerie-Outfit-Vorschau. Rechtstexte unverändert. Damit sind 10 von 24 Hauptaufgaben verifiziert; P1 erreicht 11/17 Gewichtspunkte (64,7 %). D05b/D06b bleiben offen hinsichtlich vollständiger Legacy-/Responsive- und Zustandsabnahme. Der tatsächliche Veröffentlichungsnachweis des neuesten Pakets wird in PR #124 geführt.
+Die Grundstrategie ist: **Je Suchthema eine starke öffentliche, indexierbare, hilfreiche Landingpage** (Ratgeber + sofort lösbare Beispielaufgabe + kostenloser Kern, sofern sicher), während **interne Nutzer-/Kontofunktionen grundsätzlich `noindex`** bleiben. Das zentrale Toolya-Dashboard bleibt separat unter `/dashboard/`; die Startseite `/` bleibt öffentlich und indexierbar. Daten, Synchronisation und sensible Vorgänge bleiben im vorhandenen sicheren Authentifizierungs- und Berechtigungssystem. Keine breit angelegten URL-Umbenennungen ohne belastbare Redirect-Lösung.
 
-FAQ und Datenschutz enthalten nachweislich veraltete Aussagen zu Anmeldung, lokaler Speicherung und Firebase. Inhaltliche Änderungen folgen erst nach P1/P2, ausgenommen kritische Funktions-/Sicherheitskorrekturen. Rechtstexte sind nicht juristisch freigegeben.
+### Prioritäten
 
-Supabase-Metadatenprüfung: alle 32 public-Tabellen mit RLS, auch vier estate_private-Tabellen. Advisor-Warnungen sind keine automatisch bestätigten Schwachstellen. Insbesondere können fehlende Policies absichtlich jeden Clientzugriff sperren. Öffentliche Profile und WG-Schreibrechte benötigen gesonderte Detailprüfung. Keine produktiven Nutzerdaten wurden zum Test verändert.
-
-## Verbindliche Gestaltung und Reihenfolge
-
-P1 Design → P2 SEO → P3 Texte/Recht → weitere Optimierungen. Kritische Sicherheits-/Datenverlustfehler dürfen vorgezogen werden. Bestehende Hauptseite erhalten; gemeinsame Komponenten harmonisieren. Nur Hellmodus, bläuliches Türkis, beide Originalfiguren unverändert. Der aktuelle Auftrag verlangt Footer Variante 3 mit kleinem nutzergewähltem Maskottchen und überschreibt die ältere Entfernungsvorgabe. Themenfarbe und Charakterauswahl bleiben unabhängig. Original-PNGs über SHA256SUMS schützen.
-
-## Belegstufen und Prüfgrenzen
-
-- **Bestätigt:** aktueller Quellcode, aktuelle Live-DOM-/Screenshotbeobachtung oder aktuelle Metadatenabfrage belegt den Befund.
-- **Wahrscheinlich:** Ursache im Code erkennbar; relevante End-to-End-Funktion noch nicht nachgewiesen.
-- **Nicht prüfbar:** fehlender Sitzungskontext, echte Zustellung oder rechtliche Angaben fehlen.
-
-Initiale Live-Aufnahme: Startseite und Datenschutz bei ca. 1348 px; ausgeloggter Direktaufruf Haushaltsbuch führt auf die Startseite zurück. Keine echte Anmeldung und keine private Datenmutation. Keine Behauptung vollständiger WCAG-Konformität, realer Mobilgeräteabnahme oder gemessener Core Web Vitals.
-
-## Maßnahmenkatalog und Fortschritt
-
-Die vollständige erfasste Maßnahmenliste mit IDs, Gewichten, Ist/Soll, Aufwand, Abhängigkeiten, Risiken, Status und Nachweisen steht in [toolya-roadmap.md](toolya-roadmap.md). Die Seiteninventur steht in [page-inventory.json](page-inventory.json). Vertiefende Befunde stehen in [SEO-/Inhaltsinventar](seo-content-inventory.md) und [Sicherheitsinventar](security-inventory.md). Diese präzisieren die übergeordneten Aufgaben; ihre Unterpunkte werden nicht doppelt gewichtet. Prozentwerte beziehen sich ausschließlich auf den erfassten Katalog, nicht auf den unbekannten Gesamtumfang. Neue Befunde können den Nenner erhöhen.
-
-## Qualitätsbewertung
-
-| Bereich | Nachvollziehbare Bewertung | Grenze |
+| Stufe | Wirkung | Maßnahmenkomplex |
 |---|---|---|
-| Markenassets | Zwei Identitäten erhalten; Original-Prüfsummen in den Integrationschecks erfolgreich | Keine neuen Originalgrafiken ersetzt |
-| Gemeinsame Komponenten | Footer-/Markenpaket und drei Nachlassansichten verifiziert | Übrige Familien und private Live-Zustände noch nicht vollständig abgenommen |
-| Veröffentlichung | CI und Pages für Ausgangscommit erfolgreich | Jeder Folgecommit separat prüfen |
-| Zugriffsschutz | Haushaltsbuch-Direktaufruf ausgeloggt umgeleitet; RLS auf 32 public-Tabellen aktiv | Kein vollständiger Funktions-/Angriffsnachweis |
-| SEO | Inventar mit canonical/noindex vorhanden | Indexabdeckung, Rankings, CWV nicht gemessen |
-| Inhalte | FAQ-/Datenschutzwidersprüche bestätigt | Juristische Freigabe offen |
-| Analytics | Widerrufslink wieder erreichbar; lokale Übergabe ohne Initialisierung | Galerie-Doppelladung X05 offen; keine vollständige GA4-Datenabnahme |
-
-## Bildschirmnachweise – Ausgangslage
-
-1. Startseite: klare Toolkarten und Originalfiguren; FAQ mit veralteter Kontobehauptung. Footer-Widerrufslink fehlt im DOM nach Montage. Screenshot `evidence/01-home-before.jpg`.
-2. Datenschutz: lesbare Textspalte, aber eigener Header und Begleiterkarte; zwei contentinfo-Footer im DOM. Screenshot `evidence/02-privacy-before.jpg`.
-3. Ausgeloggter Haushaltsbuch-Direktaufruf: Rückleitung auf index.html bestätigt; damit ist keine private Tool-Bedienung geprüft.
-
-## Integrations- und Rollback-Regeln
-
-Neue Änderungen in eigenem Branch/PR. Nur nach relevanten Checks integrieren. Kein Datenbankschema in diesem ersten Designpaket ändern. Rollback über gezielten Revert des jeweiligen Mergecommits; Originalassets unberührt. Code vorhanden, PR integriert und live verifiziert werden getrennt dokumentiert. Ältere Release-Dokumente sind historische Nachweise, kein Beleg für den gesamten aktuellen Auftrag.
-
-## Erstes Paket – Stand vor CI
-
-D01–D04 im Branch implementiert. 75 bestehende Node-Tests bestanden; Syntax und Originalasset-Hashes erfolgreich. Lokaler Chromium-Start ist durch die Laufzeit gesperrt (socket Operation not permitted); Browserregression wird deshalb auf isoliertem GitHub-Runner ausgeführt. Cloud-Browser kann den lokalen Preview-Port nicht erreichen; Live-Sichtprüfung folgt nach erfolgreicher CI und Integration. Kein Sicherheitsmechanismus wird dafür abgeschaltet.
-
-### CI-Nacharbeit
-
-Der erste GA4-CI-Lauf 43925565469 scheiterte an einer älteren Testerwartung: Der Test verbot Analytics auf Nachlassseiten vollständig, während der aktuelle produktive Consent-Code diese Seiten ausdrücklich bei Einwilligung einbezieht. Die Produktfunktion wird nicht geändert. Der Regressionstest wird auf die bestehende Einwilligungsregel und insbesondere das Ausschließen von Query-Strings, Schlüsselfragmenten und Referrern aus page_view ausgerichtet. Die Footer-Wortmarkenprüfung normalisiert dekorative Leerzeichen; die Markenbezeichnung bleibt Toolya. Keine Abschwächung der Auth-/Tresorschutztests.
-
-## HTTP-Baseline
-
-Alle 38 inventarisierten HTML-Adressen am 16.11.2026 per GET abgefragt: 38 × HTTP 200, 38 Antworten bytegleich zu den HTML-Dateien des Ausgangscommits. Rohdaten: [live-http-baseline.json](live-http-baseline.json). Dies belegt statische Auslieferung; clientseitige Auth-Redirects und private Nutzerabläufe sind damit nicht abgenommen. Gemeinsame CSS/JS-Änderungen werden nach Deployment separat auf Bytegleichheit geprüft.
-
-### Weitere visuelle Befunde im ersten Paket
-
-Runner-Bilder für Pflanzenpflege, Startseite und öffentliche Wishlist bei 320 px gesichtet. Header-/Footer-Figuren folgen der lila Auswahl. Pflanzenheader ist bläulich, grüne Bedienelemente im Tool bestehen weiterhin (D06). Zahlreiche andere ältere Maskottchen-Routenscreenshots zeigen nach dem Auth-Redirect die Startseite; sie zählen nicht als echte Tool-Designabnahme. Öffentliche Wishlist: allgemeines section-Padding verengt den gemeinsamen Header zusätzlich; gemeinsamer Header erhält ausdrücklich padding:0, die innere Komponente behält ihre Abstände. Ein künstliches zusätzliches Sternsymbol vor dem bereits vorhandenen Herz entfällt. Der neue Layouttest erfasst auch diese echte öffentliche Route.
-
-OpenSEO-Projekt Toolya (6eddcfc6-d4a2-403b-a689-d02bc761a969) ist verbunden, sein Kontext und Research-Log sind leer. Noch keine kostenpflichtige Recherche gestartet. Amplitude ist erreichbar, aber das Projekt default ist nicht belastbar Toolya zugeordnet; daraus werden keine Nutzerkennzahlen abgeleitet.
-
-### Nachgewiesener 320-px-Fehler
-
-Der neue responsive Test zeigte auf privacy.html eine Dokumentbreite von 354 px bei 320 px Viewport: der Zurück-Link ragte rechts aus der nicht umbrechenden Headerzeile. Datenschutz und Impressum erhalten einen umbrechenden Header mit Abstand. Das ist eine gezielte Korrektur im P1-Paket; Inhalt/Rechtsaussagen bleiben unverändert. Nachweis: CI 43926412098, platform-Job 133506951996.
-
-Der nachfolgende Test fand auf Impressum zusätzlich das untrennbare Wort Verbraucherstreitbeilegung (337 px Dokumentbreite bei 320 px). Beide Rechtstextspalten erhalten Wortumbruch. Die dortige Viewport-Sperre gegen Benutzerzoom wird entfernt; Textinhalt bleibt unverändert. Fehlerbild aus Runner-Artefakt 14257311127 visuell bestätigt.
-
-## Verifizierter Abschluss des ersten P1-Pakets
-
-PR [#91](https://github.com/duhrrom11/toolya/pull/91) gemergt. Releasecommit `1b611811afddef8bd0da78da00ba50c66cd896ea`. Alle sechs Checks am PR-Head `33180514506ad8fd73992935182d8a28c06143bf` erfolgreich: estate-security, platform, isolated, browser, privacy, isolated-browser-tests. Plattform-/Nachlasslauf [43927647192](https://github.com/duhrrom11/toolya/actions/runs/43927647192). Pages [43928099016](https://github.com/duhrrom11/toolya/actions/runs/43928099016) erfolgreich.
-
-Die sieben geänderten Produktdateien wurden live per GET auf Bytegleichheit geprüft: Consent, Plattformmodul, Tokens, Footer-CSS, Header-CSS, Datenschutz und Impressum – alle identisch. Live-Browser bestätigt einen Footer auf Startseite/Datenschutz/Impressum, Cookie-Link in gemeinsamer Footernavigation, echtes erneutes Öffnen/Ablehnen der Statistikeinstellungen und identische berechnete Schriftfamilie in Header/Footer. Beide Charaktere und vier Seiten bei 320/768/1440 px im isolierten Runner geprüft; Original-PNGs unverändert. Nachlass-Sicherheitsprüfungen unverändert erfolgreich. Keine produktiven Daten geändert.
-
-### Fortschritt nach PR #91 (historisch)
-
-Sieben von 22 übergeordneten Aufgaben verifiziert; 15 noch offen oder in Arbeit. Bestandsaufnahme 5/8 Gewichtspunkte = 62,5 %, P1 7/17 = 41,2 %, P2 0/9, P3 0/8, weitere Optimierungen 0/10. Nicht alle privaten Toolzustände live geprüft; kein Gesamtabnahmeversprechen. Zusätzlicher wahrscheinlicher Analytics-Doppelladungsbefund X05 ergänzt; die Änderung des Nenners ist transparent in der Roadmap erfasst.
-
-### Visueller Nachweis
-
-1. Startseite – gemeinsame Marke/Toolkarten erhalten; Footer und Cookie-Link korrigiert. Status: geprüft im Umfang des ersten Pakets.
-2. Datenschutz/Impressum – jeweils ein Footer, 320-px-Umbruch und freier Browserzoom. Status: Darstellung geprüft; Inhalts-/Rechtsprüfung offen.
-3. Öffentliche Wishlist – gemeinsame Headerabstände korrigiert; drei Breiten isoliert geprüft. Status: Darstellung des Pakets geprüft; vollständige Such-/Import-/Kontoflüsse nicht abgenommen.
-4. Haushaltsbuch ausgeloggt – Direktaufruf führt zur Startseite. Status: Auth-Umleitung beobachtet, private Oberfläche nicht als live geprüft gezählt.
-
-![Startseite vor dem Paket](evidence/01-home-before.jpg)
-
-![Datenschutz vor dem Paket](evidence/02-privacy-before.jpg)
-
-![Veröffentlichter gemeinsamer Footer mit Cookie-Einstellungen](evidence/04-home-footer-live.jpg)
-
-Die ursprünglichen Zwischenstände weiter oben beschreiben den Weg bis zur Verifikation. Dieser Abschluss ist für PR #91 maßgeblich. Die [Designfamilienmatrix](design-family-inventory.md) beschreibt die nächste konkrete P1-Einheit. Design, SEO und Inhalte bleiben getrennte, noch nicht vollständig abgeschlossene Phasen.
-
-Auch die main-Läufe nach dem Merge sind erfolgreich: Plattform/Nachlass 43928099143, Amazon 43928099197, isolierte Browser 43928099189.
-
-## Zweites P1-Paket – Nachlass Besitzer und Vertrauenspersonen
-
-Ausgangscommit `80247443ab3120342bfc07faef3fc4b438172f76`, Branch `audit/estate-design-turquoise-20261116`. Aktuelle Live-Besitzeransicht bestätigt grünliche UI-Flächen. Die Vertrauenspersonenseite besitzt zusätzlich zum gemeinsamen Footer einen eigenen Footer mit Schlüsselhinweis. Dieser wichtige Hinweis wird in main bewahrt, sodass nur der gemeinsame Footer bleibt.
-
-D06 wird ohne Gewichtserhöhung in D06a (Nachlass Besitzer/Erben, Gewicht 1) und D06b (übrige Formulare/Karten, Gewicht 2) geteilt. 23 Aufgaben, weiterhin 7 verifiziert; noch kein neuer Fortschritt vor Browserprüfung. CSS greift auf die bestehenden Markenfont-/Primärfarb-Tokens zurück, grüne Flächen werden bläulich, inaktive Dark-Mode-Overrides entfernt. Rot bleibt für kritische Aktionen erhalten. Hover-/Druckbewegung bleibt erhalten; die kontrastsenkende Helligkeitsfilterung entfällt. Rechnerischer Weißtext-Kontrast auf #007e9f: 4,68:1; Browserkontrast wird zusätzlich geprüft. Keine vollständige WCAG-Zertifizierung behauptet.
-
-75 bestehende Node-Tests lokal bestanden. Bestehende responsive Prüfung wird um Besitzer-Login und Vertrauenspersonenzugang bei 320/768/1440 px erweitert, einschließlich Hellmodus bei dunkler Systemeinstellung, Tastaturfokus, Primärbutton-Kontrast und erhaltenem Schlüsselhinweis. Die echte isolierte Nachlass-Sicherheitsprüfung deckt weiter Anmeldung, Verschlüsselung, Zwei-Schlüssel-Regel, 24h-Frist, Entwarnung und Sperren ab und speichert zusätzliche Bilder des geöffneten synthetischen Tresors. Keine Testdaten oder Alarme in Produktion.
-
-Unabhängige Codeprüfung: keine CSP-/Auth-/Schlüssel-/Freigabeänderung; Hinweistext erhalten. `handover.html` und `print-key.html` sind von diesem Paket ausgenommen und unverändert. Die eigenständige Übergabeseite folgt separat, weil ihr CSP externes CSS und Netzwerkzugriffe sperrt.
-
-Die Bildprüfung des geöffneten synthetischen Tresors zeigte außerdem kurzzeitig schlechten Tab-Kontrast während des Hintergrund-Farbwechsels. Die Nav-Farben wechseln nun sofort; Schatten-/Druckeffekte bleiben erhalten. Die isolierte Prüfung misst nach jedem der vier Tabwechsel den tatsächlichen Kontrast aller Navigationsbuttons. Cookie-Overlay und vorangegangene Speichermeldung werden nur in der synthetischen Bildschirmaufnahme entfernt, damit die Oberfläche erkennbar ist.
-
-Bei 320 px zeigten die Bilder außerdem mitten im Wort umgebrochene Reiterbeschriftungen. Bis 380 px stehen die vier Nachlass-Reiter deshalb untereinander; die übrigen Breiten behalten die vorhandene Anordnung. Die bestehenden 320/375/768/1280/1440-px-Prüfungen kontrollieren den Umbruch.
-
-### D06a veröffentlicht und bestätigt
-
-PR #93 gemergt, Release `384d5856578e578934a82168639969b2bfa41eb7`. Alle vier Checks am Head `798634c581e7a4fb3c554efa89b2517da348e436` erfolgreich, Lauf 43932478466. Pages 43933043137 erfolgreich. Live-DOM: helles Farbschema, Primärbutton #007e9f, je ein Footer, Schlüsselhinweis im main, private Besitzeroberfläche ohne Anmeldung verborgen. Beide Produktdateien live bytegleich. Screenshots des geöffneten Tresors stammen ausschließlich aus synthetischer isolierter DB; Screenshots 07/08 zeigen den tatsächlichen öffentlichen Live-Einstieg.
-
-## D05a – eigenständige Dateiübergabe in Hellmodus
-
-Ausgangslage live erfasst: dunkles Farbschema und unvollständig gestaltete gemeinsame Komponenten. Plan nach gezielter Sicherheitsprüfung angepasst: style-src erhält zusätzlich self, um ausschließlich eigene Stylesheets zu laden. Alle anderen CSP-Direktiven bleiben identisch, insbesondere connect-src none, script-src self, img-src self data und form-action none. Eigene statische Ressourcen bleiben Netzwerk-GETs; eine absolute Behauptung keinerlei Netzwerk wäre falsch. Ziel ist, keine Schlüssel, Passwörter oder Inhalte zu übertragen.
-
-Der Krypto-Code assets/heir-e2ee-handoff.js ist unverändert. Ein statischer Vergleich bestätigt alle elf ursprünglichen input-/button-Elemente identisch. Neue Darstellung verwendet bestehende Marken-Tokens, gemeinsamen Header/Footer und helles lesbares Inline-Grunddesign. referrer=no-referrer verhindert die Weitergabe der Seitenadresse als Referrer. Nur die exakten lokalen Routen handover.html und print-key.html werden von Analytics ausgeschlossen; normale Nachlassseiten bleiben bei Einwilligung erfasst. Die Druckseite selbst bleibt unverändert und ohne Plattformimporte.
-
-Neue isolierte Browserprüfung: drei Breiten, dunkle OS-Einstellung mit hellem Ergebnis, Fokus, erlaubte feste Assetpfade, gespeicherte Analytics-Zustimmung ohne dataLayer/Google-Script, unveränderte CSP-Datengrenzen, Passwortgeschützter Schlüssel-Download, öffentliche Schlüsseldatei, ausdrücklich bestätigter Export, realer RSA/AES-Dateirundlauf, falsches Passwort, textContent statt HTML sowie Kontrolle aller Requests auf synthetische Geheimnisse. Keine echten Dateien oder Nutzerkonten. 75 bestehende Node-Tests erneut erfolgreich; Browser-/Produktionsverifikation noch offen.
-
-D05 ist ohne Gewichtsänderung in D05a (1) und D05b (4) geteilt. Aktuell 24 Aufgaben, 8 verifiziert; P1 8/17 = 47,1 %. Historische Zwischenstände oben bleiben als Nachweise bestehen.
-
-### D05a veröffentlicht und bestätigt – Abschluss dieser Fortsetzung
-
-PR [#94](https://github.com/duhrrom11/toolya/pull/94) gemergt; Release `d055c155e00a02e74ae5804d6066820dd9106ed1`. Alle fünf Checks am Head `aeae7d3d373ec4e3f39867f74c7f06783bab1ca4` erfolgreich: platform, privacy, browser, estate-security, isolated. Die neue Handover-Prüfung im Lauf [43933662418](https://github.com/duhrrom11/toolya/actions/runs/43933662418) bestätigt den echten synthetischen RSA/AES-Dateirundlauf und 18 ausschließlich feste statische GETs. In den protokollierten URLs/Headers/Bodies tauchen weder synthetischer Inhaltsmarker noch Passwort oder Master-Key auf. Kein vollständiger Timing-/Kodierungs-Exfiltrationsnachweis behauptet. CSP-vorher-blockierte Versuche müssen nicht im Routing erscheinen; Analytics wird zusätzlich auf dataLayer und Google-Script im DOM geprüft.
-
-Pages [43934169905](https://github.com/duhrrom11/toolya/actions/runs/43934169905) erfolgreich. Auch alle main-Läufe erfolgreich: Plattform/Nachlass 43934172697, isolierte Browser 43934172711, Amazon 43934172716. Live-Browser bestätigt light, #f3f7fb, regulär gestalteten gemeinsamen Header (26 px Rundung), einen Footer, dataLayer undefined, keine Google-Skripte und no-referrer. style-src self/unsafe-inline; alle anderen CSP-Direktiven wie zuvor. Consent-JS und Handover-HTML live bytegleich.
-
-Ein Quellvergleich gegen den Stand vor dieser Fortsetzung zeigt keine Änderungen an estate-crypto.js, estate-owner.js, estate-heirs.js, estate-cloud-guard.js, heir-e2ee-handoff.js oder print-key.html. Keine produktiven Nutzer-/Datenbankdaten geändert; keine echten Schlüssel erzeugt oder reale Nachlassdateien geöffnet/exportiert. Die Originalmaskottchen-Prüfsummen bestehen.
-
-Aktueller Fortschritt: 24 Aufgaben, 9 verifiziert, 15 nicht abgeschlossen. P1 9/17 = 52,9 %. Bestandsaufnahme 5/8 = 62,5 %. P2/P3/weitere Optimierungen weiterhin 0 % abgeschlossen. D05/D06 wurden nur feiner aufgeteilt, ohne Gewichtserhöhung. Die Roadmap enthält die genaue nächste P1-Einheit.
-
-### Bildschirmfolge dieser Fortsetzung
-
-1. Besitzer-Einstieg: grünliche Ausgangsansicht → gemeinsame türkise Bedienelemente und Hellmodus. Öffentlich live geprüft; geöffneter Tresor zusätzlich in isolierter synthetischer DB bei 320/375/768/1280/1440 px geprüft.
-2. Vertrauenspersonen: türkiser Öffnen-Button, rote Notfallaktion bewahrt, ein Footer, Schlüsselhinweis sichtbar im main. Öffentlich live und drei Breiten isoliert geprüft; keine produktiven Schlüssel eingegeben.
-3. Dateiübergabe: dunkle unvollständige Gestaltung → heller gemeinsamer Themenheader und Formulare. Drei Breiten und synthetische Funktionsfolge isoliert, leere echte Seite live geprüft. Keine produktiven Dateien benutzt.
-
-![Besitzeransicht vor der Anpassung](evidence/05-estate-before.jpg)
-
-![Veröffentlichte türkise Besitzeransicht](evidence/07-estate-owner-live.jpg)
-
-![Veröffentlichter Vertrauenspersonenzugang](evidence/08-estate-trustee-live.jpg)
-
-![Dateiübergabe vor der Anpassung](evidence/06-handover-before.jpg)
-
-![Veröffentlichte helle Dateiübergabe](evidence/09-handover-live.jpg)
-
-Die Vorher-/Nachherbilder der Dateiübergabe wurden zusammen bei identischem Desktop-Viewport gesichtet. Wesentliche globale Designabweichungen anderer Familien bleiben offen, insbesondere B3-Buttons, Legacy-Wishlist-Dark-Regeln und Infoseitenheader. Der Masterauftrag ist nicht abgeschlossen; keine Ranking-, juristische oder vollständige Sicherheitsfreigabe.
-
-## P1 – visuelle Abnahme des gemeinsamen B3-Pakets, 17.11.2026
-
-PR [#96](https://github.com/duhrrom11/toolya/pull/96): gemeinsame Navigation, Editor-Aktionen, Formulargeometrie und Fokuszustände. Produkt-CSS seit `a74b535a4b745145215eb9225de12808e7079dca` unverändert; `a292421f8030bd64d3c01a54926c89c21910bc90` ergänzt ausschließlich isolierte Bilddiagnostik und Dokumentation.
-
-**Nachweislich geprüft:** Browserlauf [43978267219](https://github.com/duhrrom11/toolya/actions/runs/43978267219), 47/47 erfolgreich. Alle fünf Checks auf a292421 erfolgreich. Reale lokale Auto-/Haushaltsbuch-HTML-Seiten mit abgefangener Anmeldung/Cloud, bestehendem Tailwind-Darstellungs-CSS, ohne produktive Konten oder Daten. Je Tool drei Breiten (320/768/1440), je normale Seite und geöffneter Dashboard-Editor: alle zwölf JPEG-Ansichten tatsächlich gesichtet. Gemeinsame türkise Navigation, Editor-Primäraktion, weiße Sekundäraktionen, Umbruch, Fokus und deaktivierte Zustände ohne visuellen Blocker für dieses begrenzte Paket. Kontrast der geprüften primären Bedienelemente >=4,5, kein horizontaler Dokumentüberlauf und null Cloud-Schreibvorgänge automatisiert bestätigt. Bewegungsreduktion nach Korrektur der Hover-Spezifität bestanden.
-
-Die Diagrammbibliothek bleibt in dieser synthetischen Prüfung inert; leere Diagrammflächen sind kein Nachweis eines Produktionsfehlers. Browser-Standardsprache erzeugt englische Datei-/Datums-Controls; keine Lokalisierungsabnahme daraus ableiten. Begrenzte Bildschirmhöhe: keine vollständige Sichtprüfung aller tieferen Toolabschnitte behauptet. Die vollständigen PNGs liegen im Actions-Artefakt; hier archivierte kompakte JPEGs zeigen die tatsächlich gesichteten Ausschnitte.
-
-**Weiter offen:** Allgemeine App-Speicherbuttons sind noch uneinheitlich (Auto grau/rot, Haushaltsbuch teils grün). Diese gehörten nicht zu den gemeinsamen b3-action-Komponenten dieses Pakets. D06b bleibt In Arbeit, ebenso vollständige Prüfung der anderen acht B3-Tools und Wishlist/Dashboard; D05b bleibt offen. Keine Gesamt-WCAG-Abnahme oder produktive angemeldete Live-Abnahme behauptet.
-
-Bildnachweise: `docs/audits/evidence/pr96-*.jpg` (zwölf Ansichten). Lokale Laufzeit bleibt nicht verfügbar; die vorherige Blockade der Bildsichtung wurde durch ausschließlich synthetische CI-Bilddiagnostik überwunden. Nächste Aktion: finalen Dokumentations-/Bildcommit prüfen; danach PR #96 mergen, Pages und ausgeliefertes CSS kontrollieren. Bis zum erfolgreichen Deployment ist dieses Paket noch nicht veröffentlicht. Fortschritt bleibt 9/17 (52,9 %), 9/24 Aufgaben verifiziert.
-
-## Veröffentlichungsabschluss PR #96 – 17.11.2026
-
-**Veröffentlicht und statisch live verifiziert.** Release `5ab8a9334692acbd7206553f9d8f7b3fa376cfbe`, PR [#96](https://github.com/duhrrom11/toolya/pull/96). Finale fünf PR-Checks auf `25cca1b516fec0b33bcd79b84f0c50fcf4771f5b` erfolgreich. GitHub Pages [43979209858](https://github.com/duhrrom11/toolya/actions/runs/43979209858) erfolgreich; main Plattform/Nachlass [43979210725](https://github.com/duhrrom11/toolya/actions/runs/43979210725), isolierte Browser [43979211283](https://github.com/duhrrom11/toolya/actions/runs/43979211283) und Amazon [43979210728](https://github.com/duhrrom11/toolya/actions/runs/43979210728) erfolgreich.
-
-Schreibfreie Live-Prüfung am **17.11.2026, 00:27 Uhr Europe/Berlin** (UTC 2026-11-16T23:27:20.263Z): B3-CSS beim ersten Versuch bytegleich; SHA-256 `1631571945fd0555983ece99196d06ccc4ec126ad69eb12c6d3516f259e740ac`. Auto-/Haushaltsbuch-HTML jeweils HTTP 200 und Verweis auf gemeinsames Stylesheet bestätigt. Maschineller Nachweis: [pr96-live-delivery.json](pr96-live-delivery.json). Ausschließlich öffentliche statische GETs; keine Anmeldung, keine produktiven Daten oder privaten API-Aufrufe.
-
-Die zwölf tatsächlich gesichteten isolierten Bildausschnitte sind dauerhaft unter `evidence/pr96-*.jpg` gespeichert. Das begrenzte gemeinsame Komponentenpaket ist abgenommen. **D06b bleibt In Arbeit**: normale App-Buttons, weitere Tool-Overrides, Karten, Wishlist/Dashboard und Prüfung der anderen acht B3-Tools stehen aus. Fortschritt weiterhin 9/17 = 52,9 %, insgesamt 9/24 verifiziert; keine künstliche Aufwertung durch Teilarbeit.
-
-Nächste konkrete Aktion: normale Speicher-/Bearbeiten-Aktionen zunächst auf Auto/Haushaltsbuch anhand ihres Zwecks klassifizieren und harmonisieren (Speichern nicht mit Löschen/Alarm gleichsetzen). Auf 768 px sind die verschachtelten Auto-Formulare eng; breitere Eingaben/Unterteilung prüfen (D05b). Danach dieselben tatsächlichen Auth-Fixtures auf die übrigen B3-Tools erweitern. Keine reguläre SEO-/Textphase vor P1-Abschluss.
-
-Rollback: gezielter Revert des obigen Releasecommits; keine Migration oder Datenrücksetzung erforderlich. Lokale Laufzeit/interaktiver Browser weiter nicht verfügbar, Bildsichtung über synthetische CI-Diagnostik möglich. Private Live-Zustände bleiben nicht vollständig verifiziert. Die vorherigen Abschnitte mit ausstehender Abnahme/Veröffentlichung dokumentieren historische Zwischenstände; dieser Abschluss ist für PR #96 maßgeblich.
-
-### CI-Zeitfehler beim Abschlussprotokoll
-
-Der erste Dokumentationslauf 43979589098 scheiterte an `core.test.mjs`, v8 Charakterwechsel: zwei Date.now()-Aufrufe in render(true) können die unveränderte Ablauffrist geringfügig verlängern. Im selben PR wird die absolute Frist erhalten und pro Render nur einmal die Zeit abgelesen. Der bestehende Test verwendet eine kontrolliert bei jedem Aufruf fortschreitende Uhr und verlangt exakt gleiche Frist; die Prüfung wird nicht gelockert. Zusätzlich prüft der schreibfreie main-Releasecheck das ausgelieferte buddy.mjs bytegenau. Keine Auth-/Datenlogik geändert. PR #96 bleibt erfolgreich veröffentlicht; dieser begrenzte Begleiter-Fix wird separat per PR #97 integriert und geprüft.
-
-## P1 – App-Aktionen und Formularaufteilung: Teilabnahme PR #98
-
-Stand: 17.11.2026. PR [#98](https://github.com/duhrrom11/toolya/pull/98), geprüfter Produktstand `a4494d15308eae996766cdf323ac21255b9a910c`. Sechs Checks auf diesem Stand erfolgreich: platform, estate-security, isolated-browser-tests, isolated, privacy und Two-context Chromium / no production data. Browserlauf [43982530156](https://github.com/duhrrom11/toolya/actions/runs/43982530156): 47/47 bestanden. Danach ausschließlich Bild-/Auditdokumentation ergänzt; finale Commit-Prüfung und Veröffentlichungsnachweis sind im verlinkten PR nachvollziehbar.
-
-**Bestätigt:** 18 Ausschnitte tatsächlich gesichtet: Auto und Haushaltsbuch, je Formulare/Aktionsbereich/Dialog bei 320, 768 und 1440 px. Normale Primäraktionen türkis, Nebenaktionen mit gemeinsamer heller Gestaltung und einheitlicher Schrift. 44-px-Mindesthöhe, Kontrast >=4,5 für geprüfte primäre Buttons, Fokus, reduzierte Bewegung, Hover/Drücken, dynamische Bearbeiten-/Löschaktionen und null Schreibvorgänge in den beiden Design-Fixtures erfolgreich geprüft. Bestehende Auth-/Cloud-Konflikt-/Nachlassprüfungen bestehen. Rote Löschaktionen, Belegbilder entfernen und Abmelden nicht umgefärbt.
-
-Auto: bis 1279 px stehen äußere Erfassungs-/Listenbereiche untereinander, ab 1280 wieder nebeneinander. Auf 768 px wurden die Kennzeichen-Eingaben mit mehr als 290 px Breite geprüft. Haushaltsbuch: sechs Finanzangaben ab 768 px in zwei Reihen mit je drei Feldern. Die Kopfzeile beim Bearbeiten bricht auf kleinen Displays sinnvoll um. Zwei visuell erkannte mobile Fehler (gequetschte KM-Aktion, mitten im Wort umbrechende Dialogbuttons) vor Abnahme korrigiert und durch geometrische Assertions abgesichert.
-
-**Prüfumfang:** synthetische vorhandene Datensätze, abgefangene Auth-/Cloud-Antworten, lokales tatsächliches Tool-HTML, lediglich vorhandenes Tailwind-Darstellungs-CSS zusätzlich erlaubt. Diagrammbibliothek weiterhin inert; keine Diagrammabnahme. Englische Browser-Datei-/Datumssteuerung ist Testumgebung, keine Content-Lokalisierungsprüfung. Keine produktiven Konten, privaten Daten oder Schreibzugriffe; keine vollständige private Live-Abnahme oder WCAG-Zertifizierung.
-
-Nachweise: [pr98-visual-review.json](pr98-visual-review.json), 18 dauerhaft gespeicherte JPEGs unter `evidence/pr98-*.jpg`. HTML-Quellvergleich nach Ausblenden aller Klassenattribute identisch zum Ausgangsstand; Änderungen an dynamischen Button-Templates betreffen ebenfalls ausschließlich Klassen. Keine Handler-/ID-/Text-/Auth-/Datenänderung; Original-PNGs unverändert.
-
-**Fortsetzung:** D06b und D05b bleiben In Arbeit; alle übrigen Ansichten sind damit nicht pauschal abgenommen. Als Nächstes Umzugskisten und Verleih an denselben vorhandenen Komponenten ausrichten und mit tatsächlichen isolierten Toolansichten prüfen; danach die übrigen B3-Tools und Wishlist/Dashboard. Account-/Hilfeflächen und semantische Statusfarben separat beurteilen. Kein regulärer SEO-/Textumbau vor P1-Abschluss.
-
-**Veröffentlichungsgrenze:** visuelle und isolierte Abnahme dieses Pakets abgeschlossen. Konkreter Mergecommit, Pages und bytegenaue Live-Bestätigung werden nach Integration im dauerhaft verlinkten PR #98 protokolliert. Der schreibfreie main-Check vergleicht gemeinsames CSS, beide Themen-CSS, beide Tool-HTML-Dateien und buddy.mjs mit dem tatsächlichen Release; Status/JSON im Plattform-Job bzw. dessen Artefakt. Nur statische GETs, keine private UI-Prüfung. Rollback durch gezielten Revert des Releasecommits; keine Migration.
-
-Gewichteter Gesamtstand unverändert: 9/17 P1 = 52,9 %, insgesamt 9/24 Aufgaben verifiziert; 15 nicht abgeschlossen. Teilarbeit an zwei Tools wird nicht als Abschluss der größeren D06b-/D05b-Aufgaben gezählt. Dieser Abschnitt ist der aktuelle Fortsetzungsstand; ältere nächste Schritte sind historische Zwischenstände.
-
-## P1 – Umzugskisten und Verleih: visuelle Teilabnahme PR #99
-
-Stand 17.11.2026, Produktstand `8589dca643e8d8f69754475295aaaf0e7d40a001`, PR [#99](https://github.com/duhrrom11/toolya/pull/99). Sechs Checks erfolgreich (platform, estate-security, isolated-browser-tests, isolated, privacy, Two-context Chromium / no production data). Browserlauf [43989548520](https://github.com/duhrrom11/toolya/actions/runs/43989548520): 49/49 bestanden. Nach diesem Produktstand ausschließlich Audit-/Bildnachweise ergänzt; finale Commitprüfungen und Veröffentlichung werden im PR mit Releasecommit, Pages-Lauf und Live-Hashprotokoll dokumentiert.
-
-**Nachweislich bestätigt:** 30 aufgenommene Ausschnitte (28 unterschiedliche JPEG-Payloads) tatsächlich gesichtet: Einrichtung, Erfassung, Liste, Dialog oben und Dialogaktionen für beide Tools bei 320/768/1440 px. Primäraktionen türkis, Nebenaktionen hell, gemeinsame Schrift/Fokusgestaltung, mindestens 44 px für geprüfte Aktionsbuttons, Primärkontrast >=4,5 und kein horizontaler Seiten-/Dialogüberlauf in den geprüften Zuständen. Dynamische Bearbeitungsaktionen öffnen die echten Dialoge. Keine Browserfehler und null Schreibvorgänge in diesen beiden Design-Fixtures.
-
-Umzugskisten: äußeres Raster unter 1280 px einspaltig; Standortfelder mobil untereinander, Inventarfilter mobil einspaltig und ab 768 px dreispaltig. Unterartikel-/Dialogaktionen umbrechbar, Dialog intern scrollbar. Verleih: Setupkarten auf Tablets nebeneinander und oberhalb des Erfassungsformulars, auf Desktop bestehende Aufteilung erhalten; Datumsfelder mobil untereinander und Aktionsleisten umbrechbar. Bei erster Sichtung trotz grüner Tests erkannte zu schmale mobile Kistenfilter und 16-px-Versatz der Verleihkarten korrigiert; zusätzliche Breiten-/Positionsprüfungen bestehen. Alle finalen Bildpayloads erneut gesichtet.
-
-**Belege und Grenzen:** [pr99-visual-review.json](pr99-visual-review.json), 30 Bildpfade unter `evidence/pr99-*.jpg` mit dokumentierten Duplikaten. HTML einschließlich dynamischer Vorlagen ist nach Ausblenden sämtlicher Klassenattribute identisch zum Ausgangsrelease ea91589862bceca00b2fc8a496827b1a90f25a94. Keine Handler-/ID-/Text-/Auth-/Datenänderungen und keine Originalassets geändert. Synthetische Cloud-Snapshots, abgefangene Anmeldung/Cloud-Anfragen, tatsächliches Tool-HTML; vorhandenes Tailwind-Darstellungs-CSS erlaubt. Englische native Datum-/Dateifelder stammen aus der Testumgebung. Keine Produktionskonten/-daten/-schreibzugriffe. Kamera, QR-Erzeugung, externe Kalender/GPS-Ziele und private produktive Gesamtabläufe sind hier nicht abgenommen; keine vollständige WCAG-Prüfung.
-
-**Veröffentlichung:** Der main-Releasecheck vergleicht gemeinsames B3-CSS, buddy.mjs sowie CSS und HTML von Auto, Haushalt, Umzug und Verleih bytegenau mit toolya.app (zehn Dateien). Tatsächliche Ergebnisse nach Merge im dauerhaft verlinkten PR #99 und Plattform-Job (`B3_LIVE_DELIVERY`); die visuellen Nachweise stammen aus isoliertem Chromium, keine Behauptung einer angemeldeten Live-Sichtprüfung. Rollback: gezielter Revert des Releasecommits, keine Datenbankmigration.
-
-**Fortsetzung:** D06b/D05b bleiben In Arbeit. Vier der zehn regulären B3-Tools in diesem App-Aktions-/Formularpaket visuell geprüft; sechs weitere sowie Wishlist/Dashboard und weitere Familien bleiben offen. Nächste konkrete P1-Einheit: Zählerstände und Pflanzenpflege. Kein regulärer P2-/P3-Umbau vor P1-Abschluss. Gewichteter Dashboardstand unverändert: Bestandsaufnahme 5/8 (62,5 %), P1 9/17 (52,9 %), P2 0/9, P3 0/8, weitere 0/10. Insgesamt 9/24 Aufgaben verifiziert, 15 nicht abgeschlossen. Teilabnahme ersetzt keinen Abschluss der größeren Aufgaben. Dieser Abschnitt ist der aktuelle Fortsetzungsstand; ältere nächste Schritte sind historische Zwischenstände.
-
-## P1 – Zählerstände und Pflanzenpflege: Teilabnahme PR #100
-
-Stand 17.11.2026. Produktstand `b334bd985091c6d7869398261a61630d9c26c1f1`, PR [#100](https://github.com/duhrrom11/toolya/pull/100), Ausgangsrelease `31831d6ac7ac1f87dc4823931fd1346856a6a853`. Sechs Checks erfolgreich: platform, estate-security, isolated-browser-tests, isolated, privacy und Two-context Chromium / no production data. Browserlauf [44021701264](https://github.com/duhrrom11/toolya/actions/runs/44021701264): 51/51 bestanden. Nach diesem Produktstand nur Audit-/Bildnachweise ergänzt; finale Commitchecks und tatsächliche Veröffentlichung werden im verlinkten PR dokumentiert.
-
-**Nachweislich bestätigt:** 38 Ausschnitte (36 unterschiedliche JPEG-Payloads) tatsächlich gesichtet. Tarif-/Erfassungs-/Listenansichten beider Tools bei 320/768/1440 px; Pflanzen-Bearbeitung und Dialogaktionen ebenfalls bei drei Breiten. Mobile Zusatzansichten: Zähler-Energiehilfe oben/unten und Fotolupe, Pflanzenlager, Saatgut, ROI, Zisterne, Beet oben/unten, Ernte, Tagebuch, Galerie-Leerzustand, Hilfe und Einstellungen. 15 finale Payloads sind bytegleich zu bereits gesichteten Bildern desselben PR; alle 21 übrigen finalen Payloads erneut gesichtet. Nachweise: [pr100-visual-review.json](pr100-visual-review.json) und 38 Bildpfade unter `evidence/pr100-*.jpg`.
-
-**Umgesetzt/verifiziert im isolierten Browser:** normale primäre Aktionen türkis und sekundäre hell; gemeinsame Schrift, mindestens 44 px für geprüfte explizite Aktionsbuttons, Primärkontrast >=4,5, gemeinsamer Fokus und keine horizontalen Seiten-/Dialogüberläufe in den geprüften Zuständen. Tablet-Identitäts-/Pflegefelder in zwei breiten Spalten, auf Desktop wieder drei/vier. Pflanzen-Editierfelder mobil einspaltig, Dialoge intern scrollbar, Lager-/Saatgutzeilen umbrechbar, Beet mobil zweispaltig. Rote Löschaktionen behalten ihre Farbe und erhalten in beiden Hauptlisten mindestens 44 px Höhe. Keine Browserfehler, null Cloud-Schreibvorgänge in den beiden Design-Fixtures.
-
-**Bei Prüfung korrigiert:** ältere Barrierefreiheitsregeln überlagerten die neue primäre Lageraktion mit Grün; gemeinsame explizite Dialogaktionen erhalten den nötigen CSS-Vorrang. Die visuell erkannte zusammengeschobene mobile Zählerwechsel-Checkbox bleibt nun mindestens 16 px breit (Label als zusätzliche Klickfläche); neue Geometrieassertion bestanden. Auf Tablets zuvor umbrechende Zähler-Löschbeschriftung erhält eigenen Platz. Lange Hilfs-/Beetdialoge oben und unten tatsächlich gesichtet, Schließen erreichbar.
-
-**Quellgrenzen:** Zähler-HTML einschließlich Vorlagen nach Maskierung sämtlicher Klassenattribute unverändert. Pflanzen-HTML nach Maskierung der Klassen und Entfernen genau des neuen eigenen Stylesheetverweises identisch zum Ausgangsstand. Keine Handler-/ID-/Text-/Auth-/Datenänderung, keine Migration, keine Originalassets geändert. Das neue `helferlein-b3-pflanzen.css` ist durch die neue Bodyklasse begrenzt. Gemeinsame Dialogdarstellung erweitert; vorhandene anderen Tool-/Nachlass-/Cloud-Prüfungen erfolgreich.
-
-**Nicht pauschal abgenommen:** private produktive Gesamtabläufe, Kamera, echte Galerie-/Dateiimporte, QR-Erzeugung, PDF/Backup/Export, externe Partnerlinks und finanzielle/biologische Empfehlungen. Fotolupe mit synthetischem Einpixelbild; keine Bildqualitätsprüfung. Zusatzdialoge primär in schmalster Ansicht geprüft; keine Behauptung einer vollständigen Geräte-/WCAG-Abnahme. Englische native Datum-/Dateifelder stammen aus der Testumgebung. Bestehende Kontoflächen (z. B. grüner Pflanzen-Anmeldebutton), kleine Lager-Löschknöpfe und semantische Hinweisfarben sind noch nicht insgesamt harmonisiert; D06b bleibt offen für diese Teilflächen. Keine Produktivkonten/-daten oder Schreibzugriffe verwendet.
-
-**Veröffentlichung und Rückweg:** Nach Merge prüft der main-Releasecheck 14 öffentliche Dateien bytegenau (gemeinsames B3-CSS, buddy.mjs, je sechs Tool-CSS und Tool-HTML). Releasecommit, Pages-/CI-Läufe und tatsächliche `B3_LIVE_DELIVERY`-Hashes werden dauerhaft in PR #100 protokolliert; dieser Abschnitt behauptet keine angemeldete Live-Sichtprüfung. Rollback per gezieltem Revert des Releasecommits, keine Datenbankmigration.
-
-**Roadmap:** D06b/D05b weiterhin In Arbeit. Sechs von zehn regulären B3-Tools im App-Aktions-/Formularpaket visuell teilgeprüft; WG, Haustiergesundheit, Parkplatz und Backform folgen, danach Wishlist/Dashboard und übrige Familien. Nächste konkrete Einheit: Parkplatz und Haustiergesundheit. P2/P3 beginnen regulär nach den wesentlichen P1-Abweichungen. Gewichte unverändert: Bestandsaufnahme 5/8 = 62,5 %, P1 9/17 = 52,9 %, P2 0/9, P3 0/8, weitere 0/10. Insgesamt 9/24 Aufgaben verifiziert, 15 nicht abgeschlossen. Keine pauschale Hochrechnung aus zwei weiteren Tools. Dieser Abschnitt ist der aktuelle Fortsetzungsstand; ältere nächste Schritte sind historisch.
-
-## P1 – Parkplatz und Haustiergesundheit: Teilabnahme PR #109
-
-Stand 17.11.2026, Produktstand `3bf77832b26b9da7696c31030e188a4f220bbb20`, Ausgangsstand `2b18eff0e20b6d6d852e4e88c6db786d79fd7cd0`, PR [#109](https://github.com/duhrrom11/toolya/pull/109). Alle sechs Checks erfolgreich (platform, estate-security, isolated-browser-tests, isolated, privacy, Two-context Chromium / no production data). Browserlauf [44034255003](https://github.com/duhrrom11/toolya/actions/runs/44034255003): 53/53 bestanden. Im P1-Paket danach ausschließlich Bild-/Auditnachweise ergänzt; finale Commitchecks sowie tatsächlicher Merge-/Pages-/Live-Nachweis werden im verlinkten PR protokolliert.
-
-**Nachweislich geprüft:** 31 Ausschnitte, 29 unterschiedliche JPEG-Payloads tatsächlich gesichtet. Parkplatz: Timer/Formular/Historie bei 320/768/1440 px und mobile Hilfe. Haustier: Profilformular oben/unten, Impfformular, Medikamentenerfassung, Profile und Verlauf bei allen drei Breiten; zusätzlich mobile Gewichtseingabe und geöffnete Hilfe. 17 finale Payloads bytegleich zu bereits gesichteten Bildern desselben PR; die übrigen zwölf finalen Payloads erneut betrachtet. Zwei Duplikatpaare sind in [pr109-visual-review.json](pr109-visual-review.json) dokumentiert; Bilder dauerhaft unter `evidence/pr109-*.jpg`.
-
-**Umgesetzt und im isolierten Chromium verifiziert:** normale primäre Aktionen türkis, sekundäre hell; gemeinsame Schrift und >=44 px Höhe für geprüfte explizite Aktionsbuttons; Primärkontrast >=4,5. Äußere Parkplatz-/Haustierformulare und Haustierlisten unter 1280 px einspaltig, Desktop-Aufteilung erhalten. Medikamentenerfassung mit eigenem Raster, Vorratskarten mobil einspaltig / Tablet zweispaltig / Desktop dreispaltig. Hauptlisten-Löschaktionen behalten ihre rote Farbe und sind mindestens 44 px hoch. Dynamische Karten, Tierarztkontakte und Aktionszeilen umbrechbar. Fokus mindestens 3 px, kein horizontaler Seiten-/Panelüberlauf in den geprüften Zuständen, Registrierungscheckbox mindestens 16 px breit. Vorhandene Formularumschaltung Impfung/Gewicht und Parkplatz-Favoriten erfolgreich bedient. Partner-ID `duhrrom-21` und rote Vorratswarnung erhalten. Keine Browserfehler und null Cloud-Schreibvorgänge in diesen beiden Design-Fixtures.
-
-**Bei Sichtprüfung korrigiert:** trotz grüner erster CI zu schmale Tablet-Vorratskarten mit versetzten Löschknöpfen; jetzt breiteres Raster und feste Aktionsspalte, zusätzliche Breiten-/Positionsassertionen erfolgreich. Außerdem weiße/helltürkise Hilfeüberschriften auf hellem Hintergrund tatsächlich kaum lesbar; im bestehenden Hilfebereich auf dunkle Schrift/helle Plattformflächen umgestellt. Titelkontraste >=4,5 und lesbarer mobiler Umbruch nachgewiesen. Keine Hilfetexte verändert.
-
-**Quellgrenzen:** Tool-HTML einschließlich dynamischer Vorlagen nach Ausblenden aller Klassenattribute identisch zum Ausgangsstand. Keine Handler-/ID-/Text-/Auth-/Datenänderung und keine Originalassets geändert. Lediglich vorhandene Themen-CSS angepasst; gemeinsames CSS unverändert. Keine Funktionen entfernt, keine Migration. Synthetische Cloud-Snapshots und abgefangene Auth-/Cloud-Antworten; tatsächliche Tool-Dateien mit vorhandenem Tailwind-Darstellungs-CSS. Kein Produktivkonto, keine echten Standort-/Gesundheitsdaten, keine Geolocation-Anfrage und kein produktiver Schreibzugriff.
-
-**Prüfgrenzen/offen:** Timer-Start/-Stopp mit Cloudschreiben, Ablauf-/Push-Benachrichtigungen, reale GPS-Ermittlung/Navigation, Kalenderziele, PDF/Backup/Import und echte Foto-/Ausweisdokumente hier nicht funktional abgenommen. Bildfelder mit synthetischem Einpixelbild; keine Bildqualitätsabnahme. Native englische Datum-/Dateifelder stammen aus der Testumgebung. Keine medizinische Prüfung der vorhandenen Erinnerungs-/Pflegeaussagen und keine vollständige WCAG-/private Live-Abnahme. Kontoflächen, andere Hilfs-/Warnzustände und übrige Familien bleiben gesonderte P1-Arbeit.
-
-**Veröffentlichung:** main-Releasecheck um beide Themen-CSS und beide Tool-HTML-Dateien ergänzt; insgesamt 18 öffentliche Dateien bytegenau geprüft (gemeinsames CSS, buddy.mjs, je acht Themen-CSS und HTML). Tatsächlicher Status/Release-SHA/Pages- und CI-Läufe plus `B3_LIVE_DELIVERY`-Hashes nach Merge dauerhaft in PR #109. Statische öffentliche GETs ersetzen keine angemeldete Live-Sichtprüfung. Rollback per gezieltem Revert; keine Datenbankmigration.
-
-**Fortsetzung:** D06b/D05b bleiben In Arbeit. Acht von zehn regulären B3-Tools im App-Aktions-/Formularpaket visuell teilgeprüft; nächste Einheit WG und Backform. Danach Kontoflächen sowie Wishlist/Dashboard und übrige Designfamilien, erst anschließend reguläre P2-/P3-Arbeit. Gewichteter Fortschritt bleibt Bestandsaufnahme 5/8 = 62,5 %, P1 9/17 = 52,9 %, P2 0/9, P3 0/8, weitere 0/10. Insgesamt 9/24 Aufgaben verifiziert, 15 nicht abgeschlossen. Teilpaket ist kein Abschluss der größeren Maßnahmen. Dieser Abschnitt ist der aktuelle Fortsetzungsstand; ältere nächste Schritte sind historisch.
-
-## P1 – WG-/Backform-Aktionen und Formulare, PR #110 (17.11.2026)
-
-**Status:** Quellpaket implementiert und visuell verifiziert auf `afba484ce26897aa870c6329d70b51097ffd9d13`; sechs PR-Prüfungen erfolgreich. Veröffentlichung separat über [PR #110](https://github.com/duhrrom11/toolya/pull/110) nachverfolgt; dessen Veröffentlichungsabschnitt enthält nach Merge den tatsächlichen Release-SHA, Pages-/CI-Status und vollständigen öffentlichen Hashnachweis. Ausgangsrelease `8b931a9fcde56986299ec979bb354fbb1ebfcacf`.
-
-**Umgesetzt:** vorhandene gemeinsame türkise Primäraktionen, weiße Nebenaktionen und Fokus-/Formular-Tokens für WG und Backform verwendet. WG-Finanz- und Identitätsfelder ab Tablet mit ausgerichteten Labels/drei Spalten; Stammangaben volle Breite; mobile Kopf-/Aktionszeilen umbrechbar. Einkaufseingabe mobil über eigener Buttonzeile, Sparziele mit lesbaren Beträgen und ausreichender Kartenbreite. Zusatzdialoge scrollbar/einspaltig, Schließen neben mehrzeiligen Titeln. Mitgliederliste konnte zuvor durch Flex-Schrumpfung verschwinden: jetzt gemeinsam scrollbar; tatsächliches Bearbeiten/Abbrechen eines synthetischen Mitglieds erfolgreich. Kochplan bis Sonntag erreichbar. Backform-Tabauswahl, Drucken, Timer und Darstellungseditor konsistent; Formularfelder nutzen gemeinsame Geometrie. Desktop-Rechenspalte explizit statt über erstes Kind adressiert, da das eingefügte Buddy-ASIDE zuvor den Zweispaltenbezug verdrängte; Breite >750 px bei 1440 px geprüft. Themenfarben und Originalmaskottchen unverändert.
-
-**Prüfgrundlage:** [Chromium-Lauf 44038956851](https://github.com/duhrrom11/toolya/actions/runs/44038956851), 55 erfolgreiche Browserprüfungen; 57 Aufnahmen, 56 unterschiedliche JPEGs unter `docs/audits/evidence/pr110-*.jpg`, Zuordnung/Quell-SHA in `docs/audits/pr110-visual-review.json`. Alle unterschiedlichen Endansichten gesehen, unveränderte JPEGs mit vorheriger Sichtung bytegleich abgeglichen. 320/768/1440 px, erzwungene dunkle Betriebssystempräferenz bei heller Plattform, reduzierte Bewegung. Geprüfte Hauptaktionen mindestens 44 px, Gewicht 700, Textkontrast >=4,5; Fokus >=3 px, kein horizontaler Dokumentüberlauf. WG-Payload tatsächlich durch abgefangenen wg_spaces-Leseaufruf geladen; Backform-Snapshot abgefangen; beide Design-Fixtures null Cloud-Schreibvorgänge/Browserfehler. Umrechnungsfaktor 26→20 cm ≈0,59 geprüft. Kostenüberschrift im erneuten Bild/DOM vollständig vorhanden; keine unbelegte Text-/CSSkorrektur dafür.
-
-**Quell-/Sicherheitsgrenzen:** Beide HTML-Dateien nach Entfernen sämtlicher Klassenattribute identisch zum Ausgangsstand, einschließlich dynamischer Vorlagen. Backform-Adapter nur Buttonklassen/Primärzuordnung, keine Berechnungs-/Handler-/Auth-/Datenänderung. Gemeinsames Formular-CSS auf Backform-Main erweitert. Keine Migration, keine Produktionsdatensätze, keine Originalassets geändert/entfernt. Rollback gezielter Revert von PR #110.
-
-**Offen/nicht abgenommen:** reale Diagramme (Chart.js inert), Lucide-Iconqualität (externes Skript blockiert), OCR, QR/WLAN, Telefonkontaktimport, Kalender-/PDF-/Backupziele, reale Cloud-Speicherung, Timerablauf/Benachrichtigungen und angemeldete Produktionsdarstellung. Rezept-Umrechnen mit Speichern in diesem schreibfreien Design-Fixture nicht angeklickt; bestehende Cloud-/Konflikttests separat weiter aktiv. Keine vollständige WCAG-/Sicherheitsabnahme. Sichtprüfung erfasst App-Teilflächen, nicht alle Kontoflächen und Zustände.
-
-**Releasekontrolle:** öffentlicher Lesecheck um WG-/Backform-HTML, zwei Themen-CSS und Backform-Adapter-JS erweitert: insgesamt 23 Dateien (gemeinsames CSS, Buddy-Modul, zehn Themen-CSS, ein Adapter-JS und zehn HTML). HTTP200 plus bytegleiche SHA256 zum jeweiligen Release erforderlich; JSON-Feld `themeStyles` enthält dabei auch das Adapter-JS. Statischer GET-Nachweis ersetzt keine angemeldete Live-Funktionsprüfung.
-
-**Fortsetzung/Roadmap:** D06b/D05b bleiben **In Arbeit**. Zehn von zehn regulären B3-Tools im App-Aktions-/Formularpaket visuell teilgeprüft; nächstes Paket gemeinsame Kontoflächen/verbleibende Aktionen, anschließend Wishlist/Dashboard und übrige Designfamilien. Wishlist-Umbau bleibt gesonderte Brainstorming-Anforderung; kein Scraperentfernen hier. Reguläre P2-/P3-Arbeiten erst nach wesentlicher P1-Abnahme. Gewichteter Fortschritt unverändert: Bestandsaufnahme 5/8 = 62,5 %, P1 9/17 = 52,9 %, P2 0/9, P3 0/8, weitere 0/10; 9/24 Aufgaben verifiziert, 15 nicht abgeschlossen. Dieser Abschnitt ist der aktuelle Fortsetzungsstand; ältere nächste Schritte sind historisch.
-
-**Parallel integrierter Stand:** Vor Merge wurde main auf `06a9efabb5b3eb9c4d826937b241125df6d9650d` (PR #111: öffentliche Wunschprofile) aktualisiert. Alle 19 unabhängigen Dateien erhalten; in der gemeinsamen Browserdatei der aktualisierte Wishlist-Testabschnitt vollständig übernommen. Dadurch 56 statt 55 Browserprüfungen im kombinierten Stand. Kein eigener Wishlist-/Datenbankumbau in PR #110; vorstehender Brainstorming-Hinweis ist durch die unabhängige Umsetzung überholt. Kombinierte CI erneut erforderlich. UI-Quellstand für WG/Backform unverändert.
-
-## P1 Kontoflächen und neue öffentliche Wunschprofile – PR #112, 17.11.2026
-**Status:** Implementierung und visuelle Teilabnahme auf `7168f65915b41e2e68b5399ad27eae1116e202a3` verifiziert. Sechs PR-Checks erfolgreich; [Chromium-Lauf 44075360098](https://github.com/duhrrom11/toolya/actions/runs/44075360098), 68 Prüfungen erfolgreich. 39 tatsächliche JPEG-Ansichten (30 Kontodialoge und neun Wunschprofil-/Formular-/Aktionsansichten) bei 320/768/1440 px vollständig gesichtet; Manifest `docs/audits/pr112-visual-review.json`, Bilder `docs/audits/evidence/pr112-*.jpg`.
-
-**Umsetzung:** Zehn reguläre B3-Tools verwenden gemeinsame türkise Anmelde- und weiße Registrierungsaktionen, auf Mobilgeräten einspaltig. Gemeinsame Scrollgrenze und Formular-Tokens; Kopfzeile mit Platz für Titel/Schließen. Alle sichtbaren Buttons in diesen Einstellungsdialogen mindestens 44 px hoch, oberer Schließen-Button zusätzlich mindestens 44 px breit. Konto-/E-Mail-Anzeigen umbrechbar. Abmeldefarben und Handler unverändert. Zehn HTML-Dateien ausschließlich Klassenänderungen, keine Auth-/Storage-/Berechnungsänderung. Keine Originalassets geändert.
-**Bei Sichtabnahme behoben:** neue öffentliche Profilkarten drückten lange Namen auf Smartphone und Tablet zwischen Avatar und Herz in sehr schmale Spalten; eigene breite Namenszeile bis 900 px. Breite der Namensfläche >200 px bei 320/768 geprüft. Wunschprofil-Formular mit fünf ausgefüllten synthetischen Listen, Vorschau mit fünf Links und Partnerkennung duhrrom-21 erfolgreich. Kein horizontaler Panel-/Dokumentüberlauf in diesen Ansichten. Unabhängigen PR113-Listennummernfix vollständig erhalten.
-
-**Prüfgrenzen:** Dies ist keine vollständige Konto-/Registrierungs-/Sitzungsabnahme: keine echten Kennwörter, Konten, Registrierungen oder Auth-Anfragen, keine produktiven Änderungen und keine Backup-/Restore-Aktionen ausgelöst. Je Fixture null Cloud-Schreibvorgänge; zehn Kontofixtures keine Browserfehler. Formularvorschau lokal im isolierten Browser; echte öffentliche Profilveröffentlichung/Löschung nicht getestet. Nur geprüfte Oberflächenzustände; Warn-/Fehler-/Leerezustände, zusätzliche Einstellungsabschnitte, Endgeräte und vollständige WCAG-Prüfung bleiben offen. Unterschiedliche Backup-/Hilfebuttonfarben weiter im Maßnahmenumfang; hier deren Bedienflächen verbessert, nicht sämtliche Aktionen abschließend vereinheitlicht.
-
-**Wunschprofil-Datenprüfung (schreibfrei, vorheriger Arbeitsschritt):** Live-Einstieg ohne Anmeldung, gemeinsame Toolya-Shell und leere Suchantwort beobachtet; kein Nachweis vollständiger Profilbestände. Tatsächliche Konfiguration avapuibsidubuzxjtyld (Projektname Helferlein) getrennt von älterem Ziel yheogmeaosuigyaxkwth (toolya-staging); keine automatische Umstellung. Tabelle wishlist_public_profiles hat RLS, Owner-Policies für Änderungen und öffentliche Lesepolicy; Such-/Filterfunktionen SECURITY INVOKER. Tabellen-GRANT-Sichtung ersetzt keine vollständige Prüfung der Spaltenrechte. Keine personenbezogenen Bestände ausgelesen. Katalog public-products.json enthält genau drei Hundeartikel: andere Interessen erhalten Suchlinks. Erweiterung mit überprüften Produkten offen.
-
-**Releaseprüfung:** vorhandenen öffentlichen Hashcheck um fünf Wunschprofil-Ressourcen (HTML, CSS, Frontend-JS, Modell-JS und Katalog) ergänzt; insgesamt 28 Dateien bytegleich zum Release erforderlich. Tatsächlicher Merge-/Pages-/main-CI-Status und vollständige B3_LIVE_DELIVERY-Hashes werden nach Veröffentlichung dauerhaft in [PR112](https://github.com/duhrrom11/toolya/pull/112) geführt. Statische GETs ersetzen keine angemeldete Live-Sichtprüfung. Rollback per gezieltem Revert, keine Datenbankmigration.
-
-**Fortsetzung:** Gesamtumfang zwölf Tools plus Dashboard. D06b/D05b bleiben **In Arbeit**, keine abgeschlossene Plattformabnahme. Nächste P1-Pakete: verbleibende gemeinsame Hilfe-/Sicherungsaktionen und Einstellungszustände, Dashboard und Nachlass-/übrige Designfamilien; Wunschprofil-Detailansichten/Produktkatalog gesondert. Reguläre SEO-/Textphase folgt erst nach wesentlicher P1-Abnahme. Gewichtete Werte unverändert: Bestandsaufnahme 5/8=62,5 %, P1 9/17=52,9 %, P2 0/9, P3 0/8, weitere 0/10; 9/24 Hauptaufgaben verifiziert, 15 nicht abgeschlossen. Ältere nächste Schritte sind historisch; dieser Abschnitt ist maßgeblich. PR110 und PR113 bereits veröffentlicht und Releasechecks erfolgreich; jeweilige Nachweise in den PRs.
-
-
-## Aktueller P1-Fortsetzungsstand – PR124
-D07 Quellabnahme auf `e92277666c46d99b6255fbf81306b6ca63f40f71`: alle drei Checks erfolgreich, neun Infoseiten-Ansichten als Übersicht gesichtet (320/768/1440). Manifest `pr124-visual-review.json`; Grenzen und Fortschritt siehe aktuelle Roadmap. Rechtstextabschnitte und Skripte identisch, keine inhaltliche/rechtliche Neubewertung. Header-/Footer-Wortmarke identisch, Infoseiten-Kontrast >=4,5, Einstellungen/Consent und Galerie bedient. Ein zuvor unbemerkter ReferenceError in previewOutfit korrigiert und nun tatsächlich auf Fehlerfreiheit/geöffneten Begleiter geprüft. Kein Produktivbackend und keine Nutzerdaten im Test. Release nur über den Veröffentlichungsabschnitt von PR124 bestätigen.
-Nachlass PR117 ist veröffentlicht: fb6d15a22243bacfc6547711a76d93cfab99c543, acht main-Checks erfolgreich, 31 öffentliche Dateien bytegleich. Neue isolierte Dialog-/Formularprüfungen verändern weder verschlüsselte Cloudzeile noch Mailzähler; Sicherheitslogik/CSP unverändert.
-Nächste P1-Arbeit: Legacy-Wishlist-Familie und restliche Detail-/Warn-/Fehler-/Leerzustände. Zwölf Tools plus Dashboard bleiben Gesamtumfang. D05b/D06b noch nicht abschließend verifiziert; kein Abschluss des Gesamtaudits. P1 11/17=64,7 %, 10/24 Hauptaufgaben verifiziert.
-
-
-## P1 Legacy-Wishlist – PR125
-16 erhaltene Unterseiten im gemeinsamen Hellmodus, einheitliche Aktionen/Fokus, mobile Navigation zweispaltig, lesbare Hinweise und genau ein Footer. Keine Funktion entfernt; HTML-Skriptblöcke unverändert. In discover.mjs lokalen Follower-Zähler umbenannt: vorher verhinderte eine Temporal-Dead-Zone den gesamten Ladevorgang. Isolierte Regression prüft eine synthetische Sammlung mit drei Likes und zwei Followern, Such-Leerzustand und Wiederanzeige.
-48 Ansichten bei 320/768/1440 auf Quellstand 656043899e0aed7301924a040d4c646e9c769a72 gesichtet; fünf Checks erfolgreich. Manifest pr125-visual-review.json. Kein Produktivbackend, keine Schreibzugriffe. Keine vollständige angemeldete Funktionsabnahme. Lange deutsche Überschriften benötigen noch typografischen Feinschliff; Detail-/Warn-/Fehlerzustände weiter offen. Veröffentlichung und tatsächliche Release-Hashes werden in PR125 dokumentiert.
-P1 weiterhin 11/17 = 64,7 %, D05b/D06b In Arbeit, 10/24 Hauptaufgaben verifiziert. Zwölf Tools plus Dashboard. Nächste Arbeit: lange mobile Titel und verbleibende Detail-/Warn-/Leerzustände.
-
-
-## Aktueller Fortsetzungsstand – PR125/126 veröffentlicht
-Legacy-Wishlist-Paket PR125 veröffentlicht als 4ed6656d51d783d890ae1206759fcf6f4dd78788. Mobiler Titelfeinschliff PR126 veröffentlicht als 53882d68fd5ebacebef71be2d943e03d162f153a: Titel unter Wortmarke/Originalmaskottchen volle Breite, deutsche Silbentrennung. Alle fünf PR-Prüfungen und alle acht main-Prüfungen des aktuellen Releases erfolgreich. 48 Ansichten erneut gesichtet; Manifest pr126-visual-review.json. Alle 54 öffentlichen Ressourcen bytegleich, vollständiger Nachweis pr126-live-delivery.json. Älterer PR125-main-Browserlauf hängt bei Installation; aktueller Folge-Release ist vollständig geprüft. Kein Produktivbackend und keine realen Daten in den Designprüfungen.
-P1 11/17=64,7 %, 10/24 Hauptaufgaben verifiziert; D05b/D06b weiter In Arbeit. Nächstes begrenztes Paket PR127: öffentliche Wunschprofil-Detailansicht, Vorschau, ungültige Links, Suche leer/fehlerhaft/wiederhergestellt und zugängliche Merk-Buttonnamen. Keine vollständige private Produktionsabnahme behauptet. Zwölf Tools plus Dashboard bleiben Gesamtumfang.
-
-## Aktualisierte Bestandsaufnahme – 18.11.2026
-
-**Management-Zusammenfassung.** Toolya umfasst zwölf Tools sowie das persönliche Dashboard. Die gemeinsame Marke und der Footer waren auf der veröffentlichten Startseite und dem öffentlichen Wunschlistenverzeichnis im Browser sichtbar. Der bisherige P1-Stand enthält bereits die Harmonisierung der zehn B3-Tools, des persönlichen Dashboards, der Nachlass- und Infoseiten sowie der älteren Wunschlisten-Unterseiten. Die wichtigsten verbleibenden Lücken sind die Abnahme besonderer Zustände auf schmalen Bildschirmen, die separate Admin-Oberfläche und die widersprüchlichen Aussagen zu Anmeldung und Speicherung. Für eine Gesamtfreigabe fehlen insbesondere angemeldete Produktionsansichten und belegte Indexierungsdaten.
-
-| Bereich | Prüfgrundlage und Bewertung |
+| **P0 Schutz** | Hoch | Zugriff/Indexierung bei Nachlass-Hilfsseiten und Wishlist-Altwegen; persönliche Profildaten, Opt-in, Löschung, Import/Anzeige; Auth/RLS/Verschlüsselung; Affiliate-/Rechtsprüfung |
+| **P1 Wirkung & Messbarkeit** | Sehr hoch | Search Console/Bing/Analytics-Baseline; Backform-Rechner ohne Login auf **öffentlicher** URL; konsistente kanonische URLs und funktionierende Nutzerwege |
+| **P2 Infrastruktur & Inhalte** | Hoch | Technische SEO-Hygiene, JSON-LD sachgerecht, Performance, passende Querverlinkungen, alle 18 bestehenden Seiten verbessern, Mustertabellen/PDFs |
+| **P3 Wachstum** | Mittel bis hoch | Suchintent-Cluster, getestete programmatische Unterseiten, nutzbare freie Basis weiterer Tools, externe fachliche Erwähnungen, GEO-Messung |
+| **P4 Optionen** | Unsicher | Weitere Sprachversionen, umfassende URL-Migration, große öffentliche Datenstudien und neue Profillandingpages nur bei Belegen/Rechtsfreigabe |
+
+## 2. Datenbasis: Was sicher ist und was nur geprüft werden muss
+
+### 2.1 Technische Inventur aus [A3]
+
+- 52 HTML-Dateien im betrachteten Repository, 69 eindeutige Live-URL-Abfragen (einschließlich Varianten, robots, Sitemap und 404-Test): **68 × HTTP 200, 1 × erwartetes HTTP 404**.
+- Die **18 Sitemap-URLs** lieferten je HTTP 200, genau eine H1 und einen selbstreferenziellen Canonical; **13 Ratgeber** sind über statische Links von `/` erreichbar.
+- HTTP und `www` wurden stichprobenweise korrekt auf `https://toolya.app` weitergeleitet. Die Forderung aus [A2] nach neuen pauschalen 301-Weiterleitungen ist daher **Prüf-/Regressionsthema**, nicht als ungeprüfter Defekt zu behandeln.
+- `robots.txt` ist vorhanden, enthält `User-agent: *`, `Allow: /` und die Sitemap; Search-/KI-Crawler werden auf dieser Ebene nicht gesperrt. `sitemap.xml` ist vorhanden und enthält die 18 kanonischen öffentlichen URLs. Ein allgemeines Neuaufsetzen beider Dateien ist unnötig.
+- Die **13 Anleitungsseiten** besitzen laut [A3] parsebares `WebPage`-JSON-LD; das Wunschlisten-Verzeichnis `CollectionPage`. Es ist falsch, pauschal „JSON-LD fehlt“ zu behaupten.
+- Die 12 privaten Tool-App-Seiten hatten im A3-Inventar bereits überwiegend `noindex,follow`; `/dashboard/index.html` besitzt `noindex,follow`; Admin-Seiten besitzen `noindex,nofollow`. Das **öffentliche Verzeichnis `/tools/wishes/public.html`** ist die bewusste Ausnahme und soll nicht versehentlich `noindex` erhalten.
+- 16 ältere Dateien unter `/tools/wishes/` und die drei Dateien `/tools/estate/{handover,heirs,print-key}.html` waren öffentlich erreichbar, ohne sichtbares `noindex` im geprüften Roh-HTML/Response.
+- Öffentliche Wishlist-Detailansichten werden über `?profile=…` aus JS aufgebaut; im initialen HTML fehlt nutzbarer Profilinhalt und das Canonical zeigt auf die Suchseite. **Produkt- und Datenschutzentscheidung erforderlich**, keine automatische Indexierung privater Namensprofile.
+- `/index.html` und 13 Ratgeber-`index.html`-Varianten liefern HTTP 200 mit Canonical auf die bevorzugte Kurz-URL. Nicht per se ein Duplicates-Fehler, wohl aber Anlass für saubere interne Links und ggf. echte Redirects.
+- Eine 404-Statusantwort existiert, im geprüften Git-Stand jedoch keine eigene `404.html`.
+- OpenSEO-Crawl (18.11., 32 Seiten) wies u.a. 10 Bildwarnungen und 10 vermeintliche Waisen aus; auf **aktuelle** URLs/Crawldaten abgleichen, da die Startseite inzwischen 13 Ratgeber verlinkt. Leere `alt`-Attribute sind für dekorative Bilder korrekt.
+- GSC-Indexabdeckung, organische Klicks, Impressionen, durchschnittliche Position, Backlinks und CrUX-Felddaten waren im Audit nicht abrufbar. Das ist **Messlücke**, kein Nachweis für schlechte Rankings oder Nichtindexierung.
+
+### 2.2 Lesender Repository-Abgleich [G] am 18.11.2026
+
+- `main` lag bei Commit `4e2bcc99cb0921f4dd77383b070789a4972e804a`, zwei Commits vor dem A3-Referenzstand `43f8664`. Die Vergleichsdateien betrafen im Wesentlichen Design, Startseite, Plattform-CSS/JS und UI-Tests, **nicht** die Backform-Ratgeber-/App-Dateien.
+- `backform-rechner/index.html` enthält nach dem lesenden Dateiabgleich eine erklärende Landingpage und **kein direktes Formular**; die App unter `/tools/baking/index.html` enthält `noindex` und eine vorgeschaltete Konto-Prüflogik. Die in einem anderen Arbeitskontext erwähnte Login-freie Umsetzung ist daher **nicht als auf `main` veröffentlicht bestätigt**. Work muss offene Branches/PRs prüfen, bevor es eigene Änderungen beginnt.
+- `robots.txt` und `sitemap.xml` in `main` stimmen mit dem A3-Grundbefund überein: `Allow: /` und 18 öffentliche Kanonicals, nicht alle privaten Tool-Seiten.
+
+### 2.3 Nicht belegt / zu messen
+
+- Google-/Bing-Indexstatus pro URL, von Google gewählter Canonical, interne Suchbegriffe, Backlink-/Brand-Abdeckung, Ranking-/Klickraten, AI-Citation-Rate und tatsächlich von Crawlern abgerufene Seiten.
+- LCP, INP und CLS **als reale Felddaten**; Labordaten und eine vorläufige mobile LCP-Beobachtung sind getrennt zu führen. Prüfen, ob externe Tailwind-Laufzeiteinbindung, JavaScript, Supabase, Hero-Assets oder DOM-Menge die Startseite bremsen.
+- Hosting-/CDN-Kontrolle für HSTS/Security-Headers, Status-Weiterleitungen und `/tools/...`-Migrationsregeln. GitHub Pages allein bietet nicht beliebige serverseitige 301-Regeln.
+- Vollständige Datenschutz-/Rechtssituation der Wunschlisten-Importe und Profile, Einwilligung, Löschung, Herkunft und Zweck, Rechtsangaben, Affiliate-Hinweise und Betreiberexpertise.
+
+## 3. Dubletten, Widersprüche und verbindliche Entscheidungen
+
+| Mehrfacher Vorschlag / Konflikt | Zusammengeschlossene Entscheidung |
 |---|---|
-| Repository und Veröffentlichung | GitHub und lokaler Checkout bestätigen den aktiven öffentlichen Toolya-Stand `d5937fb`. Helferlein ist bei GitHub archiviert. 129 Toolya-Branch-Referenzen, drei offene PRs (#13, #26, #47), ein offenes Issue (#119). PR #127 dokumentiert acht erfolgreiche main-Prüfungen und 54 bytegleiche öffentliche Ressourcen für seinen Release. [PR #127](https://github.com/duhrrom11/toolya/pull/127) · [Pages](https://github.com/duhrrom11/toolya/actions/runs/44203645083) |
-| Seiteninventar und Marke | 39 HTML-Dateien in Git, davon 38 aus dem bisherigen Inventar und neu `admin-stats-dashboard/wishlist-finder.html`. Das Admin-Dashboard und sein Finder sind Zusatzoberflächen der Administration. Alle acht Original-PNGs bestätigen ihre SHA-256-Prüfsummen. Startseite und öffentliches Wunschlistenverzeichnis direkt bei 1348 px gesichtet. |
-| Öffentliches Wunschlistenverzeichnis | Theme-Header und Footer stimmen mit Toolya überein. Die beiden Sprunglinks im Live-Stand von PR #127 haben nur Textlinkgestaltung. P1-Paket bindet die Links an dunkle Markenfarbe, helle Aktionsflächen, 44 px Mindesthöhe und einen sichtbaren Fokus. Der Sprung zu beiden vorhandenen Abschnitten ist Teil der isolierten Browserprüfung. |
-| Backend und Freigabegrenzen | Öffentlicher Wunschlisten-Client und reguläres Auth-Gate referenzieren im aktuellen Code das Projekt mit Anzeigename `toolya-staging`. Die weiter oben protokollierte ältere Wunschprofil-Zuordnung ist überholt. Supabase meldet 39/39 Tabellen mit RLS in `public` dieses Projekts und 31/31 im weiterhin aktiven Backend mit Anzeigename `Helferlein`. Im Toolya-Backend sind fünf Edge Functions aktiv, darunter `wishlist-discovery` v5. Katalog und Advisors allein belegen weder wirksame Eigentümergrenzen noch eine Sicherheitsfreigabe. |
-| Sicherheit und Stabilität | Toolya-Sicherheitsadvisor meldet 13 Tabellen mit RLS ohne Policy, 11 ausführbare SECURITY-DEFINER-Funktionen, eine öffentliche Extension und deaktivierten Schutz vor bekannten kompromittierten Passwörtern. Das ist ein Prüfvorrat. Aus den Metadaten wurde kein neuer kritischer Befund bestätigt. Issue #119 muss gegen die bereits integrierten Connect-Änderungen abgeglichen werden. |
-| SEO und Inhalte | Sitemap enthält 14 Einträge. 11 von 39 HTML-Quelldateien haben keine Meta-Description. Darunter sind mehrere Admin-, Druck- und Sonderseiten. Relevanz je Route erst nach P1 entscheiden. Startseiten-FAQ, Open Graph und JSON-LD beschreiben Anmeldung als optional. Der aktuelle Auth-Code widerspricht einer pauschalen Aussage für die Tools. Search Console, Bing und Core Web Vitals sind in diesem Arbeitsschritt nicht bestätigt. |
-| Analytics und Designreferenzen | Das erreichbare Amplitude-Projekt `default` lieferte eine leere Ereignisliste. Eine Toolya-Zuordnung und Conversion-Werte lassen sich daraus nicht ableiten. Für den Designabgleich sind die vorhandenen Komponenten, Originalassets und aktuellen Browseransichten die geprüften Referenzen. |
+| `[A1/A2] robots.txt und Sitemap neu` vs. `[A3] vorhanden` | Bestehende Dateien **validieren und pflegen**; keine pauschale Neuerstellung. 18 kanonische öffentliche URLs als Ausgangspunkt. `lastmod` nur bei nachweislich relevanter Änderung. |
+| `[A2] alle 12 Tool-URLs in Sitemap` vs. `[A3] private App-URLs mit noindex` | **Nicht** alle 12 hinzufügen. Nur indexierbare, selbstkanonische öffentliche Landingpages in Sitemap; private App-, Konto-, Auth-, Admin- und operative Seiten raus. Tool-Titel/Descriptions auf App-Seiten dennoch benutzerfreundlich halten, aber dort keine Ranking-Priorität. |
+| `[A2] public.html/Auth-Views noindex` vs. `[A3] Wunschlisten-Verzeichnis ist öffentlich` | Unterscheiden: Auth-/Profilbearbeitungsansichten `noindex`; **das öffentliche Wunschlisten-Verzeichnis** bleibt nur nach Rechts-/Produktprüfung indexierbar. Öffentliche **Einzelprofile** nicht automatisch indexieren. |
+| `[A1] strukturierte Daten fehlen` vs. `[A3] WebPage/CollectionPage vorhanden` | Bestehendes Markup erweitern/vereinheitlichen, nicht blind ersetzen. `WebApplication` nur bei zutreffender Funktion und verifizierten Angaben; `FAQPage` nur bei sichtbaren echten FAQ; `BreadcrumbList` nur bei sichtbaren Breadcrumbs. Kein Anspruch auf FAQ-/HowTo-Rich-Results. |
+| `[A2] englische Pfade/HTML-Endungen grundsätzlich umbenennen` vs. `[A3] URL-Kanonicals konsistent` | Keine Big-Bang-Migration. Zunächst öffentliche deutsche Einstiegsseiten nutzen. Umbenennungen nur nach Inventur von Links, Bookmarks, QR-Codes, App-Routing, Querys und **echten** 301/308-Redirect-Möglichkeiten. Meta-Refresh/JS-Redirect sind kein vollwertiger Ersatz. |
+| `[A1] Login für alle Tools abschaffen` vs. Datenschutz & bestehende Produktentscheidung | **Öffentliche, sichere Kernfunktion pro geeignetem Tool**, beginnend Backform; Speichern/Synchronisierung und private Daten in bestehenden geschützten Abläufen. Nicht pauschal Auth/RLS/Verschlüsselung entfernen. Nachlass und persönliche Profile bleiben besonders geschützt. |
+| `[A1] 1.000–1.800 Wörter je Ratgeber` vs. `[A2] 400–600 Wörter je App` | Inhalte **intent- und nutzwertorientiert**; kein bloßes Wortmengenziel. Detaillierte Tabellen/Muster an sinnvoller öffentlicher Landingpage; auf `noindex`-App nur knappe hilfreiche Bedienhinweise statt konkurrierender SEO-Texte. |
+| `[A1] Anleitungsseite und Tool konkurrieren` vs. `[A3] App meist noindex` | Pro Thema primär **eine** indexierbare Hauptseite; die App ist Funktionsziel. Kanonisierung/noindex nur nach Prüfung, niemals blind ein indexierbares Tool zu einer nicht identischen Anleitung canonicalisieren. |
+| `[A1] Brand nicht auffindbar` vs. `[A3] keine GSC-Daten` | Indexierung/Brand-Sichtbarkeit **unbekannt**, nicht „nicht indexiert“. GSC/Bing, URL-Prüfung, Brand-Queries und Backlinks messen. |
+| `[A1/A2] llms.txt` | **Optionaler Nebenpunkt**, wenn ohne Aufwand korrekt wartbar. Kein SEO-/GEO-Prioritätshebel und kein garantierter Crawling-/Zitierstandard. |
+| `[A1] alle Bots freischalten` vs. `[A3] robots bereits offen` | Crawler-Zugriffe prüfen und Such-/Trainingscrawler nach bewusstem Datenschutz-/Nutzungszweck unterscheiden; nicht annehmen, dass `Allow` zu KI-Zitaten führt. |
+| `[A1] SearchAction` | Nur ergänzen, wenn tatsächlich eine öffentlich nutzbare interne Seitensuche existiert; nicht die Personen-Wishlist-Suche als allgemeine Website-Suche auszeichnen. |
+| `[A1] alt für Icons/Sterne` | Informative Bilder bekommen aussagekräftige Alt-Texte; rein dekorative Maskottchen-Grafiken und SVGs ggf. `alt=""`/`aria-hidden`, interaktive Favoriten-Buttons hingegen verständliche zugängliche Namen. |
 
-**Prüfgrenzen.** Datenbankabfragen betrafen ausschließlich Katalog, Projektmetadaten und Advisors. Private Produktionsabläufe, externe Such-/Versanddienste, eine vollständige Tastatur- und Kontrastprüfung sowie die juristische Prüfung bleiben offen. Die lokal installierte Chromium-Ausführung scheitert beim Start am gesperrten Socket. Die gezielte Layoutprüfung läuft deshalb über CI. Der neue Release ist erst nach Merge, Pages und Live-Abgleich bestätigt.
+## 4. URL- und Indexierungsarchitektur
 
-### P1-Release der öffentlichen Wunschlisten-Navigation
+### 4.1 Öffentlich indexierbare Kernseiten laut aktueller Sitemap (18)
 
-[PR #128](https://github.com/duhrrom11/toolya/pull/128) ist als `7ea5b58` veröffentlicht. Fünf PR-Prüfungen erfolgreich. Im isolierten Chromium waren beide Sprungziele per Tastatur bzw. Klick erreichbar. Auf den gesichteten Aufnahmen bei 320, 768 und 1440 px sind die Links mindestens 44 px hoch und der Fokus gut sichtbar. Bei 320 px stehen die Links untereinander. Das öffentliche HTML und CSS waren zusammen mit insgesamt 54 Ressourcen bytegleich zu GitHub. [Browserlauf](https://github.com/duhrrom11/toolya/actions/runs/44310047480) · [Pages](https://github.com/duhrrom11/toolya/actions/runs/44310630950) · [Live-Prüfung](https://github.com/duhrrom11/toolya/actions/runs/44310632274)
+| Nr. | Kanonische URL | Zweck | Veränderung |
+|---:|---|---|---|
+| 1 | `/` | Marke + Tool-Übersicht | Suchbegriff in H1, präzise Tool-Nutzen, Logo-/Startlinks auf `/`, Geschwindigkeit |
+| 2 | `/amazon-wunschliste-veroeffentlichen/` | Eigene Liste teilen | Amazon-Freigabe vs. Toolya-Profil, Sichtbarkeit, Löschung, Beispieldaten |
+| 3 | `/autokosten/` | Autokosten/Tankbuch | Kosten pro Monat/km, Fixkosten, Verbrauch, Rechenmuster |
+| 4 | `/backform-rechner/` | Backform umrechnen | **Direkter loginfreier Rechner**, Faktorenmatrix, geometrische Grenzen |
+| 5 | `/digitaler-nachlass/` | Digitalen Nachlass organisieren | nachvollziehbare Abläufe/Checkliste/Quellen, keine sensiblen Inhalte im HTML |
+| 6 | `/haushaltsbuch/` | Ausgaben/Budget/Belege | Beispielmonat, 50/30/20, Fixkosten, OCR-Kontrolle, Vorlagen |
+| 7 | `/parkplatz-merker/` | Auto wiederfinden | Parkebene/Platz, Standortfreigabe, Parkzeit/-kosten nur bei realen Funktionen |
+| 8 | `/pflanzenpflege/` | Gießplan | Erinnerungsintervall vs. tatsächlicher Wasserbedarf, Muster zweier Pflanzen |
+| 9 | `/tiergesundheit/` | Tier-Gesundheitstagebuch | Musterimpfung/Tierarzt, Termine/Erinnerungen, keine Tiermedizinberatung |
+| 10 | `/toolya-dashboard/` | öffentliches Dashboard-Intro | Beispieldaten, Grenzen lokaler Speicherung, Link zum getrennten privaten `/dashboard/` |
+| 11 | `/umzugskisten/` | QR-Umzugskisten | druckbares Etikett, QR-Workflow, nützliche Vorlage |
+| 12 | `/verliehene-dinge/` | Verleihliste | Beispiel vom Ausleihen bis Rückgabe, Leihdauer vs. Rückgabedatum |
+| 13 | `/wg-organisator/` | WG-Kosten/Putzplan | anteilige Aufteilung, rotierender Plan, Rollen/Rückzahlung erklären |
+| 14 | `/zaehlerstaende/` | Zähler dokumentieren | Strom/Gas/Wasser, Zählerwechsel, Wohnungsübergabe, Gasfaktor nur aus Rechnung |
+| 15 | `/tools/wishes/public.html` | öffentliche Wunschlisten-Suche | **Rechts-/Sichtbarkeitsprüfung**, initiale Erklärung, Suchgrenzen, Opt-in, Profilstrategie |
+| 16 | `/mascots.html` | Marken-/Maskottchenvorstellung | klare H1, Text-/Bild-Alt-Texte, bestehende Markenassets erhalten |
+| 17 | `/legal.html` | Impressum/Betreiber | Kontaktdaten prüfen, auf Betreiber-/Autorenangaben abstimmen |
+| 18 | `/privacy.html` | Datenschutz | tatsächliche Auth-, Browser-, Sync-, Analyse- und Wishlist-Verarbeitung abgleichen |
 
-### Ergänzende Befunde
+**Wichtige Bestandsregeln:** Keine automatische Weiterleitung von `/` nach `/dashboard/`. Verwendete Wortmarke/Logo in Header und Footer identisch halten. Vorhandene auswählbare türkis-weiße und lilafarbene Maskottchen bleiben nutzerabhängig; Footer und Hauptseiten-Design außerhalb notwendiger Verbesserungen nicht versehentlich verändern.
 
-- Die verbundene OpenSEO-Organisation enthält ein Toolya-Projekt. Sie meldet aktuell kein verbundenes Search-Console-Konto. Ahrefs verweigert die Projektabfrage für den aktuellen Tarif. Daraus lässt sich kein Indexierungsstatus ableiten. Das vorhandene Admin-Dashboard erfasst Anträge für elf Seiten anhand der Betreiberangabe und kennzeichnet Bestätigung separat.
-- Die im offenen Issue #119 als fehlend beschriebene serverseitige Autokosten-Übertragung ist inzwischen als RPC auf dem aktiven Backend vorhanden und für angemeldete Konten ausführbar. Anonyme Konten dürfen sie laut Katalog nicht ausführen. Der lokale Connect-Vertragstest ist erfolgreich. Noch offen ist der Abgleich übriger Connect-Szenarien. Kein Produktionstransfer ausgelöst.
-- Der isolierte Zwei-Geräte-Test war auf dem Ausgangsstand reproduzierbar rot, weil die letzte Assertion vor dem zweiten simulierten Lesevorgang lief. Test wartet jetzt auf beendeten Panelzustand und besteht lokal. Die Produktlogik wird durch diese Testkorrektur nicht geändert.
+### 4.2 Nicht in die Sitemap aufgenommene App-/Arbeitsansichten
 
-### Weitere P1-Releases – Admin und Nachlass
+- `/dashboard/index.html` → `noindex,follow` (privates Dashboard, keine Root-Weiterleitung).
+- `/admin-stats-dashboard/index.html`, `/admin-stats-dashboard/wishlist-finder.html` → `noindex,nofollow`; **`noindex` ersetzt keinen Zugriffsschutz**.
+- `/tools/baking/index.html`, `/tools/budget/index.html`, `/tools/car/index.html`, `/tools/estate/index.html`, `/tools/housemates/index.html`, `/tools/loans/index.html`, `/tools/meters/index.html`, `/tools/moving/index.html`, `/tools/parking/index.html`, `/tools/pet-health/index.html`, `/tools/plants/index.html` → im A3-Stand überwiegend `noindex`, teilweise unterschiedliche `follow`-Werte. Alle weiteren Tool-Dateien vollständig inventarisieren, auch neue seit A3. **Nur nichtöffentliche/operative Views** mit `noindex`.
+- `/tools/estate/handover.html`, `/tools/estate/heirs.html`, `/tools/estate/print-key.html` → fehlendes `noindex` im A3-Stand, aber wesentlich wichtiger: Berechtigungen, kryptographische Schlüssel, Freigaben, Log-Ausgaben und Freigabeabläufe sicherheitstechnisch prüfen.
+- `/tools/wishes/index.html` → Meta-Refresh zum öffentlichen Verzeichnis; vor etwaiger Ablösung echte Redirect-Unterstützung prüfen.
 
-[PR #129](https://github.com/duhrrom11/toolya/pull/129) gleicht Wortmarke, Bedienhöhen und Tastaturfokus der beiden Admin-Seiten an. Der Browsertest bestätigte den zuvor reproduzierten Überlauf des Statistik-Dashboards bei 320 px und anschließend den korrigierten Umbruch. Sechs finale Ansichten gesichtet, verweigerten Adminzugriff und synthetische Finder-Veröffentlichung geprüft. Die vier geänderten Admin-Dateien werden bytegleich ausgeliefert. Keine echten Suchanfragen oder Veröffentlichungsvorgänge in den Browserprüfungen.
+### 4.3 Alt-Wishlist-Seiten [A3] – Einzelentscheidungen nötig
 
-[PR #130](https://github.com/duhrrom11/toolya/pull/130) zeigt im Nachlass einen gemeinsamen Header mit genau einer sichtbaren Startseiten-Wortmarke. Der neutrale Seitentitel und der separat erreichbare eigene Tresor wurden in Chromium geprüft. Die vorhandenen Schlüssel-, Freigabe- und Alarmprüfungen laufen weiter in isoliertem PostgreSQL und mit abgefangenem Versand.
+`/tools/wishes/assistant.html`, `bookmarks.html`, `cockpit.html`, `collection.html`, `dashboard.html`, `discover.html`, `feed.html`, `gift-analytics.html`, `gift-tasks.html`, `notifications.html`, `occasions.html`, `planner.html`, `profile.html`, `report.html`, `reservations.html`, `social.html`.
 
-### Vorgezogener Stabilitätsbefund – WG-Organisator
+Für **jede** Route in einer Tabelle festhalten: aktiv/ersetzt/abgeschafft, öffentliche Inhalte vs. Kontoinhalte, bestehende Deep-Links/Bookmarks, Ziel-URL, Auth-/RLS-Status, HTTP-Status, Canonical/Robots. Entscheidung: echte 301/308 bei gleichwertigem dauerhaftem Nachfolger und technisch möglichem Hosting, 404/410 bei entfallener Seite, `noindex` bei notwendiger öffentlicher Arbeitsansicht, und klare Zugangsbeschränkung bei privaten Daten. Keine gebrochenen QR-/Teillinks; keine private Information im initialen HTML oder Caches.
 
-Nachgewiesen sind die produktive Browserabfrage für die Spalten `payload` und `updated_at` sowie fehlende UPDATE-Spaltenrechte für die Anwendungsrolle. Die vorhandenen RLS-Regeln sehen Schreibzugriff für Besitzer und Mitglieder vor. Die vorbereitete Migration ist auf die beiden benötigten Spalten beschränkt. ID, Eigentümer und anonymer Zugriff bleiben gesperrt. Ein isoliertes PostgreSQL-Szenario prüft Besitzer, Mitglied, unbeteiligtes Konto, anonymen Zugriff, veralteten Stand und Rücknahme der Freigabe. Keine produktive Schreibprobe. Der operative Nachweis wird im Veröffentlichungs-Prüfprotokoll des Migrations-PR ergänzt.
+### 4.4 URL-Varianten und Migration
 
-### WG-Korrektur auf dem aktiven Backend bestätigt
+`/index.html` und alle 13 Ratgeber-`index.html`-Varianten haben bereits saubere Canonicals; intern auf Kurzpfade verlinken. `?v=...`-Versionsparameter von **Seitenlinks** auf Asset-Versionierung/Build-Hashes umstellen; berechtigte Nutzer-/Profil-/Tracking-Querys nicht unüberlegt löschen. `http` und `www` als Regression prüfen. Umbenennungen etwa `/tools/baking/index.html` oder `/tools/wishes/public.html` auf deutschsprachige schöne Pfade nur als gesonderte, nachgewiesen sichere Migration und **nicht** allein zur Kosmetik; Browser- und API-Deep-Links müssen erhalten bleiben.
 
-[PR #131](https://github.com/duhrrom11/toolya/pull/131) wurde nach erfolgreicher isolierter PostgreSQL-Prüfung gemergt. Die produktive Migration `20261118133027_restore_wg_save_permissions` ist angewendet. Der Datenbankkatalog bestätigt Änderungsrechte für `payload` und `updated_at`; ID und Eigentümer haben weiterhin keine Änderungsfreigabe und die anonyme Rolle hat null freigegebene Spalten. Row Level Security ist aktiv. Kein produktiver Schreibtest und keine produktiven Datensätze geändert. [GitHub Pages](https://github.com/duhrrom11/toolya/actions/runs/44314345089) · [Isolierter Test](https://github.com/duhrrom11/toolya/actions/runs/44314006466)
+## 5. Technische SEO- und UX-Aufgaben (dedupliziert)
 
-### Technische Stichprobe und P1-Barrierefreiheit
+1. **Crawl & Index:** Canonical, HTTP-Status, Robots-Meta, Sitemap, interne Links, H1, Title/Description, JavaScript-unabhängige Kurzantwort und Linkpfad pro Seite automatisiert prüfen. Alle vorhandenen Search-Console-/Bing-Verifikationen sowie Sitemap-Submission/URL-Inspection verwenden, soweit Berechtigungen bestehen.
+2. **Meta & Social:** individuelle Titles, Meta-Descriptions, OG-/Twitter-Card-Daten und `og:locale=de_DE` auf öffentlichen Seiten; bei privaten Tools sinnvolle App-Titel, aber `noindex` beibehalten. Title mit Suchintent, H1 natürlich und unterscheidbar; Seitennamen konsistent halten.
+3. **Startseite:** H1 etwa „Kostenlose Online-Tools für Haushalt, Finanzen und Organisation“, bestehenden Claim als Subline; Kategorie-Navigation und echte unmittelbare Nutzenversprechen. Keine Seite mit unerfüllten Funktionen bewerben.
+4. **Semantik, Bilder, Icons:** informative `alt`-Texte (Grammatikfehler „Unsere türkisfarbene und lilafarbene Begleiter …“ korrigieren), dekorative SVGs zugänglich verstecken, Favoritensteuerung beschriften; WebP beibehalten, `width/height`, sinnvolles `loading="lazy"`, kein Lazy-Loading für kritisches Hero, `fetchpriority` nur nach Messung. Prüfen, welche 10 OpenSEO-Bildwarnungen heute noch bestehen.
+5. **Performance:** Tailwind-CDN-Laufzeitskript in statischen CSS-Build überführen, sofern Messung/Regression Vorteile bestätigt; HTML-Payload (~76 KB laut A3), JS-Menge, Font-/Hero-Ladepfade, Supabase-Initialisierung. Mobile Lighthouse-Labor vor/nach und CrUX-Feldwerte separat; Ziele am 75. Perzentil: LCP ≤ 2,5 s, INP ≤ 200 ms, CLS ≤ 0,1. Keine ungemessenen „Verbesserungen“ behaupten.
+6. **Accessibility & UX:** semantische Überschriften, Label, Tastatur- und Screenreader-Bedienung, Fokusmarkierungen, Skip-Link, Kontrast, mobile Touch-Ziele, klare Zustands-/Fehlermeldungen. Auth-Views und öffentliche Minirechner nicht vermischen.
+7. **Security/Hosting:** HTTPS, HSTS, CSP, Referrer-Policy, Permissions-Policy, Frame-/MIME-Schutz, Cache-Header nur dort, wo GitHub Pages/CDN technisch steuerbar; keine Header versprechen, die dort nicht gesetzt werden können. Keine Secrets in Repo, Logs, Browser-HTML oder generierten Beispielen.
+8. **Interne Navigation:** von jedem Ratgeber sinnvolle Aufgaben-Nachbarn: Umzugskisten ↔ Zählerstände, Autokosten ↔ Haushaltsbuch, WG ↔ Zählerstände, Wunschliste veröffentlichen ↔ Verzeichnis; Startseite als Hub. Sichtbare Breadcrumbs nur bei echtem Mehrwert.
+9. **404 und Weiterleitungen:** benutzerfreundliche `404.html`, Original-404-Status erhalten; für echte Redirects keine HTML-/JS-Umgehung als „301“ deklarieren. Testmatrix `http`, `www`, `/`, `index.html`, Tool-Deep-Links und `?profile`.
+10. **Crawler & GEO:** statisch lesbare Beschreibung, funktionierende Links, nachvollziehbare Beispiele. Bestehende robots-Zulassung dokumentieren; OAI-SearchBot, GPTBot, ClaudeBot, PerplexityBot, Google-Extended zweckgetrennt betrachten; `llms.txt` nur klein, korrekt, wartbar und optional.
 
-Der [OpenSEO-Crawl](https://app.openseo.so/p/6eddcfc6-d4a2-403b-a689-d02bc761a969/audit?auditId=e9451978-cd57-4244-90c7-75bfd44c4e37) erreichte 32 öffentliche HTML-URLs ohne JavaScript-Rendering, jeweils mit HTTP 200. 66 Hinweise, davon 27 Warnungen und 39 Informationen. Zehn Meldungen zu fehlendem Alt-Text betreffen fünf tatsächlich verschiedene Tool-HTMLs, jeweils inklusive der URL mit Versionsparameter. Der Quellcode bestätigt fehlende Bildbeschreibungen in den fünf Bildvorschauen. P1 ergänzt diese gezielt. Tastaturöffnung und Fokusführung der Foto-Modalfenster bleiben zu prüfen.
+## 6. Structured Data – Ausgangspunkt und Ziel
 
-14 Sitemap-Einträge haben im Quellcode Titel, Meta-Description und Canonical. Zehn dieser Einträge zeigen nach Ausführung des Anmelde-Skripts eine Weiterleitung für Besucher ohne Sitzung. Der HTTP-Crawl erfasst lediglich die statische Antwort. Der nächste reguläre P2-Schritt ist die Abstimmung öffentlicher Such-Einstiege mit geschützten Tool-Ansichten. Die 13 Canonical-Hinweise beziehen sich vorwiegend auf Parameter- und Indexvarianten. Indexbestätigungen und Core Web Vitals stehen aus.
+**Vorhanden:** 13 × `WebPage`, 1 × `CollectionPage` (nach A3); keine fehlende Struktur erfinden.  
+**Ziel:** `WebSite` mit konsistentem Seitennamen, `Organization` bzw. korrekter Betreiberentität, stabilen `@id`, `sameAs` nur auf nachweislich zugehörige Profile. Öffentliche Ratgeber mit geeignetem `WebPage`/ggf. `Article`, tatsächlichem `dateModified` und korrekten Autorenangaben. `WebApplication` nur wo wirklich eine Web-Anwendung präsentiert wird, mit belegten Eigenschaften (z. B. `inLanguage`, `operatingSystem`, Preis nur wenn zutreffend). `BreadcrumbList` nur wenn sichtbare Breadcrumbs existieren. `FAQPage` nur für tatsächlich sichtbare Fragen/Antworten und nur bei passenden Seiten, **ohne Rich-Results-Versprechen**. `HowTo` kann sachlich auszeichnbar sein, generiert aber keine Google-HowTo-Rich-Results. `SearchAction` ausschließlich für eine echte interne **Seitensuche**, nicht bloß Personensuche. Schema validieren, Inhalt und Markup müssen übereinstimmen.
 
-Der veröffentlichte [Releasestand #132](https://github.com/duhrrom11/toolya/pull/132) lieferte alle 39 HTML-Routen und 24 weitere Dateien bytegleich aus. Die anschließende Tastaturkorrektur [#133](https://github.com/duhrrom11/toolya/pull/133) verwendet echte Dialoge und beschriftete Foto-Buttons. Der zugehörige isolierte Test kontrolliert Dekodierung, Öffnen mit Enter, Schließen mit Escape oder sichtbarem Button und Rückkehr zum Auslöser. Der Veröffentlichungsnachweis steht im PR.
+Offizielle Referenzen: [Google FAQ/HowTo 2023](https://developers.google.com/search/blog/2023/08/howto-faq-changes), [Google Sitemap/lastmod](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap), [Google noindex](https://developers.google.com/search/docs/crawling-indexing/block-indexing), [Google Canonical](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls).
+
+## 7. Content-System: Suchintention statt Wörtervorgaben
+
+**Pro indexierbarer thematischer Landingpage**: direkt beantwortete Frage in 1–2 Sätzen, sofortige nutzbare Funktion/Beispiel, nachvollziehbare Formel/Tabelle/Checkliste, echte Produktgrenzen, 3–8 echte Nutzerfragen, Quellen/Methodik, ggf. Download, passender interner Link, echte Autor-/Aktualisierungsinformation. Aufwendigere Themen können 1.000–1.800 Wörter erfordern; einfache Aufgaben brauchen keine künstliche Textlänge. **Nicht** parallel identische 400–600-Wort-Blöcke in `noindex`-Apps als vermeintlichen SEO-Gewinn verstecken.
+
+### Themen-Pillars und Cluster-Ideen (Hypothesen, vor Skalierung anhand GSC/Keyword-/Wettbewerbsdaten priorisieren)
+
+| Tool / Hauptseite | Absichten, Formate und Erweiterungen |
+|---|---|
+| Backform | „Springform 26 auf 24“, 20→28 Faktor 1,96, 26→28 Faktor ≈1,16; 18/20/22/24/26/28/30-cm-Matrix; 25-/30-cm-Kastenformen; Kastenform↔Springform; Muffinform/Backblech, Teighöhe/Volumen; Backzeit ist **nicht** allein geometrisch bestimmbar |
+| Parkplatz | Parkplatz wiederfinden, Ebenen-/Stellplatznotiz, Speichern ohne Standortfreigabe; Parkscheibe-Regeln, Parkzeit überschritten/Bußgeld **nur** mit aktueller, regional passender Rechtsquelle und sauberer Trennung zum Tool |
+| Autokosten | Kosten/Monat und €/km, Fix-/variable Kosten, Tankbuch-Muster, Kilometerleistung, Verschleißannahmen und Vergleichsrechner |
+| Haushaltsbuch | Haushaltsbuch-Vorlage (CSV/Excel/PDF), Einnahmen/Ausgaben, Fixkosten, 50-30-20, Kassenbon/Rückerstattung, Excel-vs.-App-Vergleich und Erklärungen zur OCR-Nachprüfung |
+| Zählerstände | Strom/Gas/Wasser ablesen, Foto/Dokumentation, Auszugsübergabe-Vorlage, Verbrauchsvergleich, Zählerwechsel und Gas-m³-Umrechnung nur mit tatsächlichen Rechnungsfaktoren |
+| Digitaler Nachlass | sichere Checkliste und Vorlage **ohne** Passwörter im öffentlichen Dokument, Ablauf für Erben/Vollmacht, rechtliche Grenzen, Quellen/Expertise und Hinweis auf Beratung |
+| Umzugskisten | Anzahl Kisten schätzen nur mit Annahmen, QR-Code-Etikett als PDF, Raumliste, druckbare Umzugscheckliste, Scan-/Wiederfinden-Prozess |
+| Pflanzenpflege | Gießplan-Muster, Pflegeintervall ≠ biologischer Bedarf, beispielhafte Monstera-Pflege nur mit verlässlicher Quelle und Feuchtigkeits-/Saisonhinweis |
+| Tiergesundheit | dokumentierbare Muster für Impfpass-/Tierarztbesuch, keine pauschalen Impffristen ohne seriöse tierärztliche Quellen, Kalender/Erinnerung erklären |
+| WG | Putzplan-Vorlage, WG-Kostenanteile, selektive Beteiligung am Einkauf, Kostenausgleich, Rotationsplan, Verantwortlichkeiten |
+| Verliehene Dinge | Inventarliste, Leihdauer/Rückgabetermin, Werkzeug-/Buchbeispiel, Rückgabe-Workflow |
+| Wunschliste | Eigene Amazon-Wunschliste freigeben vs. Toolya-Verzeichnis; Sichtbarkeit, Identitätsverifikation, Lösch-/Widerspruchsweg; keine automatisch generierten Personen-SEO-Seiten |
+| Dashboard | Organisation/Favoriten, lokale Speicherung vs. Konto-Sync, Verweise auf konkrete Tool-Aufgaben |
+
+### Programmatic SEO – nur nach Qualitätsgate
+
+Für Backform zuerst **eine belastbare dynamische Rechnerfunktion und eine statische Faktormatrix**. Danach einzelne ausführliche Kombinationen nur bei nachgewiesener Nachfrage, einzigartiger Rechnung und fachlicher Differenzierung. Die Umrechnung von runden Formen nutzt bei gleicher Teighöhe Fläche ∝ Durchmesser²; rechteckige Backbleche/Kastenformen erfordern Länge × Breite bzw. Volumenannahmen. **Keine** Doorway-Seiten mit bloß ausgetauschten Zahlen und kein Anschein einer exakten Backzeitberechnung. Jede neue URL selbstkanonisch, gut verlinkt, eigenständig hilfreich, in Sitemap nur bei Indexierungsabsicht.
+
+### Vertrauen, Autor und Brand
+
+Über-uns-/Autorenseite mit realen, belegbaren Angaben, verständlicher Methodik („So rechnen unsere Tools“), Kontakt, Datum und Änderungsverlauf, korrekt formulierten Grenzen der Finanzen-/Rechts-/Gesundheitsthemen. Bei YMYL-nahen Inhalten qualifizierte aktuelle Quellen (Verbraucherzentrale, amtliche Hinweise, fachliche Leitlinien), rechtliche Texte fachlich prüfen lassen. Marke konsistent **„Toolya – Alltags-Tools“**, einheitliche Wortmarke, bestehende Maskottchenwahl respektieren. `sameAs` nur bei echten eigenen Profilen; keine Wikipedia-/Wikidata-Seite ohne deren Relevanzkriterien künstlich anlegen.
+
+## 8. Datenschutz, Wunschlisten und Affiliate – Schutz vor Wachstum
+
+- Importierte Wunschlistendaten / Personennamen / nicht verifizierte Identitäten wurden in [A1] als erhebliches DSGVO-/Reputationsrisiko bewertet. Das ist ein **Prüfhinweis**, kein abgeschlossenes Rechtsgutachten. Datenherkunft, Rechtsgrundlage, Transparenz, Sichtbarkeit, Anspruchs-/Löschweg, Datensparsamkeit und Zweckbindung zusammen mit realem Live-Verhalten erheben. Bis Klärung **keine** neuen personenbezogenen SEO-Landingpages und kein massenhafter Import/Index-Aufbau.
+- Identitäts- und Publikationsstatus von Wunschprofilen explizit: öffentlich sichtbar/Opt-in? verifiziert? privat? gelöschte Profile korrekt 404/410 bzw. geeigneter Status; keine öffentlich lesbaren nicht freigegebenen Daten. Datenbank-RLS und Server-APIs unabhängig von `noindex` schützen.
+- Keine nicht autorisierten Änderungen an Produktivdaten, keine Testpersonen/-listen oder fiktiven Datensätze in Produktions-Supabase; für Screenshots nur lokale neutrale Muster. Konten, Schlüssel, Freigaben, Zahlungen und Sync geschützt lassen.
+- Amazon-Partnerlinks: unmittelbare, verständliche Werbe-/Affiliate-Kennzeichnung bei entsprechenden Links und `rel="sponsored"` (je nach Link auch `nofollow`), kein dünner Affiliate-Content ohne eigenständigen Nutzen. Impressum und Datenschutzerklärung mit tatsächlichem Systemzustand und juristischer Prüfung abgleichen.
+
+## 9. GEO: Maschinenlesbarkeit, Belege und Messbarkeit
+
+**Stärken aus [A1]:** direkte Definitionssätze, ehrliche Einschränkungen, Beispiele mit realistischen Zahlen, FAQs. **Schwächen:** wichtige Lösung nur in JS/Login, wenig überprüfbare Tabellen/Quellen/Originalbelege, schwache Drittverweise/Brand-Abgrenzung, fehlende datierte Methodik, wenig direkte Vergleiche.  
+**Maßnahmen:** öffentliche Antwortabsätze, überprüfbare Formeln, einfach lesbare HTML-Tabellen, echte Muster/Visuals, Methodik/Quellen, Vergleichsartikel bei realem Bedarf, semantische Gliederung und menschlich nutzbare Site-Architektur. KI-Crawler-Policy dokumentieren. Keine unrealistische Garantie von Zitationen durch Schema oder `llms.txt`.
+
+**GEO-Monitoring:** Für definierte deutschsprachige Prompts, Markt und Engine festhalten: Datum, Suchantwort ja/nein, Toolya genannt ja/nein, URL verlinkt ja/nein, korrekt wiedergegeben ja/nein. „Keine KI-Antwort“ separat von „KI-Antwort ohne Toolya“. Vergleich nur bei gleicher Methodik und mit dokumentierten Limits. OAI-SearchBot und GPTBot erfüllen unterschiedliche Zwecke.
+
+**Externe Erwähnungen, wenn Assets echten Nutzen besitzen:** Product Hunt, thematisch passende deutsche Communitys (z. B. r/Kochen, r/Backen, r/Finanzen) nur transparent, regelkonform und mit relevantem Beitrag statt Werbespam; kuratierte Tools-/Alternativenverzeichnisse, passende Backblogs und Umzugs-/Verbraucherseiten, Gastbeiträge, lokale/Tech-Medien, ggf. Produktdemos/Shortvideos. Kein gekaufter Linkaufbau und keine unbelegte KI-„Trainingssignal“-Wirkung. Erst Backlink-Baseline, dann seriöse Outreach-Priorisierung.
+
+## 10. Ergänzende Wettbewerbsbeobachtungen aus [A3]
+
+- Backform: Online-Wettbewerber UniTools, Rasterkontor, Smartasty liefern direkte Rechner/Tabellen. Ein **sofort rechnender** Faktor ist für diese Suchintention wichtiger als lange Einführung.
+- Parkplatz: Google Maps kann Parkorte speichern. Toolya muss Unterschiede klar und wahrheitsgemäß zeigen, z. B. konkrete Stellplatz-/Ebenenotizen und Bedienung im Browser, soweit vorhanden.
+- Wunschlisten: etablierte Amazon-Ratgeber dominieren Informationsanfragen; Toolya benötigt transparentes, rechtmäßiges Unterscheidungsmerkmal. Umzug: QR-Etiketten mit Download und Scan-Demo statt vager Produktbeschreibung.
+- Zähler/WG: EnergieCheck und Flatastic sind vergleichbare Produkte. Toolya sollte konkrete, schnell lösbare Mikro-Aufgaben erklären.
+
+**Wettbewerbs- und Suchintent-Listen sind Hypothesen**, keine gemessenen Suchvolumina oder Positionen. SEO-Tools (OpenSEO, Ahrefs) dürfen zum Priorisieren verwendet werden, vorhandene Limits/offene Daten müssen berichtet werden.
+
+## 11. KPI-System & Definition of Done
+
+| KPI | Quelle | Definition |
+|---|---|---|
+| Kanonische Indexierbarkeit | Live-Crawl + GSC/Bing | 200, einzigartiger Canonical, keine versehentliche `noindex`, intern erreichbar, Sitemap nur passende Ziele |
+| Reduzierte Risikorouten | HTTP-/HTML-/Auth-Tests | Alle 16 Alt-Wishlist- und 3 Estate-Hilfsrouten einzeln klassifiziert und sicher behandelt |
+| Öffentliche Tool-Nutzbarkeit | Browser-/E2E-Test | Backform-Basisrechnung ohne Konto; weitere öffentliche Funktionen nur nach Sicherheitsprüfung |
+| Web-Vitals | Lighthouse (Labor) + CrUX/GSC (Feld) | LCP/INP/CLS pro Gerät vor/nach, Feldziele 2,5 s/200 ms/0,1 am p75 |
+| Organische Reichweite | GSC/Bing | Klicks, Impressionen, CTR, Position nach URL, Land, Gerät; nicht bei fehlender API-Zugänglichkeit schätzen |
+| GEO-Sichtbarkeit | Feste Prompt-Stichprobe + Bing AI Performance soweit verfügbar | Markennennung, echte Quellenlinks, Korrektheit, Prompt-/Modell-/Zeitbezug |
+| Nutzung | nur vorhandene rechtmäßige Analytics | Tool-Starts, erfolgreiche Umrechnungen, freiwillige Sync-Anmeldungen; ohne personenbezogene Überinstrumentierung |
+| Qualität | manuelle Redaktion & E2E | Rechnerbeispiele korrekt; Tastatur/Mobil; Quellen und Updatezeitpunkte; keine privaten Daten in Beispielen |
+
+**Vergleichsfenster:** Für identische URLs/Queries 28 Tage vor vs. 28 Tage nach Rollout, mit Saison-/Geräte-/Länderhinweisen; nicht Rankings in kurzer Zeit versprechen. Jede Phase braucht: PR mit Diff, reproduzierbare Tests, Deploy-URL, Live-HTTP-/Canonical-/Robots-Check, Changelog und aktualisierte Maßnahmenliste.
+
+## 12. Verweise zum Ausgangsmaterial
+
+1. **[A1]** Vollständiger SEO-&-GEO-Audit im aktuellen Chat (Strategie, Technik, Content, GEO, 1–12-Monats-Maßnahmen).
+2. **[A2]** Abschnitt „4. Priorisierter Umsetzungsplan“ im aktuellen Chat (Woche 1, 2–3, Monat 1–2); es lagen keine weiteren Abschnitte dieses Audits vor.
+3. **[A3]** `Toolya-SEO-GEO-Audit-2026-11-18.md` aus vorherigem Chat „SEO Toolya Gesamt“, 150 Zeilen, mit URL-Einzelinventar, 12 technischen Tickets T01–T12, 18 redaktionellen Seiten und 30–90-Tage-Messplan. Git-Referenz `43f8664`. Zur vollständigen historischen Einzelauflistung der 69 Live-Abfragen dient diese Quelldatei; die kritischen Varianten und alle 18 kanonischen Ziele sind oben explizit aufgenommen.
+4. **[G]** Lesender Repo-Abgleich vom 18.11.2026: `main` bei `4e2bcc9`; `compare 43f8664...main`; Dateien `robots.txt`, `sitemap.xml`, `backform-rechner/index.html`, `tools/baking/index.html`.
+5. **[E]** Google Search Central: [Sitemaps](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap), [noindex](https://developers.google.com/search/docs/crawling-indexing/block-indexing), [Canonical](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls), [FAQ/HowTo-Einschränkung](https://developers.google.com/search/blog/2023/08/howto-faq-changes).
+
+**Nächster Schritt:** `toolya-roadmap.md` ist der eigenständig ausführbare Auftrag für ChatGPT Work, mit Aufgaben-IDs, Abhängigkeiten, Sicherheitsgates und Abnahmekriterien. Dieses Dokument dient als Quellen-/Entscheidungssammlung; ein neuer Ist-Stand schlägt ältere Befunde und muss dokumentiert werden.
+
+## Anhang A – vollständiges URL-Statusinventar aus [A3]
+
+**Zeitbezug:** Rohbefund des Git-Stands `43f8664`, nicht automatisch Live-Zustand nach späteren Deployments. Ein einzelnes `–` bedeutet in diesem historischen Check „kein entsprechender Wert sichtbar“, nicht „kein Schutz für sämtliche Dienste“. Die App-/Hilfsseiten sind **keine** automatische Sitemap-Empfehlung.
+
+| Live-URL | HTTP | Canonical (relativ) | Robots-Meta | Befund |
+|---|---:|---|---|---|
+| `/` | 200 | `/` | `index,follow` | Kanonische öffentliche Startseite |
+| `/admin-stats-dashboard/index.html` | 200 | – | `noindex,nofollow` | Admin-Arbeitsansicht |
+| `/admin-stats-dashboard/wishlist-finder.html` | 200 | – | `noindex,nofollow` | Admin-Arbeitsansicht |
+| `/amazon-wunschliste-veroeffentlichen/` | 200 | gleich | – | Kanonisch |
+| `/amazon-wunschliste-veroeffentlichen/index.html` | 200 | `/amazon-wunschliste-veroeffentlichen/` | – | URL-Variante |
+| `/autokosten/` | 200 | gleich | – | Kanonisch |
+| `/autokosten/index.html` | 200 | `/autokosten/` | – | URL-Variante |
+| `/backform-rechner/` | 200 | gleich | – | Kanonisch |
+| `/backform-rechner/index.html` | 200 | `/backform-rechner/` | – | URL-Variante |
+| `/dashboard/index.html` | 200 | – | `noindex,follow` | Privates Dashboard |
+| `/digitaler-nachlass/` | 200 | gleich | – | Kanonisch |
+| `/digitaler-nachlass/index.html` | 200 | `/digitaler-nachlass/` | – | URL-Variante |
+| `/haushaltsbuch/` | 200 | gleich | – | Kanonisch |
+| `/haushaltsbuch/index.html` | 200 | `/haushaltsbuch/` | – | URL-Variante |
+| `/index.html` | 200 | `/` | `index,follow` | Root-Variante |
+| `/legal.html` | 200 | gleich | – | Kanonisch |
+| `/mascots.html` | 200 | gleich | – | Kanonisch |
+| `/parkplatz-merker/` | 200 | gleich | – | Kanonisch |
+| `/parkplatz-merker/index.html` | 200 | `/parkplatz-merker/` | – | URL-Variante |
+| `/pflanzenpflege/` | 200 | gleich | – | Kanonisch |
+| `/pflanzenpflege/index.html` | 200 | `/pflanzenpflege/` | – | URL-Variante |
+| `/privacy.html` | 200 | gleich | – | Kanonisch |
+| `/tiergesundheit/` | 200 | gleich | – | Kanonisch |
+| `/tiergesundheit/index.html` | 200 | `/tiergesundheit/` | – | URL-Variante |
+| `/tools/baking/index.html` | 200 | gleich | `noindex,follow` | Interne App |
+| `/tools/budget/index.html` | 200 | gleich | `noindex,follow` | Interne App |
+| `/tools/car/index.html` | 200 | gleich | `noindex,follow` | Interne App |
+| `/tools/estate/handover.html` | 200 | – | – | P0-/P1-Prüffall |
+| `/tools/estate/heirs.html` | 200 | – | – | P0-/P1-Prüffall |
+| `/tools/estate/index.html` | 200 | – | `noindex,nofollow,noarchive` | Interne App |
+| `/tools/estate/print-key.html` | 200 | – | – | P0-/P1-Prüffall |
+| `/tools/housemates/index.html` | 200 | gleich | `noindex,follow` | Interne App |
+| `/tools/loans/index.html` | 200 | gleich | `noindex,follow` | Interne App |
+| `/tools/meters/index.html` | 200 | gleich | `noindex,follow` | Interne App |
+| `/tools/moving/index.html` | 200 | gleich | `noindex,follow` | Interne App |
+| `/tools/parking/index.html` | 200 | gleich | `noindex,follow` | Interne App |
+| `/tools/pet-health/index.html` | 200 | gleich | `noindex,follow` | Interne App |
+| `/tools/plants/index.html` | 200 | gleich | `noindex,follow` | Interne App |
+| `/tools/wishes/assistant.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/tools/wishes/bookmarks.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/tools/wishes/cockpit.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/tools/wishes/collection.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/tools/wishes/dashboard.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/tools/wishes/discover.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/tools/wishes/feed.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/tools/wishes/gift-analytics.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/tools/wishes/gift-tasks.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/tools/wishes/index.html` | 200 | `/tools/wishes/public.html` | – | Meta-Refresh zum Verzeichnis |
+| `/tools/wishes/notifications.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/tools/wishes/occasions.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/tools/wishes/planner.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/tools/wishes/profile.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/tools/wishes/public.html` | 200 | gleich | – | Kanonisches öffentliches Wunschlisten-Verzeichnis |
+| `/tools/wishes/report.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/tools/wishes/reservations.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/tools/wishes/social.html` | 200 | – | – | Alt-Wishlist-Prüffall |
+| `/toolya-dashboard/` | 200 | gleich | – | Kanonisch |
+| `/toolya-dashboard/index.html` | 200 | `/toolya-dashboard/` | – | URL-Variante |
+| `/umzugskisten/` | 200 | gleich | – | Kanonisch |
+| `/umzugskisten/index.html` | 200 | `/umzugskisten/` | – | URL-Variante |
+| `/verliehene-dinge/` | 200 | gleich | – | Kanonisch |
+| `/verliehene-dinge/index.html` | 200 | `/verliehene-dinge/` | – | URL-Variante |
+| `/wg-organisator/` | 200 | gleich | – | Kanonisch |
+| `/wg-organisator/index.html` | 200 | `/wg-organisator/` | – | URL-Variante |
+| `/zaehlerstaende/` | 200 | gleich | – | Kanonisch |
+| `/zaehlerstaende/index.html` | 200 | `/zaehlerstaende/` | – | URL-Variante |
+
+Die in [A3] außerdem getestete unbekannte URL ergab den erwarteten **404**-Status. Die 69 Live-Abfragen aus [A3] umfassten auch Robots-, Sitemap- und HTTP-/www-Stichproben; die Tabelle gibt die dort einzeln gelisteten HTML-Routen wieder.
