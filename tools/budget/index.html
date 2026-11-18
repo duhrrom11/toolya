@@ -13,6 +13,7 @@
     <title>Haushaltsbuch mit Kassenbon-Scanner | Toolya</title>
     <meta name="description" content="Kostenloses Haushaltsbuch mit Kassenbon-Scanner: Einnahmen und Ausgaben erfassen, Budgets planen, Belege digitalisieren und Garantiefristen verwalten.">
     <link rel="canonical" href="https://toolya.app/tools/budget/index.html">
+    <meta name="robots" content="noindex,follow">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -106,6 +107,7 @@
     <div class="b3-tool-title">
       <h1>Haushaltsbuch mit Kassenbon-Scanner</h1>
       <p>Ausgaben erfassen, Budget planen, Belege scannen und Garantien verwalten</p>
+      <p><a href="/haushaltsbuch/" class="underline">Schritt-für-Schritt-Anleitung zum Haushaltsbuch</a></p>
     </div>
     <button type="button" class="b3-settings-trigger" id="settingsBtn" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()">⚙</button>
   </div>
@@ -196,7 +198,7 @@
             <!-- Kategorie-Budgets -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
-                    <h3 class="font-bold text-base text-gray-900">🎯 Monats-Budgets & Limite</h3>
+                    <h3 class="font-bold text-base text-gray-900">🎯 Monatsbudgets im Blick</h3>
                     <button onclick="openBudgetModal()" class="px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold b3-action b3-outline">⚙️ Budgets anpassen</button>
                 </div>
                 <div id="budgetProgressList" tabindex="0" role="region" aria-label="Monatsbudgets" tabindex="0" role="region" aria-label="Monatsbudgets" class="space-y-3 max-h-56 overflow-y-auto pr-1">
@@ -208,7 +210,7 @@
         <!-- Section: Sparziele Widget -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="goals" id="b3-goals">
             <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="font-bold text-base text-gray-900">🐷 Sparschwein & Sparziele</h3>
+                <h3 class="font-bold text-base text-gray-900">🐷 Sparziele im Blick</h3>
                 <button onclick="openAddGoalModal()" class="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-sm b3-action">+ Neues Sparziel</button>
             </div>
             <div id="savingsGoalsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -219,7 +221,7 @@
         <!-- Erfassung & Bearbeitung Formular -->
         <div id="formCard" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="form">
             <div class="flex justify-between items-center border-b pb-3 b3-budget-form-heading">
-                <h2 id="formTitle" class="text-lg font-bold text-gray-900">✍️ Neue Buchung / Kassenbon erfassen</h2>
+                <h2 id="formTitle" class="text-lg font-bold text-gray-900">✍️ Einnahme oder Ausgabe erfassen</h2>
                 <button id="cancelEditBtn" onclick="cancelEdit()" class="hidden px-3 py-1 bg-gray-200 hover:bg-gray-300 text-xs font-bold rounded-lg text-gray-700 b3-action b3-outline">✕ Abbrechen</button>
             </div>
 
@@ -1222,7 +1224,7 @@ async function toolyaCloudBoot(tool) {
             document.getElementById('uploadGalleryPreview').replaceChildren();
             document.getElementById('canvasEditor').classList.add('hidden');
             document.getElementById('ocrStatus').classList.add('hidden');
-            document.getElementById('formTitle').innerText = "✍️ Neue Buchung / Kassenbon erfassen";
+            document.getElementById('formTitle').innerText = "✍️ Einnahme oder Ausgabe erfassen";
             document.getElementById('saveBtn').innerText = "Buchung / Kassenbon speichern";
             document.getElementById('cancelEditBtn').classList.add('hidden');
             document.getElementById('receiptDate').valueAsDate = new Date();
