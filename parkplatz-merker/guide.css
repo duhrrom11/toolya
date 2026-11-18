@@ -6,6 +6,17 @@
   line-height: 1.6;
 }
 body { margin: 0; overflow-wrap: anywhere; }
+.guide-skip {
+  position: absolute;
+  inset-block-start: .5rem;
+  inset-inline-start: .5rem;
+  z-index: 1;
+  background: white;
+  padding: .5rem 1rem;
+}
+.guide-skip:not(:focus) { clip-path: inset(50%); }
+main:focus-visible { outline: 2px solid #075b72; outline-offset: -2px; }
+@media print { .guide-skip { display: none; } }
 header, main, footer { max-width: 54rem; margin-inline: auto; padding: 1.25rem; }
 header, footer, nav { display: flex; gap: .75rem 1.5rem; align-items: center; flex-wrap: wrap; }
 header { justify-content: space-between; }
