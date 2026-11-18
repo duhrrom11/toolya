@@ -30,7 +30,7 @@ Gewicht = relative Arbeitsgröße (1 klein, 2 mittel, 3 groß, 5 sehr groß), ke
 | C02 | P3 – Inhalte | 3 | Datenschutz/Impressum | Firebase-Tresor und optionales Konto veraltet | Technisch korrekter prüfpflichtiger Entwurf | Dienste/Fakten erfassen; fehlende Rechtspflichtangaben markieren | 4 h | C01; Betreiberangaben/juristische Prüfung | hoch | Offen | privacy.html Abschnitte 3/4 |
 | C03 | P3 – Inhalte | 2 | Plattformtexte | Alte Namen und teils technische Nutzertexte | Einheitliche verständliche Sprache | Buttons, Fehler, Leerzustände und Hilfen prüfen | 4 h | C01 | niedrig | Offen | Noch keine vollständige Textabnahme |
 | X01 | Weitere Optimierungen | 3 | RLS/RPC/Sicherheit | Advisors und Metadaten untersucht, kein bestätigter P0 | Owner-/Rollen-/Speichergrenzen wirksam | Gezielte isolierte Negativtests und Rechteprüfung | 1 Tag | Supabase; isolierte DB | hoch | In Arbeit | Sicherheitsfachanhang in Erstellung |
-| X02 | Weitere Optimierungen | 2 | WG-Speichern | Client UPDATE, live keine UPDATE-Spaltenrechte | Eigene Inhalte speichern, owner_id unveränderbar | Isoliert reproduzieren und minimalen Rechtefix vorbereiten | 3 h | X01 | hoch | In Arbeit | Live-Spaltenrechte und RLS bestätigt; isolierte PostgreSQL-Regression und Migration vorbereitet |
+| X02 | Weitere Optimierungen | 2 | WG-Speichern | Client UPDATE, live keine UPDATE-Spaltenrechte | Eigene Inhalte speichern, owner_id unveränderbar | Isoliert reproduzieren und minimalen Rechtefix vorbereiten | 3 h | X01 | hoch | Verifiziert | PR #131; isolierter PostgreSQL-Lauf 44314006466; produktive Migrationsversion 20261118133027 und lesender Rechteabgleich |
 | X03 | Weitere Optimierungen | 2 | Öffentliche Profile | Public SELECT auch ohne Veröffentlichung | Veröffentlichungsabsicht und sichtbare Daten stimmen überein | Policy/Produktentscheidung und Datenminimierung prüfen | 3 h | X01; Wishlist-UI | hoch | Offen | Live wishlist_profiles policy |
 | X04 | Weitere Optimierungen | 2 | Abschluss/Monitoring | Alte Releaseberichte, noch kein aktueller Gesamtnachweis | Aktueller Release und offene Grenzen dokumentiert | CI/Pages/live bytegleich prüfen und Backlog aktualisieren | 2 h | Arbeitspakete abgeschlossen | mittel | Offen | docs/TOOLYA-RELEASE-STATUS historisch |
 | X05 | Weitere Optimierungen | 1 | Galerie/Analytics | Consent klassisch und als Modul geladen | Einmalige Initialisierung je Seitenaufruf | Doppelladung isoliert bestätigen und idempotent absichern | 1 h | mascots.html; Consent | mittel | Offen | Unabhängige Codeprüfung; noch kein Laufzeitnachweis |
@@ -51,9 +51,9 @@ Gewicht = relative Arbeitsgröße (1 klein, 2 mittel, 3 groß, 5 sehr groß), ke
 | P1 – Design-Konsistenz | 14/20 | 70 % | In Arbeit |
 | P2 – SEO | 0/9 | 0 % | Offen |
 | P3 – Inhalte & Rechtstexte | 0/8 | 0 % | Offen |
-| Weitere Optimierungen | 0/10 | 0 % | In Arbeit |
+| Weitere Optimierungen | 2/10 | 20 % | In Arbeit |
 
-26 übergeordnete Aufgaben: 12 verifiziert, 14 nicht abgeschlossen. Die Aufteilungen D05 → D05a (1) + D05b (4) und D06 → D06a (1) + D06b (2) verändern das Gesamtgewicht nicht. Keine globale Prozentzahl für den noch wachsenden Prüfumfang.
+26 übergeordnete Aufgaben: 13 verifiziert, 13 nicht abgeschlossen. Die Aufteilungen D05 → D05a (1) + D05b (4) und D06 → D06a (1) + D06b (2) verändern das Gesamtgewicht nicht. Keine globale Prozentzahl für den noch wachsenden Prüfumfang.
 
 ## Fortsetzungsstand
 
@@ -328,3 +328,9 @@ D09 [PR #129](https://github.com/duhrrom11/toolya/pull/129) als `fdec698` veröf
 [PR #130](https://github.com/duhrrom11/toolya/pull/130) korrigiert die doppelte Wortmarke auf der Nachlass-Seite für Vertrauenspersonen. Abgenommener Header, Formularansichten bei drei Breiten und vorhandene isolierte Sicherheitsprüfungen erfolgreich. Gemergt als `a72179d`. Das [Pages-Deployment](https://github.com/duhrrom11/toolya/actions/runs/44313466111) war erfolgreich. Der vollständige Live-Abgleich ist im Veröffentlichungsnachweis des PR verlinkt. D05b bleibt für die übrigen Sonderzustände und die Live-Abnahme angemeldeter Ansichten offen.
 
 P1 steht bei 14/20 = 70 %. Insgesamt 12 von 26 Maßnahmen verifiziert. X02 vorgezogen, weil fehlende Rechte das Speichern für berechtigte WGs verhindern können. Eine Migration für ausschließlich Inhalt und Revision sowie eine isolierte PostgreSQL-Prüfung sind vorbereitet. Nächste Aktion: isolierte Prüfung und erst danach gezielte Migration und lesenden Rechteabgleich. Anschließend D05b/D06b abschließen und den P2-Fokus auf den Widerspruch zwischen Sitemap und Anmeldeweiterleitungen legen.
+
+## Verifizierte WG-Korrektur und nächste P1-Abnahme – 18.11.2026
+
+X02 mit [PR #131](https://github.com/duhrrom11/toolya/pull/131) integriert und auf dem aktiven Toolya-Backend als Migration `20261118133027_restore_wg_save_permissions` angewendet. PostgreSQL 17 reproduziert das Ausgangsproblem. Nach der Migration können Besitzer und Mitglieder den Inhalt mit aktueller Revision speichern. Veraltete Revision, unbeteiligte oder anonyme Konten und Identitätsänderungen sind in der Isolation geprüft. Die Rücknahme der Spaltenfreigabe wurde ebenfalls geprüft. Produktiver Katalogabgleich bestätigt zwei erlaubte Inhalts-/Revisionsspalten, null Identitätsspalten, null anonyme Änderungsrechte und weiterhin aktive RLS. Keine produktive Schreibprobe. [CI](https://github.com/duhrrom11/toolya/actions/runs/44314006466)
+
+D05b: Für die vergrößerten Bildansichten in Autokosten, Zählerständen, Umzugskisten, Parkplatz und Tiergesundheit sind beschreibende Alternativtexte ergänzt. Die Auslieferungsprüfung soll jetzt alle 39 HTML-Routen und insgesamt 63 öffentliche Ressourcen mit GitHub vergleichen. CI und Live-Abgleich für diesen Stand folgen im zugehörigen PR. Weiter offen bleiben die vollständige Tastaturbedienung der Foto-Modalfenster und die Live-Ansicht privater Kontozustände. P1 14/20. Weitere Optimierungen 2/10. Insgesamt 13 von 26 Maßnahmen verifiziert.

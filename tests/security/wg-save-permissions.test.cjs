@@ -11,7 +11,7 @@ const member = '00000000-0000-4000-8000-000000000002';
 const stranger = '00000000-0000-4000-8000-000000000003';
 const space = '00000000-0000-4000-8000-000000000010';
 const revision = '2030-01-01T00:00:00.000Z';
-const migration = fs.readFileSync('supabase/migrations/20261118133000_restore_wg_save_permissions.sql', 'utf8');
+const migration = fs.readFileSync('supabase/migrations/20261118133027_restore_wg_save_permissions.sql', 'utf8');
 
 (async () => {
   const serviceClient = new Client({ connectionString: service.href });
