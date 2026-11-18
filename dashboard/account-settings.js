@@ -12,7 +12,9 @@ function renderUser(user,error){
  const button=$('userInfo');
  button.classList.toggle('b3-auth-signed-in',!!user);
  button.classList.toggle('b3-auth-signed-out',!user);
- button.textContent=user?'Angemeldet':'Anmelden';
+ button.textContent=user?'Angemeldet':error?'Status unklar':'Nicht angemeldet';
+ $('signedOutControls').hidden=!!user||recoveryActive;
+ $('logoutUser').hidden=!user||recoveryActive;
  button.setAttribute('aria-label',user?'Angemeldet – Kontoeinstellungen öffnen':'Anmelden oder registrieren');
  $('cloudStatus').textContent=user?'✅ Angemeldet':error?'Anmeldestatus gerade nicht verfügbar':'Nicht angemeldet';
 }
@@ -31,7 +33,8 @@ function openSettings(){
  lastFocus=document.activeElement;
  dialog.showModal();
  document.body.classList.add('dashboard-modal-open');
- ($('userInfo').classList.contains('b3-auth-signed-in')?$('cloudStatus'):$('loginEmail')).focus();
+ $('accountSettings').open=true;
+ ($('signedOutControls').hidden?$('accountSettings').querySelector('summary'):$('loginEmail')).focus({preventScroll:true});
 }
 function closeSettings(){
  $('settingsModal').close();
@@ -73,7 +76,7 @@ async function register(){
 }
 async function logout(){
  if(!client)return;
- try{const {error}=await client.auth.signOut();if(error)throw error;++authRequest;renderUser(null);$('loginPassword').value='';message('Abgemeldet.')}
+ try{const {error}=await client.auth.signOut();if(error)throw error;++authRequest;renderUser(null);$('loginPassword').value='';message('Abgemeldet.');if($('settingsModal').open)$('loginEmail').focus({preventScroll:true})}
  catch(error){message('Abmeldung fehlgeschlagen: '+(error?.message||'Bitte erneut versuchen.'))}
 }
 async function reset(){
@@ -85,7 +88,7 @@ async function reset(){
   message('Falls ein Konto für diese E-Mail-Adresse existiert, erhältst du einen Link zum Zurücksetzen des Passworts.');
  }catch{message('Die Anfrage konnte gerade nicht verarbeitet werden. Bitte versuche es später erneut.')}
 }
-function showRecovery(){recoveryActive=true;$('passwordRecoveryPanel').hidden=false;openSettings();$('recoveryPassword').focus()}
+function showRecovery(){recoveryActive=true;$('signedOutControls').hidden=true;$('logoutUser').hidden=true;$('accountSettings').open=true;$('passwordRecoveryPanel').hidden=false;openSettings();$('recoveryPassword').focus()}
 async function saveRecovery(){
  if(!recoveryActive){message('Bitte öffne zuerst den Link aus deiner Passwort-E-Mail.');return}
  const a=$('recoveryPassword'),b=$('recoveryPasswordConfirm');
