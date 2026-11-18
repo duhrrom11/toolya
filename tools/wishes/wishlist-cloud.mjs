@@ -1,5 +1,5 @@
 // The cloud is a small, shuffled discovery preview, not the complete search index.
-export function sampleCloud(entries,limit=42,random=Math.random){
+export function sampleCloud(entries,limit=30,random=Math.random){
  const unique=new Map();
  for(const row of Array.isArray(entries)?entries:[]){
   if(!row||typeof row.display_name!=='string'||!row.display_name.trim()
@@ -11,5 +11,5 @@ export function sampleCloud(entries,limit=42,random=Math.random){
   const n=Number(random()),j=Math.min(i,Math.max(0,Math.floor((Number.isFinite(n)?n:0)* (i+1))));
   [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];
  }
- return shuffled.slice(0,Math.max(0,Math.min(60,Math.floor(limit))));
+ return shuffled.slice(0,Math.max(0,Math.min(30,Math.floor(limit))));
 }
