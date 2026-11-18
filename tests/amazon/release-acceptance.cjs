@@ -26,6 +26,33 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   await page.locator('#refreshCloud').click();
   await page.locator('#wishlistCloud .cloud-word').waitFor();
   await page.locator('.ty-tool-hero-mascot').waitFor();
+  // Wishlist must use the same shared Toolya settings surface, not a minimal fallback.
+  assert.equal(await page.locator('#toolya-display-settings').count(),0,'no standalone fallback settings');
+  assert.equal(await page.locator('#settingsModal .toolya-preferences').count(),1,'shared appearance panel mounted once');
+  await page.locator('#wishlistSettingsBtn').click();
+  assert.equal(await page.locator('#settingsModal').isVisible(),true,'real Wishlist settings open');
+  assert.equal(await page.locator('#settingsAccountTitle').textContent(),'☁️ Mein Konto');
+  assert.equal(await page.locator('#settingsBackupTitle').textContent(),'💾 Datensicherung');
+  assert.equal(await page.locator('#settingsModal .toolya-preferences').count(),1);
+  assert.equal(await page.locator('#settingsAuthFields').isVisible(),true);
+  await page.locator('#settingsForgotPassword').click();
+  assert.match(await page.locator('#settingsAuthMessage').textContent(),/E-Mail-Adresse/);
+  await page.locator('#settingsEmail').fill('offline@example.invalid');
+  await page.locator('#settingsPassword').fill('offline-password');
+  await page.locator('#settingsLogin').click();
+  await page.waitForFunction(()=>document.querySelector('#settingsAccountStatus')?.textContent?.includes('offline@example.invalid'));
+  assert.equal(await page.locator('#settingsAuthFields').isVisible(),false,'account panel responds to sign-in');
+  assert.equal(await page.locator('#settingsLogout').isVisible(),true);
+  await page.locator('#settingsLogout').click();
+  await page.waitForFunction(()=>document.querySelector('#settingsAccountStatus')?.textContent?.includes('Nicht angemeldet'));
+  await page.getByLabel('Begleiter',{exact:true}).selectOption('purple');
+  await page.waitForFunction(()=>document.querySelector('.ty-tool-hero-mascot')?.getAttribute('src')?.includes('_purple_'));
+  await page.locator('#cancelSettingsBtn').click();
+  assert.equal(await page.locator('#settingsModal').isVisible(),false,'close button works');
+  await page.locator('#wishlistSettingsBtn').click();
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#settingsModal').isVisible(),false,'native Escape closes settings');
+
   await page.evaluate(()=>{
     const key='helferlein-toolya-preferences-v1';
     const preferences=JSON.parse(localStorage.getItem(key)||'{}');
