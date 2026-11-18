@@ -19,6 +19,18 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   assert.equal(await page.locator('#countryFilter').count(),1);
   assert.equal(await page.locator('#wishlistCloud .cloud-word').count(),1);
   assert.equal(await page.locator('#results .profile-card').count(),0);
+  assert.equal(await page.locator('#favorites').isVisible(),false,'empty favorites stay compact');
+  assert.equal(await page.locator('#refreshCloud').count(),1);
+  await page.locator('#refreshCloud').click();
+  await page.locator('#wishlistCloud .cloud-word').waitFor();
+  await page.locator('.ty-tool-hero-mascot').waitFor();
+  await page.evaluate(()=>{
+    const key='helferlein-toolya-preferences-v1';
+    const preferences=JSON.parse(localStorage.getItem(key)||'{}');
+    localStorage.setItem(key,JSON.stringify({...preferences,character:'purple'}));
+    window.dispatchEvent(new StorageEvent('storage',{key}));
+  });
+  await page.waitForFunction(()=>document.querySelector('.ty-tool-hero-mascot')?.getAttribute('src')?.includes('_purple_'));
   await page.locator('#search').fill('Ada');await page.locator('#results .profile-card').waitFor();
   assert.equal(await page.locator('#results .profile-card').count(),1);
   await page.locator('#resetFilters').click();await page.locator('#wishlistCloud .cloud-word').waitFor();
