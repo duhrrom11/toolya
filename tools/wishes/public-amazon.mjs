@@ -40,6 +40,7 @@ function card(p,detail=false,preview=false){
 }
 function renderIdeas(root,p){const products=rankProducts(catalog,p).slice(0,3);root.append(text('h3','Vielleicht interessiert dich …'));if(!products.length){root.append(text('p','Entdecke passende Geschenkideen bei Amazon.','muted'));const cats=text('div','','categories');for(const term of (p.interests?.length?p.interests:['Bücher','Wohnen','Geschenke']).slice(0,3))cats.append(affiliateLink(term+' ↗',amazonSearchUrl(term)));root.append(cats);return}const grid=text('div','','products');for(const product of products){const e=text('article','','product');if(product.image_url&&/^https:\/\/(?:[a-z0-9-]+\.)?(?:media-amazon|images-amazon)\.com\//i.test(product.image_url)){const img=document.createElement('img');img.src=product.image_url;img.alt=product.title;img.loading='lazy';img.referrerPolicy='no-referrer';e.append(img)}e.append(text('h3',product.title),affiliateLink('Bei Amazon ansehen ↗','https://www.amazon.de/dp/'+product.asin+'?tag=duhrrom-21'));grid.append(e)}root.append(grid)}
 async function search(){
+ clearTimeout(debounce);
  const g=++generation;
  const retry=$('retrySearch');
  if(document.activeElement===retry)$('search').focus();
@@ -76,7 +77,18 @@ $('deleteProfile').onclick=async()=>{if(!user||!confirm('Dein öffentliches Wuns
 async function authenticate(signup){$('login').disabled=$('signup').disabled=true;try{const email=$('email').value.trim(),password=$('password').value;if(!email||!password)throw new Error('Bitte E-Mail und Passwort eingeben.');const r=signup?await db.auth.signUp({email,password,options:{emailRedirectTo:new URL('./public.html#profile',location.href).href}}):await db.auth.signInWithPassword({email,password});if(r.error)throw r.error;await loadProfile();if(signup&&!r.data.session)status('profileStatus','Bitte bestätige deine E-Mail-Adresse, bevor du dein Profil erstellst.')}catch(e){status('profileStatus',e.message)}finally{$('password').value='';$('login').disabled=$('signup').disabled=false}}
 $('login').onclick=()=>authenticate(false);$('signup').onclick=()=>authenticate(true);$('logoutPublic').onclick=async()=>{const r=await db.auth.signOut();if(r.error)status('profileStatus','Abmelden fehlgeschlagen.');else await loadProfile()};$('addList').onclick=()=>listField()?.querySelector('[name=name]').focus();$('previewProfile').onclick=()=>{try{const p=payload();if(!p)return;$('previewContent').replaceChildren(card(p,true,true));$('previewDialog').showModal()}catch(e){status('profileStatus',e.message)}};$('closePreview').onclick=()=>$('previewDialog').close();
 $('retrySearch').onclick=search;
-let debounce;$('search').oninput=()=>{clearTimeout(debounce);debounce=setTimeout(()=>{page=0;search()},250)};for(const id of['countryFilter','occasionFilter','interestFilter'])$(id).onchange=()=>{page=0;search()};$('resetFilters').onclick=()=>{$('search').value='';for(const id of['countryFilter','occasionFilter','interestFilter'])$(id).value='';page=0;search()};$('prevPage').onclick=()=>{page=Math.max(0,page-1);search()};$('nextPage').onclick=()=>{page++;search()};
+let debounce;
+$('search').oninput=()=>{
+ clearTimeout(debounce);
+ ++generation;
+ page=0;
+ $('retrySearch').hidden=true;
+ $('prevPage').disabled=$('nextPage').disabled=true;
+ $('results').replaceChildren();
+ status('searchStatus','Profile werden gesucht …');
+ debounce=setTimeout(search,250);
+};
+for(const id of['countryFilter','occasionFilter','interestFilter'])$(id).onchange=()=>{page=0;search()};$('resetFilters').onclick=()=>{$('search').value='';for(const id of['countryFilter','occasionFilter','interestFilter'])$(id).value='';page=0;search()};$('prevPage').onclick=()=>{page=Math.max(0,page-1);search()};$('nextPage').onclick=()=>{page++;search()};
 amazonSearch($('mainAmazonSearch'),'Bei Amazon nach Geschenkideen suchen');for(const [icon,name,term]of[['📚','Bücher','Geschenke Bücherfans'],['🌻','Garten','Gartenzubehör'],['🍼','Baby','Babygeschenke'],['💍','Hochzeit','Hochzeitsgeschenke']]){const a=text('a','','category');a.append(text('span',icon),document.createTextNode(name+' ↗'));a.href=amazonSearchUrl(term);a.target='_blank';a.rel='noopener noreferrer sponsored';$('categories').append(a)}
 try{const r=await fetch('./public-products.json');if(r.ok)catalog=await r.json()}catch{}
 renderFavorites();db.auth.onAuthStateChange(event=>{if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event))setTimeout(loadProfile,0)});window.addEventListener('storage',e=>{if(e.key===key){favorites=readFavorites();renderFavorites()}});await Promise.all([loadProfile(),filters(),search(),detail()]);
