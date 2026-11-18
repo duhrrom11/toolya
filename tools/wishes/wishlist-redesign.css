@@ -1,0 +1,164 @@
+/* Wishlist A+B: compact search-first landing page and living discovery cloud.
+   This stylesheet deliberately does not change shared Toolya headers or the homepage. */
+body.wishlist-redesign{
+ --wish-navy:#142c4d;--wish-teal:#087f91;--wish-cyan:#dcf8fb;
+ background:linear-gradient(150deg,#f7fbff 0%,#f5f8fd 55%,#f9f3fd 100%);
+ color:var(--wish-navy);
+}
+body.wishlist-redesign main{max-width:1140px;padding:0 clamp(12px,2vw,22px) 32px}
+body.wishlist-redesign main>section{margin:18px 0;border-radius:25px;box-shadow:0 12px 36px #264e6510}
+body.wishlist-redesign .ty-tool-hero[data-tool=wishes]{
+ width:min(1140px,calc(100% - 24px));max-width:calc(100% - 24px);
+ margin:14px auto 8px;border-radius:29px;
+ --ty-accent:#0a8997;--ty-soft:#eee5f8;
+ background:radial-gradient(ellipse at 76% 75%,#f6e8f7 0%,transparent 48%),
+ radial-gradient(ellipse at 8% 5%,#d8f7fb 0%,transparent 55%),#f9fcff;
+ border-color:#d0e8ed;
+ box-shadow:0 18px 48px #285b7117;
+}
+body.wishlist-redesign .ty-tool-hero[data-tool=wishes] .ty-tool-hero-inner{
+ min-height:240px;padding:clamp(20px,3.4vw,42px);gap:clamp(12px,5vw,56px)
+}
+body.wishlist-redesign .ty-tool-hero[data-tool=wishes] h1{
+ max-width:720px;font-size:clamp(29px,4.5vw,51px);
+ line-height:1.13;letter-spacing:-.045em;color:#15294b
+}
+body.wishlist-redesign .ty-tool-hero[data-tool=wishes] p{
+ max-width:640px;font-size:clamp(14px,1.7vw,18px);line-height:1.55;color:#435a70
+}
+body.wishlist-redesign .ty-tool-hero[data-tool=wishes] .ty-tool-hero-mascot{
+ flex:0 0 clamp(135px,21vw,235px);width:clamp(135px,21vw,235px);
+ height:clamp(150px,22vw,245px);object-fit:contain
+}
+body.wishlist-redesign>header{padding:0 14px 5px;max-width:1140px}
+body.wishlist-redesign>header .b3-tool-title{display:none}
+body.wishlist-redesign .public-wish-nav{justify-content:center;align-items:center;gap:8px}
+body.wishlist-redesign .public-wish-nav a{
+ min-height:40px;padding:7px 13px;border-radius:999px;
+ background:#fff;color:#12546d;border:1px solid #d0e5ef;
+ font-size:.89rem;font-weight:700;box-shadow:0 3px 8px #1748630a
+}
+body.wishlist-redesign .public-wish-nav a:hover{background:#e7f8fb}
+body.wishlist-redesign section#discover{
+ background:#fff;border:1px solid #d9eaf0;
+ padding:clamp(20px,3.2vw,34px)
+}
+body.wishlist-redesign .wish-section-heading{display:flex;justify-content:space-between;gap:16px;align-items:center}
+body.wishlist-redesign .wish-section-heading h2{font-size:clamp(24px,3.1vw,34px);margin:4px 0 8px}
+body.wishlist-redesign .wish-section-intro{margin:0 0 12px;color:#54677a;max-width:750px}
+body.wishlist-redesign .wish-search-symbol{
+ font-size:3.2rem;line-height:1;color:#07909c;
+ background:linear-gradient(140deg,#dffaff,#f4eaff);border-radius:20px;
+ display:grid;place-items:center;width:68px;height:68px;flex:0 0 68px
+}
+body.wishlist-redesign .wish-search-label{margin:8px 0 5px;color:#25445e}
+body.wishlist-redesign .wish-search-line{display:flex;gap:12px;align-items:stretch}
+body.wishlist-redesign .wish-search-line input{
+ flex:1;min-width:0;margin:0;padding:16px 18px;
+ border-radius:17px;border:1.5px solid #b8d6e1;background:#fbfdff;
+ font-size:1.05rem
+}
+body.wishlist-redesign .wish-search-line input:focus{border-color:#108e9c;outline:3px solid #b7f0f444}
+body.wishlist-redesign .wish-search-line button{
+ flex:0 0 auto;border-radius:17px;font-size:1rem;
+ background:linear-gradient(110deg,#098e9a,#08778d);
+ box-shadow:0 8px 16px #07859c20
+}
+body.wishlist-redesign .wish-search-line button span{font-size:1.3em}
+body.wishlist-redesign .filters{margin-top:16px;gap:10px;align-items:end}
+body.wishlist-redesign .filters label{
+ margin:0;flex:1 1 170px;min-width:145px;font-size:.9rem;color:#31526d
+}
+body.wishlist-redesign .filters select{padding:11px 12px;margin-top:6px;border-radius:13px}
+body.wishlist-redesign .filters #resetFilters{margin:0;min-height:46px;border-radius:13px}
+body.wishlist-redesign #searchStatus{font-size:.86rem;color:#597184;margin:12px 0 3px}
+body.wishlist-redesign #results{margin-top:16px}
+body.wishlist-redesign #resultPagination{margin-top:14px}
+body.wishlist-redesign #wishlistCloudSection{
+ padding:clamp(20px,3vw,34px);
+ background:linear-gradient(130deg,#e2faff 0%,#f5f8ff 44%,#edf3ff 100%);
+ border:1px solid #cbeaf3;
+}
+body.wishlist-redesign .wish-cloud-top{
+ display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+}
+body.wishlist-redesign .wish-cloud-top h2{font-size:clamp(24px,3vw,33px);margin:5px 0 9px}
+body.wishlist-redesign .wish-cloud-top h2 span{color:#06a3ad}
+body.wishlist-redesign .wish-cloud-top p{color:#43627a;margin:0;max-width:650px}
+body.wishlist-redesign #refreshCloud{
+ border-radius:14px;white-space:nowrap;min-height:44px;
+ color:#087789;border-color:#b7d8e4;background:#fff
+}
+body.wishlist-redesign #refreshCloud span{font-size:1.2rem}
+body.wishlist-redesign .wishlist-cloud{
+ margin-top:22px;min-height:205px;
+ padding:clamp(14px,3vw,35px);
+ gap:clamp(9px,1.6vw,17px);
+ background:
+ radial-gradient(ellipse at 15% 14%,#d5fbfd,transparent 36%),
+ radial-gradient(ellipse at 90% 18%,#f8dcf5,transparent 45%),
+ radial-gradient(ellipse at 50% 87%,#d9f8f1,transparent 50%),#eefcff;
+ border:1px solid #c8eff0;border-radius:27px;box-shadow:inset 0 2px 17px #ffffff90
+}
+body.wishlist-redesign .cloud-entry:nth-child(6n+1) .cloud-word{color:#075b77;background:#e8faff;border-color:#b2e6f0}
+body.wishlist-redesign .cloud-entry:nth-child(6n+2) .cloud-word{color:#573079;background:#f5eaff;border-color:#e5cbf6}
+body.wishlist-redesign .cloud-entry:nth-child(6n+3) .cloud-word{color:#087c68;background:#e7fff5;border-color:#b8e8d9}
+body.wishlist-redesign .cloud-entry:nth-child(6n+4) .cloud-word{color:#9b4c42;background:#fff2e9;border-color:#f3d7c5}
+body.wishlist-redesign .cloud-entry:nth-child(6n+5) .cloud-word{color:#21559b;background:#e8f3ff;border-color:#c7dfff}
+body.wishlist-redesign .cloud-entry:nth-child(6n) .cloud-word{color:#954e73;background:#ffeaf6;border-color:#f2cce4}
+body.wishlist-redesign .cloud-word{
+ border-radius:999px;padding:8px 15px;font-weight:750;
+ box-shadow:0 6px 15px #16527013;border-width:1px
+}
+body.wishlist-redesign .cloud-size-0{font-size:1rem}
+body.wishlist-redesign .cloud-size-1{font-size:1.13rem}
+body.wishlist-redesign .cloud-size-2{font-size:1.29rem}
+body.wishlist-redesign .cloud-size-3{font-size:1.48rem}
+body.wishlist-redesign .cloud-size-4{font-size:1.1rem}
+body.wishlist-redesign .wish-cloud-footnote{margin:18px 0 0;color:#48697e;font-size:.83rem}
+body.wishlist-redesign #favorites{background:#fff;padding:22px 30px}
+body.wishlist-redesign .wish-favorites-heading{display:flex;gap:12px;align-items:center}
+body.wishlist-redesign #favorites h2{margin:0 0 12px;font-size:1.45rem}
+body.wishlist-redesign .wish-count{
+ display:inline-flex;align-items:center;justify-content:center;
+ min-width:28px;height:28px;padding:3px 9px;background:#d8f7f8;
+ border-radius:999px;font-weight:800;color:#067888;margin-bottom:12px
+}
+body.wishlist-redesign section#profile{border:1px solid #d9e5f4;padding:clamp(20px,3vw,32px)}
+body.wishlist-redesign .wish-profile-title{display:flex;gap:17px;align-items:center}
+body.wishlist-redesign .wish-profile-title h2{margin:5px 0 8px}
+body.wishlist-redesign .wish-profile-title p{margin:0 0 13px;color:#56687d}
+body.wishlist-redesign .wish-profile-symbol{
+ display:grid;place-items:center;width:62px;height:62px;flex:0 0 62px;
+ border-radius:18px;color:#fff;font-size:2.5rem;
+ background:linear-gradient(125deg,#0c9da8,#08849a);
+}
+body.wishlist-redesign .faq{border:1px solid #dce6f0}
+body.wishlist-redesign .faq summary{padding:5px 2px;color:#1b3957}
+body.wishlist-redesign .faq details:last-child{padding-bottom:4px}
+@media(max-width:700px){
+ body.wishlist-redesign .ty-tool-hero[data-tool=wishes] .ty-tool-hero-inner{min-height:185px;padding:18px;gap:9px}
+ body.wishlist-redesign .ty-tool-hero[data-tool=wishes] h1{font-size:clamp(25px,6vw,34px)}
+ body.wishlist-redesign .ty-tool-hero[data-tool=wishes] .ty-tool-hero-mascot{
+  flex-basis:clamp(93px,25vw,140px);width:clamp(93px,25vw,140px);
+  height:clamp(125px,32vw,168px)
+ }
+ body.wishlist-redesign .public-wish-nav{gap:6px}
+ body.wishlist-redesign .public-wish-nav a{font-size:.8rem;padding:7px 10px}
+ body.wishlist-redesign .wish-search-line{flex-direction:column}
+ body.wishlist-redesign .wish-search-line button{min-height:48px}
+ body.wishlist-redesign .wish-search-symbol{display:none}
+ body.wishlist-redesign .wish-cloud-top{flex-wrap:wrap}
+ body.wishlist-redesign .wishlist-cloud{gap:9px;padding:14px}
+ body.wishlist-redesign .wishlist-cloud .cloud-word{font-size:clamp(.91rem,3.8vw,1.13rem)}
+ body.wishlist-redesign .wish-profile-symbol{width:44px;height:44px;flex-basis:44px;font-size:1.8rem}
+}
+@media(max-width:420px){
+ body.wishlist-redesign .ty-tool-hero[data-tool=wishes] .ty-tool-hero-inner{padding:12px;gap:6px}
+ body.wishlist-redesign .ty-tool-hero[data-tool=wishes] h1{font-size:25px}
+ body.wishlist-redesign .ty-tool-hero[data-tool=wishes] p{font-size:12px}
+ body.wishlist-redesign .filters label{min-width:calc(50% - 6px)}
+ body.wishlist-redesign .filters #resetFilters{flex:1}
+ body.wishlist-redesign .public-wish-nav a{font-size:.78rem}
+}
+@media(prefers-reduced-motion:reduce){body.wishlist-redesign .cloud-word{transition:none}}
