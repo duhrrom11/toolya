@@ -48,3 +48,22 @@
 
 /* Preserve consent navigation with either mounting order. */
 .ty-footer-links .toolya-consent-settings-link{margin:0;font:600 14px/1.5 var(--ty-font-brand);min-height:44px;display:inline-flex;align-items:center}
+
+
+/* The character lives INSIDE the Ko-fi action, never in the shared footer. */
+.ty-kofi-action{gap:9px;padding:6px 16px 6px 9px;overflow:visible}
+.ty-kofi-button-mascot{width:46px;height:46px;object-fit:contain;flex:0 0 46px;filter:drop-shadow(0 3px 5px #00182565)}
+.ty-kofi-button-label{white-space:nowrap}
+.ty-kofi-button-hearts{display:inline-flex;align-items:center;gap:1px;color:#ff9fbb;white-space:nowrap}
+.ty-kofi-button-hearts span{display:inline-block;font-size:18px;line-height:1;animation:ty-kofi-heartbeat 1.55s ease-in-out infinite}
+.ty-kofi-button-hearts span:nth-child(2){animation-delay:.23s}
+.ty-kofi-button-hearts span:nth-child(3){animation-delay:.46s}
+@keyframes ty-kofi-heartbeat{0%,35%,100%{opacity:.5;transform:scale(.85)}48%,68%{opacity:1;transform:scale(1.2)}}
+@media(max-width:650px){
+ .ty-kofi-action{justify-content:center;gap:8px;padding:6px 12px}
+ .ty-kofi-button-mascot{width:42px;height:42px;flex-basis:42px}
+ .ty-kofi-button-hearts span{font-size:17px}
+}
+@media(prefers-reduced-motion:reduce){
+ .ty-kofi-button-hearts span{animation:none!important;opacity:1;transform:none}
+}
