@@ -45,5 +45,5 @@ AS $function$
     END,
     p.display_name ASC, p.user_id
   LIMIT 25
-  OFFSET pg_catalog.least(pg_catalog.greatest(coalesce(page_offset, 0), 0), 100000)
+  OFFSET least(greatest(coalesce(page_offset, 0), 0), 100000)
 $function$;
