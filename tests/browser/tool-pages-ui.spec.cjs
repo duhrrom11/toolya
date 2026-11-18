@@ -1332,7 +1332,9 @@ test('wishlist: public cards and five-list form remain usable at three widths',a
    await page.screenshot({path:testInfo.outputPath('wishlist-'+name+'-'+width+'.png')});await reviewImage(page,'wishlist-'+name+'-'+width);
   }
  }
- await page.locator('#previewProfile').click();await expect(page.locator('#previewDialog')).toBeVisible();
+ await page.locator('#previewProfile').press('Enter');
+ await expect(page.getByRole('dialog',{name:'Profilvorschau',exact:true})).toBeVisible();
+ await expect(page.locator('#closePreview')).toBeFocused();
  await expect(page.locator('#previewContent .list-links a')).toHaveCount(5);
  for(const a of await page.locator('#previewContent .list-links a').all())expect(new URL(await a.getAttribute('href')).searchParams.get('tag')).toBe('duhrrom-21');
  for(const width of [320,768,1440]){
@@ -1342,7 +1344,9 @@ test('wishlist: public cards and five-list form remain usable at three widths',a
   await dialog.evaluate(e=>e.scrollTop=0);await page.screenshot({path:testInfo.outputPath('wishlist-preview-'+width+'.png')});
   await dialog.evaluate(e=>e.scrollTop=e.scrollHeight);await page.screenshot({path:testInfo.outputPath('wishlist-preview-bottom-'+width+'.png')});
  }
- await page.locator('#closePreview').click();await expect(page.locator('#previewDialog')).toBeHidden();
+ await page.keyboard.press('Escape');
+ await expect(page.locator('#previewDialog')).toBeHidden();
+ await expect(page.locator('#previewProfile')).toBeFocused();
  await page.locator('#amazonUrl').fill('https://example.invalid/not-amazon');await page.locator('#previewProfile').click();
  await expect(page.locator('#profileStatus')).toContainText('gültige Amazon-Wunschlisten');await expect(page.locator('#previewDialog')).toBeHidden();
  expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
