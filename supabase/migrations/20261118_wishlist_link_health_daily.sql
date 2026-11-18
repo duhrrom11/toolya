@@ -61,30 +61,32 @@ BEGIN
   WHERE public.wishlist_link_key(item->>'url') IS NOT NULL
   ON CONFLICT(list_key) DO NOTHING;
 
-  -- At most five requests a day, no redirect forwarding or credential use.
+
+  -- At most five previously published official Amazon wishlist links per day.
   FOR rec IN
-    SELECT h.list_key, (
-      SELECT split_part(item->>'url','?',1)
-      FROM public.wishlist_directory d
-      CROSS JOIN LATERAL jsonb_array_elements(d.lists) item
-      WHERE public.wishlist_link_key(item->>'url')=h.list_key
-        AND (item->>'url') ~* '^https://(www[.])?amazon[.](de|com|co[.]uk|fr|it|es|nl|pl|se|com[.]be|co[.]jp|ca|com[.]au)/(hz/wishlist/ls|gp/registry/wishlist|registry/wishlist)/[a-z0-9]+/?([?]|$)'
-      ORDER BY d.updated_at DESC LIMIT 1
-    ) AS url
+    SELECT h.list_key,
+      (
+        SELECT split_part(item->>'url','?',1)
+        FROM public.wishlist_directory d
+        CROSS JOIN LATERAL jsonb_array_elements(d.lists) item
+        WHERE public.wishlist_link_key(item->>'url')=h.list_key
+          AND (item->>'url') ~* '^https://(www[.])?amazon[.](de|com|co[.]uk|fr|it|es|nl|pl|se|com[.]be|co[.]jp|ca|com[.]au)/(hz/wishlist/ls|gp/registry/wishlist|registry/wishlist)/[a-z0-9]+/?([?]|$)'
+        ORDER BY d.updated_at DESC LIMIT 1
+      ) AS url
     FROM toolya_private.wishlist_link_health h
     WHERE h.outcome <> 'pending'
       AND h.next_check_at <= now()
-      AND EXISTS(
+      AND length(h.list_key) BETWEEN 8 AND 40
+      AND h.list_key ~ '^[A-Z0-9]+$'
+      AND EXISTS (
         SELECT 1 FROM public.wishlist_directory d
         CROSS JOIN LATERAL jsonb_array_elements(d.lists) item
         WHERE public.wishlist_link_key(item->>'url')=h.list_key
       )
-      AND h.list_key ~ '^[A-Z0-9]{8,40}
     ORDER BY h.next_check_at,h.list_key
     LIMIT 5
     FOR UPDATE OF h SKIP LOCKED
   LOOP
-    -- Only exact allowlisted HTTPS Amazon wishlist URLs from the published directory.
     IF rec.url IS NULL THEN CONTINUE; END IF;
     request := net.http_get(
       url => rec.url,
@@ -92,40 +94,15 @@ BEGIN
       timeout_milliseconds => 7000
     );
     UPDATE toolya_private.wishlist_link_health
-    SET request_id=request,requested_at=now(),outcome='pending',updated_at=now()
-    WHERE list_key=rec.list_key;
+      SET request_id=request,requested_at=now(),outcome='pending',updated_at=now()
+      WHERE list_key=rec.list_key;
     submitted := submitted+1;
   END LOOP;
   RETURN submitted;
 END $$;
 REVOKE ALL ON FUNCTION toolya_private.wishlist_link_check_dispatch() FROM PUBLIC,anon,authenticated;
 
--- Cron executes with its database owner role; neither job deletes or changes a wishlist.
-SELECT cron.schedule('wishlist-link-health-collect','*/10 * * * *',
-  'SELECT toolya_private.wishlist_link_check_collect()');
-SELECT cron.schedule('wishlist-link-health-dispatch','10 3 * * *',
-  'SELECT toolya_private.wishlist_link_check_dispatch()');
-
-    ORDER BY h.next_check_at,h.list_key
-    LIMIT 5
-    FOR UPDATE OF h SKIP LOCKED
-  LOOP
-    -- Never construct a user-controlled URL: fixed HTTPS Amazon host and validated ID.
-    request := net.http_get(
-      url => rec.url,
-      headers => '{"User-Agent":"ToolyaWishlistHealth/1.0 (+https://toolya.app)","Accept":"text/html"}'::jsonb,
-      timeout_milliseconds => 7000
-    );
-    UPDATE toolya_private.wishlist_link_health
-    SET request_id=request,requested_at=now(),outcome='pending',updated_at=now()
-    WHERE list_key=rec.list_key;
-    submitted := submitted+1;
-  END LOOP;
-  RETURN submitted;
-END $$;
-REVOKE ALL ON FUNCTION toolya_private.wishlist_link_check_dispatch() FROM PUBLIC,anon,authenticated;
-
--- Cron executes with its database owner role; neither job deletes or changes a wishlist.
+-- These schedules never delete, unpublish or modify any wishlist entry.
 SELECT cron.schedule('wishlist-link-health-collect','*/10 * * * *',
   'SELECT toolya_private.wishlist_link_check_collect()');
 SELECT cron.schedule('wishlist-link-health-dispatch','10 3 * * *',
