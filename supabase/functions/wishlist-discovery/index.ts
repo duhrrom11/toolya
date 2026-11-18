@@ -188,6 +188,47 @@ Deno.serve(async(req:Request)=>{
    ];
    for(const [phrase,lang] of multilingualPhrases)seeds.push({query:phrase+' -site:amazon.de -site:amazon.com -site:amazon.fr',country:'ALL',lang});
 
+   // International coverage across languages and regions; all candidates remain staged for review.
+   const worldwidePhrases=[
+    ['"Amazon lista de desejos"','pt'],['"minha lista de desejos Amazon"','pt'],['"nossa lista de desejos Amazon"','pt'],
+    ['"Amazon lista de presentes"','pt'],['"Amazon wishlist" "Brasil"','pt'],
+    ['"Amazon wish list" "India"','en'],['"Amazon wishlist" "Nigeria"','en'],
+    ['"Amazon wishlist" "Kenya"','en'],['"Amazon wishlist" "South Africa"','en'],
+    ['"Amazon wishlist" "New Zealand"','en'],['"Amazon wishlist" "Philippines"','en'],
+    ['"Amazon wishlist" "Pakistan"','en'],['"Amazon wishlist" "Ireland"','en'],
+    ['"Amazon wishlist" "Singapore"','en'],['"Amazon wishlist" "Malaysia"','en'],
+    ['"Amazon wishlist" "United Kingdom"','en'],['"Amazon wishlist" "United States"','en'],
+    ['"Amazon listă de dorințe"','ro'],['"lista mea de dorințe Amazon"','ro'],
+    ['"Amazon seznam přání"','cs'],['"můj seznam přání Amazon"','cs'],
+    ['"Amazon kívánságlista"','hu'],['"Amazon kívánságlistám"','hu'],
+    ['"Amazon ønskeliste"','da'],['"Amazon ønskeliste" "Norge"','no'],
+    ['"Amazon toivelista"','fi'],['"Amazon önskelista" "Finland"','sv'],
+    ['"Amazon lista de deseos" "México"','es'],['"Amazon lista de deseos" "Argentina"','es'],
+    ['"Amazon lista de deseos" "Colombia"','es'],['"Amazon lista de deseos" "Chile"','es'],
+    ['"Amazon lista de deseos" "Perú"','es'],['"Amazon lista de deseos" "España"','es'],
+    ['"Amazon dilek listesi"','tr'],['"Amazon istek listesi"','tr'],
+    ['"Amazon список желаний"','ru'],['"мой список желаний Amazon"','ru'],
+    ['"Amazon список бажань"','uk'],['"мій список бажань Amazon"','uk'],
+    ['"Amazon λίστα επιθυμιών"','el'],['"η λίστα μου Amazon"','el'],
+    ['"Amazon قائمة الأمنيات"','ar'],['"قائمة رغبات أمازون"','ar'],
+    ['"Amazon רשימת משאלות"','he'],
+    ['"Amazon इच्छा सूची"','hi'],['"अमेज़न विशलिस्ट"','hi'],
+    ['"Amazon ইচ্ছা তালিকা"','bn'],['"Amazon خواہشات کی فہرست"','ur'],
+    ['"Amazon 欲しいものリスト"','ja'],['"私のAmazonほしい物リスト"','ja'],
+    ['"Amazon 愿望清单"','zh'],['"亚马逊心愿单"','zh'],
+    ['"Amazon 위시리스트"','ko'],['"아마존 위시리스트"','ko'],
+    ['"Amazon daftar keinginan"','id'],['"daftar keinginan Amazon"','id'],
+    ['"Amazon senarai hajat"','ms'],['"senarai keinginan Amazon"','ms'],
+    ['"Amazon รายการสิ่งที่อยากได้"','th'],['"Amazon ของขวัญ wishlist"','th'],
+    ['"Amazon danh sách mong muốn"','vi'],['"danh sách yêu thích Amazon"','vi'],
+    ['"Amazon orodha ya matamanio"','sw'],['"Amazon wishlist" "Tanzania"','sw'],
+    ['"Amazon wishlist" "Ghana"','en'],['"Amazon wishlist" "Uganda"','en'],
+    ['"Amazon wishlist" "UAE"','en'],['"Amazon wishlist" "Saudi Arabia"','en']
+   ];
+   for(const [phrase,lang] of worldwidePhrases)
+    seeds.push({query:phrase+' -site:amazon.com -site:amazon.de -site:amazon.fr',country:'ALL',lang});
+
+
    must(await db.from('wishlist_discovery_queries').upsert(seeds,{onConflict:'query,country,lang',ignoreDuplicates:true}));
    const q=must(await db.from('wishlist_discovery_queries').select('*').lt('page',10).order('page').order('query').limit(1))[0];if(!q)return reply(200,{done:true,message:'Suchplan abgeschlossen. Es besteht keine Vollständigkeitsgarantie.'});
    // Tavily does not expose Brave-style pagination: each seed is queried only once.
@@ -196,7 +237,7 @@ Deno.serve(async(req:Request)=>{
    const response=await fetch('https://api.tavily.com/search',{
     method:'POST',
     headers:{Authorization:'Bearer '+key,'Content-Type':'application/json',Accept:'application/json'},
-    body:JSON.stringify({query:q.query,search_depth:'basic',max_results:20,topic:'general',include_answer:false,include_raw_content:false,exclude_domains:['amazon.de','amazon.com','amazon.fr']}),
+    body:JSON.stringify({query:q.query,search_depth:'basic',max_results:20,topic:'general',include_answer:false,include_raw_content:false,exclude_domains:['amazon.de','amazon.com','amazon.fr','amazon.co.uk','amazon.es','amazon.it','amazon.nl','amazon.pl','amazon.se','amazon.co.jp','amazon.ca','amazon.com.au','amazon.com.be']}),
     signal:AbortSignal.timeout(12000)
    });
    if(!response.ok)return reply(response.status===429?429:502,{error:'Tavily-Suche HTTP '+response.status+'. Suchfortschritt bleibt erhalten; ein Credit wurde vorsorglich reserviert.'});
