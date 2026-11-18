@@ -11,7 +11,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Backform-Umrechner & Rezeptrechner | Toolya</title>
-    <meta name="description" content="Kostenloser Backform-Umrechner und Rezeptrechner: Backformen vergleichen, Zutatenmengen umrechnen und Backzeiten für Kuchen und Rezepte anpassen.">
+    <meta name="description" content="Kostenloser Backform-Umrechner und Rezeptrechner: Backformen vergleichen, Zutatenmengen umrechnen und Backzeiten für Kuchen abschätzen.">
+    <meta name="robots" content="noindex, follow">
     <link rel="canonical" href="https://toolya.app/tools/baking/index.html">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -602,6 +603,7 @@
                     <h3 class="text-xs font-bold uppercase tracking-wider text-orange-900">Kurzanleitung – So funktioniert's:</h3>
                     <button onclick="toggleHelp()" class="b3-action b3-outline text-slate-400 hover:text-slate-600 text-xs">Schließen ✕</button>
                 </div>
+                <p><a href="/backform-rechner/" class="text-orange-900 underline">Schritt-für-Schritt-Anleitung mit Rechenbeispiel</a></p>
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs text-slate-600">
                     <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
                         <strong class="text-slate-800 block mb-0.5">1. Rezept & Basis</strong>
@@ -613,7 +615,7 @@
                     </div>
                     <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
                         <strong class="text-slate-800 block mb-0.5">3. Cloud-Konto</strong>
-                        Verbinde dein Supabase-Konto für die Datensicherung.
+                        Melde dich mit deinem Toolya-Konto an, um deine Rezepte zu speichern.
                     </div>
                     <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
                         <strong class="text-slate-800 block mb-0.5">4. Kochmodus</strong>
@@ -888,27 +890,27 @@
             const unitSys = document.getElementById('unit-system').value;
 
             const lines = rawText.split('\n');
-            let outputHtml = `<p class="font-bold text-slate-800 mb-1">${name} (Faktor ×${factor})</p>`;
+            let outputHtml = `<p class="font-bold text-slate-800 mb-1">${escapeRecipeHtml(name)} (Faktor ×${factor})</p>`;
 
             lines.forEach(line => {
                 if(!line.trim()) return;
-                const match = line.match(/^(\d+([.,]\d+)?)\s*(g|ml|TL|EL|Stück|Pck|Eier|Ei)?\s*(.*)/i);
+                const match = line.match(/^(\d+([.,]\d+)?)\s*(?:(g|ml|TL|EL|Stück|Pck|Eier|Ei)(?=\s|$))?\s*(.*)/i);
                 if(match) {
                     let val = parseFloat(match[1].replace(',', '.')) * factor;
                     const unit = match[3] || '';
-                    const desc = (match[4] || '').toLowerCase();
+                    const ingredient = escapeRecipeHtml(match[4] || '');
 
-                    if (unit.match(/ei|eier/i) || desc.includes('ei')) {
+                    if (/^(?:ei|eier)$/i.test(unit)) {
                         const eggs = Math.round(val);
-                        outputHtml += `<div><span class="text-orange-600 font-bold">${eggs} Eier</span> ${match[4]}</div>`;
+                        outputHtml += `<div><span class="text-orange-600 font-bold">${eggs} Eier</span> ${ingredient}</div>`;
                     } else if (unitSys === 'imperial' && unit === 'g') {
                         let cups = (val / 125).toFixed(1);
-                        outputHtml += `<div><span class="text-orange-600 font-bold">ca. ${cups} Cups</span> ${match[4]}</div>`;
+                        outputHtml += `<div><span class="text-orange-600 font-bold">ca. ${cups} Cups</span> ${ingredient}</div>`;
                     } else {
-                        outputHtml += `<div><span class="text-orange-600 font-bold">${val.toFixed(1).replace('.0','')}${unit}</span> ${match[4]}</div>`;
+                        outputHtml += `<div><span class="text-orange-600 font-bold">${val.toFixed(1).replace('.0','')}${unit}</span> ${ingredient}</div>`;
                     }
                 } else {
-                    outputHtml += `<div>${line}</div>`;
+                    outputHtml += `<div>${escapeRecipeHtml(line)}</div>`;
                 }
             });
 
