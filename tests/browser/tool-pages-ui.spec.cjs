@@ -1269,6 +1269,27 @@ test('wishlist: public cards and five-list form remain usable at three widths',a
  await page.goto(origin+'/tools/wishes/public.html');
  await expect(page.locator('#profileForm')).toBeVisible();await expect(page.locator('#results .profile-card')).toHaveCount(1);
  await page.locator('.toolya-signature-footer').waitFor();await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+ const navigation=page.getByRole('navigation',{name:'Wunschlisten',exact:true});
+ const discoverLink=navigation.getByRole('link',{name:'Entdecken',exact:true});
+ const profileLink=navigation.getByRole('link',{name:'Mein öffentliches Profil',exact:true});
+ for(const width of [320,768,1440]){
+  await page.setViewportSize({width,height:1000});
+  for(const link of [discoverLink,profileLink]){
+   expect((await link.boundingBox()).height).toBeGreaterThanOrEqual(44);
+   await expect(link).toHaveCSS('background-color','rgb(255, 255, 255)');
+  }
+  await discoverLink.focus();
+  await page.keyboard.press('Tab');
+  await expect(profileLink).toBeFocused();
+  await expect(profileLink).toHaveCSS('outline-width','3px');
+  await expect(profileLink).toHaveCSS('outline-style','solid');
+  await navigation.scrollIntoViewIfNeeded();
+  await page.screenshot({path:testInfo.outputPath('wishlist-navigation-'+width+'.png')});
+ }
+ await page.keyboard.press('Enter');
+ await expect(page).toHaveURL(/#profile$/);
+ await discoverLink.click();
+ await expect(page).toHaveURL(/#discover$/);
  await page.locator('#displayName').fill(profile.display_name);await page.locator('#country').fill(profile.country);await page.locator('#bio').fill(profile.bio);
  for(let i=0;i<4;i++)await page.locator('#addList').click();
  for(const [i,fs]of (await page.locator('#listFields fieldset').all()).entries()){

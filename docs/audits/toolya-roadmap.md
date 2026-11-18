@@ -1,6 +1,6 @@
 # Toolya – gewichtete Roadmap
 
-Stand: 17.11.2026. Status: Offen → In Arbeit → Umgesetzt → Verifiziert; Blockiert benennt konkrete fehlende Voraussetzungen.
+Stand: 18.11.2026. Status: Offen → In Arbeit → Umgesetzt → Verifiziert; Blockiert benennt konkrete fehlende Voraussetzungen.
 
 Gewicht = relative Arbeitsgröße (1 klein, 2 mittel, 3 groß, 5 sehr groß), keine Qualitätsnote. Fortschritt = Summe der Gewichte **verifizierter** Aufgaben / Summe aller erfassten Gewichte des Bereichs. In Arbeit/Umgesetzt zählen noch nicht. Unteraufgaben werden nicht doppelt gezählt.
 
@@ -8,9 +8,9 @@ Gewicht = relative Arbeitsgröße (1 klein, 2 mittel, 3 groß, 5 sehr groß), ke
 
 | ID | Kategorie | Gewicht | Seite/Komponente | Ist | Soll | Umsetzung | Aufwand | Abhängigkeiten | Risiko | Status | Nachweis |
 |---|---|---:|---|---|---|---|---|---|---|---|---|
-| I01 | Bestandsaufnahme | 2 | Repository/Branches/CI | 38 HTML, 93 Branches, 3 offene PRs erfasst | Architektur und offene Änderungen nachvollziehbar | Inventar und PR-Abgleich dokumentieren | 1 h | GitHub | niedrig | Verifiziert | clone; runs 43921114382/304/071; PR-Suche |
+| I01 | Bestandsaufnahme | 2 | Repository/Branches/CI | 39 HTML, 129 Branch-Referenzen, 3 offene PRs und 1 offenes Issue erfasst | Architektur und offene Änderungen nachvollziehbar | Inventar und PR-Abgleich dokumentieren | 1 h | GitHub | niedrig | Verifiziert | clone; runs 43921114382/304/071; PR-Suche |
 | I02 | Bestandsaufnahme | 2 | Supabase/Analytics | Projekte und RLS-Metadaten geprüft | Verwendetes Backend und Zugriffsumfang erfassen | Metadaten, Advisors und Analytics-Projektzuordnung prüfen | 2 h | Supabase/Amplitude | mittel | Verifiziert | security-inventory.md; Amplitude default erreichbar, Toolya-Zuordnung nicht bestätigt |
-| I03 | Bestandsaufnahme | 3 | Alle Seiten live | 38 HTTP-Routen; öffentliche Kernseiten, Nachlass-Login/Erben und Auth-Umleitung geprüft | 38 Routen klassifiziert und erreichbare Ansichten geprüft | Öffentliche Seiten, Sonderseiten und Auth-Zustände erfassen | 3 h | Browser/Anmeldesitzung | mittel | In Arbeit | page-inventory.json; Screenshots 01/02 |
+| I03 | Bestandsaufnahme | 3 | Alle Seiten live | 39 Quellseiten; frühere HTTP-Prüfung mit 38 Routen, neue Admin-Finder-Seite zur Abnahme erfasst | 39 Routen klassifiziert und erreichbare Ansichten geprüft | Öffentliche Seiten, Sonderseiten und Auth-Zustände erfassen | 3 h | Browser/Anmeldesitzung | mittel | In Arbeit | page-inventory.json; Screenshots 01/02 |
 | I04 | Bestandsaufnahme | 1 | Markenentscheidungen | Aktueller Auftrag, AGENTS und Roadmap abgeglichen | Kein Verlust verbindlicher Vorgaben | Aktuellen Footerauftrag und Originalassets festhalten | 0,5 h | Originalassets | niedrig | Verifiziert | AGENTS.md; Masterauftrag |
 | D01 | P1 – Design | 2 | Footer/Consent | Widerrufslink geht auf Startseite verloren; 2 Footer auf privacy | Ein Footer mit dauerhaftem Widerrufslink | Link beim Austausch bewahren und nach spätem Mount einhängen | 1 h | platform.mjs; consent.js | mittel | Verifiziert | Live DOM; Screenshot 02; mountFooter/init |
 | D02 | P1 – Design | 2 | Wortmarke/Token | Schriftfamilie wird seitenabhängig geerbt | Identische Markenfamilie/Gewicht/Abstände | Gemeinsame Tokens aus bestehender Startseite übernehmen | 1 h | platform/header/footer CSS | niedrig | Verifiziert | Live computed styles Inter vs ui-sans |
@@ -21,6 +21,8 @@ Gewicht = relative Arbeitsgröße (1 klein, 2 mittel, 3 groß, 5 sehr groß), ke
 | D06a | P1 – Design | 1 | Nachlass Besitzer/Vertrauenspersonen | Grüne UI-Flächen und inaktive Dark-CSS-Reste, zusätzlicher alter Footer bei Erben | Gemeinsame türkise Bedienelemente im Hellmodus, ein Footer mit erhaltenem Schlüsselhinweis | Estate-CSS mit vorhandenen Tokens verbinden; Footerhinweis in main erhalten | 2–4 h | D02; isolierte Nachlass-Prüfung | mittel | Verifiziert | PR #93; CI 43932478466; Pages 43933043137; Live-Farben/Footer und Bytegleichheit bestätigt |
 | D06b | P1 – Design | 2 | B3/Wishlist/Dashboard Formulare/Karten/Dialoge | Weitere historisch getrennte UI-Systeme | Konsistente Zustände und Eingaben | Übrige bestehende UI schrittweise mit Tokens verbinden | 1–2 Tage | D02; echte Ansichten/isolierte Fixtures | mittel | In Arbeit | B3, Wishlist, Dashboard Styles; erstes gemeinsames Kontrollpaket im Prüfbranch |
 | D07 | P1 – Design | 2 | Öffentliche Infoseiten | Eigener Header und zusätzliche Begleiterkarte | Einheitliche gemeinsame Navigation/Marke | Rechtsseiten/Galerie an vorhandene Komponenten anschließen | 2 h | D02 | niedrig | Verifiziert | PR #124; Quellstand e922776; neun Ansichten und drei erfolgreiche Checks; Release separat im PR |
+| D08 | P1 – Design | 1 | Öffentliche Wunschlisten-Navigation | Zwei kleine Textlinks im veröffentlichten Stand | Lesbare Sprunglinks mit sichtbarem Tastaturfokus und mindestens 44 px Bedienhöhe | Gemeinsame Farben und Fokusring nutzen, beide Sprungziele bei 320/768/1440 prüfen | 1 h | D02; Chromium-CI | niedrig | Umgesetzt | Live-Sichtung, CSS/HTML und erweiterter isolierter Playwright-Test; CI und Veröffentlichung ausstehend |
+| D09 | P1 – Design | 2 | Admin-Dashboard und Wunschlisten-Finder | Neue Finder-Route im alten Seiteninventar nicht erfasst | Admin-Aktionen auch mobil konsistent und nutzbar | Auth-Ansicht, Fehler-/Leerzustände und Admin-Navigation isoliert prüfen | 3–5 h | Isolierte Admin-Fixtures; keine echte Suche | mittel | Offen | Git-Dateiinventar und bestehende Admin-Quellen |
 | S01 | P2 – SEO | 3 | Indexierung/Metadaten | Private Legacy-Seiten teils ohne noindex/canonical | Bewusste Indexierungsstrategie je Route | robots/sitemap/canonical und Auth-/Public-Seiten abgleichen | 3 h | P1-Abnahme | mittel | Offen | SEO-Inventur |
 | S02 | P2 – SEO | 3 | 12 Tools/Suchintention | Keine aktuelle vollständige Zuordnung | Eindeutige Themen und sinnvolle verlinkte Erklärungen | Keyword-/Seitenmatrix auf vorhandene Funktionen stützen | 4 h | P1; verfügbare SEO-Daten | niedrig | Offen | SEO-Fachanhang in Erstellung |
 | S03 | P2 – SEO | 3 | Performance/Schema/Social | Keine aktuellen CWV-Baselines; Metadaten teils veraltet | Korrekte Angaben, belastbare Baseline | Bilder/CDNs/schema prüfen; Messung ohne erfundene Werte | 4 h | P1; Messwerkzeuge | mittel | Offen | Quellcode; keine Rankingdaten erhoben |
@@ -46,12 +48,12 @@ Gewicht = relative Arbeitsgröße (1 klein, 2 mittel, 3 groß, 5 sehr groß), ke
 | Bereich | Verifiziert/Gesamtgewicht | Fortschritt | Status |
 |---|---:|---:|---|
 | Bestandsaufnahme | 5/8 | 62,5 % | In Arbeit |
-| P1 – Design-Konsistenz | 11/17 | 64,7 % | In Arbeit |
+| P1 – Design-Konsistenz | 11/20 | 55 % | In Arbeit |
 | P2 – SEO | 0/9 | 0 % | Offen |
 | P3 – Inhalte & Rechtstexte | 0/8 | 0 % | Offen |
 | Weitere Optimierungen | 0/10 | 0 % | In Arbeit |
 
-24 übergeordnete Aufgaben: 10 verifiziert, 14 nicht abgeschlossen. Die Aufteilungen D05 → D05a (1) + D05b (4) und D06 → D06a (1) + D06b (2) verändern das Gesamtgewicht nicht. Keine globale Prozentzahl für den noch wachsenden Prüfumfang.
+26 übergeordnete Aufgaben: 10 verifiziert, 16 nicht abgeschlossen. Die Aufteilungen D05 → D05a (1) + D05b (4) und D06 → D06a (1) + D06b (2) verändern das Gesamtgewicht nicht. Keine globale Prozentzahl für den noch wachsenden Prüfumfang.
 
 ## Fortsetzungsstand
 
@@ -304,3 +306,11 @@ P1 weiterhin 11/17 = 64,7 %, D05b/D06b In Arbeit, 10/24 Hauptaufgaben verifizier
 ## Aktueller Fortsetzungsstand – PR125/126 veröffentlicht
 Legacy-Wishlist-Paket PR125 veröffentlicht als 4ed6656d51d783d890ae1206759fcf6f4dd78788. Mobiler Titelfeinschliff PR126 veröffentlicht als 53882d68fd5ebacebef71be2d943e03d162f153a: Titel unter Wortmarke/Originalmaskottchen volle Breite, deutsche Silbentrennung. Alle fünf PR-Prüfungen und alle acht main-Prüfungen des aktuellen Releases erfolgreich. 48 Ansichten erneut gesichtet; Manifest pr126-visual-review.json. Alle 54 öffentlichen Ressourcen bytegleich, vollständiger Nachweis pr126-live-delivery.json. Älterer PR125-main-Browserlauf hängt bei Installation; aktueller Folge-Release ist vollständig geprüft. Kein Produktivbackend und keine realen Daten in den Designprüfungen.
 P1 11/17=64,7 %, 10/24 Hauptaufgaben verifiziert; D05b/D06b weiter In Arbeit. Nächstes begrenztes Paket PR127: öffentliche Wunschprofil-Detailansicht, Vorschau, ungültige Links, Suche leer/fehlerhaft/wiederhergestellt und zugängliche Merk-Buttonnamen. Keine vollständige private Produktionsabnahme behauptet. Zwölf Tools plus Dashboard bleiben Gesamtumfang.
+
+## Aktueller Fortsetzungsstand – 18.11.2026
+
+PR [#127](https://github.com/duhrrom11/toolya/pull/127) ist gemergt und als `d5937fb444119a022cdcb8b3439881f730cc6125` veröffentlicht. Der PR dokumentiert die Releaseprüfung aller acht main-Checks, 54 bytegleiche öffentliche Ressourcen sowie die isolierte Abnahme der Wunschprofil-Detail-, Vorschau- und Suchzustände.
+
+D08 ist auf `audit/p1-wishlist-jump-navigation` umgesetzt. Geänderte Produktdateien: `tools/wishes/public.html` und `tools/wishes/public-profiles.css`. Der vorhandene Test in `tests/browser/tool-pages-ui.spec.cjs` prüft beide Sprungziele, Tastaturfokus und Bedienhöhe bei 320, 768 und 1440 px. Nächste Aktion: Branch-CI prüfen, Navigation visuell abnehmen, mergen und Pages-Abgleich durchführen. Danach D09 und die verbleibenden Sonder-/Fehlerzustände in D05b/D06b abschließen. Reguläre P2-/P3-Umsetzung bleibt nach der P1-Abnahme.
+
+Die zwei konkret erfassten P1-Aufgaben ergänzen den bisherigen Umfang um drei Gewichtspunkte. Bestandsaufnahme 5/8, P1 11/20, P2 0/9, P3 0/8, weitere Optimierungen 0/10. Zehn von 26 Aufgaben verifiziert. Die beiden Supabase-Projekte wurden ausschließlich lesend geprüft.
