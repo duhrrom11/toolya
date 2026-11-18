@@ -746,10 +746,33 @@ async function reviewImage(page,id){
  for(let i=0;i<total;i++)console.log('TOOLYA_REVIEW|'+id+'|'+i+'|'+total+'|'+data.slice(i*size,(i+1)*size));
 }
 
+const previewImage='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAFoCAIAAABIUN0GAAAE/ElEQVR42u3XsQnCUBSGUZ/cBSwFwdIRHCZNlrAOqV0ijcM4gmVAsLSws4mtWCmEp3meM0Hyv+Ljpv52nwEAec1NAAACDAACDAAIMAAIMAAgwAAgwACAAAOAAAMAAgwAAgwAAgwACDAACDAAIMAAIMAAgAADgAADAAIMAAIMAAIMAAgwAAgwACDAACDAAIAAA4AAAwACDAACDAACDAAIMAAIMAAgwAAgwACAAAOAAAMAAgwAAgwAAgwACDAACDAAIMAAIMAAgAADgAADAAIMAAIMAAIMAAgwAAgwACDAADBlMcWPXu8PXg6AZ/2ucgEDAAIMAAIMAAgwAAgwAAgwACDAAFCUKOlnhrb2ogBlS03nAgYABBgABBgAEGAAEGAAEGATAIAAA4AAAwACDAACDAAIMAAIMAAgwAAgwACAAAOAAAOAAAMAAgwAAgwACDAACDAAIMAAIMAAgAADgAADgAADAAIMAAIMAAgwAAgwACDAACDAAIAAA4AAA4AAAwACDAACDAAIMAAIMAAgwAAgwACAAAOAAAOAAAMAAgwAAgwACDAACDAAIMAAIMAAgAADwNeFCfJITWcEYCqGtjaCCxgABBgAEGAAEGAAQIABQIABAAEGAAEGAAEGAAQYAAQYABBgABBgAECAAUCAAQABBgABBgABBgAEGAAEGAAQYAAQYABAgAFAgAEAAQYAAQYAAQYABBgABBgAEGAAEGAAQIABQIABAAEGAAEGAAEGAAQYAAQYABhbmCCPoa2NAIALGAAEGAAEGAAQYAAQYABAgAFAgAEAAQYAAQYABBgABBgABBgAEGAAEGAAQIABQIABAAEGAAEGAF6ECfI4nC5GgOmqNksj4AIGAAEGAAQYAAQYABBgABBgABBgAECAAUCAAQABBgABBgAEGAAEGAAQYAAQYAAQYABAgAFAgAEAAQYAAQYABBgABBgAEGAAEGAAQIABQIABQIABAAEGAAEGAAQYAAQYABBgABBgAECAAUCAAUCAAQABBgABBgAEGAAEGAAQYAAQYABAgAFAgAFAgAEAAQYAAQYABBgABBgAEGAA+FVhgjyqzdIIALiAAUCAAUCAAQABBgABBgAEGAAEGAAQYAAQYABAgAFAgAFAgAEAAQYAAQYABBgABBgA+ECYII/FamsERnE9H40ALmAAQIABQIABAAEGAAEGAAEGAAQYAAQYABBgABBgAECAAUCAAQABBgABBgABNgEACDAACDAAIMAAIMAAgAADgAADAAIMAD8nTJDH9Xw0AgAuYAAQYAAQYABAgAFAgAEAAQYAAQYABBgABBgAEGAAEGAAEGAAQIABQIABAAEGAAEGAAQYAAQYABBgABBgABBgAECAAUCAAQABBgABBgAEGAAEGAAQYAAQYAAQYABAgAFAgAEAAQYAAQYABBgABBgAEGAAEGAA+GNR0s+kpvOiALiAAQABBgABBgABBgAEGAAEGAAQYAAoQepvdysAgAsYAAQYABBgABBgAECAAUCAAQABBgABBgABNgEACDAACDAAIMAAIMAAgAADgAADAAIMAAIMAAgwAAgwAAgwACDAACDAAIAAA4AAAwACDAACDAAIMAAIMAAIMAAgwAAgwACAAAOAAAMAAgwAAgwACDAACDAACDAAIMAAIMAAgAADgAADAAIMAAIMAAgwAAgwAAgwACDAACDAAIAAA4AAAwDvewClVR20r3nJugAAAABJRU5ErkJggg==';
+async function verifyPhotoPreview(page,testInfo,tool,label){
+ const trigger=page.getByRole('button',{name:label,exact:true});
+ const dialog=page.getByRole('dialog',{name:'Bildvorschau',exact:true});
+ const close=dialog.getByRole('button',{name:'Schließen',exact:true});
+ for(const width of [320,768,1440]){
+  await page.setViewportSize({width,height:1000});
+  await trigger.focus();
+  await trigger.press('Enter');
+  await expect(dialog).toBeVisible();
+  await expect(close).toBeFocused();
+  const image=dialog.getByRole('img',{name:/Vergrößertes/});
+  await expect(image).toBeVisible();
+  await expect.poll(()=>image.evaluate(element=>element.naturalWidth)).toBe(640);
+  expect((await close.boundingBox()).height).toBeGreaterThanOrEqual(44);
+  expect((await dialog.boundingBox()).width).toBeLessThanOrEqual(width-28);
+  await page.screenshot({path:testInfo.outputPath('photo-preview-'+tool+'-'+width+'.png')});
+  if(width===768)await close.press('Space');
+  else await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+ }
+}
 for(const item of tools){
  test(item.tool+': shared controls on the real authenticated page at three widths',async({page},testInfo)=>{
   const fixture=item.tool==='autokosten-reifenwechsel'
-   ?{cars:[{id:1,name:'Isoliertes Testfahrzeug',plate:'TEST',km:1000}],events:[{id:2,carId:1,title:'Isolierte Wartung',type:'Inspektion',date:'2026-11-17',cost:42}],tires:[]}
+   ?{cars:[{id:1,name:'Isoliertes Testfahrzeug',plate:'TEST',km:1000,photo:previewImage}],events:[{id:2,carId:1,title:'Isolierte Wartung',type:'Inspektion',date:'2026-11-17',cost:42}],tires:[]}
    :{entries:[{id:2,title:'Isolierter Testbeleg',entryType:'ausgabe',date:'2026-11-17',price:42,category:'Lebensmittel',photos:[]}],budgets:{Lebensmittel:100},goals:[{id:3,title:'Isoliertes Sparziel',target:100,current:20}]};
   await isolated(page,true,true,fixture);
   await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
@@ -849,6 +872,7 @@ for(const item of tools){
    expect(red[0]).toBeGreaterThan(red[1]);
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   }
+  if(item.tool==='autokosten-reifenwechsel')await verifyPhotoPreview(page,testInfo,'car','Fahrzeugfoto vergrößern');
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   // Existing account warning actions retain their red treatment.
   await page.locator('#settingsBtn').click();
@@ -865,7 +889,7 @@ for(const kind of ['moving','loans']){
   const moving=kind==='moving',errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   const snapshot=moving
-   ?{locations:[{id:1,name:'Isolierter Lagerort',icon:'📦'}],boxes:[{id:2,locId:1,name:'Isolierte Kiste',desc:'Synthetische Prüfansicht',value:42,tag:'Standard',barcode:'1234567890123',expiry:'2027-01-17',lentTo:'',subItems:[{name:'Isolierter Artikel',value:5}]}]}
+   ?{locations:[{id:1,name:'Isolierter Lagerort',icon:'📦'}],boxes:[{id:2,locId:1,name:'Isolierte Kiste',desc:'Synthetische Prüfansicht',value:42,photo:previewImage,tag:'Standard',barcode:'1234567890123',expiry:'2027-01-17',lentTo:'',subItems:[{name:'Isolierter Artikel',value:5}]}]}
    :{contacts:[{id:1,name:'Isolierter Kontakt',phone:''}],inventory:[{id:3,title:'Isolierter Gegenstand',category:'Werkzeug',serial:'TEST'}],items:[{id:2,title:'Isolierter Testgegenstand',person:'Isolierter Kontakt',date:'2026-11-17',returnDate:'2026-12-17',category:'Werkzeug',status:'active',deposit:42,note:'Synthetische Prüfansicht',photo:''}]};
   await isolated(page,true,true,snapshot);
   await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
@@ -929,6 +953,7 @@ for(const kind of ['moving','loans']){
    const rgb=await danger.evaluate(e=>getComputedStyle(e).color.match(/[\d.]+/g).map(Number));expect(rgb[0]).toBeGreaterThan(rgb[1]);
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   }
+  if(moving)await verifyPhotoPreview(page,testInfo,kind,'Kistenfoto vergrößern');
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   expect(errors).toEqual([]);
  });
@@ -941,7 +966,7 @@ for(const kind of ['meters','plants']){
   const meters=kind==='meters',errors=[];page.on('pageerror',e=>errors.push(e.message));
   const pixel='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJ1sAAAAASUVORK5CYII=';
   const snapshot=meters
-   ?{readings:[{id:2,type:'Strom',name:'Isolierter Hauptzähler',location:'Hauptwohnung',date:'2026-11-17',value:142,photo:pixel,note:'Synthetische Prüfansicht'},{id:1,type:'Strom',name:'Isolierter Hauptzähler',location:'Hauptwohnung',date:'2026-10-17',value:100}],tarifs:{Strom:{priceHT:0.38,priceNT:0.28,abschlag:80},Wasser:{price:4.5,abschlag:30},Gas:{price:0.12,abschlag:100,calib:11.2}}}
+   ?{readings:[{id:2,type:'Strom',name:'Isolierter Hauptzähler',location:'Hauptwohnung',date:'2026-11-17',value:142,photo:previewImage,note:'Synthetische Prüfansicht'},{id:1,type:'Strom',name:'Isolierter Hauptzähler',location:'Hauptwohnung',date:'2026-10-17',value:100}],tarifs:{Strom:{priceHT:0.38,priceNT:0.28,abschlag:80},Wasser:{price:4.5,abschlag:30},Gas:{price:0.12,abschlag:100,calib:11.2}}}
    :{plants:[{id:2,name:'Isolierte Testpflanze',species:'Tomate',location:'Testzimmer',light:'half',potSize:15,interval:7,lastWatered:'2026-11-17',propagation:'Standard',note:'Synthetische Prüfansicht',diary:[{date:'2026-11-17',text:'Isolierte Notiz'}],harvestLog:[],galleryPhotos:[]}],monthWaterLiters:0,totalHarvestGrams:0,inventory:[{name:'Isolierter Lagerartikel',qty:'1 L'}],seeds:[{name:'Isoliertes Saatgut',year:2026}],beetSlots:[2,...Array(15).fill(null)],cisternMax:500,cisternCurrent:400};
   await isolated(page,true,true,snapshot);
   await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
@@ -1011,6 +1036,7 @@ for(const kind of ['meters','plants']){
    if(['beetModal','energyTipsModal'].includes(id)){await surface.evaluate(e=>e.scrollTop=e.scrollHeight);await capture(id+'-end-320');}
    await page.evaluate(close=>window[close](),close);await expect(modal).toBeHidden();
   }
+  if(meters)await verifyPhotoPreview(page,testInfo,kind,'Zählerfoto vergrößern');
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   expect(errors).toEqual([]);
  });
@@ -1023,8 +1049,8 @@ for(const kind of ['parking','pet-health']){
   const parking=kind==='parking',errors=[];page.on('pageerror',e=>errors.push(e.message));
   const pixel='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJ1sAAAAASUVORK5CYII=';
   const snapshot=parking
-   ?{sessions:[{id:2,desc:'Isoliertes Testparkhaus',sector:'Testdeck B / Platz 42',date:'17.11.2026',timestamp:'2026-11-17T12:00:00Z',cost:4.5,gps:{lat:0,lng:0},photo:pixel}],activeEndTime:null}
-   :{pets:[{id:1,name:'Isoliertes Testtier',species:'Test-Rasse',chip:'TEST-123',food:'Isoliertes Futter',allergies:'Synthetischer Hinweis',tasso:true,photo:'',passport:pixel,vet:{name:'Isolierte Testpraxis',tel:'000',email:'fixture@example.invalid',address:'Synthetische Adresse'}}],events:[{id:2,petId:1,type:'Impfung',title:'Isolierter Testeintrag',date:'2026-11-17',expiryDate:'2027-11-17',cost:42,receipt:pixel}],meds:[{id:3,name:'Isolierter Vorrat',stock:'3 Packungen'},{id:4,name:'Isolierter Warnvorrat',stock:'fast leer'}]};
+   ?{sessions:[{id:2,desc:'Isoliertes Testparkhaus',sector:'Testdeck B / Platz 42',date:'17.11.2026',timestamp:'2026-11-17T12:00:00Z',cost:4.5,gps:{lat:0,lng:0},photo:previewImage}],activeEndTime:null}
+   :{pets:[{id:1,name:'Isoliertes Testtier',species:'Test-Rasse',chip:'TEST-123',food:'Isoliertes Futter',allergies:'Synthetischer Hinweis',tasso:true,photo:previewImage,passport:pixel,vet:{name:'Isolierte Testpraxis',tel:'000',email:'fixture@example.invalid',address:'Synthetische Adresse'}}],events:[{id:2,petId:1,type:'Impfung',title:'Isolierter Testeintrag',date:'2026-11-17',expiryDate:'2027-11-17',cost:42,receipt:pixel}],meds:[{id:3,name:'Isolierter Vorrat',stock:'3 Packungen'},{id:4,name:'Isolierter Warnvorrat',stock:'fast leer'}]};
   await isolated(page,true,true,snapshot);
   await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
   const route='/tools/'+kind+'/index.html';await page.goto(origin+route);
@@ -1113,6 +1139,7 @@ for(const kind of ['parking','pet-health']){
    await page.locator('#helpBox').evaluate(e=>e.scrollIntoView({block:'start'}));await capture('help-320');
    await page.evaluate(()=>closeSettings());
   }
+  await verifyPhotoPreview(page,testInfo,kind,parking?'Parkplatzfoto vergrößern':'Haustierfoto vergrößern');
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   expect(errors).toEqual([]);
  });
