@@ -2,7 +2,7 @@
 const {test,expect}=require('playwright/test');
 const origin='http://127.0.0.1:4173';
 const tools=[
-  {path:'/tools/car/index.html',title:'Autokosten-Rechner & Reifenwechsel',tool:'autokosten-reifenwechsel',form:'#carName'},
+  {path:'/tools/car/index.html',title:'Autokosten-Rechner',tool:'autokosten-reifenwechsel',form:'#carName'},
   {path:'/tools/budget/index.html',title:'Haushaltsbuch mit Kassenbon-Scanner',tool:'haushaltsbuch-kassenbon',form:'#receiptTitle'}
 ];
 async function isolated(page,authenticated,displayCss=false,initialSnapshot=null){
@@ -1521,7 +1521,7 @@ test('wishlist: public detail and search states stay usable without writes',asyn
   await page.screenshot({path:testInfo.outputPath('wishlist-detail-'+width+'.png')});
   await panel.evaluate(e=>e.scrollIntoView({block:'end'}));await page.screenshot({path:testInfo.outputPath('wishlist-detail-bottom-'+width+'.png')});
  }
- for(const [state,message]of [['empty','Keine passenden Profile'],['searchError','gerade nicht geladen'],['recovery','1 Profile auf dieser Seite']]){
+ for(const [state,message]of [['empty','Keine passende öffentliche Amazon-Wunschliste'],['searchError','gerade nicht geladen'],['recovery','1 passende Einträge auf dieser Seite']]){
   await page.evaluate(state=>{window.__wishlistMock.empty=state==='empty';window.__wishlistMock.searchError=state==='searchError'},state);
   if(state==='recovery')await page.locator('#retrySearch').click();
   else await page.locator('#resetFilters').click();

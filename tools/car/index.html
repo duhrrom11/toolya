@@ -10,9 +10,10 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autokosten-Rechner & Reifenwechsel | Toolya</title>
+    <title>Autokosten-Rechner | Toolya</title>
     <meta name="description" content="Autokosten im Blick behalten: Tankkosten, Wartung, TÜV-Termine, Reifenwechsel und Fahrzeugkosten online dokumentieren und auswerten.">
     <link rel="canonical" href="https://toolya.app/tools/car/index.html">
+    <meta name="robots" content="noindex,follow">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF für den PDF-Report-Export -->
@@ -81,8 +82,8 @@
     <a class="b3-brand" href="../../index.html" aria-label="Toolya Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Toolya</a>
     <span class="b3-tool-icon" aria-hidden="true">🚗</span>
     <div class="b3-tool-title">
-      <h1>Autokosten-Rechner & Reifenwechsel</h1>
-      <p>Autokosten, Tankbuch, TÜV, Reparaturen und Reifenwechsel im Überblick</p>
+      <h1>Autokosten-Rechner</h1>
+      <p>Erfasse Fahrzeugausgaben, führe dein Tankbuch und behalte Wartung und Reifen im Blick.</p><p><a href="/autokosten/" class="underline">Schritt-für-Schritt-Anleitung zu Autokosten und Tankbuch</a></p>
     </div>
     <button id="settingsBtn" type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()">⚙</button>
   </div>
@@ -117,7 +118,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 b3-car-form-grid" data-b3-panel="create" id="b3-create">
             <!-- 1. Fahrzeug anlegen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
-                <h2 class="text-lg font-bold">🚗 1. Fahrzeug-Profil & Bordmappe</h2>
+                <h2 class="text-lg font-bold">🚗 Fahrzeug anlegen und Unterlagen ablegen</h2>
                 <label class="helferlein-field" for="carName"><span class="helferlein-field-label">Fahrzeugname</span><input type="text" id="carName" placeholder="Fahrzeugname (z.B. Familien-Golf)" class="w-full p-3 border rounded-xl text-sm" aria-label="Fahrzeugname (z.B. Familien-Golf)"></label>
                 <div class="grid grid-cols-2 gap-2">
                     <label class="helferlein-field" for="carPlate"><span class="helferlein-field-label">Kennzeichen</span><input type="text" id="carPlate" placeholder="Kennzeichen (z.B. B-AB 1234)" class="p-3 border rounded-xl text-sm" aria-label="Kennzeichen (z.B. B-AB 1234)"></label>
@@ -142,7 +143,7 @@
 
             <!-- 2. Wartung / Tanken / Reifen erfassen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
-                <h2 class="text-lg font-bold">🛠️ 2. Eintrag, Kosten & Belege</h2>
+                <h2 class="text-lg font-bold">🛠️ Autokosten und Belege erfassen</h2>
                 <label class="helferlein-field" for="eventCarSelect"><span class="helferlein-field-label">Fahrzeug für den Eintrag</span><select id="eventCarSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Fahrzeug für den Eintrag">
                     <option value="">-- Fahrzeug wählen --</option>
                 </select></label>
@@ -190,9 +191,9 @@
                     </div>
                 </div>
 
-                <!-- Reifensatz-Lagerverwaltung -->
+                <!-- Reifensätze verwalten -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" id="b3-tires">
-                    <h3 class="font-bold text-lg">🛞 Reifensatz-Lagerverwaltung</h3>
+                    <h3 class="font-bold text-lg">🛞 Reifensätze verwalten</h3>
                     <div class="grid grid-cols-2 gap-2">
                         <label class="helferlein-field" for="tireCarSelect"><span class="helferlein-field-label">Fahrzeug für den Reifensatz</span><select id="tireCarSelect" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Fahrzeug für den Reifensatz"></select></label>
                         <label class="helferlein-field" for="tireType"><span class="helferlein-field-label">Reifentyp</span><select id="tireType" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Reifentyp">
@@ -214,7 +215,7 @@
             <!-- Wartungs- & Kosten-Einträge mit Filter -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" id="b3-history">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
-                    <h3 class="font-bold text-lg">📋 Historie, Kosten & Kalender</h3>
+                    <h3 class="font-bold text-lg">📋 Verlauf, Ausgaben und Termine</h3>
                     <label class="helferlein-field" for="filterCarSelect"><span class="helferlein-field-label">Historie nach Fahrzeug filtern</span><select id="filterCarSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Historie nach Fahrzeug filtern">
                         <option value="">Alle Fahrzeuge anzeigen</option>
                     </select></label>
@@ -341,8 +342,8 @@
                         Erfasse TÜV, Reparaturen, Tankfüllungen mit Liter/KM und Werkstatt-Belege.
                     </div>
                     <div class="bg-red-800/50 p-2.5 rounded-xl border border-red-600/30">
-                        <span class="font-bold text-red-200 block mb-0.5">3. Fristen & TCO</span>
-                        Behalte Fristen, monatliche Spritkosten und Kosten pro Kilometer im Blick.
+                        <span class="font-bold text-red-200 block mb-0.5">3. Wartung und Tankkosten</span>
+                        Sieh nach, was du im aktuellen Monat fürs Tanken ausgegeben hast, und behalte Wartungstermine im Blick.
                     </div>
                     <div class="bg-red-800/50 p-2.5 rounded-xl border border-red-600/30">
                         <span class="font-bold text-red-200 block mb-0.5">4. Reifen & Backup</span>
@@ -943,7 +944,7 @@ async function toolyaCloudBoot(tool) {
                                 ${c.papers ? `<button onclick="zoomImage('${c.papers}')" class="text-blue-600 font-semibold underline b3-action b3-outline">📄 Fahrzeugschein anzeigen</button>` : ''}
                             </div>
                             ${kmPrognoseText}
-                            ${costPerKm ? `<div class="text-[11px] bg-white p-2 border rounded-xl flex justify-between text-gray-600"><span>Gesamtkosten: <b>${carTotalCost.toFixed(2).replace('.', ',')} €</b></span><span class="text-red-700 font-semibold">TCO: ${costPerKm.replace('.', ',')} € / km</span></div>` : ''}
+                            ${costPerKm ? `<div class="text-[11px] bg-white p-2 border rounded-xl flex justify-between text-gray-600"><span>Gesamtkosten: <b>${carTotalCost.toFixed(2).replace('.', ',')} €</b></span><span class="text-red-700 font-semibold">Kosten ÷ Kilometerstand: ${costPerKm.replace('.', ',')} € / km</span></div>` : ''}
                         </div>
                     `;
                 }).join('');
