@@ -337,3 +337,13 @@ P1 11/17=64,7 %, 10/24 Hauptaufgaben verifiziert; D05b/D06b weiter In Arbeit. N�
 ### Vorgezogener Stabilitätsbefund – WG-Organisator
 
 Nachgewiesen sind die produktive Browserabfrage für die Spalten `payload` und `updated_at` sowie fehlende UPDATE-Spaltenrechte für die Anwendungsrolle. Die vorhandenen RLS-Regeln sehen Schreibzugriff für Besitzer und Mitglieder vor. Die vorbereitete Migration ist auf die beiden benötigten Spalten beschränkt. ID, Eigentümer und anonymer Zugriff bleiben gesperrt. Ein isoliertes PostgreSQL-Szenario prüft Besitzer, Mitglied, unbeteiligtes Konto, anonymen Zugriff, veralteten Stand und Rücknahme der Freigabe. Keine produktive Schreibprobe. Der operative Nachweis wird im Veröffentlichungs-Prüfprotokoll des Migrations-PR ergänzt.
+
+### WG-Korrektur auf dem aktiven Backend bestätigt
+
+[PR #131](https://github.com/duhrrom11/toolya/pull/131) wurde nach erfolgreicher isolierter PostgreSQL-Prüfung gemergt. Die produktive Migration `20261118133027_restore_wg_save_permissions` ist angewendet. Der Datenbankkatalog bestätigt Änderungsrechte für `payload` und `updated_at`; ID und Eigentümer haben weiterhin keine Änderungsfreigabe und die anonyme Rolle hat null freigegebene Spalten. Row Level Security ist aktiv. Kein produktiver Schreibtest und keine produktiven Datensätze geändert. [GitHub Pages](https://github.com/duhrrom11/toolya/actions/runs/44314345089) · [Isolierter Test](https://github.com/duhrrom11/toolya/actions/runs/44314006466)
+
+### Technische Stichprobe und P1-Barrierefreiheit
+
+Der [OpenSEO-Crawl](https://app.openseo.so/p/6eddcfc6-d4a2-403b-a689-d02bc761a969/audit?auditId=e9451978-cd57-4244-90c7-75bfd44c4e37) erreichte 32 öffentliche HTML-URLs ohne JavaScript-Rendering, jeweils mit HTTP 200. 66 Hinweise, davon 27 Warnungen und 39 Informationen. Zehn Meldungen zu fehlendem Alt-Text betreffen fünf tatsächlich verschiedene Tool-HTMLs, jeweils inklusive der URL mit Versionsparameter. Der Quellcode bestätigt fehlende Bildbeschreibungen in den fünf Bildvorschauen. P1 ergänzt diese gezielt. Tastaturöffnung und Fokusführung der Foto-Modalfenster bleiben zu prüfen.
+
+14 Sitemap-Einträge haben im Quellcode Titel, Meta-Description und Canonical. Zehn dieser Einträge zeigen nach Ausführung des Anmelde-Skripts eine Weiterleitung für Besucher ohne Sitzung. Der HTTP-Crawl erfasst lediglich die statische Antwort. Der nächste reguläre P2-Schritt ist die Abstimmung öffentlicher Such-Einstiege mit geschützten Tool-Ansichten. Die 13 Canonical-Hinweise beziehen sich vorwiegend auf Parameter- und Indexvarianten. Indexbestätigungen und Core Web Vitals stehen aus.

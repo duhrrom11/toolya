@@ -60,7 +60,15 @@ async function get(path){
     assert.equal(hash(asset.body),hash(expectedAsset),'Admin static resource must match release byte for byte');
     admin.push({url:asset.url,status:200,expectedSha256:hash(expectedAsset),actualSha256:hash(asset.body),byteIdentical:true});
    }
-   result={revision,checkedAt:new Date().toISOString(),attempt,css:{url:css.url,expectedSha256:hash(expected),actualSha256:hash(css.body),byteIdentical:true},buddy:{url:buddy.url,expectedSha256:hash(expectedBuddy),actualSha256:hash(buddy.body),byteIdentical:true},themeStyles,pages,wishlist,estate,info,legacy,admin,scope:'Public static delivery only; authenticated production UI and private flows are not verified by this check.'};
+   const otherRoutes=[];
+   for(const route of ['/', '/dashboard/', '/tools/wishes/index.html','/tools/estate/handover.html','/tools/estate/print-key.html']){
+    const page=await get(route);
+    const file=route.endsWith('/')?route.slice(1)+'index.html':route.slice(1);
+    const expectedPage=fs.readFileSync(file);
+    assert.equal(hash(page.body),hash(expectedPage),'Static HTML must match release byte for byte: '+route);
+    otherRoutes.push({url:page.url,status:200,expectedSha256:hash(expectedPage),actualSha256:hash(page.body),byteIdentical:true});
+   }
+   result={revision,checkedAt:new Date().toISOString(),attempt,css:{url:css.url,expectedSha256:hash(expected),actualSha256:hash(css.body),byteIdentical:true},buddy:{url:buddy.url,expectedSha256:hash(expectedBuddy),actualSha256:hash(buddy.body),byteIdentical:true},themeStyles,pages,wishlist,estate,info,legacy,admin,otherRoutes,scope:'Public static delivery only; authenticated production UI and private flows are not verified by this check.'};
    break;
   }catch(error){lastError=error;if(attempt<6)await new Promise(r=>setTimeout(r,10000));}
  }
