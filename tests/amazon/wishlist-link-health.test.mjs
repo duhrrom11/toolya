@@ -8,6 +8,7 @@ const edge = get('supabase/functions/wishlist-discovery/index.ts');
 const healthSql = get('supabase/migrations/20261118_wishlist_link_health_daily.sql');
 const summarySql = get('supabase/migrations/20261118_wishlist_link_health_admin_summary.sql');
 const admin = get('admin-stats-dashboard/wishlist-finder.mjs');
+const reviewSql = get('supabase/migrations/20261118_wishlist_link_health_review_admin.sql');
 
 test('link check is daily, bounded, private and never changes published records', () => {
   assert.match(healthSql, /LIMIT 5\s+FOR UPDATE OF h SKIP LOCKED/);
@@ -27,6 +28,10 @@ test('only privileged admin can see aggregated health data', () => {
   assert.match(summarySql, /REVOKE ALL ON FUNCTION public\.wishlist_link_health_summary\(\) FROM PUBLIC, anon, authenticated/);
   assert.match(edge, /db\.rpc\('wishlist_link_health_summary'\)/);
   assert.match(admin, /healthStatus/);
+  assert.match(reviewSql, /GRANT EXECUTE ON FUNCTION public\.wishlist_link_health_review\(\) TO service_role/);
+  assert.match(reviewSql, /REVOKE ALL ON FUNCTION public\.wishlist_link_health_review\(\) FROM PUBLIC,anon,authenticated/);
+  assert.match(edge, /db\.rpc\('wishlist_link_health_review'\)/);
+  assert.match(admin, /healthReview/);
 });
 
 test('international finder still stages records for manual publication', () => {
