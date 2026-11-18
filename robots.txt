@@ -1,3 +1,5 @@
+# Keep pages crawlable so crawlers can read canonical and noindex tags.
 User-agent: *
 Allow: /
+
 Sitemap: https://toolya.app/sitemap.xml
