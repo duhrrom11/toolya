@@ -31,3 +31,18 @@ main > section + section { margin-top: 1.25rem; }
 .steps h3 { margin-top: 0; }
 aside { background: #e3f5fa; padding: .8rem; border-radius: .6rem; }
 @media (max-width: 34rem) { .intro { flex-wrap: wrap; } }
+
+.guide-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: .75rem; }
+.guide-calculator fieldset { min-inline-size: 0; border: 1px solid #d4e4ea; border-radius: .6rem; }
+.guide-calculator label { display: grid; gap: .35rem; margin-block: .5rem; }
+.guide-calculator [hidden] { display: none; }
+.guide-calculator :is(input, select) { box-sizing: border-box; width: 100%; min-height: 44px; padding: .35rem; font: inherit; }
+.guide-calculator button { border: 0; font: inherit; cursor: pointer; }
+.guide-calculator output { display: block; margin-block: .6rem; font-weight: 700; }
+.guide-table { border-collapse: collapse; width: 100%; }
+.guide-table th, .guide-table td { border-bottom: 1px solid #d4e4ea; padding: .4rem; text-align: start; }
+@media print {
+  body:has(.guide-print) :is(header, nav, footer, main > :not(.guide-print)) { display: none; }
+  body:has(.guide-print) { background: white; }
+  .guide-print { break-inside: avoid; }
+}
