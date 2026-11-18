@@ -169,7 +169,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  await desktop.locator('.ty-tool-card[data-id="wishlist"]').hover();
  await desktop.screenshot({path:'test-results/mascot-home-hover.png'});await desktopContext.close();
 
- for(const route of routes){await page.goto(origin+'/tools/'+route+'/');await page.waitForFunction(()=>window.toolyaBuddy);await verifyClipboard('tools/'+route);await page.locator('.toolya-signature-footer .ty-footer-mascot').waitFor();assert.equal(await page.locator('.toolya-signature-footer .ty-footer-mascot').count(),1,route+' selected mascot appears in footer');assert.equal(await page.locator('.toolya-buddy').count(),1,route);await page.evaluate(()=>toolyaBuddy.dismiss());await page.waitForFunction(()=>{const f=document.querySelector('.toolya-idle .ty-frame');return f&&!f.hidden});
+ for(const route of routes){await page.goto(origin+'/tools/'+route+'/');await page.waitForFunction(()=>window.toolyaBuddy);await verifyClipboard('tools/'+route);await page.locator('.toolya-signature-footer .ty-footer-wordmark').waitFor();assert.equal(await page.locator('.toolya-signature-footer img').count(),0,route+' no footer mascot');assert.equal(await page.locator('.toolya-buddy').count(),1,route);await page.evaluate(()=>toolyaBuddy.dismiss());await page.waitForFunction(()=>{const f=document.querySelector('.toolya-idle .ty-frame');return f&&!f.hidden});
   const measurement=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth,overflow:[...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();if(r.right<=321||r.width===0)return false;for(let p=e.parentElement;p;p=p.parentElement){if(/auto|scroll|hidden|clip/.test(getComputedStyle(p).overflowX)&&p.getBoundingClientRect().right<=321)return false}return true}).slice(0,20).map(e=>({tag:e.tagName,id:e.id,class:e.className,right:e.getBoundingClientRect().right}))}));
   if(route==='wishes')await page.screenshot({path:'test-results/mascot-wishes-mobile.png',fullPage:true});
   assert(measurement.scroll<=322,route+' overflow '+JSON.stringify(measurement));assert.equal(await page.evaluate(()=>toolyaBuddy.character),'purple');
@@ -225,11 +225,10 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  assert.equal(await reminderCheckbox.evaluate(el=>el===document.activeElement),true,'reminder checkbox retains focus after reopening');
  await page.getByRole('button',{name:'Erinnerung entfernen: Tastaturfokus Erinnerung'}).click();
  assert.equal(await page.locator('#reminder-text').evaluate(el=>el===document.activeElement),true,'reminder input receives focus after last reminder removed');
- await page.locator('.toolya-signature-footer .ty-footer-mascot').waitFor();
+ await page.locator('.toolya-signature-footer .ty-footer-wordmark').waitFor();
  assert.equal(await page.locator('footer').count(),1,'dashboard has only the shared footer');
  assert.equal((await page.locator('.ty-footer-wordmark').textContent()).trim(),(await page.locator('.b3-hub-logo').textContent()).trim(),'dashboard header/footer use identical wordmark');
- const footerMascot=await page.locator('.ty-footer-mascot').getAttribute('src');
- assert.match(footerMascot,/toolya_wishlist_(purple|turquoise)_welcome_1024\.png$/,'footer uses selected character artwork');
+ assert.equal(await page.locator('.toolya-signature-footer img').count(),0,'dashboard footer has no mascot image');
  await verifyClipboard('dashboard');await verifyRealFormClipboard('dashboard','#task-text','#reminder-text','Aufgabe kopieren');
  // Storage-limit regression: the 151st entry must be rejected with a visible message,
  // and the typed input must remain available. All data stays in this CI browser.
@@ -255,7 +254,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  await page.reload();await page.locator('#welcome-heading').waitFor();
  await page.setViewportSize({width:390,height:844});
  await page.screenshot({path:'test-results/dashboard-ux-mobile.png',fullPage:true});
- assert.equal(await page.locator('.ty-footer-mascot').isVisible(),true,'dashboard footer mascot visible on mobile');
+ assert.equal(await page.locator('.toolya-signature-footer img').count(),0,'dashboard footer mascot absent on mobile');
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'dashboard mobile horizontal overflow');
  await page.setViewportSize({width:320,height:812});
 
@@ -269,6 +268,6 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  for(const emotion of ['happy','proud','curious','thoughtful','surprised','concerned','sad','shy','cheeky','sleepy','laughing','grateful','motivated','puzzled','celebrating','affectionate']){
   await page.evaluate(async emotion=>{const p=await import('/shared/toolya/platform.mjs');p.buddy.dismiss();p.previewEmotion(emotion)},emotion);await page.waitForFunction(()=>{const f=document.querySelector('.tb-message-box .ty-frame');return f&&!f.hidden});
  }
- const donations=page.locator('.ty-kofi-banner .ty-kofi-action');await donations.first().waitFor({state:'attached'});assert.equal(await donations.first().getAttribute('href'),'https://ko-fi.com/duhrrom');assert.equal(await page.locator('.ty-kofi-banner').count(),1,'exactly one donation banner');assert.equal(await page.evaluate(()=>document.querySelector('.ty-kofi-banner').nextElementSibling?.classList.contains('toolya-signature-footer')),true,'donation banner directly before footer');assert.equal(await page.locator('.ty-kofi-joke').isVisible(),true);assert.equal(await page.locator('.ty-kofi-mascot').isVisible(),true);assert.equal(await page.locator('.ty-kofi-banner').textContent().then(t=>t.includes('Freiwillig unterstützen · Ko-fi')),false,'unwanted small print removed');
+ const donations=page.locator('.ty-kofi-banner .ty-kofi-action');await donations.first().waitFor({state:'attached'});assert.equal(await donations.first().getAttribute('href'),'https://ko-fi.com/duhrrom');assert.equal(await page.locator('.ty-kofi-banner').count(),1,'exactly one donation banner');assert.equal(await page.evaluate(()=>document.querySelector('.ty-kofi-banner').nextElementSibling?.classList.contains('toolya-signature-footer')),true,'donation banner directly before footer');assert.equal(await page.locator('.ty-kofi-joke').isVisible(),true);assert.equal(await page.locator('.ty-kofi-banner img').count(),0,'support strip has no mascot');assert.equal(await page.locator('.ty-kofi-banner').textContent().then(t=>t.includes('Freiwillig unterstützen · Ko-fi')),false,'unwanted small print removed');
  assert.deepEqual(errors,[],'runtime errors');assert.equal(blockedWrites,0,'no production writes attempted: '+blockedWriteUrls.join(', '));console.log('PASS: 12 tool routes, 320px reflow, both-character preferences, 16 emotions, atlas loading, touch/keyboard tickle, cooldown, critical and modal locks, reduced motion, Ko-fi and no runtime errors');
  }finally{for(const c of browser.contexts())for(const p of c.pages())if(!p.isClosed())await p.screenshot({path:'test-results/last-browser-state.png',fullPage:true}).catch(()=>{});await browser.close();server.close()}})().catch(e=>{console.error(e);process.exit(1)});
