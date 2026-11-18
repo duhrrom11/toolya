@@ -82,8 +82,9 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   await page.locator('#toolya-consent-settings').click();assert(await page.locator('#toolya-consent-panel').isVisible(),'late consent initialization works');
   for(const character of ['purple','turquoise']){
    await page.evaluate(character=>{localStorage.setItem('helferlein-toolya-preferences-v1',JSON.stringify({character}));},character);
-   await page.reload();await page.locator('.ty-footer-mascot').waitFor();
-   assert((await page.locator('.ty-footer-mascot').getAttribute('src')).includes(character),'footer follows '+character);
+   await page.reload();await page.locator('.toolya-signature-footer .ty-footer-wordmark').waitFor();
+   assert.equal(await page.locator('.toolya-signature-footer img').count(),0,'footer has no mascot regardless of '+character);
+   assert.equal(await page.evaluate(()=>toolyaBuddy.character),character,'selected companion still follows '+character);
   }
   console.log('Design foundation: 7 routes × 3 widths; both consent initialization orders; both characters passed. Production application/analytics requests blocked.');
  }finally{await browser?.close();await new Promise(r=>server.close(r));}
