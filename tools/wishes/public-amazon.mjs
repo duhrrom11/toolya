@@ -41,7 +41,7 @@ async function refreshCloud(currentGeneration){
  const cloud=$('wishlistCloud');
  cloud.replaceChildren();
  status('searchStatus','Zufällige Wunschlisten werden zusammengestellt …');
- const counted=await db.from('wishlist_directory').select('user_id',{count:'exact',head:true});
+ const counted=await db.from('wishlist_directory').select('user_id',{count:'exact'}).limit(1);
  if(currentGeneration!==generation||hasSearchCriteria())return;
  if(counted.error){status('searchStatus','Die Namenswolke konnte nicht geladen werden. Die Suche ist weiterhin verfügbar.');return}
  const total=counted.count||0;
