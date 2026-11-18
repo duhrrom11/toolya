@@ -106,7 +106,7 @@ Deno.serve(async(req:Request)=>{
   }
   if(body.action==='dismiss'){
    if(!Array.isArray(body.ids)||body.ids.length<1||body.ids.length>200||body.ids.some((id:any)=>typeof id!=='string'||!/^[0-9a-f-]{36}$/i.test(id)))return reply(400,{error:'Ungültige Auswahl.'});
-   const updated=must(await db.from('wishlist_discovery_candidates').update({status:'dismissed'}).in('id',body.ids).eq('status','new').select('id'));
+   const updated=must(await db.from('wishlist_discovery_candidates').update({status:'dismissed'}).in('id',body.ids).in('status',['new','duplicate']).select('id'));
    return reply(200,{ok:true,dismissed:updated.length});
   }
   if(body.action==='restore'){
