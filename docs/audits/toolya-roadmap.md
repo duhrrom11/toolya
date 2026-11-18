@@ -21,8 +21,8 @@ Gewicht = relative Arbeitsgröße (1 klein, 2 mittel, 3 groß, 5 sehr groß), ke
 | D06a | P1 – Design | 1 | Nachlass Besitzer/Vertrauenspersonen | Grüne UI-Flächen und inaktive Dark-CSS-Reste, zusätzlicher alter Footer bei Erben | Gemeinsame türkise Bedienelemente im Hellmodus, ein Footer mit erhaltenem Schlüsselhinweis | Estate-CSS mit vorhandenen Tokens verbinden; Footerhinweis in main erhalten | 2–4 h | D02; isolierte Nachlass-Prüfung | mittel | Verifiziert | PR #93; CI 43932478466; Pages 43933043137; Live-Farben/Footer und Bytegleichheit bestätigt |
 | D06b | P1 – Design | 2 | B3/Wishlist/Dashboard Formulare/Karten/Dialoge | Weitere historisch getrennte UI-Systeme | Konsistente Zustände und Eingaben | Übrige bestehende UI schrittweise mit Tokens verbinden | 1–2 Tage | D02; echte Ansichten/isolierte Fixtures | mittel | In Arbeit | B3, Wishlist, Dashboard Styles; erstes gemeinsames Kontrollpaket im Prüfbranch |
 | D07 | P1 – Design | 2 | Öffentliche Infoseiten | Eigener Header und zusätzliche Begleiterkarte | Einheitliche gemeinsame Navigation/Marke | Rechtsseiten/Galerie an vorhandene Komponenten anschließen | 2 h | D02 | niedrig | Verifiziert | PR #124; Quellstand e922776; neun Ansichten und drei erfolgreiche Checks; Release separat im PR |
-| D08 | P1 – Design | 1 | Öffentliche Wunschlisten-Navigation | Zwei kleine Textlinks im veröffentlichten Stand | Lesbare Sprunglinks mit sichtbarem Tastaturfokus und mindestens 44 px Bedienhöhe | Gemeinsame Farben und Fokusring nutzen, beide Sprungziele bei 320/768/1440 prüfen | 1 h | D02; Chromium-CI | niedrig | Umgesetzt | Live-Sichtung, CSS/HTML und erweiterter isolierter Playwright-Test; CI und Veröffentlichung ausstehend |
-| D09 | P1 – Design | 2 | Admin-Dashboard und Wunschlisten-Finder | Neue Finder-Route im alten Seiteninventar nicht erfasst | Admin-Aktionen auch mobil konsistent und nutzbar | Auth-Ansicht, Fehler-/Leerzustände und Admin-Navigation isoliert prüfen | 3–5 h | Isolierte Admin-Fixtures; keine echte Suche | mittel | Offen | Git-Dateiinventar und bestehende Admin-Quellen |
+| D08 | P1 – Design | 1 | Öffentliche Wunschlisten-Navigation | Zwei kleine Textlinks im veröffentlichten Stand | Lesbare Sprunglinks mit sichtbarem Tastaturfokus und mindestens 44 px Bedienhöhe | Gemeinsame Farben und Fokusring nutzen, beide Sprungziele bei 320/768/1440 prüfen | 1 h | D02; Chromium-CI | niedrig | Verifiziert | PR #128, Chromium 44310047480, Pages 44310630950, Live-Hashabgleich 44310632274 |
+| D09 | P1 – Design | 2 | Admin-Dashboard und Wunschlisten-Finder | Neue Finder-Route im alten Seiteninventar nicht erfasst | Admin-Aktionen auch mobil konsistent und nutzbar | Auth-Ansicht, Fehler-/Leerzustände und Admin-Navigation isoliert prüfen | 3–5 h | Isolierte Admin-Fixtures; keine echte Suche | mittel | In Arbeit | Gemeinsame Wortmarke/Aktionsstile und isolierte Prüfung für beide Admin-Seiten implementiert, CI und Veröffentlichung ausstehend |
 | S01 | P2 – SEO | 3 | Indexierung/Metadaten | Private Legacy-Seiten teils ohne noindex/canonical | Bewusste Indexierungsstrategie je Route | robots/sitemap/canonical und Auth-/Public-Seiten abgleichen | 3 h | P1-Abnahme | mittel | Offen | SEO-Inventur |
 | S02 | P2 – SEO | 3 | 12 Tools/Suchintention | Keine aktuelle vollständige Zuordnung | Eindeutige Themen und sinnvolle verlinkte Erklärungen | Keyword-/Seitenmatrix auf vorhandene Funktionen stützen | 4 h | P1; verfügbare SEO-Daten | niedrig | Offen | SEO-Fachanhang in Erstellung |
 | S03 | P2 – SEO | 3 | Performance/Schema/Social | Keine aktuellen CWV-Baselines; Metadaten teils veraltet | Korrekte Angaben, belastbare Baseline | Bilder/CDNs/schema prüfen; Messung ohne erfundene Werte | 4 h | P1; Messwerkzeuge | mittel | Offen | Quellcode; keine Rankingdaten erhoben |
@@ -48,12 +48,12 @@ Gewicht = relative Arbeitsgröße (1 klein, 2 mittel, 3 groß, 5 sehr groß), ke
 | Bereich | Verifiziert/Gesamtgewicht | Fortschritt | Status |
 |---|---:|---:|---|
 | Bestandsaufnahme | 5/8 | 62,5 % | In Arbeit |
-| P1 – Design-Konsistenz | 11/20 | 55 % | In Arbeit |
+| P1 – Design-Konsistenz | 12/20 | 60 % | In Arbeit |
 | P2 – SEO | 0/9 | 0 % | Offen |
 | P3 – Inhalte & Rechtstexte | 0/8 | 0 % | Offen |
 | Weitere Optimierungen | 0/10 | 0 % | In Arbeit |
 
-26 übergeordnete Aufgaben: 10 verifiziert, 16 nicht abgeschlossen. Die Aufteilungen D05 → D05a (1) + D05b (4) und D06 → D06a (1) + D06b (2) verändern das Gesamtgewicht nicht. Keine globale Prozentzahl für den noch wachsenden Prüfumfang.
+26 übergeordnete Aufgaben: 11 verifiziert, 15 nicht abgeschlossen. Die Aufteilungen D05 → D05a (1) + D05b (4) und D06 → D06a (1) + D06b (2) verändern das Gesamtgewicht nicht. Keine globale Prozentzahl für den noch wachsenden Prüfumfang.
 
 ## Fortsetzungsstand
 
@@ -314,3 +314,9 @@ PR [#127](https://github.com/duhrrom11/toolya/pull/127) ist gemergt und als `d59
 D08 ist auf `audit/p1-wishlist-jump-navigation` umgesetzt. Geänderte Produktdateien: `tools/wishes/public.html` und `tools/wishes/public-profiles.css`. Der vorhandene Test in `tests/browser/tool-pages-ui.spec.cjs` prüft beide Sprungziele, Tastaturfokus und Bedienhöhe bei 320, 768 und 1440 px. Nächste Aktion: Branch-CI prüfen, Navigation visuell abnehmen, mergen und Pages-Abgleich durchführen. Danach D09 und die verbleibenden Sonder-/Fehlerzustände in D05b/D06b abschließen. Reguläre P2-/P3-Umsetzung bleibt nach der P1-Abnahme.
 
 Die zwei konkret erfassten P1-Aufgaben ergänzen den bisherigen Umfang um drei Gewichtspunkte. Bestandsaufnahme 5/8, P1 11/20, P2 0/9, P3 0/8, weitere Optimierungen 0/10. Zehn von 26 Aufgaben verifiziert. Die beiden Supabase-Projekte wurden ausschließlich lesend geprüft.
+
+## Veröffentlichung D08 und nächstes Paket D09 – 18.11.2026
+
+D08 ist mit [PR #128](https://github.com/duhrrom11/toolya/pull/128) veröffentlicht. Release `7ea5b584b8d80fe71100ffb90161ef6d88403b80`, [Pages](https://github.com/duhrrom11/toolya/actions/runs/44310630950), [Live-Abgleich](https://github.com/duhrrom11/toolya/actions/runs/44310632274). Im Live-Abgleich 54 bytegleiche Dateien, darunter beide geänderten Wunschlisten-Dateien. Visuelle Sichtung aller drei Breiten im [Browserartefakt](https://github.com/duhrrom11/toolya/actions/runs/44310047480/artifacts/14430820415). Gewichteter P1-Fortschritt 12/20 = 60 %. Elf von 26 Aufgaben verifiziert.
+
+D09 läuft auf `audit/p1-admin-design-and-checks`. Beide Admin-Seiten verwenden gemeinsame Wortmarkenfarben/-typografie und größere Navigation. Der vorhandene Finder-Browsertest prüft jetzt beide Seiten bei drei Breiten, verweigerten Adminzugriff, leere Statistik und die synthetische Finder-Veröffentlichung. Der öffentliche statische Releaseprüfer erhält vier Admin-Dateien. Unabhängig davon wartet die bestehende Zwei-Geräte-Testfixture auf den Abschluss der Panelaktion, weil das simulierte Laden zwei aufeinanderfolgende Reads ausführt. Der Test ist in die Plattform-CI aufgenommen. Kein Produktivkonto und keine Änderungen an Produktivdaten. Nächste Aktion: CI und Admin-Sichtprüfung auswerten, danach Release prüfen. Vertrauliche Admin-Abläufe und verbleibende Sonderzustände weiterhin offen.
