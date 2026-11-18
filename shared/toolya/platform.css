@@ -36,3 +36,33 @@ button.toolya-settings-trigger.helferlein-gear{width:46px;min-width:46px;max-wid
 .toolya-buddy:not([data-tool="home"]) .toolya-idle,
 .toolya-buddy:not([data-tool="home"]) .toolya-context{display:none!important}
 .toolya-buddy:not([data-tool="home"]):not(:has(.tb-message-box:not([hidden]))){margin:0!important;padding:0!important;height:0!important;min-height:0!important}
+
+
+/* Settings: one collapsible Maskottchen group beside Account and Backup. */
+.ty-settings-panel details.toolya-appearance,
+.wishlist-settings-panel details.toolya-appearance,
+.dashboard-settings-panel details.toolya-appearance,
+.toolya-settings-dialog details.toolya-appearance{margin:10px 0;border:1px solid #d1e2e8;border-radius:13px;background:#f7fbfd;overflow:visible}
+details.toolya-appearance>summary{
+ display:list-item;cursor:pointer;min-height:44px;padding:12px 16px;
+ font-weight:750;font-size:1rem;color:#163b51;list-style-position:inside;
+}
+details.toolya-appearance>summary:focus-visible{outline:3px solid #0994a0;outline-offset:2px;border-radius:10px}
+details.toolya-appearance[open]>summary{border-bottom:1px solid #d1e2e8}
+details.toolya-appearance>.ty-settings-content{padding:12px 15px 16px;min-width:0}
+details.toolya-appearance .toolya-preferences{max-width:100%;margin:0;padding:7px 10px;border-radius:12px}
+.ty-settings-panel>.ty-settings-kofi-button,
+.wishlist-settings-panel>.ty-settings-kofi-button,
+.dashboard-settings-panel>.ty-settings-kofi-button,
+.toolya-settings-dialog>.ty-settings-kofi-button,
+[role=dialog]>.ty-settings-kofi-button{
+ display:flex;align-items:center;justify-content:center;gap:8px;
+ min-height:48px;margin:16px 0 0;padding:12px 16px;box-sizing:border-box;
+ border:1px solid #8bd9e2;border-radius:14px;
+ background:linear-gradient(105deg,#087d93,#07546c);color:#fff!important;
+ font-size:1rem;font-weight:800;text-decoration:none!important;
+ box-shadow:0 6px 17px #065c7828;
+}
+.ty-settings-kofi-button:hover{filter:brightness(1.09)}
+.ty-settings-kofi-button:focus-visible{outline:3px solid #f2a900;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.ty-settings-kofi-button{transition:none}}
