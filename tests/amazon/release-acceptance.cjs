@@ -17,6 +17,8 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   assert.equal(await page.locator('#homeNewWish,#homeNewList,#createList').count(),0);
   assert.equal(await page.locator('#search').count(),1);assert.equal(await page.locator('#profileForm').count(),1);assert.match(fs.readFileSync('tools/wishes/public-amazon.mjs','utf8'),/image_url/);
   assert.equal(await page.locator('#countryFilter').count(),1);
+  assert.equal(await page.locator('#bio,#interests,#interestFilter').count(),0,'old biography and interest controls removed');
+  assert.equal(await page.locator('#wishlistCloud .cloud-word').count(),1,'cloud still renders with 30-item ceiling');
   assert.equal(await page.locator('#wishlistCloud .cloud-word').count(),1);
   assert.equal(await page.locator('#results .profile-card').count(),0);
   assert.equal(await page.locator('#favorites').isVisible(),false,'empty favorites stay compact');
