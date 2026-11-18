@@ -70,7 +70,7 @@
     <link rel="stylesheet" href="assets/helferlein-accessibility.css?v=20261112-3">
     <script src="assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="assets/helferlein-dialogs.js"></script>
-<link rel="stylesheet" href="assets/toolya-home.css?v=20261115-auth-loop-fixed">
+<link rel="stylesheet" href="assets/toolya-home.css?v=20261118-guide-cards">
 <link rel="stylesheet" href="shared/toolya/alpha.css?v=20261115-alpha">
 <script type="module" src="shared/toolya/platform.mjs"></script>
 <script type="module" src="shared/toolya/home.mjs?v=20261115-auth-loop-fixed"></script>
@@ -144,24 +144,77 @@
             <!-- Tool 10 -->
             <!-- Tool 11 -->
             <div class="tool-card ty-tool-card" data-id="wishlist" data-category="organisation" data-icon="bag-heart"><a href="tools/wishes/index.html?v=20261115-session-v2" class="ty-tool-link"><img src="assets/toolya/home/wishlist.webp" alt="Illustration für die Suche nach öffentlichen Amazon-Wunschlisten" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Amazon-Wunschlisten finden</h3><p>Öffentliche Amazon-Wunschlisten nach Namen oder Organisation suchen – ohne nach dem Link zu fragen.</p></span></a><button type="button" class="fav-btn" data-id="wishlist" onclick="toggleFavorite('wishlist', event)" aria-label="Wishlist zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="kassenbon" data-category="finanzen" data-icon="coin"><a href="tools/budget/index.html?v=20261115-session-v2" class="ty-tool-link"><img src="assets/toolya/home/budget.webp" alt="Illustration für den Budgetplaner" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Haushaltsbuch</h3><p>Einnahmen, Ausgaben und Belege einfach im Blick.</p></span></a><button type="button" class="fav-btn" data-id="kassenbon" onclick="toggleFavorite('kassenbon', event)" aria-label="Haushaltsbuch zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="kisten" data-category="zuhause" data-icon="box-seam"><a href="tools/moving/index.html?v=20261115-session-v2" class="ty-tool-link"><img src="assets/toolya/home/moving.webp" alt="Illustration für den Umzugsplaner" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Umzugskisten</h3><p>Kisten planen, beschriften und den Überblick behalten.</p></span></a><button type="button" class="fav-btn" data-id="kisten" onclick="toggleFavorite('kisten', event)" aria-label="Umzugskisten zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="pflanzen" data-category="zuhause" data-icon="flower2"><a href="tools/plants/index.html?v=20261115-session-v2" class="ty-tool-link"><img src="assets/toolya/home/plants.webp" alt="Illustration für die Pflanzenpflege" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Pflanzenpflege</h3><p>Gießpläne erstellen, Pflanzen dokumentieren und fällige Termine sehen.</p></span></a><button type="button" class="fav-btn" data-id="pflanzen" onclick="toggleFavorite('pflanzen', event)" aria-label="Pflanzenpflege zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="wg-kasse" data-category="finanzen" data-icon="house-heart"><a href="tools/housemates/index.html?v=20261115-session-v2" class="ty-tool-link"><img src="assets/toolya/home/wg-organisator.webp" alt="Illustration für den WG-Organisator" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>WG-Organisator</h3><p>WG-Ausgaben aufteilen, Putzaufgaben verteilen und Einkäufe planen.</p></span></a><button type="button" class="fav-btn" data-id="wg-kasse" onclick="toggleFavorite('wg-kasse', event)" aria-label="WG-Organisator zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="notizen" data-category="organisation" data-icon="shield-lock"><a href="tools/estate/index.html?v=20261115-session-v2" class="ty-tool-link"><img src="assets/toolya/home/digitaler-nachlass.webp" alt="Illustration für den digitalen Nachlass" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Digitaler Nachlass</h3><p>Wichtige Informationen für deine Angehörigen ordnen.</p></span></a><button type="button" class="fav-btn" data-id="notizen" onclick="toggleFavorite('notizen', event)" aria-label="Digitaler Nachlass zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="kfz" data-category="unterwegs" data-icon="car-front"><a href="tools/car/index.html?v=20261115-session-v2" class="ty-tool-link"><img src="assets/toolya/home/autokosten.webp" alt="Illustration für den Autokosten-Rechner" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Autokosten</h3><p>Fahrzeugkosten, Wartung und Termine im Blick.</p></span></a><button type="button" class="fav-btn" data-id="kfz" onclick="toggleFavorite('kfz', event)" aria-label="Autokosten zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="haustier" data-category="tiere" data-icon="heart-pulse"><a href="tools/pet-health/index.html?v=20261115-session-v2" class="ty-tool-link"><img src="assets/toolya/home/tiergesundheit.webp" alt="Illustration für den Tiergesundheits-Manager" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Tiergesundheit</h3><p>Impfungen und Tierarztbesuche gut organisiert.</p></span></a><button type="button" class="fav-btn" data-id="haustier" onclick="toggleFavorite('haustier', event)" aria-label="Tiergesundheit zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="parken" data-category="unterwegs" data-icon="geo-alt"><a href="tools/parking/index.html?v=20261115-session-v2" class="ty-tool-link"><img src="assets/toolya/home/parkplatz-merker.webp" alt="Illustration für den Parkplatz-Merker" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Parkplatz-Merker</h3><p>Parkplatz speichern, Auto wiederfinden und Parkzeit im Blick behalten.</p></span></a><button type="button" class="fav-btn" data-id="parken" onclick="toggleFavorite('parken', event)" aria-label="Parkplatz-Merker zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="verleih" data-category="organisation" data-icon="arrow-left-right"><a href="tools/loans/index.html?v=20261115-session-v2" class="ty-tool-link"><img src="assets/toolya/home/verliehene-dinge.webp" alt="Illustration für verliehene Gegenstände" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Verliehene Dinge</h3><p>Leihgaben und Rückgaben im Blick behalten.</p></span></a><button type="button" class="fav-btn" data-id="verleih" onclick="toggleFavorite('verleih', event)" aria-label="Verliehene Dinge zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="energie" data-category="finanzen" data-icon="lightning-charge"><a href="tools/meters/index.html?v=20261115-session-v2" class="ty-tool-link"><img src="assets/toolya/home/zaehlerstaende.webp" alt="Illustration für die Zählerstand-Erfassung" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Zählerstände</h3><p>Verbrauch von Strom, Gas und Wasser verfolgen.</p></span></a><button type="button" class="fav-btn" data-id="energie" onclick="toggleFavorite('energie', event)" aria-label="Zählerstände zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div><div class="tool-card ty-tool-card" data-id="backform" data-category="zuhause" data-icon="cake2"><a href="tools/baking/index.html?v=20261115-session-v2" class="ty-tool-link"><img src="assets/toolya/home/backform-rechner.webp" alt="Illustration für den Backform-Rechner" width="100" height="100" class="ty-tool-art" loading="lazy"><span class="ty-tool-copy"><h3>Backform-Rechner</h3><p>Zutaten für deine Backform einfach umrechnen.</p></span></a><button type="button" class="fav-btn" data-id="backform" onclick="toggleFavorite('backform', event)" aria-label="Backform-Rechner zu Favoriten hinzufügen" aria-pressed="false"><img src="assets/vendor/bootstrap-icons/star.svg" alt="" width="24" height="24"></button></div></div>
-    </main>
-
-    <section class="container mx-auto px-4 max-w-7xl mt-8" aria-labelledby="parking-guide-title">
-      <h2 id="parking-guide-title" class="text-lg font-bold">Anleitungen zu den Toolya-Tools</h2>
-      <a href="/parkplatz-merker/" class="text-sky-700 underline">Parkplatz speichern und Auto wiederfinden – Schritt-für-Schritt-Anleitung</a>
-      <p><a href="/autokosten/" class="text-sky-700 underline">Autokosten erfassen und Tankbuch führen – Schritt-für-Schritt-Anleitung</a></p>
-      <p><a href="/umzugskisten/" class="text-sky-700 underline">Umzugskisten organisieren und beschriften – Schritt-für-Schritt-Anleitung</a></p>
-      <p><a href="/toolya-dashboard/" class="text-sky-700 underline">Toolya-Dashboard – Favoriten, Aufgaben und Erinnerungen</a></p>
-      <p><a href="/backform-rechner/" class="text-sky-700 underline">Backformen umrechnen und Zutatenmengen anpassen</a></p>
-      <p><a href="/zaehlerstaende/" class="text-sky-700 underline">Zählerstände für Strom, Gas und Wasser erfassen</a></p>
-      <p><a href="/amazon-wunschliste-veroeffentlichen/" class="text-sky-700 underline">Amazon-Wunschliste veröffentlichen – Schritt-für-Schritt-Anleitung</a></p>
-      <p><a href="/verliehene-dinge/" class="text-sky-700 underline">Verliehene Dinge – Gegenstände und Rückgaben erfassen</a></p>
-      <p><a href="/tiergesundheit/" class="text-sky-700 underline">Tiergesundheit – Impfungen und Tierarztbesuche dokumentieren</a></p>
-      <p><a href="/digitaler-nachlass/" class="text-sky-700 underline">Digitaler Nachlass – Tresor und Vertrauenspersonen einrichten</a></p>
-      <p><a href="/wg-organisator/" class="text-sky-700 underline">WG-Organisator – Ausgaben teilen und Putzplan erstellen</a></p>
-      <p><a href="/pflanzenpflege/" class="text-sky-700 underline">Pflanzenpflege mit Gießplan – Schritt-für-Schritt-Anleitung</a></p>
-      <p><a href="/haushaltsbuch/" class="text-sky-700 underline">Haushaltsbuch führen – Schritt-für-Schritt-Anleitung</a></p>
+    <section class="ty-guides container mx-auto px-4 max-w-7xl" id="anleitungen" aria-labelledby="guides-title">
+      <h2 class="b3-section-heading" id="guides-title">Anleitungen zu den Toolya-Tools</h2>
+      <ul class="ty-guide-grid">
+        <li><a class="ty-guide-card" data-id="parken" href="/parkplatz-merker/">
+          <span class="ty-guide-icon"><img src="assets/toolya/home/parkplatz-merker.webp" width="52" height="52" alt="" loading="lazy"></span>
+          <span class="ty-guide-copy"><strong>Parkplatz-Merker</strong><span>Parkplatz speichern und Auto wiederfinden</span></span>
+          <span class="ty-guide-arrow" aria-hidden="true">→</span>
+        </a></li>
+        <li><a class="ty-guide-card" data-id="kfz" href="/autokosten/">
+          <span class="ty-guide-icon"><img src="assets/toolya/home/autokosten.webp" width="52" height="52" alt="" loading="lazy"></span>
+          <span class="ty-guide-copy"><strong>Autokosten</strong><span>Fahrzeugkosten erfassen und Tankbuch führen</span></span>
+          <span class="ty-guide-arrow" aria-hidden="true">→</span>
+        </a></li>
+        <li><a class="ty-guide-card" data-id="kisten" href="/umzugskisten/">
+          <span class="ty-guide-icon"><img src="assets/toolya/home/moving.webp" width="52" height="52" alt="" loading="lazy"></span>
+          <span class="ty-guide-copy"><strong>Umzugskisten</strong><span>Kisten planen, beschriften und wiederfinden</span></span>
+          <span class="ty-guide-arrow" aria-hidden="true">→</span>
+        </a></li>
+        <li><a class="ty-guide-card" data-id="dashboard" href="/toolya-dashboard/">
+          <span class="ty-guide-icon"><img src="assets/vendor/bootstrap-icons/star.svg" width="32" height="32" alt="" loading="lazy"></span>
+          <span class="ty-guide-copy"><strong>Toolya-Dashboard</strong><span>Favoriten, Aufgaben und Erinnerungen verwalten</span></span>
+          <span class="ty-guide-arrow" aria-hidden="true">→</span>
+        </a></li>
+        <li><a class="ty-guide-card" data-id="backform" href="/backform-rechner/">
+          <span class="ty-guide-icon"><img src="assets/toolya/home/backform-rechner.webp" width="52" height="52" alt="" loading="lazy"></span>
+          <span class="ty-guide-copy"><strong>Backform-Rechner</strong><span>Backformen und Zutatenmengen umrechnen</span></span>
+          <span class="ty-guide-arrow" aria-hidden="true">→</span>
+        </a></li>
+        <li><a class="ty-guide-card" data-id="energie" href="/zaehlerstaende/">
+          <span class="ty-guide-icon"><img src="assets/toolya/home/zaehlerstaende.webp" width="52" height="52" alt="" loading="lazy"></span>
+          <span class="ty-guide-copy"><strong>Zählerstände</strong><span>Strom, Gas und Wasser dokumentieren</span></span>
+          <span class="ty-guide-arrow" aria-hidden="true">→</span>
+        </a></li>
+        <li><a class="ty-guide-card" data-id="wishlist" href="/amazon-wunschliste-veroeffentlichen/">
+          <span class="ty-guide-icon"><img src="assets/toolya/home/wishlist.webp" width="52" height="52" alt="" loading="lazy"></span>
+          <span class="ty-guide-copy"><strong>Amazon-Wunschlisten</strong><span>Eine öffentliche Wunschliste bei Toolya eintragen</span></span>
+          <span class="ty-guide-arrow" aria-hidden="true">→</span>
+        </a></li>
+        <li><a class="ty-guide-card" data-id="verleih" href="/verliehene-dinge/">
+          <span class="ty-guide-icon"><img src="assets/toolya/home/verliehene-dinge.webp" width="52" height="52" alt="" loading="lazy"></span>
+          <span class="ty-guide-copy"><strong>Verliehene Dinge</strong><span>Leihgaben erfassen und Rückgaben verfolgen</span></span>
+          <span class="ty-guide-arrow" aria-hidden="true">→</span>
+        </a></li>
+        <li><a class="ty-guide-card" data-id="haustier" href="/tiergesundheit/">
+          <span class="ty-guide-icon"><img src="assets/toolya/home/tiergesundheit.webp" width="52" height="52" alt="" loading="lazy"></span>
+          <span class="ty-guide-copy"><strong>Tiergesundheit</strong><span>Impfungen und Tierarztbesuche dokumentieren</span></span>
+          <span class="ty-guide-arrow" aria-hidden="true">→</span>
+        </a></li>
+        <li><a class="ty-guide-card" data-id="notizen" href="/digitaler-nachlass/">
+          <span class="ty-guide-icon"><img src="assets/toolya/home/digitaler-nachlass.webp" width="52" height="52" alt="" loading="lazy"></span>
+          <span class="ty-guide-copy"><strong>Digitaler Nachlass</strong><span>Tresor und Vertrauenspersonen einrichten</span></span>
+          <span class="ty-guide-arrow" aria-hidden="true">→</span>
+        </a></li>
+        <li><a class="ty-guide-card" data-id="wg-kasse" href="/wg-organisator/">
+          <span class="ty-guide-icon"><img src="assets/toolya/home/wg-organisator.webp" width="52" height="52" alt="" loading="lazy"></span>
+          <span class="ty-guide-copy"><strong>WG-Organisator</strong><span>Ausgaben teilen und einen Putzplan erstellen</span></span>
+          <span class="ty-guide-arrow" aria-hidden="true">→</span>
+        </a></li>
+        <li><a class="ty-guide-card" data-id="pflanzen" href="/pflanzenpflege/">
+          <span class="ty-guide-icon"><img src="assets/toolya/home/plants.webp" width="52" height="52" alt="" loading="lazy"></span>
+          <span class="ty-guide-copy"><strong>Pflanzenpflege</strong><span>Gießplan erstellen und Pflege festhalten</span></span>
+          <span class="ty-guide-arrow" aria-hidden="true">→</span>
+        </a></li>
+        <li><a class="ty-guide-card" data-id="kassenbon" href="/haushaltsbuch/">
+          <span class="ty-guide-icon"><img src="assets/toolya/home/budget.webp" width="52" height="52" alt="" loading="lazy"></span>
+          <span class="ty-guide-copy"><strong>Haushaltsbuch</strong><span>Einnahmen, Ausgaben und Belege erfassen</span></span>
+          <span class="ty-guide-arrow" aria-hidden="true">→</span>
+        </a></li>
+      </ul>
     </section>
+    </main>
 
     <!-- FAQ-Sektion -->
     <section class="b3-faq container mx-auto px-4 max-w-7xl mt-8 pt-8 border-t border-gray-200" aria-labelledby="faq-title">
