@@ -298,6 +298,7 @@ body.b3-home .b3-dashboard-card-arrow{font-size:30px;font-weight:800;color:#078a
   font-size:clamp(11px,2.5vw,13px)!important;white-space:nowrap!important;
   overflow:hidden;text-overflow:ellipsis;justify-content:center;
  }
+ body.b3-home .b3-hub-nav .ty-settings-label{display:none!important}
  body.b3-home .b3-hub-nav #settingsBtn{
   flex:0 0 44px;min-width:44px;max-width:44px;
   width:44px;height:44px;min-height:44px;padding:9px!important;
