@@ -746,10 +746,31 @@ async function reviewImage(page,id){
  for(let i=0;i<total;i++)console.log('TOOLYA_REVIEW|'+id+'|'+i+'|'+total+'|'+data.slice(i*size,(i+1)*size));
 }
 
+const previewPixel='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJ1sAAAAASUVORK5CYII=';
+async function verifyPhotoPreview(page,testInfo,tool,label){
+ const trigger=page.getByRole('button',{name:label,exact:true});
+ const dialog=page.getByRole('dialog',{name:'Bildvorschau',exact:true});
+ const close=dialog.getByRole('button',{name:'Schließen',exact:true});
+ for(const width of [320,768,1440]){
+  await page.setViewportSize({width,height:1000});
+  await trigger.focus();
+  await trigger.press('Enter');
+  await expect(dialog).toBeVisible();
+  await expect(close).toBeFocused();
+  await expect(dialog.getByRole('img',{name:/Vergrößertes/})).toBeVisible();
+  expect((await close.boundingBox()).height).toBeGreaterThanOrEqual(44);
+  expect((await dialog.boundingBox()).width).toBeLessThanOrEqual(width-28);
+  await page.screenshot({path:testInfo.outputPath('photo-preview-'+tool+'-'+width+'.png')});
+  if(width===768)await close.press('Space');
+  else await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+ }
+}
 for(const item of tools){
  test(item.tool+': shared controls on the real authenticated page at three widths',async({page},testInfo)=>{
   const fixture=item.tool==='autokosten-reifenwechsel'
-   ?{cars:[{id:1,name:'Isoliertes Testfahrzeug',plate:'TEST',km:1000}],events:[{id:2,carId:1,title:'Isolierte Wartung',type:'Inspektion',date:'2026-11-17',cost:42}],tires:[]}
+   ?{cars:[{id:1,name:'Isoliertes Testfahrzeug',plate:'TEST',km:1000,photo:previewPixel}],events:[{id:2,carId:1,title:'Isolierte Wartung',type:'Inspektion',date:'2026-11-17',cost:42}],tires:[]}
    :{entries:[{id:2,title:'Isolierter Testbeleg',entryType:'ausgabe',date:'2026-11-17',price:42,category:'Lebensmittel',photos:[]}],budgets:{Lebensmittel:100},goals:[{id:3,title:'Isoliertes Sparziel',target:100,current:20}]};
   await isolated(page,true,true,fixture);
   await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
@@ -849,6 +870,7 @@ for(const item of tools){
    expect(red[0]).toBeGreaterThan(red[1]);
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   }
+  if(item.tool==='autokosten-reifenwechsel')await verifyPhotoPreview(page,testInfo,'car','Fahrzeugfoto vergrößern');
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   // Existing account warning actions retain their red treatment.
   await page.locator('#settingsBtn').click();
@@ -865,7 +887,7 @@ for(const kind of ['moving','loans']){
   const moving=kind==='moving',errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   const snapshot=moving
-   ?{locations:[{id:1,name:'Isolierter Lagerort',icon:'📦'}],boxes:[{id:2,locId:1,name:'Isolierte Kiste',desc:'Synthetische Prüfansicht',value:42,tag:'Standard',barcode:'1234567890123',expiry:'2027-01-17',lentTo:'',subItems:[{name:'Isolierter Artikel',value:5}]}]}
+   ?{locations:[{id:1,name:'Isolierter Lagerort',icon:'📦'}],boxes:[{id:2,locId:1,name:'Isolierte Kiste',desc:'Synthetische Prüfansicht',value:42,photo:previewPixel,tag:'Standard',barcode:'1234567890123',expiry:'2027-01-17',lentTo:'',subItems:[{name:'Isolierter Artikel',value:5}]}]}
    :{contacts:[{id:1,name:'Isolierter Kontakt',phone:''}],inventory:[{id:3,title:'Isolierter Gegenstand',category:'Werkzeug',serial:'TEST'}],items:[{id:2,title:'Isolierter Testgegenstand',person:'Isolierter Kontakt',date:'2026-11-17',returnDate:'2026-12-17',category:'Werkzeug',status:'active',deposit:42,note:'Synthetische Prüfansicht',photo:''}]};
   await isolated(page,true,true,snapshot);
   await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
@@ -929,6 +951,7 @@ for(const kind of ['moving','loans']){
    const rgb=await danger.evaluate(e=>getComputedStyle(e).color.match(/[\d.]+/g).map(Number));expect(rgb[0]).toBeGreaterThan(rgb[1]);
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   }
+  if(moving)await verifyPhotoPreview(page,testInfo,kind,'Kistenfoto vergrößern');
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   expect(errors).toEqual([]);
  });
@@ -1011,6 +1034,7 @@ for(const kind of ['meters','plants']){
    if(['beetModal','energyTipsModal'].includes(id)){await surface.evaluate(e=>e.scrollTop=e.scrollHeight);await capture(id+'-end-320');}
    await page.evaluate(close=>window[close](),close);await expect(modal).toBeHidden();
   }
+  if(meters)await verifyPhotoPreview(page,testInfo,kind,'Zählerfoto vergrößern');
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   expect(errors).toEqual([]);
  });
@@ -1024,7 +1048,7 @@ for(const kind of ['parking','pet-health']){
   const pixel='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJ1sAAAAASUVORK5CYII=';
   const snapshot=parking
    ?{sessions:[{id:2,desc:'Isoliertes Testparkhaus',sector:'Testdeck B / Platz 42',date:'17.11.2026',timestamp:'2026-11-17T12:00:00Z',cost:4.5,gps:{lat:0,lng:0},photo:pixel}],activeEndTime:null}
-   :{pets:[{id:1,name:'Isoliertes Testtier',species:'Test-Rasse',chip:'TEST-123',food:'Isoliertes Futter',allergies:'Synthetischer Hinweis',tasso:true,photo:'',passport:pixel,vet:{name:'Isolierte Testpraxis',tel:'000',email:'fixture@example.invalid',address:'Synthetische Adresse'}}],events:[{id:2,petId:1,type:'Impfung',title:'Isolierter Testeintrag',date:'2026-11-17',expiryDate:'2027-11-17',cost:42,receipt:pixel}],meds:[{id:3,name:'Isolierter Vorrat',stock:'3 Packungen'},{id:4,name:'Isolierter Warnvorrat',stock:'fast leer'}]};
+   :{pets:[{id:1,name:'Isoliertes Testtier',species:'Test-Rasse',chip:'TEST-123',food:'Isoliertes Futter',allergies:'Synthetischer Hinweis',tasso:true,photo:pixel,passport:pixel,vet:{name:'Isolierte Testpraxis',tel:'000',email:'fixture@example.invalid',address:'Synthetische Adresse'}}],events:[{id:2,petId:1,type:'Impfung',title:'Isolierter Testeintrag',date:'2026-11-17',expiryDate:'2027-11-17',cost:42,receipt:pixel}],meds:[{id:3,name:'Isolierter Vorrat',stock:'3 Packungen'},{id:4,name:'Isolierter Warnvorrat',stock:'fast leer'}]};
   await isolated(page,true,true,snapshot);
   await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
   const route='/tools/'+kind+'/index.html';await page.goto(origin+route);
@@ -1113,6 +1137,7 @@ for(const kind of ['parking','pet-health']){
    await page.locator('#helpBox').evaluate(e=>e.scrollIntoView({block:'start'}));await capture('help-320');
    await page.evaluate(()=>closeSettings());
   }
+  await verifyPhotoPreview(page,testInfo,kind,parking?'Parkplatzfoto vergrößern':'Haustierfoto vergrößern');
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   expect(errors).toEqual([]);
  });

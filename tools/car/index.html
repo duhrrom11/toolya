@@ -264,9 +264,12 @@
     </div>
 
     <!-- MODAL: Foto & Beleg Zoom -->
-    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50" onclick="closeImageModal()">
-        <img id="zoomedImage" src="" alt="Vergrößertes Fahrzeugfoto oder Dokument" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain">
-    </div>
+    <dialog id="imageModal" class="b3-photo-dialog" aria-label="Bildvorschau" onclick="if (event.target === this) closeImageModal()">
+        <div class="b3-photo-panel">
+            <img id="zoomedImage" src="" alt="Vergrößertes Fahrzeugfoto oder Dokument" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain">
+            <button type="button" class="b3-action b3-outline" onclick="closeImageModal()" autofocus>Schließen</button>
+        </div>
+    </dialog>
 
     <!-- Einstellungs-Modal mit Supabase Auth -->
     <div id="settingsModal" class="b3-tool-dialog fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
@@ -922,7 +925,7 @@ async function toolyaCloudBoot(tool) {
                         <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
                             <div class="flex items-center justify-between gap-3 b3-car-card-heading">
                                 <div class="flex items-center space-x-3 b3-car-card-identity">
-                                    ${c.photo ? `<img src="${c.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage('${c.photo}')" title="Foto vergrößern">` : defaultCarIcon}
+                                    ${c.photo ? `<button type="button" class="b3-photo-trigger" aria-label="Fahrzeugfoto vergrößern" onclick="zoomImage(this.firstElementChild.src)"><img alt="" src="${c.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0"></button>` : defaultCarIcon}
                                     <div>
                                         <h4 class="font-bold text-sm text-red-800">${c.name}</h4>
                                         <p class="text-xs text-gray-600">${c.plate || 'k.Kennzeichen'} ${c.km ? '| ' + c.km + ' km' : ''}</p>
@@ -1080,9 +1083,9 @@ async function toolyaCloudBoot(tool) {
 
         function zoomImage(src) {
             document.getElementById('zoomedImage').src = src;
-            document.getElementById('imageModal').classList.remove('hidden');
+            document.getElementById('imageModal').showModal();
         }
-        function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
+        function closeImageModal() { document.getElementById('imageModal').close(); }
 
         function downloadICS(title, dateStr) {
             let d = new Date(dateStr);
