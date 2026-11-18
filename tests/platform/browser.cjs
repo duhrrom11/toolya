@@ -152,7 +152,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  assert(await page.locator('.ty-hero-copy h1').evaluate(e=>e.getBoundingClientRect().right<=innerWidth&&e.scrollWidth<=e.clientWidth+1),'hero text fits mobile width');
  assert(await page.locator('#settingsBtn img').isVisible(),'mobile gear icon visible');
  await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();
- await page.getByLabel('Animation',{exact:true}).selectOption('Aus');
+ await page.locator('details.toolya-appearance').evaluate(e=>{e.open=true});await page.getByLabel('Animation',{exact:true}).selectOption('Aus');
  await page.locator('details.toolya-appearance').evaluate(e=>{e.open=true});await page.getByLabel('Begleiter ausblenden',{exact:true}).check();
  await page.locator('#cancelSettingsBtn').click();
  assert(await hero.evaluate(e=>e.classList.contains('ty-duo-hidden')),'duo honors hidden preference');
@@ -166,7 +166,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  await desktopContext.route('**/*',guard);const desktop=await desktopContext.newPage();desktop.on('pageerror',e=>errors.push(e.message));
  await desktop.goto(origin);await desktop.waitForFunction(()=>window.toolyaHomeReady===true);await desktop.evaluate(()=>toolyaBuddy.dismiss());
  await desktop.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();
- await desktop.getByLabel('Animation',{exact:true}).selectOption('Normal');
+ await desktop.locator('details.toolya-appearance').evaluate(e=>{e.open=true});await desktop.getByLabel('Animation',{exact:true}).selectOption('Normal');
  await desktop.locator('#cancelSettingsBtn').click();
  await desktop.locator('.b3-dashboard-card').hover();
  assert.equal(await desktop.locator('.ty-hero-stage').getAttribute('data-reaction'),null,'both header mascots remain static on hover');
