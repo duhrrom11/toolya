@@ -250,3 +250,72 @@ body.b3-home .toolya-buddy:has(.tb-message-box:not([hidden])) .tb-message-box{bo
   outline:3px solid #0a8497;outline-offset:3px
  }
 }
+
+
+/* 2026-11-18: Home navigation and Dashboard entry.
+   Single-line header on phones; favorite stars on tool cards are unaffected. */
+body.b3-home .b3-hub-logo{white-space:nowrap}
+body.b3-home .b3-hub-logo .b3-hub-logo-mark{display:none!important}
+body.b3-home .b3-hero-preview.b3-dashboard-teaser{
+ display:block!important;width:min(1340px,93.2%);margin:0 auto 14px;
+ padding:0;background:transparent;border:0;box-shadow:none;backdrop-filter:none;
+}
+body.b3-home .b3-dashboard-card{
+ display:flex;align-items:center;gap:16px;min-height:100px;
+ padding:18px 22px;border:1px solid #c4e5ec;border-radius:22px;
+ background:linear-gradient(115deg,#ecfbfd,#f4f6ff);
+ text-decoration:none!important;color:#153952!important;
+ box-shadow:0 8px 24px #0b53651a;transition:transform .18s,box-shadow .18s;
+}
+body.b3-home .b3-dashboard-card:hover{transform:translateY(-2px);box-shadow:0 14px 32px #0b536522}
+body.b3-home .b3-dashboard-card:focus-visible{outline:3px solid #0a8a9a;outline-offset:3px}
+body.b3-home .b3-dashboard-card-icon{
+ display:grid;place-items:center;width:65px;height:65px;flex:0 0 65px;
+ border-radius:18px;background:#d5f3f8;color:#095978
+}
+body.b3-home .b3-dashboard-card-icon img{width:32px;height:32px}
+body.b3-home .b3-dashboard-card-copy{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0}
+body.b3-home .b3-dashboard-card-copy strong{font-size:clamp(21px,2.6vw,29px);line-height:1.15;color:#0b5264}
+body.b3-home .b3-dashboard-card-copy>span{font-size:clamp(13px,1.5vw,16px);line-height:1.4;color:#48677b}
+body.b3-home .b3-dashboard-card-arrow{font-size:30px;font-weight:800;color:#078a99}
+@media(max-width:790px){
+ body.b3-home .b3-hub-topbar{
+  display:flex;flex-wrap:nowrap!important;align-items:center;
+  gap:8px;padding:10px clamp(10px,3vw,19px);min-height:64px;
+ }
+ body.b3-home .b3-hub-logo{
+  flex:0 0 auto;min-width:0;font-size:clamp(21px,5vw,27px)!important;
+  letter-spacing:-1px
+ }
+ body.b3-home .b3-hub-nav{
+  width:auto!important;max-width:none!important;min-width:0!important;
+  flex:1 1 auto!important;display:flex;flex-wrap:nowrap!important;
+  gap:7px;justify-content:flex-end;align-items:center;
+ }
+ body.b3-home .b3-hub-nav #userInfo{
+  display:inline-flex;min-width:0;max-width:145px;
+  min-height:44px;flex:0 1 auto;padding:8px 10px!important;
+  font-size:clamp(11px,2.5vw,13px)!important;white-space:nowrap!important;
+  overflow:hidden;text-overflow:ellipsis;justify-content:center;
+ }
+ body.b3-home .b3-hub-nav .ty-settings-label{display:none!important}
+ body.b3-home .b3-hub-nav #settingsBtn{
+  flex:0 0 44px;min-width:44px;max-width:44px;
+  width:44px;height:44px;min-height:44px;padding:9px!important;
+ }
+ body.b3-home .b3-hero-preview.b3-dashboard-teaser{width:calc(100% - 24px);margin:0 auto 8px}
+ body.b3-home .b3-dashboard-card{gap:12px;padding:13px 14px;min-height:82px;border-radius:18px}
+ body.b3-home .b3-dashboard-card-icon{width:52px;height:52px;flex-basis:52px;border-radius:14px}
+ body.b3-home .b3-dashboard-card-icon img{width:27px;height:27px}
+ body.b3-home .b3-dashboard-card-copy strong{font-size:20px}
+ body.b3-home .b3-dashboard-card-copy>span{font-size:12px}
+ body.b3-home .b3-dashboard-card-arrow{font-size:23px}
+}
+@media(max-width:360px){
+ body.b3-home .b3-hub-topbar{gap:5px;padding:9px 9px}
+ body.b3-home .b3-hub-nav{gap:5px}
+ body.b3-home .b3-hub-logo{font-size:20px!important}
+ body.b3-home .b3-hub-nav #userInfo{max-width:113px;padding:7px 6px!important;font-size:11px!important}
+ body.b3-home .b3-dashboard-card-copy>span{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){body.b3-home .b3-dashboard-card{transition:none}}

@@ -24,17 +24,25 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
     assert(brand.font.startsWith('Inter'),'shared existing brand font');assert.equal(brand.weight,'900');assert.equal(brand.text,'Toolya');
     if(route==='/index.html'){
      assert.equal(await page.locator('.b3-hub-logo').evaluate(el=>getComputedStyle(el).fontFamily),brand.font,'home and footer font match');
-     const dashboardLink=page.locator('.b3-hub-nav .b3-dashboard-link');
-     assert.equal(await dashboardLink.getAttribute('href'),'dashboard/','dashboard points to actual personal dashboard');
+     const dashboardCard=page.locator('.b3-dashboard-card');
+     assert.equal(await dashboardCard.getAttribute('href'),'dashboard/','dashboard card opens personal dashboard');
+     assert.equal(await page.locator('.b3-hero-preview .b3-preview-list').count(),0,'favorite preview removed');
+     assert.equal(await page.locator('.b3-hub-topbar .b3-hub-logo img').count(),0,'brand has no mascot');
      if(width<=790){
-      assert(await dashboardLink.isVisible(),'mobile Dashboard link must be visible at '+width);
-      const dashboardRect=await dashboardLink.boundingBox();
-      assert(dashboardRect&&dashboardRect.height>=44&&dashboardRect.width>=100,'Dashboard has a large mobile tap target at '+width);
-      assert(dashboardRect.x>=0&&dashboardRect.x+dashboardRect.width<=width+1,'Dashboard link fits mobile width '+width);
+      assert(await dashboardCard.isVisible(),'Dashboard card must be visible at '+width);
+      const rect=await dashboardCard.boundingBox();
+      assert(rect&&rect.height>=74&&rect.x>=0&&rect.x+rect.width<=width+1,'Dashboard card fits mobile width '+width);
+      const topbar=await page.locator('.b3-hub-topbar').evaluate(el=>({
+       row:[...el.querySelectorAll('.b3-hub-logo,#userInfo,#settingsBtn')].map(node=>({top:node.getBoundingClientRect().top,bottom:node.getBoundingClientRect().bottom})),
+       width:el.getBoundingClientRect().width
+      }));
+      assert(Math.max(...topbar.row.map(x=>x.top))-Math.min(...topbar.row.map(x=>x.top))<19,'brand/account/settings stay on one row at '+width);
      }
-
      const guides=page.locator('#anleitungen .ty-guide-card');
      assert.equal(await guides.count(),13,'all public guides are visible as links');
+     const guideIds=await guides.evaluateAll(links=>links.map(a=>a.dataset.id));
+     const toolIds=await page.locator('#toolsGrid .tool-card').evaluateAll(cards=>cards.map(card=>card.dataset.id));
+     assert.deepEqual(guideIds,['dashboard',...toolIds],'guides follow tool cards and begin with Dashboard');
      const boxes=await guides.evaluateAll(links=>links.map(link=>{
       const bounds=link.getBoundingClientRect();
       return {left:bounds.left,right:bounds.right,height:bounds.height};
