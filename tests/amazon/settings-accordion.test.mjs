@@ -25,7 +25,7 @@ test('legacy account and backup controls are retained inside native, initially c
  assert.equal(account.querySelector('#register'),register);
  assert.equal(data.querySelector('#backup'),backup);
  assert.equal(modal.querySelectorAll('details.toolya-appearance').length,1);
- register.click();assert.equal(invoked,1,'original event listener retained');
+ register.dispatchEvent(new doc.defaultView.Event('click'));assert.equal(invoked,1,'original event listener retained');
  assert.equal(unifyToolSettings(modal),true);
  assert.equal(modal.querySelectorAll('[data-settings-section]').length,2,'idempotent conversion');
  assert.equal(doc.getElementById('closeSettingsBtn').closest('.header')!==null,true);
