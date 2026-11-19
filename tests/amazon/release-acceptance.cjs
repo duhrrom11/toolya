@@ -22,7 +22,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   assert.equal(await page.locator('#results .profile-card').count(),0);
   assert.equal(await page.locator('#favorites').isVisible(),false,'empty favorites stay compact');
   assert.equal(await page.locator('#wishCreateSection .wish-creation-tile').count(),3,'three creation cards');
-  await page.locator('.ty-tool-hero-mascot').waitFor();
+  await page.waitForFunction(()=>{const img=document.querySelector('.ty-tool-hero-mascot');return img?.complete&&img.naturalWidth===400&&img.getAttribute('src')?.endsWith('_welcome_400.webp');});
   // Wishlist must use the same shared Toolya settings surface, not a minimal fallback.
   assert.equal(await page.locator('#toolya-display-settings').count(),0,'no standalone fallback settings');
   assert.equal(await page.locator('#settingsModal .toolya-preferences').count(),1,'shared appearance panel mounted once');
