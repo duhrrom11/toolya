@@ -5,10 +5,12 @@ import {readFileSync} from 'node:fs';
 const src=readFileSync(new URL('../../tools/wishes/public-amazon.mjs',import.meta.url),'utf8');
 
 test('profile cards never embed the general Amazon product search',()=>{
-  const card=src.slice(src.indexOf('function card('),src.indexOf('function renderIdeas('));
+  const card=src.slice(src.indexOf('function card('),src.indexOf('function hasSearchCriteria(){'));
   assert.ok(card.startsWith('function card('),'profile renderer exists');
   assert.doesNotMatch(card,/amazonSearch\(/,'no Amazon search form in profile details');
-  assert.match(card,/Original bei Amazon öffnen/,'original Amazon wishlist links remain');
+  assert.match(card,/amazonListUrl\(l\.url\)/,'original Amazon wishlist URLs remain');
+  assert.match(card,/profile-wishlist-link/,'original wishlist links still render as clickable cards');
+  assert.doesNotMatch(src,/function renderIdeas\(|amazonSearchUrl|rankProducts/,'removed recommendations are not reintroduced');
 });
 
 test('general Amazon product-search form is absent from the entire Wishlist page',()=>{
