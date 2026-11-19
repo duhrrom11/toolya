@@ -1,0 +1,30 @@
+/* Continuous, seamless wishlist creation marquee. Scoped to the replaced cloud section. */
+body.wishlist-redesign #wishlistCloudSection.wish-create-section{
+ overflow:hidden; padding:clamp(20px,3vw,34px) 0;
+ background:linear-gradient(125deg,#e9fbfd 0%,#f8f7ff 65%,#f2fcff 100%);
+ border:1px solid #cbeaf3;
+}
+body.wishlist-redesign .wish-create-heading{padding:0 clamp(18px,3vw,34px)}
+body.wishlist-redesign .wish-create-heading h2{margin:6px 0 8px;font-size:clamp(24px,3vw,33px);color:#142c4d}
+body.wishlist-redesign .wish-create-heading p{margin:0;color:#43627a;max-width:690px;line-height:1.5}
+body.wishlist-redesign .wish-create-marquee{overflow:hidden;position:relative;margin-top:22px;mask-image:linear-gradient(to right,transparent,#000 5%,#000 95%,transparent)}
+body.wishlist-redesign .wish-create-track{display:flex;width:max-content;animation:wishCreateDrift 32s linear infinite;will-change:transform}
+body.wishlist-redesign .wish-create-group{display:flex;flex:0 0 auto;gap:18px;padding-right:18px}
+body.wishlist-redesign .wish-create-card{display:flex;align-items:center;gap:15px;box-sizing:border-box;width:clamp(285px,35vw,380px);min-height:175px;padding:19px 20px;border:1px solid #d6eaf0;border-radius:22px;background:#fff;box-shadow:0 12px 30px #124e6814}
+body.wishlist-redesign .wish-create-art{display:grid;place-items:center;flex:0 0 82px;min-height:93px;font-size:44px;border-radius:18px;background:#ecfaff}
+body.wishlist-redesign .wish-create-card--wedding .wish-create-art{background:#fff1f7}
+body.wishlist-redesign .wish-create-card--normal .wish-create-art{background:#fff5e6}
+body.wishlist-redesign .wish-create-content{min-width:0}
+body.wishlist-redesign .wish-create-content h3{margin:0 0 7px;font-size:1.1rem;color:#17324d}
+body.wishlist-redesign .wish-create-content p{margin:0 0 11px;font-size:.9rem;line-height:1.4;color:#49657b}
+body.wishlist-redesign .wish-create-link{display:inline-flex;gap:5px;align-items:center;min-height:44px;color:#066f81;font-weight:750;text-decoration:underline;text-underline-offset:3px}
+body.wishlist-redesign .wish-create-link:focus-visible{outline:3px solid #e39b19;outline-offset:3px;border-radius:3px}
+body.wishlist-redesign .wish-create-marquee:hover .wish-create-track,
+body.wishlist-redesign .wish-create-marquee:focus-within .wish-create-track{animation-play-state:paused}
+body.wishlist-redesign .wish-create-bottom,
+body.wishlist-redesign .wish-create-disclosure{padding:0 clamp(18px,3vw,34px);margin:16px 0 0;color:#456678;font-size:.93rem}
+body.wishlist-redesign .wish-create-bottom a{font-weight:750;color:#066f81}
+body.wishlist-redesign .wish-create-disclosure{font-size:.78rem;margin-top:9px}
+@keyframes wishCreateDrift{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(max-width:650px){body.wishlist-redesign .wish-create-card{width:300px;min-height:165px;padding:14px;gap:12px}body.wishlist-redesign .wish-create-art{flex-basis:65px;min-height:80px;font-size:35px}body.wishlist-redesign .wish-create-content h3{font-size:1rem}body.wishlist-redesign .wish-create-group{gap:12px;padding-right:12px}body.wishlist-redesign .wish-create-track{animation-duration:29s}}
+@media(prefers-reduced-motion:reduce){body.wishlist-redesign .wish-create-track{animation:none;will-change:auto}body.wishlist-redesign .wish-create-marquee{overflow-x:auto;mask-image:none;scroll-snap-type:x proximity}body.wishlist-redesign .wish-create-card{scroll-snap-align:start}}
