@@ -35,7 +35,7 @@ function card(p,detail=false,preview=false){
  const root=text('article','','profile-card'+(full?' profile-card--detail':' profile-card--compact'));
  const hero=text('div','','profile-hero');
  const person=text('div','','person');
- const avatar=text('span',p.display_name.split(/\\s+/).filter(Boolean).map(x=>x[0]).slice(0,2).join('').toUpperCase(),'avatar');
+ const avatar=text('span',p.display_name.split(/\s+/).filter(Boolean).map(x=>x[0]).slice(0,2).join('').toUpperCase(),'avatar');
  avatar.setAttribute('aria-hidden','true');
  if(p.imported){
   const img=document.createElement('img');img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';img.className='imported-logo';
@@ -55,7 +55,7 @@ function card(p,detail=false,preview=false){
  root.append(hero);
  if(p.imported){
   root.append(text('p','Name aus öffentlich verlinkter Quelle · Identität nicht von Toolya bestätigt.','profile-source-note'));
-  if(p.source_url&&/^https:\\/\\//.test(p.source_url)){
+  if(p.source_url&&/^https:\/\//.test(p.source_url)){
    const source=text('a','Quelle des Eintrags ansehen ↗','profile-source-link');
    source.href=p.source_url;source.target='_blank';source.rel='noopener noreferrer';root.append(source);
   }
@@ -83,7 +83,7 @@ function card(p,detail=false,preview=false){
   if(!preview&&p.imported){
    const report=text('a','Falschen Namen oder nicht mehr öffentliche Liste melden ↗','profile-report-link');
    const subject='Korrektur eines öffentlichen Amazon-Wunschlisten-Eintrags';
-   const message='Bitte diesen Toolya-Eintrag prüfen:\\n'+profileUrl(p.user_id)+'\\n\\nGrund der Meldung (bitte ergänzen):\\n';
+   const message='Bitte diesen Toolya-Eintrag prüfen:\n'+profileUrl(p.user_id)+'\n\nGrund der Meldung (bitte ergänzen):\n';
    report.href='mailto:info@toolya.app?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(message);
    root.append(report);
   }
