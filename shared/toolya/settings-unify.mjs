@@ -9,7 +9,12 @@ export function unifyToolSettings(modal) {
  const isSupport=node=>node.matches?.('.ty-settings-kofi-button');
  const isHeader=node=>node.matches?.('.wishlist-settings-heading') ||
    (node.querySelector?.('#closeSettingsBtn,[aria-label="Einstellungen schließen"]') &&
-    !node.querySelector?.('input'));
+    !node.querySelector?.('input')) ||
+   (node===children[0] &&
+    (/^H[234]$/.test(node.tagName) && /einstellungen/i.test(node.textContent) ||
+     node.querySelector?.('h2,h3,h4') && node.querySelector?.('button') &&
+     /einstellungen/i.test(node.querySelector('h2,h3,h4').textContent) &&
+     !node.querySelector('input')));
  const isFooter=node=>node.matches?.('.wishlist-settings-footer,.b3-hub-settings-footer,.dashboard-settings-close') ||
    (node.id==='cancelSettingsBtn' || (node.querySelector?.('#cancelSettingsBtn') && !node.querySelector?.('input'))) ||
    (node.matches?.('button') && /^(schließen|schliessen|✕|×)$/i.test(node.textContent.trim()));
