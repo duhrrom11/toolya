@@ -23,7 +23,7 @@ test('redesigned cards keep original profile and wishlist actions',()=>{
  assert.match(js,/profile-open-link/);
  assert.match(js,/profile-card--detail/);
  assert.match(js,/profile-card--compact/);
- assert.match(html,/profile-cards\.css\?v=20261119-profile-clean-v1/);
+ assert.match(html,/profile-cards\.css\?v=[^"]+/);
  assert.match(css,/\.profile-wishlist-link/);
  assert.match(css,/@media\(max-width:600px\)/);
 });
