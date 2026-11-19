@@ -190,14 +190,17 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
    if(!panel)return null;
    return {
     converted:panel.dataset.toolyaAccordion==='1',
-    debug:{body:document.body.className,modalCount:document.querySelectorAll('#settingsModal,#settings-modal').length,panelTag:panel.tagName,panelClass:panel.className,attrs:panel.dataset.toolyaAccordion||null,childClasses:[...panel.children].map(n=>n.className||n.tagName).slice(0,9),heroCount:document.querySelectorAll('.ty-tool-hero').length,tool:location.pathname},
+
     account:panel.querySelectorAll('details[data-settings-section="account"]').length,
     backup:panel.querySelectorAll('details[data-settings-section="backup"]').length,
     appearance:panel.querySelectorAll('details.toolya-appearance').length,
     allClosed:[...panel.querySelectorAll('details[data-settings-section],details.toolya-appearance')].every(d=>!d.open)
    };
   });
-  if(settingsSnapshot){
+  // Legacy CloudOnly tools redirect guests to /index.html: do not mistake the
+  // homepage's own settings for the tool's accordions. Signed-in routes are
+  // exercised separately in the isolated home-auth browser test.
+  if(settingsSnapshot && new URL(page.url()).pathname.startsWith('/tools/'+route+'/')){
    assert(settingsSnapshot.converted,route+' settings panel uses shared accordion: '+JSON.stringify(settingsSnapshot));
    assert.equal(settingsSnapshot.account,1,route+' has exactly one account accordion');
    assert.equal(settingsSnapshot.appearance,1,route+' has exactly one mascot accordion');
