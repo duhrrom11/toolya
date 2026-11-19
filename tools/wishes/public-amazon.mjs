@@ -336,8 +336,6 @@ $('search').oninput=()=>{
 };
 $('submitSearch').onclick=()=>{page=0;search()};
 for(const id of['countryFilter','occasionFilter'])$(id).onchange=()=>{page=0;search()};$('resetFilters').onclick=()=>{$('search').value='';for(const id of['countryFilter','occasionFilter'])$(id).value='';page=0;search()};$('prevPage').onclick=()=>{page=Math.max(0,page-1);search()};$('nextPage').onclick=()=>{page++;search()};
-function syncWishMascot(){const img=$('wishLandingMascot');if(!img)return;const character=window.toolyaBuddy?.character==='purple'?'purple':'turquoise';const next=new URL('../../assets/toolya/originals/toolya_wishlist_'+character+'_welcome_1024.png',import.meta.url).href;if(img.src!==next)img.src=next;}
-syncWishMascot();window.addEventListener('storage',syncWishMascot);document.addEventListener('toolya:preferences-changed',syncWishMascot);
 renderFavorites();db.auth.onAuthStateChange(event=>{
  if(event==='PASSWORD_RECOVERY'){
   $('settingsRecoveryPanel').hidden=false;
