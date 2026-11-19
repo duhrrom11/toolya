@@ -206,5 +206,11 @@ function mountToolHero(){
  else {if(heading){heading.hidden=true;}const oldBack=old.previousElementSibling;if(oldBack?.tagName==='A'&&oldBack.getAttribute('href')?.includes('index.html'))oldBack.hidden=true;}
  syncToolHeroMascot();
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountToolHero,{once:true});else mountToolHero();
+function finalizeToolSettingsAndHeader(){
+ // Some tool dialogs are inserted after the initial preference pass.
+ // Normalize against the final DOM tree and keep the conversion idempotent.
+ if(tool!=='home')unifyToolSettings(document.querySelector('#settingsModal,#settings-modal')||fallbackDialog);
+ mountToolHero();
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',finalizeToolSettingsAndHeader,{once:true});else finalizeToolSettingsAndHeader();
 window.addEventListener('storage',e=>{if(e.key===key||e.key===null)syncToolHeroMascot()});
