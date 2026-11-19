@@ -1,0 +1,57 @@
+/* Toolya Amazon wishlist: quiet editorial landing, single live profile showcase */
+body.wishlist-redesign main{max-width:1280px}
+body.wishlist-redesign .wish-landing-hero{position:relative;isolation:isolate;min-height:230px;display:flex;align-items:center;overflow:hidden;margin:12px 0 15px;padding:27px clamp(24px,5vw,70px);border-radius:28px;background:radial-gradient(circle at 76% 13%,#e5f9f0 0,#e5f9f000 34%),linear-gradient(110deg,#f7fcf9,#e8f8f5 62%,#fdf6ee);border:1px solid #d9ece5}
+body.wishlist-redesign .wish-landing-text{position:relative;z-index:2;max-width:650px}
+body.wishlist-redesign .wish-overline{font-size:.72rem;letter-spacing:.12em;font-weight:800;color:#187d76}
+body.wishlist-redesign .wish-landing-text h2{margin:8px 0 10px;font-size:clamp(2rem,4.5vw,3.4rem);line-height:1.08;letter-spacing:-.035em;color:#173d38}
+body.wishlist-redesign .wish-landing-text p{max-width:550px;margin:0;color:#42635e;font-size:clamp(.98rem,1.4vw,1.12rem);line-height:1.6}
+body.wishlist-redesign .wish-landing-visual{position:absolute;right:20px;bottom:-35px;width:clamp(210px,30%,370px);height:calc(100% + 20px);pointer-events:none}
+body.wishlist-redesign .wish-landing-visual img{position:absolute;bottom:0;right:10px;max-width:100%;max-height:102%;object-fit:contain;filter:drop-shadow(0 14px 15px #2c625125)}
+body.wishlist-redesign .wish-landing-gift{position:absolute;font-size:52px;bottom:54px;left:5px;z-index:-1;filter:drop-shadow(0 8px 12px #426c5b20)}
+body.wishlist-redesign .wish-landing-gift--two{font-size:30px;left:45%;bottom:135px}
+body.wishlist-redesign #discover{padding:clamp(16px,2.8vw,25px);margin:12px 0;background:#fff;border:1px solid #e0ece9;border-radius:21px}
+body.wishlist-redesign #discover .wish-section-heading{margin-bottom:12px}
+body.wishlist-redesign #discover .wish-section-heading h2{font-size:clamp(1.17rem,2.1vw,1.55rem);margin-bottom:4px}
+body.wishlist-redesign #discover .wish-section-intro{font-size:.9rem;max-width:850px}
+body.wishlist-redesign #wishlistCloudSection.wish-public-showcase{background:transparent;border:0;box-shadow:none;margin:12px 0;padding:12px 0 17px;overflow:hidden}
+body.wishlist-redesign .wish-showcase-top{display:flex;justify-content:space-between;align-items:end;gap:16px;padding:0 9px 15px}
+body.wishlist-redesign .wish-showcase-top h2{margin:5px 0;font-size:clamp(1.38rem,2.7vw,1.9rem);color:#163a36}
+body.wishlist-redesign .wish-showcase-top p{margin:0;color:#56736d;font-size:.91rem}
+body.wishlist-redesign .wish-showcase-search{color:#16786d;font-weight:750;white-space:nowrap}
+body.wishlist-redesign .wish-public-marquee{width:100%;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 2.5%,#000 97.5%,transparent)}
+body.wishlist-redesign .wish-public-track{display:flex;width:max-content;max-width:none;gap:0}
+body.wishlist-redesign .wish-public-group{display:flex;flex:none;gap:16px;padding-right:16px}
+body.wishlist-redesign .wish-public-track.is-running{animation:wishPublicMove var(--wish-scroll-seconds,55s) linear infinite;will-change:transform}
+@keyframes wishPublicMove{to{transform:translateX(-50%)}}
+body.wishlist-redesign .wish-public-marquee:hover .wish-public-track,body.wishlist-redesign .wish-public-marquee:focus-within .wish-public-track{animation-play-state:paused}
+body.wishlist-redesign .wish-public-card{width:clamp(245px,27vw,305px);min-height:248px;display:flex;flex-direction:column;background:white;border:1px solid #dfebe6;border-radius:19px;overflow:hidden;box-shadow:0 5px 16px #244a3c13;text-decoration:none!important;color:#173a35!important;transition:box-shadow .2s,transform .2s}
+body.wishlist-redesign .wish-public-card:hover{box-shadow:0 11px 25px #244a3c24;transform:translateY(-2px)}
+body.wishlist-redesign .wish-public-card-media{height:112px;display:grid;place-items:center;position:relative;background:radial-gradient(circle at 75% 25%,#fff9e3,transparent 55%),linear-gradient(125deg,#e0f5ed,#eff7f4)}
+body.wishlist-redesign .wish-public-card:nth-child(3n+2) .wish-public-card-media{background:linear-gradient(125deg,#fff1ec,#fff8ed)}
+body.wishlist-redesign .wish-public-card:nth-child(3n) .wish-public-card-media{background:linear-gradient(125deg,#f1effd,#e7f4fc)}
+body.wishlist-redesign .wish-public-card-graphic{font-size:52px}
+body.wishlist-redesign .wish-public-card-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#eaf5f0}
+body.wishlist-redesign .wish-public-card-body{padding:15px 17px;display:flex;flex:1;flex-direction:column}
+body.wishlist-redesign .wish-public-card h3{margin:0 0 7px;color:#193f39;font-size:1.06rem;line-height:1.3}
+body.wishlist-redesign .wish-public-card-body p{margin:0;color:#526c67;font-size:.86rem;line-height:1.4;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+body.wishlist-redesign .wish-public-card-footer{margin-top:auto;padding-top:14px;font-size:.77rem;color:#157f72;font-weight:750}
+body.wishlist-redesign .wish-showcase-caption{margin:10px 9px 0;font-size:.78rem;color:#6b837d}
+body.wishlist-redesign .wish-showcase-loading{padding:35px;color:#48685e}
+body.wishlist-redesign .wish-landing-actions{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:17px 0 0}
+body.wishlist-redesign .wish-landing-action{padding:clamp(18px,2.5vw,27px);border-radius:23px;border:1px solid #e0e9e3;background:linear-gradient(120deg,#effaf7,#f8fcfb)}
+body.wishlist-redesign .wish-landing-action--publish{background:linear-gradient(120deg,#fff9f0,#f9fcf7)}
+body.wishlist-redesign .wish-landing-action-head{display:flex;align-items:center;gap:15px}
+body.wishlist-redesign .wish-action-icon{display:grid;place-items:center;flex:none;width:51px;height:51px;border-radius:16px;background:#fff;font-size:28px}
+body.wishlist-redesign .wish-landing-action h2{margin:0 0 4px;color:#163e38;font-size:clamp(1.04rem,1.7vw,1.3rem)}
+body.wishlist-redesign .wish-landing-action p{margin:0;color:#546f69;font-size:.88rem;line-height:1.45}
+body.wishlist-redesign .wish-create-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:19px}
+body.wishlist-redesign .wish-create-options a{min-height:85px;padding:12px 9px;display:flex;align-items:center;justify-content:center;gap:5px;text-align:center;flex-direction:column;background:#fff;border:1px solid #dfece7;border-radius:15px;color:#155e58;text-decoration:none;font-weight:750;font-size:.84rem;box-shadow:0 3px 8px #214b3810}
+body.wishlist-redesign .wish-create-options a span:first-child{font-size:24px}
+body.wishlist-redesign .wish-create-options a span:last-child{font-size:15px}
+body.wishlist-redesign .wish-publish-cta{display:inline-flex;justify-content:center;align-items:center;gap:12px;margin-top:19px;padding:13px 22px;min-height:45px;box-sizing:border-box;border-radius:12px;background:#008577;color:white;text-decoration:none;font-weight:750}
+body.wishlist-redesign .wish-landing-action .wish-publish-sub{margin-top:11px;font-size:.78rem}
+body.wishlist-redesign .wish-affiliate-notice{margin:7px 5px 20px;color:#657c75;font-size:.76rem}
+body.wishlist-redesign #profile{margin-top:16px}
+@media(max-width:900px){body.wishlist-redesign .wish-landing-visual{width:260px;opacity:.7}body.wishlist-redesign .wish-landing-actions{grid-template-columns:1fr}}
+@media(max-width:650px){body.wishlist-redesign .wish-landing-hero{min-height:210px;padding:25px 20px}.wish-landing-text{max-width:79%}body.wishlist-redesign .wish-landing-text h2{font-size:2rem}body.wishlist-redesign .wish-landing-visual{width:190px;right:-38px;opacity:.68}body.wishlist-redesign .wish-landing-gift{font-size:33px}body.wishlist-redesign .wish-showcase-top{align-items:start;flex-direction:column}body.wishlist-redesign .wish-public-group{gap:12px;padding-right:12px}body.wishlist-redesign .wish-public-card{width:255px}body.wishlist-redesign .wish-create-options{grid-template-columns:repeat(3,minmax(0,1fr))}body.wishlist-redesign .wish-create-options a{font-size:.75rem;padding:10px 4px}body.wishlist-redesign .wish-landing-action{padding:17px}}
+@media(prefers-reduced-motion:reduce){body.wishlist-redesign .wish-public-track.is-running{animation:none;will-change:auto}body.wishlist-redesign .wish-public-marquee{overflow-x:auto;mask-image:none;scroll-snap-type:x proximity}body.wishlist-redesign .wish-public-card{scroll-snap-align:start;transition:none}}
