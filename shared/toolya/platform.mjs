@@ -131,7 +131,7 @@ function mountFooter(){
  const footer=document.createElement('footer');footer.className='toolya-signature-footer';footer.setAttribute('aria-label','Toolya Seitenabschluss');
  const inner=document.createElement('div');inner.className='ty-footer-inner';
  const brand=document.createElement('div');brand.className='ty-footer-brand';
- const logo=document.createElement('a');logo.className='ty-footer-wordmark';logo.href=new URL('../../index.html',import.meta.url).href;logo.setAttribute('aria-label','Toolya Startseite');logo.textContent='Toolya';
+ const logo=document.createElement('a');logo.className='ty-footer-wordmark';logo.href=new URL('../../',import.meta.url).href;logo.setAttribute('aria-label','Toolya Startseite');logo.textContent='Toolya';
  
  brand.append(logo);const caption=document.createElement('small');caption.textContent='© '+new Date().getFullYear()+' Toolya · Dein smarter Tool-Begleiter';brand.append(caption);
  const links=document.createElement('nav');links.className='ty-footer-links';links.setAttribute('aria-label','Footer-Navigation');
@@ -170,7 +170,7 @@ function mountToolHero(){
  const inner=document.createElement('div');inner.className='ty-tool-hero-inner';
  const copy=document.createElement('div');copy.className='ty-tool-hero-copy';
  const top=document.createElement('div');top.className='ty-tool-hero-top';
- const logo=document.createElement('a');logo.className='ty-tool-wordmark';logo.href=new URL('../../index.html',import.meta.url).href;logo.setAttribute('aria-label','Toolya Startseite');
+ const logo=document.createElement('a');logo.className='ty-tool-wordmark';logo.href=new URL('../../',import.meta.url).href;logo.setAttribute('aria-label','Toolya Startseite');
  const mark=document.createElement('span');mark.className='b3-hub-logo-mark';mark.textContent='✳';mark.setAttribute('aria-hidden','true');logo.append(mark,document.createTextNode(' Toolya'));
  const actions=document.createElement('div');actions.className='ty-tool-hero-actions';
  const originalSettings=old.querySelector('.b3-settings-trigger,[aria-label="Einstellungen öffnen"]');
