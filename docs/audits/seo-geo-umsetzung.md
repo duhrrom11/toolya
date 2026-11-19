@@ -5,7 +5,8 @@ Stand 19. November 2026. Referenz auf `main`: `90c1dca1eee2f32f9e6d103021fa105ec
 | Punkte | Belegter Stand | Bezug |
 | --- | --- | --- |
 | R00 | Master-Audit, SEO-Roadmap und dieser versionierte Umsetzungsstand liegen vor. | [Master-Audit](toolya-master-audit.md) · [Roadmap](toolya-roadmap-1.md) |
-| R01–R03 | Die 18 Sitemap-Ziele und die wichtigsten URL-Varianten wurden geprüft. Eine vollständige maschinenlesbare Wiederholung des ursprünglichen URL-Inventars und die vollständige visuelle Baseline fehlen. Google Search Console und GA4 sind verbunden. Bing-Daten blieben für den Messbericht unbestätigt. | [Messstand](toolya-search-measurement.md) |
+| R01 | Die reproduzierbare URL-Inventur vom 19. November umfasst 53 HTML-Dateien und 88 Live-URLs. Sie vergleicht die 66 im Master-Audit einzeln aufgeführten HTML-Routen mit den aktuellen Antworten. | [JSON-Inventur](toolya-seo-url-inventory.json) |
+| R02–R03 | Die vollständige visuelle Baseline fehlt. Google Search Console und GA4 sind verbunden. Bing-Daten blieben für den Messbericht unbestätigt. | [Messstand](toolya-search-measurement.md) |
 | R10–R15 | Drei Nachlass-Hilfsseiten und 16 ältere Wunschlisten-Routen liefern `noindex`. Die öffentliche Wunschlisten-Detailansicht behält den Canonical des Verzeichnisses. Eigentümer-Löschung und Entzug der Sichtbarkeit wurden isoliert geprüft. Die Einzelklassifizierung aller Alt-Routen und die fachliche Datenschutz- und Affiliate-Prüfung bleiben offen. | [PR #175](https://github.com/duhrrom11/toolya/pull/175) · [PR #176](https://github.com/duhrrom11/toolya/pull/176) |
 | R20–R21, R51 | Der frei nutzbare Backform-Rechner, die Faktorenmatrix und vier Umrechnungsbeispiele stehen auf der öffentlichen Ratgeberseite. Die Beispiele bleiben als Abschnitte auf der bestehenden URL. | [PR #175](https://github.com/duhrrom11/toolya/pull/175) · [PR #188](https://github.com/duhrrom11/toolya/pull/188) |
 | R22–R24 | Interne Startseiten-Links führen auf `/`. Alle 18 Sitemap-Ziele lieferten HTTP 200 und einen Canonical auf sich selbst. Die 13 Ratgeber-Varianten mit `index.html` bleiben erreichbar und nennen ihre Verzeichnis-URL als Canonical. Google las die Sitemap erfolgreich. Der Bing-Sitemapstatus bleibt offen. Vier aktualisierte Ratgeber wurden über IndexNow gemeldet. | [PR #195](https://github.com/duhrrom11/toolya/pull/195) · [Sitemap-Status](toolya-sitemap-status.md) |
@@ -22,3 +23,9 @@ Stand 19. November 2026. Referenz auf `main`: `90c1dca1eee2f32f9e6d103021fa105ec
 Der isolierte Browser-Workflow von PR #195 meldete dieselben elf fehlgeschlagenen Tests wie ein früherer Lauf auf `main`. Die drei übrigen Workflows waren erfolgreich. Die sechs geänderten Dateien wurden nach dem Merge live geprüft. Die fehlgeschlagenen Tests bleiben als separate offene Abnahme erfasst.
 
 [Aktueller Vergleichslauf](https://github.com/duhrrom11/toolya/actions/runs/44517919392) · [Früherer Lauf auf main](https://github.com/duhrrom11/toolya/actions/runs/44494384720)
+
+## URL-Inventur wiederholen
+
+Führe im Git-Checkout `python3 scripts/audit-seo-urls.py > toolya-seo-url-inventory.json` aus. Mit `--offline` liest das Skript nur den Quellstand. Der Live-Lauf prüft die statischen HTTP-Antworten, einschließlich der Weiterleitungskette, HTTP- und HTML-Robots-Angaben, Schema-Typen und Verlinkungen. Eine künstliche Profil-ID prüft die Parameter-URL ohne Bezug zu einem echten Profil. JavaScript wird nicht ausgeführt und Indexstatus wird separat gemessen.
+
+Die historische Einzelauflistung im Master-Audit enthält 66 HTML-Routen. Der damalige Gesamtwert von 69 Abrufen schließt zusätzliche Prüfungen ein. Der aktuelle Lauf prüft außerdem alle Verzeichnisvarianten der im Git-Checkout erfassten HTML-Dateien.
