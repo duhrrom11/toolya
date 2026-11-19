@@ -1227,9 +1227,9 @@
                 const loaded = await ladeWGausCloud();
                 if (!loaded) throw new Error('Cloud-Daten konnten nicht geladen werden');
                 renderApp();
-                alert("Gespeichert");
+                alert("Deine WG-Daten wurden neu geladen.");
             } catch (e) {
-                alert("❌ Synchronisation fehlgeschlagen.");
+                alert("Die WG-Daten konnten gerade nicht neu geladen werden. Prüfe deine Verbindung und versuche es erneut.");
             }
         }
 
@@ -1440,7 +1440,9 @@
                         if (wgBinId !== savingWgId) return false;
                         secureWgDirty = true;
                         console.error('Geschützte WG-Speicherung fehlgeschlagen:', error);
-                        alert('WG-Änderungen konnten nicht gespeichert werden: ' + error.message);
+                        alert(secureWgSaveBlocked
+                            ? 'Die WG wurde inzwischen an anderer Stelle geändert. Sichere deine Änderungen auf diesem Gerät, bevor du die Seite neu lädst.'
+                            : 'Deine WG-Änderungen sind auf diesem Gerät gespeichert. Die Online-Sicherung ist noch nicht bestätigt. Prüfe deine Verbindung und nutze die manuelle Synchronisation.');
                         return false;
                     }
                 });
@@ -1533,7 +1535,14 @@
                     document.getElementById('main-content').replaceChildren();
                     const warning = document.createElement('section');
                     warning.className = 'p-6 bg-amber-50 border border-amber-300 rounded-2xl text-amber-900';
-                    warning.textContent = 'Die WG konnte nicht sicher geladen werden. Bitte anmelden und die Verbindung prüfen. Es werden keine zwischengespeicherten WG-Daten angezeigt.';
+                    warning.setAttribute('role', 'alert');
+                    warning.textContent = 'Die WG konnte gerade nicht sicher geladen werden. Prüfe deine Verbindung und versuche es erneut.';
+                    const retry = document.createElement('button');
+                    retry.type = 'button';
+                    retry.className = 'block mt-3 px-4 py-2 rounded-xl border border-current font-semibold';
+                    retry.textContent = 'Erneut versuchen';
+                    retry.addEventListener('click', () => window.location.reload());
+                    warning.append(retry);
                     document.getElementById('main-content').append(warning);
                     checkUserSession();
                     return;

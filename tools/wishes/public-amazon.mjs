@@ -151,7 +151,44 @@ async function search(){
  const rows=r.data||[];$('results').replaceChildren(...rows.slice(0,24).map(p=>card(p)));status('searchStatus',rows.length?Math.min(rows.length,24)+' passende Einträge auf dieser Seite.':'Keine passende öffentliche Amazon-Wunschliste im Verzeichnis gefunden. Prüfe die Schreibweise oder entferne Filter. Nicht alle öffentlichen Amazon-Listen sind bereits erfasst.');$('prevPage').disabled=page===0;$('nextPage').disabled=rows.length<=24
 }
 async function filters(){const r=await db.rpc('wishlist_directory_filters');if(r.error)return;for(const [id,prop]of[['countryFilter','countries'],['occasionFilter','occasions']]){const s=$(id),value=s.value;s.replaceChildren(s.options[0]);const values=[...new Set((r.data?.[prop]||[]).map(v=>typeof v==='string'?v.trim():v).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'de'));for(const v of values){const o=text('option',v);o.value=v;s.append(o)}s.value=value.trim()}}
-async function detail(){const params=new URL(location.href).searchParams;let id=params.get('profile');if(!id&&params.get('list')&&uuid.test(params.get('list'))){const legacy=await db.from('wishlist_amazon_publications').select('user_id').eq('id',params.get('list')).maybeSingle();id=legacy.data?.user_id}if(!id&&!params.has('list'))return;$('selectedProfile').hidden=false;if(!uuid.test(id||'')){status('detailStatus','Dieses Wunschprofil ist nicht verfügbar.');return}const r=await db.from('wishlist_directory').select('*').eq('user_id',id).maybeSingle();if(r.error||!r.data){status('detailStatus','Dieses Wunschprofil ist nicht mehr verfügbar.');return}document.title=r.data.display_name+' – öffentliche Amazon-Wunschlisten | Toolya';document.querySelector('meta[name="description"]').content='Entdecke die öffentlichen Amazon-Wunschlisten von '+r.data.display_name+'.';$('profileDetail').replaceChildren(card(r.data,true));status('detailStatus','')}
+let detailGeneration=0;
+async function detail(){
+ const params=new URL(location.href).searchParams;
+ let id=params.get('profile');
+ const list=params.get('list');
+ if(!id&&!params.has('list'))return;
+ const g=++detailGeneration;
+ const retry=$('retryDetail');
+ $('selectedProfile').hidden=false;
+ if(document.activeElement===retry)$('selectedProfile').querySelector('a').focus();
+ retry.hidden=true;
+ $('profileDetail').replaceChildren();
+ status('detailStatus','Wunschprofil wird geladen …');
+ try{
+  if(!id&&uuid.test(list||'')){
+   const legacy=await db.from('wishlist_amazon_publications').select('user_id').eq('id',list).maybeSingle();
+   if(legacy.error)throw legacy.error;
+   id=legacy.data?.user_id;
+  }
+  const r=uuid.test(id||'')?await db.from('wishlist_directory').select('*').eq('user_id',id).maybeSingle():{data:null};
+  if(g!==detailGeneration)return;
+  if(r.error)throw r.error;
+  if(!r.data){
+   status('detailStatus','Dieses Wunschprofil ist nicht mehr verfügbar.');
+   return;
+  }
+  document.title=r.data.display_name+' – öffentliche Amazon-Wunschlisten | Toolya';
+  document.querySelector('meta[name="description"]').content='Entdecke die öffentlichen Amazon-Wunschlisten von '+r.data.display_name+'.';
+  $('profileDetail').replaceChildren(card(r.data,true));
+  status('detailStatus','');
+ }catch(error){
+  if(g!==detailGeneration)return;
+  console.error('Wunschprofil konnte nicht geladen werden:',error);
+  status('detailStatus','Das Wunschprofil konnte gerade nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.');
+  retry.hidden=false;
+ }
+}
+$('retryDetail').onclick=detail;
 function renumberLists(){const fields=$('listFields');[...fields.children].forEach((fs,index)=>{fs.querySelector('legend').textContent='Wunschliste '+(index+1);const input=fs.querySelector('[name=url]');if(index===0)input.id='amazonUrl';else input.removeAttribute('id')});$('addList').disabled=fields.children.length>=5}
 function listField(value={}){const fields=$('listFields');if(fields.children.length>=5)return;const index=fields.children.length,fs=document.createElement('fieldset');fs.append(text('legend','Wunschliste '+(index+1)));for(const [name,label,type,max]of[['name','Name der Wunschliste *','text',100],['url','Amazon-Wunschlisten-Link *','url',2048],['occasion','Anlass (freiwillig)','text',80]]){const l=text('label',label),i=document.createElement('input');i.type=type;i.name=name;i.required=name!=='occasion';i.maxLength=max;i.value=value[name]||'';if(name==='url'&&index===0)i.id='amazonUrl';if(name==='occasion'){i.placeholder='Geburtstag, Hochzeit, Baby …';}l.append(i);fs.append(l)}const remove=text('button','Diese Liste entfernen','secondary');remove.type='button';remove.onclick=()=>{if(fields.children.length===1){status('profileStatus','Bitte mindestens eine Wunschliste eintragen.');return}const neighbor=fs.nextElementSibling||fs.previousElementSibling;fs.remove();renumberLists();neighbor.querySelector('[name=name]').focus()};fs.append(remove);fields.append(fs);renumberLists();return fs}
 function selectedProfileKind(){return document.querySelector('input[name="profileKind"]:checked')?.value||'person'}
@@ -175,7 +212,7 @@ async function loadProfile(){const g=++authGeneration;const r=await db.auth.getU
  $('firstName').value=own?.first_name||'';
  $('lastName').value=own?.last_name||'';
  $('organizationName').value=own?.organization_name||'';
- let kind=own?.profile_kind;
+ let kind=own?own.profile_kind:'person';
  if(kind!=='person'&&kind!=='organization'){
   // Legacy profiles only had one display name. Prefill as an organization
   // to preserve the complete name without guessing a person's name parts.
@@ -184,7 +221,30 @@ async function loadProfile(){const g=++authGeneration;const r=await db.auth.getU
  document.querySelector('input[name="profileKind"][value="'+kind+'"]').checked=true;
  updateProfileKind();
  for(const [id,prop]of[['country','country'],['city','city']])$(id).value=own?.[prop]||'';for(const l of own?.lists||[{}])listField(l);$('deleteProfile').hidden=!own;status('profileStatus',own?'Dein gespeichertes Profil ist öffentlich sichtbar.':'Dein Profil wird beim Speichern öffentlich sichtbar.')}
-$('profileForm').onsubmit=async e=>{e.preventDefault();if(!user)return;const b=$('saveProfile');b.disabled=true;try{const p=payload();if(!p)return;const writer=user.id;const r=await guardedWishlistWrite(db,writer,()=>db.from('wishlist_public_profiles').upsert({user_id:writer,...p},{onConflict:'user_id'}).select('user_id').single());if(r.error)throw r.error;own=p;$('deleteProfile').hidden=false;status('profileStatus','Gespeichert. Dein Wunschprofil ist jetzt öffentlich sichtbar.');await filters();await search();await detail()}catch(e){status('profileStatus',e.message||'Speichern fehlgeschlagen.')}finally{b.disabled=false}};
+$('profileForm').onsubmit=async e=>{
+ e.preventDefault();
+ if(!user)return;
+ let p;
+ try{p=payload()}catch(error){status('profileStatus',error.message);return}
+ if(!p)return;
+ const b=$('saveProfile'),writer=user.id;
+ b.disabled=true;
+ status('profileStatus','Dein Wunschprofil wird gespeichert …');
+ try{
+  const r=await guardedWishlistWrite(db,writer,()=>db.from('wishlist_public_profiles').upsert({user_id:writer,...p},{onConflict:'user_id'}).select('user_id').single());
+  if(r.error)throw r.error;
+  own=p;
+  $('deleteProfile').hidden=false;
+  status('profileStatus','Gespeichert. Dein Wunschprofil ist jetzt öffentlich sichtbar.');
+ }catch(error){
+  console.error('Wunschprofil konnte nicht bestätigt werden:',error);
+  status('profileStatus',error.message==='Anmeldung nicht gültig oder Konto gewechselt.'
+   ? 'Deine Anmeldung ist abgelaufen oder du hast das Konto gewechselt. Melde dich erneut an.'
+   : 'Toolya konnte die Speicherung deines Wunschprofils nicht bestätigen. Deine Eingaben bleiben im Formular. Prüfe dein öffentliches Profil, bevor du noch einmal speicherst.');
+  return;
+ }finally{b.disabled=false}
+ await Promise.allSettled([filters(),search(),detail()]);
+};
 $('deleteProfile').onclick=async()=>{if(!user||!confirm('Dein öffentliches Wunschprofil mit allen verlinkten Listen löschen? Die Original-Listen bei Amazon bleiben erhalten.'))return;const b=$('deleteProfile');b.disabled=true;try{const writer=user.id;const r=await guardedWishlistWrite(db,writer,()=>db.from('wishlist_public_profiles').delete().eq('user_id',writer).select('user_id'));if(r.error||r.data?.length!==1)throw new Error('Das Profil konnte nicht gelöscht werden.');await loadProfile();status('profileStatus','Dein öffentliches Profil wurde gelöscht.');$('profileDetail').replaceChildren();await filters();await search();await detail()}catch(e){status('profileStatus',e.message)}finally{b.disabled=false}};
 function syncSettingsAccount(){
  const signedIn=Boolean(user);
