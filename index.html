@@ -279,6 +279,7 @@
             <details id="accountSettings" class="ty-settings-group">
                 <summary>Toolya-Konto</summary>
                 <div class="ty-settings-content space-y-3">
+                    <p id="toolAccessHelp" class="text-sm text-gray-700" hidden>Das Tool konnte gerade nicht geöffnet werden. Melde dich bei Toolya an. Falls du bereits angemeldet bist, prüfe deine Internetverbindung und versuche es erneut.</p>
                     <div id="cloudStatus" role="status" aria-live="polite" class="text-xs bg-gray-100 rounded-lg p-3 text-gray-700">
                         Konto wird geprüft …
                     </div>
@@ -339,9 +340,11 @@
 
         window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         // Client initialisiert; die tatsächliche Erreichbarkeit wird bei Auth-Anfragen geprüft.
-        if(new URLSearchParams(location.search).get('auth')==='required'||new URLSearchParams(location.search).get('settings')==='1'){
+        const settingsQuery = new URLSearchParams(location.search);
+        const toolAccessRequired = settingsQuery.get('auth') === 'required';
+        if (toolAccessRequired || settingsQuery.get('settings') === '1') {
             document.addEventListener('DOMContentLoaded',()=>{
-                openSettings();
+                openSettings({ toolAccess: toolAccessRequired });
                 if(location.hash==='#datensicherung'){
                     const backup=document.getElementById('datensicherung');
                     backup.open=true;
@@ -363,8 +366,7 @@
                     return;
                 }
             }catch(error){console.warn('Toolya authentication check failed',error);}
-            openSettings();
-            document.getElementById('loginEmail')?.focus();
+            openSettings({ toolAccess: true });
         },true);
 
 
@@ -562,9 +564,10 @@
             }
         });
 
-        function openSettings() {
+        function openSettings({ toolAccess = false } = {}) {
             const modal = document.getElementById('settingsModal');
             if (modal) {
+                document.getElementById('toolAccessHelp').hidden = !toolAccess;
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
                 document.getElementById("accountSettings").open = true;
