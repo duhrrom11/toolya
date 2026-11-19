@@ -29,12 +29,36 @@ Die Seitengruppierung liefert mehr Impressionen als die Property-Gruppierung. Ih
 
 - Beide beobachteten HTTP-Varianten der Startseite leiteten beim Live-Abruf mit HTTP 301 auf `https://toolya.app/` um. Die HTTPS-Seite nennt sich selbst als Canonical.
 - Die in der Search Console beobachtete Backform-App unter `/tools/baking/index.html` liefert beim Live-Abruf `noindex, follow`. Der öffentliche Ratgeber `/backform-rechner/` liefert seinen eigenen Canonical und steht in der Sitemap.
-- Diese Abrufe zeigen den aktuellen technischen Stand. Von Google ausgewählte Canonicals und der jeweilige Indexstatus bleiben bis zur URL-Prüfung offen. Eine beantragte Indexierung wird als eigener Status geführt.
+Die Google-URL-Prüfung vom 19. November erfasste die 18 Sitemap-Ziele und zusätzlich die ältere Backform-App. Google bestätigte zwei Sitemap-Ziele als indexiert. Die übrigen 16 Sitemap-Ziele meldete Google als unbekannt. Auch die ältere App war im letzten gespeicherten Google-Stand noch indexiert. Sie liefert aktuell `noindex`. Ob ein erneuter Crawl beantragt wurde, lässt sich aus dieser Prüfung nicht ableiten.
+
+| URL auf toolya.app | Google-Status | Google-Canonical auf toolya.app | Letzter Crawl (UTC) |
+| --- | --- | --- | --- |
+| `/` | Gesendet und indexiert | `/` | 2026-11-16 02:41:22 |
+| `/tools/baking/index.html` | Gesendet und indexiert | `/tools/baking/index.html` | 2026-11-17 05:55:09 |
+| `/backform-rechner/` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+| `/tools/wishes/public.html` | Gesendet und indexiert | `/tools/wishes/public.html` | 2026-11-17 06:17:40 |
+| `/amazon-wunschliste-veroeffentlichen/` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+| `/autokosten/` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+| `/digitaler-nachlass/` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+| `/haushaltsbuch/` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+| `/parkplatz-merker/` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+| `/pflanzenpflege/` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+| `/tiergesundheit/` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+| `/toolya-dashboard/` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+| `/umzugskisten/` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+| `/verliehene-dinge/` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+| `/wg-organisator/` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+| `/zaehlerstaende/` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+| `/mascots.html` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+| `/legal.html` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+| `/privacy.html` | URL ist Google nicht bekannt | Nicht gemeldet | Nicht gemeldet |
+
+Für die Startseite nennt die gespeicherte Google-Version `/index.html` als Nutzer-Canonical. Live steht bereits `/` im HTML. Google hat `/` als Canonical gewählt.
 
 ### Bing und Google Analytics
 
 - **Bing Webmaster Tools.** Das Admin-Dashboard besitzt einen geschützten Bing-Abruf. Für diesen Messstand lag kein autorisierter Bing-Bericht vor. Bing-Klicks, Impressionen und Indexierungsstatus bleiben offen.
-- **GA4.** Die verbundene Property Toolya lieferte für den 19. Oktober bis 15. November keine Seitenzeilen für organische Suche oder alle Kanäle. Der vorhandene Website-Code erfasst `tool_open` nach Einwilligung auf bekannten Tool-Routen. Ein solcher Aufruf steht für das Öffnen eines Tools. Ein Nutzungsabschluss wird daraus nicht abgeleitet. Für diese Messung wurden keine Ereignisse erzeugt.
+- **GA4.** Die verbundene Property Toolya lieferte für den 19. Oktober bis 15. November keine Seitenzeilen für organische Suche oder alle Kanäle. Auch der Bericht für Schlüsselereignisse enthielt keine Zeilen. Der vorhandene Website-Code erfasst `tool_open` nach Einwilligung auf bekannten Tool-Routen. Ein solcher Aufruf steht für das Öffnen eines Tools. Ein Nutzungsabschluss wird daraus nicht abgeleitet. Für diese Messung wurden keine Ereignisse erzeugt.
 
 ## Wiederholung und 28-Tage-Vergleich
 
