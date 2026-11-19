@@ -104,7 +104,10 @@
 @media(max-width:600px){
  .wishlist-redesign .profile-card{border-radius:21px}
  .wishlist-redesign .profile-card .profile-hero{padding:27px 17px 19px;gap:10px}
- .wishlist-redesign .profile-card .person{display:flex;gap:11px;min-width:0}
+ .wishlist-redesign .profile-card .profile-hero{display:grid;grid-template-columns:minmax(0,1fr) auto}
+ .wishlist-redesign .profile-card .person{display:contents}
+ .wishlist-redesign .profile-card .profile-identity{grid-column:1/-1;grid-row:2}
+ .wishlist-redesign .profile-card .profile-hero>.favorite{grid-column:2;grid-row:1}
  .wishlist-redesign .profile-card .avatar{width:54px;height:54px;flex-basis:54px;border-radius:16px}
  .wishlist-redesign .profile-card .person :is(h2,h3){font-size:1.13rem}
  .wishlist-redesign .profile-card .profile-lists{padding:19px 15px}

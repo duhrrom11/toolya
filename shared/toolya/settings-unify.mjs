@@ -26,6 +26,8 @@ export function unifyToolSettings(modal) {
  function identify(node){
   if(node.querySelector?.('.b3-backup-actions,[id*="backupActions"],[id="settingsBackupTitle"]'))return 'backup';
   if(node.querySelector?.('#settingsAccountTitle,#loginEmail,#auth-email,#cloudStatus,#settingsAuthFields,#cloud-status-box,#cloud-status-text'))return 'account';
+  if(node.matches('.b3-preferences,#b3-backform-preferences'))return 'extra';
+  if(node.querySelector?.('#helpToggleBtn'))return 'help';
   const text=contentText(node);
   if(/datensicherung|backup|daten sichern|wiederherstell/.test(text))return 'backup';
   if(/konto|anmeld|registrier|account|cloud-status/.test(text))return 'account';
@@ -36,7 +38,7 @@ export function unifyToolSettings(modal) {
  // The account form is usually the first block; loose following blocks inherit its group.
  let current='account';
  for(const item of items){if(item.kind)current=item.kind;else item.kind=current}
- const labels={account:'Toolya-Konto',backup:'Datensicherung',extra:'Weitere Einstellungen'};
+ const labels={account:'Toolya-Konto',backup:'Datensicherung',extra:'Weitere Einstellungen',help:'Hilfe und Anleitung'};
  const groups=new Map(),order=[];
  for(const {node,kind} of items){
   if(!groups.has(kind)){
