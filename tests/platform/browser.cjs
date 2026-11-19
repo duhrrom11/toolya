@@ -182,6 +182,44 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
   if(route==='wishes')await page.screenshot({path:'test-results/mascot-wishes-mobile.png',fullPage:true});
   assert(measurement.scroll<=322,route+' overflow '+JSON.stringify(measurement));assert.equal(await page.evaluate(()=>toolyaBuddy.character),'purple');
   assert.equal(await page.locator('.toolya-settings').count(),0,route+' no standalone settings');
+  // Every tool must expose the same responsive, collapsed settings sections as home.
+  // Check in the isolated browser without opening accounts or touching production data.
+  const settingsSnapshot=await page.evaluate(()=>{
+   const modal=document.querySelector('#settingsModal,#settings-modal');
+   const panel=modal?.firstElementChild?.matches('div')?modal.firstElementChild:modal;
+   if(!panel)return null;
+   return {
+    converted:panel.dataset.toolyaAccordion==='1',
+    account:panel.querySelectorAll('details[data-settings-section="account"]').length,
+    backup:panel.querySelectorAll('details[data-settings-section="backup"]').length,
+    appearance:panel.querySelectorAll('details.toolya-appearance').length,
+    allClosed:[...panel.querySelectorAll('details[data-settings-section],details.toolya-appearance')].every(d=>!d.open)
+   };
+  });
+  if(settingsSnapshot){
+   assert(settingsSnapshot.converted,route+' settings panel uses shared accordion: '+JSON.stringify(settingsSnapshot));
+   assert.equal(settingsSnapshot.account,1,route+' has exactly one account accordion');
+   assert.equal(settingsSnapshot.appearance,1,route+' has exactly one mascot accordion');
+   assert(settingsSnapshot.allClosed,route+' settings accordions initially collapsed');
+  }
+  // On PC, the settings control must be in its own text-column slot, not beneath the mascot.
+  await page.setViewportSize({width:1280,height:812});
+  const gearLayout=await page.evaluate(()=>{
+   const header=document.querySelector('.ty-tool-hero');
+   const button=header?.querySelector('.ty-tool-hero-actions [aria-label="Einstellungen öffnen"]');
+   const mascot=header?.querySelector('.ty-tool-hero-mascot');
+   if(!button||!mascot)return null;
+   const a=button.getBoundingClientRect(),b=mascot.getBoundingClientRect();
+   return {a:{left:a.left,right:a.right,top:a.top,bottom:a.bottom},b:{left:b.left,right:b.right,top:b.top,bottom:b.bottom},width:innerWidth};
+  });
+  if(gearLayout){
+   const a=gearLayout.a,b=gearLayout.b;
+   const overlaps=a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+   assert(!overlaps,route+' settings button must not overlap desktop mascot: '+JSON.stringify(gearLayout));
+   assert(a.left>=0&&a.right<=gearLayout.width+1,route+' settings button fits desktop viewport');
+  }
+  await page.setViewportSize({width:320,height:812});
+
   // CloudOnly pages are intentionally blocked without a verified account.
   // Assert the real gate instead of bypassing it to click protected controls.
   // Cloud initialization is asynchronous: wait briefly for a late gate before interacting.
