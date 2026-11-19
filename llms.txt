@@ -1,0 +1,21 @@
+# Toolya
+
+> Kostenlose deutschsprachige Online-Tools und Ratgeber für Alltag, Haushalt und Organisation. Die Ratgeber, der einfache Backform-Rechner und die öffentliche Wunschlisten-Suche sind ohne Anmeldung zugänglich. Für die meisten Apps brauchst du ein Konto.
+
+## Start und Ratgeber
+
+- [Startseite](https://toolya.app/)
+- [Backform-Rechner](https://toolya.app/backform-rechner/)
+- [Haushaltsbuch](https://toolya.app/haushaltsbuch/)
+- [Autokosten](https://toolya.app/autokosten/)
+- [Zählerstände](https://toolya.app/zaehlerstaende/)
+- [Umzugskisten](https://toolya.app/umzugskisten/)
+- [WG-Organisator](https://toolya.app/wg-organisator/)
+- [Parkplatz-Merker](https://toolya.app/parkplatz-merker/)
+- [Pflanzenpflege](https://toolya.app/pflanzenpflege/)
+- [Tiergesundheit](https://toolya.app/tiergesundheit/)
+- [Verliehene Dinge](https://toolya.app/verliehene-dinge/)
+- [Digitaler Nachlass](https://toolya.app/digitaler-nachlass/)
+- [Toolya-Dashboard](https://toolya.app/toolya-dashboard/)
+- [Eigene Amazon-Wunschliste veröffentlichen](https://toolya.app/amazon-wunschliste-veroeffentlichen/)
+- [Öffentliche Amazon-Wunschlisten finden](https://toolya.app/tools/wishes/public.html)
