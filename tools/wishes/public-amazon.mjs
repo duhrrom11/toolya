@@ -1,4 +1,5 @@
 import {guardedWishlistWrite} from './wishlist-auth.mjs';
+import {profileIdentity} from './profile-identity.mjs';
 // Deployment must explicitly choose production or preview; never infer it from URL parameters.
 const PROD_PROJECT = 'yheogmeaosuigyaxkwth';
 const PROD_PUBLISHABLE_KEY = 'sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
@@ -153,16 +154,36 @@ async function filters(){const r=await db.rpc('wishlist_directory_filters');if(r
 async function detail(){const params=new URL(location.href).searchParams;let id=params.get('profile');if(!id&&params.get('list')&&uuid.test(params.get('list'))){const legacy=await db.from('wishlist_amazon_publications').select('user_id').eq('id',params.get('list')).maybeSingle();id=legacy.data?.user_id}if(!id&&!params.has('list'))return;$('selectedProfile').hidden=false;if(!uuid.test(id||'')){status('detailStatus','Dieses Wunschprofil ist nicht verfügbar.');return}const r=await db.from('wishlist_directory').select('*').eq('user_id',id).maybeSingle();if(r.error||!r.data){status('detailStatus','Dieses Wunschprofil ist nicht mehr verfügbar.');return}document.title=r.data.display_name+' – öffentliche Amazon-Wunschlisten | Toolya';document.querySelector('meta[name="description"]').content='Entdecke die öffentlichen Amazon-Wunschlisten von '+r.data.display_name+'.';$('profileDetail').replaceChildren(card(r.data,true));status('detailStatus','')}
 function renumberLists(){const fields=$('listFields');[...fields.children].forEach((fs,index)=>{fs.querySelector('legend').textContent='Wunschliste '+(index+1);const input=fs.querySelector('[name=url]');if(index===0)input.id='amazonUrl';else input.removeAttribute('id')});$('addList').disabled=fields.children.length>=5}
 function listField(value={}){const fields=$('listFields');if(fields.children.length>=5)return;const index=fields.children.length,fs=document.createElement('fieldset');fs.append(text('legend','Wunschliste '+(index+1)));for(const [name,label,type,max]of[['name','Name der Wunschliste *','text',100],['url','Amazon-Wunschlisten-Link *','url',2048],['occasion','Anlass (freiwillig)','text',80]]){const l=text('label',label),i=document.createElement('input');i.type=type;i.name=name;i.required=name!=='occasion';i.maxLength=max;i.value=value[name]||'';if(name==='url'&&index===0)i.id='amazonUrl';if(name==='occasion'){i.placeholder='Geburtstag, Hochzeit, Baby …';}l.append(i);fs.append(l)}const remove=text('button','Diese Liste entfernen','secondary');remove.type='button';remove.onclick=()=>{if(fields.children.length===1){status('profileStatus','Bitte mindestens eine Wunschliste eintragen.');return}const neighbor=fs.nextElementSibling||fs.previousElementSibling;fs.remove();renumberLists();neighbor.querySelector('[name=name]').focus()};fs.append(remove);fields.append(fs);renumberLists();return fs}
-function payload(){if(!$('profileForm').reportValidity())return null;
- for(const [id,message] of [['displayName','Bitte gib deinen Anzeigenamen ein.'],['country','Bitte gib dein Land ein.']]){
-  const field=$(id);
-  if(!field.value.trim()){
-   field.focus();
-   throw new Error(message);
-  }
+function selectedProfileKind(){return document.querySelector('input[name="profileKind"]:checked')?.value||'person'}
+function updateProfileKind(){
+ const org=selectedProfileKind()==='organization';
+ $('personNameFields').hidden=org;
+ $('organizationNameFields').hidden=!org;
+ $('firstName').required=!org;$('lastName').required=!org;$('organizationName').required=org;
+}
+for(const option of document.querySelectorAll('input[name="profileKind"]'))option.addEventListener('change',updateProfileKind);
+updateProfileKind();
+function payload(){
+ updateProfileKind();
+ const identity=profileIdentity(selectedProfileKind(),$('firstName').value,$('lastName').value,$('organizationName').value,$('country').value);
+ if(!$('profileForm').reportValidity())return null;
+ const lists=[...$('listFields').children].map(fs=>({name:fs.querySelector('[name=name]').value.trim(),url:amazonListUrl(fs.querySelector('[name=url]').value),occasion:fs.querySelector('[name=occasion]').value.trim()}));
+ if(lists.some(l=>!l.url||!l.name))throw new Error('Bitte gültige Amazon-Wunschlisten-Links und Listennamen eingeben.');
+ return {...identity,city:$('city').value.trim(),bio:own?.bio||'',interests:own?.interests||[],lists};
+}
+async function loadProfile(){const g=++authGeneration;const r=await db.auth.getUser();if(g!==authGeneration)return;user=!r.error&&!r.data?.user?.is_anonymous?r.data?.user:null;syncSettingsAccount();$('auth').hidden=!!user;$('profileForm').hidden=!user;$('logoutPublic').hidden=!user;own=null;$('listFields').replaceChildren();if(!user){listField();status('profileStatus','');return}const result=await db.from('wishlist_public_profiles').select('*').eq('user_id',user.id).maybeSingle();if(g!==authGeneration)return;if(result.error){status('profileStatus','Dein Profil konnte nicht geladen werden. Bitte lade die Seite erneut.');$('profileForm').hidden=true;return}own=result.data;
+ $('firstName').value=own?.first_name||'';
+ $('lastName').value=own?.last_name||'';
+ $('organizationName').value=own?.organization_name||'';
+ let kind=own?.profile_kind;
+ if(kind!=='person'&&kind!=='organization'){
+  // Legacy profiles only had one display name. Prefill as an organization
+  // to preserve the complete name without guessing a person's name parts.
+  kind='organization';$('organizationName').value=own?.display_name||'';
  }
- const lists=[...$('listFields').children].map(fs=>({name:fs.querySelector('[name=name]').value.trim(),url:amazonListUrl(fs.querySelector('[name=url]').value),occasion:fs.querySelector('[name=occasion]').value.trim()}));if(lists.some(l=>!l.url||!l.name))throw new Error('Bitte gültige Amazon-Wunschlisten-Links und Listennamen eingeben.');return {display_name:$('displayName').value.trim(),country:$('country').value.trim(),city:$('city').value.trim(),bio:own?.bio||'',interests:own?.interests||[],lists}}
-async function loadProfile(){const g=++authGeneration;const r=await db.auth.getUser();if(g!==authGeneration)return;user=!r.error&&!r.data?.user?.is_anonymous?r.data?.user:null;syncSettingsAccount();$('auth').hidden=!!user;$('profileForm').hidden=!user;$('logoutPublic').hidden=!user;own=null;$('listFields').replaceChildren();if(!user){listField();status('profileStatus','');return}const result=await db.from('wishlist_public_profiles').select('*').eq('user_id',user.id).maybeSingle();if(g!==authGeneration)return;if(result.error){status('profileStatus','Dein Profil konnte nicht geladen werden. Bitte lade die Seite erneut.');$('profileForm').hidden=true;return}own=result.data;for(const [id,prop]of[['displayName','display_name'],['country','country'],['city','city']])$(id).value=own?.[prop]||'';for(const l of own?.lists||[{}])listField(l);$('deleteProfile').hidden=!own;status('profileStatus',own?'Dein gespeichertes Profil ist öffentlich sichtbar.':'Dein Profil wird beim Speichern öffentlich sichtbar.')}
+ document.querySelector('input[name="profileKind"][value="'+kind+'"]').checked=true;
+ updateProfileKind();
+ for(const [id,prop]of[['country','country'],['city','city']])$(id).value=own?.[prop]||'';for(const l of own?.lists||[{}])listField(l);$('deleteProfile').hidden=!own;status('profileStatus',own?'Dein gespeichertes Profil ist öffentlich sichtbar.':'Dein Profil wird beim Speichern öffentlich sichtbar.')}
 $('profileForm').onsubmit=async e=>{e.preventDefault();if(!user)return;const b=$('saveProfile');b.disabled=true;try{const p=payload();if(!p)return;const writer=user.id;const r=await guardedWishlistWrite(db,writer,()=>db.from('wishlist_public_profiles').upsert({user_id:writer,...p},{onConflict:'user_id'}).select('user_id').single());if(r.error)throw r.error;own=p;$('deleteProfile').hidden=false;status('profileStatus','Gespeichert. Dein Wunschprofil ist jetzt öffentlich sichtbar.');await filters();await search();await detail()}catch(e){status('profileStatus',e.message||'Speichern fehlgeschlagen.')}finally{b.disabled=false}};
 $('deleteProfile').onclick=async()=>{if(!user||!confirm('Dein öffentliches Wunschprofil mit allen verlinkten Listen löschen? Die Original-Listen bei Amazon bleiben erhalten.'))return;const b=$('deleteProfile');b.disabled=true;try{const writer=user.id;const r=await guardedWishlistWrite(db,writer,()=>db.from('wishlist_public_profiles').delete().eq('user_id',writer).select('user_id'));if(r.error||r.data?.length!==1)throw new Error('Das Profil konnte nicht gelöscht werden.');await loadProfile();status('profileStatus','Dein öffentliches Profil wurde gelöscht.');$('profileDetail').replaceChildren();await filters();await search();await detail()}catch(e){status('profileStatus',e.message)}finally{b.disabled=false}};
 function syncSettingsAccount(){
