@@ -16,13 +16,13 @@ if (!production && !preview) {
   throw new Error('Supabase-Konfiguration gesperrt: expliziter Modus und passende Projektkonfiguration erforderlich.');
 }
 const db = window.supabase.createClient(configured.url, configured.publishableKey);
-import {amazonListUrl,amazonSearchUrl,rankProducts} from './public-profile-model.mjs';
+import {amazonListUrl} from './public-profile-model.mjs';
 import {sampleCloud} from './wishlist-cloud.mjs';
 import {sourceFavicon} from '../../supabase/functions/wishlist-discovery/model.mjs';
 const $=id=>document.getElementById(id), text=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value??'';if(cls)e.className=cls;return e};
 const status=(id,value)=>$(id).textContent=value;
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-let user=null,own=null,page=0,generation=0,authGeneration=0,catalog=[];
+let user=null,own=null,page=0,generation=0,authGeneration=0;
 const key='toolya-public-profile-favorites-v1';
 function readFavorites(){try{const a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a.filter(p=>uuid.test(p.user_id)&&typeof p.display_name==='string').slice(0,100):[]}catch{return []}}
 let favorites=readFavorites();
@@ -31,11 +31,68 @@ function affiliateLink(label,url){const a=text('a',label,'button');a.href=url;a.
 function renderFavorites(){const wrap=$('favoriteItems');wrap.replaceChildren();$('favorites').hidden=!favorites.length;$('favoriteCount').textContent=String(favorites.length);for(const p of favorites){const a=text('a',p.display_name);a.href=profileUrl(p.user_id);wrap.append(a)}}
 function favorite(p){const b=text('button','♡','secondary favorite');b.type='button';const sync=()=>{const on=favorites.some(x=>x.user_id===p.user_id);b.textContent=on?'♥':'♡';b.setAttribute('aria-label',(on?'Profil nicht mehr merken: ':'Profil merken: ')+p.display_name);b.setAttribute('aria-pressed',String(on))};sync();b.onclick=()=>{favorites=favorites.some(x=>x.user_id===p.user_id)?favorites.filter(x=>x.user_id!==p.user_id):[...favorites,{user_id:p.user_id,display_name:p.display_name}].slice(-100);try{localStorage.setItem(key,JSON.stringify(favorites))}catch{}document.querySelectorAll('[data-profile-favorite="'+p.user_id+'"]').forEach(x=>{x.textContent=favorites.some(y=>y.user_id===p.user_id)?'♥':'♡';x.setAttribute('aria-pressed',String(favorites.some(y=>y.user_id===p.user_id)));x.setAttribute('aria-label',(favorites.some(y=>y.user_id===p.user_id)?'Profil nicht mehr merken: ':'Profil merken: ')+p.display_name)});sync();renderFavorites()};b.dataset.profileFavorite=p.user_id;return b}
 function card(p,detail=false,preview=false){
- const root=text('article','','profile-card');const person=text('div','','person'),avatar=text('span',p.display_name.split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase(),'avatar');avatar.setAttribute('aria-hidden','true');const info=document.createElement('div'),heading=text(detail?'h2':'h3',p.display_name);info.append(heading,text('p',[p.city,p.country].filter(Boolean).join(' · '),'location'));if(p.imported){const img=document.createElement('img');img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';img.className='imported-logo';const fallback=()=>new URL('../../assets/toolya/originals/toolya_wishlist_'+(window.toolyaBuddy?.character==='purple'?'purple':'turquoise')+'_welcome_1024.png',import.meta.url).href;img.src=sourceFavicon(p.source_url)||fallback();img.onerror=()=>{img.onerror=null;img.src=fallback()};avatar.replaceChildren(img)}person.append(avatar,info);if(!preview)person.append(favorite(p));root.append(person);if(p.imported){root.append(text('p','Name aus öffentlich verlinkter Quelle · Identität nicht von Toolya bestätigt.','muted'));const source=text('a','Öffentlich gefunden · Quelle ↗','muted');source.href=/^https:\/\//.test(p.source_url||'')?p.source_url:'#';source.target='_blank';source.rel='noopener noreferrer';root.append(source)}
- if(detail||preview){root.append(text('h3',p.imported?'Original-Amazon-Wunschliste':'Öffentliche Amazon-Wunschlisten'));const lists=text('div','','list-links');for(const l of p.lists||[]){const url=amazonListUrl(l.url);if(url)lists.append(affiliateLink('🎁 '+l.name+' · Original bei Amazon öffnen ↗',url))}root.append(lists);if(!preview){if(p.imported){const report=text('a','Falschen Namen oder nicht mehr öffentliche Liste melden ↗','muted');const subject='Korrektur eines öffentlichen Amazon-Wunschlisten-Eintrags';const message='Bitte diesen Toolya-Eintrag prüfen:\n'+profileUrl(p.user_id)+'\n\nGrund der Meldung (bitte ergänzen):\n';report.href='mailto:info@toolya.app?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(message);root.append(report)}const ideas=document.createElement('div');root.append(ideas);renderIdeas(ideas,p);root.append(text('p','Anzeige · Als Amazon-Partner verdiene ich an qualifizierten Verkäufen.','muted'))}}
- else{root.append(text('p',(p.lists||[]).map(x=>x.name).join(' · '),'muted'));const a=text('a','Amazon-Wunschliste ansehen →','button');a.href=profileUrl(p.user_id);root.append(a)}return root;
+ const full=detail||preview;
+ const root=text('article','','profile-card'+(full?' profile-card--detail':' profile-card--compact'));
+ const hero=text('div','','profile-hero');
+ const person=text('div','','person');
+ const avatar=text('span',p.display_name.split(/\\s+/).filter(Boolean).map(x=>x[0]).slice(0,2).join('').toUpperCase(),'avatar');
+ avatar.setAttribute('aria-hidden','true');
+ if(p.imported){
+  const img=document.createElement('img');img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';img.className='imported-logo';
+  const fallback=()=>new URL('../../assets/toolya/originals/toolya_wishlist_'+(window.toolyaBuddy?.character==='purple'?'purple':'turquoise')+'_welcome_1024.png',import.meta.url).href;
+  img.src=sourceFavicon(p.source_url)||fallback();
+  img.onerror=()=>{img.onerror=null;img.src=fallback()};
+  avatar.replaceChildren(img);
+ }
+ const info=text('div','','profile-identity');
+ info.append(text('span',p.imported?'Öffentlich gefunden':'Öffentliches Wunschprofil','profile-eyebrow'));
+ info.append(text(full?'h2':'h3',p.display_name));
+ const location=[p.city,p.country].filter(Boolean).join(' · ');
+ if(location)info.append(text('p','📍 '+location,'location'));
+ person.append(avatar,info);
+ hero.append(person);
+ if(!preview)hero.append(favorite(p));
+ root.append(hero);
+ if(p.imported){
+  root.append(text('p','Name aus öffentlich verlinkter Quelle · Identität nicht von Toolya bestätigt.','profile-source-note'));
+  if(p.source_url&&/^https:\\/\\//.test(p.source_url)){
+   const source=text('a','Quelle des Eintrags ansehen ↗','profile-source-link');
+   source.href=p.source_url;source.target='_blank';source.rel='noopener noreferrer';root.append(source);
+  }
+ }
+ const lists=Array.isArray(p.lists)?p.lists:[];
+ if(full){
+  const section=text('div','','profile-lists');
+  const heading=text('div','','profile-lists-heading');
+  heading.append(text('h3',p.imported?'Original-Wunschliste bei Amazon':'Meine öffentlichen Wunschlisten'));
+  heading.append(text('span',lists.length+' '+(lists.length===1?'Liste':'Listen'),'profile-list-count'));
+  section.append(heading);
+  const links=text('div','','list-links');
+  for(const l of lists){
+   const url=amazonListUrl(l.url);if(!url)continue;
+   const a=text('a','','profile-wishlist-link');a.href=url;a.target='_blank';a.rel='noopener noreferrer sponsored';
+   a.append(text('span','🎁','profile-wishlist-icon'));
+   const copy=text('span','','profile-wishlist-copy');
+   copy.append(text('strong',l.name));
+   if(l.occasion)copy.append(text('span',l.occasion,'profile-wishlist-occasion'));
+   else copy.append(text('span','Öffentliche Wunschliste bei Amazon','profile-wishlist-occasion'));
+   a.append(copy,text('span','↗','profile-wishlist-arrow'));
+   links.append(a);
+  }
+  section.append(links);root.append(section);
+  if(!preview&&p.imported){
+   const report=text('a','Falschen Namen oder nicht mehr öffentliche Liste melden ↗','profile-report-link');
+   const subject='Korrektur eines öffentlichen Amazon-Wunschlisten-Eintrags';
+   const message='Bitte diesen Toolya-Eintrag prüfen:\\n'+profileUrl(p.user_id)+'\\n\\nGrund der Meldung (bitte ergänzen):\\n';
+   report.href='mailto:info@toolya.app?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(message);
+   root.append(report);
+  }
+ }else{
+  root.append(text('p',lists.length+' '+(lists.length===1?'öffentliche Wunschliste':'öffentliche Wunschlisten'),'profile-summary'));
+  const a=text('a','Wunschprofil ansehen','profile-open-link');a.href=profileUrl(p.user_id);a.append(text('span','→','profile-open-arrow'));root.append(a);
+ }
+ return root;
 }
-function renderIdeas(root,p){const products=rankProducts(catalog,p).slice(0,3);root.append(text('h3','Vielleicht interessiert dich …'));if(!products.length){root.append(text('p','Entdecke passende Geschenkideen bei Amazon.','muted'));const cats=text('div','','categories');for(const term of (p.interests?.length?p.interests:['Bücher','Wohnen','Geschenke']).slice(0,3))cats.append(affiliateLink(term+' ↗',amazonSearchUrl(term)));root.append(cats);return}const grid=text('div','','products');for(const product of products){const e=text('article','','product');if(product.image_url&&/^https:\/\/(?:[a-z0-9-]+\.)?(?:media-amazon|images-amazon)\.com\//i.test(product.image_url)){const img=document.createElement('img');img.src=product.image_url;img.alt=product.title;img.loading='lazy';img.referrerPolicy='no-referrer';e.append(img)}e.append(text('h3',product.title),affiliateLink('Bei Amazon ansehen ↗','https://www.amazon.de/dp/'+product.asin+'?tag=duhrrom-21'));grid.append(e)}root.append(grid)}
 function hasSearchCriteria(){return Boolean($('search').value.trim()||$('countryFilter').value||$('occasionFilter').value)}
 async function refreshCloud(currentGeneration){
  const cloud=$('wishlistCloud');
@@ -198,7 +255,6 @@ $('search').oninput=()=>{
 };
 $('submitSearch').onclick=()=>{page=0;search()};$('refreshCloud').onclick=()=>{if(!hasSearchCriteria()){page=0;search()}else{$('search').focus()}};
 for(const id of['countryFilter','occasionFilter'])$(id).onchange=()=>{page=0;search()};$('resetFilters').onclick=()=>{$('search').value='';for(const id of['countryFilter','occasionFilter'])$(id).value='';page=0;search()};$('prevPage').onclick=()=>{page=Math.max(0,page-1);search()};$('nextPage').onclick=()=>{page++;search()};
-try{const r=await fetch('./public-products.json');if(r.ok)catalog=await r.json()}catch{}
 renderFavorites();db.auth.onAuthStateChange(event=>{
  if(event==='PASSWORD_RECOVERY'){
   $('settingsRecoveryPanel').hidden=false;
