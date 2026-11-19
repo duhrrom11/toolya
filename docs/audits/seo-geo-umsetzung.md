@@ -1,16 +1,24 @@
-# SEO- und GEO-Umsetzung
+# Toolya SEO- und GEO-Umsetzung
 
-| Audit | Stand im Pull Request |
-|---|---|
-| T01 und T02 | 16 ältere Wishlist-Routen und drei operative Nachlass-Seiten erhalten noindex. Bestehende Routenziele und Funktionen bleiben verfügbar. Weiterleitungen oder 410 erst für nachgewiesen ersetzte bzw. eingestellte Seiten. |
-| T03 | Verzeichnis als primäre Suchseite, bestehende Profil-Links behalten denselben Canonical. Individuelle Profil-Indexierung erfordert eine gesonderte Prüfung der notwendigen Veröffentlichungs- und Löschregeln. |
-| T04 | Öffentlicher Backform-Rechner, Faktorenmatrix, Rechenbeispiele und mobile Browserregression. |
-| T05 | OpenSEO meldet keine verbundenen Search-Console-Konten. Bestehende Admin-Integration im Repository verwendet separat verwaltete Zugangsdaten. Benötigt autorisierte Live-Daten von Google und Bing. |
-| T06 und T07 | Kontextlinks für verwandte Anleitungen, zentrale Startseiten-URL im Markenlink und beschreibende H1. |
-| T08 | Mobilmessung und Ersatz des Tailwind-Laufzeitskripts stehen aus. Styles der Tool-Oberflächen müssen vor der Umstellung vollständig abgedeckt werden. |
-| T09 | Gemeinsame stabile WebSite-ID auf Startseite, Anleitungen und Verzeichnis. |
-| T10 | Eigene 404-Seite mit Rückwegen zur Startseite und zu den Anleitungen. |
-| T11 | Druckbares Umzugsetikett und Zählerübergabemuster. Das Musteretikett enthält Beispieldaten; den eigenen scanbaren QR-Code erstellt das vorhandene Tool. Zusätzliche Bilder und Social-Vorschauen stehen aus. |
-| T12 | Regionale Auswertung und Übersetzungen abhängig von Suchdaten. |
+Stand 19. November 2026. Referenz auf `main`: `90c1dca1eee2f32f9e6d103021fa105ec0f8c856`. Die IDs beziehen sich auf die [SEO-Roadmap](toolya-roadmap-1.md). Die Tabelle nennt die belegten Ergebnisse und grenzt verbleibende Prüfungen ein.
 
-Die 13 Anleitungen enthalten zusätzliche konkrete Antworten, Rechenbeispiele oder Vorlagen. Für tatsächliche Indexierung, Rankings, Web Vitals und KI-Zitierungen sind Messungen nach dem Release notwendig. Externe Ansprache und Veröffentlichung von Profilen sind gesonderte Schritte.
+| Punkte | Belegter Stand | Bezug |
+| --- | --- | --- |
+| R00 | Master-Audit, SEO-Roadmap und dieser versionierte Umsetzungsstand liegen vor. | [Master-Audit](toolya-master-audit.md) · [Roadmap](toolya-roadmap-1.md) |
+| R01–R03 | Die 18 Sitemap-Ziele und die wichtigsten URL-Varianten wurden geprüft. Eine vollständige maschinenlesbare Wiederholung des ursprünglichen URL-Inventars und die vollständige visuelle Baseline fehlen. Google Search Console und GA4 sind verbunden. Bing-Daten blieben für den Messbericht unbestätigt. | [Messstand](toolya-search-measurement.md) |
+| R10–R15 | Drei Nachlass-Hilfsseiten und 16 ältere Wunschlisten-Routen liefern `noindex`. Die öffentliche Wunschlisten-Detailansicht behält den Canonical des Verzeichnisses. Eigentümer-Löschung und Entzug der Sichtbarkeit wurden isoliert geprüft. Die Einzelklassifizierung aller Alt-Routen und die fachliche Datenschutz- und Affiliate-Prüfung bleiben offen. | [PR #175](https://github.com/duhrrom11/toolya/pull/175) · [PR #176](https://github.com/duhrrom11/toolya/pull/176) |
+| R20–R21, R51 | Der frei nutzbare Backform-Rechner, die Faktorenmatrix und vier Umrechnungsbeispiele stehen auf der öffentlichen Ratgeberseite. Die Beispiele bleiben als Abschnitte auf der bestehenden URL. | [PR #175](https://github.com/duhrrom11/toolya/pull/175) · [PR #188](https://github.com/duhrrom11/toolya/pull/188) |
+| R22–R24 | Interne Startseiten-Links führen auf `/`. Alle 18 Sitemap-Ziele lieferten HTTP 200 und einen Canonical auf sich selbst. Die 13 Ratgeber-Varianten mit `index.html` bleiben erreichbar und nennen ihre Verzeichnis-URL als Canonical. Google las die Sitemap erfolgreich. Der Bing-Sitemapstatus bleibt offen. Vier aktualisierte Ratgeber wurden über IndexNow gemeldet. | [PR #195](https://github.com/duhrrom11/toolya/pull/195) · [Sitemap-Status](toolya-sitemap-status.md) |
+| R25–R28 | Vorschau-Metadaten und Bilder wurden für die 18 öffentlichen Seiten live geprüft. Startseite und Impressum verwenden gemeinsame Schema-IDs. Die eigene Fehlerseite liefert HTTP 404. Die 13 Ratgeber haben einen Tastatursprung zum Hauptinhalt. Eine vollständige Prüfung aller Bilder und interaktiven Bedienelemente steht aus. | [PR #175](https://github.com/duhrrom11/toolya/pull/175) · [PR #177](https://github.com/duhrrom11/toolya/pull/177) · [PR #178](https://github.com/duhrrom11/toolya/pull/178) · [PR #189](https://github.com/duhrrom11/toolya/pull/189) |
+| R30–R32 | Responsive Titelbilder und statische Tailwind-Stile wurden auf der Startseite veröffentlicht. Mobiles LCP in den dokumentierten Lighthouse-Läufen: 4,29 s vor den beiden Änderungen und 1,64 s nach ihnen. Felddaten und die vollständige Vergleichsmessung für schwere Tools fehlen. | [PR #184](https://github.com/duhrrom11/toolya/pull/184) · [PR #185](https://github.com/duhrrom11/toolya/pull/185) · [Lighthouse-Nachmessung](https://app.openseo.so/p/6eddcfc6-d4a2-403b-a689-d02bc761a969/audit?auditId=8f3bdb99-a596-4570-9689-d642aa445f3d) |
+| R33–R34 | Local-first-Abwägung und systematische Prüfung der Lade- und Fehlerzustände sind offen. | [Roadmap](toolya-roadmap-1.md) |
+| R40–R48 | Die Ratgeber wurden um Beispiele, vier CSV-Vorlagen, eine Nachlass-Checkliste und Erläuterungen zur Wunschlisten-Entfernung ergänzt. Vollständige Autoren-, Quellen- und Screenshot-Prüfung sowie sensible Rechtstexte bleiben offen. | [PR #179](https://github.com/duhrrom11/toolya/pull/179) · [PR #180](https://github.com/duhrrom11/toolya/pull/180) · [PR #181](https://github.com/duhrrom11/toolya/pull/181) · [PR #182](https://github.com/duhrrom11/toolya/pull/182) · [PR #183](https://github.com/duhrrom11/toolya/pull/183) |
+| R50, R52–R55 | Themenplan, vier Vergleichstabellen, Betreiber-Verknüpfung, `llms.txt` mit Sitemap-Test und KI-Ausgangsmessung liegen vor. Der bestehende KI-Tracker prüft wöchentlich. Bing-KI-Messwerte fehlen. | [Themenplan](toolya-seo-themenplan.md) · [PR #187](https://github.com/duhrrom11/toolya/pull/187) · [PR #189](https://github.com/duhrrom11/toolya/pull/189) · [KI-Ausgangsmessung](toolya-geo-baseline.md) |
+| R60–R63 | GSC-Messstand, Sichtbarkeitsbasis und redaktionelle Entwürfe sind dokumentiert. Der 28-Tage-Vergleich ist für den 22. Dezember 2026 eingeplant. | [Messstand](toolya-search-measurement.md) · [Offpage-Basis](toolya-offpage-baseline.md) · [Entwürfe](toolya-outreach-plan.md) |
+| R70–R74 | Die Roadmap behandelt diese Punkte als spätere Produktentscheidungen mit eigenen Voraussetzungen. | [Roadmap](toolya-roadmap-1.md) |
+
+## Offene Abnahme aus der jüngsten Veröffentlichung
+
+Der isolierte Browser-Workflow von PR #195 meldete dieselben elf fehlgeschlagenen Tests wie ein früherer Lauf auf `main`. Die drei übrigen Workflows waren erfolgreich. Die sechs geänderten Dateien wurden nach dem Merge live geprüft. Die fehlgeschlagenen Tests bleiben als separate offene Abnahme erfasst.
+
+[Aktueller Vergleichslauf](https://github.com/duhrrom11/toolya/actions/runs/44517919392) · [Früherer Lauf auf main](https://github.com/duhrrom11/toolya/actions/runs/44494384720)
