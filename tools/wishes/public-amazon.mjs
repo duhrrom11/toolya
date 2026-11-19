@@ -18,7 +18,6 @@ if (!production && !preview) {
 }
 const db = window.supabase.createClient(configured.url, configured.publishableKey);
 import {amazonListUrl} from './public-profile-model.mjs';
-import {sampleCloud} from './wishlist-cloud.mjs';
 import {sourceFavicon} from '../../supabase/functions/wishlist-discovery/model.mjs';
 const $=id=>document.getElementById(id), text=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value??'';if(cls)e.className=cls;return e};
 const status=(id,value)=>$(id).textContent=value;
@@ -95,30 +94,9 @@ function card(p,detail=false,preview=false){
  return root;
 }
 function hasSearchCriteria(){return Boolean($('search').value.trim()||$('countryFilter').value||$('occasionFilter').value)}
-async function refreshCloud(currentGeneration){
- const cloud=$('wishlistCloud');
- cloud.replaceChildren();
- status('searchStatus','Zufällige Wunschlisten werden zusammengestellt …');
- const counted=await db.from('wishlist_directory').select('user_id',{count:'exact'}).limit(1);
- if(currentGeneration!==generation||hasSearchCriteria())return;
- if(counted.error){status('searchStatus','Die Namenswolke konnte nicht geladen werden. Die Suche ist weiterhin verfügbar.');return}
- const total=counted.count||0;
- if(!total){status('searchStatus','Noch keine öffentlichen Wunschlisten im Verzeichnis.');return}
- const windowSize=Math.min(120,total);
- const start=Math.floor(Math.random()*(total-windowSize+1));
- const fetched=await db.from('wishlist_directory').select('user_id,display_name').order('created_at',{ascending:false}).range(start,start+windowSize-1);
- if(currentGeneration!==generation||hasSearchCriteria())return;
- if(fetched.error){status('searchStatus','Die Namenswolke konnte nicht geladen werden. Die Suche ist weiterhin verfügbar.');return}
- const chosen=sampleCloud(fetched.data,30);
- for(let i=0;i<chosen.length;i++){
-  const p=chosen[i],entry=text('span','','cloud-entry');
-  entry.setAttribute('role','listitem');
-  const a=text('a',p.display_name,'cloud-word cloud-size-'+(i%5));
-  a.href=profileUrl(p.user_id);
-  a.title='Öffentliche Amazon-Wunschliste von '+p.display_name+' ansehen';
-  entry.append(a);cloud.append(entry);
- }
- status('searchStatus',chosen.length+' zufällig ausgewählte Wunschlisten. Suche gezielt nach Namen, um weitere zu finden.');
+async function refreshCloud(_currentGeneration){
+ // Creation carousel is static; no random directory cloud fetch needed.
+ status('searchStatus','');
 }
 async function search(){
  clearTimeout(debounce);
@@ -334,7 +312,7 @@ $('search').oninput=()=>{
  status('searchStatus','Öffentliche Amazon-Wunschlisten werden gesucht …');
  debounce=setTimeout(search,250);
 };
-$('submitSearch').onclick=()=>{page=0;search()};$('refreshCloud').onclick=()=>{if(!hasSearchCriteria()){page=0;search()}else{$('search').focus()}};
+$('submitSearch').onclick=()=>{page=0;search()};
 for(const id of['countryFilter','occasionFilter'])$(id).onchange=()=>{page=0;search()};$('resetFilters').onclick=()=>{$('search').value='';for(const id of['countryFilter','occasionFilter'])$(id).value='';page=0;search()};$('prevPage').onclick=()=>{page=Math.max(0,page-1);search()};$('nextPage').onclick=()=>{page++;search()};
 renderFavorites();db.auth.onAuthStateChange(event=>{
  if(event==='PASSWORD_RECOVERY'){
