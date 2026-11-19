@@ -47,21 +47,21 @@
       <form id="pan-calculator" class="guide-calculator">
         <div class="guide-fields">
           <fieldset>
-            <legend>Form im Rezept</legend>
-            <label>Form <select name="sourceShape"><option value="round">Rund</option><option value="rect">Eckig</option></select></label>
-            <label><span data-dimension>Durchmesser (cm)</span><input name="sourceSize" type="number" min="0.1" max="500" step="any" value="26" required></label>
-            <label data-width hidden>Breite (cm)<input name="sourceWidth" type="number" min="0.1" max="500" step="any" value="10" disabled></label>
+            <legend id="source-legend">Form im Rezept</legend>
+            <label><span id="source-shape">Form</span> <select name="sourceShape" aria-labelledby="source-legend source-shape"><option value="round">Rund</option><option value="rect">Eckig</option></select></label>
+            <label><span id="source-size" data-dimension>Durchmesser (cm)</span><input name="sourceSize" aria-labelledby="source-legend source-size" type="number" min="0.1" max="500" step="any" value="26" required></label>
+            <label data-width hidden><span id="source-width">Breite (cm)</span><input name="sourceWidth" aria-labelledby="source-legend source-width" type="number" min="0.1" max="500" step="any" value="10" disabled></label>
           </fieldset>
           <fieldset>
-            <legend>Meine Backform</legend>
-            <label>Form <select name="targetShape"><option value="round">Rund</option><option value="rect">Eckig</option></select></label>
-            <label><span data-dimension>Durchmesser (cm)</span><input name="targetSize" type="number" min="0.1" max="500" step="any" value="28" required></label>
-            <label data-width hidden>Breite (cm)<input name="targetWidth" type="number" min="0.1" max="500" step="any" value="10" disabled></label>
+            <legend id="target-legend">Meine Backform</legend>
+            <label><span id="target-shape">Form</span> <select name="targetShape" aria-labelledby="target-legend target-shape"><option value="round">Rund</option><option value="rect">Eckig</option></select></label>
+            <label><span id="target-size" data-dimension>Durchmesser (cm)</span><input name="targetSize" aria-labelledby="target-legend target-size" type="number" min="0.1" max="500" step="any" value="28" required></label>
+            <label data-width hidden><span id="target-width">Breite (cm)</span><input name="targetWidth" aria-labelledby="target-legend target-width" type="number" min="0.1" max="500" step="any" value="10" disabled></label>
           </fieldset>
         </div>
         <label>Zutatenmenge in der im Rezept angegebenen Einheit (optional)<input name="amount" type="number" min="0" max="1000000" step="any" value="200"></label>
         <button class="button" type="submit">Menge umrechnen</button>
-        <output aria-live="polite"></output>
+        <output aria-label="Umrechnungsergebnis" aria-live="polite"></output>
       </form>
       <noscript><p>Ohne JavaScript kannst du die Faktoren aus der Tabelle verwenden.</p></noscript>
       <h3>Umrechnungsfaktoren für Springformen</h3>
