@@ -29,6 +29,7 @@
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
 <script src="../../shared/toolya/auth-page-gate.js"></script>
+<script src="../../shared/toolya/cloud-page-status.js"></script>
 
     <style>
         @media print {
@@ -551,8 +552,8 @@ async function toolyaCloudSave(patch) {
     return true;
   } catch(error) {
     toolyaCloudReady = false;
-    toolyaCloudBlock('Cloud-Speicherung unbestätigt. Bitte Seite neu laden und den Cloud-Datenstand prüfen.');
-    alert('Cloud-Speicherung nicht bestätigt: '+error.message+'. Bitte Seite neu laden; Eingaben nicht als gespeichert betrachten.');
+    toolyaCloudBlock('save-unconfirmed');
+    console.error(error);
     return false;
   }
 }
@@ -572,25 +573,12 @@ async function toolyaSafeCloudImport(snapshot) {
   return result.status==='confirmed';
 }
 
-function toolyaCloudBlock(message) {
-  let gate=document.getElementById('toolya-cloud-gate');
-  if(!gate){
-    gate=document.createElement('div');
-    gate.id='toolya-cloud-gate';gate.setAttribute('role','alert');
-    gate.style.cssText='position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
-    document.body.append(gate);
-  }
-  gate.textContent=message+' ';
-  const link=document.createElement('a');link.href='../../index.html';
-  link.textContent='Zur Toolya-Anmeldung';link.style.cssText='display:block;color:#0369a1;text-decoration:underline';
-  gate.append(link);
+function toolyaCloudBlock(state) {
+  window.toolyaCloudPageStatus(state);
 }
 
 async function toolyaCloudBoot(tool) {
-  const gate = document.createElement('div');
-  gate.setAttribute('role','alert');gate.id='toolya-cloud-gate';
-  gate.style.cssText='position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
-  gate.textContent='Toolya Cloud wird geladen …';document.body.append(gate);
+  toolyaCloudBlock('loading');
   try {
     const {prepareCloudTool} = await import('../../shared/toolya/cloud-tool-adapters.mjs');
     const storage = localStorage;
@@ -616,13 +604,15 @@ async function toolyaCloudBoot(tool) {
     toolyaCloudController=prepared.controller;
     toolyaCloudUserId=initialUserId;
     toolyaCloudReady=true;
-    gate.remove();
+    document.getElementById('toolya-cloud-gate')?.remove();
     if(tool==='autokosten-reifenwechsel')loadCarDropdowns();
     if(tool==='haushaltsbuch-kassenbon')initCharts();
     renderApp();
   } catch(error) {
-    gate.textContent='Toolya Cloud gesperrt: '+error.message+' '; const link=document.createElement('a');link.href='../../index.html';link.textContent='Zur Anmeldung auf der Startseite';link.style.cssText='display:block;color:#0369a1;text-decoration:underline';gate.append(link);
     console.error(error);
+    toolyaCloudReady = false;
+    toolyaCloudController?.invalidate();
+    toolyaCloudBlock(error?.code === 'toolya_migration_paused' ? 'migration-paused' : 'load-failed');
   }
 }
 
@@ -738,7 +728,7 @@ async function toolyaCloudBoot(tool) {
             if (event === 'SIGNED_OUT') {
                 toolyaCloudReady=false;toolyaCloudUserId=null;
                 toolyaCloudController?.invalidate();
-                toolyaCloudBlock('Abgemeldet. Bitte erneut anmelden.');
+                toolyaCloudBlock('signed-out');
             } else if (event === 'SIGNED_IN' && toolyaCloudUserId) {
                 // SIGNED_IN may also fire for a refreshed session of the same user.
                 setTimeout(async () => {
@@ -746,11 +736,11 @@ async function toolyaCloudBoot(tool) {
                         const {data,error}=await window.supabaseClient.auth.getUser();
                         if(error || data?.user?.id!==toolyaCloudUserId) {
                             toolyaCloudReady=false;toolyaCloudController?.invalidate();
-                            toolyaCloudBlock('Konto gewechselt. Bitte Seite neu laden.');
+                            toolyaCloudBlock('account-changed');
                         }
                     } catch (_) {
                         toolyaCloudReady=false;toolyaCloudController?.invalidate();
-                        toolyaCloudBlock('Anmeldung konnte nicht geprüft werden.');
+                        toolyaCloudBlock('load-failed');
                     }
                 },0);
             }

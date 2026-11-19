@@ -28,6 +28,7 @@
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
 <script src="../../shared/toolya/auth-page-gate.js"></script>
+<script src="../../shared/toolya/cloud-page-status.js"></script>
     <link rel="stylesheet" href="../../assets/helferlein-b3.css">
     <link rel="stylesheet" href="../../assets/helferlein-b3-pflanzen.css">
     <script defer src="../../assets/helferlein-b3.js"></script>
@@ -435,7 +436,7 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         supabaseClient.auth.onAuthStateChange((event,session) => {
             if(plantsCloudReady&&(!session?.user?.id||session.user.id!==plantsCloudUserId||session.user.is_anonymous))
-                plantsCloudBlock('Sitzung geändert. Bitte neu anmelden.');
+                plantsCloudBlock('account-changed');
             setTimeout(() => { checkUserSession().catch(() => {}); }, 0);
         });
 
@@ -804,18 +805,12 @@
         }
 
         let plantsCloudReady=false,plantsCloudUserId=null,plantsCloudController=null;
-        function plantsCloudBlock(message){
+        function plantsCloudBlock(state){
             plantsCloudReady=false;plantsCloudController?.invalidate();
-            let gate=document.getElementById('toolya-cloud-gate');
-            if(!gate){gate=document.createElement('div');gate.id='toolya-cloud-gate';
-                gate.setAttribute('role','alert');
-                gate.style.cssText='position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
-                document.body.append(gate);}
-            gate.textContent=message+' ';
-            const link=document.createElement('a');link.href='../../index.html';link.textContent='Zur Toolya-Anmeldung';gate.append(link);
+            window.toolyaCloudPageStatus(state);
         }
         async function plantsCloudBoot(){
-            plantsCloudBlock('Toolya Cloud wird geladen …');
+            plantsCloudBlock('loading');
             try{
                 const {prepareCloudTool}=await import('../../shared/toolya/cloud-tool-adapters.mjs');
                 const {data:auth,error}=await supabaseClient.auth.getUser();
@@ -842,7 +837,7 @@
                 document.getElementById('plantLastWatered').valueAsDate=new Date();
                 calculateWaterAmount();loadLocationDropdown();renderApp();updateCisternDisplay();
                 checkFrostSeason(month);await checkUserSession();
-            }catch(error){console.error(error);plantsCloudBlock('Toolya Cloud gesperrt: '+error.message);}
+            }catch(error){console.error(error);plantsCloudBlock(error?.code === 'toolya_migration_paused' ? 'migration-paused' : 'load-failed');}
         }
         function getData(){
             if(!plantsCloudReady||!plantsCloudController?.ready)return {plants:[],monthWaterLiters:0,totalHarvestGrams:0,
@@ -850,13 +845,13 @@
             return plantsCloudController.snapshot();
         }
         async function saveData(data){
-            if(!plantsCloudReady||!plantsCloudController?.ready){plantsCloudBlock('Cloud nicht bereit.');return false;}
+            if(!plantsCloudReady||!plantsCloudController?.ready){plantsCloudBlock('load-failed');return false;}
             try{
                 const {data:auth,error}=await supabaseClient.auth.getUser();
                 if(error||auth?.user?.id!==plantsCloudUserId||auth.user.is_anonymous)throw Error('Anmeldung nicht gültig.');
                 await plantsCloudController.replace(data);
                 window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');return true;
-            }catch(error){console.error(error);plantsCloudBlock('Cloud-Speicherung unbestätigt: '+error.message);return false;}
+            }catch(error){console.error(error);plantsCloudBlock('save-unconfirmed');return false;}
         }
 
         function loadLocationDropdown() {

@@ -24,6 +24,7 @@
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
 <script src="../../shared/toolya/auth-page-gate.js"></script>
+<script src="../../shared/toolya/cloud-page-status.js"></script>
     <link rel="stylesheet" href="../../assets/helferlein-b3.css">
     <link rel="stylesheet" href="../../assets/helferlein-b3-verleih.css">
     <script>
@@ -355,7 +356,7 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         supabaseClient.auth.onAuthStateChange((event,session) => {
             if (loansCloudReady && (!session?.user?.id || session.user.id!==loansCloudUserId || session.user.is_anonymous))
-                loansCloudBlock('Toolya-Sitzung geändert. Bitte neu anmelden.');
+                loansCloudBlock('account-changed');
             setTimeout(() => { checkUserSession().catch(() => {}); }, 0);
         });
 
@@ -421,23 +422,13 @@
         });
 
         let loansCloudController=null,loansCloudUserId=null,loansCloudReady=false;
-        function loansCloudBlock(message) {
+        function loansCloudBlock(state) {
             loansCloudReady=false;
-            
-            
             loansCloudController?.invalidate();
-            let gate=document.getElementById('toolya-cloud-gate');
-            if(!gate){
-                gate=document.createElement('div');gate.id='toolya-cloud-gate';
-                gate.setAttribute('role','alert');
-                gate.style.cssText='position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
-                document.body.append(gate);
-            }
-            gate.textContent=message+' ';
-            const link=document.createElement('a');link.href='../../index.html';link.textContent='Zur Toolya-Anmeldung';gate.append(link);
+            window.toolyaCloudPageStatus(state);
         }
         async function loansCloudBoot() {
-            loansCloudBlock('Toolya Cloud wird geladen …');
+            loansCloudBlock('loading');
             try {
                 const {prepareCloudTool}=await import('../../shared/toolya/cloud-tool-adapters.mjs');
                 const {data:auth,error}=await supabaseClient.auth.getUser();
@@ -462,7 +453,7 @@
                 document.getElementById('itemDate').valueAsDate=new Date();
                 loadDropdowns();renderInventory();renderApp();
                 await checkUserSession();
-            }catch(error){console.error(error);loansCloudBlock('Toolya Cloud gesperrt: '+error.message);}
+            }catch(error){console.error(error);loansCloudBlock(error?.code === 'toolya_migration_paused' ? 'migration-paused' : 'load-failed');}
         }
         function getData() {
             if(!loansCloudReady||!loansCloudController?.ready)return {items:[],contacts:[],inventory:[]};
@@ -470,7 +461,7 @@
         }
         async function saveData(data) {
             if(!loansCloudReady||!loansCloudController?.ready){
-                loansCloudBlock('Cloud nicht bereit. Bitte neu anmelden.');return false;
+                loansCloudBlock('load-failed');return false;
             }
             try {
                 const {data:auth,error}=await supabaseClient.auth.getUser();
@@ -479,7 +470,7 @@
                 await loansCloudController.replace(data);
                 window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');
                 return true;
-            }catch(error){console.error(error);loansCloudBlock('Cloud-Speicherung unbestätigt: '+error.message);return false;}
+            }catch(error){console.error(error);loansCloudBlock('save-unconfirmed');return false;}
         }
 
         async function saveContact() {

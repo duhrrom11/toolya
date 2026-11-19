@@ -3,6 +3,10 @@ import { requireVerifiedUser } from './cloud-auth-gate.mjs';
 import { createCarCloudController, createBudgetCloudController, createMovingCloudController, createLoansCloudController, createMetersCloudController, createPlantsCloudController, createParkingCloudController, createPetHealthCloudController, createBakingCloudController } from './cloud-controller.mjs';
 import { createLegacyMigration, sameJson } from './legacy-cloud-migration.mjs';
 
+function migrationPaused(message) {
+  return Object.assign(new Error(message), { code: 'toolya_migration_paused' });
+}
+
 /**
  * Cloud-only bootstrap for the two legacy tools. This is deliberately separate
  * from their synchronous UI code until every call site can await a save.
@@ -30,9 +34,14 @@ export async function prepareCloudTool({ client, tool, storage, confirmMigration
       throw new Error('Migration erfordert Bestätigung und Backup.');
     const outcome = await migration.migrate({
       confirm: confirmMigration,
-      exportBackup
+      exportBackup: async (...args) => {
+        if (await exportBackup(...args) !== true) {
+          throw migrationPaused('Sicherung nicht bestätigt. Migration abgebrochen.');
+        }
+        return true;
+      }
     });
-    if (outcome.status !== 'confirmed') throw new Error('Migration abgebrochen; keine Daten gelöscht.');
+    if (outcome.status !== 'confirmed') throw migrationPaused('Migration abgebrochen; keine Daten gelöscht.');
   }
   if (review.status === 'cloud-already-exists') {
     // No implicit merge or overwrite. Require explicit acknowledgement and local export.
@@ -42,9 +51,9 @@ export async function prepareCloudTool({ client, tool, storage, confirmMigration
       tool, localKeys: review.localKeys, cloudRevision: review.cloudRevision,
       warning: 'Cloud-Daten haben Vorrang; Gerätedaten bleiben erhalten und werden nicht automatisch zusammengeführt.'
     });
-    if (proceed !== true) throw Error('Datenabgleich abgebrochen.');
+    if (proceed !== true) throw migrationPaused('Datenabgleich abgebrochen.');
     const exported = await exportBackup(review.local, tool);
-    if (exported !== true) throw Error('Gerätedaten-Sicherung nicht bestätigt.');
+    if (exported !== true) throw migrationPaused('Gerätedaten-Sicherung nicht bestätigt.');
     // Recheck account and cloud revision after the user interaction.
     const checked = await migration.inspect();
     if (checked.status !== 'cloud-already-exists' ||

@@ -11,7 +11,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  const b64=x=>Buffer.from(JSON.stringify(x)).toString('base64url');
  const token=b64({alg:'HS256',typ:'JWT'})+'.'+b64({sub:user.id,exp:Math.floor(Date.now()/1000)+3600,aud:'authenticated',role:'authenticated'})+'.synthetic';
  let requests=0,refreshes=0;
- let authFailure;
+ let authFailure, cloudReadFailure, cloudWriteAttempts=0;
  await page.route('**/*',r=>{
   const u=new URL(r.request().url());if(u.origin===origin)return r.continue();
   if(u.hostname!=='yheogmeaosuigyaxkwth.supabase.co'){if(r.request().method()==='GET'&&['cdn.tailwindcss.com','unpkg.com','cdn.jsdelivr.net','cdnjs.cloudflare.com','fonts.googleapis.com','fonts.gstatic.com'].includes(u.hostname))return r.continue();return r.abort();}
@@ -23,6 +23,13 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
    return reply(user);
   }
   if(u.pathname==='/auth/v1/logout')return reply({});
+  if(u.pathname==='/rest/v1/user_data'&&cloudReadFailure){
+   return cloudReadFailure.then(()=>reply({code:'PGRST000',message:'Synthetic read failure'},503));
+  }
+  if(u.pathname==='/rest/v1/rpc/toolya_save_snapshot'){
+   cloudWriteAttempts++;
+   return reply({code:'40001',message:'Synthetic write conflict'},409);
+  }
   if(u.pathname.startsWith('/rest/v1/')&&r.request().method()==='GET')return reply([]);
   if(u.pathname.startsWith('/rest/v1/'))return r.abort();
   throw Error('Unexpected synthetic auth request '+u.pathname);
@@ -74,6 +81,34 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  await page.locator('#parkDesc').waitFor();
  assert.equal(page.url(),origin+'/tools/parking/?source=retry#parking','retry preserves the original tool address');
  assert(await access.isHidden(),'access status disappears when verification succeeds');
+ // Cloud data can fail to load after a successful account check.
+ let releaseCloudRead;
+ cloudReadFailure=new Promise(resolve=>{releaseCloudRead=resolve;});
+ await page.reload({waitUntil:'commit'});
+ const cloud=page.locator('#toolya-cloud-gate');
+ await cloud.getByText('Wir laden deine gespeicherten Daten …').waitFor();
+ assert.equal(await cloud.getAttribute('role'),'status');
+ assert.equal(await cloud.getByRole('button').count(),0);
+ releaseCloudRead();
+ const retryData=cloud.getByRole('button',{name:'Erneut versuchen'});
+ await retryData.waitFor();
+ assert.equal(await cloud.getAttribute('role'),'alert');
+ assert.match(await cloud.textContent(),/konnten gerade nicht geladen werden/);
+ assert.doesNotMatch(await cloud.textContent(),/Synthetic read failure/);
+ cloudReadFailure=null;
+ await retryData.focus();
+ await page.keyboard.press('Enter');
+ await page.waitForFunction(()=>typeof parkingCloudReady!=='undefined'&&parkingCloudReady);
+ assert(await cloud.isHidden(),'data retry clears the loading panel');
+ assert.equal(page.url(),origin+'/tools/parking/?source=retry#parking');
+ // A failed save must preserve the form until a deliberate reload and never replay the write.
+ await page.locator('#parkDesc').fill('Synthetischer Stellplatz');
+ assert.equal(await page.evaluate(()=>saveData(getData())),false);
+ await cloud.getByRole('button',{name:'Seite neu laden'}).waitFor();
+ assert.match(await cloud.textContent(),/Toolya konnte die Speicherung nicht bestätigen/);
+ assert.doesNotMatch(await cloud.textContent(),/Synthetic write conflict/);
+ assert.equal(await page.locator('#parkDesc').inputValue(),'Synthetischer Stellplatz');
+ assert.equal(cloudWriteAttempts,1);
  await page.setViewportSize({width:1280,height:720});
  // One login must survive navigation through every legacy tool and back home.
  for(const tool of ['budget','moving','car','pet-health','meters','plants','parking','loans','baking','housemates']){

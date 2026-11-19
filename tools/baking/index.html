@@ -22,6 +22,7 @@
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
 <script src="../../shared/toolya/auth-page-gate.js"></script>
+<script src="../../shared/toolya/cloud-page-status.js"></script>
     <script>
         if (typeof tailwind !== 'undefined') tailwind.config = {
             darkMode: 'class',
@@ -674,7 +675,7 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         supabaseClient.auth.onAuthStateChange((event,session) => {
             if(bakingCloudReady&&(!session?.user?.id||session.user.id!==bakingCloudUserId||session.user.is_anonymous))
-                bakingCloudBlock('Sitzung geändert. Bitte neu anmelden.');
+                bakingCloudBlock('account-changed');
             setTimeout(() => { checkUserSession().catch(() => {}); }, 0);
         });
 
@@ -929,17 +930,12 @@
         }
 
         let bakingCloudReady=false,bakingCloudUserId=null,bakingCloudController=null;
-        function bakingCloudBlock(message){
+        function bakingCloudBlock(state){
             bakingCloudReady=false;bakingCloudController?.invalidate();
-            let gate=document.getElementById('toolya-cloud-gate');
-            if(!gate){gate=document.createElement('div');gate.id='toolya-cloud-gate';gate.setAttribute('role','alert');
-                gate.style.cssText='position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
-                document.body.append(gate);}
-            gate.textContent=message+' ';
-            const link=document.createElement('a');link.href='../../index.html';link.textContent='Zur Toolya-Anmeldung';gate.append(link);
+            window.toolyaCloudPageStatus(state);
         }
         async function bakingCloudBoot(){
-            bakingCloudBlock('Toolya Cloud wird geladen …');
+            bakingCloudBlock('loading');
             try{
                 const {prepareCloudTool}=await import('../../shared/toolya/cloud-tool-adapters.mjs');
                 const {data:auth,error}=await supabaseClient.auth.getUser();
@@ -962,20 +958,20 @@
                 bakingCloudController=prepared.controller;bakingCloudUserId=uid;bakingCloudReady=true;
                 document.getElementById('toolya-cloud-gate')?.remove();renderSavedRecipes();
                 await checkUserSession();
-            }catch(error){console.error(error);bakingCloudBlock('Toolya Cloud gesperrt: '+error.message);}
+            }catch(error){console.error(error);bakingCloudBlock(error?.code === 'toolya_migration_paused' ? 'migration-paused' : 'load-failed');}
         }
         function getRecipes(){
             if(!bakingCloudReady||!bakingCloudController?.ready)return [];
             return bakingCloudController.snapshot().recipes;
         }
         async function persistRecipes(recipes){
-            if(!bakingCloudReady||!bakingCloudController?.ready){bakingCloudBlock('Cloud nicht bereit.');return false;}
+            if(!bakingCloudReady||!bakingCloudController?.ready){bakingCloudBlock('load-failed');return false;}
             try{
                 const {data:auth,error}=await supabaseClient.auth.getUser();
                 if(error||auth?.user?.id!==bakingCloudUserId||auth.user.is_anonymous)throw Error('Anmeldung nicht gültig.');
                 await bakingCloudController.replace({recipes});
                 window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');return true;
-            }catch(error){console.error(error);bakingCloudBlock('Cloud-Speicherung unbestätigt: '+error.message);return false;}
+            }catch(error){console.error(error);bakingCloudBlock('save-unconfirmed');return false;}
         }
         async function saveRecipeToStorage(name,text,factor){
             const recipes=getRecipes();
