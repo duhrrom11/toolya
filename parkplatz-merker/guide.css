@@ -50,6 +50,10 @@ aside { background: #e3f5fa; padding: .8rem; border-radius: .6rem; }
 .guide-calculator [hidden] { display: none; }
 .guide-calculator :is(input, select) { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; padding: .35rem; font: inherit; }
 .guide-calculator button { border: 0; font: inherit; cursor: pointer; }
+.guide-calculator :is(input, select, button):focus-visible {
+  outline: 3px solid #075b72;
+  outline-offset: 2px;
+}
 .guide-calculator output { display: block; margin-block: .6rem; font-weight: 700; }
 .guide-table { border-collapse: collapse; width: 100%; }
 .guide-table th, .guide-table td { border-bottom: 1px solid #d4e4ea; padding: .4rem; text-align: start; }
