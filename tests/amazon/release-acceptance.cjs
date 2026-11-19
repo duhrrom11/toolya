@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 (async()=>{
- const root=process.cwd(),server=http.createServer((req,res)=>{const p=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname);if(!p.startsWith(root+'/'))return res.writeHead(403).end();try{res.setHeader('content-type',/\.m?js$/.test(p)?'text/javascript':p.endsWith('.css')?'text/css':'text/html');res.end(fs.readFileSync(p))}catch{res.writeHead(404).end()}});
+ const root=process.cwd(),server=http.createServer((req,res)=>{const p=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname.replace(/\/$/,'/index.html'));if(!p.startsWith(root+'/'))return res.writeHead(403).end();try{res.setHeader('content-type',/\.m?js$/.test(p)?'text/javascript':p.endsWith('.css')?'text/css':'text/html');res.end(fs.readFileSync(p))}catch{res.writeHead(404).end()}});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
  try{
   const origin='http://127.0.0.1:'+server.address().port,context=await browser.newContext({viewport:{width:375,height:812}});
@@ -13,18 +13,15 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
    const db={auth:{getUser:async()=>({data:{user:loggedIn?user:null}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}}),signInWithPassword:async()=>{loggedIn=true;window.__authCalls.push('login');return {data:{session:{user}},error:null}},signUp:async()=>{window.__authCalls.push('signup');return {data:{session:null},error:null}},signOut:async()=>{loggedIn=false;window.__authCalls.push('logout');return {error:null}}},rpc:async(name)=>({data:name==='wishlist_profile_filters'?{countries:['Schweiz'],interests:['Bücher'],occasions:['Geburtstag']}:rows,error:null}),from:table=>{let q;q=new Proxy({}, {get(_t,k){if(k==='then')return resolve=>Promise.resolve({data:table==='wishlist_directory'?rows:table==='wishlist_amazon_publication_products'?[{publication_id:'offline-list',title:'Beispielprodukt',description:'Produktbeschreibung',image_url:'https://m.media-amazon.com/fixture.jpg',product_url:'https://www.amazon.de/dp/B012345678'}]:[],count:table==='wishlist_directory'?rows.length:0,error:null}).then(resolve);if(k==='maybeSingle')return ()=>Promise.resolve({data:null,error:null});return ()=>q}});return q}};
    window.supabase={createClient:()=>db};
   });
-  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(origin+'/tools/wishes/public.html');await page.locator('#wishlistCloud .cloud-word').waitFor();
+  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(origin+'/tools/wishes/public.html');await page.locator('#wishPublicTrack .wish-public-card').waitFor();
   assert.equal(await page.locator('#homeNewWish,#homeNewList,#createList').count(),0);
   assert.equal(await page.locator('#search').count(),1);assert.equal(await page.locator('#profileForm').count(),1);assert.doesNotMatch(fs.readFileSync('tools/wishes/public-amazon.mjs','utf8'),/renderIdeas|rankProducts|amazonSearchUrl/,'removed Amazon recommendations must stay removed');
   assert.equal(await page.locator('#countryFilter').count(),1);
   assert.equal(await page.locator('#bio,#interests,#interestFilter').count(),0,'old biography and interest controls removed');
-  assert.equal(await page.locator('#wishlistCloud .cloud-word').count(),1,'cloud still renders with 30-item ceiling');
-  assert.equal(await page.locator('#wishlistCloud .cloud-word').count(),1);
+  assert.equal(await page.locator('#wishPublicTrack .wish-public-card').count(),1,'published profile carousel renders');
   assert.equal(await page.locator('#results .profile-card').count(),0);
   assert.equal(await page.locator('#favorites').isVisible(),false,'empty favorites stay compact');
-  assert.equal(await page.locator('#refreshCloud').count(),1);
-  await page.locator('#refreshCloud').click();
-  await page.locator('#wishlistCloud .cloud-word').waitFor();
+  assert.equal(await page.locator('#wishCreateSection .wish-creation-tile').count(),3,'three creation cards');
   await page.locator('.ty-tool-hero-mascot').waitFor();
   // Wishlist must use the same shared Toolya settings surface, not a minimal fallback.
   assert.equal(await page.locator('#toolya-display-settings').count(),0,'no standalone fallback settings');
@@ -68,12 +65,19 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   await page.waitForFunction(()=>document.querySelector('.ty-tool-hero-mascot')?.getAttribute('src')?.includes('_purple_'));
   await page.locator('#search').fill('Ada');await page.locator('#results .profile-card').waitFor();
   assert.equal(await page.locator('#results .profile-card').count(),1);
-  await page.locator('#resetFilters').click();await page.locator('#wishlistCloud .cloud-word').waitFor();
+  await page.locator('#resetFilters').click();await page.locator('#wishPublicTrack .wish-public-card').waitFor();
   assert.equal(await page.locator('#profile input[type=checkbox]').count(),0);
   assert.equal(await page.locator('#amazonDiscovery,#mainAmazonSearch').count(),0);
   for(const width of [320,375,768]){await page.setViewportSize({width,height:900});const dims=await page.evaluate(()=>({w:innerWidth,s:document.documentElement.scrollWidth}));assert.ok(dims.s<=dims.w+1,'Public wishlist overflow '+JSON.stringify(dims))}
   assert.equal(await page.locator('#email').count(),1);assert.equal(await page.locator('#password').count(),1);assert.equal(await page.locator('#login').count(),1);assert.equal(await page.locator('#signup').count(),1);
   assert.equal(await page.locator('#logoutPublic').count(),1);
+  await page.locator('#wishlistSettingsBtn').click();
+  const guide=page.getByRole('link',{name:'Wunschlisten-Anleitung',exact:true});
+  await guide.waitFor({state:'visible'});
+  await guide.click();
+  await page.waitForURL(origin+'/amazon-wunschliste-veroeffentlichen/');
+  await page.locator('#link-kopieren').waitFor();
+  assert.equal(await page.locator('a[href="/tools/wishes/public.html#wishCreateSection"]').count(),1);
   console.log('PASS Amazon-only public UI, safe image integration, mobile widths, auth controls; no production data');
  }finally{await browser.close();await new Promise(r=>server.close(r))}
 })().catch(e=>{console.error(e);process.exitCode=1});
