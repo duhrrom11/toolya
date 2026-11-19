@@ -489,12 +489,12 @@ test('backform-umrechner: save and delete recipe await cloud confirmation',async
 });
 
 
-async function isolatedWishlist(page,authenticated,profiles=[]){
+async function isolatedWishlist(page,authenticated,profiles=[],detailError=false){
  await page.route('**/*',async route=>{
   const url=route.request().url();
   if(url.startsWith(origin)&&!url.endsWith('/assets/vendor/supabase-2.57.0.js'))return route.continue();
   if(url.includes('supabase.min.js')||url.endsWith('/assets/vendor/supabase-2.57.0.js'))return route.fulfill({status:200,contentType:'text/javascript',body:`
-   window.__wishlistMock={user:${authenticated?"{id:'owner',email:'owner@example.invalid',is_anonymous:false}":"null"},writes:[],reads:0,searchError:false,empty:false};
+   window.__wishlistMock={user:${authenticated?"{id:'owner',email:'owner@example.invalid',is_anonymous:false}":"null"},writes:[],reads:0,searchError:false,detailError:${detailError},empty:false};
    window.supabase={createClient(){const m=window.__wishlistMock;return {
     auth:{
      async getUser(){m.reads++;return {data:{user:m.user},error:null}},
@@ -504,7 +504,7 @@ async function isolatedWishlist(page,authenticated,profiles=[]){
     rpc(name){if(name==='search_wishlist_directory'&&m.searchError)return Promise.resolve({data:null,error:{message:'Isolated unavailable'}});if(name==='search_wishlist_directory'&&m.empty)return Promise.resolve({data:[],error:null});return Promise.resolve({data:['search_wishlist_profiles','search_wishlist_directory'].includes(name)?${JSON.stringify(profiles)}:(name==='wishlist_directory_filters'?{countries:[],occasions:[],interests:[]}:[]),error:null})},
     from(table){return {
      select(){return this},eq(){return this},order(){return this},limit(){return this},
-     async maybeSingle(){return {data:table==='wishlist_directory'?${JSON.stringify(profiles[0]||null)}:null,error:null}},
+     async maybeSingle(){if(table==='wishlist_directory'&&m.detailError)return {data:null,error:{message:'Synthetic detail outage'}};return {data:table==='wishlist_directory'?${JSON.stringify(profiles[0]||null)}:null,error:null}},
      upsert(payload){m.writes.push({table,payload});return {select(){return this},async single(){return {data:{user_id:'owner'},error:null}}}},
      insert(payload){m.writes.push({table,payload});return {select(){return this},async single(){return {data:{id:'new-id'},error:null}}}}
     }},
@@ -520,11 +520,23 @@ test('wishlist: public discovery works without authentication and no private wri
  await expect(page.locator('#profileStatus')).toHaveText('');
  expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
 });
+test('wishlist: public profile retry distinguishes connection failure from an unavailable profile',async({page})=>{
+ await isolatedWishlist(page,false,[],true);
+ await page.goto(origin+'/tools/wishes/public.html?profile=11111111-1111-4111-8111-111111111111');
+ await expect(page.locator('#detailStatus')).toContainText('konnte gerade nicht geladen werden');
+ const retry=page.getByRole('button',{name:'Profil erneut laden'});
+ await expect(retry).toBeVisible();
+ await page.evaluate(()=>{window.__wishlistMock.detailError=false});
+ await retry.click();
+ await expect(retry).toBeHidden();
+ await expect(page.locator('#detailStatus')).toHaveText('Dieses Wunschprofil ist nicht mehr verfügbar.');
+});
 test('wishlist: account switch blocks profile write before network mutation',async({page})=>{
  await isolatedWishlist(page,true);
  await page.goto(origin+'/tools/wishes/public.html');
  await expect(page.locator('#profileForm')).toBeVisible();
- await page.locator('#displayName').fill('Anna Muster');
+ await page.locator('#firstName').fill('Anna');
+ await page.locator('#lastName').fill('Muster');
  await page.locator('#country').fill('Deutschland');
  await page.locator('#listFields [name=name]').fill('Meine Wünsche');
  await page.locator('#amazonUrl').fill('https://www.amazon.de/hz/wishlist/ls/ABC123');
@@ -537,7 +549,8 @@ test('wishlist: verified profile write uses cloud and no localStorage',async({pa
  await isolatedWishlist(page,true);
  await page.goto(origin+'/tools/wishes/public.html');
  await expect(page.locator('#profileForm')).toBeVisible();
- await page.locator('#displayName').fill('Anna Muster');
+ await page.locator('#firstName').fill('Anna');
+ await page.locator('#lastName').fill('Muster');
  await page.locator('#country').fill('Deutschland');
  await page.locator('#listFields [name=name]').fill('Meine Wünsche');
  await page.locator('#amazonUrl').fill('https://www.amazon.de/hz/wishlist/ls/ABC123');
@@ -555,7 +568,8 @@ test('wishlist: public preview, five named lists and affiliate attribution',asyn
  await page.goto(origin+'/tools/wishes/public.html');
  await expect(page.locator('#profileForm')).toBeVisible();
  await expect(page.locator('#profile .public-notice')).toContainText('Alle Angaben sind öffentlich sichtbar');
- await page.locator('#displayName').fill('Anna Muster');
+ await page.locator('#firstName').fill('Anna');
+ await page.locator('#lastName').fill('Muster');
  await page.locator('#country').fill('Schweiz');
  await page.locator('#listFields [name=name]').fill('Meine Wünsche');
  await page.locator('#amazonUrl').fill('https://www.amazon.de/hz/wishlist/ls/ABC123?tag=other-21');
@@ -1318,7 +1332,8 @@ test('wishlist: public cards and five-list form remain usable at three widths',a
  await expect(page).toHaveURL(/#profile$/);
  await discoverLink.click();
  await expect(page).toHaveURL(/#discover$/);
- await page.locator('#displayName').fill(profile.display_name);await page.locator('#country').fill(profile.country);
+ await page.getByRole('radio',{name:'Organisation'}).check();
+ await page.locator('#organizationName').fill(profile.display_name);await page.locator('#country').fill(profile.country);
  for(let i=0;i<4;i++)await page.locator('#addList').click();
  for(const [i,fs]of (await page.locator('#listFields fieldset').all()).entries()){
   await fs.locator('[name=name]').fill('Isolierte Wunschliste '+(i+1));await fs.locator('[name=url]').fill('https://www.amazon.de/hz/wishlist/ls/ABC'+i);

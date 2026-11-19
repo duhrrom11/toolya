@@ -41,7 +41,7 @@ const root=path.resolve(__dirname,'../..');
  await context.addInitScript(()=>{try{localStorage.setItem('toolya.analytics.consent.v1','no')}catch{/* Opaque initial print-popup document has no storage. */}window.print=()=>{document.body.dataset.printReady='true';};document.addEventListener('securitypolicyviolation',e=>console.warn('CSP-SOURCE',e.sourceFile,e.lineNumber,e.columnNumber,e.violatedDirective,e.sample));});
  // Test-only instrumentation: expose a fixed error category, never exception text,
  // encrypted snapshots, credentials, JWTs, request bodies or personal data.
- await context.route(origin+'/assets/estate-owner.js',async route=>{
+ await context.route(url=>url.origin===origin&&url.pathname==='/assets/estate-owner.js',async route=>{
   const source=fs.readFileSync(path.join(root,'assets/estate-owner.js'),'utf8');
   const target='catch(e){message(errorText(e),true);';
   assert(source.includes(target),'Owner error-handler instrumentation anchor changed');

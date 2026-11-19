@@ -27,9 +27,10 @@
  function validatePayload(p){if(!p||!Array.isArray(p.entries)||p.entries.length>10000)throw Error('invalid_vault');return p;}
  function normalizeConfig(c){const cfg={...c};delete cfg.masterKeyHex;delete cfg.encryptedData;delete cfg.recoveryKey;delete cfg.recovery_key;cfg.alarmPersons=Array.isArray(cfg.alarmPersons)?cfg.alarmPersons:[];cfg.checkInIntervalDays=[30,60,90].includes(Number(cfg.checkInIntervalDays))?Number(cfg.checkInIntervalDays):30;cfg.remindersEnabled=cfg.remindersEnabled===true;return cfg;}
  async function openOwner(account,password,vaultPassword){
+  message('Dein Tresor wird geöffnet …');
   user=account;await authenticated();
   const {data:remote,error}=await db.from('vault_cloud_snapshots').select('vault_id,encrypted_data,encrypted_config,recovery_key,updated_at').eq('owner_user_id',user.id).maybeSingle();
-  if(error)throw error;
+  if(error)throw Error('Deine Online-Sicherung konnte gerade nicht geladen werden. Prüfe deine Verbindung und öffne deinen Tresor erneut.');
   ownRaw=localStorage.getItem(STORE);let local=ownRaw?JSON.parse(ownRaw):null;
   if(local?.version===2&&local.ownerId!==user.id)throw Error('Dieser Gerätetresor gehört zu einem anderen Konto. Bitte verwende das passende Konto oder ein anderes Browserprofil.');
   EstateCloudGuard.assertRestoreCompatible(local,remote);
@@ -85,7 +86,7 @@
  }
  $('login-form').onsubmit=e=>{e.preventDefault();run(async()=>{const email=$('email').value.trim(),password=$('password').value,vp=$('vault-password').value||password;const {data,error}=await db.auth.signInWithPassword({email,password});if(error||!data.user)throw Error('Bitte prüfe deine E-Mail-Adresse und dein Konto-Passwort.');await openOwner(data.user,password,vp);});};
  $('register').onclick=()=>run(async()=>{const email=$('email').value.trim(),password=$('password').value;if(!$('login-form').reportValidity())return;if(password.length<8)throw Error('Bitte verwende für ein neues Konto mindestens acht Zeichen.');const {data,error}=await db.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});if(error)throw error;if(data.session&&data.user)await openOwner(data.user,password,$('vault-password').value||password);else message('Bitte bestätige die E-Mail von Toolya. Melde dich danach hier an.');});
- async function persist(){if(!key)throw Error('login_required');await authenticated();const encryptedData=await C.encrypt(payload,key),encryptedConfig=await C.encrypt(config,key);if(JSON.stringify(encryptedData).length>1000000)throw Error('Deine Unterlagen sind zu groß für diesen Tresor. Bitte kürze den letzten Eintrag.');localWrite({...record,encryptedData,encryptedConfig,pending:true});render();await sync();}
+ async function persist(){if(!key)throw Error('login_required');await authenticated();const encryptedData=await C.encrypt(payload,key),encryptedConfig=await C.encrypt(config,key);if(JSON.stringify(encryptedData).length>1000000)throw Error('Deine Unterlagen sind zu groß für diesen Tresor. Bitte kürze den letzten Eintrag.');localWrite({...record,encryptedData,encryptedConfig,pending:true});$('backup-state').textContent='Auf diesem Gerät verschlüsselt gespeichert. Die Online-Sicherung steht noch aus.';render();await sync();}
  async function sync(){
   await authenticated();if(!record||!key)throw Error('login_required');
   // Validate recipient IDs and key uniqueness before any cloud snapshot is written.
