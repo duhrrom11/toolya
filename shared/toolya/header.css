@@ -27,12 +27,17 @@
 .ty-tool-hero-mascot[role=button]{cursor:pointer;touch-action:manipulation}
 .ty-tool-hero-mascot:focus-visible{outline:3px solid var(--ty-accent);outline-offset:-4px;border-radius:16px}
 
-/* Single, quiet settings affordance in the same upper-right position on every tool. */
+/* Settings occupy a dedicated slot in the text column, never over the mascot. */
 .ty-tool-hero .ty-tool-hero-inner{position:relative}
-.ty-tool-hero .ty-tool-hero-top{min-height:46px;padding-right:57px}
+.ty-tool-hero .ty-tool-hero-copy{position:relative;z-index:2}
+.ty-tool-hero .ty-tool-hero-top{
+ display:grid;grid-template-columns:minmax(0,1fr) 46px;
+ align-items:center;column-gap:12px;min-height:46px;padding-right:0;
+}
 .ty-tool-hero .ty-tool-hero-actions{
- position:absolute;z-index:4;top:clamp(12px,2vw,18px);right:clamp(12px,2.5vw,28px);
+ position:static;inset:auto;z-index:auto;
  display:flex;align-items:center;justify-content:flex-end;
+ min-width:0;
 }
 .ty-tool-hero .ty-tool-hero-actions :is(.b3-settings-trigger,.helferlein-gear,.ty-tool-hero-settings,[aria-label="Einstellungen öffnen"]){
  appearance:none;position:static!important;inset:auto!important;transform:none!important;
@@ -58,8 +63,8 @@
  transform-origin:center;will-change:transform;
 }
 @media(max-width:500px){
- .ty-tool-hero .ty-tool-hero-top{padding-right:53px}
- .ty-tool-hero .ty-tool-hero-actions{top:12px;right:12px}
+ .ty-tool-hero .ty-tool-hero-top{grid-template-columns:minmax(0,1fr) 44px;column-gap:8px;padding-right:0}
+ .ty-tool-hero .ty-tool-hero-actions{position:static;inset:auto}
  .ty-tool-hero .ty-tool-hero-actions :is(.b3-settings-trigger,.helferlein-gear,.ty-tool-hero-settings,[aria-label="Einstellungen öffnen"]){
   width:44px!important;min-width:44px!important;max-width:44px;height:44px!important;min-height:44px!important;
  }
