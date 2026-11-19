@@ -21,7 +21,7 @@ test('legacy account and backup controls are retained inside native, initially c
  const modal=doc.getElementById('settingsModal'),account=modal.querySelector('[data-settings-section="account"]'),data=modal.querySelector('[data-settings-section="backup"]');
  assert.equal(account.tagName,'DETAILS');
  assert.equal(data.tagName,'DETAILS');
- assert.equal(account.open,false);
+ assert.equal(account.hasAttribute('open'),false,'the native accordion starts collapsed');
  assert.equal(account.querySelector('#register'),register);
  assert.equal(data.querySelector('#backup'),backup);
  assert.equal(modal.querySelectorAll('details.toolya-appearance').length,1);
