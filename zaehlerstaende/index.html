@@ -39,7 +39,7 @@
       </div>
       <img src="/assets/toolya/home/zaehlerstaende.webp" width="100" height="100" alt="">
     </section>
-    <nav aria-label="Inhalt der Anleitung"><a href="#ablesen">Zählerstand eintragen</a><a href="#verbrauch">Verbrauch vergleichen</a><a href="#fragen">Häufige Fragen</a></nav>
+    <nav aria-label="Inhalt der Anleitung"><a href="#ablesen">Zählerstand eintragen</a><a href="#verbrauch">Verbrauch vergleichen</a><a href="#protokollwahl">Protokoll wählen</a><a href="#fragen">Häufige Fragen</a></nav>
     <section id="ablesen">
       <h2>Zählerstand Schritt für Schritt eintragen</h2>
       <ol class="steps">
@@ -66,6 +66,22 @@
       <p>Multipliziere die Differenz der Zählerstände mit dem Umrechnungsfaktor in kWh/m³ aus deiner Rechnung. Beispiel: 816 m³ − 800 m³ = 16 m³. Bei einem angenommenen Faktor von 10,5 kWh/m³ ergeben sich 168 kWh. Verwende für deine Schätzung den Faktor deines Versorgers.</p>
     </section>
     <p>Für gepackte Kartons hilft die <a href="/umzugskisten/#musteretikett">Vorlage für Umzugskisten</a>.</p>
+    <section id="protokollwahl">
+      <h2>Wann reicht ein Zählerprotokoll als Tabelle?</h2>
+      <p>Für eine einzelne Wohnungsübergabe kannst du alle Ablesungen in einer Tabelle dokumentieren. Wenn du regelmäßig abliest, hilft das Tool beim Vergleichen mehrerer Stände desselben Zählers.</p>
+      <div class="guide-table-scroll" tabindex="0" role="region" aria-label="Dokumentation passend zum Anlass">
+        <table class="guide-table">
+          <caption>Dokumentation passend zum Anlass</caption>
+          <thead><tr><th scope="col">Anlass</th><th scope="col">Was du festhältst</th><th scope="col">Passendes Format</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Wohnungsübergabe</th><td>Datum, Zählernummer, Ablesewert und Einheit je Zähler</td><td>Zählerprotokoll als CSV oder Übergabebericht als PDF</td></tr>
+            <tr><th scope="row">Regelmäßige Ablesung</th><td>Neue Werte mit demselben Namen und Zählertyp</td><td>Zählerverlauf im Tool</td></tr>
+            <tr><th scope="row">Zählerwechsel</th><td>Endstand des alten und Startstand des neuen Zählers mit beiden Nummern</td><td>Zwei getrennte Zeilen im Zählerprotokoll</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Zum <a href="#uebergabe">Übergabemuster</a> oder zum <a href="/tools/meters/index.html">Tool für den Zählerverlauf</a>.</p>
+    </section>
     <section id="fragen">
       <h2>Häufige Fragen zu Zählerständen in Toolya</h2>
       <h3>Warum sehe ich noch keine Verbrauchsdifferenz?</h3><p>Für den Vergleich braucht Toolya eine frühere Ablesung mit demselben Zählertyp und Namen. Prüfe, ob beide Einträge dieselbe Bezeichnung und unterschiedliche Ablesedaten haben.</p>
