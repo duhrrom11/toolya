@@ -54,7 +54,7 @@
 }
 .ty-tool-hero .ty-tool-hero-actions .helferlein-gear-symbol,
 .ty-tool-hero .ty-tool-hero-actions .ty-tool-hero-settings-symbol{
- display:inline-block;animation:helferlein-turn 3.5s linear infinite!important;
+ display:inline-block;animation:ty-tool-gear-spin 3.5s linear infinite!important;
  transform-origin:center;will-change:transform;
 }
 @media(max-width:500px){
@@ -68,3 +68,5 @@
  .ty-tool-hero .ty-tool-hero-actions .helferlein-gear-symbol,
  .ty-tool-hero .ty-tool-hero-actions .ty-tool-hero-settings-symbol{animation:none!important}
 }
+
+@keyframes ty-tool-gear-spin{to{transform:rotate(360deg)}}
