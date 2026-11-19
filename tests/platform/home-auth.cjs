@@ -49,6 +49,20 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   await page.waitForFunction(email=>['userInfo','cloud-user-display','cloud-user-email','header-user-email'].some(id=>document.getElementById(id)?.textContent.includes(email)),user.email,{timeout:7000});
   await page.reload();
   await page.waitForFunction(email=>['userInfo','cloud-user-display','cloud-user-email','header-user-email'].some(id=>document.getElementById(id)?.textContent.includes(email)),user.email,{timeout:7000});
+  // Authenticated routes must render the actual tool settings, not the home redirect.
+  const check=await page.evaluate(()=>{
+   const modal=document.querySelector('#settingsModal,#settings-modal');
+   const panel=modal?.firstElementChild?.matches('div')?modal.firstElementChild:modal;
+   return {path:location.pathname,converted:panel?.dataset.toolyaAccordion==='1',
+    account:panel?.querySelectorAll('details[data-settings-section="account"]').length||0,
+    appearance:panel?.querySelectorAll('details.toolya-appearance').length||0,
+    collapsed:panel?[...panel.querySelectorAll('details[data-settings-section],details.toolya-appearance')].every(d=>!d.open):false};
+  });
+  assert.equal(check.path,'/tools/'+tool+'/',tool+' authenticated tool route remains active');
+  assert(check.converted,tool+' uses the homepage-style accordion: '+JSON.stringify(check));
+  assert.equal(check.account,1,tool+' account group present');
+  assert.equal(check.appearance,1,tool+' mascot group present');
+  assert(check.collapsed,tool+' settings sections initially collapsed');
  }
  for(const tool of ['wishes','estate']){
   console.log('CHECK account navigation:',tool);await page.goto(origin+'/tools/'+tool+'/');
