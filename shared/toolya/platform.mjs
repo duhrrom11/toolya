@@ -1,8 +1,9 @@
 import '../../assets/toolya-consent.js?v=20261116-local-debug';
 import {ToolyaBuddy} from './buddy.mjs';
+import {unifyToolSettings} from './settings-unify.mjs';
 const ASSETS=new URL('../../assets/toolya/',import.meta.url).href;
 const atlasURL=file=>ASSETS+file+'?v=20261115-alpha';
-for(const file of ['tokens.css','buddy.css','platform.css','footer.css','header.css']){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL(file,import.meta.url).href+(file==='header.css'?'?v=20261119-gear-no-overlap-v2':'');document.head.append(l)}
+for(const file of ['tokens.css','buddy.css','platform.css','footer.css','header.css','settings-accordion.css']){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL(file,import.meta.url).href+(file==='header.css'?'?v=20261119-gear-no-overlap-v2':file==='settings-accordion.css'?'?v=20261119-accordions-v1':'');document.head.append(l)}
 export const EMOTIONS=['happy','proud','curious','thoughtful','surprised','concerned','sad','shy','cheeky','sleepy','laughing','grateful','motivated','puzzled','celebrating','affectionate'];
 export const TOOLS={wishes:{role:0,name:'Geschenkexperte',greeting:'Hier ist Platz für große und kleine Wünsche.'},budget:{role:1,name:'Buchhalter',greeting:'Deine Ausgaben gut im Blick.'},housemates:{role:2,name:'WG-Organisator',greeting:'Ein guter Plan macht den Alltag leichter.'},moving:{role:3,name:'Umzugshelfer',greeting:'Damit beim Umzug nichts verloren geht.'},estate:{role:4,name:'Vorsorgebegleiter',greeting:'In Ruhe das Wichtige ordnen.',serious:true},car:{role:5,name:'Mechaniker',greeting:'Dein Fahrzeug gut organisiert.'},'pet-health':{role:6,name:'Tierbegleiter',greeting:'Alles Wichtige für deine tierischen Freunde.',serious:true},parking:{role:7,name:'Parkhelfer',greeting:'Parkplatz und Parkzeit im Blick.'},loans:{role:8,name:'Verleih-Organisator',greeting:'Behalte verliehene Gegenstände im Blick.'},plants:{role:9,name:'Gärtner',greeting:'Ein guter Tag für deine grünen Freunde.'},meters:{role:10,name:'Energiehelfer',greeting:'Zählerstände einfach im Blick.'},baking:{role:11,name:'Backhelfer',greeting:'Die passende Form für deine Backidee.'},home:{role:12,name:'Alltagsbegleiter',greeting:'Was möchtest du heute erledigen?'}};
 const parts=decodeURI(location.pathname).split('/').filter(Boolean);
@@ -97,6 +98,8 @@ function mountPreferences(){
   support.setAttribute('aria-label','Toolya freiwillig auf Ko-fi unterstützen (öffnet in neuem Tab)');
  }
  if(surface.lastElementChild!==support)surface.append(support);
+ // Convert each tool's existing settings groups without replacing their controls.
+ if(tool!=='home')unifyToolSettings(modal||fallbackDialog);
  if(modal&&fallbackDialog){fallbackDialog.remove();fallbackTrigger.remove();fallbackDialog=null;fallbackTrigger=null}
 }
 mountPreferences();window.addEventListener('storage',e=>{if(e.key===key||e.key===null)apply()});
