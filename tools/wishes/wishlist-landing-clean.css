@@ -32,3 +32,32 @@ body.wishlist-redesign #profile{margin-top:16px}
 @media(prefers-reduced-motion:reduce){body.wishlist-redesign .wish-public-track.is-running{animation:none;will-change:auto}body.wishlist-redesign .wish-public-marquee{overflow-x:auto;mask-image:none;scroll-snap-type:x proximity}body.wishlist-redesign .wish-public-card{scroll-snap-align:start;transition:none}}
 
 @media(max-width:650px){body.wishlist-redesign .wish-showcase-top{align-items:start;flex-direction:column}body.wishlist-redesign .wish-public-group{gap:12px;padding-right:12px}body.wishlist-redesign .wish-public-card{width:255px}}
+
+/* Distinctive, compact wishlist creation feature - independent of the public-profile carousel. */
+body.wishlist-redesign .wish-creation-feature{position:relative;isolation:isolate;overflow:hidden;margin:22px 0 18px;padding:clamp(20px,3vw,34px);border:1px solid #bfe8dc;border-radius:25px;background:radial-gradient(circle at 95% 7%,#b8eee2 0,transparent 30%),linear-gradient(125deg,#e9faf4,#f6fffc 48%,#e8f8f8);box-shadow:0 14px 34px #12685a13}
+body.wishlist-redesign .wish-creation-feature:before{content:"";position:absolute;z-index:-1;width:220px;height:220px;border-radius:50%;background:#ffffff68;top:-140px;right:10%}
+body.wishlist-redesign .wish-creation-kicker{color:#087a6e;letter-spacing:.12em;font-size:.72rem;font-weight:850}
+body.wishlist-redesign .wish-creation-intro h2{font-size:clamp(1.38rem,2.6vw,2.05rem);line-height:1.2;color:#123d37;margin:7px 0 8px}
+body.wishlist-redesign .wish-creation-intro p{max-width:700px;font-size:.98rem;line-height:1.55;color:#486960;margin:0 0 20px}
+body.wishlist-redesign .wish-creation-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+body.wishlist-redesign .wish-creation-tile{min-width:0;display:flex;flex-direction:column;align-items:flex-start;padding:20px;border:1px solid #d7e8e1;border-radius:20px;background:#fff;box-shadow:0 5px 16px #1e624d14;transition:transform .18s,box-shadow .18s}
+body.wishlist-redesign .wish-creation-tile:hover{transform:translateY(-3px);box-shadow:0 12px 24px #145b4723}
+body.wishlist-redesign .wish-creation-tile--baby{background:linear-gradient(145deg,#fff,#f1fffa)}
+body.wishlist-redesign .wish-creation-tile--wedding{background:linear-gradient(145deg,#fff,#fff3f7)}
+body.wishlist-redesign .wish-creation-tile--everyday{background:linear-gradient(145deg,#fff,#fff8ed)}
+body.wishlist-redesign .wish-creation-tile-icon{width:62px;height:62px;border-radius:19px;display:grid;place-items:center;font-size:36px;background:#e1f8ec;margin-bottom:13px}
+body.wishlist-redesign .wish-creation-tile--wedding .wish-creation-tile-icon{background:#ffe6ee}
+body.wishlist-redesign .wish-creation-tile--everyday .wish-creation-tile-icon{background:#ffefd4}
+body.wishlist-redesign .wish-creation-tag{font-size:.71rem;color:#087a69;font-weight:800;letter-spacing:.035em}
+body.wishlist-redesign .wish-creation-tile h3{font-size:clamp(1.04rem,1.6vw,1.25rem);color:#153c35;line-height:1.25;margin:5px 0 8px}
+body.wishlist-redesign .wish-creation-tile p{font-size:.88rem;line-height:1.5;color:#526f67;margin:0 0 17px}
+body.wishlist-redesign .wish-creation-tile-copy{flex:1}
+body.wishlist-redesign .wish-creation-button{width:100%;box-sizing:border-box;min-height:46px;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:12px;background:#087e72;color:#fff!important;text-decoration:none!important;font-size:.9rem;font-weight:780;box-shadow:0 4px 10px #05645720}
+body.wishlist-redesign .wish-creation-button:hover{background:#075f59}
+body.wishlist-redesign .wish-creation-button:focus-visible{outline:3px solid #cf8517;outline-offset:3px}
+body.wishlist-redesign .wish-creation-footer{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 18px;margin-top:18px;font-size:.84rem;color:#376b60}
+body.wishlist-redesign .wish-creation-footer a{font-weight:800;color:#006d68;text-decoration:underline;text-underline-offset:3px}
+body.wishlist-redesign .wish-creation-adnote{color:#587a71;font-size:.73rem}
+@media(max-width:800px){body.wishlist-redesign .wish-creation-grid{grid-template-columns:1fr}body.wishlist-redesign .wish-creation-tile{display:grid;grid-template-columns:66px minmax(0,1fr);gap:4px 14px;padding:16px}body.wishlist-redesign .wish-creation-tile-icon{grid-row:1;margin:0;width:60px;height:60px}body.wishlist-redesign .wish-creation-tile-copy{grid-column:2;grid-row:1}body.wishlist-redesign .wish-creation-tile p{margin-bottom:9px}body.wishlist-redesign .wish-creation-button{grid-column:1/-1;margin-top:9px}}
+@media(max-width:450px){body.wishlist-redesign .wish-creation-feature{padding:18px 15px}body.wishlist-redesign .wish-creation-tile{padding:14px}body.wishlist-redesign .wish-creation-intro p{font-size:.89rem}}
+@media(prefers-reduced-motion:reduce){body.wishlist-redesign .wish-creation-tile{transition:none}}
