@@ -39,6 +39,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  await page.waitForFunction(()=>document.querySelector('#settingsModal').classList.contains('hidden'),{},{timeout:5000});
  await page.waitForFunction(()=>document.querySelector('#userInfo').textContent==='Angemeldet',{},{timeout:5000});
  await page.reload();await page.waitForFunction(()=>document.querySelector('#userInfo').textContent==='Angemeldet',{},{timeout:5000});
+ await page.getByRole('button',{name:'Angemeldet. Kontoeinstellungen öffnen',exact:true}).waitFor();
  await page.locator('#userInfo').click();
  assert(await page.locator('#loginEmail').isHidden(),'signed-in users see no login form');
  assert(await page.locator('#logoutSubmit').isVisible(),'signed-in users get a sign-out button');
@@ -78,6 +79,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
 
  await page.evaluate(()=>{window.__signedOutEvents=0;supabaseClient.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')window.__signedOutEvents++});window.__logoutDone=false;logoutUser().then(()=>window.__logoutDone=true)});
  await page.waitForFunction(()=>window.__logoutDone&&document.querySelector('#userInfo').textContent==='Nicht angemeldet',{},{timeout:5000});
+ await page.getByRole('button',{name:'Nicht angemeldet. Anmelden oder registrieren',exact:true}).waitFor();
  await page.waitForFunction(()=>document.querySelector('#cloudStatus').textContent==='Nicht angemeldet',{},{timeout:5000});
  await page.waitForTimeout(200);
  assert(await page.evaluate(()=>window.__signedOutEvents<3),'logout must settle without recursive Auth events');
