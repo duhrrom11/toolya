@@ -94,9 +94,31 @@ function card(p,detail=false,preview=false){
  return root;
 }
 function hasSearchCriteria(){return Boolean($('search').value.trim()||$('countryFilter').value||$('occasionFilter').value)}
-async function refreshCloud(_currentGeneration){
- // Creation carousel is static; no random directory cloud fetch needed.
- status('searchStatus','');
+function makePublicCarouselCard(p){
+ const a=document.createElement('a');a.className='wish-public-card';a.href=profileUrl(p.user_id);a.setAttribute('aria-label','Öffentliches Wunschprofil von '+p.display_name+' ansehen');
+ const media=document.createElement('div');media.className='wish-public-card-media';
+ const icon=document.createElement('span');icon.className='wish-public-card-graphic';icon.textContent=/tier|pfoten|hund|katze|animal/i.test(p.display_name+' '+(p.bio||''))?'🐾':/baby|familie/i.test(p.display_name+' '+(p.bio||''))?'🧸':/hochzeit/i.test(p.display_name+' '+(p.bio||''))?'💍':/schule|bildung|buch/i.test(p.display_name+' '+(p.bio||''))?'📚':'🎁';media.append(icon);
+ if(p.logo_url&&/^https:\/\//i.test(p.logo_url)){const img=document.createElement('img');img.src=p.logo_url;img.loading='lazy';img.alt='';img.referrerPolicy='no-referrer';img.onerror=()=>img.remove();media.append(img)}
+ const body=document.createElement('div');body.className='wish-public-card-body';
+ const name=document.createElement('h3');name.textContent=p.display_name;
+ const description=document.createElement('p');description.textContent=(p.bio||'Öffentliche Amazon-Wunschliste ansehen und Wünsche entdecken.').trim().slice(0,145);
+ const footer=document.createElement('span');footer.className='wish-public-card-footer';footer.textContent=([p.city,p.country].filter(Boolean).join(' · ')||'Öffentliches Wunschprofil')+'  ·  Profil ansehen ↗';body.append(name,description,footer);a.append(media,body);return a;
+}
+async function refreshCloud(currentGeneration){
+ const track=$('wishPublicTrack');if(!track)return;
+ track.replaceChildren(text('p','Öffentliche Profile werden geladen …','wish-showcase-loading'));
+ let response;
+ try{response=await db.from('wishlist_directory').select('user_id,display_name,city,country,bio,logo_url,lists').order('updated_at',{ascending:false}).limit(80)}catch{response={error:true}}
+ if(currentGeneration!==generation)return;
+ if(response.error){track.replaceChildren(text('p','Die veröffentlichten Profile konnten gerade nicht geladen werden. Verwende die Suche oben.','wish-showcase-loading'));return}
+ const profiles=(response.data||[]).filter(p=>p&&p.user_id&&p.display_name&&Array.isArray(p.lists)&&p.lists.some(l=>l.url));
+ for(let i=profiles.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[profiles[i],profiles[j]]=[profiles[j],profiles[i]]}
+ const unique=[...new Map(profiles.map(p=>[p.user_id,p])).values()].slice(0,12);
+ if(!unique.length){track.replaceChildren(text('p','Noch keine veröffentlichten Wunschlisten vorhanden.','wish-showcase-loading'));return}
+ const group=document.createElement('div');group.className='wish-public-group';for(const p of unique)group.append(makePublicCarouselCard(p));
+ track.replaceChildren(group);
+ if(unique.length>2){const cloned=group.cloneNode(true);cloned.setAttribute('aria-hidden','true');cloned.inert=true;for(const a of cloned.querySelectorAll('a'))a.tabIndex=-1;track.append(cloned);track.classList.add('is-running');track.style.setProperty('--wish-scroll-seconds',Math.max(25,unique.length*5)+'s')}
+ else track.classList.remove('is-running');
 }
 async function search(){
  clearTimeout(debounce);
@@ -314,6 +336,8 @@ $('search').oninput=()=>{
 };
 $('submitSearch').onclick=()=>{page=0;search()};
 for(const id of['countryFilter','occasionFilter'])$(id).onchange=()=>{page=0;search()};$('resetFilters').onclick=()=>{$('search').value='';for(const id of['countryFilter','occasionFilter'])$(id).value='';page=0;search()};$('prevPage').onclick=()=>{page=Math.max(0,page-1);search()};$('nextPage').onclick=()=>{page++;search()};
+function syncWishMascot(){const img=$('wishLandingMascot');if(!img)return;const character=window.toolyaBuddy?.character==='purple'?'purple':'turquoise';const next=new URL('../../assets/toolya/originals/toolya_wishlist_'+character+'_welcome_1024.png',import.meta.url).href;if(img.src!==next)img.src=next;}
+syncWishMascot();window.addEventListener('storage',syncWishMascot);document.addEventListener('toolya:preferences-changed',syncWishMascot);
 renderFavorites();db.auth.onAuthStateChange(event=>{
  if(event==='PASSWORD_RECOVERY'){
   $('settingsRecoveryPanel').hidden=false;
