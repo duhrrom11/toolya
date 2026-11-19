@@ -190,6 +190,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
    if(!panel)return null;
    return {
     converted:panel.dataset.toolyaAccordion==='1',
+    debug:{body:document.body.className,modalCount:document.querySelectorAll('#settingsModal,#settings-modal').length,panelTag:panel.tagName,panelClass:panel.className,attrs:panel.dataset.toolyaAccordion||null,childClasses:[...panel.children].map(n=>n.className||n.tagName).slice(0,9),heroCount:document.querySelectorAll('.ty-tool-hero').length,tool:location.pathname},
     account:panel.querySelectorAll('details[data-settings-section="account"]').length,
     backup:panel.querySelectorAll('details[data-settings-section="backup"]').length,
     appearance:panel.querySelectorAll('details.toolya-appearance').length,
