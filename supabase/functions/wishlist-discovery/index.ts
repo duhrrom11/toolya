@@ -154,6 +154,11 @@ Deno.serve(async(req:Request)=>{
     '"Amazon wishlist" "support us"'
    ];
    for(const phrase of directPhrases)seeds.push({query:phrase+' -site:amazon.de -site:amazon.com -site:amazon.fr',country:'ALL',lang:'de'});
+   // Amazon share links commonly contain ?ref_=wl_share. Search indexed pages
+   // quoting this literal marker; no wildcard (search providers do not reliably
+   // interpret asterisks as URL glob patterns). Other retailers remain excluded
+   // by canonicalList(), which accepts only valid Amazon wish-list URLs.
+   seeds.push({query:'"ref_=wl_share" "Amazon" -site:amazon.de -site:amazon.com -site:amazon.fr',country:'ALL',lang:'de'});
    const multilingualPhrases=[
     ['"notre liste de souhaits Amazon"','fr'],
     ['"ma liste de souhaits Amazon"','fr'],
