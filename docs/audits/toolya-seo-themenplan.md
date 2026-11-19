@@ -6,7 +6,7 @@ Stand: 19. November 2026. Der Themenplan ordnet die zwölf Tools aus der Roadmap
 
 | Thema | Kanonische Zielseite | Referenzanfrage | Geschätzte Suchanfragen/Monat | Einstiege | Eigenständiger Nutzen | Passendes Linkziel |
 | --- | --- | --- | ---: | --- | --- | --- |
-| Backformen | [/backform-rechner/](https://toolya.app/backform-rechner/) | backform umrechnen | 3600 | Faktoren für Springformen · Kastenform und Springform · Springform und Blech | Rechner, gerundete Mengen und Annahme gleicher Teighöhe | [/haushaltsbuch/](https://toolya.app/haushaltsbuch/) |
+| Backformen | [/backform-rechner/](https://toolya.app/backform-rechner/) | backform umrechnen | 3600 | Faktoren für Springformen · Kastenform und Springform · Springform und Blech | Rechner, gerundete Mengen und Annahme gleicher Teighöhe | [Formenwahl](https://toolya.app/backform-rechner/#formwahl) |
 | Parkplatz | [/parkplatz-merker/](https://toolya.app/parkplatz-merker/) | parkplatz speichern | 110 | Im Parkhaus wiederfinden · Ohne GPS speichern · Parkzeit im Blick behalten | Stellplatzbeispiel mit Sektor, Foto und Kartenroute | [/toolya-dashboard/](https://toolya.app/toolya-dashboard/) |
 | Autokosten | [/autokosten/](https://toolya.app/autokosten/) | autokosten rechner | 170 | Kosten pro Kilometer · Monatliche Fixkosten · Tankbuch und Verbrauch | Kostenbeispiel pro Monat, €/km und Verbrauch in l/100 km | [/haushaltsbuch/](https://toolya.app/haushaltsbuch/) |
 | Haushaltsbuch | [/haushaltsbuch/](https://toolya.app/haushaltsbuch/) | haushaltsbuch | 8100 | Monatsbudget · App oder Excel · Kassenbon prüfen | CSV-Vorlage und Beispiel mit Rückerstattung | [/autokosten/](https://toolya.app/autokosten/) |
