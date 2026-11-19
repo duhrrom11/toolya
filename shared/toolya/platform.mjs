@@ -175,7 +175,14 @@ function mountToolHero(){
   // Preserve each tool's existing settings handler and modal; only normalize its icon.
   if(!originalSettings.querySelector('.helferlein-gear-symbol,.ty-tool-hero-settings-symbol')){
    const icon=document.createElement('span');icon.className='ty-tool-hero-settings-symbol';icon.setAttribute('aria-hidden','true');icon.textContent='⚙';
-   originalSettings.replaceChildren(icon);
+   // Move existing content rather than discarding nested controls/listeners.
+   // The button keeps its original click handler and accessibility attributes.
+   if(originalSettings.textContent.trim()==='⚙' || !originalSettings.children.length){
+    originalSettings.replaceChildren(icon);
+   }else{
+    while(originalSettings.firstChild)icon.append(originalSettings.firstChild);
+    originalSettings.append(icon);
+   }
   }
   actions.append(originalSettings);
  }
