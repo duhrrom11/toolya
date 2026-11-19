@@ -2,6 +2,7 @@ import '../../assets/toolya-consent.js?v=20261116-local-debug';
 import {ToolyaBuddy} from './buddy.mjs';
 import {unifyToolSettings} from './settings-unify.mjs';
 const ASSETS=new URL('../../assets/toolya/',import.meta.url).href;
+const welcomeMascotURL=character=>ASSETS+'headers/toolya_wishlist_'+character+'_welcome_400.webp';
 const atlasURL=file=>ASSETS+file+'?v=20261115-alpha';
 for(const file of ['tokens.css','buddy.css','platform.css','footer.css','header.css','settings-accordion.css']){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL(file,import.meta.url).href+(file==='header.css'?'?v=20261119-gear-no-overlap-v2':file==='settings-accordion.css'?'?v=20261119-accordions-v1':'');document.head.append(l)}
 export const EMOTIONS=['happy','proud','curious','thoughtful','surprised','concerned','sad','shy','cheeky','sleepy','laughing','grateful','motivated','puzzled','celebrating','affectionate'];
@@ -24,7 +25,7 @@ function cell(index){return {x:(index%8)*100/7,y:Math.floor(index/8)*100/3}}
 function paint(record,file,index,alternate=index,animate=false){
  const a=cell(index),b=cell(alternate);record.frame.style.setProperty('--ty-a',a.x+'%');record.frame.style.setProperty('--ty-b',b.x+'%');record.frame.style.setProperty('--ty-y',a.y+'%');record.frame.style.backgroundPosition=a.x+'% '+a.y+'%';
  const loaded=preload(file);record.frame.hidden=!loaded.ready;record.img.style.opacity=loaded.ready?'0':'1';record.frame.style.backgroundImage=`url("${atlasURL(file)}")`;if(record.epoch!==buddy.noticeEpoch){record.frame.classList.remove('ty-animated');void record.frame.offsetWidth;record.epoch=buddy.noticeEpoch;}record.frame.classList.toggle('ty-animated',animate);
- if(loaded.failed){record.img.style.opacity='1';if(record.img.classList.contains('tb-avatar'))stockImage(record.img,buddy.current?.type||'welcome');else record.img.src=ASSETS+'originals/toolya_wishlist_'+buddy.character+'_welcome_1024.png'}
+ if(loaded.failed){record.img.style.opacity='1';if(record.img.classList.contains('tb-avatar'))stockImage(record.img,buddy.current?.type||'welcome');else record.img.src=welcomeMascotURL(buddy.character)}
  if(!loaded.ready&&!loaded.failed)loaded.promise.then(()=>{if(record.img.isConnected)refreshFrames()});
 }
 function attach(img,kind='outfit',role=context.role){
@@ -113,7 +114,7 @@ const buttonCopy=document.createElement('span');buttonCopy.className='ty-kofi-bu
 const hearts=document.createElement('span');hearts.className='ty-kofi-button-hearts';hearts.setAttribute('aria-hidden','true');
 for(let i=0;i<3;i++){const heart=document.createElement('span');heart.textContent='♥';hearts.append(heart)}
 link.append(mini,buttonCopy,hearts);banner.append(copy,link);banner.addEventListener('animationend',()=>{}, {once:true});}
-if(footer.previousElementSibling!==banner)footer.before(banner);const mascot=banner.querySelector('.ty-kofi-button-mascot');if(mascot){const character=read().character==='purple'?'purple':'turquoise';const src=ASSETS+'originals/toolya_wishlist_'+character+'_welcome_1024.png';if(mascot.getAttribute('src')!==src)mascot.src=src}for(const old of document.querySelectorAll('footer.toolya-support'))old.remove();for(const a of document.querySelectorAll('#settingsModal a[href="https://ko-fi.com/duhrrom"],#settings-modal a[href="https://ko-fi.com/duhrrom"],.toolya-settings-dialog a[href="https://ko-fi.com/duhrrom"]')){if(!a.classList.contains('ty-settings-kofi-button')&&/kaffee|spend|unterstütz/i.test(a.textContent))a.remove()}}
+if(footer.previousElementSibling!==banner)footer.before(banner);const mascot=banner.querySelector('.ty-kofi-button-mascot');if(mascot){const character=read().character==='purple'?'purple':'turquoise';const src=welcomeMascotURL(character);if(mascot.getAttribute('src')!==src)mascot.src=src}for(const old of document.querySelectorAll('footer.toolya-support'))old.remove();for(const a of document.querySelectorAll('#settingsModal a[href="https://ko-fi.com/duhrrom"],#settings-modal a[href="https://ko-fi.com/duhrrom"],.toolya-settings-dialog a[href="https://ko-fi.com/duhrrom"]')){if(!a.classList.contains('ty-settings-kofi-button')&&/kaffee|spend|unterstütz/i.test(a.textContent))a.remove()}}
 window.addEventListener('storage',event=>{if(event.key==='helferlein-toolya-preferences-v1')mountDonation()});
 window.setInterval(()=>{const joke=document.querySelector('.ty-kofi-joke');if(!joke||document.hidden)return;donationIndex=(donationIndex+1)%donationLines.length;joke.textContent=donationLines[donationIndex]},9000);
 let scheduled=false;const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;mountPreferences();donations()})});observer.observe(document.body,{childList:true,subtree:true});donations();
@@ -154,7 +155,7 @@ function syncToolHeroMascot(){
  const hero=document.querySelector('.ty-tool-hero');if(!hero)return;
  const character=read().character==='purple'?'purple':'turquoise';
  const img=hero.querySelector('.ty-tool-hero-mascot');
- const src=ASSETS+'headers/toolya_wishlist_'+character+'_welcome_400.webp';
+ const src=welcomeMascotURL(character);
  if(img&&img.getAttribute('src')!==src)img.src=src;
  hero.dataset.character=character;
 }
