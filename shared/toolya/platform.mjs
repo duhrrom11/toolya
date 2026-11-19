@@ -154,7 +154,7 @@ function syncToolHeroMascot(){
  const hero=document.querySelector('.ty-tool-hero');if(!hero)return;
  const character=read().character==='purple'?'purple':'turquoise';
  const img=hero.querySelector('.ty-tool-hero-mascot');
- const src=ASSETS+'originals/toolya_wishlist_'+character+'_welcome_1024.png';
+ const src=ASSETS+'headers/toolya_wishlist_'+character+'_welcome_400.webp';
  if(img&&img.getAttribute('src')!==src)img.src=src;
  hero.dataset.character=character;
 }
