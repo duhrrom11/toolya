@@ -19,6 +19,7 @@
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
 <script src="../../shared/toolya/auth-page-gate.js"></script>
+<script src="../../shared/toolya/cloud-page-status.js"></script>
     <link rel="stylesheet" href="../../assets/helferlein-b3.css">
     <link rel="stylesheet" href="../../assets/helferlein-b3-parkplatz.css">
     <script>
@@ -273,7 +274,7 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         supabaseClient.auth.onAuthStateChange((event,session) => {
             if(parkingCloudReady&&(!session?.user?.id||session.user.id!==parkingCloudUserId||session.user.is_anonymous))
-                parkingCloudBlock('Sitzung geändert. Bitte neu anmelden.');
+                parkingCloudBlock('account-changed');
             setTimeout(() => { checkUserSession().catch(() => {}); }, 0);
         });
 
@@ -342,18 +343,13 @@
         });
 
         let parkingCloudReady=false,parkingCloudUserId=null,parkingCloudController=null;
-        function parkingCloudBlock(message){
+        function parkingCloudBlock(state){
             parkingCloudReady=false;parkingCloudController?.invalidate();
             clearInterval(timerInterval);timerInterval=null;
-            let gate=document.getElementById('toolya-cloud-gate');
-            if(!gate){gate=document.createElement('div');gate.id='toolya-cloud-gate';gate.setAttribute('role','alert');
-                gate.style.cssText='position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
-                document.body.append(gate);}
-            gate.textContent=message+' ';
-            const link=document.createElement('a');link.href='../../index.html';link.textContent='Zur Toolya-Anmeldung';gate.append(link);
+            window.toolyaCloudPageStatus(state);
         }
         async function parkingCloudBoot(){
-            parkingCloudBlock('Toolya Cloud wird geladen …');
+            parkingCloudBlock('loading');
             try{
                 const {prepareCloudTool}=await import('../../shared/toolya/cloud-tool-adapters.mjs');
                 const {data:auth,error}=await supabaseClient.auth.getUser();
@@ -378,20 +374,20 @@
                 activeEndTime=getData().activeEndTime||null;
                 if(activeEndTime)runTimerLoop();
                 renderParkingList();await checkUserSession();
-            }catch(error){console.error(error);parkingCloudBlock('Toolya Cloud gesperrt: '+error.message);}
+            }catch(error){console.error(error);parkingCloudBlock(error?.code === 'toolya_migration_paused' ? 'migration-paused' : 'load-failed');}
         }
         function getData(){
             if(!parkingCloudReady||!parkingCloudController?.ready)return {sessions:[],activeEndTime:null};
             return parkingCloudController.snapshot();
         }
         async function saveData(data){
-            if(!parkingCloudReady||!parkingCloudController?.ready){parkingCloudBlock('Cloud nicht bereit.');return false;}
+            if(!parkingCloudReady||!parkingCloudController?.ready){parkingCloudBlock('load-failed');return false;}
             try{
                 const {data:auth,error}=await supabaseClient.auth.getUser();
                 if(error||auth?.user?.id!==parkingCloudUserId||auth.user.is_anonymous)throw Error('Anmeldung nicht gültig.');
                 await parkingCloudController.replace(data);
                 window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');return true;
-            }catch(error){console.error(error);parkingCloudBlock('Cloud-Speicherung unbestätigt: '+error.message);return false;}
+            }catch(error){console.error(error);parkingCloudBlock('save-unconfirmed');return false;}
         }
 
         function requestNotificationPermission() {

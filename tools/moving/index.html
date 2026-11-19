@@ -26,6 +26,7 @@
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
 <script src="../../shared/toolya/auth-page-gate.js"></script>
+<script src="../../shared/toolya/cloud-page-status.js"></script>
     <link rel="stylesheet" href="../../assets/helferlein-b3.css">
     <link rel="stylesheet" href="../../assets/helferlein-b3-umzugskisten.css">
     <script>
@@ -475,7 +476,7 @@
             if (movingCloudReady &&
                 (!session?.user?.id || session.user.id !== movingCloudUserId ||
                  session.user.is_anonymous)) {
-                movingCloudBlock('Toolya-Sitzung geändert. Bitte neu anmelden oder Seite laden.');
+                movingCloudBlock('account-changed');
             }
             // Supabase auth callbacks hold the session lock; defer SDK calls.
             setTimeout(() => { updateUserDisplay().catch(() => {}); }, 0);
@@ -496,27 +497,13 @@
         let movingCloudController = null;
         let movingCloudUserId = null;
         let movingCloudReady = false;
-        function movingCloudBlock(message) {
+        function movingCloudBlock(state) {
             movingCloudReady = false;
-            
-            
             movingCloudController?.invalidate();
-            let gate = document.getElementById('toolya-cloud-gate');
-            if (!gate) {
-                gate = document.createElement('div');
-                gate.id = 'toolya-cloud-gate';
-                gate.setAttribute('role','alert');
-                gate.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#f8fafc;display:grid;place-items:center;padding:2rem;text-align:center;font:600 18px system-ui';
-                document.body.append(gate);
-            }
-            gate.textContent = message + ' ';
-            const link = document.createElement('a');
-            link.href = '../../index.html';
-            link.textContent = 'Zur Toolya-Anmeldung';
-            gate.append(link);
+            window.toolyaCloudPageStatus(state);
         }
         async function movingCloudBoot() {
-            movingCloudBlock('Toolya Cloud wird geladen …');
+            movingCloudBlock('loading');
             try {
                 const {prepareCloudTool} = await import('../../shared/toolya/cloud-tool-adapters.mjs');
                 const {data:auth,error} = await window.supabaseClient.auth.getUser();
@@ -548,7 +535,7 @@
                 await updateUserDisplay();
             } catch(error) {
                 console.error(error);
-                movingCloudBlock('Toolya Cloud gesperrt: '+error.message);
+                movingCloudBlock(error?.code === 'toolya_migration_paused' ? 'migration-paused' : 'load-failed');
             }
         }
         function getData() {
@@ -559,7 +546,7 @@
 
         async function saveData(data) {
             if (!movingCloudReady || !movingCloudController?.ready) {
-                movingCloudBlock('Cloud nicht bereit. Bitte neu anmelden oder laden.');
+                movingCloudBlock('load-failed');
                 return false;
             }
             try {
@@ -571,7 +558,7 @@
                 return true;
             } catch(error) {
                 console.error(error);
-                movingCloudBlock('Cloud-Speicherung unbestätigt: '+error.message);
+                movingCloudBlock('save-unconfirmed');
                 return false;
             }
         }

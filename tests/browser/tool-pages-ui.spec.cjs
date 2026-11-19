@@ -98,7 +98,7 @@ for(const item of tools){
       });
     }
     console.log('[UI diagnostic]',item.tool,await page.evaluate(()=>({url:location.href,ready:toolyaCloudReady,online:navigator.onLine,revision:toolyaCloudController?.revision,writes:window.__toolyaMock.writes.length,gate:document.querySelector('#toolya-cloud-gate')?.textContent,form:document.querySelector('#receiptTitle')?.value,car:document.querySelector('#carName')?.value})));
-    await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+    await expect(page.locator('#toolya-cloud-gate')).toContainText('Toolya konnte die Speicherung nicht bestätigen');
     expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   });
   test(item.tool+': authenticated UI loads real page with mock cloud',async({page})=>{
@@ -197,7 +197,7 @@ test('umzugskisten-inventar: cloud-confirmed location save and blocked failure',
     document.querySelector('#locName').value='Dachboden';
     await saveLocation();
   });
-  await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Toolya konnte die Speicherung nicht bestätigen');
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
   expect(await page.locator('#locName').inputValue()).toBe('Dachboden');
 });
@@ -260,7 +260,7 @@ test('verliehene-gegenstaende: contact saved only after cloud confirmation',asyn
     document.querySelector('#contactName').value='Nicht gespeichert';
     await saveContact();
   });
-  await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Toolya konnte die Speicherung nicht bestätigen');
   expect(await page.locator('#contactName').inputValue()).toBe('Nicht gespeichert');
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
 });
@@ -310,7 +310,7 @@ test('zaehlerstaende-erfassen: cloud confirmed tariff and blocked conflict',asyn
     document.querySelector('#tariffStromPriceHT').value='0.44';
     await saveTarifs();
   });
-  await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Toolya konnte die Speicherung nicht bestätigen');
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
 });
 test('zaehlerstaende-erfassen: photo processing precedes confirmed cloud write',async({page})=>{
@@ -352,7 +352,7 @@ test('pflanzenpflege-giessplan: confirmed save and cloud conflict',async({page})
     supabaseClient.rpc=async()=>({data:null,error:{code:'40001',message:'conflict'}});
     await saveData({...getData(),plants:[]});
   });
-  await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Toolya konnte die Speicherung nicht bestätigen');
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
 });
 test('pflanzenpflege-giessplan: plant photo awaits compression before cloud write',async({page})=>{
@@ -393,7 +393,7 @@ test('parkplatz-merker-parkschein-timer: confirmed parking save and blocked conf
     supabaseClient.rpc=async()=>({data:null,error:{code:'40001',message:'conflict'}});
     await saveData({sessions:[]});
   });
-  await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Toolya konnte die Speicherung nicht bestätigen');
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
 });
 test('parkplatz-merker-parkschein-timer: cloud-backed parking timer',async({page})=>{
@@ -433,7 +433,7 @@ test('haustier-gesundheitspass: confirmed save and blocked conflict',async({page
     supabaseClient.rpc=async()=>({data:null,error:{code:'40001',message:'conflict'}});
     await saveData({pets:[],events:[],meds:[]});
   });
-  await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Toolya konnte die Speicherung nicht bestätigen');
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
 });
 test('haustier-gesundheitspass: photo processing precedes confirmed cloud write',async({page})=>{
@@ -472,7 +472,7 @@ test('backform-umrechner: cloud recipe save and conflict lock',async({page})=>{
     supabaseClient.rpc=async()=>({data:null,error:{code:'40001',message:'conflict'}});
     await persistRecipes([]);
   });
-  await expect(page.locator('#toolya-cloud-gate')).toContainText('Cloud-Speicherung unbestätigt');
+  await expect(page.locator('#toolya-cloud-gate')).toContainText('Toolya konnte die Speicherung nicht bestätigen');
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
 });
 test('backform-umrechner: save and delete recipe await cloud confirmation',async({page})=>{

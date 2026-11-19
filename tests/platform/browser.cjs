@@ -229,7 +229,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
   // Cloud initialization is asynchronous: wait briefly for a late gate before interacting.
   await page.locator('#toolya-cloud-gate').waitFor({state:'visible',timeout:2500}).catch(()=>{});
   if(await page.locator('#toolya-cloud-gate').isVisible()){
-   assert.equal(await page.locator('#toolya-cloud-gate').getAttribute('role'),'alert',route+' authentication gate');
+   assert(['alert','status'].includes(await page.locator('#toolya-cloud-gate').getAttribute('role')),route+' cloud gate announces status');
    assert(await page.locator('#toolya-cloud-gate').isVisible(),route+' gate remains visible');
    assert.equal(await page.evaluate(()=>{const gate=document.getElementById('toolya-cloud-gate');const r=gate.getBoundingClientRect();return document.elementFromPoint(Math.min(innerWidth-1,Math.max(0,r.left+r.width/2)),Math.min(innerHeight-1,Math.max(0,r.top+r.height/2)))?.closest('#toolya-cloud-gate')===gate}),true,route+' gate intercepts unauthenticated input');
    continue;
