@@ -36,15 +36,17 @@
     {
       "@context": "https://schema.org",
       "@graph": [
-        { "@type": "WebSite", "@id": "https://toolya.app/#website", "name": "Toolya", "url": "https://toolya.app/", "inLanguage": "de" },
+        { "@type": "WebSite", "@id": "https://toolya.app/#website", "name": "Toolya", "url": "https://toolya.app/", "inLanguage": "de", "publisher": { "@id": "https://toolya.app/legal.html#betreiber" } },
+        { "@type": "Person", "@id": "https://toolya.app/legal.html#betreiber", "name": "Romain Duhr" },
         {
           "@type": "WebApplication",
+          "@id": "https://toolya.app/#webapp",
           "name": "Toolya",
           "operatingSystem": "Web Browser",
           "applicationCategory": "UtilitiesApplication",
           "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
           "description": "Entdecke zwölf kostenlose Tools für Haushalt, Finanzen und Organisation. Öffentliche Wunschlisten kannst du direkt durchsuchen. Für die meisten Tools brauchst du ein Konto.",
-          "author": { "@type": "Person", "name": "Romain Duhr" }
+          "author": { "@id": "https://toolya.app/legal.html#betreiber" }
         }
       ]
     }
