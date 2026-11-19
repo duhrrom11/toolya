@@ -503,7 +503,7 @@ async function isolatedWishlist(page,authenticated,profiles=[],detailError=false
     },
     rpc(name){if(name==='search_wishlist_directory'&&m.searchError)return Promise.resolve({data:null,error:{message:'Isolated unavailable'}});if(name==='search_wishlist_directory'&&m.empty)return Promise.resolve({data:[],error:null});return Promise.resolve({data:['search_wishlist_profiles','search_wishlist_directory'].includes(name)?${JSON.stringify(profiles)}:(name==='wishlist_directory_filters'?{countries:[],occasions:[],interests:[]}:[]),error:null})},
     from(table){return {
-     select(){return this},eq(){return this},order(){return this},limit(){return this},
+     select(){return this},eq(){return this},order(){return this},limit(){return Promise.resolve({data:table==='wishlist_directory'?${JSON.stringify(profiles)}:[],error:null})},
      async maybeSingle(){if(table==='wishlist_directory'&&m.detailError)return {data:null,error:{message:'Synthetic detail outage'}};return {data:table==='wishlist_directory'?${JSON.stringify(profiles[0]||null)}:null,error:null}},
      upsert(payload){m.writes.push({table,payload});return {select(){return this},async single(){return {data:{user_id:'owner'},error:null}}}},
      insert(payload){m.writes.push({table,payload});return {select(){return this},async single(){return {data:{id:'new-id'},error:null}}}}
@@ -519,6 +519,33 @@ test('wishlist: public discovery works without authentication and no private wri
  await page.goto(origin+'/tools/wishes/public.html');
  await expect(page.locator('#profileStatus')).toHaveText('');
  expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
+});
+test('wishlist: published profiles can be paused and scrolled on mobile',async({page})=>{
+ const profiles=Array.from({length:3},(_,i)=>({
+  user_id:'11111111-1111-4111-8111-11111111111'+i,
+  display_name:'Synthetisches Wunschprofil '+i,lists:[{url:'https://www.amazon.de/hz/wishlist/ls/ABC123'}]
+ }));
+ await isolatedWishlist(page,false,profiles);
+ await page.setViewportSize({width:375,height:812});
+ await page.emulateMedia({reducedMotion:'no-preference'});
+ await page.goto(origin+'/tools/wishes/public.html');
+ const viewport=page.locator('#wishPublicViewport');
+ const toggle=page.getByRole('button',{name:'Karussell anhalten',exact:true});
+ await expect(toggle).toBeVisible();
+ await expect(viewport).toHaveClass(/is-auto/);
+ await toggle.press('Enter');
+ await expect(page.getByRole('button',{name:'Karussell fortsetzen',exact:true})).toBeFocused();
+ await expect(viewport).not.toHaveClass(/is-auto/);
+ await expect(viewport).toHaveCSS('overflow-x','auto');
+ await expect(viewport.locator('[inert]')).toBeHidden();
+ await viewport.evaluate(e=>e.scrollLeft=e.scrollWidth);
+ expect(await viewport.evaluate(e=>e.scrollLeft)).toBeGreaterThan(0);
+ await page.getByRole('button',{name:'Karussell fortsetzen',exact:true}).press('Enter');
+ await expect(viewport).toHaveClass(/is-auto/);
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await expect(toggle).toBeHidden();
+ await expect(viewport).not.toHaveClass(/is-auto/);
+ await expect(viewport.getByRole('link')).toHaveCount(3);
 });
 test('wishlist: public profile retry distinguishes connection failure from an unavailable profile',async({page})=>{
  await isolatedWishlist(page,false,[],true);

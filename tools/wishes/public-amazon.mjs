@@ -104,9 +104,30 @@ function makePublicCarouselCard(p){
  const description=document.createElement('p');description.textContent=(p.bio||'Öffentliche Amazon-Wunschliste ansehen und Wünsche entdecken.').trim().slice(0,145);
  const footer=document.createElement('span');footer.className='wish-public-card-footer';footer.textContent=([p.city,p.country].filter(Boolean).join(' · ')||'Öffentliches Wunschprofil')+'  ·  Profil ansehen ↗';body.append(name,description,footer);a.append(media,body);return a;
 }
+const carouselViewport=$('wishPublicViewport');
+const carouselTrack=$('wishPublicTrack');
+const carouselToggle=$('wishPublicToggle');
+const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+let carouselPaused=false;
+function updateCarouselMotion(){
+ const group=carouselTrack.querySelector('.wish-public-group');
+ const canAnimate=Boolean(group?.nextElementSibling&&group.offsetWidth>carouselViewport.clientWidth&&!reducedMotion.matches);
+ carouselToggle.hidden=!canAnimate;
+ carouselToggle.textContent=carouselPaused?'Karussell fortsetzen':'Karussell anhalten';
+ carouselViewport.classList.toggle('is-auto',canAnimate&&!carouselPaused);
+}
+carouselToggle.onclick=()=>{
+ const offset=carouselViewport.getBoundingClientRect().left-carouselTrack.getBoundingClientRect().left;
+ carouselPaused=!carouselPaused;
+ updateCarouselMotion();
+ carouselViewport.scrollLeft=carouselPaused?Math.max(0,offset):0;
+};
+new ResizeObserver(updateCarouselMotion).observe(carouselViewport);
+reducedMotion.addEventListener('change',updateCarouselMotion);
 async function refreshCloud(currentGeneration){
- const track=$('wishPublicTrack');if(!track)return;
+ const track=carouselTrack;
  track.replaceChildren(text('p','Öffentliche Profile werden geladen …','wish-showcase-loading'));
+ updateCarouselMotion();
  let response;
  try{response=await db.from('wishlist_directory').select('user_id,display_name,city,country,bio,logo_url,lists').order('updated_at',{ascending:false}).limit(80)}catch{response={error:true}}
  if(currentGeneration!==generation)return;
@@ -117,8 +138,8 @@ async function refreshCloud(currentGeneration){
  if(!unique.length){track.replaceChildren(text('p','Noch keine veröffentlichten Wunschlisten vorhanden.','wish-showcase-loading'));return}
  const group=document.createElement('div');group.className='wish-public-group';for(const p of unique)group.append(makePublicCarouselCard(p));
  track.replaceChildren(group);
- if(unique.length>2){const cloned=group.cloneNode(true);cloned.setAttribute('aria-hidden','true');cloned.inert=true;for(const a of cloned.querySelectorAll('a'))a.tabIndex=-1;track.append(cloned);track.classList.add('is-running');track.style.setProperty('--wish-scroll-seconds',Math.max(25,unique.length*5)+'s')}
- else track.classList.remove('is-running');
+ if(unique.length>2){const cloned=group.cloneNode(true);cloned.setAttribute('aria-hidden','true');cloned.inert=true;for(const a of cloned.querySelectorAll('a'))a.tabIndex=-1;track.append(cloned);track.style.setProperty('--wish-scroll-seconds',Math.max(25,unique.length*5)+'s')}
+ updateCarouselMotion();
 }
 async function search(){
  clearTimeout(debounce);

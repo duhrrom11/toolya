@@ -9,10 +9,14 @@ body.wishlist-redesign .wish-showcase-top{display:flex;justify-content:space-bet
 body.wishlist-redesign .wish-showcase-top h2{margin:5px 0;font-size:clamp(1.38rem,2.7vw,1.9rem);color:#163a36}
 body.wishlist-redesign .wish-showcase-top p{margin:0;color:#56736d;font-size:.91rem}
 body.wishlist-redesign .wish-showcase-search{color:#16786d;font-weight:750;white-space:nowrap}
-body.wishlist-redesign .wish-public-marquee{width:100%;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 2.5%,#000 97.5%,transparent)}
+body.wishlist-redesign .wish-showcase-actions{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap}
+body.wishlist-redesign #wishPublicToggle{min-height:44px}
+body.wishlist-redesign .wish-public-marquee{width:100%;overflow-x:auto}
+body.wishlist-redesign .wish-public-marquee.is-auto{overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 2.5%,#000 97.5%,transparent)}
 body.wishlist-redesign .wish-public-track{display:flex;width:max-content;max-width:none;gap:0}
 body.wishlist-redesign .wish-public-group{display:flex;flex:none;gap:16px;padding-right:16px}
-body.wishlist-redesign .wish-public-track.is-running{animation:wishPublicMove var(--wish-scroll-seconds,55s) linear infinite;will-change:transform}
+body.wishlist-redesign .wish-public-marquee:not(.is-auto) .wish-public-group[inert]{display:none}
+body.wishlist-redesign .wish-public-marquee.is-auto .wish-public-track{animation:wishPublicMove var(--wish-scroll-seconds,55s) linear infinite;will-change:transform}
 @keyframes wishPublicMove{to{transform:translateX(-50%)}}
 body.wishlist-redesign .wish-public-marquee:hover .wish-public-track,body.wishlist-redesign .wish-public-marquee:focus-within .wish-public-track{animation-play-state:paused}
 body.wishlist-redesign .wish-public-card{width:clamp(245px,27vw,305px);min-height:248px;display:flex;flex-direction:column;background:white;border:1px solid #dfebe6;border-radius:19px;overflow:hidden;box-shadow:0 5px 16px #244a3c13;text-decoration:none!important;color:#173a35!important;transition:box-shadow .2s,transform .2s}
@@ -29,7 +33,7 @@ body.wishlist-redesign .wish-public-card-footer{margin-top:auto;padding-top:14px
 body.wishlist-redesign .wish-showcase-caption{margin:10px 9px 0;font-size:.78rem;color:#6b837d}
 body.wishlist-redesign .wish-showcase-loading{padding:35px;color:#48685e}
 body.wishlist-redesign #profile{margin-top:16px}
-@media(prefers-reduced-motion:reduce){body.wishlist-redesign .wish-public-track.is-running{animation:none;will-change:auto}body.wishlist-redesign .wish-public-marquee{overflow-x:auto;mask-image:none;scroll-snap-type:x proximity}body.wishlist-redesign .wish-public-card{scroll-snap-align:start;transition:none}}
+@media(prefers-reduced-motion:reduce){body.wishlist-redesign .wish-public-card{transition:none}}
 
 @media(max-width:650px){body.wishlist-redesign .wish-showcase-top{align-items:start;flex-direction:column}body.wishlist-redesign .wish-public-group{gap:12px;padding-right:12px}body.wishlist-redesign .wish-public-card{width:255px}}
 
