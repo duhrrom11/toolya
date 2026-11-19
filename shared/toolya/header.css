@@ -26,3 +26,45 @@
 
 .ty-tool-hero-mascot[role=button]{cursor:pointer;touch-action:manipulation}
 .ty-tool-hero-mascot:focus-visible{outline:3px solid var(--ty-accent);outline-offset:-4px;border-radius:16px}
+
+/* Single, quiet settings affordance in the same upper-right position on every tool. */
+.ty-tool-hero .ty-tool-hero-inner{position:relative}
+.ty-tool-hero .ty-tool-hero-top{min-height:46px;padding-right:57px}
+.ty-tool-hero .ty-tool-hero-actions{
+ position:absolute;z-index:4;top:clamp(12px,2vw,18px);right:clamp(12px,2.5vw,28px);
+ display:flex;align-items:center;justify-content:flex-end;
+}
+.ty-tool-hero .ty-tool-hero-actions :is(.b3-settings-trigger,.helferlein-gear,.ty-tool-hero-settings,[aria-label="Einstellungen öffnen"]){
+ appearance:none;position:static!important;inset:auto!important;transform:none!important;
+ display:inline-grid!important;place-items:center!important;
+ box-sizing:border-box;width:46px!important;min-width:46px!important;max-width:46px;
+ height:46px!important;min-height:46px!important;padding:0!important;margin:0!important;
+ border:1px solid #c6d9e3!important;border-radius:14px!important;
+ background:rgba(255,255,255,.88)!important;color:#365b70!important;
+ box-shadow:0 3px 10px rgba(24,58,76,.09)!important;
+ font-size:25px!important;line-height:1!important;cursor:pointer;
+ backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+}
+.ty-tool-hero .ty-tool-hero-actions :is(.b3-settings-trigger,.helferlein-gear,.ty-tool-hero-settings,[aria-label="Einstellungen öffnen"]):hover{
+ background:#f4fafc!important;border-color:#9fbfcd!important;
+ box-shadow:0 4px 13px rgba(24,58,76,.13)!important;
+}
+.ty-tool-hero .ty-tool-hero-actions :is(.b3-settings-trigger,.helferlein-gear,.ty-tool-hero-settings,[aria-label="Einstellungen öffnen"]):focus-visible{
+ outline:3px solid #14768a!important;outline-offset:3px;
+}
+.ty-tool-hero .ty-tool-hero-actions .helferlein-gear-symbol,
+.ty-tool-hero .ty-tool-hero-actions .ty-tool-hero-settings-symbol{
+ display:inline-block;animation:helferlein-turn 3.5s linear infinite!important;
+ transform-origin:center;will-change:transform;
+}
+@media(max-width:500px){
+ .ty-tool-hero .ty-tool-hero-top{padding-right:53px}
+ .ty-tool-hero .ty-tool-hero-actions{top:12px;right:12px}
+ .ty-tool-hero .ty-tool-hero-actions :is(.b3-settings-trigger,.helferlein-gear,.ty-tool-hero-settings,[aria-label="Einstellungen öffnen"]){
+  width:44px!important;min-width:44px!important;max-width:44px;height:44px!important;min-height:44px!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .ty-tool-hero .ty-tool-hero-actions .helferlein-gear-symbol,
+ .ty-tool-hero .ty-tool-hero-actions .ty-tool-hero-settings-symbol{animation:none!important}
+}
