@@ -47,3 +47,12 @@ test('settings styles and shared loader provide responsive dialog layout',()=>{
  assert.match(platform,/unifyToolSettings\(modal\|\|fallbackDialog\)/);
  assert.match(platform,/settings-accordion\.css/);
 });
+
+test('legacy unlabeled settings close button remains visible outside accordion',()=>{
+ const doc=fixture('<div class="flex justify-between"><h3>⚙️ Einstellungen und Konto</h3><button id="legacyClose">✕</button></div><div id="cloud-status-text">Nicht angemeldet</div><div><input id="auth-email"><button id="legacyLogin">Anmelden</button></div><button id="footerClose">Schließen</button>');
+ unifyToolSettings(doc.getElementById('settingsModal'));
+ assert.equal(doc.getElementById('legacyClose').closest('details'),null);
+ assert.equal(doc.getElementById('legacyClose').closest('.justify-between')!==null,true);
+ assert.ok(doc.querySelector('[data-settings-section="account"] #legacyLogin'));
+ assert.equal(doc.getElementById('footerClose').closest('details'),null);
+});
