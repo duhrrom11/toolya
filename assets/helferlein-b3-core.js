@@ -134,7 +134,10 @@ function init(){
    const help=document.getElementById(config.helpId);
    if(help?.classList.contains('hidden')&&typeof window[config.helpToggle]==='function')window[config.helpToggle]();
    if(help?.closest('#settingsModal')){
-     help?.scrollIntoView({block:'nearest',behavior:'smooth'});
+     const group=help.closest('details[data-settings-section]');
+     if(group)group.open=true;
+     help.querySelector('button')?.focus({preventScroll:true});
+     help.scrollIntoView({block:'nearest',behavior:'smooth'});
    }else{
      if(typeof window.closeSettings==='function')window.closeSettings();
      else modal.classList.add('hidden');

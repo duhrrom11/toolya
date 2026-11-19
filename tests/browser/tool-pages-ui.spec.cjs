@@ -783,6 +783,17 @@ async function verifyPhotoPreview(page,testInfo,tool,label){
   await expect(trigger).toBeFocused();
  }
 }
+async function revealToolSetting(control){
+ const group=control.locator('xpath=ancestor::details[@data-settings-section][1]');
+ await expect(group).toHaveCount(1);
+ if(await group.getAttribute('open')===null){
+  const summary=group.locator(':scope>summary');
+  await summary.focus();
+  await summary.press('Enter');
+  await expect(group).toHaveAttribute('open','');
+ }
+ await expect(control).toBeVisible();
+}
 for(const item of tools){
  test(item.tool+': shared controls on the real authenticated page at three widths',async({page},testInfo)=>{
   const fixture=item.tool==='autokosten-reifenwechsel'
@@ -814,6 +825,7 @@ for(const item of tools){
    await page.screenshot({path:testInfo.outputPath('b3-'+item.tool+'-'+width+'.png'),fullPage:true});
    await page.locator('#settingsBtn').click();
    await expect(page.locator('#settingsModal')).toBeVisible();
+   await revealToolSetting(page.locator('#b3-edit-open'));
    await page.locator('#b3-edit-open').click();
    await expect(page.locator('#b3-editor')).toBeVisible();
    const save=page.locator('#b3-editor .b3-action:not(.b3-outline)').first();
@@ -1140,6 +1152,7 @@ for(const kind of ['parking','pet-health']){
    await page.evaluate(()=>toggleHelpModal());
   }else{
    await page.locator('#settingsBtn').click();
+   await revealToolSetting(page.locator('#helpToggleBtn'));
    await page.locator('#helpToggleBtn').click();await expect(page.locator('#helpBox')).toBeVisible();
    expect(await fits(page.locator('#settingsModal>div'))).toBe(true);
    for(const title of await page.locator('#helpBox .text-white,#helpBox .text-teal-200').all()){
@@ -1237,7 +1250,7 @@ for(const kind of ['housemates','baking']){
      await inspect(page.locator('#tab-'+tab));expect(await fits(page.locator('#tab-'+tab))).toBe(true);await capture(tab+'-'+width);
     }
     await page.evaluate(()=>openCookMode());await expect(page.locator('#cook-modal')).toBeVisible();await inspect(page.locator('#cook-modal'));expect(await fits(page.locator('#cook-modal>div'))).toBe(true);await capture('timer-'+width);await page.evaluate(()=>closeCookMode());
-    await page.evaluate(()=>openSettings());await page.locator('#b3-backform-edit').click();await expect(page.locator('#b3-backform-editor')).toBeVisible();
+    await page.evaluate(()=>openSettings());await revealToolSetting(page.locator('#b3-backform-edit'));await page.locator('#b3-backform-edit').click();await expect(page.locator('#b3-backform-editor')).toBeVisible();
     await inspect(page.locator('#b3-backform-editor'));await page.locator('#b3-backform-editor').evaluate(e=>e.scrollIntoView({block:'start'}));await capture('editor-'+width);
     await page.locator('#b3-backform-editor').getByRole('button',{name:'Abbrechen',exact:true}).click();await page.evaluate(()=>closeSettings());
     await expect(page.locator('button[onclick="deleteRecipe(0)"]')).not.toHaveClass(/b3-action/);
@@ -1340,7 +1353,10 @@ test('wishlist: public cards and five-list form remain usable at three widths',a
  }
  for(const width of [320,768,1440]){
   await page.setViewportSize({width,height:1000});
-  if(width<900)expect(await page.locator('#results .person>div').evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThan(200);
+  if(width<=600)expect(await page.locator('#results .profile-identity').evaluate(e=>{
+   const hero=e.closest('.profile-hero'),style=getComputedStyle(hero);
+   return e.getBoundingClientRect().width>=hero.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-1;
+  })).toBe(true);
   for(const [name,selector]of [['card','#results'],['form','#profileForm'],['actions','#profileForm .actions']]){
    const panel=page.locator(selector);await panel.evaluate(e=>e.scrollIntoView({block:'start'}));
    expect(await panel.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
@@ -1413,6 +1429,7 @@ for(const kind of ['car','budget','moving','meters','pet-health'])test(kind+': h
  for(const width of [320,768,1440]){
   await page.setViewportSize({width,height:1000});await page.evaluate(()=>openSettings());
   const actions=page.locator('.b3-backup-actions'),picker=actions.locator('.b3-backup-picker'),input=picker.locator('input');
+  await revealToolSetting(actions);
   await actions.scrollIntoViewIfNeeded();
   for(const control of [actions.locator('button'),picker]){
    await expect(control).toHaveCSS('background-color','rgb(255, 255, 255)');
@@ -1423,7 +1440,11 @@ for(const kind of ['car','budget','moving','meters','pet-health'])test(kind+': h
   expect(await actions.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('backup-'+kind+'-'+width+'.png')});
   if(kind==='meters'){await page.evaluate(()=>closeSettings());continue;}
-  if(kind!=='budget')await page.locator('#helpToggleBtn').click();
+  if(kind!=='budget'){
+   const helpToggle=page.locator('#helpToggleBtn');
+   await revealToolSetting(helpToggle);
+   await helpToggle.click();
+  }
   else{await page.evaluate(()=>closeSettings());await page.evaluate(()=>toggleGuide())}
   const help=page.locator(kind!=='budget'?'#helpBox':'#guideSection');await expect(help).toBeVisible();await help.scrollIntoViewIfNeeded();
   await expect(help).toHaveCSS('background-color','rgb(255, 255, 255)');
@@ -1463,7 +1484,12 @@ for(const kind of ['meters','baking'])test(kind+': inline help remains readable 
  if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
  for(const width of [320,768,1440]){
   await page.setViewportSize({width,height:1000});
-  if(kind==='baking')await page.evaluate(()=>{openSettings();toggleHelp()});else await page.locator('#b3-faq>button').click();
+  if(kind==='baking'){
+   const more=page.locator('#b3-backform-more>summary');
+   await more.press('Enter');
+   await page.locator('#b3-backform-more').getByRole('button',{name:/Hilfe & Anleitung/}).press('Enter');
+   await expect(page.locator('#help-box button')).toBeFocused();
+  }else await page.locator('#b3-faq>button').click();
   const help=page.locator(kind==='baking'?'#help-box':'#accordionContent');await expect(help).toBeVisible();await help.scrollIntoViewIfNeeded();
   if(kind==='baking'){const editor=page.locator('#b3-backform-edit');expect(await editor.evaluate(e=>e.getBoundingClientRect().right<=e.parentElement.getBoundingClientRect().right+1)).toBe(true);}
   expect(await help.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);

@@ -102,7 +102,7 @@
  <div class="b3-more-content">
   <button class="b3-more-item" type="button" onclick="document.getElementById('b3-backform-more').open=false;openTab('finder')">⭕ Formen-Finder</button>
   <button class="b3-more-item" type="button" onclick="document.getElementById('b3-backform-more').open=false;openCookMode()">⏱️ Backtimer</button>
-  <button class="b3-more-item" type="button" onclick="document.getElementById('b3-backform-more').open=false;openSettings();toggleHelp()">📖 Hilfe & Anleitung</button>
+  <button class="b3-more-item" type="button" onclick="openHelpFromMenu()">📖 Hilfe & Anleitung</button>
  </div></details>
 </nav>
 
@@ -718,6 +718,19 @@
                 userEmailSpan.innerText = "";
                 btnLogout.classList.add('hidden');
             }
+        }
+
+        function openHelpFromMenu() {
+            document.getElementById('b3-backform-more').open = false;
+            openSettings();
+            const help = document.getElementById('help-box');
+            const group = help.closest('details[data-settings-section]');
+            if (group) group.open = true;
+            help.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                help.querySelector('button')?.focus({preventScroll:true});
+                help.scrollIntoView({block:'nearest'});
+            });
         }
 
         function toggleHelp() {
