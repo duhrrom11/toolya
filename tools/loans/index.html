@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<style>html.toolya-auth-pending body{visibility:hidden!important}</style>
+<style>html.toolya-auth-pending body{visibility:hidden!important}html.toolya-auth-pending body>.toolya-auth-status{visibility:visible!important}</style>
+<link rel="stylesheet" href="../../shared/toolya/auth-page-gate.css">
 <script>document.documentElement.classList.add('toolya-auth-pending')</script>
     <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
     <script>
@@ -76,6 +77,15 @@
 <link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><link rel="stylesheet" href="../../shared/toolya/alpha.css?v=20261115-alpha">
 <script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script></head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+  <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
+    <p id="toolya-auth-title"><strong>Verliehene Dinge</strong></p>
+    <p role="status">
+      <span class="toolya-auth-loading">Wir prüfen deine Anmeldung …</span>
+      <span class="toolya-auth-error">Deine Anmeldung konnte gerade nicht geprüft werden. Prüfe deine Internetverbindung und versuche es erneut.</span>
+    </p>
+    <button class="toolya-auth-error" id="toolya-auth-retry" type="button">Erneut versuchen</button>
+    <a href="../../verliehene-dinge/">Zur Anleitung</a>
+  </section>
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
 
     <!-- Header im exakten Mini-HomeBox-Stil -->
