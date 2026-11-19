@@ -2,9 +2,9 @@ name: Toolya Amazon scraper
 on:
   push:
     branches: [main]
-    paths: ['supabase/**', 'tools/wishes/**', 'assets/**', 'tests/amazon/**', 'package*.json', '.github/workflows/amazon-scraper.yml']
+    paths: ['supabase/**', 'tools/wishes/**', 'shared/toolya/**', 'assets/**', 'tests/amazon/**', 'package*.json', '.github/workflows/amazon-scraper.yml']
   pull_request:
-    paths: ['supabase/**', 'tools/wishes/**', 'assets/**', 'tests/amazon/**', 'package*.json', '.github/workflows/amazon-scraper.yml']
+    paths: ['supabase/**', 'tools/wishes/**', 'shared/toolya/**', 'assets/**', 'tests/amazon/**', 'package*.json', '.github/workflows/amazon-scraper.yml']
 jobs:
   isolated:
     timeout-minutes: 4
@@ -18,6 +18,8 @@ jobs:
       - run: npm ci
       - run: node --test tests/amazon/*.test.mjs
       - run: node --check tools/wishes/amazon-import.mjs
+      - run: node --check shared/toolya/platform.mjs
+      - run: node --check shared/toolya/settings-unify.mjs
       - run: node tests/amazon/browser.cjs
       - run: node tests/amazon/release-acceptance.cjs
       - uses: actions/upload-artifact@v4
