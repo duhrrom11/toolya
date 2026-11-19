@@ -10,7 +10,7 @@ const html=read('tools/wishes/public.html');
 const edge=read('supabase/functions/wishlist-discovery/index.ts');
 const admin=read('admin-stats-dashboard/wishlist-finder.mjs');
 
-test('cloud is bounded, randomized, linked and distinct from deliberate search',()=>{
+test('public profile carousel is bounded, randomized, linked and separate from search',()=>{
  const rows=Array.from({length:75},(_,i)=>({user_id:'00000000-0000-4000-8000-'+String(i).padStart(12,'0'),display_name:'Person '+i}));
  rows.push(rows[0],{user_id:'invalid',display_name:'Invalid'});
  const a=sampleCloud(rows,30,()=>0);
@@ -20,11 +20,13 @@ test('cloud is bounded, randomized, linked and distinct from deliberate search',
  assert.notDeepEqual(a.map(x=>x.user_id),b.map(x=>x.user_id));
  assert.equal(sampleCloud(rows,100).length,30,'helper caps even oversized requests');
  assert.equal(sampleCloud(rows).length,30,'default limit is 30');
- assert.match(frontend,/Math\.random\(\)\*\(total-windowSize\+1\)/);
+ assert.match(frontend,/\.limit\(80\)/);
+ assert.match(frontend,/Math\.floor\(Math\.random\(\)\*\(i\+1\)\)/);
+ assert.match(frontend,/\.slice\(0,12\)/);
  assert.match(frontend,/if\(!hasSearchCriteria\(\)\)/);
  assert.match(frontend,/await refreshCloud\(g\)/);
  assert.match(frontend,/a\.href=profileUrl\(p\.user_id\)/);
- assert.match(html,/id="wishlistCloud"/);
+ assert.match(html,/id="wishPublicTrack"/);
  assert.doesNotMatch(html,/id="amazonDiscovery"|id="mainAmazonSearch"/);
  assert.doesNotMatch(frontend,/amazonSearch\(/);
 });
