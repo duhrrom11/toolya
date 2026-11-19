@@ -23,6 +23,9 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   assert.equal(await page.locator('#favorites').isVisible(),false,'empty favorites stay compact');
   assert.equal(await page.locator('#wishCreateSection .wish-creation-tile').count(),3,'three creation cards');
   await page.waitForFunction(()=>{const img=document.querySelector('.ty-tool-hero-mascot');return img?.complete&&img.naturalWidth===400&&img.getAttribute('src')?.endsWith('_welcome_400.webp');});
+  const footerMascot=page.locator('.ty-kofi-button-mascot');
+  await footerMascot.waitFor({state:'attached'});
+  assert.equal(await footerMascot.getAttribute('src'),await page.locator('.ty-tool-hero-mascot').getAttribute('src'),'header and Ko-fi reuse the same cached image URL');
   // Wishlist must use the same shared Toolya settings surface, not a minimal fallback.
   assert.equal(await page.locator('#toolya-display-settings').count(),0,'no standalone fallback settings');
   assert.equal(await page.locator('#settingsModal .toolya-preferences').count(),1,'shared appearance panel mounted once');
@@ -50,6 +53,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   await page.locator('details.toolya-appearance summary').click();
   await page.getByLabel('Begleiter',{exact:true}).selectOption('purple');
   await page.waitForFunction(()=>document.querySelector('.ty-tool-hero-mascot')?.getAttribute('src')?.includes('_purple_'));
+  await page.waitForFunction(()=>{const src=document.querySelector('.ty-kofi-button-mascot')?.getAttribute('src');return src?.includes('_purple_')&&src===document.querySelector('.ty-tool-hero-mascot')?.getAttribute('src');});
   await page.locator('#cancelSettingsBtn').click();
   assert.equal(await page.locator('#settingsModal').isVisible(),false,'close button works');
   await page.locator('#wishlistSettingsBtn').click();

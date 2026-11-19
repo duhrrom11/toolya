@@ -39,7 +39,7 @@ function card(p,detail=false,preview=false){
  avatar.setAttribute('aria-hidden','true');
  if(p.imported){
   const img=document.createElement('img');img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';img.className='imported-logo';
-  const fallback=()=>new URL('../../assets/toolya/originals/toolya_wishlist_'+(window.toolyaBuddy?.character==='purple'?'purple':'turquoise')+'_welcome_1024.png',import.meta.url).href;
+  const fallback=()=>new URL('../../assets/toolya/headers/toolya_wishlist_'+(window.toolyaBuddy?.character==='purple'?'purple':'turquoise')+'_welcome_400.webp',import.meta.url).href;
   img.src=sourceFavicon(p.source_url)||fallback();
   img.onerror=()=>{img.onerror=null;img.src=fallback()};
   avatar.replaceChildren(img);
