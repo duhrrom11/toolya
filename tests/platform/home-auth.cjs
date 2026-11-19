@@ -11,13 +11,17 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  const b64=x=>Buffer.from(JSON.stringify(x)).toString('base64url');
  const token=b64({alg:'HS256',typ:'JWT'})+'.'+b64({sub:user.id,exp:Math.floor(Date.now()/1000)+3600,aud:'authenticated',role:'authenticated'})+'.synthetic';
  let requests=0,refreshes=0;
+ let authFailure;
  await page.route('**/*',r=>{
   const u=new URL(r.request().url());if(u.origin===origin)return r.continue();
   if(u.hostname!=='yheogmeaosuigyaxkwth.supabase.co'){if(r.request().method()==='GET'&&['cdn.tailwindcss.com','unpkg.com','cdn.jsdelivr.net','cdnjs.cloudflare.com','fonts.googleapis.com','fonts.gstatic.com'].includes(u.hostname))return r.continue();return r.abort();}
   requests++;
   const reply=(body,status=200)=>r.fulfill({status,contentType:'application/json',body:JSON.stringify(body)});
   if(u.pathname==='/auth/v1/token'){if(u.searchParams.get('grant_type')==='refresh_token')refreshes++;return reply({access_token:token,refresh_token:'synthetic-refresh',expires_in:3600,token_type:'bearer',user});}
-  if(u.pathname==='/auth/v1/user')return reply(user);
+  if(u.pathname==='/auth/v1/user'){
+   if(authFailure)return authFailure.then(()=>reply({code:'over_request_rate_limit',message:'Synthetic unavailable'},429));
+   return reply(user);
+  }
   if(u.pathname==='/auth/v1/logout')return reply({});
   if(u.pathname.startsWith('/rest/v1/')&&r.request().method()==='GET')return reply([]);
   if(u.pathname.startsWith('/rest/v1/'))return r.abort();
@@ -28,7 +32,8 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  await page.evaluate(()=>{window.__signedOutEvents=0;supabaseClient.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')window.__signedOutEvents++})});
  await page.waitForTimeout(200);
  assert(await page.evaluate(()=>window.__signedOutEvents<3),'guest status must not create a SIGNED_OUT loop');
- await page.goto(origin+'/?auth=required');
+ await page.goto(origin+'/tools/parking/');
+ await page.waitForURL(origin+'/index.html?auth=required');
  await page.locator('#toolAccessHelp').waitFor({state:'visible'});
  assert.match(await page.locator('#toolAccessHelp').textContent(),/Melde dich bei Toolya an/);
  await page.keyboard.press('Escape');
@@ -49,6 +54,27 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  assert(await page.locator('#loginEmail').isHidden(),'signed-in users see no login form');
  assert(await page.locator('#logoutSubmit').isVisible(),'signed-in users get a sign-out button');
  await page.keyboard.press('Escape');
+ // The private UI stays masked while account verification is pending or unavailable.
+ let releaseAuthFailure;
+ authFailure=new Promise(resolve=>{releaseAuthFailure=resolve;});
+ await page.setViewportSize({width:320,height:700});
+ await page.goto(origin+'/tools/parking/?source=retry#parking', {waitUntil:'commit'});
+ const access=page.locator('.toolya-auth-status');
+ await access.getByText('Wir prüfen deine Anmeldung …').waitFor();
+ assert.equal(await access.getByRole('link',{name:'Zur Anleitung'}).getAttribute('href'),'../../parkplatz-merker/');
+ assert(await page.locator('#parkDesc').isHidden(),'tool inputs stay hidden during the account check');
+ releaseAuthFailure();
+ const retry=access.getByRole('button',{name:'Erneut versuchen'});
+ await retry.waitFor();
+ assert(await access.getByRole('status').getByText(/Deine Anmeldung konnte gerade nicht geprüft werden/).isVisible());
+ assert(await page.locator('#parkDesc').isHidden(),'tool inputs stay hidden after a verification failure');
+ authFailure=null;
+ await retry.focus();
+ await page.keyboard.press('Enter');
+ await page.locator('#parkDesc').waitFor();
+ assert.equal(page.url(),origin+'/tools/parking/?source=retry#parking','retry preserves the original tool address');
+ assert(await access.isHidden(),'access status disappears when verification succeeds');
+ await page.setViewportSize({width:1280,height:720});
  // One login must survive navigation through every legacy tool and back home.
  for(const tool of ['budget','moving','car','pet-health','meters','plants','parking','loans','baking','housemates']){
   console.log('CHECK account navigation:',tool);await page.goto(origin+'/tools/'+tool+'/');

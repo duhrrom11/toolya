@@ -1,0 +1,46 @@
+.toolya-auth-status,
+.toolya-auth-status .toolya-auth-error {
+  display: none;
+}
+
+.toolya-auth-pending .toolya-auth-status {
+  display: block;
+  max-width: 34rem;
+  margin: 2rem auto;
+  padding: 1rem;
+  color: #1e293b;
+  background: #fff;
+  text-align: center;
+  font: 1rem/1.5 system-ui, sans-serif;
+}
+
+.toolya-auth-status p {
+  margin: 0 0 0.75rem;
+}
+
+.toolya-auth-status a,
+.toolya-auth-status button {
+  display: inline-block;
+  padding: 0.65rem 0.85rem;
+  color: #075985;
+  text-decoration: underline;
+}
+
+.toolya-auth-status button {
+  border: 1px solid currentColor;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.toolya-auth-status :focus-visible {
+  outline: 2px solid #075985;
+  outline-offset: 2px;
+}
+
+.toolya-auth-unavailable .toolya-auth-loading {
+  display: none;
+}
+
+.toolya-auth-unavailable .toolya-auth-error {
+  display: inline-block;
+}
