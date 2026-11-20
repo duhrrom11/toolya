@@ -1,0 +1,153 @@
+/* Backstudio Atelier 2026 — presentation-only redesign, scoped to baking. */
+body.bsui-redesign{background:#fff8f2;color:#38251f}
+body.bsui-redesign .b3-header{background:linear-gradient(110deg,#fffaf6,#ffebdd)!important;border-bottom:1px solid #f3d5c3}
+body.bsui-redesign .b3-header-inner{max-width:1780px}
+body.bsui-redesign .b3-tool-title h1{color:#4f261b;font-weight:850;letter-spacing:-.035em}
+body.bsui-redesign .b3-tool-title h1:after{content:" Dein Backatelier";margin-left:12px;font-size:.58em;color:#bc642c;font-style:italic;font-weight:550;letter-spacing:0}
+body.bsui-redesign #main-content{max-width:1780px!important;width:100%;display:block!important;padding:16px 18px 56px!important}
+body.bsui-redesign #main-content>.b3-baking-calculator-column{width:100%;max-width:none}
+body.bsui-redesign #main-content>#b3-baking-results:empty{display:none}
+body.bsui-redesign .b3-backform-nav{max-width:1780px;margin:auto}
+body.bsui-redesign #tab-rechner{margin:0}
+body.bsui-redesign #tab-rechner.hidden{display:none!important}
+#bsui-app{display:grid;grid-template-columns:198px minmax(0,1fr);gap:18px;align-items:start;font-family:inherit}
+#bsui-app *{box-sizing:border-box}
+#bsui-app .bsui-side{position:sticky;top:16px;min-height:710px;border-radius:25px;background:linear-gradient(168deg,#fff8f2,#ffefe5);border:1px solid #f4dac9;padding:17px 12px;box-shadow:0 12px 40px #a8714412;overflow:hidden}
+#bsui-app .bsui-side-title{display:flex;align-items:center;gap:10px;padding:9px 10px 20px;color:#643723;font-size:17px;font-weight:850}
+#bsui-app .bsui-side-title span:first-child{font-size:27px}
+#bsui-app .bsui-side-nav{display:grid;gap:5px}
+#bsui-app .bsui-nav{width:100%;text-align:left;display:flex;gap:10px;align-items:center;padding:12px 11px;border-radius:13px;color:#614537;background:transparent;border:1px solid transparent;font-size:13px;font-weight:700;cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
+#bsui-app .bsui-nav:hover{background:#fff1e5;border-color:#f3d8bf;transform:translateX(2px)}
+#bsui-app .bsui-nav[aria-current="page"]{background:#ffdfc6;border-color:#f6c39d;color:#743a1f;box-shadow:0 4px 15px #b8622616}
+#bsui-app .bsui-nav-symbol{width:24px;text-align:center;font-size:19px}
+#bsui-app .bsui-side-art{position:relative;margin:40px auto 4px;width:174px;height:215px}
+#bsui-app .bsui-side-art:before{content:"Dein Backhelfer";position:absolute;left:12px;right:12px;top:0;text-align:center;color:#99604a;font-size:12px;font-weight:750}
+#bsui-app .bsui-sprite{display:block;pointer-events:none;background-image:url('../../assets/toolya/outfits.webp?v=20261115-alpha');background-repeat:no-repeat;background-size:800% 400%;filter:drop-shadow(0 12px 15px #986b5040)}
+#bsui-app .bsui-baker{width:176px;height:176px;background-position:85.7142857% 66.666667%;position:absolute;bottom:0;left:0}
+#bsui-app .bsui-baker-girl{width:155px;height:155px;background-position:100% 66.666667%;flex:none}
+#bsui-app .bsui-content{min-width:0}
+#bsui-app .bsui-stepper{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:20px;background:#fff;border:1px solid #f2decc;border-radius:22px;padding:9px;box-shadow:0 9px 28px #b77f5110}
+#bsui-app .bsui-step{display:flex;justify-content:center;align-items:center;gap:9px;border-radius:16px;min-height:46px;padding:8px;font-weight:750;font-size:13px;background:transparent;color:#795b4b;cursor:pointer;border:0;white-space:normal}
+#bsui-app .bsui-step:hover{background:#fff0e4}
+#bsui-app .bsui-step[aria-current="step"]{background:linear-gradient(100deg,#d96012,#ee8d34);color:white;box-shadow:0 5px 16px #d56a2634}
+#bsui-app .bsui-step-number{width:27px;height:27px;border-radius:50%;border:1px solid currentColor;display:inline-flex;justify-content:center;align-items:center;flex:none;font-weight:850}
+#bsui-app .bsui-headerline{display:flex;justify-content:space-between;align-items:center;margin:0 0 18px;gap:15px}
+#bsui-app .bsui-title{font-size:clamp(22px,2vw,32px);font-weight:850;color:#4a281e;letter-spacing:-.04em;line-height:1.15;margin:0}
+#bsui-app .bsui-subtitle{margin:5px 0 0;color:#876354;font-size:13px}
+#bsui-app .bsui-grid{display:grid;grid-template-columns:minmax(0,.98fr) minmax(0,1.12fr);gap:18px;align-items:start}
+#bsui-app .bsui-left,#bsui-app .bsui-right{min-width:0;display:grid;gap:15px}
+#bsui-app .bsui-paper{background:#fffdfa;border:1px solid #f0dbca;border-radius:22px;padding:19px;box-shadow:0 12px 35px #ae774114;min-width:0}
+#bsui-app .bsui-paper h2,#bsui-app .bsui-paper h3{color:#63341e;font-weight:800}
+#bsui-app .bsui-paper h2{font-size:18px}
+#bsui-app .bsui-paper p{line-height:1.55}
+#bsui-app .bsui-section-eyebrow{font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.12em;color:#b77039;margin:0 0 8px}
+#bsui-app .bsui-forms{padding:20px}
+#bsui-app .bsui-forms>h2{margin-bottom:15px}
+#bsui-app .bsui-forms>.grid>div{border:1px solid #f5dfd0;background:#fff8f3;border-radius:15px}
+#bsui-app .bsui-forms>.grid>div:nth-child(2){background:#fff2e7}
+#bsui-app input:not([type="checkbox"]):not([type="radio"]),#bsui-app select,#bsui-app textarea{border:1px solid #e5cbb9!important;background:#fff!important;color:#4f332a!important;border-radius:10px!important;min-height:39px;max-width:100%}
+#bsui-app input:focus-visible,#bsui-app select:focus-visible,#bsui-app textarea:focus-visible,#bsui-app button:focus-visible,#bsui-app a:focus-visible{outline:3px solid #0d9488!important;outline-offset:2px}
+#bsui-app .bsui-recipe-details{border-radius:18px;border:1px solid #f1dcca;background:#fffdfa;overflow:hidden}
+#bsui-app .bsui-recipe-details>summary{cursor:pointer;display:flex;gap:10px;align-items:center;padding:16px 19px;font-size:15px;font-weight:800;color:#6e3c21;list-style:none}
+#bsui-app .bsui-recipe-details>summary::-webkit-details-marker{display:none}
+#bsui-app .bsui-recipe-details>summary:after{content:"⌄";margin-left:auto;font-size:23px}
+#bsui-app .bsui-recipe-details[open]>summary{border-bottom:1px solid #f2deca}
+#bsui-app .bsui-recipe-details>.bg-white{box-shadow:none;border:0;border-radius:0}
+#bsui-app .bsui-ingredients{padding:18px}
+#bsui-app .bsui-ingredients .bs-row{display:flex!important;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 4px;border-bottom:1px solid #f2ded3}
+#bsui-app .bsui-ingredients .bs-row span{flex:1 1 120px;min-width:0;font-size:13px;font-weight:650}
+#bsui-app .bsui-ingredients .bs-row button{font-size:15px;padding:7px 10px}
+#bsui-app .bsui-empty{color:#836b60;font-size:13px;margin:12px 0}
+#bsui-app .bsui-ingredients #bs-shopping-all{width:100%;margin:12px 0 0;background:#d65c16}
+#bsui-app .bsui-stage{overflow:hidden;padding:0;background:linear-gradient(145deg,#fff7ee,#f5e1cd)}
+#bsui-app .bsui-stage-top{padding:17px 19px 0;display:flex;justify-content:space-between;align-items:center;gap:8px;position:relative;z-index:2}
+#bsui-app .bsui-stage-top strong{font-size:15px;color:#643722}
+#bsui-app .bsui-stage-tag{font-size:11px;border-radius:100px;padding:5px 11px;color:#06685d;background:#dcf8f1;font-weight:850}
+#bsui-app .bsui-stage-screen{position:relative;min-height:405px;background:radial-gradient(ellipse at 50% 54%,#fff9f3 0,#f8d6bd 70%,#f5bf97);overflow:hidden}
+#bsui-app .bsui-stage-pan{width:100%;height:385px;position:absolute;left:0;top:0;display:grid;place-items:center;padding:25px}
+#bsui-app .bsui-stage-pan svg{width:100%;height:100%;max-width:650px;filter:drop-shadow(0 24px 18px #6c3d2340)}
+#bsui-app .bsui-stage-dims{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:5;background:#fffaf5e8;backdrop-filter:blur(6px);border-radius:60px;font-weight:850;padding:9px 18px;font-size:14px;color:#573a2e;text-align:center;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+#bsui-app .bsui-stage .bsp-panel{margin:0!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;position:relative;z-index:3}
+#bsui-app .bsui-stage .bsp-panel h4{display:none}
+#bsui-app .bsui-stage .bsp-panel .bsp-actions{position:relative;z-index:6;display:flex;justify-content:center;margin:5px auto}
+#bsui-app .bsui-stage #bsp-3d{height:385px!important;background:transparent!important;width:100%;position:relative}
+#bsui-app .bsui-stage #bsp-3d canvas{display:block!important;width:100%!important;height:385px!important}
+#bsui-app .bsui-stage .bsp-panel .bsp-muted{display:none}
+#bsui-app .bsui-stage #bsp-3d-status{padding:0 20px 8px;text-align:center;color:#865f4a;font-size:12px}
+#bsui-app .bsui-stage.bsui-webgl-ready .bsui-stage-pan{display:none}
+#bsui-app .bsui-stage .bsp-panel button{background:#0e8176;color:white;border-radius:100px;padding:8px 15px;font-weight:800;border:0}
+#bsui-app .bsui-hero-status{display:flex;gap:13px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:12px 19px 17px;background:#fff8f0;color:#5b4034;font-size:13px;font-weight:750}
+#bsui-app .bsui-hero-status strong{color:#076e5e}
+#bsui-app .bsui-finder{padding:18px}
+#bsui-app .bsui-finder .bsp-panel{margin:0!important;border:0!important;background:transparent!important;padding:0!important}
+#bsui-app .bsui-finder .bsp-panel h4{font-weight:850}
+#bsui-app .bsui-finder .bsp-match{background:#fff6ec;border:1px solid #f5ddc7;padding:10px 12px;margin:7px 0;border-radius:13px}
+#bsui-app .bsui-finder .bsp-match:first-of-type{border-color:#79cdbf;background:#eafbf6}
+#bsui-app .bsui-metrics #b3-baking-results{display:block!important;margin:0}
+#bsui-app .bsui-metrics #b3-baking-results>.bg-white{position:static!important;top:auto!important;box-shadow:none!important;border:0!important;padding:0!important;background:transparent!important}
+#bsui-app .bsui-metrics #conversion-results{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px}
+#bsui-app .bsui-metrics #conversion-results>div{padding:9px 4px;border-radius:11px;background:#fff7ef;border-color:#f0dbcb}
+#bsui-app .bsui-metrics #conversion-results span:last-child{color:#704025;font-size:15px;font-weight:850}
+#bsui-app .bsui-quicknav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}
+#bsui-app .bsui-quick{display:flex;gap:11px;align-items:center;min-height:87px;padding:13px;background:#fffaf6;border:1px solid #efd7c5;border-radius:17px;text-align:left;color:#613b2b;box-shadow:0 8px 25px #ae774111;cursor:pointer}
+#bsui-app .bsui-quick:hover{background:#ffebda;border-color:#e7b98f}
+#bsui-app .bsui-quick-symbol{font-size:28px;color:#b85d25}
+#bsui-app .bsui-quick strong{display:block;font-size:13px}
+#bsui-app .bsui-quick small{display:block;font-size:11px;color:#856b5f}
+#bsui-app .bsui-girl-side{width:155px;height:170px;position:absolute;right:6px;bottom:2px;opacity:.98;z-index:1}
+#bsui-app .bsui-quickwrap{position:relative}
+#bsui-app .bsui-additional{margin-top:20px;background:#fffaf5;border:1px solid #f1dbcb;border-radius:19px;padding:13px 15px}
+#bsui-app .bsui-additional>summary{cursor:pointer;font-weight:850;color:#78462a}
+#bsui-app .bsui-additional .bs-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))!important;gap:12px!important;padding-top:15px}
+#bsui-app .bsui-additional #toolya-backstudio{margin:0!important;padding:0!important;border:0!important;background:transparent!important}
+#bsui-app .bsui-additional #toolya-backstudio>h2,#bsui-app .bsui-additional #toolya-backstudio>p:first-of-type{display:none}
+#bsui-app .bsui-tool-view[hidden],#bsui-app .bsui-core[hidden]{display:none!important}
+#bsui-app .bsui-tool-view .bsui-tool-contents{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:15px;align-items:start}
+#bsui-app .bsui-tool-view article{margin:0!important;padding:18px!important;border:1px solid #f1d9c6!important;background:#fffaf5!important;border-radius:18px!important}
+#bsui-app .bsui-tool-view .bsp-panel{background:#fff!important}
+#bsui-app .bsui-tool-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 18px}
+#bsui-app .bsui-tool-head h2{font-size:24px;color:#603621;font-weight:850;margin:0}
+#bsui-app .bsui-return{background:#ffe5cf;color:#823d18;padding:9px 14px;border-radius:12px;border:1px solid #efc5a3;font-weight:800;cursor:pointer}
+#bsui-app #toolya-backstudio .bs-row{gap:7px}
+#bsui-app #toolya-backstudio .bs-grid{margin-top:0}
+#bsui-app #toolya-backstudio #bs-message{background:#ffedd5;border-radius:12px;padding:12px;min-height:32px}
+#bsui-app .bsui-invisible{display:none!important}
+@media(max-width:1250px){
+ #bsui-app{grid-template-columns:160px minmax(0,1fr)}
+ #bsui-app .bsui-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ #bsui-app .bsui-side-art{width:140px;height:180px}
+ #bsui-app .bsui-baker{width:140px;height:140px}
+ #bsui-app .bsui-quicknav{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #bsui-app .bsui-metrics #conversion-results{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:980px){
+ #bsui-app{grid-template-columns:1fr}
+ #bsui-app .bsui-side{position:static;min-height:unset;padding:10px 12px}
+ #bsui-app .bsui-side-title,#bsui-app .bsui-side-art{display:none}
+ #bsui-app .bsui-side-nav{display:flex;gap:5px;overflow-x:auto;scrollbar-width:thin}
+ #bsui-app .bsui-nav{white-space:nowrap;min-width:max-content;padding:10px 12px}
+ #bsui-app .bsui-grid{grid-template-columns:1fr 1fr}
+ #bsui-app .bsui-stage-screen{min-height:340px}
+ #bsui-app .bsui-stage-pan{height:335px}
+ #bsui-app .bsui-stage #bsp-3d,#bsui-app .bsui-stage #bsp-3d canvas{height:335px!important}
+}
+@media(max-width:710px){
+ body.bsui-redesign #main-content{padding:10px 9px 45px!important}
+ #bsui-app .bsui-grid{grid-template-columns:1fr}
+ #bsui-app .bsui-paper{padding:15px}
+ #bsui-app .bsui-stepper{gap:2px;padding:5px;margin-bottom:13px;border-radius:15px}
+ #bsui-app .bsui-step{font-size:10px;gap:3px;flex-direction:column;min-height:57px;padding:5px 2px;border-radius:11px}
+ #bsui-app .bsui-step-number{width:23px;height:23px;font-size:12px}
+ #bsui-app .bsui-stage-screen{min-height:340px}
+ #bsui-app .bsui-stage-pan{height:320px}
+ #bsui-app .bsui-stage #bsp-3d,#bsui-app .bsui-stage #bsp-3d canvas{height:320px!important}
+ #bsui-app .bsui-quicknav{grid-template-columns:1fr 1fr;gap:8px}
+ #bsui-app .bsui-quick{min-height:76px;padding:10px;gap:6px}
+ #bsui-app .bsui-quick-symbol{font-size:22px}
+ #bsui-app .bsui-quick small{font-size:10px}
+ #bsui-app .bsui-girl-side{display:none}
+ #bsui-app .bsui-tool-view .bsui-tool-contents{grid-template-columns:1fr}
+ #bsui-app .bsui-headerline{padding:2px 4px}
+ #bsui-app .bsui-metrics #conversion-results{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(prefers-reduced-motion:reduce){#bsui-app .bsui-nav{transition:none!important}}
