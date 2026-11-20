@@ -486,6 +486,7 @@
                 window.toolyaPetConnect=mountExpenseConnect({
                     host:document.querySelector('main')||document.body,
                     saveSelector:'[onclick="saveEvent()"]',
+                    costSelector:'#eventCost',
                     controller:petCloudController,client:supabaseClient,userId:uid,
                     sourceTool:'haustier-gesundheitspass',recordsKey:'events'
                 });
