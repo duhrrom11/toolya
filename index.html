@@ -31,7 +31,7 @@
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0284c7">
 
     <!-- Schema.org -->
@@ -57,7 +57,12 @@
 
     <link rel="stylesheet" href="assets/toolya-home-utilities.css">
     <style>
-        .tool-card::before {
+.ty-pwa-install{margin-top:1rem;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;background:#086b78;color:#fff;border:0;border-radius:12px;font:600 0.95rem system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,70,72,.16)}
+        .ty-pwa-install:hover,.ty-pwa-install:focus-visible{background:#05545d}
+        .ty-pwa-install:focus-visible{outline:3px solid #c084fc;outline-offset:3px}
+        .ty-pwa-install[hidden],.ty-pwa-install-hint[hidden]{display:none}
+        .ty-pwa-install-hint{max-width:40ch;margin:.6rem 0 0;color:#234957;font-size:.89rem;line-height:1.5}
+                .tool-card::before {
             content: '';
             position: absolute;
             top: 0; left: 0;
@@ -79,6 +84,7 @@
 <link rel="stylesheet" href="assets/toolya-home-guides.css?v=20261119-guides-v1">
 <link rel="stylesheet" href="assets/toolya-settings.css">
 <link rel="stylesheet" href="shared/toolya/alpha.css?v=20261115-alpha">
+<script defer src="/assets/toolya-pwa.js"></script>
 <script type="module" src="shared/toolya/platform.mjs"></script>
 <script type="module" src="shared/toolya/home.mjs?v=20261115-auth-loop-fixed"></script>
 </head>
@@ -98,6 +104,8 @@
   <div class="ty-hero-copy">
    <h1>Kostenlose Online-Tools <span>für den Alltag</span></h1>
    <p>Praktische, kostenlose Online-Tools für Finanzen, Zuhause, Organisation und unterwegs.</p>
+   <button type="button" id="toolyaInstallBtn" class="ty-pwa-install">Toolya als App installieren</button>
+   <p id="toolyaInstallHint" class="ty-pwa-install-hint" role="status" aria-live="polite" hidden></p>
   </div>
   <div class="ty-hero-stage" aria-label="Unsere beiden Toolya-Maskottchen">
    <img class="ty-hero-art" src="assets/toolya/home/hero-duo.webp"

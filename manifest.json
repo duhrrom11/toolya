@@ -2,7 +2,7 @@
   "name": "Toolya – Deine Alltagshelfer",
   "short_name": "Toolya",
   "id": "/",
-  "start_url": "/index.html",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f3f7fb",
@@ -20,5 +20,7 @@
       "type": "image/png",
       "purpose": "any"
     }
-  ]
+  ],
+  "lang": "de",
+  "description": "Kostenlose Alltagstools für Haushalt, Finanzen und Organisation – mit Toolya überall dabei."
 }
