@@ -6,7 +6,7 @@ const KEY='toolya_backstudio_v1';
 const n=(id,d=0)=>{const v=Number($(id)?.value);return Number.isFinite(v)?v:d};
 const txt=(tag,text,parent)=>{const x=document.createElement(tag);if(text!==null)x.textContent=String(text);parent.append(x);return x};
 const fmt=(v,d=1)=>Number(v).toLocaleString('de-DE',{maximumFractionDigits:d});
-const read=()=>{try{const x=JSON.parse(localStorage.getItem(KEY)||'{}');return x&&typeof x==='object'&&!Array.isArray(x)?x:{}}catch{return {}}};
+const read=()=>{if(window.toolyaBackstudioState)return window.toolyaBackstudioState;try{const x=JSON.parse(localStorage.getItem(KEY)||'{}');return x&&typeof x==='object'&&!Array.isArray(x)?x:{}}catch{return {}}};
 const write=data=>{try{localStorage.setItem(KEY,JSON.stringify(data));return true}catch{return false}};
 const circle=d=>Math.PI*d*d/4;
 const shapeArea=(s,a,b)=>s==='rect'?a*b:circle(a);
@@ -281,7 +281,7 @@ function saveExtendedLog(){
  const id=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);
  logs.push({id,date:new Date().toLocaleDateString('de-DE'),iso:new Date().toISOString(),name:($('recipe-name')?.value||'Mein Kuchen').slice(0,80),minutes,temperature:n('base-temp',180),shape:$('target-shape')?.value,diameter:n('target-d',20),height:n('bs-height',4),rating:Math.max(1,Math.min(5,n('bsp-rating',3))),favorite:false,note:($('bs-note')?.value||'').slice(0,250)});
  data.logs=logs.slice(-100);if(!write(data))return;
- renderMemory();$('bs-logs')?.dispatchEvent(new Event('input'));
+ renderMemory();window.toolyaBackstudioRenderLogs?.();
  status('bsp-memory-status','Backerfahrung gespeichert.');
 }
 function exportMemory(){
