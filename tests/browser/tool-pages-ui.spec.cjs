@@ -1877,7 +1877,9 @@ for (const tool of ['budget', 'meters', 'moving']) {
     const baseline = execFileSync('git', ['show', `eb1ed8a09831603aaaeb8ffe4c34d0f98716d4ab:${path}`], { encoding: 'utf8' });
     const url = origin + '/' + path;
     const samples = { baseline: [], current: [] };
-    for (let run = 0; run < 3; run++) {
+    const repetitions = tool === 'moving' ? 12 : 3;
+    if (tool === 'moving') test.setTimeout(90000);
+    for (let run = 0; run < repetitions; run++) {
       for (const variant of run % 2 ? ['current', 'baseline'] : ['baseline', 'current']) {
         const page = await browser.newPage({
           viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce'
