@@ -7,11 +7,11 @@ function button(text,cls,action){const node=make('button',cls,text);node.type='b
 const cleanNumber=(id,fallback)=>{const value=Number($(id)?.value);return Number.isFinite(value)&&value>0?value:fallback};
 const atlas='../../assets/toolya/outfits.webp?v=20261115-alpha';
 const navItems=[
- ['core','♧','Umrechner'],
- ['finder','⚖','Formenvergleich'],
- ['import','▧','Rezept importieren'],
- ['cake','♧','Tortenplaner'],
- ['memory','▤','Backgedächtnis'],
+ ['core','♧','Backform ändern'],
+ ['finder','⚖','Formen finden'],
+ ['import','▧','Rezeptfoto'],
+ ['cake','♧','Torte planen'],
+ ['memory','▤','Backnotizen'],
  ['shopping','🛒','Einkaufsliste']
 ];
 function init(){
@@ -33,7 +33,7 @@ function init(){
  if(![ingredients,fill,garage,photo,layers,memory,shopping].every(Boolean))return;
  document.body.classList.add('bsui-redesign');
  const title=document.querySelector('.b3-tool-title h1');if(title)title.textContent='Backstudio';
- const sub=document.querySelector('.b3-tool-title p');if(sub)sub.textContent='Dein Backatelier für Rezepte, Formen und perfekte Kuchen';
+ const sub=document.querySelector('.b3-tool-title p');if(sub)sub.textContent='Die passende Backform. Ganz einfach.';
  // Preserve the original main tab as the single source of truth for all existing event handlers.
  const shell=make('div');shell.id='bsui-app';tab.append(shell);
  const side=make('aside','bsui-side');side.setAttribute('aria-label','Backstudio-Navigation');shell.append(side);
@@ -44,43 +44,43 @@ function init(){
  baker.style.backgroundImage='url("'+atlas+'")';
  const content=make('div','bsui-content');shell.append(content);
  const stepper=make('nav','bsui-stepper');stepper.setAttribute('aria-label','Vier Schritte zum Backergebnis');content.append(stepper);
- const header=make('div','bsui-headerline');header.innerHTML='<div><p class="bsui-section-eyebrow">Dein Backatelier</p><h2 class="bsui-title">Backform-Umrechner</h2><p class="bsui-subtitle">Rezept anpassen, passende Formen entdecken und entspannt backen.</p></div>';content.append(header);
+ const header=make('div','bsui-headerline');header.innerHTML='<div><p class="bsui-section-eyebrow">Einfach backen</p><h2 class="bsui-title">Welche Backform brauchst du?</h2><p class="bsui-subtitle">Form auswählen – wir rechnen für dich.</p></div>';content.append(header);
  const core=make('section','bsui-core');core.id='bsui-core';content.append(core);
  const grid=make('div','bsui-grid');core.append(grid);
  const left=make('div','bsui-left'),right=make('div','bsui-right');grid.append(left,right);
  const source=make('section','bsui-paper bsui-forms');source.id='bsui-source';left.append(source);
  source.append(shapeCard);shapeCard.classList.add('bsui-moved-card');
  // Preserve additional source controls without turning the home view into a long form.
- if(wish){const details=make('details','bsui-recipe-details');details.innerHTML='<summary>Wunschhöhe und Originalhöhe einstellen</summary>';details.append(wish);left.append(details)}
+ if(wish){const details=make('details','bsui-recipe-details');details.innerHTML='<summary>Kuchenhöhe ändern</summary>';details.append(wish);left.append(details)}
  const ingredientsWrap=make('section','bsui-paper bsui-ingredients');ingredientsWrap.id='bsui-ingredients';left.append(ingredientsWrap);
  ingredientsWrap.append(ingredients);
- const empty=make('p','bsui-empty','Gib oben ein Rezept ein oder importiere ein Rezeptfoto. Die angepassten Zutaten erscheinen dann hier.');
+ const empty=make('p','bsui-empty','Trage dein Rezept ein. Hier siehst du die neuen Mengen.');
  empty.id='bsui-ingredients-empty';ingredientsWrap.append(empty);
- const recipeDetails=make('details','bsui-recipe-details');recipeDetails.id='bsui-recipe-details';recipeDetails.innerHTML='<summary>✎ Rezept und Zutaten eingeben oder bearbeiten</summary>';recipeDetails.append(recipeCard);left.append(recipeDetails);
+ const recipeDetails=make('details','bsui-recipe-details');recipeDetails.id='bsui-recipe-details';recipeDetails.innerHTML='<summary>✎ Zutaten eingeben</summary>';recipeDetails.append(recipeCard);left.append(recipeDetails);
  recipeDetails.open=!$('recipe-input')?.value.trim();
- const conditionsDetails=make('details','bsui-recipe-details');conditionsDetails.innerHTML='<summary>♨ Backtemperatur, Ofen und Backbedingungen</summary>';conditionsDetails.append(conditionsCard);left.append(conditionsDetails);
+ const conditionsDetails=make('details','bsui-recipe-details');conditionsDetails.innerHTML='<summary>♨ Backzeit und Ofen</summary>';conditionsDetails.append(conditionsCard);left.append(conditionsDetails);
  const stage=make('section','bsui-paper bsui-stage');stage.id='bsui-stage';right.append(stage);
- const stageTop=make('div','bsui-stage-top');stageTop.innerHTML='<strong>3D-Backformen-Vorschau</strong><span class="bsui-stage-tag">360° · Interaktiv</span>';stage.append(stageTop);
+ const stageTop=make('div','bsui-stage-top');stageTop.innerHTML='<strong>So sieht deine Form aus</strong><span class="bsui-stage-tag">Zum Drehen</span>';stage.append(stageTop);
  const screen=make('div','bsui-stage-screen');stage.append(screen);
- const fallback=make('div','bsui-stage-pan');fallback.innerHTML='<img src="./backstudio-pan.svg" alt="Illustrierte Springform mit Kuchenteig als Fallback für die drehbare 3D-Ansicht" loading="eager">';screen.append(fallback);
+ const fallback=make('div','bsui-stage-pan');fallback.innerHTML='<img src="./backstudio-pan.svg" alt="Springform mit Kuchenteig" loading="eager">';screen.append(fallback);
  const webgl=make('div','bsui-webgl');webgl.id='bsui-webgl';screen.append(webgl);
  const dims=make('div','bsui-stage-dims');dims.id='bsui-stage-dims';screen.append(dims);
- const heroStatus=make('div','bsui-hero-status');heroStatus.innerHTML='<span id="bsui-hero-description">Form und Rezept lassen sich links verändern.</span><strong id="bsui-hero-factor">Mengen werden angepasst</strong>';stage.append(heroStatus);
+ const heroStatus=make('div','bsui-hero-status');heroStatus.innerHTML='<span id="bsui-hero-description">So voll wird deine Form.</span><strong id="bsui-hero-factor">Deine Rezeptmenge</strong>';stage.append(heroStatus);
  const threePanel=[...fill.querySelectorAll('.bsp-panel')].find(n=>n.querySelector('#bsp-3d'));
  if(threePanel)webgl.append(threePanel);
  const recomm=make('section','bsui-paper bsui-finder');recomm.id='bsui-recommendations';right.append(recomm);
- recomm.innerHTML='<p class="bsui-section-eyebrow">Clever vergleichen</p><h2>Passende Backformen</h2><p class="bsui-subtitle">Empfehlungen aus deinen gespeicherten Formen.</p>';
+ recomm.innerHTML='<p class="bsui-section-eyebrow">Das passt</p><h2>Diese Formen passen auch</h2><p class="bsui-subtitle">Tippe eine Form an.</p>';
  const smartPanel=[...garage.querySelectorAll('.bsp-panel')].find(n=>n.querySelector('#bsp-compare-results'));
  const suggested=make('div','bsui-standard-recos');suggested.id='bsui-standard-recos';recomm.append(suggested);
- const customDetails=make('details','bsui-recommend-detail');customDetails.innerHTML='<summary>Meine gespeicherten Backformen vergleichen</summary>';recomm.append(customDetails);
+ const customDetails=make('details','bsui-recommend-detail');customDetails.innerHTML='<summary>Meine eigenen Backformen</summary>';recomm.append(customDetails);
  if(smartPanel)customDetails.append(smartPanel);
- recomm.append(button('Eigene Formen verwalten','bsui-return',()=>showView('finder')));
+ recomm.append(button('Meine Backformen','bsui-return',()=>showView('finder')));
  const metrics=make('section','bsui-paper bsui-metrics');metrics.id='bsui-metrics';right.append(metrics);
- metrics.innerHTML='<p class="bsui-section-eyebrow">Dein Ergebnis</p>';
+ metrics.innerHTML='<p class="bsui-section-eyebrow">Deine Backzeit & Mengen</p>';
  metrics.append(results);
  const quickwrap=make('div','bsui-quickwrap');core.append(quickwrap);
  const quick=make('nav','bsui-quicknav');quick.setAttribute('aria-label','Backstudio-Schnellzugriff');quickwrap.append(quick);
- const extras=make('details','bsui-additional');extras.innerHTML='<summary>Weitere Backhelfer: Füllstand, Restteig, Vorräte, Backzeit und mehr</summary>';core.append(extras);
+ const extras=make('details','bsui-additional');extras.innerHTML='<summary>Noch mehr Backhelfer</summary>';core.append(extras);
  extras.append(studio);
  // Existing bonus cards that are not rehomed are kept in the existing Backstudio grid.
  const supplemental=[...tab.children].filter(n=>n!==shell&&n!==studio&&n!==shapeCard&&n!==recipeCard&&n!==conditionsCard);
@@ -89,16 +89,16 @@ function init(){
  const createToolView=(key,title)=>{
   const view=make('section','bsui-tool-view');view.hidden=true;view.dataset.view=key;
   const head=make('div','bsui-tool-head');head.append(make('h2','',title));
-  head.append(button('← Zurück zum Umrechner','bsui-return',()=>showView('core')));view.append(head);
+  head.append(button('← Zurück','bsui-return',()=>showView('core')));view.append(head);
   const contents=make('div','bsui-tool-contents');view.append(contents);content.append(view);
   views[key]={view,contents};return contents;
  };
- const finderView=createToolView('finder','Deine Formen und Empfehlungen');
+ const finderView=createToolView('finder','Meine Backformen');
  finderView.append(garage);if(special)finderView.append(special);
- const importerView=createToolView('import','Rezept per Text oder Foto importieren');importerView.append(photo);
- const cakeView=createToolView('cake','Torten und Schichten planen');cakeView.append(layers);if(calendar)cakeView.append(calendar);
- const memoryView=createToolView('memory','Dein persönliches Backgedächtnis');memoryView.append(memory);
- const shoppingView=createToolView('shopping','Deine Backstudio-Einkaufsliste');shoppingView.append(shopping);if(pantry)shoppingView.append(pantry);if(exportCard)shoppingView.append(exportCard);
+ const importerView=createToolView('import','Rezept einlesen');importerView.append(photo);
+ const cakeView=createToolView('cake','Meine Torte planen');cakeView.append(layers);if(calendar)cakeView.append(calendar);
+ const memoryView=createToolView('memory','Meine Backnotizen');memoryView.append(memory);
+ const shoppingView=createToolView('shopping','Meine Einkaufsliste');shoppingView.append(shopping);if(pantry)shoppingView.append(pantry);if(exportCard)shoppingView.append(exportCard);
  const navButtons=new Map();
  let currentView='core';
  function showView(name){
@@ -120,10 +120,10 @@ function init(){
   b.dataset.view=key;navButtons.set(key,b);sideNav.append(b);
  }
  const steps=[
-  ['1','Rezept & Form','bsui-source','core'],
-  ['2','Umrechnen','bsui-ingredients','core'],
+  ['1','Form wählen','bsui-source','core'],
+  ['2','Zutaten','bsui-ingredients','core'],
   ['3','Ergebnis','bsui-stage','core'],
-  ['4','Einkaufen & Speichern',null,'shopping']
+  ['4','Einkaufsliste',null,'shopping']
  ];
  function jumpStep(num,target,view){
   showView(view);
@@ -135,10 +135,10 @@ function init(){
   const number=make('span','bsui-step-number',num),words=make('span','',label);b.append(number,words);stepper.append(b)
  }
  const shortcuts=[
-  ['import','▧','Rezept-Foto','Foto auslesen und Zutaten prüfen'],
-  ['cake','♧','Tortenplaner','Böden, Füllung und Creme'],
-  ['memory','▤','Backgedächtnis','Erfahrungen und Favoriten'],
-  ['shopping','🛒','Einkaufsliste','Separat von der WG']
+  ['import','▧','Rezeptfoto','Foto auswählen'],
+  ['cake','♧','Torte planen','Böden & Creme'],
+  ['memory','▤','Backnotizen','Meine Erfahrungen'],
+  ['shopping','🛒','Einkaufsliste','Was noch fehlt']
  ];
  for(const [key,icon,label,description] of shortcuts){
   const b=button('','bsui-quick',()=>showView(key));
@@ -152,7 +152,7 @@ function init(){
  function renderStandardRecommendations(){
   suggested.replaceChildren();
   const mode=$('combinator-mode')?.value;
-  if(mode==='double'){suggested.append(make('p','bsui-empty','Du verwendest zwei Zielformen. Speichere deine Formen, um weitere Kombinationen zu vergleichen.'));return}
+  if(mode==='double'){suggested.append(make('p','bsui-empty','Du hast zwei Formen gewählt.'));return}
   const shape=$('target-shape')?.value,area=shape==='rect'?cleanNumber('target-l',25)*cleanNumber('target-w',11):Math.PI*Math.pow(cleanNumber('target-d',20)/2,2);
   const d=Math.max(8,Math.round(Math.sqrt(4*area/Math.PI)));
   const options=[d,Math.max(8,d-2),d+2].filter((x,i,a)=>a.indexOf(x)===i);
@@ -163,8 +163,8 @@ function init(){
     $('target-d').dispatchEvent(new Event('input',{bubbles:true}));
    });
    const ratio=area/(Math.PI*Math.pow(diameter/2,2));
-   const optionLabel=make('strong','', '◉ Rund Ø '+diameter+' cm');
-   const info=make('span','',i===0?'Nächstliegende Standardgröße':'Teigfüllung relativ zur aktuellen Form: '+Math.round(ratio*100)+' %');
+   const optionLabel=make('strong','', '◉ Runde Form: '+diameter+' cm');
+   const info=make('span','',i===0?'Ähnliche Größe':ratio>1.05?'Gleiche Teigmenge: Kuchen wird höher.':ratio<.95?'Gleiche Teigmenge: Kuchen wird flacher.':'Fast gleich hoch.');
    if(i===0)info.className='bsui-option-best';
    row.append(optionLabel,info);suggested.append(row);
   }
@@ -177,9 +177,12 @@ function init(){
    shape==='bundt'?'Gugelhupf Ø '+cleanNumber('target-d',20)+' cm':'Rund Ø '+cleanNumber('target-d',20)+' cm';
   dims.textContent=target;
   const factor=$('res-factor')?.textContent||'';
-  $('bsui-hero-factor').textContent='Umrechnungsfaktor: '+factor;
+  const amount=Number(String(factor).replace(/[×\s]/g,'').replace(',','.'));
+  $('bsui-hero-factor').textContent=Number.isFinite(amount)?'Du brauchst '+Math.round(amount*100)+' % des Rezepts.':'Mengen werden angepasst.';
   const fillStatus=$('bs-filltext')?.textContent||'';
-  $('bsui-hero-description').textContent=fillStatus.length>120?fillStatus.slice(0,117)+'…':fillStatus||'Backform und Füllhöhe prüfen.';
+  const match=fillStatus.match(/(\d+(?:[,.]\d+)?)\s*%/);
+  const percent=match?Number(match[1].replace(',','.')):null;
+  $('bsui-hero-description').textContent=percent===null?'Füllhöhe ansehen':percent>75?'Achtung, die Form könnte zu voll sein!':'Die Form ist etwa '+Math.round(percent)+' % gefüllt.';
   const count=ingredients.querySelector('#bs-scaled')?.children.length||0;
   empty.hidden=count>0;
  }
@@ -193,9 +196,9 @@ function init(){
   stage.classList.toggle('bsui-webgl-ready',!!webglBox.querySelector('canvas'));
  }).observe(webglBox,{childList:true});
  // Allow users to opt into WebGL; an accessible image fallback is visible without network.
- const orig3dOpen=[...webgl.querySelectorAll('button')].find(n=>/3D öffnen/.test(n.textContent||''));
+ const orig3dOpen=[...webgl.querySelectorAll('button')].find(n=>/Form drehen|3D öffnen/.test(n.textContent||''));
  if(orig3dOpen){
-  orig3dOpen.textContent='↻ 3D-Modell aktivieren';
+  orig3dOpen.textContent='↻ Form drehen';
   // Start the interactive view when it first enters the viewport; data-saver users can launch it manually.
   if('IntersectionObserver' in window&&!window.navigator?.connection?.saveData){
    const observer=new IntersectionObserver(entries=>{

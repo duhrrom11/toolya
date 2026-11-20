@@ -28,11 +28,11 @@ const state={three:null, scene:null, renderer:null, camera:null, object:null, ba
 function status(id,msg){if($(id))$(id).textContent=msg}
 function init3D(){
  const parent=cardOf('bs-fillbar');if(!parent)return;
- const pane=panel(parent,'Interaktive 3D-Backform');
+ const pane=panel(parent,'Deine Backform zum Drehen');
  const canvas=txt('div',null,pane);canvas.id='bsp-3d';canvas.tabIndex=0;canvas.setAttribute('aria-label','Interaktive 3D-Backform, mit Maus oder Touch drehen, mit Pfeiltasten drehen');canvas.setAttribute('role','img');
  const controls=txt('div',null,pane);controls.className='bsp-actions';
- action(controls,'3D öffnen',async()=>{
-  const msg=$('bsp-3d-status');status('bsp-3d-status','3D-Modell wird geladen …');
+ action(controls,'Form drehen',async()=>{
+  const msg=$('bsp-3d-status');status('bsp-3d-status','Backform wird geladen …');
   try{
    const THREE=await import('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js');
    state.three=THREE;
@@ -48,15 +48,15 @@ function init3D(){
    state.scene.add(new THREE.HemisphereLight(0xffffff,0xb4a3a0,2.5));
    const lamp=new THREE.DirectionalLight(0xffffff,3);lamp.position.set(2,6,5);state.scene.add(lamp);
    state.object=new THREE.Group();state.scene.add(state.object);
-   redraw3D();status('bsp-3d-status','Modell geöffnet. Ziehen oder Pfeiltasten benutzen.');
+   redraw3D();status('bsp-3d-status','Drehe die Form mit dem Finger oder der Maus.');
    if(state.observer)state.observer.disconnect();
    state.observer=new ResizeObserver(()=>{if(!state.renderer||!canvas.isConnected)return;const width=Math.max(180,canvas.clientWidth);if(width===state.lastW)return;state.lastW=width;const height=canvas.closest('#bsui-stage')?(window.innerWidth<711?320:window.innerWidth<981?335:385):260;state.renderer.setSize(width,height);state.camera.aspect=width/height;state.camera.updateProjectionMatrix();render3D()});
    state.observer.observe(canvas);
   }catch(e){status('bsp-3d-status','3D konnte nicht gestartet werden (WebGL oder externe Bibliothek nicht verfügbar). Die Füllhöhenanzeige bleibt nutzbar.');}
  });
- action(controls,'Ansicht zurücksetzen',()=>{state.rotX=-.24;state.rotY=.6;render3D()});
- txt('p','Formtyp und Füllstand werden aus deinen Angaben übernommen. Ziehen zum Drehen; Pfeiltasten sind ebenfalls möglich.',pane).className='bsp-muted';
- txt('p','3D noch nicht geöffnet.',pane).id='bsp-3d-status';
+ action(controls,'Wieder von vorn',()=>{state.rotX=-.24;state.rotY=.6;render3D()});
+ txt('p','Drehe die Form, um sie von allen Seiten anzusehen.',pane).className='bsp-muted';
+ txt('p','Hier erscheint deine drehbare Backform.',pane).id='bsp-3d-status';
  const dragStart={x:0,y:0};
  canvas.addEventListener('pointerdown',e=>{if(!state.object)return;state.dragging=true;dragStart.x=e.clientX;dragStart.y=e.clientY;canvas.setPointerCapture(e.pointerId)});
  canvas.addEventListener('pointermove',e=>{if(!state.dragging)return;state.rotY+=(e.clientX-dragStart.x)*.01;state.rotX=Math.max(-1.25,Math.min(.8,state.rotX+(e.clientY-dragStart.y)*.01));dragStart.x=e.clientX;dragStart.y=e.clientY;render3D()});
@@ -98,12 +98,12 @@ function panSpecs(p){
 }
 function initFinder(){
  const host=cardOf('bs-garage-items');if(!host)return;
- const wrap=panel(host,'Intelligenter Formenvergleich');
+ const wrap=panel(host,'Welche Form passt?');
  const label=txt('label',null,wrap);txt('span','Vergleichsziel',label);
  const select=txt('select',null,label);select.id='bsp-compare-target';
  for(const [value,title] of [['recipe','Rezeptmenge und Teighöhe'],['mixed','Meine vorhandene Teigmenge']]){const o=txt('option',title,select);o.value=value}
- action(wrap,'Beste Einzel- und Zweierkombination finden',renderComparisons);
- txt('p','Vergleich von Füllmenge, Nutzvolumen und Formgröße. Für Gugelhupf, Kranz und Sonderformen zählt das gemessene Fassungsvermögen. Mehr als zwei Formen werden nicht kombiniert.',wrap).className='bsp-muted';
+ action(wrap,'Passende Formen finden',renderComparisons);
+ txt('p','Wähle eine Form, die zu deinem Teig passt.',wrap).className='bsp-muted';
  txt('div',null,wrap).id='bsp-compare-results';
  $('bs-pan-save')?.addEventListener('click',()=>queueMicrotask(renderComparisons));
  ['bs-height','bs-volume','bs-maxfill','bs-form-height'].forEach(id=>$(id)?.addEventListener('change',renderComparisons));
@@ -111,7 +111,7 @@ function initFinder(){
 function renderComparisons(){
  const host=$('bsp-compare-results');if(!host)return;host.replaceChildren();
  const pans=(read().pans||[]).map((p,i)=>({...panSpecs(p),p,i})).filter(p=>p.label&&Number.isFinite(p.capacity)&&p.capacity>0);
- if(!pans.length){txt('p','Speichere zuerst eigene Backformen in der Backform-Garage.',host);return}
+ if(!pans.length){txt('p','Trage zuerst deine Backformen ein.',host);return}
  const want=$('bsp-compare-target')?.value==='mixed'?n('bs-volume',1.5)*1000:desiredVolume();
  const options=pans.map(p=>({pans:[p],capacity:p.capacity,area:p.area}));
  for(let i=0;i<pans.length;i++)for(let j=i;j<pans.length;j++)options.push({pans:[pans[i],pans[j]],capacity:pans[i].capacity+pans[j].capacity,area:pans[i].area!==null&&pans[j].area!==null?pans[i].area+pans[j].area:null});
@@ -124,9 +124,9 @@ function renderComparisons(){
   const label=option.pans.map(p=>p.label).join(' + ');
   const fill=want/option.capacity;
   txt('strong',(i===0?'★ Empfehlung: ':'')+label,row);
-  txt('span','Füllbedarf '+fmt(want,0)+' ml / Nutzvolumen '+fmt(option.capacity,0)+' ml · '+fmt(fill*100)+' % der empfohlenen Füllgrenze'+(fill>1?' – zu klein!':''),row);
+  txt('span','Füllbedarf '+fmt(want,0)+' ml / Platz für Teig '+fmt(option.capacity,0)+' ml · '+fmt(fill*100)+' % der empfohlenen Füllgrenze'+(fill>1?' – diese Form ist zu klein!':''),row);
   if(option.pans.length===1&&['round','rect'].includes(option.pans[0].shape)){
-   action(row,'Als Zielform übernehmen',()=>{
+   action(row,'Diese Form nehmen',()=>{
     const p=option.pans[0];
     $('combinator-mode').value='single';window.toggleCombinator?.();
     $('target-shape').value=p.shape;window.updateShapeInputs?.('target');
@@ -134,7 +134,7 @@ function renderComparisons(){
     window.calculateAll?.();for(const id of ['target-d','target-l','target-w'])$(id)?.dispatchEvent(new Event('input',{bubbles:true}));
    });
   }else if(option.pans.length===2&&option.pans.every(p=>p.shape==='round')){
-   action(row,'Beide Formen übernehmen',()=>{
+   action(row,'Beide nehmen',()=>{
     $('combinator-mode').value='double';window.toggleCombinator?.();
     $('combo-d1').value=option.pans[0].a;$('combo-d2').value=option.pans[1].a;window.calculateAll?.();$('combo-d1').dispatchEvent(new Event('input',{bubbles:true}));
    })
@@ -171,20 +171,20 @@ function normalizeRecipe(text){
 function initRecipe(){
  const host=cardOf('bs-photo');if(!host)return;
  const oldOCR=$('bs-ocr');if(oldOCR){oldOCR.hidden=true;oldOCR.setAttribute('aria-hidden','true')}
- const preview=panel(host,'Rezeptimport mit Prüfung');
- txt('p','Unterstützt z. B. „250 g Mehl“, „Mehl 250 g“, „½ TL Salz“ und Aufzählungen. Erfasste Mengen prüfen und anschließend übernehmen.',preview).className='bsp-muted';
+ const preview=panel(host,'Rezept einlesen');
+ txt('p','Kopiere dein Rezept hier hinein. Prüfe danach die Zutaten.',preview).className='bsp-muted';
  const input=txt('textarea',null,preview);input.id='bsp-recipe-text';input.rows=5;input.placeholder='Rezept oder Zutatenliste hier einfügen …';
  const controls=txt('div',null,preview);controls.className='bsp-actions';
- action(controls,'Text prüfen',()=>reviewRecipe(input.value));
- action(controls,'Aktuelle Zutaten prüfen',()=>reviewRecipe($('recipe-input').value));
- action(controls,'Erkannte Zutaten übernehmen',()=>applyReviewed()).id='bsp-apply';
+ action(controls,'Zutaten erkennen',()=>reviewRecipe(input.value));
+ action(controls,'Mein Rezept prüfen',()=>reviewRecipe($('recipe-input').value));
+ action(controls,'Zutaten übernehmen',()=>applyReviewed()).id='bsp-apply';
  txt('div',null,preview).id='bsp-preview';
- txt('p','Nicht zugeordnete Zeilen werden ausgewiesen und nicht automatisch übernommen.',preview).className='bsp-muted';
- const ocr=panel(host,'Fotoerkennung mit Bildoptimierung');
- const opts=txt('label',null,ocr);const box=txt('input',null,opts);box.type='checkbox';box.checked=true;box.id='bsp-contrast';txt('span','Kontrast erhöhen und in Graustufen umwandeln',opts);
- action(ocr,'Foto erkennen und zur Prüfung anzeigen',async()=>{
+ txt('p','Nicht erkannte Zeilen bitte selbst prüfen.',preview).className='bsp-muted';
+ const ocr=panel(host,'Rezeptfoto einlesen');
+ const opts=txt('label',null,ocr);const box=txt('input',null,opts);box.type='checkbox';box.checked=true;box.id='bsp-contrast';txt('span','Foto besser lesbar machen',opts);
+ action(ocr,'Foto lesen',async()=>{
   const file=$('bs-photo')?.files?.[0];
-  if(!file)return status('bsp-ocr-status','Bitte zuerst ein Foto auswählen.');
+  if(!file)return status('bsp-ocr-status','Bitte ein Foto auswählen.');
   if(!/^image\//.test(file.type)||file.size>8*1024*1024)return status('bsp-ocr-status','Bitte eine Bilddatei mit maximal 8 MB auswählen.');
   const btn=$('bsp-ocr-button');btn.disabled=true;status('bsp-ocr-status','Texterkennung lädt …');
   try{
@@ -208,12 +208,12 @@ function initRecipe(){
    }
    const result=await window.Tesseract.recognize(img,'deu+eng');
    input.value=result.data.text||'';reviewRecipe(input.value);
-   status('bsp-ocr-status','Erkennung fertig (Konfidenz ca. '+fmt(result.data.confidence||0)+' %). Mengen und Einheiten vor Übernahme prüfen.');
+   status('bsp-ocr-status','Foto gelesen ('+fmt(result.data.confidence||0)+' %). Bitte Zutaten prüfen.');
   }catch(e){status('bsp-ocr-status','Fotoerkennung fehlgeschlagen oder blockiert. Nutze die Texteingabe.')}
   finally{btn.disabled=false}
  }).id='bsp-ocr-button';
- txt('p','Das Foto wird zur Erkennung im Browser verarbeitet. Die OCR-Bibliothek und Sprachdaten werden beim Klick extern geladen. Erkannter Text wird erst nach Bestätigung übernommen.',ocr).className='bsp-muted';
- txt('p','Noch kein Foto erkannt.',ocr).id='bsp-ocr-status';
+ txt('p','Dein Foto wird im Browser gelesen. Erst nach deiner Prüfung übernehmen wir die Zutaten.',ocr).className='bsp-muted';
+ txt('p','Noch kein Foto ausgewählt.',ocr).id='bsp-ocr-status';
 }
 let reviewed=[];
 function reviewRecipe(source){
@@ -232,13 +232,13 @@ function applyReviewed(){
  status('bsp-ocr-status','Erkannte Zutaten übernommen. Bitte Mengen und Backformfaktor prüfen.');
 }
 function initCake(){
- const host=cardOf('bs-layers');if(!host)return;const pane=panel(host,'Torten- und Dekorplaner');
- addField(pane,'Creme-Auftrag außen (mm)','bsp-frost-thickness','number',3).min=1;
- addField(pane,'Gewicht der Creme (g/ml)','bsp-density','number',.9).min=.1;
- addField(pane,'Verschnitt / Sicherheitsreserve (%)','bsp-waste','number',15).min=0;
- addField(pane,'Füllhöhe je Schicht (cm)','bsp-layer-height','number',.7).min=0;
+ const host=cardOf('bs-layers');if(!host)return;const pane=panel(host,'Meine Torte');
+ addField(pane,'Creme außen (mm)','bsp-frost-thickness','number',3).min=1;
+ addField(pane,'Creme-Gewicht (g/ml)','bsp-density','number',.9).min=.1;
+ addField(pane,'Etwas Creme extra (%)','bsp-waste','number',15).min=0;
+ addField(pane,'Creme zwischen den Böden (cm)','bsp-layer-height','number',.7).min=0;
  txt('div',null,pane).id='bsp-cake-output';
- action(pane,'Tortenplan aktualisieren',updateCake);
+ action(pane,'Neu berechnen',updateCake);
  ['bs-layers','bs-filling','bs-height','target-d','target-shape','target-l','target-w','bsp-frost-thickness','bsp-density','bsp-waste','bsp-layer-height'].forEach(id=>$(id)?.addEventListener('input',updateCake));
  updateCake();
 }
@@ -265,13 +265,13 @@ function initMemory(){
  const host=cardOf('bs-logs');if(!host)return;
  // Both save buttons use the enhanced format; legacy saves must not truncate history.
  const legacySave=$('bs-log');if(legacySave)legacySave.onclick=saveExtendedLog;
- const pane=panel(host,'Backgedächtnis durchsuchen und sichern');
+ const pane=panel(host,'Meine Backnotizen');
  addField(pane,'Einträge suchen','bsp-memory-search','search','');
- const label=txt('label',null,pane);txt('span','Nur Favoriten',label);const check=txt('input',null,label);check.id='bsp-favorites';check.type='checkbox';
+ const label=txt('label',null,pane);txt('span','Nur Lieblinge',label);const check=txt('input',null,label);check.id='bsp-favorites';check.type='checkbox';
  const controls=txt('div',null,pane);controls.className='bsp-actions';
- action(controls,'Eintrag mit Form, Temperatur und Bewertung speichern',saveExtendedLog);
- action(controls,'Alle Backnotizen exportieren',exportMemory);
- txt('p','Beim Export bleiben die Einträge auf deinem Gerät. Kein Upload in eine WG oder fremde Datenbank.',pane).className='bsp-muted';
+ action(controls,'Backnotiz speichern',saveExtendedLog);
+ action(controls,'Notizen herunterladen',exportMemory);
+ txt('p','Die Notizen bleiben auf deinem Gerät.',pane).className='bsp-muted';
  const gallery=txt('div',null,pane);gallery.id='bsp-memory-list';
  $('bsp-memory-search').addEventListener('input',renderMemory);check.addEventListener('change',renderMemory);
  // The existing legacy memory button remains valid; observe its local render updates.
@@ -291,19 +291,19 @@ function exportMemory(){
  const logs=(read().logs||[]).filter(x=>x&&typeof x==='object');
  const blob=new Blob([JSON.stringify({app:'Toolya Backstudio',version:1,exported:new Date().toISOString(),logs},null,2)],{type:'application/json'});
  const url=URL.createObjectURL(blob);const a=txt('a','',document.body);a.href=url;a.download='toolya-backgedaechtnis.json';a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
- status('bsp-memory-status','Backgedächtnis exportiert.');
+ status('bsp-memory-status','Notizen gespeichert.');
 }
 function renderMemory(){
  const host=$('bsp-memory-list');if(!host)return;host.replaceChildren();
  const data=read(),logs=Array.isArray(data.logs)?data.logs:[];const search=($('bsp-memory-search')?.value||'').trim().toLocaleLowerCase('de-DE'),favorites=!!$('bsp-favorites')?.checked;
  const selected=logs.map((x,index)=>({x,index})).filter(({x})=>x&&typeof x==='object'&&(!favorites||x.favorite)&&[x.name,x.note,x.date].join(' ').toLocaleLowerCase('de-DE').includes(search)).reverse().slice(0,50);
- if(!selected.length){txt('p','Keine passenden Einträge.',host);return}
+ if(!selected.length){txt('p','Keine Notizen gefunden.',host);return}
  for(const {x,index} of selected){
   const row=txt('div',null,host);row.className='bsp-match';
   txt('strong',(x.favorite?'★ ':'')+(x.name||'Backerfahrung')+' · '+(x.date||''),row);
   txt('span',[x.minutes&&x.minutes+' min',x.temperature&&x.temperature+' °C',x.rating&&x.rating+'/5 Sterne',x.shape&&'Form: '+x.shape,x.note].filter(Boolean).join(' · '),row);
   action(row,x.favorite?'★ Favorit':'☆ Favorit',()=>{const state=read();if(!Array.isArray(state.logs)||!state.logs[index])return;state.logs[index].favorite=!state.logs[index].favorite;if(write(state))renderMemory()});
-  action(row,'Löschen',()=>{if(!confirm('Diesen Backgedächtnis-Eintrag löschen?'))return;const state=read();if(!Array.isArray(state.logs))return;state.logs.splice(index,1);if(write(state))renderMemory()})
+  action(row,'Löschen',()=>{if(!confirm('Diese Notiz löschen?'))return;const state=read();if(!Array.isArray(state.logs))return;state.logs.splice(index,1);if(write(state))renderMemory()})
  }
 }
 function init(){
@@ -311,7 +311,7 @@ function init(){
  const css=txt('style',null,document.head);css.textContent='#toolya-backstudio .bsp-panel{margin:14px 0 4px;padding:12px;border-radius:12px;background:#fff;border:1px solid #fdba74}#toolya-backstudio .bsp-panel h4{font-weight:750;font-size:1rem;margin:0 0 9px}#toolya-backstudio .bsp-muted{font-size:12px;color:#475569}#toolya-backstudio .bsp-actions{display:flex;flex-wrap:wrap;gap:5px}#toolya-backstudio #bsp-3d{height:260px;width:100%;border-radius:12px;background:radial-gradient(circle at 50% 30%,#fff7ed,#fde7ce);touch-action:none;overflow:hidden;outline-offset:3px}#toolya-backstudio #bsp-3d:focus-visible{outline:3px solid #c2410c}#toolya-backstudio .bsp-match{padding:9px 0;border-bottom:1px solid #fed7aa;display:flex;flex-direction:column;gap:5px}#toolya-backstudio .bsp-match span{font-size:12px}#toolya-backstudio .bsp-match button{align-self:flex-start}#toolya-backstudio #bsp-recipe-text{min-height:85px}#toolya-backstudio #bsp-apply{background:#047857}#toolya-backstudio .bsp-panel input[type=checkbox]{width:auto}';
  init3D();initFinder();initRecipe();initCake();initMemory();
  // Default rating for extended notes (in the original memory card).
- const memory=cardOf('bs-logs');if(memory){const rating=txt('label',null,memory);txt('span','Bewertung für erweiterten Eintrag (1–5 Sterne)',rating);const input=txt('input',null,rating);input.id='bsp-rating';input.type='number';input.min='1';input.max='5';input.value='3'}
+ const memory=cardOf('bs-logs');if(memory){const rating=txt('label',null,memory);txt('span','Wie gut hat es geklappt? (1–5 Sterne)',rating);const input=txt('input',null,rating);input.id='bsp-rating';input.type='number';input.min='1';input.max='5';input.value='3'}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();

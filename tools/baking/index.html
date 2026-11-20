@@ -121,14 +121,14 @@
 <!-- Schritt 1: Original- und Zielform -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="maximize" class="w-5 h-5 text-orange-500"></i> 1. Backformen auswählen
+                        <i data-lucide="maximize" class="w-5 h-5 text-orange-500"></i> 1. Backformen wählen
                     </h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <!-- Original -->
                         <div class="space-y-3 p-4 rounded-xl bg-slate-50 border border-slate-100">
-                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Original-Form im Rezept</h3>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Form im Rezept</h3>
                             <div>
-                                <label for="orig-shape" class="block text-xs font-medium text-slate-600 mb-1">Formtyp</label>
+                                <label for="orig-shape" class="block text-xs font-medium text-slate-600 mb-1">Welche Form?</label>
                                 <select id="orig-shape" onchange="updateShapeInputs('orig')" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
                                     <option value="round">Rund (Springform)</option>
                                     <option value="rect">Kastenform / Eckig</option>
@@ -153,12 +153,12 @@
 
                         <!-- Zielform / Kombinator -->
                         <div class="space-y-3 p-4 rounded-xl bg-orange-50/50 border border-orange-100">
-                            <h3 class="text-xs font-bold uppercase tracking-wider text-orange-600">Zielform (Einzel oder 2er-Mix)</h3>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-orange-600">Deine neue Form</h3>
                             <div>
-                                <label for="combinator-mode" class="block text-xs font-medium text-slate-600 mb-1">Modus</label>
+                                <label for="combinator-mode" class="block text-xs font-medium text-slate-600 mb-1">Wie viele Formen?</label>
                                 <select id="combinator-mode" onchange="toggleCombinator()" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
-                                    <option value="single" selected>1 Zielform</option>
-                                    <option value="double">2 Formen gleichzeitig kombinieren</option>
+                                    <option value="single" selected>Eine Form</option>
+                                    <option value="double">Zwei Formen</option>
                                 </select>
                             </div>
                             <div id="single-target-box">
@@ -208,7 +208,7 @@
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="flex items-center justify-between">
                         <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                            <i data-lucide="file-text" class="w-5 h-5 text-orange-500"></i> 2. Rezept & Zutaten
+                            <i data-lucide="file-text" class="w-5 h-5 text-orange-500"></i> 2. Deine Zutaten
                         </h2>
                         <div>
                             <label for="unit-system" class="text-xs font-medium text-slate-600 mr-2">Einheit:</label>
@@ -219,18 +219,18 @@
                         </div>
                     </div>
                     <div>
-                        <label class="helferlein-field" for="recipe-name"><span class="helferlein-field-label">Name des Rezepts</span><input type="text" id="recipe-name" placeholder="Name des Rezepts (z.B. Omas Apfelkuchen)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm mb-3" aria-label="Name des Rezepts (z.B. Omas Apfelkuchen)"></label>
-                        <label class="helferlein-field" for="recipe-input"><span class="helferlein-field-label">Zutaten des Rezepts</span><textarea id="recipe-input" rows="4" placeholder="Füge hier deine Zutaten ein (z.B. &#10;250g Mehl&#10;200g Zucker&#10;3 Eier&#10;100ml Milch)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-mono" aria-label="Zutaten des Rezepts"></textarea></label>
+                        <label class="helferlein-field" for="recipe-name"><span class="helferlein-field-label">Mein Rezept</span><input type="text" id="recipe-name" placeholder="Name des Rezepts (z.B. Omas Apfelkuchen)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm mb-3" aria-label="Name des Rezepts (z.B. Omas Apfelkuchen)"></label>
+                        <label class="helferlein-field" for="recipe-input"><span class="helferlein-field-label">Meine Zutaten</span><textarea id="recipe-input" rows="4" placeholder="Füge hier deine Zutaten ein (z.B. &#10;250g Mehl&#10;200g Zucker&#10;3 Eier&#10;100ml Milch)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-mono" aria-label="Zutaten des Rezepts"></textarea></label>
                     </div>
                     <button onclick="calculateRecipe()" class="b3-action w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl transition shadow-md shadow-orange-500/20 text-sm flex items-center justify-center gap-2">
-                        <i data-lucide="calculator" class="w-4 h-4"></i> Rezept umrechnen & Analysieren
+                        <i data-lucide="calculator" class="w-4 h-4"></i> Mengen ausrechnen
                     </button>
                 </div>
 
                 <!-- Schritt 3: Backbedingungen -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="sliders" class="w-5 h-5 text-orange-500"></i> 3. Backbedingungen
+                        <i data-lucide="sliders" class="w-5 h-5 text-orange-500"></i> 3. Backzeit & Ofen
                     </h2>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -253,7 +253,7 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                         <div>
-                            <label for="recipe-material" class="block text-xs font-medium text-slate-600 mb-1">Rezept gilt für Material der Zielform</label>
+                            <label for="recipe-material" class="block text-xs font-medium text-slate-600 mb-1">Material deiner Form</label>
                             <select id="recipe-material" onchange="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm">
                                 <option value="silikon">Silikon</option>
                                 <option value="blech" selected>Metall / Blech</option>
@@ -263,18 +263,18 @@
                         <div class="flex flex-col justify-end">
                             <label class="flex items-center space-x-3 cursor-pointer py-2">
                                 <input type="checkbox" id="keep-recipe-amount" onchange="calculateAll()" class="w-4 h-4 text-orange-600 rounded border-slate-300">
-                                <span class="text-xs font-medium text-slate-700">Rezeptmenge beibehalten (keine Skalierung)</span>
+                                <span class="text-xs font-medium text-slate-700">Teigmenge nicht ändern</span>
                             </label>
                         </div>
                     </div>
 
                     <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
                         <div class="flex items-center space-x-3">
-                            <input type="checkbox" id="use-oven-factor" checked class="w-4 h-4 text-orange-600 rounded border-slate-300" onchange="toggleOvenFactor()" aria-label="Meinen Ofenfaktor nutzen">
+                            <input type="checkbox" id="use-oven-factor" checked class="w-4 h-4 text-orange-600 rounded border-slate-300" onchange="toggleOvenFactor()" aria-label="Mein Ofenfaktor">
                             <span class="text-xs font-medium text-slate-700">Meinen Ofenfaktor nutzen</span>
                         </div>
                         <div class="text-xs font-semibold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-lg">
-                            Faktor für alle Zutaten: <span id="factor-display">× 1.00</span>
+                            Rezeptmenge: <span id="factor-display">× 1.00</span>
                         </div>
                     </div>
                 </div>
@@ -488,7 +488,7 @@
         <!-- Results only while calculating -->
         <div id="b3-baking-results" class="space-y-6">
             
-            <!-- Umgerechnet & Analyse -->
+            <!-- Dein Ergebnis -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5 sticky top-24">
                 <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
                     <i data-lucide="check-circle-2" class="w-5 h-5 text-orange-500"></i> Umgerechnet & Analyse
@@ -516,13 +516,13 @@
 
                 <!-- Volumen & Füllstands-Warnung -->
                 <div id="volume-warning-box" class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1">
-                    <strong class="block font-semibold text-slate-800">Teig-Füllstand (Höhe):</strong>
+                    <strong class="block font-semibold text-slate-800">So voll wird die Form:</strong>
                     <p id="volume-warning-text">Teighöhe entspricht exakt dem Original.</p>
                 </div>
 
                 <!-- Makros & Nährwerte -->
                 <div class="p-3 rounded-xl bg-emerald-50/60 border border-emerald-100 text-xs text-emerald-900 space-y-1">
-                    <strong class="block font-semibold">Nährwert-Schätzer (pro Stück):</strong>
+                    <strong class="block font-semibold">Nährwerte (geschätzt):</strong>
                     <p id="macro-text">Schätzung erst nach Rezepteingabe verfügbar</p>
                 </div>
 
@@ -596,7 +596,7 @@
 
             <!-- Ofenprofil Einstellungen -->
             <div class="border-t border-slate-100 pt-3 space-y-3">
-                <label for="user-oven-factor" class="block text-xs font-medium text-slate-600">Individueller Ofenfaktor</label>
+                <label for="user-oven-factor" class="block text-xs font-medium text-slate-600">Mein Ofenfaktor</label>
                 <input type="number" step="0.05" id="user-oven-factor" value="1.0" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm">
             </div>
 
