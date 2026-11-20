@@ -68,46 +68,49 @@ export function createDashboardCloud(onState) {
   }
   async function guarded(action) {
     if (busy) throw Error('Bitte warte, bis der letzte Speichervorgang abgeschlossen ist.');
-    await requireUser();
+    const user = await requireUser();
+    const userId = user.id;
     busy = true;
-    try { return await action(); }
+    try { return await action(userId); }
     finally { busy = false; }
   }
   async function create(kind, item) {
-    return guarded(async () => {
-      const record = { user_id: currentUser.id, title: item.text, completed: false };
+    return guarded(async userId => {
+      const record = { user_id: userId, title: item.text, completed: false };
       if (kind === 'reminders') {
         if (!safeDate(item.due)) throw Error('Ungültiger Erinnerungstermin.');
         record.due_at = item.due;
       }
       const { data, error } = await client.from(TABLES[kind]).insert(record).select('*').single();
       if (error) throw error;
+      if (currentUser?.id !== userId) throw Error('Konto wurde während des Speicherns gewechselt.');
       rows[kind].push(data);
       return data;
     });
   }
   async function change(kind, id, completed = null, remove = false) {
-    return guarded(async () => {
-      const row = rows[kind].find(r => r.id === id && own(r, currentUser.id));
+    return guarded(async userId => {
+      const row = rows[kind].find(r => r.id === id && own(r, userId));
       if (!row) throw Error('Eintrag wurde bereits geändert. Bitte neu laden.');
       const values = { revision: row.revision + 1, updated_at: now() };
       if (remove) values.deleted_at = now();
       else values.completed = !!completed;
       const { data, error } = await client.from(TABLES[kind])
-        .update(values).eq('id', row.id).eq('user_id', currentUser.id).eq('revision', row.revision).is('deleted_at', null)
+        .update(values).eq('id', row.id).eq('user_id', userId).eq('revision', row.revision).is('deleted_at', null)
         .select('*');
       if (error) throw error;
       if (data?.length !== 1) {
         // No silent overwrite when another device has changed the same record.
         throw Error('Speicherkonflikt: Der Eintrag wurde auf einem anderen Gerät verändert. Bitte aktualisieren.');
       }
+      if (currentUser?.id !== userId) throw Error('Konto wurde während des Speicherns gewechselt.');
       rows[kind] = rows[kind].filter(r => r.id !== row.id);
       if (!remove) rows[kind].push(data[0]);
       return data[0];
     });
   }
   async function importLocal(local) {
-    return guarded(async () => {
+    return guarded(async userId => {
       let count = 0;
       for (const kind of Object.keys(TABLES)) {
         const valid = (local[kind] || []).filter(item =>
@@ -117,8 +120,9 @@ export function createDashboardCloud(onState) {
         ).slice(0, 150);
         // Conflict-ignore is intentionally insert-only. Repeated imports never overwrite cloud changes.
         for (let i = 0; i < valid.length; i += 25) {
+          if (currentUser?.id !== userId) throw Error('Konto während des Imports gewechselt. Übernahme gestoppt.');
           const values = valid.slice(i, i + 25).map(item => ({
-            user_id: currentUser.id, legacy_id: legacyKey(kind, item.id),
+            user_id: userId, legacy_id: legacyKey(kind, item.id),
             title: item.text, completed: !!item.done,
             ...(kind === 'reminders' ? { due_at: item.due } : {})
           }));
