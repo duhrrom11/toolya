@@ -6,6 +6,8 @@ const URL='https://yheogmeaosuigyaxkwth.supabase.co';
 const KEY='sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
 const $=id=>document.getElementById(id);
 const client=window.supabase?.createClient(URL,KEY);
+// Share the same GoTrue client with Dashboard cloud storage to avoid competing auth instances.
+window.toolyaDashboardAuthClient=client;
 let authRequest=0,recoveryActive=false,lastFocus=null;
 const message=text=>{$('loginMessage').textContent=text};
 function renderUser(user,error){
