@@ -18,8 +18,6 @@
     <!-- jsPDF -->
     <!-- Tesseract.js -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <!-- QRCode.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
 <script src="../../shared/toolya/auth-page-gate.js"></script>
@@ -2260,7 +2258,13 @@
             saveInfoData({ wifi: document.getElementById('editWifi').value.trim(), landlord: document.getElementById('editLandlord').value.trim(), caretaker: document.getElementById('editCaretaker').value.trim(), trash: document.getElementById('editTrash').value.trim() });
             closeInfoboardModal(); renderInfoBoard();
         }
-        function openWLANQRModal() {
+        async function openWLANQRModal() {
+            const { loadQrGenerator } = await import('../../shared/toolya/qr-generator.mjs');
+            const QRCode = await loadQrGenerator();
+            if (!QRCode) {
+                alert("Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.");
+                return;
+            }
             const modal = document.getElementById('wlanQrModal'); modal.classList.remove('hidden'); modal.classList.add('flex');
             const qrContainer = document.getElementById('wlanQrcode'); qrContainer.innerHTML = "";
             // Ask for the actual credentials; never mistake the infoboard's free-text
@@ -2271,8 +2275,7 @@
             if (password === null) { qrContainer.textContent = 'QR-Erstellung abgebrochen.'; return; }
             const escapeWifi = value => String(value).replace(/([\\;,:"])/g, '\\$1');
             const wifiString = 'WIFI:T:WPA;S:' + escapeWifi(ssid) + ';P:' + escapeWifi(password) + ';;';
-            if (typeof QRCode !== 'undefined') new QRCode(qrContainer, { text: wifiString, width: 140, height: 140 });
-            else qrContainer.textContent = 'QR-Code-Bibliothek nicht verfügbar.';
+            new QRCode(qrContainer, { text: wifiString, width: 140, height: 140 });
         }
         function closeWLANQRModal() { document.getElementById('wlanQrModal').classList.remove('flex'); document.getElementById('wlanQrModal').classList.add('hidden'); }
 

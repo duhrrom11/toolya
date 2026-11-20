@@ -1745,7 +1745,7 @@ test('moving boxes download the scanner only on demand and retry on error', asyn
   expect(requests).toBe(2);
 });
 
-for (const tool of ['loans', 'plants']) {
+for (const tool of ['loans', 'plants', 'moving', 'budget', 'housemates']) {
   test(`${tool} downloads the QR generator on demand and retries on error`, async ({ page }) => {
     await isolated(page, true);
     let requests = 0;
@@ -1759,11 +1759,23 @@ for (const tool of ['loans', 'plants']) {
     await page.goto(origin + '/tools/' + tool + '/index.html');
     expect(requests).toBe(0);
     await page.evaluate(() => { window.alert = message => { window.mockQrError = message; }; });
-    const show = () => page.evaluate(() => showQrCode('Muster', 'Beispiel', '', 5));
+    const show = () => page.evaluate(tool => {
+      if (tool === 'moving') return showQrCode(7, 'Muster');
+      if (tool === 'budget') {
+        window.getData = () => [{ id: 7, title: 'Muster', date: '2026-11-20' }];
+        return openQRModal(7);
+      }
+      if (tool === 'housemates') {
+        window.prompt = question => question.includes('SSID') ? 'Muster' : 'Beispiel';
+        return openWLANQRModal();
+      }
+      return showQrCode('Muster', 'Beispiel', '', 5);
+    }, tool);
     await show();
     await expect.poll(() => page.evaluate(() => window.mockQrError)).toContain('erneut');
     await show();
-    await expect(page.locator('#qrcode')).toContainText('Muster');
+    const qr = page.locator(tool === 'housemates' ? '#wlanQrcode' : '#qrcode');
+    await expect(qr).toContainText(tool === 'moving' ? '?box=7' : 'Muster');
     expect(requests).toBe(2);
   });
 }
