@@ -1869,75 +1869,80 @@ test('record mobile lab paint timings for public entry points', async ({ browser
   await testInfo.attach('mobile-paint-lab', { body: JSON.stringify(results, null, 2), contentType: 'application/json' });
 });
 
-const movingLibraries = [
-  'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
-];
-for (const [tool, loadLibraries = false] of [['budget'], ['meters'], ['moving'], ['moving', true]]) {
-  test(`record mobile lab paint timings for ${tool}${loadLibraries ? ' with CDN downloads' : ''}`, async ({ browser }, testInfo) => {
-    test.skip(!process.env.TOOLYA_STARTUP_COMPARISON, 'requires the fetched baseline commit');
-    const { execFileSync } = require('node:child_process');
-    const path = `tools/${tool}/index.html`;
-    const baseline = execFileSync('git', ['show', `eb1ed8a09831603aaaeb8ffe4c34d0f98716d4ab:${path}`], { encoding: 'utf8' });
-    const url = origin + '/' + path;
-    const samples = { baseline: [], current: [] };
-    const repetitions = loadLibraries ? 6 : tool === 'moving' ? 12 : 3;
-    if (tool === 'moving') test.setTimeout(loadLibraries ? 180000 : 90000);
-    for (let run = 0; run < repetitions; run++) {
-      for (const variant of run % 2 ? ['current', 'baseline'] : ['baseline', 'current']) {
-        const page = await browser.newPage({
-          viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce'
-        });
-        try {
-          await isolated(page, true);
-          const libraryResponses = [];
-          if (loadLibraries) {
-            for (const libraryUrl of movingLibraries) {
-              await page.route(libraryUrl, route => route.continue());
-            }
-            page.on('response', response => {
-              if (movingLibraries.includes(response.url())) libraryResponses.push(response);
-            });
-          }
-          // Hold shared assets and mock services constant while comparing the HTML variants.
-          if (variant === 'baseline') {
-            await page.route(url, route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: baseline }));
-          }
-          await page.addInitScript(() => {
-            new PerformanceObserver(list => {
-              window.toolyaLabLcp = list.getEntries().at(-1)?.startTime;
-            }).observe({ type: 'largest-contentful-paint', buffered: true });
-          });
-          await page.goto(url);
-          await expect(page).toHaveURL(url);
-          if (loadLibraries) {
-            expect(libraryResponses.map(response => response.url()).sort())
-              .toEqual(variant === 'baseline' ? [...movingLibraries].sort() : []);
-            expect(libraryResponses.every(response => response.ok())).toBe(true);
-            await Promise.all(libraryResponses.map(response => response.finished()));
-          }
-          await expect.poll(() => page.evaluate(tool => {
-            if (!window.__toolyaMock?.signedIn) return false;
-            if (tool === 'meters') return typeof metersCloudReady !== 'undefined' && metersCloudReady;
-            if (tool === 'moving') return typeof movingCloudReady !== 'undefined' && movingCloudReady;
-            return typeof toolyaCloudReady !== 'undefined' && toolyaCloudReady;
-          }, tool)).toBe(true);
-          await page.waitForTimeout(1000);
-          samples[variant].push(await page.evaluate(() => ({
-            fcpMs: Math.round(performance.getEntriesByName('first-contentful-paint')[0]?.startTime),
-            lcpMs: Math.round(window.toolyaLabLcp)
-          })));
-          expect(samples[variant].at(-1).fcpMs).toBeGreaterThan(0);
-          expect(samples[variant].at(-1).lcpMs).toBeGreaterThan(0);
-        } finally {
-          await page.close();
-        }
-      }
-    }
-    console.log('[mobile tool paint lab]', JSON.stringify({ tool, loadLibraries, samples }));
-    await testInfo.attach(`mobile-paint-${tool}${loadLibraries ? '-cdn' : ''}`, { body: JSON.stringify(samples, null, 2), contentType: 'application/json' });
-  });
+const pdfLibrary = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+const qrLibrary = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+const startupLibraries = {
+  budget: [pdfLibrary, qrLibrary, 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'],
+  meters: [pdfLibrary],
+  moving: [pdfLibrary, qrLibrary, 'https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js']
+};
+for (const tool of Object.keys(startupLibraries)) {
+  for (const loadLibraries of [false, true]) {
+   const libraryUrls = startupLibraries[tool];
+   test(`record mobile lab paint timings for ${tool}${loadLibraries ? ' with CDN downloads' : ''}`, async ({ browser }, testInfo) => {
+     test.skip(!process.env.TOOLYA_STARTUP_COMPARISON, 'requires the fetched baseline commit');
+     const { execFileSync } = require('node:child_process');
+     const path = `tools/${tool}/index.html`;
+     const baseline = execFileSync('git', ['show', `eb1ed8a09831603aaaeb8ffe4c34d0f98716d4ab:${path}`], { encoding: 'utf8' });
+     const url = origin + '/' + path;
+     const samples = { baseline: [], current: [] };
+     const repetitions = loadLibraries ? 6 : tool === 'moving' ? 12 : 3;
+     if (loadLibraries || tool === 'moving') test.setTimeout(loadLibraries ? 180000 : 90000);
+     for (let run = 0; run < repetitions; run++) {
+       for (const variant of run % 2 ? ['current', 'baseline'] : ['baseline', 'current']) {
+         const page = await browser.newPage({
+           viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce'
+         });
+         try {
+           await isolated(page, true);
+           const libraryResponses = [];
+           if (loadLibraries) {
+             for (const libraryUrl of libraryUrls) {
+               await page.route(libraryUrl, route => route.continue());
+             }
+             page.on('response', response => {
+               if (libraryUrls.includes(response.url())) libraryResponses.push(response);
+             });
+           }
+           // Hold shared assets and mock services constant while comparing the HTML variants.
+           if (variant === 'baseline') {
+             await page.route(url, route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: baseline }));
+           }
+           await page.addInitScript(() => {
+             new PerformanceObserver(list => {
+               window.toolyaLabLcp = list.getEntries().at(-1)?.startTime;
+             }).observe({ type: 'largest-contentful-paint', buffered: true });
+           });
+           await page.goto(url);
+           await expect(page).toHaveURL(url);
+           if (loadLibraries) {
+             expect(libraryResponses.map(response => response.url()).sort())
+               .toEqual(variant === 'baseline' ? [...libraryUrls].sort() : []);
+             expect(libraryResponses.every(response => response.ok())).toBe(true);
+             await Promise.all(libraryResponses.map(response => response.finished()));
+           }
+           await expect.poll(() => page.evaluate(tool => {
+             if (!window.__toolyaMock?.signedIn) return false;
+             if (tool === 'meters') return typeof metersCloudReady !== 'undefined' && metersCloudReady;
+             if (tool === 'moving') return typeof movingCloudReady !== 'undefined' && movingCloudReady;
+             return typeof toolyaCloudReady !== 'undefined' && toolyaCloudReady;
+           }, tool)).toBe(true);
+           await page.waitForTimeout(1000);
+           samples[variant].push(await page.evaluate(() => ({
+             fcpMs: Math.round(performance.getEntriesByName('first-contentful-paint')[0]?.startTime),
+             lcpMs: Math.round(window.toolyaLabLcp)
+           })));
+           expect(samples[variant].at(-1).fcpMs).toBeGreaterThan(0);
+           expect(samples[variant].at(-1).lcpMs).toBeGreaterThan(0);
+         } finally {
+           await page.close();
+         }
+       }
+     }
+     console.log('[mobile tool paint lab]', JSON.stringify({ tool, loadLibraries, samples }));
+     await testInfo.attach(`mobile-paint-${tool}${loadLibraries ? '-cdn' : ''}`, { body: JSON.stringify(samples, null, 2), contentType: 'application/json' });
+   });
+  }
 }
 
 const publicGuideRoutes = [...require('node:fs').readFileSync('sitemap.xml', 'utf8')
