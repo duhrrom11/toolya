@@ -1891,3 +1891,33 @@ for (const path of publicGuideRoutes) {
     }
   });
 }
+
+for (const [path, tableCount] of [
+  ['/backform-rechner/', 2], ['/haushaltsbuch/', 1],
+  ['/wg-organisator/', 1], ['/zaehlerstaende/', 1]
+]) {
+  test(`guide tables retain accessible names, headers and keyboard focus: ${path}`, async ({ page }) => {
+    await isolated(page, false);
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto(origin + path);
+    const regions = page.locator('.guide-table-scroll');
+    await expect(regions).toHaveCount(tableCount);
+    for (const region of await regions.all()) {
+      const regionName = await region.getAttribute('aria-label');
+      expect(regionName?.trim()).toBeTruthy();
+      await expect(page.getByRole('region', { name: regionName, exact: true })).toHaveCount(1);
+      const caption = await region.locator('caption').innerText();
+      const table = region.getByRole('table', { name: caption, exact: true });
+      await expect(table).toBeVisible();
+      expect(await table.getByRole('columnheader').count()).toBeGreaterThan(1);
+      await expect(region).toHaveAttribute('tabindex', '0');
+      await region.focus();
+      await expect(region).toBeFocused();
+      await expect(region).toHaveCSS('outline-style', 'solid');
+      if (await region.evaluate(element => element.scrollWidth > element.clientWidth)) {
+        await page.keyboard.press('ArrowRight');
+        await expect.poll(() => region.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
+      }
+    }
+  });
+}
