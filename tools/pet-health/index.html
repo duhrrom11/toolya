@@ -685,6 +685,7 @@
             document.getElementById('eventExpiryDate').value='';
             document.getElementById('eventReceiptInput').value='';
             renderApp();
+            window.toolyaPetConnect?.refresh();
             if(connectRequested)await window.toolyaPetConnect?.transfer(newEventId);
         }
 
