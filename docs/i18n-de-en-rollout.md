@@ -21,10 +21,15 @@ Stand: 2026-11-21. Dies ist die **Vorbereitungsphase auf einem separaten Branch*
 8. **Social-Funnel.** Jeder Post geht auf konkrete öffentlich erreichbare Sprach-/Tool-Landingpage; CTA nach einem Nutzennachweis zur Anmeldung. UTM `utm_source`, `utm_medium=organic_social`, `utm_campaign`, optional `utm_content`. Attribution datensparsam und consent-konform; Konversionsdefinition `signup_completed` und `first_tool_action` ohne personenbezogene URLs.
 9. **Rollout / Test.** Staging-Preview mit realistischen aber synthetischen UI-Daten und ohne Writes in Produktivdatenbanken. Checks: 404/200, alte Links, Login/Logout, Passwortreset, Auth Redirect Allowlist, Buddy/Theme, RLS-unverändert, Fokusnavigation, 320px Mobile, Übersetzungslücken, PDF-Exports, canonical/hreflang/sitemap, Tracking nach Sprache. Erst nach Review/Freigabe optional Feature-Flag/Deploy.
 
-## Technischer Prototyp dieses Branches
-- `shared/toolya/i18n/locale.mjs`: reine Funktionen ohne Side Effects für Sprachwahl, sichere öffentliche Sprach-URLs und UTM-Links.
-- `tests/i18n/locale.test.mjs`: Node-Builtin-Tests.
-- Noch **keine** Sprachumschalter-Injektion in die Live-Oberfläche und **keine** öffentlichen `/en/`-Seiten, weil Inhalte, Auth-Flows und SEO erst zusammen vollständig geprüft werden müssen.
+## Umgesetzter vorbereitender Meilenstein (Branch, noch nicht live)
+- `shared/toolya/i18n/locale.mjs`: reine Funktionen für DE/EN-Sprachauflösung, verifizierte öffentliche URL-Zuordnung und Kampagnenlinks. Bestehende deutsche Root- und Ratgeber-URLs bleiben kanonische Zielpfade.
+- `shared/toolya/i18n/switcher.mjs` und `switcher.css`: ein ausdrücklich betätigter „English“-Link auf der bestehenden deutschen Startseite und vier deutschen Ratgeberseiten. Speichert die Locale separat in `toolya-locale-v1`.
+- `/en/index.html` und vier englische Einstiegsseiten mit Original-Duo-Illustration, gemeinsamem CSS, SEO-Metadaten und konkret passenden Tool-Links.
+- `marketing.mjs`: zulässige UTM-Parameter werden ohne Browser-Speicherung und ohne Drittanbieter-Pixel nur an gleichoriginige Tool-Links weitergereicht.
+- Die EN-Seiten zeigen derzeit einen Hinweis, dass die eigentlichen Tool-Oberflächen **noch Deutsch** sind. Deshalb vorläufig `noindex,follow`; nicht in die Sitemap aufnehmen, bevor sie vollständig lokalisierte Nutzerwege bieten.
+- `tests/i18n/*.test.mjs`: Node-Tests für Sprachfunktionen, deutsche Bestandslinks, EN-Seiten und Sicherheitsgrenzen; `.github/workflows/i18n-check.yml` prüft diese bei PR-Änderungen.
+- 35 direkte statische GitHub-Inhaltsprüfungen bestanden; GitHub-Action/Browserprüfung und vollständige vorhandene Tests müssen noch separat erfolgreich durchgeführt werden.
+- Keine Änderung an Supabase, RLS, Benutzer-Datensätzen, Dashboard, Tool-Funktionen, Auth-Gates oder den freigegebenen Maskottchenpräferenzen.
 
 ## Akzeptanzkriterien für ersten ausführbaren DE/EN-Meilenstein
 - Alte deutschen URLs und Tool-Daten unverändert erreichbar.
