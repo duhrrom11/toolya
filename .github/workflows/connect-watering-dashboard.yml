@@ -1,0 +1,38 @@
+name: Toolya Connect Gießplan Dashboard
+on:
+  pull_request:
+    paths:
+      - 'shared/toolya/connect-watering.mjs'
+      - 'dashboard/**'
+      - 'tools/plants/index.html'
+      - 'tests/connect-watering.test.mjs'
+      - '.github/workflows/connect-watering-dashboard.yml'
+  push:
+    branches: [main, feature/connect-dashboard-watering-v1]
+    paths:
+      - 'shared/toolya/connect-watering.mjs'
+      - 'dashboard/**'
+      - 'tools/plants/index.html'
+      - 'tests/connect-watering.test.mjs'
+      - '.github/workflows/connect-watering-dashboard.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  watering:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and isolated watering contract tests
+        run: |
+          node --input-type=module --check < dashboard/dashboard.js
+          node --check shared/toolya/connect-watering.mjs
+          node --test tests/connect-watering.test.mjs tests/cloud-plants.test.mjs tests/dashboard-cloud.test.mjs
+      - name: Browser regression (local only)
+        run: |
+          npm ci --ignore-scripts
+          CHROME_PATH=/usr/bin/google-chrome node tests/platform/dashboard-local-smoke.cjs
