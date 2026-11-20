@@ -530,6 +530,7 @@
             document.getElementById('parkCost').value='';
             document.getElementById('parkPhotoInput').value='';
             renderParkingList();
+            window.toolyaParkingConnect?.refresh();
             if(connectRequested)await window.toolyaParkingConnect?.transfer(id);
         }
 
