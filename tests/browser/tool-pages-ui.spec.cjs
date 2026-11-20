@@ -1695,7 +1695,9 @@ test('budget loads receipt OCR on demand and retries a failed download', async (
 
 for (const [tool, action] of [
   ['meters', 'exportHandoverPDF'], ['moving', 'exportInventoryPDF'],
-  ['budget', 'exportPDF'], ['car', 'exportPDF'], ['parking', 'exportPDF']
+  ['budget', 'exportPDF'], ['car', 'exportPDF'], ['parking', 'exportPDF'],
+  ['housemates', 'exportAbrechnungPDF'], ['pet-health', 'exportPDF'],
+  ['loans', 'exportPDF'], ['plants', 'exportPDF']
 ]) {
   test(`${tool} loads its PDF library on export and can retry`, async ({ page }) => {
     await isolated(page, true);

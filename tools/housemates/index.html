@@ -16,7 +16,6 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- jsPDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Tesseract.js -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <!-- QRCode.js -->
@@ -2428,8 +2427,10 @@
         }
 
         /* Export PDF */
-        function exportAbrechnungPDF() {
-            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+        async function exportAbrechnungPDF() {
+            const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
+            const doc = await createExportPdf();
+            if (!doc) return;
             doc.setFontSize(16); doc.text("WG- & Haushaltsbuch Abrechnung", 14, 20);
             doc.setFontSize(10); doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
             const entries = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r));

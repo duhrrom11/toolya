@@ -22,7 +22,6 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF für PDF-Report -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- qrcodejs für QR-Codes -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Supabase JS Client -->
@@ -1192,9 +1191,10 @@
             document.getElementById('statTotalHarvest').innerText = totalKg >= 1 ? totalKg.toFixed(1) + ' kg' : harvestGrams + ' g';
         }
 
-        function exportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+        async function exportPDF() {
+            const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
+            const doc = await createExportPdf();
+            if (!doc) return;
             const data = getData();
             const plants = data.plants.filter(p => p && typeof p === 'object' && !Array.isArray(p));
             doc.setFont("helvetica", "bold");
