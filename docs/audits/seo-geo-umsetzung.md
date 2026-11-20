@@ -139,3 +139,14 @@ Sechs mobile Chromium-Läufe je HTML-Variante mit frischen Browserkontexten, wec
 | LCP-Kandidat | 190 ms (172–312 ms) | 112 ms (108–116 ms) |
 
 Der Vergleich erfasst den Effekt in diesem Laborszenario mit aktivem CDN und kaltem Browsercache. Zeiten auf echten Mobilgeräten und Felddaten bleiben offen. Der nächste vergleichbare R30-Schritt ist derselbe Aufbau für Haushaltsbuch und Zählerstände.
+
+### Haushaltsbuch und Zählerstände mit aktiven Bibliotheksdownloads
+
+Je sechs mobile Chromium-Läufe pro HTML-Variante mit frischen Browserkontexten und simulierter Anmeldung. Im alten HTML wurden die drei optionalen Bibliotheken des Haushaltsbuchs (PDF, QR, Texterkennung) und die PDF-Bibliothek der Zählerstände erfolgreich geladen. Die aktuellen Varianten luden davon beim Start keine. Die aktuellen HTML-Dateien stimmten bytegleich mit dem Live-Stand überein. [Browserlauf und Rohdaten](https://github.com/duhrrom11/toolya/actions/runs/44758740321)
+
+| Tool | Erster sichtbarer Inhalt (Median) | LCP-Kandidat (Median) |
+| --- | ---: | ---: |
+| Haushaltsbuch | 154 → 68 ms | 154 → 68 ms |
+| Zählerstände | 130 → 74 ms | 156 → 82 ms |
+
+Die Werte gelten für den isolierten Laboraufbau und die CDN-Verbindung des CI-Laufs. Messwerte von echten Geräten bleiben offen. Für R30 bleibt der öffentliche mobile Live-Vergleich mit einem einheitlichen Messprofil offen.
