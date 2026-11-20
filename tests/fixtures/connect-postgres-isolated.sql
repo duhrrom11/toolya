@@ -99,12 +99,14 @@ end $$;
 -- Additional sources, isolated synthetic users only. The production database is never used.
 insert into public.user_data(user_id,tool,data,revision) values
  ('11111111-1111-4111-8111-111111111111','parkplatz-merker-parkschein-timer',
- '{"sessions":[{"id":201,"desc":"Altstadt","cost":3.50,"date":"20.11.2026 12:30","timestamp":1795174200000}]}',1),
+ '{"sessions":[{"id":201,"desc":"Altstadt","cost":3.50,"date":"1.1.2026 12:30","timestamp":1795174200000}]}',1),
  ('11111111-1111-4111-8111-111111111111','haustier-gesundheitspass',
  '{"pets":[],"events":[{"id":301,"title":"Tierarzt","cost":49.90,"date":"2026-11-20"}],"meds":[]}',1),
  ('22222222-2222-4222-8222-222222222222','parkplatz-merker-parkschein-timer',
  '{"sessions":[{"id":202,"desc":"Fremd","cost":6,"date":"20.11.2026 09:00"}]}',1);
 \i supabase/migrations/20261120180200_toolya_connect_expense_sources.sql
+\i supabase/migrations/20261120182500_toolya_connect_parking_local_date.sql
+\i supabase/migrations/20261120184000_toolya_connect_parking_date_regex_guard.sql
 do $$
 begin
  if has_function_privilege('anon','public.toolya_connect_expense_to_budget(text,text,bigint,bigint)','EXECUTE') then
