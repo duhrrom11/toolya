@@ -75,7 +75,7 @@ async function mutation(kind, action, item, completed=false) {
     } else {
       const items=validLocal(key);
       if(action==='create') {
-        if(items.length>=MAX_ITEMS)throw Error('Maximal '+MAX_ITEMS+' Einträge möglich.');
+        if(items.length>=MAX_ITEMS)throw Error('Maximal '+MAX_ITEMS+' '+(kind==='tasks'?'Aufgaben':'Erinnerungen')+' möglich. Entferne zuerst einen Eintrag.');
         items.push(item);
       } else if(action==='delete') {
         if(!save(key,items.filter(x=>x.id!==item.id)))return false;
@@ -102,6 +102,17 @@ function renderControls() {
   $('import-local').disabled=disabled || status!=='cloud';
   $('sync-retry').disabled=pending;
 }
+async function removeWithFocus(kind,item) {
+  const host=$(kind==='tasks'?'tasks':'reminders');
+  const buttons=[...host.querySelectorAll('button[data-entry-id]')];
+  const index=buttons.findIndex(button=>button.dataset.entryId===item.id);
+  const restore=host.contains(document.activeElement);
+  const ok=await mutation(kind,'delete',item);
+  if(ok && restore) {
+    const remaining=[...host.querySelectorAll('button[data-entry-id]')];
+    (remaining[Math.min(index,remaining.length-1)] || $(kind==='tasks'?'task-text':'reminder-text')).focus();
+  }
+}
 function renderItems() {
   const tasks=activeItems('tasks');
   const reminders=activeItems('reminders').filter(x=>typeof x.due==='string'&&!Number.isNaN(Date.parse(x.due))).sort((a,b)=>a.due.localeCompare(b.due));
@@ -117,7 +128,7 @@ function renderItems() {
     const txt=element('span',t.text);
     const del=element('button','Entfernen');del.type='button';
     del.setAttribute('aria-label','Aufgabe entfernen: '+t.text);del.dataset.entryId=t.id;
-    del.onclick=()=>mutation('tasks','delete',t);
+    del.onclick=()=>removeWithFocus('tasks',t);
     li.append(cb,txt,del);taskHost.append(li);
   }
   const remindHost=$('reminders');remindHost.replaceChildren();
@@ -132,7 +143,7 @@ function renderItems() {
     txt.append(element('small',new Date(r.due).toLocaleString('de-DE',{dateStyle:'medium',timeStyle:'short'})+(overdue?' · Fällig':''),'date'));
     const del=element('button','Entfernen');del.type='button';del.dataset.entryId=r.id;
     del.setAttribute('aria-label','Erinnerung entfernen: '+r.text);
-    del.onclick=()=>mutation('reminders','delete',r);
+    del.onclick=()=>removeWithFocus('reminders',r);
     li.append(cb,txt,del);remindHost.append(li);
   }
   renderControls();
