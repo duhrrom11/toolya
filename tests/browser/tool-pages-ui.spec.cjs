@@ -1868,3 +1868,26 @@ test('record mobile lab paint timings for public entry points', async ({ browser
   console.log('[mobile paint lab]', JSON.stringify(results));
   await testInfo.attach('mobile-paint-lab', { body: JSON.stringify(results, null, 2), contentType: 'application/json' });
 });
+
+const publicGuideRoutes = [...require('node:fs').readFileSync('sitemap.xml', 'utf8')
+  .matchAll(/<loc>https:\/\/toolya\.app(\/[^/]+\/)<\/loc>/g)].map(match => match[1]);
+
+for (const path of publicGuideRoutes) {
+  test(`public guide has usable keyboard navigation at two widths: ${path}`, async ({ page }) => {
+    await isolated(page, false);
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto(origin + path);
+      await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+      const skip = page.getByRole('link', { name: 'Zum Inhalt', exact: true });
+      await page.keyboard.press('Tab');
+      await expect(skip).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(page.getByRole('main')).toBeFocused();
+      expect(await page.locator('nav[aria-label="Inhalt der Anleitung"] a').evaluateAll(links =>
+        links.length > 0 && links.every(link => link.getBoundingClientRect().height >= 44))).toBe(true);
+      expect(await page.evaluate(() =>
+        document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    }
+  });
+}
