@@ -197,3 +197,33 @@ body.bsui-redesign #tab-rechner.hidden{display:none!important}
 #bsui-app .bsui-tool-view #bs-shopping-items{display:grid;gap:5px}
 #bsui-app .bsui-tool-view #bs-shopping-items .bs-row{background:#fff;border:1px solid #f2dcc9;border-radius:12px;padding:9px}
 #bsui-app .bsui-tool-view #bs-shopping-items a{white-space:nowrap}
+
+/* Recipe photo: camera-first, touch-friendly and accessible. */
+#bsui-app .bsp-camera-actions,
+#toolya-backstudio .bsp-camera-actions{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+#bsui-app .bsp-camera-actions button,
+#toolya-backstudio .bsp-camera-actions button{min-height:48px;padding:12px 17px;font-size:15px;font-weight:800;border-radius:13px}
+#bsui-app #bsp-camera-open,
+#toolya-backstudio #bsp-camera-open{background:#0f766e!important;border-color:#0f766e!important;color:#fff!important}
+#bsui-app .bsp-camera-preview,
+#toolya-backstudio .bsp-camera-preview{margin:12px 0;padding:10px;border-radius:15px;background:#211b18}
+#bsui-app .bsp-camera-preview[hidden],
+#bsui-app #bsp-photo-preview[hidden],
+#bsui-app #bsp-camera-native-button[hidden],
+#toolya-backstudio .bsp-camera-preview[hidden],
+#toolya-backstudio #bsp-photo-preview[hidden],
+#toolya-backstudio #bsp-camera-native-button[hidden]{display:none!important}
+#bsui-app #bsp-camera-video,
+#toolya-backstudio #bsp-camera-video{width:100%;max-height:430px;border-radius:11px;display:block;object-fit:contain;background:#000}
+#bsui-app .bsp-camera-preview .bsp-actions,
+#toolya-backstudio .bsp-camera-preview .bsp-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:11px}
+#bsui-app #bsp-camera-shutter,
+#toolya-backstudio #bsp-camera-shutter{background:#0f766e!important;color:#fff!important;font-weight:850}
+#bsui-app #bsp-photo-preview,
+#toolya-backstudio #bsp-photo-preview{display:block;max-width:100%;width:auto;max-height:250px;margin:8px auto;border:1px solid #ead1be;border-radius:12px;object-fit:contain}
+#bsui-app #bsp-ocr-status,
+#toolya-backstudio #bsp-ocr-status{font-size:13px;font-weight:650;color:#725340;min-height:1.8em}
+@media(max-width:560px){
+ #bsui-app .bsp-camera-actions button,
+ #toolya-backstudio .bsp-camera-actions button{width:100%;justify-content:center}
+}
