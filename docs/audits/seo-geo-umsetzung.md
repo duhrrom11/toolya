@@ -150,3 +150,15 @@ Je sechs mobile Chromium-Läufe pro HTML-Variante mit frischen Browserkontexten 
 | Zählerstände | 130 → 74 ms | 156 → 82 ms |
 
 Die Werte gelten für den isolierten Laboraufbau und die CDN-Verbindung des CI-Laufs. Messwerte von echten Geräten bleiben offen. Für R30 bleibt der öffentliche mobile Live-Vergleich mit einem einheitlichen Messprofil offen.
+
+### Öffentliche Seiten im mobilen Live-Labor
+
+Chromium mit Pixel-7-Emulation und drei frischen Browserkontexten je URL. Der Browser rief das produktive HTML und dessen Ressourcen auf toolya.app ab. Externe Hosts und Service Worker waren gesperrt. Die Tabelle enthält Mediane aus dem Beobachtungsfenster von drei Sekunden nach dem ersten erfassten LCP-Kandidaten. [Browserlauf](https://github.com/duhrrom11/toolya/actions/runs/44760083602)
+
+| Seite | FCP | LCP-Kandidat |
+| --- | ---: | ---: |
+| Startseite | 360 ms | 360 ms |
+| Backform-Rechner | 248 ms | 248 ms |
+| Öffentliche Wunschlisten | 112 ms | 112 ms |
+
+Alle drei URLs lieferten HTTP 200, einen selbstreferenziellen Canonical und keine Noindex-Anweisung in HTTP-Header oder HTML. Alle stehen in der Live-Sitemap und sind laut robots.txt crawlbar. Google PageSpeed meldete eine ausgeschöpfte Quote und OpenSEO keine mobilen Ergebnisse für den jüngsten Auditlauf. CrUX-Felddaten und die Ladezeit externer Inhalte bleiben offen. Die Indexierung bei Suchmaschinen wurde mit diesem Lauf nicht geprüft.
