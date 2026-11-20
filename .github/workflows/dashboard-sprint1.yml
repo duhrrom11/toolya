@@ -28,6 +28,6 @@ jobs:
           node-version: '22'
       - name: Check syntax and isolated cloud tests (no production requests)
         run: |
-          node --check dashboard/dashboard.js
+          node --input-type=module --check < dashboard/dashboard.js
           node --check dashboard/modules/cloud-sync.mjs
           node --test tests/dashboard-cloud.test.mjs
