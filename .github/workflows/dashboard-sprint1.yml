@@ -4,6 +4,7 @@ on:
     paths:
       - 'dashboard/**'
       - 'tests/dashboard-cloud.test.mjs'
+      - 'tests/platform/dashboard-local-smoke.cjs'
       - 'supabase/migrations/*dashboard*'
       - '.github/workflows/dashboard-sprint1.yml'
   push:
@@ -31,3 +32,9 @@ jobs:
           node --input-type=module --check < dashboard/dashboard.js
           node --check dashboard/modules/cloud-sync.mjs
           node --test tests/dashboard-cloud.test.mjs
+      - name: Install locked browser dependencies
+        run: npm ci --ignore-scripts
+      - name: Test PR dashboard locally without production requests
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: node tests/platform/dashboard-local-smoke.cjs
