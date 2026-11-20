@@ -128,3 +128,14 @@ Die kleine Stichprobe zeigt gemischte Laborwerte. Die Auswirkung externer Biblio
 ### Wiederholungsmessung für Umzugskisten
 
 Zwölf frische Browserkontexte je HTML-Variante, mit abwechselnder Startreihenfolge und derselben mobilen Simulation. FCP-Median 70 → 64 ms (Spannweite 56–76 → 52–92 ms). LCP-Kandidat im Median 92 → 92 ms (Spannweite 80–108 → 84–136 ms). Die langsameren Mediane aus der ersten Stichprobe wiederholten sich in diesem Lauf nicht. Die Streuung und die blockierten externen Downloads begrenzen die Aussage auf diesen Laboraufbau. Als nächster R30-Schritt bleibt eine vergleichbare Messung mit aktivem Ressourcenladen im isolierten Browser. [Browserlauf und Rohdaten](https://github.com/duhrrom11/toolya/actions/runs/44747955762)
+
+### Umzugskisten mit aktiven Bibliotheksdownloads
+
+Sechs mobile Chromium-Läufe je HTML-Variante mit frischen Browserkontexten, wechselnder Startreihenfolge und simulierter Anmeldung. Die drei versionierten Bibliotheken für QR-Erstellung, QR-Scanner und PDF-Export waren vom CDN erreichbar. Im alten HTML wurden alle drei in jedem Lauf erfolgreich geladen. Das aktuelle HTML forderte beim Start keine davon an. Andere externe Anfragen blieben abgefangen. [Browserlauf und Rohdaten](https://github.com/duhrrom11/toolya/actions/runs/44748881625)
+
+| Messwert | Altes HTML, Median (Spannweite) | Aktuelles HTML, Median (Spannweite) |
+| --- | ---: | ---: |
+| Erster sichtbarer Inhalt | 168 ms (156–296 ms) | 90 ms (68–100 ms) |
+| LCP-Kandidat | 190 ms (172–312 ms) | 112 ms (108–116 ms) |
+
+Der Vergleich erfasst den Effekt in diesem Laborszenario mit aktivem CDN und kaltem Browsercache. Zeiten auf echten Mobilgeräten und Felddaten bleiben offen. Der nächste vergleichbare R30-Schritt ist derselbe Aufbau für Haushaltsbuch und Zählerstände.
