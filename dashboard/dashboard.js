@@ -188,8 +188,7 @@ async function completeWatering(item) {
 function upcomingWateringTasks() {
   if(status!=='cloud'||!watering||wateringUserId!==cloud.userId)return [];
   const today=todayLocal();
-  const horizon=new Date(new Date(today+'T12:00:00Z').getTime()+14*86400000).toISOString().slice(0,10);
-  return wateringTasks.filter(task=>task.due<=horizon).slice(0,60);
+  return wateringTasks.filter(task=>task.due<=today).slice(0,60);
 }
 function renderWatering() {
   renderItems();
