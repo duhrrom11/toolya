@@ -22,7 +22,7 @@ header, footer, nav { display: flex; gap: .75rem 1.5rem; align-items: center; fl
 header { justify-content: space-between; }
 .brand { color: #173247; font-size: 1.4rem; font-weight: 800; }
 a { color: #075b72; text-underline-offset: .18em; }
-a:focus-visible, summary:focus-visible { outline: 3px solid #075b72; outline-offset: 4px; }
+a:focus-visible, summary:focus-visible, .guide-table-scroll:focus-visible { outline: 3px solid #075b72; outline-offset: 4px; }
 h1, h2, h3 { line-height: 1.2; }
 h1 { font-size: clamp(2rem, 6vw, 3.4rem); margin: 0; }
 .intro, .steps li, main > section:not(.intro) {
@@ -55,7 +55,7 @@ aside { background: #e3f5fa; padding: .8rem; border-radius: .6rem; }
 .guide-calculator fieldset { min-inline-size: 0; margin-inline: 0; border: 1px solid #d4e4ea; border-radius: .6rem; }
 .guide-calculator label { display: grid; grid-template-columns: minmax(0, 1fr); gap: .35rem; margin-block: .5rem; }
 .guide-calculator [hidden] { display: none; }
-.guide-calculator :is(input, select) { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; padding: .35rem; font: inherit; }
+.guide-calculator :is(input, select) { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; padding: .35rem; font: inherit; color: #173247; background: white; border: 1px solid #617e8c; border-radius: .3rem; }
 .guide-calculator button { border: 0; font: inherit; cursor: pointer; }
 .guide-calculator :is(input, select, button):focus-visible {
   outline: 3px solid #075b72;
