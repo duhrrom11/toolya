@@ -378,6 +378,7 @@
                 window.toolyaParkingConnect=mountExpenseConnect({
                     host:document.querySelector('main')||document.body,
                     saveSelector:'[onclick="saveParkingSession()"]',
+                    costSelector:'#parkCost',
                     controller:parkingCloudController,client:supabaseClient,userId:uid,
                     sourceTool:'parkplatz-merker-parkschein-timer',recordsKey:'sessions'
                 });
