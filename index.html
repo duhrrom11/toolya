@@ -75,7 +75,7 @@
     <link rel="stylesheet" href="assets/helferlein-accessibility.css?v=20261112-3">
     <script src="assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="assets/helferlein-dialogs.js"></script>
-<link rel="stylesheet" href="assets/toolya-home.css?v=20261118-mobile-home-v2">
+<link rel="stylesheet" href="assets/toolya-home.css?v=20261121-p2-guidance-tokens">
 <link rel="stylesheet" href="assets/toolya-home-guides.css?v=20261119-guides-v1">
 <link rel="stylesheet" href="assets/toolya-settings.css">
 <link rel="stylesheet" href="shared/toolya/alpha.css?v=20261115-alpha">
@@ -112,7 +112,7 @@
  <aside class="b3-hero-preview b3-dashboard-teaser" aria-label="Direkt zum persönlichen Dashboard">
   <a class="b3-dashboard-card" href="dashboard/">
    <span class="b3-dashboard-card-icon" aria-hidden="true"><img src="assets/vendor/bootstrap-icons/star-fill.svg" width="34" height="34" alt=""></span>
-   <span class="b3-dashboard-card-copy"><strong>Mein Dashboard</strong><span>Deine Aufgaben, Erinnerungen und Lieblings-Tools auf einen Blick.</span></span>
+   <span class="b3-dashboard-card-copy"><strong>Mein Dashboard</strong><span>Dein persönlicher Bereich: Lieblings-Tools, Aufgaben und Erinnerungen an einem Ort.</span><small class="ty-helper-note">Deine mit ★ markierten Tools findest du hier wieder.</small></span>
    <span class="b3-dashboard-card-arrow" aria-hidden="true">→</span>
   </a>
  </aside>
@@ -127,6 +127,8 @@
   <div><h2 class="b3-section-heading">Tools entdecken</h2>
     <p class="b3-section-subtitle" id="b3-result-count" role="status" aria-live="polite">12 von 12 Tools</p></div>
  </div>
+ <p class="ty-helper-note ty-favorites-guide" id="favoritesGuide"><strong>Lieblings-Tools merken:</strong> Tippe auf den Stern einer Tool-Karte. Deine Auswahl wird in diesem Browser gespeichert und erscheint in „Mein Dashboard“. Mit erneutem Tippen entfernst du sie.</p>
+ <p class="ty-favorite-feedback" id="favoriteFeedback" role="status" aria-live="polite" aria-atomic="true"></p>
  <div class="b3-categories" role="group" aria-label="Tool-Kategorien">
   <button type="button" class="b3-filter" data-b3-category-filter="alle" aria-pressed="true">Alle 12</button>
   <button type="button" class="b3-filter" data-b3-category-filter="finanzen" aria-pressed="false">💶 Finanzen</button>
@@ -609,7 +611,13 @@
             try { localStorage.setItem('hub_favorites', JSON.stringify(favs)); }
             catch (_) { alert('Favoriten konnten nicht gespeichert werden.'); return; }
             initFavorites();
-            window.dispatchEvent(new CustomEvent('toolya:favorite', {detail:{id:toolId, active:favs.includes(toolId)}}));
+            const active = favs.includes(toolId);
+            const name = document.querySelector('#toolsGrid .tool-card[data-id="' + toolId + '"] h3')?.textContent?.trim() || 'Tool';
+            const feedback = document.getElementById('favoriteFeedback');
+            if (feedback) feedback.textContent = active
+                ? name + ' zu deinen Lieblings-Tools hinzugefügt. Im Dashboard wiederzufinden.'
+                : name + ' aus deinen Lieblings-Tools entfernt.';
+            window.dispatchEvent(new CustomEvent('toolya:favorite', {detail:{id:toolId, active}}));
         }
 
         function initFavorites() {
@@ -646,7 +654,9 @@
                     const active = favs.includes(c.getAttribute('data-id'));
                     btn.style.color = active ? '#bc7900' : '#687083'; const star = btn.querySelector('img'); if (star) star.src = 'assets/vendor/bootstrap-icons/' + (active ? 'star-fill' : 'star') + '.svg';
                     btn.setAttribute('aria-pressed', String(active));
-                    btn.setAttribute('aria-label', active ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen');
+                    const toolName = c.querySelector('h3')?.textContent?.trim() || 'Tool';
+                    btn.setAttribute('aria-label', active ? toolName + ' aus Lieblings-Tools entfernen' : toolName + ' als Lieblings-Tool speichern');
+                    btn.setAttribute('aria-describedby', 'favoritesGuide');
                 }
             });
         }

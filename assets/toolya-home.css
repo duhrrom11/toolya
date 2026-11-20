@@ -1,5 +1,5 @@
 /* Approved Toolya homepage: cyan, ivory and pastel; scoped to the homepage. */
-body.b3-home{--hub-primary:#007e9f;--hub-accent:#009fc4;--hub-ink:#101b36;--hub-muted:#424c65;--hub-bg:#fffaf6;--hub-surface:#fffdfa;--hub-border:#e1dde5;background:var(--hub-bg)!important;overflow-x:clip}
+body.b3-home{--hub-primary:#007e9f;--hub-accent:#009fc4;--hub-ink:#101b36;--hub-muted:#424c65;--hub-bg:#fffaf6;--hub-surface:#fffdfa;--hub-border:#e1dde5;--ty-radius-card:22px;--ty-space-card:16px;--ty-helper-size:13px;--ty-helper-color:var(--hub-muted);--ty-fav-size:44px;--ty-focus-color:var(--hub-primary);background:var(--hub-bg)!important;overflow-x:clip}
 body.b3-home .b3-hub-header{background:var(--hub-bg);color:var(--hub-ink);box-shadow:none;z-index:5}
 body.b3-home .b3-hub-topbar{width:min(1440px,100%);padding:16px 3.4%;min-height:76px;background:var(--hub-surface)}
 body.b3-home .b3-hub-logo{color:var(--hub-ink);font-size:32px;font-weight:900;letter-spacing:-1.4px}
@@ -49,7 +49,7 @@ body.b3-home .ty-tool-card::before{display:none}
 .ty-tool-art[src^='assets/vendor/bootstrap-icons/']{width:68px;height:68px;margin:16px;opacity:.8}
 .ty-tool-copy{min-width:0}body.b3-home .ty-tool-card h3{font-size:clamp(20px,2.2vw,30px);line-height:1.14;color:#35153a!important;letter-spacing:-.035em;font-weight:900}
 body.b3-home .ty-tool-card p{color:#382941!important;font-size:16px;line-height:1.4;margin:6px 0 0}
-body.b3-home .ty-tool-card .fav-btn{position:absolute;right:22px;top:50%;translate:0 -50%;width:44px;height:44px;border:0;border-radius:14px;background:#fff9;display:grid;place-items:center;z-index:2}
+body.b3-home .ty-tool-card .fav-btn{position:absolute;right:22px;top:50%;translate:0 -50%;width:var(--ty-fav-size);height:var(--ty-fav-size);border:0;border-radius:14px;background:#fff9;display:grid;place-items:center;z-index:2}
 .fav-btn img{width:25px;height:25px;pointer-events:none}.fav-btn[aria-pressed=true] img{filter:invert(67%) sepia(98%) saturate(1800%) hue-rotate(360deg) brightness(108%)}
 body.b3-home :is(button,.ty-primary,.b3-preview-list a,.b3-hub-nav a){transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s,background .2s;touch-action:manipulation}
 body.b3-home :is(button,.ty-primary,.b3-preview-list a,.b3-hub-nav a):active{transform:translateY(2px) scale(.955);box-shadow:inset 0 3px 8px #112b3520!important}
@@ -261,8 +261,8 @@ body.b3-home .b3-hero-preview.b3-dashboard-teaser{
  padding:0;background:transparent;border:0;box-shadow:none;backdrop-filter:none;
 }
 body.b3-home .b3-dashboard-card{
- display:flex;align-items:center;gap:16px;min-height:100px;
- padding:18px 22px;border:1px solid #c4e5ec;border-radius:22px;
+ display:flex;align-items:center;gap:var(--ty-space-card);min-height:100px;
+ padding:18px 22px;border:1px solid #c4e5ec;border-radius:var(--ty-radius-card);
  background:linear-gradient(115deg,#ecfbfd,#f4f6ff);
  text-decoration:none!important;color:#153952!important;
  box-shadow:0 8px 24px #0b53651a;transition:transform .18s,box-shadow .18s;
@@ -319,3 +319,14 @@ body.b3-home .b3-dashboard-card-arrow{font-size:30px;font-weight:800;color:#078a
  body.b3-home .b3-dashboard-card-copy>span{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){body.b3-home .b3-dashboard-card{transition:none}}
+
+/* P2 shared component foundations: one helper-note and feedback pattern for dashboard and tool favorites. */
+body.b3-home .ty-helper-note{display:block;font-size:var(--ty-helper-size);line-height:1.55;color:var(--ty-helper-color);font-weight:500}
+body.b3-home .b3-dashboard-card-copy .ty-helper-note{margin-top:3px}
+body.b3-home .ty-favorites-guide{order:3;flex-basis:100%;margin:4px 0 0;max-width:76ch}
+body.b3-home .ty-favorites-guide strong{font-weight:800;color:var(--hub-ink)}
+body.b3-home .ty-favorite-feedback{order:4;flex-basis:100%;font-size:var(--ty-helper-size);line-height:1.5;color:var(--hub-primary);font-weight:700}
+body.b3-home .ty-favorite-feedback:empty{display:none}
+body.b3-home .ty-tool-card .fav-btn:focus-visible,body.b3-home .b3-dashboard-card:focus-visible{outline:3px solid var(--ty-focus-color);outline-offset:3px}
+@media(max-width:790px){body.b3-home{--ty-radius-card:18px;--ty-space-card:12px}}
+@media(max-width:680px){body.b3-home{--ty-fav-size:40px}body.b3-home .ty-favorites-guide{margin-top:6px}body.b3-home .b3-dashboard-card-copy .ty-helper-note{font-size:11px;line-height:1.35}}
