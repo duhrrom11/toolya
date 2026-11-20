@@ -373,6 +373,14 @@
                 activeEndTime=getData().activeEndTime||null;
                 if(activeEndTime)runTimerLoop();
                 renderParkingList();await checkUserSession();
+                const {mountExpenseConnect}=await import('../../shared/toolya/connect-expense-budget.mjs');
+                window.toolyaParkingConnect?.dispose();
+                window.toolyaParkingConnect=mountExpenseConnect({
+                    host:document.querySelector('main')||document.body,
+                    saveSelector:'[onclick="saveParkingSession()"]',
+                    controller:parkingCloudController,client:supabaseClient,userId:uid,
+                    sourceTool:'parkplatz-merker-parkschein-timer',recordsKey:'sessions'
+                });
             }catch(error){console.error(error);parkingCloudBlock(error?.code === 'toolya_migration_paused' ? 'migration-paused' : 'load-failed');}
         }
         function getData(){
@@ -464,59 +472,64 @@
             document.getElementById('parkDesc').value = name;
         }
 
+        let parkingSaveInProgress=false;
         function saveParkingSession() {
-            const desc = document.getElementById('parkDesc').value.trim() || "Unbenannter Parkplatz";
-            const sector = document.getElementById('parkSector').value.trim();
-            const cost = parseFloat(document.getElementById('parkCost').value.replace(',', '.')) || 0;
-            const photoInput = document.getElementById('parkPhotoInput');
+            if(parkingSaveInProgress)return;
+            const desc=document.getElementById('parkDesc').value.trim()||'Unbenannter Parkplatz';
+            const sector=document.getElementById('parkSector').value.trim();
+            const cost=parseFloat(document.getElementById('parkCost').value.replace(',','.'))||0;
+            const photoInput=document.getElementById('parkPhotoInput');
+            const connectRequested=Boolean(window.toolyaParkingConnect?.selected);
+            const button=document.querySelector('[onclick="saveParkingSession()"]');
+            parkingSaveInProgress=true;
+            if(button)button.disabled=true;
+            const finish=async gps=>{
+                try{await processPhotoAndSave(desc,sector,cost,gps,photoInput,connectRequested);}
+                catch(error){console.error('Parkvorgang nicht bestätigt',error);alert('Speichern nicht bestätigt. Cloud-Datenstand prüfen.');}
+                finally{parkingSaveInProgress=false;if(button)button.disabled=false;}
+            };
+            if(navigator.geolocation){
+                navigator.geolocation.getCurrentPosition(
+                    position=>{
+                        currentGps={lat:position.coords.latitude,lng:position.coords.longitude};
+                        document.getElementById('statGps').innerText='Gespeichert ✓';
+                        void finish(currentGps);
+                    },
+                    ()=>{void finish(null);},
+                    {timeout:12000,maximumAge:30000}
+                );
+            }else void finish(null);
+        }
 
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(async position => {
-                    currentGps = { lat: position.coords.latitude, lng: position.coords.longitude };
-                    document.getElementById('statGps').innerText = "Gespeichert ✓";
-                    processPhotoAndSave(desc, sector, cost, currentGps, photoInput);
-                }, async () => {
-                    alert("GPS-Standort konnte nicht ermittelt werden. Ohne GPS speichern...");
-                    processPhotoAndSave(desc, sector, cost, null, photoInput);
+        async function processPhotoAndSave(desc,sector,cost,gps,photoInput,connectRequested=false) {
+            let photo='';
+            if(photoInput.files?.[0]){
+                photo=await new Promise((resolve,reject)=>{
+                    const reader=new FileReader();
+                    reader.onload=()=>resolve(reader.result);
+                    reader.onerror=()=>reject(reader.error||Error('Foto nicht lesbar'));
+                    reader.readAsDataURL(photoInput.files[0]);
                 });
-            } else {
-                processPhotoAndSave(desc, sector, cost, null, photoInput);
             }
+            await storeSessionData(desc,sector,cost,gps,photo,connectRequested);
         }
 
-        async function processPhotoAndSave(desc, sector, cost, gps, photoInput) {
-            if (photoInput.files && photoInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    await storeSessionData(desc, sector, cost, gps, e.target.result);
-                };
-                reader.readAsDataURL(photoInput.files[0]);
-            } else {
-                storeSessionData(desc, sector, cost, gps, "");
-            }
-        }
-
-        async function storeSessionData(desc, sector, cost, gps, photo) {
-            let data = getData();
-            let now = new Date();
+        async function storeSessionData(desc,sector,cost,gps,photo,connectRequested=false) {
+            const data=getData();
+            const now=new Date();
+            const id=Math.max(now.getTime(),1+data.sessions.reduce((max,item)=>
+                Number.isSafeInteger(item?.id)?Math.max(max,item.id):max,0));
             data.sessions.push({
-                id: Date.now(),
-                timestamp: now.getTime(),
-                desc,
-                sector,
-                cost,
-                gps,
-                photo,
-                date: now.toLocaleDateString('de-DE') + ' ' + now.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})
+                id,timestamp:now.getTime(),desc,sector,cost,gps,photo,
+                date:now.toLocaleDateString('de-DE')+' '+now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})
             });
-            if (!await saveData(data)) return;
-
-            document.getElementById('parkDesc').value = "";
-            document.getElementById('parkSector').value = "";
-            document.getElementById('parkCost').value = "";
-            document.getElementById('parkPhotoInput').value = "";
+            if(!await saveData(data))return;
+            document.getElementById('parkDesc').value='';
+            document.getElementById('parkSector').value='';
+            document.getElementById('parkCost').value='';
+            document.getElementById('parkPhotoInput').value='';
             renderParkingList();
-            alert("Gespeichert");
+            if(connectRequested)await window.toolyaParkingConnect?.transfer(id);
         }
 
         async function deleteSession(id) {
