@@ -108,3 +108,7 @@ Am selben Tag lieferte toolya.app für dieselben drei Pfade bei je drei sequenzi
 | Wunschlistenfinder | 84 | 84 | 3,34 | 3,34 | 5.886 |
 
 Die Stichprobe dokumentiert den Abruf vom verwendeten Messstandort und den lokalen Browserlauf. Vorher-Nachher-Zeitwerte, ein mobiler Browserlauf gegen die Live-Seiten und CrUX-Felddaten fehlen.
+
+## R20 und R32 – Fehlerrückmeldung im öffentlichen Backform-Rechner
+
+Bei ungültigen Eingaben bleibt die Meldung mit Form, Feld und Prüfhinweis unter dem Rechner sichtbar. Die native Eingabeprüfung setzt den Fokus auf das erste ungültige Feld. Der isolierte Chromium-Test prüft die Meldung für eine ungültige Breite und die erneute Berechnung nach Korrektur.
