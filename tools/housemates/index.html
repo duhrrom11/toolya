@@ -16,8 +16,6 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- jsPDF -->
-    <!-- Tesseract.js -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
 <script src="../../shared/toolya/auth-page-gate.js"></script>
@@ -2020,17 +2018,32 @@
             }).join('');
         }
 
+        let ocrGeneration = 0;
         async function runOCR() {
             const input = document.getElementById('receiptPhotoInput');
             if (!input.files || !input.files[0]) return alert("Bitte Belegfoto auswählen!");
+            const file = input.files[0];
+            const generation = ++ocrGeneration;
+            let worker;
             const statusEl = document.getElementById('ocrStatus'); statusEl.innerText = "🔍 Scanne Kassenbon..."; statusEl.classList.remove('hidden');
             try {
-                const worker = await Tesseract.createWorker('deu');
-                const ret = await worker.recognize(input.files[0]); await worker.terminate();
+                const { loadOcrLibrary } = await import('../../shared/toolya/receipt-ocr.mjs');
+                const library = await loadOcrLibrary();
+                if (generation !== ocrGeneration || input.files[0] !== file) return;
+                worker = await library.createWorker('deu');
+                if (generation !== ocrGeneration || input.files[0] !== file) return;
+                const ret = await worker.recognize(file);
+                if (generation !== ocrGeneration || input.files[0] !== file) return;
                 const priceMatch = ret.data.text.match(/(\d+[\.,]\d{2})\s*(€|EUR)?/i);
                 if (priceMatch) document.getElementById('receiptPrice').value = priceMatch[1].replace(',', '.');
                 statusEl.innerText = "✅ OCR Erfolgreich!";
-            } catch(e) { statusEl.innerText = "❌ Texterkennung fehlgeschlagen."; }
+            } catch {
+                if (generation === ocrGeneration && input.files[0] === file) statusEl.innerText = "❌ Texterkennung fehlgeschlagen.";
+            } finally {
+                if (worker) {
+                    try { await worker.terminate(); } catch (error) { console.warn('OCR worker cleanup:', error); }
+                }
+            }
         }
 
         function saveReceipt() {

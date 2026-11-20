@@ -1001,27 +1001,6 @@ async function toolyaCloudBoot(tool) {
         }
 
         /* --- Tesseract OCR --- */
-        let ocrLibraryPromise;
-        function loadOcrLibrary() {
-            if (window.Tesseract?.createWorker) return Promise.resolve(window.Tesseract);
-            if (!ocrLibraryPromise) {
-                ocrLibraryPromise = new Promise((resolve, reject) => {
-                    const script = document.createElement('script');
-                    script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-                    script.onload = () => {
-                        if (window.Tesseract?.createWorker) resolve(window.Tesseract);
-                        else reject(new Error('OCR library unavailable'));
-                    };
-                    script.onerror = () => reject(new Error('OCR library failed to load'));
-                    document.head.append(script);
-                }).catch(error => {
-                    ocrLibraryPromise = undefined;
-                    throw error;
-                });
-            }
-            return ocrLibraryPromise;
-        }
-
         async function runOCR() {
             const input = document.getElementById('receiptPhotoInput');
             if (!input.files || !input.files[0]) return alert("Bitte wähle zuerst ein Belegfoto aus!");
@@ -1033,6 +1012,7 @@ async function toolyaCloudBoot(tool) {
             statusEl.classList.remove('hidden');
 
             try {
+                const { loadOcrLibrary } = await import('../../shared/toolya/receipt-ocr.mjs');
                 const library = await loadOcrLibrary();
                 if (generation !== ocrGeneration) return;
                 worker = await library.createWorker('deu');
