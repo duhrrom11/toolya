@@ -52,3 +52,9 @@ Die internen Querverweise auf Backform-Rechner, Zählerstände und Verliehene Di
 | `https://toolya.app/index.html` | HTTP 200, Canonical auf die HTTPS-Startseite | URL Google unbekannt |
 
 Die Startversion unter `/index.html` wird als Ziel für die Passwort-Wiederherstellung verwendet. Google hat für die alte HTTP-Variante noch den älteren Crawl gespeichert. Deren Status und den der Umzugskisten nach dem nächsten Google-Crawl erneut prüfen. [Search Console](https://search.google.com/search-console?resource_id=sc-domain%3Atoolya.app)
+
+### Live-Abgleich nach den Ratgeber-Updates
+
+Am 20. November wurden alle 18 URLs aus der Live-Sitemap abgerufen. Das ausgelieferte HTML entsprach jeweils bytegenau dem Stand `7ffce51` auf `main`. Jede Seite enthielt einen Titel, eine Meta-Beschreibung und einen auf sich selbst verweisenden Canonical. In den HTML-Metatags fand sich keine Noindex-Anweisung.
+
+Damit sind die Ergänzungen zum Beschriften von [Umzugskisten](https://github.com/duhrrom11/toolya/pull/272), zur [Verleihliste](https://github.com/duhrrom11/toolya/pull/273), zum [Zählerverbrauch](https://github.com/duhrrom11/toolya/pull/274) und zur [Backform-Umrechnung](https://github.com/duhrrom11/toolya/pull/275) live bestätigt. In der erneuten Google-URL-Prüfung war für diese vier Seiten noch kein neuer Crawl sichtbar. Der nächste Indexierungsvergleich ist nach einer Aktualisierung der Google-Daten aussagekräftig.
