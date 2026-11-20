@@ -161,7 +161,7 @@ function normalizeRecipe(text){
   if(m){qty=parseNumber(m[1]);unit=m[2]||'';name=m[3]}
   else{m=raw.match(last);if(m){name=m[1];qty=parseNumber(m[2]);unit=m[3]}}
   if(!m||!Number.isFinite(qty)||qty<0||!name){warnings.push(raw);continue}
-  if(!unit && /^(?:eier?|stück|stk\.?|pck\.?)$/i.test(name.trim())){unit=name.trim();name='';}
+  if(!unit && /^(?:ei|eier|stück|stk\.?|pck\.?)$/i.test(name.trim())){unit=name.trim();name='';}
   if(/^\s*[-–]\s*\d/.test(name))warnings.push('Mengenbereich bitte prüfen: '+raw);
   const standardizedUnit=/^(eier|ei)$/i.test(unit)?'Eier':/^(stk\.?|stück)$/i.test(unit)?'Stück':/^(paket|pck\.?)$/i.test(unit)?'Pck':unit;
   items.push({name:name.trim(),qty,unit:standardizedUnit,source:raw});
@@ -222,7 +222,7 @@ function reviewRecipe(source){
  const table=txt('div',null,host);
  for(const item of reviewed){const row=txt('div',null,table);row.className='bsp-match';txt('span',(fmt(item.qty,2)+' '+item.unit+' '+item.name).trim(),row)}
  if(result.warnings.length){txt('p','Bitte manuell prüfen ('+result.warnings.length+' Zeilen):',host);for(const w of result.warnings.slice(0,30))txt('p',w,host)}
- status('bsp-ocr-status','');
+
 }
 function applyReviewed(){
  if(!reviewed.length)return;
