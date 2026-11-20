@@ -112,3 +112,15 @@ Die Stichprobe dokumentiert den Abruf vom verwendeten Messstandort und den lokal
 ## R20 und R32 – Fehlerrückmeldung im öffentlichen Backform-Rechner
 
 Bei ungültigen Eingaben bleibt die Meldung mit Form, Feld und Prüfhinweis unter dem Rechner sichtbar. Die native Eingabeprüfung setzt den Fokus auf das erste ungültige Feld. Der isolierte Chromium-Test prüft die Meldung für eine ungültige Breite und die erneute Berechnung nach Korrektur.
+
+## R30 – Mobiler HTML-Vergleich für drei geschützte Tools
+
+Chromium bei 390 × 844 Pixeln mit simulierter Anmeldung, frischem Browserkontext pro Stichprobe und je drei Läufen pro Variante. Verglichen wurden die HTML-Dateien vor der Optimierung (`eb1ed8a`) mit den HTML-Dateien aus PR #259. Beide Varianten nutzten dieselben lokalen Begleitdateien und dieselbe Nachbildung der Anmeldung. Externe Dienste und Bibliotheksabrufe waren blockiert. Für den LCP-Kandidaten lief die Beobachtung bis eine Sekunde nach der bestätigten Initialisierung der Oberfläche. [Browserlauf und Rohdaten](https://github.com/duhrrom11/toolya/actions/runs/44746994458)
+
+| Tool | FCP vorher → nachher (ms, Median) | LCP-Kandidat vorher → nachher (ms, Median) |
+| --- | ---: | ---: |
+| Haushaltsbuch | 104 → 92 | 104 → 92 |
+| Zählerstände | 84 → 84 | 124 → 124 |
+| Umzugskisten | 88 → 120 | 144 → 152 |
+
+Die kleine Stichprobe zeigt gemischte Laborwerte. Die Auswirkung externer Bibliotheksdownloads, die Zeiten realer Anmeldungen und die Core Web Vitals im Feld bleiben offen. Die drei Live-HTML-Dateien wurden bytegleich zum getesteten aktuellen Stand abgerufen und enthielten jeweils `noindex`.
