@@ -20,6 +20,9 @@ test('fallback preference and browser language', () => {
 });
 test('localized paths are safe', () => {
   assert.equal(localizedPublicUrl('en','moving-boxes'),'/en/moving-boxes/');
+  assert.equal(localizedPublicUrl('de'),'/');
+  assert.equal(localizedPublicUrl('de','moving-boxes'),'/umzugskisten/');
+  assert.throws(()=>localizedPublicUrl('en','unknown-tool'),/Unknown/);
   assert.throws(()=>localizedPublicUrl('en','../dashboard'),/Invalid/);
 });
 test('campaign links preserve locale and tracking', () => {
@@ -27,5 +30,6 @@ test('campaign links preserve locale and tracking', () => {
   assert.equal(url.pathname,'/en/moving-boxes/');
   assert.equal(url.searchParams.get('utm_source'),'instagram');
   assert.equal(url.searchParams.get('utm_campaign'),'launch_en');
+  assert.equal(new URL(campaignUrl({locale:'de',slug:'moving-boxes',source:'instagram',campaign:'launch_de'})).pathname,'/umzugskisten/');
   assert.throws(()=>campaignUrl({source:'instagram',campaign:'invalid value'}),/Invalid/);
 });
