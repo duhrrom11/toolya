@@ -1667,31 +1667,33 @@ for (const path of ['/backform-rechner/', '/toolya-dashboard/', '/amazon-wunschl
   });
 }
 
-test('budget loads receipt OCR on demand and retries a failed download', async ({ page }) => {
-  await isolated(page, true);
-  let downloads = 0;
-  await page.route('**/tesseract.min.js', async route => {
-    downloads++;
-    if (downloads === 1) return route.abort();
-    return route.fulfill({
-      contentType: 'application/javascript',
-      body: "window.Tesseract = {createWorker: async () => ({recognize: async () => ({data: {text: 'Gesamt 12,34 EUR'}}), terminate: async () => {}})};"
+for (const tool of ['budget', 'housemates']) {
+  test(`${tool} loads receipt OCR on demand and retries a failed download`, async ({ page }) => {
+    await isolated(page, true);
+    let downloads = 0;
+    await page.route('**/tesseract.min.js', async route => {
+      downloads++;
+      if (downloads === 1) return route.abort();
+      return route.fulfill({
+        contentType: 'application/javascript',
+        body: "window.Tesseract = {createWorker: async () => ({recognize: async () => ({data: {text: 'Gesamt 12,34 EUR'}}), terminate: async () => {}})};"
+      });
     });
+    await page.goto(origin + '/tools/' + tool + '/index.html');
+    await expect(page.locator('#receiptPhotoInput')).toHaveCount(1);
+    expect(downloads).toBe(0);
+    await page.locator('#receiptPhotoInput').setInputFiles({
+      name: 'sample.png', mimeType: 'image/png',
+      buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJ1sAAAAASUVORK5CYII=', 'base64')
+    });
+    const scan = page.getByRole('button', { name: tool === 'budget' ? /Text automatisch erkennen/ : /Texterkennung/ });
+    await scan.dispatchEvent('click');
+    await expect(page.locator('#ocrStatus')).toContainText('fehlgeschlagen');
+    await scan.dispatchEvent('click');
+    await expect(page.locator('#ocrStatus')).toContainText(tool === 'budget' ? 'ausgefüllt' : 'Erfolgreich');
+    expect(downloads).toBe(2);
   });
-  await page.goto(origin + '/tools/budget/index.html');
-  await expect.poll(() => page.evaluate(() => typeof toolyaCloudReady !== 'undefined' && toolyaCloudReady)).toBe(true);
-  expect(downloads).toBe(0);
-  await page.locator('#receiptPhotoInput').setInputFiles({
-    name: 'sample.png', mimeType: 'image/png',
-    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJ1sAAAAASUVORK5CYII=', 'base64')
-  });
-  const scan = page.getByRole('button', { name: /Text automatisch erkennen/ });
-  await scan.dispatchEvent('click');
-  await expect(page.locator('#ocrStatus')).toContainText('fehlgeschlagen');
-  await scan.dispatchEvent('click');
-  await expect(page.locator('#ocrStatus')).toContainText('ausgefüllt');
-  expect(downloads).toBe(2);
-});
+}
 
 for (const [tool, action] of [
   ['meters', 'exportHandoverPDF'], ['moving', 'exportInventoryPDF'],
@@ -1782,7 +1784,7 @@ for (const tool of ['loans', 'plants', 'moving', 'budget', 'housemates']) {
 
 for (const [tool, expected, remaining = 0] of [
   ['budget', 3], ['meters', 1], ['moving', 3], ['car', 1], ['parking', 1],
-  ['housemates', 3, 1], ['pet-health', 1], ['loans', 2], ['plants', 2]
+  ['housemates', 3], ['pet-health', 1], ['loans', 2], ['plants', 2]
 ]) {
   test(`compare mobile startup requests for ${tool}`, async ({ browser }) => {
     test.skip(!process.env.TOOLYA_STARTUP_COMPARISON, 'requires the fetched baseline commit');
