@@ -140,7 +140,7 @@ function renderItems() {
 const cloud=createDashboardCloud(({status:next,message,userId})=>{
   status=next;
   document.documentElement.dataset.dashboardSync=next;
-  $('sync-status').textContent=next==='cloud'?'☁ Cloud synchronisiert':next==='local'?'Nur auf diesem Gerät':next==='loading'?'Cloud wird geladen …':'Cloud nicht erreichbar';
+  $('sync-status').textContent=next==='cloud'?'☁ Aufgaben & Erinnerungen synchronisiert':next==='local'?'Nur auf diesem Gerät':next==='loading'?'Cloud wird geladen …':'Cloud nicht erreichbar';
   $('sync-detail').textContent=message||(next==='local'?'Für die geräteübergreifende Speicherung bitte anmelden.':'');
   $('sync-retry').hidden=next!=='error';
   $('import-local').hidden=next!=='cloud'||!(validLocal(keys.tasks).length||validLocal(keys.reminders).length);
