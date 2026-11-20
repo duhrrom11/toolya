@@ -1686,9 +1686,9 @@ test('budget loads receipt OCR on demand and retries a failed download', async (
     buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJ1sAAAAASUVORK5CYII=', 'base64')
   });
   const scan = page.getByRole('button', { name: /Text automatisch erkennen/ });
-  await scan.press('Enter');
+  await scan.dispatchEvent('click');
   await expect(page.locator('#ocrStatus')).toContainText('fehlgeschlagen');
-  await scan.press('Enter');
+  await scan.dispatchEvent('click');
   await expect(page.locator('#ocrStatus')).toContainText('ausgefüllt');
   expect(downloads).toBe(2);
 });
