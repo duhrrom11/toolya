@@ -1790,7 +1790,7 @@ for (const [tool, expected] of [
     const revision = 'eb1ed8a09831603aaaeb8ffe4c34d0f98716d4ab';
     const wgId = '00000000-0000-4000-8000-000000000109';
     const fixture = tool === 'housemates' ? { __wg: {
-      id: wgId, updated_at: '2026-11-17T00:00:00Z', payload: {}
+      id: wgId, updated_at: '2026-11-17T00:00:00Z', payload: { flatmates: [] }
     } } : null;
     const path = 'tools/' + tool + '/index.html';
     const url = origin + '/' + path + (fixture ? '?id=secure_' + wgId : '');
