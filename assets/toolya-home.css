@@ -323,9 +323,9 @@ body.b3-home .b3-dashboard-card-arrow{font-size:30px;font-weight:800;color:#078a
 /* P2 shared component foundations: one helper-note and feedback pattern for dashboard and tool favorites. */
 body.b3-home .ty-helper-note{display:block;font-size:var(--ty-helper-size);line-height:1.55;color:var(--ty-helper-color);font-weight:500}
 body.b3-home .b3-dashboard-card-copy .ty-helper-note{margin-top:3px}
-body.b3-home .ty-favorites-guide{margin:8px 0 0;max-width:76ch}
+body.b3-home .ty-favorites-guide{order:3;flex-basis:100%;margin:4px 0 0;max-width:76ch}
 body.b3-home .ty-favorites-guide strong{font-weight:800;color:var(--hub-ink)}
-body.b3-home .ty-favorite-feedback{font-size:var(--ty-helper-size);line-height:1.5;color:var(--hub-primary);font-weight:700}
+body.b3-home .ty-favorite-feedback{order:4;flex-basis:100%;font-size:var(--ty-helper-size);line-height:1.5;color:var(--hub-primary);font-weight:700}
 body.b3-home .ty-favorite-feedback:empty{display:none}
 body.b3-home .ty-tool-card .fav-btn:focus-visible,body.b3-home .b3-dashboard-card:focus-visible{outline:3px solid var(--ty-focus-color);outline-offset:3px}
 @media(max-width:790px){body.b3-home{--ty-radius-card:18px;--ty-space-card:12px}}
