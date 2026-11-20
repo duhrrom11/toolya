@@ -1693,7 +1693,10 @@ test('budget loads receipt OCR on demand and retries a failed download', async (
   expect(downloads).toBe(2);
 });
 
-for (const [tool, action] of [['meters', 'exportHandoverPDF'], ['moving', 'exportInventoryPDF']]) {
+for (const [tool, action] of [
+  ['meters', 'exportHandoverPDF'], ['moving', 'exportInventoryPDF'],
+  ['budget', 'exportPDF'], ['car', 'exportPDF'], ['parking', 'exportPDF']
+]) {
   test(`${tool} loads its PDF library on export and can retry`, async ({ page }) => {
     await isolated(page, true);
     let downloads = 0;
