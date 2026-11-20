@@ -13,7 +13,7 @@ function fixture(){
   const items=[{id:'d8b80362-ff07-44ee-98c8-24afae194440',user_id:'A',title:'Spülmittel',completed:false,
     revision:1,created_at:stamp,deleted_at:null}];
   const client={
-    auth:{async getUser(){return {data:{user:{id:user,is_anonymous:false}},error:null}};}},
+    auth:{async getUser(){return {data:{user:{id:user,is_anonymous:false}},error:null};}},
     from(table) {
       const filters=[];
       let mode='select',changes=null, inserted=null;
