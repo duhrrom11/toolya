@@ -20,7 +20,6 @@
     <!-- qrcode.js für QR-Code Erstellung -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- html5-qrcode für den Live-Kamera-Scanner -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <!-- jsPDF für den PDF-Report & QR-Etiketten-Export -->
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
@@ -1082,7 +1081,26 @@
             reader.readAsText(file);
         }
 
-        function openScannerModal() {
+        let scannerOpening = false;
+        async function openScannerModal() {
+            if (scannerOpening || !document.getElementById('scannerModal').classList.contains('hidden')) return;
+            scannerOpening = true;
+            try {
+                if (!window.Html5Qrcode) {
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js';
+                        script.onload = () => window.Html5Qrcode ? resolve() : reject();
+                        script.onerror = reject;
+                        document.head.append(script);
+                    });
+                }
+            } catch {
+                alert("Der QR-Scanner konnte nicht geladen werden. Bitte versuche es erneut.");
+                return;
+            } finally {
+                scannerOpening = false;
+            }
             document.getElementById('scannerModal').classList.remove('hidden');
             const resBox = document.getElementById('scanResult');
             resBox.classList.add('hidden');
