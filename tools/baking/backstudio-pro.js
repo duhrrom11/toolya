@@ -262,7 +262,10 @@ function updateCake(){
  ])txt('p',t,host)
 }
 function initMemory(){
- const host=cardOf('bs-logs');if(!host)return;const pane=panel(host,'Backgedächtnis durchsuchen und sichern');
+ const host=cardOf('bs-logs');if(!host)return;
+ // Both save buttons use the enhanced format; legacy saves must not truncate history.
+ const legacySave=$('bs-log');if(legacySave)legacySave.onclick=saveExtendedLog;
+ const pane=panel(host,'Backgedächtnis durchsuchen und sichern');
  addField(pane,'Einträge suchen','bsp-memory-search','search','');
  const label=txt('label',null,pane);txt('span','Nur Favoriten',label);const check=txt('input',null,label);check.id='bsp-favorites';check.type='checkbox';
  const controls=txt('div',null,pane);controls.className='bsp-actions';
