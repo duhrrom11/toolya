@@ -39,4 +39,16 @@ Search Console bestätigte 11 der 18 kanonischen Sitemap-URLs als indexiert. Ein
 
 Google wählte für alle elf indexierten Sitemap-URLs die jeweils passende kanonische HTTPS-Adresse. Die alte Adresse `http://www.toolya.app/` erschien zusätzlich mit einem gespeicherten Crawl vom 16. November und leitete beim Live-Abruf auf `https://toolya.app/` weiter. In den finalen Websuchdaten vom 21. Oktober bis 17. November entfiel eine Impression auf diese alte Variante. Bing bleibt ohne bestätigten Indexierungsstand.
 
-Nächster Schwerpunkt sind die internen Verweise auf Backform-Rechner, Zählerstände und Verliehene Dinge sowie eine erneute Prüfung der Umzugskisten nach dem nächsten Google-Crawl.
+Die internen Querverweise auf Backform-Rechner, Zählerstände und Verliehene Dinge wurden ergänzt und live geprüft. [PR #270](https://github.com/duhrrom11/toolya/pull/270)
+
+### Varianten der Startseite
+
+| URL | Live-Antwort | Gespeicherte Google-URL-Prüfung |
+| --- | --- | --- |
+| `https://toolya.app/` | HTTP 200, Canonical auf sich selbst | Indexiert |
+| `http://toolya.app/` | HTTP 301 direkt auf die HTTPS-Startseite | — |
+| `https://www.toolya.app/` | HTTP 301 direkt auf die HTTPS-Startseite | Seite mit Weiterleitung |
+| `http://www.toolya.app/` | HTTP 301 direkt auf die HTTPS-Startseite | Indexiert mit Crawl vom 16. November |
+| `https://toolya.app/index.html` | HTTP 200, Canonical auf die HTTPS-Startseite | URL Google unbekannt |
+
+Die Startversion unter `/index.html` wird als Ziel für die Passwort-Wiederherstellung verwendet. Google hat für die alte HTTP-Variante noch den älteren Crawl gespeichert. Deren Status und den der Umzugskisten nach dem nächsten Google-Crawl erneut prüfen. [Search Console](https://search.google.com/search-console?resource_id=sc-domain%3Atoolya.app)
