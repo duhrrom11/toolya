@@ -1,11 +1,12 @@
 /** Inline Toolya Connect for verified expense source tools. No standalone Connect area. */
-export function mountExpenseConnect({host,saveSelector,controller,client,userId,sourceTool,recordsKey}) {
+export function mountExpenseConnect({host,saveSelector,costSelector,controller,client,userId,sourceTool,recordsKey}) {
   if (!host?.querySelector || !controller?.snapshot || !client?.rpc ||
       !client?.auth?.getUser || !userId ||
       !['parkplatz-merker-parkschein-timer','haustier-gesundheitspass'].includes(sourceTool))
     throw new TypeError('Cloud Connect is not configured.');
   const saveButton=host.querySelector(saveSelector);
-  if (!saveButton) throw new TypeError('Expense save action not found.');
+  const costInput=host.querySelector(costSelector);
+  if (!saveButton || !costInput) throw new TypeError('Expense form inputs not found.');
   const root=document.createElement('div');
   root.id='toolya-connect-expense';
   root.style.cssText='margin:10px 0;padding:12px;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc;color:#0f172a;font:14px system-ui';
@@ -32,6 +33,15 @@ export function mountExpenseConnect({host,saveSelector,controller,client,userId,
   root.append(label,help,status,retry);
   saveButton.parentNode.insertBefore(root,saveButton);
   let disposed=false,busy=false,failedId=null;
+  const syncEligibility=()=>{
+    const amount=Number(String(costInput.value||'').replace(',','.'));
+    const valid=String(costInput.value||'').trim()!=='' && Number.isFinite(amount) &&
+      amount>0 && amount<=1000000 && Math.abs(amount*100-Math.round(amount*100))<1e-7;
+    check.disabled=!valid||busy;
+    if(!valid)check.checked=false;
+  };
+  costInput.addEventListener('input',syncEligibility);
+  syncEligibility();
   retry.addEventListener('click',()=>{if(failedId!==null)void transfer(failedId);});
   async function transfer(id){
     if(disposed || busy || !controller.ready)return false;
@@ -83,12 +93,12 @@ export function mountExpenseConnect({host,saveSelector,controller,client,userId,
       console.error('Toolya Connect',error);
       return false;
     }finally{
-      busy=false;if(!disposed){check.disabled=false;retry.disabled=false;}
+      busy=false;if(!disposed){syncEligibility();retry.disabled=false;}
     }
   }
   return Object.freeze({
-    get selected(){return !disposed&&check.checked;},
+    get selected(){return !disposed&&!check.disabled&&check.checked;},
     transfer,
-    dispose(){disposed=true;root.remove();}
+    dispose(){disposed=true;costInput.removeEventListener('input',syncEligibility);root.remove();}
   });
 }
