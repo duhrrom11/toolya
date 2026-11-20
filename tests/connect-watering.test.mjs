@@ -64,7 +64,8 @@ test('connect reads and mutates the plant snapshot by revision, without writing 
   fail=false;
   await connect.complete(42);
   assert.equal(saved,2);
-  assert.equal(data.plants[0].lastWatered,projectWateringTasks(data)[0]?.due?.slice(0,10)==='impossible'?'impossible':data.plants[0].lastWatered);
+  assert.match(data.plants[0].lastWatered,/^\d{4}-\d{2}-\d{2}$/);
+  assert.notEqual(data.plants[0].lastWatered,'2026-11-18');
   assert.equal(data.plants[0].connectDue,undefined);
   userId='B';
   assert.equal((await connect.read()).userId,'B');
