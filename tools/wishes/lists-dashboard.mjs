@@ -421,7 +421,7 @@ actions.append(button('Duplizieren',async()=>{
      const extras=local&&typeof local==='object'&&Object.keys(local).length?local:cloudWishExtras.get(String(wish.id));
      if(extras&&typeof extras==='object'){
       if(!wish.wishlist_products?.image_url&&typeof extras.imageUrl==='string'&&extras.imageUrl.startsWith('https://')){
-       const image=document.createElement('img');image.className='wish-product-image';image.src=extras.imageUrl;image.alt='Produktbild';image.loading='lazy';image.referrerPolicy='no-referrer';card.append(image);
+       const image=document.createElement('img');image.className='wish-product-image';image.src=extras.imageUrl;image.alt=wish.wishlist_products?.title||wish.title||'Produktbild zum Wunsch';image.loading='lazy';image.referrerPolicy='no-referrer';card.append(image);
       }
       const tags=document.createElement('div');tags.className='wish-product-extras';
       const values=[];

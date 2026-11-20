@@ -927,7 +927,7 @@ async function toolyaCloudBoot(tool) {
                         <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
                             <div class="flex items-center justify-between gap-3 b3-car-card-heading">
                                 <div class="flex items-center space-x-3 b3-car-card-identity">
-                                    ${c.photo ? `<button type="button" class="b3-photo-trigger" aria-label="Fahrzeugfoto vergrößern" onclick="zoomImage(this.firstElementChild.src)"><img alt="" src="${c.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0"></button>` : defaultCarIcon}
+                                    ${c.photo ? `<button type="button" class="b3-photo-trigger" aria-label="Fahrzeugfoto vergrößern" onclick="zoomImage(this.firstElementChild.src)"><img alt="Fahrzeugfoto" src="${c.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0"></button>` : defaultCarIcon}
                                     <div>
                                         <h4 class="font-bold text-sm text-red-800">${c.name}</h4>
                                         <p class="text-xs text-gray-600">${c.plate || 'k.Kennzeichen'} ${c.km ? '| ' + c.km + ' km' : ''}</p>

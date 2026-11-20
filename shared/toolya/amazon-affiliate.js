@@ -41,7 +41,7 @@ function addProductImage(link){
  const picture=document.createElement('img');
  picture.className='toolya-affiliate-picture';
  picture.src=src;
- picture.alt='';
+ picture.alt='Produktabbildung: '+(link.getAttribute('data-product-title')||link.querySelector('strong')?.textContent?.trim()||'Empfohlenes Produkt');
  picture.width=112;picture.height=112;
  picture.loading='lazy';picture.decoding='async';picture.referrerPolicy='no-referrer';
  link.prepend(picture);

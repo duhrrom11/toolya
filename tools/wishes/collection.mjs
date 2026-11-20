@@ -27,7 +27,7 @@ async function main(){
  const wishes=ids.map(wishId=>lookup.get(String(wishId))).filter(Boolean);
  $('title').textContent=list.title;$('description').textContent=list.description||'Eine Sammlung voller Geschenkideen.';
  $('icon').textContent=list.icon||'🎁';
- if(list.cover_url){try{const cover=new URL(list.cover_url);if(cover.protocol==='https:'){const image=document.createElement('img');image.src=cover.href;image.alt='Titelbild der Sammlung';image.loading='lazy';image.style.cssText='width:min(38vw,240px);height:180px;object-fit:cover;border-radius:16px';document.querySelector('.hero').prepend(image)}}catch{}}if(/^#[0-9a-f]{6}$/i.test(list.color||''))document.querySelector('.hero').style.borderTop='7px solid '+list.color;
+ if(list.cover_url){try{const cover=new URL(list.cover_url);if(cover.protocol==='https:'){const image=document.createElement('img');image.src=cover.href;image.alt='Titelbild der Sammlung: '+(list.title||'Sammlung');image.loading='lazy';image.style.cssText='width:min(38vw,240px);height:180px;object-fit:cover;border-radius:16px';document.querySelector('.hero').prepend(image)}}catch{}}if(/^#[0-9a-f]{6}$/i.test(list.color||''))document.querySelector('.hero').style.borderTop='7px solid '+list.color;
  $('count').textContent=wishes.length+' Wünsche'+(items.length===500?' · maximal 500 geladen':'');
  const viewer=await currentUser(db);
  let reservations=new Map();
@@ -36,7 +36,7 @@ async function main(){
  for(const wish of wishes){
   const card=document.createElement('article');card.className='card';
   const cover=document.createElement('div');cover.className='cover';cover.textContent=list.icon||'🎁';cover.setAttribute('aria-hidden','true');
-  if(wish.wishlist_products?.image_url){const image=document.createElement('img');image.src=wish.wishlist_products.image_url;image.alt='';image.loading='lazy';image.referrerPolicy='no-referrer';cover.replaceChildren(image);}
+  if(wish.wishlist_products?.image_url){const image=document.createElement('img');image.src=wish.wishlist_products.image_url;image.alt=wish.wishlist_products.title||'Produktbild zum Wunsch';image.loading='lazy';image.referrerPolicy='no-referrer';cover.replaceChildren(image);}
   const body=document.createElement('div');body.className='card-body';
   const title=document.createElement('h2');title.textContent=wish.wishlist_products?.title||'Wunsch';
   body.append(title);appendProductMetadata(body,wish.wishlist_products,{image:false});

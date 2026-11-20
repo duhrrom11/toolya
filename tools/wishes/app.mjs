@@ -68,7 +68,7 @@ function appendWishExtras(card,wish,cloudExtras){
  const local=readWishExtras(user.id,wish.id);
  const data=Object.keys(local).length?local:cloudExtras;
  if(!data||!Object.keys(data).length)return;
- if(data.imageUrl){const img=document.createElement('img');img.className='wish-product-image';img.alt='Zusätzlich gespeichertes Produktbild';img.loading='lazy';img.referrerPolicy='no-referrer';img.src=data.imageUrl;card.append(img)}
+ if(data.imageUrl){const img=document.createElement('img');img.className='wish-product-image';img.alt=wish.wishlist_products?.title||wish.title||'Zusätzlich gespeichertes Produktbild';img.loading='lazy';img.referrerPolicy='no-referrer';img.src=data.imageUrl;card.append(img)}
  const wrap=document.createElement('div');wrap.className='wish-product-extras';
  const labels=[];
  if(data.price!==null&&data.price!==undefined)labels.push('🎯 '+new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(data.price));

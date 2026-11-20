@@ -22,7 +22,7 @@ function render(){
  for(const item of rows){
   const card=document.createElement('article');card.className='card';
   const cover=document.createElement('div');cover.className='cover';cover.textContent=item.icon||'🎁';
-  if(item.cover_url){try{const url=new URL(item.cover_url);if(url.protocol==='https:'){const img=document.createElement('img');img.src=url.href;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';cover.replaceChildren(img)}}catch{}}
+  if(item.cover_url){try{const url=new URL(item.cover_url);if(url.protocol==='https:'){const img=document.createElement('img');img.src=url.href;img.alt='Titelbild der Sammlung: '+(item.title||'Sammlung');img.loading='lazy';img.referrerPolicy='no-referrer';cover.replaceChildren(img)}}catch{}}
   const body=document.createElement('div');body.className='card-body';
   const badge=document.createElement('span');badge.className='badge';badge.textContent='❤️ '+(counts.get(item.id)||0)+' Likes · 👥 '+item.followers+' Profil-Follower';
   const title=document.createElement('h2');title.textContent=item.title;

@@ -847,6 +847,7 @@ async function toolyaCloudBoot(tool) {
                     if (idx !== 0) pendingPhotoReads--;
                     const imgThumb = document.createElement('img');
                     imgThumb.src = e.target.result;
+                    imgThumb.alt = 'Vorschau des Belegfotos ' + (idx + 1);
                     imgThumb.className = "w-14 h-14 object-cover rounded-lg border shadow-sm";
                     imgThumb.dataset.photoIndex = String(idx);
                     const next = [...previewContainer.children].find(child => Number(child.dataset.photoIndex) > idx);
@@ -1179,9 +1180,10 @@ async function toolyaCloudBoot(tool) {
             previewContainer.innerHTML = "";
             if (photos.length > 0) {
                 previewContainer.classList.remove('hidden');
-                photos.forEach(src => {
+                photos.forEach((src, index) => {
                     const imgThumb = document.createElement('img');
                     imgThumb.src = src;
+                    imgThumb.alt = 'Vorschau des Belegfotos ' + (index + 1);
                     imgThumb.className = "w-14 h-14 object-cover rounded-lg border shadow-sm";
                     previewContainer.appendChild(imgThumb);
                 });
@@ -1493,7 +1495,7 @@ async function toolyaCloudBoot(tool) {
                         <div class="flex items-start space-x-3">
                             ${photos.length > 0 
                                 ? `<div class="relative cursor-pointer" onclick="openGalleryModal(${safeHaushaltsId(r.id)})">
-                                     <img src="${photos[0]}" class="w-16 h-16 object-cover rounded-xl border shadow-sm">
+                                     <img src="${photos[0]}" alt="Belegfoto zur Buchung" class="w-16 h-16 object-cover rounded-xl border shadow-sm">
                                      ${photos.length > 1 ? `<span class="absolute bottom-0 right-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-br-xl">+${photos.length - 1}</span>` : ''}
                                    </div>` 
                                 : `<div class="w-16 h-16 ${isIncome ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'} rounded-xl flex items-center justify-center font-bold text-xl">${isIncome ? '🔺' : '🧾'}</div>`
@@ -1619,7 +1621,7 @@ async function toolyaCloudBoot(tool) {
             document.getElementById('galleryTitle').innerText = `🖼️ Galerie: ${r.title || 'Beleg'}`;
             container.innerHTML = photos.map((src, idx) => `
                 <div class="space-y-1 text-center">
-                    <img src="${src}" class="w-full object-contain rounded-xl border max-h-80 bg-gray-100">
+                    <img src="${src}" alt="Belegfoto ${idx + 1} zur Buchung" class="w-full object-contain rounded-xl border max-h-80 bg-gray-100">
                     <span class="text-xs text-gray-500">Seite ${idx + 1} von ${photos.length}</span>
                 </div>
             `).join('');

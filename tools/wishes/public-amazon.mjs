@@ -38,7 +38,7 @@ function card(p,detail=false,preview=false){
  const avatar=text('span',p.display_name.split(/\s+/).filter(Boolean).map(x=>x[0]).slice(0,2).join('').toUpperCase(),'avatar');
  avatar.setAttribute('aria-hidden','true');
  if(p.imported){
-  const img=document.createElement('img');img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';img.className='imported-logo';
+  const img=document.createElement('img');img.alt='Symbol der importierten Wunschliste von '+p.display_name;img.loading='lazy';img.referrerPolicy='no-referrer';img.className='imported-logo';
   const fallback=()=>new URL('../../assets/toolya/headers/toolya_wishlist_'+(window.toolyaBuddy?.character==='purple'?'purple':'turquoise')+'_welcome_400.webp',import.meta.url).href;
   img.src=sourceFavicon(p.source_url)||fallback();
   img.onerror=()=>{img.onerror=null;img.src=fallback()};
@@ -98,7 +98,7 @@ function makePublicCarouselCard(p){
  const a=document.createElement('a');a.className='wish-public-card';a.href=profileUrl(p.user_id);a.setAttribute('aria-label','Öffentliches Wunschprofil von '+p.display_name+' ansehen');
  const media=document.createElement('div');media.className='wish-public-card-media';
  const icon=document.createElement('span');icon.className='wish-public-card-graphic';icon.textContent=/tier|pfoten|hund|katze|animal/i.test(p.display_name+' '+(p.bio||''))?'🐾':/baby|familie/i.test(p.display_name+' '+(p.bio||''))?'🧸':/hochzeit/i.test(p.display_name+' '+(p.bio||''))?'💍':/schule|bildung|buch/i.test(p.display_name+' '+(p.bio||''))?'📚':'🎁';media.append(icon);
- if(p.logo_url&&/^https:\/\//i.test(p.logo_url)){const img=document.createElement('img');img.src=p.logo_url;img.loading='lazy';img.alt='';img.referrerPolicy='no-referrer';img.onerror=()=>img.remove();media.append(img)}
+ if(p.logo_url&&/^https:\/\//i.test(p.logo_url)){const img=document.createElement('img');img.src=p.logo_url;img.loading='lazy';img.alt='Logo von '+p.display_name;img.referrerPolicy='no-referrer';img.onerror=()=>img.remove();media.append(img)}
  const body=document.createElement('div');body.className='wish-public-card-body';
  const name=document.createElement('h3');name.textContent=p.display_name;
  const description=document.createElement('p');description.textContent=(p.bio||'Öffentliche Amazon-Wunschliste ansehen und Wünsche entdecken.').trim().slice(0,145);

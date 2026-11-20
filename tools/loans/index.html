@@ -944,7 +944,7 @@
                     return `
                         <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 b3-loan-card ${i.status !== 'active' ? 'opacity-60' : ''}">
                             <div class="flex items-center space-x-3 b3-loan-card-identity">
-                                ${safeImageUrl(i.photo) ? `<img src="${safeImageUrl(i.photo)}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" data-loan-action="qr" data-loan-index="${itemIndex}">` : `<div data-loan-action="qr" data-loan-index="${itemIndex}" class="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer" title="QR-Code anzeigen">📱 QR</div>`}
+                                ${safeImageUrl(i.photo) ? `<img src="${safeImageUrl(i.photo)}" alt="Foto des verliehenen Gegenstands" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" data-loan-action="qr" data-loan-index="${itemIndex}">` : `<div data-loan-action="qr" data-loan-index="${itemIndex}" class="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer" title="QR-Code anzeigen">📱 QR</div>`}
                                 <div>
                                     <div class="flex items-center space-x-2 flex-wrap gap-1">
                                         <span class="text-xs font-bold text-gray-800">📦 ${escapeHtml(i.title)}</span>

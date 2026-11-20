@@ -778,7 +778,7 @@
             let photos = Array.isArray(p.galleryPhotos) ? p.galleryPhotos : [];
             if (photos.length === 0 && p.photo) photos = [p.photo];
             photos = photos.filter(img => typeof img === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(img));
-            document.getElementById('galleryGrid').innerHTML = photos.map((img, idx) => `<div class="relative group border rounded-xl overflow-hidden bg-gray-100"><img src="${escapeHtml(img)}" class="w-full h-32 object-cover"><span class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-[9px] px-1.5 py-0.5 rounded">Foto ${idx+1}</span></div>`).join('') || `<p class="col-span-2 text-xs text-gray-400 text-center py-4">Keine Fotos.</p>`;
+            document.getElementById('galleryGrid').innerHTML = photos.map((img, idx) => `<div class="relative group border rounded-xl overflow-hidden bg-gray-100"><img src="${escapeHtml(img)}" alt="Pflanzenfoto ${idx + 1}" class="w-full h-32 object-cover"><span class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-[9px] px-1.5 py-0.5 rounded">Foto ${idx+1}</span></div>`).join('') || `<p class="col-span-2 text-xs text-gray-400 text-center py-4">Keine Fotos.</p>`;
         }
         async function addGalleryPhoto() {
             const rawId = document.getElementById('galleryPlantId').value;
@@ -1162,7 +1162,7 @@
                     return `
                         <div class="b3-plant-card p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                             <div class="b3-plant-card-identity flex items-center space-x-3">
-                                ${typeof p.photo === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(p.photo) ? `<img src="${escapeHtml(p.photo)}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" onclick="openGalleryModal(${p.id})">` : `<div onclick="openGalleryModal(${p.id})" class="w-12 h-12 bg-lime-100 text-lime-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer">📸</div>`}
+                                ${typeof p.photo === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(p.photo) ? `<img src="${escapeHtml(p.photo)}" alt="Foto der Pflanze ${escapeHtml(p.name)}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" onclick="openGalleryModal(${p.id})">` : `<div onclick="openGalleryModal(${p.id})" class="w-12 h-12 bg-lime-100 text-lime-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer">📸</div>`}
                                 <div>
                                     <div class="flex items-center space-x-2 flex-wrap gap-1">
                                         <span class="text-xs font-bold text-gray-800">${escapeHtml(p.name)}</span>

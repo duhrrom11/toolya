@@ -754,7 +754,7 @@
                         <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
                             <div class="b3-pet-profile-heading flex items-center justify-between gap-3">
                                 <div class="b3-pet-profile-identity flex items-center space-x-3">
-                                    ${p.photo ? `<button type="button" class="b3-photo-trigger" aria-label="Haustierfoto vergrößern" onclick="zoomImage(this.firstElementChild.src)"><img alt="" src="${p.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0"></button>` : defaultPetIcon}
+                                    ${p.photo ? `<button type="button" class="b3-photo-trigger" aria-label="Haustierfoto vergrößern" onclick="zoomImage(this.firstElementChild.src)"><img alt="Haustierfoto" src="${p.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0"></button>` : defaultPetIcon}
                                     <div>
                                         <h4 class="font-bold text-sm text-teal-800">${p.name}</h4>
                                         <p class="text-xs text-gray-600">${p.species || 'k.A.'} ${p.chip ? '| Chip: ' + p.chip : ''}</p>
