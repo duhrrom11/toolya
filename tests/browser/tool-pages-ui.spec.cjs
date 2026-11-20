@@ -1621,3 +1621,19 @@ test('meter handover prints only the blank form on one A4 page', async ({ page }
   expect(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
   await testInfo.attach('zaehlerprotokoll-a4', { body: pdf, contentType: 'application/pdf' });
 });
+
+test('moving boxes guide prints the sample QR label without the instructions', async ({ page }) => {
+  await isolated(page, false);
+  await page.goto('/umzugskisten/');
+  await expect(page.locator('#etiketten').getByRole('link', { name: 'öffentliche Musteretikett' }))
+    .toHaveAttribute('href', '#musteretikett');
+
+  await page.emulateMedia({ media: 'print' });
+  await expect(page.locator('#musteretikett')).toBeHidden();
+  await expect(page.locator('#fragen')).toBeHidden();
+  const label = page.getByRole('region', { name: 'Druckbares Musteretikett' });
+  await expect(label.getByText('Kiste 07 · Küche')).toBeVisible();
+  const qr = label.getByRole('img', { name: 'QR-Code zum öffentlichen Musteretikett' });
+  await expect(qr).toBeVisible();
+  await expect(qr).toHaveJSProperty('naturalWidth', 328);
+});
