@@ -1,0 +1,73 @@
+name: Public SEO mobile lab
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/public-seo-mobile.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+      - name: Measure canonical public pages
+        run: |
+          node <<'JS'
+          const assert = require('node:assert/strict');
+          const { chromium, devices } = require('playwright');
+          const paths = ['/', '/backform-rechner/', '/tools/wishes/public.html'];
+          (async () => {
+            const browser = await chromium.launch();
+            try {
+              for (const path of paths) {
+                const url = 'https://toolya.app' + path;
+                const samples = [];
+                for (let run = 0; run < 3; run++) {
+                  const context = await browser.newContext({ ...devices['Pixel 7'], serviceWorkers: 'block' });
+                  try {
+                    await context.route('**/*', route => {
+                      const { hostname } = new URL(route.request().url());
+                      return hostname === 'toolya.app' && route.request().method() === 'GET'
+                        ? route.continue() : route.abort();
+                    });
+                    const page = await context.newPage();
+                    await page.addInitScript(() => {
+                      new PerformanceObserver(list => {
+                        window.lastLcp = list.getEntries().at(-1).startTime;
+                      }).observe({ type: 'largest-contentful-paint', buffered: true });
+                    });
+                    const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
+                    assert.equal(response.status(), 200);
+                    assert.equal(page.url(), url);
+                    assert.doesNotMatch(response.headers()['x-robots-tag'] || '', /noindex/i);
+                    await page.waitForFunction(() => window.lastLcp > 0);
+                    await page.waitForTimeout(3000);
+                    const sample = await page.evaluate(() => ({
+                      canonical: document.querySelector('link[rel=canonical]')?.href,
+                      robots: [...document.querySelectorAll('meta[name=robots],meta[name=googlebot],meta[name=bingbot]')].map(node => node.content).join(','),
+                      fcp: Math.round(performance.getEntriesByName('first-contentful-paint')[0].startTime),
+                      lcp: Math.round(window.lastLcp)
+                    }));
+                    assert.equal(sample.canonical, url);
+                    assert.doesNotMatch(sample.robots, /noindex/i);
+                    samples.push({ fcp: sample.fcp, lcp: sample.lcp });
+                  } finally {
+                    await context.close();
+                  }
+                }
+                console.log('[public SEO mobile]', JSON.stringify({ path, samples }));
+              }
+            } finally {
+              await browser.close();
+            }
+          })().catch(error => { console.error(error); process.exitCode = 1; });
+          JS
