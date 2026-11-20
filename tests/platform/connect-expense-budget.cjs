@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 const {parseHTML}=require('linkedom');
 (async()=>{
-  const {document}=parseHTML('<html><body><main><button onclick="saveEvent()">Speichern</button></main></body></html>');
+  const {document}=parseHTML('<html><body><main><input id="expenseCost" value="3.50"><button onclick="saveEvent()">Speichern</button></main></body></html>');
   global.document=document;
   let approve=true;
   global.window={confirm:()=>approve};
@@ -22,11 +22,17 @@ const {parseHTML}=require('linkedom');
     }
   };
   const mounted=mountExpenseConnect({host:document.querySelector('main'),
-    saveSelector:'[onclick="saveEvent()"]',controller,client,userId:'a',
+    saveSelector:'[onclick="saveEvent()"]',costSelector:'#expenseCost',
+    controller,client,userId:'a',
     sourceTool:'parkplatz-merker-parkschein-timer',recordsKey:'sessions'});
   const choice=document.getElementById('toolya-connect-expense-choice');
   const retry=document.querySelector('#toolya-connect-expense button');
-  assert(choice&&!choice.checked,'option must be off by default');
+  assert(choice&&!choice.checked&&!choice.disabled,'valid opt-in must be off by default');
+  const amountInput=document.getElementById('expenseCost');
+  amountInput.value='0';amountInput.dispatchEvent(new document.defaultView.Event('input'));
+  assert.equal(choice.disabled,true,'free activities must not show an actionable transfer');
+  amountInput.value='3.50';amountInput.dispatchEvent(new document.defaultView.Event('input'));
+  assert.equal(choice.disabled,false);
   choice.checked=true;assert.equal(mounted.selected,true);
   approve=false;
   assert.equal(await mounted.transfer(101),false);
