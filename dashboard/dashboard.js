@@ -117,10 +117,11 @@ async function removeWithFocus(kind,item) {
 function renderItems() {
   const tasks=activeItems('tasks');
   const reminders=activeItems('reminders').filter(x=>typeof x.due==='string'&&!Number.isNaN(Date.parse(x.due))).sort((a,b)=>a.due.localeCompare(b.due));
-  $('task-count').textContent=tasks.filter(t=>!t.done).length;
+  const waterTasks=upcomingWateringTasks();
+  $('task-count').textContent=tasks.filter(t=>!t.done).length+waterTasks.length;
   $('reminder-count').textContent=reminders.filter(r=>!r.done).length;
   const taskHost=$('tasks');taskHost.replaceChildren();
-  if(!tasks.length)taskHost.append(element('li','Noch keine Aufgaben angelegt.','empty'));
+  if(!tasks.length&&!waterTasks.length)taskHost.append(element('li','Noch keine Aufgaben angelegt.','empty'));
   for(const t of tasks) {
     const li=element('li',undefined,t.done?'done':'');
     const cb=document.createElement('input');cb.type='checkbox';cb.checked=!!t.done;
@@ -131,6 +132,17 @@ function renderItems() {
     del.setAttribute('aria-label','Aufgabe entfernen: '+t.text);del.dataset.entryId=t.id;
     del.onclick=()=>removeWithFocus('tasks',t);
     li.append(cb,txt,del);taskHost.append(li);
+  }
+  for(const item of waterTasks) {
+    const li=element('li',undefined,'water-connect-item'+(item.overdue?' overdue':''));
+    const txt=element('span','💧 '+item.name);
+    txt.append(element('small','Gießplan · '+new Date(item.due+'T12:00:00Z').toLocaleDateString('de-DE',{dateStyle:'medium'})+
+      (item.overdue?' · überfällig':''),'date'));
+    const button=element('button','Gegossen');button.type='button';
+    button.setAttribute('aria-label',item.name+' heute gegossen');
+    button.disabled=wateringBusy;
+    button.onclick=()=>completeWatering(item);
+    li.append(txt,button);taskHost.append(li);
   }
   const remindHost=$('reminders');remindHost.replaceChildren();
   if(!reminders.length)remindHost.append(element('li','Noch keine Erinnerungen angelegt.','empty'));
@@ -157,38 +169,30 @@ function clearWatering(message='Zum Synchronisieren bitte mit deinem Toolya-Kont
   watering=null;wateringTasks=[];wateringUserId=null;wateringLastRead=0;
   $('watering-connect-status').textContent=message;
   $('watering-connect-form').hidden=true;
-  $('watering-connect-tasks').replaceChildren();
+  renderItems();
+}
+async function completeWatering(item) {
+  if(wateringBusy||status!=='cloud'||!watering)return;
+  wateringBusy=true;++wateringLoadGeneration;renderItems();
+  let failed=false;
+  try {
+    const data=await watering.complete(item.id);
+    if(status!=='cloud'||wateringUserId!==data.userId)return;
+    wateringTasks=data.tasks;
+    $('watering-connect-status').textContent='Gießvorgang im Pflanzen-Tool gespeichert.';
+  } catch(error) {
+    $('watering-connect-status').textContent='Gießvorgang nicht bestätigt: '+(error?.message||'Bitte Gießplan neu laden.');
+    failed=true;
+  } finally {wateringBusy=false;if(failed)await loadWatering(true);else renderWatering();}
+}
+function upcomingWateringTasks() {
+  if(status!=='cloud'||!watering||wateringUserId!==cloud.userId)return [];
+  const today=todayLocal();
+  const horizon=new Date(new Date(today+'T12:00:00Z').getTime()+14*86400000).toISOString().slice(0,10);
+  return wateringTasks.filter(task=>task.due<=horizon).slice(0,60);
 }
 function renderWatering() {
-  const host=$('watering-connect-tasks');host.replaceChildren();
-  const today=todayLocal();
-  const relevant=wateringTasks.filter(task=>task.due<=today || task.due<=new Date(new Date(today+'T12:00:00Z').getTime()+14*86400000).toISOString().slice(0,10)).slice(0,60);
-  if(!relevant.length){
-    host.append(element('li','Keine Gießaufgaben in den nächsten 14 Tagen.','empty'));
-  }
-  for(const item of relevant){
-    const li=element('li',undefined,item.overdue?'overdue':'');
-    const label=element('span','💧 '+item.name);
-    label.append(element('small','Gießen am '+new Date(item.due+'T12:00:00Z').toLocaleDateString('de-DE',{dateStyle:'medium'})+(item.overdue?' · überfällig':''),'date'));
-    const button=element('button','Gegossen');
-    button.type='button';button.setAttribute('aria-label',item.name+' heute gegossen');
-    button.disabled=wateringBusy;
-    button.onclick=async()=>{
-      if(wateringBusy||status!=='cloud'||!watering)return;
-      wateringBusy=true;++wateringLoadGeneration;renderWatering();
-      let failed=false;
-      try{
-        const data=await watering.complete(item.id);
-        if(status!=='cloud'||wateringUserId!==data.userId)return;
-        wateringTasks=data.tasks;renderWatering();
-        $('watering-connect-status').textContent='Gießvorgang im Pflanzen-Tool gespeichert.';
-      }catch(error){
-        $('watering-connect-status').textContent='Gießvorgang nicht bestätigt: '+(error?.message||'Bitte Gießplan neu laden.');
-        failed=true;
-      }finally{wateringBusy=false;if(failed)await loadWatering(true);else renderWatering();}
-    };
-    li.append(label,button);host.append(li);
-  }
+  renderItems();
   const select=$('watering-connect-plant'),current=select.value;
   select.replaceChildren();
   for(const item of wateringTasks){
@@ -223,7 +227,7 @@ async function loadWatering(force=false) {
     if(generation!==wateringLoadGeneration)return;
     watering=null;wateringTasks=[];wateringUserId=null;
     $('watering-connect-form').hidden=true;
-    $('watering-connect-tasks').replaceChildren();
+    renderItems();
     $('watering-connect-status').textContent='Gießplan nicht verfügbar: '+(error?.message||'Bitte später erneut öffnen.');
   }
 }
