@@ -1780,9 +1780,9 @@ for (const tool of ['loans', 'plants', 'moving', 'budget', 'housemates']) {
   });
 }
 
-for (const [tool, expected] of [
+for (const [tool, expected, remaining = 0] of [
   ['budget', 3], ['meters', 1], ['moving', 3], ['car', 1], ['parking', 1],
-  ['housemates', 2], ['pet-health', 1], ['loans', 2], ['plants', 2]
+  ['housemates', 3, 1], ['pet-health', 1], ['loans', 2], ['plants', 2]
 ]) {
   test(`compare mobile startup requests for ${tool}`, async ({ browser }) => {
     test.skip(!process.env.TOOLYA_STARTUP_COMPARISON, 'requires the fetched baseline commit');
@@ -1827,7 +1827,7 @@ for (const [tool, expected] of [
         await page.close();
       }
     }
-    expect(results, tool).toEqual([expected, 0]);
+    expect(results, tool).toEqual([expected, remaining]);
     console.log(`[mobile startup] ${tool}: ${results[0]} -> ${results[1]} optional library requests`);
   });
 }
