@@ -91,3 +91,33 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(-
 .watering-connect-form button{grid-column:3;grid-row:2}
 .watering-connect .items li button{min-height:38px}
 @media(max-width:720px){.watering-connect-form{grid-template-columns:1fr}.watering-connect-form label,.watering-connect-form input,.watering-connect-form select,.watering-connect-form button{grid-row:auto;grid-column:1}}
+
+/* Unified shopping list: standard dashboard controls, source and printed origin preserved. */
+.unified-shopping{margin-top:18px}
+.unified-shopping .panel-head button{min-height:44px}
+.unified-shopping .shopping-filter{display:flex;align-items:center;gap:9px;margin:12px 0;font-size:13px;font-weight:650}
+.unified-shopping .shopping-filter input{width:18px;height:18px;accent-color:#147c70}
+.unified-shopping .shopping-source{display:block;font-size:11px;font-weight:600;color:#526975;margin-top:3px}
+.unified-shopping .shopping-entry{display:flex;align-items:center;gap:11px;min-height:48px;flex-wrap:wrap}
+.unified-shopping .shopping-entry input[type=checkbox]{width:19px;height:19px;flex:none;accent-color:#147c70}
+.unified-shopping .shopping-entry>span{flex:1 1 160px;min-width:0;overflow-wrap:anywhere}
+.unified-shopping .shopping-entry.done .shopping-name{text-decoration:line-through;color:#687c83}
+.unified-shopping .shopping-entry>a{font-size:12px;font-weight:700;color:#0c686b}
+.unified-shopping .shopping-entry button{min-height:44px}
+.unified-shopping .entry[hidden]{display:none}
+@media(max-width:500px){.unified-shopping .shopping-entry{display:flex}.unified-shopping .shopping-entry button{grid-column:auto;justify-self:auto}}
+@media print{
+ @page{size:auto;margin:14mm}
+ body{background:white!important;color:black!important}
+ body>*:not(main){display:none!important}
+ main{width:100%!important;max-width:none!important;margin:0!important;padding:0!important}
+ main>*:not(#unified-shopping){display:none!important}
+ #unified-shopping{display:block!important;box-shadow:none!important;background:white!important;border:0!important;padding:0!important;margin:0!important}
+ #unified-shopping .panel-head button,#shopping-form,#shopping-status,.shopping-filter,.shopping-explanation,#unified-shopping .shopping-entry button,#unified-shopping .shopping-entry a{display:none!important}
+ #unified-shopping .panel-head h2{font-size:22pt!important;color:black!important}
+ #unified-shopping .items{max-height:none!important;overflow:visible!important}
+ #unified-shopping .items li{break-inside:avoid;display:flex!important;border-bottom:1px solid #aaa!important;background:white!important;color:black!important}
+ #unified-shopping .items li.done{display:none!important}
+ #unified-shopping .shopping-source{color:#555!important}
+ #unified-shopping input[type=checkbox]{appearance:auto;print-color-adjust:exact}
+}

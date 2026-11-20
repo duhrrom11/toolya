@@ -1,4 +1,5 @@
 import { createDashboardCloud } from './modules/cloud-sync.mjs';
+import { createUnifiedShopping } from './modules/unified-shopping.mjs';
 import { createWateringConnect, todayLocal } from '../shared/toolya/connect-watering.mjs';
 
 const tools = [
@@ -114,14 +115,127 @@ async function removeWithFocus(kind,item) {
     (remaining[Math.min(index,remaining.length-1)] || $(kind==='tasks'?'task-text':'reminder-text')).focus();
   }
 }
+// Toolya Connect provider registry: WG shopping and cleaning tasks retain their own Cloud source.
+// Other tools can register additional source adapters through unified-shopping.mjs.
+let connectedShopping=null, connectedItems=[], connectedTasks=[], connectedOwner=null;
+let connectedBusy=false, connectedLoading=false, connectedGeneration=0, connectedLastRead=0;
+function resetUnified(message='Für die gemeinsame Einkaufsliste bitte anmelden.') {
+  ++connectedGeneration;
+  connectedShopping=null;connectedItems=[];connectedTasks=[];connectedOwner=null;connectedLastRead=0;
+  $('shopping-form').hidden=true;$('shopping-print').disabled=true;
+  $('shopping-status').textContent=message;
+  renderShopping();renderItems();
+}
+function renderShopping() {
+  const host=$('shopping-items');host.replaceChildren();
+  const visible=connectedItems.filter(item=>!item.done||$('shopping-show-completed').checked)
+    .sort((a,b)=>Number(a.done)-Number(b.done)||a.origin.localeCompare(b.origin,'de')||a.text.localeCompare(b.text,'de'));
+  $('shopping-print').disabled=status!=='cloud'||connectedBusy||connectedLoading||!connectedItems.some(x=>!x.done);
+  if(!visible.length){host.append(element('li',connectedItems.length?'Alle Artikel bestätigt.':'Noch keine Einkaufsartikel vorhanden.','empty'));return;}
+  for(const item of visible){
+    const li=element('li',undefined,'shopping-entry'+(item.done?' done':''));
+    const cb=document.createElement('input');
+    cb.type='checkbox';cb.checked=!!item.done;cb.disabled=connectedBusy;
+    cb.setAttribute('aria-label',item.text+' gekauft');cb.onchange=()=>changeConnected(item,cb.checked);
+    const details=element('span');
+    details.append(element('span',item.text,'shopping-name'),element('small',item.origin,'shopping-source'));
+    const link=element('a','Quelle');link.href=item.url;
+    link.setAttribute('aria-label','In '+item.origin+' öffnen');
+    li.append(cb,details,link);
+    if(item.source==='dashboard'){
+      const remove=element('button','Entfernen');remove.type='button';remove.disabled=connectedBusy;
+      remove.setAttribute('aria-label','Artikel entfernen: '+item.text);
+      remove.onclick=()=>removeConnected(item);li.append(remove);
+    }
+    host.append(li);
+  }
+}
+async function loadUnified(force=false) {
+  if(status!=='cloud'||!cloud.userId||connectedBusy||connectedLoading)return;
+  const uid=cloud.userId;
+  if(!force&&connectedOwner===uid&&Date.now()-connectedLastRead<45000)return;
+  const generation=++connectedGeneration;
+  connectedLoading=true;
+  $('shopping-status').textContent='Einkaufslisten werden synchronisiert …';
+  try{
+    const client=globalThis.toolyaDashboardAuthClient;
+    if(!client)throw Error('Die Cloud-Anmeldung ist nicht verfügbar.');
+    const source=connectedShopping||createUnifiedShopping(client);
+    const state=await source.load();
+    if(generation!==connectedGeneration||status!=='cloud'||cloud.userId!==uid||state.userId!==uid)return;
+    connectedShopping=source;connectedOwner=uid;connectedItems=state.shopping;connectedTasks=state.tasks;
+    connectedLastRead=Date.now();
+    $('shopping-form').hidden=false;
+    const open=connectedItems.filter(x=>!x.done).length;
+    $('shopping-status').textContent=(state.partial?'Teilweise geladen – bitte die Quellen prüfen. · ':'')+
+      open+' offene Artikel aus '+new Set(connectedItems.map(x=>x.origin)).size+' Quellen.';
+    renderShopping();renderItems();
+  }catch(error){
+    if(generation!==connectedGeneration)return;
+    connectedShopping=null;connectedOwner=null;connectedItems=[];connectedTasks=[];
+    $('shopping-form').hidden=true;
+    $('shopping-status').textContent='Einkaufslisten nicht vollständig verfügbar: '+(error?.message||'Bitte später erneut laden.');
+    renderShopping();renderItems();
+  }finally{connectedLoading=false;renderShopping();}
+}
+async function changeConnected(item,done) {
+  if(status!=='cloud'||!connectedShopping||connectedBusy)return;
+  connectedBusy=true;renderShopping();renderItems();
+  try{
+    const result=await connectedShopping.setDone(item,done);
+    if(status!=='cloud'||result.userId!==cloud.userId)return;
+    connectedItems=result.shopping;connectedTasks=result.tasks;connectedLastRead=Date.now();
+    $('shopping-status').textContent='Änderung in Toolya Cloud bestätigt.';
+  }catch(error){
+    $('shopping-status').textContent='Änderung nicht bestätigt: '+(error?.message||'Speicherkonflikt.');
+    connectedBusy=false;await loadUnified(true);
+  }finally{connectedBusy=false;renderShopping();renderItems();}
+}
+async function removeConnected(item){
+  if(!connectedShopping||connectedBusy||item.source!=='dashboard')return;
+  connectedBusy=true;renderShopping();
+  try{
+    const result=await connectedShopping.remove(item);
+    if(status!=='cloud'||result.userId!==cloud.userId)return;
+    connectedItems=result.shopping;connectedTasks=result.tasks;
+    $('shopping-status').textContent='Artikel aus dem Dashboard entfernt.';
+  }catch(error){
+    $('shopping-status').textContent='Entfernen nicht bestätigt: '+(error?.message||'Bitte neu laden.');
+    connectedBusy=false;await loadUnified(true);
+  }finally{connectedBusy=false;renderShopping();renderItems();}
+}
+$('shopping-form').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(status!=='cloud'||!connectedShopping||connectedBusy)return;
+  const input=$('shopping-title'),title=input.value.trim();
+  if(!title)return;
+  connectedBusy=true;renderShopping();
+  try{
+    const result=await connectedShopping.add(title);
+    if(status!=='cloud'||result.userId!==cloud.userId)return;
+    connectedItems=result.shopping;connectedTasks=result.tasks;input.value='';
+    $('shopping-status').textContent='Artikel in Toolya Cloud gespeichert.';
+  }catch(error){
+    $('shopping-status').textContent='Artikel nicht gespeichert: '+(error?.message||'Bitte erneut versuchen.');
+    connectedBusy=false;await loadUnified(true);
+  }finally{connectedBusy=false;renderShopping();renderItems();input.focus();}
+});
+$('shopping-show-completed').addEventListener('change',renderShopping);
+$('shopping-print').addEventListener('click',()=>{
+  if(status==='cloud'&&!connectedBusy&&connectedItems.some(x=>!x.done))window.print();
+});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&status==='cloud')void loadUnified(true);});
+setInterval(()=>{if(!document.hidden&&status==='cloud')void loadUnified();},60000);
+
 function renderItems() {
   const tasks=activeItems('tasks');
   const reminders=activeItems('reminders').filter(x=>typeof x.due==='string'&&!Number.isNaN(Date.parse(x.due))).sort((a,b)=>a.due.localeCompare(b.due));
   const waterTasks=upcomingWateringTasks();
-  $('task-count').textContent=tasks.filter(t=>!t.done).length+waterTasks.length;
+  const extraTasks=status==='cloud'&&connectedOwner===cloud.userId?connectedTasks.filter(t=>!t.done):[];
+  $('task-count').textContent=tasks.filter(t=>!t.done).length+waterTasks.length+extraTasks.length;
   $('reminder-count').textContent=reminders.filter(r=>!r.done).length;
   const taskHost=$('tasks');taskHost.replaceChildren();
-  if(!tasks.length&&!waterTasks.length)taskHost.append(element('li','Noch keine Aufgaben angelegt.','empty'));
+  if(!tasks.length&&!waterTasks.length&&!extraTasks.length)taskHost.append(element('li','Noch keine Aufgaben angelegt.','empty'));
   for(const t of tasks) {
     const li=element('li',undefined,t.done?'done':'');
     const cb=document.createElement('input');cb.type='checkbox';cb.checked=!!t.done;
@@ -143,6 +257,15 @@ function renderItems() {
     button.disabled=wateringBusy;
     button.onclick=()=>completeWatering(item);
     li.append(txt,button);taskHost.append(li);
+  }
+  for(const item of extraTasks) {
+    const li=element('li',undefined,'connect-task');
+    const cb=document.createElement('input');cb.type='checkbox';cb.checked=false;cb.disabled=connectedBusy;
+    cb.setAttribute('aria-label','WG-Aufgabe '+item.text+' erledigt');cb.onchange=()=>changeConnected(item,cb.checked);
+    const span=element('span',item.text);
+    span.append(element('small','WG-Putzplan'+(item.assignee?' · '+item.assignee:''),'date'));
+    const link=element('a','Zur WG');link.href=item.url;
+    li.append(cb,span,link);taskHost.append(li);
   }
   const remindHost=$('reminders');remindHost.replaceChildren();
   if(!reminders.length)remindHost.append(element('li','Noch keine Erinnerungen angelegt.','empty'));
@@ -252,8 +375,9 @@ $('watering-connect-date').value=todayLocal();
 
 const cloud=createDashboardCloud(({status:next,message,userId})=>{
   status=next;
-  if(next==='cloud'){void loadWatering();}
-  else clearWatering(next==='local'?'Für Gießaufgaben bitte anmelden.':'Gießplan bis zur bestätigten Anmeldung gesperrt.');
+  if(next==='cloud'){void loadWatering();void loadUnified();}
+  else {resetUnified(next==='local'?'Für die gemeinsame Einkaufsliste bitte anmelden.':'Einkaufslisten bis zur bestätigten Anmeldung gesperrt.');}
+  if(next!=='cloud')clearWatering(next==='local'?'Für Gießaufgaben bitte anmelden.':'Gießplan bis zur bestätigten Anmeldung gesperrt.');
   document.documentElement.dataset.dashboardSync=next;
   $('sync-status').textContent=next==='cloud'?'☁ Aufgaben & Erinnerungen synchronisiert':next==='local'?'Nur auf diesem Gerät':next==='loading'?'Cloud wird geladen …':'Cloud nicht erreichbar';
   $('sync-detail').textContent=message||(next==='local'?'Für die geräteübergreifende Speicherung bitte anmelden.':'');

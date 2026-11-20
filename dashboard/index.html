@@ -72,6 +72,18 @@
 </form>
 <p class="hint">Fällige und überfällige Gießaufgaben erscheinen oben unter „Meine Aufgaben“. Im Dashboard erledigte Gießvorgänge werden unmittelbar im Pflanzen-Tool dokumentiert.</p>
 </section>
+<section id="unified-shopping" class="panel unified-shopping" aria-labelledby="shopping-heading">
+<div class="panel-head"><h2 id="shopping-heading">🛒 Gemeinsame Einkaufsliste</h2><button id="shopping-print" type="button" disabled>Liste drucken</button></div>
+<p id="shopping-status" class="hint" role="status" aria-live="polite">Einkaufslisten werden geladen …</p>
+<form id="shopping-form" class="entry" hidden>
+<label class="sr" for="shopping-title">Artikel zur gemeinsamen Einkaufsliste hinzufügen</label>
+<input id="shopping-title" maxlength="160" placeholder="Was möchtest du einkaufen?" autocomplete="off" required>
+<button type="submit">Hinzufügen</button>
+</form>
+<label class="shopping-filter" for="shopping-show-completed"><input id="shopping-show-completed" type="checkbox"> Erledigte Artikel anzeigen</label>
+<ul id="shopping-items" class="items"></ul>
+<p class="hint shopping-explanation">Einkaufsartikel aus deinen berechtigten WG-Listen und aus dem Dashboard stehen hier zusammen. Ein bestätigter WG-Artikel wird auch im WG-Organisator als gekauft markiert. Wunschlisten bleiben eigenständig.</p>
+</section>
 <!-- Shared Toolya footer is mounted by platform.mjs after the main content. -->
 </main>
 <dialog id="settingsModal" class="dashboard-settings" aria-labelledby="settingsTitle">
