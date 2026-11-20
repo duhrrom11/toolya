@@ -10,6 +10,9 @@ const read = path => readFileSync(new URL(path, root), 'utf8');
 const readPage = path => parseHTML(read(path)).document;
 const sitemapUrls = Array.from(read('sitemap.xml').matchAll(/<loc>([^<]+)<\/loc>/g), match => match[1]);
 
+const guideUrls = sitemapUrls.map(entry => new URL(entry))
+  .filter(url => /^\/[^/]+\/$/.test(url.pathname));
+
 function hasNoindex(document) {
   return Array.from(document.querySelectorAll('meta[name]')).some(meta => {
     const name = meta.getAttribute('name').toLowerCase();
@@ -72,15 +75,33 @@ test('public guides link to the website publisher and identify it in JSON-LD', (
   assert.ok(readPage(publisher.pathname.slice(1)).getElementById(publisher.hash.slice(1)),
     'publisher anchor has no target');
 
-  const guides = sitemapUrls.map(entry => new URL(entry))
-    .filter(url => /^\/[^/]+\/$/.test(url.pathname));
-  assert.ok(guides.length > 0, 'public guides missing from sitemap');
-  for (const url of guides) {
+  assert.ok(guideUrls.length > 0, 'public guides missing from sitemap');
+  for (const url of guideUrls) {
     const page = readPage(url.pathname.slice(1) + 'index.html');
     const meta = JSON.parse(page.querySelector('script[type="application/ld+json"]').textContent);
     assert.equal(meta.publisher?.['@id'], publisher.href, url.pathname + ' publisher mismatch');
     const links = Array.from(page.querySelectorAll('footer a[href]'),
       link => new URL(link.getAttribute('href'), url).href);
     assert.ok(links.includes(publisher.href), url.pathname + ' publisher link missing');
+  }
+});
+
+test('public guide jump links and image accessibility attributes are present', () => {
+  for (const url of guideUrls) {
+    const path = url.pathname.slice(1) + 'index.html';
+    const page = readPage(path);
+    for (const link of page.querySelectorAll('a[href^="#"]')) {
+      const target = link.getAttribute('href').slice(1);
+      assert.ok(target && page.getElementById(target), path + ' missing jump target #' + target);
+    }
+    for (const image of page.querySelectorAll('main img')) {
+      const label = path + ' ' + image.getAttribute('src');
+      assert.ok(image.hasAttribute('alt'), label + ' missing alt attribute');
+      assert.match(image.getAttribute('width') ?? '', /^[1-9]\d*$/, label + ' missing width');
+      assert.match(image.getAttribute('height') ?? '', /^[1-9]\d*$/, label + ' missing height');
+      if (image.closest('figure, a')) {
+        assert.ok(image.getAttribute('alt').trim(), label + ' missing descriptive alt text');
+      }
+    }
   }
 });
