@@ -1692,3 +1692,30 @@ test('budget loads receipt OCR on demand and retries a failed download', async (
   await expect(page.locator('#ocrStatus')).toContainText('ausgefüllt');
   expect(downloads).toBe(2);
 });
+
+for (const [tool, action] of [['meters', 'exportHandoverPDF'], ['moving', 'exportInventoryPDF']]) {
+  test(`${tool} loads its PDF library on export and can retry`, async ({ page }) => {
+    await isolated(page, true);
+    let downloads = 0;
+    await page.route('**/jspdf.umd.min.js', async route => {
+      downloads++;
+      if (downloads === 1) return route.abort();
+      return route.fulfill({
+        contentType: 'application/javascript',
+        body: `window.jspdf = {jsPDF: class {
+          setFont() {} setFontSize() {} text() {} addPage() {}
+          splitTextToSize(value) { return [value]; }
+          save(filename) { window.pdfExportFilename = filename; }
+        }};`
+      });
+    });
+    await page.goto(origin + '/tools/' + tool + '/index.html');
+    expect(downloads).toBe(0);
+    await page.evaluate(() => { window.alert = message => { window.pdfExportError = message; }; });
+    await page.evaluate(handler => window[handler](), action);
+    await expect.poll(() => page.evaluate(() => window.pdfExportError)).toContain('Bitte versuche es erneut');
+    await page.evaluate(handler => window[handler](), action);
+    await expect.poll(() => page.evaluate(() => window.pdfExportFilename)).toMatch(/\.pdf$/);
+    expect(downloads).toBe(2);
+  });
+}

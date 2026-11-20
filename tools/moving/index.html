@@ -22,7 +22,6 @@
     <!-- html5-qrcode für den Live-Kamera-Scanner -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <!-- jsPDF für den PDF-Report & QR-Etiketten-Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
 <script src="../../shared/toolya/auth-page-gate.js"></script>
@@ -886,9 +885,10 @@
             }).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Einträge gefunden.</p>`;
         }
 
-        function exportInventoryPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+        async function exportInventoryPDF() {
+            const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
+            const doc = await createExportPdf();
+            if (!doc) return;
             const data = getData();
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
@@ -960,8 +960,9 @@
             let data = getData();
             if (data.boxes.length === 0) return alert("Keine Kisten vorhanden.");
 
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
+            const doc = await createExportPdf();
+            if (!doc) return;
             let x = 14, y = 20;
             let colWidth = 90, rowHeight = 45;
 
