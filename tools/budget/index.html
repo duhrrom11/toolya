@@ -21,8 +21,6 @@
     <!-- Chart.js für Finanz-Analysen -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- jsPDF für PDF-Berichte -->
-    <!-- QRCode.js für Sticker-Generierung -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
 <script src="../../shared/toolya/auth-page-gate.js"></script>
@@ -1653,10 +1651,16 @@ async function toolyaCloudBoot(tool) {
             document.getElementById('galleryModal').classList.add('hidden');
         }
 
-        function openQRModal(id) {
+        async function openQRModal(id) {
             const data = getData();
             const r = data.find(item => item && item.id === id);
             if (!r) return;
+            const { loadQrGenerator } = await import('../../shared/toolya/qr-generator.mjs');
+            const QRCode = await loadQrGenerator();
+            if (!QRCode) {
+                alert("Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.");
+                return;
+            }
             const modal = document.getElementById('qrModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -1678,15 +1682,11 @@ async function toolyaCloudBoot(tool) {
             const qrText = `GERÄT: ${r.title}\nKAUFDATUM: ${r.date}\nHÄNDLER: ${r.store || 'k.A.'}\nSERIENNR: ${r.sn || 'k.A.'}`;
 
             // QR content includes private receipt data: never send it to a third-party image service.
-            if (typeof QRCode === 'undefined') {
-                qrContainer.textContent = 'QR-Code momentan nicht verfügbar. Bitte die Seite neu laden.';
-            } else {
-                try {
-                    new QRCode(qrContainer, { text: qrText, width: 120, height: 120 });
-                } catch (error) {
-                    console.error('QR-Code konnte nicht erstellt werden:', error);
-                    qrContainer.textContent = 'QR-Code konnte nicht erstellt werden.';
-                }
+            try {
+                new QRCode(qrContainer, { text: qrText, width: 120, height: 120 });
+            } catch (error) {
+                console.error('QR-Code konnte nicht erstellt werden:', error);
+                qrContainer.textContent = 'QR-Code konnte nicht erstellt werden.';
             }
         }
 
