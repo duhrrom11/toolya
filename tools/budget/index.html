@@ -22,8 +22,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- jsPDF für PDF-Berichte -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Tesseract.js für OCR Texterkennung -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <!-- QRCode.js für Sticker-Generierung -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Supabase JS Client -->
@@ -1006,6 +1004,27 @@ async function toolyaCloudBoot(tool) {
         }
 
         /* --- Tesseract OCR --- */
+        let ocrLibraryPromise;
+        function loadOcrLibrary() {
+            if (window.Tesseract?.createWorker) return Promise.resolve(window.Tesseract);
+            if (!ocrLibraryPromise) {
+                ocrLibraryPromise = new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+                    script.onload = () => {
+                        if (window.Tesseract?.createWorker) resolve(window.Tesseract);
+                        else reject(new Error('OCR library unavailable'));
+                    };
+                    script.onerror = () => reject(new Error('OCR library failed to load'));
+                    document.head.append(script);
+                }).catch(error => {
+                    ocrLibraryPromise = undefined;
+                    throw error;
+                });
+            }
+            return ocrLibraryPromise;
+        }
+
         async function runOCR() {
             const input = document.getElementById('receiptPhotoInput');
             if (!input.files || !input.files[0]) return alert("Bitte wähle zuerst ein Belegfoto aus!");
@@ -1017,7 +1036,9 @@ async function toolyaCloudBoot(tool) {
             statusEl.classList.remove('hidden');
 
             try {
-                worker = await Tesseract.createWorker('deu');
+                const library = await loadOcrLibrary();
+                if (generation !== ocrGeneration) return;
+                worker = await library.createWorker('deu');
                 if (generation !== ocrGeneration) return;
                 const ret = await worker.recognize(file);
                 if (generation !== ocrGeneration) return;

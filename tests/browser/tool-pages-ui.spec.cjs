@@ -1666,3 +1666,29 @@ for (const path of ['/backform-rechner/', '/toolya-dashboard/', '/amazon-wunschl
     await expect(image).toBeHidden();
   });
 }
+
+test('budget loads receipt OCR on demand and retries a failed download', async ({ page }) => {
+  await isolated(page, true);
+  let downloads = 0;
+  await page.route('**/tesseract.min.js', async route => {
+    downloads++;
+    if (downloads === 1) return route.abort();
+    return route.fulfill({
+      contentType: 'application/javascript',
+      body: "window.Tesseract = {createWorker: async () => ({recognize: async () => ({data: {text: 'Gesamt 12,34 EUR'}}), terminate: async () => {}})};"
+    });
+  });
+  await page.goto(origin + '/tools/budget/index.html');
+  await expect.poll(() => page.evaluate(() => typeof toolyaCloudReady !== 'undefined' && toolyaCloudReady)).toBe(true);
+  expect(downloads).toBe(0);
+  await page.locator('#receiptPhotoInput').setInputFiles({
+    name: 'sample.png', mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJ1sAAAAASUVORK5CYII=', 'base64')
+  });
+  const scan = page.getByRole('button', { name: /Text automatisch erkennen/ });
+  await scan.click();
+  await expect(page.locator('#ocrStatus')).toContainText('fehlgeschlagen');
+  await scan.click();
+  await expect(page.locator('#ocrStatus')).toContainText('ausgefüllt');
+  expect(downloads).toBe(2);
+});
