@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const tools=[
 ['wishlist','Wishlist','wishes','wishlist.webp'],['kassenbon','Haushaltsbuch','budget','budget.webp'],['kisten','Umzugskisten','moving','moving.webp'],['pflanzen','Pflanzenpflege','plants','plants.webp'],['wg-kasse','WG-Organisator','housemates','wg-organisator.webp'],['notizen','Digitaler Nachlass','estate','digitaler-nachlass.webp'],['kfz','Autokosten','car','autokosten.webp'],['haustier','Tiergesundheit','pet-health','tiergesundheit.webp'],['parken','Parkplatz-Merker','parking','parkplatz-merker.webp'],['verleih','Verliehene Dinge','loans','verliehene-dinge.webp'],['energie','Zählerstände','meters','zaehlerstaende.webp'],['backform','Backform-Rechner','baking','backform-rechner.webp']
-].map(([id,name,route,img])=>({id,name,url:'../tools/'+route+'/',img:'../assets/toolya/home/'+img}));
+].map(([id,name,route,img])=>({id,name,url:'../tools/'+route+(route==='wishes'?'/public.html':'/'),img:'../assets/toolya/home/'+img}));
 const byId=new Map(tools.map(t=>[t.id,t]));
 const keys={favorites:'hub_favorites',recent:'toolya_recent_tools_v1',tasks:'toolya_dashboard_tasks_v1',reminders:'toolya_dashboard_reminders_v1'};
 const $=id=>document.getElementById(id);
