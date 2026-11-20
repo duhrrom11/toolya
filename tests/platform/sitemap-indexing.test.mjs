@@ -90,9 +90,14 @@ test('public guide jump links and image accessibility attributes are present', (
   for (const url of guideUrls) {
     const path = url.pathname.slice(1) + 'index.html';
     const page = readPage(path);
-    for (const link of page.querySelectorAll('a[href^="#"]')) {
-      const target = link.getAttribute('href').slice(1);
-      assert.ok(target && page.getElementById(target), path + ' missing jump target #' + target);
+    for (const link of page.querySelectorAll('a[href]')) {
+      const href = link.getAttribute('href');
+      const destination = new URL(href, url);
+      if (destination.origin !== origin || !destination.hash) continue;
+      const target = decodeURIComponent(destination.hash.slice(1));
+      const targetPath = destination.pathname.slice(1) + (destination.pathname.endsWith('/') ? 'index.html' : '');
+      const targetPage = targetPath === path ? page : readPage(targetPath);
+      assert.ok(targetPage.getElementById(target), path + ' missing jump target ' + href);
     }
     for (const image of page.querySelectorAll('main img')) {
       const label = path + ' ' + image.getAttribute('src');
