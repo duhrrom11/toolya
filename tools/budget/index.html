@@ -21,7 +21,6 @@
     <!-- Chart.js für Finanz-Analysen -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- jsPDF für PDF-Berichte -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- QRCode.js für Sticker-Generierung -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Supabase JS Client -->
@@ -1924,9 +1923,10 @@ async function toolyaCloudBoot(tool) {
    reader.readAsText(file);
  }
 
-        function exportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+        async function exportPDF() {
+            const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
+            const doc = await createExportPdf();
+            if (!doc) return;
             const data = getData();
 
             doc.setFontSize(16);
