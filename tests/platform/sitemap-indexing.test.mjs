@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 import { parseHTML } from 'linkedom';
 
@@ -103,5 +103,24 @@ test('public guide jump links and image accessibility attributes are present', (
         assert.ok(image.getAttribute('alt').trim(), label + ' missing descriptive alt text');
       }
     }
+  }
+});
+
+test('sitemap pages have complete social previews with local images', () => {
+  for (const entry of sitemapUrls) {
+    const url = new URL(entry);
+    const path = url.pathname.slice(1) + (url.pathname.endsWith('/') ? 'index.html' : '');
+    const page = readPage(path);
+    for (const property of ['og:title', 'og:description', 'og:locale', 'og:url', 'og:image']) {
+      const tags = page.querySelectorAll(`meta[property="${property}"]`);
+      assert.equal(tags.length, 1, path + ' expected exactly one ' + property);
+      assert.ok(tags[0].getAttribute('content')?.trim(), path + ' empty ' + property);
+    }
+    assert.equal(page.querySelector('meta[property="og:url"]').getAttribute('content'), entry);
+    const image = new URL(page.querySelector('meta[property="og:image"]').getAttribute('content'));
+    assert.equal(image.origin, origin, path + ' preview image must be hosted on Toolya');
+    assert.ok(existsSync(new URL(image.pathname.slice(1), root)), path + ' preview image missing');
+    assert.match(page.querySelector('meta[name="twitter:card"]')?.getAttribute('content') ?? '',
+      /^summary(_large_image)?$/, path + ' invalid Twitter card');
   }
 });
