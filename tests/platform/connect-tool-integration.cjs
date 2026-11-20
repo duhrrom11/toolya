@@ -31,3 +31,29 @@ const publicEntry=fs.readFileSync('tools/wishes/index.html','utf8');
 assert.doesNotMatch(publicEntry,/auth-page-gate|toolya-auth-pending/);
 assert.match(publicEntry,/public\.html/);
 console.log('PASS: public wishlist discovery remains public');
+
+
+// Public guides and embedded assistance must stay aligned with the supported
+// inline Connect workflow. Static-only: no browser accounts or production writes.
+for(const [guide,tool,category] of [
+ ['autokosten','car','Auto'],
+ ['parkplatz-merker','parking','Auto'],
+ ['tiergesundheit','pet-health','Haustiere']
+]){
+ const guideHtml=fs.readFileSync(guide+'/index.html','utf8');
+ const toolHtml=fs.readFileSync('tools/'+tool+'/index.html','utf8');
+ assert.match(guideHtml,/<a href="#connect">Toolya Connect<\/a>/,guide+' guidance navigation');
+ assert.match(guideHtml,/<section id="connect">/,guide+' public instructions');
+ assert.match(guideHtml,/ins Haushaltsbuch übernehmen/,guide+' optional action');
+ assert.ok(guideHtml.includes(category),guide+' mapped category missing');
+ assert.match(guideHtml,/Bargeld/,guide+' payment-method review missing');
+ assert.match(toolHtml,/Toolya Connect/,tool+' embedded help missing');
+ assert.match(toolHtml,/Haushaltsbuch/,tool+' target missing in help');
+}
+const budgetHelp=fs.readFileSync('haushaltsbuch/index.html','utf8');
+assert.match(budgetHelp,/<a href="#connect">Toolya Connect<\/a>/);
+assert.match(budgetHelp,/<section id="connect">/);
+for(const path of ['/autokosten/','/parkplatz-merker/','/tiergesundheit/'])
+ assert.ok(budgetHelp.includes('href="'+path+'"'),'budget guidance missing source '+path);
+assert.match(budgetHelp,/keine Doppelbuchung/);
+console.log('PASS: four public Connect guides and three embedded tool help sections');
