@@ -1869,6 +1869,55 @@ test('record mobile lab paint timings for public entry points', async ({ browser
   await testInfo.attach('mobile-paint-lab', { body: JSON.stringify(results, null, 2), contentType: 'application/json' });
 });
 
+for (const tool of ['budget', 'meters', 'moving']) {
+  test(`record mobile lab paint timings for ${tool}`, async ({ browser }, testInfo) => {
+    test.skip(!process.env.TOOLYA_STARTUP_COMPARISON, 'requires the fetched baseline commit');
+    const { execFileSync } = require('node:child_process');
+    const path = `tools/${tool}/index.html`;
+    const baseline = execFileSync('git', ['show', `eb1ed8a09831603aaaeb8ffe4c34d0f98716d4ab:${path}`], { encoding: 'utf8' });
+    const url = origin + '/' + path;
+    const samples = { baseline: [], current: [] };
+    for (let run = 0; run < 3; run++) {
+      for (const variant of run % 2 ? ['current', 'baseline'] : ['baseline', 'current']) {
+        const page = await browser.newPage({
+          viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce'
+        });
+        try {
+          await isolated(page, true);
+          // Hold shared assets and mock services constant while comparing the HTML variants.
+          if (variant === 'baseline') {
+            await page.route(url, route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: baseline }));
+          }
+          await page.addInitScript(() => {
+            new PerformanceObserver(list => {
+              window.toolyaLabLcp = list.getEntries().at(-1)?.startTime;
+            }).observe({ type: 'largest-contentful-paint', buffered: true });
+          });
+          await page.goto(url);
+          await expect(page).toHaveURL(url);
+          await expect.poll(() => page.evaluate(tool => {
+            if (!window.__toolyaMock?.signedIn) return false;
+            if (tool === 'meters') return typeof metersCloudReady !== 'undefined' && metersCloudReady;
+            if (tool === 'moving') return typeof movingCloudReady !== 'undefined' && movingCloudReady;
+            return typeof toolyaCloudReady !== 'undefined' && toolyaCloudReady;
+          }, tool)).toBe(true);
+          await page.waitForTimeout(1000);
+          samples[variant].push(await page.evaluate(() => ({
+            fcpMs: Math.round(performance.getEntriesByName('first-contentful-paint')[0]?.startTime),
+            lcpMs: Math.round(window.toolyaLabLcp)
+          })));
+          expect(samples[variant].at(-1).fcpMs).toBeGreaterThan(0);
+          expect(samples[variant].at(-1).lcpMs).toBeGreaterThan(0);
+        } finally {
+          await page.close();
+        }
+      }
+    }
+    console.log('[mobile tool paint lab]', JSON.stringify({ tool, samples }));
+    await testInfo.attach(`mobile-paint-${tool}`, { body: JSON.stringify(samples, null, 2), contentType: 'application/json' });
+  });
+}
+
 const publicGuideRoutes = [...require('node:fs').readFileSync('sitemap.xml', 'utf8')
   .matchAll(/<loc>https:\/\/toolya\.app(\/[^/]+\/)<\/loc>/g)].map(match => match[1]);
 
