@@ -4,6 +4,8 @@ const KEY='toolya_backstudio_v1', TAG='duhrrom-21';
 const el=id=>document.getElementById(id), number=(id,d=0)=>Number(el(id)?.value)||d, fmt=n=>Number(n).toLocaleString('de-DE',{maximumFractionDigits:1});
 const safe=x=>String(x||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let data;try{data=JSON.parse(localStorage.getItem(KEY)||'{}')}catch{data={}}data=Object.assign({pans:[],logs:[],shopping:[],pantry:{}},data);for(const key of ['pans','logs','shopping'])if(!Array.isArray(data[key]))data[key]=[];if(!data.pantry||typeof data.pantry!=='object'||Array.isArray(data.pantry))data.pantry={};
+// Share the same in-memory state with the additive pro controls to avoid overwriting newer entries.
+window.toolyaBackstudioState=data;
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(data))}catch{message('Lokales Speichern fehlgeschlagen.')}};
 const message=m=>el('bs-message').textContent=m;
 const area=(s,a,b)=>s==='rect'?a*b:Math.PI*a*a/4;
@@ -42,7 +44,7 @@ function queue(items){
  save();renderShopping();message(count?count+' Artikel zur Backstudio-Einkaufsliste hinzugefügt. Jeder Artikel hat einen Amazon-Suchbutton.':'Diese Artikel stehen bereits auf deiner Einkaufsliste.');
 }
 function renderShopping(){
- const root=el('bs-shopping-items');if(!root)return;root.replaceChildren();
+ const root=el('bs-shopping-items');if(!root)return;root.setAttribute('data-user-content','');root.replaceChildren();
  if(!data.shopping.length){make('p',root,'Deine Einkaufsliste ist leer.');return}
  for(const item of data.shopping){
   const row=make('div',root);row.className='bs-row';
@@ -50,7 +52,7 @@ function renderShopping(){
   const check=make('input',label);check.type='checkbox';check.checked=!!item.done;check.style.width='auto';check.setAttribute('aria-label',item.title+' erledigt');
   check.onchange=()=>{item.done=check.checked;save();renderShopping()};
   const name=make('span',label,item.title);if(item.done)name.style.textDecoration='line-through';
-  const a=make('a',row,'🔎 Amazon');a.href=amazon(item.query||item.title);a.target='_blank';a.rel='noopener noreferrer sponsored';a.title='Anzeige – Amazon-Partnerlink mit Partner-ID';
+  const a=make('a',row,'🔎 Amazon · Anzeige');a.href=amazon(item.query||item.title);a.target='_blank';a.rel='noopener noreferrer sponsored';a.title='Anzeige – Amazon-Partnerlink mit Partner-ID';
   const del=make('button',row,'×');del.type='button';del.setAttribute('aria-label',item.title+' entfernen');del.onclick=()=>{data.shopping=data.shopping.filter(x=>x.id!==item.id);save();renderShopping()};
  }
 }
@@ -114,11 +116,11 @@ function update(){
  el('bs-fillbar').style.background=percent>75?'#ea580c':'#0d9488';
  el('bs-filltext').textContent=fmt(percent)+' % rechnerische Füllhöhe · '+(percent>75?'Achtung, mögliche Überfüllung!':'Füllhöhe auf Grundlage gerader Wände geschätzt.');
  el('bs-ratio').textContent='Umrechnungsfaktor mit Wunschhöhe: ×'+fmt(f);
- const box=el('bs-scaled');box.replaceChildren();
+ const box=el('bs-scaled');box.setAttribute('data-user-content','');box.replaceChildren();
  for(const i of parsed()){const row=make('div',box);row.className='bs-row';make('span',row,i.qty===undefined?i.name:adjusted(i));
  if(i.qty===undefined)continue;
  const btn=make('button',row,'🛒');btn.title='Zur Einkaufsliste';btn.type='button';btn.onclick=()=>queue([{title:adjusted(i),query:i.name}]);
- const a=make('a',row,'Amazon ↗');a.href=amazon(i.name);a.target='_blank';a.rel='noopener noreferrer sponsored';a.title='Anzeige – Amazon-Partnerlink';
+ const a=make('a',row,'Amazon ↗ · Anzeige');a.href=amazon(i.name);a.target='_blank';a.rel='noopener noreferrer sponsored';a.title='Anzeige – Amazon-Partnerlink';
  }
  const remaining=liters*1000-target()*ph*10*number('bs-maxfill',.7);
  el('bs-leftover').textContent=remaining>0?'Ca. '+fmt(remaining)+' ml mehr Teig als die eingestellte empfohlene Füllgrenze. Das entspricht ungefähr '+fmt(remaining/100)+' Muffinförmchen à 100 ml.':'Teigmenge liegt innerhalb der eingestellten Füllgrenze (rechnerische Näherung).';
@@ -133,6 +135,7 @@ function update(){
  const heightWarning=el('bs-height-warning');if(heightWarning)heightWarning.textContent=h>ph*number('bs-maxfill',.7)?'Achtung: Die gewünschte Teighöhe ist größer als die eingestellte Füllgrenze der Backform.':'Wunschhöhe innerhalb der eingestellten Füllgrenze (bei geraden Wänden).';
 }
 function logs(){const root=el('bs-logs');root.replaceChildren();data.logs.slice(-12).reverse().forEach(x=>make('p',root,x.date+' · '+x.name+' · '+x.minutes+' Min. · '+x.note))}
+window.toolyaBackstudioRenderLogs=logs;
 function init(){
  const root=el('tab-rechner');if(!root)return;
  const host=document.createElement('section');host.id='toolya-backstudio';
