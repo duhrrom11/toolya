@@ -71,7 +71,9 @@ function init(){
  const recomm=make('section','bsui-paper bsui-finder');recomm.id='bsui-recommendations';right.append(recomm);
  recomm.innerHTML='<p class="bsui-section-eyebrow">Clever vergleichen</p><h2>Passende Backformen</h2><p class="bsui-subtitle">Empfehlungen aus deinen gespeicherten Formen.</p>';
  const smartPanel=[...garage.querySelectorAll('.bsp-panel')].find(n=>n.querySelector('#bsp-compare-results'));
- if(smartPanel)recomm.append(smartPanel);
+ const suggested=make('div','bsui-standard-recos');suggested.id='bsui-standard-recos';recomm.append(suggested);
+ const customDetails=make('details','bsui-recommend-detail');customDetails.innerHTML='<summary>Meine gespeicherten Backformen vergleichen</summary>';recomm.append(customDetails);
+ if(smartPanel)customDetails.append(smartPanel);
  recomm.append(button('Eigene Formen verwalten','bsui-return',()=>showView('finder')));
  const metrics=make('section','bsui-paper bsui-metrics');metrics.id='bsui-metrics';right.append(metrics);
  metrics.innerHTML='<p class="bsui-section-eyebrow">Dein Ergebnis</p>';
@@ -104,7 +106,7 @@ function init(){
   currentView=mode;
   core.hidden=mode!=='core';
   for(const [key,{view}] of Object.entries(views))view.hidden=key!==mode;
-  if(smartPanel)(mode==='finder'?finderView:recomm).append(smartPanel);
+  if(smartPanel)(mode==='finder'?finderView:customDetails).append(smartPanel);
   navButtons.forEach((node,key)=>{if(key===mode)node.setAttribute('aria-current','page');else node.removeAttribute('aria-current')});
   for(const b of stepper.querySelectorAll('button')){if(mode==='core'&&b.dataset.step==='1')b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')}
   if(mode==='core')sync();
@@ -143,13 +145,32 @@ function init(){
   const symbol=make('span','bsui-quick-symbol',icon),body=make('span');
   body.append(make('strong','',label),make('small','',description));b.append(symbol,body);quick.append(b)
  }
- // Decorative baker girl sits by the actions and never obscures interactive controls.
+// Baker and baker-girl use their corresponding Toolya outfit-atlas cells.
  const girlWrap=make('div','bsui-girl-side');girlWrap.setAttribute('aria-hidden','true');
  const girl=make('span','bsui-sprite bsui-baker-girl');girl.style.backgroundImage='url("'+atlas+'")';girlWrap.append(girl);
- // Above the footer actions only on roomy desktop; no overlap with the shopping button.
- // The same mascot is intentionally decorative and does not override selected header mascot.
- const gurl=make('div','bsui-mascot-landing');gurl.append(girlWrap);side.append(gurl);
+ recomm.append(girlWrap);
+ function renderStandardRecommendations(){
+  suggested.replaceChildren();
+  const mode=$('combinator-mode')?.value;
+  if(mode==='double'){suggested.append(make('p','bsui-empty','Du verwendest zwei Zielformen. Speichere deine Formen, um weitere Kombinationen zu vergleichen.'));return}
+  const shape=$('target-shape')?.value,area=shape==='rect'?cleanNumber('target-l',25)*cleanNumber('target-w',11):Math.PI*Math.pow(cleanNumber('target-d',20)/2,2);
+  const d=Math.max(8,Math.round(Math.sqrt(4*area/Math.PI)));
+  const options=[d,Math.max(8,d-2),d+2].filter((x,i,a)=>a.indexOf(x)===i);
+  for(const [i,diameter] of options.entries()){
+   const row=button('','bsui-match-option',()=>{
+    $('combinator-mode').value='single';window.toggleCombinator?.();$('target-shape').value='round';
+    window.updateShapeInputs?.('target');$('target-d').value=diameter;window.calculateAll?.();
+    $('target-d').dispatchEvent(new Event('input',{bubbles:true}));
+   });
+   const ratio=area/(Math.PI*Math.pow(diameter/2,2));
+   const optionLabel=make('strong','', '◉ Rund Ø '+diameter+' cm');
+   const info=make('span','',i===0?'Nächstliegende Standardgröße':'Teigfüllung relativ zur aktuellen Form: '+Math.round(ratio*100)+' %');
+   if(i===0)info.className='bsui-option-best';
+   row.append(optionLabel,info);suggested.append(row);
+  }
+ }
  function sync(){
+  renderStandardRecommendations();
   const shape=$('target-shape')?.value||'round',double=$('combinator-mode')?.value==='double';
   const target=double?'2 Formen Ø '+cleanNumber('combo-d1',20)+' / '+cleanNumber('combo-d2',16)+' cm':
    shape==='rect'?'Rechteck '+cleanNumber('target-l',25)+' × '+cleanNumber('target-w',11)+' cm':
@@ -176,7 +197,7 @@ function init(){
  if(orig3dOpen){orig3dOpen.textContent='↻ 3D-Modell aktivieren';}
  // Pro UI uses 260px fixed camera; the redesigned stage uses 385px (patched in pro script).
  // Keep existing message observable for accessibility while showing a concise status at the top.
- const existingMessage=$('bs-message');if(existingMessage)existingMessage.setAttribute('aria-live','polite');
+ const existingMessage=$('bs-message');if(existingMessage){existingMessage.setAttribute('aria-live','polite');existingMessage.classList.add('bsui-site-message');header.after(existingMessage)}
  if($('recipe-input')?.value.trim())recipeDetails.open=false;
  sync();showView('core');
 }
