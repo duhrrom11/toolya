@@ -131,7 +131,10 @@ export function createDashboardCloud(onState) {
       return count;
     });
   }
+  let started = false;
   function start() {
+    if (started) { void syncAuth(); return; }
+    started = true;
     if (client) {
       client.auth.onAuthStateChange(() => {
         // Avoid invoking auth APIs within the Supabase auth callback.
@@ -145,7 +148,7 @@ export function createDashboardCloud(onState) {
     void syncAuth();
   }
   return {
-    start, refresh, create, change, importLocal, snapshot,
+    start, retry: syncAuth, refresh, create, change, importLocal, snapshot,
     get status() { return active; },
     get userId() { return currentUser?.id || null; }
   };
