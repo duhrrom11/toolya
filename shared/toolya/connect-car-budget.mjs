@@ -3,7 +3,8 @@ export function mountCarBudgetConnect({host,controller,client,userId}) {
   if (!host?.querySelector || !controller?.snapshot || !client?.rpc || !client?.auth?.getUser || !userId)
     throw new TypeError('Connect requires verified Cloud dependencies and the expense form.');
   const saveButton = host.querySelector('[onclick="saveEvent()"]');
-  if (!saveButton) throw new TypeError('Connect requires the Autokosten expense form.');
+  const costInput=host.querySelector('#eventCost');
+  if (!saveButton || !costInput) throw new TypeError('Connect requires the Autokosten expense form.');
   const root = document.createElement('div');
   root.id = 'toolya-connect-car-budget';
   root.style.cssText = 'padding:12px;margin:10px 0;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc;color:#0f172a;font:14px system-ui';
@@ -30,6 +31,16 @@ export function mountCarBudgetConnect({host,controller,client,userId}) {
   root.append(label,help,status,retry);
   saveButton.parentNode.insertBefore(root,saveButton);
   let busy=false,disposed=false,lastFailedId=null;
+  const refresh=()=>{
+    const raw=String(costInput.value||'').trim().replace(',','.');
+    const amount=Number(raw);
+    const valid=raw!==''&&Number.isFinite(amount)&&amount>0&&amount<=1000000&&
+      Math.abs(amount*100-Math.round(amount*100))<1e-7;
+    checkbox.disabled=busy||!valid;
+    if(!valid)checkbox.checked=false;
+  };
+  costInput.addEventListener('input',refresh);
+  refresh();
   retry.addEventListener('click', () => {
     if (!busy && lastFailedId !== null) void transferEvent(lastFailedId);
   });
@@ -95,12 +106,13 @@ export function mountCarBudgetConnect({host,controller,client,userId}) {
       return false;
     } finally {
       busy=false;
-      if (!disposed) checkbox.disabled=false;
+      if (!disposed) refresh();
     }
   }
   return Object.freeze({
-    get selected(){return !disposed && checkbox.checked;},
+    get selected(){return !disposed && !checkbox.disabled && checkbox.checked;},
+    refresh,
     transferEvent,
-    dispose(){disposed=true;root.remove();}
+    dispose(){disposed=true;costInput.removeEventListener('input',refresh);root.remove();}
   });
 }
