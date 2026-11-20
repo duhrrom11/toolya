@@ -1724,3 +1724,23 @@ for (const [tool, action] of [
     expect(downloads).toBe(2);
   });
 }
+
+test('moving boxes download the scanner only on demand and retry on error', async ({ page }) => {
+  await isolated(page, true);
+  let requests = 0;
+  await page.route('**/html5-qrcode.min.js', async route => {
+    if (++requests === 1) return route.abort();
+    return route.fulfill({
+      contentType: 'application/javascript',
+      body: 'window.Html5Qrcode = class { async start() { window.mockScannerStarted = true; } };'
+    });
+  });
+  await page.goto(origin + '/tools/moving/index.html');
+  expect(requests).toBe(0);
+  await page.evaluate(() => { window.alert = message => { window.mockScannerError = message; }; });
+  await page.evaluate(() => openScannerModal());
+  await expect.poll(() => page.evaluate(() => window.mockScannerError)).toContain('erneut');
+  await page.evaluate(() => openScannerModal());
+  await expect.poll(() => page.evaluate(() => window.mockScannerStarted)).toBe(true);
+  expect(requests).toBe(2);
+});
