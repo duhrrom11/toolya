@@ -124,3 +124,7 @@ Chromium bei 390 × 844 Pixeln mit simulierter Anmeldung, frischem Browserkontex
 | Umzugskisten | 88 → 120 | 144 → 152 |
 
 Die kleine Stichprobe zeigt gemischte Laborwerte. Die Auswirkung externer Bibliotheksdownloads, die Zeiten realer Anmeldungen und die Core Web Vitals im Feld bleiben offen. Die drei Live-HTML-Dateien wurden bytegleich zum getesteten aktuellen Stand abgerufen und enthielten jeweils `noindex`.
+
+### Wiederholungsmessung für Umzugskisten
+
+Zwölf frische Browserkontexte je HTML-Variante, mit abwechselnder Startreihenfolge und derselben mobilen Simulation. FCP-Median 70 → 64 ms (Spannweite 56–76 → 52–92 ms). LCP-Kandidat im Median 92 → 92 ms (Spannweite 80–108 → 84–136 ms). Die langsameren Mediane aus der ersten Stichprobe wiederholten sich in diesem Lauf nicht. Die Streuung und die blockierten externen Downloads begrenzen die Aussage auf diesen Laboraufbau. Als nächster R30-Schritt bleibt eine vergleichbare Messung mit aktivem Ressourcenladen im isolierten Browser. [Browserlauf und Rohdaten](https://github.com/duhrrom11/toolya/actions/runs/44747955762)
