@@ -4,13 +4,13 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,follow">
 <title>Mein Dashboard | Toolya</title>
-<meta name="description" content="Öffne deine Lieblings-Tools und verwalte Aufgaben und Erinnerungen in deinem Browser.">
+<meta name="description" content="Öffne deine Lieblings-Tools und synchronisiere Aufgaben und Erinnerungen sicher über dein Toolya-Konto.">
 <link rel="stylesheet" href="./dashboard.css">
 <link rel="stylesheet" href="../assets/toolya-settings.css">
 <script src="../assets/vendor/supabase-2.57.0.js" defer></script>
 <script src="./account-settings.js" defer></script>
 <script type="module" src="../shared/toolya/platform.mjs"></script>
-<script src="./dashboard.js" defer></script>
+<script type="module" src="./dashboard.js"></script>
 </head>
 <body>
 <a class="skip" href="#main">Direkt zum Inhalt</a>
@@ -28,6 +28,10 @@
 <main id="main">
 <h1 id="welcome-heading" class="dashboard-heading">Mein Dashboard</h1>
 <div id="notice" role="status" aria-live="polite" class="notice" hidden></div>
+<section class="sync-panel" aria-label="Datenspeicherung">
+ <div class="sync-panel-main"><strong id="sync-status" role="status" aria-live="polite">Kontostatus wird geprüft …</strong><span id="sync-detail">Deine vorhandenen Browserdaten bleiben erhalten.</span></div>
+ <div class="sync-actions"><button id="import-local" type="button" hidden>Lokale Einträge übernehmen</button><button id="sync-retry" type="button" hidden>Erneut verbinden</button></div>
+</section>
 <p><a href="/toolya-dashboard/">Anleitung zum Toolya-Dashboard</a></p>
 <section class="stats" aria-label="Deine Übersicht">
 <div class="stat"><span>★ Favoriten</span><strong id="fav-count">0</strong></div>
@@ -41,12 +45,12 @@
 </div>
 <div class="columns">
 <section class="panel" aria-labelledby="tasks-heading">
-<div class="panel-head"><h2 id="tasks-heading">✓ Meine Aufgaben</h2><span class="hint">Nur hier gespeichert</span></div>
+<div class="panel-head"><h2 id="tasks-heading">✓ Meine Aufgaben</h2><span class="hint">Lokal oder im angemeldeten Konto</span></div>
 <form id="task-form" class="entry"><label class="sr" for="task-text">Neue Aufgabe</label><input id="task-text" maxlength="160" autocomplete="off" placeholder="Was möchtest du erledigen?" required><button type="submit">Hinzufügen</button></form>
 <ul id="tasks" class="items"></ul>
 </section>
 <section class="panel" aria-labelledby="reminders-heading">
-<div class="panel-head"><h2 id="reminders-heading">◷ Erinnerungen</h2><span class="hint">Keine Push-Nachrichten</span></div>
+<div class="panel-head"><h2 id="reminders-heading">◷ Erinnerungen</h2><span class="hint">Noch keine Push-Nachrichten</span></div>
 <p class="hint">Fällige Termine erscheinen hier, sobald du dein Dashboard öffnest. Es werden noch keine automatischen Benachrichtigungen versendet.</p>
 <form id="reminder-form" class="reminder-form">
 <label>Woran möchtest du denken?<input id="reminder-text" maxlength="160" required placeholder="z. B. Pflanzen gießen"></label>
