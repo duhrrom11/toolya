@@ -99,6 +99,7 @@ export function mountExpenseConnect({host,saveSelector,costSelector,controller,c
   return Object.freeze({
     get selected(){return !disposed&&!check.disabled&&check.checked;},
     transfer,
+    refresh:syncEligibility,
     dispose(){disposed=true;costInput.removeEventListener('input',syncEligibility);root.remove();}
   });
 }
