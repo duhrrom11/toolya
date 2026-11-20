@@ -54,7 +54,7 @@
       <p>Die Verbrauchsdifferenz ist der neue Zählerstand abzüglich des vorherigen Stands desselben Zählers. Bei Strom wird sie in Kilowattstunden (kWh), bei Gas und Wasser im Zählerverlauf in Kubikmetern (m³) angegeben. Eine erste Ablesung liefert den Ausgangswert für den nächsten Vergleich.</p>
       <p>Bei einer Wohnungsübergabe kannst du Datum, Zählernummer und Zählerstand notieren sowie ein Foto anhängen. Über <strong>Übergabebericht (PDF)</strong> kannst du die Ablesungen als Dokument ausgeben.</p>
     </section>
-    <section id="uebergabe" class="guide-print">
+    <section id="uebergabe">
       <h2>Muster für die Zählerstände bei der Wohnungsübergabe</h2>
       <p>Halte Datum, Zählernummer, Stand und Einheit fest. Beispielwerte für den 1. Juni:</p>
       <table class="guide-table">
@@ -65,6 +65,23 @@
       <h3>Wie wird aus dem Gasverbrauch in m³ ein Wert in kWh?</h3>
       <p>Multipliziere die Differenz der Zählerstände mit dem Umrechnungsfaktor in kWh/m³ aus deiner Rechnung. Beispiel: 816 m³ − 800 m³ = 16 m³. Bei einem angenommenen Faktor von 10,5 kWh/m³ ergeben sich 168 kWh. Verwende für deine Schätzung den Faktor deines Versorgers.</p>
     </section>
+    <p>Öffne die Druckfunktion deines Browsers oder drücke Strg+P (auf dem Mac ⌘+P). Die Druckansicht enthält das leere Übergabeprotokoll zum Ausfüllen von Hand.</p>
+    <section id="druckprotokoll" class="guide-print">
+      <h2>Zählerprotokoll zur Wohnungsübergabe</h2>
+      <p>Adresse / Wohnung: __________________________________________</p>
+      <p>Datum der Ablesung: _________________________________________</p>
+      <table class="guide-table">
+        <thead><tr><th scope="col">Zählerart</th><th scope="col">Zählernummer</th><th scope="col">Zählerstand</th><th scope="col">Einheit</th></tr></thead>
+        <tbody>
+          <tr><td>Strom</td><td>____________</td><td>____________</td><td>kWh</td></tr>
+          <tr><td>Gas</td><td>____________</td><td>____________</td><td>m³</td></tr>
+          <tr><td>Kaltwasser</td><td>____________</td><td>____________</td><td>m³</td></tr>
+          <tr><td>Warmwasser</td><td>____________</td><td>____________</td><td>m³</td></tr>
+          <tr><td>____________</td><td>____________</td><td>____________</td><td>________</td></tr>
+        </tbody>
+      </table>
+      <p>Notizen: ____________________________________________________</p>
+    </section>
     <p>Für gepackte Kartons hilft die <a href="/umzugskisten/#musteretikett">Vorlage für Umzugskisten</a>.</p>
     <section id="protokollwahl">
       <h2>Wann reicht ein Zählerprotokoll als Tabelle?</h2>
@@ -74,7 +91,7 @@
           <caption>Dokumentation passend zum Anlass</caption>
           <thead><tr><th scope="col">Anlass</th><th scope="col">Was du festhältst</th><th scope="col">Passendes Format</th></tr></thead>
           <tbody>
-            <tr><th scope="row">Wohnungsübergabe</th><td>Datum, Zählernummer, Ablesewert und Einheit je Zähler</td><td>Zählerprotokoll als CSV oder Übergabebericht als PDF</td></tr>
+            <tr><th scope="row">Wohnungsübergabe</th><td>Datum, Zählernummer, Ablesewert und Einheit je Zähler</td><td><a href="#druckprotokoll">Druckvorlage</a>, CSV oder Übergabebericht als PDF</td></tr>
             <tr><th scope="row">Regelmäßige Ablesung</th><td>Neue Werte mit demselben Namen und Zählertyp</td><td>Zählerverlauf im Tool</td></tr>
             <tr><th scope="row">Zählerwechsel</th><td>Endstand des alten und Startstand des neuen Zählers mit beiden Nummern</td><td>Zwei getrennte Zeilen im Zählerprotokoll</td></tr>
           </tbody>
