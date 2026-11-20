@@ -104,6 +104,7 @@ function init(){
  function showView(name){
   const mode=views[name]?name:'core';
   currentView=mode;
+  document.dispatchEvent(new CustomEvent('toolya:backstudio-view-change',{detail:mode}));
   core.hidden=mode!=='core';
   for(const [key,{view}] of Object.entries(views))view.hidden=key!==mode;
   if(smartPanel)(mode==='finder'?finderView:customDetails).append(smartPanel);
