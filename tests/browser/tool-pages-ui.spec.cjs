@@ -1600,3 +1600,24 @@ test('wishlist: public detail and search states stay usable without writes',asyn
  }
  expect(await page.evaluate(()=>window.__wishlistMock.writes)).toEqual([]);expect(errors).toEqual([]);
 });
+
+test('meter handover prints only the blank form on one A4 page', async ({ page }, testInfo) => {
+  await isolated(page, false);
+  await page.goto('/zaehlerstaende/');
+  const example = page.locator('#uebergabe');
+  const form = page.locator('#druckprotokoll');
+  await expect(example).toBeVisible();
+
+  await page.emulateMedia({ media: 'print' });
+  await expect(example).toBeHidden();
+  await expect(page.locator('#fragen')).toBeHidden();
+  await expect(form.getByRole('heading')).toHaveText('Zählerprotokoll zur Wohnungsübergabe');
+  await expect(form.getByText('Adresse / Wohnung:', { exact: false })).toBeVisible();
+  await expect(form.getByText('Datum der Ablesung:', { exact: false })).toBeVisible();
+  await expect(form.locator('tbody tr')).toHaveCount(5);
+  await expect(form.getByText('Notizen:', { exact: false })).toBeVisible();
+
+  const pdf = await page.pdf({ format: 'A4', displayHeaderFooter: false });
+  expect(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
+  await testInfo.attach('zaehlerprotokoll-a4', { body: pdf, contentType: 'application/pdf' });
+});
