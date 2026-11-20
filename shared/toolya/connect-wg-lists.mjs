@@ -8,7 +8,7 @@ export const connectorKinds = Object.freeze({
   shopping: 'shopping',
   task: 'task'
 });
-const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i;
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const validItemId = id => (typeof id === 'number' && Number.isSafeInteger(id) && id >= 0) ||
   (typeof id === 'string' && id.length > 0 && id.length <= 120 && /^[a-zA-Z0-9_-]+$/.test(id));
 const clean = value => typeof value === 'string' ? value.trim().slice(0,160) : '';
