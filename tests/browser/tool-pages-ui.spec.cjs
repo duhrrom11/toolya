@@ -1744,3 +1744,26 @@ test('moving boxes download the scanner only on demand and retry on error', asyn
   await expect.poll(() => page.evaluate(() => window.mockScannerStarted)).toBe(true);
   expect(requests).toBe(2);
 });
+
+for (const tool of ['loans', 'plants']) {
+  test(`${tool} downloads the QR generator on demand and retries on error`, async ({ page }) => {
+    await isolated(page, true);
+    let requests = 0;
+    await page.route('**/qrcodejs/1.0.0/qrcode.min.js', async route => {
+      if (++requests === 1) return route.abort();
+      return route.fulfill({
+        contentType: 'application/javascript',
+        body: 'window.QRCode = class { constructor(element, options) { element.textContent = options.text; } };'
+      });
+    });
+    await page.goto(origin + '/tools/' + tool + '/index.html');
+    expect(requests).toBe(0);
+    await page.evaluate(() => { window.alert = message => { window.mockQrError = message; }; });
+    const show = () => page.evaluate(() => showQrCode('Muster', 'Beispiel', '', 5));
+    await show();
+    await expect.poll(() => page.evaluate(() => window.mockQrError)).toContain('erneut');
+    await show();
+    await expect(page.locator('#qrcode')).toContainText('Muster');
+    expect(requests).toBe(2);
+  });
+}

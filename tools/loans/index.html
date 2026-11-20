@@ -19,7 +19,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF für PDF-Report -->
     <!-- qrcodejs für QR-Codes -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
 <script src="../../shared/toolya/auth-page-gate.js"></script>
@@ -732,7 +731,13 @@
             renderApp();
         }
 
-        function showQrCode(title, person) {
+        async function showQrCode(title, person) {
+            const { loadQrGenerator } = await import('../../shared/toolya/qr-generator.mjs');
+            const QRCode = await loadQrGenerator();
+            if (!QRCode) {
+                alert("Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.");
+                return;
+            }
             document.getElementById('qrTitle').innerText = title + " (" + person + ")";
             document.getElementById('qrcode').innerHTML = "";
             new QRCode(document.getElementById("qrcode"), {
