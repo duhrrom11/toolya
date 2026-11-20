@@ -32,8 +32,19 @@ async function isolated(page,authenticated,displayCss=false,initialSnapshot=null
                    insert(){m.writes.push({table,operation:'insert'});throw Error('Unexpected WG design-fixture write')},
                    delete(){m.writes.push({table,operation:'delete'});throw Error('Unexpected WG design-fixture write')}};
                 }
+                if(m.fixture?.__dashboard && ['dashboard_tasks','dashboard_reminders'].includes(table)){
+                  const rows=table==='dashboard_tasks'?[{
+                    id:'fixture-task',user_id:'ui-fixture-user',title:'Isolierte Aufgabe mit langem Text für die Prüfung der mobilen Bedienfläche und der Schaltfläche zum Entfernen',
+                    completed:false,revision:1,deleted_at:null,due_at:null,created_at:'2026-11-20T12:00:00Z'
+                  }]:[{
+                    id:'fixture-reminder',user_id:'ui-fixture-user',title:'Isolierte Erinnerung mit langem Text',
+                    completed:false,revision:1,deleted_at:null,due_at:'2030-01-01T12:00:00Z',created_at:'2026-11-20T12:00:00Z'
+                  }];
+                  const q={select(){return q},eq(){return q},is(){return q},order(){return q},async limit(){return {data:rows,error:null}}};
+                  return q;
+                }
                 if(table!=='user_data')throw Error('unexpected table '+table);
-                return {select(){return this},eq(key,value){if(key==='tool')this.tool=value;return this},async maybeSingle(){return {data:m.fixture?{id:1,user_id:'ui-fixture-user',tool:this.tool,data:m.fixture,revision:1}:null,error:null}}};
+                return {select(){return this},eq(key,value){if(key==='tool')this.tool=value;return this},async maybeSingle(){return {data:m.fixture&&!m.fixture.__dashboard?{id:1,user_id:'ui-fixture-user',tool:this.tool,data:m.fixture,revision:1}:null,error:null}}};
               },
               async rpc(name,args){
                 if(name!=='toolya_save_snapshot')throw Error('unexpected RPC '+name);
@@ -1412,7 +1423,7 @@ test('wishlist: public cards and five-list form remain usable at three widths',a
 });
 
 test('dashboard: shared actions, task rows and account dialog at three widths',async({page},testInfo)=>{
- const errors=[];page.on('pageerror',e=>errors.push(e.message));await isolated(page,true,true);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));await isolated(page,true,true,{__dashboard:true});
  await page.addInitScript(()=>{
   localStorage.setItem('toolya_dashboard_tasks_v1',JSON.stringify([{id:'fixture-task',text:'Isolierte Aufgabe mit langem Text für die Prüfung der mobilen Bedienfläche und der Schaltfläche zum Entfernen',done:false}]));
   localStorage.setItem('toolya_dashboard_reminders_v1',JSON.stringify([{id:'fixture-reminder',text:'Isolierte Erinnerung mit langem Text',due:'2030-01-01T12:00:00Z',done:false}]));
@@ -1421,6 +1432,7 @@ test('dashboard: shared actions, task rows and account dialog at three widths',a
  });
  await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
  await page.goto(origin+'/dashboard/');await page.locator('.toolya-signature-footer').waitFor();
+ await expect(page.locator('#tasks input[type=checkbox]')).toHaveCount(1);
  await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
  const capture=async name=>{await page.screenshot({path:testInfo.outputPath(name+'.png')});await reviewImage(page,name)};
  for(const width of [320,768,1440]){
