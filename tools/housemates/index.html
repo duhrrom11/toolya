@@ -1544,6 +1544,25 @@
                 }
                 alert('WG-Cloud nicht erreichbar. Lokale Daten dieser WG werden angezeigt; Änderungen können derzeit nicht zuverlässig synchronisiert werden.');
             }
+            if (loaded) {
+                try {
+                    const key = 'toolya_baking_shopping_handoff_v1';
+                    const pending = JSON.parse(localStorage.getItem(key) || '[]');
+                    if (Array.isArray(pending) && pending.length && pending.length <= 50 &&
+                        pending.every(x => x && typeof x.title === 'string' && x.title.trim().length && x.title.length <= 180)) {
+                        const confirmed = confirm(pending.length + ' Zutaten aus dem Toolya Backstudio in diese WG-Einkaufsliste übernehmen?');
+                        if (confirmed) {
+                            const existing = getShoppingList();
+                            const additions = pending.map((x, i) => ({
+                                id: Date.now() + i,
+                                title: x.title.trim()
+                            }));
+                            saveShoppingList(existing.concat(additions));
+                            localStorage.removeItem(key);
+                        }
+                    }
+                } catch (error) { console.warn('Backstudio-Übernahme fehlgeschlagen', error); }
+            }
             renderApp();
             // Opening a WG must never write stale local data back over cloud records.
             checkUserSession();
