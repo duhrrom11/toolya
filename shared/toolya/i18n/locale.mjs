@@ -39,7 +39,9 @@ const PUBLIC_GUIDES = Object.freeze({
 
 export function localizedPublicUrl(locale, slug = '') {
   const language = normalizeLocale(locale) || DEFAULT_LOCALE;
-  const clean = String(slug).replace(/^\\/+|\\/+$/g, '');
+  let clean = String(slug);
+  while (clean.startsWith('/')) clean = clean.slice(1);
+  while (clean.endsWith('/')) clean = clean.slice(0, -1);
   if (clean && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(clean)) throw new Error('Invalid public landing slug');
   if (!clean) return language === 'de' ? '/' : '/en/';
   if (!Object.hasOwn(PUBLIC_GUIDES, clean)) throw new Error('Unknown public landing slug');
