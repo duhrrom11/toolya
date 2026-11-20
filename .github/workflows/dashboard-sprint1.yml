@@ -1,0 +1,33 @@
+name: Toolya dashboard sprint 1
+on:
+  pull_request:
+    paths:
+      - 'dashboard/**'
+      - 'tests/dashboard-cloud.test.mjs'
+      - 'supabase/migrations/*dashboard*'
+      - '.github/workflows/dashboard-sprint1.yml'
+  push:
+    branches:
+      - feature/dashboard-sprint1-cloud-sync
+    paths:
+      - 'dashboard/**'
+      - 'tests/dashboard-cloud.test.mjs'
+      - 'supabase/migrations/*dashboard*'
+      - '.github/workflows/dashboard-sprint1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dashboard-cloud:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check syntax and isolated cloud tests (no production requests)
+        run: |
+          node --check dashboard/dashboard.js
+          node --check dashboard/modules/cloud-sync.mjs
+          node --test tests/dashboard-cloud.test.mjs
