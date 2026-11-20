@@ -81,3 +81,13 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(-
 .sync-actions button{font-size:12px;padding:9px 12px}
 .sync-actions [hidden]{display:none!important}
 @media(max-width:500px){.sync-panel{align-items:stretch}.sync-actions button{width:100%}}
+
+/* Toolya Connect watering uses the existing dashboard card language. */
+.watering-connect{margin-top:18px}
+.watering-connect-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:9px;align-items:end;margin:17px 0}
+.watering-connect-form[hidden]{display:none}
+.watering-connect-form label{font-size:12px;font-weight:700;color:#526975;grid-row:1}
+.watering-connect-form select,.watering-connect-form input{grid-row:2;min-height:44px;min-width:0;width:100%;border:1px solid #bccfd4;border-radius:12px;padding:9px 10px;font:inherit;background:#fff}
+.watering-connect-form button{grid-column:3;grid-row:2}
+.watering-connect .items li button{min-height:38px}
+@media(max-width:720px){.watering-connect-form{grid-template-columns:1fr}.watering-connect-form label,.watering-connect-form input,.watering-connect-form select,.watering-connect-form button{grid-row:auto;grid-column:1}}

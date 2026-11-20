@@ -60,6 +60,18 @@
 <ul id="reminders" class="items"></ul>
 </section>
 </div>
+<section class="panel watering-connect" aria-labelledby="watering-connect-heading">
+<div class="panel-head"><h2 id="watering-connect-heading">💧 Gießaufgaben planen · Toolya Connect</h2><a href="/tools/plants/">Pflanzenpflege öffnen</a></div>
+<p id="watering-connect-status" class="hint" role="status" aria-live="polite">Anmeldung und Gießplan werden geprüft …</p>
+<form id="watering-connect-form" class="watering-connect-form" hidden>
+<label for="watering-connect-plant">Gießaufgabe für Pflanze</label>
+<select id="watering-connect-plant" required></select>
+<label for="watering-connect-date">Gewünschter Gießtag</label>
+<input id="watering-connect-date" type="date" required>
+<button type="submit">Im Gießplan einplanen</button>
+</form>
+<p class="hint">Fällige und überfällige Gießaufgaben erscheinen oben unter „Meine Aufgaben“. Im Dashboard erledigte Gießvorgänge werden unmittelbar im Pflanzen-Tool dokumentiert.</p>
+</section>
 <!-- Shared Toolya footer is mounted by platform.mjs after the main content. -->
 </main>
 <dialog id="settingsModal" class="dashboard-settings" aria-labelledby="settingsTitle">

@@ -803,6 +803,7 @@
         }
 
         let plantsCloudReady=false,plantsCloudUserId=null,plantsCloudController=null;
+        let connectWateringDue=null;
         function plantsCloudBlock(state){
             plantsCloudReady=false;plantsCloudController?.invalidate();
             window.toolyaCloudPageStatus(state);
@@ -828,6 +829,8 @@
                 });
                 const {data:again,error:againError}=await supabaseClient.auth.getUser();
                 if(againError||again?.user?.id!==uid||again.user.is_anonymous)throw Error('Konto gewechselt.');
+                const wateringModule=await import('../../shared/toolya/connect-watering.mjs');
+                connectWateringDue=wateringModule.wateringDueDate;
                 plantsCloudController=prepared.controller;plantsCloudUserId=uid;plantsCloudReady=true;
                 document.getElementById('toolya-cloud-gate')?.remove();
                 const month=new Date().getMonth();
@@ -968,6 +971,8 @@
                 if (!Array.isArray(p.waterHistory)) p.waterHistory = [];
                 if (p.lastWatered === todayStr || p.waterHistory.includes(todayStr)) return;
                 p.lastWatered = todayStr;
+                // A dashboard-planned task is completed by the real watering event.
+                delete p.connectDue;
                 p.waterHistory = [todayStr, ...p.waterHistory.filter(date => typeof date === 'string' &&
                     isValidCalendarDate(date) && date !== todayStr)].slice(0, 5);
                 const ml = getMlForPot(p.potSize);
@@ -1054,6 +1059,7 @@
                         typeof date === 'string' && isValidCalendarDate(date) && date !== editedLastWatered)].slice(0, 5);
                 }
                 p.lastWatered = editedLastWatered;
+                if (p.connectDue && p.connectDue <= editedLastWatered) delete p.connectDue;
                 p.note = document.getElementById('editNote').value.trim();
                 if (!await saveData(data)) return;
             closeEditModal(); loadLocationDropdown(); renderApp();
@@ -1105,8 +1111,8 @@
                 const last = new Date(p.lastWatered + 'T00:00:00');
                 const rawInterval = Number(p.interval);
                 const days = Number.isFinite(rawInterval) && rawInterval > 0 ? Math.max(1, Math.floor(rawInterval)) : 7;
-                const due = new Date(last);
-                due.setDate(last.getDate() + days);
+                const due = connectWateringDue?.(p) ? new Date(connectWateringDue(p) + 'T00:00:00') : new Date(last);
+                if (!connectWateringDue?.(p)) due.setDate(last.getDate() + days);
                 if (!Number.isFinite(due.getTime())) return;
                 const difference = Math.round((Date.UTC(due.getFullYear(), due.getMonth(), due.getDate()) -
                     Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000);
@@ -1128,7 +1134,8 @@
                     const nextWater = new Date(lastWater);
                     const rawInterval = Number(p.interval);
                     const intervalDays = Number.isFinite(rawInterval) && rawInterval > 0 ? Math.max(1, Math.floor(rawInterval)) : 7;
-                    nextWater.setDate(lastWater.getDate() + intervalDays);
+                    if (connectWateringDue?.(p)) nextWater.setTime(new Date(connectWateringDue(p) + 'T00:00:00').getTime());
+                    else nextWater.setDate(lastWater.getDate() + intervalDays);
                     const diffWater = Number.isFinite(nextWater.getTime())
                         ? Math.round((Date.UTC(nextWater.getFullYear(), nextWater.getMonth(), nextWater.getDate()) -
                             Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000) : null;
@@ -1166,7 +1173,7 @@
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1">
                                         ${p.location ? '📍 ' + escapeHtml(p.location) + ' | ' : ''}
-                                        Gießen: alle ${escapeHtml(p.interval)}T (~${getMlForPot(p.potSize)}ml)
+                                        Gießen: alle ${escapeHtml(p.interval)}T (~${getMlForPot(p.potSize)}ml)${connectWateringDue?.(p) && p.connectDue ? ' · 📅 Toolya Connect: ' + escapeHtml(p.connectDue) : ''}
                                     </p>
                                     ${p.note ? `<p class="text-[11px] text-gray-400 mt-0.5">${escapeHtml(p.note)}</p>` : ''}
                                     ${diaryHtml}
