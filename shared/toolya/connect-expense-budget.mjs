@@ -47,8 +47,8 @@ export function mountExpenseConnect({host,saveSelector,controller,client,userId,
       failedId=null;return false;
     }
     const title=String(entry.title||entry.desc||'Ausgabe');
-    if(!window.confirm('Ausgabe ins Haushaltsbuch übernehmen?\\n\\n'+title+
-       '\\n'+cost.toFixed(2).replace('.',',')+' €\\n\\nOhne Foto/Beleg. Zahlungsart danach prüfen.')){
+    if(!window.confirm('Ausgabe ins Haushaltsbuch übernehmen?\n\n'+title+
+       '\n'+cost.toFixed(2).replace('.',',')+' €\n\nOhne Foto/Beleg. Zahlungsart danach prüfen.')){
       status.textContent='Ausgabe gespeichert; Übernahme nicht ausgeführt.';
       failedId=sourceId;retry.hidden=false;return false;
     }
