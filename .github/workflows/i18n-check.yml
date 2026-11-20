@@ -1,0 +1,26 @@
+name: i18n static checks
+on:
+  pull_request:
+    paths:
+      - 'en/**'
+      - 'shared/toolya/i18n/**'
+      - 'tests/i18n/**'
+      - 'index.html'
+      - 'umzugskisten/index.html'
+      - 'wg-organisator/index.html'
+      - 'pflanzenpflege/index.html'
+      - 'backform-rechner/index.html'
+      - '.github/workflows/i18n-check.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  i18n-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test DE/EN locale and public landing pages
+        run: node --test tests/i18n/*.test.mjs
