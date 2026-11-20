@@ -99,8 +99,30 @@ function mountPreferences(){
   support.setAttribute('aria-label','Toolya freiwillig auf Ko-fi unterstützen (öffnet in neuem Tab)');
  }
  if(surface.lastElementChild!==support)surface.append(support);
- // Convert each tool's existing settings groups without replacing their controls.
+ // Convert legacy controls before adding the independent installation section.
  if(tool!=='home')unifyToolSettings(modal||fallbackDialog);
+ if(!surface.querySelector('.ty-pwa-settings')){
+  const install=document.createElement('details');
+  install.className='ty-settings-group ty-pwa-settings';
+  install.innerHTML=`<summary>App installieren</summary>
+   <div class="ty-settings-content ty-pwa-content">
+    <div class="ty-pwa-lead">
+     <img class="ty-pwa-icon" src="/android-chrome-192x192.png" width="56" height="56" alt="" loading="lazy">
+     <div class="ty-pwa-copy">
+      <span class="ty-pwa-kicker">TOOLYA FÜR DEIN GERÄT</span>
+      <h3>Immer griffbereit</h3>
+      <p>Starte Toolya direkt vom Startbildschirm – ganz ohne App-Store.</p>
+     </div>
+    </div>
+    <button type="button" class="ty-pwa-action" data-toolya-install>
+     <span aria-hidden="true">↧</span> App installieren
+    </button>
+    <p class="ty-pwa-status" data-toolya-install-status role="status" aria-live="polite" hidden></p>
+    <p class="ty-pwa-footnote">Kostenlos · Direkt über deinen Browser</p>
+   </div>`;
+  surface.insertBefore(install,support);
+  document.dispatchEvent(new Event('toolya:pwa-settings-mounted'));
+ }
  if(modal&&fallbackDialog){fallbackDialog.remove();fallbackTrigger.remove();fallbackDialog=null;fallbackTrigger=null}
 }
 mountPreferences();window.addEventListener('storage',e=>{if(e.key===key||e.key===null)apply()});

@@ -12,34 +12,45 @@
   let installPrompt = null;
   const installed = () =>
     window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-  const button = document.getElementById('toolyaInstallBtn');
-  const hint = document.getElementById('toolyaInstallHint');
+  const buttonFor = () => document.querySelector('[data-toolya-install]');
+  const statusFor = () => document.querySelector('[data-toolya-install-status]');
 
-  const message = text => {
-    if (!hint) return;
-    hint.textContent = text;
-    hint.hidden = false;
-  };
+  function message(text) {
+    const status = statusFor();
+    if (!status) return;
+    status.textContent = text;
+    status.hidden = false;
+  }
+
+  function refresh() {
+    const button = buttonFor();
+    if (!button) return;
+    button.hidden = installed();
+    if (installed()) message('Toolya ist bereits als App geöffnet.');
+  }
 
   window.addEventListener('beforeinstallprompt', event => {
     event.preventDefault();
     installPrompt = event;
-    if (button && !installed()) button.hidden = false;
+    refresh();
   });
 
   window.addEventListener('appinstalled', () => {
     installPrompt = null;
+    const button = buttonFor();
     if (button) button.hidden = true;
     message('Toolya wurde als App installiert.');
   });
 
-  if (!button) return;
-  if (installed()) {
-    button.hidden = true;
-    return;
-  }
+  document.addEventListener('toolya:pwa-settings-mounted', refresh);
+  document.addEventListener('DOMContentLoaded', refresh, { once: true });
+  refresh();
 
-  button.addEventListener('click', async () => {
+  // Event delegation keeps the button working when platform.mjs mounts settings later.
+  document.addEventListener('click', async event => {
+    const button = event.target.closest?.('[data-toolya-install]');
+    if (!button || installed()) return;
+
     if (installPrompt) {
       const prompt = installPrompt;
       installPrompt = null;
@@ -48,7 +59,7 @@
         const choice = await prompt.userChoice;
         if (choice?.outcome === 'accepted') {
           button.hidden = true;
-          message('Die Installation wurde gestartet.');
+          message('Installation bestätigt. Du findest Toolya auf deinem Startbildschirm.');
         } else {
           message('Du kannst Toolya später über das Browsermenü installieren.');
         }
@@ -63,7 +74,7 @@
     if (ios) {
       message('Auf iPhone oder iPad: Toolya in Safari öffnen, auf „Teilen“ tippen und „Zum Home-Bildschirm“ wählen.');
     } else {
-      message('Öffne das Menü deines Browsers und wähle „App installieren“ oder „Zum Startbildschirm hinzufügen“. Nutze dazu https://toolya.app in Chrome oder Edge.');
+      message('Öffne das Browsermenü und wähle „App installieren“ oder „Zum Startbildschirm hinzufügen“. In Chrome und Edge ist diese Funktion direkt im Menü verfügbar.');
     }
   });
 })();

@@ -80,3 +80,117 @@ body:not(.b3-home) :is(#settingsModal,#settings-modal,.toolya-settings-dialog) .
 @media(prefers-reduced-motion:reduce){
  body:not(.b3-home) .ty-unified-settings-panel *{scroll-behavior:auto}
 }
+
+/* Consistent installation card inside the existing Toolya settings accordion. */
+:is(#settingsModal,#settings-modal,.toolya-settings-dialog) .ty-pwa-settings {
+  box-sizing:border-box;
+  display:block;
+  margin:12px 0;
+  overflow:hidden;
+  border:1px solid #cadddf;
+  border-radius:14px;
+  background:#f5fbfc;
+  color:#153b49;
+  box-shadow:none;
+}
+:is(#settingsModal,#settings-modal,.toolya-settings-dialog) .ty-pwa-settings>summary {
+  display:list-item;
+  box-sizing:border-box;
+  list-style-position:inside;
+  min-height:46px;
+  padding:13px 17px;
+  cursor:pointer;
+  color:#143a49;
+  font:750 1rem/1.35 system-ui,sans-serif;
+}
+:is(#settingsModal,#settings-modal,.toolya-settings-dialog) .ty-pwa-settings[open]>summary {
+  border-bottom:1px solid #d9e8ec;
+}
+:is(#settingsModal,#settings-modal,.toolya-settings-dialog) .ty-pwa-content {
+  min-width:0;
+  padding:15px;
+}
+.ty-pwa-lead {
+  display:flex;
+  align-items:center;
+  gap:13px;
+  min-width:0;
+  padding:15px;
+  border:1px solid #d7e9ed;
+  border-radius:13px;
+  background:#fff;
+}
+.ty-pwa-icon {
+  display:block;
+  flex:0 0 56px;
+  width:56px;
+  height:56px;
+  object-fit:contain;
+  border-radius:13px;
+}
+.ty-pwa-copy {min-width:0}
+.ty-pwa-kicker {
+  display:block;
+  margin-bottom:4px;
+  color:#087481;
+  font:750 .7rem/1.3 system-ui,sans-serif;
+  letter-spacing:.07em;
+}
+.ty-pwa-copy h3 {
+  margin:0 0 3px;
+  color:#14394a;
+  font:750 1.08rem/1.3 system-ui,sans-serif;
+}
+.ty-pwa-copy p {
+  margin:0;
+  color:#426174;
+  font:400 .88rem/1.5 system-ui,sans-serif;
+}
+:is(#settingsModal,#settings-modal,.toolya-settings-dialog) .ty-pwa-action {
+  box-sizing:border-box;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  width:100%;
+  min-height:46px;
+  margin-top:12px;
+  padding:11px 14px;
+  border:1px solid #006c76;
+  border-radius:12px;
+  background:#006c76;
+  color:#fff;
+  font:750 .97rem/1.35 system-ui,sans-serif;
+  cursor:pointer;
+  box-shadow:0 4px 11px rgba(0,90,106,.13);
+}
+:is(#settingsModal,#settings-modal,.toolya-settings-dialog) .ty-pwa-action:hover {
+  background:#005763;
+  border-color:#005763;
+}
+:is(#settingsModal,#settings-modal,.toolya-settings-dialog) .ty-pwa-action:focus-visible,
+:is(#settingsModal,#settings-modal,.toolya-settings-dialog) .ty-pwa-settings>summary:focus-visible {
+  outline:3px solid #00738b;
+  outline-offset:3px;
+}
+:is(#settingsModal,#settings-modal,.toolya-settings-dialog) .ty-pwa-action[hidden],
+:is(#settingsModal,#settings-modal,.toolya-settings-dialog) .ty-pwa-status[hidden] {display:none!important}
+.ty-pwa-status {
+  margin:10px 0 0;
+  padding:11px 12px;
+  border:1px solid #c2dfe6;
+  border-radius:11px;
+  background:#edf8fa;
+  color:#174354;
+  font:500 .89rem/1.5 system-ui,sans-serif;
+}
+.ty-pwa-footnote {
+  margin:10px 0 0;
+  color:#637e8c;
+  text-align:center;
+  font:400 .76rem/1.45 system-ui,sans-serif;
+}
+@media(max-width:420px){
+  .ty-pwa-lead {padding:12px;gap:11px}
+  .ty-pwa-icon {width:48px;height:48px;flex-basis:48px}
+}
