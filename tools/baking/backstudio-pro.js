@@ -222,10 +222,10 @@ function initRecipe(){
   $('bsp-ocr-button')?.click();
  }
  originalInput.addEventListener('change',()=>{
-  const file=originalInput.files?.[0];if(file)showPhoto(file);
+  const file=originalInput.files?.[0];if(file){showPhoto(file);originalInput.value=''}
  });
  captureInput.addEventListener('change',()=>{
-  const file=captureInput.files?.[0];if(file)showPhoto(file);
+  const file=captureInput.files?.[0];if(file){showPhoto(file);captureInput.value=''}
  });
  async function openCamera(){
   if(cameraStream){closeCamera();return}
@@ -266,6 +266,7 @@ function initRecipe(){
    closeCamera();showPhoto(file);
   },'image/jpeg',.9);
  }
+ document.addEventListener('toolya:backstudio-view-change',event=>{if(event.detail!=='import')closeCamera()});
  window.addEventListener('pagehide',()=>{closeCamera();if(previewUrl)URL.revokeObjectURL(previewUrl)},{once:true});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)closeCamera()});
  // The OCR workflow remains review-first. Nothing is written to a recipe or
