@@ -1,0 +1,44 @@
+name: Dashboard unified shopping and task Connect
+on:
+  pull_request:
+    paths:
+      - 'dashboard/**'
+      - 'shared/toolya/connect-*.mjs'
+      - 'tools/housemates/index.html'
+      - 'supabase/migrations/*dashboard_unified_shopping.sql'
+      - 'tests/connect-shopping.test.mjs'
+      - '.github/workflows/dashboard-shopping-connect.yml'
+  push:
+    branches:
+      - feature/dashboard-unified-shopping-and-task-connect
+      - main
+    paths:
+      - 'dashboard/**'
+      - 'shared/toolya/connect-*.mjs'
+      - 'tools/housemates/index.html'
+      - 'supabase/migrations/*dashboard_unified_shopping.sql'
+      - 'tests/connect-shopping.test.mjs'
+      - '.github/workflows/dashboard-shopping-connect.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unit-and-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check browser modules and adapter contracts
+        run: |
+          node --input-type=module --check < dashboard/dashboard.js
+          node --check dashboard/modules/unified-shopping.mjs
+          node --check shared/toolya/connect-wg-lists.mjs
+          node --check shared/toolya/connect-source-registry.mjs
+          node --test tests/connect-shopping.test.mjs tests/connect-watering.test.mjs tests/cloud-plants.test.mjs tests/dashboard-cloud.test.mjs
+      - name: Run isolated guest browser regression without production services
+        run: |
+          npm ci --ignore-scripts
+          CHROME_PATH=/usr/bin/google-chrome node tests/platform/dashboard-local-smoke.cjs
