@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const KEY='toolya_backstudio_v1', HANDOFF='toolya_baking_shopping_handoff_v1', TAG='duhrrom-21';
+const KEY='toolya_backstudio_v1', TAG='duhrrom-21';
 const el=id=>document.getElementById(id), number=(id,d=0)=>Number(el(id)?.value)||d, fmt=n=>Number(n).toLocaleString('de-DE',{maximumFractionDigits:1});
 const safe=x=>String(x||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let data;try{data=JSON.parse(localStorage.getItem(KEY)||'{}')}catch{data={}}data=Object.assign({pans:[],logs:[],shopping:[]},data);if(!Array.isArray(data.shopping))data.shopping=[];
@@ -14,11 +14,6 @@ const parsed=()=>el('recipe-input').value.split(/\r?\n/).map(s=>s.trim()).filter
 const adjusted=i=>{const v=i.qty*factor(),u=i.unit||'';let result=v;if(el('bs-practical').checked){result=/^(kg|l)$/i.test(u)?Math.round(v*100)/100:/^(ei|eier|stück|pck\.?)$/i.test(u)?Math.round(v*2)/2:/^(tl|el)$/i.test(u)?Math.round(v*4)/4:/^(g|ml)$/i.test(u)?v>=100?Math.round(v/5)*5:Math.round(v):Math.round(v*10)/10;}return result.toLocaleString('de-DE',{maximumFractionDigits:/^(kg|l)$/i.test(u)?2:1})+' '+u+(i.name.toLowerCase()===u.toLowerCase()?'':' '+i.name)};
 const amazon=q=>'https://www.amazon.de/s?k='+encodeURIComponent(q)+'&tag='+TAG;
 const make=(tag,where,content)=>{const n=document.createElement(tag);if(content!==undefined)n.textContent=content;where.append(n);return n};
-function queueToWG(items){
- const clean=items.filter(i=>i&&i.title).map(i=>({title:String(i.title).slice(0,180)})).slice(0,50);
- if(!clean.length)return message('Bitte zuerst Zutaten eingeben.');
- try{localStorage.setItem(HANDOFF,JSON.stringify(clean));el('bs-shopping-link').hidden=false;message(clean.length+' Artikel vorbereitet. Öffne die Einkaufsliste, um sie nach dem Laden deiner WG zu übernehmen.')}catch{message('Übernahme konnte nicht vorbereitet werden.')}
-}
 function queue(items){
  const clean=items.filter(i=>i&&typeof i.title==='string'&&i.title.trim()).map(i=>({title:i.title.trim().slice(0,180),query:String(i.query||i.title).trim().slice(0,120)})).slice(0,50);
  if(!clean.length)return message('Bitte zuerst Zutaten eingeben.');
@@ -95,7 +90,7 @@ function init(){
  '<article><h3>8 · Spezialformen</h3><p>Gugelhupf, Herz, Kranz: tatsächlich nutzbares Volumen ausmessen.</p><label>Füllvolumen (ml)<input id="bs-special" type="number" min="1" value="1500"></label><p id="bs-special-result"></p></article>'+
  '<article><h3>9 · Zutaten-Vorrat</h3><div id="bs-pantry"></div><p id="bs-pantry-result"></p></article>'+
  '<article><h3>10 · Wunschhöhe</h3><label>Original-Teighöhe (cm)<input id="bs-original-height" type="number" min=".5" step=".5" value="4"></label><label>Wunschhöhe (cm)<input id="bs-height" type="number" min=".5" step=".5" value="4"></label></article>'+
- '<article><h3>11 · Meine Backstudio-Einkaufsliste</h3><p>Unabhängig von einer WG. Jeder Artikel besitzt einen eigenen Amazon-Suchbutton mit Partner-ID.</p><label>Weitere Zutat<input id="bs-shopping-custom" type="text" maxlength="180" placeholder="z. B. Vanillezucker"></label><button id="bs-shopping-add">Artikel hinzufügen</button><div id="bs-shopping-items"></div><button id="bs-connect">Liste zusätzlich an WG übergeben</button><a id="bs-shopping-link" href="/tools/housemates/" hidden>WG-Einkaufsliste öffnen ↗</a><p class="bs-hint">Die Backstudio-Liste bleibt in diesem Browser gespeichert. Die WG-Übergabe ist optional.</p></article>'+
+ '<article><h3>11 · Meine Backstudio-Einkaufsliste</h3><p>Unabhängig von einer WG. Jeder Artikel besitzt einen eigenen Amazon-Suchbutton mit Partner-ID.</p><label>Weitere Zutat<input id="bs-shopping-custom" type="text" maxlength="180" placeholder="z. B. Vanillezucker"></label><button id="bs-shopping-add">Artikel hinzufügen</button><div id="bs-shopping-items"></div><p class="bs-hint">Die Backstudio-Liste bleibt unabhängig von der WG-Liste in diesem Browser gespeichert.</p></article>'+
  '<article><h3>12 · Backgedächtnis</h3><label>Notiz<textarea id="bs-note" rows="2"></textarea></label><label>Tatsächliche Backzeit<input id="bs-time" type="number" min="1" value="45"></label><button id="bs-log">Backerfahrung merken</button><div id="bs-logs"></div><p class="bs-hint">Backformen und Erfahrungen werden lokal im Browser gespeichert.</p></article>'+
  '</div><p id="bs-message" role="status" aria-live="polite">Bereit.</p>';
  root.append(host);
@@ -103,7 +98,7 @@ function init(){
  el('bs-pan-save').onclick=()=>{const shape=el('bs-pan-shape').value,a=number('bs-pan-a'),b=number('bs-pan-b');if(!(a>0)||shape==='rect'&&!(b>0)||data.pans.length>=40)return message('Gültige Maße eingeben (max. 40 Formen).');data.pans.push({shape,a,b});save();renderGarage()};
  el('bs-shopping-all').onclick=()=>queue(parsed().filter(x=>x.qty!==undefined).map(i=>({title:adjusted(i),query:i.name})));
  el('bs-shopping-add').onclick=()=>{const input=el('bs-shopping-custom'),title=input.value.trim();if(!title)return message('Bitte einen Artikel eingeben.');queue([{title,query:title}]);input.value=''};
- el('bs-connect').onclick=()=>queueToWG(data.shopping.filter(i=>!i.done).map(i=>({title:i.title})));
+
  el('bs-refresh').onclick=()=>{renderPantry();update();message('Rezept neu analysiert.')};
  el('bs-log').onclick=()=>{const n=number('bs-time');if(n<1||n>3000)return message('Ungültige Backzeit.');data.logs.push({date:new Date().toLocaleDateString('de-DE'),name:(el('recipe-name').value||'Mein Kuchen').slice(0,80),minutes:n,note:el('bs-note').value.slice(0,250)});data.logs=data.logs.slice(-30);save();logs();message('Backerfahrung lokal gespeichert.')};
  el('bs-ocr').onclick=async()=>{const file=el('bs-photo').files?.[0];if(!file)return message('Bitte Foto auswählen.');if(file.size>8*1024*1024)return message('Foto darf maximal 8 MB groß sein.');const btn=el('bs-ocr');btn.disabled=true;message('Foto wird lokal analysiert …');try{if(!window.Tesseract){const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';await new Promise((resolve,reject)=>{script.onload=resolve;script.onerror=reject;document.head.append(script)})}const r=await window.Tesseract.recognize(file,'deu');el('recipe-input').value=r.data.text;renderPantry();update();message('Erkanntes Rezept unbedingt prüfen.')}catch{message('Foto-Erkennung nicht verfügbar; Text bitte einfügen.')}finally{btn.disabled=false}};
