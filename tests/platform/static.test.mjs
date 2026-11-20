@@ -13,7 +13,7 @@ test('the release keeps explicit Supabase identities and Toolya routes',()=>{
  for(const p of [...pages,...files('assets').filter(p=>/\.(?:m?js|css)$/.test(p)),...files('shared')]){const content=read(p).replace("legacyLink.href='https://duhrrom11.github.io/Helferlein/';",'');assert.doesNotMatch(content,/duhrrom11\.github\.io\/Helferlein/,'Old route in '+p);assert.doesNotMatch(content,/avapuibsidubuzxjtyld/,'Unexpected project change in '+p)}
  assert.match(read('tools/wishes/public.html'),/mode:"production",url:"https:\/\/yheogmeaosuigyaxkwth\.supabase\.co"/);
  assert.match(read('tools/wishes/app.mjs'),/mountAmazonImport/);assert.match(read('tools/wishes/toolya-client.mjs'),/yheogmeaosuigyaxkwth/);
- assert.match(read('index.html'),/tools\/wishes\/index.html/);assert.equal(read('CNAME').trim(),'toolya.app');
+ assert.match(read('index.html'),/href="tools\/wishes\/public\.html" class="ty-tool-link"/);assert.equal(read('CNAME').trim(),'toolya.app');
 });
 test('all eight original PNGs remain byte-for-byte unchanged',()=>{
  for(const line of read('assets/toolya/originals/SHA256SUMS').trim().split('\n')){const [sha,name]=line.split(/\s+/);assert.equal(createHash('sha256').update(readFileSync('assets/toolya/originals/'+name)).digest('hex'),sha,name)}
