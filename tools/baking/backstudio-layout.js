@@ -194,7 +194,17 @@ function init(){
  }).observe(webglBox,{childList:true});
  // Allow users to opt into WebGL; an accessible image fallback is visible without network.
  const orig3dOpen=[...webgl.querySelectorAll('button')].find(n=>/3D öffnen/.test(n.textContent||''));
- if(orig3dOpen){orig3dOpen.textContent='↻ 3D-Modell aktivieren';}
+ if(orig3dOpen){
+  orig3dOpen.textContent='↻ 3D-Modell aktivieren';
+  // Start the interactive view when it first enters the viewport; data-saver users can launch it manually.
+  if('IntersectionObserver' in window&&!window.navigator?.connection?.saveData){
+   const observer=new IntersectionObserver(entries=>{
+    if(!entries.some(e=>e.isIntersecting))return;
+    observer.disconnect();orig3dOpen.click();
+   },{rootMargin:'0px 0px 180px 0px'});
+   observer.observe(stage);
+  }
+ }
  // Pro UI uses 260px fixed camera; the redesigned stage uses 385px (patched in pro script).
  // Keep existing message observable for accessibility while showing a concise status at the top.
  const existingMessage=$('bs-message');if(existingMessage){existingMessage.setAttribute('aria-live','polite');existingMessage.classList.add('bsui-site-message');header.after(existingMessage)}
