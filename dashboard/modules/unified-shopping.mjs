@@ -3,6 +3,7 @@
  * Tools keep ownership of their data. This module never writes snapshots into another table.
  */
 import {createWgConnect} from '../../shared/toolya/connect-wg-lists.mjs';
+import {createConnectRegistry} from '../../shared/toolya/connect-source-registry.mjs';
 const TABLE='dashboard_shopping_items';
 const normalizeTitle = title => {
   if(typeof title!=='string'||!title.trim()||title.trim().length>160||
@@ -18,6 +19,7 @@ export function projectDashboardShopping(rows,userId) {
 export function createUnifiedShopping(client) {
   if(!client?.auth?.getUser || !client.from)throw TypeError('Supabase nicht verfügbar.');
   const wg=createWgConnect(client);
+  const registry=createConnectRegistry([{id:'wg',load:()=>wg.load(),setDone:(item,done)=>wg.setDone(item,done)}]);
   let owner=null,rows=[],shopping=[],tasks=[],partial=false;
   async function user() {
     const {data,error}=await client.auth.getUser();
@@ -29,13 +31,13 @@ export function createUnifiedShopping(client) {
     const [ownResult,sourceResult]=await Promise.all([
       client.from(TABLE).select('id,user_id,title,completed,revision,deleted_at,created_at')
         .eq('user_id',uid).is('deleted_at',null).order('created_at',{ascending:true}).limit(1000),
-      wg.load().then(value=>({data:value,error:null}),error=>({data:null,error}))
+      registry.load().then(value=>({data:value,error:null}),error=>({data:null,error}))
     ]);
     if(await user()!==uid)throw Error('Konto während des Ladens gewechselt.');
     if(ownResult.error)throw Error('Dashboard-Einkaufsliste nicht verfügbar: '+ownResult.error.message);
     rows=ownResult.data||[];
     owner=uid;
-    partial=Boolean(sourceResult.error)||rows.length===1000||Boolean(sourceResult.data?.truncated);
+    partial=Boolean(sourceResult.error)||rows.length===1000||Boolean(sourceResult.data?.partial);
     shopping=[
       ...projectDashboardShopping(rows,uid),
       ...(sourceResult.data?.shopping||[])
@@ -63,7 +65,7 @@ export function createUnifiedShopping(client) {
     const uid=await guard();
     if(item?.source==='wg') {
       if(item.kind!=='shopping'&&item.kind!=='task')throw Error('Ungültiger WG-Eintrag.');
-      await wg.setDone(item,done);
+      await registry.setDone(item,Boolean(done));
       if(await user()!==uid)throw Error('Konto während des WG-Speicherns gewechselt.');
       return load();
     }
