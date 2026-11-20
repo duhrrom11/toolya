@@ -120,7 +120,11 @@ function mountPreferences(){
     <p class="ty-pwa-status" data-toolya-install-status role="status" aria-live="polite" hidden></p>
     <p class="ty-pwa-footnote">Kostenlos · Direkt über deinen Browser</p>
    </div>`;
-  surface.insertBefore(install,support);
+  // Keep the new accordion inside settings, before the existing close controls.
+  const closeControl=surface.querySelector('.b3-hub-settings-footer,.dashboard-settings-close,.wishlist-settings-footer,#cancelSettingsBtn');
+  let anchor=closeControl;
+  while(anchor&&anchor.parentElement!==surface)anchor=anchor.parentElement;
+  surface.insertBefore(install,anchor||support);
   document.dispatchEvent(new Event('toolya:pwa-settings-mounted'));
  }
  if(modal&&fallbackDialog){fallbackDialog.remove();fallbackTrigger.remove();fallbackDialog=null;fallbackTrigger=null}

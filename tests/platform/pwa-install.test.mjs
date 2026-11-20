@@ -36,7 +36,7 @@ test('Toolya exposes an offline-only service worker and install flow', () => {
   const settings = read('shared/toolya/platform.mjs');
   assert.match(settings, /className='ty-settings-group ty-pwa-settings'/);
   assert.match(settings, /data-toolya-install/);
-  assert.match(settings, /insertBefore\(install,support\)/);
+  assert.match(settings, /insertBefore\(install,anchor\|\|support\)/);
   assert.match(install, /addEventListener\('click'/);
   assert.match(install, /closest\?\.\('\[data-toolya-install\]'\)/);
   assert.match(install, /toolya:pwa-settings-mounted/);
