@@ -22,7 +22,6 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF für PDF-Report -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Supabase JS Client -->
     <script src="../../assets/vendor/supabase-2.57.0.js"></script>
 <script src="../../shared/toolya/auth-page-gate.js"></script>
@@ -1027,9 +1026,10 @@
             }
         }
 
-        function exportHandoverPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+        async function exportHandoverPDF() {
+            const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
+            const doc = await createExportPdf();
+            if (!doc) return;
             const data = getData();
 
             doc.setFontSize(18);
@@ -1115,9 +1115,10 @@
             reader.readAsText(file);
         }
 
-        function exportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+        async function exportPDF() {
+            const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
+            const doc = await createExportPdf();
+            if (!doc) return;
             const data = getData();
 
             doc.setFontSize(16);
