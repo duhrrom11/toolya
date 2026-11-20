@@ -44,7 +44,7 @@ function queue(items){
  save();renderShopping();message(count?count+' Artikel zur Backstudio-Einkaufsliste hinzugefügt. Jeder Artikel hat einen Amazon-Suchbutton.':'Diese Artikel stehen bereits auf deiner Einkaufsliste.');
 }
 function renderShopping(){
- const root=el('bs-shopping-items');if(!root)return;root.replaceChildren();
+ const root=el('bs-shopping-items');if(!root)return;root.setAttribute('data-user-content','');root.replaceChildren();
  if(!data.shopping.length){make('p',root,'Deine Einkaufsliste ist leer.');return}
  for(const item of data.shopping){
   const row=make('div',root);row.className='bs-row';
@@ -52,7 +52,7 @@ function renderShopping(){
   const check=make('input',label);check.type='checkbox';check.checked=!!item.done;check.style.width='auto';check.setAttribute('aria-label',item.title+' erledigt');
   check.onchange=()=>{item.done=check.checked;save();renderShopping()};
   const name=make('span',label,item.title);if(item.done)name.style.textDecoration='line-through';
-  const a=make('a',row,'🔎 Amazon');a.href=amazon(item.query||item.title);a.target='_blank';a.rel='noopener noreferrer sponsored';a.title='Anzeige – Amazon-Partnerlink mit Partner-ID';
+  const a=make('a',row,'🔎 Amazon · Anzeige');a.href=amazon(item.query||item.title);a.target='_blank';a.rel='noopener noreferrer sponsored';a.title='Anzeige – Amazon-Partnerlink mit Partner-ID';
   const del=make('button',row,'×');del.type='button';del.setAttribute('aria-label',item.title+' entfernen');del.onclick=()=>{data.shopping=data.shopping.filter(x=>x.id!==item.id);save();renderShopping()};
  }
 }
@@ -116,11 +116,11 @@ function update(){
  el('bs-fillbar').style.background=percent>75?'#ea580c':'#0d9488';
  el('bs-filltext').textContent=fmt(percent)+' % rechnerische Füllhöhe · '+(percent>75?'Achtung, mögliche Überfüllung!':'Füllhöhe auf Grundlage gerader Wände geschätzt.');
  el('bs-ratio').textContent='Umrechnungsfaktor mit Wunschhöhe: ×'+fmt(f);
- const box=el('bs-scaled');box.replaceChildren();
+ const box=el('bs-scaled');box.setAttribute('data-user-content','');box.replaceChildren();
  for(const i of parsed()){const row=make('div',box);row.className='bs-row';make('span',row,i.qty===undefined?i.name:adjusted(i));
  if(i.qty===undefined)continue;
  const btn=make('button',row,'🛒');btn.title='Zur Einkaufsliste';btn.type='button';btn.onclick=()=>queue([{title:adjusted(i),query:i.name}]);
- const a=make('a',row,'Amazon ↗');a.href=amazon(i.name);a.target='_blank';a.rel='noopener noreferrer sponsored';a.title='Anzeige – Amazon-Partnerlink';
+ const a=make('a',row,'Amazon ↗ · Anzeige');a.href=amazon(i.name);a.target='_blank';a.rel='noopener noreferrer sponsored';a.title='Anzeige – Amazon-Partnerlink';
  }
  const remaining=liters*1000-target()*ph*10*number('bs-maxfill',.7);
  el('bs-leftover').textContent=remaining>0?'Ca. '+fmt(remaining)+' ml mehr Teig als die eingestellte empfohlene Füllgrenze. Das entspricht ungefähr '+fmt(remaining/100)+' Muffinförmchen à 100 ml.':'Teigmenge liegt innerhalb der eingestellten Füllgrenze (rechnerische Näherung).';
