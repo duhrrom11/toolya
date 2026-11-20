@@ -1,31 +1,46 @@
-# Toolya Connect – integrierte Ausgabe (Stand 2026-11-17)
+# Toolya Connect – integrierte Ausgabe
 
-## Produktentscheidung
-Toolya Connect erhält **keinen eigenen Bereich**. Verbindungen erscheinen nur dort, wo
-Nutzerinnen und Nutzer einen passenden Datensatz erstellen oder eine Ausgabe auslösen:
-als optionale, standardmäßig ausgeschaltete Auswahl direkt an der Speichern-/Ausgabe-Aktion.
+## Produktregel
+Connect hat keine eigene Seite oder einen eigenen Hauptbereich. Die Wahl erscheint
+bei einer passenden Erfassung direkt oberhalb des Speichern-Knopfs, standardmäßig aus,
+und ist nur bei einem tatsächlich positiven, centgenauen Betrag aktiv.
+Die Quelle wird zuerst bestätigtermaßen in Toolya Cloud gespeichert; erst danach
+wird die gesondert bestätigte Übertragung ins Haushaltsbuch ausgelöst.
 
-Das Muster gilt für alle künftigen fachlich passenden Werkzeuge und Bereiche.
-Es werden **keine** funktionslosen Verbindungsoptionen für noch nicht unterstützte Ziele angezeigt.
+## Aktive Verbindungen
+| Quelle | Auslöser | Ziel | Kategorie |
+| --- | --- | --- | --- |
+| Autokosten | neuer Ereignis-Eintrag mit realen Kosten | Haushaltsbuch | Auto |
+| Parkplatz-Merker | neuer Parkvorgang mit tatsächlicher Gebühr | Haushaltsbuch | Auto |
+| Haustier-Gesundheitspass | neues Ereignis mit tatsächlichen Kosten | Haushaltsbuch | Haustiere |
 
-## Erste produktive Verbindung: Autokosten → Haushaltsbuch
-- Beim Anlegen eines Autokosten-Eintrags steht direkt vor „Eintrag speichern“
-  „Diese Ausgabe auch ins Haushaltsbuch übernehmen“.
-- Der Autokosten-Eintrag wird zuerst regulär in Toolya Cloud gespeichert.
-- Nur bei ausdrücklicher Auswahl folgt eine Bestätigung und die serverseitige Übertragung.
-- Die RPC `toolya_connect_car_to_budget` prüft Identität, Quell-/Zielrevision,
-  positive Ausgabe und Duplikate. Der Zielstand wird atomar aktualisiert.
-- Kein Belegtransfer. Die Zahlungsart muss im Haushaltsbuch geprüft werden.
-- Bei fehlgeschlagenem Transfer bleibt der erfolgreich gespeicherte Autokosten-Eintrag
-  bestehen; die Oberfläche meldet ausdrücklich, dass keine Übertragung bestätigt ist.
+Der Betrag, Datum und Titel werden aus der bereits gespeicherten Cloud-Quelle
+serverseitig übernommen. Fotos, Belege, GPS-Positionen, medizinische Zusatzdaten,
+Seriennummern und sonstige vertrauliche Metadaten werden **nicht** übertragen.
+Zahlungsart wird als **Bargeld (prüfen)** angelegt, nicht als behauptete
+tatsächlich benutzte Zahlungsart.
 
-## Weitere Verbindungen
-Erst nach Definition einer sicheren Datenzuordnung, Consent, Idempotenz und
-serverseitiger atomarer Speicherung je Zielwerkzeug sichtbar machen. Keine
-allgemeine Connect-Seite, keine stillen Hintergrundübertragungen.
+Ein Ausgabeneintrag bleibt bei abgebrochener Übertragung bestehen; ein manueller
+Retry ist direkt an der Eingabe möglich. Ein serverseitiges Transferjournal
+verhindert Mehrfachverbuchungen. Revisionen beider Cloud-Snapshots werden geprüft.
+Die Übertragung verlangt dieselbe verifizierte Benutzeridentität auf beiden Seiten.
+Das Journal hat RLS und keine direkten Schreibrechte für Browserrollen.
+
+## Geprüfte, bewusst nicht automatisch verbundene Bereiche
+- **WG-Kasse**: Buchungen können gemeinsam sein, Kostenträger und Cloud-Eigentümer
+  müssen nicht identisch sein. Keine heimliche Übernahme in ein privates Budget.
+- **Zählerstände**: Tarif- und Jahreskostenprognosen sind keine realen Zahlungen.
+- **Pflanzen**: ROI-/Ertragsrechnung ist eine Simulation, kein Beleg.
+- **Verleih**: Kautionen sind Forderungen/Sicherheiten und keine laufenden Ausgaben.
+- **Umzugskisten, Backformen/Rezeptrechner, Wunschliste**: keine verifizierte
+  vollständige Zahlung bei der normalen Eintragsanlage.
+- **Digitaler Nachlass**: vertraulicher Sonderbereich ohne finanzielle Buchung.
+
+Erst bei echten Zahlungen und klarer Kostenverantwortung kann eine weitere
+Verbindung samt passender Serverregel ergänzt werden; keine Platzhalter-Checkboxen.
 
 ## Qualität und Betrieb
-Die Cloud-RPC und Migration existieren bereits im Repository. Tests verwenden
-isolierte Daten und dürfen keine produktiven Datensätze anlegen.
-GitHub-Actions-Status und GitHub-Pages-Deployment sind für jeden Release separat
-zu prüfen.
+Die Backend-Migration ist auf Toolya Supabase angewendet und die Berechtigungen
+wurden schreibfrei geprüft. Das CI nutzt ausschließlich synthetische Benutzer und
+isoliertes PostgreSQL/Browserkontexte. Eine echte Buchung im produktiven Konto wird
+nicht zu Testzwecken erzeugt.
