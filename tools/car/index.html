@@ -813,6 +813,7 @@ async function toolyaCloudBoot(tool) {
             document.getElementById('eventLitres').value = "";
             document.getElementById('eventReceiptInput').value = "";
             renderApp();
+            window.toolyaCarConnectPanel?.refresh();
             // The source is now confirmed. Transfer only the specifically saved event.
             if (connectRequested) await window.toolyaCarConnectPanel?.transferEvent(newEventId);
         }
