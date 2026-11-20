@@ -91,3 +91,17 @@ Vergleich der Tool-HTML-Dateien zwischen `eb1ed8a` und `67ff56c`, der zusammenge
 Die neun Seiten enthalten zusammen elf statt 28 externe Skript-Tags. Ein separater Chromium-Vergleich mit simulierter Anmeldung und 390 × 844 Pixeln bestätigt, dass die 17 geprüften Startanfragen für PDF-, OCR- und QR-Bibliotheken entfallen. Beim Live-Abgleich vom 20. November 2026 stimmten alle neun HTML-Dateien mit dem Repository überein und enthielten `noindex`. Ihre Tool-Adressen stehen außerhalb der Sitemap. [Isolierter Browserlauf](https://github.com/duhrrom11/toolya/actions/runs/44721365851)
 
 Die nächste vergleichbare Browsermessung sollte auf demselben Stand und mit identischer Gerätesimulation wiederholt werden. Für Startseite, öffentlichen Backform-Rechner und Wunschlistenfinder eignet sich der öffentliche Einstieg. Für Haushaltsbuch, Zählerstände und Umzugskisten ist eine isolierte Sitzung mit nachgebildeter Anmeldung nötig, damit die Messung die Tool-Oberfläche erreicht.
+
+## R30 – Öffentliche Seiten im mobilen Labor und beim HTTP-Abruf
+
+Am 20. November 2026 wurden Startseite, Backform-Rechner und Wunschlistenfinder je dreimal im isolierten Chromium bei 390 × 844 Pixeln gemessen. Der Browser lud lokale HTML-Dateien mit blockierten externen Diensten. Pro Durchlauf wurde ein neues Browserprofil verwendet. FCP misst den ersten sichtbaren Inhalt. Die LCP-Spalte erfasst den letzten beobachteten Kandidaten im festen Nachladefenster. [Browserlauf](https://github.com/duhrrom11/toolya/actions/runs/44730060834)
+
+Am selben Tag lieferte toolya.app für dieselben drei Pfade bei je drei sequenziellen, separaten curl-Aufrufen jeweils HTTP 200. Die HTTP-Zeit bis zum ersten Byte schließt Verbindungsaufbau und den Netzwerkpfad der Arbeitsumgebung ein. Die HTTP-Gesamtzeit umfasst das HTML-Dokument. Beide HTTP-Spalten sind Mediane und bilden keinen vollständigen Seitenaufbau ab. Die Byte-Zahl bezieht sich auf den übertragenen Antwortkörper bei aktivierter HTTP-Kompression.
+
+| Seite | Lokaler FCP (ms) | Lokaler LCP-Kandidat (ms) | Live-HTTP erstes Byte (s) | Live-HTTP Gesamt (s) | HTML-Transfer (Byte) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Startseite | 120 | 120 | 3,27 | 3,31 | 18.322 |
+| Backform-Rechner | 44 | 44 | 3,57 | 3,57 | 4.251 |
+| Wunschlistenfinder | 84 | 84 | 3,34 | 3,34 | 5.886 |
+
+Die Stichprobe dokumentiert den Abruf vom verwendeten Messstandort und den lokalen Browserlauf. Vorher-Nachher-Zeitwerte, ein mobiler Browserlauf gegen die Live-Seiten und CrUX-Felddaten fehlen.
