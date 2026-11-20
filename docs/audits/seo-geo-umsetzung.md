@@ -74,7 +74,7 @@ Die historische Einzelauflistung im Master-Audit enthält 66 HTML-Routen. Der da
 
 ## R30/R31 – Externe Skripte beim Seitenstart
 
-Vergleich der Tool-HTML-Dateien zwischen `eb1ed8a` und `f96d6c2`, der zusammengefassten Änderung aus [PR #235](https://github.com/duhrrom11/toolya/pull/235) bis [PR #241](https://github.com/duhrrom11/toolya/pull/241). Gezählt wurden externe HTTPS-Adressen in statischen Script-Tags. Die letzte Spalte summiert die zuvor ermittelten Dateigrößen der verschobenen Bibliotheken vor HTTP-Kompression. Die Bibliotheken laden bei der jeweiligen Aktion. Cache, Netztransfer, dynamisch geladene Ressourcen und mobile Zeitwerte wurden in diesem Vergleich nicht gemessen.
+Vergleich der Tool-HTML-Dateien zwischen `eb1ed8a` und `67ff56c`, der zusammengefassten Änderung aus [PR #235](https://github.com/duhrrom11/toolya/pull/235) bis [PR #245](https://github.com/duhrrom11/toolya/pull/245). Gezählt wurden externe HTTPS-Adressen in statischen Script-Tags. Die letzte Spalte summiert die zuvor ermittelten Dateigrößen der verschobenen Bibliotheken vor HTTP-Kompression. Die Bibliotheken laden bei der jeweiligen Aktion. Cache, Netztransfer, dynamisch geladene Ressourcen und mobile Zeitwerte wurden in diesem Vergleich nicht gemessen.
 
 | Tool | Externe Skripte vorher | Externe Skripte nachher | Verschobene JavaScript-Bytes |
 | --- | ---: | ---: | ---: |
@@ -83,9 +83,11 @@ Vergleich der Tool-HTML-Dateien zwischen `eb1ed8a` und `f96d6c2`, der zusammenge
 | Parkplatz-Merker | 2 | 1 | 364.463 |
 | Zählerstände | 2 | 1 | 364.463 |
 | Umzugskisten | 4 | 1 | 759.754 |
-| WG-Organisator | 5 | 3 | 384.390 |
+| WG-Organisator | 5 | 2 | 451.085 |
 | Tiergesundheit | 2 | 1 | 364.463 |
 | Verliehene Dinge | 3 | 1 | 384.390 |
 | Pflanzenpflege | 3 | 1 | 384.390 |
+
+Die neun Seiten enthalten zusammen elf statt 28 externe Skript-Tags. Ein separater Chromium-Vergleich mit simulierter Anmeldung und 390 × 844 Pixeln bestätigt, dass die 17 geprüften Startanfragen für PDF-, OCR- und QR-Bibliotheken entfallen. Beim Live-Abgleich vom 20. November 2026 stimmten alle neun HTML-Dateien mit dem Repository überein und enthielten `noindex`. Ihre Tool-Adressen stehen außerhalb der Sitemap. [Isolierter Browserlauf](https://github.com/duhrrom11/toolya/actions/runs/44721365851)
 
 Die nächste vergleichbare Browsermessung sollte auf demselben Stand und mit identischer Gerätesimulation wiederholt werden. Für Startseite, öffentlichen Backform-Rechner und Wunschlistenfinder eignet sich der öffentliche Einstieg. Für Haushaltsbuch, Zählerstände und Umzugskisten ist eine isolierte Sitzung mit nachgebildeter Anmeldung nötig, damit die Messung die Tool-Oberfläche erreicht.
