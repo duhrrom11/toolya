@@ -11,7 +11,7 @@ const orig=()=>area(el('orig-shape').value,el('orig-shape').value==='rect'?numbe
 const target=()=>el('combinator-mode').value==='double'?area('round',number('combo-d1',20))+area('round',number('combo-d2',16)):area(el('target-shape').value,el('target-shape').value==='rect'?number('target-l',25):number('target-d',20),number('target-w',11));
 const factor=()=>target()/Math.max(orig(),1)*number('bs-height',4)/Math.max(number('bs-original-height',4),.1);
 const parsed=()=>el('recipe-input').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).map(s=>{const m=s.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l|TL|EL|Pck\.?|Stück|Eier?|Prisen?)?\s*(.*)$/i);return m?{qty:Number(m[1].replace(',','.')),unit:m[2]||'',name:m[3]||m[2]||'Zutat'}:{name:s}});
-const adjusted=i=>{const v=i.qty*factor(),u=i.unit||'';return (el('bs-practical').checked?fmt(/^(ei|eier|stück|pck\.?)$/i.test(u)?Math.round(v*2)/2:/^(tl|el)$/i.test(u)?Math.round(v*4)/4:v>=100?Math.round(v/5)*5:Math.round(v)):fmt(v))+' '+u+' '+i.name};
+const adjusted=i=>{const v=i.qty*factor(),u=i.unit||'';let result=v;if(el('bs-practical').checked){result=/^(kg|l)$/i.test(u)?Math.round(v*100)/100:/^(ei|eier|stück|pck\.?)$/i.test(u)?Math.round(v*2)/2:/^(tl|el)$/i.test(u)?Math.round(v*4)/4:/^(g|ml)$/i.test(u)?v>=100?Math.round(v/5)*5:Math.round(v):Math.round(v*10)/10;}return result.toLocaleString('de-DE',{maximumFractionDigits:/^(kg|l)$/i.test(u)?2:1})+' '+u+(i.name.toLowerCase()===u.toLowerCase()?'':' '+i.name)};
 const amazon=q=>'https://www.amazon.de/s?k='+encodeURIComponent(q)+'&tag='+TAG;
 const make=(tag,where,content)=>{const n=document.createElement(tag);if(content!==undefined)n.textContent=content;where.append(n);return n};
 function queue(items){
