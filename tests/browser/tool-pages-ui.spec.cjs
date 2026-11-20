@@ -1637,3 +1637,32 @@ test('moving boxes guide prints the sample QR label without the instructions', a
   await expect(qr).toBeVisible();
   await expect(qr).toHaveJSProperty('naturalWidth', 328);
 });
+
+for (const path of ['/backform-rechner/', '/toolya-dashboard/', '/amazon-wunschliste-veroeffentlichen/']) {
+  test(`guide controls and screenshot fit a narrow screen at ${path}`, async ({ page }) => {
+    await isolated(page, false);
+    await page.setViewportSize({ width: 320, height: 720 });
+    await page.goto(path);
+    const jumpLinks = await page.locator('main nav a').evaluateAll(links =>
+      links.map(link => link.getBoundingClientRect().height));
+    expect(jumpLinks.length).toBeGreaterThan(0);
+    expect(Math.min(...jumpLinks)).toBeGreaterThanOrEqual(44);
+
+    const toggle = page.locator('main details summary');
+    await toggle.press('Enter');
+    await expect(toggle).toBeFocused();
+    await expect(toggle).toHaveCSS('outline-style', 'solid');
+    expect((await toggle.boundingBox()).height).toBeGreaterThanOrEqual(44);
+
+    const image = page.locator('main details figure img');
+    await expect(image).toBeVisible();
+    await image.scrollIntoViewIfNeeded();
+    await expect.poll(() => image.evaluate(img => img.naturalWidth)).toBeGreaterThan(0);
+    const bounds = await image.boundingBox();
+    expect(bounds.x).toBeGreaterThanOrEqual(0);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(320);
+
+    await toggle.press('Space');
+    await expect(image).toBeHidden();
+  });
+}
