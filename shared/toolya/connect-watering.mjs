@@ -39,6 +39,7 @@ export function scheduleWatering(snapshot, plantId, date, today=todayLocal()) {
   if (!plant) throw Error('Pflanze im Gießplan nicht mehr vorhanden.');
   const existing=wateringDueDate(plant);
   if (!existing) throw Error('Pflanze hat keinen gültigen Gießrhythmus.');
+  if (date<=plant.lastWatered) throw Error('Der neue Gießtag muss nach dem letzten Gießen liegen.');
   if (plant.connectDue===date) return false;
   plant.connectDue=date;
   return true;
