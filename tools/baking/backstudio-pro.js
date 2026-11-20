@@ -181,12 +181,100 @@ function initRecipe(){
  txt('div',null,preview).id='bsp-preview';
  txt('p','Nicht erkannte Zeilen bitte selbst prüfen.',preview).className='bsp-muted';
  const ocr=panel(host,'Rezeptfoto einlesen');
- const opts=txt('label',null,ocr);const box=txt('input',null,opts);box.type='checkbox';box.checked=true;box.id='bsp-contrast';txt('span','Foto besser lesbar machen',opts);
- action(ocr,'Foto lesen',async()=>{
-  const file=$('bs-photo')?.files?.[0];
-  if(!file)return status('bsp-ocr-status','Bitte ein Foto auswählen.');
-  if(!/^image\//.test(file.type)||file.size>8*1024*1024)return status('bsp-ocr-status','Bitte eine Bilddatei mit maximal 8 MB auswählen.');
-  const btn=$('bsp-ocr-button');btn.disabled=true;status('bsp-ocr-status','Texterkennung lädt …');
+ const originalInput=$('bs-photo');
+ if(!originalInput)return;
+ // Keep the original file input and its legacy handler, but replace the confusing
+ // browser-native picker with two clearly named user actions.
+ originalInput.hidden=true;originalInput.style.display='none';
+ const captureInput=txt('input',null,ocr);
+ captureInput.type='file';captureInput.accept='image/*';captureInput.setAttribute('capture','environment');
+ captureInput.id='bsp-camera-native';captureInput.hidden=true;captureInput.style.display='none';
+ const choices=txt('div',null,ocr);choices.className='bsp-camera-actions bsp-actions';
+ const cameraButton=action(choices,'📷 Kamera öffnen',openCamera);
+ cameraButton.id='bsp-camera-open';
+ action(choices,'🖼️ Foto auswählen',()=>originalInput.click()).id='bsp-photo-choose';
+ const nativeButton=action(choices,'📷 Handykamera verwenden',()=>captureInput.click());
+ nativeButton.id='bsp-camera-native-button';nativeButton.hidden=true;
+ const cameraArea=txt('div',null,ocr);cameraArea.className='bsp-camera-preview';cameraArea.hidden=true;
+ const video=txt('video',null,cameraArea);
+ video.id='bsp-camera-video';video.autoplay=true;video.muted=true;video.playsInline=true;
+ video.setAttribute('aria-label','Kamerabild zum Aufnehmen deines Rezepts');
+ const cameraControls=txt('div',null,cameraArea);cameraControls.className='bsp-actions';
+ action(cameraControls,'📸 Foto aufnehmen',takePhoto).id='bsp-camera-shutter';
+ action(cameraControls,'Abbrechen',closeCamera);
+ const thumbnail=txt('img',null,ocr);
+ thumbnail.id='bsp-photo-preview';thumbnail.hidden=true;thumbnail.alt='Dein ausgewähltes Rezeptfoto';
+ const opts=txt('label',null,ocr);
+ const box=txt('input',null,opts);box.type='checkbox';box.checked=true;box.id='bsp-contrast';
+ txt('span','Foto besser lesbar machen',opts);
+ let cameraStream=null,photoFile=null,previewUrl=null;
+ function closeCamera(){
+  if(cameraStream){for(const track of cameraStream.getTracks())track.stop();cameraStream=null}
+  video.pause();video.srcObject=null;cameraArea.hidden=true;
+ }
+ function showPhoto(file){
+  if(!file)return;
+  photoFile=file;
+  if(previewUrl)URL.revokeObjectURL(previewUrl);
+  previewUrl=URL.createObjectURL(file);
+  thumbnail.src=previewUrl;thumbnail.hidden=false;
+  status('bsp-ocr-status','Foto ausgewählt. Text wird gelesen …');
+  $('bsp-ocr-button')?.click();
+ }
+ originalInput.addEventListener('change',()=>{
+  const file=originalInput.files?.[0];if(file)showPhoto(file);
+ });
+ captureInput.addEventListener('change',()=>{
+  const file=captureInput.files?.[0];if(file)showPhoto(file);
+ });
+ async function openCamera(){
+  if(cameraStream){closeCamera();return}
+  if(!navigator.mediaDevices?.getUserMedia){
+   nativeButton.hidden=false;
+   status('bsp-ocr-status','Kamera nicht verfügbar. Tippe auf „Handykamera verwenden“.');
+   return;
+  }
+  cameraButton.disabled=true;
+  status('bsp-ocr-status','Bitte den Zugriff auf die Kamera erlauben.');
+  let stream;
+  try{
+   stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'}}});
+   cameraStream=stream;
+   video.srcObject=stream;cameraArea.hidden=false;
+   await video.play();
+   status('bsp-ocr-status','Halte dein Rezept vor die Kamera und tippe auf „Foto aufnehmen“.');
+  }catch(e){
+   if(stream){for(const track of stream.getTracks())track.stop()}
+   closeCamera();nativeButton.hidden=false;
+   status('bsp-ocr-status','Kamera konnte nicht geöffnet werden. Versuche „Handykamera verwenden“.');
+  }finally{cameraButton.disabled=false}
+ }
+ function takePhoto(){
+  if(!cameraStream||!video.videoWidth||!video.videoHeight){
+   status('bsp-ocr-status','Das Kamerabild ist noch nicht bereit.');
+   return;
+  }
+  const canvas=document.createElement('canvas');
+  const ratio=Math.min(1,2200/Math.max(video.videoWidth,video.videoHeight));
+  canvas.width=Math.max(1,Math.round(video.videoWidth*ratio));
+  canvas.height=Math.max(1,Math.round(video.videoHeight*ratio));
+  const context=canvas.getContext('2d');if(!context){status('bsp-ocr-status','Foto konnte nicht aufgenommen werden.');return}
+  context.drawImage(video,0,0,canvas.width,canvas.height);
+  canvas.toBlob(blob=>{
+   if(!blob){status('bsp-ocr-status','Foto konnte nicht gespeichert werden.');return}
+   const file=new File([blob],'rezeptfoto.jpg',{type:'image/jpeg',lastModified:Date.now()});
+   closeCamera();showPhoto(file);
+  },'image/jpeg',.9);
+ }
+ window.addEventListener('pagehide',()=>{closeCamera();if(previewUrl)URL.revokeObjectURL(previewUrl)},{once:true});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)closeCamera()});
+ // The OCR workflow remains review-first. Nothing is written to a recipe or
+ // shopping list until the user explicitly clicks "Zutaten übernehmen".
+ action(ocr,'Foto erneut lesen',async()=>{
+  const file=photoFile||originalInput.files?.[0];
+  if(!file)return status('bsp-ocr-status','Bitte ein Foto aufnehmen oder auswählen.');
+  if(!/^image\//.test(file.type)||file.size>20*1024*1024)return status('bsp-ocr-status','Bitte ein Foto bis 20 MB verwenden.');
+  const btn=$('bsp-ocr-button');btn.disabled=true;status('bsp-ocr-status','Rezept wird gelesen …');
   try{
    if(!window.Tesseract){
     const script=document.createElement('script');
@@ -202,18 +290,23 @@ function initRecipe(){
      const ctx=canvas.getContext('2d',{willReadFrequently:true});if(!ctx)throw Error('Canvas unavailable');
      ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
      const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
-     for(let i=0;i<pixels.data.length;i+=4){const gray=Math.min(255,Math.max(0,Math.round((.2126*pixels.data[i]+.7152*pixels.data[i+1]+.0722*pixels.data[i+2]-128)*1.55+128)));pixels.data[i]=pixels.data[i+1]=pixels.data[i+2]=gray}
+     for(let i=0;i<pixels.data.length;i+=4){
+      const gray=Math.min(255,Math.max(0,Math.round((.2126*pixels.data[i]+.7152*pixels.data[i+1]+.0722*pixels.data[i+2]-128)*1.55+128)));
+      pixels.data[i]=pixels.data[i+1]=pixels.data[i+2]=gray
+     }
      ctx.putImageData(pixels,0,0);img=canvas;
     }finally{bitmap.close()}
    }
    const result=await window.Tesseract.recognize(img,'deu+eng');
    input.value=result.data.text||'';reviewRecipe(input.value);
-   status('bsp-ocr-status','Foto gelesen ('+fmt(result.data.confidence||0)+' %). Bitte Zutaten prüfen.');
-  }catch(e){status('bsp-ocr-status','Fotoerkennung fehlgeschlagen oder blockiert. Nutze die Texteingabe.')}
+   status('bsp-ocr-status','Foto gelesen. Bitte Zutaten prüfen und dann übernehmen.');
+  }catch(e){status('bsp-ocr-status','Foto konnte nicht gelesen werden. Bitte anderes Foto versuchen.')}
   finally{btn.disabled=false}
  }).id='bsp-ocr-button';
- txt('p','Dein Foto wird im Browser gelesen. Erst nach deiner Prüfung übernehmen wir die Zutaten.',ocr).className='bsp-muted';
- txt('p','Noch kein Foto ausgewählt.',ocr).id='bsp-ocr-status';
+ txt('p','Bitte die erkannten Zutaten prüfen.',ocr).className='bsp-muted';
+ const cameraStatus=txt('p','Wähle Kamera oder Foto.',ocr);
+ cameraStatus.id='bsp-ocr-status';cameraStatus.setAttribute('role','status');cameraStatus.setAttribute('aria-live','polite');
+
 }
 let reviewed=[];
 function reviewRecipe(source){
