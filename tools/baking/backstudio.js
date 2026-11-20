@@ -4,6 +4,8 @@ const KEY='toolya_backstudio_v1', TAG='duhrrom-21';
 const el=id=>document.getElementById(id), number=(id,d=0)=>Number(el(id)?.value)||d, fmt=n=>Number(n).toLocaleString('de-DE',{maximumFractionDigits:1});
 const safe=x=>String(x||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let data;try{data=JSON.parse(localStorage.getItem(KEY)||'{}')}catch{data={}}data=Object.assign({pans:[],logs:[],shopping:[],pantry:{}},data);for(const key of ['pans','logs','shopping'])if(!Array.isArray(data[key]))data[key]=[];if(!data.pantry||typeof data.pantry!=='object'||Array.isArray(data.pantry))data.pantry={};
+// Share the same in-memory state with the additive pro controls to avoid overwriting newer entries.
+window.toolyaBackstudioState=data;
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(data))}catch{message('Lokales Speichern fehlgeschlagen.')}};
 const message=m=>el('bs-message').textContent=m;
 const area=(s,a,b)=>s==='rect'?a*b:Math.PI*a*a/4;
@@ -133,6 +135,7 @@ function update(){
  const heightWarning=el('bs-height-warning');if(heightWarning)heightWarning.textContent=h>ph*number('bs-maxfill',.7)?'Achtung: Die gewünschte Teighöhe ist größer als die eingestellte Füllgrenze der Backform.':'Wunschhöhe innerhalb der eingestellten Füllgrenze (bei geraden Wänden).';
 }
 function logs(){const root=el('bs-logs');root.replaceChildren();data.logs.slice(-12).reverse().forEach(x=>make('p',root,x.date+' · '+x.name+' · '+x.minutes+' Min. · '+x.note))}
+window.toolyaBackstudioRenderLogs=logs;
 function init(){
  const root=el('tab-rechner');if(!root)return;
  const host=document.createElement('section');host.id='toolya-backstudio';
