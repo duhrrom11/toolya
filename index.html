@@ -82,6 +82,8 @@
 <script defer src="/assets/toolya-pwa.js"></script>
 <script type="module" src="shared/toolya/platform.mjs"></script>
 <script type="module" src="shared/toolya/home.mjs?v=20261115-auth-loop-fixed"></script>
+<link rel="stylesheet" href="/shared/toolya/i18n/switcher.css">
+<script type="module" src="/shared/toolya/i18n/switcher.mjs"></script>
 </head>
 <body class="b3-home bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -91,6 +93,7 @@
  <div class="b3-hub-topbar">
   <a class="b3-hub-logo" href="/" aria-label="Toolya Startseite">Toolya</a>
   <nav class="b3-hub-nav" aria-label="Konto und Einstellungen">
+   <a class="ty-language-choice" href="/en/" lang="en" hreflang="en" data-set-locale="en" aria-label="Switch to English">English</a>
    <button type="button" id="userInfo" class="b3-hub-account b3-auth-status b3-auth-signed-out" aria-controls="settingsModal" aria-haspopup="dialog" aria-label="Konto wird geprüft … Kontoeinstellungen öffnen">Konto wird geprüft …</button>
    <button type="button" id="settingsBtn" aria-haspopup="dialog" aria-controls="settingsModal" aria-label="Einstellungen öffnen"><img class="ty-settings-icon" src="assets/vendor/bootstrap-icons/gear.svg" width="22" height="22" alt=""><span class="ty-settings-label">Einstellungen</span></button>
   </nav>
