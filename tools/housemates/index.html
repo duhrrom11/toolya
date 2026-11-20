@@ -1557,8 +1557,15 @@
                                 id: Date.now() + i,
                                 title: x.title.trim()
                             }));
-                            saveShoppingList(existing.concat(additions));
-                            localStorage.removeItem(key);
+                            // Keep the handoff pending until the cloud confirms the write.
+                            saveShoppingList(existing.concat(additions), false);
+                            const saved = await speichereWGinCloud();
+                            if (saved) {
+                                localStorage.removeItem(key);
+                                window.toolyaNotice?.('success', 'Backstudio-Zutaten in der WG-Einkaufsliste gespeichert.');
+                            } else {
+                                alert('Die Zutaten sind lokal vorgemerkt, aber noch nicht online bestätigt. Die Übernahme bleibt für den nächsten sicheren Versuch erhalten.');
+                            }
                         }
                     }
                 } catch (error) { console.warn('Backstudio-Übernahme fehlgeschlagen', error); }
