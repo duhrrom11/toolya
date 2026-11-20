@@ -58,3 +58,9 @@ Die Startversion unter `/index.html` wird als Ziel für die Passwort-Wiederherst
 Am 20. November wurden alle 18 URLs aus der Live-Sitemap abgerufen. Das ausgelieferte HTML entsprach jeweils bytegenau dem Stand `7ffce51` auf `main`. Jede Seite enthielt einen Titel, eine Meta-Beschreibung und einen auf sich selbst verweisenden Canonical. In den HTML-Metatags fand sich keine Noindex-Anweisung.
 
 Damit sind die Ergänzungen zum Beschriften von [Umzugskisten](https://github.com/duhrrom11/toolya/pull/272), zur [Verleihliste](https://github.com/duhrrom11/toolya/pull/273), zum [Zählerverbrauch](https://github.com/duhrrom11/toolya/pull/274) und zur [Backform-Umrechnung](https://github.com/duhrrom11/toolya/pull/275) live bestätigt. In der erneuten Google-URL-Prüfung war für diese vier Seiten noch kein neuer Crawl sichtbar. Der nächste Indexierungsvergleich ist nach einer Aktualisierung der Google-Daten aussagekräftig.
+
+### R23 und R27 – Verzeichnisvarianten und interne Linkziele
+
+Die 18 Sitemap-Adressen und ihre 14 zusätzlichen `index.html`-Varianten wurden am 20. November ohne Weiterleitungsverfolgung live abgerufen. Alle 32 Antworten lieferten HTTP 200. Jede enthielt genau einen Canonical. Dieser zeigte bei den Sitemap-Adressen auf die jeweils eigene URL und bei den `index.html`-Varianten auf die passende Verzeichnis-URL. Keine Antwort enthielt `noindex` im `X-Robots-Tag`.
+
+Die statisch im HTML hinterlegten Links auf toolya.app wurden für alle 18 Sitemap-Seiten gegen den Repository-Stand `85bd524` geprüft. Alle geprüften Pfade und HTML-Sprungmarken waren vorhanden. Dynamisch erzeugte Links waren außerhalb dieser Prüfung.
