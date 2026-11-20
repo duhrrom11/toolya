@@ -175,7 +175,8 @@ function renderWatering() {
     button.disabled=wateringBusy;
     button.onclick=async()=>{
       if(wateringBusy||status!=='cloud'||!watering)return;
-      wateringBusy=true;renderWatering();
+      wateringBusy=true;++wateringLoadGeneration;renderWatering();
+      let failed=false;
       try{
         const data=await watering.complete(item.id);
         if(status!=='cloud'||wateringUserId!==data.userId)return;
@@ -183,8 +184,8 @@ function renderWatering() {
         $('watering-connect-status').textContent='Gießvorgang im Pflanzen-Tool gespeichert.';
       }catch(error){
         $('watering-connect-status').textContent='Gießvorgang nicht bestätigt: '+(error?.message||'Bitte Gießplan neu laden.');
-        await loadWatering(true);
-      }finally{wateringBusy=false;renderWatering();}
+        failed=true;
+      }finally{wateringBusy=false;if(failed)await loadWatering(true);else renderWatering();}
     };
     li.append(label,button);host.append(li);
   }
@@ -231,7 +232,8 @@ $('watering-connect-form').addEventListener('submit',async event=>{
   if(wateringBusy||status!=='cloud'||!watering)return;
   const id=$('watering-connect-plant').value, date=$('watering-connect-date').value;
   if(!id||!date)return;
-  wateringBusy=true;renderWatering();
+  wateringBusy=true;++wateringLoadGeneration;renderWatering();
+  let failed=false;
   try{
     const result=await watering.schedule(id,date);
     if(status!=='cloud'||wateringUserId!==result.userId)return;
@@ -239,8 +241,8 @@ $('watering-connect-form').addEventListener('submit',async event=>{
     $('watering-connect-status').textContent='Gießaufgabe im Pflanzen-Tool eingeplant.';
   }catch(error){
     $('watering-connect-status').textContent='Planung nicht gespeichert: '+(error?.message||'Bitte erneut laden.');
-    await loadWatering(true);
-  }finally{wateringBusy=false;renderWatering();}
+    failed=true;
+  }finally{wateringBusy=false;if(failed)await loadWatering(true);else renderWatering();}
 });
 $('watering-connect-date').min=todayLocal();
 $('watering-connect-date').value=todayLocal();
