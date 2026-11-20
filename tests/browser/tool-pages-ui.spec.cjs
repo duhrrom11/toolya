@@ -1833,3 +1833,38 @@ for (const [tool, expected, remaining = 0] of [
     console.log(`[mobile startup] ${tool}: ${results[0]} -> ${results[1]} optional library requests`);
   });
 }
+
+test('record mobile lab paint timings for public entry points', async ({ browser }, testInfo) => {
+  test.skip(!process.env.TOOLYA_STARTUP_COMPARISON, 'runs in the isolated browser workflow');
+  const results = [];
+  for (const path of ['/', '/backform-rechner/', '/tools/wishes/public.html']) {
+    const samples = [];
+    for (let run = 0; run < 3; run++) {
+      const page = await browser.newPage({
+        viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce'
+      });
+      try {
+        await isolated(page, false);
+        await page.addInitScript(() => {
+          new PerformanceObserver(list => {
+            window.toolyaLabLcp = list.getEntries().at(-1)?.startTime;
+          }).observe({ type: 'largest-contentful-paint', buffered: true });
+        });
+        await page.goto(origin + path);
+        await expect(page).toHaveURL(origin + path);
+        await expect.poll(() => page.evaluate(() => window.toolyaLabLcp || 0)).toBeGreaterThan(0);
+        // Use a fixed observation window for late paint candidates after load.
+        await page.waitForTimeout(1000);
+        samples.push(await page.evaluate(() => ({
+          fcpMs: Math.round(performance.getEntriesByName('first-contentful-paint')[0].startTime),
+          lcpMs: Math.round(window.toolyaLabLcp)
+        })));
+      } finally {
+        await page.close();
+      }
+    }
+    results.push({ path, samples });
+  }
+  console.log('[mobile paint lab]', JSON.stringify(results));
+  await testInfo.attach('mobile-paint-lab', { body: JSON.stringify(results, null, 2), contentType: 'application/json' });
+});
