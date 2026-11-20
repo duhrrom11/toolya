@@ -481,6 +481,14 @@
                 petCloudController=prepared.controller;petCloudUserId=uid;petCloudReady=true;
                 document.getElementById('toolya-cloud-gate')?.remove();
                 loadPetDropdowns();renderApp();await updateUserDisplay();
+                const {mountExpenseConnect}=await import('../../shared/toolya/connect-expense-budget.mjs');
+                window.toolyaPetConnect?.dispose();
+                window.toolyaPetConnect=mountExpenseConnect({
+                    host:document.querySelector('main')||document.body,
+                    saveSelector:'[onclick="saveEvent()"]',
+                    controller:petCloudController,client:supabaseClient,userId:uid,
+                    sourceTool:'haustier-gesundheitspass',recordsKey:'events'
+                });
             }catch(error){console.error(error);petCloudBlock(error?.code === 'toolya_migration_paused' ? 'migration-paused' : 'load-failed');}
         }
         function getData(){
@@ -635,36 +643,48 @@
             renderApp();
         }
 
+        let petEventSaveInProgress=false;
         async function saveEvent() {
-            const petId = document.getElementById('eventPetSelect').value;
-            const type = document.getElementById('eventType').value;
-            const date = document.getElementById('eventDate').value;
-            const title = document.getElementById('eventTitle').value.trim();
-            const cost = parseFloat(document.getElementById('eventCost').value.replace(',', '.')) || 0;
-            const weight = parseFloat(document.getElementById('eventWeight').value.replace(',', '.')) || null;
-            const expiryDate = document.getElementById('eventExpiryDate').value || null;
-            const receiptInput = document.getElementById('eventReceiptInput');
-
-            if (!petId || !date || !title) return alert("Bitte Haustier, Datum und Bezeichnung angeben!");
-
-            let receipt='';
-            try{receipt=await petImage(receiptInput.files?.[0]);}
-            catch(error){alert('Beleg konnte nicht verarbeitet werden. Nichts gespeichert.');return;}
-            await storeEventData(parseInt(petId),type,date,title,cost,weight,expiryDate,receipt);
+            if(petEventSaveInProgress)return;
+            const petId=document.getElementById('eventPetSelect').value;
+            const type=document.getElementById('eventType').value;
+            const date=document.getElementById('eventDate').value;
+            const title=document.getElementById('eventTitle').value.trim();
+            const cost=parseFloat(document.getElementById('eventCost').value.replace(',','.'))||0;
+            const weight=parseFloat(document.getElementById('eventWeight').value.replace(',','.'))||null;
+            const expiryDate=document.getElementById('eventExpiryDate').value||null;
+            const receiptInput=document.getElementById('eventReceiptInput');
+            if(!petId||!date||!title)return alert('Bitte Haustier, Datum und Bezeichnung angeben!');
+            const connectRequested=Boolean(window.toolyaPetConnect?.selected);
+            const button=document.querySelector('[onclick="saveEvent()"]');
+            petEventSaveInProgress=true;
+            if(button)button.disabled=true;
+            try{
+                const receipt=await petImage(receiptInput.files?.[0]);
+                await storeEventData(parseInt(petId),type,date,title,cost,weight,expiryDate,receipt,connectRequested);
+            }catch(error){
+                console.error('Haustier-Eintrag nicht bestätigt',error);
+                alert('Eintrag oder Beleg konnte nicht gespeichert werden. Cloud-Datenstand prüfen.');
+            }finally{
+                petEventSaveInProgress=false;
+                if(button)button.disabled=false;
+            }
         }
 
-        async function storeEventData(petId, type, date, title, cost, weight, expiryDate, receipt) {
-            let data = getData();
-            data.events.push({ id: Date.now(), petId, type, date, title, cost, weight, expiryDate, receipt });
-            if (!await saveData(data)) return;
-
-            document.getElementById('eventDate').value = "";
-            document.getElementById('eventTitle').value = "";
-            document.getElementById('eventCost').value = "";
-            document.getElementById('eventWeight').value = "";
-            document.getElementById('eventExpiryDate').value = "";
-            document.getElementById('eventReceiptInput').value = "";
+        async function storeEventData(petId,type,date,title,cost,weight,expiryDate,receipt,connectRequested=false) {
+            const data=getData();
+            const newEventId=Math.max(Date.now(),1+data.events.reduce((max,e)=>
+                Number.isSafeInteger(e?.id)?Math.max(max,e.id):max,0));
+            data.events.push({id:newEventId,petId,type,date,title,cost,weight,expiryDate,receipt});
+            if(!await saveData(data))return;
+            document.getElementById('eventDate').value='';
+            document.getElementById('eventTitle').value='';
+            document.getElementById('eventCost').value='';
+            document.getElementById('eventWeight').value='';
+            document.getElementById('eventExpiryDate').value='';
+            document.getElementById('eventReceiptInput').value='';
             renderApp();
+            if(connectRequested)await window.toolyaPetConnect?.transfer(newEventId);
         }
 
         async function deleteEvent(id) {
