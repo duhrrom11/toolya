@@ -61,3 +61,26 @@ test('tool, account and admin HTML stay outside the sitemap', () => {
     }
   }
 });
+
+test('public guides link to the website publisher and identify it in JSON-LD', () => {
+  const website = JSON.parse(readPage('index.html')
+    .querySelector('script[type="application/ld+json"]').textContent)['@graph']
+    .find(entity => entity['@type'] === 'WebSite');
+  const publisher = new URL(website.publisher['@id']);
+  assert.equal(publisher.origin, origin);
+  assert.ok(publisher.hash, 'publisher anchor missing');
+  assert.ok(readPage(publisher.pathname.slice(1)).getElementById(publisher.hash.slice(1)),
+    'publisher anchor has no target');
+
+  const guides = sitemapUrls.map(entry => new URL(entry))
+    .filter(url => /^\/[^/]+\/$/.test(url.pathname));
+  assert.ok(guides.length > 0, 'public guides missing from sitemap');
+  for (const url of guides) {
+    const page = readPage(url.pathname.slice(1) + 'index.html');
+    const meta = JSON.parse(page.querySelector('script[type="application/ld+json"]').textContent);
+    assert.equal(meta.publisher?.['@id'], publisher.href, url.pathname + ' publisher mismatch');
+    const links = Array.from(page.querySelectorAll('footer a[href]'),
+      link => new URL(link.getAttribute('href'), url).href);
+    assert.ok(links.includes(publisher.href), url.pathname + ' publisher link missing');
+  }
+});
