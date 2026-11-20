@@ -2,7 +2,7 @@
 'use strict';
 const KEY='toolya_backstudio_v1', HANDOFF='toolya_baking_shopping_handoff_v1', TAG='duhrrom-21';
 const el=id=>document.getElementById(id), number=(id,d=0)=>Number(el(id)?.value)||d, fmt=n=>Number(n).toLocaleString('de-DE',{maximumFractionDigits:1});
-const safe=x=>String(x||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;':'&quot;',"'":'&#39;'}[c]));
+const safe=x=>String(x||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let data;try{data=JSON.parse(localStorage.getItem(KEY)||'{}')}catch{data={}}data=Object.assign({pans:[],logs:[]},data);
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(data))}catch{message('Lokales Speichern fehlgeschlagen.')}};
 const message=m=>el('bs-message').textContent=m;
