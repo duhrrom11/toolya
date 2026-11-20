@@ -36,7 +36,7 @@ function init3D(){
   try{
    const THREE=await import('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js');
    state.three=THREE;
-   const rect=canvas.getBoundingClientRect(),w=Math.max(220,Math.round(rect.width)),h=260;
+   const rect=canvas.getBoundingClientRect(),w=Math.max(220,Math.round(rect.width)),h=canvas.closest('#bsui-stage')?(window.innerWidth<711?320:window.innerWidth<981?335:385):260;
    if(state.renderer){state.renderer.dispose();state.renderer.domElement.remove()}
    state.renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
    state.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -50,7 +50,7 @@ function init3D(){
    state.object=new THREE.Group();state.scene.add(state.object);
    redraw3D();status('bsp-3d-status','Modell geöffnet. Ziehen oder Pfeiltasten benutzen.');
    if(state.observer)state.observer.disconnect();
-   state.observer=new ResizeObserver(()=>{if(!state.renderer||!canvas.isConnected)return;const width=Math.max(180,canvas.clientWidth);if(width===state.lastW)return;state.lastW=width;state.renderer.setSize(width,260);state.camera.aspect=width/260;state.camera.updateProjectionMatrix();render3D()});
+   state.observer=new ResizeObserver(()=>{if(!state.renderer||!canvas.isConnected)return;const width=Math.max(180,canvas.clientWidth);if(width===state.lastW)return;state.lastW=width;const height=canvas.closest('#bsui-stage')?(window.innerWidth<711?320:window.innerWidth<981?335:385):260;state.renderer.setSize(width,height);state.camera.aspect=width/height;state.camera.updateProjectionMatrix();render3D()});
    state.observer.observe(canvas);
   }catch(e){status('bsp-3d-status','3D konnte nicht gestartet werden (WebGL oder externe Bibliothek nicht verfügbar). Die Füllhöhenanzeige bleibt nutzbar.');}
  });
