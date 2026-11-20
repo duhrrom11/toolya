@@ -30,13 +30,21 @@ export function resolveLocale({pathname = '/', explicit = null, saved = null, br
   return DEFAULT_LOCALE;
 }
 
+const PUBLIC_GUIDES = Object.freeze({
+  'moving-boxes': 'umzugskisten',
+  'roommate-organizer': 'wg-organisator',
+  'plant-care': 'pflanzenpflege',
+  'cake-pan-calculator': 'backform-rechner'
+});
+
 export function localizedPublicUrl(locale, slug = '') {
   const language = normalizeLocale(locale) || DEFAULT_LOCALE;
-  const clean = String(slug).replace(/^\/+|\/+$/g, '');
+  const clean = String(slug).replace(/^\\/+|\\/+$/g, '');
   if (clean && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(clean)) throw new Error('Invalid public landing slug');
-  return '/' + language + '/' + (clean ? clean + '/' : '');
+  if (!clean) return language === 'de' ? '/' : '/en/';
+  if (!Object.hasOwn(PUBLIC_GUIDES, clean)) throw new Error('Unknown public landing slug');
+  return language === 'de' ? '/' + PUBLIC_GUIDES[clean] + '/' : '/en/' + clean + '/';
 }
-
 export function campaignUrl({locale = 'de', slug = '', source, campaign, medium = 'organic_social', content = null} = {}) {
   if (!SAFE_CAMPAIGN.test(source || '') || !SAFE_CAMPAIGN.test(campaign || '') ||
       !SAFE_CAMPAIGN.test(medium || '') || (content !== null && !SAFE_CAMPAIGN.test(content))) {
