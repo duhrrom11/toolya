@@ -1,4 +1,5 @@
 import { createDashboardCloud } from './modules/cloud-sync.mjs';
+import { createWateringConnect, todayLocal } from '../shared/toolya/connect-watering.mjs';
 
 const tools = [
   ['wishlist','Wishlist','wishes','wishlist.webp'],['kassenbon','Haushaltsbuch','budget','budget.webp'],
@@ -148,8 +149,106 @@ function renderItems() {
   }
   renderControls();
 }
+// Watering tasks are projections of the authoritative plants snapshot, not duplicate todos.
+let watering=null, wateringTasks=[], wateringUserId=null, wateringBusy=false, wateringLoadGeneration=0;
+let wateringLastRead=0;
+function clearWatering(message='Zum Synchronisieren bitte mit deinem Toolya-Konto anmelden.') {
+  wateringLoadGeneration++;
+  watering=null;wateringTasks=[];wateringUserId=null;wateringLastRead=0;
+  $('watering-connect-status').textContent=message;
+  $('watering-connect-form').hidden=true;
+  $('watering-connect-tasks').replaceChildren();
+}
+function renderWatering() {
+  const host=$('watering-connect-tasks');host.replaceChildren();
+  const today=todayLocal();
+  const relevant=wateringTasks.filter(task=>task.due<=today || task.due<=new Date(new Date(today+'T12:00:00Z').getTime()+14*86400000).toISOString().slice(0,10)).slice(0,60);
+  if(!relevant.length){
+    host.append(element('li','Keine Gießaufgaben in den nächsten 14 Tagen.','empty'));
+  }
+  for(const item of relevant){
+    const li=element('li',undefined,item.overdue?'overdue':'');
+    const label=element('span','💧 '+item.name);
+    label.append(element('small','Gießen am '+new Date(item.due+'T12:00:00Z').toLocaleDateString('de-DE',{dateStyle:'medium'})+(item.overdue?' · überfällig':''),'date'));
+    const button=element('button','Gegossen');
+    button.type='button';button.setAttribute('aria-label',item.name+' heute gegossen');
+    button.disabled=wateringBusy;
+    button.onclick=async()=>{
+      if(wateringBusy||status!=='cloud'||!watering)return;
+      wateringBusy=true;renderWatering();
+      try{
+        const data=await watering.complete(item.id);
+        if(status!=='cloud'||wateringUserId!==data.userId)return;
+        wateringTasks=data.tasks;renderWatering();
+        $('watering-connect-status').textContent='Gießvorgang im Pflanzen-Tool gespeichert.';
+      }catch(error){
+        $('watering-connect-status').textContent='Gießvorgang nicht bestätigt: '+(error?.message||'Bitte Gießplan neu laden.');
+        await loadWatering(true);
+      }finally{wateringBusy=false;renderWatering();}
+    };
+    li.append(label,button);host.append(li);
+  }
+  const select=$('watering-connect-plant'),current=select.value;
+  select.replaceChildren();
+  for(const item of wateringTasks){
+    const option=document.createElement('option');
+    option.value=item.id;option.textContent=item.name;
+    select.append(option);
+  }
+  if(wateringTasks.some(x=>x.id===current))select.value=current;
+  $('watering-connect-form').hidden=wateringTasks.length===0;
+  $('watering-connect-form').querySelector('button').disabled=wateringBusy;
+}
+async function loadWatering(force=false) {
+  if(status!=='cloud'||!cloud.userId)return;
+  if(wateringBusy)return;
+  const uid=cloud.userId;
+  if(!force && uid===wateringUserId && Date.now()-wateringLastRead<45000)return;
+  const generation=++wateringLoadGeneration;
+  $('watering-connect-status').textContent='Gießplan wird geladen …';
+  try{
+    // Account settings already owns the live Supabase client used by the dashboard.
+    const client=globalThis.toolyaDashboardAuthClient;
+    if(!client)throw Error('Toolya-Konto nicht verfügbar.');
+    const connector=createWateringConnect(client);
+    const snapshot=await connector.read();
+    if(generation!==wateringLoadGeneration||status!=='cloud'||cloud.userId!==uid||snapshot.userId!==uid)return;
+    watering=connector;wateringUserId=uid;wateringTasks=snapshot.tasks;wateringLastRead=Date.now();
+    $('watering-connect-status').textContent=snapshot.exists?
+      'Gießaufgaben aus Toolya Cloud · '+wateringTasks.length+' Pflanzen':
+      'Noch kein Gießplan vorhanden. Lege zuerst eine Pflanze an.';
+    renderWatering();
+  }catch(error){
+    if(generation!==wateringLoadGeneration)return;
+    watering=null;wateringTasks=[];wateringUserId=null;
+    $('watering-connect-form').hidden=true;
+    $('watering-connect-tasks').replaceChildren();
+    $('watering-connect-status').textContent='Gießplan nicht verfügbar: '+(error?.message||'Bitte später erneut öffnen.');
+  }
+}
+$('watering-connect-form').addEventListener('submit',async event=>{
+  event.preventDefault();
+  if(wateringBusy||status!=='cloud'||!watering)return;
+  const id=$('watering-connect-plant').value, date=$('watering-connect-date').value;
+  if(!id||!date)return;
+  wateringBusy=true;renderWatering();
+  try{
+    const result=await watering.schedule(id,date);
+    if(status!=='cloud'||wateringUserId!==result.userId)return;
+    wateringTasks=result.tasks;
+    $('watering-connect-status').textContent='Gießaufgabe im Pflanzen-Tool eingeplant.';
+  }catch(error){
+    $('watering-connect-status').textContent='Planung nicht gespeichert: '+(error?.message||'Bitte erneut laden.');
+    await loadWatering(true);
+  }finally{wateringBusy=false;renderWatering();}
+});
+$('watering-connect-date').min=todayLocal();
+$('watering-connect-date').value=todayLocal();
+
 const cloud=createDashboardCloud(({status:next,message,userId})=>{
   status=next;
+  if(next==='cloud'){void loadWatering();}
+  else clearWatering(next==='local'?'Für Gießaufgaben bitte anmelden.':'Gießplan bis zur bestätigten Anmeldung gesperrt.');
   document.documentElement.dataset.dashboardSync=next;
   $('sync-status').textContent=next==='cloud'?'☁ Aufgaben & Erinnerungen synchronisiert':next==='local'?'Nur auf diesem Gerät':next==='loading'?'Cloud wird geladen …':'Cloud nicht erreichbar';
   $('sync-detail').textContent=message||(next==='local'?'Für die geräteübergreifende Speicherung bitte anmelden.':'');
