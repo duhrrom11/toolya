@@ -133,10 +133,13 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   await width.fill('0');
   await page.keyboard.press('Enter');
   assert.equal(await result.textContent(),'');
-  assert(await width.evaluate(input=>input.validity.rangeUnderflow));
+  assert(await width.evaluate(input=>input.validity.rangeUnderflow && input===document.activeElement));
+  const error=calculator.getByRole('alert');
+  assert.match(await error.textContent(),/Meine Backform – Breite \(cm\) – .+/);
   await width.fill('20');
   await page.keyboard.press('Enter');
   assert.match(await result.textContent(),/0,9417.*188,35/);
+  assert.equal(await error.textContent(),'');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'public calculator fits a narrow viewport');
   // Force the opposite initialization order: shared footer exists before consent.
   await page.route('**/assets/toolya-consent.js*',route=>route.fulfill({contentType:'text/javascript',body:''}));

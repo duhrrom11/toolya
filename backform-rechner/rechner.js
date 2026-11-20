@@ -1,4 +1,6 @@
 const panForm = document.querySelector('#pan-calculator');
+const panResult = panForm.querySelector('output');
+const panError = document.querySelector('#pan-calculator-error');
 const formatFactor = new Intl.NumberFormat('de', { maximumFractionDigits: 4, minimumFractionDigits: 2 });
 const formatAmount = new Intl.NumberFormat('de', { maximumFractionDigits: 2 });
 
@@ -21,7 +23,18 @@ for (const prefix of ['source', 'target']) {
   updateFields();
 }
 
-panForm.addEventListener('input', () => { panForm.querySelector('output').value = ''; });
+panForm.addEventListener('input', () => {
+  panResult.value = '';
+  panError.textContent = '';
+});
+panForm.addEventListener('invalid', event => {
+  const field = event.target;
+  if (field !== panForm.querySelector('input:invalid')) return;
+  panResult.value = '';
+  const name = field.labels[0].textContent.trim();
+  const group = field.closest('fieldset')?.querySelector('legend').textContent.trim();
+  panError.textContent = [group, name, field.validationMessage].filter(Boolean).join(' – ');
+}, true);
 panForm.addEventListener('submit', event => {
   event.preventDefault();
   const data = new FormData(panForm);
@@ -29,5 +42,6 @@ panForm.addEventListener('submit', event => {
   const factor = area('target') / area('source');
   const amount = data.get('amount');
   const result = amount === '' ? '' : ` · Neue Menge: ${formatAmount.format(Number(amount) * factor)} in derselben Einheit`;
-  panForm.querySelector('output').value = `Faktor: × ${formatFactor.format(factor)}${result}`;
+  panError.textContent = '';
+  panResult.value = `Faktor: × ${formatFactor.format(factor)}${result}`;
 });
