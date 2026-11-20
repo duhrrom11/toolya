@@ -1059,6 +1059,7 @@
                         typeof date === 'string' && isValidCalendarDate(date) && date !== editedLastWatered)].slice(0, 5);
                 }
                 p.lastWatered = editedLastWatered;
+                if (p.connectDue && p.connectDue <= editedLastWatered) delete p.connectDue;
                 p.note = document.getElementById('editNote').value.trim();
                 if (!await saveData(data)) return;
             closeEditModal(); loadLocationDropdown(); renderApp();
