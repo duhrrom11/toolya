@@ -117,6 +117,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(-
  #unified-shopping .panel-head h2{font-size:22pt!important;color:black!important}
  #unified-shopping .items{max-height:none!important;overflow:visible!important}
  #unified-shopping .items li{break-inside:avoid;display:flex!important;border-bottom:1px solid #aaa!important;background:white!important;color:black!important}
+ #unified-shopping .items li.done{display:none!important}
  #unified-shopping .shopping-source{color:#555!important}
  #unified-shopping input[type=checkbox]{appearance:auto;print-color-adjust:exact}
 }
