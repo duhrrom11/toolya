@@ -46,8 +46,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Fetch the startup comparison baseline
+        run: git fetch --no-tags --depth=1 origin eb1ed8a09831603aaaeb8ffe4c34d0f98716d4ab
       - name: Run isolated Toolya cloud-only UI tests
         env:
+          TOOLYA_STARTUP_COMPARISON: '1'
           TOOLYA_VISUAL_LOGS: ${{ github.event.pull_request.draft && '1' || '0' }}
         run: npx playwright test tests/browser/tool-pages-ui.spec.cjs tests/browser/cloud-isolated.spec.cjs --reporter=line
       - name: Upload isolated browser evidence

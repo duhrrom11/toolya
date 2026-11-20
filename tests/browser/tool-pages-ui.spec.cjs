@@ -1779,3 +1779,44 @@ for (const tool of ['loans', 'plants', 'moving', 'budget', 'housemates']) {
     expect(requests).toBe(2);
   });
 }
+
+test('compare mobile tool startup requests against the pre-optimization HTML', async ({ browser }) => {
+  test.skip(!process.env.TOOLYA_STARTUP_COMPARISON, 'requires the fetched baseline commit');
+  const { execFileSync } = require('node:child_process');
+  const revision = 'eb1ed8a09831603aaaeb8ffe4c34d0f98716d4ab';
+
+  for (const [tool, expected] of [['budget', 3], ['meters', 1], ['moving', 3]]) {
+    const path = 'tools/' + tool + '/index.html';
+    const url = origin + '/' + path;
+    const baseline = execFileSync('git', ['show', revision + ':' + path], { encoding: 'utf8' });
+    const results = [];
+    for (const html of [baseline, null]) {
+      const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+      try {
+        await isolated(page, true);
+        if (html !== null) {
+          await page.route(url, route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: html }));
+        }
+        const requests = [];
+        page.on('request', request => {
+          if (/\/(?:jspdf\.umd\.min|tesseract\.min|qrcode\.min|html5-qrcode\.min)\.js$/.test(new URL(request.url()).pathname)) {
+            requests.push(request.url());
+          }
+        });
+        await page.goto(url);
+        await expect(page).toHaveURL(url);
+        await expect.poll(() => page.evaluate(() => window.__toolyaMock?.signedIn)).toBe(true);
+        await expect.poll(() => page.evaluate(tool => {
+          if (tool === 'meters') return typeof metersCloudReady !== 'undefined' && metersCloudReady;
+          if (tool === 'moving') return typeof movingCloudReady !== 'undefined' && movingCloudReady;
+          return typeof toolyaCloudReady !== 'undefined' && toolyaCloudReady;
+        }, tool)).toBe(true);
+        results.push(requests.length);
+      } finally {
+        await page.close();
+      }
+    }
+    expect(results, tool).toEqual([expected, 0]);
+    console.log(`[mobile startup] ${tool}: ${results[0]} -> ${results[1]} optional library requests`);
+  }
+});
