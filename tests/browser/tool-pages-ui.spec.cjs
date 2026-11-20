@@ -1780,20 +1780,26 @@ for (const tool of ['loans', 'plants', 'moving', 'budget', 'housemates']) {
   });
 }
 
-test('compare mobile tool startup requests against the pre-optimization HTML', async ({ browser }) => {
-  test.skip(!process.env.TOOLYA_STARTUP_COMPARISON, 'requires the fetched baseline commit');
-  const { execFileSync } = require('node:child_process');
-  const revision = 'eb1ed8a09831603aaaeb8ffe4c34d0f98716d4ab';
-
-  for (const [tool, expected] of [['budget', 3], ['meters', 1], ['moving', 3]]) {
+for (const [tool, expected, remaining = 0] of [
+  ['budget', 3], ['meters', 1], ['moving', 3], ['car', 1], ['parking', 1],
+  ['housemates', 3, 1], ['pet-health', 1], ['loans', 2], ['plants', 2]
+]) {
+  test(`compare mobile startup requests for ${tool}`, async ({ browser }) => {
+    test.skip(!process.env.TOOLYA_STARTUP_COMPARISON, 'requires the fetched baseline commit');
+    const { execFileSync } = require('node:child_process');
+    const revision = 'eb1ed8a09831603aaaeb8ffe4c34d0f98716d4ab';
+    const wgId = '00000000-0000-4000-8000-000000000109';
+    const fixture = tool === 'housemates' ? { __wg: {
+      id: wgId, updated_at: '2026-11-17T00:00:00Z', payload: { flatmates: [] }
+    } } : null;
     const path = 'tools/' + tool + '/index.html';
-    const url = origin + '/' + path;
+    const url = origin + '/' + path + (fixture ? '?id=secure_' + wgId : '');
     const baseline = execFileSync('git', ['show', revision + ':' + path], { encoding: 'utf8' });
     const results = [];
     for (const html of [baseline, null]) {
       const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
       try {
-        await isolated(page, true);
+        await isolated(page, true, false, fixture);
         if (html !== null) {
           await page.route(url, route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: html }));
         }
@@ -1809,6 +1815,11 @@ test('compare mobile tool startup requests against the pre-optimization HTML', a
         await expect.poll(() => page.evaluate(tool => {
           if (tool === 'meters') return typeof metersCloudReady !== 'undefined' && metersCloudReady;
           if (tool === 'moving') return typeof movingCloudReady !== 'undefined' && movingCloudReady;
+          if (tool === 'parking') return typeof parkingCloudReady !== 'undefined' && parkingCloudReady;
+          if (tool === 'pet-health') return typeof petCloudReady !== 'undefined' && petCloudReady;
+          if (tool === 'loans') return typeof loansCloudReady !== 'undefined' && loansCloudReady;
+          if (tool === 'plants') return typeof plantsCloudReady !== 'undefined' && plantsCloudReady;
+          if (tool === 'housemates') return typeof secureWgRevision !== 'undefined' && !!secureWgRevision;
           return typeof toolyaCloudReady !== 'undefined' && toolyaCloudReady;
         }, tool)).toBe(true);
         results.push(requests.length);
@@ -1816,7 +1827,7 @@ test('compare mobile tool startup requests against the pre-optimization HTML', a
         await page.close();
       }
     }
-    expect(results, tool).toEqual([expected, 0]);
+    expect(results, tool).toEqual([expected, remaining]);
     console.log(`[mobile startup] ${tool}: ${results[0]} -> ${results[1]} optional library requests`);
-  }
-});
+  });
+}
