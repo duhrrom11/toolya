@@ -2170,8 +2170,11 @@
             const items = getShoppingList(); const container = document.getElementById('shoppingList');
             if (items.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Einkaufsliste ist leer.</p>`; return; }
             container.innerHTML = items.map(item => `
-                <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
-                    <span class="font-medium text-gray-800">${escapeUserHtml(item.title)}</span>
+                <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs gap-2">
+                    <label class="flex items-center gap-2 min-w-0 flex-1">
+                        <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleShoppingItem(${safeInlineId(item.id)})" aria-label="${escapeUserHtml(item.title)} gekauft" class="w-4 h-4 accent-emerald-700 shrink-0">
+                        <span class="font-medium text-gray-800 ${item.done ? 'line-through opacity-60' : ''}">${escapeUserHtml(item.title)}</span>
+                    </label>
                     <div class="flex gap-1.5">
                         <a href="https://www.amazon.de/s?k=${encodeURIComponent(item.title)}&tag=${AMAZON_AFFILIATE_TAG}" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded font-bold text-[10px]">📦 Amazon</a>
                         <button onclick="transferShoppingToExpense(${safeInlineId(item.id)})" class="b3-action b3-outline px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">🧾 Buchen</button>
@@ -2185,6 +2188,14 @@
             if (!title) return alert("Bitte Bezeichnung eingeben!");
             const items = getShoppingList(); items.push({ id: Date.now(), title });
             saveShoppingList(items); if (!customTitle) document.getElementById('newShoppingItem').value = ""; renderShoppingList();
+        }
+        function toggleShoppingItem(id) {
+            const items=getShoppingList();
+            const item=items.find(i=>i && i.id===id);
+            if(!item)return;
+            item.done=!Boolean(item.done);
+            saveShoppingList(items);
+            renderShoppingList();
         }
         function deleteShoppingItem(id) { saveShoppingList(getShoppingList().filter(i => i.id !== id)); renderShoppingList(); }
         function transferShoppingToExpense(id) {
