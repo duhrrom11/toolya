@@ -70,3 +70,21 @@ Die isolierte Browser-Suite prüft unter anderem die Tastaturwege in den Einstel
 Führe im Git-Checkout `python3 scripts/audit-seo-urls.py > toolya-seo-url-inventory.json` aus. Mit `--offline` liest das Skript nur den Quellstand. Der Live-Lauf prüft die statischen HTTP-Antworten, einschließlich der Weiterleitungskette, HTTP- und HTML-Robots-Angaben, Schema-Typen und Verlinkungen. Eine künstliche Profil-ID prüft die Parameter-URL ohne Bezug zu einem echten Profil. JavaScript wird nicht ausgeführt und Indexstatus wird separat gemessen.
 
 Die historische Einzelauflistung im Master-Audit enthält 66 HTML-Routen. Der damalige Gesamtwert von 69 Abrufen schließt zusätzliche Prüfungen ein. Der aktuelle Lauf prüft außerdem alle Verzeichnisvarianten der im Git-Checkout erfassten HTML-Dateien.
+
+## R30/R31 – Externe Skripte beim Seitenstart
+
+Vergleich der Tool-HTML-Dateien zwischen `eb1ed8a` und `f96d6c2`, der zusammengefassten Änderung aus [PR #235](https://github.com/duhrrom11/toolya/pull/235) bis [PR #241](https://github.com/duhrrom11/toolya/pull/241). Gezählt wurden externe HTTPS-Adressen in statischen Script-Tags. Die letzte Spalte summiert die zuvor ermittelten Dateigrößen der verschobenen Bibliotheken vor HTTP-Kompression. Die Bibliotheken laden bei der jeweiligen Aktion. Cache, Netztransfer, dynamisch geladene Ressourcen und mobile Zeitwerte wurden in diesem Vergleich nicht gemessen.
+
+| Tool | Externe Skripte vorher | Externe Skripte nachher | Verschobene JavaScript-Bytes |
+| --- | ---: | ---: | ---: |
+| Haushaltsbuch | 5 | 2 | 451.085 |
+| Autokosten | 2 | 1 | 364.463 |
+| Parkplatz-Merker | 2 | 1 | 364.463 |
+| Zählerstände | 2 | 1 | 364.463 |
+| Umzugskisten | 4 | 1 | 759.754 |
+| WG-Organisator | 5 | 3 | 384.390 |
+| Tiergesundheit | 2 | 1 | 364.463 |
+| Verliehene Dinge | 3 | 1 | 384.390 |
+| Pflanzenpflege | 3 | 1 | 384.390 |
+
+Die nächste vergleichbare Browsermessung sollte auf demselben Stand und mit identischer Gerätesimulation wiederholt werden. Für Startseite, öffentlichen Backform-Rechner und Wunschlistenfinder eignet sich der öffentliche Einstieg. Für Haushaltsbuch, Zählerstände und Umzugskisten ist eine isolierte Sitzung mit nachgebildeter Anmeldung nötig, damit die Messung die Tool-Oberfläche erreicht.
