@@ -180,3 +180,20 @@ body.bsui-redesign #tab-rechner.hidden{display:none!important}
  #bsui-app .bsui-finder{padding-right:20px}
  #bsui-app .bsui-girl-side{display:none}
 }
+
+/* Tool modules moved out of legacy cards keep their buttons and shopping rows styled. */
+#bsui-app .bsui-tool-view article button,#bsui-app .bsui-ingredients article button{
+ background:#c96520;color:#fff;border:1px solid #c96520;border-radius:11px;padding:9px 12px;
+ font-size:12px;font-weight:800;cursor:pointer;line-height:1.3;max-width:100%;
+}
+#bsui-app .bsui-tool-view article button:hover,#bsui-app .bsui-ingredients article button:hover{background:#a74c15}
+#bsui-app .bsui-tool-view article a,#bsui-app .bsui-ingredients article a{color:#a6521a;font-size:12px;font-weight:750;text-decoration:underline}
+#bsui-app .bsui-tool-view article .bs-row,#bsui-app .bsui-ingredients article .bs-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 0;border-bottom:1px solid #f1dac8}
+#bsui-app .bsui-tool-view article .bs-row span,#bsui-app .bsui-ingredients article .bs-row span{flex:1 1 120px;font-size:12px}
+#bsui-app .bsui-tool-view .bsp-panel button{background:#0f766e;color:#fff;border-color:#0f766e}
+#bsui-app .bsui-tool-view .bsp-panel .bsp-match{border-radius:11px;padding:10px}
+#bsui-app .bsui-tool-view article h3{font-size:17px!important}
+#bsui-app .bsui-tool-view #bs-logs p{margin:6px 0}
+#bsui-app .bsui-tool-view #bs-shopping-items{display:grid;gap:5px}
+#bsui-app .bsui-tool-view #bs-shopping-items .bs-row{background:#fff;border:1px solid #f2dcc9;border-radius:12px;padding:9px}
+#bsui-app .bsui-tool-view #bs-shopping-items a{white-space:nowrap}
