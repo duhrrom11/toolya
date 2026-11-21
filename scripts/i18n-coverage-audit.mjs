@@ -66,7 +66,14 @@ for(const f of html){
  const isEnglish=f.startsWith('en/');
  const title=small(document.title||'');
  const counterpart=isEnglish ? [...pairs].find(([,en])=>en===f)?.[0] : pairs.get(f);
- const appSwitch=supportedTools.has(f)&&source.includes('tool-entry.mjs');
+ /* Each application family mounts a different reversible language presentation.
+    Check the actual entrypoint instead of counting only the original tool shell. */
+ const entrypoint=f.startsWith('tools/wishes/')?'wishes-entry.mjs'
+  :f.startsWith('tools/estate/')?'estate-entry.mjs'
+  :f.startsWith('admin-stats-dashboard/')?'admin-entry.mjs'
+  :f==='dashboard/index.html'?'dashboard-entry.mjs'
+  :'tool-entry.mjs';
+ const appSwitch=supportedTools.has(f)&&source.includes(entrypoint);
  const hasEnglishRoute=isEnglish||appSwitch||bilingualPages.has(f)||redirectPages.has(f)||Boolean(counterpart&&fileSet.has(counterpart));
  const noindex=Boolean(document.querySelector('meta[name="robots"]')?.getAttribute('content')?.includes('noindex'));
  const hasENLink=Boolean(document.querySelector('[data-set-locale="en"]'));
@@ -108,6 +115,13 @@ for(const f of scriptSources){
 const absent=reports.filter(x=>x.status==='NO EN COVERAGE');
 const publicEnglish=reports.filter(x=>x.status==='EN page');
 const toolPartial=reports.filter(x=>x.status==='EN opt-in tool');
+const groups=Object.freeze({
+ main:toolPartial.filter(x=>/^tools\/(?:moving|housemates|plants|baking|budget|car|loans|meters|parking|pet-health)\//.test(x.file)).length,
+ wishes:toolPartial.filter(x=>x.file.startsWith('tools/wishes/')).length,
+ estate:toolPartial.filter(x=>x.file.startsWith('tools/estate/')).length,
+ dashboard:toolPartial.filter(x=>x.file==='dashboard/index.html').length,
+ admin:toolPartial.filter(x=>x.file.startsWith('admin-stats-dashboard/')).length
+});
 const blockers=[
  `${absent.length} HTML pages without an English counterpart or a supported EN switch`,
  `${toolPartial.length} tool pages only provide opt-in, incomplete English UI`,
@@ -123,7 +137,7 @@ const output=[
  'This is a source-wide inventory, **not** a certificate of full translation. Runtime text and auth/export flows still require isolated browser checks. User records, mascot preferences and back-end data are not touched.',
  '',
  `Source files checked: **${html.length} HTML pages** and **${js.length} JS/MJS files** (+ inline scripts within HTML).`,
- `English public pages: **${publicEnglish.length}**. Opt-in tool pages: **${toolPartial.length}**. HTML pages without EN coverage: **${absent.length}**.`,
+ `English public pages: **${publicEnglish.length}**. Opt-in tool pages: **${toolPartial.length}** (main: ${groups.main}, wishes: ${groups.wishes}, estate: ${groups.estate}, dashboard: ${groups.dashboard}, admin: ${groups.admin}). HTML pages without EN coverage: **${absent.length}**.`,
  '',
  '## Release blockers',
  ...blockers.map(v=>'- '+v),
@@ -149,7 +163,7 @@ const output=[
 ];
 fs.writeFileSync('i18n-coverage-report.md',output.join('\n')+'\n');
 if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,output.slice(0,21).join('\n')+'\n');
-console.log('I18N PAGE AUDIT: '+JSON.stringify({html:html.length,js:js.length,english:publicEnglish.length,partialTools:toolPartial.length,missingPages:absent.length,englishNoindex:publicEnglish.filter(x=>x.noindex).length,germanUiCandidates:germanUi.length,germanMessageFiles:dynamic.length,htmlLangNotSet}));
+console.log('I18N PAGE AUDIT: '+JSON.stringify({html:html.length,js:js.length,english:publicEnglish.length,partialTools:toolPartial.length,missingPages:absent.length,englishNoindex:publicEnglish.filter(x=>x.noindex).length,partialGroups:groups,germanUiCandidates:germanUi.length,germanMessageFiles:dynamic.length,htmlLangNotSet}));
 console.log('Release blockers:\n'+blockers.map(b=>' - '+b).join('\n'));
 console.log('Report: i18n-coverage-report.md');
 if(process.argv.includes('--strict') && (absent.length||toolPartial.length||htmlLangNotSet||publicEnglish.some(x=>x.noindex)||germanUi.length||dynamic.length)){
