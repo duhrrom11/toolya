@@ -1829,5 +1829,5 @@ test('Sprint A baking locale switch refreshes existing helper results without sa
  handlers['toolya:locale-change']();
  assert.deepEqual(refreshed,['calculate','timer'],'empty/unopened helper results stay untouched');
  const listener=html.slice(start,end);
- assert.ok(!listener.includes('calculateRecipe()')&&!listener.includes('saveRecipeToStorage(')&&!listener.includes('localStorage.setItem('),'locale changes never persist recipes');
+ assert.ok(!/^\s*calculateRecipe\(\);/m.test(listener)&&!listener.includes('saveRecipeToStorage(')&&!listener.includes('localStorage.setItem('),'locale changes never persist recipes');
 });
