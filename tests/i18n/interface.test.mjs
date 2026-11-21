@@ -357,3 +357,26 @@ test('baking timer phase labels are localized without mutating timer state',asyn
   assert.equal(elements['timer-phase-title'].innerText,title);
  }
 });
+
+test('moving box cards localize status and actions without changing stored box fields',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
+ const expected=[
+  "'Location' : 'Standort'", "'✏️ Edit' : '✏️ Bearbeiten'",
+  "'🗑️ Delete' : '🗑️ Löschen'",
+  "'Enlarge box photo' : 'Kistenfoto vergrößern'",
+  "'Photo of moving box' : 'Foto der Umzugskiste'",
+  "'No image' : 'Kein Bild'", "'Lent to' : 'Ausgeliehen an'",
+  "'🤝 Lent' : '🤝 Ausgeliehen'", "'⚠️ Expired' : '⚠️ Ablauf'",
+  "'No description' : 'Keine Beschreibung'",
+  "'Contents' : 'Inhalt'", "'Value' : 'Wert'",
+  "'Expires' : 'Ablauf'", "'No matching boxes at this location.'",
+  "'No matching entries found.'", "'Detected' : 'Erkannt'"
+ ];
+ for(const label of expected)assert.ok(html.includes(label),'missing English box-card translation: '+label);
+ assert.match(html,/document\.addEventListener\('toolya:locale-change', \(\) => \{/);
+ assert.match(html,/if \(document\.getElementById\('inventoryContainer'\)\) renderInventory\(\)/);
+ assert.match(html,/const subItemsText = b\.subItems/,'subitems still sourced from existing box records');
+ assert.match(html,/const isLent = b\.lentTo/,'lending status still uses existing data');
+ assert.match(html,/const isExpired = b\.expiry/,'expiry status still uses existing data');
+});
