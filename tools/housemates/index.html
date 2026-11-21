@@ -1879,7 +1879,7 @@
         function renderInventory() {
             const items = getInventory(); const container = document.getElementById('inventoryList');
             const flatmates = getFlatmates(); const now = new Date(); let totalZeitwert = 0;
-            if (items.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-4">Noch kein Inventar erfasst.</p>`; document.getElementById('statInventoryValue').innerText = "0,00 €"; return; }
+            if (items.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-4">${window.__toolyaUILocale === 'en' ? 'No inventory recorded yet.' : 'Noch kein Inventar erfasst.'}</p>`; document.getElementById('statInventoryValue').innerText = "0,00 €"; return; }
             container.innerHTML = items.map(item => {
                 const buyDate = new Date(item.date);
                 const ageYears = (now - buyDate) / (1000 * 60 * 60 * 24 * 365.25);
@@ -1891,10 +1891,10 @@
                         <div class="flex justify-between font-bold text-teal-950">
                             <span>📦 ${escapeUserHtml(item.title)}</span><button onclick="deleteInventoryItem(${safeInlineId(item.id)})" class="text-red-500">&times;</button>
                         </div>
-                        <p class="text-gray-600 text-[11px]">Kauf: ${item.price.toFixed(2)} € (${item.date})</p>
+                        <p class="text-gray-600 text-[11px]">${window.__toolyaUILocale === 'en' ? 'Purchased' : 'Kauf'}: ${item.price.toFixed(2)} € (${item.date})</p>
                         <div class="pt-1 border-t border-teal-200 flex justify-between items-center text-[11px]">
-                            <span>Zeitwert: <strong class="text-teal-900">${zeitwert.toFixed(2)} €</strong></span>
-                            <span class="text-teal-800 font-semibold">Anteil: ${share.toFixed(2)} €/p.P.</span>
+                            <span>${window.__toolyaUILocale === 'en' ? 'Current value' : 'Zeitwert'}: <strong class="text-teal-900">${zeitwert.toFixed(2)} €</strong></span>
+                            <span class="text-teal-800 font-semibold">${window.__toolyaUILocale === 'en' ? 'Share' : 'Anteil'}: ${share.toFixed(2)} €/${window.__toolyaUILocale === 'en' ? 'person' : 'p.P.'}</span>
                         </div>
                     </div>
                 `;
@@ -2083,7 +2083,7 @@
             document.getElementById('receiptPaymentPayer').value = r.payer || '';
             document.getElementById('receiptIsFixkosten').checked = !!r.isFixkosten;
             document.getElementById('receiptIsTax').checked = !!r.isTax;
-            document.getElementById('formTitle').innerText = `✏️ Buchung bearbeiten: ${r.title}`;
+            document.getElementById('formTitle').innerText = `✏️ ${window.__toolyaUILocale === 'en' ? 'Edit transaction' : 'Buchung bearbeiten'}: ${r.title}`;
             document.getElementById('saveBtn').innerText = window.__toolyaUILocale === "en" ? "💾 Save" : "💾 Speichern";
             document.getElementById('cancelEditBtn').classList.remove('hidden');
             document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
@@ -2094,8 +2094,8 @@
             document.getElementById('receiptTitle').value = "";
             document.getElementById('receiptStore').value = "";
             document.getElementById('receiptPrice').value = "";
-            document.getElementById('formTitle').innerText = "✍️ Buchung / WG-Kassenbon erfassen";
-            document.getElementById('saveBtn').innerText = "Buchung / Kassenbon speichern";
+            document.getElementById('formTitle').innerText = window.__toolyaUILocale === "en" ? "✍️ Record transaction / receipt" : "✍️ Buchung / WG-Kassenbon erfassen";
+            document.getElementById('saveBtn').innerText = window.__toolyaUILocale === "en" ? "Save transaction / receipt" : "Buchung / Kassenbon speichern";
             document.getElementById('cancelEditBtn').classList.add('hidden');
             document.getElementById('receiptDate').valueAsDate = new Date();
         }
@@ -2105,15 +2105,15 @@
         /* Sparziele */
         function renderSavingsGoals() {
             const goals = getSavingsGoals(); const container = document.getElementById('savingsGoalsGrid');
-            if (goals.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-2">Noch keine Sparziele angelegt.</p>`; return; }
+            if (goals.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-2">${window.__toolyaUILocale === 'en' ? 'No savings goals yet.' : 'Noch keine Sparziele angelegt.'}</p>`; return; }
             container.innerHTML = goals.map(g => {
                 const percent = Math.min(100, (g.current / g.target) * 100);
                 return `
                     <div class="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2 text-xs">
                         <div class="flex justify-between font-bold text-emerald-900"><span>${escapeUserHtml(g.title)}</span><button onclick="deleteSavingsGoal(${safeInlineId(g.id)})" class="text-red-500">✕</button></div>
-                        <div class="flex justify-between text-[11px]"><span>Gespart: <strong>${g.current.toFixed(2)} €</strong></span><span>Ziel: ${g.target.toFixed(2)} €</span></div>
+                        <div class="flex justify-between text-[11px]"><span>${window.__toolyaUILocale === 'en' ? 'Saved' : 'Gespart'}: <strong>${g.current.toFixed(2)} €</strong></span><span>${window.__toolyaUILocale === 'en' ? 'Goal' : 'Ziel'}: ${g.target.toFixed(2)} €</span></div>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden"><div class="bg-emerald-600 h-2 transition-all" style="width: ${percent}%"></div></div>
-                        <button onclick="depositGoal(${safeInlineId(g.id)})" class="b3-action w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">+ Einzahlen</button>
+                        <button onclick="depositGoal(${safeInlineId(g.id)})" class="b3-action w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">${window.__toolyaUILocale === 'en' ? '+ Deposit' : '+ Einzahlen'}</button>
                     </div>
                 `;
             }).join('');
