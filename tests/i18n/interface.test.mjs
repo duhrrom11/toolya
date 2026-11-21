@@ -2393,3 +2393,18 @@ test('Sprint A household concurrent-save and signed-out states are presented in 
  }
  assert.equal(translateToolDialog('housemates','en','supabase: permission denied for user 123'),'supabase: permission denied for user 123');
 });
+
+
+test('Sprint A composed member error localizes authored tail but preserves unknown server diagnostics',()=>{
+ assert.equal(translateToolDialog('housemates','en','Mitgliederverwaltung: Bitte zuerst in den Einstellungen anmelden.'),'Member management: Sign in through settings first.');
+ assert.equal(translateToolDialog('housemates','en','Mitgliederverwaltung: 401 backend details'),'Member management: 401 backend details');
+ assert.equal(translateToolDialog('housemates','de','Mitgliederverwaltung: Bitte zuerst in den Einstellungen anmelden.'),'Mitgliederverwaltung: Bitte zuerst in den Einstellungen anmelden.');
+});
+
+test('Sprint A successful protected-household sync toast uses the active UI locale only',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ assert.match(html,/if\(saved\)window\.toolyaNotice\?\.\('success',window\.__toolyaUILocale === 'en' \? 'Household changes saved online\.' : 'WG-Änderungen online gespeichert\.'\)/);
+ assert.match(html,/secureWgDirty = secureWgSavedVersion < secureWgChangeVersion/);
+ assert.match(html,/if \(!saved\) return false/);
+});
