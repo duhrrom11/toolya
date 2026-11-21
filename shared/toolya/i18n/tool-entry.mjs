@@ -55,7 +55,9 @@ function mountToolLanguage(){
    // Keep html[lang]=de while the main application is not fully translated.
  }
  if(header){
-   header.append(switcher);
+   const titleContainer=header.querySelector('.b3-tool-title');
+   if (!titleContainer) return;
+   titleContainer.append(switcher);
    header.after(notice);
    apply(selected,false);
  }
