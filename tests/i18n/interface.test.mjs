@@ -1110,7 +1110,7 @@ test('dashboard editor localizes panel titles, actions and accessibility without
   assert.equal(document.querySelector('#b3-editor p').textContent,'Sort sections, show or hide them, or choose S / M / L sizes.');
   assert.equal(document.querySelector('.b3-editor-row strong').textContent,translated);
   assert.equal(document.querySelector('.b3-editor-row label').textContent,'Visible');
-  assert.equal(control.checked,true);
+  assert.equal(control.hasAttribute('checked'),true);
   assert.equal(select.querySelector('option[value="m"]').getAttribute('selected'),'');
   assert.equal(document.getElementById('save').textContent,'Save');
   assert.equal(document.getElementById('cancel').textContent,'Cancel');
