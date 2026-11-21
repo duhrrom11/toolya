@@ -212,9 +212,9 @@ function init(){
   stage.classList.toggle('bsui-webgl-ready',!!webglBox.querySelector('canvas'));
  }).observe(webglBox,{childList:true});
  // Allow users to opt into WebGL; an accessible image fallback is visible without network.
- const orig3dOpen=[...webgl.querySelectorAll('button')].find(n=>/Form drehen|3D öffnen/.test(n.textContent||''));
+ const orig3dOpen=[...webgl.querySelectorAll('button')].find(n=>/Form drehen|3D öffnen|Rotate pan|Open 3D/.test(n.textContent||''));
  if(orig3dOpen){
-  orig3dOpen.textContent='↻ Form drehen';
+  orig3dOpen.textContent=text('↻ Form drehen','↻ Rotate pan');
   // Start the interactive view when it first enters the viewport; data-saver users can launch it manually.
   if('IntersectionObserver' in window&&!window.navigator?.connection?.saveData){
    const observer=new IntersectionObserver(entries=>{
