@@ -1563,8 +1563,7 @@
         document.addEventListener('toolya:locale-change', () => {
             if (!householdReadyForLocaleRefresh) return;
             renderApp();
-            if (!document.getElementById('cookingModal')?.classList.contains('hidden')) openCookingModal();
-            if (!document.getElementById('dietModal')?.classList.contains('hidden')) openDietModal();
+            // Keep open edit forms untouched so unsaved user input is never replaced.
         });
 
         /* Storage Helper */
