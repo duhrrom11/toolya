@@ -2414,7 +2414,7 @@ test('Sprint A QR labels translate known UI category only; custom tags and QR pa
  const {readFile}=await import('node:fs/promises');
  const src=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
  const block=src.slice(src.indexOf('async function exportQrLabelsPDF()'),src.indexOf('async function showQrCode('));
- assert.match(block,/exportLanguage === 'en' \? \(\{ Standard: 'Standard', Zerbrechlich: 'Fragile'/);
+ assert.match(block,/formatMovingTagLabel\(b\.tag, exportLanguage\)/);
  assert.match(block,/\? 'Unknown' : 'Unbekannt'/);
  assert.match(block,/const deepLinkUrl = `\$\{window\.location\.origin\}\$\{window\.location\.pathname\}\?box=\$\{b\.id\}`/);
  assert.match(block,/doc\.save\(exportLanguage === 'en' \? "moving-box-qr-labels\.pdf"/);
@@ -2459,6 +2459,23 @@ test('Sprint A QR export captures request locale before async loading and prints
  assert.match(qr,/const exportLanguage = window\.__toolyaUILocale === 'en' \? 'en' : 'de'/);
  assert.match(qr,/Number\(b\.value \|\| 0\)\.toFixed\(2\)/);
  assert.ok(!qr.slice(qr.indexOf('const QRCode = await loadQrGenerator()')).includes('window.__toolyaUILocale'),'export labels must use request-time language');
- assert.match(qr,/exportLanguage === 'en' \? \(\{ Standard:/);
+ assert.match(qr,/formatMovingTagLabel\(b\.tag, exportLanguage\)/);
  assert.match(qr,/const deepLinkUrl = `\$\{window\.location\.origin\}\$\{window\.location\.pathname\}\?box=\$\{b\.id\}`/);
+});
+
+
+test('Sprint A QR category helper retains custom and prototype-like labels',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const src=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
+ const start=src.indexOf('function formatMovingTagLabel(');
+ const end=src.indexOf('function refreshMovingSelectLabels()',start);
+ assert.ok(start>=0&&end>start);
+ const context={window:{__toolyaUILocale:'en'}};
+ createContext(context);
+ runInContext(src.slice(start,end),context);
+ assert.equal(runInContext("formatMovingTagLabel('Zerbrechlich','en')",context),'Fragile');
+ assert.equal(runInContext("formatMovingTagLabel('__proto__','en')",context),'__proto__');
+ assert.equal(runInContext("formatMovingTagLabel('Custom label','en')",context),'Custom label');
+ assert.equal(runInContext("formatMovingTagLabel('Zerbrechlich','de')",context),'Zerbrechlich');
 });
