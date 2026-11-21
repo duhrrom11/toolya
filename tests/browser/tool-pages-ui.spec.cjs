@@ -2154,26 +2154,33 @@ test('i18n Sprint A household: 320/768px budget and cooking editor drafts surviv
 
 // Native-dialog boundary: verify the real locale selector and browser dialog
 // wrappers with synthetic cloud fixtures; no migration, import or database calls.
-test('i18n Sprint A moving: mobile native backup dialogs follow real DE/EN selector',async({page})=>{
+test('i18n Sprint A moving: mobile backup notices follow real DE/EN selector',async({page})=>{
  test.setTimeout(60000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- const seen=[];page.on('dialog',async d=>{seen.push({type:d.type(),message:d.message()});await d.dismiss()});
  await isolated(page,true,true,{locations:[],boxes:[]});
  await page.setViewportSize({width:320,height:800});
  await page.goto(origin+'/tools/moving/index.html');
  await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
  await page.locator('[data-tool-locale="en"]').click();
+ const notice=page.getByRole('alertdialog',{name:'Toolya'});
  await page.evaluate(()=>alert('Backup erfolgreich importiert!'));
+ await expect(notice.locator('#hl-alert-message')).toHaveText('Backup imported successfully!');
+ await expect(notice.getByRole('button',{name:'OK'})).toBeFocused();
+ expect(await notice.evaluate(el=>el.scrollWidth<=el.clientWidth+2)).toBe(true);
+ await notice.getByRole('button',{name:'OK'}).press('Enter');
+ await expect(notice).toHaveCount(0);
  await page.evaluate(()=>alert('Backup-Datei konnte nicht gelesen werden.'));
- expect(seen.slice(-2).map(x=>x.message)).toEqual(['Backup imported successfully!','The backup file could not be read.']);
+ await expect(notice.locator('#hl-alert-message')).toHaveText('The backup file could not be read.');
+ await notice.getByRole('button',{name:'OK'}).click();
  await page.locator('[data-tool-locale="de"]').click();
  await page.evaluate(()=>alert('Backup erfolgreich importiert!'));
- expect(seen.at(-1).message).toBe('Backup erfolgreich importiert!');
+ await expect(notice.locator('#hl-alert-message')).toHaveText('Backup erfolgreich importiert!');
+ await notice.getByRole('button',{name:'OK'}).click();
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
  expect(errors).toEqual([]);
 });
 
-test('i18n Sprint A household: mobile Wi-Fi and member error dialog localize without data writes',async({page})=>{
+test('i18n Sprint A household: mobile Wi-Fi prompt and custom member notice localize without writes',async({page})=>{
  test.setTimeout(90000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const seen=[];page.on('dialog',async d=>{seen.push({type:d.type(),message:d.message()});await d.dismiss()});
@@ -2187,11 +2194,16 @@ test('i18n Sprint A household: mobile Wi-Fi and member error dialog localize wit
  await expect.poll(()=>page.evaluate(()=>typeof secureWgRevision!=='undefined'&&!!secureWgRevision)).toBe(true);
  await page.locator('[data-tool-locale="en"]').click();
  await page.evaluate(()=>prompt('WLAN-Name (SSID):',''));
+ expect(seen.at(-1)).toEqual({type:'prompt',message:'Wi-Fi network name (SSID):'});
+ const notice=page.getByRole('alertdialog',{name:'Toolya'});
  await page.evaluate(()=>alert('Mitgliederverwaltung: Auth request failed'));
- expect(seen.slice(-2).map(x=>x.message)).toEqual(['Wi-Fi network name (SSID):','Member management: Auth request failed']);
+ await expect(notice.locator('#hl-alert-message')).toHaveText('Member management: Auth request failed');
+ await expect(notice.getByRole('button',{name:'OK'})).toBeFocused();
+ await notice.getByRole('button',{name:'OK'}).press('Enter');
+ await expect(notice).toHaveCount(0);
  await page.locator('[data-tool-locale="de"]').click();
  await page.evaluate(()=>prompt('WLAN-Name (SSID):',''));
- expect(seen.at(-1).message).toBe('WLAN-Name (SSID):');
+ expect(seen.at(-1)).toEqual({type:'prompt',message:'WLAN-Name (SSID):'});
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
  expect(errors).toEqual([]);
 });
