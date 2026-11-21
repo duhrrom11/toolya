@@ -2390,3 +2390,63 @@ test('i18n Sprint A moving: blocked PDF library gives EN/DE error, no export or 
  }
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
 });
+
+
+test('i18n Sprint A moving: QR label export text and deep links stay stable across language changes',async({page})=>{
+ test.setTimeout(90000);
+ const fixture={locations:[{id:100,name:'Synthetic shelf',icon:'📍'}],boxes:[
+  {id:201,locId:100,name:'User box',desc:'Original stored contents',tag:'Zerbrechlich',value:'12.50',subItems:[]},
+  {id:202,locId:999,name:'Another box',desc:'Second contents',tag:'Custom tag',value:4.25,subItems:[]}
+ ]};
+ await isolated(page,true,true,fixture);
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ await page.evaluate(()=>{
+  window.__qrPdfSpy={texts:[],images:[],files:[],urls:[]};
+  window.QRCode=class{constructor(node,opts){window.__qrPdfSpy.urls.push(opts.text);const img=document.createElement('img');img.src='data:image/png;base64,iVBORw0KGgo=';node.append(img)}};
+  window.jspdf={jsPDF:class{
+   setFont(){return this}setFontSize(){return this}setDrawColor(){return this}
+   roundedRect(){return this}addPage(){return this}
+   text(v){window.__qrPdfSpy.texts.push(String(v));return this}
+   addImage(v){window.__qrPdfSpy.images.push(v);return this}
+   save(v){window.__qrPdfSpy.files.push(v)}
+  }};
+ });
+ for(const lang of ['en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await page.evaluate(()=>{window.__qrPdfSpy.texts=[];window.__qrPdfSpy.images=[];window.__qrPdfSpy.urls=[];return exportQrLabelsPDF()});
+  const v=await page.evaluate(()=>({spy:window.__qrPdfSpy,snapshot:getData(),writes:window.__toolyaMock.writes.length}));
+  expect(v.writes).toBe(0);
+  expect(v.snapshot).toEqual(fixture);
+  expect(v.spy.urls).toEqual([origin+'/tools/moving/index.html?box=201',origin+'/tools/moving/index.html?box=202']);
+  expect(v.spy.images).toHaveLength(2);
+  expect(v.spy.texts.join(' ')).toContain('User box');
+  expect(v.spy.texts.join(' ')).toContain('Original stored contents');
+  expect(v.spy.texts.join(' ')).toContain('Custom tag');
+  if(lang==='en'){
+   expect(v.spy.files.at(-1)).toBe('moving-box-qr-labels.pdf');
+   expect(v.spy.texts.join(' ')).toContain('Fragile');
+   expect(v.spy.texts.join(' ')).toContain('Unknown');
+  }else{
+   expect(v.spy.files.at(-1)).toBe('kisten-qr-etiketten.pdf');
+   expect(v.spy.texts.join(' ')).toContain('Zerbrechlich');
+   expect(v.spy.texts.join(' ')).toContain('Unbekannt');
+  }
+ }
+});
+
+test('i18n Sprint A moving: missing QR library reports localized failure and does not create a PDF',async({page})=>{
+ test.setTimeout(60000);
+ await isolated(page,true,true,{locations:[{id:1,name:'Synthetic',icon:'📍'}],boxes:[{id:2,locId:1,name:'Box',desc:'Synthetic',tag:'Standard',value:1}]});
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ for(const [lang,message] of [['en','The QR code could not be loaded. Please try again.'],['de','Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.']]){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await page.evaluate(()=>exportQrLabelsPDF());
+  const dialog=page.getByRole('alertdialog',{name:'Toolya'});
+  await expect(dialog.locator('#hl-alert-message')).toHaveText(message);
+  await expect(dialog.getByRole('button',{name:'OK'})).toBeFocused();
+  await dialog.getByRole('button',{name:'OK'}).click();
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
