@@ -2309,6 +2309,16 @@ test('i18n Sprint A moving: confirmed restore writes synthetic cloud snapshot on
  await page.goto(origin+'/tools/moving/index.html');
  await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
  await page.locator('[data-tool-locale="en"]').click();
+ // Initial synthetic snapshot exists at revision 1. Honor the repository's
+ // compare-and-swap response contract (next revision must be 2).
+ await page.evaluate(()=>{
+  const base=window.supabaseClient.rpc.bind(window.supabaseClient);
+  window.supabaseClient.rpc=async(name,args)=>{
+   const result=await base(name,args);
+   if(result.data?.[0]) result.data[0].revision=(args.p_expected_revision??0)+1;
+   return result;
+  };
+ });
  const snapshot={locations:[{id:911,name:'Synthetic pantry',icon:'📍'}],boxes:[{id:912,locId:911,name:'Synthetic box',desc:'Only mocked',tag:'Standard',value:5,subItems:[]}]};
  const file=page.locator('input[type="file"][onchange="importBackup(event)"]');
  await file.setInputFiles({name:'synthetic-restore.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(snapshot))});
@@ -2373,6 +2383,7 @@ test('i18n Sprint A moving: blocked PDF library gives EN/DE error, no export or 
  const dialog=page.getByRole('alertdialog',{name:'Toolya'});
  for(const [lang,message] of [['en','Could not create the PDF. Please try again.'],['de','Das PDF konnte nicht erstellt werden. Bitte versuche es erneut.']]){
   await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await expect.poll(()=>page.evaluate(()=>window.__toolyaUILocale)).toBe(lang);
   await page.evaluate(()=>exportInventoryPDF());
   await expect(dialog.locator('#hl-alert-message')).toHaveText(message);
   await dialog.getByRole('button',{name:'OK'}).click();
