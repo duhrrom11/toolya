@@ -1976,3 +1976,36 @@ test('Sprint A open household budget labels switch language in place and retain 
  assert.ok(listener.includes('refreshOpenBudgetLabels()'),'language change refreshes budget label');
  assert.ok(!listener.includes('saveBudgets(')&&!listener.includes('localStorage.setItem('),'language change is read-only');
 });
+
+
+test('Sprint A household cooking weekdays localize without modifying original plan or unsaved edits',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const start=html.indexOf('function formatHouseholdWeekday(day) {');
+ const end=html.indexOf('function renderCookingPlan()',start);
+ assert.ok(start>0&&end>start,'weekday rendering helpers present');
+ const {document}=parseHTML('<div id="cookingModal"><div id="cookingInputList"><div><span data-cooking-day="Montag">Montag</span><select><option value="Frei">Frei</option></select><input class="dishInput" value="Linsensuppe"><input class="ingredientsInput" value="Linsen, Kartoffeln"></div><div><span data-cooking-day="Dienstag">Dienstag</span><input class="dishInput" value="Pasta"></div></div></div>');
+ const context={window:{__toolyaUILocale:'en'},document};
+ createContext(context);
+ runInContext(html.slice(start,end),context);
+ assert.equal(runInContext('formatHouseholdWeekday("Montag")',context),'Monday');
+ assert.equal(runInContext('formatHouseholdWeekday("Sonntag")',context),'Sunday');
+ assert.equal(runInContext('formatHouseholdWeekday("My custom day")',context),'My custom day');
+ runInContext('refreshOpenCookingDayLabels()',context);
+ assert.deepEqual([...document.querySelectorAll('[data-cooking-day]')].map(x=>x.textContent),['Monday','Tuesday']);
+ assert.equal(document.querySelector('.dishInput').value,'Linsensuppe','dish draft not overwritten');
+ assert.equal(document.querySelector('.ingredientsInput').value,'Linsen, Kartoffeln','ingredients draft not overwritten');
+ assert.deepEqual([...document.querySelectorAll('[data-cooking-day]')].map(x=>x.getAttribute('data-cooking-day')),['Montag','Dienstag'],'original weekday keys retained');
+ context.window.__toolyaUILocale='de';
+ runInContext('refreshOpenCookingDayLabels()',context);
+ assert.deepEqual([...document.querySelectorAll('[data-cooking-day]')].map(x=>x.textContent),['Montag','Dienstag']);
+ document.getElementById('cookingModal').classList.add('hidden');
+ context.window.__toolyaUILocale='en';
+ runInContext('refreshOpenCookingDayLabels()',context);
+ assert.equal(document.querySelector('[data-cooking-day]').textContent,'Montag','closed editor remains unchanged');
+ assert.ok(html.includes('escapeUserHtml(formatHouseholdWeekday(p.day))'),'display labels use weekday formatter');
+ assert.ok(html.includes('data-cooking-day="${escapeUserHtml(p.day)}"'),'editor retains original source day');
+ assert.ok(html.includes('refreshOpenCookingDayLabels();'),'locale event triggers in-place update');
+ assert.ok(html.includes('p.chef = chefs[idx].value; p.dish = dishes[idx].value.trim(); p.ingredients = ingredients[idx].value.trim();'),'stored plan is unchanged');
+});
