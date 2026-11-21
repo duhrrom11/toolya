@@ -15,6 +15,8 @@ const incoming=new URLSearchParams(location.search);
 for (const link of document.querySelectorAll('a[data-tool-link]')) {
   const url=new URL(link.href,location.href);
   if(url.origin!==location.origin)continue;
+  // The language signal is explicit and limited to Toolya's existing app links.
+  if (url.pathname.startsWith('/tools/')) url.searchParams.set('lang','en');
   for(const field of allow){
     const value=incoming.get(field);
     if(value&&/^[a-z0-9][a-z0-9_-]{0,79}$/i.test(value))url.searchParams.set(field,value);
