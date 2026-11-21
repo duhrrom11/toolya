@@ -507,10 +507,18 @@
                 document.getElementById("passwordRecoveryPanel").hidden = true;
                 status.textContent = "";
                 alert("Dein Passwort wurde geändert. Du kannst dich jetzt damit anmelden.");
-                await window.supabaseClient.auth.signOut();
-                updateUserDisplay();
             } catch (_) {
                 status.textContent = "Passwort konnte nicht geändert werden. Bitte fordere gegebenenfalls einen neuen Link an.";
+                return;
+            }
+            // The password update already succeeded. A later sign-out error
+            // must not be mistaken for a failed password change.
+            try {
+                const { error } = await window.supabaseClient.auth.signOut();
+                if (error) throw error;
+                updateUserDisplay();
+            } catch (_) {
+                status.textContent = "Passwort geändert, aber Abmelden fehlgeschlagen. Bitte melde dich manuell ab.";
             }
         }
 
