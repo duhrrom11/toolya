@@ -1319,3 +1319,21 @@ test('source-exact help translations leave unknown notes and help paragraphs unc
   assert.equal(document.body.innerHTML,before);
  }
 });
+
+test('frost precautions and member-management headings translate without touching alert logic or user entries',()=>{
+ const {document}=parseHTML('<html><body><section id="frostBanner"><div><h4>Achtung: Frostgefahr!</h4><p>Bitte empfindliche Kübelpflanzen schützen oder ins Winterquartier holen!</p></div><button onclick="dismissFrostAlert()">Ausblenden</button></section><p id="private">Bitte empfindliche Kübelpflanzen schützen oder ins Winterquartier holen!</p></body></html>');
+ const notice=document.querySelector('#frostBanner p');
+ const original=notice.textContent,handler=document.querySelector('#frostBanner button').getAttribute('onclick');
+ applyToolInterfaceLocale(document,'plants','en');
+ assert.equal(notice.textContent,'Protect sensitive potted plants or move them indoors for winter.');
+ assert.equal(document.getElementById('private').textContent,original);
+ assert.equal(document.querySelector('#frostBanner button').getAttribute('onclick'),handler);
+ applyToolInterfaceLocale(document,'plants','de');
+ assert.equal(notice.textContent,original);
+ const {document:wg}=parseHTML('<html><body><h3>👥 Mitglieder- & Kontaktverwaltung</h3><input id="person" value="Alex"></body></html>');
+ applyToolInterfaceLocale(wg,'housemates','en');
+ assert.equal(wg.querySelector('h3').textContent,'👥 Member and contact management');
+ assert.equal(wg.getElementById('person').value,'Alex');
+ applyToolInterfaceLocale(wg,'housemates','de');
+ assert.equal(wg.querySelector('h3').textContent,'👥 Mitglieder- & Kontaktverwaltung');
+});
