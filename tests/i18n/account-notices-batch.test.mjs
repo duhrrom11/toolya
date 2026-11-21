@@ -58,3 +58,38 @@ for (const name of ['plants','baking','moving']) {
   assert.ok(html.includes('window.__toolyaUILocale'),name+' missing locale switch');
  });
 }
+
+for (const name of ['parking','loans']) {
+ test(name + ': session states distinguish signed out from unavailable auth and clear stale identity',async()=>{
+  const html=await readTool(name);
+  const start=html.indexOf('async function checkUserSession()');
+  const end=html.indexOf('\n        }',start)+10;
+  assert.ok(start>=0 && end>start);
+  const elements=Object.fromEntries(['cloud-status-text','cloud-user-display','header-user-badge','header-user-email','btn-logout'].map(id=>[id,{
+   innerText:'stale@example.invalid',classList:{add(){},remove(){}}
+  }]));
+  let response={data:{user:{email:'person@example.invalid'}}};
+  const window={__toolyaUILocale:'en'};
+  const context={window,document:{getElementById:id=>elements[id]},
+   supabaseClient:{auth:{getUser:async()=>{if(response instanceof Error)throw response;return response}}}};
+  runInNewContext(html.slice(start,end),context);
+  const invoke=()=>runInNewContext('checkUserSession()',context);
+  await invoke();
+  assert.equal(elements['cloud-status-text'].innerText,'Status: Connected and signed in');
+  assert.equal(elements['cloud-user-display'].innerText,'person@example.invalid');
+  response={data:{user:null},error:null};
+  await invoke();
+  assert.equal(elements['cloud-status-text'].innerText,'Not signed in');
+  assert.equal(elements['cloud-user-display'].innerText,'');
+  assert.equal(elements['header-user-email'].innerText,'');
+  response=new Error('network unavailable');
+  await invoke();
+  assert.equal(elements['cloud-status-text'].innerText,'Status: Unable to verify connection or session');
+  window.__toolyaUILocale='de';
+  await invoke();
+  assert.equal(elements['cloud-status-text'].innerText,'Status: Verbindung oder Sitzung nicht überprüfbar');
+  response={data:{user:null},error:{name:'AuthSessionMissingError'}};
+  await invoke();
+  assert.equal(elements['cloud-status-text'].innerText,'Nicht angemeldet');
+ });
+}
