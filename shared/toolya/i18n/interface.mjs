@@ -658,3 +658,78 @@ export function applyToolInterfaceLocale(document,tool,language){
  }
  applyStaticFormCopy(document,tool,language);
 }
+
+/* Only application-owned, source-exact browser-dialog copy. Dynamic user values,
+   email addresses, backend errors and machine-readable exports are untouched. */
+const dialogCopy = Object.freeze({
+ moving: {
+  'Bitte E-Mail und Passwort eingeben.':'Enter your email address and password.',
+  'Registrierung erfolgreich.':'Registration successful.',
+  'Bitte Standort eingeben!':'Enter a location.',
+  'Standort umbenennen:':'Rename location:',
+  '⚠️ Möchtest du diesen Standort und ALLE Kisten darin wirklich löschen?':'⚠️ Delete this location and ALL boxes in it?',
+  'Bitte Standort und Kisten-Name angeben!':'Enter a location and box name.',
+  'Bild konnte nicht gelesen werden. Nichts gespeichert.':'The image could not be read. Nothing was saved.',
+  'Bitte Artikel-Name eingeben!':'Enter an item name.',
+  '⚠️ Möchtest du diese Kiste wirklich löschen?':'⚠️ Delete this box?',
+  'Keine Kisten vorhanden.':'No boxes available.',
+  'Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.':'The QR code could not be loaded. Please try again.',
+  'Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden nicht überschrieben.':'Import existing device data into your Toolya account? Cloud data will not be overwritten.',
+  'Cloud- und Gerätedaten vorhanden. Cloud-Daten behalten und Gerätedaten separat sichern?':'Cloud and device data both exist. Keep cloud data and back up device data separately?',
+  'Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.':'Confirm that the backup was downloaded.'
+ },
+ housemates: {
+  'Ungültige WG-ID im Link.':'Invalid household ID in the link.',
+  'Bitte E-Mail und Passwort eingeben.':'Enter your email address and password.',
+  'Angemeldet. Dein Konto ist einsatzbereit.':'Signed in. Your account is ready.',
+  'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.':'Request processed. If confirmation is required, check your inbox and verify your email address, then sign in.',
+  'Erfolgreich angemeldet!':'Signed in successfully!',
+  'Abmeldung angehalten: Deine Änderungen sind noch nicht online gesichert. Bitte speichere sie, bevor du dich abmeldest.':'Sign-out paused: your changes have not been saved online. Save them before signing out.',
+  'Abgemeldet.':'Signed out.',
+  'Migration ist nur für eine ältere WG verfügbar.':'Migration is only available for an older household.',
+  'Mitgliederverwaltung ist nur für geschützte WGs verfügbar.':'Member management is only available for protected households.',
+  'Deine Benutzer-ID zum Freigeben durch den WG-Eigentümer:':'Your user ID for approval by the household owner:',
+  'Die Cloud-Daten der alten WG wurden gelesen. Jetzt eine private Kopie für dein Konto erstellen?':'The old household cloud data was read. Create a private copy for your account now?'
+ },
+ plants: {
+  'Bitte E-Mail und Passwort eingeben.':'Enter your email address and password.',
+  'Registrierung erfolgreich!':'Registration successful!',
+  'Erfolgreich angemeldet!':'Signed in successfully!',
+  'Abgemeldet.':'Signed out.',
+  'Bitte ein gültiges Fassungsvermögen größer als 0 eingeben.':'Enter a valid capacity greater than 0.',
+  'Regentonne / Zisterne vollständig aufgefüllt!':'Rainwater tank filled completely!',
+  'Bitte ein gültiges Saatgutjahr eingeben.':'Enter a valid seed year.',
+  'Mehrere Pflanzen gefunden. Bitte die eindeutige Pflanzen-ID eingeben.':'Multiple plants found. Enter the unique plant ID.',
+  'Nicht gefunden.':'Not found.',
+  'Ungültige Pflanzen-ID.':'Invalid plant ID.',
+  'Bitte eine gültige Erntemenge in ganzen Gramm eingeben.':'Enter a valid harvest amount in whole grams.',
+  'Die gesamte Erntemenge überschreitet den unterstützten Zahlenbereich.':'The total harvest amount exceeds the supported numeric range.',
+  'Lokale Pflanzendaten nach Sicherung in die Cloud übernehmen?':'Back up local plant data and then import it into the cloud?'
+ },
+ baking: {
+  'Bitte E-Mail und Passwort eingeben.':'Enter your email address and password.',
+  'Registrierung erfolgreich!':'Registration successful!',
+  'Erfolgreich angemeldet!':'Signed in successfully!',
+  'Abgemeldet.':'Signed out.',
+  'Lokale Rezepte nach Sicherung in die Cloud übernehmen?':'Back up local recipes and then import them into the cloud?',
+  'Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?':'Cloud and device data both exist. Keep cloud data and back up local data separately?',
+  'Bitte bestätigen, dass die Sicherung heruntergeladen wurde.':'Confirm that the backup was downloaded.',
+  'Gespeichert':'Saved',
+  'Timer abgelaufen!':'Timer finished!'
+ }
+});
+const dialogPrefixes = Object.freeze({
+ housemates: {
+  'Registrierung fehlgeschlagen: ':'Registration failed: ',
+  'Abmeldung fehlgeschlagen: ':'Sign-out failed: ',
+  'Migration fehlgeschlagen: ':'Migration failed: '
+ }
+});
+export function translateToolDialog(tool, language, message) {
+ if(language!=='en' || typeof message!=='string') return message;
+ const exact=dialogCopy[tool]?.[message];
+ if(exact!==undefined) return exact;
+ for(const [prefix,translated] of Object.entries(dialogPrefixes[tool]||{}))
+  if(message.startsWith(prefix)) return translated+message.slice(prefix.length);
+ return message;
+}
