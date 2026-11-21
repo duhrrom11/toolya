@@ -1533,7 +1533,7 @@
                     const warning = document.createElement('section');
                     warning.className = 'p-6 bg-amber-50 border border-amber-300 rounded-2xl text-amber-900';
                     warning.setAttribute('role', 'alert');
-                    warning.textContent = 'Die WG konnte gerade nicht sicher geladen werden. Prüfe deine Verbindung und versuche es erneut.';
+                    warning.textContent = window.__toolyaUILocale === 'en' ? 'The household could not be loaded safely. Check your connection and try again.' : 'Die WG konnte gerade nicht sicher geladen werden. Prüfe deine Verbindung und versuche es erneut.';
                     const retry = document.createElement('button');
                     retry.type = 'button';
                     retry.className = 'block mt-3 px-4 py-2 rounded-xl border border-current font-semibold';
@@ -1729,7 +1729,7 @@
                 .filter(([, amount]) => amount > 0)
                 .map(([category, amount]) => category + ': ' + formatChartAmount(amount))
                 .join('; ');
-            document.getElementById('categoryChartSummary').textContent = categoryChartSummary || 'Keine Ausgaben in diesem Monat.';
+            document.getElementById('categoryChartSummary').textContent = categoryChartSummary || (window.__toolyaUILocale === 'en' ? 'No expenses this month.' : 'Keine Ausgaben in diesem Monat.');
             document.getElementById('cashflowChartSummary').textContent =
                 'Einnahmen: ' + formatChartAmount(totalIncome) + '; Ausgaben: ' + formatChartAmount(totalExpense) +
                 '; Saldo: ' + formatChartAmount(totalIncome - totalExpense) + '.';
@@ -1804,7 +1804,7 @@
             document.getElementById('noteContentInput').value = "";
             document.getElementById('noteColorInput').value = "yellow";
             document.getElementById('notePinnedInput').checked = false;
-            document.getElementById('noteModalTitle').innerText = "✏️ Neue Sticky Note";
+            document.getElementById('noteModalTitle').innerText = window.__toolyaUILocale === "en" ? "✏️ New sticky note" : "✏️ Neue Sticky Note";
             document.getElementById('noteModal').classList.remove('hidden');
             document.getElementById('noteModal').classList.add('flex');
         }
@@ -1846,7 +1846,7 @@
         /* Events */
         function renderEvents() {
             const events = getEvents(); const container = document.getElementById('eventList');
-            if (events.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-4">Keine anstehenden Termine oder Slots.</p>`; return; }
+            if (events.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-4">${window.__toolyaUILocale === 'en' ? 'No upcoming events or slots.' : 'Keine anstehenden Termine oder Slots.'}</p>`; return; }
             const icons = { "Waschmaschine": "🧺", "Trockner": "💨", "Gäste": "👤", "Party": "🎉", "Allgemein": "📅" };
             container.innerHTML = events.map(ev => `
                 <div class="p-3 border rounded-xl flex justify-between items-start text-xs bg-gray-50">
@@ -1999,7 +1999,7 @@
             if (typeFilter === 'fixkosten') filtered = filtered.filter(r => r.isFixkosten);
             if (catFilter !== 'All') filtered = filtered.filter(r => r.category === catFilter);
 
-            if (filtered.length === 0) { listContainer.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Keine passenden Buchungen.</p>`; return; }
+            if (filtered.length === 0) { listContainer.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No matching bookings.' : 'Keine passenden Buchungen.'}</p>`; return; }
             listContainer.innerHTML = filtered.map(r => {
                 const isIncome = r.entryType === 'einnahme' || r.category === 'Einnahme';
                 return `
@@ -2038,7 +2038,7 @@
                 if (generation !== ocrGeneration || input.files[0] !== file) return;
                 const priceMatch = ret.data.text.match(/(\d+[\.,]\d{2})\s*(€|EUR)?/i);
                 if (priceMatch) document.getElementById('receiptPrice').value = priceMatch[1].replace(',', '.');
-                statusEl.innerText = "✅ OCR Erfolgreich!";
+                statusEl.innerText = window.__toolyaUILocale === "en" ? "✅ Text recognition successful!" : "✅ OCR Erfolgreich!";
             } catch {
                 if (generation === ocrGeneration && input.files[0] === file) statusEl.innerText = "❌ Texterkennung fehlgeschlagen.";
             } finally {
@@ -2084,7 +2084,7 @@
             document.getElementById('receiptIsFixkosten').checked = !!r.isFixkosten;
             document.getElementById('receiptIsTax').checked = !!r.isTax;
             document.getElementById('formTitle').innerText = `✏️ Buchung bearbeiten: ${r.title}`;
-            document.getElementById('saveBtn').innerText = "💾 Speichern";
+            document.getElementById('saveBtn').innerText = window.__toolyaUILocale === "en" ? "💾 Save" : "💾 Speichern";
             document.getElementById('cancelEditBtn').classList.remove('hidden');
             document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
         }
@@ -2242,7 +2242,7 @@
         /* Verträge */
         function renderContracts() {
             const contracts = getContracts(); const container = document.getElementById('contractList');
-            if (contracts.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Keine Verträge eingetragen.</p>`; return; }
+            if (contracts.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No contracts added.' : 'Keine Verträge eingetragen.'}</p>`; return; }
             container.innerHTML = contracts.map(c => `
                 <div class="p-2.5 bg-indigo-50 border rounded-xl flex justify-between items-center text-xs">
                     <div><strong>${escapeUserHtml(c.name)}</strong> <span class="text-gray-500">(${escapeUserHtml(c.payer)})</span></div>
@@ -2334,7 +2334,7 @@
             const mates = getFlatmates();
             const container = document.getElementById('flatmateList');
             if (mates.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Keine Mitglieder vorhanden.</p>`;
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No members yet.' : 'Keine Mitglieder vorhanden.'}</p>`;
                 return;
             }
             container.innerHTML = mates.map((m, idx) => `
@@ -2394,7 +2394,7 @@
             document.getElementById('mateInsta').value = m.insta || '';
             document.getElementById('mateFb').value = m.fb || '';
 
-            document.getElementById('mateFormTitle').innerText = "✏️ Mitglied bearbeiten";
+            document.getElementById('mateFormTitle').innerText = window.__toolyaUILocale === "en" ? "✏️ Edit member" : "✏️ Mitglied bearbeiten";
             document.getElementById('mateCancelBtn').classList.remove('hidden');
         }
 
@@ -2406,7 +2406,7 @@
             document.getElementById('matePhone').value = "";
             document.getElementById('mateInsta').value = "";
             document.getElementById('mateFb').value = "";
-            document.getElementById('mateFormTitle').innerText = "➕ Neues Mitglied hinzufügen";
+            document.getElementById('mateFormTitle').innerText = window.__toolyaUILocale === "en" ? "➕ Add new member" : "➕ Neues Mitglied hinzufügen";
             document.getElementById('mateCancelBtn').classList.add('hidden');
             renderFlatmateModalList();
         }
