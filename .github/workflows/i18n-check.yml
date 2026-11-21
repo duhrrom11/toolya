@@ -22,5 +22,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install locked test dependencies
+        run: npm ci --ignore-scripts
       - name: Test DE/EN locale and public landing pages
         run: node --test tests/i18n/*.test.mjs
