@@ -1316,7 +1316,7 @@
                 doc.text(exportEnglish ? "No plants recorded." : "Keine Pflanzen erfasst.", 14, y);
             }
             plants.forEach(p => {
-                const line = `- ${String(p.name ?? (window.__toolyaUILocale === 'en' ? 'Unnamed' : 'Unbenannt'))} (${String(p.species || (exportEnglish ? 'n/a' : 'k.A.'))}), ${exportEnglish ? 'Location' : 'Ort'}: ${String(p.location || (exportEnglish ? 'n/a' : 'k.A.'))}, ${exportEnglish ? 'Watering' : 'Gießen'}: ${String(p.interval ?? '?')}${exportEnglish ? 'd' : 'T'}`;
+                const line = `- ${String(p.name ?? (exportEnglish ? 'Unnamed' : 'Unbenannt'))} (${String(p.species || (exportEnglish ? 'n/a' : 'k.A.'))}), ${exportEnglish ? 'Location' : 'Ort'}: ${String(p.location || (exportEnglish ? 'n/a' : 'k.A.'))}, ${exportEnglish ? 'Watering' : 'Gießen'}: ${String(p.interval ?? '?')}${exportEnglish ? 'd' : 'T'}`;
                 doc.splitTextToSize(line, 180).forEach(textLine => {
                     if (y > 270) { doc.addPage(); y = 20; }
                     doc.text(textLine, 14, y);
