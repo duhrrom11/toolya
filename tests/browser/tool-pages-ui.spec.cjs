@@ -2009,3 +2009,129 @@ for (const [path, tableCount] of [
     }
   });
 }
+
+
+// Sprint A: real Chromium locale toggles at phone and tablet widths.
+// All cloud responses are synthetic and all requests except local preview and
+// display-only CSS are intercepted by isolated(). No production credentials.
+test('i18n Sprint A moving: 320/768px preserve box draft and selected location',async({page},testInfo)=>{
+ test.setTimeout(60000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await isolated(page,true,true,{
+  locations:[{id:1,name:'Synthetic storage',icon:'📦'}],
+  boxes:[{id:2,locId:1,name:'Synthetic box',desc:'Sample',value:12.5,tag:'Zerbrechlich',barcode:'',expiry:'',lentTo:'',subItems:[]}]
+ });
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady&&!!movingCloudController?.ready)).toBe(true);
+ for(const width of [320,768]){
+  await page.setViewportSize({width,height:900});
+  await page.locator('#boxLocationSelect').selectOption('1');
+  await page.locator('#boxName').fill('Unsaved draft box');
+  await page.evaluate(()=>{window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await expect(page.locator('#boxLocationSelect')).toHaveValue('1');
+  await expect(page.locator('#boxName')).toHaveValue('Unsaved draft box');
+  await expect(page.locator('#boxLocationSelect option[value=""]')).toHaveText('-- Choose location --');
+  await expect(page.locator('#tagFilter option[value="Zerbrechlich"]')).toHaveText('Fragile');
+  await page.evaluate(()=>toggleHelp());
+  await expect(page.locator('#helpToggleBtn span')).toHaveText('Hide help and guide');
+  await page.evaluate(()=>toggleHelp());
+  await page.screenshot({path:testInfo.outputPath('i18n-moving-'+width+'.png')});
+  await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await expect(page.locator('#boxLocationSelect')).toHaveValue('1');
+  await expect(page.locator('#boxName')).toHaveValue('Unsaved draft box');
+  await expect(page.locator('#tagFilter option[value="Zerbrechlich"]')).toHaveText('Zerbrechlich');
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
+test('i18n Sprint A plants: 320/768px localize cistern without modifying capacity',async({page},testInfo)=>{
+ test.setTimeout(60000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await isolated(page,true,true);
+ await page.goto(origin+'/tools/plants/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof plantsCloudReady!=='undefined'&&plantsCloudReady&&!!plantsCloudController?.ready)).toBe(true);
+ await page.evaluate(()=>openCisternModal());
+ for(const width of [320,768]){
+  await page.setViewportSize({width,height:900});
+  const capacity=page.locator('#cisternMaxLiters');
+  await capacity.fill('15000');
+  await page.evaluate(()=>{window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await expect(capacity).toHaveValue('15000');
+  await expect(page.locator('#cisternPercentText')).toContainText('% full');
+  await page.screenshot({path:testInfo.outputPath('i18n-plants-'+width+'.png')});
+  await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await expect(capacity).toHaveValue('15000');
+  await expect(page.locator('#cisternPercentText')).toContainText('% gefüllt');
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
+test('i18n Sprint A baking: 320/768px preserve recipe draft and do not resave previews',async({page},testInfo)=>{
+ test.setTimeout(60000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await isolated(page,true,true,{recipes:[{name:'Synthetic recipe',text:'100 g flour',factor:1,date:'2026-11-20',note:'Existing saved note'}]});
+ await page.goto(origin+'/tools/baking/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof bakingCloudReady!=='undefined'&&bakingCloudReady&&!!bakingCloudController?.ready)).toBe(true);
+ for(const width of [320,768]){
+  await page.setViewportSize({width,height:900});
+  await page.locator('#recipe-input').fill('2 Eier\\n100 g Mehl');
+  await page.evaluate(()=>{
+   document.querySelector('[data-recipe-note-input]').value='Unsaved draft note';
+   renderRecipePreview();
+   window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'));
+  });
+  await expect(page.locator('[data-recipe-note-input]')).toHaveValue('Unsaved draft note');
+  await expect(page.locator('[data-recipe-note-label]')).toHaveText('Baking notes:');
+  await expect(page.locator('#print-card')).toContainText('Factor');
+  await page.screenshot({path:testInfo.outputPath('i18n-baking-'+width+'.png')});
+  await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await expect(page.locator('[data-recipe-note-input]')).toHaveValue('Unsaved draft note');
+  await expect(page.locator('[data-recipe-note-label]')).toHaveText('Geling-Protokoll / Notiz:');
+  await expect(page.locator('#recipe-input')).toHaveValue('2 Eier\\n100 g Mehl');
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
+test('i18n Sprint A household: 320/768px budget and cooking editor drafts survive language changes',async({page},testInfo)=>{
+ test.setTimeout(90000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const fixture={__wg:{id:'00000000-0000-4000-8000-000000000109',updated_at:'2026-11-17T00:00:00Z',payload:{
+  flatmates:[{vorname:'Mia',nachname:'Test'},{vorname:'Ben',nachname:'Test'}],
+  notes:[],data:[],budgets:{Lebensmittel:100},goals:[],events:[],inventory:[],
+  diets:{},cleaning:[],shopping:[],contracts:[],
+  cooking:['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'].map(day=>({day,chef:'Frei',dish:'',ingredients:''})),
+  infoboard:{wifi:'',landlord:'',caretaker:'',trash:''}
+ }}};
+ await isolated(page,true,true,fixture);
+ await page.goto(origin+'/tools/housemates/index.html?id=secure_00000000-0000-4000-8000-000000000109');
+ await expect.poll(()=>page.evaluate(()=>typeof secureWgRevision!=='undefined'&&!!secureWgRevision)).toBe(true);
+ for(const width of [320,768]){
+  await page.setViewportSize({width,height:900});
+  await page.evaluate(()=>openBudgetModal());
+  const amount=page.locator('#budgetInputList input[data-cat="Lebensmittel"]');
+  await amount.fill('175');
+  await page.evaluate(()=>{window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await expect(amount).toHaveValue('175');
+  await expect(page.locator('label[for="budget-amount-0"]')).toHaveText('Groceries:');
+  await page.screenshot({path:testInfo.outputPath('i18n-household-budget-'+width+'.png')});
+  await page.evaluate(()=>closeBudgetModal());
+  await page.evaluate(()=>openCookingModal());
+  const dish=page.locator('#cookingInputList input.dishInput').first();
+  await dish.fill('Unsaved dinner plan');
+  await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await expect(dish).toHaveValue('Unsaved dinner plan');
+  await expect(page.locator('#cookingInputList [data-cooking-day]').first()).toHaveText('Montag');
+  await page.evaluate(()=>{window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await expect(dish).toHaveValue('Unsaved dinner plan');
+  await expect(page.locator('#cookingInputList [data-cooking-day]').first()).toHaveText('Monday');
+  await expect(dish).toHaveAttribute('placeholder','Dish');
+  await page.screenshot({path:testInfo.outputPath('i18n-household-cooking-'+width+'.png')});
+  await page.evaluate(()=>closeCookingModal());
+  await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
