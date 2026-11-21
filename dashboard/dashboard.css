@@ -40,7 +40,7 @@
 .dashboard-backup p{font-size:13px;line-height:1.5;color:#526975}
 .dashboard-settings-close{display:flex;justify-content:flex-end;padding-top:16px}
 .dashboard-settings-close button{background:#e9f2f4;color:#20515b}
-@media(max-width:650px){
+@media(max-width:740px){
  .b3-hub-topbar{gap:6px;padding:10px 12px;flex-wrap:wrap}
  .b3-hub-logo{font-size:20px}
  .b3-hub-logo-mark,.b3-hub-nav [aria-current=page],.b3-hub-nav .ty-settings-label{display:none}
