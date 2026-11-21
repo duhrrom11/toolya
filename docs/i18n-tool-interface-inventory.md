@@ -29,3 +29,9 @@ Stand 2026-11-21. Quelle: vier vorhandene `tools/*/index.html` im Entwicklungsbr
 8. Vor der internationalen Veröffentlichung: durchgängiger englischer Auth-Funnel; SEO-hreflang-Paare, Sitemap, Canonical-/OG-Sprachen und `noindex`-Freigabe.
 
 **Freigabe-Schranke:** Der aktuelle Sprachschalter bedeutet nicht, dass das jeweilige Tool bereits vollständig übersetzt ist. Keine automatische EN-Nutzerakquise oder Live-Übernahme dieser unvollständigen Fassung.
+
+## Umsetzung auf PR #291 nach d112e980 (2026-11-21)
+- Source-exakte DE/EN-Texte für `alert`, `confirm` und `prompt` der vier Tools. Unbekannte Serverfehler, Freitext, Benutzereingaben und Rückgabewerte bleiben unverändert. Weitere dynamische DOM-Renderstellen sind nicht vollständig erfasst.
+- PDF-Kopfzeilen und Berichtslabels für Umzugskisten, WG und Pflanzen werden bei `lang=en` in Englisch ausgegeben; die gespeicherten Datensätze, maschinenlesbaren Backup-Formate, QR-Inhalte und Dateinamen bleiben unverändert.
+- Regressionstests für die vier Dialog-Kataloge und für PDF-Sprachumschaltung ergänzt.
+- **Noch offen:** vollständige dynamische DOM-Texte, sämtliche Kontozustände/Fehlerfälle, weitere Export-/Druckinhalte und E2E-Authentifizierung. Dieser Stand ist nicht releasefähig. Vor Merge/Deployment alle Workflows des endgültigen Commits abwarten.
