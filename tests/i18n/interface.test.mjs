@@ -1550,13 +1550,13 @@ test('moving inventory accessibility labels switch reversibly without changing d
 });
 
 test('moving box form accessibility is reversible without mutating values or attached controls',()=>{
- const {document}=parseHTML(`<html><body>
+ const {document}=parseHTML(`<html><body><main id="main-content">
  <input id="boxValue" aria-label="Wert in € (optional)" value="42">
  <input id="boxDesc" aria-label="Inhalt / Beschreibung (z.B. Lichterketten)" value="Private description">
  <input id="boxBarcode" aria-label="Barcode / EAN (optional)" value="123456">
  <input id="boxName" aria-label="Kisten-Name (z.B. Karton #3)" value="My box">
  <input id="boxPhotoInput" type="file">
- </body></html>`);
+ </main></body></html>`);
  const nodes=[...document.querySelectorAll('input')];
  const labels=nodes.map(node=>node.getAttribute('aria-label'));
  const values=nodes.map(node=>node.value);
