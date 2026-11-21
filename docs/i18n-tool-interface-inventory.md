@@ -97,3 +97,11 @@ Stand 2026-11-21. Quelle: vier vorhandene `tools/*/index.html` im Entwicklungsbr
 - Bestehende `href`-Links, Button-Handler, Dashboard-Panel-IDs, Maske/Maskottchen und Cloud-Daten bleiben unverändert. Der Sprachwechsel ruft dieselbe zentrale Anzeigeübersetzung erneut auf, ohne B3 neu zu initialisieren.
 - Zwei Regressionstests prüfen Hin-/Rückwechsel, Link- und Handler-Identität, unbekannte Inhalte sowie die allgemeinen Menüpunkte.
 - Der **vorherige Commit `ec7d2184`** war in allen acht GitHub-Workflows erfolgreich. Für die darauf folgenden Änderungen muss die neue CI erneut erfolgreich abschließen; kein Merge und kein Deployment.
+
+## B3-Dashboard-Editor auf Englisch (2026-11-21)
+
+- Die B3-Core-Bibliothek erzeugt den Dashboard-Editor bei jedem Öffnen, Sortieren und Zurücksetzen neu. Sie sendet deshalb nach dem Rendern ein rein lesendes `toolya:b3-editor-rendered`-Ereignis. Das i18n-Entrypoint aktualisiert anschließend die Darstellung.
+- `shared/toolya/i18n/interface.mjs` übersetzt gezielt die vorhandenen Editor-Abschnitte von Umzugskisten (4 Titel) und WG-Organisator (13 Titel), die Editor-Beschreibung, Speichern/Abbrechen/Standardlayout, „Sichtbar“, die Bildschirmleser-Texte für Hoch/Runter, Sichtbarkeit und Kartengröße sowie das Editor-Dialoglabel. Bei fehlgeschlagenem Layout-Speichern wird die bekannte Meldung ebenfalls übersetzt.
+- Die Checkbox bleibt im bestehenden `label` erhalten: Nur ein unmittelbarer Textknoten wird angepasst, nicht der Label-Inhalt ersetzt. Originaltexte werden für den Sprachwechsel über `WeakMap` wiederhergestellt. Die Original-Panel-IDs, Reihenfolge, `S/M/L`-Werte, Checkbox-Zustände, gespeicherter Layout-Schlüssel und Event-Handler werden nicht verändert.
+- Drei ergänzte Regressionstests prüfen Umzugskisten und WG-Editor, Hin- und Rückwechsel, das erneute Rendern, Nutzereingaben/Bedienelemente und die bekannte Fehlermeldung.
+- Die acht Workflows des vorherigen stabilen Commits `ec7d2184` waren erfolgreich; die danach laufenden CI-Jobs müssen für den endgültigen PR-Stand erneut grün sein. Weiterhin kein Merge, kein Deployment und keine produktiven Supabase-Änderungen.
