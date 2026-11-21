@@ -378,7 +378,7 @@ test('moving box cards localize status and actions without changing stored box f
  ];
  for(const label of expected)assert.ok(html.includes(label),'missing English box-card translation: '+label);
  assert.match(html,/document\.addEventListener\('toolya:locale-change', \(\) => \{/);
- assert.match(html,/if \(document\.getElementById\('inventoryContainer'\)\) renderInventory\(\)/);
+ assert.match(html,/if \(movingCloudReady && document\.getElementById\('inventoryContainer'\)\) renderInventory\(\)/);
  assert.match(html,/const subItemsText = b\.subItems/,'subitems still sourced from existing box records');
  assert.match(html,/const isLent = b\.lentTo/,'lending status still uses existing data');
  assert.match(html,/const isExpired = b\.expiry/,'expiry status still uses existing data');
@@ -2118,7 +2118,8 @@ test('Sprint A moving tags translate display labels and options but retain the o
  assert.equal(boxChosen.hasAttribute('selected'),true);
  assert.ok(html.includes('${formatMovingTagLabel(b.tag || \'Standard\')}'),'saved tag badge displays translated label');
  assert.ok(html.includes('refreshMovingSelectLabels();'),'language event updates existing selectors');
- assert.ok(html.includes('if (movingCloudReady) loadLocationsDropdown();'),'unloaded cloud does not trigger location refresh');
+ assert.ok(html.includes('refreshMovingLocationPrompts();'),'location prompt translation does not rebuild selected choices');
+ assert.ok(!html.slice(html.indexOf("document.addEventListener('toolya:locale-change'"),html.indexOf('async function exportInventoryPDF()')).includes('loadLocationsDropdown()'),'locale refresh never resets unsaved location selections');
 });
 
 test('Sprint A household note and receipt titles change language without resetting draft fields',async()=>{
