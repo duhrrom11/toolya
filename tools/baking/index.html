@@ -713,11 +713,11 @@
             const btnLogout = document.getElementById('btn-logout');
 
             if(user) {
-                statusText.innerText = "Status: Verbunden";
+                statusText.innerText = window.toolyaUiText?.("Status: Verbunden") ?? "Status: Verbunden";
                 userEmailSpan.innerText = user.email;
                 btnLogout.classList.remove('hidden');
             } else {
-                statusText.innerText = "Nicht angemeldet";
+                statusText.innerText = window.toolyaUiText?.("Nicht angemeldet") ?? "Nicht angemeldet";
                 userEmailSpan.innerText = "";
                 btnLogout.classList.add('hidden');
             }
