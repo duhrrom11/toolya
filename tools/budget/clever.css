@@ -1,0 +1,116 @@
+/* Toolya Haushaltsbuch – Clever sparen 2026. Isolated CSS, no global overrides. */
+#cs-root.cs-shell{--cs-ink:#244038;--cs-green:#126b51;--cs-border:#dbe9df;--cs-cream:#fff9f0;--cs-soft:#f2faf5;--cs-gold:#fcddae;color:var(--cs-ink);margin:0 0 24px;font-family:inherit;scroll-margin-top:28px}
+#cs-root *,.cs-receipt-editor *{box-sizing:border-box}
+#cs-root .cs-hero{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 27px;border:1px solid #d5e9df;background:linear-gradient(105deg,#eff9f1 0%,#fff9eb 100%);border-radius:24px;position:relative;overflow:hidden;min-height:128px;box-shadow:0 10px 28px #14533b0b}
+#cs-root .cs-hero-copy{position:relative;z-index:2}
+#cs-root .cs-eyebrow{color:#0e7058;font-size:11px;font-weight:900;letter-spacing:.09em}
+#cs-root .cs-hero h2{color:#214c3a;font-size:clamp(24px,3.1vw,36px);font-weight:900;line-height:1.15;letter-spacing:-.03em;margin:8px 0 4px}
+#cs-root .cs-hero-subtitle{font-size:14px;color:#52705e;margin:0}
+#cs-root .cs-hero-art{font-size:76px;opacity:.8;transform:rotate(-11deg);filter:drop-shadow(0 8px 9px #a4bdad55);pointer-events:none}
+#cs-root .cs-nav{display:flex;flex-wrap:wrap;gap:7px;margin:15px 0 12px;align-items:center}
+#cs-root .cs-tab{background:#fff;color:#3c6654;border:1px solid #d9e7dc;box-shadow:0 2px 8px #172f2610;font-weight:800;font-size:14px;border-radius:13px;min-height:43px;padding:10px 16px}
+#cs-root .cs-tab[aria-pressed="true"]{background:#126b51;color:#fff;border-color:#126b51}
+#cs-root .cs-tab:hover:not([aria-pressed="true"]){background:#e8f7ee}
+#cs-root .cs-status{margin:0 0 10px;font-size:13px;color:#176446;font-weight:700;min-height:3px}
+#cs-root .cs-status:empty{display:none}
+#cs-root .cs-status[data-error="true"]{color:#9f3923}
+#cs-root .cs-panel{display:grid;gap:16px}
+#cs-root .cs-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+#cs-root .cs-metric{background:white;border:1px solid #dfebdf;border-radius:18px;padding:16px 18px;box-shadow:0 4px 16px #1e63400a;min-width:0}
+#cs-root .cs-metric-label{font-size:12px;color:#688173;font-weight:800;margin:0 0 6px}
+#cs-root .cs-metric-value{display:block;font-size:clamp(19px,2.1vw,29px);color:#176a50;letter-spacing:-.025em;white-space:normal;overflow-wrap:anywhere;line-height:1.15}
+#cs-root .cs-small{color:#72897a;font-size:12px;line-height:1.5}
+#cs-root .cs-metric .cs-small{margin-top:7px}
+#cs-root .cs-grid-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+#cs-root .cs-card{background:#fff;border:1px solid var(--cs-border);border-radius:19px;padding:19px 21px;box-shadow:0 7px 25px #174b3310;min-width:0}
+#cs-root .cs-card h3{font-size:18px;line-height:1.35;color:#245340;font-weight:900;margin:0 0 7px}
+#cs-root .cs-muted{font-size:12px;line-height:1.5;color:#6f8275;margin:6px 0 13px}
+#cs-root .cs-soft{background:#f2faf5;border:1px solid #e2f1e7;border-radius:12px;padding:11px 13px;font-size:13px;color:#456453;line-height:1.6}
+#cs-root .cs-warning{color:#ad5313;background:#fff7e8;padding:9px;border-radius:10px;font-size:12px}
+#cs-root .cs-tip{background:#eff8f1;border-radius:12px;padding:11px;margin:9px 0;color:#365c45;font-size:13px}
+#cs-root .cs-bottom-tip{font-size:12px;color:#627d6c;margin:0}
+#cs-root .cs-big{display:block;font-size:clamp(24px,3vw,35px);font-weight:900;color:#146b53;line-height:1.2;letter-spacing:-.02em;margin:8px 0}
+#cs-root .cs-button{background:#126b51;color:#fff;padding:10px 13px;min-height:41px;border:1px solid #126b51;border-radius:12px;font-size:13px;cursor:pointer;font-weight:850;transition:background .15s}
+#cs-root .cs-button:hover{background:#0f533e}
+#cs-root .cs-button:disabled{opacity:.65;cursor:wait}
+#cs-root .cs-button.cs-outline{background:#fff;color:#21664a;border-color:#bbdaca}
+#cs-root .cs-button.cs-outline:hover{background:#eef8f1}
+#cs-root .cs-button.cs-quiet{background:transparent;color:#a1482b;border-color:transparent;min-height:32px;padding:5px 9px}
+#cs-root .cs-button.cs-quiet:hover{background:#fff1eb}
+#cs-root .cs-button.cs-shortcut{background:#fff9ef;color:#63472b;border-color:#f0e0c8;text-align:left}
+#cs-root .cs-button.cs-shortcut:hover{background:#ffefdc}
+#cs-root .cs-button.cs-hide{display:none}
+#cs-root .cs-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#cs-root .cs-inline,#cs-root .cs-annual-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end;margin:13px 0}
+#cs-root .cs-meal-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end;margin:12px 0}
+#cs-root .cs-meal-form .cs-field:has(textarea){grid-column:1/-1}
+#cs-root .cs-meal-form .cs-button{justify-self:start}
+#cs-root .cs-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+#cs-root .cs-label{font-size:12px;color:#476957;font-weight:750}
+#cs-root .cs-field input,#cs-root .cs-field select,#cs-root .cs-field textarea{width:100%;background:#fff;border:1px solid #bbd6c6;border-radius:10px;min-height:41px;padding:9px 11px;color:#2b4d3d;font-size:14px;box-shadow:inset 0 1px 2px #23694405;max-width:100%}
+#cs-root .cs-field textarea{min-height:90px;resize:vertical}
+#cs-root .cs-field input:focus-visible,#cs-root .cs-field select:focus-visible,#cs-root .cs-field textarea:focus-visible,#cs-root .cs-button:focus-visible,.cs-receipt-editor button:focus-visible,.cs-receipt-editor input:focus-visible{outline:3px solid #e7a443!important;outline-offset:3px}
+#cs-root .cs-item,#cs-root .cs-price-row,#cs-root .cs-change-row,#cs-root .cs-meal-row,#cs-root .cs-annual-row{display:flex;align-items:center;gap:12px;padding:11px 3px;border-bottom:1px solid #ebf1ed;flex-wrap:wrap;font-size:13px}
+#cs-root .cs-item strong,#cs-root .cs-price-row strong,#cs-root .cs-change-row strong{font-weight:800;color:#295240}
+#cs-root .cs-price-row>span:first-child{flex:1;min-width:125px}
+#cs-root .cs-price-value{font-size:17px;font-weight:850;color:#0d6a4b}
+#cs-root .cs-price-change{font-size:12px;color:#80653d;width:100%;margin:0}
+#cs-root .cs-scroll{max-height:400px;overflow:auto;overscroll-behavior:contain}
+#cs-root .cs-item-value{margin-left:auto;font-weight:750}
+#cs-root .cs-total{display:block;font-size:17px;margin:12px 0;color:#126b51}
+#cs-root .cs-meal-row>div,#cs-root .cs-annual-row>div{flex:1;min-width:130px}
+#cs-root .cs-meal-row>div strong,#cs-root .cs-annual-row>div strong{display:block;color:#315843;font-weight:850}
+#cs-root .cs-meal-row .cs-small{width:100%;margin:0}
+#cs-root .cs-alert{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;background:#fff9ed;border:1px solid #f3e3c9;border-radius:13px;padding:12px;margin:9px 0}
+#cs-root .cs-alert strong{grid-column:1/-1;color:#7f5526}
+#cs-root .cs-alert p{margin:0}
+#cs-root[aria-busy="true"]{cursor:progress}
+.cs-receipt-editor{background:#f1faf4;border:1px solid #cfe6d4;border-radius:15px;padding:15px;margin:16px 0}
+.cs-receipt-editor h3{font-size:16px;color:#165b3d;font-weight:900;margin:0 0 8px}
+.cs-receipt-editor .cs-muted{font-size:12px;color:#617968;margin:0 0 8px}
+.cs-receipt-rows{display:grid;gap:8px}
+.cs-receipt-item{display:grid;grid-template-columns:26px minmax(130px,2fr) minmax(75px,1fr) minmax(95px,1fr) 40px;gap:7px;align-items:end;padding:8px;border:1px solid #d9e8dc;border-radius:10px;background:#fff}
+.cs-receipt-item>.cs-field{min-width:0;display:flex;flex-direction:column;gap:4px}
+.cs-receipt-item>.cs-field .cs-label{font-size:11px}
+.cs-receipt-item input:not([type=checkbox]){width:100%;min-width:0;padding:8px;border:1px solid #bddec9;border-radius:9px;min-height:38px}
+.cs-receipt-item input[type=checkbox]{width:20px;height:20px;align-self:center}
+.cs-receipt-editor button{background:#176b52;color:white;border:0;border-radius:10px;min-height:39px;padding:8px 12px;font-size:13px;font-weight:750;cursor:pointer}
+.cs-receipt-editor .cs-inline-actions{margin-top:8px}
+.cs-receipt-editor .cs-quiet{background:#fff2ea;color:#a14b2b}
+.cs-receipt-editor #cs-receipt-subtotal{margin:10px 0 0;color:#3f634a;font-weight:700}
+@media(max-width:1000px){
+ #cs-root .cs-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #cs-root .cs-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ #cs-root .cs-hero{padding:20px 16px;border-radius:18px}
+ #cs-root .cs-hero-art{font-size:48px}
+ #cs-root .cs-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ #cs-root .cs-tab{padding:9px 7px}
+ #cs-root .cs-grid-two{grid-template-columns:1fr}
+ #cs-root .cs-card{padding:16px;border-radius:15px}
+ #cs-root .cs-metric{padding:13px}
+ #cs-root .cs-metric-value{font-size:22px}
+ #cs-root .cs-inline,#cs-root .cs-meal-form,#cs-root .cs-annual-form{grid-template-columns:1fr 1fr}
+ .cs-receipt-item{grid-template-columns:23px 1fr 1fr}
+ .cs-receipt-item>.cs-field:nth-of-type(1){grid-column:2/-1}
+ .cs-receipt-item>.cs-field:nth-of-type(2){grid-column:2}
+ .cs-receipt-item>.cs-field:nth-of-type(3){grid-column:3}
+ .cs-receipt-item>button{grid-column:1/-1;justify-self:end}
+}
+@media(prefers-reduced-motion:reduce){#cs-root .cs-button{transition:none}}
+
+/* Make groceries and meal planning easier to use on mobile. */
+#cs-root .cs-item>input[type=checkbox]{width:20px;height:20px;accent-color:#126b51;flex:none;cursor:pointer}
+#cs-root .cs-item .cs-done{text-decoration:line-through;color:#87958a;font-weight:650}
+#cs-root .cs-item .cs-item-value{margin-left:auto;white-space:nowrap}
+#cs-root .cs-item .cs-quiet{margin-left:auto}
+#cs-root .cs-recipe-picker{grid-column:1/-1;background:#f5fbf5;border:1px solid #deebdf;border-radius:14px;padding:13px 15px;margin:7px 0}
+#cs-root .cs-recipe-picker h4{font-size:14px;color:#26684f;font-weight:850;margin:0 0 9px}
+#cs-root .cs-recipe-picker .cs-inline{display:grid;grid-template-columns:minmax(0,2fr) minmax(80px,1fr) auto;align-items:end;gap:9px}
+#cs-root .cs-recipe-picker .cs-item{border-bottom:1px solid #e1eae1;padding:8px 0}
+#cs-root .cs-recipe-picker .cs-item .cs-quiet{min-width:75px}
+@media(max-width:700px){
+ #cs-root .cs-recipe-picker .cs-inline{grid-template-columns:minmax(0,1fr) minmax(90px,.7fr)}
+ #cs-root .cs-recipe-picker .cs-inline .cs-button{grid-column:1/-1}
+}
