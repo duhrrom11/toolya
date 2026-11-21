@@ -2,6 +2,7 @@
    Stays strictly outside business logic, data, auth gates and maskot state.
    Incomplete translation is explicitly disclosed: main tool forms are still German. */
 import {normalizeLocale} from './locale.mjs';
+import {applyToolInterfaceLocale} from './interface.mjs';
 const key='toolya-locale-v1';
 const SUPPORTED=Object.freeze({
  moving:{heading:'Moving box organizer',subtitle:'Track your boxes, contents and locations',guide:'/en/moving-boxes/',german:'/umzugskisten/'},
@@ -52,6 +53,7 @@ function mountToolLanguage(){
    de.setAttribute('aria-pressed',String(lang==='de'));
    en.setAttribute('aria-pressed',String(lang==='en'));
    notice.hidden=lang!=='en';
+   applyToolInterfaceLocale(document,name,lang);
    // Keep html[lang]=de while the main application is not fully translated.
  }
  if(header){
