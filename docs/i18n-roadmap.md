@@ -1,5 +1,14 @@
 # Toolya – Roadmap für die englische Übersetzung (DE/EN)
 
+## Weiteres Paket – Pflanzenpflege-Laufzeit und PDF-Export (21.11.2026)
+
+- Bekannte Vermehrungsstatus werden nur in der Kartenansicht übersetzt; gespeicherte Statuswerte und freie Pflanzennamen bleiben unverändert und HTML-escaped.
+- Standortfilter zeigt den englischen Standardwert und erhält die aktuelle Auswahl bei Sprachwechsel; die erneute Anzeige ist rein lesend.
+- Pflanzen-PDF fixiert DE/EN vor dem asynchronen Laden der PDF-Bibliothek. Titel, Datumsformat, Feldnamen, Fallbacks und Dateiname bleiben auch bei einem Sprachwechsel während des Exports konsistent.
+- Regressionstest ergänzt. **In dieser Ausführungsumgebung konnte die vollständige Node-/Chromium-Suite mangels lokalem Repository/Netzzugriff nicht ausgeführt werden.** GitHub-CI ist separat zu prüfen; kein grüner Release-Nachweis.
+- PR #291 bleibt Draft. Kein Merge, Deployment, produktiver Supabase-Zugriff, Testdatensatz oder Entfernen von `noindex`.
+
+
 Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 
 ## Fortsetzung – vier konkrete Anzeige- und Sprachwechsel-Lücken (21.11.2026)
