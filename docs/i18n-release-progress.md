@@ -83,3 +83,7 @@ Die englischen Leitfäden für digitalen Nachlass und öffentliche Amazon-Wunsch
 ### Regression für englische Anleitungslinks
 
 Die statische i18n-CI auf `fde5504b` meldete drei Fehler in `marketing.test.mjs`, weil die Tests Anwendungslinks ohne `lang=en` erwarteten. Die Tests prüfen nun für alle 25 Links die Anzahl pro Anleitung, Herkunft, Zielpfad, den Sprachparameter und den Profilanker. Der lokale Node-Runner war in dieser Ausführung nicht verfügbar. Das Ergebnis des vollständigen Node- und Chromium-Laufs wird über die CI des aktualisierten HEAD geprüft.
+
+### Zweisprachige Fehler bei Dashboard-Kontoaktionen
+
+Anmeldung, Registrierung, Abmeldung und die Anforderung eines Rücksetzlinks verwenden umschaltbare Meldungen für bekannte Kontofehler und aktionsspezifische Meldungen für unbekannte Fehler. Der DE/EN-Rundlauf, die Zuordnung der Fehlercodes und der Fallback wurden mit synthetischen JavaScript-Daten geprüft. Eine Node-Regression ist Teil der statischen CI. Der vollständige Rücksetzablauf mit Mailzustellung bleibt offen.
