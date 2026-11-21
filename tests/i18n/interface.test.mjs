@@ -1223,3 +1223,28 @@ test('plants and baking core dashboard editors announce new render events withou
   assert.match(script,/JSON\.stringify\(draft\)/,'original serialized layout structure is unchanged');
  }
 });
+
+test('all dashboard settings have reversible accessibility labels without losing actions',()=>{
+ for(const tool of ['moving','housemates','plants','baking']){
+  const {document}=parseHTML('<html><body><div class="b3-preferences" aria-label="Darstellung und Dashboard"><a class="b3-kofi-link" href="https://ko-fi.com/duhrrom" aria-label="Auf Ko-fi einen Kaffee spendieren">☕ Kaffee spendieren</a></div><button id="b3-backform-edit" type="button" onclick="edit()">✎ Dashboard bearbeiten</button><div id="b3-backform-editor" aria-label="Dashboard-Einstellungen"></div></body></html>');
+  const prefs=document.querySelector('.b3-preferences'),support=document.querySelector('.b3-kofi-link'),edit=document.getElementById('b3-backform-edit'),editor=document.getElementById('b3-backform-editor');
+  const original=document.body.innerHTML;
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(prefs.getAttribute('aria-label'),'Appearance and dashboard');
+  assert.equal(support.getAttribute('aria-label'),'Support Toolya with a coffee');
+  assert.equal(support.getAttribute('href'),'https://ko-fi.com/duhrrom');
+  assert.equal(edit.textContent,'✎ Edit dashboard');
+  assert.equal(edit.getAttribute('onclick'),'edit()');
+  assert.equal(editor.getAttribute('aria-label'),'Dashboard settings');
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(document.body.innerHTML,original,'all tool settings return to source state: '+tool);
+ }
+});
+
+test('plants and baking layout save warnings translate without altering unknown error information',()=>{
+ assert.equal(translateToolDialog('plants','en','Layout konnte nicht gespeichert werden. Bitte Browser-Speicher prüfen.'),'Could not save the layout. Check your browser storage.');
+ assert.equal(translateToolDialog('baking','en','Layout konnte nicht gespeichert werden.'),'Could not save the dashboard layout.');
+ for(const tool of ['plants','baking']){
+  assert.equal(translateToolDialog(tool,'en','Unbekannte Serverfehlermeldung #903'),'Unbekannte Serverfehlermeldung #903');
+ }
+});
