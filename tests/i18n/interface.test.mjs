@@ -324,3 +324,35 @@ test('plant card watering states and accessible controls localize without modify
  assert.match(html,/escapeHtml\(p\.note\)/,'plant note escaped');
  assert.match(html,/escapeHtml\(d\.text\)/,'diary content escaped');
 });
+
+test('baking timer phase labels are localized without mutating timer state',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const html=await readFile(new URL('../../tools/baking/index.html',import.meta.url),'utf8');
+ const start=html.indexOf('function updateTimerDisplay() {');
+ const end=html.indexOf('// Initialisierung beim Laden',start);
+ assert.ok(start>0 && end>start);
+ const elements={ 'timer-phase-title':{innerText:''},'timer-display':{innerText:''} };
+ const handlers={};
+ const context={
+  window:{__toolyaUILocale:'en'},
+  document:{getElementById:id=>elements[id],addEventListener:(name,fn)=>handlers[name]=fn},
+  timerPhases:[{title:'Phase 1: Teig gehen lassen / Kühlen'},{title:'Phase 2: Backen im Ofen'},{title:'Phase 3: Auskühlen in der Form'}],
+  currentPhaseIdx:1,timeLeft:125,bakingCloudReady:false,renderSavedRecipes:()=>{throw Error('Unexpected cloud render');}
+ };
+ createContext(context);runInContext(html.slice(start,end),context);
+ assert.equal(elements['timer-phase-title'].innerText,'Phase 2: Bake in the oven');
+ assert.equal(elements['timer-display'].innerText,'02:05');
+ context.window.__toolyaUILocale='de';
+ handlers['toolya:locale-change']();
+ assert.equal(elements['timer-phase-title'].innerText,'Phase 2: Backen im Ofen');
+ assert.equal(elements['timer-display'].innerText,'02:05');
+ assert.equal(context.timerPhases[1].title,'Phase 2: Backen im Ofen');
+ assert.equal(context.timeLeft,125);
+ context.window.__toolyaUILocale='en';
+ for(const [index,title] of ['Phase 1: Let dough rise / chill','Phase 2: Bake in the oven','Phase 3: Cool in the pan'].entries()){
+  context.currentPhaseIdx=index;
+  runInContext('updateTimerDisplay()',context);
+  assert.equal(elements['timer-phase-title'].innerText,title);
+ }
+});
