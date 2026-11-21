@@ -23,7 +23,7 @@ export function validateMoving(data){
   if(!m.projects.every(p=>typeof p.name==='string'&&p.name.trim().length>0&&p.name.length<=100&&['draft','active','completed','archived'].includes(p.status)&&(!p.moveDate||/^\d{4}-\d{2}-\d{2}$/.test(p.moveDate))))throw Error('Ungültiges Projekt');
   if(m.projects.filter(p=>p.status==='active').length>1)throw Error('Nur ein aktiver Umzug erlaubt');
   if(!m.rooms.every(r=>projects.has(r.projectId)&&typeof r.name==='string'&&r.name.trim().length>0&&r.name.length<=80))throw Error('Ungültiger Zielraum');
-  if(!m.assignments.every(a=>projects.has(a.projectId)&&boxIds.has(a.boxId)&&Number.isSafeInteger(a.boxId)&&(!a.targetRoomId||(rooms.has(a.targetRoomId)&&rooms.get(a.targetRoomId).projectId===a.projectId))&&statuses.includes(a.status)&&priorities.includes(a.priority)))throw Error('Ungültige Kistenzuordnung');
+  if(!m.assignments.every(a=>projects.has(a.projectId)&&(boxIds.has(a.boxId)||m.projects.find(p=>p.id===a.projectId)?.status!=='active')&&Number.isSafeInteger(a.boxId)&&(!a.targetRoomId||(rooms.has(a.targetRoomId)&&rooms.get(a.targetRoomId).projectId===a.projectId))&&statuses.includes(a.status)&&priorities.includes(a.priority)))throw Error('Ungültige Kistenzuordnung');
   if(!unique(m.assignments.filter(a=>m.projects.find(p=>p.id===a.projectId)?.status==='active'),'boxId')||!unique(m.assignments,'id'))throw Error('Mehrfachzuordnung erkannt');
   return data;
 }
