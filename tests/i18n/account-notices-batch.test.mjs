@@ -93,3 +93,33 @@ for (const name of ['parking','loans']) {
   assert.equal(elements['cloud-status-text'].innerText,'Nicht angemeldet');
  });
 }
+
+test('moving: registration and session refresh keep the active language and latest identity', async () => {
+ const html = await readTool('moving');
+ const start = html.indexOf('async function registerUser()');
+ const end = html.indexOf('function openSettings()', start);
+ assert.ok(start >= 0 && end > start);
+ const fields = {
+  loginEmail: {value:'person@example.invalid'}, loginPassword: {value:'synthetic-password'},
+  userInfo: {textContent:''}, cloudStatus: {textContent:''}
+ };
+ const alerts = [];
+ const pending = [];
+ const window = {__toolyaUILocale:'en', supabaseClient:{auth:{
+  async signUp(){return {data:{session:null},error:null}},
+  getUser(){return new Promise(resolve=>pending.push(resolve))}
+ }}};
+ const context = {window, document:{getElementById:id=>fields[id]}, alert:value=>alerts.push(value), closeSettings(){}};
+ runInNewContext(html.slice(start,end),context);
+ await runInNewContext('registerUser()',context);
+ assert.match(alerts.at(-1),/^Request processed\. If confirmation is required/);
+ const latestRefresh = runInNewContext('updateUserDisplay()',context);
+ assert.equal(pending.length,2);
+ pending[1]({data:{user:null},error:{name:'AuthSessionMissingError'}});
+ await latestRefresh;
+ assert.equal(fields.userInfo.textContent,'Nicht angemeldet');
+ pending[0]({data:{user:{email:'old-account@example.invalid'}},error:null});
+ await Promise.resolve();
+ assert.equal(fields.userInfo.textContent,'Nicht angemeldet');
+ assert.equal(fields.cloudStatus.textContent,'Nicht angemeldet');
+});

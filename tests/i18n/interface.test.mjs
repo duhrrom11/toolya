@@ -922,7 +922,7 @@ test('account verification distinguishes a missing session from temporary Supaba
   ['baking','checkUserSession','openHelpFromMenu']
  ]){
   const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
-  const start=html.indexOf('async function '+method+'() {');
+  const start=html.indexOf(tool==='moving'?'let userDisplayRequest = 0;':'async function '+method+'() {');
   const end=html.indexOf(tool==='plants'?next:'function '+next+'()',start);
   assert.ok(start>0&&end>start,tool+': account status handler');
   const fragment=html.slice(start,end);

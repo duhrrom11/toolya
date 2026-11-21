@@ -395,11 +395,18 @@
                 return alert((window.__toolyaUILocale === 'en' ? 'Registration failed: ' : 'Registrierung fehlgeschlagen: ') + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             }
             if (error) {
-                alert(error.message);
+                alert((window.__toolyaUILocale === 'en' ? 'Registration failed: ' : 'Registrierung fehlgeschlagen: ') + (error.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
                 return;
             }
 
-            alert(data?.session ? 'Angemeldet. Dein Konto ist einsatzbereit.' : 'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.');
+            const english = window.__toolyaUILocale === 'en';
+            if (data?.session) {
+                alert(english ? 'Signed in. Your account is ready.' : 'Angemeldet. Dein Konto ist einsatzbereit.');
+            } else {
+                alert(english
+                    ? 'Request processed. If confirmation is required, check your inbox and confirm your email address. Then sign in.'
+                    : 'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.');
+            }
             updateUserDisplay();
             closeSettings();
         }
@@ -420,7 +427,7 @@
                 return alert((window.__toolyaUILocale === 'en' ? 'Sign-in failed: ' : 'Anmeldung fehlgeschlagen: ') + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             }
             if (error) {
-                alert(error.message);
+                alert((window.__toolyaUILocale === 'en' ? 'Sign-in failed: ' : 'Anmeldung fehlgeschlagen: ') + (error.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
                 return;
             }
 
@@ -431,14 +438,17 @@
         async function logoutUser() {
             try {
                 const { error } = await window.supabaseClient.auth.signOut();
-                if (error) return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error.message || 'Unbekannter Fehler'));
+                if (error) return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             } catch (error) {
-                return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error?.message || 'Unbekannter Fehler'));
+                return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             }
             updateUserDisplay();
         }
 
+        let userDisplayRequest = 0;
+
         async function updateUserDisplay() {
+            const request = ++userDisplayRequest;
             let user = null;
             let sessionError = null;
             try {
@@ -448,6 +458,8 @@
             } catch (error) {
                 sessionError = error;
             }
+
+            if (request !== userDisplayRequest) return;
 
             const headerInfo = document.getElementById("userInfo");
             const cloudStatus = document.getElementById("cloudStatus");
