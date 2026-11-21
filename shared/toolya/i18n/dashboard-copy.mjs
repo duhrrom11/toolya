@@ -71,7 +71,7 @@ export const DASHBOARD_COPY=Object.freeze(Object.fromEntries([
  ],
  [
   "↗ Zuletzt genutzt",
-  "↗ Recently used"
+  "↗ Recently opened"
  ],
  [
   "✓ Offene Aufgaben",
@@ -311,7 +311,7 @@ export const DASHBOARD_COPY=Object.freeze(Object.fromEntries([
  ],
  [
   "Anmeldung momentan nicht erreichbar.",
-  "Sign-in is currently unavailable."
+  "Sign-in service is currently unreachable."
  ],
  [
   "Registrierung erfolgreich.",
@@ -439,7 +439,7 @@ export const DASHBOARD_COPY=Object.freeze(Object.fromEntries([
  ],
  [
   "Bitte neu laden.",
-  "Please reload."
+  "Please refresh."
  ],
  [
   "Artikel in Toolya Cloud gespeichert.",

@@ -1,8 +1,7 @@
 /* Administrator interface translations. No role or publishing logic changes. */
 export const ADMIN_COPY=Object.freeze({
- "Statistik-Kommandozentrale": "Statistics command centre",
+ "Statistik-Kommandozentrale": "Statistics dashboard",
  "Statistik-Kommando­zentrale": "Statistics command centre",
- "Statistik-Kommando&shy;zentrale": "Statistics command centre",
  "← Mein Dashboard": "← My dashboard",
  "← Admin-Dashboard": "← Admin dashboard",
  "Alle Dienste und Kennzahlen an einem Ort. Daten werden nur nach erfolgreicher Admin-Prüfung geladen.": "All services and metrics in one place. Data is loaded only after successful administrator verification.",
