@@ -1,7 +1,9 @@
 (function(){
 'use strict';
 const KEY='toolya_backstudio_v1', TAG='duhrrom-21';
-const el=id=>document.getElementById(id), number=(id,d=0)=>Number(el(id)?.value)||d, fmt=n=>Number(n).toLocaleString('de-DE',{maximumFractionDigits:1});
+const langEn=()=>window.__toolyaUILocale==='en';
+const ui=(de,en)=>langEn()?en:de;
+const el=id=>document.getElementById(id), number=(id,d=0)=>Number(el(id)?.value)||d, fmt=n=>Number(n).toLocaleString(langEn()?'en-GB':'de-DE',{maximumFractionDigits:1});
 const safe=x=>String(x||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let data;try{data=JSON.parse(localStorage.getItem(KEY)||'{}')}catch{data={}}data=Object.assign({pans:[],logs:[],shopping:[],pantry:{}},data);for(const key of ['pans','logs','shopping'])if(!Array.isArray(data[key]))data[key]=[];if(!data.pantry||typeof data.pantry!=='object'||Array.isArray(data.pantry))data.pantry={};
 // Share the same in-memory state with the additive pro controls to avoid overwriting newer entries.
@@ -29,78 +31,78 @@ function missingIngredients(){
 function renderMissing(){
  const root=el('bs-missing');if(!root)return;root.replaceChildren();
  const missing=missingIngredients();
- if(!missing.length){make('p',root,'Noch keine fehlenden Zutaten ermittelt. Gib deine Vorräte ein; nicht erfasste Zutaten gelten als unbekannt.');return}
- for(const item of missing)make('p',root,'Fehlt: '+item.title);
+ if(!missing.length){make('p',root,ui('Noch keine fehlenden Zutaten ermittelt. Gib deine Vorräte ein; nicht erfasste Zutaten gelten als unbekannt.','No missing ingredients identified yet. Enter your pantry quantities; unlisted ingredients are treated as unknown.'));return}
+ for(const item of missing)make('p',root,ui('Fehlt: ','Missing: ')+item.title);
 }
 function queue(items){
  const clean=items.filter(i=>i&&typeof i.title==='string'&&i.title.trim()).map(i=>({title:i.title.trim().slice(0,180),query:String(i.query||i.title).trim().slice(0,120)})).slice(0,50);
- if(!clean.length)return message('Bitte zuerst Zutaten eingeben.');
+ if(!clean.length)return message(ui('Bitte zuerst Zutaten eingeben.','Enter ingredients first.'));
  const existing=new Set(data.shopping.map(i=>i.title.toLocaleLowerCase('de-DE')));
  let count=0;
  for(const item of clean){if(data.shopping.length>=150)break;if(existing.has(item.title.toLocaleLowerCase('de-DE')))continue;
   data.shopping.push({id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),title:item.title,query:item.query,done:false});
   existing.add(item.title.toLocaleLowerCase('de-DE'));count++;
  }
- save();renderShopping();message(count?count+' Artikel zur Backstudio-Einkaufsliste hinzugefügt. Jeder Artikel hat einen Amazon-Suchbutton.':'Diese Artikel stehen bereits auf deiner Einkaufsliste.');
+ save();renderShopping();message(count?count+ui(' Artikel zur Backstudio-Einkaufsliste hinzugefügt. Jeder Artikel hat einen Amazon-Suchbutton.',' items added to your Backstudio shopping list. Each item has an Amazon search button.'):ui('Diese Artikel stehen bereits auf deiner Einkaufsliste.','These items are already on your shopping list.'));
 }
 function renderShopping(){
  const root=el('bs-shopping-items');if(!root)return;root.setAttribute('data-user-content','');root.replaceChildren();
- if(!data.shopping.length){make('p',root,'Deine Einkaufsliste ist leer.');return}
+ if(!data.shopping.length){make('p',root,ui('Deine Einkaufsliste ist leer.','Your shopping list is empty.'));return}
  for(const item of data.shopping){
   const row=make('div',root);row.className='bs-row';
   const label=make('label',row);label.style.display='flex';label.style.alignItems='center';label.style.gap='7px';label.style.flex='1';
-  const check=make('input',label);check.type='checkbox';check.checked=!!item.done;check.style.width='auto';check.setAttribute('aria-label',item.title+' erledigt');
+  const check=make('input',label);check.type='checkbox';check.checked=!!item.done;check.style.width='auto';check.setAttribute('aria-label',item.title+ui(' erledigt',' completed'));
   check.onchange=()=>{item.done=check.checked;save();renderShopping()};
   const name=make('span',label,item.title);if(item.done)name.style.textDecoration='line-through';
   const a=make('a',row,'🔎 Amazon · Anzeige');a.href=amazon(item.query||item.title);a.target='_blank';a.rel='noopener noreferrer sponsored';a.title='Anzeige – Amazon-Partnerlink mit Partner-ID';
-  const del=make('button',row,'×');del.type='button';del.setAttribute('aria-label',item.title+' entfernen');del.onclick=()=>{data.shopping=data.shopping.filter(x=>x.id!==item.id);save();renderShopping()};
+  const del=make('button',row,'×');del.type='button';del.setAttribute('aria-label',item.title+ui(' entfernen',' remove'));del.onclick=()=>{data.shopping=data.shopping.filter(x=>x.id!==item.id);save();renderShopping()};
  }
 }
 function exportShopping(){
- if(!data.shopping.length)return message('Die Backstudio-Einkaufsliste ist noch leer.');
- const lines=['Toolya Backstudio – Einkaufsliste','Erstellt: '+new Date().toLocaleString('de-DE'),'',
-  ...data.shopping.map(x=>(x.done?'[x] ':'[ ] ')+x.title),'','Amazon-Suchlinks auf toolya.app verwenden die Partner-ID '+TAG+'.'];
+ if(!data.shopping.length)return message(ui('Die Backstudio-Einkaufsliste ist noch leer.','Your Backstudio shopping list is empty.'));
+ const lines=[ui('Toolya Backstudio – Einkaufsliste','Toolya Backstudio – Shopping list'),ui('Erstellt: ','Created: ')+new Date().toLocaleString(langEn()?'en-GB':'de-DE'),'',
+  ...data.shopping.map(x=>(x.done?'[x] ':'[ ] ')+x.title),'',ui('Amazon-Suchlinks auf toolya.app verwenden die Partner-ID ','Amazon search links on toolya.app use affiliate ID ')+TAG+'.'];
  const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
  const href=URL.createObjectURL(blob),link=document.createElement('a');
- link.href=href;link.download='toolya-backstudio-einkaufsliste.txt';document.body.append(link);link.click();link.remove();
+ link.href=href;link.download=ui('toolya-backstudio-einkaufsliste.txt','toolya-backstudio-shopping-list.txt');document.body.append(link);link.click();link.remove();
  setTimeout(()=>URL.revokeObjectURL(href),1000);
- message('Backstudio-Einkaufsliste als Textdatei exportiert.');
+ message(ui('Backstudio-Einkaufsliste als Textdatei exportiert.','Backstudio shopping list exported as a text file.'));
 }
 function renderSchedule(){
  const host=el('bs-schedule');if(!host)return;
  const value=el('bs-serving').value;
- if(!value){host.textContent='Wähle eine Uhrzeit für das Servieren.';return}
- const serving=new Date(value);if(!Number.isFinite(serving.getTime())){host.textContent='Bitte ein gültiges Datum wählen.';return}
+ if(!value){host.textContent=ui('Wähle eine Uhrzeit für das Servieren.','Choose a serving date and time.');return}
+ const serving=new Date(value);if(!Number.isFinite(serving.getTime())){host.textContent=ui('Bitte ein gültiges Datum wählen.','Choose a valid date.');return}
  const prep=Number(el('bs-prep').value),cool=Number(el('bs-cool').value),base=Number(el('base-time').value);
  if(![prep,cool,base].every(Number.isFinite)||prep<0||cool<0||base<=0||prep>1440||cool>1440||base>1440){
-  host.textContent='Bitte gültige Zeiten in Minuten eingeben (0–1440, Backzeit größer 0).';return
+  host.textContent=ui('Bitte gültige Zeiten in Minuten eingeben (0–1440, Backzeit größer 0).','Enter valid times in minutes (0–1440; baking time must exceed 0).');return
  }
  const minutesBefore=prep+base+cool;
  const start=new Date(serving.getTime()-minutesBefore*60000);
  const oven=new Date(start.getTime()+prep*60000);
  const finish=new Date(oven.getTime()+base*60000);
- const local=d=>d.toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'});
+ const local=d=>d.toLocaleString(langEn()?'en-GB':'de-DE',{dateStyle:'short',timeStyle:'short'});
  host.replaceChildren();
- for(const [label,date] of [['Vorbereitung beginnen',start],['Backen beginnen',oven],['Backen voraussichtlich fertig',finish],['Servieren',serving]]){
+ for(const [label,date] of [[ui('Vorbereitung beginnen','Start preparation'),start],[ui('Backen beginnen','Start baking'),oven],[ui('Backen voraussichtlich fertig','Estimated baking completion'),finish],[ui('Servieren','Serve'),serving]]){
   const p=make('p',host);make('strong',p,label+': ');make('span',p,local(date))
  }
- make('p',host,'Planung auf Basis der Rezept-Backzeit und deiner Vorbereitungs- und Abkühlzeiten. Garprobe und echte Backdauer haben Vorrang.');
+ make('p',host,ui('Planung auf Basis der Rezept-Backzeit und deiner Vorbereitungs- und Abkühlzeiten. Garprobe und echte Backdauer haben Vorrang.','Schedule based on recipe baking time, preparation and cooling. Check doneness and actual baking time before serving.'));
 }
 function renderGarage(){
  const root=el('bs-garage-items');root.replaceChildren();const ideal=orig()*number('bs-original-height',4)/number('bs-height',4);
  const pans=data.pans.map((p,index)=>({p,index,score:Math.abs((p.shape==='volume'?p.a/(number('bs-height',4)*10):p.shape==='muffin'?p.a*38:area(p.shape,p.a,p.b))-ideal)/Math.max(ideal,1)})).sort((a,b)=>a.score-b.score);
- if(!pans.length)make('p',root,'Noch keine eigenen Formen gespeichert.');
+ if(!pans.length)make('p',root,ui('Noch keine eigenen Formen gespeichert.','No pans saved yet.'));
  for(const row of pans){const div=make('div',root);div.className='bs-row';const p=row.p;
  make('span',div,(row===pans[0]?'★ ':'')+(p.shape==='round'?'Rund Ø '+p.a:p.shape==='rect'?'Eckig '+p.a+' × '+p.b:p.shape==='volume'?'Spezial '+p.a+' ml':'Muffins '+p.a)+' · Abweichung '+fmt(row.score*100)+' %');
- const use=make('button',div,'Wählen');use.type='button';use.onclick=()=>{if(p.shape==='volume'||p.shape==='muffin'){el('bs-special').value=p.shape==='volume'?p.a:p.a*100;update();return message('Volumen in den Spezialformen-Rechner übernommen.')}el('combinator-mode').value='single';window.toggleCombinator();el('target-shape').value=p.shape;window.updateShapeInputs('target');if(p.shape==='round')el('target-d').value=p.a;else{el('target-l').value=p.a;el('target-w').value=p.b}window.calculateAll();update()};
- const del=make('button',div,'×');del.type='button';del.setAttribute('aria-label','Form entfernen');del.onclick=()=>{data.pans.splice(row.index,1);save();renderGarage()};
+ const use=make('button',div,ui('Wählen','Select'));use.type='button';use.onclick=()=>{if(p.shape==='volume'||p.shape==='muffin'){el('bs-special').value=p.shape==='volume'?p.a:p.a*100;update();return message('Volumen in den Spezialformen-Rechner übernommen.')}el('combinator-mode').value='single';window.toggleCombinator();el('target-shape').value=p.shape;window.updateShapeInputs('target');if(p.shape==='round')el('target-d').value=p.a;else{el('target-l').value=p.a;el('target-w').value=p.b}window.calculateAll();update()};
+ const del=make('button',div,'×');del.type='button';del.setAttribute('aria-label',ui('Form entfernen','Remove pan'));del.onclick=()=>{data.pans.splice(row.index,1);save();renderGarage()};
  }
 }
 function renderPantry(){
  const root=el('bs-pantry');root.replaceChildren();
  for(const i of parsed().filter(x=>x.qty>0)){
-  const key=pantryKey(i),label=make('label',root,i.name+' ('+fmt(i.qty*factor())+' '+i.unit+' für deine Form benötigt)');
-  const input=make('input',label);input.type='number';input.min='0';input.step='any';input.placeholder='Mein Vorrat ('+i.unit+')';input.dataset.original=i.qty;
+  const key=pantryKey(i),label=make('label',root,i.name+' ('+fmt(i.qty*factor())+' '+i.unit+ui(' für deine Form benötigt)',' needed for your pan')+')');
+  const input=make('input',label);input.type='number';input.min='0';input.step='any';input.placeholder=ui('Mein Vorrat (','In my pantry (')+i.unit+')';input.dataset.original=i.qty;
   input.dataset.pantryKey=key;input.value=data.pantry[key]??'';
   input.addEventListener('input',()=>{
    if(input.value===''||!Number.isFinite(Number(input.value))||Number(input.value)<0)delete data.pantry[key];
@@ -119,7 +121,7 @@ function update(){
  const box=el('bs-scaled');box.setAttribute('data-user-content','');box.replaceChildren();
  for(const i of parsed()){const row=make('div',box);row.className='bs-row';make('span',row,i.qty===undefined?i.name:adjusted(i));
  if(i.qty===undefined)continue;
- const btn=make('button',row,'🛒');btn.title='Zur Einkaufsliste';btn.type='button';btn.onclick=()=>queue([{title:adjusted(i),query:i.name}]);
+ const btn=make('button',row,'🛒');btn.title=ui('Zur Einkaufsliste','Add to shopping list');btn.type='button';btn.onclick=()=>queue([{title:adjusted(i),query:i.name}]);
  const a=make('a',row,'Amazon ↗ · Anzeige');a.href=amazon(i.name);a.target='_blank';a.rel='noopener noreferrer sponsored';a.title='Anzeige – Amazon-Partnerlink';
  }
  const remaining=liters*1000-target()*ph*10*number('bs-maxfill',.7);
@@ -160,13 +162,13 @@ function init(){
  el('bs-pan-save').onclick=()=>{const shape=el('bs-pan-shape').value,a=number('bs-pan-a'),b=number('bs-pan-b');if(!(a>0)||shape==='rect'&&!(b>0)||data.pans.length>=40)return message('Gültige Maße eingeben (max. 40 Formen).');data.pans.push({shape,a,b});save();renderGarage()};
  el('bs-shopping-all').onclick=()=>queue(parsed().filter(x=>x.qty!==undefined).map(i=>({title:adjusted(i),query:i.name})));
  el('bs-add-missing').onclick=()=>queue(missingIngredients());
- el('bs-shopping-add').onclick=()=>{const input=el('bs-shopping-custom'),title=input.value.trim();if(!title)return message('Bitte einen Artikel eingeben.');queue([{title,query:title}]);input.value=''};
+ el('bs-shopping-add').onclick=()=>{const input=el('bs-shopping-custom'),title=input.value.trim();if(!title)return message(ui('Bitte einen Artikel eingeben.','Enter an item.'));queue([{title,query:title}]);input.value=''};
  el('bs-shopping-export').onclick=exportShopping;
  ['bs-serving','bs-prep','bs-cool','base-time'].forEach(id=>el(id)?.addEventListener('input',renderSchedule));
 
- el('bs-refresh').onclick=()=>{renderPantry();update();message('Rezept neu analysiert.')};
- el('bs-log').onclick=()=>{const n=number('bs-time');if(n<1||n>3000)return message('Ungültige Backzeit.');data.logs.push({date:new Date().toLocaleDateString('de-DE'),name:(el('recipe-name').value||'Mein Kuchen').slice(0,80),minutes:n,note:el('bs-note').value.slice(0,250)});data.logs=data.logs.slice(-30);save();logs();message('Backerfahrung lokal gespeichert.')};
- el('bs-ocr').onclick=async()=>{const file=el('bs-photo').files?.[0];if(!file)return message('Bitte Foto auswählen.');if(file.size>8*1024*1024)return message('Foto darf maximal 8 MB groß sein.');const btn=el('bs-ocr');btn.disabled=true;message('Foto wird lokal analysiert …');try{if(!window.Tesseract){const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';await new Promise((resolve,reject)=>{script.onload=resolve;script.onerror=reject;document.head.append(script)})}const r=await window.Tesseract.recognize(file,'deu');el('recipe-input').value=r.data.text;renderPantry();update();message('Erkanntes Rezept unbedingt prüfen.')}catch{message('Foto-Erkennung nicht verfügbar; Text bitte einfügen.')}finally{btn.disabled=false}};
+ el('bs-refresh').onclick=()=>{renderPantry();update();message(ui('Rezept neu analysiert.','Recipe analysed again.'))};
+ el('bs-log').onclick=()=>{const n=number('bs-time');if(n<1||n>3000)return message(ui('Ungültige Backzeit.','Invalid baking time.'));data.logs.push({date:new Date().toLocaleDateString('de-DE'),name:(el('recipe-name').value||'Mein Kuchen').slice(0,80),minutes:n,note:el('bs-note').value.slice(0,250)});data.logs=data.logs.slice(-30);save();logs();message(ui('Backerfahrung lokal gespeichert.','Baking notes saved on this device.'))};
+ el('bs-ocr').onclick=async()=>{const file=el('bs-photo').files?.[0];if(!file)return message(ui('Bitte Foto auswählen.','Select a photo.'));if(file.size>8*1024*1024)return message(ui('Foto darf maximal 8 MB groß sein.','Photo must be 8 MB or smaller.'));const btn=el('bs-ocr');btn.disabled=true;message(ui('Foto wird lokal analysiert …','Analysing the photo on your device…'));try{if(!window.Tesseract){const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';await new Promise((resolve,reject)=>{script.onload=resolve;script.onerror=reject;document.head.append(script)})}const r=await window.Tesseract.recognize(file,'deu');el('recipe-input').value=r.data.text;renderPantry();update();message(ui('Erkanntes Rezept unbedingt prüfen.','Check the recognised recipe carefully.'))}catch{message(ui('Foto-Erkennung nicht verfügbar; Text bitte einfügen.','Photo recognition unavailable; paste the recipe text instead.'))}finally{btn.disabled=false}};
  ['bs-height','bs-original-height','bs-volume','bs-form-height','bs-maxfill','bs-dough','bs-material','bs-layers','bs-filling','bs-special','bs-practical'].forEach(id=>el(id).addEventListener('input',()=>{renderPantry();renderGarage();update()}));
  ['orig-shape','orig-d','orig-l','orig-w','target-shape','target-d','target-l','target-w','combo-d1','combo-d2','base-time','recipe-input'].forEach(id=>el(id)?.addEventListener('input',()=>{renderGarage();renderPantry();update()}));
  renderGarage();renderPantry();renderShopping();logs();update();renderSchedule();
