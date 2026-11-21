@@ -1588,3 +1588,45 @@ test('moving inventory uses English display-only number and date formatting',asy
  assert.equal((1234.5).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}),'1,234.50');
  assert.equal((1234.5).toFixed(2).replace('.',','),'1234,50','German legacy presentation remains unchanged');
 });
+
+
+test('Sprint A static workflow labels and filter options translate across four tools',()=>{
+ const samples=[
+  ['moving','<option value="fragile">⚠️ Zerbrechlich</option><button onclick="startScanner()">🔍 Live Scanner</button>',
+   '⚠️ Fragile','🔍 Live scanner'],
+  ['housemates','<option value="expense">🔻 Nur Ausgaben</option><button onclick="rotateCleaners()">🔄 Rotieren</button>',
+   '🔻 Expenses only','🔄 Rotate'],
+  ['plants','<option value="sun">☀️ Volle Sonne (ca. 7-8 Std.)</option><button onclick="noop()">🌱 Standard / Gekauft</button>',
+   '☀️ Full sun (approx. 7–8 hrs)','🌱 Standard / purchased'],
+  ['baking','<option value="cups">US Cups / Ounces</option><button onclick="findPans()">⭕ Formen-Finder</button>',
+   'US cups / ounces','⭕ Pan finder']
+ ];
+ for(const [tool,html,expectedOption,expectedButton] of samples){
+  const {document}=parseHTML('<html lang="de"><body><main id="main-content"><select>'+html.split('</option>')[0]+'</option></select>'+html.split('</option>')[1]+'<input id="safe" value="private-entry"></main></body></html>');
+  const option=document.querySelector('option'), button=document.querySelector('button'),input=document.querySelector('#safe');
+  const originalOption=option.textContent,originalButton=button.textContent,originalValue=option.value,handler=button.getAttribute('onclick');
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(option.textContent,expectedOption,tool+' select label');
+  assert.equal(button.textContent,expectedButton,tool+' button');
+  assert.equal(option.value,originalValue,'explicit selection value unchanged');
+  assert.equal(input.value,'private-entry','private input unchanged');
+  assert.equal(button.getAttribute('onclick'),handler,'click handler unchanged');
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(option.textContent,originalOption,'option restored');
+  assert.equal(button.textContent,originalButton,'button restored');
+  assert.equal(option.value,originalValue,'option selection preserved');
+ }
+});
+
+test('Sprint A implicit option value remains the original German storage key',()=>{
+ const {document}=parseHTML('<main id="main-content"><select id="tag"><option>⚠️ Zerbrechlich</option></select></main>');
+ const option=document.querySelector('option'),select=document.querySelector('select');
+ assert.equal(option.hasAttribute('value'),false);
+ applyToolInterfaceLocale(document,'moving','en');
+ assert.equal(option.textContent,'⚠️ Fragile');
+ assert.equal(option.value,'⚠️ Zerbrechlich','English label does not become stored tag value');
+ assert.equal(select.value,'⚠️ Zerbrechlich');
+ applyToolInterfaceLocale(document,'moving','de');
+ assert.equal(option.textContent,'⚠️ Zerbrechlich');
+ assert.equal(option.hasAttribute('value'),false,'implicit value restored');
+});
