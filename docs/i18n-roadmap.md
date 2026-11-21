@@ -5,7 +5,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 ## Projektstatus
 - Aktueller geprüfter Implementierungsstand vor diesem Roadmap-Commit: `dd413ec486973d66d7075223afd3284949ec1a3b`; 9 von 9 GitHub-Actions-Workflows erfolgreich.
 - Die englischen Startseiten und vier Tool-Einstiege sind vorhanden. Die Tool-Oberflächen sind noch nicht durchgängig übersetzt; englische öffentliche Inhalte bleiben vorerst `noindex`.
-- Gesamtfortschritt **ca. 59 % (Planungsschätzung, nach weiteren Sprint-A-Dynamikarbeiten)**, nicht automatisch gemessen: Summe aus Paketgewicht × geschätztem Teilfortschritt, 58,7 % gerundet. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
+- Gesamtfortschritt **ca. 59 % (Planungsschätzung, nach weiteren Sprint-A-Dynamikarbeiten)**, nicht automatisch gemessen: Summe aus Paketgewicht × geschätztem Teilfortschritt, 59,0 % gerundet. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
 - Datenbanken, Supabase-Berechtigungen, gespeicherte Objekte, Sprach-unabhängige Maskottchen-Einstellung und produktive Seiten bleiben unangetastet.
 
 ## Sechs gebündelte Arbeitspakete
@@ -14,7 +14,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 |---|---:|---:|---|---|
 | 1. Sprachsystem & technische Grundlage | 15 % | 100 % | fertig | DE/EN-Umschaltung reversibel; Präferenz unabhängig; bestehende Daten/Maskottchen unverändert |
 | 2. Englische Startseiten & Ratgeber | 15 % | 80 % | weitgehend | Vier Ratgeber, Startseite und Rechner vollständig redigiert, zugänglich, funktionale Links |
-| 3. Vier Tool-Oberflächen | 30 % | 69 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
+| 3. Vier Tool-Oberflächen | 30 % | 70 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
 | 4. Konten, Datenwege & Exporte | 20 % | 35 % | teilweise | Auth inklusive Recovery, erlaubte Redirects, Datenkonflikte, PDF/QR/CSV/Import/Export in EN und DE E2E |
 | 5. Qualitätssicherung & Sicherheit | 10 % | 40 % | aktiv | vollständige E2E-Tests, 320px/mobile, Keyboard, Screenreader, Auth-Sicherheit, abschließend alle CI erfolgreich |
 | 6. SEO-Freigabe & Veröffentlichung | 10 % | 0 % | gesperrt | hreflang, Canonicals, Sitemap, OG/JSON-LD, noindex nur nach Freigabegates aufheben, kontrollierter Release |
@@ -74,3 +74,11 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Neue Regressionstests für die isolierte Anzeigenformatierung, Rückwechsel nach DE, negative und Null-Beträge, sichere unbekannte Kategorien, erhaltene Daten-Keys und den bestehenden Schutz vor einem Sprachwechsel-Rendern nicht geladener Haushalte.
 - **Fortschrittsschätzung Paket 3: 69 %; Gesamt: 59 % gerundet.** Keine Abnahme von Sprint A oder Auth/Export/SEO.
 - Für den endgültigen Commit ist eine neue vollständige CI notwendig; vorzeitige „alle Tests grün“-Aussagen sind nicht zulässig.
+
+## Sprint A – Pflanzenpflege und Backstudio: dynamische Zahlenanzeigen (2026-11-21)
+
+- **Pflanzenpflege:** ROI-Gewinn, Ernte-/Kosten-Zusammenfassung sowie angezeigtes Zisternenvolumen, heutiger Wasserbedarf und Erntestatistik verwenden im englischen UI sprachgerechte Zahlenformate (`en-GB`); die bisherige deutsche Zahlendarstellung bleibt erhalten.
+- **Backstudio:** Angezeigte Backzeit (`min`), Kosten und Stückbreite werden englisch formatiert. Der interne Wert in `#res-factor` bleibt als `toFixed(2)` bewusst maschinenlesbar, da die Rezeptberechnung diesen Wert per `parseFloat` erneut ausliest.
+- Zwei neue isolierte Regressionstests prüfen Englisch/Deutsch, negative und größere Zahlen, unveränderte ROI-Formeln sowie den unberührten Umrechnungsfaktor.
+- **Fortschrittsschätzung Paket 3: 70 %; Gesamt: 59,0 %** nach gewichteter Roadmap. Noch keine Sprint-A-Abnahme: dynamische Freitexte/States, übrige vier Tool-Flows und mobile End-to-End-Prüfung fehlen.
+- Keine Cloud-/Supabase-Änderung, kein Merge/Deployment, englische öffentliche Seiten bleiben `noindex`. Für den endgültigen HEAD müssen alle CI-Workflows erneut erfolgreich sein.
