@@ -411,10 +411,11 @@
 
             if (user) {
                 if (headerInfo) headerInfo.textContent = "👤 " + user.email;
-                if (cloudStatus) cloudStatus.textContent = "✅ Angemeldet – " + (user.email || "Benutzer");
+                if (cloudStatus) cloudStatus.textContent = (window.__toolyaUILocale === "en" ? "✅ Signed in – " : "✅ Angemeldet – ") + (user.email || (window.__toolyaUILocale === "en" ? "User" : "Benutzer"));
             } else {
-                if (headerInfo) headerInfo.textContent = "Nicht angemeldet";
-                if (cloudStatus) cloudStatus.textContent = "Nicht angemeldet";
+                const signedOutLabel = window.__toolyaUILocale === "en" ? "Not signed in" : "Nicht angemeldet";
+                if (headerInfo) headerInfo.textContent = signedOutLabel;
+                if (cloudStatus) cloudStatus.textContent = signedOutLabel;
             }
         }
 
