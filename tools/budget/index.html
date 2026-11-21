@@ -628,7 +628,7 @@ async function toolyaCloudBoot(tool) {
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
-                alert("Bitte E-Mail und Passwort eingeben.");
+                alert(window.__toolyaUILocale === "en" ? "Please enter your email and password." : "Bitte E-Mail und Passwort eingeben.");
                 return;
             }
 
@@ -638,7 +638,7 @@ async function toolyaCloudBoot(tool) {
                 return;
             }
 
-            alert("Registrierung erfolgreich.");
+            alert(window.__toolyaUILocale === "en" ? "Registration successful." : "Registrierung erfolgreich.");
             updateUserDisplay();
             closeSettings();
         }
@@ -648,7 +648,7 @@ async function toolyaCloudBoot(tool) {
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
-                alert("Bitte E-Mail und Passwort eingeben.");
+                alert(window.__toolyaUILocale === "en" ? "Please enter your email and password." : "Bitte E-Mail und Passwort eingeben.");
                 return;
             }
 
