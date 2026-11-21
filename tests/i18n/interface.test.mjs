@@ -339,7 +339,8 @@ test('baking timer phase labels are localized without mutating timer state',asyn
   window:{__toolyaUILocale:'en'},
   document:{getElementById:id=>elements[id],addEventListener:(name,fn)=>handlers[name]=fn},
   timerPhases:[{title:'Phase 1: Teig gehen lassen / Kühlen'},{title:'Phase 2: Backen im Ofen'},{title:'Phase 3: Auskühlen in der Form'}],
-  currentPhaseIdx:1,timeLeft:125,bakingCloudReady:false,renderSavedRecipes:()=>{throw Error('Unexpected cloud render');}
+  currentPhaseIdx:1,timeLeft:125,bakingCloudReady:false,calculationRefreshCount:0,
+  calculateAll:()=>{context.calculationRefreshCount++;},renderSavedRecipes:()=>{throw Error('Unexpected cloud render');}
  };
  createContext(context);runInContext(html.slice(start,end),context);
  runInContext('updateTimerDisplay()',context);
@@ -351,6 +352,7 @@ test('baking timer phase labels are localized without mutating timer state',asyn
  assert.equal(elements['timer-display'].innerText,'02:05');
  assert.equal(context.timerPhases[1].title,'Phase 2: Backen im Ofen');
  assert.equal(context.timeLeft,125);
+ assert.equal(context.calculationRefreshCount,1,'language switch refreshes derived baking calculations');
  context.window.__toolyaUILocale='en';
  for(const [index,title] of ['Phase 1: Let dough rise / chill','Phase 2: Bake in the oven','Phase 3: Cool in the pan'].entries()){
   context.currentPhaseIdx=index;
