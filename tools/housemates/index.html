@@ -1730,7 +1730,7 @@
 
             // Text alternatives share the exact calculated values used by the charts.
             // textContent prevents category names from becoming executable markup.
-            const formatChartAmount = value => Number(value).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+            const formatChartAmount = value => Number(value).toLocaleString(window.__toolyaUILocale === 'en' ? 'en-GB' : 'de-DE', { style: 'currency', currency: 'EUR' });
             const categoryChartSummary = Object.entries(categoryExpenses)
                 .filter(([, amount]) => amount > 0)
                 .map(([category, amount]) => category + ': ' + formatChartAmount(amount))
@@ -1928,8 +1928,8 @@
                     <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
                         <span class="font-bold text-gray-800">${escapeUserHtml(m)}</span>
                         <div class="text-right text-[11px]">
-                            <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold">${escapeUserHtml(info.pref)}</span>
-                            <span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-semibold ml-1">🚫 ${escapeUserHtml(info.allergy)}</span>
+                            <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold">${escapeUserHtml(info.pref === 'Allesesser' && window.__toolyaUILocale === 'en' ? 'Omnivore' : info.pref)}</span>
+                            <span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-semibold ml-1">🚫 ${escapeUserHtml(info.allergy === 'Keine' && window.__toolyaUILocale === 'en' ? 'None' : info.allergy)}</span>
                         </div>
                     </div>
                 `;
@@ -2272,10 +2272,10 @@
         /* Infoboard & WLAN QR */
         function renderInfoBoard() {
             const info = getInfoData();
-            document.getElementById('infoWifi').innerText = info.wifi || 'k.A.';
-            document.getElementById('infoLandlord').innerText = info.landlord || 'k.A.';
-            document.getElementById('infoCaretaker').innerText = info.caretaker || 'k.A.';
-            document.getElementById('infoTrash').innerText = info.trash || 'k.A.';
+            document.getElementById('infoWifi').innerText = info.wifi || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.');
+            document.getElementById('infoLandlord').innerText = info.landlord || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.');
+            document.getElementById('infoCaretaker').innerText = info.caretaker || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.');
+            document.getElementById('infoTrash').innerText = info.trash || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.');
         }
         function openInfoboardModal() {
             const info = getInfoData();
