@@ -185,3 +185,15 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Drei zusätzliche isolierte Regressionstests prüfen reversible Anzeige, unveränderte selektierte Optionen, Formular-Entwürfe und den speicherfreien Vorschaupfad.
 - **Fortschritt: Paket 3 geschätzt 80 %, Gesamt 62,0 %** (heuristische gewichtete Planungsschätzung). Keine Sprint-A-Endabnahme; verbleibend sind vollständige englische End-to-End-Journeys der vier Tools, 320-px-/Accessibility-Prüfungen und restliche Sonderfälle.
 - Veröffentlichungs-Gate unverändert: PR #291 Draft, kein Merge, Deployment, Supabase-Schreibzugriff oder EN-Indexierungsänderung.
+
+## Sprint A – Chromium-Prüfung mit isolierten 320px-/768px-Nutzerabläufen (2026-11-21)
+
+**Testumgebung:** `tests/browser/tool-pages-ui.spec.cjs` verwendet weiterhin den vorhandenen isolierten lokalen HTTP-Preview-Server und ausschließlich synthetische Cloud-Snapshots. Supabase wird in Chromium vollständig durch einen lokalen Fake ersetzt; externe Applikationsanfragen werden abgebrochen. Die neuen Tests laufen unter `.github/workflows/toolya-browser-tests.yml` auf GitHub Actions und erstellen Screenshots pro Ansicht/Breite zur Sichtprüfung.
+
+- **Umzugskisten:** Standort auswählen und Kistenname als ungespeicherten Entwurf eingeben; DE→EN→DE bei 320/768px; bestehende Standortauswahl, Kistenname, Tag-Filter und Hilfe-Button bleiben bedienbar und korrekt übersetzt, ohne Cloud-Schreibzugriff.
+- **Pflanzenpflege:** Mit leerem synthetischem Bestand Zisternendialog öffnen, noch nicht gespeichertes Fassungsvermögen ändern und den Sprachwechsel bei 320/768px überprüfen; Prozentstatus und Formularwert werden kontrolliert.
+- **Backstudio:** Synthetisches vorhandenes Rezept mit ungespeichert bearbeiteter Notiz; neue Rezeptvorschau, Sprachwechsel und Rückwechsel bei 320/768px; Quellrezept, Notizen, Vorschauüberschrift und unveränderte Schreibanzahl werden geprüft.
+- **WG-Organisator:** Synthetische geschützte WG mit sieben Kochplantagen und Budgetwerten; Budgeteditor mit ungespeichertem Betrag sowie geöffneter Wochenkochplan mit ungespeichertem Gericht. Bei 320/768px werden übersetzte Kategorien/Wochentage/Platzhalter, Eingabewerte und fehlende Cloud-Schreibzugriffe geprüft.
+- Die Prüfungen verwenden reale Chromium-DOM-Knoten und aufnehmenbare Screenshots. Sie sind **zusätzliche fokussierte Browserregressionen**, keine Abnahme sämtlicher Funktionen, Bildschirmgrößen, Fehlerfälle oder realer Benutzerkonten.
+- **Fortschrittsschätzung bleibt vor Browserabnahme bei Paket 3: 80 %, Paket 5: 40 %, Gesamt: 62 %.** Erst nach grünem, abschließendem CI-Head darf für diesen Teilbereich ein Testnachweis gelten.
+- **Weiterhin offen:** vollständige Testmatrix der Tool-Flows (inkl. Auth/Recovery und Exporte), 320px-Audit von tatsächlich gerenderten modalen Inhalten, Screenreader-/Tastaturführung, redaktionelle EN-Vollständigkeit und verifizierter Release-Gate. Keine Veröffentlichung, kein Merge/Deployment oder Änderung an realen Daten/Maskottchen/SEO-Indexierung.
