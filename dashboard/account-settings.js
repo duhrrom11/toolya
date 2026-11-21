@@ -97,9 +97,14 @@ async function saveRecovery(){
  if(a.value.length<8||a.value!==b.value){message('Bitte zwei identische Passwörter mit mindestens 8 Zeichen eingeben.');return}
  try{
   const {error}=await client.auth.updateUser({password:a.value});if(error)throw error;
+  }catch{message('Passwort konnte nicht geändert werden. Bitte fordere einen neuen Link an.');return}
+  // A successful update must not be reported as a failed password change if
+  // the subsequent sign-out fails. Never display a false signed-out state.
   a.value='';b.value='';recoveryActive=false;$('passwordRecoveryPanel').hidden=true;
-  await client.auth.signOut();++authRequest;renderUser(null);message('Passwort geändert. Bitte erneut anmelden.');
- }catch{message('Passwort konnte nicht geändert werden. Bitte fordere einen neuen Link an.')}
+  try{
+   const {error}=await client.auth.signOut();if(error)throw error;
+   ++authRequest;renderUser(null);message('Passwort geändert. Bitte erneut anmelden.');
+  }catch{message('Passwort geändert, aber Abmelden fehlgeschlagen. Bitte melde dich manuell ab.')}
 }
 $('settingsBtn').addEventListener('click',openSettings);
 $('userInfo').addEventListener('click',openSettings);
