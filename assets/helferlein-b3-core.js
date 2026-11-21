@@ -85,6 +85,8 @@ function editorRender(host){
   draft=defaultLayout();paint(draft);editorRender(host);
  },true));
  host.append(commands);
+ // Presentation-only extension point for locale-aware editor labels.
+ document.dispatchEvent(new Event('toolya:b3-editor-rendered'));
 }
 function init(){
  const main=document.getElementById('main-content');
