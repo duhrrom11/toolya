@@ -1,6 +1,6 @@
 /* Opt-in language presentation for existing authenticated tools.
    Stays strictly outside business logic, data, auth gates and maskot state.
-   Incomplete translation is explicitly disclosed: main tool forms are still German. */
+   Incomplete translation is explicitly disclosed; account and tool workflows still need end-to-end verification. */
 import {normalizeLocale} from './locale.mjs';
 import {applyToolInterfaceLocale,translateToolDialog,translateAccountStatus} from './interface.mjs';
 const key='toolya-locale-v1';
@@ -78,7 +78,7 @@ function mountToolLanguage(){
  guide.href=settings.guide;
  guide.lang='en';
  guide.textContent='Read the English guide';
- notice.append('The English interface is being translated. Most forms, account dialogs and messages are still in German. ',guide);
+ notice.append('The English interface is still being completed. Some features and account workflows may appear in German. ',guide);
  function syncHeader(lang){
    const hero=document.querySelector('.ty-tool-hero');
    const titleContainer=hero?.querySelector('.ty-tool-hero-copy') || header?.querySelector('.b3-tool-title');
