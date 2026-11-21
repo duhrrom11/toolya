@@ -227,3 +227,6 @@ body.bsui-redesign #tab-rechner.hidden{display:none!important}
  #bsui-app .bsp-camera-actions button,
  #toolya-backstudio .bsp-camera-actions button{width:100%;justify-content:center}
 }
+
+/* Keep the actual baking main grid single-column on compact viewports, regardless of the asynchronous B3 body class. */
+@media (max-width:1279px){main.b3-backform-main{grid-template-columns:minmax(0,1fr)!important}}
