@@ -1054,7 +1054,9 @@
             const sourceId = wgBinId;
             try {
                 const user = await getAuthenticatedWgUser();
-                if (!confirm('Die ältere WG in einen neuen, kontogeschützten Speicher kopieren?\\n' +
+                if (!confirm(window.__toolyaUILocale === 'en'
+                    ? 'Copy the older household to a new account-protected storage area?\\nThe existing household remains unchanged and accessible through its old link.\\nOther members will need access to the new household later.'
+                    : 'Die ältere WG in einen neuen, kontogeschützten Speicher kopieren?\\n' +
                     'Die bisherige WG bleibt unverändert und ist weiterhin über ihren alten Link erreichbar.\\n' +
                     'Andere Mitglieder müssen später für die neue WG freigegeben werden.')) return;
                 // Use the same legacy providers as normal WG loading.
@@ -1115,16 +1117,20 @@
                     .select('user_id').eq('wg_id', id);
                 if (error) throw new Error(error.message);
                 const existing = (members || []).map(m => m.user_id);
-                const action = prompt('WG-Mitglieder (nur Eigentümer).\nAktuell freigegebene Benutzer-IDs:\n' +
-                    (existing.join('\n') || '(keine)') +
-                    '\n\nNeue Benutzer-ID eintragen oder -ID zum Entfernen mit Minuszeichen voran:');
+                const action = prompt((window.__toolyaUILocale === 'en'
+                    ? 'Household members (owner only).\nCurrently authorized user IDs:\n'
+                    : 'WG-Mitglieder (nur Eigentümer).\nAktuell freigegebene Benutzer-IDs:\n') +
+                    (existing.join('\n') || (window.__toolyaUILocale === 'en' ? '(none)' : '(keine)')) +
+                    (window.__toolyaUILocale === 'en'
+                    ? '\n\nEnter a new user ID, or prefix an ID with a minus sign to revoke access:'
+                    : '\n\nNeue Benutzer-ID eintragen oder -ID zum Entfernen mit Minuszeichen voran:'));
                 if (action === null || !action.trim()) return;
                 const remove = action.trim().startsWith('-');
                 const memberId = action.trim().replace(/^-/, '').trim();
                 if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(memberId))
                     throw new Error('Ungültige Benutzer-ID. Das Mitglied muss sich zuerst registrieren.');
                 if (memberId === ownId) throw new Error('Der Eigentümer ist bereits berechtigt.');
-                if (!confirm((remove ? 'Zugriff entziehen für ' : 'Bearbeitungszugriff erteilen für ') + memberId + '?')) return;
+                if (!confirm((window.__toolyaUILocale === 'en' ? (remove ? 'Revoke access for ' : 'Grant editing access to ') : (remove ? 'Zugriff entziehen für ' : 'Bearbeitungszugriff erteilen für ')) + memberId + '?')) return;
                 if (remove) {
                     const { error: deleteError } = await supabaseClient.from('wg_members')
                         .delete().eq('wg_id', id).eq('user_id', memberId);
@@ -1484,7 +1490,7 @@
 
         async function kopiereWGLink() {
             if (isSecureWgId(wgBinId)) {
-                const manage = confirm('Geschützte WG: Der Link allein erteilt keinen Zugriff.\nOK: Mitgliederzugriff verwalten / eigene Benutzer-ID anzeigen.\nAbbrechen: Link kopieren.');
+                const manage = confirm(window.__toolyaUILocale === 'en' ? 'Protected household: The link alone does not grant access.\nOK: Manage member access / show your user ID.\nCancel: Copy the link.' : 'Geschützte WG: Der Link allein erteilt keinen Zugriff.\nOK: Mitgliederzugriff verwalten / eigene Benutzer-ID anzeigen.\nAbbrechen: Link kopieren.');
                 if (manage) return showWgMemberAccess();
             }
             if (!validWgId(wgBinId)) return alert('Keine gültige WG-ID vorhanden.');
@@ -2414,7 +2420,7 @@
         function removeFlatmateContact(idx) {
             const mates = getFlatmates();
             if (mates.length <= 1) return alert("Es muss mindestens ein Mitglied in der WG verbleiben!");
-            if (confirm(`Möchtest du "${mates[idx].vorname}" wirklich entfernen?`)) {
+            if (confirm(window.__toolyaUILocale === 'en' ? `Remove "${mates[idx].vorname}" from the household?` : `Möchtest du "${mates[idx].vorname}" wirklich entfernen?`)) {
                 mates.splice(idx, 1);
                 saveFlatmates(mates);
                 renderApp();
