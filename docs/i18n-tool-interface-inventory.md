@@ -32,6 +32,14 @@ Stand 2026-11-21. Quelle: vier vorhandene `tools/*/index.html` im Entwicklungsbr
 
 ## Umsetzung auf PR #291 nach d112e980 (2026-11-21)
 - Source-exakte DE/EN-Texte für `alert`, `confirm` und `prompt` der vier Tools. Unbekannte Serverfehler, Freitext, Benutzereingaben und Rückgabewerte bleiben unverändert. Weitere dynamische DOM-Renderstellen sind nicht vollständig erfasst.
-- PDF-Kopfzeilen und Berichtslabels für Umzugskisten, WG und Pflanzen werden bei `lang=en` in Englisch ausgegeben; die gespeicherten Datensätze, maschinenlesbaren Backup-Formate, QR-Inhalte und Dateinamen bleiben unverändert.
+- PDF-Kopfzeilen und Berichtslabels für Umzugskisten, WG und Pflanzen werden bei `lang=en` in Englisch ausgegeben; die gespeicherten Datensätze, maschinenlesbaren Backup-Formate und QR-Inhalte bleiben unverändert. PDF-Dateinamen sind mittlerweile sprachabhängig; deutsche Originalnamen bleiben bei DE erhalten.
 - Regressionstests für die vier Dialog-Kataloge und für PDF-Sprachumschaltung ergänzt.
 - **Noch offen:** vollständige dynamische DOM-Texte, sämtliche Kontozustände/Fehlerfälle, weitere Export-/Druckinhalte und E2E-Authentifizierung. Dieser Stand ist nicht releasefähig. Vor Merge/Deployment alle Workflows des endgültigen Commits abwarten.
+
+## Größeres Übersetzungspaket – vier Tools (2026-11-21)
+
+- In `shared/toolya/i18n/interface.mjs` wurden **41 weitere exakte statische Textpaare** für Umzugskisten (4), WG (22), Pflanzen (5) und Backstudio (10) ergänzt. Nur vorhandene Blatttexte in den bereits freigegebenen Elementtypen (Label, Button, Option, Überschrift) werden ersetzt.
+- Dazu kommen **10 gezielte WG-Formular-Platzhalter** für Inventar, Sparziel, Mitgliederkontakte, Putzaufgaben und Verträge. Die Sprachumstellung schreibt nicht in Eingabewerte oder Cloud-Daten.
+- DOM-Regressionstests prüfen Hin-/Rückwechsel, Optionswerte, ursprüngliche Button-Handler und unveränderte Nutzereingaben. Der englische UI-Stand bleibt **teilweise** übersetzt; `html[lang]` verbleibt deshalb auf Deutsch.
+- Weiterer Stand vor diesem Paket: dynamische WG-Haushalts- und Pflanzenkarten, Saatgut- und Lageranzeigen, Backstudio-Timer, Garten-Monatstipps sowie locale-spezifische PDF-Dateinamen. Ein Sprachwechsel darf keine ungespeicherten Formulare neu initialisieren.
+- **Noch offen / Freigabe-Blocker:** durchgängige Authentifizierung inklusive Wiederherstellung und Fehlermeldungen, restliche dynamische UI und externe Backstudio-Skripte, vollständige isolierte Browser- und Zugriffsprüfungen sowie abschließend erfolgreiche CI-Läufe. Kein Merge, kein Deployment, `noindex` bleibt bestehen.
