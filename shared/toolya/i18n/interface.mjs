@@ -17,6 +17,7 @@ const common = [
 ];
 const toolTranslations = {
  moving: [
+  ['#toolya-auth-title strong','Moving boxes'],
   ['button[onclick="saveLocation()"]','Save location'],
   ['button[onclick="saveBox()"]','Save box and QR code'],
   ['button[onclick="registerUser()"]','👤 Register'],
@@ -33,6 +34,7 @@ const toolTranslations = {
   ['#locName','','aria-label','Location name']
  ],
  housemates: [
+  ['#toolya-auth-title strong','Roommate organizer'],
   ['#settingsModal h3','⚙️ Settings and account'],
   ['label[for="receiptTitle"]','Title / item *:'],
   ['label[for="receiptDate"]','Purchase date *:'],
@@ -41,6 +43,7 @@ const toolTranslations = {
   ['button[onclick="saveReceipt()"]','Save transaction / receipt']
  ],
  plants: [
+  ['#toolya-auth-title strong','Plant care tracker'],
   ['#settingsModal h3','⚙️ Settings and account'],
   ['label[for="plantLight"]','Light requirements:'],
   ['label[for="plantPotSize"]','Pot size (Ø):'],
@@ -50,6 +53,7 @@ const toolTranslations = {
   ['button[onclick="savePlant()"]','Save plant']
  ],
  baking: [
+  ['#toolya-auth-title strong','Cake pan calculator'],
   ['#btn-tab-rechner','🧮 Cake pan calculator'],
   ['#btn-tab-rezepte','📚 My recipes'],
   ['#btn-tab-substanz','🥄 Baking helpers'],
@@ -894,6 +898,9 @@ export function translateToolDialog(tool, language, message) {
    addresses, user names, server diagnostics or cloud object fields. */
 const accountStatusCopy=Object.freeze({
  'Nicht angemeldet':'Not signed in',
+ 'Konto wird geprüft …':'Checking your account…',
+ 'Lade...':'Loading…',
+ 'Konto wird geprüft ...':'Checking your account...',
  'Status: Verbunden':'Status: Connected',
  'Status: Verbunden & Angemeldet':'Status: Connected and signed in',
  'Status: Verbindung oder Sitzung nicht überprüfbar':'Status: Unable to verify connection or session',
