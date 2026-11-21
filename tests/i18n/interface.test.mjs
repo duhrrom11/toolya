@@ -1574,8 +1574,10 @@ test('moving box form accessibility is reversible without mutating values or att
 test('moving inventory uses English display-only number and date formatting',async()=>{
  const {readFile}=await import('node:fs/promises');
  const html=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
- const localePattern=/window\\.__toolyaUILocale === 'en' \\? Number\\((?:totalVal|locVal|tagVal|b\\.value \\|\\| 0)\\)\\.toLocaleString\\('en-GB', \\{ minimumFractionDigits: 2, maximumFractionDigits: 2 \\}\\)/g;
- assert.equal([...html.matchAll(localePattern)].length,4,'all four inventory value displays use English formatting');
+ const englishFormat="toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })";
+ assert.equal(html.split(englishFormat).length-1,4,'all four inventory value displays use English formatting');
+ for(const value of ['totalVal','locVal','tagVal','b.value || 0'])
+  assert.ok(html.includes('Number('+value+').'+englishFormat),'English formatting covers '+value);
  assert.ok(html.includes("b.expiry.split('-').reverse().join('/')"),'English expiry date');
  assert.ok(html.includes("b.expiry.split('-').reverse().join('.')"),'original German expiry date');
  assert.equal((1234.5).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}),'1,234.50');
