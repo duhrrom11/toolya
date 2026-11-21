@@ -3,9 +3,9 @@
 Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 
 ## Projektstatus
-- Aktueller geprüfter Implementierungsstand vor diesem Roadmap-Commit: `dd413ec486973d66d7075223afd3284949ec1a3b`; 9 von 9 GitHub-Actions-Workflows erfolgreich.
+- Letzter für alle neun GitHub-Workflows vollständig geprüfter Stand vor diesem Paket: `cadd0a62`; für neuere Commits jeweils den eigenen CI-Lauf prüfen.
 - Die englischen Startseiten und vier Tool-Einstiege sind vorhanden. Die Tool-Oberflächen sind noch nicht durchgängig übersetzt; englische öffentliche Inhalte bleiben vorerst `noindex`.
-- Gesamtfortschritt **ca. 61 % (Planungsschätzung, nach Sprachwechsel-Fixes für WG-Editoren)**, nicht automatisch gemessen: Summe aus Paketgewicht × geschätztem Teilfortschritt, 59,0 % gerundet. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
+- Gesamtfortschritt **ca. 62 % (Planungsschätzung)**, nicht automatisch gemessen: Summe der Paketgewichte × geschätztem Teilfortschritt = **61,7 %**, gerundet 62 %. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
 - Datenbanken, Supabase-Berechtigungen, gespeicherte Objekte, Sprach-unabhängige Maskottchen-Einstellung und produktive Seiten bleiben unangetastet.
 
 ## Sechs gebündelte Arbeitspakete
@@ -14,7 +14,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 |---|---:|---:|---|---|
 | 1. Sprachsystem & technische Grundlage | 15 % | 100 % | fertig | DE/EN-Umschaltung reversibel; Präferenz unabhängig; bestehende Daten/Maskottchen unverändert |
 | 2. Englische Startseiten & Ratgeber | 15 % | 80 % | weitgehend | Vier Ratgeber, Startseite und Rechner vollständig redigiert, zugänglich, funktionale Links |
-| 3. Vier Tool-Oberflächen | 30 % | 77 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
+| 3. Vier Tool-Oberflächen | 30 % | 79 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
 | 4. Konten, Datenwege & Exporte | 20 % | 35 % | teilweise | Auth inklusive Recovery, erlaubte Redirects, Datenkonflikte, PDF/QR/CSV/Import/Export in EN und DE E2E |
 | 5. Qualitätssicherung & Sicherheit | 10 % | 40 % | aktiv | vollständige E2E-Tests, 320px/mobile, Keyboard, Screenreader, Auth-Sicherheit, abschließend alle CI erfolgreich |
 | 6. SEO-Freigabe & Veröffentlichung | 10 % | 0 % | gesperrt | hreflang, Canonicals, Sitemap, OG/JSON-LD, noindex nur nach Freigabegates aufheben, kontrollierter Release |
@@ -166,3 +166,13 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Neuer isolierter Regressionstest für EN→DE, erhaltene Entwurfswerte, unveränderte Eingaben, den Cloud-Ready-Guard und fehlende Speicheroperationen.
 - **Fortschrittsschätzung unverändert:** Tool-Oberflächen **77 %**, Gesamtprojekt **61 %**. Sprint A bleibt offen: vollständige englische End-to-End-Journeys und letzte dynamische Sonderzustände sind nicht abgenommen.
 - Der vorherige HEAD `cadd0a62` hatte neun erfolgreiche CI-Workflows. Der neue HEAD erfordert eine eigene Prüfung. Draft-PR bleibt unveröffentlicht; kein Merge/Deployment oder Supabase-Eingriff.
+
+## Sprint A – großer Vier-Tool-Batch: sichere Live-Texte und Zahlen (2026-11-21)
+
+- **Backstudio:** Die gespeicherte Rezeptliste wird beim Sprachwechsel nicht länger komplett neu gerendert. Stattdessen werden Faktorlabel, Löschbeschriftung, Notizüberschrift und Platzhalter an bestehenden Knoten aktualisiert. Dadurch bleiben nicht gespeicherte Notizbearbeitungen erhalten. Ein bereits vorhandener fehlerhafter Lösch-Button wurde zu einem gültigen HTML-Button korrigiert.
+- **Umzugskisten:** Die vier festen Kennzeichnungen werden in Filterauswahl, neuen/bearbeiteten Kisten, Tag-Zusammenfassung und Kartenansicht englisch angezeigt; die Datenwerte `Standard`, `Zerbrechlich`, `Wertvoll`, `Saison` bleiben unverändert. Die Standort-Auswahl zeigt in EN eine passende Aufforderung. Sprachwechsel erhalten Auswahlwerte und ungespeicherte Formulardaten.
+- **WG-Organisator:** Die vorhandenen Titel für neu erstellte/bearbeitete Haftnotizen sowie die Formularüberschrift und Speichern-Beschriftung für Belege wechseln live die Sprache, ohne die eingegebenen Haftnotiz- oder Belegwerte zu ersetzen.
+- **Pflanzenpflege:** Große Zisternenvolumen-, Wasserbedarfs- und Erntemengen im Liter-/Milliliter-/Gramm-Bereich werden in EN mit Tausendertrennzeichen angezeigt. Deutsche Zahlenanzeige, gespeicherte Einheiten und Rechen-/Speicherpfade bleiben unverändert.
+- **Regression:** Vier zusätzliche isolierte Laufzeit-/Quelltests decken DE→EN→DE, im Editor ungespeicherte Texte, ausgewählte Tagwerte, unveränderte ID-/Speicherschlüssel und numerische Anzeigefunktionen ab.
+- **Fortschrittsschätzung:** Paket 3 von 77 % auf **79 %**, gewichtetes Gesamtprojekt **61,7 % ≈ 62 %**. Die Prozentwerte sind heuristisch und kein Ersatz für die finale Sprint-A-Abnahme.
+- Weiterhin offen: End-to-End- und Mobilprüfungen über alle vier Tools, dynamische Spezial-/Fehlerzustände sowie die abschließende CI-/Browser-Freigabe. **PR #291 bleibt Draft; kein Merge, Deployment, Supabase-Eingriff oder `noindex`-Wechsel.**
