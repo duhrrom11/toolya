@@ -24,7 +24,7 @@ async function list(ownerId:string,projectId:string){const [s,v,g]=await Promise
 ]);if(s.error||v.error||g.error)throw Error('LIST_READ');const views=new Map((v.data||[]).map((x)=>[x.assignment_id,x]));return {boxes:(s.data||[]).map(x=>({assignmentId:x.assignment_id,status:x.status,version:x.version,label:views.get(x.assignment_id)?.display_label||'Kiste',room:views.get(x.assignment_id)?.room_label||'',priority:views.get(x.assignment_id)?.priority||'normal'})),grants:g.data||[]};}
 async function incidents(ownerId:string,projectId:string,helper=false){
  const {data,error}=await db.from('moving_transport_incidents')
- .select(helper?'id,assignment_id,kind,resolved_at':'id,assignment_id,kind,note,reported_at,resolved_at')
+ .select('id,assignment_id,kind,note,reported_at,resolved_at')
  .eq('owner_id',ownerId).eq('project_id',projectId)
  .order('reported_at',{ascending:false}).limit(500);
  if(error)throw Error('INCIDENT_READ');
