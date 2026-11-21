@@ -34,3 +34,22 @@ test('baking navigation translation preserves the original click handlers',()=>{
  applyToolInterfaceLocale(document,'baking','de');
  assert.equal(document.querySelector('#btn-tab-rechner').textContent,'🧮 Backform-Rechner');
 });
+
+test('extended form labels across four tools are reversible and preserve data and handlers', () => {
+ const fixtures={
+  moving:['Standort speichern','Save location'],
+  housemates:['📅 Termin / Slot buchen','📅 Book event / slot'],
+  plants:['Pflanze speichern','Save plant'],
+  baking:['Mengen ausrechnen','Calculate quantities']
+ };
+ for(const [tool,[german,english]] of Object.entries(fixtures)){
+  const {document}=parseHTML(`<html lang="de"><body><button onclick="preserveAction()">${german}</button><input id="private-value" value="fake-data"></body></html>`);
+  const button=document.querySelector('button');
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(button.textContent,english,tool);
+  assert.equal(button.getAttribute('onclick'),'preserveAction()');
+  assert.equal(document.querySelector('input').value,'fake-data');
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(button.textContent,german);
+ }
+});
