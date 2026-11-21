@@ -8,7 +8,7 @@ test('moving box editor refreshes translated subitem amounts without rebuilding 
  const html = await tool('moving');
  const listener = html.slice(html.indexOf("document.addEventListener('toolya:locale-change'"));
  assert.match(listener, /if \(!document\.getElementById\('editBoxModal'\)\?\.classList\.contains\('hidden'\)\) renderSubItemsModal\(\)/);
- assert.match(html, /escapeHtml\(String\(item\.name \?\? ''\)\)/);
+ assert.match(html, /escapeInventoryText\(item\.name\)/);
  assert.match(html, /\(item\.value \|\| 0\)\.toFixed\(2\)/);
  assert.doesNotMatch(listener.slice(0, listener.indexOf('async function exportInventoryPDF')), /saveData\(|updateBox\(|activeSubItemsTemp\s*=/);
 });

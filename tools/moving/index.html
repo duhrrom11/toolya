@@ -674,10 +674,19 @@
             }
         }
 
+        function escapeInventoryText(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
         function loadLocationsDropdown() {
             let data = getData();
             const html = '<option value="">' + (window.__toolyaUILocale === 'en' ? '-- Choose location --' : '-- Standort wählen --') + '</option>' + 
-                data.locations.map(l => `<option value="${l.id}">${l.icon || '📍'} ${l.name}</option>`).join('');
+                data.locations.map(l => `<option value="${escapeInventoryText(l.id)}">${escapeInventoryText(l.icon || '📍')} ${escapeInventoryText(l.name)}</option>`).join('');
             document.getElementById('boxLocationSelect').innerHTML = html;
             document.getElementById('editBoxLocSelect').innerHTML = html;
         }
@@ -769,7 +778,7 @@
             }
             container.innerHTML = activeSubItemsTemp.map((item, idx) => `
                 <div class="flex justify-between items-center bg-gray-50 p-2 border rounded-xl text-xs">
-                    <span><b>${escapeHtml(String(item.name ?? ''))}</b> (${window.__toolyaUILocale === 'en' ? Number(item.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (item.value || 0).toFixed(2)} €)</span>
+                    <span><b>${escapeInventoryText(item.name)}</b> (${window.__toolyaUILocale === 'en' ? Number(item.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.value || 0).toFixed(2)} €)</span>
                     <button onclick="removeSubItem(${idx})" class="text-red-500 font-bold px-2 py-0.5 hover:bg-red-50 rounded-lg">✕</button>
                 </div>
             `).join('');
@@ -853,7 +862,7 @@
                 locStatsCard.classList.remove('hidden');
                 locStatsList.innerHTML = data.locations.map(loc => {
                     const locVal = data.boxes.filter(b => b.locId === loc.id).reduce((sum, b) => sum + Number(b.value || 0), 0);
-                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">${loc.icon || '📍'} ${loc.name}</p><p class="text-sm font-bold text-amber-800">${window.__toolyaUILocale === 'en' ? Number(locVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : locVal.toFixed(2).replace('.', ',')} €</p></div>`;
+                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">${escapeInventoryText(loc.icon || '📍')} ${escapeInventoryText(loc.name)}</p><p class="text-sm font-bold text-amber-800">${window.__toolyaUILocale === 'en' ? Number(locVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : locVal.toFixed(2).replace('.', ',')} €</p></div>`;
                 }).join('');
             } else {
                 locStatsCard.classList.add('hidden');
@@ -908,42 +917,42 @@
                 return `
                     <div class="border rounded-2xl p-4 bg-gray-50 space-y-3">
                         <div class="flex justify-between items-center border-b pb-2 b3-moving-location-heading">
-                            <h4 class="font-bold text-md text-amber-800">${loc.icon || '📍'} ${window.__toolyaUILocale === 'en' ? 'Location' : 'Standort'}: ${loc.name}</h4>
+                            <h4 class="font-bold text-md text-amber-800">${escapeInventoryText(loc.icon || '📍')} ${window.__toolyaUILocale === 'en' ? 'Location' : 'Standort'}: ${escapeInventoryText(loc.name)}</h4>
                             <div class="flex gap-3">
-                                <button onclick="editLocation(${loc.id})" class="text-xs text-blue-600 hover:underline b3-action b3-outline">${window.__toolyaUILocale === 'en' ? '✏️ Edit' : '✏️ Bearbeiten'}</button>
-                                <button onclick="deleteLocation(${loc.id})" class="text-xs text-red-500 hover:underline">${window.__toolyaUILocale === 'en' ? '🗑️ Delete' : '🗑️ Löschen'}</button>
+                                <button onclick="editLocation(${Number(loc.id)})" class="text-xs text-blue-600 hover:underline b3-action b3-outline">${window.__toolyaUILocale === 'en' ? '✏️ Edit' : '✏️ Bearbeiten'}</button>
+                                <button onclick="deleteLocation(${Number(loc.id)})" class="text-xs text-red-500 hover:underline">${window.__toolyaUILocale === 'en' ? '🗑️ Delete' : '🗑️ Löschen'}</button>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             ${locBoxes.length > 0 ? locBoxes.map(b => {
                                 const isExpired = b.expiry && b.expiry < today;
                                 const isLent = b.lentTo && b.lentTo.trim() !== "";
-                                const subItemsText = b.subItems && b.subItems.length > 0 ? b.subItems.map(s => `• ${s.name}`).join(' | ') : '';
+                                const subItemsText = b.subItems && b.subItems.length > 0 ? b.subItems.map(s => `• ${escapeInventoryText(s.name)}`).join(' | ') : '';
 
                                 return `
                                     <div class="bg-white p-3 border rounded-xl flex items-center justify-between shadow-sm gap-3 b3-moving-box-card ${isExpired ? 'border-red-400 bg-red-50/30' : ''}">
                                         <div class="flex items-center space-x-3 b3-moving-box-identity">
-                                            ${b.photo ? `<button type="button" class="b3-photo-trigger" aria-label="${window.__toolyaUILocale === 'en' ? 'Enlarge box photo' : 'Kistenfoto vergrößern'}" onclick="zoomImage(this.firstElementChild.src)"><img alt="${window.__toolyaUILocale === 'en' ? 'Photo of moving box' : 'Foto der Umzugskiste'}" src="${b.photo}" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80"></button>` : `<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">${window.__toolyaUILocale === 'en' ? 'No image' : 'Kein Bild'}</div>`}
+                                            ${b.photo ? `<button type="button" class="b3-photo-trigger" aria-label="${window.__toolyaUILocale === 'en' ? 'Enlarge box photo' : 'Kistenfoto vergrößern'}" onclick="zoomImage(this.firstElementChild.src)"><img alt="${window.__toolyaUILocale === 'en' ? 'Photo of moving box' : 'Foto der Umzugskiste'}" src="${escapeInventoryText(b.photo)}" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80"></button>` : `<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">${window.__toolyaUILocale === 'en' ? 'No image' : 'Kein Bild'}</div>`}
                                             <div>
                                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
-                                                    <h5 class="font-bold text-sm">📦 ${b.name}</h5>
-                                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">${formatMovingTagLabel(b.tag || 'Standard')}</span>
-                                                    ${isLent ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold" title="${window.__toolyaUILocale === 'en' ? 'Lent to' : 'Ausgeliehen an'}: ${b.lentTo}">${window.__toolyaUILocale === 'en' ? '🤝 Lent' : '🤝 Ausgeliehen'} (${b.lentTo})</span>` : ''}
+                                                    <h5 class="font-bold text-sm">📦 ${escapeInventoryText(b.name)}</h5>
+                                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">${escapeInventoryText(formatMovingTagLabel(b.tag || 'Standard'))}</span>
+                                                    ${isLent ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold" title="${window.__toolyaUILocale === 'en' ? 'Lent to' : 'Ausgeliehen an'}: ${escapeInventoryText(b.lentTo)}">${window.__toolyaUILocale === 'en' ? '🤝 Lent' : '🤝 Ausgeliehen'} (${escapeInventoryText(b.lentTo)})</span>` : ''}
                                                     ${isExpired ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 font-bold" title="${window.__toolyaUILocale === 'en' ? 'Expired date!' : 'Ablaufdatum überschritten!'}">${window.__toolyaUILocale === 'en' ? '⚠️ Expired' : '⚠️ Ablauf'}</span>` : ''}
                                                 </div>
-                                                <p class="text-xs text-gray-600 mt-0.5">${b.desc || (window.__toolyaUILocale === 'en' ? 'No description' : 'Keine Beschreibung')}</p>
+                                                <p class="text-xs text-gray-600 mt-0.5">${escapeInventoryText(b.desc || (window.__toolyaUILocale === 'en' ? 'No description' : 'Keine Beschreibung'))}</p>
                                                 ${subItemsText ? `<p class="text-[11px] text-indigo-600 font-medium mt-0.5">${window.__toolyaUILocale === 'en' ? 'Contents' : 'Inhalt'}: ${subItemsText}</p>` : ''}
                                                 <div class="flex gap-3 text-[11px] text-gray-500 mt-0.5 b3-moving-box-meta">
-                                                    <span class="font-semibold text-green-600">${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${window.__toolyaUILocale === 'en' ? Number(b.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (b.value || 0).toFixed(2).replace('.', ',')} €</span>
-                                                    ${b.barcode ? `<span class="font-mono text-gray-400">EAN: ${b.barcode}</span>` : ''}
-                                                    ${b.expiry ? `<span>${window.__toolyaUILocale === 'en' ? 'Expires' : 'Ablauf'}: ${window.__toolyaUILocale === 'en' ? b.expiry.split('-').reverse().join('/') : b.expiry.split('-').reverse().join('.')}</span>` : ''}
+                                                    <span class="font-semibold text-green-600">${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${window.__toolyaUILocale === 'en' ? Number(b.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(b.value || 0).toFixed(2).replace('.', ',')} €</span>
+                                                    ${b.barcode ? `<span class="font-mono text-gray-400">EAN: ${escapeInventoryText(b.barcode)}</span>` : ''}
+                                                    ${b.expiry ? `<span>${window.__toolyaUILocale === 'en' ? 'Expires' : 'Ablauf'}: ${escapeInventoryText(b.expiry.split('-').reverse().join(window.__toolyaUILocale === 'en' ? '/' : '.'))}</span>` : ''}
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-1 b3-moving-box-actions">
-                                            <button onclick="showQrCode(${b.id}, '${b.name}', '${b.desc}')" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100 b3-action b3-outline" title="QR-Code & Deep-Link">🖨️</button>
-                                            <button onclick="openEditBoxModal(${b.id})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 b3-action b3-outline" title="${window.__toolyaUILocale === 'en' ? 'Edit' : 'Bearbeiten'}">✏️</button>
-                                            <button onclick="deleteBox(${b.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="${window.__toolyaUILocale === 'en' ? 'Delete' : 'Löschen'}">✕</button>
+                                            <button onclick="showQrCode(${Number(b.id)})" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100 b3-action b3-outline" title="${window.__toolyaUILocale === 'en' ? 'QR code and deep link' : 'QR-Code & Deep-Link'}">🖨️</button>
+                                            <button onclick="openEditBoxModal(${Number(b.id)})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 b3-action b3-outline" title="${window.__toolyaUILocale === 'en' ? 'Edit' : 'Bearbeiten'}">✏️</button>
+                                            <button onclick="deleteBox(${Number(b.id)})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="${window.__toolyaUILocale === 'en' ? 'Delete' : 'Löschen'}">✕</button>
                                         </div>
                                     </div>
                                 `;
@@ -1100,7 +1109,8 @@
             doc.save(exportLanguage === 'en' ? "moving-box-qr-labels.pdf" : "kisten-qr-etiketten.pdf");
         }
 
-        async function showQrCode(boxId, name, desc) {
+        async function showQrCode(boxId, name = getData().boxes.find(box => Number(box.id) === boxId)?.name) {
+            if (name == null) return;
             const { loadQrGenerator } = await import('../../shared/toolya/qr-generator.mjs');
             const QRCode = await loadQrGenerator();
             if (!QRCode) {

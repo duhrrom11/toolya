@@ -1392,11 +1392,6 @@ const toolAccessibilityCopy=Object.freeze({
       "Image preview"
     ],
     [
-      "title",
-      "QR-Code & Deep-Link",
-      "QR code and deep link"
-    ],
-    [
       "alt",
       "Vergrößertes Foto der Umzugskiste",
       "Enlarged photo of the moving box"

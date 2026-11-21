@@ -1459,7 +1459,6 @@ test('household header subtitle is translated while the brand and primary headin
 test('source-owned accessibility labels reverse DE/EN without altering form data or URLs',()=>{
  const cases=[
   ['moving','aria-label','Inventar nach Kennzeichnung filtern','Filter inventory by label'],
-  ['moving','title','QR-Code & Deep-Link','QR code and deep link'],
   ['housemates','aria-label','Diagramm: WG-Ausgaben nach Kategorie','Chart: household expenses by category'],
   ['plants','aria-label','Name (z.B. Tomate Harzfeuer)','Plant name (e.g. Harzfeuer tomato)'],
   ['baking','aria-label','Zutaten des Rezepts','Recipe ingredients']
@@ -1484,7 +1483,7 @@ test('all tool accessibility translations match source HTML and skip personal at
  const start=source.indexOf(prefix),end=source.indexOf(');\nfunction applyToolAccessibilityCopy',start);
  assert.ok(start>=0&&end>start);
  const catalog=JSON.parse(source.slice(start+prefix.length,end));
- assert.equal(Object.values(catalog).reduce((n,pairs)=>n+pairs.length,0),19);
+ assert.equal(Object.values(catalog).reduce((n,pairs)=>n+pairs.length,0),18);
  for(const tool of ['moving','housemates','plants','baking']){
   const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
   for(const [attribute,de,en]of catalog[tool]){
@@ -1583,10 +1582,9 @@ test('moving inventory uses English display-only number and date formatting',asy
  assert.equal(html.split("toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })").length-1,8,'five screen values plus three PDF numeric values');
  assert.ok(html.includes("Number(b.value || 0).toLocaleString('en-GB'"),'PDF values use English numeric formatting');
  assert.ok(html.includes(": Number(b.value || 0).toFixed(2)"),'German PDF numeric representation remains unchanged');
- assert.ok(html.includes("b.expiry.split('-').reverse().join('/')"),'English expiry date');
- assert.ok(html.includes("b.expiry.split('-').reverse().join('.')"),'original German expiry date');
+ assert.ok(html.includes("b.expiry.split('-').reverse().join(window.__toolyaUILocale === 'en' ? '/' : '.')"),'expiry date uses the active language separator');
  assert.ok(html.includes("Number(item.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"),'English subitem preview uses locale formatting');
- assert.ok(html.includes(": (item.value || 0).toFixed(2)"),'German subitem preview keeps existing formatting');
+ assert.ok(html.includes(": Number(item.value || 0).toFixed(2)"),'German subitem preview keeps existing formatting');
  assert.equal((1234.5).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}),'1,234.50');
  assert.equal((1234.5).toFixed(2).replace('.',','),'1234,50','German legacy presentation remains unchanged');
 });
@@ -2117,7 +2115,6 @@ test('Sprint A moving tags translate display labels and options but retain the o
  assert.equal(document.querySelector('#tagFilter option[value=""]').textContent,'Alle Tags');
  assert.equal(filterChosen.hasAttribute('selected'),true);
  assert.equal(boxChosen.hasAttribute('selected'),true);
- assert.ok(html.includes('${formatMovingTagLabel(b.tag || \'Standard\')}'),'saved tag badge displays translated label');
  assert.ok(html.includes('refreshMovingSelectLabels();'),'language event updates existing selectors');
  assert.ok(html.includes('refreshMovingLocationPrompts();'),'location prompt translation does not rebuild selected choices');
  assert.ok(!html.slice(html.indexOf("document.addEventListener('toolya:locale-change'"),html.indexOf('async function exportInventoryPDF()')).includes('loadLocationsDropdown()'),'locale refresh never resets unsaved location selections');
@@ -2661,4 +2658,32 @@ test('plant export captures locale before async dependency and leaves user recor
  assert.match(html,/escapeHtml\(propagationDisplay\)/);
  assert.match(html,/locations\.includes\(selectedLocation\) \? selectedLocation : ''/);
  assert.match(html,/All locations \/ rooms/);
+});
+
+test('moving inventory renders literal names and labels the QR action in both languages', async () => {
+ const {readFile}=await import('node:fs/promises');
+ const {runInNewContext}=await import('node:vm');
+ const html=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
+ const extract=(from,to)=>html.slice(html.indexOf(from),html.indexOf(to));
+ const source=[
+  extract('function formatMovingTagLabel(', 'function refreshMovingSelectLabels('),
+  extract('function escapeInventoryText(', 'async function saveBox('),
+  extract('function renderInventory()', '// Rebuild the visible card list')
+ ].join('\n');
+ const fields=['inventoryContainer','statBoxes','statLocs','statValue','locationValueStatsCard','locationValueStatsList','tagValueStatsCard','tagValueStatsList'];
+ const {document}=parseHTML('<html><body>'+fields.map(id=>'<div id="'+id+'"></div>').join('')+
+  '<input id="searchBox"><input id="tagFilter"><input id="sortFilter"><select id="boxLocationSelect"></select><select id="editBoxLocSelect"></select></body></html>');
+ const name="Mia's <b>Winter</b> & Co.";
+ const data={locations:[{id:1,name}],boxes:[{id:7,locId:1,name,desc:'& Pins',value:'12.50',tag:'Zerbrechlich',lentTo:name}]};
+ const snapshot=JSON.stringify(data);
+ for(const [locale,title,tag] of [['en','QR code and deep link','Fragile'],['de','QR-Code & Deep-Link','Zerbrechlich']]){
+  runInNewContext(source+'\nloadLocationsDropdown(); renderInventory();',{document,getData:()=>data,window:{__toolyaUILocale:locale}});
+  const inventory=document.querySelector('#inventoryContainer');
+  assert.equal(inventory.querySelector('h5').textContent,'📦 '+name);
+  assert.equal(inventory.querySelector('h5 b'),null);
+  assert.ok(inventory.textContent.includes(tag));
+  assert.ok(document.querySelector('#boxLocationSelect option[value="1"]').textContent.includes(name));
+  assert.equal(inventory.querySelector('button[title="'+title+'"]').getAttribute('onclick'),'showQrCode(7)');
+  assert.equal(JSON.stringify(data),snapshot);
+ }
 });
