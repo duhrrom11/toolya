@@ -719,7 +719,7 @@ const formCopy = Object.freeze({
   "Titel / Betreff *:": "Title / subject *:",
   "Erstellt von:": "Created by:",
   "Zettel-Farbe:": "Note colour:",
-  "🟨 Gelb": "🟨 Yellow",
+  "🨨 Gelb": "🨨 Yellow",
   "🌸 Rosa": "🌸 Pink",
   "🌊 Blau": "🌊 Blue",
   "🔮 Violett": "🔮 Violet",
