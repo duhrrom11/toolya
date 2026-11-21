@@ -858,3 +858,54 @@ test('registration outcome messages require an actual auth session across three 
   }
  }
 });
+
+test('sign-out errors across moving, plants and baking do not claim success or refresh the account',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ for(const [tool,method,next] of [
+  ['moving','logoutUser','updateUserDisplay'],
+  ['plants','supabaseLogout','checkUserSession'],
+  ['baking','supabaseLogout','checkUserSession']
+ ]){
+  const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
+  const start=html.indexOf('async function '+method+'() {');
+  const end=html.indexOf('async function '+next+'()',start);
+  assert.ok(start>0&&end>start,tool+': expected sign-out handler');
+  const fragment=html.slice(start,end);
+  for(const mode of ['success','result-error','throw']){
+   const messages=[];let refreshed=0;
+   const auth={
+    signOut:async()=>{
+     if(mode==='throw')throw Error('temporary failure');
+     return mode==='result-error'?{error:{message:'temporary failure'}}:{error:null};
+    }
+   };
+   const ctx={
+    window:{supabaseClient:{auth}},
+    supabaseClient:{auth},
+    updateUserDisplay:()=>{refreshed++},
+    checkUserSession:()=>{refreshed++},
+    alert:message=>messages.push(message)
+   };
+   createContext(ctx);
+   runInContext(fragment,ctx);
+   await runInContext(method+'()',ctx);
+   assert.equal(refreshed,mode==='success'?1:0,tool+' '+mode+': refresh only on success');
+   assert.deepEqual(messages,mode==='success'&&tool!=='moving'?['Abgemeldet.']:mode==='success'?[]:['Abmeldung fehlgeschlagen: temporary failure'],tool+' '+mode+' feedback');
+   if(mode!=='success')assert.equal(translateToolDialog(tool,'en',messages[0]),'Sign-out failed: temporary failure',tool+' English error prefix');
+  }
+ }
+});
+
+test('Backstudio Pro recommendations and saved shape labels localize without modifying source keys',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const source=await readFile(new URL('../../tools/baking/backstudio-pro.js',import.meta.url),'utf8');
+ assert.match(source,/action\(row,proUi\('Diese Form nehmen','Use this pan'\)/);
+ assert.match(source,/action\(row,proUi\('Beide nehmen','Use both pans'\)/);
+ assert.match(source,/x\.shape&&proUi\('Form: ','Pan: '\)/);
+ for(const key of ['round','rect','volume','muffin']){
+  assert.ok(source.includes("'"+key+"':proUi("),'shape '+key+' uses a display-only translation');
+ }
+ assert.match(source,/state\.logs\[index\]\.favorite=!state\.logs\[index\]\.favorite/,'favorite flags still use original log entry');
+ assert.match(source,/state\.logs\.splice\(index,1\)/,'delete still targets original log entry');
+});
