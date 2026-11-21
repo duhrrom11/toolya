@@ -624,3 +624,87 @@ test('Backstudio affiliate notices and saved pan descriptions localize while ide
  assert.match(script,/localStorage\.setItem\(KEY,JSON\.stringify\(data\)\)/,'storage persistence unchanged');
  assert.match(script,/a\.rel='noopener noreferrer sponsored'/,'sponsored links still disclosed');
 });
+
+test('Backstudio Pro static controls and accessibility reverse without changing inputs or pan selection',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const script=await readFile(new URL('../../tools/baking/backstudio-pro.js',import.meta.url),'utf8');
+ const start=script.indexOf('const proEn=()=>');
+ const end=script.indexOf("const KEY='toolya_backstudio_v1'",start);
+ assert.ok(start>0&&end>start,'pro translation helper exists');
+ const {document}=parseHTML('<html><body><section id="toolya-backstudio"><section class="bsp-panel"><h4>Welche Form passt?</h4><p class="bsp-muted">Wähle eine Form, die zu deinem Teig passt.</p><label><span>Vergleichsziel</span><select id="bsp-compare-target"><option value="recipe">Rezeptmenge und Teighöhe</option><option value="mixed">Meine vorhandene Teigmenge</option></select></label><div class="bsp-actions"><button id="find" onclick="run()">Passende Formen finden</button></div><input id="bsp-recipe-text" value="1000.5 g flour" placeholder="Rezept oder Zutatenliste hier einfügen …"></section><div class="bsp-match"><strong>Welche Form passt?</strong></div><div id="bsp-3d"></div><video id="bsp-camera-video"></video><img id="bsp-photo-preview" alt="Dein ausgewähltes Rezeptfoto"></section></body></html>');
+ const ctx={document,window:{__toolyaUILocale:'en'},$:id=>document.getElementById(id)};
+ createContext(ctx);
+ runInContext(script.slice(start,end)+'\nlocalizeProControls()',ctx);
+ assert.equal(document.querySelector('.bsp-panel h4').textContent,'Which pan fits?');
+ assert.equal(document.querySelector('.bsp-muted').textContent,'Choose a pan that fits your batter.');
+ assert.equal(document.getElementById('find').textContent,'Find matching pans');
+ assert.equal(document.getElementById('find').getAttribute('onclick'),'run()');
+ assert.equal(document.getElementById('bsp-compare-target').value,'recipe');
+ assert.equal(document.querySelector('option').value,'recipe');
+ assert.equal(document.querySelector('option').textContent,'Recipe quantity and cake height');
+ assert.equal(document.getElementById('bsp-recipe-text').value,'1000.5 g flour');
+ assert.equal(document.querySelector('.bsp-match strong').textContent,'Welche Form passt?','dynamic user content stays untouched');
+ assert.match(document.getElementById('bsp-3d').getAttribute('aria-label'),/Interactive 3D pan/);
+ assert.equal(document.getElementById('bsp-photo-preview').alt,'Selected recipe photo');
+ ctx.window.__toolyaUILocale='de';
+ runInContext('localizeProControls()',ctx);
+ assert.equal(document.querySelector('.bsp-panel h4').textContent,'Welche Form passt?');
+ assert.equal(document.getElementById('find').textContent,'Passende Formen finden');
+ assert.equal(document.getElementById('bsp-compare-target').value,'recipe');
+ assert.equal(document.querySelector('option').textContent,'Rezeptmenge und Teighöhe');
+ assert.equal(document.getElementById('bsp-recipe-text').value,'1000.5 g flour');
+ assert.equal(document.getElementById('bsp-photo-preview').alt,'Dein ausgewähltes Rezeptfoto');
+});
+
+test('Backstudio Pro English recipe import preserves decimal quantities in the editable recipe',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const script=await readFile(new URL('../../tools/baking/backstudio-pro.js',import.meta.url),'utf8');
+ const start=script.indexOf('function applyReviewed(){');
+ const end=script.indexOf('function initCake(){',start);
+ assert.ok(start>0&&end>start);
+ const field={value:'',dispatchEvent:()=>{}};
+ let calculations=0;
+ const ctx={
+  reviewed:[{qty:1000.5,unit:'g',name:'flour'},{qty:.75,unit:'l',name:'milk'}],
+  proEn:()=>ctx.window.__toolyaUILocale==='en',
+  fmt:(n,d)=>Number(n).toLocaleString('de-DE',{maximumFractionDigits:d}),
+  $:id=>id==='recipe-input'?field:null,
+  Event:class{constructor(type,params){this.type=type;this.bubbles=params.bubbles}},
+  window:{__toolyaUILocale:'en',calculateRecipe:()=>{calculations++}},
+  status:()=>{}
+ };
+ createContext(ctx);runInContext(script.slice(start,end),ctx);
+ runInContext('applyReviewed()',ctx);
+ assert.equal(field.value,'1000.5 g flour\n0.75 l milk');
+ assert.equal(calculations,1);
+ ctx.window.__toolyaUILocale='de';
+ runInContext('applyReviewed()',ctx);
+ assert.equal(field.value,'1000,5 g flour\n0,75 l milk','German display retains its prior decimal representation');
+ assert.equal(calculations,2);
+ assert.equal(ctx.reviewed[0].qty,1000.5,'parsed quantity is never modified');
+});
+
+test('Backstudio Pro translates dynamic camera, 3D, cake and memory messages without changing algorithms',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const code=await readFile(new URL('../../tools/baking/backstudio-pro.js',import.meta.url),'utf8');
+ const english=[
+  'Loading the baking pan…','3D view: approx.','Add your baking pans first.',
+  'Batter required ','this pan is too small!', 'Check quantity range: ',
+  'Camera unavailable. Choose','Allow camera access.','Photo read. Check ingredients',
+  'Could not read the photo. Try another one.','Recognized ingredients applied.',
+  'Total frosting (outside + fillings): approx.','No notes found.','Delete this note?',
+  'toolya-baking-notes.json'
+ ];
+ for(const label of english)assert.ok(code.includes(label),'missing translated pro output: '+label);
+ assert.match(code,/Tesseract\.recognize\(img,'deu\+eng'\)/,'bilingual OCR model retained');
+ assert.match(code,/const sourceFactor=\(\)=>desiredVolume\(\)\/Math\.max\(sourceVolume\(\),1\)/,'volume scaling formula preserved');
+ assert.match(code,/const fillRatio=Math\.min\(1,Math\.max\(0,n\('bs-volume'/,'3D fill calculation preserved');
+ assert.match(code,/const creamArea=outerArea\+perimeter\*total/,'cake frosting formula preserved');
+ assert.match(code,/const KEY='toolya_backstudio_v1'/,'storage key unchanged');
+ assert.match(code,/const write=data=>\{try\{localStorage\.setItem\(KEY,JSON\.stringify\(data\)\)/,'stored schema unchanged');
+ assert.match(code,/document\.addEventListener\('toolya:locale-change'/,'language change supported');
+ const part=code.slice(code.indexOf("document.addEventListener('toolya:locale-change'"),code.indexOf('// Default rating'));
+ assert.ok(!part.includes('write(')&&!part.includes('localStorage.setItem'),'language switch does not save data');
+});
