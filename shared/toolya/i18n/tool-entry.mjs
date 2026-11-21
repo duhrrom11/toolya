@@ -57,9 +57,20 @@ function mountToolLanguage(){
    for(const selector of accountStatusSelectors[name]||[]){
      const el=document.querySelector(selector);
      if(!el)continue;
+     // Never flatten nested account controls or replace user-authored content.
+     if(el.children.length || el.isContentEditable)continue;
      const original=el.textContent;
      const translated=translateAccountStatus(lang,original);
      if(original!==translated)el.textContent=translated;
+   }
+ }
+ // Auth callbacks can update status after the initial locale application.
+ // Observe only known status fields rather than the entire document.
+ if(typeof MutationObserver!=='undefined'){
+   const statusObserver=new MutationObserver(()=>localizeVisibleAccountStatus(selected));
+   for(const selector of accountStatusSelectors[name]||[]){
+     const el=document.querySelector(selector);
+     if(el)statusObserver.observe(el,{childList:true,characterData:true,subtree:true});
    }
  }
  const notice=document.createElement('p');
