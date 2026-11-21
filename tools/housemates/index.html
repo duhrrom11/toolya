@@ -2271,6 +2271,16 @@
             document.querySelectorAll('#cookingInputList [data-cooking-day]').forEach(label => {
                 label.textContent = formatHouseholdWeekday(label.getAttribute('data-cooking-day'));
             });
+            const english = window.__toolyaUILocale === 'en';
+            document.querySelectorAll('#cookingInputList select.chefSelect option[value="Frei"]').forEach(option => {
+                option.textContent = english ? 'Unassigned' : 'Frei';
+            });
+            document.querySelectorAll('#cookingInputList input.dishInput').forEach(input => {
+                input.placeholder = english ? 'Dish' : 'Gericht';
+            });
+            document.querySelectorAll('#cookingInputList input.ingredientsInput').forEach(input => {
+                input.placeholder = english ? 'Ingredients (comma-separated)' : 'Zutaten (kommagetrennt)';
+            });
         }
         function renderCookingPlan() {
             document.getElementById('cookingPlanList').innerHTML = getCookingPlan().map((p, idx) => `
