@@ -364,3 +364,11 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - **KFZ-PDF:** Beim Export darf ein zulässiger Verbrauchswert als Daten-String stehen; `Number(...).toFixed(1)` verhindert den vorher möglichen Laufzeitabbruch. Die neue PDF-Spy-Regression prüft EN-Beschriftungen, das Einfrieren der Exportsprache bei asynchronem Laden, unveränderte private Datensätze und den Dateinamen.
 - **Lokal geprüft:** 187/187 Node-i18n-Tests grün; isolierter CloudOnly-Vertragstest grün; acht originale Maskottchen-PNGs laut SHA256SUMS unverändert. Der neue lokale Chromium-Test wurde gestartet, konnte in dieser Container-Sandbox aber **nicht** ausgeführt werden: Chromium bricht vor der Seitenerstellung mit `process_singleton_posix.cc socket() failed: Operation not permitted` ab. Das ist ausdrücklich kein bestandener Browsernachweis.
 - **Release-Gates:** Für den neuen Commit sind GitHub-CI und insbesondere Chromium erneut zu prüfen. Auth-/Recovery-E2E, visuell gerenderte ICS-/PDF-/QR-Abnahme, vollständige EN-Redaktion und Screenreader bleiben offen. PR #291 bleibt Draft, kein Merge/Deployment, kein Produktiv-Supabase-Zugriff und kein Entfernen von `noindex`.
+
+
+## ICS title escaping regression (2026-11-21)
+
+- The vehicle and pet calendar exports now escape user-provided SUMMARY text according to iCalendar TEXT escaping (backslashes, commas, semicolons, and line breaks). The locale-dependent DESCRIPTION remains DE/EN; event titles and saved data are not translated or modified.
+- Added isolated Node regression cases for multiline titles attempting to introduce extra VEVENT fields. A standalone Node check of the escaping expression succeeded; the full repository Node and Chromium suites have **not** been rerun for this commit in this environment.
+- GitHub's PR-run lookup returned no workflows for the previous head `ad795bb5`; CI on the new head is not yet verified. Browser, full auth/recovery, rendered exports, accessibility and translation-completeness gates remain open.
+- PR #291 stays Draft. No merge, deployment, live Supabase access, production fixtures, mascot modifications or removal of English `noindex`.
