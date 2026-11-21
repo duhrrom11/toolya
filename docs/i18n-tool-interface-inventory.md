@@ -81,3 +81,11 @@ Stand 2026-11-21. Quelle: vier vorhandene `tools/*/index.html` im Entwicklungsbr
 - Regressionstests für 3 Tools × 5 Kontostatusfälle, 3 Tools × 3 Logoutfälle und 3 Tools × 2 Auth-Aktionen × 2 Netzwerkfehlerfälle. Zusätzlich wurde der isolierte Backstudio-Pro-Dezimaltest korrigiert, sodass der Übersetzungs-Helper korrekt im Testkontext bereitsteht.
 - Direkte isolierte Funktionschecks wurden auf Basis des letzten GitHub-Quellcodes ausgeführt. **Ein vollständiger Node-/Browser-/CI-Lauf wurde nicht als erfolgreich nachgewiesen.** Die GitHub-Actions-Jobs blieben bei der letzten Prüfung in der Warteschlange.
 - Freigabe-Blocker: vollständige End-to-End-Anmeldung/Recovery im isolierten Browser, CI-Ergebnisse, verbleibende Übersetzungen und anschließend ausdrückliche Releaseentscheidung. Keine Produktionseinträge oder Supabase-Konfiguration geändert.
+
+## GitHub Actions – CI-Fehlerbehebung (2026-11-21)
+
+- Der GitHub-Workflow `i18n static checks` war auf `f5d55030` **rot** (53/56 Teiltests erfolgreich). Die offiziellen Workflow-Logs zeigten drei konkrete Probleme in isolierten Tests: fehlender `plantsCloudReady`-Mock im Kalender-VM-Test, LinkeDOM-`select.value` statt expliziter Optionswerte und fehlender Backstudio-Pro-`proUi`-Helper in einem VM-Test.
+- Der Helper war im Branch bereits nachgerüstet; die beiden verbleibenden Fixtures wurden mit `28cea109` korrigiert. Für diesen Commit meldet GitHub Actions `i18n static checks` **success**.
+- Im ergänzenden Backstudio-Layout ist der 3D-Startbutton auch dann auffindbar, wenn Pro-Steuerelemente zuvor schon auf Englisch lokalisiert wurden. Der Button behält die passende Sprachbeschriftung; WebGL-Kamera-/Maskottchen-/Baking-Datenlogik bleibt unverändert.
+- Neue Regressionstests prüfen den bilingualen 3D-Start und schützen die zentrale Passwort-Wiederherstellung auf `index.html` vor versehentlicher Duplizierung in den Tool-Auth-Gates. Der vorhandene Token-Workflow bleibt unangetastet.
+- Ein neuer vollständiger CI-Lauf für die nachfolgenden Commits muss erneut erfolgreich abgeschlossen sein, bevor ein Merge oder Deployment infrage kommt.
