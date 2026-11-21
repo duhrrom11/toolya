@@ -550,7 +550,7 @@
         function calculateWaterAmount() {
             const potSize = parseInt(document.getElementById('plantPotSize').value);
             let ml = potSize <= 10 ? 120 : (potSize <= 15 ? 300 : (potSize <= 20 ? 600 : 1500));
-            document.getElementById('waterMlHint').innerText = `💧 Empfohlene Gießmenge: ca. ${ml >= 1000 ? (ml/1000) + ' Liter' : ml + ' ml'} pro Vorgang`;
+            document.getElementById('waterMlHint').innerText = window.__toolyaUILocale === 'en' ? `💧 Suggested watering amount: approx. ${ml >= 1000 ? (ml/1000) + ' litres' : ml + ' ml'} per watering` : `💧 Empfohlene Gießmenge: ca. ${ml >= 1000 ? (ml/1000) + ' Liter' : ml + ' ml'} pro Vorgang`;
         }
 
         function getMlForPot(potSize) {
@@ -568,8 +568,8 @@
             const expenses = expensesInput === '' ? 0 : Number(expensesInput);
             const pricePerKg = priceInput === '' ? 4.50 : Number(priceInput);
             if (!Number.isFinite(expenses) || expenses < 0 || !Number.isFinite(pricePerKg) || pricePerKg < 0) {
-                document.getElementById('roiProfitDisplay').innerText = 'Ungültige Eingabe';
-                document.getElementById('roiDetailsText').innerText = 'Bitte gültige, nichtnegative Beträge eingeben.';
+                document.getElementById('roiProfitDisplay').innerText = window.__toolyaUILocale === 'en' ? 'Invalid input' : 'Ungültige Eingabe';
+                document.getElementById('roiDetailsText').innerText = window.__toolyaUILocale === 'en' ? 'Enter valid, non-negative amounts.' : 'Bitte gültige, nichtnegative Beträge eingeben.';
                 return;
             }
             let data = getData();
@@ -581,7 +581,7 @@
             let display = document.getElementById('roiProfitDisplay');
             display.innerText = (profit >= 0 ? '+ ' : '') + profit.toFixed(2) + ' €';
             display.className = profit >= 0 ? 'text-xl font-extrabold text-emerald-700' : 'text-xl font-extrabold text-red-600';
-            document.getElementById('roiDetailsText').innerText = `Gesamtertrag: ${totalKg.toFixed(2)} kg (Marktwert: ${harvestValue.toFixed(2)} € abzüglich ${expenses.toFixed(2)} € Ausgaben)`;
+            document.getElementById('roiDetailsText').innerText = window.__toolyaUILocale === 'en' ? `Total harvest: ${totalKg.toFixed(2)} kg (market value: €${harvestValue.toFixed(2)} minus expenses: €${expenses.toFixed(2)})` : `Gesamtertrag: ${totalKg.toFixed(2)} kg (Marktwert: ${harvestValue.toFixed(2)} € abzüglich ${expenses.toFixed(2)} € Ausgaben)`;
         }
 
         // Zisterne
@@ -620,7 +620,7 @@
             let percent = Math.round((cur / max) * 100);
             document.getElementById('statCistern').innerText = cur >= 1000 ? (cur/1000).toFixed(1) + ' m³' : cur + ' L';
             document.getElementById('cisternDisplayLiters').innerText = cur + ' L / ' + max + ' L';
-            document.getElementById('cisternPercentText').innerText = percent + '% gefüllt';
+            document.getElementById('cisternPercentText').innerText = percent + (window.__toolyaUILocale === 'en' ? '% full' : '% gefüllt');
         }
 
         // Saatgut
