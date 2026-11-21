@@ -451,40 +451,40 @@
         async function supabaseRegister() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            if(!email || !password) return alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
             let data, error;
             try {
                 ({ data, error } = await supabaseClient.auth.signUp({ email, password }));
             } catch (err) {
-                return alert('Registrierung fehlgeschlagen: ' + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
+                return alert((window.__toolyaUILocale === 'en' ? 'Registration failed: ' : 'Registrierung fehlgeschlagen: ') + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             }
             if(error) alert(error.message);
-            else { alert(data?.session ? 'Angemeldet. Dein Konto ist einsatzbereit.' : 'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.'); checkUserSession(); }
+            else { alert(data?.session ? (window.__toolyaUILocale === 'en' ? 'Signed in. Your account is ready.' : 'Angemeldet. Dein Konto ist einsatzbereit.') : (window.__toolyaUILocale === 'en' ? 'Request processed. If confirmation is required, check your inbox, confirm your email address, then sign in.' : 'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.')); checkUserSession(); }
         }
 
         async function supabaseLogin() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            if(!email || !password) return alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
             let error;
             try {
                 ({ error } = await supabaseClient.auth.signInWithPassword({ email, password }));
             } catch (err) {
-                return alert('Anmeldung fehlgeschlagen: ' + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
+                return alert((window.__toolyaUILocale === 'en' ? 'Sign-in failed: ' : 'Anmeldung fehlgeschlagen: ') + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             }
             if(error) alert(error.message);
-            else { alert('Erfolgreich angemeldet!'); checkUserSession(); toggleSettingsModal(); }
+            else { alert(window.__toolyaUILocale === 'en' ? 'Signed in successfully!' : 'Erfolgreich angemeldet!'); checkUserSession(); toggleSettingsModal(); }
         }
 
         async function supabaseLogout() {
             try {
                 const { error } = await supabaseClient.auth.signOut();
-                if (error) return alert('Abmeldung fehlgeschlagen: ' + (error.message || 'Unbekannter Fehler'));
+                if (error) return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error.message || 'Unbekannter Fehler'));
             } catch (error) {
-                return alert('Abmeldung fehlgeschlagen: ' + (error?.message || 'Unbekannter Fehler'));
+                return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error?.message || 'Unbekannter Fehler'));
             }
             checkUserSession();
-            alert('Abgemeldet.');
+            alert(window.__toolyaUILocale === 'en' ? 'Signed out.' : 'Abgemeldet.');
         }
 
         async function checkUserSession() {
