@@ -1263,3 +1263,59 @@ test('Wi-Fi QR password prompt and unreadable plant photo feedback are localized
  assert.equal(translateToolDialog('plants','de',feedback),feedback);
  assert.equal(translateToolDialog('housemates','en','private-password-value'),'private-password-value','secret content stays verbatim');
 });
+
+test('household and plant help content switches between EN/DE without touching editable household notes',()=>{
+ const cases=[
+  ['housemates',
+   'Farbige Sticky Notes erstellen, wichtige Zettel oben anpinnen 📌, Autor wählen und Notizen per Klick verwalten.',
+   'Create colorful sticky notes, pin important items 📌, select an author, and manage notes with a click.',
+   'Schritt-für-Schritt-Anleitung zum WG-Organisator',
+   'Step-by-step roommate organizer guide'],
+  ['plants',
+   'Nutze den Button „📄 PDF“, um jederzeit einen kompakten Report aller erfassten Pflanzen und Daten als Dokument zu generieren.',
+   'Use “📄 PDF” to generate a compact report of your recorded plants and data at any time.',
+   'Schritt-für-Schritt-Anleitung zur Pflanzenpflege',
+   'Step-by-step plant care guide']
+ ];
+ for(const [tool,de,en,guideDe,guideEn]of cases){
+  const {document}=parseHTML('<html><body><section id="helpModal"><div><details><summary>Help</summary><p class="help">\n  '+de+'\n</p></details><p><a href="/original-guide/">'+guideDe+'</a></p></div></section><textarea id="personal-notes">My personal note</textarea><div id="user-data"><p>'+de+'</p></div></body></html>');
+  const text=document.querySelector('.help'),anchor=document.querySelector('#helpModal > div > p > a');
+  const original=text.textContent,initialHref=anchor.getAttribute('href');
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(text.textContent,'\n  '+en+'\n');
+  assert.equal(anchor.textContent,guideEn);
+  assert.equal(anchor.getAttribute('href'),initialHref,'the display translator does not redirect links itself');
+  assert.equal(document.querySelector('#user-data p').textContent,de,'user-authored content is never translated');
+  assert.equal(document.getElementById('personal-notes').value,'My personal note');
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(text.textContent,original,'original whitespace and text restored exactly');
+  assert.equal(anchor.textContent,guideDe);
+  assert.equal(document.querySelector('#user-data p').textContent,de);
+ }
+});
+
+test('help modal instructions and localized guide links are complete for WG and plants',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const entry=await readFile(new URL('../../shared/toolya/i18n/tool-entry.mjs',import.meta.url),'utf8');
+ assert.match(entry,/const modalHelpGuide=document\.querySelector\('#helpModal > div > p > a'\)/);
+ assert.match(entry,/if\(lang==='en'\)modalHelpGuide\.setAttribute\('href',settings\.guide\)/);
+ assert.match(entry,/else if\(originalModalHelpGuideHref!==null\)modalHelpGuide\.setAttribute\('href',originalModalHelpGuideHref\)/);
+ for(const [tool,guide]of [['housemates','/wg-organisator/'],['plants','/pflanzenpflege/']]){
+  const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
+  assert.ok(html.includes('href="'+guide+'"'),'original German guide is still present');
+  assert.match(html,/<div id="helpModal"[\s\S]*?<details/);
+  const sections=Array.from(html.matchAll(/<details class="bg-gray-50 border rounded-xl p-3">/g)).length;
+  assert.ok(sections>=3,tool+' help sections retained');
+ }
+});
+
+test('source-exact help translations leave unknown notes and help paragraphs unchanged',()=>{
+ const {document}=parseHTML('<html><body><div id="helpModal"><div><details><p>My private gardening plan for a family member</p></details></div></div></body></html>');
+ const before=document.body.innerHTML;
+ for(const tool of ['plants','housemates']){
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(document.body.innerHTML,before);
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(document.body.innerHTML,before);
+ }
+});
