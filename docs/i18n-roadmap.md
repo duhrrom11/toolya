@@ -5,7 +5,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 ## Projektstatus
 - Letzter für alle neun GitHub-Workflows vollständig geprüfter Stand vor diesem Paket: `cadd0a62`; für neuere Commits jeweils den eigenen CI-Lauf prüfen.
 - Die englischen Startseiten und vier Tool-Einstiege sind vorhanden. Die Tool-Oberflächen sind noch nicht durchgängig übersetzt; englische öffentliche Inhalte bleiben vorerst `noindex`.
-- Gesamtfortschritt **ca. 62 % (Planungsschätzung)**, nicht automatisch gemessen: Summe der Paketgewichte × geschätztem Teilfortschritt = **62,0 %**, gerundet 62 %. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
+- Gesamtfortschritt **ca. 63 % (Planungsschätzung)**, nicht automatisch gemessen: Summe der Paketgewichte × geschätztem Teilfortschritt = **62,8 %**, gerundet 63 %. Diese Zahl ist keine Aussage über vollständige Testabdeckung oder Releasefähigkeit.
 - Datenbanken, Supabase-Berechtigungen, gespeicherte Objekte, Sprach-unabhängige Maskottchen-Einstellung und produktive Seiten bleiben unangetastet.
 
 ## Sechs gebündelte Arbeitspakete
@@ -14,9 +14,9 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 |---|---:|---:|---|---|
 | 1. Sprachsystem & technische Grundlage | 15 % | 100 % | fertig | DE/EN-Umschaltung reversibel; Präferenz unabhängig; bestehende Daten/Maskottchen unverändert |
 | 2. Englische Startseiten & Ratgeber | 15 % | 80 % | weitgehend | Vier Ratgeber, Startseite und Rechner vollständig redigiert, zugänglich, funktionale Links |
-| 3. Vier Tool-Oberflächen | 30 % | 80 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
+| 3. Vier Tool-Oberflächen | 30 % | 81 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
 | 4. Konten, Datenwege & Exporte | 20 % | 35 % | teilweise | Auth inklusive Recovery, erlaubte Redirects, Datenkonflikte, PDF/QR/CSV/Import/Export in EN und DE E2E |
-| 5. Qualitätssicherung & Sicherheit | 10 % | 40 % | aktiv | vollständige E2E-Tests, 320px/mobile, Keyboard, Screenreader, Auth-Sicherheit, abschließend alle CI erfolgreich |
+| 5. Qualitätssicherung & Sicherheit | 10 % | 45 % | aktiv | vollständige E2E-Tests, 320px/mobile, Keyboard, Screenreader, Auth-Sicherheit, abschließend alle CI erfolgreich |
 | 6. SEO-Freigabe & Veröffentlichung | 10 % | 0 % | gesperrt | hreflang, Canonicals, Sitemap, OG/JSON-LD, noindex nur nach Freigabegates aufheben, kontrollierter Release |
 
 Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden Strings. Ab sofort wird ein Paket erst auf 100 % gesetzt, wenn sein Abnahmekriterium nachgewiesen ist.
@@ -197,3 +197,15 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Die Prüfungen verwenden reale Chromium-DOM-Knoten und aufnehmenbare Screenshots. Sie sind **zusätzliche fokussierte Browserregressionen**, keine Abnahme sämtlicher Funktionen, Bildschirmgrößen, Fehlerfälle oder realer Benutzerkonten.
 - **Fortschrittsschätzung bleibt vor Browserabnahme bei Paket 3: 80 %, Paket 5: 40 %, Gesamt: 62 %.** Erst nach grünem, abschließendem CI-Head darf für diesen Teilbereich ein Testnachweis gelten.
 - **Weiterhin offen:** vollständige Testmatrix der Tool-Flows (inkl. Auth/Recovery und Exporte), 320px-Audit von tatsächlich gerenderten modalen Inhalten, Screenreader-/Tastaturführung, redaktionelle EN-Vollständigkeit und verifizierter Release-Gate. Keine Veröffentlichung, kein Merge/Deployment oder Änderung an realen Daten/Maskottchen/SEO-Indexierung.
+
+## Sprint A – geprüfte echte Sprachschalter, mobile Bildkontrolle und sichtbare Labelkorrekturen (2026-11-21)
+
+- Der zuvor hinzugefügte Browserlauf für alle vier Tools bei **320px und 768px** ist mit streng isolierten, synthetischen Daten erfolgreich gewesen (Commit `b055588a`, 9/9 GitHub-Workflows). Die Bildartefakte wurden manuell kontrolliert: Alle geprüften Dialoge passten in die Telefonbreite; das Cookie-Panel verdeckte zunächst einen Teil der Test-Screenshots.
+- Die Browserprüfungen schließen das Cookie-Panel daher jetzt vor der Aufnahme, kontrollieren horizontale Überläufe im Umzugskisten-/Backstudio-Dokument sowie im WG-Budget-/Kochplan- und Pflanzen-Zisternendialog, und betätigen die **wirklichen DE-/EN-Bedienelemente** statt nur ein künstliches Lokalisierungsereignis.
+- **Umzugskisten:** Auch das mobile Feld `Kisten-Name` wird als `Box name` angezeigt, ohne dessen Wert oder Eingabeknoten zu ersetzen.
+- **Pflanzenpflege:** Im Zisternendialog werden `Restbestand` und `Schließen` nun als `Remaining volume` und `Close` angezeigt, ohne Fassungsvermögen/Cloud-Daten zu ändern.
+- **Backstudio:** Die im mobilen Screenshot verbliebenen `Mein Rezept` und `Meine Zutaten` erhalten eigene source-exakte Labelübersetzungen. Für Überschriften und den Berechnen-Button mit verschachtelten Lucide-Icons werden ausschließlich **direkte Textknoten** übersetzt, sodass Icons, Click-Handler und editierbarer Rezepttext unangetastet bleiben.
+- Neuer isolierter DE→EN→DE-Regressionstest kontrolliert alle drei Werkzeugbereiche inklusive Knoten-/Handlerstabilität; die Chromium-Tests prüfen die zusätzlichen sichtbaren englischen Beschriftungen auf Telefonbreite.
+- **Schätzung jetzt:** Paket 3 **81 %**, Paket 5 **45 %**, gewichteter Gesamtwert **62,8 % ≈ 63 %**. Die höhere QA-Schätzung betrifft reale synthetische Browserabdeckung, **nicht** ein vollständiges mobiles, barrierefreies oder produktives E2E-Abnahmeergebnis.
+- **Noch offen:** restliche gemischte Sprachabschnitte (insbesondere dynamisch zusammengesetzte B3-Karten), weitere Sonder-/Fehlerzustände, vollständige Routen-/Auth-/Export-Journeys, Screenreader und finaler Release-Gate.
+- Letzter Implementierungsstand vor diesem Abschlusscommit benötigt einen eigenen erfolgreichen CI-Lauf. PR #291 bleibt Draft, keine produktiven Datenbank-/Maskottchen-/SEO-Änderungen, kein Merge oder Deployment.
