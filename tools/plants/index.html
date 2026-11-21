@@ -510,6 +510,29 @@
             10: "November: Garten winterfest machen.",
             11: "Dezember: Zimmerpflanzen genießen, sparsam gießen."
         };
+        const gardenCalendarEn = {
+            0: "January: Water houseplants sparingly; do not fertilize.",
+            1: "February: Start vegetable seeds indoors on a windowsill.",
+            2: "March: Prune roses in spring and repot houseplants.",
+            3: "April: Sow seeds outdoors and move container plants outside when conditions are suitable.",
+            4: "May: Watch for late frosts; plant summer flowers afterward.",
+            5: "June: Peak growing season! Fertilize regularly, generally once a week as needed.",
+            6: "July: Remove faded flowers and water lawns during dry spells.",
+            7: "August: Harvest season for fruit and vegetables!",
+            8: "September: Plant spring-flowering bulbs.",
+            9: "October: Move frost-sensitive container plants to winter shelter.",
+            10: "November: Prepare the garden for winter.",
+            11: "December: Enjoy houseplants and water sparingly."
+        };
+
+        function renderGardenCalendar(month = new Date().getMonth()) {
+            const output = document.getElementById('calendarTodoText');
+            if (!output) return;
+            output.textContent = window.__toolyaUILocale === 'en'
+                ? (gardenCalendarEn[month] || 'Take care of your plants.')
+                : (gartenKalender[month] || 'Pflege deine Pflanzen.');
+        }
+        document.addEventListener('toolya:locale-change', () => renderGardenCalendar());
 
         const mischkulturDb = {
             "tomate": { gute: ["Basilikum", "Salat", "Knoblauch", "Karotten"], schlechte: ["Kartoffeln", "Fenchel", "Erbsen"] },
@@ -836,7 +859,7 @@
                 plantsCloudController=prepared.controller;plantsCloudUserId=uid;plantsCloudReady=true;
                 document.getElementById('toolya-cloud-gate')?.remove();
                 const month=new Date().getMonth();
-                document.getElementById('calendarTodoText').innerText=gartenKalender[month]||'Pflege deine Pflanzen.';
+                renderGardenCalendar(month);
                 document.getElementById('plantLastWatered').valueAsDate=new Date();
                 calculateWaterAmount();loadLocationDropdown();renderApp();updateCisternDisplay();
                 checkFrostSeason(month);await checkUserSession();
