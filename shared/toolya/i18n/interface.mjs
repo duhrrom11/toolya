@@ -1101,7 +1101,7 @@ const toolSmallCopy=Object.freeze({
 });
 function applyToolSmallCopy(document,tool,language){
  const dictionary=toolSmallCopy[tool];if(!dictionary)return;
- for(const el of document.querySelectorAll('#main-content span,#main-content strong,#main-content li,#main-content p,#settingsModal strong,#settingsModal span')){
+ for(const el of document.querySelectorAll('#main-content span,#main-content strong,#main-content li,#main-content p,#settingsModal strong,#settingsModal span,.b3-tool-title p')){
   if(el.children.length||el.isContentEditable||el.closest('[contenteditable="true"]'))continue;
   const original=originals.get(el)?.get('text')??el.textContent;
   const source=original.trim(),translation=dictionary[source];
