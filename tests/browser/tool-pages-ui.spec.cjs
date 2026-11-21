@@ -2323,3 +2323,56 @@ test('i18n Sprint A moving: confirmed restore writes synthetic cloud snapshot on
  await expect(file).toHaveValue('');
  expect(errors).toEqual([]);
 });
+
+
+test('i18n Sprint A moving PDF report labels translate while source records stay untouched',async({page})=>{
+ test.setTimeout(60000);
+ const fixture={locations:[{id:501,name:'Synthetic loft',icon:'📍'}],boxes:[{id:502,locId:501,name:'My custom stored box',desc:'User description',lentTo:'Test borrower',tag:'Standard',value:21.5,subItems:[{name:'Personal item'}]}]};
+ await isolated(page,true,true,fixture);
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ await page.evaluate(()=>{
+  window.__pdfSpy={texts:[],files:[]};
+  window.jspdf={jsPDF:class {
+   setFont(){return this}setFontSize(){return this}
+   splitTextToSize(v){return [String(v)]}
+   text(v){window.__pdfSpy.texts.push(String(v));return this}
+   addPage(){return this}
+   save(v){window.__pdfSpy.files.push(v)}
+  }};
+ });
+ for(const lang of ['en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await page.evaluate(()=>{window.__pdfSpy.texts.length=0;return exportInventoryPDF()});
+  const result=await page.evaluate(()=>({texts:window.__pdfSpy.texts.slice(),files:window.__pdfSpy.files.slice(),snapshot:getData(),writes:window.__toolyaMock.writes.length}));
+  expect(result.snapshot).toEqual(fixture);
+  expect(result.writes).toBe(0);
+  expect(result.texts.join(' ')).toContain('My custom stored box');
+  expect(result.texts.join(' ')).toContain('Test borrower');
+  expect(result.texts.join(' ')).toContain('Personal item');
+  if(lang==='en'){
+   expect(result.files.at(-1)).toBe('moving-box-inventory-report.pdf');
+   expect(result.texts.join(' ')).toContain('Total inventory value');
+   expect(result.texts.join(' ')).toContain('Lent to');
+  }else{
+   expect(result.files.at(-1)).toBe('kisten-inventar-report.pdf');
+   expect(result.texts.join(' ')).toContain('Gesamtwert des Inventars');
+   expect(result.texts.join(' ')).toContain('Ausgeliehen an');
+  }
+ }
+});
+
+test('i18n Sprint A moving: blocked PDF library gives EN/DE error, no export or cloud write',async({page})=>{
+ test.setTimeout(60000);
+ await isolated(page,true,false,{locations:[],boxes:[]});
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ const dialog=page.getByRole('alertdialog',{name:'Toolya'});
+ for(const [lang,message] of [['en','Could not create the PDF. Please try again.'],['de','Das PDF konnte nicht erstellt werden. Bitte versuche es erneut.']]){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await page.evaluate(()=>exportInventoryPDF());
+  await expect(dialog.locator('#hl-alert-message')).toHaveText(message);
+  await dialog.getByRole('button',{name:'OK'}).click();
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
