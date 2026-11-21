@@ -584,6 +584,7 @@ const formCopy = Object.freeze({
   '📤 Wiederherstellen':'📤 Restore','📖 Hilfe & Anleitung anzeigen':'📖 View help and guide'
  },
  housemates: {
+  "👥 Mitglieder- & Kontaktverwaltung": "👥 Member and contact management",
   // Source-exact help and workflow headings; never change stored records.
 "1. Digitale Pinnwand & Notizen": "1. Digital noticeboard and notes",
   "2. Finanzen & Kasse": "2. Finances and shared funds",
@@ -976,6 +977,22 @@ const toolHelpBodyCopy=Object.freeze({
   'Schritt-für-Schritt-Anleitung zur Pflanzenpflege':'Step-by-step plant care guide'
  }
 });
+/* Plant frost notices remain visible and accessible in the selected language;
+   the weather and frost-detection logic is intentionally untouched. */
+const toolAlertCopy=Object.freeze({
+ plants:{
+  'Bitte empfindliche Kübelpflanzen schützen oder ins Winterquartier holen!':'Protect sensitive potted plants or move them indoors for winter.'
+ }
+});
+function applyToolAlertCopy(document,tool,language){
+ const dictionary=toolAlertCopy[tool];if(!dictionary)return;
+ for(const el of document.querySelectorAll('#frostBanner p')){
+  if(el.children.length||el.isContentEditable)continue;
+  const original=originals.get(el)?.get('text')??el.textContent;
+  const source=original.trim(),english=dictionary[source];
+  if(english!==undefined)updateElement(el,original.replace(source,english),null,language);
+ }
+}
 function applyToolHelpBodyCopy(document,tool,language){
  const dictionary=toolHelpBodyCopy[tool];
  if(!dictionary)return;
@@ -999,6 +1016,7 @@ export function applyToolInterfaceLocale(document,tool,language){
  applyB3NavigationCopy(document,tool,language);
  applyB3EditorCopy(document,tool,language);
  applyToolHelpBodyCopy(document,tool,language);
+ applyToolAlertCopy(document,tool,language);
  if(tool==='baking')applyBackstudioCopy(document,language);
 }
 
