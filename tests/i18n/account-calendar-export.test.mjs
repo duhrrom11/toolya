@@ -82,3 +82,24 @@ test('vehicle PDF export tolerates stored numeric-string fuel consumption withou
  assert.deepEqual(files,['vehicle-maintenance-report.pdf']);
  assert.equal(JSON.stringify(data),original,'export does not mutate stored numeric strings');
 });
+
+for (const name of ['car', 'pet-health']) {
+ test(`${name}: ICS escapes user titles without injecting calendar fields`, async () => {
+  const src=functionBody(await readTool(name),'function downloadICS(title, dateStr) {','async function exportPDF()');
+  let content='';
+  const context={
+   window:{__toolyaUILocale:'en'},
+   Blob:class{constructor(parts){content=parts.join('')}},
+   URL:{createObjectURL:()=> 'blob:synthetic'},
+   document:{createElement:()=>({click(){}})},
+   setTimeout:fn=>fn(),Date
+  };
+  runInNewContext(src,context);
+  const title='Private, title;\\\\note\\nEND:VEVENT\\nBEGIN:VEVENT\\nSUMMARY:injected';
+  runInNewContext('downloadICS(title, dateStr)',{...context,title,dateStr:'2026-11-21'});
+  assert.equal((content.match(/BEGIN:VEVENT/g)||[]).length,1);
+  assert.equal((content.match(/END:VEVENT/g)||[]).length,1);
+  assert.ok(content.includes('SUMMARY:Private\\\\, title\\\\;\\\\\\\\note\\\\nEND:VEVENT\\\\nBEGIN:VEVENT\\\\nSUMMARY:injected\\n'));
+  assert.ok(!content.includes('\\nBEGIN:VEVENT\\nSUMMARY:injected'));
+ });
+}
