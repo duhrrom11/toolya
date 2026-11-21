@@ -1548,3 +1548,25 @@ test('moving inventory accessibility labels switch reversibly without changing d
  applyToolInterfaceLocale(document,'moving','de');
  assert.deepEqual([...document.querySelectorAll('[aria-label]')].map(el=>el.getAttribute('aria-label')),original);
 });
+
+test('moving box form accessibility is reversible without mutating values or attached controls',()=>{
+ const {document}=parseHTML(`<html><body>
+ <input id="boxValue" aria-label="Wert in € (optional)" value="42">
+ <input id="boxDesc" aria-label="Inhalt / Beschreibung (z.B. Lichterketten)" value="Private description">
+ <input id="boxBarcode" aria-label="Barcode / EAN (optional)" value="123456">
+ <input id="boxName" aria-label="Kisten-Name (z.B. Karton #3)" value="My box">
+ <input id="boxPhotoInput" type="file">
+ </body></html>`);
+ const nodes=[...document.querySelectorAll('input')];
+ const labels=nodes.map(node=>node.getAttribute('aria-label'));
+ const values=nodes.map(node=>node.value);
+ applyToolInterfaceLocale(document,'moving','en');
+ assert.deepEqual(nodes.map(node=>node.getAttribute('aria-label')),
+  ['Value in euros (optional)','Contents / description','Barcode / EAN (optional)','Box name (e.g. Box #3)','Select box photo']);
+ assert.equal(nodes[4].getAttribute('title'),'Select box photo');
+ assert.deepEqual(nodes.map(node=>node.value),values);
+ applyToolInterfaceLocale(document,'moving','de');
+ assert.deepEqual(nodes.map(node=>node.getAttribute('aria-label')),labels);
+ assert.equal(nodes[4].hasAttribute('title'),false,'added title removed on switching back');
+ assert.deepEqual(nodes.map(node=>node.value),values);
+});
