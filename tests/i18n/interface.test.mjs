@@ -1653,3 +1653,20 @@ test('Sprint A household finance displays English separators and restores German
  assert.match(html,/householdReadyForLocaleRefresh\) return;/,'locale switch still guarded against unloaded household');
  assert.match(html,/item\.price \* \(1 - \(ageYears \/ \(item\.lifespan \|\| 5\)\)\)/,'original remaining-value formula remains intact');
 });
+
+
+test('Sprint A household chart categories use English labels only at render time',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const match=html.match(/function formatHouseholdCategoryLabel\(category\) \{([\s\S]*?)\n        \}/);
+ assert.ok(match,'category display formatter available');
+ const translate=new Function('window','category',match[1]);
+ assert.equal(translate({__toolyaUILocale:'en'},'Lebensmittel'),'Groceries');
+ assert.equal(translate({__toolyaUILocale:'en'},'Verträge'),'Contracts');
+ assert.equal(translate({__toolyaUILocale:'de'},'Lebensmittel'),'Lebensmittel');
+ assert.equal(translate({__toolyaUILocale:'en'},'Custom user category'),'Custom user category');
+ assert.ok(html.includes('catLabels.map(formatHouseholdCategoryLabel)'),'chart axis labels localized');
+ assert.ok(html.includes("formatHouseholdCategoryLabel(category) + ': ' + formatChartAmount(amount)"),'accessible summary matches chart labels');
+ assert.ok(html.includes('categoryExpenses[r.category]'),'saved category keys remain original');
+ assert.ok(html.includes('const defaultCategories = ["Lebensmittel", "Wohnen", "Energie", "Auto", "Freizeit", "Elektronik", "Gesundheit", "Verträge", "Sonstiges"]'),'original category keys unchanged');
+});
