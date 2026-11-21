@@ -1670,3 +1670,43 @@ test('Sprint A household chart categories use English labels only at render time
  assert.ok(html.includes('categoryExpenses[r.category]'),'saved category keys remain original');
  assert.ok(html.includes('const defaultCategories = ["Lebensmittel", "Wohnen", "Energie", "Auto", "Freizeit", "Elektronik", "Gesundheit", "Verträge", "Sonstiges"]'),'original category keys unchanged');
 });
+
+
+test('Sprint A plant ROI and dashboard numeric displays keep stored values untouched',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/plants/index.html',import.meta.url),'utf8');
+ const match=html.match(/function formatPlantDisplayNumber\(value, decimals = 2\) \{([\s\S]*?)\n        \}/);
+ assert.ok(match,'pure number display helper present');
+ const format=new Function('window','value','decimals',match[1]);
+ assert.equal(format({__toolyaUILocale:'en'},1234.5,2),'1,234.50');
+ assert.equal(format({__toolyaUILocale:'de'},1234.5,2),'1234.50');
+ assert.equal(format({__toolyaUILocale:'en'},1.5,1),'1.5');
+ assert.equal(format({__toolyaUILocale:'en'},-1250.4,2),'-1,250.40');
+ for(const source of [
+  'formatPlantDisplayNumber(profit)',
+  'formatPlantDisplayNumber(totalKg)',
+  'formatPlantDisplayNumber(harvestValue)',
+  'formatPlantDisplayNumber(expenses)',
+  'formatPlantDisplayNumber(cur/1000, 1)',
+  'formatPlantDisplayNumber(totalWaterTodayMl / 1000, 1)',
+  'formatPlantDisplayNumber(totalKg, 1)'
+ ]) assert.ok(html.includes(source),'localized displayed value: '+source);
+ assert.ok(html.includes('let profit = harvestValue - expenses;'),'underlying ROI formula intact');
+ assert.ok(html.includes('const totalGrams = Number.isFinite(storedGrams)'),'stored harvest still read as numeric data');
+});
+
+test('Sprint A baking calculation displays localize without modifying machine-readable factor',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/baking/index.html',import.meta.url),'utf8');
+ const match=html.match(/function formatBakingDisplayNumber\(value, decimals = 2\) \{([\s\S]*?)\n        \}/);
+ assert.ok(match,'pure baking display helper present');
+ const format=new Function('window','value','decimals',match[1]);
+ assert.equal(format({__toolyaUILocale:'en'},1234.5,2),'1,234.50');
+ assert.equal(format({__toolyaUILocale:'de'},1234.5,2),'1234.50');
+ assert.equal(format({__toolyaUILocale:'en'},2.35,1),'2.4');
+ assert.ok(html.includes("document.getElementById('res-time').innerText = adjTime + (window.__toolyaUILocale === 'en' ? ' min' : ' Min.');"));
+ assert.ok(html.includes("document.getElementById('res-cost').innerText = formatBakingDisplayNumber(matCost) + ' €';"));
+ assert.ok(html.includes("const sliceWidth = formatBakingDisplayNumber((Math.PI * targetD) / count, 1);"));
+ assert.ok(html.includes("document.getElementById('res-factor').innerText = factor.toFixed(2);"),'factor stays parseable');
+ assert.ok(html.includes("parseFloat(document.getElementById('res-factor').innerText)"),'recipe calculator still parses original factor');
+});
