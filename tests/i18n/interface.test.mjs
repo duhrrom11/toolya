@@ -2588,3 +2588,38 @@ test('budget PDF uses selected locale for formatted amounts and date ranges',asy
  assert.ok(budget.includes("pdfLabel(' bis ', ' to ')"));
  assert.ok(parking.includes('pdfLabel("Gesamtkosten: ","Total costs: ")'));
 });
+
+test('seven PDF export paths render EN and DE without mutating records (isolated synthetic fixtures)',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const {runInNewContext}=await import('node:vm');
+ const fixtures={
+  budget:[{date:'2026-11-01',entryType:'ausgabe',title:'Private receipt',store:'Shop',category:'Lebensmittel',price:12.5,paymentMethod:'card'}],
+  car:{cars:[{id:'car1',name:'Personal car',plate:'AB-123',km:8000}],events:[{carId:'car1',type:'Reparatur',title:'Wheel service',date:'2026-11-01',cost:80}]},
+  loans:{items:[{status:'active',title:'Personal drill',person:'Alex',date:'2026-11-01',deposit:20}]},
+  meters:{readings:[{type:'Strom',name:'Meter-1',location:'Private garage',value:120,date:'2026-11-01',note:'Private note'}]},
+  parking:{sessions:[{desc:'Private parking',sector:'A2',date:'2026-11-01',cost:3.5}]},
+  'pet-health':{pets:[{id:'pet1',name:'Momo',species:'Katze'}],events:[{petId:'pet1',type:'Impfung',title:'Check-up',date:'2026-11-01',cost:45}]}
+ };
+ const functions=[['budget','exportPDF'],['car','exportPDF'],['loans','exportPDF'],['meters','exportPDF'],['meters','exportHandoverPDF'],['parking','exportPDF'],['pet-health','exportPDF']];
+ for(const [tool,func] of functions){
+  const html=readFileSync(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
+  const start=html.indexOf('async function '+func+'()');
+  assert.ok(start>=0,tool+' '+func);
+  const save=html.indexOf('doc.save(',start),semicolon=html.indexOf(';',save),end=html.indexOf('}',semicolon)+1;
+  assert.ok(save>start&&end>save);
+  const original=html.slice(start,end);
+  const code=original.replace("const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');",
+    'const createExportPdf=async()=>pdfStub;');
+  assert.notEqual(code,original,tool+' stub replacement');
+  for(const lang of ['de','en']){
+   const rows=JSON.parse(JSON.stringify(fixtures[tool])),before=JSON.stringify(rows),texts=[],filenames=[];
+   const pdfStub={setFont(){},setFontSize(){},text(value){texts.push(String(value))},splitTextToSize(value){return [String(value)]},addPage(){},save(name){filenames.push(String(name))}};
+   const context={window:{__toolyaUILocale:lang},getData:()=>rows,pdfStub,parseReceiptDate:date=>new Date(date)};
+   await runInNewContext(code+';'+func+'()',context);
+   assert.equal(JSON.stringify(rows),before,'source data mutated: '+tool);
+   assert.equal(filenames.length,1,'PDF not created: '+tool);
+   assert.ok(texts.length>=3,'missing PDF text: '+tool);
+   assert.ok(texts.some(value=>lang==='en'?/Created on:/.test(value):/Erstellt am:/.test(value)),tool+' report date '+lang);
+  }
+ }
+});
