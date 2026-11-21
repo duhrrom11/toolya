@@ -77,3 +77,22 @@ test('all known application-owned status fields in Wishes are eligible for live 
   assert.ok(!source.includes("'#"+id+"'"),'progress indicator must not be translated: '+id);
  }
 });
+
+test('safety-critical Wishes messages remain present in their source modules and have reversible translations',()=>{
+ const cases=[
+  ['gift-start.mjs','JSON-Sicherung lokal heruntergeladen. Keine Daten hochgeladen.','JSON backup downloaded locally. No data was uploaded.'],
+  ['gift-start.mjs','Cloud-Ansichten konnten nicht geladen werden. Lokale Ansichten wurden nicht verändert.','Cloud views could not be loaded. Local views were not changed.'],
+  ['app.mjs','Importvorschau abgelaufen. Bitte neu prüfen.','Import preview expired. Check again.'],
+  ['app.mjs','Cloud-Konflikte konnten nicht vollständig geprüft werden. Kein Import.','Cloud conflicts could not be fully checked. Nothing was imported.'],
+  ['lists-dashboard.mjs','Die Listenzuordnung hat sich geändert. Bitte Auswahl und Aktion erneut prüfen.','List assignment changed. Review the selection and action again.'],
+  ['gift-assistant.mjs','Bitte zuerst die Übernahme ausdrücklich bestätigen.','Explicitly confirm the import first.'],
+  ['occasions.mjs','Diesen Anlass dauerhaft löschen?','Permanently delete this occasion?'],
+  ['gift-dashboard.mjs','Priorität konnte nicht gespeichert werden.','Priority could not be saved.']
+ ];
+ for(const [file,de,en] of cases){
+  const source=readFileSync(new URL('../../tools/wishes/'+file,import.meta.url),'utf8');
+  assert.ok(source.includes(de),'Missing application source warning: '+file+' / '+de);
+  assert.equal(wishesText(de,'en'),en,file);
+  assert.equal(wishesText(en,'de'),de,file);
+ }
+});
