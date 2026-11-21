@@ -478,7 +478,15 @@
         }
 
         async function checkUserSession() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
+            let user = null;
+            let sessionError = null;
+            try {
+                const result = await supabaseClient.auth.getUser();
+                sessionError = result?.error?.name === 'AuthSessionMissingError' ? null : (result?.error ?? null);
+                user = sessionError ? null : (result?.data?.user ?? null);
+            } catch (error) {
+                sessionError = error;
+            }
             const statusText = document.getElementById('cloud-status-text');
             const userDisplay = document.getElementById('cloud-user-display');
             const headerBadge = document.getElementById('header-user-badge');
@@ -493,7 +501,7 @@
                 headerBadge.classList.add('inline-flex');
                 btnLogout.classList.remove('hidden');
             } else {
-                statusText.innerText = window.toolyaUiText?.("Nicht angemeldet") ?? "Nicht angemeldet";
+                statusText.innerText = window.toolyaUiText?.(sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet') ?? (sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet');
                 userDisplay.innerText = "";
                 headerBadge.classList.add('hidden');
                 headerBadge.classList.remove('inline-flex');
