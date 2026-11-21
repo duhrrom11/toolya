@@ -613,6 +613,14 @@
             return ps <= 10 ? 120 : (ps <= 15 ? 300 : (ps <= 20 ? 600 : 1500));
         }
 
+        // Display only: all stored quantities and calculation inputs stay numeric.
+        function formatPlantDisplayNumber(value, decimals = 2) {
+            const amount = Number(value);
+            return window.__toolyaUILocale === 'en'
+                ? amount.toLocaleString('en-GB', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+                : amount.toFixed(decimals);
+        }
+
         // ROI Rechner
         function openRoiModal() { calculateRoiValues(); document.getElementById('roiModal').classList.remove('hidden'); }
         function closeRoiModal() { document.getElementById('roiModal').classList.add('hidden'); }
@@ -633,9 +641,9 @@
             let harvestValue = totalKg * pricePerKg;
             let profit = harvestValue - expenses;
             let display = document.getElementById('roiProfitDisplay');
-            display.innerText = (profit >= 0 ? '+ ' : '') + profit.toFixed(2) + ' €';
+            display.innerText = (profit >= 0 ? '+ ' : '') + formatPlantDisplayNumber(profit) + ' €';
             display.className = profit >= 0 ? 'text-xl font-extrabold text-emerald-700' : 'text-xl font-extrabold text-red-600';
-            document.getElementById('roiDetailsText').innerText = window.__toolyaUILocale === 'en' ? `Total harvest: ${totalKg.toFixed(2)} kg (market value: €${harvestValue.toFixed(2)} minus expenses: €${expenses.toFixed(2)})` : `Gesamtertrag: ${totalKg.toFixed(2)} kg (Marktwert: ${harvestValue.toFixed(2)} € abzüglich ${expenses.toFixed(2)} € Ausgaben)`;
+            document.getElementById('roiDetailsText').innerText = window.__toolyaUILocale === 'en' ? `Total harvest: ${formatPlantDisplayNumber(totalKg)} kg (market value: €${formatPlantDisplayNumber(harvestValue)} minus expenses: €${formatPlantDisplayNumber(expenses)})` : `Gesamtertrag: ${totalKg.toFixed(2)} kg (Marktwert: ${harvestValue.toFixed(2)} € abzüglich ${expenses.toFixed(2)} € Ausgaben)`;
         }
 
         // Zisterne
@@ -672,7 +680,7 @@
             const current = data.cisternCurrent === undefined ? max : Number(data.cisternCurrent);
             const cur = Number.isFinite(current) ? Math.min(max, Math.max(0, current)) : max;
             let percent = Math.round((cur / max) * 100);
-            document.getElementById('statCistern').innerText = cur >= 1000 ? (cur/1000).toFixed(1) + ' m³' : cur + ' L';
+            document.getElementById('statCistern').innerText = cur >= 1000 ? formatPlantDisplayNumber(cur/1000, 1) + ' m³' : cur + ' L';
             document.getElementById('cisternDisplayLiters').innerText = cur + ' L / ' + max + ' L';
             document.getElementById('cisternPercentText').innerText = percent + (window.__toolyaUILocale === 'en' ? '% full' : '% gefüllt');
         }
@@ -1252,11 +1260,11 @@
             document.getElementById('statPlants').innerText = totalCount;
             document.getElementById('statDueSoon').innerText = dueSoonCount;
             document.getElementById('statOverdue').innerText = overdueCount;
-            document.getElementById('statWaterNeeded').innerText = totalWaterTodayMl >= 1000 ? (totalWaterTodayMl / 1000).toFixed(1) + ' L' : totalWaterTodayMl + ' ml';
+            document.getElementById('statWaterNeeded').innerText = totalWaterTodayMl >= 1000 ? formatPlantDisplayNumber(totalWaterTodayMl / 1000, 1) + ' L' : totalWaterTodayMl + ' ml';
             const storedHarvest = Number(data.totalHarvestGrams);
             const harvestGrams = Number.isFinite(storedHarvest) && storedHarvest >= 0 ? storedHarvest : 0;
             let totalKg = harvestGrams / 1000;
-            document.getElementById('statTotalHarvest').innerText = totalKg >= 1 ? totalKg.toFixed(1) + ' kg' : harvestGrams + ' g';
+            document.getElementById('statTotalHarvest').innerText = totalKg >= 1 ? formatPlantDisplayNumber(totalKg, 1) + ' kg' : harvestGrams + ' g';
         }
 
         async function exportPDF() {
