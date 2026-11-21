@@ -2352,7 +2352,7 @@
         function openBudgetModal() {
             const budgets = getBudgets();
             document.getElementById('budgetInputList').innerHTML = defaultCategories.map((cat, index) => `
-                <div class="flex justify-between items-center"><label for="budget-amount-${index}" class="font-semibold">${escapeUserHtml(cat)}:</label><input id="budget-amount-${index}" type="number" step="10" data-cat="${escapeUserHtml(cat)}" value="${escapeUserHtml(budgets[cat] || 0)}" class="p-2 border rounded-xl w-28 text-right font-bold"></div>
+                <div class="flex justify-between items-center"><label for="budget-amount-${index}" class="font-semibold">${escapeUserHtml(formatHouseholdCategoryLabel(cat))}:</label><input id="budget-amount-${index}" type="number" step="10" data-cat="${escapeUserHtml(cat)}" value="${escapeUserHtml(budgets[cat] || 0)}" class="p-2 border rounded-xl w-28 text-right font-bold"></div>
             `).join('');
             document.getElementById('budgetModal').classList.remove('hidden'); document.getElementById('budgetModal').classList.add('flex');
         }
