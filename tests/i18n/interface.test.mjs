@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {parseHTML} from 'linkedom';
-import {applyToolInterfaceLocale} from '../../shared/toolya/i18n/interface.mjs';
+import {applyToolInterfaceLocale,translateToolDialog} from '../../shared/toolya/i18n/interface.mjs';
 
 test('auth sign-in, sign-out and validation shell are reversible without touching account data', () => {
  const {document} = parseHTML(`<html lang="de"><body>
@@ -75,4 +75,21 @@ test('extended form localization is reversible and never changes input values or
   assert.equal(field.value,value,'input value remains untouched');
   assert.equal(button.textContent,buttonLabel,'original button restored');
  }
+});
+
+test('native dialog localization covers all four tools and preserves dynamic payloads',()=>{
+ const samples=[
+  ['moving','Bitte Standort eingeben!','Enter a location.'],
+  ['housemates','Registrierung fehlgeschlagen: fake error','Registration failed: fake error'],
+  ['plants','Ungültige Pflanzen-ID.','Invalid plant ID.'],
+  ['baking','Timer abgelaufen!','Timer finished!']
+ ];
+ for(const [tool,de,en] of samples){
+  assert.equal(translateToolDialog(tool,'en',de),en);
+  assert.equal(translateToolDialog(tool,'de',de),de);
+ }
+ assert.equal(translateToolDialog('moving','en','Private box data'), 'Private box data');
+ assert.equal(translateToolDialog('housemates','en','Registrierung fehlgeschlagen: fake@example.org'),
+              'Registration failed: fake@example.org');
+ assert.equal(translateToolDialog('baking','en',null),null);
 });
