@@ -43,3 +43,12 @@ Stand 2026-11-21. Quelle: vier vorhandene `tools/*/index.html` im Entwicklungsbr
 - DOM-Regressionstests prüfen Hin-/Rückwechsel, Optionswerte, ursprüngliche Button-Handler und unveränderte Nutzereingaben. Der englische UI-Stand bleibt **teilweise** übersetzt; `html[lang]` verbleibt deshalb auf Deutsch.
 - Weiterer Stand vor diesem Paket: dynamische WG-Haushalts- und Pflanzenkarten, Saatgut- und Lageranzeigen, Backstudio-Timer, Garten-Monatstipps sowie locale-spezifische PDF-Dateinamen. Ein Sprachwechsel darf keine ungespeicherten Formulare neu initialisieren.
 - **Noch offen / Freigabe-Blocker:** durchgängige Authentifizierung inklusive Wiederherstellung und Fehlermeldungen, restliche dynamische UI und externe Backstudio-Skripte, vollständige isolierte Browser- und Zugriffsprüfungen sowie abschließend erfolgreiche CI-Läufe. Kein Merge, kein Deployment, `noindex` bleibt bestehen.
+
+## Backstudio-Laufzeitpaket – externes Skript (2026-11-21)
+
+- `tools/baking/backstudio.js`: 66 zusätzliche feste Textpaare für die von JavaScript aufgebauten Backstudio-Elemente; weitere sprachabhängige Meldungen für Warenkorb, Vorratsliste, eigene Backformen, Zeiten, Füllhöhen, Kuchenlagen, Backhinweise, Foto-OCR und Textdatei-Export.
+- Umschaltung über `toolya:locale-change` aktualisiert den vorhandenen UI-Bereich, ohne Formulare neu zu erzeugen oder `localStorage` zu beschreiben. Für die festen Texte werden ausschließlich originale, direkt enthaltene Textknoten der Backstudio-Elemente über einen begrenzten Katalog übersetzt, keine Nutzertexte und keine verschachtelten Eingabekontrollen.
+- Zahlen- und Datumsanzeige über `de-DE` beziehungsweise `en-GB`; Einheit, Rezeptzutaten, Pantry-Schlüssel, Pan-Geometrie und Berechnungsformeln bleiben unangetastet. Die Textdatei für Einkaufslisten erhält bei EN einen englischen Dateinamen; die gespeicherten Einträge bleiben original.
+- Sponsoring-/Partnerlink-Kennzeichnung und feste Amazon-Partner-ID bleiben sichtbar bzw. unverändert. Der Export kennzeichnet Amazon-Partnerlinks auch in Englisch.
+- Ergänzte Regressionstests für Laufzeitmeldungen, Hin-/Rückschalten von Backstudio-Blatttexten, unveränderte Nutzereingaben, Formular-Optionswerte, Amazon-IDs und Datenhaltung.
+- **Restrisiko / Release-Schranke:** Das weitere externe `backstudio-pro.js` enthält eigene dynamische Meldungen und benötigt noch eine vollständige DE/EN-Überarbeitung; Browser-, OCR- und End-to-End-Tests sind nicht abschließend nachgewiesen. `noindex` bleibt aktiv, kein Merge/Deployment.
