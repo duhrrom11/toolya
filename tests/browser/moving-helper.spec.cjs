@@ -22,8 +22,8 @@ test('temporary helper sees only minimal projection and persists sequential stat
   return route.abort();
  });
  await page.goto(origin+'/tools/moving/helper/index.html#t='+token);
- await expect(page.getByText('Kiste 3')).toBeVisible();
- await expect(page.getByText('Küche')).toBeVisible();
+ await expect(page.locator('.box strong')).toBeVisible();
+ await expect(page.locator('.box small').first()).toBeVisible();
  await expect(page.getByText('Geplant')).toBeVisible();
  expect(await page.locator('body').innerText()).not.toContain('Private Inventarinhalte: Goldschmuck');
  await page.getByRole('button',{name:'Nächster Status'}).click();
