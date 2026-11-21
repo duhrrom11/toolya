@@ -562,7 +562,7 @@ test('Backstudio static source-owned controls reverse DE/EN without touching ent
  const start=script.indexOf('const staticBackstudioCopy = new Map(');
  const end=script.indexOf('function missingIngredients()',start);
  assert.ok(start>0&&end>start,'static source-owned translations are present');
- const {document}=parseHTML('<html><body><section id="toolya-backstudio"><h2>🍰 Toolya Backstudio</h2><article><h3>1 · Meine Backformen</h3><label>Typ<select id="pan"><option value="round">Rund</option><option value="rect">Rechteck</option></select></label><label>Breite bei Rechteck<input id="width" value="user input"></label><button id="save" onclick="keep()">Form speichern</button></article><article><p>Deine Liste bleibt auf diesem Gerät.</p></article><div data-user-content><p>Meine Backformen</p></div></section><input id="bs-shopping-custom" placeholder="z. B. Vanillezucker" value="Do not change"></body></html>');
+ const {document}=parseHTML('<html><body><section id="toolya-backstudio"><h2>🍰 Toolya Backstudio</h2><article><h3>1 · Meine Backformen</h3><label>Typ<select id="pan"><option value="round">Rund</option><option value="rect">Rechteck</option></select></label><label>Breite bei Rechteck<input id="width" value="user input"></label><button id="save" onclick="keep()">Form speichern</button></article><article><p>Deine Liste bleibt auf diesem Gerät.</p></article><div data-user-content><p>Meine Backformen</p></div><p id="bs-message">Bereit.</p></section><input id="bs-shopping-custom" placeholder="z. B. Vanillezucker" value="Do not change"></body></html>');
  const context={document,window:{__toolyaUILocale:'en'}};
  context.el=id=>document.getElementById(id);
  context.langEn=()=>context.window.__toolyaUILocale==='en';
@@ -573,6 +573,7 @@ test('Backstudio static source-owned controls reverse DE/EN without touching ent
  assert.equal(document.getElementById('pan').querySelector('option').textContent,'Round');
  assert.equal(document.getElementById('pan').querySelector('option').value,'round');
  assert.equal(document.getElementById('save').textContent,'Save pan');
+ assert.equal(document.getElementById('bs-message').textContent,'Ready.');
  assert.equal(document.getElementById('save').getAttribute('onclick'),'keep()');
  assert.equal(document.getElementById('width').value,'user input');
  assert.equal(document.getElementById('bs-shopping-custom').value,'Do not change');
@@ -581,6 +582,7 @@ test('Backstudio static source-owned controls reverse DE/EN without touching ent
  runInContext('renderBackstudioStaticCopy()',context);
  assert.equal(document.querySelector('h3').textContent,'1 · Meine Backformen');
  assert.equal(document.getElementById('save').textContent,'Form speichern');
+ assert.equal(document.getElementById('bs-message').textContent,'Bereit.');
  assert.equal(document.getElementById('pan').querySelector('option').value,'round');
  assert.equal(document.getElementById('bs-shopping-custom').placeholder,'z. B. Vanillezucker');
 });
