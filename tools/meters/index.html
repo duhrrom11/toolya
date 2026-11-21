@@ -1146,7 +1146,8 @@
             }
             readings.forEach((r) => {
                 const unit = r.type.includes('Strom') ? 'kWh' : 'm³';
-                const line = `${r.date} | ${r.type} (${r.name} - ${r.location || 'Haupt'}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`;
+                const typeLabel = pdfEn ? ({Strom:'Electricity',Wasser:'Water',Gas:'Gas',Heizung:'Heating'})[r.type] || r.type : r.type;
+                const line = `${r.date} | ${typeLabel} (${r.name} - ${r.location || pdfLabel('Haupt','Main')}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`;
                 const lines = doc.splitTextToSize(line, 180);
                 lines.forEach(textLine => {
                     if (y > 275) { doc.addPage(); y = 20; }

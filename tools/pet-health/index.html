@@ -948,7 +948,8 @@
                 if (y > 270) { doc.addPage(); y = 20; }
                 let tassoText = p.tasso ? " [TASSO]" : "";
                 let vetText = p.vet && p.vet.name ? ` | ${pdfLabel("TA: ","Vet: ")}${p.vet.name} (${p.vet.tel || '-'})` : "";
-                const lines = doc.splitTextToSize(`- ${p.name} (${p.species || pdfLabel(pdfLabel("Haustier","Pet"),"Pet")}), Chip: ${p.chip || pdfLabel(pdfLabel("k.A.","n/a"),"n/a")}${tassoText}${vetText}`, 180);
+                const species = pdfEn ? ({Hund:'Dog',Katze:'Cat',Vogel:'Bird',Kaninchen:'Rabbit',Pferd:'Horse'})[p.species] || p.species : p.species;
+                const lines = doc.splitTextToSize(`- ${p.name} (${species || pdfLabel("Haustier","Pet")}), Chip: ${p.chip || pdfLabel("k.A.","n/a")}${tassoText}${vetText}`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
@@ -967,7 +968,8 @@
                 if (y > 270) { doc.addPage(); y = 20; }
                 let weightText = e.weight ? ` | ${e.weight} kg` : "";
                 let expText = e.expiryDate ? ` (${pdfLabel("Gültig bis: ","Valid until: ")}${new Date(e.expiryDate).toLocaleDateString(pdfDateLocale)})` : "";
-                const lines = doc.splitTextToSize(`- [${e.type}] ${pName}: ${e.title}${pdfLabel(" am "," on ")}${new Date(e.date).toLocaleDateString(pdfDateLocale)} (${Number(e.cost || 0).toFixed(2)} EUR${weightText})${expText}`, 180);
+                const eventType = pdfEn ? ({Impfung:'Vaccination',Behandlung:'Treatment',Medikament:'Medication',Kontrolle:'Check-up',Operation:'Surgery'})[e.type] || e.type : e.type;
+                const lines = doc.splitTextToSize(`- [${eventType}] ${pName}: ${e.title}${pdfLabel(" am "," on ")}${new Date(e.date).toLocaleDateString(pdfDateLocale)} (${Number(e.cost || 0).toFixed(2)} EUR${weightText})${expText}`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 

@@ -2623,3 +2623,25 @@ test('seven PDF export paths render EN and DE without mutating records (isolated
   }
  }
 });
+
+test('PDFs translate only controlled enum values; preserve user titles and stored records',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const {runInNewContext}=await import('node:vm');
+ const scenarios=[
+  ['car',{cars:[{id:'c',name:'My car',plate:'AB'}],events:[{carId:'c',type:'Reparatur',title:'Private wheel service',date:'2026-11-01',cost:5}]},'Repair','Private wheel service'],
+  ['pet-health',{pets:[{id:'p',name:'Momo',species:'Katze'}],events:[{petId:'p',type:'Impfung',title:'Private check-up',date:'2026-11-01',cost:5}]},'Vaccination','Private check-up'],
+  ['meters',{readings:[{type:'Strom',name:'Private meter',date:'2026-11-01',value:10,note:'Private note'}]},'Electricity','Private note']
+ ];
+ for(const [tool,data,translated,privateValue]of scenarios){
+  const html=readFileSync(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
+  const start=html.indexOf('async function exportPDF()'),save=html.indexOf('doc.save(',start);
+  const end=html.indexOf('}',html.indexOf(';',save))+1;
+  const code=html.slice(start,end).replace("const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');",'const createExportPdf=async()=>pdfStub;');
+  const source=JSON.stringify(data),printed=[];
+  const pdfStub={setFont(){},setFontSize(){},text(x){printed.push(String(x))},splitTextToSize(x){return [String(x)]},addPage(){},save(){}};
+  await runInNewContext(code+';exportPDF()', {window:{__toolyaUILocale:'en'},getData:()=>data,pdfStub});
+  assert.ok(printed.some(x=>x.includes(translated)),tool+' enum');
+  assert.ok(printed.some(x=>x.includes(privateValue)),tool+' user data');
+  assert.equal(JSON.stringify(data),source,tool+' data changed');
+ }
+});

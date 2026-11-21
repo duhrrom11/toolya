@@ -1131,7 +1131,7 @@ async function toolyaCloudBoot(tool) {
             doc.setFont("helvetica", "normal");
             data.cars.forEach(c => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                const lines = doc.splitTextToSize(`- ${c.name} (${c.plate || pdfLabel(pdfLabel("k.A.","n/a"),"n/a")}), ${pdfLabel("KM: ","Mileage: ")}${c.km || pdfLabel(pdfLabel("k.A.","n/a"),"n/a")} | ${pdfLabel("Vers.: ","Insurance: ")}${c.insurance || '-'}`, 180);
+                const lines = doc.splitTextToSize(`- ${c.name} (${c.plate || pdfLabel("k.A.","n/a")}), ${pdfLabel("KM: ","Mileage: ")}${c.km || pdfLabel("k.A.","n/a")} | ${pdfLabel("Vers.: ","Insurance: ")}${c.insurance || '-'}`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
@@ -1151,7 +1151,8 @@ async function toolyaCloudBoot(tool) {
                 let treadText = e.tread ? ` | ${e.tread} mm` : "";
                 let tankText = e.litres ? ` | ${e.litres} L` : "";
                 let consText = e.consumption ? ` | ${e.consumption.toFixed(1)} l/100km` : "";
-                const lines = doc.splitTextToSize(`- [${e.type}] ${cName}: ${e.title}${pdfLabel(" am "," on ")}${new Date(e.date).toLocaleDateString(pdfDateLocale)} (${Number(e.cost || 0).toFixed(2)} EUR${treadText}${tankText}${consText})`, 180);
+                const eventType = pdfEn ? ({Reparatur:'Repair',Wartung:'Maintenance',Tanken:'Refuelling',Versicherung:'Insurance',Steuer:'Tax',Reifen:'Tyres'})[e.type] || e.type : e.type;
+                const lines = doc.splitTextToSize(`- [${eventType}] ${cName}: ${e.title}${pdfLabel(" am "," on ")}${new Date(e.date).toLocaleDateString(pdfDateLocale)} (${Number(e.cost || 0).toFixed(2)} EUR${treadText}${tankText}${consText})`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
