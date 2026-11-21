@@ -836,7 +836,7 @@
                 plantsCloudController=prepared.controller;plantsCloudUserId=uid;plantsCloudReady=true;
                 document.getElementById('toolya-cloud-gate')?.remove();
                 const month=new Date().getMonth();
-                document.getElementById('calendarTodoText').innerText=window.__toolyaUILocale === 'en' ? 'Review your plants and seasonal care tasks.' : (gartenKalender[month]||'Pflege deine Pflanzen.');
+                document.getElementById('calendarTodoText').innerText=gartenKalender[month]||'Pflege deine Pflanzen.';
                 document.getElementById('plantLastWatered').valueAsDate=new Date();
                 calculateWaterAmount();loadLocationDropdown();renderApp();updateCisternDisplay();
                 checkFrostSeason(month);await checkUserSession();
