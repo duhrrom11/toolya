@@ -913,11 +913,12 @@
             calculateAll();
             const rawText = document.getElementById('recipe-input').value;
             const factor = parseFloat(document.getElementById('res-factor').innerText);
-            const name = document.getElementById('recipe-name').value || (window.__toolyaUILocale === 'en' ? 'Untitled recipe' : 'Unbenanntes Rezept');
+            const name = document.getElementById('recipe-name').value || 'Unbenanntes Rezept';
+            const displayName = document.getElementById('recipe-name').value || (window.__toolyaUILocale === 'en' ? 'Untitled recipe' : 'Unbenanntes Rezept');
             const unitSys = document.getElementById('unit-system').value;
 
             const lines = rawText.split('\n');
-            let outputHtml = `<p class="font-bold text-slate-800 mb-1">${escapeRecipeHtml(name)} (${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'} ×${factor})</p>`;
+            let outputHtml = `<p class="font-bold text-slate-800 mb-1">${escapeRecipeHtml(displayName)} (${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'} ×${factor})</p>`;
 
             lines.forEach(line => {
                 if(!line.trim()) return;
