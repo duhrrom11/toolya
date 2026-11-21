@@ -384,7 +384,7 @@
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
-                alert("Bitte E-Mail und Passwort eingeben.");
+                alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
                 return;
             }
 
@@ -392,7 +392,7 @@
             try {
                 ({ data, error } = await window.supabaseClient.auth.signUp({ email, password }));
             } catch (err) {
-                return alert('Registrierung fehlgeschlagen: ' + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
+                return alert((window.__toolyaUILocale === 'en' ? 'Registration failed: ' : 'Registrierung fehlgeschlagen: ') + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             }
             if (error) {
                 alert(error.message);
@@ -409,7 +409,7 @@
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
-                alert("Bitte E-Mail und Passwort eingeben.");
+                alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
                 return;
             }
 
@@ -417,7 +417,7 @@
             try {
                 ({ error } = await window.supabaseClient.auth.signInWithPassword({ email, password }));
             } catch (err) {
-                return alert('Anmeldung fehlgeschlagen: ' + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
+                return alert((window.__toolyaUILocale === 'en' ? 'Sign-in failed: ' : 'Anmeldung fehlgeschlagen: ') + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             }
             if (error) {
                 alert(error.message);
@@ -431,9 +431,9 @@
         async function logoutUser() {
             try {
                 const { error } = await window.supabaseClient.auth.signOut();
-                if (error) return alert('Abmeldung fehlgeschlagen: ' + (error.message || 'Unbekannter Fehler'));
+                if (error) return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error.message || 'Unbekannter Fehler'));
             } catch (error) {
-                return alert('Abmeldung fehlgeschlagen: ' + (error?.message || 'Unbekannter Fehler'));
+                return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error?.message || 'Unbekannter Fehler'));
             }
             updateUserDisplay();
         }
