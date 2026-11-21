@@ -410,3 +410,7 @@ Im nachfolgenden Paket sind Dashboard-Recovery bei 320 px, sichtbare Nachlass-Sp
 Die ICS-Downloads von Autokosten und Tiergesundheit wurden in Chromium auf beiden Sprachpfaden am echten Termin-Knopf geprüft. Die Dateien erhalten Originaltitel und Datum, verwenden DE/EN-Beschreibungen und enthalten einen ganztägigen Kalendereintrag.
 
 Die Transport- und Helferansicht der Umzugskisten übersetzt auch bereits angezeigte Fehler beim Sprachwechsel. Synthetischer JavaScript-Test für Serverausfall und DE→EN-Wechsel bestanden. Alle 13 PR-Workflows auf `52f43e04` waren grün. Die vollständige CI auf dem neuen HEAD bleibt separat zu prüfen.
+
+### Englische Anleitungen für zusammenhängende Alltagsabläufe
+
+Vier Anleitungen am deutschen Funktionsstand ergänzt: Haushaltsbuch (Monatsrechnung und fehlende Speicherbestätigung), Dashboard (gemeinsamer Einkauf, Druckansicht, lokale und synchronisierte Daten sowie Zählerablesung), Autokosten (Wartung, Reifen, ICS und bestätigte Kostenübernahme) und Tiergesundheit (Kalenderdatum und bestätigte Kostenübernahme). Der Vergleich erfolgte anhand der deutschen Leitfäden und des bereits geprüften ICS-Exports. Statisch geprüft: eindeutige Einfügepunkte, ausgeglichene Abschnitte, englisches Sprachattribut und fortbestehendes `noindex`. Der lokale Checkout war nicht verfügbar. Auf dem vorherigen HEAD `56f2c96c` waren bei der Abfrage 12 von 13 PR-Workflows grün. Der strikte Abgleich der Anwendungsoberflächen bleibt offen.
