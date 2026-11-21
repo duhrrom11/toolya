@@ -61,3 +61,13 @@ Stand 2026-11-21. Quelle: vier vorhandene `tools/*/index.html` im Entwicklungsbr
 - Die Erkennungsmodelle `deu+eng`, die Backform-/Creme-Rechenformeln, die lokale Speicherkennung und die Datenstruktur bleiben unverändert. Lokalisierung ist ausschließlich ein Darstellungsschritt; die Freigabe erkannter Zutaten bleibt explizit.
 - Zusätzliche Regressionstests prüfen DE/EN-Umschaltung, Kamera-/3D-Beschriftungen, erhaltene Optionswerte und Nutzereingaben, OCR-/Berechnungsformeln, unveränderte Speicherstruktur sowie englische/deutsche Dezimalmengen. Ein direkter Funktions-Check der Mengenübernahme und JavaScript-Syntaxprüfung wurden durchgeführt.
 - **Weiter offen:** durchgehende Auth- und Recovery-Flows, übrige Inhalte außerhalb der vier Tools, tatsächliche Browser-/Kamera-/OCR-Ausführung, CI-Workflow-Abschluss und Freigabeentscheidung. Kein Merge oder Deployment; `noindex` bleibt bestehen.
+
+## Konto- und Authentifizierungsoberfläche (2026-11-21)
+
+- Übersetzte Auth-Gate-Überschriften für alle vier Tools, außerdem reversible Konto-Ladezustände (`Checking your account…`) und vorhandene Anmeldestatus-Texte. E-Mail-Adressen, Serverfehler und Nutzerdaten werden nicht übersetzt.
+- Hilfe-Links auf den gesperrten Tool-Seiten führen bei expliziter englischer Auswahl zu den passenden `/en/`-Ratgebern und bei Deutsch zum unveränderten bisherigen deutschen Link. Der Auth-Gate-Bereich erhält bei der Auswahl die passende Screenreader-Sprache.
+- Hinweistext zur teilweise vorhandenen Englischübersetzung wurde dem Fortschritt angepasst. Die Tools bleiben weiterhin `noindex` und `html[lang]="de"`, solange die gesamte Oberfläche nicht vollständig lokalisiert ist.
+- Beim Wiederöffnen einer gespeicherten WG-ID bleibt ein explizites `?lang=de` oder `?lang=en` im Redirect erhalten. Fremde URL-Parameter werden nicht durchgereicht; der vorhandene Auth-/WG-Speichermechanismus bleibt unverändert.
+- Für die Registrierung in Umzugskisten, Pflanzenpflege und Backstudio wird eine Anfrage ohne zurückgegebene Sitzung **nicht mehr als sofort abgeschlossene Registrierung** bezeichnet; bei möglicher E-Mail-Verifizierung ist die Rückmeldung entsprechend vorsichtig. Der `signUp`-Aufruf bleibt derselbe. Die beiden Statusmeldungen sind in DE/EN verfügbar.
+- Tests prüfen den Hin-/Rückwechsel der Gate- und Kontomeldungen, unveränderte Identitäten, zugelassene Locale-Redirects sowie Registrierung ohne und mit zurückgegebener Sitzung anhand simulierter Rückgabewerte ohne produktive Supabase-Zugriffe.
+- **Weiter offen:** Anmeldung/Registrierung/Recovery in realen isolierten Browser-Sessions, alle serverseitigen Sonderfälle und erfolgreiche GitHub-Workflows. Keine Aussage zur Releasefähigkeit; kein Merge/Deployment.
