@@ -50,7 +50,7 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - run: deno check supabase/functions/moving-helper/index.ts
+      - run: deno check --config supabase/functions/moving-helper/deno.json supabase/functions/moving-helper/index.ts
       - run: node --check tools/moving/moving-transport.mjs
       - run: node --check tools/moving/helper/helper-client.mjs
   browser-compatibility:
