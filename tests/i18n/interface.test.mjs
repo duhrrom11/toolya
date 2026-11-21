@@ -1580,6 +1580,8 @@ test('moving inventory uses English display-only number and date formatting',asy
   assert.ok(html.includes('Number('+value+').'+englishFormat),'English formatting covers '+value);
  assert.ok(html.includes("b.expiry.split('-').reverse().join('/')"),'English expiry date');
  assert.ok(html.includes("b.expiry.split('-').reverse().join('.')"),'original German expiry date');
+ assert.ok(html.includes("Number(item.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"),'English subitem preview uses locale formatting');
+ assert.ok(html.includes(": (item.value || 0).toFixed(2)"),'German subitem preview keeps existing formatting');
  assert.equal((1234.5).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}),'1,234.50');
  assert.equal((1234.5).toFixed(2).replace('.',','),'1234,50','German legacy presentation remains unchanged');
 });
