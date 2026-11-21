@@ -2207,3 +2207,28 @@ test('i18n Sprint A household: mobile Wi-Fi prompt and custom member notice loca
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
  expect(errors).toEqual([]);
 });
+
+
+test('i18n Sprint A moving: malformed backup is rejected in isolated Chromium before cloud writes',async({page})=>{
+ test.setTimeout(60000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await isolated(page,true,true,{locations:[],boxes:[]});
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ await page.locator('[data-tool-locale="en"]').click();
+ const input=page.locator('input[type="file"][onchange="importBackup(event)"]');
+ await input.setInputFiles({name:'invalid-backup.json',mimeType:'application/json',buffer:Buffer.from('{"locations":[],"boxes":"not-an-array"}')});
+ const dialog=page.getByRole('alertdialog',{name:'Toolya'});
+ await expect(dialog.locator('#hl-alert-message')).toHaveText('Invalid backup format.');
+ await expect(dialog.getByRole('button',{name:'OK'})).toBeFocused();
+ await dialog.getByRole('button',{name:'OK'}).click();
+ await expect(input).toHaveValue('');
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ await page.locator('[data-tool-locale="de"]').click();
+ await input.setInputFiles({name:'invalid-backup.json',mimeType:'application/json',buffer:Buffer.from('not json')});
+ await expect(dialog.locator('#hl-alert-message')).toHaveText('Fehler beim Lesen der Datei.');
+ await dialog.getByRole('button',{name:'OK'}).click();
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
