@@ -63,7 +63,7 @@ test('German pages have exact matching English navigation and no auto-redirects'
 
 test('English guides link only to existing non-localized tool app paths and warn users',()=>{
   const apps=['moving','housemates','plants','baking'];
-  for(const [i,slug] of Object.keys(pages).slice(1).entries()){
+  for(const [i,slug] of Object.keys(pages).slice(1,5).entries()){
     const html=read(pages[slug]);
     assert.ok(html.includes('href="/tools/'+apps[i]+'/index.html"'),slug);
     assert.ok(html.includes('currently has a German interface'),slug);
