@@ -399,3 +399,22 @@ test('PDF filenames follow selected language while retaining German names and ex
  const household=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
  assert.match(household,/new Date\(\)\.toISOString\(\)\.split\('T'\)\[0\]/,'household export preserves date suffix');
 });
+
+test('seed age warnings and inventory modals localize display only',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/plants/index.html',import.meta.url),'utf8');
+ for(const phrase of [
+  'Check harvest year','Future harvest year','Germination rate may be low',
+  "'✅ Good' : '✅ Gut'","'Harvested' : 'Ernte'",
+  "'🛒 Buy again' : '🛒 Neu kaufen'",
+  "'No seeds in stock.' : 'Kein Saatgut im Lager.'",
+  "'🛒 Reorder' : '🛒 Nachbestellen'",
+  "'Inventory is empty.' : 'Lager ist leer.'"
+ ])assert.ok(html.includes(phrase),'missing localized seed or inventory display: '+phrase);
+ assert.match(html,/escapeHtml\(s\.name\)/,'seed names are HTML-escaped');
+ assert.match(html,/escapeHtml\(s\.year\)/,'harvest years are HTML-escaped');
+ assert.match(html,/escapeHtml\(item\.name\)/,'stored inventory item names are HTML-escaped');
+ assert.match(html,/encodeURIComponent\(String\(s\.name/,'search queries still use source seed name');
+ assert.match(html,/if \(plantsCloudReady && !document\.getElementById\('seedsModal'\)\?\.classList\.contains\('hidden'\)\) renderSeedList\(\)/);
+ assert.match(html,/if \(plantsCloudReady && !document\.getElementById\('inventoryModal'\)\?\.classList\.contains\('hidden'\)\) renderInventoryList\(\)/);
+});
