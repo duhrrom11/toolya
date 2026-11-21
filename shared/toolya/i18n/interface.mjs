@@ -816,6 +816,72 @@ function applyB3NavigationCopy(document,tool,language){
   if(translation!==undefined)updateElement(element,original.replace(sourceLabel,translation),null,language);
  }
 }
+/* Dynamic dashboard editor. The panel identifiers and stored layout stay in German/source form.
+   Only the known B3 core view labels and exact panel names receive translated display copy. */
+const b3EditorPanels=Object.freeze({
+ moving:{
+  'Inventar-Statistiken':'Inventory statistics',
+  'Werte nach Standort & Kategorie':'Values by location and category',
+  'Standort & Kisten erfassen':'Add locations and boxes',
+  'Inventar durchsuchen':'Search inventory'
+ },
+ housemates:{
+  'WG-Statistiken':'Household statistics',
+  'Pinnwand & Notizen':'Noticeboard and notes',
+  'WG-Stammdaten':'Household details',
+  'Ausgabenanalyse & Budgets':'Expense analysis and budgets',
+  'Sparziele':'Savings goals',
+  'Buchungen & Kassenbons':'Transactions and receipts',
+  'Schulden & Ausgleich':'Debts and settlements',
+  'WG-Inventar':'Household inventory',
+  'WG-Kalender':'Household calendar',
+  'Putzplan & Einkaufsliste':'Chores and shopping list',
+  'Kochplan & Ernährung':'Meal plan and diet',
+  'Verträge & Abos':'Contracts and subscriptions',
+  'Empfehlungen':'Recommendations'
+ }
+});
+const b3EditorCopy=Object.freeze({
+ 'Dashboard bearbeiten':'Edit dashboard',
+ 'Bereiche sortieren, ein-/ausblenden oder in S / M / L darstellen.':'Sort sections, show or hide them, or choose S / M / L sizes.',
+ 'Sichtbar':'Visible',
+ 'Speichern':'Save',
+ 'Abbrechen':'Cancel',
+ 'Standardlayout':'Default layout'
+});
+const b3EditorLabelNodes=new WeakMap();
+function applyB3EditorCopy(document,tool,language){
+ const names=b3EditorPanels[tool];
+ const host=document.querySelector('#b3-editor');
+ if(!host||!names)return;
+ for(const el of host.querySelectorAll('h2,p,.b3-editor-row strong,.b3-editor-row label,.flex > button')){
+  if(el.closest('[contenteditable="true"]'))continue;
+  // A checkbox is nested in a label. Modify only its direct text node to preserve the input.
+  for(const node of el.childNodes){
+   if(node.nodeType!==3)continue;
+   const original=b3EditorLabelNodes.get(node)??node.textContent;
+   const key=original.trim();
+   const english=names[key]??b3EditorCopy[key];
+   if(english===undefined)continue;
+   b3EditorLabelNodes.set(node,original);
+   const value=language==='en'?original.replace(key,english):original;
+   if(node.textContent!==value)node.textContent=value;
+  }
+ }
+ for(const el of host.querySelectorAll('.b3-editor-row [aria-label]')){
+  const original=originals.get(el)?.get('aria-label')??el.getAttribute('aria-label');
+  if(!original)continue;
+  let translation;
+  for(const [de,en]of Object.entries(names)){
+   if(original===de+' nach oben')translation=en+' move up';
+   else if(original===de+' nach unten')translation=en+' move down';
+   else if(original===de+' sichtbar')translation=en+' visible';
+   else if(original==='Kartengröße '+de)translation='Card size: '+en;
+   if(translation)break;
+  }
+  if(translation)updateElement(el,translation,'aria-label',language);
+ }
+}
 export function applyToolInterfaceLocale(document,tool,language){
  for(const [selector,translation,attribute,attributeTranslation] of [...common,...(toolTranslations[tool]||[]),...(extendedFormTranslations[tool]||[])]){
   const translated=attribute?attributeTranslation:translation;
@@ -825,6 +891,7 @@ export function applyToolInterfaceLocale(document,tool,language){
  }
  applyStaticFormCopy(document,tool,language);
  applyB3NavigationCopy(document,tool,language);
+ applyB3EditorCopy(document,tool,language);
  if(tool==='baking')applyBackstudioCopy(document,language);
 }
 
