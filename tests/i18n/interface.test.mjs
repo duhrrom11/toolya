@@ -224,7 +224,7 @@ test('household access dialogs retain ownership and membership identifiers while
   'Revoke access for ',
   'Grant editing access to ',
   'The link alone does not grant access.',
-  'Remove \\"${mates[idx].vorname}\\" from the household?'
+  'Remove "${mates[idx].vorname}" from the household?'
  ];
  for(const message of sourceEnglish)assert.ok(html.includes(message),'missing localized permission copy: '+message);
  assert.match(html,/existing\.join\('\\n'\)/,'member IDs still assembled from existing records');
