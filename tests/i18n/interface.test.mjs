@@ -318,6 +318,7 @@ test('plant card watering states and accessible controls localize without modify
   "'Harvest' : 'Ernte'", "'Gallery' : 'Galerie'", "'Edit' : 'Bearbeiten'"
  ])assert.ok(html.includes(text),'missing translated plant card: '+text);
  assert.match(html,/if \(plantsCloudReady\) renderApp\(\)/,'switching locale rerenders cards only when cloud data is ready');
+ assert.ok(html.includes('? `<span class="text-[10px] bg-gray-100'), 'missing-date label uses interpolated template');
  assert.match(html,/escapeHtml\(p\.name\)/,'plant name escaped');
  assert.match(html,/escapeHtml\(p\.interval\)/,'watering interval escaped');
  assert.match(html,/escapeHtml\(p\.note\)/,'plant note escaped');
