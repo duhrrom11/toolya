@@ -93,3 +93,13 @@ test('native dialog localization covers all four tools and preserves dynamic pay
               'Registration failed: fake@example.org');
  assert.equal(translateToolDialog('baking','en',null),null);
 });
+
+test('English PDF labels are localized without modifying user records or export names',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const paths=['moving','housemates','plants'];
+ for(const tool of paths){
+  const html=await readFile(new URL(`../../tools/${tool}/index.html`,import.meta.url),'utf8');
+  assert.match(html,/window\.__toolyaUILocale === ['"]en['"]/,'PDF language gate in '+tool);
+  assert.match(html,/toLocaleDateString\(window\.__toolyaUILocale === 'en' \? 'en-GB' : 'de-DE'\)/,'PDF date format in '+tool);
+ }
+});
