@@ -158,7 +158,7 @@ function renderComparisons(){
   txt('strong',(i===0?proUi('★ Empfehlung: ','★ Recommended: '):'')+label,row);
   txt('span',proUi('Füllbedarf ','Batter required ')+fmt(want,0)+proUi(' ml / Platz für Teig ',' ml / pan capacity ')+fmt(option.capacity,0)+' ml · '+fmt(fill*100)+proUi(' % der empfohlenen Füllgrenze','% of recommended fill limit')+(fill>1?proUi(' – diese Form ist zu klein!',' – this pan is too small!'):''),row);
   if(option.pans.length===1&&['round','rect'].includes(option.pans[0].shape)){
-   action(row,'Diese Form nehmen',()=>{
+   action(row,proUi('Diese Form nehmen','Use this pan'),()=>{
     const p=option.pans[0];
     $('combinator-mode').value='single';window.toggleCombinator?.();
     $('target-shape').value=p.shape;window.updateShapeInputs?.('target');
@@ -166,7 +166,7 @@ function renderComparisons(){
     window.calculateAll?.();for(const id of ['target-d','target-l','target-w'])$(id)?.dispatchEvent(new Event('input',{bubbles:true}));
    });
   }else if(option.pans.length===2&&option.pans.every(p=>p.shape==='round')){
-   action(row,'Beide nehmen',()=>{
+   action(row,proUi('Beide nehmen','Use both pans'),()=>{
     $('combinator-mode').value='double';window.toggleCombinator?.();
     $('combo-d1').value=option.pans[0].a;$('combo-d2').value=option.pans[1].a;window.calculateAll?.();$('combo-d1').dispatchEvent(new Event('input',{bubbles:true}));
    })
@@ -427,7 +427,7 @@ function renderMemory(){
  for(const {x,index} of selected){
   const row=txt('div',null,host);row.className='bsp-match';
   txt('strong',(x.favorite?'★ ':'')+(x.name||proUi('Backerfahrung','Baking note'))+' · '+(x.date||''),row);
-  txt('span',[x.minutes&&x.minutes+' min',x.temperature&&x.temperature+' °C',x.rating&&x.rating+proUi('/5 Sterne','/5 stars'),x.shape&&proUi('Form: ','Pan: ')+x.shape,x.note].filter(Boolean).join(' · '),row);
+  txt('span',[x.minutes&&x.minutes+' min',x.temperature&&x.temperature+' °C',x.rating&&x.rating+proUi('/5 Sterne','/5 stars'),x.shape&&proUi('Form: ','Pan: ')+({'round':proUi('Rund','Round'),'rect':proUi('Rechteck','Rectangular'),'volume':proUi('Spezialform','Special pan'),'muffin':proUi('Muffinmulden','Muffin cups')}[x.shape]||x.shape),x.note].filter(Boolean).join(' · '),row);
   action(row,x.favorite?proUi('★ Favorit','★ Favorite'):proUi('☆ Favorit','☆ Favorite'),()=>{const state=read();if(!Array.isArray(state.logs)||!state.logs[index])return;state.logs[index].favorite=!state.logs[index].favorite;if(write(state))renderMemory()});
   action(row,proUi('Löschen','Delete'),()=>{if(!confirm(proUi('Diese Notiz löschen?','Delete this note?')))return;const state=read();if(!Array.isArray(state.logs))return;state.logs.splice(index,1);if(write(state))renderMemory()})
  }
