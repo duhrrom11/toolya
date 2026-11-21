@@ -362,6 +362,22 @@ export const DASHBOARD_COPY=Object.freeze(Object.fromEntries([
   "The password could not be changed. Request a new reset link."
  ],
  [
+  "Passwort geändert, aber Abmelden fehlgeschlagen. Bitte melde dich manuell ab.",
+  "Password changed, but signing out failed. Please sign out manually."
+ ],
+ [
+  "Passwort konnte nicht geändert werden. Bitte fordere gegebenenfalls einen neuen Link an.",
+  "The password could not be changed. Request a new reset link if needed."
+ ],
+ [
+  "Dein Passwort wurde geändert. Du kannst dich jetzt damit anmelden.",
+  "Your password has been changed. You can now sign in with it."
+ ],
+ [
+  "Neues Passwort festlegen",
+  "Set a new password"
+ ],
+ [
   "Anmeldung momentan nicht verfügbar.",
   "Sign-in is currently unavailable."
  ],
