@@ -105,6 +105,36 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
    }
   }
   await page.setViewportSize({width:320,height:900});
+  await page.goto(origin+'/');
+  const star = page.locator('.fav-btn[data-id="wishlist"]');
+  const starBox = await star.boundingBox();
+  assert(starBox.width >= 44 && starBox.height >= 44, 'favorite star has a phone-sized touch target');
+  await star.press('Space');
+  assert.equal(await star.getAttribute('aria-pressed'), 'true');
+  const feedback = page.locator('#favoriteFeedback');
+  assert.match(await feedback.textContent(), /Amazon-Wunschlisten finden gespeichert/);
+  const feedbackBox = await feedback.boundingBox();
+  assert(feedbackBox.y >= 0 && feedbackBox.y + feedbackBox.height <= 900, 'feedback stays in the viewport');
+  await page.reload();
+  assert.equal(await star.getAttribute('aria-pressed'), 'true', 'favorite survives reload');
+  const dashboard = await context.newPage();
+  await dashboard.setViewportSize({width:320,height:900});
+  await dashboard.goto(origin+'/dashboard/');
+  await dashboard.locator('#favorites a').waitFor();
+  assert.match(await dashboard.locator('#favorites').textContent(), /Amazon-Wunschlisten finden/);
+  assert.equal(await dashboard.locator('#fav-count').textContent(), '1');
+  assert((await dashboard.locator('.b3-hub-topbar').boundingBox()).height <= 65, 'dashboard header fits on one row');
+  assert(await dashboard.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+  await star.press('Enter');
+  assert.equal(await star.getAttribute('aria-pressed'), 'false');
+  assert.match(await feedback.textContent(), /entfernt/);
+  await dashboard.waitForFunction(() => document.getElementById('fav-count').textContent === '0');
+  assert.match(await dashboard.locator('#favorites').textContent(), /noch keine Favoriten/);
+  await dashboard.getByRole('link', {name:'Anleitung zum Toolya-Dashboard'}).click();
+  assert(await dashboard.getByRole('heading', {name:'Ein Tool als Favorit speichern'}).isVisible());
+  assert(await dashboard.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+  await dashboard.close();
+
   await page.goto(origin+'/backform-rechner/');
   await page.keyboard.press('Tab');
   assert(await page.locator('.guide-skip').evaluate(link => link === document.activeElement));
