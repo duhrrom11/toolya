@@ -2031,6 +2031,7 @@ test('i18n Sprint A moving: 320/768px preserve box draft and selected location',
   await page.evaluate(()=>{document.querySelector('[data-tool-locale="en"]').click()});
   await expect(page.locator('#boxLocationSelect')).toHaveValue('1');
   await expect(page.locator('#boxName')).toHaveValue('Unsaved draft box');
+  await expect(page.locator('label[for="boxName"] .helferlein-field-label')).toHaveText('Box name');
   await expect(page.locator('#boxLocationSelect option[value=""]')).toHaveText('-- Choose location --');
   await expect(page.locator('#tagFilter option[value="Zerbrechlich"]')).toHaveText('Fragile');
   await page.evaluate(()=>toggleHelp());
@@ -2062,6 +2063,8 @@ test('i18n Sprint A plants: 320/768px localize cistern without modifying capacit
   await page.evaluate(()=>{document.querySelector('[data-tool-locale="en"]').click()});
   await expect(capacity).toHaveValue('15000');
   await expect(page.locator('#cisternPercentText')).toContainText('% full');
+  await expect(page.locator('#cisternModal p.text-sky-700')).toHaveText('Remaining volume');
+  await expect(page.locator('#cisternModal button[onclick="closeCisternModal()"]')).toHaveText('Close');
   expect(await page.locator('#cisternModal > div').evaluate(el=>el.scrollWidth<=el.clientWidth+2)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('i18n-plants-'+width+'.png')});
   await page.evaluate(()=>{document.querySelector('[data-tool-locale="de"]').click()});
@@ -2090,6 +2093,9 @@ test('i18n Sprint A baking: 320/768px preserve recipe draft and do not resave pr
   await expect(page.locator('[data-recipe-note-input]')).toHaveValue('Unsaved draft note');
   await expect(page.locator('[data-recipe-note-label]')).toHaveText('Baking notes:');
   await expect(page.locator('#print-card')).toContainText('Factor');
+  await expect(page.locator('label[for="recipe-name"] .helferlein-field-label')).toHaveText('My recipe');
+  await expect(page.locator('label[for="recipe-input"] .helferlein-field-label')).toHaveText('My ingredients');
+  await expect(page.locator('button[onclick="calculateRecipe()"]')).toContainText('Calculate quantities');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('i18n-baking-'+width+'.png')});
   await page.evaluate(()=>{document.querySelector('[data-tool-locale="de"]').click()});
