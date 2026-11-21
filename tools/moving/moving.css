@@ -32,3 +32,56 @@
 #toolya-moving-transport .mv-r2-incidents{border-top:1px solid var(--b3-line,#e2e8f0);margin-top:18px;padding-top:8px}
 #toolya-moving-transport .mv-r2-incidents .mv-r2-box small{overflow-wrap:anywhere}
 #toolya-moving-transport #mv-owner-incident label{min-width:min(100%,150px)}
+
+/* Guided navigation: a presentation-only layer over the existing, unchanged panels. */
+#mv-journey[hidden]{display:none!important}
+#mv-journey{background:var(--b3-surface,#fff);border:1px solid var(--b3-line,#e2e8f0);border-radius:20px;padding:clamp(16px,3vw,26px);box-shadow:0 4px 20px #1716470b;color:var(--b3-ink,#242c45)}
+#mv-journey .mv-journey-top h2{font-size:clamp(1.1rem,2.8vw,1.45rem);font-weight:800;margin:0 0 5px}
+#mv-journey .mv-journey-top p{font-size:.9rem;color:var(--b3-muted,#566077);margin:0 0 12px}
+#mv-journey .mv-journey-eyebrow{font-size:.7rem!important;font-weight:800!important;letter-spacing:.07em;text-transform:uppercase;color:#6752a8!important;margin-bottom:5px!important}
+#mv-journey button{font:inherit;cursor:pointer;min-height:44px;border:1px solid #d9d3ea;border-radius:13px;background:#fff;color:#342b56;text-align:left}
+#mv-journey button:focus-visible{outline:3px solid #8b5cf6;outline-offset:3px}
+#mv-journey .mv-mode-choice{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#mv-journey .mv-mode-card{display:flex;align-items:center;gap:13px;padding:14px;transition:border-color .15s,background .15s}
+#mv-journey .mv-mode-card>span:first-child{font-size:1.5rem;line-height:1}
+#mv-journey .mv-mode-card strong,#mv-journey .mv-mode-card small{display:block}
+#mv-journey .mv-mode-card strong{font-size:1rem;font-weight:800}
+#mv-journey .mv-mode-card small{color:#657087;font-size:.8rem;line-height:1.4;margin-top:4px}
+#mv-journey .mv-mode-card[aria-pressed="true"]{background:#f1edfc;border:2px solid #6c56b8;padding:13px}
+#mv-journey .mv-mode-card[aria-pressed="true"] small{color:#4a3b85}
+#mv-journey .mv-phase-header{margin-top:22px}
+#mv-journey .mv-phase-header h3{font-size:.94rem;font-weight:800;margin:0}
+#mv-journey .mv-phase-header p{font-size:.8rem;color:#657087;margin:3px 0 12px}
+#mv-journey .mv-phase-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#mv-journey .mv-phase-step{padding:10px;display:flex;align-items:center;justify-content:center;gap:9px;font-size:.85rem;font-weight:750}
+#mv-journey .mv-phase-step[aria-current="step"]{background:#5b47a7;border-color:#5b47a7;color:white}
+#mv-journey .mv-phase-number{display:grid;place-items:center;width:26px;height:26px;flex:0 0 26px;border-radius:50%;background:#ede7fa;color:#4f3d8d;font-weight:800}
+#mv-journey .mv-phase-step[aria-current="step"] .mv-phase-number{background:#fff;color:#4f3d8d}
+#mv-journey .mv-phase-intro,#mv-journey .mv-inventory-intro{margin:14px 0 0;padding:14px;border-radius:12px;background:#f8f6fd}
+#mv-journey .mv-phase-intro strong,#mv-journey .mv-inventory-intro strong{font-size:.95rem;font-weight:750}
+#mv-journey .mv-phase-intro p,#mv-journey .mv-inventory-intro p{color:#5b6478;font-size:.86rem;margin:4px 0 0}
+#mv-journey .mv-phase-notice{font-size:.86rem;padding:10px;border-radius:10px;background:#fffbeb;color:#854d0e;margin:12px 0 0}
+#mv-journey .mv-phase-tools{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+#mv-journey .mv-phase-tools button{background:#fff;font-size:.84rem;font-weight:700;padding:9px 13px}
+#mv-journey .mv-phase-tools button:hover{border-color:#6c56b8;background:#f9f7ff}
+#main-content[data-mv-mode="inventory"] > #toolya-moving-planner,
+#main-content[data-mv-mode="inventory"] > #toolya-moving-transport{display:none!important}
+#main-content[data-mv-mode="moving"] > #b3-stats,
+#main-content[data-mv-mode="moving"] > #b3-values,
+#main-content[data-mv-mode="moving"] > #b3-inventory{display:none!important}
+#main-content[data-mv-mode="moving"][data-mv-phase="preparation"] > #toolya-moving-transport,
+#main-content[data-mv-mode="moving"][data-mv-phase="transport"] > #toolya-moving-planner,
+#main-content[data-mv-mode="moving"][data-mv-phase="transport"] > #b3-create,
+#main-content[data-mv-mode="moving"][data-mv-phase="arrival"] > #b3-create{display:none!important}
+#main-content[data-mv-mode="moving"][data-mv-project="none"] > #toolya-moving-transport{display:none!important}
+#main-content[data-mv-mode="moving"][data-mv-project="none"] > #toolya-moving-planner{display:block!important}
+#main-content[data-mv-mode="inventory"] > #b3-stats{margin-top:20px}
+@media(max-width:600px){
+  #mv-journey .mv-mode-choice{grid-template-columns:1fr}
+  #mv-journey .mv-mode-card{padding:12px}
+  #mv-journey .mv-mode-card[aria-pressed="true"]{padding:11px}
+  #mv-journey .mv-phase-steps{gap:5px}
+  #mv-journey .mv-phase-step{flex-direction:column;gap:5px;text-align:center;font-size:.73rem;padding:8px 4px}
+  #mv-journey .mv-phase-number{width:23px;height:23px;flex-basis:23px}
+  #mv-journey .mv-phase-tools button{width:100%;text-align:center}
+}
