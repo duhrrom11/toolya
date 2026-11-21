@@ -127,6 +127,9 @@ function mountToolLanguage(){
    document.dispatchEvent(new document.defaultView.Event('toolya:locale-change'));
    // Keep html[lang]=de while the main application is not fully translated.
  }
+ // The B3 editor re-creates its controls whenever sections are reordered/reset.
+ // Translate the new controls without reloading or touching stored layout choices.
+ document.addEventListener('toolya:b3-editor-rendered',()=>applyToolInterfaceLocale(document,name,selected));
  document.addEventListener('toolya:tool-hero-ready',()=>syncHeader(selected),{once:true});
  if(name==='baking')document.addEventListener('toolya:backstudio-layout-ready',()=>apply(selected,false),{once:true});
  apply(selected,false);
