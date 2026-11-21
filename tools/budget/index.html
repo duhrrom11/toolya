@@ -49,6 +49,7 @@
           {id:'history',name:'Buchungshistorie & Belege',size:'l'}
         ],
         navigation:[
+          ['💚','Clever sparen','#cs-root'],
           ['📊','Übersicht','#main-content'],
           ['📈','Statistiken','#b3-stats'],
           ['🎯','Budgets','#b3-charts'],
@@ -94,7 +95,8 @@
     <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="../../assets/helferlein-dialogs.js"></script>
 <link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><link rel="stylesheet" href="../../shared/toolya/alpha.css?v=20261115-alpha">
-<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script></head>
+<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="./clever.css?v=20261121-v1">
+</head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col font-sans">
   <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
     <p id="toolya-auth-title"><strong>Haushaltsbuch</strong></p>
@@ -151,6 +153,7 @@
 
     <!-- Main Content -->
     <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-7xl space-y-6">
+        <section id="cs-root" aria-label="Clever sparen" aria-live="off"></section>
         
         <!-- Combined Dashboard Statistiken -->
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3" data-b3-panel="stats" id="b3-stats">
@@ -555,6 +558,9 @@ async function toolyaCloudSave(patch) {
     return false;
   }
 }
+
+// Read and update the same verified cloud document as the existing Haushaltsbuch.
+window.toolyaCleverBudget={snapshot:()=>toolyaCloudSnapshot(),save:patch=>toolyaCloudSave(patch)};
 
 async function toolyaSafeCloudImport(snapshot) {
   const {confirmCloudReplacement,exportJsonBackup} = await import('../../shared/toolya/cloud-backup.mjs');
@@ -1025,6 +1031,7 @@ async function toolyaCloudBoot(tool) {
                 if (generation !== ocrGeneration) return;
 
                 const text = ret.data.text;
+                window.dispatchEvent(new CustomEvent('toolya:receipt-ocr',{detail:{text}}));
                 const recognizedPrice = extractReceiptTotal(text);
                 const recognizedDate = extractReceiptDate(text);
                 const priceInput = document.getElementById('receiptPrice');
@@ -1110,7 +1117,8 @@ async function toolyaCloudBoot(tool) {
                     data[index] = {
                         ...data[index],
                         title, store, date, price, category, paymentMethod, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, note, entryType,
-                        photos: [...currentUploadedPhotos]
+                        photos: [...currentUploadedPhotos],
+                        lineItems:window.toolyaCleverBudgetReceiptItems?.() ?? data[index].lineItems ?? []
                     };
                 }
             } else {
@@ -1125,7 +1133,8 @@ async function toolyaCloudBoot(tool) {
                 data.push({
                     id: newId,
                     title, store, date, price, category, paymentMethod, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, note, entryType,
-                    photos: currentUploadedPhotos.length > 0 ? [...currentUploadedPhotos] : []
+                    photos: currentUploadedPhotos.length > 0 ? [...currentUploadedPhotos] : [],
+                    lineItems:window.toolyaCleverBudgetReceiptItems?.() ?? []
                 });
             }
 
@@ -1146,6 +1155,7 @@ async function toolyaCloudBoot(tool) {
             const data = getData();
             const r = data.find(item => item && item.id === id);
             if (!r) return;
+            window.dispatchEvent(new CustomEvent('toolya:receipt-edit',{detail:{lineItems:r.lineItems||[]}}));
 
             photoReadGeneration++;
             ocrGeneration++;
@@ -1202,6 +1212,7 @@ async function toolyaCloudBoot(tool) {
         function cancelEdit() { resetForm(); }
 
         function resetForm() {
+            window.dispatchEvent(new Event('toolya:receipt-clear'));
             ocrGeneration++;
             photoReadGeneration++;
             pendingPhotoReads = 0;
@@ -1385,6 +1396,7 @@ async function toolyaCloudBoot(tool) {
 
             renderSavingsGoals();
             renderTransactionList();
+            window.dispatchEvent(new Event('toolya:budget-changed'));
         }
 
         /* --- Sparziele Render --- */
@@ -1842,7 +1854,8 @@ async function toolyaCloudBoot(tool) {
                 version: 1,
                 data: getData(),
                 budgets: getBudgets(),
-                goals: getSavingsGoals()
+                goals: getSavingsGoals(),
+                cleverSparen: toolyaCloudSnapshot().cleverSparen || {}
             };
             const blob = new Blob([JSON.stringify(backupObj)], { type: 'application/json' });
             const a = document.createElement('a');
@@ -1867,7 +1880,8 @@ async function toolyaCloudBoot(tool) {
             const sections = {
                 data: ['kassenbon_data', Array.isArray],
                 budgets: ['budgetbuch_budgets', value => value !== null && typeof value === 'object' && !Array.isArray(value)],
-                goals: ['budgetbuch_goals', Array.isArray]
+                goals: ['budgetbuch_goals', Array.isArray],
+                cleverSparen: ['budgetbuch_clever_sparen', value => value !== null && typeof value === 'object' && !Array.isArray(value)]
             };
             const changes = [];
             for (const [key, [storageKey, check]] of Object.entries(sections)) {
@@ -1890,7 +1904,7 @@ async function toolyaCloudBoot(tool) {
      try {
        const changes=validateHaushaltsbuchBackup(JSON.parse(e.target.result));
        const snapshot=toolyaCloudSnapshot();
-       const map={kassenbon_data:'entries',budgetbuch_budgets:'budgets',budgetbuch_goals:'goals'};
+       const map={kassenbon_data:'entries',budgetbuch_budgets:'budgets',budgetbuch_goals:'goals',budgetbuch_clever_sparen:'cleverSparen'};
        const preview=[];
        for(const [key,json] of changes){
          const next=JSON.parse(json),field=map[key];
@@ -1983,5 +1997,7 @@ async function toolyaCloudBoot(tool) {
     </script>
 
 
+<script defer src="./clever-core.js?v=20261121-v1"></script>
+<script defer src="./clever-ui.js?v=20261121-v1"></script>
 </body>
 </html>
