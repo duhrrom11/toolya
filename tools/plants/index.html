@@ -557,6 +557,9 @@
         }
         document.addEventListener('toolya:locale-change', () => {
             renderGardenCalendar();
+            // Update the visible estimated amount using the current form value only.
+            // No cloud or local-storage write, even when the form has unsaved edits.
+            if (document.getElementById('plantPotSize') && document.getElementById('waterMlHint')) calculateWaterAmount();
             if (plantsCloudReady) renderApp(); // read-only refresh for translated card labels
             if (plantsCloudReady && !document.getElementById('seedsModal')?.classList.contains('hidden')) renderSeedList();
             if (plantsCloudReady && !document.getElementById('inventoryModal')?.classList.contains('hidden')) renderInventoryList();
