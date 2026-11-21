@@ -55,7 +55,7 @@ Deno.serve(async(req:Request)=>{
     const label=String(payload.label||'').trim(),hours=Number(payload.hours);
     if(label.length<1||label.length>80||!Number.isInteger(hours)||hours<1||hours>72)return fail(400,'Invalid grant details',origin);
     await sync(userId,projectId);
-    const secret=new Uint8Array(32);crypto.getRandomValues(secret);const token=btoa(String.fromCharCode(...secret)).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'');
+    const secret=new Uint8Array(32);crypto.getRandomValues(secret);const token=btoa(String.fromCharCode(...secret)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
     const hash=await digest(token);const expires=new Date(Date.now()+hours*3600000).toISOString();
     const {data,error}=await db.from('moving_helper_grants').insert({owner_id:userId,project_id:projectId,helper_label:label,token_hash:hash,expires_at:expires}).select('id,helper_label,expires_at').single();if(error)throw Error('GRANT_WRITE');
     return result(200,{grant:data,token},origin);
