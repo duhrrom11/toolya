@@ -293,25 +293,25 @@
         async function supabaseRegister() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            if(!email || !password) return alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
             const { error } = await supabaseClient.auth.signUp({ email, password });
             if(error) alert(error.message);
-            else { alert('Registrierung erfolgreich!'); checkUserSession(); }
+            else { alert(window.__toolyaUILocale === 'en' ? 'Registration successful!' : 'Registrierung erfolgreich!'); checkUserSession(); }
         }
 
         async function supabaseLogin() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            if(!email || !password) return alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
             const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if(error) alert(error.message);
-            else { alert('Erfolgreich angemeldet!'); checkUserSession(); toggleSettingsModal(); }
+            else { alert(window.__toolyaUILocale === 'en' ? 'Signed in successfully!' : 'Erfolgreich angemeldet!'); checkUserSession(); toggleSettingsModal(); }
         }
 
         async function supabaseLogout() {
             await supabaseClient.auth.signOut();
             checkUserSession();
-            alert('Abgemeldet.');
+            alert(window.__toolyaUILocale === 'en' ? 'Signed out.' : 'Abgemeldet.');
         }
 
         async function checkUserSession() {
