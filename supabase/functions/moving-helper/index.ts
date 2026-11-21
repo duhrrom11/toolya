@@ -16,7 +16,7 @@ function fail(status:number,message:string,origin:string|null){return result(sta
 async function digest(value:string){const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value));return Array.from(new Uint8Array(bytes)).map(x=>x.toString(16).padStart(2,'0')).join('');}
 async function owner(req:Request){const auth=req.headers.get('Authorization')||'';if(!auth.startsWith('Bearer '))return null;const token=auth.slice(7);if(!token||token.startsWith('sb_'))return null;const {data,error}=await db.auth.getUser(token);return error||!data?.user?.id||data.user.is_anonymous?null:data.user.id;}
 async function source(ownerId:string,projectId:string){const {data,error}=await db.from('user_data').select('data').eq('user_id',ownerId).eq('tool','umzugskisten-inventar').maybeSingle();if(error)throw Error('CLOUD_READ');const s=data?.data;if(!isObject(s)||!Array.isArray(s.boxes)||!isObject(s.moving))return null;const p=Array.isArray(s.moving.projects)?s.moving.projects.find((p:unknown)=>isObject(p)&&p.id===projectId&&p.status==='active'):null;if(!p)return null;const assignments=Array.isArray(s.moving.assignments)?s.moving.assignments.filter((a:unknown)=>isObject(a)&&a.projectId===projectId):[];const rooms=Array.isArray(s.moving.rooms)?s.moving.rooms.filter((r:unknown)=>isObject(r)&&r.projectId===projectId):[];return {p,assignments,rooms,boxes:s.boxes};}
-async function activeGrant(token:string){if(typeof token!=='string'||!/^[A-Za-z0-9_-]{40,100}$/.test(token))return null;const hashed=await digest(token);const {data,error}=await db.from('moving_helper_grants').select('id,owner_id,project_id,helper_label,scope,expires_at').eq('token_hash',hashed).is('revoked_at',null).gt('expires_at',new Date().toISOString()).maybeSingle();if(error)throw Error('GRANT_READ');return data?{...data,hashed}:null;}
+async function activeGrant(token:string){if(typeof token!=='string'||!/^[A-Za-z0-9_-]{40,100}$/.test(token))return null;const hashed=await digest(token);const {data,error}=await db.from('moving_helper_grants').select('id,owner_id,project_id,helper_label,scope,expires_at').eq('token_hash',hashed).is('revoked_at',null).gt('expires_at',new Date().toISOString()).maybeSingle();if(error)throw Error('GRANT_READ');if(!data)return null;const limit=await db.rpc('moving_helper_rate_limit',{p_token_hash:hashed});if(limit.error)throw Error('RATE_LIMIT_READ');if(!limit.data)throw Error('RATE_LIMIT');return {...data,hashed};}
 async function list(ownerId:string,projectId:string){const [s,v,g]=await Promise.all([
  db.from('moving_transport_state').select('assignment_id,status,version').eq('owner_id',ownerId).eq('project_id',projectId),
  db.from('moving_public_box_views').select('assignment_id,display_label,room_label,priority').eq('owner_id',ownerId).eq('project_id',projectId),
@@ -55,6 +55,8 @@ Deno.serve(async(req:Request)=>{
     const label=String(payload.label||'').trim(),hours=Number(payload.hours);
     if(label.length<1||label.length>80||!Number.isInteger(hours)||hours<1||hours>72)return fail(400,'Invalid grant details',origin);
     await sync(userId,projectId);
+    const {count:activeCount,error:countError}=await db.from('moving_helper_grants').select('id',{count:'exact',head:true}).eq('owner_id',userId).eq('project_id',projectId).is('revoked_at',null).gt('expires_at',new Date().toISOString());
+    if(countError)throw Error('GRANT_LIMIT_READ');if((activeCount||0)>=20)return fail(429,'Maximum active helper links reached',origin);
     const secret=new Uint8Array(32);crypto.getRandomValues(secret);const token=btoa(String.fromCharCode(...secret)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
     const hash=await digest(token);const expires=new Date(Date.now()+hours*3600000).toISOString();
     const {data,error}=await db.from('moving_helper_grants').insert({owner_id:userId,project_id:projectId,helper_label:label,token_hash:hash,expires_at:expires}).select('id,helper_label,expires_at').single();if(error)throw Error('GRANT_WRITE');
@@ -69,5 +71,5 @@ Deno.serve(async(req:Request)=>{
     const {data,error}=await db.rpc('moving_owner_transition',{p_owner_id:userId,p_project_id:projectId,p_assignment_id:payload.assignmentId,p_expected_version:payload.expectedVersion,p_next_status:payload.status,p_request_id:payload.requestId});if(error)return fail(error.code==='40001'?409:400,'Status not saved; reload before retrying',origin);return result(200,data,origin);
   }
   return fail(400,'Unknown action',origin);
- }catch(e){console.error('moving helper operation failed',e instanceof Error?e.message:'unknown');return fail(500,'Service temporarily unavailable',origin);}
+ }catch(e){if(e instanceof Error&&e.message==='RATE_LIMIT')return fail(429,'Too many requests',origin);console.error('moving helper operation failed',e instanceof Error?e.message:'unknown');return fail(500,'Service temporarily unavailable',origin);}
 });
