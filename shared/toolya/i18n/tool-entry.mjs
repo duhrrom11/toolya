@@ -2,7 +2,7 @@
    Stays strictly outside business logic, data, auth gates and maskot state.
    Incomplete translation is explicitly disclosed: main tool forms are still German. */
 import {normalizeLocale} from './locale.mjs';
-import {applyToolInterfaceLocale} from './interface.mjs';
+import {applyToolInterfaceLocale,translateToolDialog} from './interface.mjs';
 const key='toolya-locale-v1';
 const SUPPORTED=Object.freeze({
  moving:{heading:'Moving box organizer',subtitle:'Track your boxes, contents and locations',guide:'/en/moving-boxes/',german:'/umzugskisten/'},
@@ -34,6 +34,16 @@ function mountToolLanguage(){
    button.dataset.toolLocale=lang;
    switcher.append(button);
    button.addEventListener('click',()=>apply(lang,true));
+ }
+ // Wrap native dialogs once. Preserve return values, user input, and unknown errors.
+ // The wrapper only changes known application-authored German messages.
+ const nativeDialogs={};
+ for(const method of ['alert','confirm','prompt']){
+   if(typeof window[method]!=='function')continue;
+   nativeDialogs[method]=window[method].bind(window);
+   window[method]=function(message,...args){
+     return nativeDialogs[method](translateToolDialog(name,selected,message),...args);
+   };
  }
  const notice=document.createElement('p');
  notice.className='ty-tool-language-notice';
