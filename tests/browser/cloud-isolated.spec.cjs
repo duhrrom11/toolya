@@ -80,3 +80,46 @@ for (const [tool, empty, changed] of [
     expect(result.saved).toEqual(changed);
   });
 }
+
+
+test('isolated Chromium: DE/EN dynamic failures preserve literal backend details and never write cloud data', async ({page}) => {
+ // Browser runs on an inert same-origin fixture and never opens a real tool or account.
+ await page.route('**/*', route => {
+  const url = new URL(route.request().url());
+  return url.origin === origin ? route.continue() : route.abort();
+ });
+ await page.route(origin+'/__toolya_i18n_safety__', route => route.fulfill({
+  status:200, contentType:'text/html', body:'<!doctype html><html lang="de"><body><output id="status" role="alert"></output></body></html>'
+ }));
+ await page.setViewportSize({width:320,height:720});
+ await page.goto(origin+'/__toolya_i18n_safety__');
+ const result = await page.evaluate(async () => {
+  const {translateToolDialog,translateAccountStatus} = await import('/shared/toolya/i18n/interface.mjs');
+  const status=document.getElementById('status');
+  let writes=0;
+  const backend='40001: revision conflict; user@example.test';
+  const responses=[];
+  for(const lang of ['de','en']) {
+   document.documentElement.lang=lang;
+   const text=translateToolDialog('housemates',lang,'Registrierung fehlgeschlagen: '+backend);
+   status.textContent=text;
+   responses.push({lang,text:status.textContent,role:status.getAttribute('role')});
+  }
+  const odd=['__proto__','constructor','toString'].map(key=>({
+   key,dialog:translateToolDialog('moving','en',key),
+   account:translateAccountStatus('en',key),
+   nested:translateToolDialog('housemates','en','Mitgliederverwaltung: '+key)
+  }));
+  return {responses,odd,writes};
+ });
+ expect(result.responses).toEqual([
+  {lang:'de',text:'Registrierung fehlgeschlagen: 40001: revision conflict; user@example.test',role:'alert'},
+  {lang:'en',text:'Registration failed: 40001: revision conflict; user@example.test',role:'alert'}
+ ]);
+ for(const {key,dialog,account,nested} of result.odd) {
+  expect(dialog).toBe(key);
+  expect(account).toBe(key);
+  expect(nested).toBe('Member management: '+key);
+ }
+ expect(result.writes).toBe(0);
+});
