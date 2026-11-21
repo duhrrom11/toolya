@@ -805,8 +805,9 @@ function applyB3NavigationCopy(document,tool,language){
  for(const element of document.querySelectorAll('.b3-nav-links > a,.b3-more > summary,.b3-more-content > button,.b3-preferences > h4,.b3-preferences > button,.b3-settings-footer > a')){
   if(element.children.length||element.isContentEditable)continue;
   const original=originals.get(element)?.get('text')??element.textContent;
-  const translation=translations[original]??b3NavigationCopy.common[original];
-  if(translation!==undefined)updateElement(element,translation,null,language);
+  const sourceLabel=original.trim();
+  const translation=translations[sourceLabel]??b3NavigationCopy.common[sourceLabel];
+  if(translation!==undefined)updateElement(element,original.replace(sourceLabel,translation),null,language);
  }
 }
 export function applyToolInterfaceLocale(document,tool,language){
