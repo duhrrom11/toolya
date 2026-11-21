@@ -630,9 +630,31 @@
             renderInventory();
         }
 
+        function formatMovingTagLabel(tag) {
+            if (window.__toolyaUILocale !== 'en') return tag;
+            const labels = { Standard: 'Standard', Zerbrechlich: 'Fragile', Wertvoll: 'Valuable', Saison: 'Seasonal' };
+            return Object.hasOwn(labels, tag) ? labels[tag] : tag;
+        }
+        function refreshMovingSelectLabels() {
+            // Replace only visible option text, never the selected values or the form.
+            document.querySelectorAll('#boxTag option, #editBoxTag option, #tagFilter option').forEach(option => {
+                const value = option.value;
+                if (!value) {
+                    if (option.parentElement?.id === 'tagFilter')
+                        option.textContent = window.__toolyaUILocale === 'en' ? 'All tags' : 'Alle Tags';
+                    return;
+                }
+                const prefix = option.parentElement?.id === 'tagFilter' ? '' :
+                    ({ Standard: '🏷️ ', Zerbrechlich: '⚠️ ', Wertvoll: '💎 ', Saison: '❄️ ' }[value] || '');
+                const suffix = value === 'Saison' && option.parentElement?.id !== 'tagFilter'
+                    ? (window.__toolyaUILocale === 'en' ? ' / decoration' : ' / Deko') : '';
+                option.textContent = prefix + formatMovingTagLabel(value) + suffix;
+            });
+        }
+
         function loadLocationsDropdown() {
             let data = getData();
-            const html = '<option value="">-- Standort wählen --</option>' + 
+            const html = '<option value="">' + (window.__toolyaUILocale === 'en' ? '-- Choose location --' : '-- Standort wählen --') + '</option>' + 
                 data.locations.map(l => `<option value="${l.id}">${l.icon || '📍'} ${l.name}</option>`).join('');
             document.getElementById('boxLocationSelect').innerHTML = html;
             document.getElementById('editBoxLocSelect').innerHTML = html;
@@ -822,7 +844,7 @@
                 tagStatsCard.classList.remove('hidden');
                 tagStatsList.innerHTML = tags.map(t => {
                     const tagVal = data.boxes.filter(b => (b.tag || 'Standard') === t).reduce((sum, b) => sum + Number(b.value || 0), 0);
-                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">🏷️ ${t}</p><p class="text-sm font-bold text-amber-800">${window.__toolyaUILocale === 'en' ? Number(tagVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : tagVal.toFixed(2).replace('.', ',')} €</p></div>`;
+                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">🏷️ ${formatMovingTagLabel(t)}</p><p class="text-sm font-bold text-amber-800">${window.__toolyaUILocale === 'en' ? Number(tagVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : tagVal.toFixed(2).replace('.', ',')} €</p></div>`;
                 }).join('');
             } else {
                 tagStatsCard.classList.add('hidden');
@@ -883,7 +905,7 @@
                                             <div>
                                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                                     <h5 class="font-bold text-sm">📦 ${b.name}</h5>
-                                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">${b.tag || 'Standard'}</span>
+                                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">${formatMovingTagLabel(b.tag || 'Standard')}</span>
                                                     ${isLent ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold" title="${window.__toolyaUILocale === 'en' ? 'Lent to' : 'Ausgeliehen an'}: ${b.lentTo}">${window.__toolyaUILocale === 'en' ? '🤝 Lent' : '🤝 Ausgeliehen'} (${b.lentTo})</span>` : ''}
                                                     ${isExpired ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 font-bold" title="${window.__toolyaUILocale === 'en' ? 'Expired date!' : 'Ablaufdatum überschritten!'}">${window.__toolyaUILocale === 'en' ? '⚠️ Expired' : '⚠️ Ablauf'}</span>` : ''}
                                                 </div>
@@ -913,6 +935,8 @@
         // Rebuild the visible card list after manual language changes; never save data.
         document.addEventListener('toolya:locale-change', () => {
             updateMovingHelpToggleLabel();
+            refreshMovingSelectLabels();
+            if (movingCloudReady) loadLocationsDropdown();
             if (document.getElementById('inventoryContainer')) renderInventory();
         });
 
