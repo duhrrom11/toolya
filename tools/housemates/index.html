@@ -1570,7 +1570,8 @@
             if (!householdReadyForLocaleRefresh) return;
             renderApp();
             refreshOpenBudgetLabels();
-            // Refresh labels in place; keep unsaved amounts and category keys untouched.
+            refreshOpenCookingDayLabels();
+            // Refresh labels in place; keep unsaved form values and stored keys untouched.
         });
 
         /* Storage Helper */
@@ -2253,10 +2254,28 @@
         }
 
         /* Kochplaner */
+        function formatHouseholdWeekday(day) {
+            if (window.__toolyaUILocale !== 'en') return day;
+            const names = {
+                Montag: 'Monday', Dienstag: 'Tuesday', Mittwoch: 'Wednesday',
+                Donnerstag: 'Thursday', Freitag: 'Friday', Samstag: 'Saturday',
+                Sonntag: 'Sunday'
+            };
+            return Object.hasOwn(names, day) ? names[day] : day;
+        }
+        function refreshOpenCookingDayLabels() {
+            const modal = document.getElementById('cookingModal');
+            if (!modal || modal.classList.contains('hidden')) return;
+            // Do not rebuild open cooking inputs: their draft dishes and ingredients
+            // must remain exactly as entered by the user.
+            document.querySelectorAll('#cookingInputList [data-cooking-day]').forEach(label => {
+                label.textContent = formatHouseholdWeekday(label.getAttribute('data-cooking-day'));
+            });
+        }
         function renderCookingPlan() {
             document.getElementById('cookingPlanList').innerHTML = getCookingPlan().map((p, idx) => `
                 <div class="p-2 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
-                    <div><span class="font-bold">${escapeUserHtml(p.day)}:</span> <span class="text-emerald-800">${escapeUserHtml(p.dish || (window.__toolyaUILocale === 'en' ? 'Unassigned' : 'Frei'))}</span> ${p.chef !== 'Frei' ? `<span class="bg-purple-100 text-purple-800 font-bold px-1 rounded text-[10px]">${escapeUserHtml(p.chef)}</span>` : ''}</div>
+                    <div><span class="font-bold">${escapeUserHtml(formatHouseholdWeekday(p.day))}:</span> <span class="text-emerald-800">${escapeUserHtml(p.dish || (window.__toolyaUILocale === 'en' ? 'Unassigned' : 'Frei'))}</span> ${p.chef !== 'Frei' ? `<span class="bg-purple-100 text-purple-800 font-bold px-1 rounded text-[10px]">${escapeUserHtml(p.chef)}</span>` : ''}</div>
                     ${p.ingredients ? `<button onclick="syncIngredientsToShopping(${idx})" class="b3-action b3-outline px-2 py-0.5 bg-amber-50 text-amber-800 border rounded text-[10px] font-bold">${window.__toolyaUILocale === 'en' ? '🛒 Ingredients' : '🛒 Zutaten'}</button>` : ''}
                 </div>
             `).join('');
@@ -2265,7 +2284,7 @@
             const plan = getCookingPlan(); const mateNames = getFlatmateNames();
             document.getElementById('cookingInputList').innerHTML = plan.map((p, idx) => `
                 <div class="p-2.5 bg-gray-50 border rounded-xl space-y-1.5">
-                    <div class="flex justify-between font-bold"><span>${escapeUserHtml(p.day)}</span><select data-idx="${idx}" class="chefSelect border p-1 rounded bg-white"><option value="Frei">${window.__toolyaUILocale === 'en' ? 'Unassigned' : 'Frei'}</option>${mateNames.map(m => `<option value="${escapeUserHtml(m)}" ${p.chef === m ? 'selected' : ''}>${escapeUserHtml(m)}</option>`).join('')}</select></div>
+                    <div class="flex justify-between font-bold"><span data-cooking-day="${escapeUserHtml(p.day)}">${escapeUserHtml(formatHouseholdWeekday(p.day))}</span><select data-idx="${idx}" class="chefSelect border p-1 rounded bg-white"><option value="Frei">${window.__toolyaUILocale === 'en' ? 'Unassigned' : 'Frei'}</option>${mateNames.map(m => `<option value="${escapeUserHtml(m)}" ${p.chef === m ? 'selected' : ''}>${escapeUserHtml(m)}</option>`).join('')}</select></div>
                     <input type="text" data-idx="${idx}" class="dishInput w-full p-1.5 border rounded" placeholder="${window.__toolyaUILocale === 'en' ? 'Dish' : 'Gericht'}" value="${escapeUserHtml(p.dish || '')}">
                     <input type="text" data-idx="${idx}" class="ingredientsInput w-full p-1.5 border rounded" placeholder="${window.__toolyaUILocale === 'en' ? 'Ingredients (comma-separated)' : 'Zutaten (kommagetrennt)'}" value="${escapeUserHtml(p.ingredients || '')}">
                 </div>
