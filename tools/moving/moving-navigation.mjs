@@ -57,12 +57,15 @@ function render(focus=''){
  document.dispatchEvent(new CustomEvent('toolya:moving-navigation',{detail:{mode,phase,activeProject:active}}));
  if(focus){
    requestAnimationFrame(()=>{
-     const target=focus==='create'?document.getElementById('b3-create'):focus==='search'?document.getElementById('b3-inventory'):null;
+     const target=focus==='create'?document.getElementById('b3-create'):focus==='search'?document.getElementById('b3-inventory'):focus==='stats'?document.getElementById('b3-stats'):null;
      if(target){target.scrollIntoView({behavior:'smooth',block:'start'});target.setAttribute('tabindex','-1');target.focus({preventScroll:true});}
    });
  }
 }
 function initialize(){
+ // Keep legacy element IDs and handlers intact; only move their containers.
+ const sections=['b3-create','b3-inventory','b3-stats','b3-values'].map(id=>document.getElementById(id));
+ if(sections.every(Boolean))main.append(...sections);
  if(initialized||!window.movingCloudReady||typeof window.getData!=='function')return;
  initialized=true;
  const last=stored();
@@ -82,6 +85,17 @@ nav?.addEventListener('click',event=>{
    else window.alert('Der QR-Etiketten-Export ist gerade nicht verfügbar.');
  }
 });
+// Existing B3 shortcuts also work when their target panel is in the other mode.
+document.addEventListener('click',event=>{
+ const a=event.target.closest?.('a[href]');
+ if(!a||!main)return;
+ let url;try{url=new URL(a.href,location.href);}catch{return;}
+ if(url.origin!==location.origin||url.pathname!==location.pathname)return;
+ const focus={'#b3-create':'create','#b3-inventory':'search','#b3-stats':'stats','#b3-values':'stats'}[url.hash];
+ if(!focus)return;
+ event.preventDefault();
+ setMode('inventory',{focus});
+},true);
 document.addEventListener('toolya:moving-ready',()=>{initialize();if(initialized)render();});
 document.addEventListener('toolya:moving-saved',()=>{if(initialized)render();});
 window.ToolyaMovingNavigation={open:setMode,get state(){return {mode,phase};}};
