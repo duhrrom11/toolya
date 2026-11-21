@@ -2460,12 +2460,12 @@
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
-            doc.setFontSize(16); doc.text("WG- & Haushaltsbuch Abrechnung", 14, 20);
-            doc.setFontSize(10); doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
+            doc.setFontSize(16); doc.text(window.__toolyaUILocale === "en" ? "Household Finance Report" : "WG- & Haushaltsbuch Abrechnung", 14, 20);
+            doc.setFontSize(10); doc.text(`${window.__toolyaUILocale === 'en' ? 'Created on' : 'Erstellt am'}: ${new Date().toLocaleDateString(window.__toolyaUILocale === 'en' ? 'en-GB' : 'de-DE')}`, 14, 28);
             const entries = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r));
-            doc.text(`Buchungen: ${entries.length}`, 14, 35);
+            doc.text(`${window.__toolyaUILocale === 'en' ? 'Transactions' : 'Buchungen'}: ${entries.length}`, 14, 35);
             let y = 43;
-            if (!entries.length) doc.text("Keine Buchungen erfasst.", 14, y);
+            if (!entries.length) doc.text(window.__toolyaUILocale === "en" ? "No transactions recorded." : "Keine Buchungen erfasst.", 14, y);
             entries.forEach(r => {
                 const price = Number(r.price);
                 const line = `${r.date || '-'} | ${r.title || '-'} (${r.category || '-'}): ${Number.isFinite(price) ? price.toFixed(2) : '-'} EUR [${r.payer || 'Privat'}]`;
