@@ -1050,3 +1050,43 @@ test('global password recovery remains a single token-based flow; tool translati
  assert.match(authGate,/const reject = \(\) => window\.location\.replace\(home\)/,'unauthenticated tool access routes to central account');
  assert.doesNotMatch(authGate,/resetPasswordForEmail|updateUser\(/,'auth gate does not invent another password recovery flow');
 });
+
+test('generated B3 navigation and action menu switches DE/EN without altering links or handlers',()=>{
+ for(const [tool,labels,translated] of [
+  ['moving',
+   ['📦 Übersicht','📊 Statistiken','🔍 QR- & Barcode-Scanner','💾 Sicherung herunterladen'],
+   ['📦 Overview','📊 Statistics','🔍 QR & barcode scanner','💾 Download backup']],
+  ['housemates',
+   ['🏠 Übersicht','📌 Pinnwand','👥 Mitglieder / Kontakte','🔐 WG-Zugriff verwalten'],
+   ['🏠 Overview','📌 Noticeboard','👥 Members / contacts','🔐 Manage household access']]
+ ]){
+  const {document}=parseHTML('<html><body><div class="b3-shell"><nav class="b3-nav"><div class="b3-nav-links">'+labels.slice(0,2).map((text,i)=>'<a href="#panel'+i+'">'+text+'</a>').join('')+'</div><details class="b3-more"><summary>☷ Weitere Tools</summary><div class="b3-more-content">'+labels.slice(2).map((text,i)=>'<button data-action="original'+i+'" onclick="go()"> '+text+'</button>').join('')+'</div></details></nav></div><section id="settingsModal"><section class="b3-preferences"><h4>Darstellung & Dashboard</h4><button onclick="edit()">✎ Dashboard bearbeiten</button></section><div class="b3-settings-footer"><a href="../../index.html">↗ Entdecke mehr Toolya</a></div></section></body></html>');
+  const links=[...document.querySelectorAll('.b3-nav-links a')];
+  const actions=[...document.querySelectorAll('.b3-more-content button')];
+  const hrefs=links.map(x=>x.getAttribute('href'));
+  const handlers=actions.map(x=>x.getAttribute('onclick'));
+  const originalMenu=[...links,...actions].map(x=>x.textContent);
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.deepEqual(links.map(x=>x.textContent),translated.slice(0,2));
+  assert.deepEqual(actions.map(x=>x.textContent.trim()),translated.slice(2));
+  assert.equal(document.querySelector('.b3-more > summary').textContent,'☷ More tools');
+  assert.equal(document.querySelector('.b3-preferences > h4').textContent,'Appearance & dashboard');
+  assert.equal(document.querySelector('.b3-preferences > button').textContent,'✎ Edit dashboard');
+  assert.equal(document.querySelector('.b3-settings-footer > a').textContent,'↗ Explore more Toolya');
+  assert.deepEqual(links.map(x=>x.getAttribute('href')),hrefs);
+  assert.deepEqual(actions.map(x=>x.getAttribute('onclick')),handlers);
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.deepEqual([...links,...actions].map(x=>x.textContent),originalMenu,'original labels restored exactly');
+  assert.equal(document.querySelector('.b3-more > summary').textContent,'☷ Weitere Tools');
+  assert.deepEqual(actions.map(x=>x.getAttribute('onclick')),handlers,'handlers restored');
+ }
+});
+
+test('generated menu translation leaves unknown dynamic links and user content alone',()=>{
+ const {document}=parseHTML('<html><body><nav class="b3-nav"><div class="b3-nav-links"><a href="/private">Private link with personal data</a></div><details class="b3-more"><summary>My original menu</summary><div class="b3-more-content"><button>Personal saved entry</button></div></details></nav><div class="b3-preferences"><button><span aria-hidden="true">✎</span> User settings</button></div></body></html>');
+ const before=document.body.innerHTML;
+ applyToolInterfaceLocale(document,'housemates','en');
+ assert.equal(document.body.innerHTML,before);
+ applyToolInterfaceLocale(document,'housemates','de');
+ assert.equal(document.body.innerHTML,before);
+});
