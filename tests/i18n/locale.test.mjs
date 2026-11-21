@@ -33,3 +33,12 @@ test('campaign links preserve locale and tracking', () => {
   assert.equal(new URL(campaignUrl({locale:'de',slug:'moving-boxes',source:'instagram',campaign:'launch_de'})).pathname,'/umzugskisten/');
   assert.throws(()=>campaignUrl({source:'instagram',campaign:'invalid value'}),/Invalid/);
 });
+
+test('new English public guide paths keep their German originals',async()=>{
+ const {localizedPublicUrl}=await import('../../shared/toolya/i18n/locale.mjs');
+ const pairs=[["vehicle-costs","autokosten"],["household-budget","haushaltsbuch"],["digital-estate","digitaler-nachlass"],["parking-spot","parkplatz-merker"],["pet-health","tiergesundheit"],["lent-items","verliehene-dinge"],["meter-readings","zaehlerstaende"],["publish-amazon-wishlist","amazon-wunschliste-veroeffentlichen"]];
+ for(const [slug,german] of pairs){
+  assert.equal(localizedPublicUrl('en',slug),'/en/'+slug+'/');
+  assert.equal(localizedPublicUrl('de',slug),'/'+german+'/');
+ }
+});

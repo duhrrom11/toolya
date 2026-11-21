@@ -10,17 +10,33 @@ const pages={
  '/en/moving-boxes/':'en/moving-boxes/index.html',
  '/en/roommate-organizer/':'en/roommate-organizer/index.html',
  '/en/plant-care/':'en/plant-care/index.html',
- '/en/cake-pan-calculator/':'en/cake-pan-calculator/index.html'
+ '/en/cake-pan-calculator/':'en/cake-pan-calculator/index.html',
+ '/en/vehicle-costs/':'en/vehicle-costs/index.html',
+ '/en/household-budget/':'en/household-budget/index.html',
+ '/en/digital-estate/':'en/digital-estate/index.html',
+ '/en/parking-spot/':'en/parking-spot/index.html',
+ '/en/pet-health/':'en/pet-health/index.html',
+ '/en/lent-items/':'en/lent-items/index.html',
+ '/en/meter-readings/':'en/meter-readings/index.html',
+ '/en/publish-amazon-wishlist/':'en/publish-amazon-wishlist/index.html'
 };
 const pairs=[
  ['index.html','/en/'],
  ['umzugskisten/index.html','/en/moving-boxes/'],
  ['wg-organisator/index.html','/en/roommate-organizer/'],
  ['pflanzenpflege/index.html','/en/plant-care/'],
- ['backform-rechner/index.html','/en/cake-pan-calculator/']
+ ['backform-rechner/index.html','/en/cake-pan-calculator/'],
+ ['autokosten/index.html','/en/vehicle-costs/'],
+ ['haushaltsbuch/index.html','/en/household-budget/'],
+ ['digitaler-nachlass/index.html','/en/digital-estate/'],
+ ['parkplatz-merker/index.html','/en/parking-spot/'],
+ ['tiergesundheit/index.html','/en/pet-health/'],
+ ['verliehene-dinge/index.html','/en/lent-items/'],
+ ['zaehlerstaende/index.html','/en/meter-readings/'],
+ ['amazon-wunschliste-veroeffentlichen/index.html','/en/publish-amazon-wishlist/']
 ];
 
-test('five English public pages have unique correct canonical URLs and language',()=>{
+test('English public pages have unique correct canonical URLs and language',()=>{
   for(const [url,path] of Object.entries(pages)){
     const html=read(path);
     assert.match(html,/<html lang="en">/);
@@ -59,4 +75,16 @@ test('no Supabase or mascot preference changes introduced',()=>{
     const html=read(path);
     assert.doesNotMatch(html,/service_role|supabaseClient|signInWithPassword|helferlein-toolya-preferences-v1/i);
   }
+});
+
+test('new English guides preserve reciprocal DE/EN links and use real application routes',()=>{
+ const guides=[{"slug":"vehicle-costs","de":"autokosten","app":"car","appFile":"index.html"},{"slug":"household-budget","de":"haushaltsbuch","app":"budget","appFile":"index.html"},{"slug":"digital-estate","de":"digitaler-nachlass","app":"estate","appFile":"index.html"},{"slug":"parking-spot","de":"parkplatz-merker","app":"parking","appFile":"index.html"},{"slug":"pet-health","de":"tiergesundheit","app":"pet-health","appFile":"index.html"},{"slug":"lent-items","de":"verliehene-dinge","app":"loans","appFile":"index.html"},{"slug":"meter-readings","de":"zaehlerstaende","app":"meters","appFile":"index.html"},{"slug":"publish-amazon-wishlist","de":"amazon-wunschliste-veroeffentlichen","app":"wishes","appFile":"public.html#profile"}];
+ for(const guide of guides){
+  const html=read('en/'+guide.slug+'/index.html');
+  const de=read(guide.de+'/index.html');
+  assert.ok(html.includes('href="/'+guide.de+'/" lang="de"')||html.includes('href="/'+guide.de+'/" data-set-locale="de"'),guide.slug);
+  assert.ok(de.includes('href="/en/'+guide.slug+'/" lang="en"'),guide.de);
+  assert.ok(html.includes('href="/tools/'+guide.app+'/'+guide.appFile+'"'),guide.slug);
+  assert.ok(html.includes('noindex,follow'),'keep unreleased English guide out of index');
+ }
 });

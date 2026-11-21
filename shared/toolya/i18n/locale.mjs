@@ -34,7 +34,15 @@ const PUBLIC_GUIDES = Object.freeze({
   'moving-boxes': 'umzugskisten',
   'roommate-organizer': 'wg-organisator',
   'plant-care': 'pflanzenpflege',
-  'cake-pan-calculator': 'backform-rechner'
+  'cake-pan-calculator': 'backform-rechner',
+  'vehicle-costs': 'autokosten',
+  'household-budget': 'haushaltsbuch',
+  'digital-estate': 'digitaler-nachlass',
+  'parking-spot': 'parkplatz-merker',
+  'pet-health': 'tiergesundheit',
+  'lent-items': 'verliehene-dinge',
+  'meter-readings': 'zaehlerstaende',
+  'publish-amazon-wishlist': 'amazon-wunschliste-veroeffentlichen'
 });
 
 export function localizedPublicUrl(locale, slug = '') {

@@ -29,7 +29,15 @@ const pairs=new Map([
  ['umzugskisten/index.html','en/moving-boxes/index.html'],
  ['wg-organisator/index.html','en/roommate-organizer/index.html'],
  ['pflanzenpflege/index.html','en/plant-care/index.html'],
- ['backform-rechner/index.html','en/cake-pan-calculator/index.html']
+ ['backform-rechner/index.html','en/cake-pan-calculator/index.html'],
+ ['autokosten/index.html','en/vehicle-costs/index.html'],
+ ['haushaltsbuch/index.html','en/household-budget/index.html'],
+ ['digitaler-nachlass/index.html','en/digital-estate/index.html'],
+ ['parkplatz-merker/index.html','en/parking-spot/index.html'],
+ ['tiergesundheit/index.html','en/pet-health/index.html'],
+ ['verliehene-dinge/index.html','en/lent-items/index.html'],
+ ['zaehlerstaende/index.html','en/meter-readings/index.html'],
+ ['amazon-wunschliste-veroeffentlichen/index.html','en/publish-amazon-wishlist/index.html']
 ]);
 const supportedTools=new Set(['tools/moving/index.html','tools/housemates/index.html','tools/plants/index.html','tools/baking/index.html']);
 const german=/\b(?:Anmelden|Abmelden|Registrieren|Passwort|Einstellungen|Speichern|Löschen|Abbrechen|Schließen|Auswählen|Zurück|Datenschutz|Impressum|Warnung|Fehlermeldung|Warenkorb|Mitglieder|Pflanzen|Kisten|Herunterladen|Wiederherstellen|Übernehmen|Benutzerkonto|Bitte|Fehler)\b/i;
