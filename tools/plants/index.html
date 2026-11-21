@@ -542,7 +542,7 @@
                 if(key.includes(k)) { match = mischkulturDb[k]; break; }
             }
             if(match) {
-                box.innerHTML = `🤝 <b>Mischkultur-Tipp:</b> Liebt Nachbarschaft mit ${match.gute.join(', ')}. Vermeide ${match.schlechte.join(', ')}.`;
+                box.innerHTML = window.__toolyaUILocale === 'en' ? `🤝 <b>Companion planting tip:</b> Grows well alongside ${match.gute.join(', ')}. Avoid ${match.schlechte.join(', ')}.` : `🤝 <b>Mischkultur-Tipp:</b> Liebt Nachbarschaft mit ${match.gute.join(', ')}. Vermeide ${match.schlechte.join(', ')}.`;
                 box.classList.remove('hidden');
             } else { box.classList.add('hidden'); }
         }
@@ -674,20 +674,20 @@
             let data = getData();
             document.getElementById('beetGrid').innerHTML = data.beetSlots.map((plantId, index) => {
                 let p = data.plants.find(item => item && typeof item === 'object' && item.id === plantId);
-                return `<button type="button" onclick="assignToBeet(${index})" class="h-24 border-2 border-dashed border-emerald-300 rounded-xl p-2 flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 cursor-pointer text-center"><span class="text-[10px] text-emerald-600 font-bold">Feld ${index+1}</span><span class="text-xs font-bold text-emerald-900 mt-1">${p ? escapeHtml(p.name) : '+ Belegen'}</span></button>`;
+                return `<button type="button" onclick="assignToBeet(${index})" class="h-24 border-2 border-dashed border-emerald-300 rounded-xl p-2 flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 cursor-pointer text-center"><span class="text-[10px] text-emerald-600 font-bold">${window.__toolyaUILocale === 'en' ? 'Plot' : 'Feld'} ${index+1}</span><span class="text-xs font-bold text-emerald-900 mt-1">${p ? escapeHtml(p.name) : (window.__toolyaUILocale === 'en' ? '+ Assign' : '+ Belegen')}</span></button>`;
             }).join('');
         }
         async function assignToBeet(slotIndex) {
             let data = getData();
             if (!Number.isSafeInteger(slotIndex) || slotIndex < 0 || slotIndex >= data.beetSlots.length) return;
             let plantNames = data.plants.filter(p => p && typeof p === 'object' &&
-                Number.isSafeInteger(p.id) && p.id >= 0).map(p => `${p.id}: ${String(p.name ?? 'Unbenannt')}`).join('\n');
-            let input = prompt(`Pflanze für Beet-Feld ${slotIndex+1}:\n\n${plantNames}\n\n('leer' zum Leeren)`);
+                Number.isSafeInteger(p.id) && p.id >= 0).map(p => `${p.id}: ${String(p.name ?? (window.__toolyaUILocale === 'en' ? 'Unnamed' : 'Unbenannt'))}`).join('\n');
+            let input = prompt(window.__toolyaUILocale === 'en' ? `Plant for plot ${slotIndex+1}:\n\n${plantNames}\n\n(type 'clear' to empty)` : `Pflanze für Beet-Feld ${slotIndex+1}:\n\n${plantNames}\n\n('leer' zum Leeren)`);
             if (input === null) return;
             input = input.trim();
             if (!input) return;
             let nextPlantId = null;
-            if (input.toLowerCase() !== 'leer') {
+            if (input.toLowerCase() !== 'leer' && !(window.__toolyaUILocale === 'en' && input.toLowerCase() === 'clear')) {
                 const candidates = data.plants.filter(p => p && typeof p === 'object' &&
                     Number.isSafeInteger(p.id) && p.id >= 0);
                 const exactId = candidates.find(p => String(p.id) === input);
@@ -780,7 +780,7 @@
             let photos = Array.isArray(p.galleryPhotos) ? p.galleryPhotos : [];
             if (photos.length === 0 && p.photo) photos = [p.photo];
             photos = photos.filter(img => typeof img === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(img));
-            document.getElementById('galleryGrid').innerHTML = photos.map((img, idx) => `<div class="relative group border rounded-xl overflow-hidden bg-gray-100"><img src="${escapeHtml(img)}" alt="Pflanzenfoto ${idx + 1}" class="w-full h-32 object-cover"><span class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-[9px] px-1.5 py-0.5 rounded">Foto ${idx+1}</span></div>`).join('') || `<p class="col-span-2 text-xs text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No photos.' : 'Keine Fotos.'}</p>`;
+            document.getElementById('galleryGrid').innerHTML = photos.map((img, idx) => `<div class="relative group border rounded-xl overflow-hidden bg-gray-100"><img src="${escapeHtml(img)}" alt="${window.__toolyaUILocale === 'en' ? 'Plant photo' : 'Pflanzenfoto'} ${idx + 1}" class="w-full h-32 object-cover"><span class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-[9px] px-1.5 py-0.5 rounded">${window.__toolyaUILocale === 'en' ? 'Photo' : 'Foto'} ${idx+1}</span></div>`).join('') || `<p class="col-span-2 text-xs text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No photos.' : 'Keine Fotos.'}</p>`;
         }
         async function addGalleryPhoto() {
             const rawId = document.getElementById('galleryPlantId').value;
