@@ -652,6 +652,16 @@
             });
         }
 
+        function refreshMovingLocationPrompts() {
+            // Update just the placeholder: rebuilding the selects would drop
+            // unsaved location choices in the add/edit box forms.
+            for (const id of ['boxLocationSelect', 'editBoxLocSelect']) {
+                const option = document.getElementById(id)?.querySelector('option[value=""]');
+                if (option) option.textContent = window.__toolyaUILocale === 'en'
+                    ? '-- Choose location --' : '-- Standort wählen --';
+            }
+        }
+
         function loadLocationsDropdown() {
             let data = getData();
             const html = '<option value="">' + (window.__toolyaUILocale === 'en' ? '-- Choose location --' : '-- Standort wählen --') + '</option>' + 
@@ -936,8 +946,8 @@
         document.addEventListener('toolya:locale-change', () => {
             updateMovingHelpToggleLabel();
             refreshMovingSelectLabels();
-            if (movingCloudReady) loadLocationsDropdown();
-            if (document.getElementById('inventoryContainer')) renderInventory();
+            refreshMovingLocationPrompts();
+            if (movingCloudReady && document.getElementById('inventoryContainer')) renderInventory();
         });
 
         async function exportInventoryPDF() {
