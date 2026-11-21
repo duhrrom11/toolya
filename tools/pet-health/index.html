@@ -921,6 +921,10 @@
         }
 
         async function exportPDF() {
+            const pdfEn = window.__toolyaUILocale === 'en';
+            const pdfLabel = (de,en) => pdfEn ? en : de;
+            const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
@@ -928,29 +932,29 @@
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text("Haustier-Gesundheits-Pass Report", 14, 20);
+            doc.text(pdfLabel("Haustier-Gesundheits-Pass Report","Pet health report"), 14, 20);
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+            doc.text(`${pdfLabel("Erstellt am: ","Created on: ")}${new Date().toLocaleDateString(pdfDateLocale)}`, 14, 27);
 
             let y = 35;
             doc.setFont("helvetica", "bold");
-            doc.text("Haustiere & Tierarzt:", 14, y);
+            doc.text(pdfLabel("Haustiere & Tierarzt:","Pets and veterinarian:"), 14, y);
             y += 7;
 
             doc.setFont("helvetica", "normal");
             data.pets.forEach(p => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let tassoText = p.tasso ? " [TASSO]" : "";
-                let vetText = p.vet && p.vet.name ? ` | TA: ${p.vet.name} (${p.vet.tel || '-'})` : "";
-                const lines = doc.splitTextToSize(`- ${p.name} (${p.species || 'Haustier'}), Chip: ${p.chip || 'k.A.'}${tassoText}${vetText}`, 180);
+                let vetText = p.vet && p.vet.name ? ` | ${pdfLabel("TA: ","Vet: ")}${p.vet.name} (${p.vet.tel || '-'})` : "";
+                const lines = doc.splitTextToSize(`- ${p.name} (${p.species || pdfLabel(pdfLabel("Haustier","Pet"),"Pet")}), Chip: ${p.chip || pdfLabel(pdfLabel("k.A.","n/a"),"n/a")}${tassoText}${vetText}`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 4;
             doc.setFont("helvetica", "bold");
-            doc.text("Gesundheits-Einträge & Kosten:", 14, y);
+            doc.text(pdfLabel("Gesundheits-Einträge & Kosten:","Health records and costs:"), 14, y);
             y += 7;
 
             let totalCosts = 0;
@@ -962,17 +966,17 @@
 
                 if (y > 270) { doc.addPage(); y = 20; }
                 let weightText = e.weight ? ` | ${e.weight} kg` : "";
-                let expText = e.expiryDate ? ` (Gültig bis: ${new Date(e.expiryDate).toLocaleDateString('de-DE')})` : "";
-                const lines = doc.splitTextToSize(`- [${e.type}] ${pName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${Number(e.cost || 0).toFixed(2)} EUR${weightText})${expText}`, 180);
+                let expText = e.expiryDate ? ` (${pdfLabel("Gültig bis: ","Valid until: ")}${new Date(e.expiryDate).toLocaleDateString(pdfDateLocale)})` : "";
+                const lines = doc.splitTextToSize(`- [${e.type}] ${pName}: ${e.title}${pdfLabel(" am "," on ")}${new Date(e.date).toLocaleDateString(pdfDateLocale)} (${Number(e.cost || 0).toFixed(2)} EUR${weightText})${expText}`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 6;
             doc.setFont("helvetica", "bold");
             if (y > 270) { doc.addPage(); y = 20; }
-            doc.text(`Gesamtkosten: ${totalCosts.toFixed(2)} EUR`, 14, y);
+            doc.text(`${pdfLabel("Gesamtkosten: ","Total costs: ")}${totalCosts.toFixed(2)} EUR`, 14, y);
 
-            doc.save("haustier-gesundheits-report.pdf");
+            doc.save(pdfLabel("haustier-gesundheits-report.pdf","pet-health-report.pdf"));
         }
 
         function exportBackup() {

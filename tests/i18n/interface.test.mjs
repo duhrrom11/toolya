@@ -2562,3 +2562,20 @@ test('parking notification only changes display locale and keeps timer computati
  assert.ok(source.includes("window.__toolyaUILocale === 'en' ? 'Parking alert'"));
  assert.ok(source.includes('Number(activeEndTime) - Date.now()'));
 });
+
+test('additional PDF exports display EN labels without modifying storage structures or CSV schemas',async()=>{
+ const {readFileSync}=await import('node:fs');
+ for(const tool of ['budget','car','loans','meters','parking','pet-health']){
+  const html=readFileSync(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
+  const pdfStart=html.indexOf('async function exportPDF()');
+  assert.ok(pdfStart>=0,tool);
+  const pdfEnd=html.indexOf('doc.save(',pdfStart);
+  const segment=html.slice(pdfStart,pdfEnd+260);
+  assert.ok(segment.includes("window.__toolyaUILocale === 'en'"),tool);
+  assert.ok(segment.includes("pdfEn ? 'en-GB' : 'de-DE'"),tool);
+  assert.ok(segment.includes('pdfLabel('),tool);
+  assert.ok(segment.includes('en-GB'),'English date format');
+ }
+ const budget=readFileSync(new URL('../../tools/budget/index.html',import.meta.url),'utf8');
+ assert.ok(budget.includes("'Haendler', 'Kategorie', 'Preis_EUR'"),'CSV machine-readable headers unchanged');
+});

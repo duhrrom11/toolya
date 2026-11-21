@@ -1031,24 +1031,28 @@
         }
 
         async function exportHandoverPDF() {
+            const pdfEn = window.__toolyaUILocale === 'en';
+            const pdfLabel = (de,en) => pdfEn ? en : de;
+            const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
             const data = getData();
 
             doc.setFontSize(18);
-            doc.text("Wohnungs- & Zählerübergabe-Protokoll", 14, 20);
+            doc.text(pdfLabel("Wohnungs- & Zählerübergabe-Protokoll","Property and meter handover report"), 14, 20);
             doc.setFontSize(10);
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
-            doc.text("Dieses Dokument dient als formeller Nachweis der aktuellen Zählerstände.", 14, 34);
+            doc.text(`${pdfLabel("Erstellt am: ","Created on: ")}${new Date().toLocaleDateString(pdfDateLocale)}`, 14, 28);
+            doc.text(pdfLabel("Dieses Dokument dient als formeller Nachweis der aktuellen Zählerstände.","This document records the current meter readings for handover."), 14, 34);
 
             let y = 48;
             data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string').forEach((r, idx) => {
                 const unit = r.type.includes('Strom') ? 'kWh' : 'm³';
                 const lines = [
                     ...doc.splitTextToSize(`${idx + 1}. [${r.type}] ${r.name} (${r.location || 'Haupt'})`, 180),
-                    ...doc.splitTextToSize(`Ablesedatum: ${r.date} | Zählerstand: ${r.value} ${unit}`, 180),
-                    ...(r.note ? doc.splitTextToSize(`Bemerkung: ${r.note}`, 180) : [])
+                    ...doc.splitTextToSize(`${pdfLabel("Ablesedatum: ","Reading date: ")}${r.date} | ${pdfLabel("Zählerstand: ","Reading: ")}${r.value} ${unit}`, 180),
+                    ...(r.note ? doc.splitTextToSize(`${pdfLabel("Bemerkung: ","Note: ")}${r.note}`, 180) : [])
                 ];
                 lines.forEach(line => {
                     if (y > 270) { doc.addPage(); y = 20; }
@@ -1061,12 +1065,12 @@
             if (y + 24 > 280) { doc.addPage(); y = 20; }
             y += 10;
             doc.text("___________________________", 14, y);
-            doc.text("Unterschrift Übergeber / Mieter", 14, y + 6);
+            doc.text(pdfLabel("Unterschrift Übergeber / Mieter","Signature of outgoing occupant / tenant"), 14, y + 6);
 
             doc.text("___________________________", 120, y);
-            doc.text("Unterschrift Übernehmer / Vermieter", 120, y + 6);
+            doc.text(pdfLabel("Unterschrift Übernehmer / Vermieter","Signature of incoming occupant / landlord"), 120, y + 6);
 
-            doc.save(`zaehler-uebergabeprotokoll-${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.save(`${pdfLabel("zaehler-uebergabeprotokoll-","meter-handover-report-")}${new Date().toISOString().split('T')[0]}.pdf`);
         }
 
         function exportBackup() {
@@ -1120,21 +1124,25 @@
         }
 
         async function exportPDF() {
+            const pdfEn = window.__toolyaUILocale === 'en';
+            const pdfLabel = (de,en) => pdfEn ? en : de;
+            const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
             const data = getData();
 
             doc.setFontSize(16);
-            doc.text("Zählerstands-Bericht & Prognose", 14, 20);
+            doc.text(pdfLabel("Zählerstands-Bericht & Prognose","Meter readings and forecast"), 14, 20);
             doc.setFontSize(10);
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
+            doc.text(`${pdfLabel("Erstellt am: ","Created on: ")}${new Date().toLocaleDateString(pdfDateLocale)}`, 14, 28);
 
             const readings = data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string');
-            doc.text(`Erfasste Ablesungen: ${readings.length}`, 14, 34);
+            doc.text(`${pdfLabel("Erfasste Ablesungen: ","Recorded readings: ")}${readings.length}`, 14, 34);
             let y = 44;
             if (!readings.length) {
-                doc.text("Keine Zählerstände erfasst.", 14, y);
+                doc.text(pdfLabel("Keine Zählerstände erfasst.","No meter readings recorded."), 14, y);
             }
             readings.forEach((r) => {
                 const unit = r.type.includes('Strom') ? 'kWh' : 'm³';
@@ -1148,7 +1156,7 @@
                 y += 2;
             });
 
-            doc.save(`zaehlerstaende-${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.save(`${pdfLabel("zaehlerstaende-","meter-readings-")}${new Date().toISOString().split('T')[0]}.pdf`);
         }
     </script>
 </body>

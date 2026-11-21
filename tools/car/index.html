@@ -1106,6 +1106,10 @@ async function toolyaCloudBoot(tool) {
         }
 
         async function exportPDF() {
+            const pdfEn = window.__toolyaUILocale === 'en';
+            const pdfLabel = (de,en) => pdfEn ? en : de;
+            const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
@@ -1113,27 +1117,27 @@ async function toolyaCloudBoot(tool) {
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text("KFZ- & Wartungs-Report", 14, 20);
+            doc.text(pdfLabel("KFZ- & Wartungs-Report","Vehicle and maintenance report"), 14, 20);
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+            doc.text(`${pdfLabel("Erstellt am: ","Created on: ")}${new Date().toLocaleDateString(pdfDateLocale)}`, 14, 27);
 
             let y = 35;
             doc.setFont("helvetica", "bold");
-            doc.text("Fahrzeuge & Bordmappe:", 14, y);
+            doc.text(pdfLabel("Fahrzeuge & Bordmappe:","Vehicles and documents:"), 14, y);
             y += 7;
 
             doc.setFont("helvetica", "normal");
             data.cars.forEach(c => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                const lines = doc.splitTextToSize(`- ${c.name} (${c.plate || 'k.A.'}), KM: ${c.km || 'k.A.'} | Vers.: ${c.insurance || '-'}`, 180);
+                const lines = doc.splitTextToSize(`- ${c.name} (${c.plate || pdfLabel(pdfLabel("k.A.","n/a"),"n/a")}), ${pdfLabel("KM: ","Mileage: ")}${c.km || pdfLabel(pdfLabel("k.A.","n/a"),"n/a")} | ${pdfLabel("Vers.: ","Insurance: ")}${c.insurance || '-'}`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 4;
             doc.setFont("helvetica", "bold");
-            doc.text("Wartungen, Fixkosten & Tanken:", 14, y);
+            doc.text(pdfLabel("Wartungen, Fixkosten & Tanken:","Maintenance, fixed costs and fuel:"), 14, y);
             y += 7;
 
             let totalCosts = 0;
@@ -1147,16 +1151,16 @@ async function toolyaCloudBoot(tool) {
                 let treadText = e.tread ? ` | ${e.tread} mm` : "";
                 let tankText = e.litres ? ` | ${e.litres} L` : "";
                 let consText = e.consumption ? ` | ${e.consumption.toFixed(1)} l/100km` : "";
-                const lines = doc.splitTextToSize(`- [${e.type}] ${cName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${Number(e.cost || 0).toFixed(2)} EUR${treadText}${tankText}${consText})`, 180);
+                const lines = doc.splitTextToSize(`- [${e.type}] ${cName}: ${e.title}${pdfLabel(" am "," on ")}${new Date(e.date).toLocaleDateString(pdfDateLocale)} (${Number(e.cost || 0).toFixed(2)} EUR${treadText}${tankText}${consText})`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 6;
             doc.setFont("helvetica", "bold");
             if (y > 270) { doc.addPage(); y = 20; }
-            doc.text(`Gesamtkosten: ${totalCosts.toFixed(2)} EUR`, 14, y);
+            doc.text(`${pdfLabel("Gesamtkosten: ","Total costs: ")}${totalCosts.toFixed(2)} EUR`, 14, y);
 
-            doc.save("kfz-wartungs-report.pdf");
+            doc.save(pdfLabel("kfz-wartungs-report.pdf","vehicle-maintenance-report.pdf"));
         }
 
         function exportBackup() {

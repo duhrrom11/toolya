@@ -983,6 +983,10 @@
         }
 
         async function exportPDF() {
+            const pdfEn = window.__toolyaUILocale === 'en';
+            const pdfLabel = (de,en) => pdfEn ? en : de;
+            const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
@@ -990,34 +994,34 @@
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text("Leih- & Verleih-Report Pro", 14, 20);
+            doc.text(pdfLabel("Leih- & Verleih-Report Pro","Lending and borrowing report"), 14, 20);
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+            doc.text(`${pdfLabel("Erstellt am: ","Created on: ")}${new Date().toLocaleDateString(pdfDateLocale)}`, 14, 27);
 
             let y = 35;
             let totalDeposit = data.items.filter(i => i.status === 'active').reduce((sum, i) => sum + Number(i.deposit || 0), 0);
 
             doc.setFont("helvetica", "bold");
-            doc.text(`Offene Kaution / Wert: ${totalDeposit.toFixed(2)} EUR`, 14, y);
+            doc.text(`${pdfLabel("Offene Kaution / Wert: ","Outstanding deposit / value: ")}${totalDeposit.toFixed(2)} EUR`, 14, y);
             y += 10;
 
             doc.setFont("helvetica", "underline");
-            doc.text("Verleih-Historie:", 14, y);
+            doc.text(pdfLabel("Verleih-Historie:","Loan history:"), 14, y);
             y += 7;
 
             doc.setFont("helvetica", "normal");
             data.items.forEach(i => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                let statusLabel = i.status === 'returned' ? "[ZURÜCK]" : (i.status === 'lost' ? "[VERLOREN/DEFEKT]" : "[AKTIV]");
+                let statusLabel = i.status === 'returned' ? pdfLabel("[ZURÜCK]","[RETURNED]") : (i.status === 'lost' ? pdfLabel("[VERLOREN/DEFEKT]","[LOST/DAMAGED]") : pdfLabel("[AKTIV]","[ACTIVE]"));
                 let serialText = i.serial ? ` (SN: ${i.serial})` : "";
-                let depText = Number(i.deposit || 0) > 0 ? ` [Kaution: ${Number(i.deposit).toFixed(2)} EUR]` : "";
-                const lines = doc.splitTextToSize(`- ${statusLabel} ${i.title}${serialText} an ${i.person} (seit ${new Date(i.date).toLocaleDateString('de-DE')})${depText}`, 180);
+                let depText = Number(i.deposit || 0) > 0 ? ` [${pdfLabel("Kaution: ","Deposit: ")}${Number(i.deposit).toFixed(2)} EUR]` : "";
+                const lines = doc.splitTextToSize(`- ${statusLabel} ${i.title}${serialText}${pdfLabel(" an "," to ")}${i.person} (${pdfLabel("seit ","since ")}${new Date(i.date).toLocaleDateString(pdfDateLocale)})${depText}`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
-            doc.save("verleih-report-pro.pdf");
+            doc.save(pdfLabel("verleih-report-pro.pdf","lending-report.pdf"));
         }
     </script>
 </body>

@@ -1911,15 +1911,19 @@ async function toolyaCloudBoot(tool) {
  }
 
         async function exportPDF() {
+            const pdfEn = window.__toolyaUILocale === 'en';
+            const pdfLabel = (de,en) => pdfEn ? en : de;
+            const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
             const data = getData();
 
             doc.setFontSize(16);
-            doc.text("Haushalts-, Finanz- & Kassenbon-Übersicht", 14, 20);
+            doc.text(pdfLabel("Haushalts-, Finanz- & Kassenbon-Übersicht","Household finances and receipts overview"), 14, 20);
             doc.setFontSize(10);
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
+            doc.text(`${pdfLabel("Erstellt am: ","Created on: ")}${new Date().toLocaleDateString(pdfDateLocale)}`, 14, 28);
 
             let totalIncome = 0;
             let totalExpense = 0;
@@ -1941,15 +1945,15 @@ async function toolyaCloudBoot(tool) {
             });
             const money = amount => amount.toFixed(2).replace('.', ',') + ' EUR';
             doc.setFontSize(11);
-            doc.text('Zusammenfassung (alle Buchungen)', 14, 39);
+            doc.text(pdfLabel(pdfLabel("Zusammenfassung (alle Buchungen)","Summary (all transactions)"),"Summary (all transactions)"), 14, 39);
             doc.setFontSize(10);
-            doc.text('Buchungen: ' + validEntries, 14, 46);
-            doc.text('Einnahmen: ' + money(totalIncome), 14, 52);
-            doc.text('Ausgaben: ' + money(totalExpense), 14, 58);
-            doc.text('Saldo: ' + money(totalIncome - totalExpense), 14, 64);
+            doc.text(pdfLabel(pdfLabel("Buchungen: ","Transactions: "),"Transactions: ") + validEntries, 14, 46);
+            doc.text(pdfLabel(pdfLabel("Einnahmen: ","Income: "),"Income: ") + money(totalIncome), 14, 52);
+            doc.text(pdfLabel(pdfLabel("Ausgaben: ","Expenses: "),"Expenses: ") + money(totalExpense), 14, 58);
+            doc.text(pdfLabel(pdfLabel("Saldo: ","Balance: "),"Balance: ") + money(totalIncome - totalExpense), 14, 64);
             const formatDate = value => value.slice(8, 10) + '.' + value.slice(5, 7) + '.' + value.slice(0, 4);
-            const period = earliestDate && latestDate ? formatDate(earliestDate) + ' bis ' + formatDate(latestDate) : 'Keine gültigen Buchungsdaten';
-            doc.text('Zeitraum: ' + period, 14, 70);
+            const period = earliestDate && latestDate ? formatDate(earliestDate) + ' bis ' + formatDate(latestDate) : pdfLabel(pdfLabel("Keine gültigen Buchungsdaten","No valid transaction dates"),"No valid transaction dates");
+            doc.text(pdfLabel(pdfLabel("Zeitraum: ","Period: "),"Period: ") + period, 14, 70);
 
             // Chronologisch ausgeben, ohne die gespeicherte Reihenfolge zu verändern.
             const bookingDate = r => {
@@ -1969,8 +1973,8 @@ async function toolyaCloudBoot(tool) {
             sortedData.forEach((r) => {
                 const sign = (r.entryType === 'einnahme' || r.category === 'Einnahme') ? '+' : '-';
                 const price = Number(r.price);
-                const amount = Number.isFinite(price) ? sign + price.toFixed(2) : 'k.A.';
-                const line = `${r.date || 'k.A.'} | ${r.title || 'Ohne Titel'} (${r.category || 'Sonstiges'}): ${amount} € [${r.paymentMethod || 'k.A.'}]`;
+                const amount = Number.isFinite(price) ? sign + price.toFixed(2) : pdfLabel(pdfLabel("k.A.","n/a"),"n/a");
+                const line = `${r.date || pdfLabel(pdfLabel("k.A.","n/a"),"n/a")} | ${r.title || pdfLabel(pdfLabel("Ohne Titel","Untitled"),"Untitled")} (${r.category || pdfLabel(pdfLabel("Sonstiges","Other"),"Other")}): ${amount} € [${r.paymentMethod || pdfLabel(pdfLabel("k.A.","n/a"),"n/a")}]`;
                 const lines = doc.splitTextToSize(line, 180);
                 for (const textLine of lines) {
                     if (y > 275) { doc.addPage(); y = 20; }
@@ -1980,7 +1984,7 @@ async function toolyaCloudBoot(tool) {
                 y += 2;
             });
 
-            doc.save(`finanz-bericht-${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.save(`${pdfLabel("finanz-bericht-","financial-report-")}${new Date().toISOString().split('T')[0]}.pdf`);
         }
     </script>
 

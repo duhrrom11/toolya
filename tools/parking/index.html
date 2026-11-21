@@ -605,6 +605,10 @@
 
         // PDF Report Export via jsPDF
         async function exportPDF() {
+            const pdfEn = window.__toolyaUILocale === 'en';
+            const pdfLabel = (de,en) => pdfEn ? en : de;
+            const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
@@ -612,34 +616,34 @@
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text("Parkschein- & Parkplatz-Report", 14, 20);
+            doc.text(pdfLabel("Parkschein- & Parkplatz-Report","Parking session and location report"), 14, 20);
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+            doc.text(`${pdfLabel("Erstellt am: ","Created on: ")}${new Date().toLocaleDateString(pdfDateLocale)}`, 14, 27);
 
             const sessions = data.sessions.filter(s => s && typeof s === 'object' && !Array.isArray(s));
             let y = 35;
             let totalCost = sessions.reduce((sum, s) => sum + Number(s.cost || 0), 0);
 
             doc.setFont("helvetica", "bold");
-            doc.text(`Parkvorgänge: ${sessions.length} | Gesamtkosten: ${totalCost.toFixed(2)} EUR`, 14, y);
+            doc.text(`${pdfLabel("Parkvorgänge: ","Parking sessions: ")}${sessions.length} | Gesamtkosten: ${totalCost.toFixed(2)} EUR`, 14, y);
             y += 10;
 
             doc.setFont("helvetica", "underline");
-            doc.text("Parkhistorie:", 14, y);
+            doc.text(pdfLabel("Parkhistorie:","Parking history:"), 14, y);
             y += 7;
 
             doc.setFont("helvetica", "normal");
-            if (!sessions.length) doc.text("Keine Parkvorgänge erfasst.", 14, y);
+            if (!sessions.length) doc.text(pdfLabel("Keine Parkvorgänge erfasst.","No parking sessions recorded."), 14, y);
             sessions.forEach((s, idx) => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                let sectorText = s.sector ? ` [Sektor: ${s.sector}]` : "";
-                const lines = doc.splitTextToSize(`${idx + 1}. Standort: ${s.desc}${sectorText} | ${s.date} | ${Number(s.cost || 0).toFixed(2)} EUR`, 180);
+                let sectorText = s.sector ? ` [${pdfLabel("Sektor: ","Sector: ")}${s.sector}]` : "";
+                const lines = doc.splitTextToSize(`${idx + 1}. ${pdfLabel("Standort: ","Location: ")}${s.desc}${sectorText} | ${s.date} | ${Number(s.cost || 0).toFixed(2)} EUR`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
-            doc.save("park-report.pdf");
+            doc.save(pdfLabel("park-report.pdf","parking-report.pdf"));
         }
     </script>
 </body>
