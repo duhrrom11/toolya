@@ -10,7 +10,9 @@ create table if not exists public.moving_helper_grants (
  expires_at timestamptz not null,
  revoked_at timestamptz,
  created_at timestamptz not null default now(),
- last_used_at timestamptz
+ last_used_at timestamptz,
+ request_window_at timestamptz not null default now(),
+ request_count integer not null default 0 check (request_count>=0)
 );
 create index if not exists moving_helper_grants_owner_idx on public.moving_helper_grants(owner_id,project_id);
 create table if not exists public.moving_transport_state (
@@ -74,7 +76,7 @@ begin
  end if;
  select * into v_grant from public.moving_helper_grants
  where token_hash=p_token_hash and revoked_at is null and expires_at>now()
- and scope='transport';
+ and scope='transport' for update;
  if not found then raise exception 'Grant unavailable' using errcode='42501'; end if;
  select * into v_existing from public.moving_transport_events
  where grant_id=v_grant.id and request_id=p_request_id;
@@ -158,3 +160,26 @@ end;
 $$;
 revoke all on function public.moving_owner_transition(uuid,uuid,uuid,integer,text,uuid) from public,anon,authenticated;
 grant execute on function public.moving_owner_transition(uuid,uuid,uuid,integer,text,uuid) to service_role;
+
+-- Bounded per-grant request rate across all edge instances (including reads).
+create or replace function public.moving_helper_rate_limit(p_token_hash text)
+returns boolean language plpgsql security definer set search_path=''
+as $$
+declare g public.moving_helper_grants%rowtype;
+begin
+ if p_token_hash is null or p_token_hash !~ '^[a-f0-9]{64}$' then return false; end if;
+ select * into g from public.moving_helper_grants
+ where token_hash=p_token_hash and revoked_at is null and expires_at>now()
+ for update;
+ if not found then return false; end if;
+ if g.request_window_at<now()-interval '1 minute' then
+   update public.moving_helper_grants set request_window_at=now(),request_count=1,last_used_at=now() where id=g.id;
+   return true;
+ end if;
+ if g.request_count>=80 then return false; end if;
+ update public.moving_helper_grants set request_count=request_count+1,last_used_at=now() where id=g.id;
+ return true;
+end;
+$$;
+revoke all on function public.moving_helper_rate_limit(text) from public,anon,authenticated;
+grant execute on function public.moving_helper_rate_limit(text) to service_role;
