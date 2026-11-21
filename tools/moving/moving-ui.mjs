@@ -32,8 +32,9 @@ function render(){
     el.innerHTML=h;return;
   }
   const assigned=m.assignments.filter(x=>x.projectId===p.id),rooms=m.rooms.filter(x=>x.projectId===p.id&&!x.archived);
-  const arrived=assigned.filter(x=>['arrived','unpacked'].includes(x.status)).length;
-  const unpacked=assigned.filter(x=>x.status==='unpacked').length;
+  const liveStatus=a=>window.movingTransportStatuses?.[a.id]?.status||a.status;
+  const arrived=assigned.filter(x=>['arrived','unpacked'].includes(liveStatus(x))).length;
+  const unpacked=assigned.filter(x=>liveStatus(x)==='unpacked').length;
   h+='<div class="mv-project"><strong>'+esc(p.name)+'</strong><span>'+esc(p.moveDate||'Ohne Umzugsdatum')+'</span></div>';
   h+='<div class="mv-stats"><div><strong>'+assigned.length+'</strong><small>Kisten</small></div><div><strong>'+arrived+'</strong><small>Angekommen</small></div><div><strong>'+unpacked+'</strong><small>Ausgepackt</small></div></div>';
   h+='<div class="mv-progress" aria-label="'+arrived+' von '+assigned.length+' Kisten angekommen"><span style="width:'+(assigned.length?Math.round(arrived/assigned.length*100):0)+'%"></span></div>';
@@ -42,16 +43,17 @@ function render(){
     h+='<button class="mv-secondary" data-act="room">+ Zielraum hinzufügen</button>';
     h+='<div class="mv-list">'+(rooms.length?rooms.map(r=>{const a=assigned.filter(x=>x.targetRoomId===r.id);return '<div class="mv-item"><strong>'+esc(r.name)+'</strong><small>'+esc(r.floor||'')+' · '+a.length+' Kisten</small></div>';}).join(''):'<p class="mv-muted">Noch keine Zielräume vorhanden.</p>')+'</div>';
   }else if(activeTab==='first'){
-    const ordered=priorityList(data,p.id);
+    const ordered=priorityList(data,p.id).filter(a=>liveStatus(a)!=='unpacked');
     h+='<p class="mv-muted">Diese Reihenfolge ergibt sich aus der eingestellten Priorität. Du kannst sie bei jeder Kiste ändern.</p>';
-    h+='<div class="mv-list">'+(ordered.length?ordered.map(a=>{const b=data.boxes.find(x=>x.id===a.boxId);return '<div class="mv-item"><strong>'+esc(b?.name||'Kiste')+'</strong><small>'+esc(importance[a.priority])+' · '+esc(labels[a.status])+'</small></div>';}).join(''):'<p class="mv-muted">Noch keine offenen Kisten.</p>')+'</div>';
+    h+='<div class="mv-list">'+(ordered.length?ordered.map(a=>{const b=data.boxes.find(x=>x.id===a.boxId);return '<div class="mv-item"><strong>'+esc(b?.name||'Kiste')+'</strong><small>'+esc(importance[a.priority])+' · '+esc(labels[liveStatus(a)])+'</small></div>';}).join(''):'<p class="mv-muted">Noch keine offenen Kisten.</p>')+'</div>';
   }else{
     const available=data.boxes.filter(b=>!assigned.some(a=>a.boxId===b.id));
+    if(window.movingTransportActive)h+='<p class="mv-muted">🚛 Der Transportstatus wird serverseitig im Bereich „Transport & Helfer“ verwaltet.</p>';
     h+='<button class="mv-primary" data-act="assign" '+(!available.length?'disabled':'')+'>+ Vorhandene Kiste zuordnen</button>';
     h+='<div class="mv-list">'+(assigned.length?assigned.map(a=>{
       const b=data.boxes.find(x=>x.id===a.boxId),r=rooms.find(x=>x.id===a.targetRoomId);
-      const i=statuses.indexOf(a.status);
-      return '<div class="mv-item"><div><strong>'+esc(b?.name||'Kiste #'+a.boxId)+'</strong><small>'+esc(r?.name||'Noch kein Zielraum')+' · '+esc(importance[a.priority])+'</small></div><div class="mv-actions"><select data-room="'+esc(a.id)+'" aria-label="Zielraum" '+(saving?'disabled':'')+'><option value="">Ohne Zielraum</option>'+rooms.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===a.targetRoomId?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select><select data-priority="'+esc(a.id)+'" aria-label="Priorität" '+(saving?'disabled':'')+'>'+Object.entries(importance).map(([v,l])=>'<option value="'+v+'" '+(a.priority===v?'selected':'')+'>'+l+'</option>').join('')+'</select><div class="mv-status"><button data-step="'+esc(a.id)+'" data-delta="-1" '+(i===0||saving?'disabled':'')+' aria-label="Vorheriger Status">‹</button><span>'+esc(labels[a.status])+'</span><button data-step="'+esc(a.id)+'" data-delta="1" '+(i===4||saving?'disabled':'')+' aria-label="Nächster Status">›</button></div></div></div>';
+      const i=statuses.indexOf(liveStatus(a));
+      return '<div class="mv-item"><div><strong>'+esc(b?.name||'Kiste #'+a.boxId)+'</strong><small>'+esc(r?.name||'Noch kein Zielraum')+' · '+esc(importance[a.priority])+'</small></div><div class="mv-actions"><select data-room="'+esc(a.id)+'" aria-label="Zielraum" '+(saving?'disabled':'')+'><option value="">Ohne Zielraum</option>'+rooms.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===a.targetRoomId?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select><select data-priority="'+esc(a.id)+'" aria-label="Priorität" '+(saving?'disabled':'')+'>'+Object.entries(importance).map(([v,l])=>'<option value="'+v+'" '+(a.priority===v?'selected':'')+'>'+l+'</option>').join('')+'</select><div class="mv-status"><button data-step="'+esc(a.id)+'" data-delta="-1" '+(i===0||saving||window.movingTransportActive?'disabled':'')+' aria-label="Vorheriger Status">‹</button><span>'+esc(labels[a.status])+'</span><button data-step="'+esc(a.id)+'" data-delta="1" '+(i===4||saving||window.movingTransportActive?'disabled':'')+' aria-label="Nächster Status">›</button></div></div></div>';
     }).join(''):'<p class="mv-muted">Noch keine Kisten zugeordnet.</p>')+'</div>';
   }
   h+='<div class="mv-footer"><button class="mv-secondary" data-act="finish" '+(saving?'disabled':'')+'>Umzug abschließen</button><span class="mv-muted">'+(saving?'Speichern …':'Alle Änderungen werden in Toolya Cloud gespeichert')+'</span></div>';
@@ -90,6 +92,7 @@ el?.addEventListener('click',async ev=>{
     await commit(s=>finishProject(s,p.id));return;
   }
   if(b.dataset.step){
+    if(window.movingTransportActive)return;
     const id=b.dataset.step,as=m.assignments.find(x=>x.id===id);if(!as)return;
     const next=statuses[statuses.indexOf(as.status)+Number(b.dataset.delta)];
     if(next)await commit(s=>updateStatus(s,id,next));
@@ -102,4 +105,5 @@ el?.addEventListener('change',async ev=>{
 });
 document.addEventListener('toolya:moving-ready',render);
 document.addEventListener('toolya:moving-saved',render);
+document.addEventListener('toolya:moving-transport',render);
 render();
