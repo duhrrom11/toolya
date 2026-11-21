@@ -5,7 +5,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 ## Projektstatus
 - Aktueller geprüfter Implementierungsstand vor diesem Roadmap-Commit: `dd413ec486973d66d7075223afd3284949ec1a3b`; 9 von 9 GitHub-Actions-Workflows erfolgreich.
 - Die englischen Startseiten und vier Tool-Einstiege sind vorhanden. Die Tool-Oberflächen sind noch nicht durchgängig übersetzt; englische öffentliche Inhalte bleiben vorerst `noindex`.
-- Gesamtfortschritt **ca. 61 % (Planungsschätzung, nach dynamischen WG-Finanzlisten)**, nicht automatisch gemessen: Summe aus Paketgewicht × geschätztem Teilfortschritt, 59,0 % gerundet. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
+- Gesamtfortschritt **ca. 61 % (Planungsschätzung, nach dynamischen Hilfe- und Budgeteditor-Labels)**, nicht automatisch gemessen: Summe aus Paketgewicht × geschätztem Teilfortschritt, 59,0 % gerundet. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
 - Datenbanken, Supabase-Berechtigungen, gespeicherte Objekte, Sprach-unabhängige Maskottchen-Einstellung und produktive Seiten bleiben unangetastet.
 
 ## Sechs gebündelte Arbeitspakete
@@ -14,7 +14,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 |---|---:|---:|---|---|
 | 1. Sprachsystem & technische Grundlage | 15 % | 100 % | fertig | DE/EN-Umschaltung reversibel; Präferenz unabhängig; bestehende Daten/Maskottchen unverändert |
 | 2. Englische Startseiten & Ratgeber | 15 % | 80 % | weitgehend | Vier Ratgeber, Startseite und Rechner vollständig redigiert, zugänglich, funktionale Links |
-| 3. Vier Tool-Oberflächen | 30 % | 75 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
+| 3. Vier Tool-Oberflächen | 30 % | 76 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
 | 4. Konten, Datenwege & Exporte | 20 % | 35 % | teilweise | Auth inklusive Recovery, erlaubte Redirects, Datenkonflikte, PDF/QR/CSV/Import/Export in EN und DE E2E |
 | 5. Qualitätssicherung & Sicherheit | 10 % | 40 % | aktiv | vollständige E2E-Tests, 320px/mobile, Keyboard, Screenreader, Auth-Sicherheit, abschließend alle CI erfolgreich |
 | 6. SEO-Freigabe & Veröffentlichung | 10 % | 0 % | gesperrt | hreflang, Canonicals, Sitemap, OG/JSON-LD, noindex nur nach Freigabegates aufheben, kontrollierter Release |
@@ -126,3 +126,11 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Neuer Regressionstest prüft EN/DE-Anzeigewerte, Schulden-/Belegpfade, escaped Nutzerfelder und unveränderte Finanzalgorithmen und Daten-Payloads.
 - **Paket 3 geschätzt 75 %, Gesamt 60,5 % (gerundet 61 %).** Das ist eine Planungsschätzung, keine Vollständigkeitsabnahme.
 - Sprint A noch offen: dynamische Inhalte und Sonderzustände in den vier Tools, verifizierte englische End-to-End-Nutzerwege und finale Browser-/CI-Abnahme. PR bleibt Draft, keine Produktion, keine Supabase-Änderung, englische öffentliche Seiten bleiben vorerst `noindex`.
+
+## Sprint A – Umzugshilfe und WG-Budgeteditor: dynamische Labels (2026-11-21)
+
+- **Umzugskisten:** Der vorhandene Auf-/Zuklapp-Schalter der Hilfe zeigt bei jeder Sprache `Show/Hide help and guide` beziehungsweise den bisherigen deutschen Text an. Das sichtbare `span` wird per `textContent` aktualisiert; die ursprüngliche Schaltfläche mit Handler wird weder ersetzt noch neu aufgebaut. Sprachwechsel aktualisieren das Label ohne die aufgeklappte Ansicht zu schließen.
+- **WG-Organisator:** Die Beschriftungen im bei Bedarf erzeugten Budgeteditor verwenden die bekannten englischen Kategorienamen. Die ursprünglichen `data-cat`-Werte (`Wohnen`, `Lebensmittel` usw.), Beträge, Eingabefelder und Speicherlogik bleiben unverändert. Ein offenes Editorformular wird beim Sprachwechsel nicht neu erzeugt, um ungespeicherte Werte zu bewahren.
+- Zwei neue isolierte Regressionstests prüfen DE/EN-Hilfe-Zustände, unveränderten Schalter-Handler und WG-Budgetlabels mit stabilen Datenschlüsseln.
+- **Paket 3 geschätzt 76 %, Gesamt 60,8 % (gerundet 61 %).** Noch keine Sprint-A-Abnahme; dynamische Spezialzustände und browsergestützte E2E-Abnahme bleiben offen.
+- Vor Freigabe sind alle GitHub-Workflows für den finalen Commit erforderlich. PR bleibt Draft, keine produktiven Supabase- oder Webseitenänderungen.
