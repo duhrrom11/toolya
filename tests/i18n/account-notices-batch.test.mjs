@@ -1,0 +1,60 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { runInNewContext } from 'node:vm';
+
+const readTool = name => readFile(new URL('../../tools/' + name + '/index.html', import.meta.url), 'utf8');
+
+for (const name of ['parking', 'loans']) {
+ test(name + ': bilingual register/login/logout without production backend', async () => {
+  const html = await readTool(name);
+  const start = html.indexOf('async function supabaseRegister()');
+  const end = html.indexOf('async function checkUserSession()', start);
+  assert.ok(start >= 0 && end > start, 'auth functions found');
+  const alerts = [], calls = [];
+  const fields = { 'auth-email': {value: ''}, 'auth-password': {value: ''} };
+  const window = {__toolyaUILocale:'en'};
+  const auth = {
+   async signUp(values){calls.push(['register',values]);return {error:null}},
+   async signInWithPassword(values){calls.push(['login',values]);return {error:null}},
+   async signOut(){calls.push(['logout']);return {error:null}}
+  };
+  const context = {
+   window, document:{getElementById:id=>fields[id]}, supabaseClient:{auth},
+   alert:value=>alerts.push(value),checkUserSession:()=>calls.push(['refresh']),
+   toggleSettingsModal:()=>calls.push(['close'])
+  };
+  runInNewContext(html.slice(start,end),context);
+  const invoke = name => runInNewContext(name + '()',context);
+  await invoke('supabaseRegister');
+  await invoke('supabaseLogin');
+  assert.deepEqual(alerts,['Please enter your email and password.','Please enter your email and password.']);
+  assert.equal(calls.length,0);
+  window.__toolyaUILocale='de';
+  await invoke('supabaseRegister');
+  assert.equal(alerts.at(-1),'Bitte E-Mail und Passwort eingeben.');
+  fields['auth-email'].value='fake@example.invalid';
+  fields['auth-password'].value='fake-password';
+  window.__toolyaUILocale='en';
+  await invoke('supabaseRegister');
+  await invoke('supabaseLogin');
+  await invoke('supabaseLogout');
+  assert.deepEqual(alerts.slice(-3),['Registration successful!','Signed in successfully!','Signed out.']);
+  assert.deepEqual(calls.map(x=>x[0]),['register','refresh','login','refresh','close','logout','refresh']);
+  assert.equal(calls[0][1].email,'fake@example.invalid');
+  assert.equal(calls[0][1].password,'fake-password');
+ });
+}
+
+for (const name of ['plants','baking','moving']) {
+ test(name + ': guarded auth messages retain original DE and offer EN',async()=>{
+  const html=await readTool(name);
+  for(const text of ['Please enter your email and password.','Registration failed: ','Sign-in failed: ','Sign-out failed: ','Signed in. Your account is ready.','Request processed. If confirmation is required']) {
+   assert.ok(html.includes(text),name+' missing '+text);
+  }
+  for(const text of ['Bitte E-Mail und Passwort eingeben.','Registrierung fehlgeschlagen: ','Anmeldung fehlgeschlagen: ','Abmeldung fehlgeschlagen: ']) {
+   assert.ok(html.includes(text),name+' DE changed '+text);
+  }
+  assert.ok(html.includes('window.__toolyaUILocale'),name+' missing locale switch');
+ });
+}
