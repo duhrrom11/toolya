@@ -734,3 +734,62 @@ test('Backstudio Pro translates already-visible runtime statuses while skipping 
  assert.equal(document.getElementById('bsp-ocr-status').textContent,'Foto wurde gelesen.');
  assert.equal(document.getElementById('bsp-3d-status').textContent,'Form wird geladen.');
 });
+
+test('auth gates across all four tools translate their headings and account loading status reversibly',()=>{
+ const cases=[
+  ['moving','Umzugskisten','Moving boxes'],
+  ['housemates','WG-Organisator','Roommate organizer'],
+  ['plants','Pflanzenpflege','Plant care tracker'],
+  ['baking','Backform-Rechner','Cake pan calculator']
+ ];
+ for(const [tool,german,english] of cases){
+  const {document}=parseHTML('<html lang="de"><body><section class="toolya-auth-status"><p id="toolya-auth-title"><strong>'+german+'</strong></p><span class="toolya-auth-loading">Wir prüfen deine Anmeldung …</span><span class="toolya-auth-error">Deine Anmeldung konnte gerade nicht geprüft werden. Prüfe deine Internetverbindung und versuche es erneut.</span><button class="toolya-auth-error" id="toolya-auth-retry" onclick="reload()">Erneut versuchen</button><a href="../../guide/">Zur Anleitung</a></section><div id="cloud-status-text">Konto wird geprüft …</div><span id="header-user-email">personal@example.org</span></body></html>');
+  const title=document.querySelector('#toolya-auth-title strong');
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(title.textContent,english,tool+' gate title');
+  assert.equal(document.querySelector('.toolya-auth-loading').textContent,'Checking your sign-in…');
+  assert.equal(document.querySelector('.toolya-auth-error:not(button)').textContent,'We could not verify your sign-in. Check your internet connection and try again.');
+  assert.equal(document.getElementById('toolya-auth-retry').textContent,'Try again');
+  assert.equal(document.getElementById('toolya-auth-retry').getAttribute('onclick'),'reload()');
+  assert.equal(document.getElementById('cloud-status-text').textContent,'Konto wird geprüft …','static form translator never modifies live account status');
+  assert.equal(document.getElementById('header-user-email').textContent,'personal@example.org');
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(title.textContent,german);
+  assert.equal(document.querySelector('.toolya-auth-loading').textContent,'Wir prüfen deine Anmeldung …');
+  assert.equal(document.getElementById('toolya-auth-retry').textContent,'Erneut versuchen');
+ }
+});
+
+test('account loading and signed-in status translations preserve user identity and reverse cleanly',()=>{
+ const values=[
+  ['Konto wird geprüft …','Checking your account…'],
+  ['Konto wird geprüft ...','Checking your account...'],
+  ['Lade...','Loading…'],
+  ['Status: Verbunden','Status: Connected'],
+  ['✅ Angemeldet – member@example.org','✅ Signed in – member@example.org']
+ ];
+ for(const [de,en]of values){
+  assert.equal(translateAccountStatus('en',de),en);
+  assert.equal(translateAccountStatus('de',en),de);
+ }
+ for(const untrusted of ['member@example.org','SessionExpiredError: key-123','Person Name','Konto wird geprüft … @user']){
+  assert.equal(translateAccountStatus('en',untrusted),untrusted,'unrecognized identity or error is untouched');
+ }
+});
+
+test('auth gate guide links respect selected locale and preserve original German targets',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const source=await readFile(new URL('../../shared/toolya/i18n/tool-entry.mjs',import.meta.url),'utf8');
+ assert.match(source,/const authGuide=document\.querySelector\('\.toolya-auth-status > a'\)/);
+ assert.match(source,/const originalAuthGuideHref=authGuide\?\.getAttribute\('href'\)/);
+ assert.match(source,/if\(lang==='en'\)authGuide\.setAttribute\('href',settings\.guide\)/);
+ assert.match(source,/else if\(originalAuthGuideHref!==null\)authGuide\.setAttribute\('href',originalAuthGuideHref\)/);
+ assert.match(source,/authGuide\.lang=lang/);
+ for(const [tool,german]of [
+  ['moving','umzugskisten'],['housemates','wg-organisator'],
+  ['plants','pflanzenpflege'],['baking','backform-rechner']
+ ]){
+  const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
+  assert.match(html,new RegExp('class="toolya-auth-status"[\\s\\S]*?<a href="\\.\\./\\.\\./'+german+'/">Zur Anleitung</a>'),'German guide remains in the source');
+ }
+});
