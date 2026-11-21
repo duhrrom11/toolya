@@ -502,3 +502,55 @@ test('household locale refresh is gated on completed load and preserves unsaved 
  assert.ok(!region.includes('openCookingModal(') && !region.includes('openDietModal('),'locale switch does not reset unsaved modal inputs');
  assert.ok(html.includes("retry.textContent = window.__toolyaUILocale === 'en' ? 'Try again' : 'Erneut versuchen'"));
 });
+
+test('expanded static labels across four tools translate and reverse without changing option semantics',()=>{
+ const cases=[
+  ['moving','<select><option>-- Standort wählen --</option><option>🏢 Büro</option></select><button onclick="keep()">✕ Schließen</button>', ['-- Select location --','🏢 Office','✕ Close']],
+  ['housemates','<h3>📶 Gäste-WLAN QR-Code</h3><label>Aufgabe / Bereich *:</label><select><option>🌿 Grün</option></select><button onclick="keep()">🖨️ Für Küche Drucken</button>', ['📶 Guest Wi-Fi QR code','Task / area *:','🌿 Green','🖨️ Print for kitchen']],
+  ['plants','<h3>📖 Hilfe & Anleitungen</h3><select><option>Alle Standorte / Räume</option><option>Groß (20 cm ~ 600ml)</option></select>', ['📖 Help and guides','All locations / rooms','Large (20 cm ~ 600 ml)']],
+  ['baking','<button onclick="keep()">⭕ Welche Backform passt? Formen-Finder öffnen</button><select><option>Xylit (ungefähr 1:1)</option><option>Erythrit (weniger süß)</option></select>', ['⭕ Which pan fits? Open pan finder','Xylitol (approximately 1:1)','Erythritol (less sweet)']]
+ ];
+ for(const [tool,html,expected] of cases){
+  const {document}=parseHTML('<html lang="de"><body>'+html+'<input id="private" value="personal entry"></body></html>');
+  const elements=[...document.querySelectorAll('h3,label,button,option')];
+  const originals=elements.map(el=>el.textContent);
+  const actions=[...document.querySelectorAll('button')].map(el=>el.getAttribute('onclick'));
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.deepEqual(elements.map(el=>el.textContent),expected,tool+' translated text');
+  assert.equal(document.querySelector('#private').value,'personal entry',tool+' retained form input');
+  for(const option of document.querySelectorAll('option')){
+   assert.equal(option.getAttribute('value'),originals[elements.indexOf(option)],tool+' original option value preserved');
+  }
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.deepEqual(elements.map(el=>el.textContent),originals,tool+' original labels restored');
+  assert.deepEqual([...document.querySelectorAll('button')].map(el=>el.getAttribute('onclick')),actions,tool+' actions unchanged');
+  for(const option of document.querySelectorAll('option'))assert.equal(option.hasAttribute('value'),false,tool+' implicit option value restored');
+ }
+});
+
+test('household contact and planning placeholders keep entered data and restore source text',()=>{
+ const ids=[
+  ['invTitle','e.g. microwave, coffee machine'],
+  ['goalTitle','e.g. holiday, deposit reserve'],
+  ['mateVorname','First name *'],
+  ['mateNachname','Last name / display name *'],
+  ['mateEmail','Email address'],
+  ['matePhone','WhatsApp / phone number'],
+  ['mateInsta','Instagram (@handle)'],
+  ['mateFb','Facebook profile URL / name'],
+  ['cleanTaskTitle','e.g. clean the bathroom'],
+  ['contractName','e.g. broadband, broadcasting fee']
+ ];
+ const {document}=parseHTML('<html><body>'+ids.map(([id])=>'<input id="'+id+'" placeholder="Original German text" value="User input">').join('')+'</body></html>');
+ applyToolInterfaceLocale(document,'housemates','en');
+ for(const [id,translation] of ids){
+  const el=document.getElementById(id);
+  assert.equal(el.getAttribute('placeholder'),translation);
+  assert.equal(el.value,'User input');
+ }
+ applyToolInterfaceLocale(document,'housemates','de');
+ for(const [id] of ids){
+  assert.equal(document.getElementById(id).getAttribute('placeholder'),'Original German text');
+  assert.equal(document.getElementById(id).value,'User input');
+ }
+});
