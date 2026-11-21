@@ -1,11 +1,12 @@
 name: Moving Helper release 2 security and browser CI
 on:
   push:
-    branches: [feature/moving-helper-release2-20261121]
+    branches: [feature/moving-helper-release2-20261121, feature/moving-incidents-20261121]
   pull_request:
     paths:
       - 'tools/moving/**'
       - 'supabase/migrations/*moving_control*'
+      - 'supabase/migrations/*moving_incidents*'
       - 'supabase/functions/moving-helper/**'
       - 'tests/moving-*'
       - 'tests/browser/moving-*'
@@ -42,6 +43,8 @@ jobs:
       - run: psql -v ON_ERROR_STOP=1 -f tests/moving-sql-bootstrap.sql
       - run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261121074155_moving_control_release2.sql
       - run: psql -v ON_ERROR_STOP=1 -f tests/moving-helper-security.sql
+      - run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261121093000_moving_incidents.sql
+      - run: psql -v ON_ERROR_STOP=1 -f tests/moving-incidents-security.sql
   edge-typecheck:
     runs-on: ubuntu-latest
     timeout-minutes: 10
