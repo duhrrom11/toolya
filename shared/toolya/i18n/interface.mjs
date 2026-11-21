@@ -179,6 +179,16 @@ const extendedFormTranslations = {
   ]
  ],
  "housemates": [
+  ["#invTitle", "", "placeholder", "e.g. microwave, coffee machine"],
+  ["#goalTitle", "", "placeholder", "e.g. holiday, deposit reserve"],
+  ["#mateVorname", "", "placeholder", "First name *"],
+  ["#mateNachname", "", "placeholder", "Last name / display name *"],
+  ["#mateEmail", "", "placeholder", "Email address"],
+  ["#matePhone", "", "placeholder", "WhatsApp / phone number"],
+  ["#mateInsta", "", "placeholder", "Instagram (@handle)"],
+  ["#mateFb", "", "placeholder", "Facebook profile URL / name"],
+  ["#cleanTaskTitle", "", "placeholder", "e.g. clean the bathroom"],
+  ["#contractName", "", "placeholder", "e.g. broadband, broadcasting fee"],
   [
    "#auth-email",
    "",
