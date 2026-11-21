@@ -1,5 +1,5 @@
 import {dashboardText} from './dashboard-copy.mjs';
-const excluded=new Set(['TASKS','REMINDERS','SHOPPING-ITEMS','FAVORITES','RECENT']);
+const excluded=new Set(['TASKS','REMINDERS','SHOPPING-ITEMS','FAVORITES','RECENT','USERINFO','CLOUDSTATUS','LOGINMESSAGE','SYNC-STATUS','SYNC-DETAIL','SHOPPING-STATUS','WATERING-CONNECT-STATUS','NOTICE']);
 const sourceText=new WeakMap(),sourceAttributes=new WeakMap();
 const attributeNames=['aria-label','title','placeholder','alt'];
 function suppressed(element){
@@ -15,7 +15,7 @@ export function applyDashboardPageLocale(document,lang){
    if(node.nodeType!==3)continue;
    const initial=sourceText.has(node)?sourceText.get(node):node.nodeValue;
    if(!sourceText.has(node))sourceText.set(node,initial);
-   const match=/^(\\s*)([\\s\\S]*?)(\\s*)$/.exec(initial);
+   const match=/^(\s*)([\s\S]*?)(\s*)$/.exec(initial);
    if(!match)continue;
    const converted=dashboardText(match[2],lang);
    const output=match[1]+converted+match[3];

@@ -17,9 +17,7 @@ function mount(){
  });
  nav.append(group);
  const guide=document.querySelector('a[href="/toolya-dashboard/"]');
- const originals=new Map();
  const nodes=dynamicSelectors.map(s=>document.querySelector(s)).filter(Boolean);
- for(const el of nodes) originals.set(el,el.textContent);
  const [de,en]=buttons;
  function translateDynamic(){
   const lang=dashboardLocale();
@@ -28,6 +26,10 @@ function mount(){
    const txt=el.textContent;
    const translated=dashboardText(txt,lang);
    if(txt!==translated)el.textContent=translated;
+   for(const attr of ['aria-label','title'])if(el.hasAttribute(attr)){
+    const old=el.getAttribute(attr),next=dashboardText(old,lang);
+    if(old!==next)el.setAttribute(attr,next);
+   }
   }
  }
  function apply(lang,persist){

@@ -696,9 +696,9 @@ export function dashboardText(value,lang=dashboardLocale()){
  if(Object.hasOwn(table,value))return table[value];
  const pairs=lang==='en'?prefixes:prefixes.map(([de,en])=>[en,de]);
  for(const [before,after] of pairs)if(value.startsWith(before))return after+value.slice(before.length);
- const match=/^(\\d+) offene Artikel aus (\\d+) Quellen\\.$/.exec(value);
+ const match=/^(\d+) offene Artikel aus (\d+) Quellen\.$/.exec(value);
  if(lang==='en'&&match)return match[1]+' open items from '+match[2]+' sources.';
- const back=/^(\\d+) open items from (\\d+) sources\\.$/.exec(value);
+ const back=/^(\d+) open items from (\d+) sources\.$/.exec(value);
  if(lang==='de'&&back)return back[1]+' offene Artikel aus '+back[2]+' Quellen.';
  return value;
 }

@@ -20,6 +20,7 @@ test('dashboard DOM language switch changes app-authored leaf text and attribute
  const {document}=parseHTML('<html lang="de">'+fixture+'</html>');
  const input=document.querySelector('input'),button=document.querySelector('button');
  applyDashboardPageLocale(document,'en');
+ assert.equal(document.querySelector('#loginMessage').textContent,'Bitte eine gültige E-Mail-Adresse eingeben.','dynamic status must not be overwritten by static translator');
  assert.equal(document.querySelector('h2').textContent,'✓ My tasks');
  assert.equal(input.getAttribute('placeholder'),'What do you want to do?');
  assert.equal(input.value,'Privater Wert');
