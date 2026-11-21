@@ -100,15 +100,20 @@
   }
   // A large expense is a question to review, never proof of an error.
   const dated=validEntries(entries).filter(e=>expense(e)&&!e.isFixkosten).sort((a,b)=>a.date.localeCompare(b.date));
-  for(const [index,row] of dated.entries()){
-   const prior=dated.slice(0,index).filter(e=>e.category===row.category&&e.date<row.date).slice(-12)
-     .map(e=>amount(e.price)).filter(Number.isFinite).sort((a,b)=>a-b);
-   if(prior.length<3)continue;
-   const mid=Math.floor(prior.length/2),median=prior.length%2?prior[mid]:(prior[mid-1]+prior[mid])/2;
-   const value=amount(row.price);
-   if(median>0&&value>median*2.5&&value>median+25){
-    alerts.push({kind:'high',label:'Ungewöhnlich hoher Betrag',text:(row.title||row.category||'Ausgabe')+': '+euro(value)+' statt sonst etwa '+euro(median),ids:[row.id]});
+  const histories=new Map();
+  for(const row of dated){
+   const category=String(row.category||'Sonstiges'),history=histories.get(category)||[];
+   const prior=history.filter(x=>x.date<row.date).map(x=>x.price).sort((a,b)=>a-b);
+   if(prior.length>=3){
+    const mid=Math.floor(prior.length/2),median=prior.length%2?prior[mid]:(prior[mid-1]+prior[mid])/2;
+    const value=amount(row.price);
+    if(median>0&&value>median*2.5&&value>median+25){
+     alerts.push({kind:'high',label:'Ungewöhnlich hoher Betrag',text:(row.title||row.category||'Ausgabe')+': '+euro(value)+' statt sonst etwa '+euro(median),ids:[row.id]});
+    }
    }
+   history.push({price:amount(row.price),date:row.date});
+   if(history.length>12)history.shift();
+   histories.set(category,history);
   }
   return alerts.slice(0,35);
  }
