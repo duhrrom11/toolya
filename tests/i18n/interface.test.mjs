@@ -2352,3 +2352,30 @@ test('Sprint A backup, migration, membership and Wi-Fi dialogs translate only kn
  assert.ok(housemates.includes('${contacts.length} contact(s) imported from your phone successfully!'),'only display copies count');
  assert.ok(housemates.includes('saveFlatmates(mates)'),'contact persistence untouched');
 });
+
+
+test('Sprint A member access and pending cloud backup warnings localize without changing server details',()=>{
+ const phrases=[
+  ['Mitgliederzugriff entfernt.','Member access revoked.'],
+  ['Mitgliederzugriff erteilt. Der WG-Link kann jetzt geteilt werden.','Member access granted. You can now share the household link.'],
+  ['Deine WG-Änderungen sind auf diesem Gerät gespeichert. Die Online-Sicherung ist noch nicht bestätigt. Prüfe deine Verbindung und nutze die manuelle Synchronisation.','Your household changes are saved on this device. The online backup is not confirmed yet. Check your connection and sync manually.']
+ ];
+ for(const [de,en] of phrases){
+  assert.equal(translateToolDialog('housemates','en',de),en);
+  assert.equal(translateToolDialog('housemates','de',de),de);
+ }
+ assert.equal(translateToolDialog('housemates','en','Mitgliederverwaltung: 403 unauthorized'),'Member management: 403 unauthorized');
+ assert.equal(translateToolDialog('housemates','en','Error: row 42'),'Error: row 42');
+});
+
+test('Sprint A QR export uses only locale-specific filenames, never rewrites backup payloads',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const src=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
+ assert.match(src,/doc\.save\(window\.__toolyaUILocale === 'en' \? "moving-box-qr-labels\.pdf" : "kisten-qr-etiketten\.pdf"\)/);
+ assert.match(src,/homebox-backup-\$\{new Date\(\)\.toISOString\(\)\.split\('T'\)\[0\]\}\.json/);
+ assert.match(src,/if \(!confirm\("Backup importieren\? Vorhandene Daten werden ersetzt\."\)\) return;/);
+ const invalid=src.indexOf('return alert("Ungültiges Backup-Format.");');
+ const confirmation=src.indexOf('if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt."))');
+ const storage=src.indexOf('if (!await saveData(parsed))');
+ assert.ok(invalid>=0&&invalid<confirmation&&confirmation<storage,'schema check and explicit confirmation precede any import write');
+});
