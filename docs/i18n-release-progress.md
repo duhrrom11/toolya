@@ -63,3 +63,7 @@ Die darauf aufbauende Änderung übersetzt Zielräume, Kistenzuordnung, 72-Stund
 Der Exportdialog von Autokosten und Tiergesundheit lädt den Termin über seine vorhandene ID. Termintitel und Fahrzeug- beziehungsweise Tiername bleiben wörtliche Daten, auch mit Apostrophen und Umlauten. Die gemeinsam erzeugte ICS-Datei enthält unter anderem eine stabile UID, UTC-Zeitstempel, ganztägigen Start, eine zweisprachige Beschreibung und korrekt umgebrochene UTF-8-Felder. Der gespeicherte Tag bleibt derselbe. [iCalendar-Spezifikation RFC 5545](https://www.rfc-editor.org/rfc/rfc5545.html)
 
 Zwei isolierte Chromium-Fälle lösten die echten Download-Knöpfe aus und lasen vier heruntergeladene ICS-Dateien. Beide Sprachpfade, Originaltitel und Datum waren korrekt, ohne Anwendungsschreibzugriffe. Die zwölf einschlägigen Konto-/Kalender-Node-Tests und die kombinierte Node-Suite wurden ausgeführt. Kalenderimport in externen Kalenderprogrammen bleibt Teil der abschließenden Abnahme.
+
+### Transport und Helferfreigaben
+
+`68cb0080` lokalisiert die Eigentümeransicht für Transportstatus, Vorfälle, Helferlinks und QR-Aktionen einschließlich Statuslabels, Anzahl und Zeitangaben. Ein synthetischer JavaScript-Test bestätigte den Sprachwechsel, die unveränderte Anzeige eines gespeicherten Kistennamens und den Erhalt einer begonnenen Notiz. Die Entwicklungsumgebung war für einen lokalen Node- oder Chromium-Lauf nicht verfügbar. GitHub Actions und die vollständige Browserabnahme sind separat zu prüfen.
