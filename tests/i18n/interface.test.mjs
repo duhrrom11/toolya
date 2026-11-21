@@ -1441,3 +1441,15 @@ test('compact dashboard catalog uses source labels appearing in HTML and never c
  assert.match(source,/el\.children\.length\|\|el\.isContentEditable/);
  assert.match(source,/originals\.get\(el\)\?\.get\('text'\)/);
 });
+
+test('household header subtitle is translated while the brand and primary heading stay unchanged',()=>{
+ const {document}=parseHTML('<html><body><header class="b3-header"><div class="b3-tool-title"><h1>WG-Organisator mit Haushaltsbuch</h1><p>WG-Ausgaben aufteilen, Putzplan, Kalender und gemeinsame Aufgaben organisieren</p></div><a class="b3-brand" href="../../index.html">Toolya</a></header></body></html>');
+ const heading=document.querySelector('h1'),subtitle=document.querySelector('.b3-tool-title p'),brand=document.querySelector('.b3-brand');
+ applyToolInterfaceLocale(document,'housemates','en');
+ assert.equal(subtitle.textContent,'Split household expenses, organize cleaning, calendars and shared tasks');
+ assert.equal(heading.textContent,'WG-Organisator mit Haushaltsbuch','header title ownership is separate from help copy');
+ assert.equal(brand.textContent,'Toolya');
+ assert.equal(brand.getAttribute('href'),'../../index.html');
+ applyToolInterfaceLocale(document,'housemates','de');
+ assert.equal(subtitle.textContent,'WG-Ausgaben aufteilen, Putzplan, Kalender und gemeinsame Aufgaben organisieren');
+});
