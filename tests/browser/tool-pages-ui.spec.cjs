@@ -2023,6 +2023,7 @@ test('i18n Sprint A moving: 320/768px preserve box draft and selected location',
  });
  await page.goto(origin+'/tools/moving/index.html');
  await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady&&!!movingCloudController?.ready)).toBe(true);
+ if(await page.locator('#toolya-consent-panel').isVisible()) await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
  for(const width of [320,768]){
   await page.setViewportSize({width,height:900});
   await page.locator('#boxLocationSelect').selectOption('1');
@@ -2035,6 +2036,7 @@ test('i18n Sprint A moving: 320/768px preserve box draft and selected location',
   await page.evaluate(()=>toggleHelp());
   await expect(page.locator('#helpToggleBtn span')).toHaveText('Hide help and guide');
   await page.evaluate(()=>toggleHelp());
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('i18n-moving-'+width+'.png')});
   await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
   await expect(page.locator('#boxLocationSelect')).toHaveValue('1');
@@ -2051,6 +2053,7 @@ test('i18n Sprint A plants: 320/768px localize cistern without modifying capacit
  await isolated(page,true,true);
  await page.goto(origin+'/tools/plants/index.html');
  await expect.poll(()=>page.evaluate(()=>typeof plantsCloudReady!=='undefined'&&plantsCloudReady&&!!plantsCloudController?.ready)).toBe(true);
+ if(await page.locator('#toolya-consent-panel').isVisible()) await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
  await page.evaluate(()=>openCisternModal());
  for(const width of [320,768]){
   await page.setViewportSize({width,height:900});
@@ -2059,6 +2062,7 @@ test('i18n Sprint A plants: 320/768px localize cistern without modifying capacit
   await page.evaluate(()=>{window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'))});
   await expect(capacity).toHaveValue('15000');
   await expect(page.locator('#cisternPercentText')).toContainText('% full');
+  expect(await page.locator('#cisternModal > div').evaluate(el=>el.scrollWidth<=el.clientWidth+2)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('i18n-plants-'+width+'.png')});
   await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
   await expect(capacity).toHaveValue('15000');
@@ -2074,9 +2078,10 @@ test('i18n Sprint A baking: 320/768px preserve recipe draft and do not resave pr
  await isolated(page,true,true,{recipes:[{name:'Synthetic recipe',text:'100 g flour',factor:1,date:'2026-11-20',note:'Existing saved note'}]});
  await page.goto(origin+'/tools/baking/index.html');
  await expect.poll(()=>page.evaluate(()=>typeof bakingCloudReady!=='undefined'&&bakingCloudReady&&!!bakingCloudController?.ready)).toBe(true);
+ if(await page.locator('#toolya-consent-panel').isVisible()) await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
  for(const width of [320,768]){
   await page.setViewportSize({width,height:900});
-  await page.locator('#recipe-input').fill('2 Eier\\n100 g Mehl');
+  await page.locator('#recipe-input').fill('2 Eier\n100 g Mehl');
   await page.evaluate(()=>{
    document.querySelector('[data-recipe-note-input]').value='Unsaved draft note';
    renderRecipePreview();
@@ -2085,11 +2090,12 @@ test('i18n Sprint A baking: 320/768px preserve recipe draft and do not resave pr
   await expect(page.locator('[data-recipe-note-input]')).toHaveValue('Unsaved draft note');
   await expect(page.locator('[data-recipe-note-label]')).toHaveText('Baking notes:');
   await expect(page.locator('#print-card')).toContainText('Factor');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('i18n-baking-'+width+'.png')});
   await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
   await expect(page.locator('[data-recipe-note-input]')).toHaveValue('Unsaved draft note');
   await expect(page.locator('[data-recipe-note-label]')).toHaveText('Geling-Protokoll / Notiz:');
-  await expect(page.locator('#recipe-input')).toHaveValue('2 Eier\\n100 g Mehl');
+  await expect(page.locator('#recipe-input')).toHaveValue('2 Eier\n100 g Mehl');
  }
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
  expect(errors).toEqual([]);
@@ -2108,6 +2114,7 @@ test('i18n Sprint A household: 320/768px budget and cooking editor drafts surviv
  await isolated(page,true,true,fixture);
  await page.goto(origin+'/tools/housemates/index.html?id=secure_00000000-0000-4000-8000-000000000109');
  await expect.poll(()=>page.evaluate(()=>typeof secureWgRevision!=='undefined'&&!!secureWgRevision)).toBe(true);
+ if(await page.locator('#toolya-consent-panel').isVisible()) await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
  for(const width of [320,768]){
   await page.setViewportSize({width,height:900});
   await page.evaluate(()=>openBudgetModal());
@@ -2116,6 +2123,7 @@ test('i18n Sprint A household: 320/768px budget and cooking editor drafts surviv
   await page.evaluate(()=>{window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'))});
   await expect(amount).toHaveValue('175');
   await expect(page.locator('label[for="budget-amount-0"]')).toHaveText('Groceries:');
+  expect(await page.locator('#budgetModal > div').evaluate(el=>el.scrollWidth<=el.clientWidth+2)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('i18n-household-budget-'+width+'.png')});
   await page.evaluate(()=>closeBudgetModal());
   await page.evaluate(()=>openCookingModal());
@@ -2128,6 +2136,7 @@ test('i18n Sprint A household: 320/768px budget and cooking editor drafts surviv
   await expect(dish).toHaveValue('Unsaved dinner plan');
   await expect(page.locator('#cookingInputList [data-cooking-day]').first()).toHaveText('Monday');
   await expect(dish).toHaveAttribute('placeholder','Dish');
+  expect(await page.locator('#cookingModal > div').evaluate(el=>el.scrollWidth<=el.clientWidth+2)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('i18n-household-cooking-'+width+'.png')});
   await page.evaluate(()=>closeCookingModal());
   await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
