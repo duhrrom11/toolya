@@ -838,13 +838,13 @@
             const warningText = document.getElementById('volume-warning-text');
             if (heightRatio > 1.25) {
                 warningBox.className = "p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1";
-                warningText.innerText = "Achtung: Teig steht deutlich höher als im Original! Form zu 2/3 füllen oder größere Form wählen.";
+                warningText.innerText = window.__toolyaUILocale === "en" ? "Warning: Batter is much deeper than in the original pan. Fill the pan no more than two-thirds or choose a larger pan." : "Achtung: Teig steht deutlich höher als im Original! Form zu 2/3 füllen oder größere Form wählen.";
             } else if (heightRatio < 0.75) {
                 warningBox.className = "p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 space-y-1";
-                warningText.innerText = "Hinweis: Teig ist recht flach in dieser Form. Backzeit ggf. 5 Min. verkürzen.";
+                warningText.innerText = window.__toolyaUILocale === "en" ? "Note: Batter is quite shallow in this pan. Consider reducing baking time by 5 minutes." : "Hinweis: Teig ist recht flach in dieser Form. Backzeit ggf. 5 Min. verkürzen.";
             } else {
                 warningBox.className = "p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1";
-                warningText.innerText = "Teighöhe / Füllstand ist optimal im Verhältnis zum Original.";
+                warningText.innerText = window.__toolyaUILocale === "en" ? "Batter depth is well matched to the original pan." : "Teighöhe / Füllstand ist optimal im Verhältnis zum Original.";
             }
 
             const matCost = (2.20 * factor) + (adjTime > 0 ? 0.30 : 0);
@@ -859,7 +859,7 @@
             const count = parseFloat(document.getElementById('slice-count').value) || 12;
             const targetD = parseFloat(document.getElementById('target-d').value) || 20;
             const sliceWidth = ((Math.PI * targetD) / count).toFixed(1);
-            document.getElementById('slice-info').innerText = `ca. ${sliceWidth} cm Stückbreite am Rand.`;
+            document.getElementById('slice-info').innerText = window.__toolyaUILocale === "en" ? `Approx. ${sliceWidth} cm per slice at the edge.` : `ca. ${sliceWidth} cm Stückbreite am Rand.`;
         }
 
         function calculateSugar() {
@@ -870,16 +870,16 @@
 
             if (type === 'xylit') {
                 res.innerText = g + 'g';
-                tip.innerText = 'Xylit ist ungefähr so süß wie Zucker; beim Backen kann sich die Textur ändern.';
+                tip.innerText = window.__toolyaUILocale === 'en' ? 'Xylitol is about as sweet as sugar; baking texture may change.' : 'Xylit ist ungefähr so süß wie Zucker; beim Backen kann sich die Textur ändern.';
             } else if (type === 'erythrit') {
-                res.innerText = Math.round(g * 1.4) + 'g (grober Richtwert)';
-                tip.innerText = 'Erythrit süßt weniger stark als Zucker. Größere Mengen können Textur und Verträglichkeit verändern.';
+                res.innerText = Math.round(g * 1.4) + (window.__toolyaUILocale === 'en' ? 'g (rough estimate)' : 'g (grober Richtwert)');
+                tip.innerText = window.__toolyaUILocale === 'en' ? 'Erythritol is less sweet than sugar. Larger amounts can affect texture and tolerance.' : 'Erythrit süßt weniger stark als Zucker. Größere Mengen können Textur und Verträglichkeit verändern.';
             } else if (type === 'honey') {
-                res.innerText = Math.round(g * 0.8) + 'g (Flüssigkeit im Teig um 20ml reduzieren)';
-                tip.innerText = 'Honig süßt stärker und bringt Feuchtigkeit mit.';
+                res.innerText = Math.round(g * 0.8) + (window.__toolyaUILocale === 'en' ? 'g (reduce batter liquid by 20 ml)' : 'g (Flüssigkeit im Teig um 20ml reduzieren)');
+                tip.innerText = window.__toolyaUILocale === 'en' ? 'Honey is sweeter and adds moisture.' : 'Honig süßt stärker und bringt Feuchtigkeit mit.';
             } else {
-                res.innerText = (g / 200).toFixed(1) + ' TL Konzentrat';
-                tip.innerText = 'Stevia-Konzentrat extrem sparsam dosieren.';
+                res.innerText = (g / 200).toFixed(1) + (window.__toolyaUILocale === 'en' ? ' tsp concentrate' : ' TL Konzentrat');
+                tip.innerText = window.__toolyaUILocale === 'en' ? 'Use stevia concentrate very sparingly.' : 'Stevia-Konzentrat extrem sparsam dosieren.';
             }
         }
 
@@ -887,11 +887,11 @@
             const temp = parseFloat(document.getElementById('room-temp').value) || 21;
             const res = document.getElementById('climate-result');
             if (temp > 26) {
-                res.innerText = "Achtung, warm! Mürbeteig 30 Min. länger kühlen, Hefeteig geht doppelt so schnell.";
+                res.innerText = window.__toolyaUILocale === "en" ? "Warm room: chill shortcrust pastry 30 minutes longer; yeast dough may rise twice as fast." : "Achtung, warm! Mürbeteig 30 Min. länger kühlen, Hefeteig geht doppelt so schnell.";
             } else if (temp < 18) {
-                res.innerText = "Etwas kühl. Hefeteig an einem warmen Ort (z.B. Ofen bei 30°C) gehen lassen.";
+                res.innerText = window.__toolyaUILocale === "en" ? "A little cool. Let yeast dough rise in a warm place (e.g. an oven at 30°C)." : "Etwas kühl. Hefeteig an einem warmen Ort (z.B. Ofen bei 30°C) gehen lassen.";
             } else {
-                res.innerText = "Perfektes Backklima. Keine Anpassung nötig.";
+                res.innerText = window.__toolyaUILocale === "en" ? "Ideal baking conditions. No adjustment needed." : "Perfektes Backklima. Keine Anpassung nötig.";
             }
         }
 
