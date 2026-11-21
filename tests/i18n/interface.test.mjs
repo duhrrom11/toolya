@@ -2097,12 +2097,14 @@ test('Sprint A moving tags translate display labels and options but retain the o
  assert.ok(start>0&&end>start);
  const {document}=parseHTML('<select id="tagFilter"><option value="">Alle Tags</option><option value="Zerbrechlich">Zerbrechlich</option><option value="Wertvoll">Wertvoll</option></select><select id="boxTag"><option value="Standard">🏷️ Standard</option><option value="Saison">❄️ Saison / Deko</option></select><select id="editBoxTag"><option value="Wertvoll">💎 Wertvoll</option></select>');
  const filter=document.getElementById('tagFilter'),box=document.getElementById('boxTag');
- filter.value='Wertvoll';box.value='Saison';
+ const filterChosen=filter.querySelector('option[value="Wertvoll"]');
+ const boxChosen=box.querySelector('option[value="Saison"]');
+ filterChosen.setAttribute('selected','');boxChosen.setAttribute('selected','');
  const context={window:{__toolyaUILocale:'en'},document};
  createContext(context);runInContext(html.slice(start,end),context);
  runInContext('refreshMovingSelectLabels()',context);
- assert.equal(filter.value,'Wertvoll');
- assert.equal(box.value,'Saison');
+ assert.equal(filterChosen.hasAttribute('selected'),true);
+ assert.equal(boxChosen.hasAttribute('selected'),true);
  assert.equal(document.querySelector('#tagFilter option[value="Zerbrechlich"]').textContent,'Fragile');
  assert.equal(document.querySelector('#tagFilter option[value="Wertvoll"]').textContent,'Valuable');
  assert.equal(document.querySelector('#boxTag option[value="Saison"]').textContent,'❄️ Seasonal / decoration');
@@ -2112,8 +2114,8 @@ test('Sprint A moving tags translate display labels and options but retain the o
  runInContext('refreshMovingSelectLabels()',context);
  assert.equal(document.querySelector('#boxTag option[value="Saison"]').textContent,'❄️ Saison / Deko');
  assert.equal(document.querySelector('#tagFilter option[value=""]').textContent,'Alle Tags');
- assert.equal(filter.value,'Wertvoll');
- assert.equal(box.value,'Saison');
+ assert.equal(filterChosen.hasAttribute('selected'),true);
+ assert.equal(boxChosen.hasAttribute('selected'),true);
  assert.ok(html.includes('${formatMovingTagLabel(b.tag || \'Standard\')}'),'saved tag badge displays translated label');
  assert.ok(html.includes('refreshMovingSelectLabels();'),'language event updates existing selectors');
  assert.ok(html.includes('if (movingCloudReady) loadLocationsDropdown();'),'unloaded cloud does not trigger location refresh');
