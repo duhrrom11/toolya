@@ -98,6 +98,18 @@
     }
    }
   }
+  // A large expense is a question to review, never proof of an error.
+  const dated=validEntries(entries).filter(e=>expense(e)&&!e.isFixkosten).sort((a,b)=>a.date.localeCompare(b.date));
+  for(const [index,row] of dated.entries()){
+   const prior=dated.slice(0,index).filter(e=>e.category===row.category&&e.date<row.date).slice(-12)
+     .map(e=>amount(e.price)).filter(Number.isFinite).sort((a,b)=>a-b);
+   if(prior.length<3)continue;
+   const mid=Math.floor(prior.length/2),median=prior.length%2?prior[mid]:(prior[mid-1]+prior[mid])/2;
+   const value=amount(row.price);
+   if(median>0&&value>median*2.5&&value>median+25){
+    alerts.push({kind:'high',label:'Ungewöhnlich hoher Betrag',text:(row.title||row.category||'Ausgabe')+': '+euro(value)+' statt sonst etwa '+euro(median),ids:[row.id]});
+   }
+  }
   return alerts.slice(0,35);
  }
  function parser(text){
