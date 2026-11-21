@@ -885,9 +885,9 @@ const dialogCopy = Object.freeze({
  }
 });
 const dialogPrefixes = Object.freeze({
- moving: { 'Abmeldung fehlgeschlagen: ':'Sign-out failed: ' },
- plants: { 'Abmeldung fehlgeschlagen: ':'Sign-out failed: ' },
- baking: { 'Abmeldung fehlgeschlagen: ':'Sign-out failed: ' },
+ moving: { 'Abmeldung fehlgeschlagen: ':'Sign-out failed: ', 'Anmeldung fehlgeschlagen: ':'Sign-in failed: ', 'Registrierung fehlgeschlagen: ':'Registration failed: ' },
+ plants: { 'Abmeldung fehlgeschlagen: ':'Sign-out failed: ', 'Anmeldung fehlgeschlagen: ':'Sign-in failed: ', 'Registrierung fehlgeschlagen: ':'Registration failed: ' },
+ baking: { 'Abmeldung fehlgeschlagen: ':'Sign-out failed: ', 'Anmeldung fehlgeschlagen: ':'Sign-in failed: ', 'Registrierung fehlgeschlagen: ':'Registration failed: ' },
  housemates: {
   'Registrierung fehlgeschlagen: ':'Registration failed: ',
   'Abmeldung fehlgeschlagen: ':'Sign-out failed: ',
