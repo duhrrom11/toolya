@@ -374,3 +374,11 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - PR #291 stays Draft. No merge, deployment, live Supabase access, production fixtures, mascot modifications or removal of English `noindex`.
 
 - **Nachprüfung der ICS-Regression:** Der neue Test verwendet jetzt tatsächliche Zeilenumbrüche im bösartigen Titel und verankerte `^BEGIN:VEVENT$`/`^END:VEVENT$`-Prüfungen. Die vorherige Variante enthielt nur die wörtliche `\\n`-Zeichenfolge und hätte die reale Zeileninjektion nicht ausreichend geprüft. Der Korrektur-Commit ist auf demselben Draft-Branch; vollständige Tests stehen noch aus.
+
+## Größeres Auth-/Export-Paket (21.11.2026)
+
+- Vier Tool-Oberflächen (Autokosten, Tiergesundheit, Haushaltsbuch, Zählerstände): Leere E-Mail/Passwort-Eingaben in Anmeldung und Registrierung sowie erfolgreiche Registrierung werden anhand von `window.__toolyaUILocale` auf Deutsch/Englisch ausgegeben. Unbekannte Backend-Fehlertexte bleiben unverändert; Auth-Requests, Zugangsdaten und Sitzungslogik sind nicht modifiziert.
+- `tests/i18n/account-calendar-export.test.mjs` enthält vier neue isolierte Funktionsausführungen für beide Sprachen, fehlende Zugangsdaten, erfolgreiche Registrierung, unveränderte synthetische Zugangsdaten, Backend-Fehler und erfolgreichen Login. Zusammen mit der korrigierten echten ICS-Zeilenumbruch-Injektion deckt das Paket mehrere Laufzeit- und Exportpfade ab.
+- Änderungen wurden direkt über die GitHub-Schnittstelle auf den bestehenden Branch geschrieben. In dieser Sitzung ist kein lokaler Repository-Checkout verfügbar; `git ls-remote` scheitert an fehlender DNS-Auflösung von github.com. Die vollständigen Node- und Chromium-Suiten konnten daher für den aktuellen HEAD **nicht** ausgeführt werden. Weder grüne Node-Tests noch bestandene Browserläufe werden für diesen Stand behauptet.
+- CI auf dem neuen Commit ist gesondert zu prüfen. Weiter offen: weitere dynamische Meldungen und Exporte, echte Auth-/Recovery-E2E-Prüfungen mit isoliertem Fake-Backend, 34 nur teilweise lokalisierte Ansichten, A11y und Release-Audit.
+- PR #291 bleibt Draft. Kein Merge, Deployment, Entfernen von `noindex`, produktiver Supabase-Zugriff oder produktive Testdaten.
