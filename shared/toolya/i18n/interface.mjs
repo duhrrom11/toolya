@@ -959,6 +959,34 @@ function applyB3EditorCopy(document,tool,language){
   if(translation)updateElement(el,translation,'aria-label',language);
  }
 }
+/* Help-modal body copy is deliberately restricted to fixed help paragraphs.
+   Do not touch shared notes, user content, interactive controls or stored records. */
+const toolHelpBodyCopy=Object.freeze({
+ housemates:{
+  'Farbige Sticky Notes erstellen, wichtige Zettel oben anpinnen 📌, Autor wählen und Notizen per Klick verwalten.':'Create colorful sticky notes, pin important items 📌, select an author, and manage notes with a click.',
+  'Einnahmen und Ausgaben erfassen, Belegfotos per Texterkennung auslesen und Rückzahlungen berechnen lassen. Die vorgeschlagenen Überweisungen führt ihr selbst durch.':'Track income and expenses, scan receipt photos with text recognition, and calculate reimbursements. You make any suggested transfers yourselves.',
+  'WG-Kalender für Waschmaschine, Trockner, Übernachtungsgäste oder Partys nutzen.':'Use the shared calendar for laundry, dryers, overnight visitors or parties.',
+  'Putzaufgaben verteilen, Mahlzeiten planen, Einkaufsartikel sammeln und den geschätzten Restwert gemeinsamer Anschaffungen ansehen.':'Assign chores, plan meals, collect shopping items, and view estimated remaining values of shared purchases.',
+  'Schritt-für-Schritt-Anleitung zum WG-Organisator':'Step-by-step roommate organizer guide'
+ },
+ plants:{
+  'Gib den Pflanzennamen, die Sorte und den Standort ein. Die App berechnet anhand der Topfgröße automatisch die empfohlene Gießmenge in Millilitern. Über den „💧 Gießen“-Button aktualisierst du den Rhythmus und ziehst Wasser von deiner Zisterne ab.':'Enter the plant name, variety and location. The app estimates the recommended watering amount in millilitres from the pot size. Use “💧 Water” to update the schedule and subtract water from your rainwater tank.',
+  'Im Zisternen-Manager kannst du dein Fassungsvermögen festlegen und den Wasserstand bei jedem Gießen automatisch reduzieren. Der Garten-ROI-Rechner vergleicht deine Ausgaben mit dem Marktwert der geernteten Früchte (in kg).':'Set the tank capacity and reduce the water level automatically whenever you water. The garden ROI calculator compares expenses with the estimated market value of harvested produce (in kg).',
+  'Nutze den Button „📄 PDF“, um jederzeit einen kompakten Report aller erfassten Pflanzen und Daten als Dokument zu generieren.':'Use “📄 PDF” to generate a compact report of your recorded plants and data at any time.',
+  'Schritt-für-Schritt-Anleitung zur Pflanzenpflege':'Step-by-step plant care guide'
+ }
+});
+function applyToolHelpBodyCopy(document,tool,language){
+ const dictionary=toolHelpBodyCopy[tool];
+ if(!dictionary)return;
+ for(const element of document.querySelectorAll('#helpModal details > p,#helpModal > div > p > a')){
+  if(element.children.length||element.isContentEditable)continue;
+  const original=originals.get(element)?.get('text')??element.textContent;
+  const source=original.trim();
+  const english=dictionary[source];
+  if(english!==undefined)updateElement(element,original.replace(source,english),null,language);
+ }
+}
 export function applyToolInterfaceLocale(document,tool,language){
  for(const [selector,translation,attribute,attributeTranslation] of [...common,...(toolTranslations[tool]||[]),...(extendedFormTranslations[tool]||[])]){
   const translated=attribute?attributeTranslation:translation;
@@ -970,6 +998,7 @@ export function applyToolInterfaceLocale(document,tool,language){
  applyKnownB3Accessibility(document,language);
  applyB3NavigationCopy(document,tool,language);
  applyB3EditorCopy(document,tool,language);
+ applyToolHelpBodyCopy(document,tool,language);
  if(tool==='baking')applyBackstudioCopy(document,language);
 }
 
