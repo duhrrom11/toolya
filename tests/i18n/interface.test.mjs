@@ -1009,3 +1009,44 @@ test('authentication network failures are reported without claiming registration
   }
  }
 });
+
+test('Backstudio 3D launch button remains discoverable when Pro controls initialize in either language',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const source=await readFile(new URL('../../tools/baking/backstudio-layout.js',import.meta.url),'utf8');
+ const start=source.indexOf("const orig3dOpen=[...webgl.querySelectorAll('button')]");
+ const end=source.indexOf('// Pro UI uses 260px fixed camera',start);
+ assert.ok(start>0&&end>start);
+ const code=source.slice(start,end);
+ for(const [locale,label,expected] of [
+  ['de','Form drehen','↻ Form drehen'],
+  ['en','Rotate pan','↻ Rotate pan'],
+  ['en','Form drehen','↻ Rotate pan'],
+  ['de','3D öffnen','↻ Form drehen']
+ ]){
+  let clicked=0;
+  const button={textContent:label,click:()=>{clicked++}};
+  const ctx={
+   webgl:{querySelectorAll:selector=>selector==='button'?[button]:[]},
+   text:(de,en)=>locale==='en'?en:de,
+   window:{__toolyaUILocale:locale},
+   stage:{}
+  };
+  createContext(ctx);runInContext(code,ctx);
+  assert.equal(button.textContent,expected,'3D launch label '+locale+' / '+label);
+  assert.equal(clicked,0,'3D view is not automatically started in unsupported browsers');
+ }
+});
+
+test('global password recovery remains a single token-based flow; tool translations do not duplicate auth logic',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const homepage=await readFile(new URL('../../index.html',import.meta.url),'utf8');
+ const authGate=await readFile(new URL('../../shared/toolya/auth-page-gate.js',import.meta.url),'utf8');
+ assert.match(homepage,/auth\.resetPasswordForEmail\(email,/,'existing one-time recovery email flow is retained');
+ assert.match(homepage,/auth\.updateUser\(\{ password: newPassword \}\)/,'password update remains in central account flow');
+ assert.match(homepage,/if \(!passwordRecoveryActive\)/,'recovery panel requires active recovery state');
+ assert.match(homepage,/first\.value\.length < 8 \|\| first\.value !== second\.value/,'password confirmation is required');
+ assert.match(homepage,/redirectTo: "https:\/\/toolya\.app\/index\.html"/,'the recovery token targets the central account page');
+ assert.match(authGate,/const reject = \(\) => window\.location\.replace\(home\)/,'unauthenticated tool access routes to central account');
+ assert.doesNotMatch(authGate,/resetPasswordForEmail|updateUser\(/,'auth gate does not invent another password recovery flow');
+});
