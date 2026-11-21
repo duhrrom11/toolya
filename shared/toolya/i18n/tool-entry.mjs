@@ -25,6 +25,8 @@ function mountToolLanguage(){
  const originalDocTitle=document.title;
  const authGuide=document.querySelector('.toolya-auth-status > a');
  const originalAuthGuideHref=authGuide?.getAttribute('href');
+ const modalHelpGuide=document.querySelector('#helpModal > div > p > a');
+ const originalModalHelpGuideHref=modalHelpGuide?.getAttribute('href');
  const switcher=document.createElement('nav');
  switcher.className='ty-tool-language';
  switcher.setAttribute('aria-label','Tool language selection / Sprachauswahl');
@@ -123,6 +125,12 @@ function mountToolLanguage(){
      authGuide.lang=lang;
    }
    applyToolInterfaceLocale(document,name,lang);
+   if(modalHelpGuide){
+     // Keep tool help navigation in the same language; preserve the source link for DE.
+     if(lang==='en')modalHelpGuide.setAttribute('href',settings.guide);
+     else if(originalModalHelpGuideHref!==null)modalHelpGuide.setAttribute('href',originalModalHelpGuideHref);
+     modalHelpGuide.lang=lang;
+   }
    localizeVisibleAccountStatus(lang);
    document.dispatchEvent(new document.defaultView.Event('toolya:locale-change'));
    // Keep html[lang]=de while the main application is not fully translated.
