@@ -1573,6 +1573,7 @@
             refreshOpenCookingDayLabels();
             refreshOpenDietPlaceholders();
             refreshOpenHouseholdFormTitles();
+            refreshHouseholdMemberFormTitle();
             // Refresh labels in place; keep unsaved form values and stored keys untouched.
         });
 
@@ -2518,6 +2519,20 @@
 
             document.getElementById('mateFormTitle').innerText = window.__toolyaUILocale === "en" ? "✏️ Edit member" : "✏️ Mitglied bearbeiten";
             document.getElementById('mateCancelBtn').classList.remove('hidden');
+        }
+
+        function refreshHouseholdMemberFormTitle() {
+            // Only update a displayed title for an already-open member editor;
+            // the edited contact and unsaved fields must not be reloaded.
+            const modal = document.getElementById('mitbewohnerModal');
+            if (!modal || modal.classList.contains('hidden')) return;
+            const title = document.getElementById('mateFormTitle');
+            const index = document.getElementById('editMateIndex');
+            if (!title || !index) return;
+            const editing = Number.isInteger(Number(index.value)) && Number(index.value) >= 0;
+            title.textContent = editing
+                ? (window.__toolyaUILocale === 'en' ? '✏️ Edit member' : '✏️ Mitglied bearbeiten')
+                : (window.__toolyaUILocale === 'en' ? '➕ Add new member' : '➕ Neues Mitglied hinzufügen');
         }
 
         function resetMateForm() {
