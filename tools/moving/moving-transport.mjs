@@ -69,7 +69,7 @@ root?.addEventListener('click',async e=>{
  if(b.dataset.act==='copy'){const v=document.getElementById('mv-helper-link')?.value;if(v){try{await navigator.clipboard.writeText(v);}catch{document.getElementById('mv-helper-link').select();}}return;}
  if(b.dataset.act==='show-qr'){await drawQr('mv-share-qr',share);return;}
  if(b.dataset.act==='close-qr'){qrLink='';render();return;}
- if(b.dataset.act==='box-qr'){const id=document.getElementById('mv-qr-assignment')?.value;if(id&&token){const u=new URL('./helper/index.html',location.href);u.hash=new URLSearchParams({t:token,a:id}).toString();qrLink=u.href;render();}return;}
+ if(b.dataset.act==='box-qr'){const id=document.getElementById('mv-qr-assignment')?.value;if(id&&token){const u=new URL('./helper/index.html',location.href);u.searchParams.set('lang',language());u.hash=new URLSearchParams({t:token,a:id}).toString();qrLink=u.href;render();}return;}
  const p=project();if(!p)return;projectId=p.id;
  const act=b.dataset.act;
  const inputLabel=document.getElementById('mv-helper-name')?.value.trim();
@@ -82,7 +82,7 @@ root?.addEventListener('click',async e=>{
   else if(act==='create'){
     const label=inputLabel,hours=inputHours;
     if(!label)throw new TransportError('missingLabel');
-    const x=await api('create',{label,hours});token=x.token;const u=new URL('./helper/index.html',location.href);u.hash=new URLSearchParams({t:token}).toString();share=u.href;data=await api('state');
+    const x=await api('create',{label,hours});token=x.token;const u=new URL('./helper/index.html',location.href);u.searchParams.set('lang',language());u.hash=new URLSearchParams({t:token}).toString();share=u.href;data=await api('state');
   }else if(b.dataset.resolve){await api('resolve-incident',{incidentId:b.dataset.resolve});data=await api('state');}
   else if(b.dataset.revoke){await api('revoke',{grantId:b.dataset.revoke});data=await api('state');share='';token='';qrLink='';}
   else if(b.dataset.status){const item=data?.boxes?.find(x=>x.assignmentId===b.dataset.status);if(!item)return;await api('owner-transition',{assignmentId:item.assignmentId,expectedVersion:item.version,status:b.dataset.next,requestId:crypto.randomUUID()});data=await api('state');}
