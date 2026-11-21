@@ -909,3 +909,54 @@ test('Backstudio Pro recommendations and saved shape labels localize without mod
  assert.match(source,/state\.logs\[index\]\.favorite=!state\.logs\[index\]\.favorite/,'favorite flags still use original log entry');
  assert.match(source,/state\.logs\.splice\(index,1\)/,'delete still targets original log entry');
 });
+
+test('account verification distinguishes a missing session from temporary Supabase failures in three tools',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ for(const [tool,method,next] of [
+  ['moving','updateUserDisplay','openSettings'],
+  ['plants','checkUserSession','const gartenKalender'],
+  ['baking','checkUserSession','openHelpFromMenu']
+ ]){
+  const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
+  const start=html.indexOf('async function '+method+'() {');
+  const end=html.indexOf(tool==='plants'?next:'function '+next+'()',start);
+  assert.ok(start>0&&end>start,tool+': account status handler');
+  const fragment=html.slice(start,end);
+  for(const [mode,expected] of [
+   ['connected','connected'],
+   ['missing','signed-out'],
+   ['missing-error','signed-out'],
+   ['server-error','unavailable'],
+   ['throw','unavailable']
+  ]){
+   const elements=new Map();
+   const element=id=>{
+    if(!elements.has(id))elements.set(id,{
+     textContent:'',innerText:'',classList:{add:()=>{},remove:()=>{}}
+    });
+    return elements.get(id);
+   };
+   const client={auth:{getUser:async()=>{
+    if(mode==='throw')throw Error('Network unavailable');
+    if(mode==='server-error')return {data:null,error:{message:'Network unavailable'}};
+    if(mode==='missing-error')return {data:null,error:{name:'AuthSessionMissingError'}};
+    if(mode==='connected')return {data:{user:{email:'person@example.org'}},error:null};
+    return {data:{user:null},error:null};
+   }}};
+   const ctx={
+    document:{getElementById:element},supabaseClient:client,
+    window:{supabaseClient:client,toolyaUiText:value=>translateAccountStatus('en',value)}
+   };
+   createContext(ctx);
+   runInContext(fragment,ctx);
+   await runInContext(method+'()',ctx);
+   const status=tool==='moving'?element('cloudStatus').textContent:element('cloud-status-text').innerText;
+   const english=expected==='connected'?(tool==='moving'?'✅ Signed in – person@example.org':tool==='plants'?'Status: Connected and signed in':'Status: Connected'):expected==='signed-out'?'Not signed in':'Status: Unable to verify connection or session';
+   assert.equal(status,english,tool+' '+mode);
+   const email=tool==='moving'?element('userInfo').textContent:tool==='plants'?element('cloud-user-display').innerText:element('cloud-user-email').innerText;
+   if(expected==='connected')assert.ok(email.includes('person@example.org'));
+   else assert.ok(!email.includes('person@example.org'),tool+' '+mode+': no stale identity shown');
+  }
+ }
+});
