@@ -237,3 +237,18 @@ test('household access dialogs retain ownership and membership identifiers while
  ];
  for(const [de,en] of exact)assert.equal(translateToolDialog('housemates','en',de),en);
 });
+
+test('planting plots and gallery expose localized display labels without changing plant records',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/plants/index.html',import.meta.url),'utf8');
+ for(const phrase of [
+  'Companion planting tip:', 'Grows well alongside',
+  "'Plot' : 'Feld'", "'+ Assign' : '+ Belegen'",
+  "type 'clear' to empty", "input.toLowerCase() === 'clear'",
+  "'Plant photo' : 'Pflanzenfoto'", "'Photo' : 'Foto'"
+ ]) assert.ok(html.includes(phrase),'missing translated plant display: '+phrase);
+ assert.match(html,/escapeHtml\(p\.name\)/,'plant names remain escaped in grid');
+ assert.match(html,/match\.gute\.join/,'companion plant recommendations still use original data');
+ assert.match(html,/match\.schlechte\.join/,'avoidance recommendations still use original data');
+ assert.match(html,/input\.toLowerCase\(\) !== 'leer'/,'existing German clear command preserved');
+});
