@@ -1,5 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {parseHTML} from 'linkedom';
+import {readFileSync} from 'node:fs';
 import {WISHES_COPY,WISHES_RUNTIME_COPY,wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
 import {applyWishLocale} from '../../shared/toolya/i18n/wishes-dom.mjs';
 test('Wishlist translation changes only author-owned controls and restores implicit option keys',()=>{
@@ -64,4 +65,15 @@ test('cloud conflict, export/import and occasion notifications have reversible E
  ];
  for(const [de,en] of cases){assert.equal(wishesText(de,'en'),en);assert.equal(wishesText(en,'de'),de)}
  for(const [de,en]of Object.entries(WISHES_RUNTIME_COPY)){assert.equal(wishesText(de,'en'),en,de);assert.equal(wishesText(en,'de'),de,en)}
+});
+
+test('all known application-owned status fields in Wishes are eligible for live translation',()=>{
+ const source=readFileSync(new URL('../../shared/toolya/i18n/wishes-entry.mjs',import.meta.url),'utf8');
+ for(const id of ['status','taskStatus','checklistStatus','giftStatus','giftFormFeedback',
+  'settingsAuthMessage','profileStatus','actionStatus','notice','reviewStatus','closingStatus']){
+  assert.ok(source.includes("'#"+id+"'"),'status not tracked: '+id);
+ }
+ for(const id of ['progressBar','dailyProgress','budgetProgress']){
+  assert.ok(!source.includes("'#"+id+"'"),'progress indicator must not be translated: '+id);
+ }
 });

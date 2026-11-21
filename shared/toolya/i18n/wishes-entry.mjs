@@ -20,7 +20,11 @@ function mount(){
  // account identifiers must not be modified by the status translator.
  const statusSelectors=['#status','#taskStatus','#checklistStatus','#rolloverStatus',
   '#giftStatus','#filterStatus','#productSearchStatus','#searchStatus','#detailStatus',
-  '#profileStatus','#settingsAuthMessage','#settingsAccountStatus','#settingsStatus'];
+  '#profileStatus','#settingsAuthMessage','#settingsAccountStatus','#settingsStatus',
+  '#notice','#reactionStatus','#actionStatus','#budgetSaveFeedback','#giftFormFeedback',
+  '#taskActionStatus','#closingStatus','#reviewStatus'];
+ // Do not select progress bars, counters, wish cards, user descriptions or
+ // account identity fields. Status translations must be exact/prefix matched.
  function translateLiveStatuses(){
   for(const selector of statusSelectors){
    const node=document.querySelector(selector);
