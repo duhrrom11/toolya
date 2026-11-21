@@ -27,10 +27,10 @@ test('temporary helper sees only minimal projection and persists sequential stat
  await expect(page.getByText('Geplant')).toBeVisible();
  expect(await page.locator('body').innerText()).not.toContain('Private Inventarinhalte: Goldschmuck');
  await page.getByRole('button',{name:'Nächster Status'}).click();
- await expect(page.getByText('Gepackt')).toBeVisible();
+ await expect(page.getByText('Gepackt',{exact:true})).toBeVisible();
  expect(writes).toBe(1);
  await page.getByRole('button',{name:/Aktualisieren/}).click();
- await expect(page.getByText('Gepackt')).toBeVisible();
+ await expect(page.getByText('Gepackt',{exact:true})).toBeVisible();
 });
 test('helper without a token exposes no private data and makes no requests',async({page})=>{
  let requests=0;
