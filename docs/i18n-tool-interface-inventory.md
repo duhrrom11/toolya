@@ -105,3 +105,12 @@ Stand 2026-11-21. Quelle: vier vorhandene `tools/*/index.html` im Entwicklungsbr
 - Die Checkbox bleibt im bestehenden `label` erhalten: Nur ein unmittelbarer Textknoten wird angepasst, nicht der Label-Inhalt ersetzt. Originaltexte werden für den Sprachwechsel über `WeakMap` wiederhergestellt. Die Original-Panel-IDs, Reihenfolge, `S/M/L`-Werte, Checkbox-Zustände, gespeicherter Layout-Schlüssel und Event-Handler werden nicht verändert.
 - Drei ergänzte Regressionstests prüfen Umzugskisten und WG-Editor, Hin- und Rückwechsel, das erneute Rendern, Nutzereingaben/Bedienelemente und die bekannte Fehlermeldung.
 - Die acht Workflows des vorherigen stabilen Commits `ec7d2184` waren erfolgreich; die danach laufenden CI-Jobs müssen für den endgültigen PR-Stand erneut grün sein. Weiterhin kein Merge, kein Deployment und keine produktiven Supabase-Änderungen.
+
+## B3-Navigation und Dashboard-Editoren in allen vier Tools (2026-11-21)
+
+- Der zuvor bearbeitete Stand `43388e5c` hat inzwischen **alle acht GitHub-Actions-Workflows erfolgreich abgeschlossen**.
+- Für Pflanzenpflege wurden die dynamisch erzeugten B3-Navigation, Aktionen (Gießplan, Saatgut, Zisterne, Beet, Inventar und PDF) und das Navigations-Landmark übersetzt. Für den Editor kommen fünf Pflanzen-Paneltitel, Größen-/Sichtbarkeitsoptionen, Aktionsbuttons und Hilfstexte hinzu.
+- Im Backstudio wurde der eigenständige Dashboard-Editor übersetzt: fünf Toolabschnitte, Editor-Hinweise, drei Kartendichteoptionen, Aktionsbuttons sowie Screenreader-Attribute. Die Original-Tab-IDs (`rechner`, `finder`, `substanz`, `tools`, `rezepte`) und die Werte `s/m/l` bleiben unverändert.
+- Beide Dashboard-Skripte senden nach jedem Editorrendern ein `toolya:b3-editor-rendered`-Ereignis, das lediglich die bereits vorhandene i18n-Darstellung erneut anwendet. Keine zusätzlichen `localStorage`-/Supabase-Schreibvorgänge.
+- Drei weitere Regressionstests prüfen die Navigation und Editoren einschließlich Rückwechsel auf Deutsch, ihrer Event- und Optionsidentität sowie unveränderter Layoutspeicher-Schlüssel.
+- Nachfolgende Commit-Workflows müssen erneut grün sein; Browser-/Cloud-Tests im realen Nutzerkonto sind dadurch nicht automatisch ersetzt. **Kein Merge/Deployment**.
