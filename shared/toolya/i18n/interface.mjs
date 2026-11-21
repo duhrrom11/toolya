@@ -802,6 +802,11 @@ const b3NavigationCopy=Object.freeze({
 function applyB3NavigationCopy(document,tool,language){
  const translations=b3NavigationCopy[tool];
  if(!translations)return;
+ const nav=document.querySelector('.b3-nav');
+ if(nav){
+  const accessibleLabel=tool==='moving'?'Moving boxes navigation':'Roommate organizer navigation';
+  updateElement(nav,accessibleLabel,'aria-label',language);
+ }
  for(const element of document.querySelectorAll('.b3-nav-links > a,.b3-more > summary,.b3-more-content > button,.b3-preferences > h4,.b3-preferences > button,.b3-settings-footer > a')){
   if(element.children.length||element.isContentEditable)continue;
   const original=originals.get(element)?.get('text')??element.textContent;
