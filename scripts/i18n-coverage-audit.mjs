@@ -46,6 +46,7 @@ const pairs=new Map([
 const bilingualPages=new Set(['404.html','offline.html']);
 const redirectPages=new Set(['tools/wishes/index.html']);
 const supportedTools=new Set(['dashboard/index.html',
+ ...['index','heirs','handover','print-key'].map(x=>'tools/estate/'+x+'.html'),
 
  ...['moving','housemates','plants','baking','budget','car','loans','meters','parking','pet-health'].map(name=>'tools/'+name+'/index.html'),
  ...['public','dashboard','collection','discover','feed','planner','profile','occasions','reservations','assistant','bookmarks','cockpit','gift-analytics','gift-tasks','notifications','report','social'].map(name=>'tools/wishes/'+name+'.html')

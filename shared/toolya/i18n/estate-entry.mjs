@@ -1,0 +1,39 @@
+/* No hooks into encryption, authentication, export or clipboard logic. */
+import {estateText} from './estate-copy.mjs';
+import {applyEstateLocale} from './estate-dom.mjs';
+const key='toolya-locale-v1';
+function saved(){const q=new URLSearchParams(location.search).get('lang');
+if(q==='de'||q==='en')return q;
+try{return localStorage.getItem(key)==='en'?'en':'de'}catch{return 'de'}}
+function mount(){
+ const print=location.pathname.endsWith('/print-key.html');
+ const originalTitle=document.title;
+ let lang=saved();
+ let nav=null,notice=null;
+ const header=document.querySelector('body > header');
+ if(!print&&header){
+  nav=document.createElement('nav');nav.className='ty-estate-locale';nav.setAttribute('aria-label','Language / Sprache');
+  notice=document.createElement('p');notice.className='ty-estate-locale-notice';notice.setAttribute('role','status');
+  notice.textContent='English translation is being completed; some security and account messages remain in German.';
+  for(const target of ['de','en']){
+   const b=document.createElement('button');b.type='button';b.textContent=target.toUpperCase();b.lang=target;b.dataset.estateLocale=target;
+   b.addEventListener('click',()=>apply(target,true));nav.append(b);
+  }
+  header.append(nav);header.after(notice);
+ }
+ function apply(target,persist){
+  lang=target;
+  if(persist){
+   try{localStorage.setItem(key,lang)}catch{}
+   const url=new URL(location.href);url.searchParams.set('lang',lang);
+   history.replaceState(history.state,'',url.pathname+url.search+url.hash);
+  }
+  applyEstateLocale(document,lang);
+  document.title=lang==='en'?estateText(originalTitle.replace(' | Toolya',''),'en')+' | Toolya':originalTitle;
+  nav?.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.estateLocale===lang)));
+  if(notice)notice.hidden=lang!=='en';
+  document.dispatchEvent(new Event('toolya:estate-locale-change'));
+ }
+ apply(lang,false);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
