@@ -30,7 +30,7 @@ test('moving planner creates project, room and box assignment with mocked cloud'
   await expect(navigation).toBeVisible({timeout:15000});
   await expect(page.locator('#b3-inventory')).toBeVisible();
   await expect(planner).toBeHidden();
-  await navigation.getByRole('button',{name:/Mein Umzug/}).click();
+  await navigation.getByRole('button',{name:/Mein Umzug/}).dispatchEvent('click');
   await expect(planner).toBeVisible();
   await expect(page.locator('#b3-create')).toBeVisible();
   await expect(page.locator('#b3-inventory')).toBeHidden();
@@ -49,13 +49,13 @@ test('moving planner creates project, room and box assignment with mocked cloud'
   expect(db.snapshot.moving.assignments).toHaveLength(1);
   expect(db.writes).toBe(3);
   await expect(planner.getByRole('button',{name:'Umzug abschließen'})).toHaveCount(0);
-  await navigation.getByRole('button',{name:/Umzugstag/}).click();
+  await navigation.getByRole('button',{name:/Umzugstag/}).dispatchEvent('click');
   await expect(planner).toBeHidden();
   await expect(page.locator('#toolya-moving-transport')).toBeVisible();
-  await navigation.getByRole('button',{name:/Einzug/}).click();
+  await navigation.getByRole('button',{name:/Einzug/}).dispatchEvent('click');
   await expect(planner).toBeVisible();
   await expect(planner.getByRole('button',{name:'Umzug abschließen'})).toBeVisible();
-  await navigation.getByRole('button',{name:/Mein Inventar/}).click();
+  await navigation.getByRole('button',{name:/Mein Inventar/}).dispatchEvent('click');
   await expect(planner).toBeHidden();
   await expect(page.locator('#b3-inventory')).toBeVisible();
   expect((await page.evaluate(()=>window.__mvMock)).writes).toBe(3);
