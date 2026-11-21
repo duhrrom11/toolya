@@ -2581,7 +2581,9 @@
                         });
                         saveFlatmates(mates);
                         renderApp();
-                        alert(`✅ ${contacts.length} Kontakt(e) erfolgreich aus dem Handy importiert!`);
+                        alert(window.__toolyaUILocale === 'en'
+                            ? `✅ ${contacts.length} contact(s) imported from your phone successfully!`
+                            : `✅ ${contacts.length} Kontakt(e) erfolgreich aus dem Handy importiert!`);
                     }
                 } catch (ex) {
                     console.warn("Kontakt-Import abgebrochen oder nicht erlaubt:", ex);
