@@ -1,3 +1,5 @@
+import { validateMoving } from '../../tools/moving/moving-state.mjs';
+
 /**
  * Toolya Cloud-only state controller. In-memory state is a read cache, not persistence.
  * All writes await Supabase confirmation; no localStorage write fallback.
@@ -141,12 +143,7 @@ export function createBudgetCloudController(repository) {
 }
 
 export function validateMovingSnapshot(data) {
-  if (!data || typeof data !== 'object' || Array.isArray(data) ||
-      !Array.isArray(data.locations) || !Array.isArray(data.boxes) ||
-      ![...data.locations,...data.boxes].every(item =>
-        item && typeof item === 'object' && !Array.isArray(item)))
-    throw new Error('Ungültiger Umzugskisten-Datenstand.');
-  return data;
+  return validateMoving(data);
 }
 export function createMovingCloudController(repository) {
   return createCloudController({ repository, validate: validateMovingSnapshot,

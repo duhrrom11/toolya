@@ -27,6 +27,7 @@
 <script src="../../shared/toolya/cloud-page-status.js"></script>
     <link rel="stylesheet" href="../../assets/helferlein-b3.css">
     <link rel="stylesheet" href="../../assets/helferlein-b3-umzugskisten.css">
+<link rel="stylesheet" href="./moving.css">
     <script>
       window.HELFERLEIN_B3 = {
         key:'umzugskisten',
@@ -107,6 +108,8 @@
     <!-- Main Content -->
     <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
         
+        <section id="toolya-moving-planner" hidden aria-label="Umzugsplanung"></section>
+
         <!-- Dashboard Statistiken -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
@@ -497,6 +500,8 @@
         let movingCloudReady = false;
         function movingCloudBlock(state) {
             movingCloudReady = false;
+            window.movingCloudReady=false;
+            document.dispatchEvent(new Event("toolya:moving-ready"));
             movingCloudController?.invalidate();
             window.toolyaCloudPageStatus(state);
         }
@@ -526,6 +531,8 @@
                 movingCloudController=prepared.controller;
                 movingCloudUserId=uid;
                 movingCloudReady=true;
+                window.movingCloudReady=true;
+                document.dispatchEvent(new Event("toolya:moving-ready"));
                 document.getElementById('toolya-cloud-gate')?.remove();
                 loadLocationsDropdown();
                 checkDeepLink();
@@ -553,6 +560,7 @@
                     throw Error('Anmeldung nicht mehr gültig.');
                 await movingCloudController.replace(data);
                 window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');
+                document.dispatchEvent(new Event("toolya:moving-saved"));
                 return true;
             } catch(error) {
                 console.error(error);
@@ -595,6 +603,12 @@
         }
 
         async function deleteLocation(locId) {
+            const current=getData();
+            const moving=current.moving;
+            if(moving?.assignments?.some(a=>current.boxes.some(b=>b.locId===locId&&b.id===a.boxId) && moving.projects.some(p=>p.id===a.projectId&&p.status==='active'))){
+                alert("Dieser Standort enthält Kisten aus einem aktiven Umzug. Bitte den Umzug erst abschließen.");
+                return;
+            }
             if (!confirm("⚠️ Möchtest du diesen Standort und ALLE Kisten darin wirklich löschen?")) return;
             let data = getData();
             data.locations = data.locations.filter(l => l.id !== locId);
@@ -755,6 +769,11 @@
         }
 
         async function deleteBox(boxId) {
+            const moving=getData().moving;
+            if(moving?.assignments?.some(a=>a.boxId===boxId && moving.projects.some(p=>p.id===a.projectId&&p.status==='active'))){
+                alert("Diese Kiste ist einem aktiven Umzug zugeordnet. Bitte den Umzug erst abschließen.");
+                return;
+            }
             if (!confirm("⚠️ Möchtest du diese Kiste wirklich löschen?")) return;
             let data = getData();
             data.boxes = data.boxes.filter(b => b.id !== boxId);
@@ -1078,6 +1097,12 @@
                         !parsed.boxes.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
                         return alert("Ungültiges Backup-Format.");
                     }
+                    const current=getData();
+                    if(current.moving?.projects?.length && !parsed.moving &&
+                       !confirm("Dieses Backup enthält keine Umzugsprojekte. Die bestehenden Umzugsplanungen würden verloren gehen. Trotzdem fortfahren?")) return;
+                    if(!confirm("Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.")) return;
+                    exportBackup();
+                    if(!confirm("Hast du die aktuelle Sicherung erfolgreich heruntergeladen?")) return;
                     if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
                     if (!await saveData(parsed)) return;
                     loadLocationsDropdown();
@@ -1150,5 +1175,6 @@
             document.getElementById('scannerModal').classList.add('hidden');
         }
     </script>
+<script type="module" src="./moving-ui.mjs"></script>
 </body>
 </html>
