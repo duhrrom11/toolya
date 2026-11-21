@@ -3,6 +3,7 @@ const origin='http://127.0.0.1:4173';
 test('moving planner creates project, room and box assignment with mocked cloud',async({page})=>{
   await page.route('**/*',route=>{
     const url=route.request().url();
+    if(url==='https://cdn.tailwindcss.com')return route.fulfill({status:200,contentType:'text/javascript',body:"document.head.insertAdjacentHTML('beforeend','<style>.hidden{display:none!important}</style>');"});
     if(url===origin+'/assets/vendor/supabase-2.57.0.js')
       return route.fulfill({status:200,contentType:'text/javascript',body:`
         window.__mvMock={writes:0,revision:1,snapshot:{locations:[{id:5,name:'Keller',icon:'📦'}],boxes:[{id:16,locId:5,name:'Gläser',desc:'Gläser',value:20,tag:'Zerbrechlich'}]}};
@@ -29,7 +30,6 @@ test('moving planner creates project, room and box assignment with mocked cloud'
   const prompts=['Mein Testumzug','','Küche','EG','16'];
   page.on('dialog',d=>d.type()==='prompt'?d.accept(prompts.shift()??''):d.accept());
   await page.evaluate(()=>{window.scrollTo(0,0);document.querySelector('#toolya-moving-planner [data-act=project]').scrollIntoView({block:'center',behavior:'instant'});});
-  console.log('moving-button-hit',await page.evaluate(()=>{const e=document.querySelector('#toolya-moving-planner [data-act=project]'),r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2,hit=document.elementFromPoint(x,y);return {at:[x,y],hit:hit?.tagName,hitClass:hit?.className,pointer:getComputedStyle(e).pointerEvents,position:getComputedStyle(e).position,z:getComputedStyle(e).zIndex,htmlClass:document.documentElement.className,scrollY:window.scrollY,viewport:window.innerHeight,panelPosition:getComputedStyle(document.querySelector('#toolya-moving-planner')).position,stack:document.elementsFromPoint(x,y).slice(0,12).map(n=>n.tagName+'#'+n.id+'.'+n.className),ancestors:(()=>{let z=e,out=[];while(z&&out.length<9){const st=getComputedStyle(z);out.push({tag:z.tagName,id:z.id,cl:String(z.className).slice(0,60),visibility:st.visibility,display:st.display,pointer:st.pointerEvents,zIndex:st.zIndex,opacity:st.opacity,inert:z.inert});z=z.parentElement;}return out})()};}));
   await planner.getByRole('button',{name:/Neuen Umzug planen/}).click();
   await expect(planner.getByText('Mein Testumzug')).toBeVisible();
   await planner.getByRole('button',{name:'Räume'}).click();
