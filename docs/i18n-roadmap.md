@@ -408,3 +408,5 @@ Die verifizierten Node-, CloudOnly- und Chromium-Läufe ersetzen die früheren H
 Im nachfolgenden Paket sind Dashboard-Recovery bei 320 px, sichtbare Nachlass-Sprachwahl und verschlüsselter Handover sowie gerenderte Umzugskisten-PDFs mit dekodierten QR-Zielen zusätzlich geprüft. Die Umzugsplanung unterstützt DE/EN einschließlich Datumsanzeige und behält bestehende Projekt-, Kisten- und Raumwerte bei. Für den aktuellen SHA und noch offene Vollabnahmen gilt die Fortschrittsdatei.
 
 Die ICS-Downloads von Autokosten und Tiergesundheit wurden in Chromium auf beiden Sprachpfaden am echten Termin-Knopf geprüft. Die Dateien erhalten Originaltitel und Datum, verwenden DE/EN-Beschreibungen und enthalten einen ganztägigen Kalendereintrag.
+
+Die Transport- und Helferansicht der Umzugskisten übersetzt auch bereits angezeigte Fehler beim Sprachwechsel. Synthetischer JavaScript-Test für Serverausfall und DE→EN-Wechsel bestanden. Alle 13 PR-Workflows auf `52f43e04` waren grün. Die vollständige CI auf dem neuen HEAD bleibt separat zu prüfen.
