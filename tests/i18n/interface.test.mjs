@@ -1867,3 +1867,23 @@ test('Sprint A plant photo and identifier errors translate without leaking or mo
  }
  assert.equal(translateToolDialog('plants','en','Custom server diagnostic 123'),'Custom server diagnostic 123','unknown error messages untouched');
 });
+
+
+test('Sprint A household settlement and receipt values use localized display only',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const match=html.match(/function formatHouseholdDisplayAmount\(value\) \{([\s\S]*?)\n        \}/);
+ assert.ok(match,'household display formatter exists');
+ const format=new Function('window','value',match[1]);
+ assert.equal(format({__toolyaUILocale:'en'},1234.5),'1,234.50');
+ assert.equal(format({__toolyaUILocale:'de'},1234.5),'1234.50');
+ assert.equal(format({__toolyaUILocale:'en'},-25.5),'-25.50');
+ assert.ok(html.includes('${formatHouseholdDisplayAmount(s.amount)} €'),'settlement display uses locale');
+ assert.ok(html.includes('formatHouseholdDisplayAmount(totalVolume) + " €"'),'debt volume uses locale');
+ assert.ok(html.includes('${formatHouseholdDisplayAmount(r.price)} €</strong>'),'receipt display uses locale');
+ assert.ok(html.includes("r.payer || (window.__toolyaUILocale === 'en' ? 'Private' : 'Privat')"),'only fallback payer label translates');
+ assert.ok(html.includes('const share = amount / splitWith.length;'),'debt calculation remains unchanged');
+ assert.ok(html.includes('transactions.push({ from: debtor.name, to: creditor.name, amount: min })'),'settlement amounts stay numeric');
+ assert.ok(html.includes('data.unshift({ id: Date.now(), title, store, date, price, category, payer, isFixkosten, isTax, entryType, splitWith })'),'receipt payload unchanged');
+ assert.ok(html.includes('escapeUserHtml(r.payer ||'),'payer still HTML escaped');
+});
