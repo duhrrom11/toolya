@@ -854,6 +854,7 @@ function applyB3EditorCopy(document,tool,language){
  const names=b3EditorPanels[tool];
  const host=document.querySelector('#b3-editor');
  if(!host||!names)return;
+ if(host.getAttribute('aria-label')==='Dashboard bearbeiten'||originals.get(host)?.has('aria-label'))updateElement(host,'Edit dashboard','aria-label',language);
  for(const el of host.querySelectorAll('h2,p,.b3-editor-row strong,.b3-editor-row label,.flex > button')){
   if(el.closest('[contenteditable="true"]'))continue;
   // A checkbox is nested in a label. Modify only its direct text node to preserve the input.
@@ -899,6 +900,7 @@ export function applyToolInterfaceLocale(document,tool,language){
    email addresses, backend errors and machine-readable exports are untouched. */
 const dialogCopy = Object.freeze({
  moving: {
+  'Layout konnte nicht gespeichert werden.':'Could not save the dashboard layout.',
   'Angemeldet. Dein Konto ist einsatzbereit.':'Signed in. Your account is ready.',
   'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.':'Request processed. If confirmation is required, check your inbox and verify your email address, then sign in.',
   "Backup zu groß (maximal 20 MB).": "Backup too large (maximum 20 MB).",
@@ -923,6 +925,7 @@ const dialogCopy = Object.freeze({
   'Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.':'Confirm that the backup was downloaded.'
  },
  housemates: {
+  'Layout konnte nicht gespeichert werden.':'Could not save the dashboard layout.',
   "Hinweis: Diese ältere WG verwendet einen ungeschützten Link-Speicher. Wer die WG-ID kennt, kann die Daten möglicherweise lesen oder verändern. Für neue WGs steht geschützter Kontospeicher zur Verfügung.": "Notice: This older household uses unprotected link-based storage. Anyone who knows the household ID may be able to read or change the data. Protected account storage is available for new households.",
   "🔗 WG-Link kopiert! Teile ihn nur mit berechtigten Personen.": "🔗 Household link copied! Share it only with authorized people.",
   "WG-Link manuell kopieren:": "Copy household link manually:",
