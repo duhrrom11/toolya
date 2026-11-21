@@ -239,3 +239,5 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Node-Regressionsprüfung für Quellmeldungen, Sprachwechsel und unberührte technische Meldungen hinzugefügt.
 - Die vorherige Basis `c16c9c38` ist mit **9/9 erfolgreichen GitHub-Actions-Workflows** verifiziert, inklusive isolierter Browser-CI. Der neue HEAD benötigt einen eigenen vollständigen Workflow-Durchlauf.
 - **Noch nicht vollständig abgeschlossen:** tatsächlicher bestätigter Restore mit gültigen synthetischen Daten, PDF-Inhaltsprüfung, sämtliche Auth-/Recovery-Journeys, Screenreader-Abnahme und redaktionell vollständige EN-Oberflächen. PR #291 bleibt Draft; kein Merge, Deployment oder Produktivdatenzugriff.
+
+- Nachprüfung des echten UI-Pfads: Die Cloud-Synchronisierung meldet Erfolg über `window.toolyaNotice` statt `alert`. Deshalb wurde die Erfolgsmeldung dort direkt an `window.__toolyaUILocale` gebunden. Für die zusammengesetzte Mitgliedermeldung wird nur ein fest bekannter, anwendungseigener Fehlertext übersetzt; unbekannte Backend-Details bleiben unverändert. Zusätzliche Regressionen schützen beide Pfade.
