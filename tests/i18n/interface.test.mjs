@@ -2509,3 +2509,13 @@ test('six additional tools localise source-exact form copy without changing data
   assert.equal(b.textContent,de);
  }
 });
+
+test('additional tools translate native warnings and preserve user/backend payloads',()=>{
+ const cases=[["budget","Bitte wähle zuerst ein Belegfoto aus!","Select a receipt photo first."],["car","Bitte einen Fahrzeugnamen eingeben!","Enter a vehicle name."],["loans","Ungültiges Rückgabedatum.","Invalid return date."],["meters","⚠️ Diesen Zählerstand wirklich löschen?","⚠️ Delete this meter reading?"],["parking","Dein Browser unterstützt keine Benachrichtigungen.","Your browser does not support notifications."],["pet-health","Bitte Medikamenten-Namen angeben!","Enter a medication name."]];
+ for(const [tool,de,en] of cases){
+  assert.equal(translateToolDialog(tool,'en',de),en);
+  assert.equal(translateToolDialog(tool,'de',de),de);
+  assert.equal(translateToolDialog(tool,'en','user@example.org'),'user@example.org');
+  assert.equal(translateToolDialog(tool,'en','Cloud-Import fehlgeschlagen: user@example.org'),'Cloud import failed: user@example.org');
+ }
+});
