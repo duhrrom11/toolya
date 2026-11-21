@@ -5,6 +5,19 @@ import {resolve} from 'node:path';
 
 const root=resolve(import.meta.dirname,'../..');
 const read=path=>readFileSync(resolve(root,path),'utf8');
+const origin='https://toolya.app';
+function assertEnglishToolLinks(html, target, expectedCount, guide){
+  const expected=new URL(target,origin);
+  const links=[...html.matchAll(/<a\b[^>]*\bdata-tool-link\s+href="([^"]+)"/g)];
+  assert.equal(links.length,expectedCount,guide);
+  for(const [,href] of links){
+    const url=new URL(href,origin);
+    assert.equal(url.origin,expected.origin,guide);
+    assert.equal(url.pathname,expected.pathname,guide);
+    assert.equal(url.search,'?lang=en',guide);
+    assert.equal(url.hash,expected.hash,guide);
+  }
+}
 const pages={
  '/en/':'en/index.html',
  '/en/moving-boxes/':'en/moving-boxes/index.html',
@@ -69,7 +82,7 @@ test('English guides link to existing applications and disclose partial translat
   const apps=['moving','housemates','plants','baking'];
   for(const [i,slug] of Object.keys(pages).slice(1,5).entries()){
     const html=read(pages[slug]);
-    assert.ok(html.includes('href="/tools/'+apps[i]+'/index.html"'),slug);
+    assertEnglishToolLinks(html,'/tools/'+apps[i]+'/index.html',apps[i]==='baking'?1:2,slug);
     assert.ok(html.includes('offers a partial English interface'),slug);
   }
 });
@@ -88,7 +101,7 @@ test('new English guides preserve reciprocal DE/EN links and use real applicatio
   const de=read(guide.de+'/index.html');
   assert.ok(html.includes('href="/'+guide.de+'/" lang="de"')||html.includes('href="/'+guide.de+'/" data-set-locale="de"'),guide.slug);
   assert.ok(de.includes('href="/en/'+guide.slug+'/" lang="en"'),guide.de);
-  assert.ok(html.includes('href="/tools/'+guide.app+'/'+guide.appFile+'"'),guide.slug);
+  assertEnglishToolLinks(html,'/tools/'+guide.app+'/'+guide.appFile,2,guide.slug);
   assert.ok(html.includes('noindex,follow'),'keep unreleased English guide out of index');
  }
 });
@@ -122,7 +135,7 @@ test('English legal and privacy notices preserve disclosure details and reciproc
 test('English dashboard CTA preserves opt-in language and public legal footers link to EN translations',()=>{
  const page=read('en/toolya-dashboard/index.html');
  const helper=read('shared/toolya/i18n/marketing.mjs');
- assert.ok(page.includes('data-tool-link href="/dashboard/"'));
+ assertEnglishToolLinks(page,'/dashboard/',2,'Dashboard guide');
  assert.ok(helper.includes("url.pathname === '/dashboard/'"));
  for(const p of Object.values(pages)){
   const html=read(p);

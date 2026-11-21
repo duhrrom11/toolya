@@ -422,3 +422,7 @@ Sechs englische Leitfäden anhand der deutschen Fassungen ergänzt. WG-Organisat
 ### Übergänge von englischen Anleitungen zu den Tools
 
 Die englischen Leitfäden für digitalen Nachlass und öffentliche Amazon-Wunschlisten enthalten jetzt konkrete Schritte für Sicherung, Schlüsselübergabe und Notfallfrist sowie für Linkprüfung, Profilvorschau, Suche und Verwaltung. Alle 13 englischen Tool-Anleitungen übergeben `lang=en` direkt in ihren Anwendungslinks. Das gilt auch ohne das Marketing-Skript auf der Anleitung. Der Profilanker der Wunschliste bleibt erhalten. Geprüft wurden die Linkziele, die Zahl der Links je Seite und `noindex`. Die Sprach- und Browserabnahme in den Anwendungen bleibt offen.
+
+### Regression für englische Anleitungslinks
+
+Die statische i18n-CI auf `fde5504b` meldete drei Fehler in `marketing.test.mjs`, weil die Tests Anwendungslinks ohne `lang=en` erwarteten. Die Tests prüfen nun für alle 25 Links die Anzahl pro Anleitung, Herkunft, Zielpfad, den Sprachparameter und den Profilanker. Der lokale Node-Runner war in dieser Ausführung nicht verfügbar. Das Ergebnis des vollständigen Node- und Chromium-Laufs wird über die CI des aktualisierten HEAD geprüft.
