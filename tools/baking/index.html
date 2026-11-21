@@ -1164,6 +1164,9 @@
 
         // Re-render read-only labels when the language switch changes.
         document.addEventListener('toolya:locale-change', () => {
+            // calculateAll reads the active pan inputs and updates derived display
+            // values only. It must not change the stored recipe or cloud session.
+            calculateAll();
             updateTimerDisplay();
             if (bakingCloudReady) renderSavedRecipes();
         });
