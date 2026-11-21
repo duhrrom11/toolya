@@ -2019,3 +2019,40 @@ test('Sprint A household cooking weekdays localize without modifying original pl
  assert.ok(html.includes('refreshOpenCookingDayLabels();'),'locale event triggers in-place update');
  assert.ok(html.includes('p.chef = chefs[idx].value; p.dish = dishes[idx].value.trim(); p.ingredients = ingredients[idx].value.trim();'),'stored plan is unchanged');
 });
+
+
+test('Sprint A household diet editor reverses placeholders without touching draft diet fields',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const start=html.indexOf('function refreshOpenDietPlaceholders() {');
+ const end=html.indexOf('function openDietModal()',start);
+ assert.ok(start>0&&end>start,'diet display helper available');
+ const {document}=parseHTML('<div id="dietModal"><div id="dietInputContainer"><input class="dietPref" data-mate="Anna" placeholder="Ernährung" value="Vegetarisch"><input class="dietAllergy" data-mate="Anna" placeholder="Allergien" value="Nüsse"></div></div>');
+ const preference=document.querySelector('.dietPref'),allergy=document.querySelector('.dietAllergy');
+ preference.value='Vegan';
+ allergy.value='Sesam';
+ const context={window:{__toolyaUILocale:'en'},document};
+ createContext(context);runInContext(html.slice(start,end),context);
+ runInContext('refreshOpenDietPlaceholders()',context);
+ assert.equal(preference.placeholder,'Diet');
+ assert.equal(allergy.placeholder,'Allergies');
+ assert.equal(preference.value,'Vegan');
+ assert.equal(allergy.value,'Sesam');
+ assert.equal(preference.getAttribute('data-mate'),'Anna');
+ context.window.__toolyaUILocale='de';
+ runInContext('refreshOpenDietPlaceholders()',context);
+ assert.equal(preference.placeholder,'Ernährung');
+ assert.equal(allergy.placeholder,'Allergien');
+ assert.equal(document.querySelector('.dietPref'),preference,'input DOM node unchanged');
+ document.getElementById('dietModal').classList.add('hidden');
+ context.window.__toolyaUILocale='en';
+ runInContext('refreshOpenDietPlaceholders()',context);
+ assert.equal(preference.placeholder,'Ernährung','closed editor stays untouched');
+ const listenerStart=html.indexOf("document.addEventListener('toolya:locale-change'");
+ const listenerEnd=html.indexOf('/* Storage Helper */',listenerStart);
+ const listener=html.slice(listenerStart,listenerEnd);
+ assert.ok(listener.includes('if (!householdReadyForLocaleRefresh) return;'),'cloud-ready check retained');
+ assert.ok(listener.includes('refreshOpenDietPlaceholders();'),'language change refreshes diet placeholders');
+ assert.ok(!listener.includes('saveDiets(')&&!listener.includes('localStorage.setItem('),'locale switch does not save diets');
+});
