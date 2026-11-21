@@ -1170,10 +1170,13 @@
                         !parsed.boxes.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
                         return alert("Ungültiges Backup-Format.");
                     }
+                    if (!confirm("Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.")) return;
+                    exportBackup();
+                    if (!confirm("Hast du die aktuelle Sicherung erfolgreich heruntergeladen?")) return;
                     if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
                     if (!await saveData(parsed)) return;
                     loadLocationsDropdown();
-                        renderInventory();
+                    renderInventory();
                     alert("Backup erfolgreich importiert!");
                 } catch (err) {
                     alert("Fehler beim Lesen der Datei.");

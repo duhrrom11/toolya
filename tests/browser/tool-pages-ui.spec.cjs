@@ -1273,8 +1273,14 @@ for(const kind of ['housemates','baking']){
    }else{
     await page.locator('#btn-tab-rechner').click();
     await page.locator('#tab-rechner').evaluate(e=>e.scrollIntoView({block:'start'}));await inspect(page.locator('main'));await capture('calculator-'+width);
-    expect(await page.locator('main.b3-backform-main').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length)).toBe(width<1280?1:3);
+    const atelier = page.locator('#bsui-app');
+    await expect(atelier).toBeVisible();
+    const trackCount = locator => locator.evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').length);
+    expect(await trackCount(atelier)).toBe(width <= 980 ? 1 : 2);
+    expect(await trackCount(atelier.locator('.bsui-grid'))).toBe(width <= 710 ? 1 : 2);
     if(width===1440)expect(await page.locator('.b3-baking-calculator-column').evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThan(750);
+    const recipeDetails = page.locator('.bsui-recipe-details').filter({has:page.locator('#recipe-input')});
+    if (!await recipeDetails.evaluate(details => details.open)) await recipeDetails.locator('summary').click();
     await page.locator('#recipe-input').fill('250g Mehl');
     await page.locator('#orig-d').fill('26');await page.locator('#target-d').fill('20');
     expect(Number(await page.locator('#res-factor').innerText())).toBeCloseTo(400/676,2);
@@ -2156,11 +2162,13 @@ test('i18n Sprint A household: 320/768px budget and cooking editor drafts surviv
 // wrappers with synthetic cloud fixtures; no migration, import or database calls.
 test('i18n account status: real vehicle UI toggles both languages and signed-out state',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await isolated(page,true);
+ await isolated(page,true,true);
  await page.setViewportSize({width:320,height:800});
  await page.goto(origin+'/tools/car/index.html');
  await expect.poll(()=>page.evaluate(()=>typeof updateUserDisplay==='function'&&!!window.__toolyaMock)).toBe(true);
- await page.locator('[data-tool-locale="en"]').click();
+ const english = page.locator('[data-tool-locale="en"]');
+ await english.click();
+ await expect(english).toHaveAttribute('aria-pressed','true');
  await page.evaluate(()=>updateUserDisplay());
  await expect(page.locator('#cloudStatus')).toHaveText('✅ Signed in – mock@example.invalid');
  await expect(page.locator('#userInfo')).toHaveText('👤 mock@example.invalid');
