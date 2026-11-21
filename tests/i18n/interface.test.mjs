@@ -1940,3 +1940,39 @@ test('Sprint A household budget editor translates labels but keeps persisted cat
  assert.equal(format({__toolyaUILocale:'en'},'Wohnen'),'Housing');
  assert.equal(format({__toolyaUILocale:'de'},'Wohnen'),'Wohnen');
 });
+
+
+test('Sprint A open household budget labels switch language in place and retain unsaved values',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const category=html.match(/function formatHouseholdCategoryLabel\(category\) \{([\s\S]*?)\n        \}/);
+ const a=html.indexOf('function refreshOpenBudgetLabels() {');
+ const b=html.indexOf('function openBudgetModal()',a);
+ assert.ok(category&&a>0&&b>a,'locale-aware budget label updater available');
+ const {document}=parseHTML('<div id="budgetModal"><div id="budgetInputList"><div><label for="budget-amount-0">Lebensmittel:</label><input id="budget-amount-0" type="number" data-cat="Lebensmittel" value="150"></div><div><label for="budget-amount-1">Wohnen:</label><input id="budget-amount-1" type="number" data-cat="Wohnen" value="900"></div></div></div>');
+ const inputs=[...document.querySelectorAll('#budgetInputList input')];
+ inputs[0].value='175';
+ inputs[1].value='925';
+ const context={window:{__toolyaUILocale:'en'},document};
+ createContext(context);
+ runInContext('function formatHouseholdCategoryLabel(category) {'+category[1]+'\n}',context);
+ runInContext(html.slice(a,b),context);
+ runInContext('refreshOpenBudgetLabels()',context);
+ assert.deepEqual([...document.querySelectorAll('#budgetInputList label')].map(x=>x.textContent),['Groceries:','Housing:']);
+ assert.deepEqual(inputs.map(x=>x.value),['175','925'],'unsaved input values retained');
+ assert.deepEqual(inputs.map(x=>x.getAttribute('data-cat')),['Lebensmittel','Wohnen'],'original storage keys retained');
+ context.window.__toolyaUILocale='de';
+ runInContext('refreshOpenBudgetLabels()',context);
+ assert.deepEqual([...document.querySelectorAll('#budgetInputList label')].map(x=>x.textContent),['Lebensmittel:','Wohnen:']);
+ assert.equal(document.querySelector('#budgetInputList input'),inputs[0],'form inputs are never recreated');
+ document.getElementById('budgetModal').classList.add('hidden');
+ context.window.__toolyaUILocale='en';
+ runInContext('refreshOpenBudgetLabels()',context);
+ assert.equal(document.querySelector('#budgetInputList label').textContent,'Lebensmittel:','closed modal not touched');
+ const listenerStart=html.indexOf("document.addEventListener('toolya:locale-change'");
+ const listenerEnd=html.indexOf('/* Storage Helper */',listenerStart);
+ const listener=html.slice(listenerStart,listenerEnd);
+ assert.ok(listener.includes('refreshOpenBudgetLabels()'),'language change refreshes budget label');
+ assert.ok(!listener.includes('saveBudgets(')&&!listener.includes('localStorage.setItem('),'language change is read-only');
+});
