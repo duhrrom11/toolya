@@ -2379,3 +2379,17 @@ test('Sprint A QR export uses only locale-specific filenames, never rewrites bac
  const storage=src.indexOf('if (!await saveData(parsed))');
  assert.ok(invalid>=0&&invalid<confirmation&&confirmation<storage,'schema check and explicit confirmation precede any import write');
 });
+
+
+test('Sprint A household concurrent-save and signed-out states are presented in EN without changing data',()=>{
+ const warnings=[
+  ['Die WG wurde inzwischen an anderer Stelle geändert. Sichere deine Änderungen auf diesem Gerät, bevor du die Seite neu lädst.','The household was changed elsewhere. Back up your changes on this device before reloading.'],
+  ['WG-Änderungen online gespeichert.','Household changes saved online.'],
+  ['Bitte zuerst in den Einstellungen anmelden.','Sign in through settings first.']
+ ];
+ for(const [original,translated] of warnings){
+  assert.equal(translateToolDialog('housemates','en',original),translated);
+  assert.equal(translateToolDialog('housemates','de',original),original);
+ }
+ assert.equal(translateToolDialog('housemates','en','supabase: permission denied for user 123'),'supabase: permission denied for user 123');
+});
