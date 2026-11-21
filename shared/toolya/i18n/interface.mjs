@@ -1403,6 +1403,7 @@ export function applyToolInterfaceLocale(document,tool,language){
    email addresses, backend errors and machine-readable exports are untouched. */
 const dialogCopy = Object.freeze({
  moving: {
+  'Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.':'Before importing, download and check a current backup.',
   'Layout konnte nicht gespeichert werden.':'Could not save the dashboard layout.',
   'Angemeldet. Dein Konto ist einsatzbereit.':'Signed in. Your account is ready.',
   'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.':'Request processed. If confirmation is required, check your inbox and verify your email address, then sign in.',
