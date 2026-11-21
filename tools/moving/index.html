@@ -419,7 +419,12 @@
         }
 
         async function logoutUser() {
-            await window.supabaseClient.auth.signOut();
+            try {
+                const { error } = await window.supabaseClient.auth.signOut();
+                if (error) return alert('Abmeldung fehlgeschlagen: ' + (error.message || 'Unbekannter Fehler'));
+            } catch (error) {
+                return alert('Abmeldung fehlgeschlagen: ' + (error?.message || 'Unbekannter Fehler'));
+            }
             updateUserDisplay();
         }
 
