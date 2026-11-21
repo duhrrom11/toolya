@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {parseHTML} from 'linkedom';
-import {applyToolInterfaceLocale,translateToolDialog,translateAccountStatus} from '../../shared/toolya/i18n/interface.mjs';
+import {applyToolInterfaceLocale,translateToolDialog,translateAccountStatus,translateToolRuntimeStatus} from '../../shared/toolya/i18n/interface.mjs';
 
 test('auth sign-in, sign-out and validation shell are reversible without touching account data', () => {
  const {document} = parseHTML(`<html lang="de"><body>
@@ -2537,4 +2537,28 @@ test('new B3 navigation and editor translate only visible labels, preserving rou
   assert.equal(link.textContent,de);
   assert.equal(panel.textContent,panelDe);
  }
+});
+
+test('trusted dynamic OCR, editing and parking alerts translate both directions without changing user text',()=>{
+ const scenarios=[
+  ['budget','🔍 Scanne Kassenbon... Bitte warten.','🔍 Scanning receipt… Please wait.'],
+  ['budget','Keine Ausgaben in diesem Monat.','No expenses this month.'],
+  ['parking','⏰ ABGELAUFEN!','⏰ TIME EXPIRED!'],
+  ['parking','Kein aktiver Parkschein-Timer','No active parking timer'],
+  ['parking','Bitte Parkzeit verlängern oder zum Auto gehen!','Extend parking time or return to your car!']
+ ];
+ for(const [tool,de,en]of scenarios){
+  assert.equal(translateToolRuntimeStatus(tool,'en',de),en);
+  assert.equal(translateToolRuntimeStatus(tool,'de',en),de);
+ }
+ const personal='Alex 💼 Privat';
+ assert.equal(translateToolRuntimeStatus('budget','en','✏️ Buchung bearbeiten: '+personal),'✏️ Edit transaction: '+personal);
+ assert.equal(translateToolRuntimeStatus('budget','de','✏️ Edit transaction: '+personal),'✏️ Buchung bearbeiten: '+personal);
+ assert.equal(translateToolRuntimeStatus('budget','en','A private note from someone'),'A private note from someone');
+});
+test('parking notification only changes display locale and keeps timer computation intact',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const source=readFileSync(new URL('../../tools/parking/index.html',import.meta.url),'utf8');
+ assert.ok(source.includes("window.__toolyaUILocale === 'en' ? 'Parking alert'"));
+ assert.ok(source.includes('Number(activeEndTime) - Date.now()'));
 });

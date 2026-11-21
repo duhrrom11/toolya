@@ -458,7 +458,9 @@
                     document.getElementById("timerDisplay").innerText = "⏰ ABGELAUFEN!";
                     document.getElementById("timerStatus").innerText = "Bitte Parkzeit verlängern oder zum Auto gehen!";
                     if ("Notification" in window && Notification.permission === "granted") {
-                        new Notification("Park-Alarm", { body: "Deine Parkzeit ist abgelaufen!" });
+                        new Notification(window.__toolyaUILocale === 'en' ? 'Parking alert' : 'Park-Alarm',
+                          { body: window.__toolyaUILocale === 'en'
+                            ? 'Your parking time has expired!' : 'Deine Parkzeit ist abgelaufen!' });
                     }
                     return;
                 }

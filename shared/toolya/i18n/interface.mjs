@@ -2158,6 +2158,40 @@ export function translateToolDialog(tool, language, message) {
  return message;
 }
 
+/* Runtime text is deliberately restricted to trusted, known status fields.
+   Translate only exact application-owned messages or a fixed prefix. Never
+   translate account identifiers, free-form descriptions or calculated values. */
+const toolRuntimeStatus=Object.freeze({
+ budget:{
+  '🔍 Scanne Kassenbon... Bitte warten.':'🔍 Scanning receipt… Please wait.',
+  'ℹ️ Angaben erkannt. Bereits ausgefüllte Felder wurden nicht überschrieben.':'ℹ️ Details recognised. Existing fields were not overwritten.',
+  '⚠️ Kein eindeutiger Gesamtbetrag oder gültiges Datum erkannt. Bitte manuell eintragen.':'⚠️ No clear total or valid date recognised. Enter the details manually.',
+  '❌ Texterkennung fehlgeschlagen.':'❌ Text recognition failed.',
+  '💾 Änderungen speichern':'💾 Save changes',
+  '✍️ Einnahme oder Ausgabe erfassen':'✍️ Record income or expense',
+  'Keine Ausgaben in diesem Monat.':'No expenses this month.'
+ },
+ parking:{
+  'Kein aktiver Parkschein-Timer':'No active parking timer',
+  '⏰ ABGELAUFEN!':'⏰ TIME EXPIRED!',
+  'Bitte Parkzeit verlängern oder zum Auto gehen!':'Extend parking time or return to your car!',
+  'Parkzeit läuft...':'Parking timer running…',
+  'Gespeichert ✓':'Saved ✓'
+ }
+});
+const toolRuntimeReverse=Object.freeze(Object.fromEntries(Object.entries(toolRuntimeStatus).map(([name,labels])=>[name,Object.fromEntries(Object.entries(labels).map(([de,en])=>[en,de]))])));
+const toolRuntimePrefixes=Object.freeze({budget:[['✏️ Buchung bearbeiten: ','✏️ Edit transaction: ']]});
+export function translateToolRuntimeStatus(tool,language,message){
+ if(typeof message!=='string'||(language!=='en'&&language!=='de'))return message;
+ const table=(language==='en'?toolRuntimeStatus:toolRuntimeReverse)[tool];
+ if(table&&Object.hasOwn(table,message))return table[message];
+ for(const [de,en]of toolRuntimePrefixes[tool]||[]){
+  const source=language==='en'?de:en,target=language==='en'?en:de;
+  if(message.startsWith(source))return target+message.slice(source.length);
+ }
+ return message;
+}
+
 /* Localize only known, app-authored status strings. Never translate email
    addresses, user names, server diagnostics or cloud object fields. */
 const accountStatusCopy=Object.freeze({

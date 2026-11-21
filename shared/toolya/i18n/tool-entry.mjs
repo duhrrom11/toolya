@@ -2,7 +2,7 @@
    Stays strictly outside business logic, data, auth gates and maskot state.
    Incomplete translation is explicitly disclosed; account and tool workflows still need end-to-end verification. */
 import {normalizeLocale} from './locale.mjs';
-import {applyToolInterfaceLocale,translateToolDialog,translateAccountStatus} from './interface.mjs';
+import {applyToolInterfaceLocale,translateToolDialog,translateAccountStatus,translateToolRuntimeStatus} from './interface.mjs';
 const key='toolya-locale-v1';
 const uiGlobal=typeof window === 'undefined' ? globalThis : window;
 const SUPPORTED=Object.freeze({
@@ -86,6 +86,25 @@ function mountToolLanguage(){
      if(el)statusObserver.observe(el,{childList:true,characterData:true,subtree:true});
    }
  }
+ // Observe only known, application-owned status nodes. Never observe user
+ // records, shopping items, receipt descriptions or arbitrary new elements.
+ const runtimeStatusSelectors={
+  budget:['#ocrStatus','#saveBtn','#formTitle','#categoryChartSummary'],
+  parking:['#timerStatus','#timerDisplay','#statGps']
+ };
+ const runtimeNodes=(runtimeStatusSelectors[name]||[])
+  .map(selector=>document.querySelector(selector)).filter(Boolean);
+ function localizeRuntimeStatus(){
+  for(const el of runtimeNodes){
+   if(el.children.length||el.isContentEditable)continue;
+   const before=el.textContent,after=translateToolRuntimeStatus(name,selected,before);
+   if(before!==after)el.textContent=after;
+  }
+ }
+ if(typeof MutationObserver!=='undefined'&&runtimeNodes.length){
+  const observer=new MutationObserver(localizeRuntimeStatus);
+  for(const el of runtimeNodes)observer.observe(el,{childList:true,characterData:true,subtree:true});
+ }
  const notice=document.createElement('p');
  notice.className='ty-tool-language-notice';
  notice.setAttribute('role','status');
@@ -144,6 +163,7 @@ function mountToolLanguage(){
      modalHelpGuide.lang=lang;
    }
    localizeVisibleAccountStatus(lang);
+   localizeRuntimeStatus();
    document.dispatchEvent(new document.defaultView.Event('toolya:locale-change'));
    // Keep html[lang]=de while the main application is not fully translated.
  }
