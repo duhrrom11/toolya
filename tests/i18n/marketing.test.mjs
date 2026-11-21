@@ -18,7 +18,9 @@ const pages={
  '/en/pet-health/':'en/pet-health/index.html',
  '/en/lent-items/':'en/lent-items/index.html',
  '/en/meter-readings/':'en/meter-readings/index.html',
- '/en/publish-amazon-wishlist/':'en/publish-amazon-wishlist/index.html'
+ '/en/publish-amazon-wishlist/':'en/publish-amazon-wishlist/index.html',
+ '/en/toolya-dashboard/':'en/toolya-dashboard/index.html',
+ '/en/mascots.html':'en/mascots.html'
 };
 const pairs=[
  ['index.html','/en/'],
@@ -33,7 +35,9 @@ const pairs=[
  ['tiergesundheit/index.html','/en/pet-health/'],
  ['verliehene-dinge/index.html','/en/lent-items/'],
  ['zaehlerstaende/index.html','/en/meter-readings/'],
- ['amazon-wunschliste-veroeffentlichen/index.html','/en/publish-amazon-wishlist/']
+ ['amazon-wunschliste-veroeffentlichen/index.html','/en/publish-amazon-wishlist/'],
+ ['toolya-dashboard/index.html','/en/toolya-dashboard/'],
+ ['mascots.html','/en/mascots.html']
 ];
 
 test('English public pages have unique correct canonical URLs and language',()=>{
@@ -87,4 +91,16 @@ test('new English guides preserve reciprocal DE/EN links and use real applicatio
   assert.ok(html.includes('href="/tools/'+guide.app+'/'+guide.appFile+'"'),guide.slug);
   assert.ok(html.includes('noindex,follow'),'keep unreleased English guide out of index');
  }
+});
+
+test('English mascot gallery keeps all outfit values and loads matching translated emotion labels',()=>{
+ const de=read('mascots.html'),en=read('en/mascots.html');
+ const src=read('shared/toolya/gallery.mjs');
+ for(let index=0;index<16;index++){
+  assert.ok(de.includes('<option value="'+index+'">'),index);
+  assert.ok(en.includes('<option value="'+index+'">'),index);
+ }
+ assert.ok(src.includes("emotionLabelsForLocale(document.documentElement.lang)"),'gallery uses document language');
+ assert.match(en,/src="\/shared\/toolya\/gallery\.mjs"/);
+ assert.match(en,/href="\/shared\/toolya\/info-pages\.css"/);
 });

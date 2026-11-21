@@ -42,3 +42,5 @@ test('new English public guide paths keep their German originals',async()=>{
   assert.equal(localizedPublicUrl('de',slug),'/'+german+'/');
  }
 });
+
+test('dashboard guide has both locale-specific paths',async()=>{const {localizedPublicUrl}=await import('../../shared/toolya/i18n/locale.mjs');assert.equal(localizedPublicUrl('en','toolya-dashboard'),'/en/toolya-dashboard/');assert.equal(localizedPublicUrl('de','toolya-dashboard'),'/toolya-dashboard/');});

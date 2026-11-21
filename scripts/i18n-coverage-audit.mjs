@@ -37,7 +37,9 @@ const pairs=new Map([
  ['tiergesundheit/index.html','en/pet-health/index.html'],
  ['verliehene-dinge/index.html','en/lent-items/index.html'],
  ['zaehlerstaende/index.html','en/meter-readings/index.html'],
- ['amazon-wunschliste-veroeffentlichen/index.html','en/publish-amazon-wishlist/index.html']
+ ['amazon-wunschliste-veroeffentlichen/index.html','en/publish-amazon-wishlist/index.html'],
+ ['toolya-dashboard/index.html','en/toolya-dashboard/index.html'],
+ ['mascots.html','en/mascots.html']
 ]);
 const supportedTools=new Set(['tools/moving/index.html','tools/housemates/index.html','tools/plants/index.html','tools/baking/index.html']);
 const german=/\b(?:Anmelden|Abmelden|Registrieren|Passwort|Einstellungen|Speichern|Löschen|Abbrechen|Schließen|Auswählen|Zurück|Datenschutz|Impressum|Warnung|Fehlermeldung|Warenkorb|Mitglieder|Pflanzen|Kisten|Herunterladen|Wiederherstellen|Übernehmen|Benutzerkonto|Bitte|Fehler)\b/i;

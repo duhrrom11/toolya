@@ -42,7 +42,8 @@ const PUBLIC_GUIDES = Object.freeze({
   'pet-health': 'tiergesundheit',
   'lent-items': 'verliehene-dinge',
   'meter-readings': 'zaehlerstaende',
-  'publish-amazon-wishlist': 'amazon-wunschliste-veroeffentlichen'
+  'publish-amazon-wishlist': 'amazon-wunschliste-veroeffentlichen',
+  'toolya-dashboard': 'toolya-dashboard'
 });
 
 export function localizedPublicUrl(locale, slug = '') {
