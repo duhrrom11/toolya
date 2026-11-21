@@ -1789,8 +1789,8 @@
                 return `
                     <div class="space-y-1">
                         <div class="flex justify-between text-xs">
-                            <span class="font-bold text-gray-700">${escapeUserHtml(cat)}</span>
-                            <span class="text-gray-500">${spent.toFixed(2)} € / <strong>${limit.toFixed(2)} €</strong></span>
+                            <span class="font-bold text-gray-700">${escapeUserHtml(formatHouseholdCategoryLabel(cat))}</span>
+                            <span class="text-gray-500">${formatHouseholdDisplayAmount(spent)} € / <strong>${formatHouseholdDisplayAmount(limit)} €</strong></span>
                         </div>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
                             <div class="${barColor} h-2 transition-all" style="width: ${percent}%"></div>
