@@ -501,6 +501,7 @@
         function movingCloudBlock(state) {
             movingCloudReady = false;
             window.movingCloudReady=false;
+            document.dispatchEvent(new Event("toolya:moving-ready"));
             movingCloudController?.invalidate();
             window.toolyaCloudPageStatus(state);
         }
