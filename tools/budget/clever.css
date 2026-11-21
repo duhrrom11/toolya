@@ -99,3 +99,18 @@
  .cs-receipt-item>button{grid-column:1/-1;justify-self:end}
 }
 @media(prefers-reduced-motion:reduce){#cs-root .cs-button{transition:none}}
+
+/* Make groceries and meal planning easier to use on mobile. */
+#cs-root .cs-item>input[type=checkbox]{width:20px;height:20px;accent-color:#126b51;flex:none;cursor:pointer}
+#cs-root .cs-item .cs-done{text-decoration:line-through;color:#87958a;font-weight:650}
+#cs-root .cs-item .cs-item-value{margin-left:auto;white-space:nowrap}
+#cs-root .cs-item .cs-quiet{margin-left:auto}
+#cs-root .cs-recipe-picker{grid-column:1/-1;background:#f5fbf5;border:1px solid #deebdf;border-radius:14px;padding:13px 15px;margin:7px 0}
+#cs-root .cs-recipe-picker h4{font-size:14px;color:#26684f;font-weight:850;margin:0 0 9px}
+#cs-root .cs-recipe-picker .cs-inline{display:grid;grid-template-columns:minmax(0,2fr) minmax(80px,1fr) auto;align-items:end;gap:9px}
+#cs-root .cs-recipe-picker .cs-item{border-bottom:1px solid #e1eae1;padding:8px 0}
+#cs-root .cs-recipe-picker .cs-item .cs-quiet{min-width:75px}
+@media(max-width:700px){
+ #cs-root .cs-recipe-picker .cs-inline{grid-template-columns:minmax(0,1fr) minmax(90px,.7fr)}
+ #cs-root .cs-recipe-picker .cs-inline .cs-button{grid-column:1/-1}
+}
