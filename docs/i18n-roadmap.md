@@ -2,6 +2,27 @@
 
 Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 
+## Aktualisierte Bestandsaufnahme nach den großen Übersetzungspaketen (21.11.2026)
+
+> **Die bisherigen Prozent- und Zwischenstandsangaben weiter unten sind historische Planungsschätzungen.** Maßgeblich sind hier die gezählten Seiten und die noch nicht erfüllten Abnahmekriterien, nicht eine geschätzte Prozentzahl.
+
+**Git-Bestand nach diesem Umsetzungspaket:** 71 HTML-Dateien, 17 englische öffentliche HTML-Seiten mit deutschen Gegenstücken, 34 bestehende Tool-/Dashboard-/Wunschlisten-/Nachlass-/Adminansichten mit **teilweise** englischen, ausdrücklich opt-in aktivierten Bedienelementen, zwei zweisprachige Fehler-/Offline-Seiten und ein sprachwahrender Redirect. Damit ist die Lücke „Seite völlig ohne englischen Zugang“ im Quellbaum adressiert; **das bedeutet ausdrücklich nicht, dass alle 71 Seiten vollständig englisch nutzbar sind.** Im Quellbaum sind 113 Frontend-JavaScript-/MJS-Dateien außerhalb von Tests, Skripten und Supabase vorhanden.
+
+**Umgesetzt und nur im Entwicklungsbranch gespeichert:**
+- Weitere acht umfangreiche englische Ratgeber sowie englische Dashboard-Anleitung, Maskottchen-Galerie, Impressum und Datenschutzerklärung; bestehende deutsche Ratgeber wurden um passende Rück-/Hinweise ergänzt. Die ursprüngliche deutsche Startseite bleibt bestehen.
+- 10 Alltagstools mit DE/EN-Schalter (vier früher und sechs neu), zusätzlich 17 Wunschlisten-Ansichten, vier sensible Nachlassseiten, Dashboard und zwei Adminansichten. Alle sind noch als teilweise lokalisiert zu behandeln.
+- Exakt bekannte feste Formulartexte, B3-Navigations-/Editor-Beschriftungen, Warn-/Löschbestätigungen, Anmeldung, Synchronisationsstatus, OCR und Parktimer; keine generische Übersetzung persönlicher Einträge.
+- Sieben PDF-Exportpfade in sechs Alltagstools mit EN/DE-Überschriften, Datumsformaten und Dateinamen. CSV-Schemata, Backup-Strukturen, Datenbank-Schlüssel und Nutzerdatensätze bleiben unverändert.
+- Isolierte Quellcode-/Laufzeitprüfungen: 15 betroffene JavaScript-Module syntaktisch geprüft, vier Übersetzungskataloge auf reversiblen Schlüssel-/Wert-Abgleich geprüft, 14 PDF-Aufrufe mit **synthetischen** Datensätzen (DE und EN) erfolgreich ausgeführt und Eingabedaten unverändert belassen. **Das ist weder ein Browser-End-to-End-Nachweis noch ein visueller PDF-Render-Test.** Neue gezielte Tests sind in GitHub committed, ihre vollständige Ausführung auf dem neuesten HEAD ist noch offen.
+
+**Unabdingbare offene Release-Gates:**
+1. **34 teilweise übersetzte Anwendungsseiten:** sämtliche dynamischen Renderzustände, Nutzerreisen, Konto-/Recovery-Meldungen, Hilfen und Exportinhalte vervollständigen. Es gibt noch bekannte deutsche Laufzeittexte. Die Anwendungen behalten deshalb bei aktivierter EN-Anzeige `html[lang]=de`.
+2. Auth, E-Mail-Links/Redirect-Allowlist, Offline- und Synchronisationskonflikte, sensible Nachlass-/Adminberechtigungen, PDF-/QR-/CSV-Exporte und Datenwahrung mit isolierten Browser-E2E belegen. Keine Tests mit echten Konten oder Produktivdaten.
+3. Kleinste Displays (320px), Tastatur, Screenreader, korrektes `html[lang]`, Fokus und DOM-Umbruch abnehmen; rechtliche EN-Seiten und Consent-Texte prüfen.
+4. Alle 17 öffentlichen EN-Seiten bleiben bis zum Freigabetermin `noindex,follow`. Vor Indexierungsfreigabe: bidirektionale `hreflang`, Canonical, OG, JSON-LD und Sitemap prüfen und vervollständigen.
+5. Branch mit `main` sicher versöhnen; bei letzter Prüfung **82 Commits hinter main**. Erst auf dem **endgültigen** Merge-Head alle neun CI-Workflows erfolgreich ausführen. Die letzten bestätigten neun grünen Workflows beziehen sich nur auf den älteren Stand `c55b8819`, nicht auf die neuen Übersetzungspakete.
+6. **Kein Merge und kein Deployment**, bevor alle Punkte abgenommen sind. Es gab keine Supabase- oder Produktivdatenänderungen.
+
 ## Projektstatus
 - Letzter vor diesem neuen Paket vollständig geprüfter Stand: `c69838dd` (9/9 CI erfolgreich). Für jeden neueren HEAD ist ein eigener CI-Nachweis erforderlich.
 - Die englischen Startseiten und vier Tool-Einstiege sind vorhanden. Die Tool-Oberflächen sind noch nicht durchgängig übersetzt; englische öffentliche Inhalte bleiben vorerst `noindex`.
