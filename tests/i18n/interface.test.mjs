@@ -793,3 +793,29 @@ test('auth gate guide links respect selected locale and preserve original German
   assert.match(html,new RegExp('class="toolya-auth-status"[\\s\\S]*?<a href="\\.\\./\\.\\./'+german+'/">Zur Anleitung</a>'),'German guide remains in the source');
  }
 });
+
+test('saved household redirect keeps explicitly requested DE/EN and does not forward unrelated query data',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const start=html.indexOf('const urlParams = new URLSearchParams(window.location.search);');
+ const end=html.indexOf('// Supabase Konfiguration',start);
+ assert.ok(start>0&&end>start);
+ const script=html.slice(start,end);
+ for(const [query,expected] of [
+  ['?lang=en&utm_source=example','/tools/housemates/?id=savedWG123&lang=en'],
+  ['?lang=de','/tools/housemates/?id=savedWG123&lang=de'],
+  ['?lang=fr&utm_campaign=private','/tools/housemates/?id=savedWG123']
+ ]){
+  let redirected=null;
+  const ctx={
+   URLSearchParams,window:{location:{
+    search:query,pathname:'/tools/housemates/',replace:url=>{redirected=url}
+   }},
+   localStorage:{getItem:key=>key==='wg_active_bin_id'?'savedWG123':null,setItem:()=>{throw Error('Unexpected local storage mutation')}},
+   alert:()=>{throw Error('Unexpected validation alert')}
+  };
+  createContext(ctx);runInContext(script,ctx);
+  assert.equal(redirected,expected);
+ }
+});
