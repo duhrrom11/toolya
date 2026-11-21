@@ -1887,3 +1887,56 @@ test('Sprint A household settlement and receipt values use localized display onl
  assert.ok(html.includes('data.unshift({ id: Date.now(), title, store, date, price, category, payer, isFixkosten, isTax, entryType, splitWith })'),'receipt payload unchanged');
  assert.ok(html.includes('escapeUserHtml(r.payer ||'),'payer still HTML escaped');
 });
+
+
+test('Sprint A moving help toggle follows language and visibility without replacing controls',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const html=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
+ const a=html.indexOf('function updateMovingHelpToggleLabel() {');
+ const b=html.indexOf('let movingCloudController',a);
+ assert.ok(a>0&&b>a,'moving help display functions are available');
+ const flags=new Set(['hidden']),label={textContent:''};
+ const box={classList:{
+  contains:name=>flags.has(name),
+  toggle:name=>flags.has(name)?flags.delete(name):flags.add(name)
+ }};
+ const context={window:{__toolyaUILocale:'de'},document:{
+  getElementById:id=>id==='helpBox'?box:null,
+  querySelector:selector=>selector==='#helpToggleBtn span'?label:null
+ }};
+ createContext(context);runInContext(html.slice(a,b),context);
+ runInContext('updateMovingHelpToggleLabel()',context);
+ assert.equal(label.textContent,'Hilfe & Anleitung anzeigen');
+ context.window.__toolyaUILocale='en';
+ runInContext('updateMovingHelpToggleLabel()',context);
+ assert.equal(label.textContent,'Show help and guide');
+ runInContext('toggleHelp()',context);
+ assert.equal(flags.has('hidden'),false);
+ assert.equal(label.textContent,'Hide help and guide');
+ context.window.__toolyaUILocale='de';
+ runInContext('updateMovingHelpToggleLabel()',context);
+ assert.equal(label.textContent,'Hilfe & Anleitung ausblenden');
+ runInContext('toggleHelp()',context);
+ assert.equal(flags.has('hidden'),true);
+ assert.equal(label.textContent,'Hilfe & Anleitung anzeigen');
+ assert.match(html,/document\.addEventListener\('toolya:locale-change', \(\) => \{\s*updateMovingHelpToggleLabel\(\)/,'language event updates help label');
+ assert.match(html,/id="helpToggleBtn"[^>]*>[\s\S]*?<span>Hilfe & Anleitung anzeigen<\/span>/,'original markup and click binding remain');
+ assert.ok(!html.slice(a,b).includes('innerHTML'),'help toggle does not replace nested DOM elements');
+});
+
+test('Sprint A household budget editor translates labels but keeps persisted category attributes',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const start=html.indexOf('function openBudgetModal()');
+ const end=html.indexOf('function closeBudgetModal()',start);
+ const modal=html.slice(start,end);
+ assert.ok(modal.includes('escapeUserHtml(formatHouseholdCategoryLabel(cat))'),'budget editor uses display translation');
+ assert.ok(modal.includes('data-cat="${escapeUserHtml(cat)}"'),'original category key remains on input');
+ assert.ok(modal.includes('value="${escapeUserHtml(budgets[cat] || 0)}"'),'stored budget value displayed without mutation');
+ assert.ok(html.includes("budgets[input.getAttribute('data-cat')] = parseFloat(input.value) || 0"),'save still uses original category IDs');
+ const mapping=html.match(/function formatHouseholdCategoryLabel\(category\) \{([\s\S]*?)\n        \}/);
+ const format=new Function('window','category',mapping[1]);
+ assert.equal(format({__toolyaUILocale:'en'},'Wohnen'),'Housing');
+ assert.equal(format({__toolyaUILocale:'de'},'Wohnen'),'Wohnen');
+});
