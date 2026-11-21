@@ -72,6 +72,449 @@ const toolTranslations = {
   ['button[onclick="supabaseLogout()"]','Sign out']
  ]
 };
+/* Additional explicitly selected static form fields; never translate stored values or event handlers. */
+const extendedFormTranslations = {
+ "moving": [
+  [
+   "#loginEmail",
+   "",
+   "placeholder",
+   "Email"
+  ],
+  [
+   "#loginPassword",
+   "",
+   "placeholder",
+   "Password"
+  ],
+  [
+   "#boxName",
+   "",
+   "placeholder",
+   "Box name (e.g. Box #3)"
+  ],
+  [
+   "#boxName",
+   "",
+   "aria-label",
+   "Box name"
+  ],
+  [
+   "#boxValue",
+   "",
+   "placeholder",
+   "Value in € (optional)"
+  ],
+  [
+   "#boxDesc",
+   "",
+   "placeholder",
+   "Contents / description"
+  ],
+  [
+   "#boxBarcode",
+   "",
+   "placeholder",
+   "Barcode / EAN (optional)"
+  ],
+  [
+   "#boxExpiry",
+   "",
+   "aria-label",
+   "Warranty or expiry date"
+  ],
+  [
+   "#boxLocationSelect",
+   "",
+   "aria-label",
+   "Box location"
+  ],
+  [
+   "#boxTag",
+   "",
+   "aria-label",
+   "Box label"
+  ],
+  [
+   "#searchBox",
+   "",
+   "placeholder",
+   "Search boxes, items or barcodes…"
+  ],
+  [
+   "#searchBox",
+   "",
+   "aria-label",
+   "Search boxes, items or barcodes"
+  ],
+  [
+   "#newSubItemName",
+   "",
+   "placeholder",
+   "Item name"
+  ],
+  [
+   "#newSubItemVal",
+   "",
+   "placeholder",
+   "Value €"
+  ],
+  [
+   "#editBoxLentTo",
+   "",
+   "placeholder",
+   "e.g. Alex"
+  ],
+  [
+   "label[for='editBoxValue']",
+   "Value (€):"
+  ],
+  [
+   "label[for='editBoxLentTo']",
+   "Lent to (blank = stored):"
+  ],
+  [
+   "button[onclick='closeScannerModal()']",
+   "Close scanner"
+  ]
+ ],
+ "housemates": [
+  [
+   "#auth-email",
+   "",
+   "placeholder",
+   "name@example.com"
+  ],
+  [
+   "#receiptTitle",
+   "",
+   "placeholder",
+   "e.g. detergent, rent, salary"
+  ],
+  [
+   "#receiptStore",
+   "",
+   "placeholder",
+   "e.g. shop, employer"
+  ],
+  [
+   "#receiptPhotoInput",
+   "",
+   "aria-label",
+   "Select receipt photo"
+  ],
+  [
+   "label[for='receiptStore']",
+   "Merchant / partner / source (optional):"
+  ],
+  [
+   "label[for='receiptPaymentPayer']",
+   "Paid by:"
+  ],
+  [
+   "label[for='receiptWarranty']",
+   "Warranty (months):"
+  ],
+  [
+   "label[for='receiptReturnDays']",
+   "Returns (days):"
+  ],
+  [
+   "label[for='receiptLifespan']",
+   "Useful life (years):"
+  ],
+  [
+   "label[for='receiptSN']",
+   "Serial number (optional):"
+  ],
+  [
+   "#receiptLocation",
+   "",
+   "placeholder",
+   "e.g. basement shelf 2"
+  ],
+  [
+   "#filterType",
+   "",
+   "aria-label",
+   "Filter transactions by type"
+  ],
+  [
+   "#filterCategory",
+   "",
+   "aria-label",
+   "Filter by category"
+  ],
+  [
+   "#newShoppingItem",
+   "",
+   "placeholder",
+   "e.g. oat milk, dish soap"
+  ],
+  [
+   "#newShoppingItem",
+   "",
+   "aria-label",
+   "e.g. oat milk, dish soap"
+  ],
+  [
+   "button[onclick='addShoppingItem()']",
+   "Add"
+  ],
+  [
+   "#noteTitleInput",
+   "",
+   "placeholder",
+   "e.g. parcel in the hallway"
+  ],
+  [
+   "#noteContentInput",
+   "",
+   "placeholder",
+   "Write a household note…"
+  ],
+  [
+   "#eventTitle",
+   "",
+   "placeholder",
+   "e.g. laundry, visitor"
+  ],
+  [
+   "label[for='eventTitle']",
+   "Title / description *:"
+  ],
+  [
+   "label[for='eventDate']",
+   "Date *:"
+  ],
+  [
+   "label[for='eventTimeStart']",
+   "Start time (optional):"
+  ],
+  [
+   "label[for='eventTimeEnd']",
+   "End time (optional):"
+  ]
+ ],
+ "plants": [
+  [
+   "#auth-email",
+   "",
+   "placeholder",
+   "name@example.com"
+  ],
+  [
+   "#plantName",
+   "",
+   "placeholder",
+   "Name (e.g. tomato)"
+  ],
+  [
+   "#plantName",
+   "",
+   "aria-label",
+   "Plant name"
+  ],
+  [
+   "#plantSpecies",
+   "",
+   "placeholder",
+   "Species / variety"
+  ],
+  [
+   "#plantSpecies",
+   "",
+   "aria-label",
+   "Species / variety"
+  ],
+  [
+   "#plantLocation",
+   "",
+   "placeholder",
+   "Location / bed"
+  ],
+  [
+   "#plantLocation",
+   "",
+   "aria-label",
+   "Location / bed"
+  ],
+  [
+   "#plantNote",
+   "",
+   "placeholder",
+   "Care notes…"
+  ],
+  [
+   "#plantNote",
+   "",
+   "aria-label",
+   "Care notes"
+  ],
+  [
+   "label[for='plantPropagation']",
+   "Propagation / status:"
+  ],
+  [
+   "label[for='plantPropDate']",
+   "Propagation date:"
+  ],
+  [
+   "#filterLocation",
+   "",
+   "aria-label",
+   "Filter plants by location"
+  ],
+  [
+   "#invItemName",
+   "",
+   "placeholder",
+   "Item (e.g. fertilizer)"
+  ],
+  [
+   "#invItemQty",
+   "",
+   "placeholder",
+   "Quantity (e.g. 2 L)"
+  ],
+  [
+   "#seedName",
+   "",
+   "placeholder",
+   "Variety"
+  ],
+  [
+   "#seedYear",
+   "",
+   "placeholder",
+   "Harvest year"
+  ],
+  [
+   "#harvestWeightGrams",
+   "",
+   "placeholder",
+   "Grams (g)"
+  ],
+  [
+   "#diaryText",
+   "",
+   "placeholder",
+   "Enter a note…"
+  ],
+  [
+   "button[onclick='addInventoryItem()']",
+   "Add item"
+  ],
+  [
+   "button[onclick='addSeedItem()']",
+   "Add"
+  ],
+  [
+   "button[onclick='saveHarvest()']",
+   "Save"
+  ],
+  [
+   "button[onclick='addGalleryPhoto()']",
+   "Add photo"
+  ]
+ ],
+ "baking": [
+  [
+   "#auth-email",
+   "",
+   "placeholder",
+   "Email address"
+  ],
+  [
+   "#auth-password",
+   "",
+   "placeholder",
+   "Password"
+  ],
+  [
+   "#recipe-name",
+   "",
+   "placeholder",
+   "Recipe name (e.g. apple cake)"
+  ],
+  [
+   "#recipe-input",
+   "",
+   "placeholder",
+   "Enter ingredients (e.g. 250 g flour, 3 eggs)"
+  ],
+  [
+   "label[for='target-d']",
+   "Diameter (cm)"
+  ],
+  [
+   "label[for='combo-d1']",
+   "Pan 1 Ø (cm)"
+  ],
+  [
+   "label[for='combo-d2']",
+   "Pan 2 Ø (cm)"
+  ],
+  [
+   "label[for='recipe-material']",
+   "Pan material"
+  ],
+  [
+   "label[for='glaze-type']",
+   "Type"
+  ],
+  [
+   "label[for='user-oven-factor']",
+   "My oven factor"
+  ],
+  [
+   "label[for='sugar-input']",
+   "Granulated sugar (g)"
+  ],
+  [
+   "label[for='sugar-type']",
+   "Alternative"
+  ],
+  [
+   "label[for='room-temp']",
+   "Current room temperature (°C)"
+  ],
+  [
+   "button[onclick='calculateRecipe()']",
+   "Calculate amounts"
+  ],
+  [
+   "button[onclick='runFormFinder()']",
+   "Find matching pans"
+  ],
+  [
+   "button[onclick='openCookMode()']",
+   "Start cooking mode and timers"
+  ],
+  [
+   "button[onclick='saveSettings()']",
+   "Save"
+  ],
+  [
+   "button[onclick='startTimer()']",
+   "Start"
+  ],
+  [
+   "button[onclick='pauseTimer()']",
+   "Pause"
+  ],
+  [
+   "button[onclick='nextTimerPhase()']",
+   "Next phase"
+  ],
+  [
+   "#use-oven-factor",
+   "",
+   "aria-label",
+   "My oven factor"
+  ]
+ ]
+};
 const originals = new WeakMap();
 function updateElement(element, translation, attribute, language) {
  let record=originals.get(element);
@@ -207,7 +650,7 @@ function applyStaticFormCopy(document,tool,language){
 }
 
 export function applyToolInterfaceLocale(document,tool,language){
- for(const [selector,translation,attribute,attributeTranslation] of [...common,...(toolTranslations[tool]||[])]){
+ for(const [selector,translation,attribute,attributeTranslation] of [...common,...(toolTranslations[tool]||[]),...(extendedFormTranslations[tool]||[])]){
   const translated=attribute?attributeTranslation:translation;
   for(const element of document.querySelectorAll(selector)){
    updateElement(element,translated,attribute,language);
