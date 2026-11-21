@@ -115,6 +115,7 @@ function mountToolLanguage(){
    de.setAttribute('aria-pressed',String(lang==='de'));
    en.setAttribute('aria-pressed',String(lang==='en'));
    notice.hidden=lang!=='en';
+   document.querySelector('.toolya-auth-status')?.setAttribute('lang',lang);
    if(authGuide){
      // The sign-in gate must lead to the guide in the selected language.
      if(lang==='en')authGuide.setAttribute('href',settings.guide);
