@@ -6,7 +6,7 @@ import {dashboardText} from '../../shared/toolya/i18n/dashboard-copy.mjs';
 
 const source=await readFile(new URL('../../dashboard/account-settings.js',import.meta.url),'utf8');
 
-function isolatedAccount({updateError=null,signOutError=null}={}){
+function isolatedAccount({updateError=null,signOutError=null,updateGate=null}={}){
  const elements=new Map();
  const node=id=>{
   if(!elements.has(id))elements.set(id,{
@@ -21,7 +21,7 @@ function isolatedAccount({updateError=null,signOutError=null}={}){
  const auth={
   onAuthStateChange(){},
   getUser(){return new Promise(()=>{})}, // no live account or network
-  async updateUser(payload){calls.push(['update',payload]);return {error:updateError}},
+  async updateUser(payload){calls.push(['update',payload]);if(updateGate)await updateGate;return {error:updateError}},
   async signOut(){calls.push(['signOut']);return {error:signOutError}}
  };
  const context={
@@ -74,4 +74,17 @@ test('successful recovery signs out after update and retains central token-only 
  assert.match(home,/Passwort geändert, aber Abmelden fehlgeschlagen/);
  assert.match(home,/if \(error\) throw error;\s*updateUserDisplay\(\)/);
  assert.equal(dashboardText('user@example.org','en'),'user@example.org');
+});
+
+test('concurrent recovery submissions update password only once',async()=>{
+ let release;
+ const gate=new Promise(resolve=>{release=resolve});
+ const fixture=isolatedAccount({updateGate:gate});
+ const first=fixture.save();
+ const second=fixture.save();
+ assert.deepEqual(fixture.calls.map(([name])=>name),['update']);
+ release();
+ await Promise.all([first,second]);
+ assert.deepEqual(fixture.calls.map(([name])=>name),['update','signOut']);
+ assert.equal(fixture.node('loginMessage').textContent,'Passwort geändert. Bitte erneut anmelden.');
 });
