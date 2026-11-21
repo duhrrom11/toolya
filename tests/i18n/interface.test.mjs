@@ -1453,3 +1453,64 @@ test('household header subtitle is translated while the brand and primary headin
  applyToolInterfaceLocale(document,'housemates','de');
  assert.equal(subtitle.textContent,'WG-Ausgaben aufteilen, Putzplan, Kalender und gemeinsame Aufgaben organisieren');
 });
+
+test('source-owned accessibility labels reverse DE/EN without altering form data or URLs',()=>{
+ const cases=[
+  ['moving','aria-label','Inventar nach Kennzeichnung filtern','Filter inventory by label'],
+  ['moving','title','QR-Code & Deep-Link','QR code and deep link'],
+  ['housemates','aria-label','Diagramm: WG-Ausgaben nach Kategorie','Chart: household expenses by category'],
+  ['plants','aria-label','Name (z.B. Tomate Harzfeuer)','Plant name (e.g. Harzfeuer tomato)'],
+  ['baking','aria-label','Zutaten des Rezepts','Recipe ingredients']
+ ];
+ for(const [tool,attribute,de,en] of cases){
+  const {document}=parseHTML('<html><body><main id="main-content"><div id="control" '+attribute+'="'+de.replaceAll('&','&amp;')+'"><input id="content" value="My private content"></div></main><aside><div '+attribute+'="'+de.replaceAll('&','&amp;')+'">Unrelated content</div></aside></body></html>');
+  const el=document.getElementById('control');
+  assert.equal(el.getAttribute(attribute),de);
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(el.getAttribute(attribute),en,tool+' attribute localized');
+  assert.equal(document.querySelector('aside div').getAttribute(attribute),de,'outside tool-owned UI is untouched');
+  assert.equal(document.getElementById('content').getAttribute('value'),'My private content');
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(el.getAttribute(attribute),de,'original attribute restored');
+ }
+});
+
+test('all tool accessibility translations match source HTML and skip personal attributes',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const source=await readFile(new URL('../../shared/toolya/i18n/interface.mjs',import.meta.url),'utf8');
+ const prefix='const toolAccessibilityCopy=Object.freeze(';
+ const start=source.indexOf(prefix),end=source.indexOf(');\nfunction applyToolAccessibilityCopy',start);
+ assert.ok(start>=0&&end>start);
+ const catalog=JSON.parse(source.slice(start+prefix.length,end));
+ assert.equal(Object.values(catalog).reduce((n,pairs)=>n+pairs.length,0),18);
+ for(const tool of ['moving','housemates','plants','baking']){
+  const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
+  for(const [attribute,de,en]of catalog[tool]){
+   const htmlEncoded=de.replaceAll('&','&amp;');
+   assert.ok(html.includes(attribute+'="'+de+'"')||html.includes(attribute+'="'+htmlEncoded+'"'),tool+' '+de);
+   assert.ok(en&&de!==en);
+  }
+ }
+ assert.match(source,/element\.isContentEditable\|\|element\.closest\('\[contenteditable="true"\]'\)/);
+});
+
+test('plant water amount refreshes in selected language without mutating the pot size field',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const html=await readFile(new URL('../../tools/plants/index.html',import.meta.url),'utf8');
+ const a=html.indexOf('function calculateWaterAmount() {');
+ const b=html.indexOf('function getMlForPot(',a);
+ assert.ok(a>0&&b>a);
+ const snippet=html.slice(a,b);
+ const attrs={'plantPotSize':{value:'18'},'waterMlHint':{innerText:''}};
+ const ctx={document:{getElementById:id=>attrs[id]},window:{__toolyaUILocale:'en'}};
+ createContext(ctx);runInContext(snippet,ctx);
+ runInContext('calculateWaterAmount()',ctx);
+ assert.equal(attrs.waterMlHint.innerText,'💧 Suggested watering amount: approx. 600 ml per watering');
+ assert.equal(attrs.plantPotSize.value,'18');
+ ctx.window.__toolyaUILocale='de';
+ runInContext('calculateWaterAmount()',ctx);
+ assert.equal(attrs.waterMlHint.innerText,'💧 Empfohlene Gießmenge: ca. 600 ml pro Vorgang');
+ assert.equal(attrs.plantPotSize.value,'18');
+ assert.match(html,/document\.addEventListener\('toolya:locale-change',[\s\S]*?calculateWaterAmount\(\)/,'locale listener refreshes the visible estimate');
+});
