@@ -39,7 +39,9 @@ async function run(){
   await list.getByRole('textbox',{name:'Artikel'}).fill('Butter 250g');
   await list.getByRole('spinbutton',{name:'Anzahl'}).fill('2');
   await list.getByRole('button',{name:'+ Zur Liste'}).click();
-  await page.getByText('Bekannte Preise: 4,58',{exact:false}).waitFor();
+  await page.waitForTimeout(350);
+  console.log('DIAG_SHOP',JSON.stringify(await page.evaluate(()=>({panel:document.querySelector('#cs-panel')?.innerText.slice(0,2600),status:document.querySelector('#cs-status')?.textContent,shopping:window.__fixture.get().cleverSparen.shopping}))));
+  await page.getByText('Bekannte Preise: 4,58',{exact:false}).waitFor({timeout:3000});
   assert.equal((await page.evaluate(()=>window.__fixture.get().cleverSparen.shopping)).length,1);
   await list.getByRole('checkbox',{name:'Butter 250g eingekauft'}).check();
   await page.getByText('Bekannte Preise: 0,00',{exact:false}).waitFor();
