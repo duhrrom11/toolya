@@ -10,7 +10,7 @@
 <body>
   <header><a class="brand" href="/">Toolya</a></header>
   <main>
-    <section class="intro">
+    <section class="intro" id="ty-message-de" lang="de">
       <div>
         <h1>Diese Seite wurde nicht gefunden</h1>
         <p>Hier findest du die aktuellen Tools und Anleitungen.</p>
@@ -18,6 +18,17 @@
         <a href="/#anleitungen">Zu den Anleitungen</a>
       </div>
     </section>
+<section class="intro" id="ty-message-en" lang="en" hidden><div>
+<h1>We couldn't find this page</h1>
+<p>Explore the latest Toolya tools and guides in English.</p>
+<p><a class="button" href="/en/">English Toolya homepage</a></p>
+<a href="/en/#tools">Explore all tools</a>
+</div></section>
   </main>
-</body>
+<script>
+(()=>{let chosen='de';try{if(location.pathname.startsWith('/en/')||localStorage.getItem('toolya-locale-v1')==='en')chosen='en'}catch{}
+document.documentElement.lang=chosen;document.title=(chosen==='en'?'Page not found':'Seite nicht gefunden')+' | Toolya';
+for(const lang of ['de','en'])document.getElementById('ty-message-'+lang).hidden=lang!==chosen;
+})();
+</script></body>
 </html>

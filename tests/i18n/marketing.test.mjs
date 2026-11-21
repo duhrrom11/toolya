@@ -130,3 +130,15 @@ test('English dashboard CTA preserves opt-in language and public legal footers l
   assert.doesNotMatch(html,/Privacy information \(German\)|Legal notice \(German\)/);
  }
 });
+
+test('offline and unknown URLs offer German and English messages with correct page language',()=>{
+ for(const path of ['404.html','offline.html']){
+  const html=read(path);
+  assert.ok(html.includes('id="ty-message-de"'));
+  assert.ok(html.includes('id="ty-message-en"'));
+  assert.ok(html.includes('document.documentElement.lang=chosen'));
+  assert.ok(html.includes('toolya-locale-v1'));
+ }
+ const redir=read('tools/wishes/index.html');
+ assert.match(redir,/location\.search \+ location\.hash/);
+});

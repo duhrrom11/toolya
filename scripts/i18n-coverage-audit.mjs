@@ -43,7 +43,10 @@ const pairs=new Map([
  ['legal.html','en/legal.html'],
  ['privacy.html','en/privacy.html']
 ]);
-const supportedTools=new Set([
+const bilingualPages=new Set(['404.html','offline.html']);
+const redirectPages=new Set(['tools/wishes/index.html']);
+const supportedTools=new Set(['dashboard/index.html',
+
  ...['moving','housemates','plants','baking','budget','car','loans','meters','parking','pet-health'].map(name=>'tools/'+name+'/index.html'),
  ...['public','dashboard','collection','discover','feed','planner','profile','occasions','reservations','assistant','bookmarks','cockpit','gift-analytics','gift-tasks','notifications','report','social'].map(name=>'tools/wishes/'+name+'.html')
 ]);
@@ -63,7 +66,7 @@ for(const f of html){
  const title=small(document.title||'');
  const counterpart=isEnglish ? [...pairs].find(([,en])=>en===f)?.[0] : pairs.get(f);
  const appSwitch=supportedTools.has(f)&&source.includes('tool-entry.mjs');
- const hasEnglishRoute=isEnglish||appSwitch||Boolean(counterpart&&fileSet.has(counterpart));
+ const hasEnglishRoute=isEnglish||appSwitch||bilingualPages.has(f)||redirectPages.has(f)||Boolean(counterpart&&fileSet.has(counterpart));
  const noindex=Boolean(document.querySelector('meta[name="robots"]')?.getAttribute('content')?.includes('noindex'));
  const hasENLink=Boolean(document.querySelector('[data-set-locale="en"]'));
  const hasDELink=Boolean(document.querySelector('[data-set-locale="de"]'));
@@ -83,7 +86,7 @@ for(const f of html){
   }
  }
  if(suspects.length)germanUi.push({file:f,samples:[...new Set(suspects)].slice(0,12)});
- const status=isEnglish?'EN page':appSwitch?'EN opt-in tool':hasEnglishRoute?'DE page with EN pair':'NO EN COVERAGE';
+ const status=isEnglish?'EN page':appSwitch?'EN opt-in tool':bilingualPages.has(f)?'Bilingual fallback':redirectPages.has(f)?'Language-preserving redirect':hasEnglishRoute?'DE page with EN pair':'NO EN COVERAGE';
  reports.push({file:f,lang,status,noindex,langLinks:hasENLink&&hasDELink,englishCopy:counterpart||null,suspects:suspects.length});
 }
 const runtime=read('shared/toolya/i18n/tool-entry.mjs');
