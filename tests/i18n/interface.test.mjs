@@ -2421,3 +2421,10 @@ test('Sprint A QR labels translate known UI category only; custom tags and QR pa
  assert.match(src,/try \{ reader\.readAsText\(file\); \}/);
  assert.match(src,/catch \(error\) \{\s*input\.value = '';\s*alert\("Backup-Datei konnte nicht gelesen werden\."\)/);
 });
+
+
+test('Sprint A backup safety preflight is localized without skipping the separate destructive-import confirmation',()=>{
+ assert.equal(translateToolDialog('moving','en','Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.'),'Before importing, download and check a current backup.');
+ assert.equal(translateToolDialog('moving','de','Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.'),'Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.');
+ assert.equal(translateToolDialog('moving','en','Backup importieren? Vorhandene Daten werden ersetzt.'),'Import backup? Existing data will be replaced.');
+});
