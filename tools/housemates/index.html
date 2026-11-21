@@ -1569,7 +1569,8 @@
         document.addEventListener('toolya:locale-change', () => {
             if (!householdReadyForLocaleRefresh) return;
             renderApp();
-            // Keep open edit forms untouched so unsaved user input is never replaced.
+            refreshOpenBudgetLabels();
+            // Refresh labels in place; keep unsaved amounts and category keys untouched.
         });
 
         /* Storage Helper */
@@ -2349,6 +2350,17 @@
         function closeWLANQRModal() { document.getElementById('wlanQrModal').classList.remove('flex'); document.getElementById('wlanQrModal').classList.add('hidden'); }
 
         /* Budgets */
+        function refreshOpenBudgetLabels() {
+            const modal = document.getElementById('budgetModal');
+            if (!modal || modal.classList.contains('hidden')) return;
+            // Source-exact labels from immutable category IDs. Never recreate
+            // an open form: unsaved amount input values must survive locale changes.
+            document.querySelectorAll('#budgetInputList input[data-cat]').forEach(input => {
+                const label = input.parentElement?.querySelector('label');
+                if (!label) return;
+                label.textContent = formatHouseholdCategoryLabel(input.getAttribute('data-cat')) + ':';
+            });
+        }
         function openBudgetModal() {
             const budgets = getBudgets();
             document.getElementById('budgetInputList').innerHTML = defaultCategories.map((cat, index) => `
