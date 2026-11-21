@@ -1105,6 +1105,7 @@ test('dashboard editor localizes panel titles, actions and accessibility without
   const original=document.getElementById('b3-editor').innerHTML;
   const originalActions=[...document.querySelectorAll('#b3-editor button')].map(el=>el.getAttribute('onclick'));
   applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(document.querySelector('#b3-editor').getAttribute('aria-label'),'Edit dashboard');
   assert.equal(document.querySelector('#b3-editor h2').textContent,'Edit dashboard');
   assert.equal(document.querySelector('#b3-editor p').textContent,'Sort sections, show or hide them, or choose S / M / L sizes.');
   assert.equal(document.querySelector('.b3-editor-row strong').textContent,translated);
@@ -1120,6 +1121,7 @@ test('dashboard editor localizes panel titles, actions and accessibility without
   assert.equal(select.getAttribute('aria-label'),'Card size: '+translated);
   assert.deepEqual([...document.querySelectorAll('#b3-editor button')].map(el=>el.getAttribute('onclick')),originalActions);
   applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(document.querySelector('#b3-editor').getAttribute('aria-label'),'Dashboard bearbeiten');
   assert.equal(document.querySelector('.b3-editor-row strong').textContent,panel);
   assert.equal(document.querySelector('.b3-editor-row label').textContent,'Sichtbar');
   assert.equal(document.getElementById('move-up').getAttribute('aria-label'),panel+' nach oben');
@@ -1143,4 +1145,12 @@ test('dashboard editor translation runs after editor rerenders and never reiniti
  assert.equal(document.querySelector('strong').textContent,'Search inventory');
  applyToolInterfaceLocale(document,'moving','de');
  assert.equal(document.querySelector('strong').textContent,'Inventar durchsuchen');
+});
+
+test('generated dashboard save errors translate exactly without modifying unknown backend errors',()=>{
+ for(const tool of ['moving','housemates']){
+  assert.equal(translateToolDialog(tool,'en','Layout konnte nicht gespeichert werden.'),'Could not save the dashboard layout.');
+  assert.equal(translateToolDialog(tool,'en','Server-specific error 123'),'Server-specific error 123');
+  assert.equal(translateToolDialog(tool,'de','Layout konnte nicht gespeichert werden.'),'Layout konnte nicht gespeichert werden.');
+ }
 });
