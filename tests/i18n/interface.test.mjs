@@ -438,3 +438,28 @@ test('household finance accessibility labels and settlements localize without ch
  assert.match(html,/categoryChartInstance\.data\.labels = catLabels\.length/,'chart still uses source categories');
  assert.match(html,/removeFlatmateContact\(\$\{idx\}\)/,'member action still targets original index');
 });
+
+test('household shopping, cleaning, notes and Wi-Fi feedback keep stored content intact',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const pairs=[
+  ['Cleaning schedule is empty.','Putzplan ist leer.'],
+  ['Shopping list is empty.','Einkaufsliste ist leer.'],
+  ['purchased','gekauft'],
+  ['🧾 Record expense','🧾 Buchen'],
+  ['🛒 Ingredients','🛒 Zutaten'],
+  ['The noticeboard is empty. Create your first sticky note!','Die Pinnwand ist noch leer. Erstelle die erste Sticky Note!'],
+  ['Today','Heute'],
+  ['No Wi-Fi network name provided.','Kein WLAN-Name angegeben.'],
+  ['QR code creation cancelled.','QR-Erstellung abgebrochen.']
+ ];
+ for(const [en,de] of pairs){
+  assert.ok(html.includes(en),'missing English translation '+en);
+  assert.ok(html.includes(de),'missing German original '+de);
+ }
+ assert.match(html,/escapeUserHtml\(item\.title\)/,'shopping item names remain HTML-escaped');
+ assert.match(html,/escapeUserHtml\(n\.content\)/,'sticky note content remains HTML-escaped');
+ assert.match(html,/safeInlineId\(item\.id\)/,'shopping IDs still pass through safe inline encoding');
+ assert.match(html,/const wifiString = 'WIFI:T:WPA;S:'/,'Wi-Fi QR payload format remains unchanged');
+ assert.match(html,/const price = parseFloat\(prompt\(/,'expense recording keeps original price input');
+});
