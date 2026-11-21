@@ -339,7 +339,7 @@ function reviewRecipe(source){
 }
 function applyReviewed(){
  if(!reviewed.length)return;
- $('recipe-input').value=reviewed.map(i=>fmt(i.qty,2).replace(/\./g,'')+' '+i.unit+' '+i.name).join('\n');
+ $('recipe-input').value=reviewed.map(i=>(proEn()?String(i.qty):fmt(i.qty,2).replace(/\./g,''))+' '+i.unit+' '+i.name).join('\n');
  $('recipe-input').dispatchEvent(new Event('input',{bubbles:true}));
  window.calculateRecipe?.();
  status('bsp-ocr-status',proUi('Erkannte Zutaten übernommen. Bitte Mengen und Backformfaktor prüfen.','Recognized ingredients applied. Check quantities and the pan scaling factor.'));
