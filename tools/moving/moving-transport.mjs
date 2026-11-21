@@ -6,6 +6,9 @@ const steps=['planned','packed','loaded','arrived','unpacked'];
 const language=()=>window.__toolyaUILocale==='en'?'en':'de';
 const text=(de,en)=>language()==='en'?en:de;
 const labels={de:{planned:'Geplant',packed:'Gepackt',loaded:'Verladen',arrived:'Angekommen',unpacked:'Ausgepackt'},en:{planned:'Planned',packed:'Packed',loaded:'Loaded',arrived:'Arrived',unpacked:'Unpacked'}};
+const errorMessages={"signIn":["Bitte erneut anmelden","Please sign in again"],"unavailable":["Transportdienst nicht erreichbar","Transport service unavailable"],"missingLabel":["Bitte eine Helferbezeichnung eingeben","Enter a label for the helper"],"action":["Transportaktion fehlgeschlagen","Transport action failed"],"issue":["Vorfall konnte nicht gespeichert werden","Could not save the issue"]};
+class TransportError extends Error {}
+const transportError=(failure,fallback)=>failure instanceof TransportError?failure.message:fallback;
 const priorities={normal:['Normal','Normal'],important:['Wichtig','Important'],first_day:['Erster Tag','First day']};
 const priorityLabel=key=>Object.hasOwn(priorities,key)?text(...priorities[key]):key;
 const formatDate=value=>new Date(value).toLocaleString(text('de-DE','en-GB'));
@@ -15,11 +18,10 @@ const current=()=>window.getData?.();
 const project=()=>current()?.moving?.projects?.find(p=>p.status==='active');
 async function api(action,more={},helper=false){
   const headers={'Content-Type':'application/json','apikey':apikey};
-  if(!helper){const {data:{session},error}=await window.supabaseClient.auth.getSession();if(error||!session?.access_token)throw Error(text("Bitte erneut anmelden","Please sign in again"));headers.Authorization='Bearer '+session.access_token;}
+  if(!helper){const {data:{session},error}=await window.supabaseClient.auth.getSession();if(error||!session?.access_token)throw new TransportError('signIn');headers.Authorization='Bearer '+session.access_token;}
   const res=await fetch(endpoint,{method:'POST',headers,body:JSON.stringify({action,projectId,...more}),cache:'no-store',referrerPolicy:'no-referrer'});
-  const body=await res.json().catch(()=>({}));
-  if(!res.ok)throw Error(body.error||text("Transportdienst nicht erreichbar","Transport service unavailable"));
-  return body;
+  if(!res.ok)throw new TransportError(res.status===401?'signIn':'unavailable');
+  return res.json();
 }
 function setTransport(){
   const enabled=Boolean(data?.boxes?.length||data?.grants?.length);
@@ -33,7 +35,7 @@ function render(){
   if(!window.movingCloudReady||!p){root.hidden=true;window.movingTransportActive=false;return;}
   root.hidden=false;
   let h='<header><h2>🚛 '+esc(text('Transport & Helfer','Transport & helpers'))+'</h2><p>'+esc(text("Serverseitige Transportstände und zeitlich begrenzte Helferlinks. Helfer sehen keine Inventarinhalte.","Track box progress and share time-limited links with helpers. Helpers cannot see what's inside your boxes."))+'</p></header>';
-  if(error)h+='<p role="alert" class="mv-error">'+esc(error)+'</p>';
+  if(error)h+='<p role="alert" class="mv-error">'+esc(text(...errorMessages[error]))+'</p>';
   if(!data){root.innerHTML=h+'<button type="button" data-act="load" '+(busy?'disabled':'')+'>'+esc(text("Transportmodus laden","Load transport mode"))+'</button>';return;}
   h+='<div class="mv-r2-toolbar"><button type="button" data-act="sync" '+(busy?'disabled':'')+'>'+esc(text("Kisten & Räume abgleichen","Sync boxes and rooms"))+'</button><span class="mv-muted">'+new Intl.NumberFormat(text('de-DE','en-GB')).format(data.boxes.length)+esc(data.boxes.length===1?text(' Kiste im Transportmodus',' box in transport mode'):text(' Kisten im Transportmodus',' boxes in transport mode'))+'</span></div>';
   h+='<h3>'+esc(text("Transportstatus","Transport status"))+'</h3>';
@@ -61,7 +63,7 @@ async function drawQr(id,url){
   if(!QR){target.textContent=text("QR-Bibliothek nicht verfügbar. Bitte den Link kopieren.","QR codes are unavailable. Copy the link instead.");return;}
   target.replaceChildren();new QR(target,{text:url,width:192,height:192,correctLevel:QR.CorrectLevel?.M});
 }
-async function load(){const p=project();if(!p)return;projectId=p.id;busy=true;error='';render();try{data=await api('state');setTransport();}catch(e){error=e.message;}finally{busy=false;render();}}
+async function load(){const p=project();if(!p)return;projectId=p.id;busy=true;error='';render();try{data=await api('state');setTransport();}catch(e){error=transportError(e,'unavailable');}finally{busy=false;render();}}
 root?.addEventListener('click',async e=>{
  const b=e.target.closest('button');if(!b||busy)return;
  if(b.dataset.act==='copy'){const v=document.getElementById('mv-helper-link')?.value;if(v){try{await navigator.clipboard.writeText(v);}catch{document.getElementById('mv-helper-link').select();}}return;}
@@ -79,13 +81,13 @@ root?.addEventListener('click',async e=>{
   if(act==='sync'){data=await api('sync');}
   else if(act==='create'){
     const label=inputLabel,hours=inputHours;
-    if(!label)throw Error(text("Bitte eine Helferbezeichnung eingeben","Enter a label for the helper"));
+    if(!label)throw new TransportError('missingLabel');
     const x=await api('create',{label,hours});token=x.token;const u=new URL('./helper/index.html',location.href);u.hash=new URLSearchParams({t:token}).toString();share=u.href;data=await api('state');
   }else if(b.dataset.resolve){await api('resolve-incident',{incidentId:b.dataset.resolve});data=await api('state');}
   else if(b.dataset.revoke){await api('revoke',{grantId:b.dataset.revoke});data=await api('state');share='';token='';qrLink='';}
   else if(b.dataset.status){const item=data?.boxes?.find(x=>x.assignmentId===b.dataset.status);if(!item)return;await api('owner-transition',{assignmentId:item.assignmentId,expectedVersion:item.version,status:b.dataset.next,requestId:crypto.randomUUID()});data=await api('state');}
   setTransport();
- }catch(ex){error=ex.message||text("Transportaktion fehlgeschlagen","Transport action failed");}finally{busy=false;render();}
+ }catch(ex){error=transportError(ex,'action');}finally{busy=false;render();}
 });
 root?.addEventListener('submit',async event=>{
  if(event.target.id!=='mv-owner-incident')return;
@@ -99,7 +101,7 @@ root?.addEventListener('submit',async event=>{
  try{
    await api('owner-report-incident',{assignmentId,kind,note,requestId:crypto.randomUUID()});
    data=await api('state');
- }catch(ex){error=ex.message||text("Vorfall konnte nicht gespeichert werden","Could not save the issue");}
+ }catch(ex){error=transportError(ex,'issue');}
  finally{busy=false;render();}
 });
 document.addEventListener('toolya:moving-ready',()=>{if(!project()){data=null;root.hidden=true;return;}if(!initialised){initialised=true;void load();}else render();});
