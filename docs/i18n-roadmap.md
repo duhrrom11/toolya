@@ -5,7 +5,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 ## Projektstatus
 - Aktueller geprüfter Implementierungsstand vor diesem Roadmap-Commit: `dd413ec486973d66d7075223afd3284949ec1a3b`; 9 von 9 GitHub-Actions-Workflows erfolgreich.
 - Die englischen Startseiten und vier Tool-Einstiege sind vorhanden. Die Tool-Oberflächen sind noch nicht durchgängig übersetzt; englische öffentliche Inhalte bleiben vorerst `noindex`.
-- Gesamtfortschritt **ca. 59 % (Planungsschätzung, nach Anzeige- und Sprachwechsel-Fixes)**, nicht automatisch gemessen: Summe aus Paketgewicht × geschätztem Teilfortschritt, 59,0 % gerundet. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
+- Gesamtfortschritt **ca. 60 % (Planungsschätzung, nach Mischkultur- und Backhelfer-Anpassungen)**, nicht automatisch gemessen: Summe aus Paketgewicht × geschätztem Teilfortschritt, 59,0 % gerundet. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
 - Datenbanken, Supabase-Berechtigungen, gespeicherte Objekte, Sprach-unabhängige Maskottchen-Einstellung und produktive Seiten bleiben unangetastet.
 
 ## Sechs gebündelte Arbeitspakete
@@ -14,7 +14,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 |---|---:|---:|---|---|
 | 1. Sprachsystem & technische Grundlage | 15 % | 100 % | fertig | DE/EN-Umschaltung reversibel; Präferenz unabhängig; bestehende Daten/Maskottchen unverändert |
 | 2. Englische Startseiten & Ratgeber | 15 % | 80 % | weitgehend | Vier Ratgeber, Startseite und Rechner vollständig redigiert, zugänglich, funktionale Links |
-| 3. Vier Tool-Oberflächen | 30 % | 71 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
+| 3. Vier Tool-Oberflächen | 30 % | 72 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
 | 4. Konten, Datenwege & Exporte | 20 % | 35 % | teilweise | Auth inklusive Recovery, erlaubte Redirects, Datenkonflikte, PDF/QR/CSV/Import/Export in EN und DE E2E |
 | 5. Qualitätssicherung & Sicherheit | 10 % | 40 % | aktiv | vollständige E2E-Tests, 320px/mobile, Keyboard, Screenreader, Auth-Sicherheit, abschließend alle CI erfolgreich |
 | 6. SEO-Freigabe & Veröffentlichung | 10 % | 0 % | gesperrt | hreflang, Canonicals, Sitemap, OG/JSON-LD, noindex nur nach Freigabegates aufheben, kontrollierter Release |
@@ -91,3 +91,11 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - **Paket 3 geschätzt 71 %, Gesamt 59,3 % (gerundet 59 %)**. Die Werte bleiben Planungsannahmen; der Sprint gilt noch nicht als abgeschlossen.
 - Verbleibend in Sprint A: weitere dynamische Renderzustände insbesondere im WG-Organisator, Pflanzen-/Backstudio-Sonderdialoge, das vollständige Durchlaufen sämtlicher Tools und ein englischer Browser-E2E-Nachweis.
 - Kein Merge, Deployment, Eingriff in Supabase, Entfernen von `noindex` oder Veränderung produktiver Daten.
+
+## Sprint A – Mischkultur und Backhelfer im laufenden Sprachwechsel (2026-11-21)
+
+- **Pflanzenpflege:** Bekannte feste Mischkultur-Empfehlungen zeigen bei EN auch die Pflanzen- und Kräuternamen auf Englisch an. Neben deutschen Stichwörtern werden ausdrücklich auch `tomato`, `carrot` und `strawberry` als sichere Suchaliasse erkannt. Deutsche Bestandswerte und der frei eingegebene Artenname bleiben unangetastet. Ein bereits sichtbarer Mischkultur-Hinweis wird bei DE ↔ EN aktualisiert.
+- **Backstudio:** Bereits berechnete Hinweise für Zuckerersatz, Raumklima und Formenfinder werden beim Sprachwechsel gezielt neu aufgebaut; noch nicht berechnete Ergebnisse bleiben leer. Die speichernde Funktion `calculateRecipe()` wird bei einem Sprachwechsel nicht ausgeführt.
+- Zwei neue isolierte Regressionstests prüfen Quelltext-Erkennung, die Rückumschaltung und unveränderte Eingaben sowie das gezielte Neurendern der Backhelfer ohne Rezept-Persistenz.
+- **Paket 3: geschätzt 72 %; Gesamt: 59,6 % (gerundet 60 %).** Keine Vollständigkeits- oder Release-Freigabe. Für den letzten Commit sind alle CI-Workflows zu prüfen.
+- **Noch offen:** Weitere dynamische Texte, Sonderfälle bei Dialogen/Fehlerzuständen, vollständige DE/EN-End-to-End-Journeys aller Tools, Staging-Auth und abschließende Browser-/Sicherheits-/SEO-Gates.
