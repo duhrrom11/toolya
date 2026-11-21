@@ -1482,7 +1482,7 @@ test('all tool accessibility translations match source HTML and skip personal at
  const start=source.indexOf(prefix),end=source.indexOf(');\nfunction applyToolAccessibilityCopy',start);
  assert.ok(start>=0&&end>start);
  const catalog=JSON.parse(source.slice(start+prefix.length,end));
- assert.equal(Object.values(catalog).reduce((n,pairs)=>n+pairs.length,0),18);
+ assert.equal(Object.values(catalog).reduce((n,pairs)=>n+pairs.length,0),19);
  for(const tool of ['moving','housemates','plants','baking']){
   const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
   for(const [attribute,de,en]of catalog[tool]){
@@ -1513,4 +1513,17 @@ test('plant water amount refreshes in selected language without mutating the pot
  assert.equal(attrs.waterMlHint.innerText,'💧 Empfohlene Gießmenge: ca. 600 ml pro Vorgang');
  assert.equal(attrs.plantPotSize.value,'18');
  assert.match(html,/document\.addEventListener\('toolya:locale-change',[\s\S]*?calculateWaterAmount\(\)/,'locale listener refreshes the visible estimate');
+});
+
+test('photo zoom dialog translates its accessible name and alt text while keeping image URL untouched',()=>{
+ const {document}=parseHTML('<html><body><dialog id="imageModal" aria-label="Bildvorschau"><img id="zoomedImage" src="blob:example-image" alt="Vergrößertes Foto der Umzugskiste"><button type="button" onclick="closeImageModal()">Schließen</button></dialog></body></html>');
+ const modal=document.getElementById('imageModal'),image=document.getElementById('zoomedImage');
+ const initial=document.body.innerHTML;
+ applyToolInterfaceLocale(document,'moving','en');
+ assert.equal(modal.getAttribute('aria-label'),'Image preview');
+ assert.equal(image.getAttribute('alt'),'Enlarged photo of the moving box');
+ assert.equal(image.getAttribute('src'),'blob:example-image');
+ assert.equal(document.querySelector('#imageModal button').getAttribute('onclick'),'closeImageModal()');
+ applyToolInterfaceLocale(document,'moving','de');
+ assert.equal(document.body.innerHTML,initial);
 });
