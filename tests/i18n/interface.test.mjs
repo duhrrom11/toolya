@@ -2479,3 +2479,19 @@ test('Sprint A QR category helper retains custom and prototype-like labels',asyn
  assert.equal(runInContext("formatMovingTagLabel('Custom label','en')",context),'Custom label');
  assert.equal(runInContext("formatMovingTagLabel('Zerbrechlich','de')",context),'Zerbrechlich');
 });
+
+test('shared error prefixes localize across all tools without changing backend details',()=>{
+ for(const tool of ['moving','housemates','plants','baking']){
+  for(const [german,english] of [
+   ['Passwort zurücksetzen fehlgeschlagen: ', 'Password reset failed: '],
+   ['Speichern fehlgeschlagen: ', 'Save failed: '],
+   ['Export fehlgeschlagen: ', 'Export failed: '],
+   ['Import fehlgeschlagen: ', 'Import failed: '],
+   ['Netzwerkfehler: ', 'Network error: ']
+  ]){
+   const detail='user@example.org / HTTP 403';
+   assert.equal(translateToolDialog(tool,'en',german+detail),english+detail);
+   assert.equal(translateToolDialog(tool,'de',german+detail),german+detail);
+  }
+ }
+});
