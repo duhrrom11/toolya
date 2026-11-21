@@ -50,7 +50,7 @@ export const assignBox=(snapshot,projectId,boxId,targetRoomId=null,priority='nor
   if(!project||project.status!=='active')throw Error('Projekt nicht aktiv');
   const existing=m.assignments.find(a=>a.projectId===projectId&&a.boxId===boxId);
   if(existing){existing.targetRoomId=targetRoomId;existing.priority=priority;existing.updatedAt=new Date().toISOString();}
-  else m.assignments.push({id:uuid(),projectId,boxId,targetRoomId,priority,status:'planned',fragile:false,noStack:false,notes:'',updatedAt:new Date().toISOString()});
+  else m.assignments.push({id:uuid(),projectId,boxId,targetRoomId,priority,status:'planned',statusHistory:[],fragile:false,noStack:false,notes:'',updatedAt:new Date().toISOString()});
 });
 export const updateStatus=(snapshot,id,status)=>editMoving(snapshot,m=>{
   const a=m.assignments.find(a=>a.id===id);
@@ -59,7 +59,10 @@ export const updateStatus=(snapshot,id,status)=>editMoving(snapshot,m=>{
   if(p?.status!=='active')throw Error('Projekt ist abgeschlossen');
   const old=statuses.indexOf(a.status),next=statuses.indexOf(status);
   if(next<0||Math.abs(next-old)!==1)throw Error('Statuswechsel nicht erlaubt');
-  a.status=status;a.updatedAt=new Date().toISOString();
+  const at=new Date().toISOString();
+  a.statusHistory??=[];
+  a.statusHistory.push({from:a.status,to:status,at});
+  a.status=status;a.updatedAt=at;
 });
 export const finishProject=(snapshot,id)=>editMoving(snapshot,m=>{
   const p=m.projects.find(p=>p.id===id&&p.status==='active');
