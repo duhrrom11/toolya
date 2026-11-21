@@ -2481,7 +2481,7 @@
                     y += 6;
                 });
             });
-            doc.save(`haushaltsbericht-${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.save(`${window.__toolyaUILocale === 'en' ? 'household-finance-report' : 'haushaltsbericht'}-${new Date().toISOString().split('T')[0]}.pdf`);
         }
     </script>
 </body>
