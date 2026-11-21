@@ -2371,7 +2371,7 @@ test('Sprint A member access and pending cloud backup warnings localize without 
 test('Sprint A QR export uses only locale-specific filenames, never rewrites backup payloads',async()=>{
  const {readFile}=await import('node:fs/promises');
  const src=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
- assert.match(src,/doc\.save\(window\.__toolyaUILocale === 'en' \? "moving-box-qr-labels\.pdf" : "kisten-qr-etiketten\.pdf"\)/);
+ assert.match(src,/doc\.save\(exportLanguage === 'en' \? "moving-box-qr-labels\.pdf" : "kisten-qr-etiketten\.pdf"\)/);
  assert.match(src,/homebox-backup-\$\{new Date\(\)\.toISOString\(\)\.split\('T'\)\[0\]\}\.json/);
  assert.match(src,/if \(!confirm\("Backup importieren\? Vorhandene Daten werden ersetzt\."\)\) return;/);
  const invalid=src.indexOf('return alert("Ungültiges Backup-Format.");');
@@ -2414,7 +2414,7 @@ test('Sprint A QR labels translate known UI category only; custom tags and QR pa
  const {readFile}=await import('node:fs/promises');
  const src=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
  const block=src.slice(src.indexOf('async function exportQrLabelsPDF()'),src.indexOf('async function showQrCode('));
- assert.match(block,/formatMovingTagLabel\(b\.tag\)/);
+ assert.match(block,/exportLanguage === 'en' \? \(\{ Standard: 'Standard', Zerbrechlich: 'Fragile'/);
  assert.match(block,/\? 'Unknown' : 'Unbekannt'/);
  assert.match(block,/const deepLinkUrl = `\$\{window\.location\.origin\}\$\{window\.location\.pathname\}\?box=\$\{b\.id\}`/);
  assert.match(block,/doc\.save\(window\.__toolyaUILocale === 'en' \? "moving-box-qr-labels\.pdf"/);
