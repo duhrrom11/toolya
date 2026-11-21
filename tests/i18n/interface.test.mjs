@@ -1132,7 +1132,7 @@ test('dashboard editor translation runs after editor rerenders and never reiniti
  const {readFile}=await import('node:fs/promises');
  const core=await readFile(new URL('../../assets/helferlein-b3-core.js',import.meta.url),'utf8');
  const entry=await readFile(new URL('../../shared/toolya/i18n/tool-entry.mjs',import.meta.url),'utf8');
- assert.match(core,/host\.append\(commands\);\s*document\.dispatchEvent\(new Event\('toolya:b3-editor-rendered'\)\)/);
+ assert.match(core,/host\.append\(commands\);[\s\S]{0,180}document\.dispatchEvent\(new Event\('toolya:b3-editor-rendered'\)\)/);
  assert.match(entry,/document\.addEventListener\('toolya:b3-editor-rendered',\(\)=>applyToolInterfaceLocale\(document,name,selected\)\)/);
  const {document}=parseHTML('<html><body><div id="b3-editor"><h2>Dashboard bearbeiten</h2></div></body></html>');
  applyToolInterfaceLocale(document,'moving','en');
