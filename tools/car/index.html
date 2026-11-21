@@ -392,7 +392,7 @@ async function toolyaCloudSave(patch) {
     const next = toolyaCloudController.snapshot();
     Object.assign(next, patch);
     await toolyaCloudController.replace(next);
-    window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');
+    window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Saved to Toolya Cloud.' : 'In Toolya Cloud gespeichert.');
     return true;
   } catch(error) {
     toolyaCloudReady = false;

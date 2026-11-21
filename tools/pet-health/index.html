@@ -507,7 +507,7 @@
                 const {data:auth,error}=await supabaseClient.auth.getUser();
                 if(error||auth?.user?.id!==petCloudUserId||auth.user.is_anonymous)throw Error('Anmeldung nicht gültig.');
                 await petCloudController.replace(data);
-                window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');return true;
+                window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Saved to Toolya Cloud.' : 'In Toolya Cloud gespeichert.');return true;
             }catch(error){console.error(error);petCloudBlock('save-unconfirmed');return false;}
         }
         async function petImage(file){

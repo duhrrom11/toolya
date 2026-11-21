@@ -592,7 +592,7 @@
                 if(error||auth?.user?.id!==metersCloudUserId||auth.user.is_anonymous)
                     throw Error('Anmeldung nicht mehr gültig.');
                 await metersCloudController.replace(data);
-                window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');
+                window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Saved to Toolya Cloud.' : 'In Toolya Cloud gespeichert.');
                 return true;
             }catch(error){console.error(error);metersCloudBlock('save-unconfirmed');return false;}
         }

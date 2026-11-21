@@ -11,6 +11,14 @@
 
 Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 
+## Fortsetzung – neun Tool-Cloud-Speichermeldungen und Recovery-Regression (21.11.2026)
+
+- **Neun Alltagstools:** Die nach bestätigter Cloud-Sicherung angezeigte Meldung „In Toolya Cloud gespeichert.“ wird bei EN als „Saved to Toolya Cloud.“ ausgegeben: Umzugskisten, Pflanzenpflege, Backstudio, Haushaltsbuch, Auto, verliehene Dinge, Zählerstände, Parkplatz und Tiergesundheit. Die WG-Erfolgsmeldung war bereits lokalisiert. Der Tool-Sprachschalter steuert die Meldung nur im Anzeigezweig, nicht die Cloud-Speicherung.
+- **Keine falsche Erfolgsmeldung:** Drei echte Save-Funktionen wurden mit synthetischen Auth-/Cloud-Objekten in DE und EN ausgeführt; alle zeigen die Meldung erst nach bestätigtem Speicheraufruf und unterdrücken sie bei Schreibfehlern. Sechs weitere Save-Funktionen sind auf die Reihenfolge von Await und Toast, Sprachzweige und bestehenden Fehler-Blocker quellgeprüft.
+- **Recovery:** Die beim letzten GitHub-Paket ergänzte Sperre gegen gleichzeitige Passwort-Reset-Übermittlungen ist lokal mit dem synthetischen verzögerten Auth-Stub getestet. Keine echten Konten oder Tokens.
+- **Node:** Gesamte i18n-Suite auf dem lokalen Paketstand **180/180 erfolgreich**. Der strenge i18n-Coverage-Audit bleibt erwartungsgemäß **rot**: 34 nur teilweise lokalisierte App-Ansichten, 47 JavaScript-Quelldateien mit deutschen Laufzeit-Literalen, englische Toolansichten mit noch deutschem Dokument-Lang und 17 EN-Public-Seiten mit noindex. Ein isolierter Chromium-Aufruf wurde erneut versucht, konnte aber wegen einer Betriebssystem-Socket-Sperre beim Start von Chromium keine Browserfälle ausführen. Browser-E2E/visuelle PDF-/QR-Prüfungen bleiben offen.
+- Kein Einfluss auf Datenverträge, gespeicherte Nutzerwerte, Maskottchen, produktives Supabase oder SEO. Draft-PR bleibt gesperrt für Merge/Deployment; alle neun CI-Workflows auf dem finalen Head sind erforderlich.
+
 ## Fortsetzung – Recovery-Zustandswahrheit und Pflanzen-Regressionen (21.11.2026)
 
 - **Auth / Passwort-Recovery:** Im Dashboard und zentralen Startseiten-Kontoablauf wird eine bereits erfolgreiche Passwortaktualisierung nicht mehr als fehlgeschlagen dargestellt, wenn erst der nachfolgende Sign-out scheitert. Der Zustand zeigt dann ausdrücklich „Passwort geändert, aber Abmelden fehlgeschlagen“ und fordert zum manuellen Abmelden auf; es wird kein abgemeldeter Zustand vorgetäuscht. Der eigentliche Update-Fehler beendet den Pfad weiterhin vor dem Sign-out, und Passwort-/Token-Daten werden nicht protokolliert.
