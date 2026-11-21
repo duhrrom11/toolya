@@ -3,7 +3,7 @@ const labels={planned:'Geplant',packed:'Gepackt',loaded:'Verladen',arrived:'Ange
 const importance={normal:'Normal',important:'Wichtig',first_day:'Erster Tag'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const el=document.getElementById('toolya-moving-planner');
-let saving=false,activeTab='boxes',error='';
+let saving=false,activeTab='rooms',error='',navigationPhase='preparation';
 const snapshot=()=>window.getData();
 const promptText=(q,def='')=>window.prompt(q,def);
 async function commit(edit){
@@ -38,7 +38,7 @@ function render(){
   h+='<div class="mv-project"><strong>'+esc(p.name)+'</strong><span>'+esc(p.moveDate||'Ohne Umzugsdatum')+'</span></div>';
   h+='<div class="mv-stats"><div><strong>'+assigned.length+'</strong><small>Kisten</small></div><div><strong>'+arrived+'</strong><small>Angekommen</small></div><div><strong>'+unpacked+'</strong><small>Ausgepackt</small></div></div>';
   h+='<div class="mv-progress" aria-label="'+arrived+' von '+assigned.length+' Kisten angekommen"><span style="width:'+(assigned.length?Math.round(arrived/assigned.length*100):0)+'%"></span></div>';
-  h+='<div class="mv-tabs" role="group" aria-label="Umzugsansicht"><button data-tab="boxes" '+(activeTab==='boxes'?'aria-current="true"':'')+'>Kisten</button><button data-tab="rooms" '+(activeTab==='rooms'?'aria-current="true"':'')+'>Räume</button><button data-tab="first" '+(activeTab==='first'?'aria-current="true"':'')+'>Erste 72 Std.</button></div>';
+  h+='<div class="mv-tabs" role="group" aria-label="Umzugsansicht"><button data-tab="rooms" '+(activeTab==='rooms'?'aria-current="true"':'')+'>1. Zielräume</button><button data-tab="boxes" '+(activeTab==='boxes'?'aria-current="true"':'')+'>2. Kisten zuordnen</button><button data-tab="first" '+(activeTab==='first'?'aria-current="true"':'')+'>3. Erste 72 Std.</button></div>';
   if(activeTab==='rooms'){
     h+='<button class="mv-secondary" data-act="room">+ Zielraum hinzufügen</button>';
     h+='<div class="mv-list">'+(rooms.length?rooms.map(r=>{const a=assigned.filter(x=>x.targetRoomId===r.id);return '<div class="mv-item"><strong>'+esc(r.name)+'</strong><small>'+esc(r.floor||'')+' · '+a.length+' Kisten</small></div>';}).join(''):'<p class="mv-muted">Noch keine Zielräume vorhanden.</p>')+'</div>';
@@ -56,7 +56,7 @@ function render(){
       return '<div class="mv-item"><div><strong>'+esc(b?.name||'Kiste #'+a.boxId)+'</strong><small>'+esc(r?.name||'Noch kein Zielraum')+' · '+esc(importance[a.priority])+'</small></div><div class="mv-actions"><select data-room="'+esc(a.id)+'" aria-label="Zielraum" '+(saving?'disabled':'')+'><option value="">Ohne Zielraum</option>'+rooms.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===a.targetRoomId?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select><select data-priority="'+esc(a.id)+'" aria-label="Priorität" '+(saving?'disabled':'')+'>'+Object.entries(importance).map(([v,l])=>'<option value="'+v+'" '+(a.priority===v?'selected':'')+'>'+l+'</option>').join('')+'</select><div class="mv-status"><button data-step="'+esc(a.id)+'" data-delta="-1" '+(i===0||saving||window.movingTransportActive?'disabled':'')+' aria-label="Vorheriger Status">‹</button><span>'+esc(labels[a.status])+'</span><button data-step="'+esc(a.id)+'" data-delta="1" '+(i===4||saving||window.movingTransportActive?'disabled':'')+' aria-label="Nächster Status">›</button></div></div></div>';
     }).join(''):'<p class="mv-muted">Noch keine Kisten zugeordnet.</p>')+'</div>';
   }
-  h+='<div class="mv-footer"><button class="mv-secondary" data-act="finish" '+(saving?'disabled':'')+'>Umzug abschließen</button><span class="mv-muted">'+(saving?'Speichern …':'Alle Änderungen werden in Toolya Cloud gespeichert')+'</span></div>';
+  h+='<div class="mv-footer">'+(navigationPhase==='arrival'?'<button class="mv-secondary" data-act="finish" '+(saving?'disabled':'')+'>Umzug abschließen</button>':'')+'<span class="mv-muted">'+(saving?'Speichern …':'Alle Änderungen werden in Toolya Cloud gespeichert')+'</span></div>';
   el.innerHTML=h;
 }
 el?.addEventListener('click',async ev=>{
@@ -87,7 +87,7 @@ el?.addEventListener('click',async ev=>{
     await commit(s=>assignBox(s,p.id,box.id,room));return;
   }
   if(a==='finish'){
-    const pending=m.assignments.filter(x=>x.projectId===p.id&&x.status!=='unpacked').length;
+    const pending=m.assignments.filter(x=>x.projectId===p.id&&(window.movingTransportStatuses?.[x.id]?.status||x.status)!=='unpacked').length;
     if(!confirm('Umzug abschließen? '+pending+' Kisten sind noch nicht ausgepackt. Das Inventar bleibt erhalten.'))return;
     await commit(s=>finishProject(s,p.id));return;
   }
@@ -106,4 +106,11 @@ el?.addEventListener('change',async ev=>{
 document.addEventListener('toolya:moving-ready',render);
 document.addEventListener('toolya:moving-saved',render);
 document.addEventListener('toolya:moving-transport',render);
+document.addEventListener('toolya:moving-navigation',event=>{
+  const next=event.detail?.phase;
+  if(event.detail?.mode!=='moving'||!['preparation','transport','arrival'].includes(next)||next===navigationPhase)return;
+  navigationPhase=next;
+  activeTab=next==='arrival'?'first':'rooms';
+  render();
+});
 render();
