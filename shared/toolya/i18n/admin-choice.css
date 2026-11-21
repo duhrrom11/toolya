@@ -1,0 +1,5 @@
+.ty-admin-language{display:inline-flex;gap:3px;padding:3px;border:1px solid #8dbbc4;border-radius:999px;background:#fff;margin:4px}
+.ty-admin-language button{min-height:34px;min-width:36px;border:0;border-radius:999px;background:transparent;color:#14505e;font-weight:750}
+.ty-admin-language button[aria-pressed=true]{background:#136d75;color:#fff}
+.ty-admin-language-notice{margin:.5rem auto;max-width:1100px;padding:.6rem 1rem;border-left:3px solid #9378d0;background:#f7f3fc;color:#49375d}
+.ty-admin-language-notice[hidden]{display:none}

@@ -45,7 +45,7 @@ const pairs=new Map([
 ]);
 const bilingualPages=new Set(['404.html','offline.html']);
 const redirectPages=new Set(['tools/wishes/index.html']);
-const supportedTools=new Set(['dashboard/index.html',
+const supportedTools=new Set(['dashboard/index.html','admin-stats-dashboard/index.html','admin-stats-dashboard/wishlist-finder.html',
  ...['index','heirs','handover','print-key'].map(x=>'tools/estate/'+x+'.html'),
 
  ...['moving','housemates','plants','baking','budget','car','loans','meters','parking','pet-health'].map(name=>'tools/'+name+'/index.html'),
