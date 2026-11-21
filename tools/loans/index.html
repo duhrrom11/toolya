@@ -395,7 +395,15 @@
         }
 
         async function checkUserSession() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
+            let user = null;
+            let sessionError = null;
+            try {
+                const result = await supabaseClient.auth.getUser();
+                sessionError = result?.error?.name === 'AuthSessionMissingError' ? null : (result?.error ?? null);
+                user = sessionError ? null : (result?.data?.user ?? null);
+            } catch (error) {
+                sessionError = error;
+            }
             const statusText = document.getElementById('cloud-status-text');
             const userDisplay = document.getElementById('cloud-user-display');
             const headerBadge = document.getElementById('header-user-badge');
@@ -403,15 +411,16 @@
             const btnLogout = document.getElementById('btn-logout');
 
             if(user) {
-                statusText.innerText = "Status: Verbunden & Angemeldet";
-                userDisplay.innerText = user.email;
-                headerEmail.innerText = user.email;
+                statusText.innerText = window.__toolyaUILocale === 'en' ? 'Status: Connected and signed in' : 'Status: Verbunden & Angemeldet';
+                userDisplay.innerText = user.email || '';
+                headerEmail.innerText = user.email || '';
                 headerBadge.classList.remove('hidden');
                 headerBadge.classList.add('inline-flex');
                 btnLogout.classList.remove('hidden');
             } else {
-                statusText.innerText = "Nicht angemeldet";
+                statusText.innerText = sessionError ? (window.__toolyaUILocale === 'en' ? 'Status: Unable to verify connection or session' : 'Status: Verbindung oder Sitzung nicht überprüfbar') : (window.__toolyaUILocale === 'en' ? 'Not signed in' : 'Nicht angemeldet');
                 userDisplay.innerText = "";
+                headerEmail.innerText = "";
                 headerBadge.classList.add('hidden');
                 headerBadge.classList.remove('inline-flex');
                 btnLogout.classList.add('hidden');
