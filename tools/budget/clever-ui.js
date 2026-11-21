@@ -81,16 +81,20 @@ function renderOverview(host,data,records,prices){
  metric(metrics,'Im Vergleich',trend.hasPrior?money(trend.difference):'–',trend.hasPrior?'Mehr (+) oder weniger (−)':'Noch zu wenig Buchungen');
  metric(metrics,'Jahreskosten',data.annual.length?money(data.annual.reduce((x,y)=>x+Number(y.amount||0),0)/12):'–',data.annual.length?'Monatlich zurücklegen':'Jahreskosten eintragen');
  const grid=e('div',host,'cs-grid-two');
- const week=section(grid,'Was kann ich diese Woche ausgeben?','Dein Wochenbudget minus gebuchte und bekannte feste Ausgaben.');
+ const week=section(grid,'Was kann ich diese Woche ausgeben?','So steht es um dein Wochenbudget.');
  if(w.remaining===null){
   text(week,'Lege zuerst dein Wochenbudget fest.','cs-soft');
   button(week,'Wochenbudget festlegen',()=>switchPage('planning'));
  }else{
-  e('strong',week,'cs-big',money(w.remaining));text(week,'Ausgegeben: '+money(w.spent)+' · Vorgemerkt: '+money(w.reserved));
-  if(w.pending.length)for(const item of w.pending.slice(0,3))text(week,'Demnächst: '+item.title+' · '+money(item.price),'cs-small');
-  text(week,'Richtwert – kein Kontostand.','cs-muted');
+  e('strong',week,'cs-big',money(w.spent)+' ausgegeben');
+  const used=Math.max(0,Math.min(100,(w.spent+w.reserved)/w.limit*100));
+  const bar=e('progress',week,'cs-budget-progress');bar.max=100;bar.value=used;
+  bar.setAttribute('aria-label','Genutzter Anteil deines Wochenbudgets');
+  text(week,'Noch übrig: '+money(w.remaining)+' · Rechnungen: '+money(w.reserved),'cs-muted');
+  if(w.pending.length)for(const item of w.pending.slice(0,3))text(week,'Bald fällig: '+item.title+' · '+money(item.price),'cs-small');
+  text(week,'Die Angaben sind nur ein Richtwert.','cs-small');
  }
- const tip=section(grid,'Dein Spartipp','Hinweise aus deinen eigenen Buchungen.');
+ const tip=section(grid,'Dein Spartipp','Tipps aus deinen Ausgaben.');
  if(!trend.hasPrior)text(tip,'Mit zwei Monaten an Ausgaben kann Toolya dir erste Spartipps zeigen.','cs-soft');
  else{
   const rising=trend.categories.find(x=>x.now>x.previous&&x.previous>0);
@@ -113,7 +117,7 @@ function itemRow(parent,item,onDelete){
 }
 function renderShopping(host,data,priceMap){
  const grid=e('div',host,'cs-grid-two');
- const memory=section(grid,'1 · Mein Preisgedächtnis','Preise aus deinen gespeicherten Kassenbons.');
+ const memory=section(grid,'Deine Preise','Preise aus deinen gespeicherten Kassenbons.');
  const history=C.priceSummary(priceMap).slice(0,30);
  if(!history.length)text(memory,'Noch keine Einzelpreise. Scanne einen Kassenbon und prüfe seine Artikel.','cs-soft');
  else{
@@ -130,7 +134,7 @@ function renderShopping(host,data,priceMap){
   }
   search.addEventListener('input',draw);draw();
  }
- const list=section(grid,'2 · Mein nächster Einkauf','So viel kostet die Einkaufsliste ungefähr.');
+ const list=section(grid,'Dein nächster Einkauf','So viel kostet die Einkaufsliste ungefähr.');
  const form=e('form',list,'cs-inline');const name=field(form,'Artikel','text','',{placeholder:'z. B. Milch 1 l'}),quantity=field(form,'Anzahl','number','1',{min:0,step:0.25});
  const price=field(form,'Eigener Preis (optional)','number','',{min:0,step:0.01});
  const submit=e('button',form,'cs-button cs-primary','+ Zur Liste');submit.type='submit';
@@ -153,8 +157,8 @@ function renderShopping(host,data,priceMap){
  }
  e('strong',list,'cs-total','Bekannte Preise: '+money(estimate.total));
  if(estimate.missing)text(list,estimate.missing+' Artikel ohne Preis. Gesamtkosten können höher sein.','cs-warning');
- text(list,'Preise stammen von deinen alten Kassenbons oder deiner Eingabe. Keine Live-Shoppreise.','cs-muted');
- const meal=section(host,'5 · Was kostet unser Essen?','Wähle deine Zutaten aus der Preisliste.');
+ text(list,'Geschätzte Preise aus deinen Kassenbons.','cs-muted');
+ const meal=section(host,'Was kostet unser Essen?','Wähle deine Zutaten aus der Preisliste.');
  const mealForm=e('form',meal,'cs-meal-form');
  const title=field(mealForm,'Gericht','text','',{placeholder:'z. B. Nudeln mit Soße'});
  const servings=field(mealForm,'Für wie viele Personen?','number','4',{min:1,step:1});
@@ -197,7 +201,7 @@ function renderShopping(host,data,priceMap){
 }
 function renderPlanning(host,data,records){
  const grid=e('div',host,'cs-grid-two');
- const budget=section(grid,'3 · Mein Geld bis Sonntag','So viel bleibt von deinem Wochenbudget übrig.');
+ const budget=section(grid,'Dein Geld bis Sonntag','So viel bleibt von deinem Wochenbudget übrig.');
  const weekly=C.weekly(records,data.weeklyBudget);
  const form=e('form',budget,'cs-inline');
  const weeklyField=field(form,'Mein Wochenbudget (€)','number',data.weeklyBudget??'',{min:0.01,step:1,placeholder:'z. B. 180'});
@@ -207,7 +211,7 @@ function renderPlanning(host,data,records){
  text(budget,'Diese Woche ausgegeben: '+money(weekly.spent)+'. Bekannte Rechnungen: '+money(weekly.reserved)+'.','cs-muted');
  if(weekly.pending.length)for(const p of weekly.pending)text(budget,p.date+': '+p.title+' · '+money(p.price),'cs-small');
  text(budget,'Richtwert aus deinen Buchungen, kein Kontostand.','cs-muted');
- const afford=section(grid,'7 · Kann ich mir das leisten?','Prüfe eine Anschaffung mit deinen vorhandenen Zahlen.');
+ const afford=section(grid,'Kann ich mir das leisten?','Prüfe eine Anschaffung mit deinen vorhandenen Zahlen.');
  const cost=field(afford,'Was möchtest du ausgeben? (€)','number','',{min:.01,step:.01,placeholder:'z. B. 75'});
  const output=text(afford,'Betrag eingeben, um deinen Spielraum zu sehen.','cs-soft');
  cost.addEventListener('input',()=>{
@@ -219,7 +223,7 @@ function renderPlanning(host,data,records){
   if(weekly.remaining!=null)message+=' Vom Wochenbudget blieben '+money(weekly.remaining-price)+'.';
   output.textContent=message+' Kontostand und noch unbekannte Rechnungen sind nicht enthalten.';
  });
- const annual=section(host,'4 · Teure Monate frühzeitig planen','Weihnachten, Versicherungen und andere Jahreskosten.');
+ const annual=section(host,'Fürs Jahr vorsorgen','Weihnachten, Versicherungen und andere Jahreskosten.');
  const annualForm=e('form',annual,'cs-annual-form');
  const name=field(annualForm,'Wofür?','text','',{placeholder:'z. B. Weihnachten'});
  const amount=field(annualForm,'Betrag (€)','number','',{min:0.01,step:.01});
@@ -255,7 +259,7 @@ function downloadReminder(item){
 function renderChecking(host,data,records,priceMap){
  const grid=e('div',host,'cs-grid-two');
  const changes=C.monthCompare(records);
- const compare=section(grid,'10 · Was ist teurer geworden?','Dieser Monat bis heute im Vergleich zum gleichen Zeitraum des Vormonats.');
+ const compare=section(grid,'Was ist teurer geworden?','So haben sich deine Ausgaben verändert.');
  if(!changes.hasPrior)text(compare,'Noch keine Buchungen aus dem Vormonat zum Vergleichen.','cs-soft');
  else{
   e('strong',compare,'cs-big',(changes.difference>0?'+':'')+money(changes.difference));
@@ -265,18 +269,18 @@ function renderChecking(host,data,records,priceMap){
    e('strong',row,'',cat.name);e('span',row,'',money(cat.now)+' / '+money(cat.previous));
   }
  }
- const tips=section(grid,'6 · Dein Sparhelfer','Tipps aus deinen Ausgaben.');
+ const tips=section(grid,'Deine Spartipps','Tipps aus deinen Ausgaben.');
  const rising=changes.hasPrior?changes.categories.filter(x=>x.previous>0&&x.now>x.previous).slice(0,3):[];
  if(!rising.length)text(tips,'Aktuell keine größeren Kostensteigerungen erkennbar. Mit mehr Buchungen werden die Tipps genauer.','cs-soft');
  for(const cat of rising)text(tips,'Bei '+cat.name+' wurden '+money(cat.now-cat.previous)+' mehr ausgegeben. Hier lohnt sich ein Blick auf einzelne Käufe.','cs-tip');
- const alerts=section(host,'9 · Kassenbon-Detektiv','Doppelte Beträge und auffällige Kassenbons zum Nachprüfen.');
+ const alerts=section(host,'Kassenbon prüfen','Doppelte Beträge und auffällige Kassenbons zum Nachprüfen.');
  const findings=C.duplicateAlerts(records);
  if(!findings.length)text(alerts,'Keine auffälligen Buchungen gefunden.','cs-soft');
  for(const a of findings.slice(0,15)){
   const row=e('div',alerts,'cs-alert');e('strong',row,'',a.label);text(row,a.text,'cs-small');
   button(row,'Buchungen ansehen',()=>{$('b3-history')?.scrollIntoView({behavior:'smooth'});},'cs-outline');
  }
- const repair=section(host,'8 · Reparieren oder neu kaufen?','Nutze deine gespeicherten Gerätebelege.');
+ const repair=section(host,'Reparieren oder neu kaufen?','Nutze deine gespeicherten Gerätebelege.');
  const appliances=records.filter(r=>C.expense(r)&&(r.category==='Elektronik'||Number(r.warrantyMonths)>0)).slice(0,70);
  if(!appliances.length)text(repair,'Noch keine Gerätebelege vorhanden.','cs-soft');
  else{
@@ -308,7 +312,7 @@ function renderChecking(host,data,records,priceMap){
  }
  const priceChange=C.priceSummary(priceMap).filter(x=>x.change!==null&&x.change>0).slice(0,4);
  if(priceChange.length){
-  const price=section(host,'1 · Wo sind Lebensmittel teurer?','Vergleich mit deinen vorherigen Preisen.');
+  const price=section(host,'Welche Lebensmittel sind teurer?','Vergleich mit deinen vorherigen Preisen.');
   for(const p of priceChange)text(price,p.name+': '+money(p.previous.unitPrice)+' → '+money(p.unitPrice),'cs-tip');
  }
 }
