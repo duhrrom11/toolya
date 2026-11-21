@@ -1781,7 +1781,7 @@
             const notes = getNotes();
             const container = document.getElementById('stickyNotesGrid');
             if (notes.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-4 py-6">Die Pinnwand ist noch leer. Erstelle die erste Sticky Note!</p>`;
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-4 py-6">${window.__toolyaUILocale === 'en' ? 'The noticeboard is empty. Create your first sticky note!' : 'Die Pinnwand ist noch leer. Erstelle die erste Sticky Note!'}</p>`;
                 return;
             }
             const sortedNotes = [...notes].sort((a, b) => (b.pinned === a.pinned) ? 0 : b.pinned ? 1 : -1);
@@ -1793,7 +1793,7 @@
                         ${n.content ? `<p class="text-xs leading-relaxed whitespace-pre-line opacity-90">${escapeUserHtml(n.content)}</p>` : ''}
                     </div>
                     <div class="pt-2 border-t border-black/10 flex justify-between items-center text-[10px] font-semibold opacity-80">
-                        <span>👤 ${escapeUserHtml(n.author)} (${escapeUserHtml(n.date || 'Heute')})</span>
+                        <span>👤 ${escapeUserHtml(n.author)} (${escapeUserHtml(n.date || (window.__toolyaUILocale === 'en' ? 'Today' : 'Heute'))})</span>
                         <div class="flex items-center gap-1">
                             <button onclick="togglePinNote(${safeInlineId(n.id)})" class="p-0.5">${n.pinned ? '📌' : '📍'}</button>
                             <button onclick="editNote(${safeInlineId(n.id)})" class="b3-action b3-outline p-0.5">✏️</button>
@@ -2144,7 +2144,7 @@
         /* Putzplan */
         function renderCleaningPlan() {
             const plan = getCleaningPlan(); const container = document.getElementById('cleaningPlanList');
-            if (plan.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Putzplan ist leer.</p>`; return; }
+            if (plan.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'Cleaning schedule is empty.' : 'Putzplan ist leer.'}</p>`; return; }
             container.innerHTML = plan.map(p => `
                 <div class="p-2.5 ${p.done ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200'} border rounded-xl flex justify-between items-center text-xs">
                     <div class="flex items-center space-x-2">
@@ -2176,16 +2176,16 @@
         /* Einkaufsliste */
         function renderShoppingList() {
             const items = getShoppingList(); const container = document.getElementById('shoppingList');
-            if (items.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Einkaufsliste ist leer.</p>`; return; }
+            if (items.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'Shopping list is empty.' : 'Einkaufsliste ist leer.'}</p>`; return; }
             container.innerHTML = items.map(item => `
                 <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs gap-2">
                     <label class="flex items-center gap-2 min-w-0 flex-1">
-                        <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleShoppingItem(${safeInlineId(item.id)})" aria-label="${escapeUserHtml(item.title)} gekauft" class="w-4 h-4 accent-emerald-700 shrink-0">
+                        <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleShoppingItem(${safeInlineId(item.id)})" aria-label="${escapeUserHtml(item.title)} ${window.__toolyaUILocale === 'en' ? 'purchased' : 'gekauft'}" class="w-4 h-4 accent-emerald-700 shrink-0">
                         <span class="font-medium text-gray-800 ${item.done ? 'line-through opacity-60' : ''}">${escapeUserHtml(item.title)}</span>
                     </label>
                     <div class="flex gap-1.5">
                         <a href="https://www.amazon.de/s?k=${encodeURIComponent(item.title)}&tag=${AMAZON_AFFILIATE_TAG}" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded font-bold text-[10px]">📦 Amazon</a>
-                        <button onclick="transferShoppingToExpense(${safeInlineId(item.id)})" class="b3-action b3-outline px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">🧾 Buchen</button>
+                        <button onclick="transferShoppingToExpense(${safeInlineId(item.id)})" class="b3-action b3-outline px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">${window.__toolyaUILocale === 'en' ? '🧾 Record expense' : '🧾 Buchen'}</button>
                         <button onclick="deleteShoppingItem(${safeInlineId(item.id)})" class="text-gray-400 hover:text-red-500 font-bold px-1">&times;</button>
                     </div>
                 </div>
@@ -2219,7 +2219,7 @@
             document.getElementById('cookingPlanList').innerHTML = getCookingPlan().map((p, idx) => `
                 <div class="p-2 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
                     <div><span class="font-bold">${escapeUserHtml(p.day)}:</span> <span class="text-emerald-800">${escapeUserHtml(p.dish || 'Frei')}</span> ${p.chef !== 'Frei' ? `<span class="bg-purple-100 text-purple-800 font-bold px-1 rounded text-[10px]">${escapeUserHtml(p.chef)}</span>` : ''}</div>
-                    ${p.ingredients ? `<button onclick="syncIngredientsToShopping(${idx})" class="b3-action b3-outline px-2 py-0.5 bg-amber-50 text-amber-800 border rounded text-[10px] font-bold">🛒 Zutaten</button>` : ''}
+                    ${p.ingredients ? `<button onclick="syncIngredientsToShopping(${idx})" class="b3-action b3-outline px-2 py-0.5 bg-amber-50 text-amber-800 border rounded text-[10px] font-bold">${window.__toolyaUILocale === 'en' ? '🛒 Ingredients' : '🛒 Zutaten'}</button>` : ''}
                 </div>
             `).join('');
         }
@@ -2302,9 +2302,9 @@
             // Ask for the actual credentials; never mistake the infoboard's free-text
             // Wi-Fi description for a password or transmit credentials to a QR service.
             const ssid = prompt('WLAN-Name (SSID):', '')?.trim();
-            if (!ssid) { qrContainer.textContent = 'Kein WLAN-Name angegeben.'; return; }
+            if (!ssid) { qrContainer.textContent = window.__toolyaUILocale === 'en' ? 'No Wi-Fi network name provided.' : 'Kein WLAN-Name angegeben.'; return; }
             const password = prompt('WLAN-Passwort (wird nicht gespeichert):');
-            if (password === null) { qrContainer.textContent = 'QR-Erstellung abgebrochen.'; return; }
+            if (password === null) { qrContainer.textContent = window.__toolyaUILocale === 'en' ? 'QR code creation cancelled.' : 'QR-Erstellung abgebrochen.'; return; }
             const escapeWifi = value => String(value).replace(/([\\;,:"])/g, '\\$1');
             const wifiString = 'WIFI:T:WPA;S:' + escapeWifi(ssid) + ';P:' + escapeWifi(password) + ';;';
             new QRCode(qrContainer, { text: wifiString, width: 140, height: 140 });
