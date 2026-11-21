@@ -2092,7 +2092,7 @@ test('Sprint A moving tags translate display labels and options but retain the o
  const {readFile}=await import('node:fs/promises');
  const {createContext,runInContext}=await import('node:vm');
  const html=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
- const start=html.indexOf('function formatMovingTagLabel(tag) {');
+ const start=html.indexOf('function formatMovingTagLabel(');
  const end=html.indexOf('function loadLocationsDropdown()',start);
  assert.ok(start>0&&end>start);
  const {document}=parseHTML('<select id="tagFilter"><option value="">Alle Tags</option><option value="Zerbrechlich">Zerbrechlich</option><option value="Wertvoll">Wertvoll</option></select><select id="boxTag"><option value="Standard">🏷️ Standard</option><option value="Saison">❄️ Saison / Deko</option></select><select id="editBoxTag"><option value="Wertvoll">💎 Wertvoll</option></select>');
