@@ -8,14 +8,14 @@ const safe=x=>String(x||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'
 let data;try{data=JSON.parse(localStorage.getItem(KEY)||'{}')}catch{data={}}data=Object.assign({pans:[],logs:[],shopping:[],pantry:{}},data);for(const key of ['pans','logs','shopping'])if(!Array.isArray(data[key]))data[key]=[];if(!data.pantry||typeof data.pantry!=='object'||Array.isArray(data.pantry))data.pantry={};
 // Share the same in-memory state with the additive pro controls to avoid overwriting newer entries.
 window.toolyaBackstudioState=data;
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(data))}catch{message('Lokales Speichern fehlgeschlagen.')}};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(data))}catch{message(ui('Lokales Speichern fehlgeschlagen.','Could not save on this device.'))}};
 const message=m=>el('bs-message').textContent=m;
 const area=(s,a,b)=>s==='rect'?a*b:Math.PI*a*a/4;
 const orig=()=>area(el('orig-shape').value,el('orig-shape').value==='rect'?number('orig-l',30):number('orig-d',26),number('orig-w',10));
 const target=()=>el('combinator-mode').value==='double'?area('round',number('combo-d1',20))+area('round',number('combo-d2',16)):area(el('target-shape').value,el('target-shape').value==='rect'?number('target-l',25):number('target-d',20),number('target-w',11));
 const factor=()=>target()/Math.max(orig(),1)*number('bs-height',4)/Math.max(number('bs-original-height',4),.1);
 const parsed=()=>el('recipe-input').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).map(s=>{const m=s.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l|TL|EL|Pck\.?|Stück|Eier?|Prisen?)?\s*(.*)$/i);return m?{qty:Number(m[1].replace(',','.')),unit:m[2]||'',name:m[3]||m[2]||'Zutat'}:{name:s}});
-const adjusted=i=>{const v=i.qty*factor(),u=i.unit||'';let result=v;if(el('bs-practical').checked){result=/^(kg|l)$/i.test(u)?Math.round(v*100)/100:/^(ei|eier|stück|pck\.?)$/i.test(u)?Math.round(v*2)/2:/^(tl|el)$/i.test(u)?Math.round(v*4)/4:/^(g|ml)$/i.test(u)?v>=100?Math.round(v/5)*5:Math.round(v):Math.round(v*10)/10;}return result.toLocaleString('de-DE',{maximumFractionDigits:/^(kg|l)$/i.test(u)?2:1})+' '+u+(i.name.toLowerCase()===u.toLowerCase()?'':' '+i.name)};
+const adjusted=i=>{const v=i.qty*factor(),u=i.unit||'';let result=v;if(el('bs-practical').checked){result=/^(kg|l)$/i.test(u)?Math.round(v*100)/100:/^(ei|eier|stück|pck\.?)$/i.test(u)?Math.round(v*2)/2:/^(tl|el)$/i.test(u)?Math.round(v*4)/4:/^(g|ml)$/i.test(u)?v>=100?Math.round(v/5)*5:Math.round(v):Math.round(v*10)/10;}return result.toLocaleString(langEn()?'en-GB':'de-DE',{maximumFractionDigits:/^(kg|l)$/i.test(u)?2:1})+' '+u+(i.name.toLowerCase()===u.toLowerCase()?'':' '+i.name)};
 const amazon=q=>'https://www.amazon.de/s?k='+encodeURIComponent(q)+'&tag='+TAG;
 const make=(tag,where,content)=>{const n=document.createElement(tag);if(content!==undefined)n.textContent=content;where.append(n);return n};
 const pantryKey=i=>(i.unit+'|'+i.name).trim().toLocaleLowerCase('de-DE');
@@ -71,7 +71,7 @@ function renderShopping(){
   const check=make('input',label);check.type='checkbox';check.checked=!!item.done;check.style.width='auto';check.setAttribute('aria-label',item.title+ui(' erledigt',' completed'));
   check.onchange=()=>{item.done=check.checked;save();renderShopping()};
   const name=make('span',label,item.title);if(item.done)name.style.textDecoration='line-through';
-  const a=make('a',row,'🔎 Amazon · Anzeige');a.href=amazon(item.query||item.title);a.target='_blank';a.rel='noopener noreferrer sponsored';a.title='Anzeige – Amazon-Partnerlink mit Partner-ID';
+  const a=make('a',row,ui('🔎 Amazon · Anzeige','🔎 Amazon · Ad'));a.href=amazon(item.query||item.title);a.target='_blank';a.rel='noopener noreferrer sponsored';a.title=ui('Anzeige – Amazon-Partnerlink mit Partner-ID','Advertisement – Amazon affiliate link');
   const del=make('button',row,'×');del.type='button';del.setAttribute('aria-label',item.title+ui(' entfernen',' remove'));del.onclick=()=>{data.shopping=data.shopping.filter(x=>x.id!==item.id);save();renderShopping()};
  }
 }
@@ -110,8 +110,8 @@ function renderGarage(){
  const pans=data.pans.map((p,index)=>({p,index,score:Math.abs((p.shape==='volume'?p.a/(number('bs-height',4)*10):p.shape==='muffin'?p.a*38:area(p.shape,p.a,p.b))-ideal)/Math.max(ideal,1)})).sort((a,b)=>a.score-b.score);
  if(!pans.length)make('p',root,ui('Noch keine eigenen Formen gespeichert.','No pans saved yet.'));
  for(const row of pans){const div=make('div',root);div.className='bs-row';const p=row.p;
- make('span',div,(row===pans[0]?'★ ':'')+(p.shape==='round'?'Rund Ø '+p.a:p.shape==='rect'?'Eckig '+p.a+' × '+p.b:p.shape==='volume'?'Spezial '+p.a+' ml':'Muffins '+p.a)+' · Abweichung '+fmt(row.score*100)+' %');
- const use=make('button',div,ui('Wählen','Select'));use.type='button';use.onclick=()=>{if(p.shape==='volume'||p.shape==='muffin'){el('bs-special').value=p.shape==='volume'?p.a:p.a*100;update();return message('Volumen in den Spezialformen-Rechner übernommen.')}el('combinator-mode').value='single';window.toggleCombinator();el('target-shape').value=p.shape;window.updateShapeInputs('target');if(p.shape==='round')el('target-d').value=p.a;else{el('target-l').value=p.a;el('target-w').value=p.b}window.calculateAll();update()};
+ make('span',div,(row===pans[0]?'★ ':'')+(p.shape==='round'?ui('Rund Ø ','Round Ø ')+p.a:p.shape==='rect'?ui('Eckig ','Rectangular ')+p.a+' × '+p.b:p.shape==='volume'?ui('Spezial ','Special ')+p.a+' ml':ui('Muffins ','Muffins ')+p.a)+ui(' · Abweichung ',' · Difference ')+fmt(row.score*100)+' %');
+ const use=make('button',div,ui('Wählen','Select'));use.type='button';use.onclick=()=>{if(p.shape==='volume'||p.shape==='muffin'){el('bs-special').value=p.shape==='volume'?p.a:p.a*100;update();return message(ui('Volumen in den Spezialformen-Rechner übernommen.','Volume transferred to the special pan calculator.'))}el('combinator-mode').value='single';window.toggleCombinator();el('target-shape').value=p.shape;window.updateShapeInputs('target');if(p.shape==='round')el('target-d').value=p.a;else{el('target-l').value=p.a;el('target-w').value=p.b}window.calculateAll();update()};
  const del=make('button',div,'×');del.type='button';del.setAttribute('aria-label',ui('Form entfernen','Remove pan'));del.onclick=()=>{data.pans.splice(row.index,1);save();renderGarage()};
  }
 }
@@ -139,7 +139,7 @@ function update(){
  for(const i of parsed()){const row=make('div',box);row.className='bs-row';make('span',row,i.qty===undefined?i.name:adjusted(i));
  if(i.qty===undefined)continue;
  const btn=make('button',row,'🛒');btn.title=ui('Zur Einkaufsliste','Add to shopping list');btn.type='button';btn.onclick=()=>queue([{title:adjusted(i),query:i.name}]);
- const a=make('a',row,'Amazon ↗ · Anzeige');a.href=amazon(i.name);a.target='_blank';a.rel='noopener noreferrer sponsored';a.title='Anzeige – Amazon-Partnerlink';
+ const a=make('a',row,ui('Amazon ↗ · Anzeige','Amazon ↗ · Ad'));a.href=amazon(i.name);a.target='_blank';a.rel='noopener noreferrer sponsored';a.title=ui('Anzeige – Amazon-Partnerlink','Advertisement – Amazon affiliate link');
  }
  const remaining=liters*1000-target()*ph*10*number('bs-maxfill',.7);
  el('bs-leftover').textContent=remaining>0?ui('Ca. ','Approx. ')+fmt(remaining)+ui(' ml mehr Teig als die eingestellte empfohlene Füllgrenze. Das entspricht ungefähr ',' ml more batter than the recommended fill limit. This is about ')+fmt(remaining/100)+ui(' Muffinförmchen à 100 ml.',' muffin cups of 100 ml each.'):ui('Teigmenge liegt innerhalb der eingestellten Füllgrenze (rechnerische Näherung).','Batter is within the specified fill limit (approximation).');
@@ -176,7 +176,7 @@ function init(){
  '</div><p id="bs-message" role="status" aria-live="polite">Bereit.</p>';
  root.append(host);
  const css=document.createElement('style');css.textContent='#toolya-backstudio{margin-top:25px;background:white;padding:22px;border:1px solid #fed7aa;border-radius:18px}#toolya-backstudio h2{font-weight:800;font-size:1.4rem}#toolya-backstudio h3{font-weight:700;margin-bottom:8px}#toolya-backstudio .bs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:12px}#toolya-backstudio article{padding:15px;background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;min-width:0}#toolya-backstudio label{display:grid;gap:3px;font-size:13px;margin:8px 0}#toolya-backstudio input:not([type=checkbox]),#toolya-backstudio select,#toolya-backstudio textarea{width:100%;padding:7px;border:1px solid #94a3b8;border-radius:8px;background:white}#toolya-backstudio button{background:#c2410c;color:white;border-radius:8px;padding:7px 10px;font-size:12px;margin:3px;cursor:pointer}#toolya-backstudio a{color:#9a3412;text-decoration:underline;font-size:12px}#toolya-backstudio p{font-size:13px;margin:7px 0}#toolya-backstudio .bs-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid #fed7aa}#toolya-backstudio .bs-row span{flex:1;min-width:100px;font-size:12px}#toolya-backstudio .bs-tank{width:100px;height:140px;border:6px solid #94a3b8;border-radius:12px;position:relative;overflow:hidden;margin:auto}#bs-fillbar{position:absolute;bottom:0;left:0;width:100%;background:#0d9488}#toolya-backstudio .bs-hint{font-size:11px;color:#64748b}#bs-message{background:#ffedd5;padding:10px;border-radius:8px}';document.head.append(css);
- el('bs-pan-save').onclick=()=>{const shape=el('bs-pan-shape').value,a=number('bs-pan-a'),b=number('bs-pan-b');if(!(a>0)||shape==='rect'&&!(b>0)||data.pans.length>=40)return message('Gültige Maße eingeben (max. 40 Formen).');data.pans.push({shape,a,b});save();renderGarage()};
+ el('bs-pan-save').onclick=()=>{const shape=el('bs-pan-shape').value,a=number('bs-pan-a'),b=number('bs-pan-b');if(!(a>0)||shape==='rect'&&!(b>0)||data.pans.length>=40)return message(ui('Gültige Maße eingeben (max. 40 Formen).','Enter valid dimensions (maximum 40 pans).'));data.pans.push({shape,a,b});save();renderGarage()};
  el('bs-shopping-all').onclick=()=>queue(parsed().filter(x=>x.qty!==undefined).map(i=>({title:adjusted(i),query:i.name})));
  el('bs-add-missing').onclick=()=>queue(missingIngredients());
  el('bs-shopping-add').onclick=()=>{const input=el('bs-shopping-custom'),title=input.value.trim();if(!title)return message(ui('Bitte einen Artikel eingeben.','Enter an item.'));queue([{title,query:title}]);input.value=''};
