@@ -43,7 +43,7 @@ const pairs=new Map([
  ['legal.html','en/legal.html'],
  ['privacy.html','en/privacy.html']
 ]);
-const supportedTools=new Set(['tools/moving/index.html','tools/housemates/index.html','tools/plants/index.html','tools/baking/index.html']);
+const supportedTools=new Set(['moving','housemates','plants','baking','budget','car','loans','meters','parking','pet-health'].map(name=>'tools/'+name+'/index.html'));
 const german=/\b(?:Anmelden|Abmelden|Registrieren|Passwort|Einstellungen|Speichern|Löschen|Abbrechen|Schließen|Auswählen|Zurück|Datenschutz|Impressum|Warnung|Fehlermeldung|Warenkorb|Mitglieder|Pflanzen|Kisten|Herunterladen|Wiederherstellen|Übernehmen|Benutzerkonto|Bitte|Fehler)\b/i;
 const reports=[];
 let germanUi=[];
