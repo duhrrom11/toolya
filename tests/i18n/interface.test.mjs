@@ -2519,3 +2519,22 @@ test('additional tools translate native warnings and preserve user/backend paylo
   assert.equal(translateToolDialog(tool,'en','Cloud-Import fehlgeschlagen: user@example.org'),'Cloud import failed: user@example.org');
  }
 });
+
+test('new B3 navigation and editor translate only visible labels, preserving route, handler and panel ID',()=>{
+ const examples=[["budget","📊 Übersicht","📊 Overview","Monatsstatistiken","Monthly statistics","Household budget navigation"],["car","➕ Fahrzeug erfassen","➕ Add vehicle","Fahrzeug-Statistiken","Vehicle statistics","Vehicle costs navigation"],["loans","🤝 Übersicht","🤝 Overview","Ausleih-Statistiken","Lending statistics","Lending tracker navigation"],["meters","⚡ Übersicht","⚡ Overview","Ableseverlauf","Reading history","Meter readings navigation"],["parking","⏱️ Parkschein-Timer","⏱️ Parking timer","Parkstatistiken","Parking statistics","Parking saver navigation"],["pet-health","🐾 Übersicht","🐾 Overview","Haustier-Statistiken","Pet statistics","Pet health navigation"]];
+ const originalNames={budget:'Haushaltsbuch & Kassenbon-Scanner',car:'Autokosten & Reifenwechsel',loans:'Verliehene Gegenstände',meters:'Zählerstände erfassen',parking:'Parkplatz-Merker','pet-health':'Haustier-Gesundheitspass'};
+ for(const [tool,de,en,panelDe,panelEn,ariaEn] of examples){
+  const html='<html><body><nav class="b3-nav" aria-label="'+originalNames[tool]+' Navigation"><div class="b3-nav-links"><a href="#b3-create">'+de+'</a></div></nav><div id="b3-editor"><div class="b3-editor-row"><strong>'+panelDe+'</strong><button onclick="move()">Speichern</button></div></div></body></html>';
+  const {document}=parseHTML(html);
+  const link=document.querySelector('.b3-nav-links a'),panel=document.querySelector('strong'),button=document.querySelector('button');
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(link.textContent,en,tool);
+  assert.equal(document.querySelector('nav').getAttribute('aria-label'),ariaEn,tool);
+  assert.equal(panel.textContent,panelEn,tool);
+  assert.equal(link.getAttribute('href'),'#b3-create');
+  assert.equal(button.getAttribute('onclick'),'move()');
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(link.textContent,de);
+  assert.equal(panel.textContent,panelDe);
+ }
+});

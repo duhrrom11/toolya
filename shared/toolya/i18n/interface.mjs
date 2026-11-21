@@ -978,13 +978,79 @@ const b3NavigationCopy=Object.freeze({
   '📶 WLAN QR-Code':'📶 Wi-Fi QR code'
  }
 });
+/* B3 navigation displays are generated from source-language configuration.
+   Never translate configuration IDs, targets or action handlers themselves. */
+const additionalB3NavCopy=Object.freeze({
+ "budget": {
+  "📊 Übersicht": "📊 Overview",
+  "📈 Statistiken": "📈 Statistics",
+  "🎯 Budgets": "🎯 Budgets",
+  "🧾 Beleg erfassen": "🧾 Add receipt",
+  "📋 Buchungen": "📋 Transactions",
+  "📊 Alle Buchungen (CSV)": "📊 All transactions (CSV)",
+  "💼 Steuer-Datei herunterladen (CSV)": "💼 Download tax file (CSV)",
+  "📄 Finanzbericht (PDF)": "📄 Financial report (PDF)",
+  "💾 Sicherung herunterladen": "💾 Download backup",
+  "📂 Sicherung einlesen": "📂 Import backup"
+ },
+ "car": {
+  "🚗 Übersicht": "🚗 Overview",
+  "📊 Statistiken": "📊 Statistics",
+  "➕ Fahrzeug erfassen": "➕ Add vehicle",
+  "🛞 Reifenlager": "🛞 Tyre storage",
+  "📋 Kostenhistorie": "📋 Cost history",
+  "📄 PDF-Report": "📄 PDF report",
+  "💾 Sicherung herunterladen": "💾 Download backup",
+  "📂 Daten importieren": "📂 Import data"
+ },
+ "loans": {
+  "🤝 Übersicht": "🤝 Overview",
+  "📊 Statistiken": "📊 Statistics",
+  "➕ Verleih erfassen": "➕ Record loan",
+  "🛠️ Inventar": "🛠️ Inventory",
+  "📋 Rückgaben": "📋 Returns",
+  "📄 Verleih-Bericht (PDF)": "📄 Lending report (PDF)"
+ },
+ "meters": {
+  "⚡ Übersicht": "⚡ Overview",
+  "📊 Statistiken": "📊 Statistics",
+  "✍️ Ablesung erfassen": "✍️ Record reading",
+  "💶 Tarife": "💶 Tariffs",
+  "📈 Prognose": "📈 Forecast",
+  "📋 Verlauf": "📋 History",
+  "📅 Ablese-Erinnerung (Kalender)": "📅 Reading reminder (calendar)",
+  "💡 Energiespar-Tipps": "💡 Energy-saving tips",
+  "💬 Verbrauch teilen": "💬 Share consumption",
+  "📋 Übergabebericht (PDF)": "📋 Handover report (PDF)",
+  "📄 Zählerbericht (PDF)": "📄 Meter report (PDF)"
+ },
+ "parking": {
+  "🅿️ Übersicht": "🅿️ Overview",
+  "📊 Statistiken": "📊 Statistics",
+  "⏱️ Parkschein-Timer": "⏱️ Parking timer",
+  "📍 Parkplatz merken": "📍 Save parking spot",
+  "📋 Parkhistorie": "📋 Parking history",
+  "🔔 Browser-Benachrichtigung erlauben": "🔔 Enable browser notifications",
+  "📄 Parkbericht (PDF)": "📄 Parking report (PDF)"
+ },
+ "pet-health": {
+  "🐾 Übersicht": "🐾 Overview",
+  "📊 Statistiken": "📊 Statistics",
+  "➕ Haustier erfassen": "➕ Add pet",
+  "💊 Apotheke": "💊 Pharmacy",
+  "📋 Gesundheitsverlauf": "📋 Health history",
+  "📄 Gesundheitsbericht (PDF)": "📄 Health report (PDF)",
+  "💾 Backup herunterladen": "💾 Download backup",
+  "📂 Daten importieren": "📂 Import data"
+ }
+});
 function applyB3NavigationCopy(document,tool,language){
- const translations=b3NavigationCopy[tool];
+ const translations=b3NavigationCopy[tool]??additionalB3NavCopy[tool];
  if(!translations)return;
  const nav=document.querySelector('.b3-nav');
- const sourceNavLabel={moving:'Umzugskisten & Inventarliste Navigation',housemates:'WG-Organisator Navigation',plants:'Pflanzenpflege Navigation'}[tool];
+ const sourceNavLabel={moving:'Umzugskisten & Inventarliste Navigation',housemates:'WG-Organisator Navigation',plants:'Pflanzenpflege Navigation',budget:'Haushaltsbuch & Kassenbon-Scanner Navigation',car:'Autokosten & Reifenwechsel Navigation',loans:'Verliehene Gegenstände Navigation',meters:'Zählerstände erfassen Navigation',parking:'Parkplatz-Merker Navigation','pet-health':'Haustier-Gesundheitspass Navigation'}[tool];
  if(nav && sourceNavLabel && (nav.getAttribute('aria-label')===sourceNavLabel || originals.get(nav)?.has('aria-label'))){
-  const accessibleLabel={moving:'Moving boxes navigation',housemates:'Roommate organizer navigation',plants:'Plant care navigation'}[tool];
+  const accessibleLabel={moving:'Moving boxes navigation',housemates:'Roommate organizer navigation',plants:'Plant care navigation',budget:'Household budget navigation',car:'Vehicle costs navigation',loans:'Lending tracker navigation',meters:'Meter readings navigation',parking:'Parking saver navigation','pet-health':'Pet health navigation'}[tool];
   updateElement(nav,accessibleLabel,'aria-label',language);
  }
  for(const element of document.querySelectorAll('.b3-nav-links > a,.b3-more > summary,.b3-more-content > button,.b3-preferences > h4,.b3-preferences > button,.b3-settings-footer > a')){
@@ -1048,8 +1114,54 @@ const b3EditorCopy=Object.freeze({
  'Großzügig':'Spacious'
 });
 const b3EditorLabelNodes=new WeakMap();
+/* Additional panel display names only; B3 layout persistence keeps its original keys. */
+const additionalB3EditorPanels=Object.freeze({
+ "budget": {
+  "Monatsstatistiken": "Monthly statistics",
+  "Diagramme & Budgets": "Charts and budgets",
+  "Sparziele": "Savings goals",
+  "Buchungen & Kassenbons erfassen": "Record transactions and receipts",
+  "Buchungshistorie & Belege": "Transaction history and receipts"
+ },
+ "car": {
+  "Fahrzeug-Statistiken": "Vehicle statistics",
+  "Dringende Fristen & Warnungen": "Urgent deadlines and warnings",
+  "Fahrzeug & Wartung erfassen": "Record vehicle and maintenance",
+  "Fahrzeuge, Reifenlager & Kostenhistorie": "Vehicles, tyre storage and cost history"
+ },
+ "loans": {
+  "Ausleih-Statistiken": "Lending statistics",
+  "Kontakte, Gegenstände & Verleih erfassen": "Add contacts, items and loans",
+  "Stamm-Inventar": "Master inventory",
+  "Verleih-Liste & Rückgaben": "Loans and returns",
+  "Hilfreiches Zubehör": "Useful accessories"
+ },
+ "meters": {
+  "Ablese-Erinnerung": "Reading reminder",
+  "Verbrauchsstatistiken": "Consumption statistics",
+  "Tarife & Abschläge": "Tariffs and monthly payments",
+  "Zählerstand erfassen": "Record meter reading",
+  "Monatsvergleich": "Monthly comparison",
+  "Jahresprognose": "Annual forecast",
+  "Ableseverlauf": "Reading history",
+  "Anleitung & Energiespartipps": "Guide and energy-saving tips"
+ },
+ "parking": {
+  "Parkstatistiken": "Parking statistics",
+  "Parkschein-Timer & Parkplatz erfassen": "Parking timer and spot entry",
+  "Gespeicherte Parkplätze und Gebühren": "Saved spots and fees",
+  "Parkzubehör": "Parking accessories"
+ },
+ "pet-health": {
+  "Haustier-Statistiken": "Pet statistics",
+  "Impfungen & Fristen": "Vaccinations and deadlines",
+  "Haustier & Gesundheitsdaten erfassen": "Record pet and health details",
+  "Medikamentenvorrat": "Medication stock",
+  "Haustiere, Kalender & Gesundheitsverlauf": "Pets, calendar and health history"
+ }
+});
 function applyB3EditorCopy(document,tool,language){
- const names=b3EditorPanels[tool];
+ const names=b3EditorPanels[tool]??additionalB3EditorPanels[tool];
  const host=document.querySelector(tool==='baking'?'#b3-backform-editor':'#b3-editor');
  if(!host||!names)return;
  const originalEditorLabel=originals.get(host)?.get('aria-label')??host.getAttribute('aria-label');
