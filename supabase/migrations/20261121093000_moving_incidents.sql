@@ -30,7 +30,7 @@ declare g public.moving_helper_grants%rowtype;
 begin
  if p_token_hash is null or p_token_hash !~ '^[a-f0-9]{64}$'
  or p_assignment_id is null or p_request_id is null
- or p_kind not in ('missing','damaged') or p_note is null
+ or p_kind is null or p_kind not in ('missing','damaged') or p_note is null
  or char_length(p_note)>300 then
    raise exception 'Invalid incident' using errcode='22023';
  end if;
