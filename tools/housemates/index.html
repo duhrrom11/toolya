@@ -1720,7 +1720,7 @@
             if (categoryChartInstance && cashflowChartInstance) {
                 const catLabels = Object.keys(categoryExpenses).filter(k => categoryExpenses[k] > 0);
                 const catValues = catLabels.map(k => categoryExpenses[k]);
-                categoryChartInstance.data.labels = catLabels.length ? catLabels : ['Keine Ausgaben'];
+                categoryChartInstance.data.labels = catLabels.length ? catLabels : [window.__toolyaUILocale === 'en' ? 'No expenses' : 'Keine Ausgaben'];
                 categoryChartInstance.data.datasets[0].data = catValues.length ? catValues : [1];
                 categoryChartInstance.update();
 
@@ -1737,8 +1737,8 @@
                 .join('; ');
             document.getElementById('categoryChartSummary').textContent = categoryChartSummary || (window.__toolyaUILocale === 'en' ? 'No expenses this month.' : 'Keine Ausgaben in diesem Monat.');
             document.getElementById('cashflowChartSummary').textContent =
-                'Einnahmen: ' + formatChartAmount(totalIncome) + '; Ausgaben: ' + formatChartAmount(totalExpense) +
-                '; Saldo: ' + formatChartAmount(totalIncome - totalExpense) + '.';
+                (window.__toolyaUILocale === 'en' ? 'Income: ' : 'Einnahmen: ') + formatChartAmount(totalIncome) + (window.__toolyaUILocale === 'en' ? '; Expenses: ' : '; Ausgaben: ') + formatChartAmount(totalExpense) +
+                (window.__toolyaUILocale === 'en' ? '; Balance: ' : '; Saldo: ') + formatChartAmount(totalIncome - totalExpense) + '.';
 
             const budgetContainer = document.getElementById('budgetProgressList');
             budgetContainer.innerHTML = defaultCategories.map(cat => {
@@ -1984,13 +1984,13 @@
 
         function renderSettlementAndExpenses() {
             const settlements = calculateSettlements(); const container = document.getElementById('settlementList'); let totalVolume = 0;
-            if (settlements.length === 0) { container.innerHTML = `<p class="text-emerald-700 font-medium">✨ Alle Schulden ausgeglichen!</p>`; } 
+            if (settlements.length === 0) { container.innerHTML = `<p class="text-emerald-700 font-medium">${window.__toolyaUILocale === 'en' ? '✨ All debts settled!' : '✨ Alle Schulden ausgeglichen!'}</p>`; } 
             else {
                 container.innerHTML = settlements.map(s => {
                     totalVolume += s.amount;
                     return `
                         <div class="flex justify-between items-center py-1 border-b border-emerald-100 last:border-0 text-xs">
-                            <span>👤 <strong>${escapeUserHtml(s.from)}</strong> an <strong>${escapeUserHtml(s.to)}</strong>:</span>
+                            <span>👤 <strong>${escapeUserHtml(s.from)}</strong> ${window.__toolyaUILocale === 'en' ? 'to' : 'an'} <strong>${escapeUserHtml(s.to)}</strong>:</span>
                             <span class="font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200">${s.amount.toFixed(2)} €</span>
                         </div>
                     `;
@@ -2356,7 +2356,7 @@
                     </div>
                     <div class="flex gap-1.5 self-end sm:self-center">
                         <button onclick="editFlatmateContact(${idx})" class="b3-action b3-outline px-2.5 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg font-bold">✏️</button>
-                        <button onclick="removeFlatmateContact(${idx})" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg font-bold">✕ Löschen</button>
+                        <button onclick="removeFlatmateContact(${idx})" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg font-bold">${window.__toolyaUILocale === 'en' ? '✕ Delete' : '✕ Löschen'}</button>
                     </div>
                 </div>
             `).join('');
