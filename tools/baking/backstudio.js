@@ -116,8 +116,8 @@ function update(){
  const f=factor(),h=number('bs-height',4),ph=number('bs-form-height',7),liters=number('bs-volume',1.5),fill=liters*1000/Math.max(target()*ph*10,1),percent=fill*100;
  el('bs-fillbar').style.height=Math.max(0,Math.min(percent,100))+'%';
  el('bs-fillbar').style.background=percent>75?'#ea580c':'#0d9488';
- el('bs-filltext').textContent=fmt(percent)+' % rechnerische Füllhöhe · '+(percent>75?'Achtung, mögliche Überfüllung!':'Füllhöhe auf Grundlage gerader Wände geschätzt.');
- el('bs-ratio').textContent='Umrechnungsfaktor mit Wunschhöhe: ×'+fmt(f);
+ el('bs-filltext').textContent=fmt(percent)+ui(' % rechnerische Füllhöhe · ',' % calculated fill level · ')+(percent>75?ui('Achtung, mögliche Überfüllung!','Warning: possible overfilling!'):ui('Füllhöhe auf Grundlage gerader Wände geschätzt.','Estimated assuming straight pan walls.'));
+ el('bs-ratio').textContent=ui('Umrechnungsfaktor mit Wunschhöhe: ×','Scaling factor at desired height: ×')+fmt(f);
  const box=el('bs-scaled');box.setAttribute('data-user-content','');box.replaceChildren();
  for(const i of parsed()){const row=make('div',box);row.className='bs-row';make('span',row,i.qty===undefined?i.name:adjusted(i));
  if(i.qty===undefined)continue;
@@ -125,18 +125,18 @@ function update(){
  const a=make('a',row,'Amazon ↗ · Anzeige');a.href=amazon(i.name);a.target='_blank';a.rel='noopener noreferrer sponsored';a.title='Anzeige – Amazon-Partnerlink';
  }
  const remaining=liters*1000-target()*ph*10*number('bs-maxfill',.7);
- el('bs-leftover').textContent=remaining>0?'Ca. '+fmt(remaining)+' ml mehr Teig als die eingestellte empfohlene Füllgrenze. Das entspricht ungefähr '+fmt(remaining/100)+' Muffinförmchen à 100 ml.':'Teigmenge liegt innerhalb der eingestellten Füllgrenze (rechnerische Näherung).';
+ el('bs-leftover').textContent=remaining>0?ui('Ca. ','Approx. ')+fmt(remaining)+ui(' ml mehr Teig als die eingestellte empfohlene Füllgrenze. Das entspricht ungefähr ',' ml more batter than the recommended fill limit. This is about ')+fmt(remaining/100)+ui(' Muffinförmchen à 100 ml.',' muffin cups of 100 ml each.'):ui('Teigmenge liegt innerhalb der eingestellten Füllgrenze (rechnerische Näherung).','Batter is within the specified fill limit (approximation).');
  const minutes=number('base-time',45),mat=el('bs-material').value,kind=el('bs-dough').value;
  const center=Math.max(5,minutes+(Math.sqrt(h/number('bs-original-height',4))-1)*minutes*.35+(mat==='glass'?5:mat==='dark'?-3:0));
- el('bs-oven').textContent='Ab ca. '+fmt(Math.max(5,center-12))+'–'+fmt(center+12)+' Minuten prüfen · '+(kind==='cheese'?'Wackelprobe':kind==='yeast'?'Klopfprobe':'Stäbchenprobe')+'. Unverbindliche Schätzung, Ofen und Rezept sind entscheidend.';
- const n=number('bs-layers',3);el('bs-layers-result').textContent=n+' Böden à ca. '+fmt(h/n)+' cm · '+fmt((n-1)*number('bs-filling',200))+' g Füllung für '+(n-1)+' Schichten.';
- el('bs-special-result').textContent='Volumenfaktor gegenüber Original (bei gleicher Füllhöhe): ×'+fmt(number('bs-special',1500)/(orig()*number('bs-original-height',4)*10));
+ el('bs-oven').textContent=ui('Ab ca. ','Start checking after approx. ')+fmt(Math.max(5,center-12))+'–'+fmt(center+12)+ui(' Minuten prüfen · ',' minutes · ')+(kind==='cheese'?ui('Wackelprobe','Wobble test'):kind==='yeast'?ui('Klopfprobe','Tap test'):ui('Stäbchenprobe','Skewer test'))+ui('. Unverbindliche Schätzung, Ofen und Rezept sind entscheidend.','. This is an estimate; follow your oven and recipe.');
+ const n=number('bs-layers',3);el('bs-layers-result').textContent=n+ui(' Böden à ca. ',' layers of approx. ')+fmt(h/n)+' cm · '+fmt((n-1)*number('bs-filling',200))+ui(' g Füllung für ',' g filling for ')+(n-1)+ui(' Schichten.',' layers.');
+ el('bs-special-result').textContent=ui('Volumenfaktor gegenüber Original (bei gleicher Füllhöhe): ×','Volume factor compared with the original (same fill height): ×')+fmt(number('bs-special',1500)/(orig()*number('bs-original-height',4)*10));
  const portions=[...el('bs-pantry').querySelectorAll('input')].filter(i=>i.value!==''&&Number(i.value)>=0).map(i=>Number(i.value)/Number(i.dataset.original));
- el('bs-pantry-result').textContent=portions.length?'Dein Vorrat ermöglicht maximal ×'+fmt(Math.min(...portions))+' des ursprünglichen Rezepts.':'Vorratsmenge für mindestens eine Zutat eintragen.';
+ el('bs-pantry-result').textContent=portions.length?ui('Dein Vorrat ermöglicht maximal ×','Your pantry supports up to ×')+fmt(Math.min(...portions))+ui(' des ursprünglichen Rezepts.',' of the original recipe.'):ui('Vorratsmenge für mindestens eine Zutat eintragen.','Enter the available quantity for at least one ingredient.');
  renderMissing();
- const heightWarning=el('bs-height-warning');if(heightWarning)heightWarning.textContent=h>ph*number('bs-maxfill',.7)?'Achtung: Die gewünschte Teighöhe ist größer als die eingestellte Füllgrenze der Backform.':'Wunschhöhe innerhalb der eingestellten Füllgrenze (bei geraden Wänden).';
+ const heightWarning=el('bs-height-warning');if(heightWarning)heightWarning.textContent=h>ph*number('bs-maxfill',.7)?ui('Achtung: Die gewünschte Teighöhe ist größer als die eingestellte Füllgrenze der Backform.','Warning: the desired cake height exceeds the pan fill limit.'):ui('Wunschhöhe innerhalb der eingestellten Füllgrenze (bei geraden Wänden).','Desired height is within the fill limit (straight-walled pan).');
 }
-function logs(){const root=el('bs-logs');root.replaceChildren();data.logs.slice(-12).reverse().forEach(x=>make('p',root,x.date+' · '+x.name+' · '+x.minutes+' Min. · '+x.note))}
+function logs(){const root=el('bs-logs');root.replaceChildren();data.logs.slice(-12).reverse().forEach(x=>make('p',root,x.date+' · '+x.name+' · '+x.minutes+ui(' Min. · ',' min · ')+x.note))}
 window.toolyaBackstudioRenderLogs=logs;
 function init(){
  const root=el('tab-rechner');if(!root)return;
