@@ -100,7 +100,7 @@ test('English PDF labels are localized without modifying user records or export 
  for(const tool of paths){
   const html=await readFile(new URL(`../../tools/${tool}/index.html`,import.meta.url),'utf8');
   assert.match(html,/window\.__toolyaUILocale === ['"]en['"]/,'PDF language gate in '+tool);
-  assert.match(html,/toLocaleDateString\(window\.__toolyaUILocale === 'en' \? 'en-GB' : 'de-DE'\)/,'PDF date format in '+tool);
+  assert.match(html,tool==='plants' ? /toLocaleDateString\(exportEnglish \? 'en-GB' : 'de-DE'\)/ : /toLocaleDateString\(window\.__toolyaUILocale === 'en' \? 'en-GB' : 'de-DE'\)/,'PDF date format in '+tool);
  }
 });
 
@@ -2644,4 +2644,20 @@ test('PDFs translate only controlled enum values; preserve user titles and store
   assert.ok(printed.some(x=>x.includes(privateValue)),tool+' user data');
   assert.equal(JSON.stringify(data),source,tool+' data changed');
  }
+});
+
+
+test('plant export captures locale before async dependency and leaves user records untouched', async () => {
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/plants/index.html',import.meta.url),'utf8');
+ const exportSource=html.slice(html.indexOf('async function exportPDF()'),html.indexOf('    </script>',html.indexOf('async function exportPDF()')));
+ assert.match(exportSource,/const exportEnglish = window\.__toolyaUILocale === 'en';/);
+ assert.ok(exportSource.indexOf('const exportEnglish')<exportSource.indexOf('await import('));
+ assert.match(exportSource,/doc\.save\(exportEnglish \?/);
+ assert.match(exportSource,/p\.name \?\? \(exportEnglish \?/);
+ assert.doesNotMatch(exportSource,/window\.__toolyaUILocale/g,'no language rereads during PDF creation after initial capture');
+ assert.match(html,/Object\.hasOwn\(propagationLabels, p\.propagation\)/);
+ assert.match(html,/escapeHtml\(propagationDisplay\)/);
+ assert.match(html,/locations\.includes\(selectedLocation\) \? selectedLocation : ''/);
+ assert.match(html,/All locations \/ rooms/);
 });
