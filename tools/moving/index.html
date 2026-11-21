@@ -946,14 +946,14 @@
                     locBoxes.forEach(b => {
                         const statusText = b.lentTo ? ` [${window.__toolyaUILocale === 'en' ? 'Lent to' : 'Ausgeliehen an'}: ${b.lentTo}]` : '';
                         const subStr = Array.isArray(b.subItems) && b.subItems.length ? ` | ${window.__toolyaUILocale === 'en' ? 'Items' : 'Artikel'}: ${b.subItems.map(item => item.name).join(', ')}` : '';
-                        writeWrapped(`- ${b.name}${statusText} | ${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${Number(b.value || 0).toFixed(2)} EUR${subStr}`);
+                        writeWrapped(`- ${b.name}${statusText} | ${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${window.__toolyaUILocale === 'en' ? Number(b.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(b.value || 0).toFixed(2)} EUR${subStr}`);
                     });
                 }
                 y += 4;
             });
             const totalVal = data.boxes.reduce((sum, b) => sum + Number(b.value || 0), 0);
             y += 5;
-            writeWrapped(`${window.__toolyaUILocale === 'en' ? 'Total inventory value' : 'Gesamtwert des Inventars'}: ${totalVal.toFixed(2)} EUR`, true, 12);
+            writeWrapped(`${window.__toolyaUILocale === 'en' ? 'Total inventory value' : 'Gesamtwert des Inventars'}: ${window.__toolyaUILocale === 'en' ? Number(totalVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : totalVal.toFixed(2)} EUR`, true, 12);
             doc.save(window.__toolyaUILocale === 'en' ? 'moving-box-inventory-report.pdf' : 'kisten-inventar-report.pdf');
         }
 
@@ -1031,7 +1031,7 @@
                 doc.setFontSize(8);
                 doc.text(`${window.__toolyaUILocale === 'en' ? 'Location' : 'Ort'}: ${cleanLocName}`, textX, y + 14);
                 doc.text(`${window.__toolyaUILocale === 'en' ? 'Contents' : 'Inhalt'}: ${b.desc || '-'}`, textX, y + 20);
-                doc.text(`${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${(b.value || 0).toFixed(2)} €`, textX, y + 26);
+                doc.text(`${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${window.__toolyaUILocale === 'en' ? Number(b.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (b.value || 0).toFixed(2)} €`, textX, y + 26);
                 doc.text(`Tag: ${b.tag || (window.__toolyaUILocale === 'en' ? 'Default' : 'Standard')}`, textX, y + 32);
 
                 if (x === 14) { 
