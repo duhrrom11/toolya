@@ -126,3 +126,15 @@ test('static translation leaves nested children and their handlers intact',()=>{
  applyToolInterfaceLocale(document,'baking','de');
  assert.equal(document.querySelector('#icon'),icon);
 });
+
+test('calculated baking and plant-care feedback has explicit DE/EN branches',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ for(const [tool,phrases] of [
+  ['baking',['Batter is much deeper','Batter is quite shallow','Ideal baking conditions','Use stevia concentrate','per slice at the edge']],
+  ['plants',['Suggested watering amount','Enter valid, non-negative amounts','Total harvest:','% full']]
+ ]){
+  const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
+  for(const phrase of phrases)assert.ok(html.includes(phrase),tool+': '+phrase);
+  assert.match(html,/window\.__toolyaUILocale === ['"]en['"]/);
+ }
+});
