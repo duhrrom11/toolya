@@ -23,3 +23,13 @@ test('wishlist catalogue includes public, planning, social and account UI withou
  assert.equal(wishesText('Geschenk speichern','en'),'Save gift');
  assert.equal(wishesText('Private note from a user','en'),'Private note from a user');
 });
+test('all seventeen interactive wishlist pages load only the reversible locale shell',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const names=['public','dashboard','collection','discover','feed','planner','profile','occasions','reservations','assistant','bookmarks','cockpit','gift-analytics','gift-tasks','notifications','report','social'];
+ for(const name of names){
+  const html=readFileSync(new URL('../../tools/wishes/'+name+'.html',import.meta.url),'utf8');
+  assert.ok(html.includes('wishes-entry.mjs'),name);
+  assert.ok(html.includes('wishes-choice.css'),name);
+  assert.ok(html.includes('lang="de"'),name);
+ }
+});
