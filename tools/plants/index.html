@@ -560,7 +560,7 @@
             // Update the visible estimated amount using the current form value only.
             // No cloud or local-storage write, even when the form has unsaved edits.
             if (document.getElementById('plantPotSize') && document.getElementById('waterMlHint')) calculateWaterAmount();
-            if (plantsCloudReady) renderApp(); // read-only refresh for translated card labels
+            if (plantsCloudReady) { loadLocationDropdown(); renderApp(); } // read-only refresh; preserve location filter
             if (plantsCloudReady && !document.getElementById('seedsModal')?.classList.contains('hidden')) renderSeedList();
             if (plantsCloudReady && !document.getElementById('inventoryModal')?.classList.contains('hidden')) renderInventoryList();
             // Companion advice is generated from fixed local catalogue data.
@@ -951,7 +951,7 @@
             const locations = [...new Set(data.plants.filter(p => p && typeof p === 'object' && typeof p.location === 'string')
                 .map(p => p.location.trim()).filter(Boolean))];
             const selectedLocation = filterLoc.value;
-            filterLoc.replaceChildren(new Option('Alle Standorte / Räume', ''));
+            filterLoc.replaceChildren(new Option(window.__toolyaUILocale === 'en' ? 'All locations / rooms' : 'Alle Standorte / Räume', ''));
             locations.forEach(loc => filterLoc.add(new Option(loc, loc)));
             filterLoc.value = locations.includes(selectedLocation) ? selectedLocation : '';
         }
@@ -1237,7 +1237,10 @@
 
                     let propBadge = "";
                     if(p.propagation && p.propagation !== 'Standard') {
-                        propBadge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">✂️ ${escapeHtml(p.propagation)} ${p.propDate ? '('+escapeHtml(p.propDate)+')' : ''}</span>`;
+                        const propagationLabels = { 'Steckling im Wurzeln': 'Rooting cutting', 'Bereit zum Tauschen': 'Ready to swap' };
+                        const propagationDisplay = window.__toolyaUILocale === 'en' && Object.hasOwn(propagationLabels, p.propagation)
+                            ? propagationLabels[p.propagation] : p.propagation;
+                        propBadge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">✂️ ${escapeHtml(propagationDisplay)} ${p.propDate ? '('+escapeHtml(p.propDate)+')' : ''}</span>`;
                     }
 
                     const harvestSum = Array.isArray(p.harvestLog) ? p.harvestLog.reduce((sum, entry) => {
@@ -1294,6 +1297,9 @@
         }
 
         async function exportPDF() {
+            // Capture the requested language before asynchronous dependency loading.
+            // A mid-export switch must not mix the report title, labels and filename.
+            const exportEnglish = window.__toolyaUILocale === 'en';
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
@@ -1301,16 +1307,16 @@
             const plants = data.plants.filter(p => p && typeof p === 'object' && !Array.isArray(p));
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text(window.__toolyaUILocale === "en" ? "Plant and Garden Report" : "Pflanzen- & Garten-Pass Report", 14, 20);
+            doc.text(exportEnglish ? "Plant and Garden Report" : "Pflanzen- & Garten-Pass Report", 14, 20);
             doc.setFont("helvetica", "normal");
             doc.setFontSize(10);
-            doc.text(`${window.__toolyaUILocale === 'en' ? 'Created on' : 'Erstellt am'}: ${new Date().toLocaleDateString(window.__toolyaUILocale === 'en' ? 'en-GB' : 'de-DE')} | ${window.__toolyaUILocale === 'en' ? 'Plants' : 'Pflanzen'}: ${plants.length}`, 14, 28);
+            doc.text(`${exportEnglish ? 'Created on' : 'Erstellt am'}: ${new Date().toLocaleDateString(exportEnglish ? 'en-GB' : 'de-DE')} | ${exportEnglish ? 'Plants' : 'Pflanzen'}: ${plants.length}`, 14, 28);
             let y = 40;
             if (!plants.length) {
-                doc.text(window.__toolyaUILocale === "en" ? "No plants recorded." : "Keine Pflanzen erfasst.", 14, y);
+                doc.text(exportEnglish ? "No plants recorded." : "Keine Pflanzen erfasst.", 14, y);
             }
             plants.forEach(p => {
-                const line = `- ${String(p.name ?? (window.__toolyaUILocale === 'en' ? 'Unnamed' : 'Unbenannt'))} (${String(p.species || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.'))}), ${window.__toolyaUILocale === 'en' ? 'Location' : 'Ort'}: ${String(p.location || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.'))}, ${window.__toolyaUILocale === 'en' ? 'Watering' : 'Gießen'}: ${String(p.interval ?? '?')}${window.__toolyaUILocale === 'en' ? 'd' : 'T'}`;
+                const line = `- ${String(p.name ?? (window.__toolyaUILocale === 'en' ? 'Unnamed' : 'Unbenannt'))} (${String(p.species || (exportEnglish ? 'n/a' : 'k.A.'))}), ${exportEnglish ? 'Location' : 'Ort'}: ${String(p.location || (exportEnglish ? 'n/a' : 'k.A.'))}, ${exportEnglish ? 'Watering' : 'Gießen'}: ${String(p.interval ?? '?')}${exportEnglish ? 'd' : 'T'}`;
                 doc.splitTextToSize(line, 180).forEach(textLine => {
                     if (y > 270) { doc.addPage(); y = 20; }
                     doc.text(textLine, 14, y);
@@ -1318,7 +1324,7 @@
                 });
                 y += 2;
             });
-            doc.save(window.__toolyaUILocale === 'en' ? 'plant-garden-report.pdf' : 'pflanzen-report.pdf');
+            doc.save(exportEnglish ? 'plant-garden-report.pdf' : 'pflanzen-report.pdf');
         }
     </script>
 </body>
