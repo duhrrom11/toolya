@@ -38,7 +38,17 @@ function mount(){
    const b=document.createElement('button');b.type='button';b.textContent=target.toUpperCase();b.lang=target;b.dataset.estateLocale=target;
    b.addEventListener('click',()=>apply(target,true));nav.append(b);
   }
-  header.append(nav);header.after(notice);
+  function mountLanguageControls(){
+   const hero=document.querySelector('.ty-tool-hero');
+   const host=hero?.querySelector('.ty-tool-hero-copy')||header;
+   host.append(nav);
+   (hero||header).after(notice);
+  }
+  mountLanguageControls();
+  document.addEventListener('toolya:tool-hero-ready',()=>{
+   mountLanguageControls();
+   apply(lang,false);
+  },{once:true});
  }
  function apply(target,persist){
   lang=target;

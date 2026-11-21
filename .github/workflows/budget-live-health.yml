@@ -23,8 +23,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
-      - name: Quellcode laden
+      - name: Referenz für die produktive Auslieferung laden
         uses: actions/checkout@v4
+        with:
+          # PR code is tested by Budget Clever sparen – Checks. Compare the
+          # public site against the base revision while the PR is unreleased.
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.sha }}
       - name: Node einrichten
         uses: actions/setup-node@v4
         with:

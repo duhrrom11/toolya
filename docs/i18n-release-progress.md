@@ -33,3 +33,10 @@ Auf `2d68e5fa` bestanden zunächst zehn PR-Workflows und der statische Push-i18n
 5. Finale Codebasis und PR-Prüfungen erneut vollständig abnehmen. Erst dann den Status **READY FOR RELEASE APPROVAL** vergeben und die ausdrückliche Freigabe für Merge, Produktion und gegebenenfalls Indexierung einholen.
 
 PR #291 bleibt Draft. Die 17 englischen öffentlichen Seiten bleiben bei `noindex`. Ein Merge nach `main`, ein Deployment und produktive Supabase-Nutzerdaten oder Testdatensätze waren nicht Teil der Ausführung.
+
+## Nachtrag zum neueren Prüfstand
+
+- `4b607a20e8ba46e0a298d8f5ae973b2f00afe6df` ergänzt die zweisprachige Umzugsnavigation und diesen Wiederaufnahmepunkt. Der gezielte Chromium-Navigationstest und die 271 Node-Tests sind lokal grün.
+- Der isolierte GitHub-Browser-Workflow auf `2d68e5fa` ist abgeschlossen und grün. Die zwei übrigen roten Jobs wurden diagnostiziert. Der Nachlass-Sprachschalter hing im vom gemeinsamen Header ausgeblendeten Bereich. Er wird im sichtbaren Header montiert. Der lokal grüne Handover-Test prüft den englischen Druckknopf, 28 exakt zugelassene statische GETs, unveränderte CSP, den verschlüsselten Dateiaustausch und das Verhalten bei falschem Passwort.
+- Der Livecheck des Haushaltsbuchs vergleicht in PRs die veröffentlichte Seite mit `main`. Die PR-Fassung wird durch den getrennten Haushaltsbuch-Workflow geprüft. Nach einem Merge bleibt der Livevergleich mit dem veröffentlichten Commit erhalten.
+- Den tatsächlichen endgültigen HEAD und die zugeordneten Actions über den Branch-Link oben prüfen. Ein abschließender grüner Lauf allein schließt die offenen Übersetzungs-, Auth-/Recovery-, Export- und A11y-Gates nicht.
