@@ -554,3 +554,55 @@ test('household contact and planning placeholders keep entered data and restore 
   assert.equal(document.getElementById(id).value,'User input');
  }
 });
+
+test('Backstudio static source-owned controls reverse DE/EN without touching entered values',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const script=await readFile(new URL('../../tools/baking/backstudio.js',import.meta.url),'utf8');
+ const start=script.indexOf('const staticBackstudioCopy = new Map(');
+ const end=script.indexOf('function missingIngredients()',start);
+ assert.ok(start>0&&end>start,'static source-owned translations are present');
+ const {document}=parseHTML('<html><body><section id="toolya-backstudio"><h2>🍰 Toolya Backstudio</h2><article><h3>1 · Meine Backformen</h3><label>Typ<select id="pan"><option value="round">Rund</option><option value="rect">Rechteck</option></select></label><label>Breite bei Rechteck<input id="width" value="user input"></label><button id="save" onclick="keep()">Form speichern</button></article><article><p>Deine Liste bleibt auf diesem Gerät.</p></article><div data-user-content><p>Meine Backformen</p></div></section><input id="bs-shopping-custom" placeholder="z. B. Vanillezucker" value="Do not change"></body></html>');
+ const context={document,window:{__toolyaUILocale:'en'}};
+ context.el=id=>document.getElementById(id);
+ context.langEn=()=>context.window.__toolyaUILocale==='en';
+ context.ui=(de,en)=>context.langEn()?en:de;
+ createContext(context);
+ runInContext(script.slice(start,end)+'\nrenderBackstudioStaticCopy();',context);
+ assert.equal(document.querySelector('h3').textContent,'1 · My baking pans');
+ assert.equal(document.getElementById('pan').querySelector('option').textContent,'Round');
+ assert.equal(document.getElementById('pan').querySelector('option').value,'round');
+ assert.equal(document.getElementById('save').textContent,'Save pan');
+ assert.equal(document.getElementById('save').getAttribute('onclick'),'keep()');
+ assert.equal(document.getElementById('width').value,'user input');
+ assert.equal(document.getElementById('bs-shopping-custom').value,'Do not change');
+ assert.equal(document.querySelector('[data-user-content] p').textContent,'Meine Backformen');
+ context.window.__toolyaUILocale='de';
+ runInContext('renderBackstudioStaticCopy()',context);
+ assert.equal(document.querySelector('h3').textContent,'1 · Meine Backformen');
+ assert.equal(document.getElementById('save').textContent,'Form speichern');
+ assert.equal(document.getElementById('pan').querySelector('option').value,'round');
+ assert.equal(document.getElementById('bs-shopping-custom').placeholder,'z. B. Vanillezucker');
+});
+
+test('Backstudio external runtime localizes calculations, shopping and scheduling without changing models',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const script=await readFile(new URL('../../tools/baking/backstudio.js',import.meta.url),'utf8');
+ for(const phrase of [
+  'No missing ingredients identified yet.', 'Your shopping list is empty.',
+  'Backstudio shopping list exported as a text file.',
+  'Choose a serving date and time.', 'Start preparation', 'Start baking',
+  'No pans saved yet.', 'Warning: possible overfilling!',
+  'Scaling factor at desired height:', 'Start checking after approx.',
+  'Batter is within the specified fill limit', 'Your pantry supports up to',
+  'Photo recognition unavailable', 'Baking notes saved on this device.',
+  'toolya-backstudio-shopping-list.txt'
+ ])assert.ok(script.includes(phrase),'missing English Backstudio runtime text: '+phrase);
+ assert.match(script,/const fmt=n=>Number\(n\)\.toLocaleString\(langEn\(\)\?'en-GB':'de-DE'/);
+ assert.match(script,/const factor=\(\)=>target\(\)\/Math\.max\(orig\(\),1\)/,'pan conversion still uses original formula');
+ assert.match(script,/const KEY='toolya_backstudio_v1'/,'original storage key remains');
+ assert.match(script,/localStorage\.setItem\(KEY,JSON\.stringify\(data\)\)/,'original storage schema remains');
+ assert.match(script,/document\.addEventListener\('toolya:locale-change'/);
+ const listener=script.slice(script.lastIndexOf("document.addEventListener('toolya:locale-change'"));
+ assert.ok(!listener.includes('save()')&&!listener.includes('localStorage.setItem'),'language change is read-only');
+});
