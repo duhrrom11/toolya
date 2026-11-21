@@ -134,3 +134,11 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Zwei neue isolierte Regressionstests prüfen DE/EN-Hilfe-Zustände, unveränderten Schalter-Handler und WG-Budgetlabels mit stabilen Datenschlüsseln.
 - **Paket 3 geschätzt 76 %, Gesamt 60,8 % (gerundet 61 %).** Noch keine Sprint-A-Abnahme; dynamische Spezialzustände und browsergestützte E2E-Abnahme bleiben offen.
 - Vor Freigabe sind alle GitHub-Workflows für den finalen Commit erforderlich. PR bleibt Draft, keine produktiven Supabase- oder Webseitenänderungen.
+
+## Sprint A – Live-Sprachwechsel bei offenem WG-Budgeteditor (2026-11-21)
+
+- Der bisher nur beim Öffnen übersetzte WG-Budgeteditor aktualisiert nun beim Sprachwechsel DE ↔ EN seine neun fest definierten Kategorienamen direkt an den vorhandenen `label`-Knoten, solange der Dialog offen ist. Die Felder werden nicht neu erzeugt.
+- `data-cat`, Eingabe-`value`, ungespeicherte Beträge, Budget-Speicherschlüssel und Berechnungslogik bleiben unverändert. Ein geschlossener Dialog wird nicht bearbeitet; die Aktualisierung ist rein präsentationsbezogen und erfolgt erst nach dem vorhandenen Cloud-Ready-Guard.
+- Neuer isolierter Laufzeittest prüft beide Sprachrichtungen, unveränderte Eingabewerte und Node-Identitäten, geschlossenen Dialog sowie fehlende Speicherzugriffe.
+- **Fortschritt unverändert als vorsichtige Schätzung:** Paket 3 **76 %**, Gesamt **61 %**. Der Sprachwechsel-Fix schließt einen konkreten Sonderzustand, ist aber noch kein vollständiges End-to-End-Abnahmekriterium.
+- Unverändert: Sprint A offen, alle relevanten CI-Gates am letzten HEAD erforderlich, PR #291 Draft, kein Merge/Deployment, keine produktiven Supabase-/SEO-Änderungen.
