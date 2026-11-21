@@ -1831,3 +1831,26 @@ test('Sprint A baking locale switch refreshes existing helper results without sa
  const listener=html.slice(start,end);
  assert.ok(!/^\s*calculateRecipe\(\);/m.test(listener)&&!listener.includes('saveRecipeToStorage(')&&!listener.includes('localStorage.setItem('),'locale changes never persist recipes');
 });
+
+
+test('Sprint A household budget labels use English presentation without changing category storage keys',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const category=html.match(/function formatHouseholdCategoryLabel\(category\) \{([\s\S]*?)\n        \}/);
+ const amount=html.match(/function formatHouseholdDisplayAmount\(value\) \{([\s\S]*?)\n        \}/);
+ assert.ok(category&&amount,'display-only formatters present');
+ const name=new Function('window','category',category[1]);
+ const number=new Function('window','value',amount[1]);
+ const english={__toolyaUILocale:'en'},german={__toolyaUILocale:'de'};
+ assert.equal(name(english,'Lebensmittel'),'Groceries');
+ assert.equal(name(english,'Sonstiges'),'Other');
+ assert.equal(name(german,'Lebensmittel'),'Lebensmittel');
+ assert.equal(name(english,'My own category'),'My own category');
+ assert.equal(number(english,1234.5),'1,234.50');
+ assert.equal(number(german,1234.5),'1234.50');
+ assert.ok(html.includes('escapeUserHtml(formatHouseholdCategoryLabel(cat))'),'budget category display translated and escaped');
+ assert.ok(html.includes('formatHouseholdDisplayAmount(spent)'),'budget spending format localized');
+ assert.ok(html.includes('formatHouseholdDisplayAmount(limit)'),'budget target format localized');
+ assert.ok(html.includes('const limit = budgets[cat] || 0'),'budget lookups use original keys');
+ assert.ok(html.includes('const spent = categoryExpenses[cat] || 0'),'expense lookups use original keys');
+});
