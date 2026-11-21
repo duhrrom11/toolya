@@ -1093,3 +1093,54 @@ test('generated menu translation leaves unknown dynamic links and user content a
  applyToolInterfaceLocale(document,'housemates','de');
  assert.equal(document.body.innerHTML,before);
 });
+
+test('dashboard editor localizes panel titles, actions and accessibility without modifying layout choices',()=>{
+ for(const [tool,panel,translated] of [
+  ['moving','Inventar-Statistiken','Inventory statistics'],
+  ['housemates','WG-Statistiken','Household statistics']
+ ]){
+  const {document}=parseHTML('<html><body><div id="b3-editor" aria-label="Dashboard bearbeiten"><h2>Dashboard bearbeiten</h2><p>Bereiche sortieren, ein-/ausblenden oder in S / M / L darstellen.</p><div class="b3-editor-row"><strong>'+panel+'</strong><button id="move-up" aria-label="'+panel+' nach oben" onclick="move()">↑</button><button id="move-down" aria-label="'+panel+' nach unten" onclick="move()">↓</button><label><input id="visible" type="checkbox" checked aria-label="'+panel+' sichtbar">Sichtbar</label><select id="size" aria-label="Kartengröße '+panel+'"><option value="s">S</option><option value="m" selected>M</option><option value="l">L</option></select></div><div class="flex"><button id="save" onclick="save()">Speichern</button><button id="cancel" onclick="cancel()">Abbrechen</button><button id="reset" onclick="reset()">Standardlayout</button></div></div></body></html>');
+  const control=document.getElementById('visible');
+  const select=document.getElementById('size');
+  const original=document.getElementById('b3-editor').innerHTML;
+  const originalActions=[...document.querySelectorAll('#b3-editor button')].map(el=>el.getAttribute('onclick'));
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(document.querySelector('#b3-editor h2').textContent,'Edit dashboard');
+  assert.equal(document.querySelector('#b3-editor p').textContent,'Sort sections, show or hide them, or choose S / M / L sizes.');
+  assert.equal(document.querySelector('.b3-editor-row strong').textContent,translated);
+  assert.equal(document.querySelector('.b3-editor-row label').textContent,'Visible');
+  assert.equal(control.checked,true);
+  assert.equal(select.querySelector('option[value="m"]').getAttribute('selected'),'');
+  assert.equal(document.getElementById('save').textContent,'Save');
+  assert.equal(document.getElementById('cancel').textContent,'Cancel');
+  assert.equal(document.getElementById('reset').textContent,'Default layout');
+  assert.equal(document.getElementById('move-up').getAttribute('aria-label'),translated+' move up');
+  assert.equal(document.getElementById('move-down').getAttribute('aria-label'),translated+' move down');
+  assert.equal(control.getAttribute('aria-label'),translated+' visible');
+  assert.equal(select.getAttribute('aria-label'),'Card size: '+translated);
+  assert.deepEqual([...document.querySelectorAll('#b3-editor button')].map(el=>el.getAttribute('onclick')),originalActions);
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(document.querySelector('.b3-editor-row strong').textContent,panel);
+  assert.equal(document.querySelector('.b3-editor-row label').textContent,'Sichtbar');
+  assert.equal(document.getElementById('move-up').getAttribute('aria-label'),panel+' nach oben');
+  assert.equal(select.getAttribute('aria-label'),'Kartengröße '+panel);
+  assert.equal(document.getElementById('b3-editor').innerHTML,original,'all original editor markup is restored');
+ }
+});
+
+test('dashboard editor translation runs after editor rerenders and never reinitializes saved dashboard settings',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const core=await readFile(new URL('../../assets/helferlein-b3-core.js',import.meta.url),'utf8');
+ const entry=await readFile(new URL('../../shared/toolya/i18n/tool-entry.mjs',import.meta.url),'utf8');
+ assert.match(core,/host\.append\(commands\);\s*document\.dispatchEvent\(new Event\('toolya:b3-editor-rendered'\)\)/);
+ assert.match(entry,/document\.addEventListener\('toolya:b3-editor-rendered',\(\)=>applyToolInterfaceLocale\(document,name,selected\)\)/);
+ const {document}=parseHTML('<html><body><div id="b3-editor"><h2>Dashboard bearbeiten</h2></div></body></html>');
+ applyToolInterfaceLocale(document,'moving','en');
+ assert.equal(document.querySelector('h2').textContent,'Edit dashboard');
+ document.querySelector('#b3-editor').innerHTML='<h2>Dashboard bearbeiten</h2><div class="b3-editor-row"><strong>Inventar durchsuchen</strong></div>';
+ applyToolInterfaceLocale(document,'moving','en');
+ assert.equal(document.querySelector('h2').textContent,'Edit dashboard');
+ assert.equal(document.querySelector('strong').textContent,'Search inventory');
+ applyToolInterfaceLocale(document,'moving','de');
+ assert.equal(document.querySelector('strong').textContent,'Inventar durchsuchen');
+});
