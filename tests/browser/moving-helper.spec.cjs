@@ -31,6 +31,18 @@ test('temporary helper sees only minimal projection and persists sequential stat
  expect(writes).toBe(1);
  await page.getByRole('button',{name:/Aktualisieren/}).click();
  await expect(page.getByText('Gepackt',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'English',exact:true}).click();
+ await expect(page.locator('html')).toHaveAttribute('lang','en');
+ await expect(page.getByRole('heading',{name:'Moving helper'})).toBeVisible();
+ await expect(page.getByText('Packed',{exact:true})).toBeVisible();
+ await expect(page.locator('.box strong')).toHaveText('Kiste 3');
+ await expect(page.locator('.box small').first()).toContainText('Küche');
+ expect(new URL(page.url()).hash).toBe('#t='+token);
+ expect(writes).toBe(1);
+ await page.getByRole('button',{name:'Deutsch',exact:true}).click();
+ await expect(page.locator('html')).toHaveAttribute('lang','de');
+ await expect(page.getByText('Gepackt',{exact:true})).toBeVisible();
+ expect(writes).toBe(1);
 });
 test('helper without a token exposes no private data and makes no requests',async({page})=>{
  let requests=0;

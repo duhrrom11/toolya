@@ -20,7 +20,7 @@ function visit(dir=''){
  }
 }
 visit();
-const html=files.filter(f=>f.endsWith('.html')).sort();
+const html=files.filter(f=>f.endsWith('.html')&&!f.startsWith('tests/')).sort();
 const js=files.filter(f=>/\.(?:mjs|js)$/.test(f)&&!f.startsWith('tests/')&&!f.startsWith('scripts/')&&!f.startsWith('supabase/')).sort();
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const fileSet=new Set(files);
@@ -44,6 +44,7 @@ const pairs=new Map([
  ['privacy.html','en/privacy.html']
 ]);
 const bilingualPages=new Set(['404.html','offline.html']);
+const bilingualApps=new Map([['tools/moving/helper/index.html','helper-client.mjs']]);
 const redirectPages=new Set(['tools/wishes/index.html']);
 const supportedTools=new Set(['dashboard/index.html','admin-stats-dashboard/index.html','admin-stats-dashboard/wishlist-finder.html',
  ...['index','heirs','handover','print-key'].map(x=>'tools/estate/'+x+'.html'),
@@ -74,7 +75,8 @@ for(const f of html){
   :f==='dashboard/index.html'?'dashboard-entry.mjs'
   :'tool-entry.mjs';
  const appSwitch=supportedTools.has(f)&&source.includes(entrypoint);
- const hasEnglishRoute=isEnglish||appSwitch||bilingualPages.has(f)||redirectPages.has(f)||Boolean(counterpart&&fileSet.has(counterpart));
+ const bilingualApp=bilingualApps.has(f)&&source.includes(bilingualApps.get(f))&&Boolean(document.querySelector('[data-helper-locale="en"]'));
+ const hasEnglishRoute=isEnglish||appSwitch||bilingualApp||bilingualPages.has(f)||redirectPages.has(f)||Boolean(counterpart&&fileSet.has(counterpart));
  const noindex=Boolean(document.querySelector('meta[name="robots"]')?.getAttribute('content')?.includes('noindex'));
  const hasENLink=Boolean(document.querySelector('[data-set-locale="en"]'));
  const hasDELink=Boolean(document.querySelector('[data-set-locale="de"]'));
@@ -94,7 +96,7 @@ for(const f of html){
   }
  }
  if(suspects.length)germanUi.push({file:f,samples:[...new Set(suspects)].slice(0,12)});
- const status=isEnglish?'EN page':appSwitch?'EN opt-in tool':bilingualPages.has(f)?'Bilingual fallback':redirectPages.has(f)?'Language-preserving redirect':hasEnglishRoute?'DE page with EN pair':'NO EN COVERAGE';
+ const status=isEnglish?'EN page':appSwitch?'EN opt-in tool':bilingualApp?'DE/EN application':bilingualPages.has(f)?'Bilingual fallback':redirectPages.has(f)?'Language-preserving redirect':hasEnglishRoute?'DE page with EN pair':'NO EN COVERAGE';
  reports.push({file:f,lang,status,noindex,langLinks:hasENLink&&hasDELink,englishCopy:counterpart||null,suspects:suspects.length});
 }
 const runtime=read('shared/toolya/i18n/tool-entry.mjs');
