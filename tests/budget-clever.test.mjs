@@ -94,3 +94,23 @@ test('never treats missing bookings as account balances',()=>{
  assert.equal(C.weekly([],null,new Date(2026,10,21)).remaining,null);
  assert.equal(C.monthCompare([],new Date(2026,10,21)).hasPrior,false);
 });
+
+
+test('repeated scans of the same shop visit do not hide a genuine price increase',()=>{
+ const third=JSON.parse(JSON.stringify(receipts[1]));
+ third.id=3; // two scans of the same store, date and product price
+ const history=C.priceSummary(C.prices([...receipts,third]));
+ const butter=history.find(x=>x.name==='Butter 250g');
+ assert.equal(butter.unitPrice,2.29);
+ assert.equal(butter.previous.unitPrice,1.79);
+ assert.equal(butter.change,.5);
+});
+
+test('a different shop on the same date still counts as a comparable price',()=>{
+ const sample=[
+  {date:'2026-11-20',title:'Einkauf',store:'A',price:1.79,lineItems:[{name:'Butter',quantity:1,unit:'Stück',total:1.79}]},
+  {date:'2026-11-20',title:'Einkauf',store:'B',price:2.29,lineItems:[{name:'Butter',quantity:1,unit:'Stück',total:2.29}]}
+ ];
+ const history=C.priceSummary(C.prices(sample));
+ assert.equal(history[0].change,.5);
+});

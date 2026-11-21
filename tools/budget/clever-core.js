@@ -63,7 +63,9 @@
  }
  function priceSummary(map){
   return [...map.entries()].map(([key,history])=>{
-   const last=history[history.length-1],previous=history.length>1?history[history.length-2]:null;
+   const last=history[history.length-1];
+   // Multiple identical entries from one shopping day are not a new price comparison.
+   const previous=history.slice(0,-1).reverse().find(item=>item.date!==last.date||item.store!==last.store||item.unitPrice!==last.unitPrice)||null;
    return {key,...last,previous,change:previous?round(last.unitPrice-previous.unitPrice):null,count:history.length};
   }).sort((a,b)=>b.date.localeCompare(a.date));
  }

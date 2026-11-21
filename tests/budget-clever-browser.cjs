@@ -32,10 +32,11 @@ async function run(){
   await page.getByRole('heading',{name:'Clever sparen'}).waitFor();
   assert.equal(await page.locator('.cs-tab').count(),4);
   assert.equal(await page.locator('.cs-metric').count(),4);
+  assert.equal(await page.locator('progress.cs-budget-progress').count(),1,'Weekly budget indicator on overview');
   await page.screenshot({path:path.join(images,'desktop-ueberblick.png'),fullPage:true});
   await page.getByRole('button',{name:'Einkaufen'}).click();
   assert.match(await page.locator('#cs-panel').innerText(),/Butter 250g/);
-  const list=page.locator('.cs-card').filter({has:page.getByRole('heading',{name:'2 · Mein nächster Einkauf'})});
+  const list=page.locator('.cs-card').filter({has:page.getByRole('heading',{name:'Dein nächster Einkauf'})});
   await list.getByRole('textbox',{name:'Artikel'}).fill('Butter 250g');
   await list.getByRole('spinbutton',{name:'Anzahl'}).fill('2');
   assert.equal(await list.getByRole('spinbutton',{name:'Anzahl'}).evaluate(el=>el.validity.valid),true,'Whole item quantities must satisfy HTML form constraints');

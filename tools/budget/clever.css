@@ -114,3 +114,9 @@
  #cs-root .cs-recipe-picker .cs-inline{grid-template-columns:minmax(0,1fr) minmax(90px,.7fr)}
  #cs-root .cs-recipe-picker .cs-inline .cs-button{grid-column:1/-1}
 }
+
+/* Short and readable weekly budget indicator. */
+#cs-root .cs-budget-progress{display:block;width:100%;height:13px;margin:11px 0 7px;appearance:none;border:0;border-radius:100px;overflow:hidden;background:#ecf3ea}
+#cs-root .cs-budget-progress::-webkit-progress-bar{background:#ecf3ea;border-radius:100px}
+#cs-root .cs-budget-progress::-webkit-progress-value{background:#1b8a67;border-radius:100px}
+#cs-root .cs-budget-progress::-moz-progress-bar{background:#1b8a67;border-radius:100px}
