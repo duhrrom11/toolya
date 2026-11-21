@@ -1022,6 +1022,7 @@
         }
 
         async function exportQrLabelsPDF() {
+            const exportLanguage = window.__toolyaUILocale === 'en' ? 'en' : 'de';
             let data = getData();
             if (data.boxes.length === 0) return alert("Keine Kisten vorhanden.");
 
@@ -1040,7 +1041,7 @@
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(16);
-            doc.text(window.__toolyaUILocale === "en" ? "Toolya Moving Boxes - QR Labels" : "Toolya Umzugskisten – QR-Etiketten", 14, 12);
+            doc.text(exportLanguage === "en" ? "Toolya Moving Boxes - QR Labels" : "Toolya Umzugskisten – QR-Etiketten", 14, 12);
 
             for (let i = 0; i < data.boxes.length; i++) {
                 let b = data.boxes[i];
@@ -1050,7 +1051,7 @@
                 }
 
                 const loc = data.locations.find(l => l.id === b.locId);
-                const cleanLocName = loc ? loc.name.replace(/[\u{1F000}-\u{1F6FF}|[\u{1F900}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[📦🏠🚪🏡🚗🏢⛺📍]/gu, '').trim()  : (window.__toolyaUILocale === 'en' ? 'Unknown' : 'Unbekannt');
+                const cleanLocName = loc ? loc.name.replace(/[\u{1F000}-\u{1F6FF}|[\u{1F900}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[📦🏠🚪🏡🚗🏢⛺📍]/gu, '').trim()  : (exportLanguage === 'en' ? 'Unknown' : 'Unbekannt');
                 const deepLinkUrl = `${window.location.origin}${window.location.pathname}?box=${b.id}`;
 
                 doc.setDrawColor(200);
@@ -1064,14 +1065,14 @@
                 let textX = x + 40;
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(10);
-                doc.text(`${window.__toolyaUILocale === 'en' ? 'Box' : 'Kiste'}: ${b.name}`, textX, y + 8);
+                doc.text(`${exportLanguage === 'en' ? 'Box' : 'Kiste'}: ${b.name}`, textX, y + 8);
 
                 doc.setFont("helvetica", "normal");
                 doc.setFontSize(8);
-                doc.text(`${window.__toolyaUILocale === 'en' ? 'Location' : 'Ort'}: ${cleanLocName}`, textX, y + 14);
-                doc.text(`${window.__toolyaUILocale === 'en' ? 'Contents' : 'Inhalt'}: ${b.desc || '-'}`, textX, y + 20);
-                doc.text(`${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${window.__toolyaUILocale === 'en' ? Number(b.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (b.value || 0).toFixed(2)} €`, textX, y + 26);
-                doc.text(`Tag: ${b.tag ? formatMovingTagLabel(b.tag) : (window.__toolyaUILocale === 'en' ? 'Default' : 'Standard')}`, textX, y + 32);
+                doc.text(`${exportLanguage === 'en' ? 'Location' : 'Ort'}: ${cleanLocName}`, textX, y + 14);
+                doc.text(`${exportLanguage === 'en' ? 'Contents' : 'Inhalt'}: ${b.desc || '-'}`, textX, y + 20);
+                doc.text(`${exportLanguage === 'en' ? 'Value' : 'Wert'}: ${exportLanguage === 'en' ? Number(b.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(b.value || 0).toFixed(2)} €`, textX, y + 26);
+                doc.text(`Tag: ${b.tag ? (exportLanguage === 'en' ? ({ Standard: 'Standard', Zerbrechlich: 'Fragile', Wertvoll: 'Valuable', Saison: 'Seasonal' }[b.tag] || b.tag) : b.tag) : (exportLanguage === 'en' ? 'Default' : 'Standard')}`, textX, y + 32);
 
                 if (x === 14) { 
                     x = 110; 
@@ -1081,7 +1082,7 @@
                 }
             }
 
-            doc.save(window.__toolyaUILocale === 'en' ? "moving-box-qr-labels.pdf" : "kisten-qr-etiketten.pdf");
+            doc.save(exportLanguage === 'en' ? "moving-box-qr-labels.pdf" : "kisten-qr-etiketten.pdf");
         }
 
         async function showQrCode(boxId, name, desc) {
