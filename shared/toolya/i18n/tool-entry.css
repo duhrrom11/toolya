@@ -6,3 +6,7 @@
 .ty-tool-language-notice[hidden]{display:none!important}
 .ty-tool-language-notice a{color:#185b73;text-decoration:underline;font-weight:700}
 @media(max-width:650px){.ty-tool-language{margin-left:auto}.ty-tool-language-notice{margin-inline:1rem}}
+
+/* The baking calculator must remain a single-column grid below desktop width.
+   Scope to this tool so no other tool or mascot layout is affected. */
+@media(max-width:1279px){body.b3.b3-backform main.b3-backform-main{grid-template-columns:minmax(0,1fr)!important}}
