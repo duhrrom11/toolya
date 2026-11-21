@@ -115,3 +115,46 @@ end;
 $$;
 revoke all on function public.moving_helper_transition(text,uuid,integer,text,uuid) from public,anon,authenticated;
 grant execute on function public.moving_helper_transition(text,uuid,integer,text,uuid) to service_role;
+
+-- Owner workflow uses the same CAS and audit semantics, without issuing a helper grant.
+create unique index if not exists moving_transport_events_owner_request_idx
+on public.moving_transport_events(owner_id,request_id);
+create or replace function public.moving_owner_transition(
+ p_owner_id uuid,p_project_id uuid,p_assignment_id uuid,p_expected_version integer,
+ p_next_status text,p_request_id uuid
+) returns jsonb language plpgsql security definer set search_path=''
+as $$
+declare
+ v_state public.moving_transport_state%rowtype;
+ v_existing public.moving_transport_events%rowtype;
+ v_steps text[] := array['planned','packed','loaded','arrived','unpacked'];
+begin
+ if p_owner_id is null or p_project_id is null or p_assignment_id is null
+ or p_request_id is null or p_expected_version is null or p_next_status is null then
+   raise exception 'Invalid transition' using errcode='22023';
+ end if;
+ select * into v_existing from public.moving_transport_events
+ where owner_id=p_owner_id and request_id=p_request_id;
+ if found then
+   if v_existing.assignment_id<>p_assignment_id or v_existing.to_status<>p_next_status then
+     raise exception 'Request id collision' using errcode='23505';
+   end if;
+   return jsonb_build_object('assignmentId',p_assignment_id,'status',p_next_status,'version',v_existing.resulting_version,'replayed',true);
+ end if;
+ select * into v_state from public.moving_transport_state
+ where owner_id=p_owner_id and project_id=p_project_id and assignment_id=p_assignment_id for update;
+ if not found then raise exception 'Assignment unavailable' using errcode='42501'; end if;
+ if v_state.version<>p_expected_version then raise exception 'Revision conflict' using errcode='40001'; end if;
+ if array_position(v_steps,p_next_status) is null or
+ abs(array_position(v_steps,p_next_status)-array_position(v_steps,v_state.status))<>1 then
+   raise exception 'Invalid status sequence' using errcode='22023';
+ end if;
+ update public.moving_transport_state set status=p_next_status,version=version+1,updated_at=now()
+ where owner_id=p_owner_id and project_id=p_project_id and assignment_id=p_assignment_id;
+ insert into public.moving_transport_events(owner_id,project_id,assignment_id,request_id,from_status,to_status,resulting_version)
+ values(p_owner_id,p_project_id,p_assignment_id,p_request_id,v_state.status,p_next_status,v_state.version+1);
+ return jsonb_build_object('assignmentId',p_assignment_id,'status',p_next_status,'version',v_state.version+1,'replayed',false);
+end;
+$$;
+revoke all on function public.moving_owner_transition(uuid,uuid,uuid,integer,text,uuid) from public,anon,authenticated;
+grant execute on function public.moving_owner_transition(uuid,uuid,uuid,integer,text,uuid) to service_role;
