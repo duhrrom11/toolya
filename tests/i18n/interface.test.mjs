@@ -53,3 +53,26 @@ test('extended form labels across four tools are reversible and preserve data an
   assert.equal(button.textContent,german);
  }
 });
+
+
+test('extended form localization is reversible and never changes input values or handlers',()=>{
+ const examples=[
+  ['moving','<input id="boxName" placeholder="Kisten-Name" value="Privat"><button onclick="closeScannerModal()">Scanner schließen</button>','#boxName','placeholder','Box name (e.g. Box #3)'],
+  ['housemates','<input id="receiptTitle" placeholder="z. B. Miete" value="Miete"><button onclick="addShoppingItem()">Hinzufügen</button>','#receiptTitle','placeholder','e.g. detergent, rent, salary'],
+  ['plants','<input id="plantName" placeholder="Name" value="Tomate"><button onclick="addSeedItem()">Hinzufügen</button>','#plantName','placeholder','Name (e.g. tomato)'],
+  ['baking','<input id="recipe-name" placeholder="Rezeptname" value="Kuchen"><button onclick="calculateRecipe()">Mengen ausrechnen</button>','#recipe-name','placeholder','Recipe name (e.g. apple cake)']
+ ];
+ for(const [tool,html,selector,attribute,translation] of examples){
+  const {document}=parseHTML('<html><body>'+html+'</body></html>');
+  const field=document.querySelector(selector), original=field.getAttribute(attribute), value=field.value;
+  const button=document.querySelector('button'), handler=button.getAttribute('onclick'),buttonLabel=button.textContent;
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(field.getAttribute(attribute),translation,tool);
+  assert.equal(field.value,value,'input value preserved');
+  assert.equal(button.getAttribute('onclick'),handler,'handler preserved');
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(field.getAttribute(attribute),original,'original placeholder restored');
+  assert.equal(field.value,value,'input value remains untouched');
+  assert.equal(button.textContent,buttonLabel,'original button restored');
+ }
+});
