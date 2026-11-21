@@ -103,3 +103,50 @@ for (const name of ['car', 'pet-health']) {
   assert.ok(!content.includes('\nBEGIN:VEVENT\nSUMMARY:injected'));
  });
 }
+
+for (const name of ['car','pet-health','budget','meters']) {
+ test(`${name}: DE/EN auth validation, registration and login preserve server errors`,async()=>{
+  const src=functionBody(await readTool(name),'async function registerUser() {','async function updateUserDisplay() {');
+  const alerts=[],calls=[],fields={loginEmail:{value:''},loginPassword:{value:''}};
+  let signupError=null,loginError=null;
+  const window={__toolyaUILocale:'en',supabaseClient:{auth:{
+   async signUp(credentials){calls.push(['signup',credentials]);return {error:signupError}},
+   async signInWithPassword(credentials){calls.push(['login',credentials]);return {error:loginError}},
+   async signOut(){calls.push(['logout']);return {error:null}}
+  }}};
+  const context={window,document:{getElementById:id=>fields[id]},alert:value=>alerts.push(value),
+   updateUserDisplay:()=>calls.push(['refresh']),closeSettings:()=>calls.push(['close'])};
+  runInNewContext(src,context);
+  const invoke=fn=>runInNewContext(fn+'()',context);
+  await invoke('registerUser');
+  await invoke('loginUser');
+  assert.deepEqual(alerts,['Please enter your email and password.','Please enter your email and password.']);
+  assert.equal(calls.length,0);
+  window.__toolyaUILocale='de';
+  await invoke('registerUser');await invoke('loginUser');
+  assert.deepEqual(alerts.slice(2),['Bitte E-Mail und Passwort eingeben.','Bitte E-Mail und Passwort eingeben.']);
+  fields.loginEmail.value='synthetic@example.invalid';fields.loginPassword.value='synthetic-password';
+  window.__toolyaUILocale='en';
+  await invoke('registerUser');
+  assert.equal(alerts.at(-1),'Registration successful.');
+  assert.deepEqual(calls.map(([type])=>type),['signup','refresh','close']);
+  assert.equal(calls[0][1].email,'synthetic@example.invalid');
+  assert.equal(calls[0][1].password,'synthetic-password');
+  signupError={message:'unrecognized backend error'};
+  await invoke('registerUser');
+  assert.equal(alerts.at(-1),'unrecognized backend error');
+  assert.equal(calls.filter(([type])=>type==='refresh').length,1);
+  loginError={message:'another backend error'};
+  await invoke('loginUser');
+  assert.equal(alerts.at(-1),'another backend error');
+  assert.equal(calls.filter(([type])=>type==='close').length,1);
+  loginError=null;
+  await invoke('loginUser');
+  assert.deepEqual(calls.slice(-3).map(([type])=>type),['login','refresh','close']);
+  window.__toolyaUILocale='de';
+  signupError=null;
+  await invoke('registerUser');
+  assert.equal(alerts.at(-1),'Registrierung erfolgreich.');
+  assert.ok(calls.every(([type])=>type!=='logout'),'no unexpected sign-out');
+ });
+}
