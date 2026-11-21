@@ -584,6 +584,19 @@ const formCopy = Object.freeze({
   '📤 Wiederherstellen':'📤 Restore','📖 Hilfe & Anleitung anzeigen':'📖 View help and guide'
  },
  housemates: {
+  // Source-exact help and workflow headings; never change stored records.
+"1. Digitale Pinnwand & Notizen": "1. Digital noticeboard and notes",
+  "2. Finanzen & Kasse": "2. Finances and shared funds",
+  "3. Termine & Wasch-Slots": "3. Events and laundry slots",
+  "4. Küche & Inventar": "4. Kitchen and inventory",
+  "🧮 Optimaler WG-Schuldenausgleich": "🧮 Optimized household debt settlement",
+  "Nachricht / Notiz (optional):": "Message / note (optional):",
+  "📅 Allgemeiner WG-Termin": "📅 General household event",
+  "📦 WG-Inventar erfassen": "📦 Add household inventory",
+  "📌 WG-Stammdaten bearbeiten": "📌 Edit household details",
+  "➕ Neues Mitglied hinzufügen": "➕ Add household member",
+  "Gemeinsamer WG-Planer": "Shared household planner",
+  "🔐 Private WG erstellen (Anmeldung erforderlich)": "🔐 Create private household (sign-in required)",
   // Additional source-exact static labels, never translated in stored objects.
   "⚙️ Einstellungen und Konto": "⚙️ Settings and account",
   "📖 Hilfe & WG-Handbuch": "📖 Help and household guide",
@@ -638,6 +651,10 @@ const formCopy = Object.freeze({
   'Fertig & Schließen':'Done and close','📶 WLAN-Passwort:':'📶 Wi-Fi password:'
  },
  plants: {
+  // Source-exact help and workflow headings; never change stored records.
+"Wie erfasse und verwalte ich meine Pflanzen?": "How do I add and manage my plants?",
+  "Wie nutze ich den Zisternen- & ROI-Rechner?": "How do I use the rainwater tank and ROI calculators?",
+  "Wie erstelle ich einen PDF-Report?": "How do I create a PDF report?",
   // Additional source-exact static labels, never translated in stored objects.
   "📖 Hilfe & Anleitungen": "📖 Help and guides",
   "Groß (20 cm ~ 600ml)": "Large (20 cm ~ 600 ml)",
@@ -669,6 +686,8 @@ const formCopy = Object.freeze({
   '💧 Gießen':'💧 Water','Ausblenden':'Dismiss','Achtung: Frostgefahr!':'Warning: frost risk!'
  },
  baking: {
+  // Source-exact help and workflow headings; never change stored records.
+"☷ Mehr": "☷ More",
   // Additional source-exact static labels, never translated in stored objects.
   "📖 Hilfe & Anleitung": "📖 Help and guide",
   "⭕ Welche Backform passt? Formen-Finder öffnen": "⭕ Which pan fits? Open pan finder",
@@ -715,7 +734,7 @@ const formCopy = Object.freeze({
 function applyStaticFormCopy(document,tool,language){
  const dictionary=formCopy[tool];
  if(!dictionary)return;
- for(const element of document.querySelectorAll('label,button,option,h2,h3,h4')){
+ for(const element of document.querySelectorAll('label,button,option,h2,h3,h4,summary')){
   if(element.children.length || element.closest('[contenteditable="true"]'))continue;
   let record=originals.get(element);
   const original=record?.get('text') ?? element.textContent;
