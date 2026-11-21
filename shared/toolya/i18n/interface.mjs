@@ -516,6 +516,7 @@ const extendedFormTranslations = {
  ]
 };
 const originals = new WeakMap();
+const implicitOptionValues = new WeakSet();
 function updateElement(element, translation, attribute, language) {
  // Replacing textContent on an interactive element with nested icons/controls
  // removes its children and can destroy delegated UI state. Only leaf text
@@ -530,7 +531,16 @@ function updateElement(element, translation, attribute, language) {
   if(language==='en')element.setAttribute(attribute,translation);
   else if(original===null)element.removeAttribute(attribute);
   else element.setAttribute(attribute,original);
- }else element.textContent=language==='en'?translation:original;
+ }else{
+  if(element.tagName==='OPTION'){
+   if(language==='en' && !element.hasAttribute('value')){
+    element.setAttribute('value',original.replace(/[ \t\n\f\r]+/g,' ').replace(/^ | $/g,''));
+    implicitOptionValues.add(element);
+   }
+   if(language!=='en' && implicitOptionValues.delete(element))element.removeAttribute('value');
+  }
+  element.textContent=language==='en'?translation:original;
+ }
 }
 
 /* Source-exact UI copy for existing static form controls. Text nodes are translated
@@ -653,6 +663,45 @@ function applyStaticFormCopy(document,tool,language){
  }
 }
 
+const backstudioCopy = {
+ 'Einfach backen':'Baking made easy','Welche Backform brauchst du?':'Which pan do you need?',
+ 'Form auswählen – wir rechnen für dich.':'Choose a pan and we’ll do the maths.',
+ 'Kuchenhöhe ändern':'Adjust cake height','✎ Zutaten eingeben':'✎ Enter ingredients',
+ '♨ Backzeit und Ofen':'♨ Baking time and oven','So sieht deine Form aus':'Pan preview',
+ 'Zum Drehen':'Rotate the pan','Das passt':'Good matches','Diese Formen passen auch':'Other pans that fit',
+ 'Tippe eine Form an.':'Choose a pan.','Meine eigenen Backformen':'My pans',
+ 'Meine Backformen':'My pans','Deine Backzeit & Mengen':'Baking time and quantities',
+ 'Noch mehr Backhelfer':'More baking tools','Rezept einlesen':'Import a recipe',
+ 'Meine Torte planen':'Plan my cake','Meine Backnotizen':'My baking notes',
+ 'Meine Einkaufsliste':'My shopping list','← Zurück':'← Back',
+ 'Backform ändern':'Resize a recipe','Formen finden':'Find pans','Rezeptfoto':'Recipe photo',
+ 'Torte planen':'Plan a cake','Backnotizen':'Baking notes','Einkaufsliste':'Shopping list',
+ 'Form wählen':'Choose a pan','Zutaten':'Ingredients','Ergebnis':'Result',
+ 'Foto auswählen':'Choose a photo','Böden & Creme':'Layers and filling',
+ 'Meine Erfahrungen':'What worked for me','Was noch fehlt':'What you still need',
+ 'Trage dein Rezept ein. Hier siehst du die neuen Mengen.':'Enter your recipe to see the new quantities here.',
+ '↻ Form drehen':'↻ Rotate pan'
+};
+const backstudioAttributes = [
+ ['.bsui-side','aria-label','Backstudio navigation'],
+ ['.bsui-side-nav','aria-label','Backstudio sections'],
+ ['.bsui-stepper','aria-label','Four steps for resizing a recipe'],
+ ['.bsui-quicknav','aria-label','Backstudio shortcuts'],
+ ['.bsui-baker','aria-label','Turquoise Toolya baker mascot'],
+ ['.bsui-stage-pan img','alt','Springform pan filled with cake batter']
+];
+function applyBackstudioCopy(document,language){
+ const shell=document.querySelector('#bsui-app');
+ if(!shell)return;
+ for(const element of shell.querySelectorAll('.bsui-headerline :is(p,h2),.bsui-recipe-details > summary,.bsui-stage-top > *, .bsui-finder > :is(p,h2,button),.bsui-recommend-detail > summary,.bsui-metrics > p,.bsui-additional > summary,.bsui-tool-head > *, .bsui-nav > span:last-child,.bsui-step > span:last-child,.bsui-quick :is(strong,small),#bsui-ingredients-empty,#bsui-webgl button')){
+  const original=originals.get(element)?.get('text') ?? element.textContent;
+  if(Object.hasOwn(backstudioCopy,original))updateElement(element,backstudioCopy[original],null,language);
+ }
+ for(const [selector,attribute,translation] of backstudioAttributes){
+  for(const element of shell.querySelectorAll(selector))updateElement(element,translation,attribute,language);
+ }
+}
+
 export function applyToolInterfaceLocale(document,tool,language){
  for(const [selector,translation,attribute,attributeTranslation] of [...common,...(toolTranslations[tool]||[]),...(extendedFormTranslations[tool]||[])]){
   const translated=attribute?attributeTranslation:translation;
@@ -661,6 +710,7 @@ export function applyToolInterfaceLocale(document,tool,language){
   }
  }
  applyStaticFormCopy(document,tool,language);
+ if(tool==='baking')applyBackstudioCopy(document,language);
 }
 
 /* Only application-owned, source-exact browser-dialog copy. Dynamic user values,

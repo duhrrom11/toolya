@@ -19,11 +19,16 @@ test('four existing tool pages include opt-in shell only, not i18n text replacem
 });
 
 test('language selection works in an isolated document without changing mascot preferences',async()=>{
- const {document}=parseHTML('<!doctype html><html lang="de"><head><title>Pflanzenpflege-App mit Gießplan | Toolya</title></head><body><header class="b3-header"><div class="b3-header-inner"><div class="b3-tool-title"><h1>Pflanzenpflege-App mit Gießplan</h1><p>Gießplan und Fotos</p></div></div></header><main></main></body></html>');
+ const {document}=parseHTML('<!doctype html><html lang="de"><head><title>Pflanzenpflege-App mit Gießplan | Toolya</title></head><body><section class="ty-tool-hero"><div class="ty-tool-hero-copy"><h1><span aria-hidden="true">🌿</span>Pflanzenpflege-App mit Gießplan</h1><p>Gießplan und Fotos</p></div><img data-mascot src="purple.webp" alt="Begleiter"></section><header class="b3-header"><div class="b3-header-inner"><div class="b3-tool-title"><h1>Pflanzenpflege-App mit Gießplan</h1><p>Gießplan und Fotos</p></div></div></header><main></main></body></html>');
  const saved=new Map([['helferlein-toolya-preferences-v1','{"character":"purple"}']]);
- const old={document:globalThis.document,location:globalThis.location,localStorage:globalThis.localStorage};
+ const old={document:globalThis.document,location:globalThis.location,localStorage:globalThis.localStorage,history:globalThis.history};
  globalThis.document=document;
- globalThis.location={pathname:'/tools/plants/index.html',search:'?lang=en'};
+ globalThis.location=new URL('https://toolya.app/tools/plants/?lang=en&utm_source=test#garden');
+ const historyState={kept:true};
+ globalThis.history={state:historyState,replaceState(state,title,url){
+   assert.equal(state,historyState);
+   globalThis.location=new URL(url);
+ }};
  globalThis.localStorage={getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)};
  try {
    await import('../../shared/toolya/i18n/tool-entry.mjs');
@@ -31,18 +36,27 @@ test('language selection works in an isolated document without changing mascot p
    const en=document.querySelector('[data-tool-locale="en"]');
    assert.ok(en,'English control exists');
    assert.equal(en.getAttribute('aria-pressed'),'true');
-   assert.equal(document.querySelector('.b3-tool-title h1').textContent,'Plant care tracker');
+   assert.ok(en.closest('.ty-tool-hero'));
+   const heading=document.querySelector('.ty-tool-hero h1');
+   const icon=heading.firstElementChild;
+   assert.equal(heading.textContent,'🌿Plant care tracker');
+   assert.equal(heading.lang,'en');
    assert.equal(document.documentElement.lang,'de','do not falsely claim fully translated application');
    assert.equal(document.querySelector('.ty-tool-language-notice').hidden,false);
    const de=document.querySelector('[data-tool-locale="de"]');
    de.click();
-   assert.equal(document.querySelector('.b3-tool-title h1').textContent,'Pflanzenpflege-App mit Gießplan');
+   assert.equal(heading.textContent,'🌿Pflanzenpflege-App mit Gießplan');
+   assert.equal(heading.firstElementChild,icon);
+   assert.equal(heading.lang,'de');
+   assert.equal(document.querySelector('[data-mascot]').getAttribute('src'),'purple.webp');
    assert.equal(saved.get('toolya-locale-v1'),'de');
+   assert.equal(location.href,'https://toolya.app/tools/plants/?lang=de&utm_source=test#garden');
    assert.equal(saved.get('helferlein-toolya-preferences-v1'),'{"character":"purple"}');
  } finally {
    globalThis.document=old.document;
    globalThis.location=old.location;
    globalThis.localStorage=old.localStorage;
+   globalThis.history=old.history;
  }
 });
 

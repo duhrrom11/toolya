@@ -11,7 +11,7 @@ const SUPPORTED=Object.freeze({
  plants:{heading:'Plant care tracker',subtitle:'Track watering, plant notes and photos',guide:'/en/plant-care/',german:'/pflanzenpflege/'},
  baking:{heading:'Cake pan and recipe calculator',subtitle:'Resize baking pans and ingredients',guide:'/en/cake-pan-calculator/',german:'/backform-rechner/'}
 });
-const name=location.pathname.match(/^\/tools\/(moving|housemates|plants|baking)\/index\.html$/)?.[1];
+const name=location.pathname.match(/^\/tools\/(moving|housemates|plants|baking)\/(?:index\.html)?$/)?.[1];
 const settings=SUPPORTED[name];
 function mountToolLanguage(){
  if(!settings)return;
@@ -20,11 +20,8 @@ function mountToolLanguage(){
  try { stored=localStorage.getItem(key); } catch (_) { /* storage is optional */ }
  const query=new URLSearchParams(location.search);
  let selected=normalizeLocale(query.get('lang'))||normalizeLocale(stored)||'de';
- const header=document.querySelector('header.b3-header .b3-header-inner');
- const title=header?.querySelector('.b3-tool-title h1');
- const subtitle=header?.querySelector('.b3-tool-title p');
- const originalTitle=title?.textContent ?? '';
- const originalSubtitle=subtitle?.textContent ?? '';
+ const header=document.querySelector('header.b3-header');
+ const originalHeadings=new WeakMap();
  const originalDocTitle=document.title;
  const switcher=document.createElement('nav');
  switcher.className='ty-tool-language';
@@ -82,27 +79,48 @@ function mountToolLanguage(){
  guide.lang='en';
  guide.textContent='Read the English guide';
  notice.append('The English interface is being translated. Most forms, account dialogs and messages are still in German. ',guide);
+ function syncHeader(lang){
+   const hero=document.querySelector('.ty-tool-hero');
+   const titleContainer=hero?.querySelector('.ty-tool-hero-copy') || header?.querySelector('.b3-tool-title');
+   if(!titleContainer)return;
+   const heading=titleContainer.querySelector('h1');
+   const title=[...(heading?.childNodes||[])].find(node=>node.nodeType===3 && node.textContent.trim());
+   const subtitle=titleContainer.querySelector('p');
+   for(const [node,translation] of [[title,settings.heading],[subtitle,settings.subtitle]]){
+     if(!node)continue;
+     if(!originalHeadings.has(node))originalHeadings.set(node,node.textContent);
+     node.textContent=lang==='en'?translation:originalHeadings.get(node);
+   }
+   for(const node of [heading,subtitle])if(node)node.lang=lang;
+   if(switcher.parentElement!==titleContainer){
+     titleContainer.append(switcher);
+     (hero||header).after(notice);
+   }
+ }
  function apply(lang,persist){
    selected=lang;
    uiGlobal.__toolyaUILocale=lang; // presentation only; never changes saved data or units
-   if(persist)try{localStorage.setItem(key,lang)}catch(_){}
-   if(title)title.textContent=lang==='en'?settings.heading:originalTitle;
-   if(subtitle)subtitle.textContent=lang==='en'?settings.subtitle:originalSubtitle;
+   if(persist){
+     try{localStorage.setItem(key,lang)}catch(_){}
+     if(uiGlobal.history && location.href){
+       const url=new URL(location.href);
+       url.searchParams.set('lang',lang);
+       uiGlobal.history.replaceState(uiGlobal.history.state,'',url);
+     }
+   }
+   syncHeader(lang);
    document.title=lang==='en'?settings.heading+' | Toolya':originalDocTitle;
    de.setAttribute('aria-pressed',String(lang==='de'));
    en.setAttribute('aria-pressed',String(lang==='en'));
    notice.hidden=lang!=='en';
    applyToolInterfaceLocale(document,name,lang);
    localizeVisibleAccountStatus(lang);
+   document.dispatchEvent(new document.defaultView.Event('toolya:locale-change'));
    // Keep html[lang]=de while the main application is not fully translated.
  }
- if(header){
-   const titleContainer=header.querySelector('.b3-tool-title');
-   if (!titleContainer) return;
-   titleContainer.append(switcher);
-   header.after(notice);
-   apply(selected,false);
- }
+ document.addEventListener('toolya:tool-hero-ready',()=>syncHeader(selected),{once:true});
+ if(name==='baking')document.addEventListener('toolya:backstudio-layout-ready',()=>apply(selected,false),{once:true});
+ apply(selected,false);
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mountToolLanguage,{once:true});
 else mountToolLanguage();

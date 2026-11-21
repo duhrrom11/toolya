@@ -1,4 +1,4 @@
-.ty-tool-language{display:flex;gap:.25rem;align-items:center;padding:.22rem;border:1px solid #a2cad0;border-radius:99px;background:white;flex-shrink:0}
+.ty-tool-language{display:flex;width:max-content;margin-top:.5rem;gap:.25rem;align-items:center;padding:.22rem;border:1px solid #a2cad0;border-radius:99px;background:white;flex-shrink:0}
 .ty-tool-language button{font:inherit;font-size:.82rem;font-weight:750;padding:.3rem .65rem;background:transparent;border:0;border-radius:99px;color:#28465b;cursor:pointer}
 .ty-tool-language button[aria-pressed="true"]{background:#126d77;color:white}
 .ty-tool-language button:focus-visible{outline:3px solid #6941ba;outline-offset:2px}

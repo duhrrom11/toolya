@@ -177,3 +177,20 @@ test('household inventory, savings and receipt editing localize display copy onl
  assert.match(html,/escapeUserHtml\(g\.title\)/,'savings goal titles still escaped');
  assert.match(html,/editingReceiptId = id/,'receipt edit identity not replaced');
 });
+
+test('translated implicit option values stay stable and Backstudio copy is reversible',()=>{
+ const {document}=parseHTML('<html><body><select><option>Gugelhupf</option><option value="round">Rund (Springform)</option></select><div id="bsui-app"><nav class="bsui-stepper" aria-label="Vier Schritte zum Backergebnis"><button class="bsui-step"><span>1</span><span>Form wählen</span></button></nav></div></body></html>');
+ const [bundt,round]=document.querySelectorAll('option');
+ const nav=document.querySelector('.bsui-stepper');
+ applyToolInterfaceLocale(document,'baking','en');
+ assert.equal(bundt.textContent,'Bundt');
+ assert.equal(bundt.getAttribute('value'),'Gugelhupf');
+ assert.equal(round.getAttribute('value'),'round');
+ assert.equal(nav.getAttribute('aria-label'),'Four steps for resizing a recipe');
+ assert.equal(nav.textContent,'1Choose a pan');
+ applyToolInterfaceLocale(document,'baking','de');
+ assert.equal(bundt.textContent,'Gugelhupf');
+ assert.equal(bundt.getAttribute('value'),null);
+ assert.equal(round.getAttribute('value'),'round');
+ assert.equal(nav.textContent,'1Form wählen');
+});
