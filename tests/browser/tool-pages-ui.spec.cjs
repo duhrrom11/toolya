@@ -1273,8 +1273,18 @@ for(const kind of ['housemates','baking']){
    }else{
     await page.locator('#btn-tab-rechner').click();
     await page.locator('#tab-rechner').evaluate(e=>e.scrollIntoView({block:'start'}));await inspect(page.locator('main'));await capture('calculator-'+width);
-    expect(await page.locator('main.b3-backform-main').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length)).toBe(width<1280?1:3);
-    if(width===1440)expect(await page.locator('.b3-baking-calculator-column').evaluate(e=>e.getBoundingClientRect().width)).toBeGreaterThan(750);
+    const form = await page.locator('#bsui-source').boundingBox();
+    const preview = await page.locator('#bsui-stage').boundingBox();
+    if (width === 320) {
+     expect(preview.y).toBeGreaterThanOrEqual(form.y + form.height);
+     expect(Math.abs(preview.width - form.width)).toBeLessThanOrEqual(1);
+    } else {
+     expect(preview.x).toBeGreaterThanOrEqual(form.x + form.width);
+     expect(Math.abs(preview.y - form.y)).toBeLessThanOrEqual(1);
+     if (width === 1440) expect(preview.width).toBeGreaterThan(500);
+    }
+    const recipeDetails = page.locator('#bsui-recipe-details');
+    if (await recipeDetails.getAttribute('open') === null) await recipeDetails.locator('summary').click();
     await page.locator('#recipe-input').fill('250g Mehl');
     await page.locator('#orig-d').fill('26');await page.locator('#target-d').fill('20');
     expect(Number(await page.locator('#res-factor').innerText())).toBeCloseTo(400/676,2);
