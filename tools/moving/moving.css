@@ -28,3 +28,7 @@
 #toolya-moving-transport .mv-status span{font-size:.85rem;min-width:90px;text-align:center}
 #toolya-moving-transport .mv-status button{min-width:40px;padding:7px}
 @media(max-width:550px){#toolya-moving-transport{padding:13px}#toolya-moving-transport .mv-r2-create>*{width:100%;flex:1 1 100%}#toolya-moving-transport .mv-r2-box{align-items:stretch;flex-direction:column}}
+
+#toolya-moving-transport .mv-r2-incidents{border-top:1px solid var(--b3-line,#e2e8f0);margin-top:18px;padding-top:8px}
+#toolya-moving-transport .mv-r2-incidents .mv-r2-box small{overflow-wrap:anywhere}
+#toolya-moving-transport #mv-owner-incident label{min-width:min(100%,150px)}
