@@ -1389,3 +1389,55 @@ test('baking guidance and plant-care watering tips change only visible copy, not
  applyToolInterfaceLocale(document,'baking','de');
  assert.equal(paragraphs[1].textContent,'Teighöhe entspricht exakt dem Original.');
 });
+
+test('small dashboard texts translate across four tools and restore source labels without touching values',()=>{
+ const cases=[
+  ['moving','span','Standort der Kiste','Box location'],
+  ['housemates','p','Monats-Ausgaben','Monthly expenses'],
+  ['plants','p','Überfällig','Overdue'],
+  ['baking','li','Alle Zutaten abwiegen und bereitstellen.','Weigh out and prepare all ingredients.']
+ ];
+ for(const [tool,tag,de,en] of cases){
+  const {document}=parseHTML('<html><body><main id="main-content"><'+tag+' id="label"> '+de+' </'+tag+'><label><input id="entry" value="User text"></label><p id="user" contenteditable="true">'+de+'</p></main><section id="unrelated"><'+tag+'>'+de+'</'+tag+'></section></body></html>');
+  const node=document.getElementById('label'),before=node.textContent;
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(node.textContent,' '+en+' ',tool);
+  assert.equal(document.getElementById('entry').getAttribute('value'),'User text');
+  assert.equal(document.getElementById('user').textContent,de);
+  assert.equal(document.querySelector('#unrelated '+tag).textContent,de);
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(node.textContent,before);
+ }
+});
+
+test('baking checklist stays intact while its source-owned list items translate',()=>{
+ const {document}=parseHTML('<html><body><main id="main-content"><ul><li>Butter 2 Std. vorher aus dem Kühlschrank nehmen.</li><li>Springform fetten und mit Mehl/Semmelbröseln ausstreuen.</li><li>Alle Zutaten abwiegen und bereitstellen.</li></ul><strong>Nährwerte (geschätzt):</strong><input id="recipe" value="300 g flour"></main></body></html>');
+ const list=[...document.querySelectorAll('li')],before=list.map(x=>x.textContent);
+ applyToolInterfaceLocale(document,'baking','en');
+ assert.equal(list[0].textContent,'Take butter out of the fridge two hours ahead.');
+ assert.equal(list[1].textContent,'Grease the cake pan and dust with flour or breadcrumbs.');
+ assert.equal(list[2].textContent,'Weigh out and prepare all ingredients.');
+ assert.equal(document.querySelector('strong').textContent,'Nutrition (estimated):');
+ assert.equal(document.getElementById('recipe').getAttribute('value'),'300 g flour');
+ applyToolInterfaceLocale(document,'baking','de');
+ assert.deepEqual(list.map(x=>x.textContent),before);
+});
+
+test('compact dashboard catalog uses source labels appearing in HTML and never changes stored IDs',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const source=await readFile(new URL('../../shared/toolya/i18n/interface.mjs',import.meta.url),'utf8');
+ const prefix='const toolSmallCopy=Object.freeze(';
+ const start=source.indexOf(prefix),end=source.indexOf(');\nfunction applyToolSmallCopy',start);
+ assert.ok(start>=0&&end>start);
+ const catalog=JSON.parse(source.slice(start+prefix.length,end));
+ assert.equal(Object.values(catalog).reduce((total,m)=>total+Object.keys(m).length,0),22);
+ for(const tool of ['moving','housemates','plants','baking']){
+  const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
+  for(const [sourceText,translation] of Object.entries(catalog[tool])){
+   assert.ok(html.includes(sourceText),tool+': missing source label '+sourceText);
+   assert.ok(translation&&translation!==sourceText,'missing translation for '+sourceText);
+  }
+ }
+ assert.match(source,/el\.children\.length\|\|el\.isContentEditable/);
+ assert.match(source,/originals\.get\(el\)\?\.get\('text'\)/);
+});
