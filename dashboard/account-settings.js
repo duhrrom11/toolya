@@ -97,6 +97,8 @@ async function saveRecovery(){
  const a=$('recoveryPassword'),b=$('recoveryPasswordConfirm');
  if(a.value.length<8||a.value!==b.value){message('Bitte zwei identische Passwörter mit mindestens 8 Zeichen eingeben.');return}
  recoverySaving=true;
+ const saveButton=$('saveRecovery');
+ saveButton.disabled=true;
  try{
   try{
    const {error}=await client.auth.updateUser({password:a.value});if(error)throw error;
@@ -107,8 +109,14 @@ async function saveRecovery(){
   try{
    const {error}=await client.auth.signOut();if(error)throw error;
    ++authRequest;renderUser(null);message('Passwort geändert. Bitte erneut anmelden.');
-  }catch{message('Passwort geändert, aber Abmelden fehlgeschlagen. Bitte melde dich manuell ab.')}
- }finally{recoverySaving=false}
+  }catch{
+   void refresh();
+   message('Passwort geändert, aber Abmelden fehlgeschlagen. Bitte melde dich manuell ab.');
+  }
+ }finally{
+  recoverySaving=false;
+  saveButton.disabled=false;
+ }
 }
 $('settingsBtn').addEventListener('click',openSettings);
 $('userInfo').addEventListener('click',openSettings);
@@ -120,8 +128,13 @@ $('registerUser').addEventListener('click',register);
 $('logoutUser').addEventListener('click',logout);
 $('forgotPassword').addEventListener('click',reset);
 $('saveRecovery').addEventListener('click',saveRecovery);
-if(new URLSearchParams(location.search).has('auth')||new URLSearchParams(location.search).has('settings')){
- openSettings();history.replaceState(null,'',location.pathname+location.hash);
+const params=new URLSearchParams(location.search);
+if(params.has('auth')||params.has('settings')){
+ openSettings();
+ params.delete('auth');
+ params.delete('settings');
+ const query=params.toString();
+ history.replaceState(history.state,'',location.pathname+(query?'?'+query:'')+location.hash);
 }
 if(client){
  client.auth.onAuthStateChange((event,session)=>{

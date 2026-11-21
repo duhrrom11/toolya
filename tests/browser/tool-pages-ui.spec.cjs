@@ -21,7 +21,10 @@ async function isolated(page,authenticated,displayCss=false,initialSnapshot=null
               auth:{
                 async getUser(){return {data:{user:m.signedIn?{id:'ui-fixture-user',email:'mock@example.invalid',is_anonymous:false}:null},error:null}},
                 async getSession(){return {data:{session:null},error:null}},
-                onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}},
+                onAuthStateChange(listener){
+                  if(m.fixture?.__recovery)(m.authListeners??=[]).push(listener);
+                  return {data:{subscription:{unsubscribe(){}}}};
+                },
                 async signOut(){m.signedIn=false;return {error:null}},
                 async signInWithPassword(){m.signedIn=true;return {data:{user:{id:'ui-fixture-user'}},error:null}}
               },
@@ -1468,6 +1471,60 @@ test('dashboard: shared actions, task rows and account dialog at three widths',a
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  }
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);expect(errors).toEqual([]);
+});
+
+test('dashboard recovery keeps English and restores manual sign-out after an auth failure',async({page})=>{
+ await isolated(page,true,true,{__dashboard:true,__recovery:true});
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/dashboard/?auth=1&lang=en');
+ await expect(page).toHaveURL(new RegExp('/dashboard/\\?lang=en$'));
+ await expect(page.locator('button[data-dashboard-locale="en"]')).toHaveAttribute('aria-pressed','true');
+ await page.evaluate(()=>{
+  const mock=window.__toolyaMock;
+  const auth=window.toolyaDashboardAuthClient.auth;
+  mock.recoveryCalls=[];
+  auth.updateUser=()=>new Promise(resolve=>{
+   mock.recoveryCalls.push('update');
+   mock.finishUpdate=(error)=>resolve({error});
+  });
+  auth.signOut=async()=>{
+   mock.recoveryCalls.push('signOut');
+   if(mock.recoveryCalls.filter(call=>call==='signOut').length===1)return {error:{message:'Synthetic network error'}};
+   mock.signedIn=false;
+   return {error:null};
+  };
+  for(const listener of mock.authListeners)listener('PASSWORD_RECOVERY',{access_token:'synthetic-token'});
+ });
+ const panel=page.locator('#passwordRecoveryPanel');
+ const password=page.locator('#recoveryPassword');
+ const confirmation=page.locator('#recoveryPasswordConfirm');
+ const submit=page.locator('#saveRecovery');
+ const status=page.locator('#loginMessage');
+ const signOut=page.locator('#logoutUser');
+ await expect(panel).toBeVisible();
+ await expect(password).toBeFocused();
+ await password.fill('synthetic-password');
+ await confirmation.fill('synthetic-password');
+ await submit.click();
+ await expect(submit).toBeDisabled();
+ await submit.dispatchEvent('click');
+ expect(await page.evaluate(()=>window.__toolyaMock.recoveryCalls)).toEqual(['update']);
+ await page.evaluate(()=>window.__toolyaMock.finishUpdate({message:'Synthetic update failure'}));
+ await expect(status).toHaveText('The password could not be changed. Request a new reset link.');
+ await expect(submit).toBeEnabled();
+ await expect(password).toHaveValue('synthetic-password');
+ await submit.click();
+ await page.evaluate(()=>window.__toolyaMock.finishUpdate(null));
+ await expect(panel).toBeHidden();
+ await expect(password).toHaveValue('');
+ await expect(confirmation).toHaveValue('');
+ await expect(status).toHaveText('Password changed, but signing out failed. Please sign out manually.');
+ await expect(signOut).toBeVisible();
+ await signOut.click();
+ await expect(status).toHaveText('Signed out.');
+ await expect(page.locator('#signedOutControls')).toBeVisible();
+ expect(await page.evaluate(()=>window.__toolyaMock.recoveryCalls)).toEqual(['update','update','signOut','signOut']);
+ expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
 });
 
 for(const kind of ['car','budget','moving','meters','pet-health'])test(kind+': help and backup controls stay readable and keyboard accessible',async({page},testInfo)=>{
