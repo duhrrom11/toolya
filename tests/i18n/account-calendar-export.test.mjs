@@ -95,11 +95,11 @@ for (const name of ['car', 'pet-health']) {
    setTimeout:fn=>fn(),Date
   };
   runInNewContext(src,context);
-  const title='Private, title;\\\\note\\nEND:VEVENT\\nBEGIN:VEVENT\\nSUMMARY:injected';
+  const title='Private, title;\\note\nEND:VEVENT\nBEGIN:VEVENT\nSUMMARY:injected';
   runInNewContext('downloadICS(title, dateStr)',{...context,title,dateStr:'2026-11-21'});
-  assert.equal((content.match(/BEGIN:VEVENT/g)||[]).length,1);
-  assert.equal((content.match(/END:VEVENT/g)||[]).length,1);
-  assert.ok(content.includes('SUMMARY:Private\\\\, title\\\\;\\\\\\\\note\\\\nEND:VEVENT\\\\nBEGIN:VEVENT\\\\nSUMMARY:injected\\n'));
-  assert.ok(!content.includes('\\nBEGIN:VEVENT\\nSUMMARY:injected'));
+  assert.equal((content.match(/^BEGIN:VEVENT$/gm)||[]).length,1);
+  assert.equal((content.match(/^END:VEVENT$/gm)||[]).length,1);
+  assert.ok(content.includes('SUMMARY:Private\\, title\\;\\\\note\\nEND:VEVENT\\nBEGIN:VEVENT\\nSUMMARY:injected\n'));
+  assert.ok(!content.includes('\nBEGIN:VEVENT\nSUMMARY:injected'));
  });
 }
