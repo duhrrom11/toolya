@@ -2450,3 +2450,15 @@ test('Sprint A PDF export error captures the request-time language before async 
  assert.match(source,/const requestLanguage = window\.__toolyaUILocale === 'en' \? 'en' : 'de'/);
  assert.match(source,/window\.alert\(requestLanguage === 'en' \? 'Could not create the PDF/);
 });
+
+
+test('Sprint A QR export captures request locale before async loading and prints numeric backup values safely',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const src=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
+ const qr=src.slice(src.indexOf('async function exportQrLabelsPDF()'),src.indexOf('async function showQrCode('));
+ assert.match(qr,/const exportLanguage = window\.__toolyaUILocale === 'en' \? 'en' : 'de'/);
+ assert.match(qr,/Number\(b\.value \|\| 0\)\.toFixed\(2\)/);
+ assert.ok(!qr.slice(qr.indexOf('const QRCode = await loadQrGenerator()')).includes('window.__toolyaUILocale'),'export labels must use request-time language');
+ assert.match(qr,/exportLanguage === 'en' \? \(\{ Standard:/);
+ assert.match(qr,/const deepLinkUrl = `\$\{window\.location\.origin\}\$\{window\.location\.pathname\}\?box=\$\{b\.id\}`/);
+});
