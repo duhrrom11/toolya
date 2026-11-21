@@ -819,3 +819,41 @@ test('saved household redirect keeps explicitly requested DE/EN and does not for
   assert.equal(redirected,expected);
  }
 });
+
+test('registration outcome messages require an actual auth session across three tools',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const pending='Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.';
+ const ready='Angemeldet. Dein Konto ist einsatzbereit.';
+ for(const [tool,method,nextMethod] of [
+  ['moving','registerUser','loginUser'],
+  ['plants','supabaseRegister','supabaseLogin'],
+  ['baking','supabaseRegister','supabaseLogin']
+ ]){
+  const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
+  const start=html.indexOf('async function '+method+'() {');
+  const end=html.indexOf('async function '+nextMethod+'()',start);
+  assert.ok(start>0&&end>start,tool+' registration function exists');
+  const fragment=html.slice(start,end);
+  for(const [session,expected] of [[null,pending],[{access_token:'opaque'},ready]]){
+   const messages=[];
+   const mockClient={auth:{signUp:async()=>({data:{session},error:null})}};
+   const values={'loginEmail':'someone@example.org','loginPassword':'example','auth-email':'someone@example.org','auth-password':'example'};
+   const ctx={
+    document:{getElementById:id=>({value:values[id]||''})},
+    window:{supabaseClient:mockClient},
+    supabaseClient:mockClient,
+    alert:msg=>messages.push(msg),
+    updateUserDisplay:async()=>{},
+    checkUserSession:async()=>{},
+    closeSettings:()=>{}
+   };
+   createContext(ctx);
+   runInContext(fragment,ctx);
+   await runInContext(method+'()',ctx);
+   assert.deepEqual(messages,[expected],tool+' message depends on a real session');
+   assert.equal(mockClient.auth.signUp instanceof Function,true);
+   assert.equal(translateToolDialog(tool,'en',expected),session?'Signed in. Your account is ready.':'Request processed. If confirmation is required, check your inbox and verify your email address, then sign in.');
+  }
+ }
+});
