@@ -1945,15 +1945,15 @@ async function toolyaCloudBoot(tool) {
             });
             const money = amount => (pdfEn ? amount.toFixed(2) : amount.toFixed(2).replace('.', ',')) + ' EUR';
             doc.setFontSize(11);
-            doc.text(pdfLabel(pdfLabel("Zusammenfassung (alle Buchungen)","Summary (all transactions)"),"Summary (all transactions)"), 14, 39);
+            doc.text(pdfLabel("Zusammenfassung (alle Buchungen)","Summary (all transactions)"), 14, 39);
             doc.setFontSize(10);
-            doc.text(pdfLabel(pdfLabel("Buchungen: ","Transactions: "),"Transactions: ") + validEntries, 14, 46);
-            doc.text(pdfLabel(pdfLabel("Einnahmen: ","Income: "),"Income: ") + money(totalIncome), 14, 52);
-            doc.text(pdfLabel(pdfLabel("Ausgaben: ","Expenses: "),"Expenses: ") + money(totalExpense), 14, 58);
-            doc.text(pdfLabel(pdfLabel("Saldo: ","Balance: "),"Balance: ") + money(totalIncome - totalExpense), 14, 64);
+            doc.text(pdfLabel("Buchungen: ","Transactions: ") + validEntries, 14, 46);
+            doc.text(pdfLabel("Einnahmen: ","Income: ") + money(totalIncome), 14, 52);
+            doc.text(pdfLabel("Ausgaben: ","Expenses: ") + money(totalExpense), 14, 58);
+            doc.text(pdfLabel("Saldo: ","Balance: ") + money(totalIncome - totalExpense), 14, 64);
             const formatDate = value => value.slice(8, 10) + (pdfEn ? '/' : '.') + value.slice(5, 7) + (pdfEn ? '/' : '.') + value.slice(0, 4);
-            const period = earliestDate && latestDate ? formatDate(earliestDate) + pdfLabel(' bis ', ' to ') + formatDate(latestDate) : pdfLabel(pdfLabel("Keine gültigen Buchungsdaten","No valid transaction dates"),"No valid transaction dates");
-            doc.text(pdfLabel(pdfLabel("Zeitraum: ","Period: "),"Period: ") + period, 14, 70);
+            const period = earliestDate && latestDate ? formatDate(earliestDate) + pdfLabel(' bis ', ' to ') + formatDate(latestDate) : pdfLabel("Keine gültigen Buchungsdaten","No valid transaction dates");
+            doc.text(pdfLabel("Zeitraum: ","Period: ") + period, 14, 70);
 
             // Chronologisch ausgeben, ohne die gespeicherte Reihenfolge zu verändern.
             const bookingDate = r => {
@@ -1973,8 +1973,8 @@ async function toolyaCloudBoot(tool) {
             sortedData.forEach((r) => {
                 const sign = (r.entryType === 'einnahme' || r.category === 'Einnahme') ? '+' : '-';
                 const price = Number(r.price);
-                const amount = Number.isFinite(price) ? sign + price.toFixed(2) : pdfLabel(pdfLabel("k.A.","n/a"),"n/a");
-                const line = `${r.date || pdfLabel(pdfLabel("k.A.","n/a"),"n/a")} | ${r.title || pdfLabel(pdfLabel("Ohne Titel","Untitled"),"Untitled")} (${r.category || pdfLabel(pdfLabel("Sonstiges","Other"),"Other")}): ${amount} € [${r.paymentMethod || pdfLabel(pdfLabel("k.A.","n/a"),"n/a")}]`;
+                const amount = Number.isFinite(price) ? sign + price.toFixed(2) : pdfLabel("k.A.","n/a");
+                const line = `${r.date || pdfLabel("k.A.","n/a")} | ${r.title || pdfLabel("Ohne Titel","Untitled")} (${r.category || pdfLabel("Sonstiges","Other")}): ${amount} € [${r.paymentMethod || pdfLabel("k.A.","n/a")}]`;
                 const lines = doc.splitTextToSize(line, 180);
                 for (const textLine of lines) {
                     if (y > 275) { doc.addPage(); y = 20; }
