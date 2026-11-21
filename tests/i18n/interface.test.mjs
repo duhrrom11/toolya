@@ -138,3 +138,17 @@ test('calculated baking and plant-care feedback has explicit DE/EN branches',asy
   assert.match(html,/window\.__toolyaUILocale === ['"]en['"]/);
  }
 });
+
+test('dynamic empty states and labels are localized in each tool without touching stored fields',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const cases={
+  moving:['No items recorded.','No locations added yet.','QR code for: '],
+  housemates:['No upcoming events or slots.','No matching bookings.','No contracts added.','No members yet.','Edit member','Add new member','The household could not be loaded safely.'],
+  plants:['No photos.','No plants added yet.'],
+  baking:['Overall ratio','No saved recipes yet.']
+ };
+ for(const [tool,expected] of Object.entries(cases)){
+  const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
+  for(const translation of expected) assert.ok(html.includes(translation),tool+': '+translation);
+ }
+});
