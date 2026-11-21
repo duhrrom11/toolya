@@ -2,6 +2,25 @@
 import {estateText} from './estate-copy.mjs';
 import {applyEstateLocale} from './estate-dom.mjs';
 const key='toolya-locale-v1';
+const trustedStatusIds=['message','entry-file-status','mail-status','keyStatus','exportStatus',
+ 'openStatus','countdown','confirm-title','confirm-text'];
+function translateEstateStatuses(lang){
+ for(const id of trustedStatusIds){
+  const el=document.getElementById(id);
+  if(!el||el.children.length||el.isContentEditable)continue;
+  const old=el.textContent,next=estateText(old,lang);
+  if(old!==next)el.textContent=next;
+ }
+}
+function observeEstateStatuses(currentLanguage){
+ if(typeof MutationObserver!=='function')return;
+ const observer=new MutationObserver(()=>translateEstateStatuses(currentLanguage()));
+ for(const id of trustedStatusIds){
+  const el=document.getElementById(id);
+  if(el)observer.observe(el,{childList:true,characterData:true,subtree:true});
+ }
+}
+
 function saved(){const q=new URLSearchParams(location.search).get('lang');
 if(q==='de'||q==='en')return q;
 try{return localStorage.getItem(key)==='en'?'en':'de'}catch{return 'de'}}
@@ -29,11 +48,14 @@ function mount(){
    history.replaceState(history.state,'',url.pathname+url.search+url.hash);
   }
   applyEstateLocale(document,lang);
+  globalThis.__toolyaEstateLocale=lang;
+  translateEstateStatuses(lang);
   document.title=lang==='en'?estateText(originalTitle.replace(' | Toolya',''),'en')+' | Toolya':originalTitle;
   nav?.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.estateLocale===lang)));
   if(notice)notice.hidden=lang!=='en';
   document.dispatchEvent(new Event('toolya:estate-locale-change'));
  }
+ observeEstateStatuses(()=>lang);
  apply(lang,false);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();

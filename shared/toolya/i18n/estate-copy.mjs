@@ -104,6 +104,96 @@ export const ESTATE_COPY=Object.freeze({
  "Drucken / Als PDF speichern": "Print / Save as PDF"
 });
 const reverse=Object.freeze(Object.fromEntries(Object.entries(ESTATE_COPY).map(([de,en])=>[en,de])));
+export const ESTATE_RUNTIME_COPY=Object.freeze({
+ "Dein Tresor ist geschlossen.": "Your vault is locked.",
+ "Dein Tresor wird geöffnet …": "Opening your vault…",
+ "Deine Online-Sicherung konnte gerade nicht geladen werden. Prüfe deine Verbindung und öffne deinen Tresor erneut.": "Your online backup could not be loaded. Check your connection and open your vault again.",
+ "Dieser Gerätetresor gehört zu einem anderen Konto. Bitte verwende das passende Konto oder ein anderes Browserprofil.": "This device vault belongs to a different account. Use the matching account or another browser profile.",
+ "Dein Tresor ist geöffnet und online gesichert. Bitte überprüfe deine Unterlagen und Vertrauenspersonen unter „Lebenszeichen“.": "Your vault is open and backed up online. Review your documents and trusted people under 'Check-in'.",
+ "Dein Tresor ist geöffnet und online gesichert.": "Your vault is open and backed up online.",
+ "Deine Unterlagen sind online gesichert. Der Lesezugang und Schlüsseländerungen wurden noch nicht bestätigt. Wähle „Jetzt online sichern“ erneut.": "Your documents are backed up online, but read access and key changes have not been confirmed. Select 'Back up online now' again.",
+ "Kein Notfallalarm. Es sind zwei persönliche Schlüssel erforderlich.": "No emergency alert. Two personal keys are required.",
+ "Ein Notfall wurde gemeldet. Die Alarm-E-Mail wird noch zugestellt. Es gibt noch keine Ein-Personen-Freigabe.": "An emergency was reported. The alert email is still being delivered. One-person access is not yet available.",
+ "Die 24 Stunden sind abgelaufen. Eine Vertrauensperson kann deine Unterlagen mit ihrem Schlüssel lesen.": "The 24-hour period has ended. A trusted person can now read your documents with their key.",
+ "Der E-Mail-Versand ist noch nicht eingerichtet. Der 24-Stunden-Notfallalarm und Erinnerungsmails bleiben deshalb gesperrt. Der Zugang mit zwei Schlüsseln funktioniert.": "Email delivery is not configured. Emergency alerts and email reminders are disabled; access with two keys still works.",
+ "Noch keine Einträge.": "No entries yet.",
+ "Noch keine Überprüfung bestätigt.": "No review has been confirmed yet.",
+ "Hier ist Platz für deine erste Unterlage.": "Add your first document here.",
+ "Bitte eine Datei bis 250 KB auswählen.": "Choose a file of up to 250 KB.",
+ "Eintrag verschlüsselt gespeichert.": "Entry saved in encrypted form.",
+ "Nachricht vorbereitet. Bitte sende sie in deiner E-Mail- oder WhatsApp-App selbst ab.": "Message prepared. Send it yourself using your email or WhatsApp app.",
+ "Neuer Schlüssel – noch nicht übergeben": "New key – not yet handed over",
+ "Alter Schlüssel widerrufen. Bitte den neuen Schlüssel weitergeben.": "Old key revoked. Give the new key to the intended person.",
+ "Person entfernt und Schlüssel online widerrufen.": "Person removed and key revoked online.",
+ "Bitte entferne zuerst eine Person. Du kannst höchstens zehn Vertrauenspersonen anlegen.": "Remove a contact first. You can have up to ten trusted people.",
+ "Diese E-Mail-Adresse gehört bereits zu einer Vertrauensperson.": "This email address already belongs to a trusted contact.",
+ "Bitte bestätige dein Konto-Passwort. Damit beendest du einen laufenden Alarm und die Ein-Personen-Freigabe.": "Confirm your account password. This ends any active alert and one-person access.",
+ "Bitte prüfe dein Konto-Passwort.": "Check your account password.",
+ "Dein Lebenszeichen ist angekommen. Für neue Zugriffe sind zwei Schlüssel erforderlich.": "Your check-in was received. Two keys are required for new access.",
+ "Bestattungswünsche verschlüsselt gespeichert.": "Funeral wishes saved in encrypted form.",
+ "Intervall gespeichert.": "Interval saved.",
+ "Überprüfung vermerkt.": "Review recorded.",
+ "Dein Name ist gespeichert.": "Your name was saved.",
+ "Online-Sicherung und Lesezugang sind auf dem aktuellen Stand.": "Online backup and read access are up to date.",
+ "Bitte verwende mindestens zwölf Zeichen.": "Use at least twelve characters.",
+ "Gib das Passwort der Sicherung ein.": "Enter the backup password.",
+ "Bitte reduziere zuerst deine Vertrauenspersonen auf weniger als zehn.": "Reduce the number of trusted contacts to fewer than ten first.",
+ "Der Gerätetresor und die Online-Sicherung gehören zu unterschiedlichen Tresoren. Beide Stände bleiben unverändert. Bitte nutze ein anderes Browserprofil.": "The device vault and online backup belong to different vaults. Both copies remain unchanged. Use another browser profile.",
+ "Der Tresor wurde auf einem anderen Gerät geändert. Nutze zunächst das Gerät mit dem aktuellen Stand. Deine Änderungen hier bleiben verschlüsselt erhalten.": "The vault was changed on another device. Use the device with the latest copy first. Your local changes remain encrypted.",
+ "Bitte melde dich erneut an.": "Sign in again.",
+ "Bitte sichere zuerst deinen Tresor online.": "Back up your vault online first.",
+ "Zu viele Versuche. Bitte warte eine Minute.": "Too many attempts. Wait one minute.",
+ "Die Alarm-E-Mail ist noch nicht eingerichtet. Es wurde kein Alarm gestartet.": "The alert email service is not configured. No alert has started.",
+ "Bitte bestätige dein Konto-Passwort erneut.": "Confirm your account password again.",
+ "Das hat nicht geklappt. Prüfe deine Verbindung und deine Passwörter. Vorhandene Daten bleiben erhalten.": "That did not work. Check your connection and passwords. Existing data remains unchanged.",
+ "Kein aktiver Notfallalarm. Zwei verschiedene Schlüssel sind erforderlich.": "No active emergency alert. Two different keys are required.",
+ "Der Notfall wurde gemeldet. Die E-Mail wird noch zugestellt. Die 24-Stunden-Frist beginnt erst nach bestätigter Zustellung an den E-Mail-Dienst.": "The emergency was reported. The email is still being delivered. The 24-hour period begins only after the email service confirms delivery.",
+ "Die 24 Stunden sind abgelaufen. Du kannst den Tresor mit deinem persönlichen Schlüssel lesen.": "The 24-hour period has elapsed. You can now read the vault using your personal key.",
+ "Die Frist ist abgelaufen. Bitte prüfe den aktuellen Alarmstatus.": "The waiting period has ended. Check the current alert status.",
+ "Der Tresor konnte nicht geöffnet werden. Prüfe deine Verbindung und versuche es erneut.": "The vault could not be opened. Check your connection and try again.",
+ "Der Tresor ist geschlossen.": "The vault is locked.",
+ "Im Tresor liegen noch keine Unterlagen.": "There are no documents in this vault yet.",
+ "Öffentlicher Schlüssel heruntergeladen. Nur diese Datei an den Nachlassbesitzer weitergeben. Privaten Schlüssel und Passwort getrennt sicher aufbewahren.": "Public key downloaded. Give only this file to the vault owner. Keep the private key and password secure and separate.",
+ "Privater Schlüssel heruntergeladen. Jetzt den öffentlichen Schlüssel mit dem zweiten Button herunterladen. Beide Dateien sind für die Übergabe nötig.": "Private key downloaded. Now download the public key using the second button. Both files are required for the handover.",
+ "Schlüsselerstellung fehlgeschlagen.": "Key generation failed.",
+ "Verschlüsseltes Nachlasspaket erstellt. Nur der passende private Erbenschlüssel kann es öffnen. Bereits übergebene Kopien lassen sich später nicht zurückrufen.": "Encrypted estate package created. Only the matching private recipient key can open it. Previously handed-over copies cannot be revoked later.",
+ "Übergabe fehlgeschlagen.": "Handover failed.",
+ "Deine Daten sind geöffnet.": "Your data is open.",
+ "Entschlüsselung fehlgeschlagen. Bitte passenden privaten Schlüssel und Nachlassdatei prüfen.": "Decryption failed. Check the matching private key and estate file.",
+ "Ungültiges Dateiformat.": "Invalid file format.",
+ "Datei fehlt oder ist zu groß (max. 5 MB).": "File missing or too large (maximum 5 MB).",
+ "Ungültige private Schlüsseldatei.": "Invalid private key file.",
+ "Bitte zuerst den öffentlichen Schlüssel herunterladen, bevor du ein neues Schlüsselpaar erstellst.": "Download the public key before creating another key pair.",
+ "Passwörter stimmen nicht überein.": "The passwords do not match.",
+ "Bitte die unwiderrufliche Übergabe ausdrücklich bestätigen.": "Explicitly confirm the irreversible handover.",
+ "Ungültiger öffentlicher Erbenschlüssel.": "Invalid recipient public key.",
+ "Kein geeigneter lokaler Tresor vorhanden.": "No suitable local vault found.",
+ "Lokaler Tresor unvollständig.": "Local vault is incomplete.",
+ "Tresorinhalt zu groß.": "Vault content is too large.",
+ "Tresorinhalt ungültig.": "Vault content is invalid.",
+ "Nachlass zu groß für diese Übergabe.": "Estate package is too large for this handover.",
+ "Schlüssel oder Nachlassdatei haben ein ungültiges Format.": "The key or estate file has an invalid format.",
+ "Ungültiger privater Schlüssel.": "Invalid private key.",
+ "Ungültiges Paket.": "Invalid package.",
+ "Ungültiger Schlüssel.": "Invalid key.",
+ "Nachlassinhalt zu groß.": "Estate content is too large.",
+ "Nachlassinhalt ungültig.": "Estate content is invalid."
+});
+const runtimeReverse=Object.freeze(Object.fromEntries(Object.entries(ESTATE_RUNTIME_COPY).map(([de,en])=>[en,de])));
+const runtimePrefixes=Object.freeze({
+ "Verbleibende Zeit: ": "Time remaining: ",
+ "Nächste Überprüfung: ": "Next review: ",
+ "Ein Notfall wurde gemeldet. Ohne Entwarnung ist der Zugang mit einem Schlüssel ab ": "An emergency was reported. Without a check-in, one-key access begins at ",
+ "Die 24-Stunden-Frist läuft. Der Zugang mit einem Schlüssel ist frühestens am ": "The 24-hour period is running. One-key access is available no earlier than "
+});
+const reversePrefixes=Object.freeze(Object.fromEntries(Object.entries(runtimePrefixes).map(([de,en])=>[en,de])));
+
 export function estateText(value,lang){if(typeof value!=='string')return value;
 const dict=lang==='en'?ESTATE_COPY:reverse;
-return Object.hasOwn(dict,value)?dict[value]:value}
+if(Object.hasOwn(dict,value))return dict[value];
+const runtime=lang==='en'?ESTATE_RUNTIME_COPY:runtimeReverse;
+if(Object.hasOwn(runtime,value))return runtime[value];
+const dynamicPrefixes=lang==='en'?runtimePrefixes:reversePrefixes;
+for(const [before,after] of Object.entries(dynamicPrefixes))
+ if(value.startsWith(before))return after+value.slice(before.length);
+return value}
