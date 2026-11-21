@@ -21,7 +21,7 @@ export async function createExportPdf() {
     await pendingLibrary;
     return new window.jspdf.jsPDF();
   } catch {
-    window.alert('Das PDF konnte nicht erstellt werden. Bitte versuche es erneut.');
+    window.alert(window.__toolyaUILocale === 'en' ? 'Could not create the PDF. Please try again.' : 'Das PDF konnte nicht erstellt werden. Bitte versuche es erneut.');
     return null;
   }
 }
