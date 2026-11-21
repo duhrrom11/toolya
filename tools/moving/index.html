@@ -884,6 +884,11 @@
             }).join('') || `<p class="text-sm text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No matching entries found.' : 'Keine passenden Einträge gefunden.'}</p>`;
         }
 
+        // Rebuild the visible card list after manual language changes; never save data.
+        document.addEventListener('toolya:locale-change', () => {
+            if (document.getElementById('inventoryContainer')) renderInventory();
+        });
+
         async function exportInventoryPDF() {
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
@@ -1123,7 +1128,7 @@
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 220, height: 150 } },
                 (decodedText) => {
-                    resBox.innerText = `Erkannt: ${decodedText}`;
+                    resBox.innerText = `${window.__toolyaUILocale === 'en' ? 'Detected' : 'Erkannt'}: ${decodedText}`;
                     resBox.classList.remove('hidden');
 
                     if (decodedText.includes('?box=')) {
