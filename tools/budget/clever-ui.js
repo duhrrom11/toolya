@@ -131,7 +131,7 @@ function renderShopping(host,data,priceMap){
   search.addEventListener('input',draw);draw();
  }
  const list=section(grid,'2 · Mein nächster Einkauf','So viel kostet die Einkaufsliste ungefähr.');
- const form=e('form',list,'cs-inline');const name=field(form,'Artikel','text','',{placeholder:'z. B. Milch 1 l'}),quantity=field(form,'Anzahl','number','1',{min:0.01,step:0.25});
+ const form=e('form',list,'cs-inline');const name=field(form,'Artikel','text','',{placeholder:'z. B. Milch 1 l'}),quantity=field(form,'Anzahl','number','1',{min:0,step:0.25});
  const price=field(form,'Eigener Preis (optional)','number','',{min:0,step:0.01});
  const submit=e('button',form,'cs-button cs-primary','+ Zur Liste');submit.type='submit';
  form.addEventListener('submit',ev=>{
@@ -164,7 +164,7 @@ function renderShopping(host,data,priceMap){
  const ingredientName=field(ingredientForm,'Zutat','text','',{placeholder:'z. B. Nudeln 500g'});
  const datalist=e('datalist',ingredientForm);datalist.id='cs-price-suggestions';ingredientName.setAttribute('list',datalist.id);
  for(const p of C.priceSummary(priceMap).slice(0,180)){const option=e('option',datalist);option.value=p.name}
- const ingredientQty=field(ingredientForm,'Wie oft brauchst du es?','number','1',{min:.01,step:.25});
+ const ingredientQty=field(ingredientForm,'Wie oft brauchst du es?','number','1',{min:0,step:.25});
  const selectedIngredients=[];const selectedHost=e('div',ingredients,'cs-recipe-selected');
  const drawSelected=()=>{selectedHost.replaceChildren();
   for(const [index,item] of selectedIngredients.entries()){
@@ -344,7 +344,7 @@ function drawReceiptItems(){
   check.addEventListener('change',()=>{item.selected=check.checked;receiptSubtotal()});
   const name=field(row,'Artikel','text',item.name||'',{placeholder:'z. B. Milch 1 l'});
   name.addEventListener('change',()=>{item.name=name.value.slice(0,100)});
-  const quantity=field(row,'Anzahl','number',item.quantity||1,{min:.01,step:.25});
+  const quantity=field(row,'Anzahl','number',item.quantity||1,{min:0,step:.25});
   quantity.addEventListener('change',()=>{item.quantity=Number(quantity.value);receiptSubtotal()});
   const sum=field(row,'Preis gesamt (€)','number',item.total??'',{min:.01,step:.01});
   sum.addEventListener('change',()=>{item.total=Number(sum.value);receiptSubtotal()});
