@@ -41,12 +41,12 @@
 .dashboard-settings-close{display:flex;justify-content:flex-end;padding-top:16px}
 .dashboard-settings-close button{background:#e9f2f4;color:#20515b}
 @media(max-width:740px){
- .b3-hub-topbar{gap:6px;padding:10px 12px;flex-wrap:wrap}
+ .b3-hub-topbar{gap:6px;padding:10px 12px}
  .b3-hub-logo{font-size:20px}
  .b3-hub-logo-mark,.b3-hub-nav [aria-current=page],.b3-hub-nav .ty-settings-label{display:none}
- .b3-hub-nav{gap:4px;justify-content:flex-end;flex:1 1 auto}
- .b3-hub-nav a,.b3-hub-nav button{font-size:12px;padding:6px}
- .b3-hub-nav #settingsBtn{width:44px;height:44px}
+ .b3-hub-nav{gap:4px;justify-content:flex-end;flex:1;min-width:0;flex-wrap:nowrap}
+ .b3-hub-nav a,.b3-hub-nav button{font-size:12px;padding:6px;white-space:normal;text-align:center;line-height:1.2}
+ .b3-hub-nav #settingsBtn{flex:0 0 44px;width:44px;height:44px}
  .dashboard-settings-panel{padding:16px}
  .dashboard-account-actions{grid-template-columns:1fr}
 }

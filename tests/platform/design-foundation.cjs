@@ -123,7 +123,18 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   await dashboard.locator('#favorites a').waitFor();
   assert.match(await dashboard.locator('#favorites').textContent(), /Amazon-Wunschlisten finden/);
   assert.equal(await dashboard.locator('#fav-count').textContent(), '1');
-  assert((await dashboard.locator('.b3-hub-topbar').boundingBox()).height <= 65, 'dashboard header fits on one row');
+  for (const width of [320, 390, 700]) {
+   await dashboard.setViewportSize({width,height:900});
+   const header = await dashboard.locator('.b3-hub-topbar').evaluate(node =>
+    [...node.querySelectorAll('.b3-hub-logo, nav > a:first-child, #userInfo, #settingsBtn')].map(control => {
+     const {left,right,top,bottom} = control.getBoundingClientRect();
+     return {left,right,center:(top+bottom)/2};
+    })
+   );
+   assert(header.every(box => box.left >= 0 && box.right <= width && Math.abs(box.center - header[0].center) < 2),
+    'dashboard navigation fits on one row at '+width);
+  }
+  await dashboard.setViewportSize({width:320,height:900});
   assert(await dashboard.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
   await star.press('Enter');
   assert.equal(await star.getAttribute('aria-pressed'), 'false');
