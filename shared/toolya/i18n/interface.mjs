@@ -1532,6 +1532,19 @@ const dialogCopy = Object.freeze({
   'Timer abgelaufen!':'Timer finished!'
  }
 });
+/* Shared authentication and file-operation error prefixes are translated without
+   modifying the trailing server diagnostic, user-entered text or identifiers. */
+const sharedDialogPrefixes = Object.freeze({
+ 'Anmeldung fehlgeschlagen: ':'Sign-in failed: ',
+ 'Registrierung fehlgeschlagen: ':'Registration failed: ',
+ 'Abmeldung fehlgeschlagen: ':'Sign-out failed: ',
+ 'Passwort zurücksetzen fehlgeschlagen: ':'Password reset failed: ',
+ 'Passwort-Reset fehlgeschlagen: ':'Password reset failed: ',
+ 'Speichern fehlgeschlagen: ':'Save failed: ',
+ 'Export fehlgeschlagen: ':'Export failed: ',
+ 'Import fehlgeschlagen: ':'Import failed: ',
+ 'Netzwerkfehler: ':'Network error: '
+});
 const dialogPrefixes = Object.freeze({
  moving: { 'Abmeldung fehlgeschlagen: ':'Sign-out failed: ', 'Anmeldung fehlgeschlagen: ':'Sign-in failed: ', 'Registrierung fehlgeschlagen: ':'Registration failed: ' },
  plants: { 'Abmeldung fehlgeschlagen: ':'Sign-out failed: ', 'Anmeldung fehlgeschlagen: ':'Sign-in failed: ', 'Registrierung fehlgeschlagen: ':'Registration failed: ' },
@@ -1547,7 +1560,7 @@ export function translateToolDialog(tool, language, message) {
  if(language!=='en' || typeof message!=='string') return message;
  const exact=Object.hasOwn(dialogCopy,tool) && Object.hasOwn(dialogCopy[tool],message) ? dialogCopy[tool][message] : undefined;
  if(exact!==undefined) return exact;
- for(const [prefix,translated] of Object.entries(dialogPrefixes[tool]||{}))
+ for(const [prefix,translated] of Object.entries({...sharedDialogPrefixes,...(dialogPrefixes[tool]||{})}))
   if(message.startsWith(prefix)) {
    const detail=message.slice(prefix.length);
    return translated+(Object.hasOwn(dialogCopy,tool) && Object.hasOwn(dialogCopy[tool],detail) ? dialogCopy[tool][detail] : detail);
