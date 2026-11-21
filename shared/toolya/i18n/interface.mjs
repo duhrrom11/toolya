@@ -1445,6 +1445,8 @@ const dialogCopy = Object.freeze({
  },
  plants: {
   "Das Foto konnte nicht gelesen werden.": "Could not read the photo.",
+  "Pflanzenfoto konnte nicht verarbeitet werden. Nichts gespeichert.": "The plant photo could not be processed. Nothing was saved.",
+  "Es konnte keine eindeutige Pflanzen-ID erzeugt werden.": "Could not generate a unique plant ID.",
   "Layout konnte nicht gespeichert werden. Bitte Browser-Speicher prüfen.": "Could not save the layout. Check your browser storage.",
   'Angemeldet. Dein Konto ist einsatzbereit.':'Signed in. Your account is ready.',
   'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.':'Request processed. If confirmation is required, check your inbox and verify your email address, then sign in.',
