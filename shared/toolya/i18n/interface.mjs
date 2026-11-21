@@ -1108,6 +1108,119 @@ function applyToolSmallCopy(document,tool,language){
   if(translation!==undefined)updateElement(el,original.replace(source,translation),null,language);
  }
 }
+/* Source-exact accessibility copy on application-owned controls. Unlike
+   text node copy, this intentionally changes attributes only; form values,
+   URL destinations and any user-generated names are never touched. */
+const toolAccessibilityCopy=Object.freeze({
+  "moving": [
+    [
+      "aria-label",
+      "Symbol des Standorts",
+      "Location icon"
+    ],
+    [
+      "aria-label",
+      "Kisten-Name (z.B. Karton #3)",
+      "Box name (e.g. Box #3)"
+    ],
+    [
+      "aria-label",
+      "Inhalt / Beschreibung (z.B. Lichterketten)",
+      "Contents / description (e.g. string lights)"
+    ],
+    [
+      "title",
+      "Garantie / Ablaufdatum",
+      "Warranty / expiry date"
+    ],
+    [
+      "aria-label",
+      "Inventar nach Kennzeichnung filtern",
+      "Filter inventory by label"
+    ],
+    [
+      "aria-label",
+      "Inventar sortieren",
+      "Sort inventory"
+    ],
+    [
+      "aria-label",
+      "Bildvorschau",
+      "Image preview"
+    ],
+    [
+      "title",
+      "QR-Code & Deep-Link",
+      "QR code and deep link"
+    ]
+  ],
+  "housemates": [
+    [
+      "aria-label",
+      "Diagramm: WG-Ausgaben nach Kategorie",
+      "Chart: household expenses by category"
+    ],
+    [
+      "aria-label",
+      "Diagramm: WG-Einnahmen und Ausgaben im Vergleich",
+      "Chart: household income versus expenses"
+    ],
+    [
+      "aria-label",
+      "Buchungen nach Typ filtern",
+      "Filter transactions by type"
+    ]
+  ],
+  "plants": [
+    [
+      "aria-label",
+      "Name (z.B. Tomate Harzfeuer)",
+      "Plant name (e.g. Harzfeuer tomato)"
+    ],
+    [
+      "aria-label",
+      "Art / Sorte (z.B. Tomate)",
+      "Species / variety (e.g. tomato)"
+    ],
+    [
+      "aria-label",
+      "Standort / Beet (z.B. Gewächshaus)",
+      "Location / bed (e.g. greenhouse)"
+    ],
+    [
+      "aria-label",
+      "Wichtige Anmerkungen & Pflegehinweise...",
+      "Important notes and care instructions…"
+    ]
+  ],
+  "baking": [
+    [
+      "aria-label",
+      "Backform-Werkzeuge",
+      "Baking pan tools"
+    ],
+    [
+      "aria-label",
+      "Name des Rezepts (z.B. Omas Apfelkuchen)",
+      "Recipe name (e.g. grandma's apple cake)"
+    ],
+    [
+      "aria-label",
+      "Zutaten des Rezepts",
+      "Recipe ingredients"
+    ]
+  ]
+});
+function applyToolAccessibilityCopy(document,tool,language){
+ const pairs=toolAccessibilityCopy[tool];if(!pairs)return;
+ for(const element of document.querySelectorAll('#main-content [aria-label],#main-content [title],#settingsModal [aria-label],#settingsModal [title],.b3-backform-main [aria-label],.b3-backform-main [title],.b3-backform-tabs [aria-label]')){
+  if(element.isContentEditable||element.closest('[contenteditable="true"]'))continue;
+  for(const [attribute,source,translation] of pairs){
+   const original=originals.get(element)?.get(attribute)??element.getAttribute(attribute);
+   if(original===source)updateElement(element,translation,attribute,language);
+  }
+ }
+}
 export function applyToolInterfaceLocale(document,tool,language){
  for(const [selector,translation,attribute,attributeTranslation] of [...common,...(toolTranslations[tool]||[]),...(extendedFormTranslations[tool]||[])]){
   const translated=attribute?attributeTranslation:translation;
@@ -1123,6 +1236,7 @@ export function applyToolInterfaceLocale(document,tool,language){
  applyToolAlertCopy(document,tool,language);
  applyToolParagraphCopy(document,tool,language);
  applyToolSmallCopy(document,tool,language);
+ applyToolAccessibilityCopy(document,tool,language);
  if(tool==='baking')applyBackstudioCopy(document,language);
 }
 
