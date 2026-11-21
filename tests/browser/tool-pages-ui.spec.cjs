@@ -2150,3 +2150,48 @@ test('i18n Sprint A household: 320/768px budget and cooking editor drafts surviv
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
  expect(errors).toEqual([]);
 });
+
+
+// Native-dialog boundary: verify the real locale selector and browser dialog
+// wrappers with synthetic cloud fixtures; no migration, import or database calls.
+test('i18n Sprint A moving: mobile native backup dialogs follow real DE/EN selector',async({page})=>{
+ test.setTimeout(60000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const seen=[];page.on('dialog',async d=>{seen.push({type:d.type(),message:d.message()});await d.dismiss()});
+ await isolated(page,true,true,{locations:[],boxes:[]});
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ await page.locator('[data-tool-locale="en"]').click();
+ await page.evaluate(()=>alert('Backup erfolgreich importiert!'));
+ await page.evaluate(()=>alert('Backup-Datei konnte nicht gelesen werden.'));
+ expect(seen.slice(-2).map(x=>x.message)).toEqual(['Backup imported successfully!','The backup file could not be read.']);
+ await page.locator('[data-tool-locale="de"]').click();
+ await page.evaluate(()=>alert('Backup erfolgreich importiert!'));
+ expect(seen.at(-1).message).toBe('Backup erfolgreich importiert!');
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
+test('i18n Sprint A household: mobile Wi-Fi and member error dialog localize without data writes',async({page})=>{
+ test.setTimeout(90000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const seen=[];page.on('dialog',async d=>{seen.push({type:d.type(),message:d.message()});await d.dismiss()});
+ const fixture={__wg:{id:'00000000-0000-4000-8000-000000000109',updated_at:'2026-11-17T00:00:00Z',payload:{
+  flatmates:[{vorname:'Mia',nachname:'Test'}],notes:[],data:[],budgets:{},goals:[],events:[],inventory:[],diets:{},
+  cleaning:[],shopping:[],contracts:[],cooking:[],infoboard:{wifi:'',landlord:'',caretaker:'',trash:''}
+ }}};
+ await isolated(page,true,true,fixture);
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/housemates/index.html?id=secure_00000000-0000-4000-8000-000000000109');
+ await expect.poll(()=>page.evaluate(()=>typeof secureWgRevision!=='undefined'&&!!secureWgRevision)).toBe(true);
+ await page.locator('[data-tool-locale="en"]').click();
+ await page.evaluate(()=>prompt('WLAN-Name (SSID):',''));
+ await page.evaluate(()=>alert('Mitgliederverwaltung: Auth request failed'));
+ expect(seen.slice(-2).map(x=>x.message)).toEqual(['Wi-Fi network name (SSID):','Member management: Auth request failed']);
+ await page.locator('[data-tool-locale="de"]').click();
+ await page.evaluate(()=>prompt('WLAN-Name (SSID):',''));
+ expect(seen.at(-1).message).toBe('WLAN-Name (SSID):');
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
