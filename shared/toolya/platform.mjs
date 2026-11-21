@@ -2,11 +2,11 @@ import '../../assets/toolya-consent.js?v=20261116-local-debug';
 import {ToolyaBuddy} from './buddy.mjs';
 import {unifyToolSettings} from './settings-unify.mjs';
 const ASSETS=new URL('../../assets/toolya/',import.meta.url).href;
-const welcomeMascotURL=character=>ASSETS+'headers/toolya_wishlist_'+character+'_welcome_400.webp';
 const atlasURL=file=>ASSETS+file+'?v=20261115-alpha';
-for(const file of ['tokens.css','buddy.css','platform.css','footer.css','header.css','settings-accordion.css']){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL(file,import.meta.url).href+(file==='header.css'?'?v=20261119-gear-no-overlap-v2':file==='settings-accordion.css'?'?v=20261119-accordions-v1':'');document.head.append(l)}
+for(const file of ['tokens.css','buddy.css','platform.css','footer.css','header.css','settings-accordion.css']){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL(file,import.meta.url).href+(file==='header.css'?'?v=20261121-thematic-hero-v1':file==='settings-accordion.css'?'?v=20261119-accordions-v1':'');document.head.append(l)}
 export const EMOTIONS=['happy','proud','curious','thoughtful','surprised','concerned','sad','shy','cheeky','sleepy','laughing','grateful','motivated','puzzled','celebrating','affectionate'];
 export const TOOLS={wishes:{role:0,name:'Geschenkexperte',greeting:'Hier ist Platz für große und kleine Wünsche.'},budget:{role:1,name:'Buchhalter',greeting:'Deine Ausgaben gut im Blick.'},housemates:{role:2,name:'WG-Organisator',greeting:'Ein guter Plan macht den Alltag leichter.'},moving:{role:3,name:'Umzugshelfer',greeting:'Damit beim Umzug nichts verloren geht.'},estate:{role:4,name:'Vorsorgebegleiter',greeting:'In Ruhe das Wichtige ordnen.',serious:true},car:{role:5,name:'Mechaniker',greeting:'Dein Fahrzeug gut organisiert.'},'pet-health':{role:6,name:'Tierbegleiter',greeting:'Alles Wichtige für deine tierischen Freunde.',serious:true},parking:{role:7,name:'Parkhelfer',greeting:'Parkplatz und Parkzeit im Blick.'},loans:{role:8,name:'Verleih-Organisator',greeting:'Behalte verliehene Gegenstände im Blick.'},plants:{role:9,name:'Gärtner',greeting:'Ein guter Tag für deine grünen Freunde.'},meters:{role:10,name:'Energiehelfer',greeting:'Zählerstände einfach im Blick.'},baking:{role:11,name:'Backhelfer',greeting:'Die passende Form für deine Backidee.'},home:{role:12,name:'Alltagsbegleiter',greeting:'Was möchtest du heute erledigen?'}};
+const TOOL_SYMBOLS=['🎁','🧮','🏠','📦','🛡️','🔧','🐾','🅿️','📋','🪴','⚡','🧁','✨'];
 const parts=decodeURI(location.pathname).split('/').filter(Boolean);
 export const tool=parts.includes('tools')?parts[parts.indexOf('tools')+1]:'home';
 const context=TOOLS[tool]||TOOLS.home, key='helferlein-toolya-preferences-v1';
@@ -24,14 +24,27 @@ function preload(file){if(!cache.has(file)){const i=new Image();const record={re
 function cell(index){return {x:(index%8)*100/7,y:Math.floor(index/8)*100/3}}
 function paint(record,file,index,alternate=index,animate=false){
  const a=cell(index),b=cell(alternate);record.frame.style.setProperty('--ty-a',a.x+'%');record.frame.style.setProperty('--ty-b',b.x+'%');record.frame.style.setProperty('--ty-y',a.y+'%');record.frame.style.backgroundPosition=a.x+'% '+a.y+'%';
- const loaded=preload(file);record.frame.hidden=!loaded.ready;record.img.style.opacity=loaded.ready?'0':'1';record.frame.style.backgroundImage=`url("${atlasURL(file)}")`;if(record.epoch!==buddy.noticeEpoch){record.frame.classList.remove('ty-animated');void record.frame.offsetWidth;record.epoch=buddy.noticeEpoch;}record.frame.classList.toggle('ty-animated',animate);
- if(loaded.failed){record.img.style.opacity='1';if(record.img.classList.contains('tb-avatar'))stockImage(record.img,buddy.current?.type||'welcome');else record.img.src=welcomeMascotURL(buddy.character)}
+ const loaded=preload(file);
+ record.frame.hidden=!loaded.ready&&!loaded.failed;
+ record.img.style.opacity=loaded.ready||loaded.failed?'0':'1';
+ record.frame.style.backgroundImage=loaded.failed?'none':`url("${atlasURL(file)}")`;
+ if(record.epoch!==buddy.noticeEpoch){record.frame.classList.remove('ty-animated');void record.frame.offsetWidth;record.epoch=buddy.noticeEpoch;}
+ record.frame.classList.toggle('ty-animated',loaded.ready&&animate);
+ if(loaded.failed){
+  // An unavailable atlas must never replace a tool outfit with the Wishlist gift artwork.
+  record.frame.classList.add('ty-sprite-fallback');
+  const symbol=TOOL_SYMBOLS[record.role]||TOOL_SYMBOLS[12];
+  if(record.frame.textContent!==symbol)record.frame.textContent=symbol;
+ }else{
+  record.frame.classList.remove('ty-sprite-fallback');
+  if(record.frame.textContent)record.frame.textContent='';
+ }
  if(!loaded.ready&&!loaded.failed)loaded.promise.then(()=>{if(record.img.isConnected)refreshFrames()});
 }
 function attach(img,kind='outfit',role=context.role){
  if(img.dataset.toolyaSprite)return;img.dataset.toolyaSprite='true';const wrap=document.createElement('span');wrap.className='ty-sprite-wrap';img.before(wrap);wrap.append(img);const frame=document.createElement('span');frame.className='ty-frame';frame.hidden=true;frame.setAttribute('aria-hidden','true');wrap.append(frame);const r={img,frame,kind,role};frames.add(r);return r;
 }
-buddy.image=(img,type)=>{img.hidden=false;img.src=pixel;img.onerror=()=>stockImage(img,type)};
+buddy.image=(img,type)=>{img.hidden=false;img.src=pixel;img.onerror=()=>{if(tool==='wishes')stockImage(img,type);else img.src=pixel}};
 function refreshFrames(){
  syncToolHeroMascot();for(const r of frames){if(!r.img.isConnected){frames.delete(r);continue}const character=buddy.character==='purple'?1:0;if(r.kind==='dialog'){const index=EMOTIONS.indexOf(r.emotion||'concerned')*2;paint(r,'emotions-'+buddy.character+'.webp',index,index+1,false);}else if(r.kind==='notice'&&buddy.current&&buddy.current.type!=='welcome'){
  const index=EMOTIONS.indexOf(currentEmotion)*2,flip=sequence%2;paint(r,'emotions-'+buddy.character+'.webp',index+flip,index+1-flip,true);
@@ -135,12 +148,12 @@ const donationLines=['Ein Käffchen für meinen Werkzeugkasten? ☕','Meine flau
 let donationIndex=0;try{const n=Number(sessionStorage.getItem('toolya-donation-variant')||0);donationIndex=Number.isSafeInteger(n)&&n>=0?n%donationLines.length:0;sessionStorage.setItem('toolya-donation-variant',String((donationIndex+1)%donationLines.length))}catch{}
 function donations(){for(const mark of document.querySelectorAll('.b3-hub-logo-mark,.b3-brand-mark')){if(mark.dataset.toolyaNav)continue;mark.dataset.toolyaNav='true';mark.classList.add('ty-nav-mascot');const img=document.createElement('img');img.alt='';img.src=pixel;img.width=40;img.height=40;mark.replaceChildren(img);attach(img);}for(const panel of document.querySelectorAll('.hl-alert-panel')){if(panel.dataset.toolyaDecorated)continue;panel.dataset.toolyaDecorated='true';const img=document.createElement('img');img.alt='';img.src=pixel;img.width=84;img.height=84;panel.prepend(img);const rec=attach(img,'dialog');rec.emotion=panel.querySelector('#hl-alert-message')?.textContent==='Gespeichert'?'proud':'concerned';}for(const img of document.querySelectorAll('.tb-dialog-avatar'))attach(img,'dialog');refreshFrames()}
 function mountDonation(){const footer=document.querySelector('.toolya-signature-footer');if(!footer)return;let banner=document.querySelector('.ty-kofi-banner');if(!banner){banner=document.createElement('section');banner.className='ty-kofi-banner';banner.setAttribute('aria-label','Toolya auf Ko-fi unterstützen');const copy=document.createElement('div');copy.className='ty-kofi-copy';const title=document.createElement('h2');title.textContent='Toolya unterstützen';const line=document.createElement('p');line.className='ty-kofi-joke';line.textContent=donationLines[donationIndex];copy.append(title,line);const link=document.createElement('a');link.className='ty-kofi-action';link.href='https://ko-fi.com/duhrrom';link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label','Toolya auf Ko-fi unterstützen');
-const mini=document.createElement('img');mini.className='ty-kofi-button-mascot';mini.alt='';mini.width=48;mini.height=48;mini.loading='lazy';
+const mini=document.createElement('img');mini.className='ty-kofi-button-mascot';mini.alt='';mini.width=48;mini.height=48;mini.loading='lazy';mini.src=pixel;
 const buttonCopy=document.createElement('span');buttonCopy.className='ty-kofi-button-label';buttonCopy.textContent='☕ Ko-fi';
 const hearts=document.createElement('span');hearts.className='ty-kofi-button-hearts';hearts.setAttribute('aria-hidden','true');
 for(let i=0;i<3;i++){const heart=document.createElement('span');heart.textContent='♥';hearts.append(heart)}
 link.append(mini,buttonCopy,hearts);banner.append(copy,link);banner.addEventListener('animationend',()=>{}, {once:true});}
-if(footer.previousElementSibling!==banner)footer.before(banner);const mascot=banner.querySelector('.ty-kofi-button-mascot');if(mascot){const character=read().character==='purple'?'purple':'turquoise';const src=welcomeMascotURL(character);if(mascot.getAttribute('src')!==src)mascot.src=src}for(const old of document.querySelectorAll('footer.toolya-support'))old.remove();for(const a of document.querySelectorAll('#settingsModal a[href="https://ko-fi.com/duhrrom"],#settings-modal a[href="https://ko-fi.com/duhrrom"],.toolya-settings-dialog a[href="https://ko-fi.com/duhrrom"]')){if(!a.classList.contains('ty-settings-kofi-button')&&/kaffee|spend|unterstütz/i.test(a.textContent))a.remove()}}
+if(footer.previousElementSibling!==banner)footer.before(banner);const mascot=banner.querySelector('.ty-kofi-button-mascot');if(mascot){if(mascot.getAttribute('src')!==pixel)mascot.src=pixel;attach(mascot,'outfit',context.role);refreshFrames()}for(const old of document.querySelectorAll('footer.toolya-support'))old.remove();for(const a of document.querySelectorAll('#settingsModal a[href="https://ko-fi.com/duhrrom"],#settings-modal a[href="https://ko-fi.com/duhrrom"],.toolya-settings-dialog a[href="https://ko-fi.com/duhrrom"]')){if(!a.classList.contains('ty-settings-kofi-button')&&/kaffee|spend|unterstütz/i.test(a.textContent))a.remove()}}
 window.addEventListener('storage',event=>{if(event.key==='helferlein-toolya-preferences-v1')mountDonation()});
 window.setInterval(()=>{const joke=document.querySelector('.ty-kofi-joke');if(!joke||document.hidden)return;donationIndex=(donationIndex+1)%donationLines.length;joke.textContent=donationLines[donationIndex]},9000);
 let scheduled=false;const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;mountPreferences();donations()})});observer.observe(document.body,{childList:true,subtree:true});donations();
@@ -180,9 +193,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 function syncToolHeroMascot(){
  const hero=document.querySelector('.ty-tool-hero');if(!hero)return;
  const character=read().character==='purple'?'purple':'turquoise';
- const img=hero.querySelector('.ty-tool-hero-mascot');
- const src=welcomeMascotURL(character);
- if(img&&img.getAttribute('src')!==src)img.src=src;
  hero.dataset.character=character;
 }
 function mountToolHero(){
@@ -226,12 +236,12 @@ function mountToolHero(){
  const h=document.createElement('h1');const symbol=document.createElement('span');symbol.className='ty-tool-hero-icon';symbol.textContent=icon;symbol.setAttribute('aria-hidden','true');h.append(symbol,document.createTextNode(title));
  const p=document.createElement('p');p.textContent=description;
  copy.append(top,h,p);
- const img=document.createElement('img');img.className='ty-tool-hero-mascot';img.alt='Dein ausgewählter Toolya-Begleiter';img.width=185;img.height=190;img.decoding='async';img.setAttribute('role','button');img.setAttribute('tabindex','0');img.setAttribute('aria-label','Toolya-Maskottchen kitzeln');img.addEventListener('click',()=>buddy.tickle());img.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.repeat){e.preventDefault();if(buddy.tickle())buddy.host.querySelector('.tb-avatar')?.focus({preventScroll:true});}});
- inner.append(copy,img);hero.append(inner);
+ const img=document.createElement('img');img.className='ty-tool-hero-mascot';img.alt='Dein ausgewählter Toolya-Begleiter';img.width=185;img.height=190;img.src=pixel;img.decoding='async';img.setAttribute('role','button');img.setAttribute('tabindex','0');img.setAttribute('aria-label','Toolya-Maskottchen kitzeln');img.addEventListener('click',()=>buddy.tickle());img.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.repeat){e.preventDefault();if(buddy.tickle())buddy.host.querySelector('.tb-avatar')?.focus({preventScroll:true});}});
+ inner.append(copy,img);attach(img,'outfit',context.role);hero.append(inner);
  old.before(hero);
  if(old.matches('.b3-header')){old.classList.add('ty-tool-original-header');heading?.setAttribute('aria-hidden','true');}
  else {if(heading){heading.hidden=true;}const oldBack=old.previousElementSibling;if(oldBack?.tagName==='A'&&oldBack.getAttribute('href')?.includes('index.html'))oldBack.hidden=true;}
- syncToolHeroMascot();
+ refreshFrames();
 }
 function finalizeToolSettingsAndHeader(){
  // Some tool dialogs are inserted after the initial preference pass.
@@ -240,4 +250,4 @@ function finalizeToolSettingsAndHeader(){
  mountToolHero();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',finalizeToolSettingsAndHeader,{once:true});else finalizeToolSettingsAndHeader();
-window.addEventListener('storage',e=>{if(e.key===key||e.key===null)syncToolHeroMascot()});
+window.addEventListener('storage',e=>{if(e.key===key||e.key===null)refreshFrames()});
