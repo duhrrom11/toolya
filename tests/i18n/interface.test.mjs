@@ -194,3 +194,23 @@ test('translated implicit option values stay stable and Backstudio copy is rever
  assert.equal(round.getAttribute('value'),'round');
  assert.equal(nav.textContent,'1Form wählen');
 });
+
+test('backup and safety dialogs use exact translations without altering unknown content',()=>{
+ const cases=[
+  ['moving','Backup importieren? Vorhandene Daten werden ersetzt.','Import backup? Existing data will be replaced.'],
+  ['moving','Kamera-Zugriff fehlgeschlagen oder nicht unterstützt.','Camera access failed or is not supported.'],
+  ['housemates','Cloud-Daten neu laden? Nicht synchronisierte lokale Änderungen können verloren gehen.','Reload cloud data? Unsynced local changes may be lost.'],
+  ['housemates','Speicherkonflikt: Die WG wurde andernorts geändert. Lokale Änderungen bleiben erhalten; bitte vor dem Neuladen sichern.','Save conflict: The household was changed elsewhere. Local changes are kept; back them up before reloading.'],
+  ['housemates','Bitte mindestens Titel, Datum und Betrag angeben!','Enter at least a title, date and amount.'],
+  ['plants','⚠️ Pflanze wirklich löschen?','⚠️ Delete this plant?'],
+  ['plants','Ungültige Pflanzen-ID. Die Änderungen wurden nicht gespeichert.','Invalid plant ID. Changes were not saved.']
+ ];
+ for(const [tool,de,en] of cases){
+  assert.equal(translateToolDialog(tool,'en',de),en);
+  assert.equal(translateToolDialog(tool,'de',de),de);
+ }
+ for(const tool of ['moving','housemates','plants']){
+  assert.equal(translateToolDialog(tool,'en','Person@example.org'),'Person@example.org');
+  assert.equal(translateToolDialog(tool,'en','Unrecognized server failure'),'Unrecognized server failure');
+ }
+});
