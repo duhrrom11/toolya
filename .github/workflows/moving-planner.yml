@@ -10,6 +10,9 @@ on:
       - 'tests/moving-model.test.mjs'
       - '.github/workflows/moving-planner.yml'
   workflow_dispatch:
+concurrency:
+  group: moving-planner-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   moving-tests:
     runs-on: ubuntu-latest
