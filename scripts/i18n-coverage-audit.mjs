@@ -97,7 +97,7 @@ const blockers=[
  `${germanUi.reduce((n,x)=>n+x.samples.length,0)} sampled suspicious German texts in English HTML (some may be intended)`,
  `${dynamic.length} source files with German dialog or DOM message literals (review runtime coverage)`
 ];
-const rows=reports.map(x=>`| \`\${x.file}\` | \${x.lang} | \${x.status} | \${x.langLinks?'yes':'no'} | \${x.noindex?'yes':'no'} | \${x.suspects} |`);
+const rows=reports.map(x=>'| `'+x.file+'` | '+x.lang+' | '+x.status+' | '+(x.langLinks?'yes':'no')+' | '+(x.noindex?'yes':'no')+' | '+x.suspects+' |');
 const output=[
  '# Toolya DE/EN – automatic coverage audit',
  '',
