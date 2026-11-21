@@ -563,6 +563,15 @@
             if (plantsCloudReady) renderApp(); // read-only refresh for translated card labels
             if (plantsCloudReady && !document.getElementById('seedsModal')?.classList.contains('hidden')) renderSeedList();
             if (plantsCloudReady && !document.getElementById('inventoryModal')?.classList.contains('hidden')) renderInventoryList();
+            // Refresh only already-open calculation and garden planning panels;
+            // never repopulate their input fields or persist data on locale changes.
+            if (plantsCloudReady && !document.getElementById('roiModal')?.classList.contains('hidden')) calculateRoiValues();
+            if (plantsCloudReady && !document.getElementById('cisternModal')?.classList.contains('hidden')) updateCisternDisplay();
+            if (plantsCloudReady && !document.getElementById('beetModal')?.classList.contains('hidden')) renderBeetGrid();
+            if (plantsCloudReady && !document.getElementById('galleryModal')?.classList.contains('hidden')) {
+                const plantId = Number(document.getElementById('galleryPlantId')?.value);
+                if (Number.isSafeInteger(plantId) && plantId > 0) renderGalleryGrid(plantId);
+            }
         });
 
         const mischkulturDb = {
