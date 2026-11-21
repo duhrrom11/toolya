@@ -776,6 +776,8 @@ export function applyToolInterfaceLocale(document,tool,language){
    email addresses, backend errors and machine-readable exports are untouched. */
 const dialogCopy = Object.freeze({
  moving: {
+  'Angemeldet. Dein Konto ist einsatzbereit.':'Signed in. Your account is ready.',
+  'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.':'Request processed. If confirmation is required, check your inbox and verify your email address, then sign in.',
   "Backup zu groß (maximal 20 MB).": "Backup too large (maximum 20 MB).",
   "Ungültiges Backup-Format.": "Invalid backup format.",
   "Backup importieren? Vorhandene Daten werden ersetzt.": "Import backup? Existing data will be replaced.",
@@ -840,6 +842,8 @@ const dialogCopy = Object.freeze({
   'Die Cloud-Daten der alten WG wurden gelesen. Jetzt eine private Kopie für dein Konto erstellen?':'The old household cloud data was read. Create a private copy for your account now?'
  },
  plants: {
+  'Angemeldet. Dein Konto ist einsatzbereit.':'Signed in. Your account is ready.',
+  'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.':'Request processed. If confirmation is required, check your inbox and verify your email address, then sign in.',
   "Bitte Name und gültiges Gießdatum angeben!": "Enter a name and valid watering date.",
   "Bitte ein Gießintervall zwischen 1 und 3650 Tagen eingeben.": "Enter a watering interval between 1 and 3650 days.",
   "Bitte ein gültiges Vermehrungsdatum eingeben.": "Enter a valid propagation date.",
@@ -867,6 +871,8 @@ const dialogCopy = Object.freeze({
   'Lokale Pflanzendaten nach Sicherung in die Cloud übernehmen?':'Back up local plant data and then import it into the cloud?'
  },
  baking: {
+  'Angemeldet. Dein Konto ist einsatzbereit.':'Signed in. Your account is ready.',
+  'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.':'Request processed. If confirmation is required, check your inbox and verify your email address, then sign in.',
   'Bitte E-Mail und Passwort eingeben.':'Enter your email address and password.',
   'Registrierung erfolgreich!':'Registration successful!',
   'Erfolgreich angemeldet!':'Signed in successfully!',
