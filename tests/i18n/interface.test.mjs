@@ -2334,7 +2334,7 @@ test('Sprint A backup, migration, membership and Wi-Fi dialogs translate only kn
   ['moving','Backup erfolgreich importiert!','Backup imported successfully!'],
   ['moving','Backup-Datei konnte nicht gelesen werden.','The backup file could not be read.'],
   ['housemates','WLAN-Name (SSID):','Wi-Fi network name (SSID):'],
-  ['housemates',String.raw`Private WG-Kopie erstellt.\\nDer alte WG-Link bleibt bestehen.\\nBitte teile ab jetzt nur den neuen Link mit freigegebenen Mitgliedern.`,String.raw`Private household copy created.\\nThe old household link remains active.\\nFrom now on, only share the new link with authorized members.`],
+  ['housemates',`Private WG-Kopie erstellt.\\nDer alte WG-Link bleibt bestehen.\\nBitte teile ab jetzt nur den neuen Link mit freigegebenen Mitgliedern.`,`Private household copy created.\\nThe old household link remains active.\\nFrom now on, only share the new link with authorized members.`],
   ['housemates','Mitgliederverwaltung: Auth request failed','Member management: Auth request failed']
  ];
  for(const [tool,source,target] of cases){
