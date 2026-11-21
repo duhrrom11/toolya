@@ -209,8 +209,119 @@ export const WISHES_COPY=Object.freeze({
  "❤️ Aktivitäten auf deinen Wunschwelten": "❤️ Activity on your wish worlds"
 });
 const reverse=Object.freeze(Object.fromEntries(Object.entries(WISHES_COPY).map(([de,en])=>[en,de])));
+
+/* Fixed runtime messages emitted by existing Wishes modules; only app-authored
+   statuses and native dialogs qualify, never profile or gift content. */
+export const WISHES_RUNTIME_COPY=Object.freeze({
+ "Du bist abgemeldet.": "You are signed out.",
+ "Abmelden fehlgeschlagen.": "Sign-out failed.",
+ "Bitte gib zuerst deine E-Mail-Adresse ein.": "Enter your email address first.",
+ "Falls für diese E-Mail-Adresse ein Konto existiert, erhältst du eine E-Mail zum Zurücksetzen des Passworts.": "If an account exists for this email address, you will receive a password reset email.",
+ "Bitte ein Passwort mit mindestens acht Zeichen verwenden.": "Use a password of at least eight characters.",
+ "Die Passwörter stimmen nicht überein.": "The passwords do not match.",
+ "Dein neues Passwort wurde gespeichert.": "Your new password has been saved.",
+ "Bitte E-Mail und Passwort eingeben.": "Enter your email and password.",
+ "Bitte gültige Amazon-Wunschlisten-Links und Listennamen eingeben.": "Enter valid Amazon wish-list links and list names.",
+ "Das Profil konnte nicht gelöscht werden.": "The profile could not be deleted.",
+ "Dein öffentliches Wunschprofil mit allen verlinkten Listen löschen? Die Original-Listen bei Amazon bleiben erhalten.": "Delete your public wish profile and all linked lists? The original Amazon lists will remain.",
+ "Profil nicht gefunden.": "Profile not found.",
+ "Bitte anmelden.": "Please sign in.",
+ "Bitte zuerst anmelden.": "Sign in first.",
+ "Aufgabe wirklich löschen?": "Delete this task?",
+ "Aufgabenpaket für den gewählten Anlass erstellen? Vorhandene Aufgaben desselben Pakets bleiben erhalten.": "Create a task bundle for this occasion? Existing tasks from the same bundle will be preserved.",
+ "Keine fälligen Erinnerungen.": "No reminders are due.",
+ "Keine Aufgaben in dieser Ansicht.": "No tasks in this view.",
+ "✏️ Aufgabe bearbeiten": "✏️ Edit task",
+ "Änderungen speichern": "Save changes",
+ "Statuswechsel fehlgeschlagen.": "Status update failed.",
+ "Aufgabe aktualisiert.": "Task updated.",
+ "Löschen fehlgeschlagen.": "Deletion failed.",
+ "Aufgabe gelöscht.": "Task deleted.",
+ "Bitte Aufgabe eingeben.": "Enter a task.",
+ "Aufgabe gespeichert.": "Task saved.",
+ "Aufgabe konnte nicht gespeichert werden.": "The task could not be saved.",
+ "Deine Geschenk-To-dos sind aktuell.": "Your gift tasks are up to date.",
+ "Bitte zuerst einen Anlass mit Datum auswählen.": "Select an occasion with a date first.",
+ "Noch keine Aufgabenpakete erstellt.": "No task bundles created yet.",
+ "Bitte zuerst einen Anlass wählen.": "Choose an occasion first.",
+ "Jahresarchiv konnte nicht geändert werden.": "The annual archive could not be updated.",
+ "Bitte zuerst einen Anlass auswählen.": "Select an occasion first.",
+ "Aufgabenpaket konnte nicht erstellt werden.": "The task bundle could not be created.",
+ "Noch keine Jahresbilanzen vorhanden.": "No annual summaries yet.",
+ "Bitte einen jährlich wiederkehrenden Anlass wählen.": "Choose an annually recurring occasion.",
+ "Bitte Anlass und mindestens eine Aufgabe auswählen.": "Select an occasion and at least one task.",
+ "Maximal 100 Aufgaben gleichzeitig.": "A maximum of 100 tasks can be processed at once.",
+ "Übernahme fehlgeschlagen. Bitte Auswahl und Jahr prüfen.": "Copy failed. Check the selection and year.",
+ "Aufgaben konnten nicht geladen werden.": "Tasks could not be loaded.",
+ "Dieses Geschenk dauerhaft löschen?": "Permanently delete this gift?",
+ "Geschenk als verschenkt markieren und DEINE Reservierung gleichzeitig freigeben?\nOK = verschenkt und Reservierung freigeben.\nAbbrechen = nur Status ändern.": "Mark this gift as given and release YOUR reservation at the same time?\nOK = mark as given and release reservation.\nCancel = only change status.",
+ "Noch keine passenden Geschenke. Lege links deine erste Geschenkidee an.": "No matching gifts. Add your first gift idea on the left.",
+ "📦 Produktquelle": "📦 Product source",
+ "📦 Produkt verknüpft": "📦 Linked product",
+ "✏️ Geschenk bearbeiten": "✏️ Edit gift",
+ "Geschenk gelöscht.": "Gift deleted.",
+ "Merke dir öffentliche Wunschwelten, um hier kostenlose Geschenkideen zu erhalten.": "Save public wish worlds to find gift ideas here.",
+ "Wunschwelt ansehen ↗": "View wish world ↗",
+ "Als Geschenkidee übernehmen": "Use as gift idea",
+ "Bitte zuerst einen Anlass anlegen.": "Create an occasion first.",
+ "Vorschlag übernommen – zum Speichern bitte Geschenk prüfen.": "Suggestion added – review the gift before saving.",
+ "Reservierungsabgleich nicht verfügbar.": "Reservation lookup is unavailable.",
+ "Reservierter Wunsch konnte nicht übernommen werden. Bitte prüfe Anmeldung, Öffentlichkeit und Anlässe.": "Reserved wish could not be imported. Check sign-in, public visibility and occasions.",
+ "Reservierten Wunsch als Geschenkentwurf übernommen. Bitte Anlass auswählen und speichern.": "Reserved wish imported as a gift draft. Choose an occasion and save.",
+ "Bitte mindestens zwei Zeichen eingeben.": "Enter at least two characters.",
+ "Suche läuft …": "Searching…",
+ "Keine passenden Produkte gefunden.": "No matching products found.",
+ "Als Geschenk übernehmen": "Use as gift",
+ "Produkt als Entwurf übernommen. Bitte Geschenk prüfen und speichern.": "Product imported as draft. Review and save the gift.",
+ "Produkt bei Amazon ansehen ↗": "View product on Amazon ↗",
+ "Suche fehlgeschlagen. Bitte erneut versuchen.": "Search failed. Try again.",
+ "Geschenkplanung konnte nicht geladen werden. Bitte später erneut versuchen.": "Gift planning could not be loaded. Try again later.",
+ "Bitte einen Suchbegriff verwenden.": "Enter a search term.",
+ "Noch keine Aktivitäten für deine Einstellungen vorhanden.": "No activity matches your settings.",
+ "Sammlung öffnen ↗": "Open collection ↗",
+ "Einstellungen konnten nicht geladen werden.": "Settings could not be loaded.",
+ "Gelesen-Status konnte nicht gespeichert werden.": "Read status could not be saved.",
+ "Gelesen-Status gespeichert.": "Read status saved.",
+ "Benachrichtigungen aktualisiert.": "Notifications updated.",
+ "Benachrichtigungen konnten nicht geladen werden. Bitte erneut versuchen.": "Notifications could not be loaded. Try again.",
+ "Nicht alle Hinweise konnten als gelesen gespeichert werden.": "Not all notifications could be marked as read.",
+ "Geladene Hinweise als gelesen gespeichert.": "Loaded notifications marked as read.",
+ "Benachrichtigungszentrale konnte nicht gestartet werden.": "Notification centre could not be started.",
+ "Wunschwelt öffnen ↗": "Open wish world ↗",
+ "Feed konnte nicht geladen werden. Bitte später erneut versuchen.": "Feed could not be loaded. Try again later.",
+ "Vorschlag: ": "Suggestion: ",
+ "Vorlage ": "Template ",
+ "Erledigt: ": "Completed: ",
+ "Geplant: ": "Planned: ",
+ "Wunschliste ": "Wish list ",
+ "Keine Checklistenaufgaben aus ": "No checklist tasks from ",
+ "Wunschprofil konnte nicht geladen werden:": "Wish profile could not be loaded:",
+ "Wunschprofil konnte nicht bestätigt werden:": "Wish profile could not be confirmed:"
+});
+const runtimeReverse=Object.freeze(Object.fromEntries(Object.entries(WISHES_RUNTIME_COPY).map(([de,en])=>[en,de])));
+const statusPrefixes=Object.freeze({
+ "Wunschprofil konnte nicht geladen werden: ": "Wish profile could not be loaded: ",
+ "Wunschprofil konnte nicht bestätigt werden: ": "Wish profile could not be confirmed: ",
+ "Reservierung fehlgeschlagen: ": "Reservation failed: ",
+ "Anmeldung fehlgeschlagen: ": "Sign-in failed: ",
+ "Registrierung fehlgeschlagen: ": "Registration failed: ",
+ "Abmeldung fehlgeschlagen: ": "Sign-out failed: ",
+ "Speichern fehlgeschlagen: ": "Save failed: ",
+ "Vorschlag: ": "Suggestion: ",
+ "Vorlage ": "Template ",
+ "Erledigt: ": "Completed: ",
+ "Geplant: ": "Planned: ",
+ "Keine Checklistenaufgaben aus ": "No checklist tasks from "
+});
+const prefixReverse=Object.freeze(Object.fromEntries(Object.entries(statusPrefixes).map(([de,en])=>[en,de])));
+
 export function wishesText(value,language){
  if(typeof value!=='string')return value;
  const table=language==='en'?WISHES_COPY:reverse;
- return Object.hasOwn(table,value)?table[value]:value;
+ if(Object.hasOwn(table,value))return table[value];
+ const live=language==='en'?WISHES_RUNTIME_COPY:runtimeReverse;
+ if(Object.hasOwn(live,value))return live[value];
+ const from=language==='en'?statusPrefixes:prefixReverse;
+ for(const [prefix,translated] of Object.entries(from))if(value.startsWith(prefix))return translated+value.slice(prefix.length);
+ return value;
 }

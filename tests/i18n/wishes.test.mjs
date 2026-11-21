@@ -33,3 +33,23 @@ test('all seventeen interactive wishlist pages load only the reversible locale s
   assert.ok(html.includes('lang="de"'),name);
  }
 });
+
+test('dynamic Wishes statuses and auth warnings translate but preserve user payloads',()=>{
+ const sample=[
+  ['Aufgabe gelöscht.','Task deleted.'],
+  ['Bitte ein Passwort mit mindestens acht Zeichen verwenden.','Use a password of at least eight characters.'],
+  ['Benachrichtigungen konnten nicht geladen werden. Bitte erneut versuchen.','Notifications could not be loaded. Try again.'],
+  ['Dieses Geschenk dauerhaft löschen?','Permanently delete this gift?']
+ ];
+ for(const [de,en]of sample){assert.equal(wishesText(de,'en'),en);assert.equal(wishesText(en,'de'),de)}
+ assert.equal(wishesText('Vorschlag: My private note','en'),'Suggestion: My private note');
+ assert.equal(wishesText('my@example.org','en'),'my@example.org');
+});
+test('Wishes direct text node changes are recognised as new app updates',()=>{
+ const {document}=parseHTML('<html><body><button>Aufgabe gespeichert.</button></body></html>');
+ const button=document.querySelector('button');
+ applyWishLocale(document,'en');assert.equal(button.textContent,'Task saved.');
+ button.firstChild.nodeValue='Aufgabe gelöscht.';
+ applyWishLocale(document,'en');assert.equal(button.textContent,'Task deleted.');
+ applyWishLocale(document,'de');assert.equal(button.textContent,'Aufgabe gelöscht.');
+});

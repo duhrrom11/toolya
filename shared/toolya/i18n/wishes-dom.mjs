@@ -8,16 +8,20 @@ export function applyWishLocale(document,language){
   let originalAttrs=attrs.get(el);
   if(!originalAttrs){originalAttrs=new Map();attrs.set(el,originalAttrs)}
   for(const attr of ['aria-label','title','placeholder']){
-   if(!originalAttrs.has(attr))originalAttrs.set(attr,el.getAttribute(attr));
-   const source=originalAttrs.get(attr);
-   if(source===null)continue;
-   const translation=wishesText(source,language);
-   if(el.getAttribute(attr)!==translation)el.setAttribute(attr,translation);
+   const current=el.getAttribute(attr);
+   const previous=originalAttrs.get(attr);
+   if(!previous||previous.rendered!==current)originalAttrs.set(attr,{source:current,rendered:current});
+   const record=originalAttrs.get(attr);
+   if(record.source===null)continue;
+   const translation=wishesText(record.source,language);
+   record.rendered=translation;
+   if(current!==translation)el.setAttribute(attr,translation);
   }
   for(const node of el.childNodes){
    if(node.nodeType!==3)continue;
-   if(!sources.has(node))sources.set(node,node.nodeValue);
-   const original=sources.get(node);
+   const current=node.nodeValue,previous=sources.get(node);
+   if(!previous||previous.rendered!==current)sources.set(node,{source:current,rendered:current});
+   const record=sources.get(node),original=record.source;
    const key=original.trim();
    const translation=wishesText(key,language);
    if(el.tagName==='OPTION'&&translation!==key&&language==='en'&&!el.hasAttribute('value')){
@@ -25,6 +29,7 @@ export function applyWishLocale(document,language){
    }
    if(el.tagName==='OPTION'&&language==='de'&&implicit.delete(el))el.removeAttribute('value');
    const target=key?original.replace(key,translation):original;
+   record.rendered=target;
    if(node.nodeValue!==target)node.nodeValue=target;
   }
  }

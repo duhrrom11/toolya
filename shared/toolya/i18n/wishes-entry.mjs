@@ -16,6 +16,36 @@ function mount(){
  notice.textContent='The English version is still being completed. Some dynamic and account messages may remain in German.';
  const initialTitle=document.title;
  let active=storedLocale();
+ // Only fixed, app-owned message containers. Content cards, private notes and
+ // account identifiers must not be modified by the status translator.
+ const statusSelectors=['#status','#taskStatus','#checklistStatus','#rolloverStatus',
+  '#giftStatus','#filterStatus','#productSearchStatus','#searchStatus','#detailStatus',
+  '#profileStatus','#settingsAuthMessage','#settingsAccountStatus','#settingsStatus'];
+ function translateLiveStatuses(){
+  for(const selector of statusSelectors){
+   const node=document.querySelector(selector);
+   if(!node||node.children.length||node.isContentEditable)continue;
+   const before=node.textContent,after=wishesText(before,active);
+   if(before!==after)node.textContent=after;
+  }
+ }
+ let scheduled=false;
+ function updateVisibleCopy(){
+  scheduled=false;
+  applyWishLocale(document,active);
+  translateLiveStatuses();
+ }
+ function scheduleUpdate(){
+  if(scheduled)return;
+  scheduled=true;
+  if(typeof requestAnimationFrame==='function')requestAnimationFrame(updateVisibleCopy);
+  else queueMicrotask(updateVisibleCopy);
+ }
+ if(typeof MutationObserver==='function'){
+  const observer=new MutationObserver(scheduleUpdate);
+  observer.observe(document.body,{subtree:true,childList:true,characterData:true});
+ }
+
  for(const lang of ['de','en']){
   const button=document.createElement('button');button.type='button';button.lang=lang;button.textContent=lang.toUpperCase();
   button.dataset.wishesLocale=lang;
@@ -29,7 +59,7 @@ function mount(){
    const url=new URL(location.href);url.searchParams.set('lang',lang);
    history.replaceState(history.state,'',url.pathname+url.search+url.hash);
   }
-  applyWishLocale(document,lang);
+  updateVisibleCopy();
   document.title=lang==='en'?wishesText(initialTitle.replace(' · Toolya Wishes',''),'en')+' · Toolya Wishes':initialTitle;
   nav.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.wishesLocale===lang)));
   notice.hidden=lang!=='en';
