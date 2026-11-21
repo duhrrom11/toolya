@@ -58,5 +58,12 @@ test('moving planner creates project, room and box assignment with mocked cloud'
   await navigation.getByRole('button',{name:/Mein Inventar/}).dispatchEvent('click');
   await expect(planner).toBeHidden();
   await expect(page.locator('#b3-inventory')).toBeVisible();
+  const locale = page.locator('[data-tool-locale="en"]');
+  await locale.dispatchEvent('click');
+  await expect(locale).toHaveAttribute('aria-pressed','true');
+  await expect(navigation.getByRole('button',{name:/My inventory/})).toHaveAttribute('aria-pressed','true');
+  await navigation.getByRole('button',{name:/My move/}).dispatchEvent('click');
+  await expect(navigation.getByRole('button',{name:/Moving in/})).toHaveAttribute('aria-current','step');
+  await expect(planner.getByText('Mein Testumzug')).toBeVisible();
   expect((await page.evaluate(()=>window.__mvMock)).writes).toBe(3);
 });

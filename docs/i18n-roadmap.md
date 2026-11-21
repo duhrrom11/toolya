@@ -396,3 +396,11 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - On sign-out or unavailable sessions, both cloud account text and header email are cleared, avoiding stale identity display. Successful sessions retain the actual email; backend auth behavior and stored records are unchanged.
 - Added isolated Node VM regression execution for authenticated, signed-out, network-failure, DE/EN and missing-session states. These tests use only synthetic in-memory auth stubs.
 - Verification caveat: local GitHub DNS is unavailable and no full checkout was available for this continuation. **Full Node, Chromium and current-HEAD CI are not verified.** PR #291 stays Draft; no merge/deploy, no live Supabase access, no EN `noindex` changes.
+
+## Checkout, Regressionen und Abgleich mit main (21.11.2026)
+
+Der aktuelle Prüfstand einschließlich Commit-SHAs und Wiederaufnahmepunkten steht in [i18n-release-progress.md](i18n-release-progress.md). Der gestartete GitHub-HEAD war `3416d11f`. Der zuvor offene Node-Fehler bei der Umzugskisten-Registrierung ist behoben. Das Paket korrigiert außerdem das Öffnen des Kisteneditors mit vorhandenen Unterartikeln, zweisprachige QR-Aktionen, die Anzeige wörtlicher Inventartexte und den Download-Schritt vor einer bestätigten Backup-Wiederherstellung.
+
+Der Abgleich hat die seit dem gemeinsamen Ausgangspunkt hinzugekommenen 82 main-Commits in den Entwicklungsbranch aufgenommen, einschließlich der neuen Umzugsplanung und der Haushaltsbuch-Funktionen. Die Helferansicht verfügt über DE/EN einschließlich Status, Meldungen und zugänglicher Beschriftung. Die Navigation zwischen Inventar, Vorbereitung, Umzugstag und Einzug ist ebenfalls zweisprachig. Ihre Rechte und gespeicherten Statuswerte bleiben sprachunabhängig.
+
+Die verifizierten Node-, CloudOnly- und Chromium-Läufe ersetzen die früheren Hinweise auf fehlenden lokalen Checkout für die jeweils geprüften Stände. Release-Gate offen: 34 teilweise übersetzte Anwendungen, weitere vollständige Auth-/Recovery- und Exportprüfungen sowie Accessibility- und CI-Abnahme. Details und etwaige Varianten je Teststand siehe Fortschrittsdatei.

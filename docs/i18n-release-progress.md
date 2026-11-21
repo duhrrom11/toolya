@@ -1,0 +1,35 @@
+# Toolya DE/EN – Release-Fortschritt
+
+Stand 21.11.2026. **Release-Gate offen.** [Draft-PR #291](https://github.com/duhrrom11/toolya/pull/291) · [aktueller Branch-HEAD und Actions](https://github.com/duhrrom11/toolya/commits/feature/i18n-de-en-foundation-20261121/). Maßgeblich für CI ist der SHA des aktuell geprüften Kandidaten, nicht ein älterer grüner Lauf.
+
+| Commit | Arbeitspaket |
+| --- | --- |
+| `3416d11fa7d45c4fee07cbaaad7224065541585c` | Start-HEAD bestätigt. 199 von 200 lokalen i18n-Tests erfolgreich. Der fehlende englische Registrierungsstatus von Umzugskisten verursachte den Fehler. |
+| `182d6892e5737a32297b5fb2d0d54c9ccc367fcf` | DE/EN-Anmeldemeldungen und Schutz gegen überholte Kontoabfragen im Umzugskisten-Tool. 201 von 201 i18n-Tests grün. GitHub-Push-Workflow für den statischen i18n-Check grün. |
+| `4c265510c0f6f02ef93080a7a36aa86a181f0cc9` | Kisteneditor mit Unterartikeln repariert. Inventartexte werden als Text dargestellt, QR-Knöpfe sind zweisprachig, der sichtbare Kistenname bleibt erhalten. 202 von 202 i18n-Tests grün. |
+| `ee2b271f458757a2d21221b2fdf54654678fbdfb` | Backup vor Wiederherstellung und beide Download-Bestätigungen wiederhergestellt. Browserabnahme an das bestehende Backstudio und das echte Sprachwahl-Verhalten angepasst. 154 Chromium-Fälle bestanden, 16 optionale Fälle übersprungen. |
+| `58dfa798fc166c97827a0861f75be0c2e45c729d` | `main` mit Stand `98451fc941a8fe6536247244195f38fb324e4378` in den Entwicklungsbranch übernommen. Konflikte in Dashboard, Haushaltsbuch, Umzugskisten und Browser-Tests gelöst. Die bestehende Umzugsprojekt-Warnung beim Import ist zweisprachig. |
+| `2d68e5faba8dc4abf70630c48fb23bcb009225c1` | Temporäre Helferansicht auf Deutsch und Englisch mit Sprachwechsel bei gleichbleibender Freigabe, Auswahl und Status. Übersetzte Status-, Scanner- und Vorfallmeldungen. |
+
+## Tatsächlich ausgeführte Prüfungen
+
+- Auf dem mit `main` abgeglichenen Quellbaum bestanden 271 Node-Tests für i18n, Amazon, Umzugsmodell und Haushaltsbuch. Drei separate Szenarien für CloudOnly, Connect und simulierte Geräte-/Kontowechsel bestanden.
+- Chromium auf `58dfa798` und `2d68e5fa` mit synthetischem Backend: 158 von 158 ausgeführten Tests bestanden. 16 zusätzliche Start-/Performance-Fälle liefen ohne das optionale CI-Flag nicht. Für die Darstellung nutzte der lokale Runner eine unveränderte, separat heruntergeladene Tailwind-Datei. Das installierte System-Chromium scheiterte am Prozess-Socket der Umgebung. Der lokale Lauf verwendete deshalb einen vorhandenen Chromium Headless Shell.
+- Alle drei Helfer-Browserfälle bestanden nach der Lokalisierung, einschließlich DE/EN/DE, unveränderter Kisten- und Raumnamen, gültigem Linkfragment und identischer Anzahl bestätigter Schreibvorgänge. Kamerazugriff mit einem physischen Gerät ist offen. Der anschließende Umzugsnavigationstest bestätigte My move, My inventory und Moving in bei unveränderter aktiver Phase, wörtlichem Projektnamen und unverändertem Schreibzähler.
+- Acht Original-Maskottchen stimmen mit ihren gespeicherten SHA-256-Prüfsummen überein.
+- `node scripts/i18n-coverage-audit.mjs --strict` schlägt erwartungsgemäß fehl. Der Audit zählt 72 Anwendungs- und Inhaltsseiten, 17 öffentliche EN-Seiten, 34 teilweise lokalisierte Anwendungsansichten und 49 Dateien mit heuristischen Treffern für deutsche Laufzeittexte. Test-Fixtures werden vom Seitenaudit ausgenommen.
+- Die PDF- und QR-Regressionsfälle der Browser-Suite verwenden Attrappen für die Bibliotheken. Sichtprüfung der fertigen PDFs, Lesbarkeit im Druck und echte Kamera-QR-Abnahme stehen aus.
+
+## GitHub Actions
+
+Auf `2d68e5fa` bestanden zunächst zehn PR-Workflows und der statische Push-i18n-Check. Der Haushaltsbuch-Livecheck verglich die veröffentlichte HTML-Datei mit der absichtlich unveröffentlichten PR-Fassung. Der Hash der Live-Datei stimmte mit der Datei in `main` überein. Im Plattform-Workflow bestand der Job für Nachlass-Sicherheit. Der separate Handover-Designtest blockierte neue statische Sprachdateien, weil sie in seiner exakten Test-Allowlist fehlten. Der isolierte Browser-Workflow war bei der ersten Abfrage noch im Lauf.
+
+## Nächste Arbeitsschritte vor der Freigabe
+
+1. Ausstehende Actions am aktuellen HEAD auswerten. Bei roten Jobs anhand der Job-Logs zwischen einem Fehler im Kandidaten und einem Live-Vergleich unterscheiden. Der Haushaltsbuch-Live-Check vergleicht produktiv ausgelieferte Dateien und kann bei absichtlich unveröffentlichtem Code Abweichungen melden.
+2. Begonnenen Abgleich der neuen Umzugsplanung und Haushaltsbuch-Funktionen vervollständigen. Danach die 34 Teilansichten aus dem Audit einzeln abnehmen. Insbesondere Laufzeittexte, Einwilligung, Formulare, Validierungen, Accessibility-Texte und Formatierung auf beiden Sprachpfaden prüfen.
+3. Registrierung, Anmeldung, Abmeldung, Passwort-Recovery, Sitzungsablauf und Benutzerwechsel durchgängig mit isolierten Testkonten prüfen. Reale Mailzustellung über eine geeignete Testumgebung separat bestätigen.
+4. PDF, QR, Druckansichten und Kalender mit synthetischen Daten einschließlich Umlauten und Sonderzeichen auf beiden Sprachpfaden prüfen. Mobile Ansichten, Tastatur und Screenreader je relevanter Route prüfen. Nach vollständiger Lokalisierung die Dokumentsprache mit der Benutzerwahl abgleichen.
+5. Finale Codebasis und PR-Prüfungen erneut vollständig abnehmen. Erst dann den Status **READY FOR RELEASE APPROVAL** vergeben und die ausdrückliche Freigabe für Merge, Produktion und gegebenenfalls Indexierung einholen.
+
+PR #291 bleibt Draft. Die 17 englischen öffentlichen Seiten bleiben bei `noindex`. Ein Merge nach `main`, ein Deployment und produktive Supabase-Nutzerdaten oder Testdatensätze waren nicht Teil der Ausführung.
