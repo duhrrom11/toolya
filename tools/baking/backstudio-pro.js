@@ -8,7 +8,7 @@ const proStaticCopy=new Map([["Deine Backform zum Drehen","Your interactive baki
 const proOriginalText=new WeakMap();
 function localizeProControls(){
  const root=$('toolya-backstudio');if(!root)return;
- for(const node of root.querySelectorAll('.bsp-panel h4,.bsp-panel .bsp-muted,.bsp-panel .bsp-actions > button,.bsp-panel label > span,#toolya-backstudio > article > label > span,.bsp-panel option')){
+ for(const node of root.querySelectorAll('.bsp-panel h4,.bsp-panel .bsp-muted,.bsp-panel .bsp-actions > button,.bsp-panel label > span,#toolya-backstudio article > label > span,.bsp-panel option')){
   if(node.children.length)continue;
   const source=proOriginalText.get(node)??node.textContent;
   if(!proStaticCopy.has(source))continue;
@@ -423,13 +423,13 @@ function init(){
  if(!$('toolya-backstudio'))return;
  const css=txt('style',null,document.head);css.textContent='#toolya-backstudio .bsp-panel{margin:14px 0 4px;padding:12px;border-radius:12px;background:#fff;border:1px solid #fdba74}#toolya-backstudio .bsp-panel h4{font-weight:750;font-size:1rem;margin:0 0 9px}#toolya-backstudio .bsp-muted{font-size:12px;color:#475569}#toolya-backstudio .bsp-actions{display:flex;flex-wrap:wrap;gap:5px}#toolya-backstudio #bsp-3d{height:260px;width:100%;border-radius:12px;background:radial-gradient(circle at 50% 30%,#fff7ed,#fde7ce);touch-action:none;overflow:hidden;outline-offset:3px}#toolya-backstudio #bsp-3d:focus-visible{outline:3px solid #c2410c}#toolya-backstudio .bsp-match{padding:9px 0;border-bottom:1px solid #fed7aa;display:flex;flex-direction:column;gap:5px}#toolya-backstudio .bsp-match span{font-size:12px}#toolya-backstudio .bsp-match button{align-self:flex-start}#toolya-backstudio #bsp-recipe-text{min-height:85px}#toolya-backstudio #bsp-apply{background:#047857}#toolya-backstudio .bsp-panel input[type=checkbox]{width:auto}';
  init3D();initFinder();initRecipe();initCake();initMemory();
-  localizeProControls();
   document.addEventListener('toolya:locale-change',()=>{
    localizeProControls();
    renderComparisons();updateCake();renderMemory();
   });
  // Default rating for extended notes (in the original memory card).
  const memory=cardOf('bs-logs');if(memory){const rating=txt('label',null,memory);txt('span','Wie gut hat es geklappt? (1–5 Sterne)',rating);const input=txt('input',null,rating);input.id='bsp-rating';input.type='number';input.min='1';input.max='5';input.value='3'}
+  localizeProControls();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
