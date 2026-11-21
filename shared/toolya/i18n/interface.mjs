@@ -10,8 +10,6 @@ const common = [
  ['.b3-brand','', 'aria-label','Toolya home'],
  ['#settingsModal label[for="auth-email"]','Email address'],
  ['#settingsModal label[for="auth-password"]','Password'],
- ['#settingsModal #header-user-email','Not signed in'],
- ['#settingsModal #cloud-status-text','Checking account…'],
  ['#settingsModal [onclick="supabaseLogin()"]','Sign in'],
  ['#settingsModal [onclick="supabaseRegister()"]','Register'],
  ['#settingsModal [onclick="supabaseLogout()"]','Sign out'],
@@ -53,9 +51,6 @@ export function applyToolInterfaceLocale(document,tool,language){
  for(const [selector,translation,attribute,attributeTranslation] of [...common,...(toolTranslations[tool]||[])]){
   const translated=attribute?attributeTranslation:translation;
   for(const element of document.querySelectorAll(selector)){
-   // Dynamic user/account values must never be replaced.
-   if((selector.includes('header-user-email') && element.textContent.trim()!=='Nicht angemeldet' && !originals.has(element))
-    || (selector.includes('cloud-status-text') && element.textContent.trim()!=='Konto wird geprüft …' && !originals.has(element)))continue;
    updateElement(element,translated,attribute,language);
   }
  }
