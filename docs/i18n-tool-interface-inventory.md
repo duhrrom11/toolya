@@ -145,3 +145,12 @@ Stand 2026-11-21. Quelle: vier vorhandene `tools/*/index.html` im Entwicklungsbr
 - Es werden nur bekannte leaf-Elemente im `#main-content`, im Einstellungsdialog oder im ausdrücklich benannten B3-Untertitle bearbeitet. Verschachtelte oder editierbare Nutzerdaten sind ausgeschlossen; bei DE werden Originaltext und Leerzeichen wiederhergestellt. Verlinkungen, Handlers, Tool-IDs, Rezeptformeln und alle gespeicherten Daten bleiben unverändert.
 - Vier neue Regressionstests prüfen die vier Tools, die Backstudio-Zutatencheckliste, den vollständig belegten Wörterbuchkatalog und den WG-Header inklusive unverändertem Toolya-Schriftzug.
 - Vor dem Merge müssen alle Workflows für den jeweils letzten Commit erfolgreich sein; über die abgeschlossene i18n-Suite hinaus ersetzt das keinen manuellen Browser-/Accountsicherheits-Review. **Kein Live-Deployment und keine Supabase-Migration.**
+
+## Barrierefreiheit und Live-Gießmengen-Anzeige (2026-11-21)
+
+- Alle neun CI-Workflows für den vorherigen Stand `da1f4a9a` waren bei der letzten Abfrage bis auf den noch laufenden `Isolated Toolya browser tests` erfolgreich. Kein Freigabeclaim für diesen oder den aktuellen HEAD, solange ein Workflow offen ist.
+- Der neue `toolAccessibilityCopy`-Katalog ergänzt **19** source-exakte Attribute für die vier Tools: Umzugskisten-Foto, Bildvergrößerung, QR-Link, Filter und Boxfelder; WG-Statistikdiagramme und Belegfilter; Pflanzenformulare; Backform-Navigation und Rezeptfelder. Originalattribute werden beim Rückwechsel wiederhergestellt, Eingabewerte, URLs und Benutzer-IDs nicht verändert.
+- Foto-Zoom-Dialog `#imageModal`: `aria-label` und `alt` lassen sich nach Englisch umschalten, das `src`-Attribut und der Schließen-Handler bleiben unverändert.
+- Pflanzenpflege: Der bestehende reine Berechnungspfad `calculateWaterAmount()` wird bei `toolya:locale-change` erneut ausgeführt. Die angezeigte ml/Liter-Empfehlung nimmt die gewählte Sprache an, ohne den Topfgrößenwert zu überschreiben oder Supabase/`localStorage` zu ändern.
+- Vier zusätzliche i18n-Regressionstests prüfen Hin-/Rückwechsel, im DOM vorhandene Originalattribute, unveränderte persönliche Inhalte und Bildquellen sowie die angezeigte Gießmenge in beiden Sprachen.
+- Der vollständige neue CI-Lauf und die isolierte Browser-/Kontoprüfung bleiben Voraussetzung für Merge und Release. **Keine Produktionsänderung.**
