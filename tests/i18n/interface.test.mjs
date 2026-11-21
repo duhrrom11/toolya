@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {parseHTML} from 'linkedom';
-import {applyToolInterfaceLocale,translateToolDialog} from '../../shared/toolya/i18n/interface.mjs';
+import {applyToolInterfaceLocale,translateToolDialog,translateAccountStatus} from '../../shared/toolya/i18n/interface.mjs';
 
 test('auth sign-in, sign-out and validation shell are reversible without touching account data', () => {
  const {document} = parseHTML(`<html lang="de"><body>
@@ -102,4 +102,27 @@ test('English PDF labels are localized without modifying user records or export 
   assert.match(html,/window\.__toolyaUILocale === ['"]en['"]/,'PDF language gate in '+tool);
   assert.match(html,/toLocaleDateString\(window\.__toolyaUILocale === 'en' \? 'en-GB' : 'de-DE'\)/,'PDF date format in '+tool);
  }
+});
+
+test('account status localization is reversible and never translates identity content',()=>{
+ const cases=[
+  ['Nicht angemeldet','Not signed in'],
+  ['Status: Verbunden & Angemeldet','Status: Connected and signed in'],
+  ['Status: Verbindung oder Sitzung nicht überprüfbar','Status: Unable to verify connection or session'],
+  ['✅ Angemeldet – person@example.org','✅ Signed in – person@example.org']
+ ];
+ for(const [de,en] of cases){
+  assert.equal(translateAccountStatus('en',de),en);
+  assert.equal(translateAccountStatus('de',en),de);
+ }
+ assert.equal(translateAccountStatus('en','person@example.org'),'person@example.org');
+});
+test('static translation leaves nested children and their handlers intact',()=>{
+ const {document}=parseHTML('<html><body><button id="btn-tab-rechner" onclick="openTab()"><svg id="icon" aria-hidden="true"></svg>🧮 Backform-Rechner</button></body></html>');
+ const button=document.querySelector('button'),icon=document.querySelector('#icon');
+ applyToolInterfaceLocale(document,'baking','en');
+ assert.equal(document.querySelector('#icon'),icon);
+ assert.equal(button.getAttribute('onclick'),'openTab()');
+ applyToolInterfaceLocale(document,'baking','de');
+ assert.equal(document.querySelector('#icon'),icon);
 });
