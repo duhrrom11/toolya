@@ -739,6 +739,15 @@ const dialogCopy = Object.freeze({
   'Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.':'Confirm that the backup was downloaded.'
  },
  housemates: {
+  "Hinweis: Diese ältere WG verwendet einen ungeschützten Link-Speicher. Wer die WG-ID kennt, kann die Daten möglicherweise lesen oder verändern. Für neue WGs steht geschützter Kontospeicher zur Verfügung.": "Notice: This older household uses unprotected link-based storage. Anyone who knows the household ID may be able to read or change the data. Protected account storage is available for new households.",
+  "🔗 WG-Link kopiert! Teile ihn nur mit berechtigten Personen.": "🔗 Household link copied! Share it only with authorized people.",
+  "WG-Link manuell kopieren:": "Copy household link manually:",
+  "Zutaten übernommen!": "Ingredients added!",
+  "Es muss mindestens ein Mitglied in der WG verbleiben!": "At least one household member must remain.",
+  "Import abgebrochen oder von diesem Browser auf dem Gerät eingeschränkt.": "Import cancelled or restricted by this browser on this device.",
+  "ℹ️ Der direkte Handy-Kontakte-Zugriff wird von deinem aktuellen Browser/Gerät nicht direkt unterstützt (wird meist auf mobilen Android/iOS Chrome- oder Web-Browsern unterstützt). Du kannst Kontakte aber ganz bequem manuell über das Formular eintragen.": "ℹ️ Direct access to phone contacts is not supported by this browser or device. You can add contacts manually using the form.",
+  "Ungültige Benutzer-ID. Das Mitglied muss sich zuerst registrieren.": "Invalid user ID. The member must register first.",
+  "Der Eigentümer ist bereits berechtigt.": "The owner already has access.",
   "Keine WG-ID aktiv.": "No active household ID.",
   "Speicherkonflikt: Die WG wurde andernorts geändert. Lokale Änderungen bleiben erhalten; bitte vor dem Neuladen sichern.": "Save conflict: The household was changed elsewhere. Local changes are kept; back them up before reloading.",
   "Deine Änderungen sind auf diesem Gerät gespeichert. Die Online-Sicherung steht noch aus.": "Your changes are saved on this device. Online backup is still pending.",
