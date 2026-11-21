@@ -1791,3 +1791,43 @@ test('Sprint A companion planting advice recognizes English names and restores G
  assert.ok(listener.includes("checkCompanionPlanting(document.getElementById('plantSpecies')?.value || '')"));
  assert.ok(!listener.includes('saveData(')&&!listener.includes('localStorage.setItem('),'language change makes no data writes');
 });
+
+
+test('Sprint A baking locale switch refreshes existing helper results without saving recipes',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const html=await readFile(new URL('../../tools/baking/index.html',import.meta.url),'utf8');
+ const start=html.indexOf("document.addEventListener('toolya:locale-change'");
+ const end=html.indexOf('// Initialisierung beim Laden',start);
+ assert.ok(start>0&&end>start);
+ const refreshed=[];
+ const nodes={
+  'sugar-result':{innerText:'Old result'},
+  'climate-result':{innerText:'Old climate'},
+  'finder-results':{innerHTML:'Old finder'}
+ };
+ const handlers={};
+ const context={
+  bakingCloudReady:false,
+  document:{addEventListener:(key,fn)=>handlers[key]=fn,getElementById:id=>nodes[id]||null},
+  calculateAll:()=>refreshed.push('calculate'),
+  updateTimerDisplay:()=>refreshed.push('timer'),
+  calculateSugar:()=>refreshed.push('sugar'),
+  checkClimate:()=>refreshed.push('climate'),
+  runFormFinder:()=>refreshed.push('finder'),
+  renderSavedRecipes:()=>{throw Error('Cloud render forbidden without ready session');},
+  calculateRecipe:()=>{throw Error('Would persist a recipe');},
+  saveRecipeToStorage:()=>{throw Error('Recipe persistence forbidden');}
+ };
+ createContext(context);runInContext(html.slice(start,end),context);
+ handlers['toolya:locale-change']();
+ assert.deepEqual(refreshed,['calculate','timer','sugar','climate','finder']);
+ refreshed.length=0;
+ nodes['sugar-result'].innerText='';
+ nodes['climate-result'].innerText='';
+ nodes['finder-results'].innerHTML='';
+ handlers['toolya:locale-change']();
+ assert.deepEqual(refreshed,['calculate','timer'],'empty/unopened helper results stay untouched');
+ const listener=html.slice(start,end);
+ assert.ok(!listener.includes('calculateRecipe()')&&!listener.includes('saveRecipeToStorage(')&&!listener.includes('localStorage.setItem('),'locale changes never persist recipes');
+});
