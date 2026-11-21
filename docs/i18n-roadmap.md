@@ -438,3 +438,5 @@ Der Kontohinweis auf der Startseite übernimmt Englisch aus dem geschützten Too
 ### Übersetzungen direkt in der gemeinsamen Tool-Vorlage
 
 Zehn Werkzeugseiten verwenden dieselbe vorhandene Anwendung für DE und EN. In diesem Paket sind 202 Stellen in den deutschen Vorlagen mit englischen Labels, Hinweisen oder zugänglichen Beschriftungen versehen. Ein gemeinsamer Helfer setzt diese Texte bei Englisch ein und stellt bei Deutsch die Ausgangstexte wieder her. Die statische Kontrolle bestätigte, dass abgesehen von den Übersetzungsattributen alle zehn HTML-Dateien bytegleich sind. Ein synthetischer Test überprüfte den Hin- und Rückwechsel, unveränderte Optionswerte und den Erhalt eines geänderten Laufzeittexts. Vollständige Browserabnahme und weitere Laufzeitmeldungen bleiben offen.
+
+Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status und Kalenderaktionen zweisprachig ergänzt und isoliert in Chromium geprüft.

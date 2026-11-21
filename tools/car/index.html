@@ -892,6 +892,9 @@ async function toolyaCloudBoot(tool) {
         }
 
         function renderApp() {
+            const english = window.__toolyaUILocale === 'en';
+            const displayLocale = english ? 'en-GB' : 'de-DE';
+            const label = (de, en) => english ? en : de;
             let data = getData();
             const carsContainer = document.getElementById('carsList');
             const tiresContainer = document.getElementById('tiresList');
@@ -992,7 +995,7 @@ async function toolyaCloudBoot(tool) {
                         <div class="p-3 border rounded-xl ${statusColor}">
                             <p class="text-[11px] font-bold text-gray-500">${carName} (${e.type})</p>
                             <p class="text-xs font-bold mt-0.5">${e.title}</p>
-                            <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString('de-DE')})</p>
+                            <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString(displayLocale)})</p>
                         </div>
                     `;
                 }).join('');
@@ -1030,14 +1033,17 @@ async function toolyaCloudBoot(tool) {
             document.getElementById('statCosts').innerText = totalCosts.toFixed(2).replace('.', ',') + ' €';
 
             if (filteredEvents.length === 0) {
-                eventsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Einträge für diesen Filter erfasst.</p>`;
+                eventsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${label('Keine Einträge für diesen Filter erfasst.','No entries match this filter.')}</p>`;
             } else {
                 eventsContainer.innerHTML = filteredEvents.map(e => {
                     let car = data.cars.find(c => c.id === e.carId);
                     let carName = car ? car.name : "Unbekannt";
                     let d = new Date(e.date);
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
-                    let badge = diff < 0 ? "🔴 Überfällig" : (diff <= 30 ? `🟡 in ${diff} Tagen` : "🟢 Planmäßig");
+                    const days = label(diff === 1 ? 'Tag' : 'Tagen', diff === 1 ? 'day' : 'days');
+                    const badge = diff < 0 ? label('🔴 Überfällig', '🔴 Overdue')
+                        : diff === 0 ? label('🟡 Heute fällig', '🟡 Due today')
+                        : diff <= 30 ? `🟡 in ${diff} ${days}` : label('🟢 Planmäßig', '🟢 On schedule');
 
                     let treadBadge = "";
                     if (e.tread !== null && e.tread !== undefined && !isNaN(e.tread)) {
@@ -1058,8 +1064,8 @@ async function toolyaCloudBoot(tool) {
                     if (!['Reifentiefe', 'Tanken', 'Reparatur'].includes(e.type)) {
                         let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title + ' (' + carName + ')')}&dates=${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('KFZ-Termin für ' + carName)}`;
                         calendarButtons = `
-                            <a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
-                            <button onclick="downloadEventICS(${Number(e.id)})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="Apple / ICS Kalender">📥 ICS</button>
+                            <a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="${label('Google Kalender','Google Calendar')}">📅 Google</a>
+                            <button onclick="downloadEventICS(${Number(e.id)})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="${label('Apple / ICS Kalender','Download calendar file')}">📥 ICS</button>
                         `;
                     }
 
@@ -1074,7 +1080,7 @@ async function toolyaCloudBoot(tool) {
                                     ${tankBadge}
                                 </div>
                                 <h4 class="font-bold text-sm mt-1">${e.title} <span class="text-xs font-normal text-gray-500">(${badge})</span></h4>
-                                <p class="text-xs text-gray-500">Datum: ${d.toLocaleDateString('de-DE')}</p>
+                                <p class="text-xs text-gray-500">${label('Datum','Date')}: ${d.toLocaleDateString(displayLocale)}</p>
                             </div>
                             <div class="flex items-center gap-2 self-end sm:self-center flex-wrap">
                                 ${receiptBtn}
@@ -1087,6 +1093,10 @@ async function toolyaCloudBoot(tool) {
                 }).join('');
             }
         }
+
+        document.addEventListener('toolya:locale-change', () => {
+            if (toolyaCloudReady) renderApp();
+        });
 
         function zoomImage(src) {
             document.getElementById('zoomedImage').src = src;

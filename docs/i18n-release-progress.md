@@ -99,3 +99,7 @@ Zehn Werkzeugseiten verwenden dieselbe vorhandene Anwendung für DE und EN. In d
 ### Laufzeitmeldungen für Umzug, WG-Kopie und Haushaltsbuch
 
 Vier Dialoge für Löschschutz, private WG-Kopie und doppelte Buchungen sind DE/EN erfasst. Die Cloud-Importvorschau des Haushaltsbuchs zeigt verständliche Bereichsnamen und Warnungen in beiden Sprachen. Die Dialogübersetzungen wurden synthetisch ausgeführt. Die statische CI auf `bdb9d622` scheiterte an einer Prüfung der alten Auth-Weiterleitungsform. Die aktualisierte Regression simuliert vier Weiterleitungsvarianten ohne produktiven Auth-Zugriff.
+
+### Terminverlauf in Autokosten und Tiergesundheit
+
+Terminstatus im Verlauf, Datumsanzeige, Filter-Leerzustände, Kalender-Schaltflächen und das Ablaufdatum bei Tiergesundheit folgen der gewählten Sprache. 205 lokale i18n-Node-Tests und beide gezielten Chromium-Tests bestanden. Die Browserfälle prüften DE/EN-Anzeige, den unveränderten synthetischen Titel, vier ICS-Downloads und null Cloud-Schreibvorgänge. Alle 13 PR-Workflows des Ausgangscommits `a6f2f440` waren grün.

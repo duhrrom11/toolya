@@ -2242,6 +2242,9 @@ for(const calendar of [
    const choice=page.locator('[data-tool-locale="'+language+'"]');
    await choice.click();
    await expect(choice).toHaveAttribute('aria-pressed','true');
+   await expect(button).toHaveAttribute('title',language==='en'?'Download calendar file':calendar.tool==='car'?'Apple / ICS Kalender':'ICS Kalender');
+   await expect(page.locator('#eventsList')).toContainText(language==='en'?'Date: 21/11/2026':'Datum: 21.11.2026');
+   await expect(page.locator('#eventsList')).toContainText(title);
    const [download]=await Promise.all([page.waitForEvent('download'),button.click()]);
    const content=(await readFile(await download.path(),'utf8')).replaceAll('\r\n ','');
    expect(download.suggestedFilename()).toMatch(/\.ics$/);

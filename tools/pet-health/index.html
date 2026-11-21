@@ -719,6 +719,9 @@
         }
 
         function renderApp() {
+            const english = window.__toolyaUILocale === 'en';
+            const displayLocale = english ? 'en-GB' : 'de-DE';
+            const label = (de, en) => english ? en : de;
             let data = getData();
             const petsContainer = document.getElementById('petsList');
             const eventsContainer = document.getElementById('eventsList');
@@ -817,7 +820,7 @@
                         let expD = new Date(e.expiryDate);
                         let expDiff = Math.ceil((expD - today) / (1000 * 60 * 60 * 24));
                         let expColor = expDiff < 0 ? "text-red-700 font-bold" : (expDiff <= 30 ? "text-amber-700 font-bold" : "text-teal-700");
-                        expiryHint = `<p class="text-[10px] ${expColor} mt-0.5">📅 Impf-Gültigkeit bis: ${expD.toLocaleDateString('de-DE')} (${expDiff < 0 ? 'Abgelaufen!' : 'in ' + expDiff + ' Tagen'})</p>`;
+                        expiryHint = `<p class="text-[10px] ${expColor} mt-0.5">📅 Impf-Gültigkeit bis: ${expD.toLocaleDateString(displayLocale)} (${expDiff < 0 ? 'Abgelaufen!' : 'in ' + expDiff + ' Tagen'})</p>`;
                     }
 
                     let intervalHint = "";
@@ -825,7 +828,7 @@
                         let nextWormDate = new Date(d);
                         nextWormDate.setDate(nextWormDate.getDate() + 90);
                         let wormDiff = Math.ceil((nextWormDate - today) / (1000 * 60 * 60 * 24));
-                        intervalHint = `<p class="text-[10px] text-teal-700 mt-0.5">🪱 Nächste Entwurmung: in ${wormDiff} Tagen (${nextWormDate.toLocaleDateString('de-DE')})</p>`;
+                        intervalHint = `<p class="text-[10px] text-teal-700 mt-0.5">🪱 Nächste Entwurmung: in ${wormDiff} Tagen (${nextWormDate.toLocaleDateString(displayLocale)})</p>`;
                     }
 
                     let statusColor = diff < 0 ? "border-red-400 bg-red-50 text-red-800" : (diff <= 14 ? "border-amber-400 bg-amber-50 text-amber-800" : "border-gray-200 bg-gray-50 text-gray-800");
@@ -834,7 +837,7 @@
                         <div class="p-3 border rounded-xl ${statusColor}">
                             <p class="text-[11px] font-bold text-gray-500">${petName} (${e.type})</p>
                             <p class="text-xs font-bold mt-0.5">${e.title}</p>
-                            <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString('de-DE')})</p>
+                            <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString(displayLocale)})</p>
                             ${expiryHint}
                             ${intervalHint}
                         </div>
@@ -850,14 +853,17 @@
             }
 
             if (filteredEvents.length === 0) {
-                eventsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Termine für diesen Filter erfasst.</p>`;
+                eventsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${label('Keine Termine für diesen Filter erfasst.','No appointments match this filter.')}</p>`;
             } else {
                 eventsContainer.innerHTML = filteredEvents.map(e => {
                     let pet = data.pets.find(p => p.id === e.petId);
                     let petName = pet ? pet.name : "Unbekannt";
                     let d = new Date(e.date);
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
-                    let badge = diff < 0 ? "🔴 Überfällig" : (diff <= 30 ? `🟡 in ${diff} Tagen` : "🟢 Planmäßig");
+                    const days = label(diff === 1 ? 'Tag' : 'Tagen', diff === 1 ? 'day' : 'days');
+                    const badge = diff < 0 ? label('🔴 Überfällig', '🔴 Overdue')
+                        : diff === 0 ? label('🟡 Heute fällig', '🟡 Due today')
+                        : diff <= 30 ? `🟡 in ${diff} ${days}` : label('🟢 Planmäßig', '🟢 On schedule');
 
                     let weightBadge = "";
                     if (e.weight !== null && e.weight !== undefined) {
@@ -889,12 +895,12 @@
                                     ${weightBadge}
                                 </div>
                                 <h4 class="font-bold text-sm mt-1">${e.title} <span class="text-xs font-normal text-gray-500">${e.type === 'Tagebuch' ? '' : '(' + badge + ')'}</span></h4>
-                                <p class="text-xs text-gray-500">Datum: ${d.toLocaleDateString('de-DE')}</p>
-                                ${e.expiryDate ? `<p class="text-[11px] text-teal-700 mt-0.5">📅 Gültig bis: ${new Date(e.expiryDate).toLocaleDateString('de-DE')}</p>` : ''}
+                                <p class="text-xs text-gray-500">${label('Datum','Date')}: ${d.toLocaleDateString(displayLocale)}</p>
+                                ${e.expiryDate ? `<p class="text-[11px] text-teal-700 mt-0.5">📅 ${label('Gültig bis','Valid until')}: ${new Date(e.expiryDate).toLocaleDateString(displayLocale)}</p>` : ''}
                             </div>
                             <div class="b3-pet-event-actions flex items-center gap-2 self-end sm:self-center flex-wrap">
                                 ${receiptBtn}
-                                ${e.type !== 'Tagebuch' ? `<a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="b3-action b3-outline px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a><button onclick="downloadEventICS(${Number(e.id)})" class="b3-action b3-outline px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Kalender">📥 ICS</button>` : ''}
+                                ${e.type !== 'Tagebuch' ? `<a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="b3-action b3-outline px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="${label('Google Kalender','Google Calendar')}">📅 Google</a><button onclick="downloadEventICS(${Number(e.id)})" class="b3-action b3-outline px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="${label('ICS Kalender','Download calendar file')}">📥 ICS</button>` : ''}
                                 <button onclick="deleteEvent(${e.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
@@ -902,6 +908,10 @@
                 }).join('');
             }
         }
+
+        document.addEventListener('toolya:locale-change', () => {
+            if (petCloudReady) renderApp();
+        });
 
         function zoomImage(src) {
             document.getElementById('zoomedImage').src = src;
