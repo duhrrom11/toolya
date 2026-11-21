@@ -632,13 +632,15 @@ test('Backstudio Pro static controls and accessibility reverse without changing 
  const start=script.indexOf('const proEn=()=>');
  const end=script.indexOf("const KEY='toolya_backstudio_v1'",start);
  assert.ok(start>0&&end>start,'pro translation helper exists');
- const {document}=parseHTML('<html><body><section id="toolya-backstudio"><section class="bsp-panel"><h4>Welche Form passt?</h4><p class="bsp-muted">Wähle eine Form, die zu deinem Teig passt.</p><label><span>Vergleichsziel</span><select id="bsp-compare-target"><option value="recipe">Rezeptmenge und Teighöhe</option><option value="mixed">Meine vorhandene Teigmenge</option></select></label><div class="bsp-actions"><button id="find" onclick="run()">Passende Formen finden</button></div><input id="bsp-recipe-text" value="1000.5 g flour" placeholder="Rezept oder Zutatenliste hier einfügen …"></section><div class="bsp-match"><strong>Welche Form passt?</strong></div><div id="bsp-3d"></div><video id="bsp-camera-video"></video><img id="bsp-photo-preview" alt="Dein ausgewähltes Rezeptfoto"></section></body></html>');
+ const {document}=parseHTML('<html><body><section id="toolya-backstudio"><section class="bsp-panel"><h4>Welche Form passt?</h4><p class="bsp-muted">Wähle eine Form, die zu deinem Teig passt.</p><label><span>Vergleichsziel</span><select id="bsp-compare-target"><option value="recipe">Rezeptmenge und Teighöhe</option><option value="mixed">Meine vorhandene Teigmenge</option></select></label><div class="bsp-actions"><button id="find" onclick="run()">Passende Formen finden</button></div><input id="bsp-recipe-text" value="1000.5 g flour" placeholder="Rezept oder Zutatenliste hier einfügen …"></section><div class="bsp-match"><strong>Welche Form passt?</strong></div><div id="bsp-3d"></div><p id="bsp-3d-status">Hier erscheint deine drehbare Backform.</p><p id="bsp-ocr-status">Wähle Kamera oder Foto.</p><video id="bsp-camera-video"></video><img id="bsp-photo-preview" alt="Dein ausgewähltes Rezeptfoto"></section></body></html>');
  const ctx={document,window:{__toolyaUILocale:'en'},$:id=>document.getElementById(id)};
  createContext(ctx);
  runInContext(script.slice(start,end)+'\nlocalizeProControls()',ctx);
  assert.equal(document.querySelector('.bsp-panel h4').textContent,'Which pan fits?');
  assert.equal(document.querySelector('.bsp-muted').textContent,'Choose a pan that fits your batter.');
  assert.equal(document.getElementById('find').textContent,'Find matching pans');
+ assert.equal(document.getElementById('bsp-3d-status').textContent,'Your interactive baking pan appears here.');
+ assert.equal(document.getElementById('bsp-ocr-status').textContent,'Choose camera or photo.');
  assert.equal(document.getElementById('find').getAttribute('onclick'),'run()');
  assert.equal(document.getElementById('bsp-compare-target').value,'recipe');
  assert.equal(document.querySelector('option').value,'recipe');
@@ -651,6 +653,8 @@ test('Backstudio Pro static controls and accessibility reverse without changing 
  runInContext('localizeProControls()',ctx);
  assert.equal(document.querySelector('.bsp-panel h4').textContent,'Welche Form passt?');
  assert.equal(document.getElementById('find').textContent,'Passende Formen finden');
+ assert.equal(document.getElementById('bsp-3d-status').textContent,'Hier erscheint deine drehbare Backform.');
+ assert.equal(document.getElementById('bsp-ocr-status').textContent,'Wähle Kamera oder Foto.');
  assert.equal(document.getElementById('bsp-compare-target').value,'recipe');
  assert.equal(document.querySelector('option').textContent,'Rezeptmenge und Teighöhe');
  assert.equal(document.getElementById('bsp-recipe-text').value,'1000.5 g flour');
