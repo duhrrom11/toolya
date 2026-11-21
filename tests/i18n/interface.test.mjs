@@ -1060,15 +1060,17 @@ test('generated B3 navigation and action menu switches DE/EN without altering li
    ['🏠 Übersicht','📌 Pinnwand','👥 Mitglieder / Kontakte','🔐 WG-Zugriff verwalten'],
    ['🏠 Overview','📌 Noticeboard','👥 Members / contacts','🔐 Manage household access']]
  ]){
-  const {document}=parseHTML('<html><body><div class="b3-shell"><nav class="b3-nav"><div class="b3-nav-links">'+labels.slice(0,2).map((text,i)=>'<a href="#panel'+i+'">'+text+'</a>').join('')+'</div><details class="b3-more"><summary>☷ Weitere Tools</summary><div class="b3-more-content">'+labels.slice(2).map((text,i)=>'<button data-action="original'+i+'" onclick="go()"> '+text+'</button>').join('')+'</div></details></nav></div><section id="settingsModal"><section class="b3-preferences"><h4>Darstellung & Dashboard</h4><button onclick="edit()">✎ Dashboard bearbeiten</button></section><div class="b3-settings-footer"><a href="../../index.html">↗ Entdecke mehr Toolya</a></div></section></body></html>');
+  const {document}=parseHTML('<html><body><div class="b3-shell"><nav class="b3-nav" aria-label="Original German navigation"><div class="b3-nav-links">'+labels.slice(0,2).map((text,i)=>'<a href="#panel'+i+'">'+text+'</a>').join('')+'</div><details class="b3-more"><summary>☷ Weitere Tools</summary><div class="b3-more-content">'+labels.slice(2).map((text,i)=>'<button data-action="original'+i+'" onclick="go()"> '+text+'</button>').join('')+'</div></details></nav></div><section id="settingsModal"><section class="b3-preferences"><h4>Darstellung & Dashboard</h4><button onclick="edit()">✎ Dashboard bearbeiten</button></section><div class="b3-settings-footer"><a href="../../index.html">↗ Entdecke mehr Toolya</a></div></section></body></html>');
   const links=[...document.querySelectorAll('.b3-nav-links a')];
   const actions=[...document.querySelectorAll('.b3-more-content button')];
   const hrefs=links.map(x=>x.getAttribute('href'));
+  const originalNavLabel=document.querySelector('.b3-nav').getAttribute('aria-label');
   const handlers=actions.map(x=>x.getAttribute('onclick'));
   const originalMenu=[...links,...actions].map(x=>x.textContent);
   applyToolInterfaceLocale(document,tool,'en');
   assert.deepEqual(links.map(x=>x.textContent),translated.slice(0,2));
   assert.deepEqual(actions.map(x=>x.textContent.trim()),translated.slice(2));
+  assert.equal(document.querySelector('.b3-nav').getAttribute('aria-label'),tool==='moving'?'Moving boxes navigation':'Roommate organizer navigation');
   assert.equal(document.querySelector('.b3-more > summary').textContent,'☷ More tools');
   assert.equal(document.querySelector('.b3-preferences > h4').textContent,'Appearance & dashboard');
   assert.equal(document.querySelector('.b3-preferences > button').textContent,'✎ Edit dashboard');
@@ -1077,6 +1079,7 @@ test('generated B3 navigation and action menu switches DE/EN without altering li
   assert.deepEqual(actions.map(x=>x.getAttribute('onclick')),handlers);
   applyToolInterfaceLocale(document,tool,'de');
   assert.deepEqual([...links,...actions].map(x=>x.textContent),originalMenu,'original labels restored exactly');
+  assert.equal(document.querySelector('.b3-nav').getAttribute('aria-label'),originalNavLabel);
   assert.equal(document.querySelector('.b3-more > summary').textContent,'☷ Weitere Tools');
   assert.deepEqual(actions.map(x=>x.getAttribute('onclick')),handlers,'handlers restored');
  }
