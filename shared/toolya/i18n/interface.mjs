@@ -970,6 +970,7 @@ const dialogCopy = Object.freeze({
   'Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.':'Confirm that the backup was downloaded.'
  },
  housemates: {
+  "WLAN-Passwort (wird nicht gespeichert):": "Wi-Fi password (not saved):",
   'Layout konnte nicht gespeichert werden.':'Could not save the dashboard layout.',
   "Hinweis: Diese ältere WG verwendet einen ungeschützten Link-Speicher. Wer die WG-ID kennt, kann die Daten möglicherweise lesen oder verändern. Für neue WGs steht geschützter Kontospeicher zur Verfügung.": "Notice: This older household uses unprotected link-based storage. Anyone who knows the household ID may be able to read or change the data. Protected account storage is available for new households.",
   "🔗 WG-Link kopiert! Teile ihn nur mit berechtigten Personen.": "🔗 Household link copied! Share it only with authorized people.",
@@ -1013,6 +1014,7 @@ const dialogCopy = Object.freeze({
   'Die Cloud-Daten der alten WG wurden gelesen. Jetzt eine private Kopie für dein Konto erstellen?':'The old household cloud data was read. Create a private copy for your account now?'
  },
  plants: {
+  "Das Foto konnte nicht gelesen werden.": "Could not read the photo.",
   "Layout konnte nicht gespeichert werden. Bitte Browser-Speicher prüfen.": "Could not save the layout. Check your browser storage.",
   'Angemeldet. Dein Konto ist einsatzbereit.':'Signed in. Your account is ready.',
   'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.':'Request processed. If confirmation is required, check your inbox and verify your email address, then sign in.',
