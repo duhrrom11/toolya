@@ -8,7 +8,7 @@ const $=id=>document.getElementById(id);
 const client=window.supabase?.createClient(URL,KEY);
 // Share the same GoTrue client with Dashboard cloud storage to avoid competing auth instances.
 window.toolyaDashboardAuthClient=client;
-let authRequest=0,recoveryActive=false,lastFocus=null;
+let authRequest=0,recoveryActive=false,recoverySaving=false,lastFocus=null;
 const message=text=>{$('loginMessage').textContent=text};
 function renderUser(user,error){
  const button=$('userInfo');
@@ -92,11 +92,14 @@ async function reset(){
 }
 function showRecovery(){recoveryActive=true;$('signedOutControls').hidden=true;$('logoutUser').hidden=true;$('accountSettings').open=true;$('passwordRecoveryPanel').hidden=false;openSettings();$('recoveryPassword').focus()}
 async function saveRecovery(){
+ if(recoverySaving)return;
  if(!recoveryActive){message('Bitte öffne zuerst den Link aus deiner Passwort-E-Mail.');return}
  const a=$('recoveryPassword'),b=$('recoveryPasswordConfirm');
  if(a.value.length<8||a.value!==b.value){message('Bitte zwei identische Passwörter mit mindestens 8 Zeichen eingeben.');return}
+ recoverySaving=true;
  try{
-  const {error}=await client.auth.updateUser({password:a.value});if(error)throw error;
+  try{
+   const {error}=await client.auth.updateUser({password:a.value});if(error)throw error;
   }catch{message('Passwort konnte nicht geändert werden. Bitte fordere einen neuen Link an.');return}
   // A successful update must not be reported as a failed password change if
   // the subsequent sign-out fails. Never display a false signed-out state.
@@ -105,6 +108,7 @@ async function saveRecovery(){
    const {error}=await client.auth.signOut();if(error)throw error;
    ++authRequest;renderUser(null);message('Passwort geändert. Bitte erneut anmelden.');
   }catch{message('Passwort geändert, aber Abmelden fehlgeschlagen. Bitte melde dich manuell ab.')}
+ }finally{recoverySaving=false}
 }
 $('settingsBtn').addEventListener('click',openSettings);
 $('userInfo').addEventListener('click',openSettings);
