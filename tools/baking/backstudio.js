@@ -23,7 +23,7 @@ const staticBackstudioCopy = new Map([["Alles für deinen Kuchen auf einen Blick
 const backstudioSourceNodes = new WeakMap();
 function renderBackstudioStaticCopy(){
  const host=el('toolya-backstudio');if(!host)return;
- for(const target of host.querySelectorAll('h2,h3,article > p,article > label,article > button,article option')){
+ for(const target of host.querySelectorAll('h2,h3,article > p,article > label,article > button,article option,#bs-message')){
   // Only source-owned, direct text nodes; never touch user data or nested controls.
   for(const node of target.childNodes){
    if(node.nodeType!==3)continue;
