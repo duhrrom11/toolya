@@ -1008,162 +1008,51 @@ function applyToolHelpBodyCopy(document,tool,language){
    leaf paragraphs inside tool-owned UI are eligible. Never translate form
    values, user-edited text or contenteditable descendants. */
 const toolParagraphCopy=Object.freeze({
- "moving": [
-  [
-   "Erfasse Umzugskisten mit Standort und Inhalt und finde deine Sachen über die Suche oder per QR-Code wieder.",
-   "Record moving boxes with their location and contents, then find items using search or QR codes."
-  ],
-  [
-   "Noch keine Standorte oder Kisten erfasst.",
-   "No locations or boxes added yet."
-  ],
-  [
-   "Drucke diesen Code aus. Beim Scannen öffnet sich die Kiste direkt in der App!",
-   "Print this code. Scanning it opens the box directly in the app!"
-  ]
- ],
- "housemates": [
-  [
-   "Nachrichten, Hinweise oder Einkaufs-Zettel für die Küche anpinnen",
-   "Pin messages, reminders or shopping notes for the kitchen"
-  ],
-  [
-   "Die Pinnwand ist noch leer. Erstelle die erste Sticky Note!",
-   "The noticeboard is empty. Create your first sticky note!"
-  ],
-  [
-   "Noch keine Sparziele angelegt.",
-   "No savings goals yet."
-  ],
-  [
-   "Noch keine Buchungen vorhanden.",
-   "No transactions yet."
-  ],
-  [
-   "Wasch-Slots, Gäste-Übernachtungen & Events",
-   "Laundry slots, overnight guests and events"
-  ],
-  [
-   "Keine anstehenden Termine oder Slots.",
-   "No upcoming events or slots."
-  ],
-  [
-   "Küche & Haushaltshelfer",
-   "Kitchen and household helpers"
-  ],
-  [
-   "Praktische Geräte für die WG-Küche →",
-   "Useful equipment for the shared kitchen →"
-  ],
-  [
-   "Für den perfekten Putzplan-Einsatz →",
-   "Useful cleaning tools →"
-  ],
-  [
-   "Mit Smartphone-Kamera scannen für Sofort-Verbindung:",
-   "Scan with your phone camera to connect instantly:"
-  ],
-  [
-   "Übernimmt Name & Telefonnummer direkt aus deinem Handy-Adressbuch.",
-   "Imports name and phone number directly from your phone contacts."
-  ],
-  [
-   "Neue WG-Daten werden geschützt in deinem angemeldeten Konto gespeichert. Zugriff hat zunächst nur der Ersteller; gemeinsames Bearbeiten erfordert eine spätere Mitgliederfreigabe.",
-   "New household data is stored securely in your signed-in account. Initially only the creator has access; sharing edits requires granting members access."
-  ]
- ],
- "plants": [
-  [
-   "Gießplan, Pflegenotizen und Fotos für Zimmerpflanzen und Garten",
-   "Watering schedule, care notes and photos for houseplants and gardens"
-  ],
-  [
-   "Keine Pflanzen erfasst.",
-   "No plants recorded."
-  ],
-  [
-   "Erde & Bio-Dünger",
-   "Soil and organic fertilizer"
-  ],
-  [
-   "Für ein gesundes Pflanzenwachstum →",
-   "For healthy plant growth →"
-  ],
-  [
-   "Gewächshäuser & Frühbeete",
-   "Greenhouses and cold frames"
-  ],
-  [
-   "Optimal für Aussaat & Zucht →",
-   "Ideal for sowing and propagation →"
-  ],
-  [
-   "Verwalte dein Schuppen-Inventar. Nutze den Nachbestell-Button, um Artikel direkt über deine Partner-ID bei Amazon zu ordern:",
-   "Manage your shed inventory. Use the reorder button to find items on Amazon through your affiliate link:"
-  ]
- ],
- "baking": [
-  [
-   "Backformen umrechnen, Zutatenmengen anpassen und Backzeiten abschätzen",
-   "Resize baking pans, scale ingredient quantities and estimate baking times"
-  ],
-  [
-   "Wähle zuerst deine Backformen, füge bei Bedarf Zutaten hinzu und passe anschließend die Backbedingungen an. Die Ergebnisse werden automatisch berechnet.",
-   "Choose your baking pans, add ingredients if needed, then adjust the baking conditions. Results are calculated automatically."
-  ],
-  [
-   "Stückbreite am Rand.",
-   "Portion width at the edge."
-  ],
-  [
-   "Du hast ein Rezept für eine bestimmte Springformgröße im Kopf, möchtest aber wissen, welche Alternativen (Kastenform, Muffins etc.) exakt dasselbe Teigvolumen ergeben?",
-   "Have a recipe for a particular round pan? Find alternatives such as loaf pans or muffins with the same batter volume."
-  ],
-  [
-   "Klicke auf den Button, um äquivalente Backformen zu berechnen...",
-   "Select the button to calculate equivalent baking pans…"
-  ],
-  [
-   "Margarine (1:1) oder Pflanzenöl (100g Butter = 75g Öl).",
-   "Margarine (1:1) or vegetable oil (100 g butter = 75 g oil)."
-  ],
-  [
-   "Richtwerte: Süßkraft und Backeigenschaften hängen vom Produkt und Rezept ab.",
-   "Guidance only: sweetness and baking properties depend on the product and recipe."
-  ],
-  [
-   "Perfektes Backklima. Keine Anpassung nötig.",
-   "Ideal baking conditions. No adjustment needed."
-  ],
-  [
-   "Fehlt dir noch die richtige Form oder das passende Equipment? Hier direkt stöbern:",
-   "Need the right pan or baking equipment? Browse here:"
-  ],
-  [
-   "Noch keine Rezepte gespeichert.",
-   "No recipes saved yet."
-  ],
-  [
-   "Teighöhe entspricht exakt dem Original.",
-   "Batter height matches the original exactly."
-  ],
-  [
-   "Schätzung erst nach Rezepteingabe verfügbar",
-   "Estimate available after entering a recipe."
-  ],
-  [
-   "Füge links ein Rezept ein...",
-   "Enter a recipe on the left…"
-  ],
-  [
-   "Rührkuchen: Bei Raumtemperatur in Alufolie luftdicht verpacken (3-4 Tage frisch).",
-   "Pound cake: wrap airtight in foil and store at room temperature (fresh for 3–4 days)."
-  ],
-  [
-   "Alle Rechenwerkzeuge bleiben erreichbar. Hier kannst du Reihenfolge und Kartendichte anpassen.",
-   "All calculators remain accessible. Adjust their order and card density here."
-  ]
- ]
+  "moving": {
+    "Erfasse Umzugskisten mit Standort und Inhalt und finde deine Sachen über die Suche oder per QR-Code wieder.": "Record moving boxes with their location and contents, then find items using search or QR codes.",
+    "Noch keine Standorte oder Kisten erfasst.": "No locations or boxes added yet.",
+    "Drucke diesen Code aus. Beim Scannen öffnet sich die Kiste direkt in der App!": "Print this code. Scanning it opens the box directly in the app!"
+  },
+  "housemates": {
+    "Nachrichten, Hinweise oder Einkaufs-Zettel für die Küche anpinnen": "Pin messages, reminders or shopping notes for the kitchen",
+    "Die Pinnwand ist noch leer. Erstelle die erste Sticky Note!": "The noticeboard is empty. Create your first sticky note!",
+    "Noch keine Sparziele angelegt.": "No savings goals yet.",
+    "Noch keine Buchungen vorhanden.": "No transactions yet.",
+    "Wasch-Slots, Gäste-Übernachtungen & Events": "Laundry slots, overnight guests and events",
+    "Keine anstehenden Termine oder Slots.": "No upcoming events or slots.",
+    "Küche & Haushaltshelfer": "Kitchen and household helpers",
+    "Praktische Geräte für die WG-Küche →": "Useful equipment for the shared kitchen →",
+    "Für den perfekten Putzplan-Einsatz →": "Useful cleaning tools →",
+    "Mit Smartphone-Kamera scannen für Sofort-Verbindung:": "Scan with your phone camera to connect instantly:",
+    "Übernimmt Name & Telefonnummer direkt aus deinem Handy-Adressbuch.": "Imports name and phone number directly from your phone contacts.",
+    "Neue WG-Daten werden geschützt in deinem angemeldeten Konto gespeichert. Zugriff hat zunächst nur der Ersteller; gemeinsames Bearbeiten erfordert eine spätere Mitgliederfreigabe.": "New household data is stored securely in your signed-in account. Initially only the creator has access; sharing edits requires granting members access."
+  },
+  "plants": {
+    "Gießplan, Pflegenotizen und Fotos für Zimmerpflanzen und Garten": "Watering schedule, care notes and photos for houseplants and gardens",
+    "Keine Pflanzen erfasst.": "No plants recorded.",
+    "Erde & Bio-Dünger": "Soil and organic fertilizer",
+    "Für ein gesundes Pflanzenwachstum →": "For healthy plant growth →",
+    "Gewächshäuser & Frühbeete": "Greenhouses and cold frames",
+    "Optimal für Aussaat & Zucht →": "Ideal for sowing and propagation →",
+    "Verwalte dein Schuppen-Inventar. Nutze den Nachbestell-Button, um Artikel direkt über deine Partner-ID bei Amazon zu ordern:": "Manage your shed inventory. Use the reorder button to find items on Amazon through your affiliate link:"
+  },
+  "baking": {
+    "Backformen umrechnen, Zutatenmengen anpassen und Backzeiten abschätzen": "Resize baking pans, scale ingredient quantities and estimate baking times",
+    "Wähle zuerst deine Backformen, füge bei Bedarf Zutaten hinzu und passe anschließend die Backbedingungen an. Die Ergebnisse werden automatisch berechnet.": "Choose your baking pans, add ingredients if needed, then adjust the baking conditions. Results are calculated automatically.",
+    "Stückbreite am Rand.": "Portion width at the edge.",
+    "Du hast ein Rezept für eine bestimmte Springformgröße im Kopf, möchtest aber wissen, welche Alternativen (Kastenform, Muffins etc.) exakt dasselbe Teigvolumen ergeben?": "Have a recipe for a particular round pan? Find alternatives such as loaf pans or muffins with the same batter volume.",
+    "Klicke auf den Button, um äquivalente Backformen zu berechnen...": "Select the button to calculate equivalent baking pans…",
+    "Margarine (1:1) oder Pflanzenöl (100g Butter = 75g Öl).": "Margarine (1:1) or vegetable oil (100 g butter = 75 g oil).",
+    "Richtwerte: Süßkraft und Backeigenschaften hängen vom Produkt und Rezept ab.": "Guidance only: sweetness and baking properties depend on the product and recipe.",
+    "Perfektes Backklima. Keine Anpassung nötig.": "Ideal baking conditions. No adjustment needed.",
+    "Fehlt dir noch die richtige Form oder das passende Equipment? Hier direkt stöbern:": "Need the right pan or baking equipment? Browse here:",
+    "Noch keine Rezepte gespeichert.": "No recipes saved yet.",
+    "Teighöhe entspricht exakt dem Original.": "Batter height matches the original exactly.",
+    "Schätzung erst nach Rezepteingabe verfügbar": "Estimate available after entering a recipe.",
+    "Füge links ein Rezept ein...": "Enter a recipe on the left…",
+    "Rührkuchen: Bei Raumtemperatur in Alufolie luftdicht verpacken (3-4 Tage frisch).": "Pound cake: wrap airtight in foil and store at room temperature (fresh for 3–4 days).",
+    "Alle Rechenwerkzeuge bleiben erreichbar. Hier kannst du Reihenfolge und Kartendichte anpassen.": "All calculators remain accessible. Adjust their order and card density here."
+  }
 });
 function applyToolParagraphCopy(document,tool,language){
  const dictionary=toolParagraphCopy[tool];
