@@ -255,7 +255,7 @@ test('planting plots and gallery expose localized display labels without changin
 
 test('seasonal garden calendar has all 12 English months and updates on DE/EN changes',async()=>{
  const {readFile}=await import('node:fs/promises');
- const {runInNewContext}=await import('node:vm');
+ const {createContext,runInContext}=await import('node:vm');
  const html=await readFile(new URL('../../tools/plants/index.html',import.meta.url),'utf8');
  const start=html.indexOf('const gartenKalender = {');
  const end=html.indexOf('const mischkulturDb =',start);
@@ -269,15 +269,16 @@ test('seasonal garden calendar has all 12 English months and updates on DE/EN ch
   },
   Date:class{getMonth(){return 0;}}
  };
- runInNewContext(html.slice(start,end),context);
+ createContext(context);
+ runInContext(html.slice(start,end),context);
  assert.equal(typeof handlers['toolya:locale-change'],'function');
  assert.equal(context.window.__toolyaUILocale,'de');
  for(let month=0;month<12;month++){
   context.window.__toolyaUILocale='de';
-  runInNewContext('renderGardenCalendar('+month+')',context);
+  runInContext('renderGardenCalendar('+month+')',context);
   assert.match(output.textContent,/^(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember):/);
   context.window.__toolyaUILocale='en';
-  runInNewContext('renderGardenCalendar('+month+')',context);
+  runInContext('renderGardenCalendar('+month+')',context);
   assert.match(output.textContent,/^(January|February|March|April|May|June|July|August|September|October|November|December):/);
  }
  context.window.__toolyaUILocale='en';
