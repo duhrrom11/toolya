@@ -19,6 +19,23 @@ const adjusted=i=>{const v=i.qty*factor(),u=i.unit||'';let result=v;if(el('bs-pr
 const amazon=q=>'https://www.amazon.de/s?k='+encodeURIComponent(q)+'&tag='+TAG;
 const make=(tag,where,content)=>{const n=document.createElement(tag);if(content!==undefined)n.textContent=content;where.append(n);return n};
 const pantryKey=i=>(i.unit+'|'+i.name).trim().toLocaleLowerCase('de-DE');
+const staticBackstudioCopy = new Map([["Alles für deinen Kuchen auf einen Blick.","Everything for your cake at a glance."],["1 · Meine Backformen","1 · My baking pans"],["Typ","Type"],["Rund","Round"],["Rechteck","Rectangular"],["Spezialform (ml)","Special pan (ml)"],["Muffinmulden","Muffin cups"],["Durchmesser / Länge / ml / Anzahl","Diameter / length / ml / quantity"],["Breite bei Rechteck","Width for rectangular pans"],["Form speichern","Save pan"],["2 · Wie voll wird die Form?","2 · How full is the pan?"],["Teigmenge (Liter)","Batter volume (litres)"],["Höhe der Form (cm)","Pan height (cm)"],["Wie voll darf die Form sein?","Maximum pan fill"],["3 · Zutaten","3 · Ingredients"],["Mengen einfach runden","Round quantities to practical amounts"],["Zutaten auf die Einkaufsliste","Add ingredients to shopping list"],["Mit Amazon-Suche bei jeder Zutat (Anzeige).","Amazon search for each ingredient (advertisement)."],["4 · Backzeit","4 · Baking time"],["Teig","Batter type"],["Rührteig / Biskuit","Sponge cake batter"],["Hefeteig","Yeast dough"],["Käsekuchen","Cheesecake"],["Material","Material"],["Helles Metall","Light metal"],["Dunkles Metall","Dark metal"],["Glas / Keramik","Glass / ceramic"],["5 · Rezeptfoto","5 · Recipe photo"],["Füge ein Rezept ein oder wähle ein Foto.","Paste a recipe or choose a photo."],["Foto auslesen","Read photo"],["Text analysieren","Analyse text"],["Foto wird im Browser gelesen. Bitte Zutaten prüfen.","Photo is read in your browser. Check all ingredients."],["6 · Teig übrig?","6 · Leftover batter?"],["7 · Torte stapeln","7 · Layer a cake"],["Böden","Layers"],["Füllung pro Schicht (g)","Filling per layer (g)"],["8 · Besondere Formen","8 · Special pans"],["Fülle die Form mit Wasser und miss die Menge.","Fill the pan with water and measure the volume."],["Wassermenge in der Form (ml)","Water volume in pan (ml)"],["9 · Mein Vorrat","9 · My pantry"],["Fehlende Zutaten einkaufen","Buy missing ingredients"],["Trage ein, was du zu Hause hast.","Enter what you already have."],["10 · Kuchenhöhe","10 · Cake height"],["Bisherige Kuchenhöhe (cm)","Original cake height (cm)"],["So hoch soll er werden (cm)","Desired cake height (cm)"],["11 · Meine Einkaufsliste","11 · My shopping list"],["Nur für deine Backzutaten. Bei jedem Artikel kannst du auf Amazon suchen (Anzeige).","For baking ingredients only. Each item links to an Amazon search (advertisement)."],["Weitere Zutat","Additional ingredient"],["Artikel hinzufügen","Add item"],["Deine Liste bleibt auf diesem Gerät.","Your list stays on this device."],["12 · Meine Backnotizen","12 · My baking notes"],["Notiz","Note"],["So lange hat es gedauert","Actual baking time"],["Backzeit merken","Save baking time"],["Deine Notizen bleiben auf diesem Gerät.","Your notes stay on this device."],["13 · Wann fange ich an?","13 · When should I start?"],["Wann soll der Kuchen serviert werden?","When should the cake be served?"],["Vorbereitung (Min.)","Preparation (min)"],["Abkühlen / Ruhen (Min.)","Cooling / resting (min)"],["Die Zeiten sind nur Richtwerte.","Times are estimates."],["14 · Liste speichern","14 · Export list"],["Nimm deine Einkaufsliste als Datei mit.","Save your shopping list to a file."],["Liste herunterladen","Download list"],["Amazon-Suche findest du direkt in der Liste (Anzeige).","Amazon search links are included (advertisement)."],["Bereit.","Ready."],["z. B. Vanillezucker","e.g. vanilla sugar"]]);
+const backstudioSourceNodes = new WeakMap();
+function renderBackstudioStaticCopy(){
+ const host=el('toolya-backstudio');if(!host)return;
+ for(const target of host.querySelectorAll('h2,h3,article > p,article > label,article > button,article option')){
+  // Only source-owned, direct text nodes; never touch user data or nested controls.
+  for(const node of target.childNodes){
+   if(node.nodeType!==3)continue;
+   const source=backstudioSourceNodes.get(node)??node.textContent;
+   if(!staticBackstudioCopy.has(source.trim()))continue;
+   backstudioSourceNodes.set(node,source);
+   node.textContent=langEn()?source.replace(source.trim(),staticBackstudioCopy.get(source.trim())):source;
+  }
+ }
+ const custom=el('bs-shopping-custom');
+ if(custom)custom.placeholder=ui('z. B. Vanillezucker','e.g. vanilla sugar');
+}
 function missingIngredients(){
  return parsed().filter(i=>Number.isFinite(i.qty)&&i.qty>0).flatMap(i=>{
   const available=data.pantry[pantryKey(i)];
@@ -171,7 +188,12 @@ function init(){
  el('bs-ocr').onclick=async()=>{const file=el('bs-photo').files?.[0];if(!file)return message(ui('Bitte Foto auswählen.','Select a photo.'));if(file.size>8*1024*1024)return message(ui('Foto darf maximal 8 MB groß sein.','Photo must be 8 MB or smaller.'));const btn=el('bs-ocr');btn.disabled=true;message(ui('Foto wird lokal analysiert …','Analysing the photo on your device…'));try{if(!window.Tesseract){const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';await new Promise((resolve,reject)=>{script.onload=resolve;script.onerror=reject;document.head.append(script)})}const r=await window.Tesseract.recognize(file,'deu');el('recipe-input').value=r.data.text;renderPantry();update();message(ui('Erkanntes Rezept unbedingt prüfen.','Check the recognised recipe carefully.'))}catch{message(ui('Foto-Erkennung nicht verfügbar; Text bitte einfügen.','Photo recognition unavailable; paste the recipe text instead.'))}finally{btn.disabled=false}};
  ['bs-height','bs-original-height','bs-volume','bs-form-height','bs-maxfill','bs-dough','bs-material','bs-layers','bs-filling','bs-special','bs-practical'].forEach(id=>el(id).addEventListener('input',()=>{renderPantry();renderGarage();update()}));
  ['orig-shape','orig-d','orig-l','orig-w','target-shape','target-d','target-l','target-w','combo-d1','combo-d2','base-time','recipe-input'].forEach(id=>el(id)?.addEventListener('input',()=>{renderGarage();renderPantry();update()}));
+ renderBackstudioStaticCopy();
  renderGarage();renderPantry();renderShopping();logs();update();renderSchedule();
+ document.addEventListener('toolya:locale-change',()=>{
+  renderBackstudioStaticCopy();
+  renderGarage();renderShopping();logs();update();renderSchedule();renderMissing();
+ });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
