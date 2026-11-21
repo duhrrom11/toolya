@@ -1571,6 +1571,7 @@
             renderApp();
             refreshOpenBudgetLabels();
             refreshOpenCookingDayLabels();
+            refreshOpenDietPlaceholders();
             // Refresh labels in place; keep unsaved form values and stored keys untouched.
         });
 
@@ -1973,6 +1974,19 @@
                     </div>
                 `;
             }).join('');
+        }
+        function refreshOpenDietPlaceholders() {
+            const modal = document.getElementById('dietModal');
+            if (!modal || modal.classList.contains('hidden')) return;
+            // Only the placeholders change. Preserve unsaved diet and allergy text
+            // and each input's data-mate identity.
+            const english = window.__toolyaUILocale === 'en';
+            document.querySelectorAll('#dietInputContainer input.dietPref').forEach(input => {
+                input.placeholder = english ? 'Diet' : 'Ernährung';
+            });
+            document.querySelectorAll('#dietInputContainer input.dietAllergy').forEach(input => {
+                input.placeholder = english ? 'Allergies' : 'Allergien';
+            });
         }
         function openDietModal() {
             const mateNames = getFlatmateNames(); const diets = getDiets();
