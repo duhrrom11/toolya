@@ -34,10 +34,11 @@ test('moving planner creates project, room and box assignment with mocked cloud'
   await expect(planner).toBeVisible();
   await expect(page.locator('#b3-create')).toBeVisible();
   await expect(page.locator('#b3-inventory')).toBeHidden();
-  const prompts=['Mein Testumzug','','Küche','EG','16'];
+  const prompts=['Mein Testumzug','2026-12-05','Küche','EG','16'];
   page.on('dialog',d=>d.type()==='prompt'?d.accept(prompts.shift()??''):d.accept());
   await planner.getByRole('button',{name:/Neuen Umzug planen/}).dispatchEvent('click');
   await expect(planner.getByText('Mein Testumzug')).toBeVisible();
+  await expect(planner.getByText('05.12.2026')).toBeVisible();
   await planner.getByRole('button',{name:'1. Zielräume'}).dispatchEvent('click');
   await planner.getByRole('button',{name:/Zielraum hinzufügen/}).dispatchEvent('click');
   await expect(planner.getByText('Küche')).toBeVisible();
@@ -46,6 +47,7 @@ test('moving planner creates project, room and box assignment with mocked cloud'
   await expect(planner.getByText('Gläser')).toBeVisible();
   const db=await page.evaluate(()=>window.__mvMock);
   expect(db.snapshot.boxes[0].name).toBe('Gläser');
+  expect(db.snapshot.moving.projects[0].moveDate).toBe('2026-12-05');
   expect(db.snapshot.moving.assignments).toHaveLength(1);
   expect(db.writes).toBe(3);
   await expect(planner.getByRole('button',{name:'Umzug abschließen'})).toHaveCount(0);
@@ -65,5 +67,9 @@ test('moving planner creates project, room and box assignment with mocked cloud'
   await navigation.getByRole('button',{name:/My move/}).dispatchEvent('click');
   await expect(navigation.getByRole('button',{name:/Moving in/})).toHaveAttribute('aria-current','step');
   await expect(planner.getByText('Mein Testumzug')).toBeVisible();
+  await expect(planner.getByRole('button',{name:'Finish move'})).toBeVisible();
+  await expect(planner.getByText('5 Dec 2026')).toBeVisible();
+  await expect(planner.getByRole('button',{name:'3. First 72 hours'})).toHaveAttribute('aria-current','true');
+  await expect(planner.getByText('Gläser')).toBeVisible();
   expect((await page.evaluate(()=>window.__mvMock)).writes).toBe(3);
 });
