@@ -481,14 +481,14 @@
             const btnLogout = document.getElementById('btn-logout');
 
             if(user) {
-                statusText.innerText = "Status: Verbunden & Angemeldet";
+                statusText.innerText = window.toolyaUiText?.("Status: Verbunden & Angemeldet") ?? "Status: Verbunden & Angemeldet";
                 userDisplay.innerText = user.email;
                 headerEmail.innerText = user.email;
                 headerBadge.classList.remove('hidden');
                 headerBadge.classList.add('inline-flex');
                 btnLogout.classList.remove('hidden');
             } else {
-                statusText.innerText = "Nicht angemeldet";
+                statusText.innerText = window.toolyaUiText?.("Nicht angemeldet") ?? "Nicht angemeldet";
                 userDisplay.innerText = "";
                 headerBadge.classList.add('hidden');
                 headerBadge.classList.remove('inline-flex');
