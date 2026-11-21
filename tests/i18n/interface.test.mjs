@@ -380,3 +380,22 @@ test('moving box cards localize status and actions without changing stored box f
  assert.match(html,/const isLent = b\.lentTo/,'lending status still uses existing data');
  assert.match(html,/const isExpired = b\.expiry/,'expiry status still uses existing data');
 });
+
+test('PDF filenames follow selected language while retaining German names and export data paths',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const paths={
+  moving:['moving-box-inventory-report.pdf','kisten-inventar-report.pdf'],
+  plants:['plant-garden-report.pdf','pflanzen-report.pdf'],
+  housemates:['household-finance-report','haushaltsbericht']
+ };
+ for(const [tool,[english,german]] of Object.entries(paths)){
+  const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
+  assert.ok(html.includes(english),tool+': English filename');
+  assert.ok(html.includes(german),tool+': German filename retained');
+  const saveLine=html.split('\n').find(line=>line.includes('doc.save(') && line.includes(english));
+  assert.ok(saveLine && saveLine.includes("window.__toolyaUILocale === 'en'"),tool+': filename is locale-specific');
+  assert.match(html,/const doc = await createExportPdf\(\)/,tool+': export still uses shared PDF helper');
+ }
+ const household=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ assert.match(household,/new Date\(\)\.toISOString\(\)\.split\('T'\)\[0\]/,'household export preserves date suffix');
+});
