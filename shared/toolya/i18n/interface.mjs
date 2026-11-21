@@ -1152,6 +1152,11 @@ const toolAccessibilityCopy=Object.freeze({
       "title",
       "QR-Code & Deep-Link",
       "QR code and deep link"
+    ],
+    [
+      "alt",
+      "Vergrößertes Foto der Umzugskiste",
+      "Enlarged photo of the moving box"
     ]
   ],
   "housemates": [
@@ -1213,7 +1218,7 @@ const toolAccessibilityCopy=Object.freeze({
 });
 function applyToolAccessibilityCopy(document,tool,language){
  const pairs=toolAccessibilityCopy[tool];if(!pairs)return;
- for(const element of document.querySelectorAll('#main-content [aria-label],#main-content [title],#settingsModal [aria-label],#settingsModal [title],.b3-backform-main [aria-label],.b3-backform-main [title],.b3-backform-tabs [aria-label]')){
+ for(const element of document.querySelectorAll('#main-content [aria-label],#main-content [title],#settingsModal [aria-label],#settingsModal [title],.b3-backform-main [aria-label],.b3-backform-main [title],.b3-backform-tabs [aria-label],#imageModal[aria-label],#imageModal [alt]')){
   if(element.isContentEditable||element.closest('[contenteditable="true"]'))continue;
   for(const [attribute,source,translation] of pairs){
    const original=originals.get(element)?.get(attribute)??element.getAttribute(attribute);
