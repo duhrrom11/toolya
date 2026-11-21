@@ -2428,3 +2428,12 @@ test('Sprint A backup safety preflight is localized without skipping the separat
  assert.equal(translateToolDialog('moving','de','Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.'),'Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.');
  assert.equal(translateToolDialog('moving','en','Backup importieren? Vorhandene Daten werden ersetzt.'),'Import backup? Existing data will be replaced.');
 });
+
+
+test('Sprint A shared PDF dependency failure follows UI language without changing PDF creation contract',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const src=await readFile(new URL('../../shared/toolya/pdf-export.mjs',import.meta.url),'utf8');
+ assert.match(src,/window\.__toolyaUILocale === 'en' \? 'Could not create the PDF\. Please try again\.' : 'Das PDF konnte nicht erstellt werden\. Bitte versuche es erneut\.'/);
+ assert.match(src,/return new window\.jspdf\.jsPDF\(\)/);
+ assert.match(src,/pendingLibrary = undefined/);
+});
