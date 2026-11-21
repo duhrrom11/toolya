@@ -162,3 +162,9 @@ Chromium mit Pixel-7-Emulation und drei frischen Browserkontexten je URL. Der Br
 | Öffentliche Wunschlisten | 112 ms | 112 ms |
 
 Alle drei URLs lieferten HTTP 200, einen selbstreferenziellen Canonical und keine Noindex-Anweisung in HTTP-Header oder HTML. Alle stehen in der Live-Sitemap und sind laut robots.txt crawlbar. Google PageSpeed meldete eine ausgeschöpfte Quote und OpenSEO keine mobilen Ergebnisse für den jüngsten Auditlauf. CrUX-Felddaten und die Ladezeit externer Inhalte bleiben offen. Die Indexierung bei Suchmaschinen wurde mit diesem Lauf nicht geprüft.
+
+## R43/R46/R47 – Abgleich nach Dashboard- und Backstudio-Release
+
+Am 21. November 2026 wurden die öffentliche Dashboard-Anleitung zur Speicherung mit und ohne Konto sowie zur gemeinsamen Einkaufsliste und die Backform-Anleitung zu den aktuellen Backstudio-Schaltflächen aktualisiert. Die Plattformprüfung deckte zusätzlich auf, dass die isolierte Nachlassübergabe nach der PWA-Einführung ein Installationsskript abrief. Die feste Ressourcenliste der Seite wurde wiederhergestellt. Alle drei live abgerufenen HTML-Dateien entsprachen bytegenau dem Merge `9d460ba`. [PR #292](https://github.com/duhrrom11/toolya/pull/292) · [CI](https://github.com/duhrrom11/toolya/actions/runs/44843280258)
+
+Die Google-URL-Prüfung vom 21. November zeigte noch keinen neuen Crawl für Umzugskisten, Backform-Rechner, Zählerstände und Verliehene Dinge. Bing-Indexstatus und Felddaten bleiben offen. Der nächste aussagekräftige SEO-Abgleich ist die erneute URL-Prüfung nach aktualisierten Crawl-Daten. Die 28-Tage-Auswertung bleibt separat vorgesehen.
