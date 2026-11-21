@@ -4,6 +4,7 @@
 import {normalizeLocale} from './locale.mjs';
 import {applyToolInterfaceLocale,translateToolDialog,translateAccountStatus} from './interface.mjs';
 const key='toolya-locale-v1';
+const uiGlobal=typeof window === 'undefined' ? globalThis : window;
 const SUPPORTED=Object.freeze({
  moving:{heading:'Moving box organizer',subtitle:'Track your boxes, contents and locations',guide:'/en/moving-boxes/',german:'/umzugskisten/'},
  housemates:{heading:'Roommate organizer',subtitle:'Split expenses and plan shared tasks',guide:'/en/roommate-organizer/',german:'/wg-organisator/'},
@@ -39,13 +40,13 @@ function mountToolLanguage(){
  // The wrapper only changes known application-authored German messages.
  const nativeDialogs={};
  for(const method of ['alert','confirm','prompt']){
-   if(typeof window[method]!=='function')continue;
-   nativeDialogs[method]=window[method].bind(window);
-   window[method]=function(message,...args){
+   if(typeof uiGlobal[method]!=='function')continue;
+   nativeDialogs[method]=uiGlobal[method].bind(window);
+   uiGlobal[method]=function(message,...args){
      return nativeDialogs[method](translateToolDialog(name,selected,message),...args);
    };
  }
- window.toolyaUiText=(value)=>translateAccountStatus(selected,value);
+ uiGlobal.toolyaUiText=(value)=>translateAccountStatus(selected,value);
  const accountStatusSelectors={
    moving:['#userInfo','#cloudStatus'],
    housemates:['#cloud-status-text','#header-user-email'],
@@ -72,7 +73,7 @@ function mountToolLanguage(){
  notice.append('The English interface is being translated. Most forms, account dialogs and messages are still in German. ',guide);
  function apply(lang,persist){
    selected=lang;
-   window.__toolyaUILocale=lang; // presentation only; never changes saved data or units
+   uiGlobal.__toolyaUILocale=lang; // presentation only; never changes saved data or units
    if(persist)try{localStorage.setItem(key,lang)}catch(_){}
    if(title)title.textContent=lang==='en'?settings.heading:originalTitle;
    if(subtitle)subtitle.textContent=lang==='en'?settings.subtitle:originalSubtitle;
