@@ -220,3 +220,13 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - **Roadmap-Schätzung:** Paket 3 **82 %**, Paket 5 **47 %**, gewichteter Gesamtwert **63,3 % ≈ 63 %**. Die Änderung ist keine Abnahme aller Auth-, Import- oder Export-Journeys.
 - **Noch offen:** vollständige End-to-End-Validierung des echten Backup-Imports (synthetische Daten), Migration und Auth-Recovery, weitere dynamische B3- und Fehlermeldungen, PDF-/QR-Exportinhalte, Screenreader und endgültige redaktionelle EN-Vollständigkeit.
 - **Sicherheitsgrenze:** Isolierte Mocks und lokale Browser-Prompts; keine Produktivkonten, keine Datenbankmigration, kein Supabase-Schreibzugriff, kein Merge/Deployment oder `noindex`-Wechsel. PR #291 bleibt Draft. Den abschließenden HEAD nur nach 9/9 grünen Workflows als CI-geprüft bezeichnen.
+
+
+## Sprint A – Import-/Export- und Mitgliederfehler-Sicherung (2026-11-21)
+
+- Ergänzt drei übersetzte WG-Zustände: erteilte/entzogene Mitgliederberechtigung sowie ausstehende Online-Sicherung nach lokaler Änderung. Dynamische Serverfehler nach dem bekannten Präfix bleiben unübersetzt.
+- Der QR-Etiketten-PDF-Export der Umzugskisten verwendet unter EN den Dateinamen `moving-box-qr-labels.pdf`; der deutsche Originalname `kisten-qr-etiketten.pdf`, QR-Nutzdaten, PDF-Geometrie und unveränderte `homebox-backup-*.json`-Dateien bleiben erhalten.
+- Node-Regressionen prüfen die Sprachmeldungen, unveränderte Fehlerdetails, den vor Speicheroperationen ausgeführten Formatcheck und die zwingende Importbestätigung.
+- Isolierter Chromium-Fall mit synthetischem Cloud-Snapshot überprüft ungültige und nicht lesbare JSON-Backups bei DE/EN auf 320px einschließlich zugänglicher Fehlermeldung, geleertem Datei-Input und **null Cloud-Schreibvorgängen**. Ein tatsächlich importierter gültiger Backup-Datensatz ist hier bewusst nicht getestet, weil der bestehende Austausch produktiver Daten nicht versehentlich ausgelöst werden soll.
+- Die zuvor geprüften neun Workflows auf `96340786` waren erfolgreich. Für den neuen HEAD sind sämtliche neun Workflows erneut zu prüfen; dies ist **kein** Release-Gate. Auth-Recovery, gültiger Import mit Bestätigung, Export-Inhaltsprüfung und vollständige redaktionelle E2E-Abnahme bleiben offen.
+- PR #291 bleibt Draft. Keine Änderung an Produktiv-Supabase, Maskottchen, EN-`noindex`, kein Merge und kein Deployment.
