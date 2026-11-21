@@ -418,3 +418,23 @@ test('seed age warnings and inventory modals localize display only',async()=>{
  assert.match(html,/if \(plantsCloudReady && !document\.getElementById\('seedsModal'\)\?\.classList\.contains\('hidden'\)\) renderSeedList\(\)/);
  assert.match(html,/if \(plantsCloudReady && !document\.getElementById\('inventoryModal'\)\?\.classList\.contains\('hidden'\)\) renderInventoryList\(\)/);
 });
+
+test('household finance accessibility labels and settlements localize without changing calculations',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ for(const phrase of [
+  "'No expenses' : 'Keine Ausgaben'",
+  "'Income: ' : 'Einnahmen: '",
+  "'; Expenses: ' : '; Ausgaben: '",
+  "'; Balance: ' : '; Saldo: '",
+  "'✨ All debts settled!' : '✨ Alle Schulden ausgeglichen!'",
+  "'to' : 'an'",
+  "'✕ Delete' : '✕ Löschen'"
+ ])assert.ok(html.includes(phrase),'missing household translation: '+phrase);
+ assert.match(html,/formatChartAmount\(totalIncome - totalExpense\)/,'balance calculation preserved');
+ assert.match(html,/totalVolume \+= s\.amount/,'settlement totals preserved');
+ assert.match(html,/escapeUserHtml\(s\.from\)/,'debtor names still HTML escaped');
+ assert.match(html,/escapeUserHtml\(s\.to\)/,'creditor names still HTML escaped');
+ assert.match(html,/categoryChartInstance\.data\.labels = catLabels\.length/,'chart still uses source categories');
+ assert.match(html,/removeFlatmateContact\(\$\{idx\}\)/,'member action still targets original index');
+});
