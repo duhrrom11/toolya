@@ -2,7 +2,7 @@
    Stays strictly outside business logic, data, auth gates and maskot state.
    Incomplete translation is explicitly disclosed: main tool forms are still German. */
 import {normalizeLocale} from './locale.mjs';
-import {applyToolInterfaceLocale,translateToolDialog} from './interface.mjs';
+import {applyToolInterfaceLocale,translateToolDialog,translateAccountStatus} from './interface.mjs';
 const key='toolya-locale-v1';
 const SUPPORTED=Object.freeze({
  moving:{heading:'Moving box organizer',subtitle:'Track your boxes, contents and locations',guide:'/en/moving-boxes/',german:'/umzugskisten/'},
@@ -45,6 +45,22 @@ function mountToolLanguage(){
      return nativeDialogs[method](translateToolDialog(name,selected,message),...args);
    };
  }
+ window.toolyaUiText=(value)=>translateAccountStatus(selected,value);
+ const accountStatusSelectors={
+   moving:['#userInfo','#cloudStatus'],
+   housemates:['#cloud-status-text','#header-user-email'],
+   plants:['#cloud-status-text','#header-user-email'],
+   baking:['#cloud-status-text']
+ };
+ function localizeVisibleAccountStatus(lang){
+   for(const selector of accountStatusSelectors[name]||[]){
+     const el=document.querySelector(selector);
+     if(!el)continue;
+     const original=el.textContent;
+     const translated=translateAccountStatus(lang,original);
+     if(original!==translated)el.textContent=translated;
+   }
+ }
  const notice=document.createElement('p');
  notice.className='ty-tool-language-notice';
  notice.setAttribute('role','status');
@@ -65,6 +81,7 @@ function mountToolLanguage(){
    en.setAttribute('aria-pressed',String(lang==='en'));
    notice.hidden=lang!=='en';
    applyToolInterfaceLocale(document,name,lang);
+   localizeVisibleAccountStatus(lang);
    // Keep html[lang]=de while the main application is not fully translated.
  }
  if(header){
