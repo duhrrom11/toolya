@@ -960,3 +960,51 @@ test('account verification distinguishes a missing session from temporary Supaba
   }
  }
 });
+
+test('authentication network failures are reported without claiming registration or login success',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ for(const [tool,register,login,logout] of [
+  ['moving','registerUser','loginUser','logoutUser'],
+  ['plants','supabaseRegister','supabaseLogin','supabaseLogout'],
+  ['baking','supabaseRegister','supabaseLogin','supabaseLogout']
+ ]){
+  const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
+  for(const [method,next,verb,prefix,translated] of [
+   [register,login,'signUp','Registrierung fehlgeschlagen: ','Registration failed: '],
+   [login,logout,'signInWithPassword','Anmeldung fehlgeschlagen: ','Sign-in failed: ']
+  ]){
+   const start=html.indexOf('async function '+method+'() {');
+   const end=html.indexOf('async function '+next+'()',start);
+   assert.ok(start>0&&end>start,tool+' '+method+' must exist');
+   const fragment=html.slice(start,end);
+   for(const message of ['Temporary network error',null]){
+    const alerts=[];
+    let successfulActions=0;
+    const client={auth:{
+     [verb]:async()=>{throw message?Error(message):{}}
+    }};
+    const data={
+     loginEmail:'member@example.org',loginPassword:'password123',
+     'auth-email':'member@example.org','auth-password':'password123'
+    };
+    const ctx={
+     document:{getElementById:id=>({value:data[id]||''})},
+     window:{supabaseClient:client,__toolyaUILocale:'de'},
+     supabaseClient:client,
+     alert:x=>alerts.push(x),
+     updateUserDisplay:()=>{successfulActions++},
+     checkUserSession:()=>{successfulActions++},
+     closeSettings:()=>{successfulActions++},
+     toggleSettingsModal:()=>{successfulActions++}
+    };
+    createContext(ctx);runInContext(fragment,ctx);
+    await runInContext(method+'()',ctx);
+    const expected=prefix+(message||'Unbekannter Fehler');
+    assert.deepEqual(alerts,[expected],tool+' '+method+' error message');
+    assert.equal(successfulActions,0,'failed auth never shows success or opens account');
+    assert.equal(translateToolDialog(tool,'en',expected),translated+(message||'Unbekannter Fehler'),'server diagnostics remain intact');
+   }
+  }
+ }
+});
