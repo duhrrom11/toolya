@@ -2262,3 +2262,51 @@ test('i18n Sprint A moving: valid backup cancellation and oversized backup never
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
  expect(errors).toEqual([]);
 });
+
+
+test('i18n Sprint A moving: exported synthetic JSON matches stored snapshot byte-for-byte across locales',async({page})=>{
+ test.setTimeout(60000);
+ const fixture={locations:[{id:811,name:'Synthetic attic',icon:'📦'}],boxes:[{id:812,locId:811,name:'Demo crate',desc:'Synthetic only',tag:'Standard',value:12.5,subItems:[]}]};
+ await isolated(page,true,true,fixture);
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ for(const lang of ['en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  const downloadPromise=page.waitForEvent('download');
+  await page.evaluate(()=>exportBackup());
+  const download=await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/^homebox-backup-\d{4}-\d{2}-\d{2}\.json$/);
+  const parts=[];for await(const chunk of await download.createReadStream())parts.push(chunk);
+  const payload=JSON.parse(Buffer.concat(parts).toString('utf8'));
+  expect(payload).toEqual(fixture);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ }
+});
+
+test('i18n Sprint A moving: confirmed restore writes synthetic cloud snapshot only after consent',async({page})=>{
+ test.setTimeout(90000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const confirmations=[];
+ page.on('dialog',async dialog=>{
+  confirmations.push({type:dialog.type(),message:dialog.message()});
+  if(dialog.type()==='confirm')await dialog.accept();
+  else await dialog.dismiss();
+ });
+ await isolated(page,true,true,{locations:[],boxes:[]});
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ await page.locator('[data-tool-locale="en"]').click();
+ const snapshot={locations:[{id:911,name:'Synthetic pantry',icon:'📍'}],boxes:[{id:912,locId:911,name:'Synthetic box',desc:'Only mocked',tag:'Standard',value:5,subItems:[]}]};
+ const file=page.locator('input[type="file"][onchange="importBackup(event)"]');
+ await file.setInputFiles({name:'synthetic-restore.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(snapshot))});
+ await expect.poll(()=>page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
+ expect(confirmations).toEqual([{type:'confirm',message:'Import backup? Existing data will be replaced.'}]);
+ const writes=await page.evaluate(()=>window.__toolyaMock.writes);
+ expect(writes[0].p_data).toEqual(snapshot);
+ const dialog=page.getByRole('alertdialog',{name:'Toolya'});
+ await expect(dialog.locator('#hl-alert-message')).toHaveText('Backup imported successfully!');
+ await dialog.getByRole('button',{name:'OK'}).click();
+ await expect(file).toHaveValue('');
+ expect(errors).toEqual([]);
+});
