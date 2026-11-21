@@ -7,8 +7,6 @@ const common = [
  ['a[href="#main-content"]','Skip to main content'],
  ['.b3-settings-trigger','', 'aria-label','Open settings'],
  ['.b3-settings-trigger','', 'title','Settings'],
- ['.b3-preferences','', 'aria-label','Appearance and dashboard'],
- ['.b3-kofi-link','', 'aria-label','Support Toolya with a coffee'],
  ['#b3-backform-edit','✎ Edit dashboard'],
  ['#b3-backform-editor','', 'aria-label','Dashboard settings'],
  ['.b3-brand','', 'aria-label','Toolya home'],
@@ -767,6 +765,19 @@ function applyBackstudioCopy(document,language){
 
 /* B3 menus are generated after page parse; translate only known action labels.
    Never replace links, handlers, panel keys, user-generated content or account data. */
+// Only update accessibility attributes owned by the dashboard shell.
+const b3KnownAttributes=Object.freeze([
+ ['.b3-preferences','aria-label','Darstellung und Dashboard','Appearance and dashboard'],
+ ['.b3-kofi-link','aria-label','Auf Ko-fi einen Kaffee spendieren','Support Toolya with a coffee']
+]);
+function applyKnownB3Accessibility(document,language){
+ for(const [selector,attribute,source,english] of b3KnownAttributes){
+  for(const element of document.querySelectorAll(selector)){
+   const original=originals.get(element)?.get(attribute)??element.getAttribute(attribute);
+   if(original===source)updateElement(element,english,attribute,language);
+  }
+ }
+}
 const b3NavigationCopy=Object.freeze({
  common:{
   '☷ Weitere Tools':'☷ More tools',
@@ -890,7 +901,8 @@ function applyB3EditorCopy(document,tool,language){
  const names=b3EditorPanels[tool];
  const host=document.querySelector(tool==='baking'?'#b3-backform-editor':'#b3-editor');
  if(!host||!names)return;
- if(host.getAttribute('aria-label')==='Dashboard bearbeiten'||originals.get(host)?.has('aria-label'))updateElement(host,'Edit dashboard','aria-label',language);
+ const originalEditorLabel=originals.get(host)?.get('aria-label')??host.getAttribute('aria-label');
+ if(originalEditorLabel==='Dashboard bearbeiten')updateElement(host,'Edit dashboard','aria-label',language);
  for(const el of host.querySelectorAll('h2,h3,p,.b3-editor-row strong,.b3-editor-row label,.b3-backform-editor-row strong,.flex > button,.b3-backform-editor-actions > button,.b3-backform-editor-row option')){
   if(el.closest('[contenteditable="true"]'))continue;
   // A checkbox is nested in a label. Modify only its direct text node to preserve the input.
@@ -936,6 +948,7 @@ export function applyToolInterfaceLocale(document,tool,language){
   }
  }
  applyStaticFormCopy(document,tool,language);
+ applyKnownB3Accessibility(document,language);
  applyB3NavigationCopy(document,tool,language);
  applyB3EditorCopy(document,tool,language);
  if(tool==='baking')applyBackstudioCopy(document,language);
