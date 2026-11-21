@@ -22,6 +22,19 @@ async function list(ownerId:string,projectId:string){const [s,v,g]=await Promise
  db.from('moving_public_box_views').select('assignment_id,display_label,room_label,priority').eq('owner_id',ownerId).eq('project_id',projectId),
  db.from('moving_helper_grants').select('id,helper_label,expires_at,revoked_at,created_at').eq('owner_id',ownerId).eq('project_id',projectId).order('created_at',{ascending:false})
 ]);if(s.error||v.error||g.error)throw Error('LIST_READ');const views=new Map((v.data||[]).map((x)=>[x.assignment_id,x]));return {boxes:(s.data||[]).map(x=>({assignmentId:x.assignment_id,status:x.status,version:x.version,label:views.get(x.assignment_id)?.display_label||'Kiste',room:views.get(x.assignment_id)?.room_label||'',priority:views.get(x.assignment_id)?.priority||'normal'})),grants:g.data||[]};}
+async function incidents(ownerId:string,projectId:string,helper=false){
+ const {data,error}=await db.from('moving_transport_incidents')
+ .select('id,assignment_id,kind,note,reported_at,resolved_at')
+ .eq('owner_id',ownerId).eq('project_id',projectId)
+ .order('reported_at',{ascending:false}).limit(500);
+ if(error)throw Error('INCIDENT_READ');
+ return (data||[]).map(x=>({id:x.id,assignmentId:x.assignment_id,kind:x.kind,resolved:!!x.resolved_at,...(helper?{}:{note:x.note,reportedAt:x.reported_at})}));
+}
+function incidentInput(payload:Record<string,unknown>){
+ const kind=String(payload.kind||''),note=String(payload.note||'').trim();
+ return isUuid(payload.assignmentId)&&isUuid(payload.requestId)
+ &&['missing','damaged'].includes(kind)&&note.length<=300;
+}
 async function sync(ownerId:string,projectId:string){const src=await source(ownerId,projectId);if(!src)return null;if(src.assignments.length>1500)throw Error('TOO_MANY');const boxMap=new Map(src.boxes.filter(isObject).map((b)=>[b.id,b]));const roomMap=new Map(src.rooms.filter(isObject).map((r)=>[r.id,r]));const initial=[];const publicRows=[];for(const a of src.assignments){if(!isObject(a)||!isUuid(a.id)||!Number.isSafeInteger(a.boxId))continue;const b=boxMap.get(a.boxId);if(!b)continue;const r=roomMap.get(a.targetRoomId);initial.push({owner_id:ownerId,project_id:projectId,assignment_id:a.id,box_id:a.boxId,status:states.includes(String(a.status))?a.status:'planned'});publicRows.push({owner_id:ownerId,project_id:projectId,assignment_id:a.id,display_label:String(b.name||'Kiste').slice(0,100),room_label:String(r?.name||'').slice(0,80),priority:['normal','important','first_day'].includes(String(a.priority))?a.priority:'normal'});}
  // Never overwrite a server status/version after initial import.
  if(initial.length){const ids=initial.map(x=>x.assignment_id);const {data:existing,error:lookupError}=await db.from('moving_transport_state').select('assignment_id').eq('owner_id',ownerId).eq('project_id',projectId).in('assignment_id',ids);if(lookupError)throw Error('STATE_READ');const exists=new Set((existing||[]).map(x=>x.assignment_id));const missing=initial.filter(x=>!exists.has(x.assignment_id));if(missing.length){const {error}=await db.from('moving_transport_state').upsert(missing,{onConflict:'owner_id,project_id,assignment_id',ignoreDuplicates:true});if(error)throw Error('STATE_WRITE');}const {error:projectionError}=await db.from('moving_public_box_views').upsert(publicRows,{onConflict:'owner_id,project_id,assignment_id'});if(projectionError)throw Error('PROJECTION_WRITE');}
@@ -38,10 +51,16 @@ Deno.serve(async(req:Request)=>{
   const raw=await req.text();if(raw.length>16384)return fail(413,'Request too large',origin);
   const payload=JSON.parse(raw);if(!isObject(payload))return fail(400,'Invalid request',origin);
   const action=payload.action;
-  if(['view','transition'].includes(String(action))){
+  if(['view','transition','report-incident'].includes(String(action))){
     const grant=await activeGrant(String(payload.token||''));if(!grant)return fail(401,'Link invalid or expired',origin);
     const src=await source(grant.owner_id,grant.project_id);if(!src)return fail(403,'Project not active',origin);
-    if(action==='view'){const current=await list(grant.owner_id,grant.project_id);const allowed=new Set(src.assignments.filter(isObject).map(a=>a.id));return result(200,{helperLabel:grant.helper_label,projectName:String(src.p.name||'Umzug').slice(0,100),boxes:current.boxes.filter(b=>allowed.has(b.assignmentId))},origin);}
+    if(action==='view'){const current=await list(grant.owner_id,grant.project_id);const allowed=new Set(src.assignments.filter(isObject).map(a=>a.id));return result(200,{helperLabel:grant.helper_label,projectName:String(src.p.name||'Umzug').slice(0,100),boxes:current.boxes.filter(b=>allowed.has(b.assignmentId)),incidents:(await incidents(grant.owner_id,grant.project_id,true)).filter(i=>allowed.has(i.assignmentId))},origin);}
+    if(action==='report-incident'){
+      if(!incidentInput(payload)||!src.assignments.some(a=>isObject(a)&&a.id===payload.assignmentId))return fail(400,'Invalid incident report',origin);
+      const {data,error}=await db.rpc('moving_helper_report_incident',{p_token_hash:grant.hashed,p_assignment_id:payload.assignmentId,p_kind:payload.kind,p_note:String(payload.note||'').trim(),p_request_id:payload.requestId});
+      if(error)return fail(error.code==='42501'?403:error.code==='23505'?409:400,'Incident not saved',origin);
+      return result(200,data,origin);
+    }
     if(!isUuid(payload.assignmentId)||!isUuid(payload.requestId)||!Number.isSafeInteger(payload.expectedVersion)||!states.includes(String(payload.status))||!src.assignments.some(a=>isObject(a)&&a.id===payload.assignmentId))return fail(400,'Invalid change',origin);
     const {data,error}=await db.rpc('moving_helper_transition',{p_token_hash:grant.hashed,p_assignment_id:payload.assignmentId,p_expected_version:payload.expectedVersion,p_next_status:payload.status,p_request_id:payload.requestId});if(error)return fail(error.code==='40001'?409:error.code==='42501'?403:400,'Status not saved; reload before retrying',origin);return result(200,data,origin);
   }
@@ -50,7 +69,7 @@ Deno.serve(async(req:Request)=>{
   const projectId=String(payload.projectId);
   const src=await source(userId,projectId);if(!src)return fail(403,'Project not active',origin);
   if(action==='sync'){const data=await sync(userId,projectId);return result(200,data,origin);}
-  if(action==='state'){return result(200,await list(userId,projectId),origin);}
+  if(action==='state'){return result(200,{...await list(userId,projectId),incidents:await incidents(userId,projectId)},origin);}
   if(action==='create'){
     const label=String(payload.label||'').trim(),hours=Number(payload.hours);
     if(label.length<1||label.length>80||!Number.isInteger(hours)||hours<1||hours>72)return fail(400,'Invalid grant details',origin);
@@ -65,6 +84,18 @@ Deno.serve(async(req:Request)=>{
   if(action==='revoke'){
     if(!isUuid(payload.grantId))return fail(400,'Invalid grant ID',origin);
     const {data,error}=await db.from('moving_helper_grants').update({revoked_at:new Date().toISOString()}).eq('id',payload.grantId).eq('owner_id',userId).eq('project_id',projectId).is('revoked_at',null).select('id');if(error)throw Error('GRANT_REVOKE');return result(200,{revoked:(data||[]).length===1},origin);
+  }
+  if(action==='owner-report-incident'){
+    if(!incidentInput(payload)||!src.assignments.some(a=>isObject(a)&&a.id===payload.assignmentId))return fail(400,'Invalid incident report',origin);
+    const {data,error}=await db.from('moving_transport_incidents').insert({owner_id:userId,project_id:projectId,assignment_id:payload.assignmentId,request_id:payload.requestId,kind:payload.kind,note:String(payload.note||'').trim()}).select('id').single();
+    if(error)return fail(error.code==='23505'?409:400,'Incident not saved',origin);
+    return result(200,{incidentId:data.id},origin);
+  }
+  if(action==='resolve-incident'){
+    if(!isUuid(payload.incidentId))return fail(400,'Invalid incident',origin);
+    const {data,error}=await db.from('moving_transport_incidents').update({resolved_at:new Date().toISOString()}).eq('id',payload.incidentId).eq('owner_id',userId).eq('project_id',projectId).is('resolved_at',null).select('id');
+    if(error)return fail(500,'Incident not resolved',origin);
+    return result(200,{resolved:(data||[]).length===1},origin);
   }
   if(action==='owner-transition'){
     if(!isUuid(payload.assignmentId)||!isUuid(payload.requestId)||!Number.isSafeInteger(payload.expectedVersion)||!states.includes(String(payload.status))||!src.assignments.some(a=>isObject(a)&&a.id===payload.assignmentId))return fail(400,'Invalid change',origin);

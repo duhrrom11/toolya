@@ -36,7 +36,8 @@ function render(){
  const show=selected?data.boxes.filter(x=>x.assignmentId===selected):data.boxes;
  h+='<div class="box-list">'+(show.length?show.map(x=>{
    const n=states.indexOf(x.status);
-   return '<article class="box '+(selected===x.assignmentId?'active':'')+'"><div class="box-top"><div><strong>'+esc(x.label)+'</strong><small>Zielraum: '+esc(x.room||'Nicht zugewiesen')+' · Priorität: '+esc(x.priority)+'</small></div><small>Version '+Number(x.version)+'</small></div><div class="status"><button data-id="'+esc(x.assignmentId)+'" data-status="'+esc(states[n-1]||'')+'" '+(n<=0||busy?'disabled':'')+' aria-label="Vorheriger Status">‹</button><span>'+esc(names[x.status]||'Unbekannt')+'</span><button data-id="'+esc(x.assignmentId)+'" data-status="'+esc(states[n+1]||'')+'" '+(n>=states.length-1||busy?'disabled':'')+' aria-label="Nächster Status">›</button></div></article>';
+   const incidents=(data.incidents||[]).filter(i=>i.assignmentId===x.assignmentId&&!i.resolved);
+   return '<article class="box '+(selected===x.assignmentId?'active':'')+'"><div class="box-top"><div><strong>'+esc(x.label)+'</strong><small>Zielraum: '+esc(x.room||'Nicht zugewiesen')+' · Priorität: '+esc(x.priority)+'</small></div><small>Version '+Number(x.version)+'</small></div><div class="status"><button data-id="'+esc(x.assignmentId)+'" data-status="'+esc(states[n-1]||'')+'" '+(n<=0||busy?'disabled':'')+' aria-label="Vorheriger Status">‹</button><span>'+esc(names[x.status]||'Unbekannt')+'</span><button data-id="'+esc(x.assignmentId)+'" data-status="'+esc(states[n+1]||'')+'" '+(n>=states.length-1||busy?'disabled':'')+' aria-label="Nächster Status">›</button></div>'+(incidents.length?'<p class="error" role="status">Gemeldet: '+incidents.map(i=>i.kind==='missing'?'Fehlend':'Beschädigt').join(', ')+'</p>':'')+'<div class="incident-actions"><button type="button" class="secondary" data-report="'+esc(x.assignmentId)+'" data-kind="missing" '+(busy?'disabled':'')+'>Fehlend melden</button><button type="button" class="secondary" data-report="'+esc(x.assignmentId)+'" data-kind="damaged" '+(busy?'disabled':'')+'>Schaden melden</button></div></article>';
  }).join(''):'<p class="muted">Keine Kisten für diese Auswahl.</p>')+'</div>';
  app.innerHTML=h;
  if(scanner)void startCamera();
@@ -50,6 +51,18 @@ async function change(id,status){
   const updated=data.boxes.find(x=>x.assignmentId===id);if(updated){updated.status=out.status;updated.version=out.version;}
   notice='Status gespeichert';
  }catch(e){error=e.message+' Bitte aktualisieren.';try{data=await call('view');}catch{}}
+ finally{busy=false;render();}
+}
+async function reportIncident(id,kind){
+ if(busy||!data?.boxes?.some(x=>x.assignmentId===id)||!['missing','damaged'].includes(kind))return;
+ const note=window.prompt(kind==='missing'?'Optional: Wo wurde zuletzt nach der Kiste gesucht?':'Optional: Schaden kurz beschreiben','');
+ if(note===null)return;
+ if(note.trim().length>300){error='Bitte maximal 300 Zeichen eingeben.';render();return;}
+ busy=true;error='';notice='';render();
+ try{
+   await call('report-incident',{assignmentId:id,kind,note:note.trim(),requestId:crypto.randomUUID()});
+   data=await call('view');notice='Vorfall gemeldet. Der Besitzer kann ihn bearbeiten.';
+ }catch(e){error=e.message||'Vorfall konnte nicht gemeldet werden';}
  finally{busy=false;render();}
 }
 function stopCamera(){
@@ -77,6 +90,7 @@ app?.addEventListener('click',async e=>{
  if(b.dataset.act==='refresh'){notice='';await refresh();return;}
  if(b.dataset.act==='stop'){stopCamera();render();return;}
  if(b.dataset.act==='scan'){scanner=true;error='';render();return;}
+ if(b.dataset.report){await reportIncident(b.dataset.report,b.dataset.kind);return;}
  if(b.dataset.id)await change(b.dataset.id,b.dataset.status);
 });
 window.addEventListener('pagehide',stopCamera);
