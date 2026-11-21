@@ -16,7 +16,7 @@ test('dashboard copy is reversible, user identifiers and unknown server errors r
  assert.equal(dashboardText('3 offene Artikel aus 2 Quellen.','en'),'3 open items from 2 sources.');
 });
 test('dashboard DOM language switch changes app-authored leaf text and attributes but never input values or user entries',()=>{
- const fixture='<body><div><h2>✓ Meine Aufgaben</h2><label>Neue Aufgabe<input value="Privater Wert" placeholder="Was möchtest du erledigen?"></label><button onclick="save()">Hinzufügen</button></div><ul id="tasks"><li>Passwort</li></ul><p id="loginMessage">Bitte eine gültige E-Mail-Adresse eingeben.</p></body>';
+ const fixture='<body><div><h2>✓ Meine Aufgaben</h2><label>Neue Aufgabe<input value="Privater Wert" placeholder="Was möchtest du erledigen?"></label><button onclick="save()">Hinzufügen</button></div><ul id="tasks"><li>Passwort</li></ul><select id="watering-connect-plant"><option>Einstellungen</option></select><p id="loginMessage">Bitte eine gültige E-Mail-Adresse eingeben.</p></body>';
  const {document}=parseHTML('<html lang="de">'+fixture+'</html>');
  const input=document.querySelector('input'),button=document.querySelector('button');
  applyDashboardPageLocale(document,'en');
@@ -26,6 +26,7 @@ test('dashboard DOM language switch changes app-authored leaf text and attribute
  assert.equal(input.value,'Privater Wert');
  assert.equal(button.getAttribute('onclick'),'save()');
  assert.equal(document.querySelector('#tasks li').textContent,'Passwort');
+ assert.equal(document.querySelector('#watering-connect-plant option').textContent,'Einstellungen','personal plant names must never be translated');
  applyDashboardPageLocale(document,'de');
  assert.equal(document.querySelector('h2').textContent,'✓ Meine Aufgaben');
  assert.equal(input.getAttribute('placeholder'),'Was möchtest du erledigen?');

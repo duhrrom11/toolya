@@ -1,5 +1,5 @@
 import {adminText} from './admin-copy.mjs';
-const original=new WeakMap(),attributes=new WeakMap();
+const original=new WeakMap(),attributes=new WeakMap(),implicitOptions=new WeakSet();
 export function applyAdminLocale(document,lang){
  const nodes=document.querySelectorAll('h1,h2,h3,h4,p,button,label,option,summary,header a,input,textarea');
  for(const el of nodes){
@@ -16,6 +16,8 @@ export function applyAdminLocale(document,lang){
    if(node.nodeType!==3)continue;
    if(!original.has(node))original.set(node,node.nodeValue);
    const before=original.get(node),source=before.trim(),translated=adminText(source,lang);
+   if(el.tagName==='OPTION'&&lang==='en'&&source!==translated&&!el.hasAttribute('value')){el.setAttribute('value',source);implicitOptions.add(el)}
+   if(el.tagName==='OPTION'&&lang==='de'&&implicitOptions.delete(el))el.removeAttribute('value');
    const next=source?before.replace(source,translated):before;
    if(node.nodeValue!==next)node.nodeValue=next;
   }

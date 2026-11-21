@@ -15,3 +15,4 @@ test('estate labels are translated without changing secret input or print data',
  assert.equal(button.textContent,'Tresor schließen');
 });
 test('unknown user messages and cryptographic material are never rewritten',()=>{assert.equal(estateText('real user@example.org','en'),'real user@example.org');});
+test('estate options preserve source keys on locale change',()=>{const {document}=parseHTML('<html><body><select><option>30 Tage</option></select></body></html>');const option=document.querySelector('option');applyEstateLocale(document,'en');assert.equal(option.textContent,'30 days');assert.equal(option.getAttribute('value'),'30 Tage');applyEstateLocale(document,'de');assert.equal(option.textContent,'30 Tage');assert.equal(option.hasAttribute('value'),false);});

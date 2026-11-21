@@ -1,5 +1,5 @@
 import {estateText} from './estate-copy.mjs';
-const originalTexts=new WeakMap(),attrs=new WeakMap();
+const originalTexts=new WeakMap(),attrs=new WeakMap(),implicitOptions=new WeakSet();
 const selectors='h1,h2,h3,h4,button,label,summary,option,nav a,p';
 const exclude='#print-pages,[data-secret],[data-key],.estate-entry,.vault-record,[contenteditable]';
 export function applyEstateLocale(document,lang){
@@ -17,6 +17,8 @@ export function applyEstateLocale(document,lang){
    if(!originalTexts.has(child))originalTexts.set(child,child.nodeValue);
    const text=originalTexts.get(child),trimmed=text.trim();
    const converted=estateText(trimmed,lang);
+   if(el.tagName==='OPTION'&&lang==='en'&&trimmed!==converted&&!el.hasAttribute('value')){el.setAttribute('value',trimmed);implicitOptions.add(el)}
+   if(el.tagName==='OPTION'&&lang==='de'&&implicitOptions.delete(el))el.removeAttribute('value');
    if(converted!==trimmed)child.nodeValue=text.replace(trimmed,converted);
    else if(child.nodeValue!==text)child.nodeValue=text;
   }

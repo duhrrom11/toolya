@@ -669,10 +669,6 @@ const prefixes=[
   "Roommate task "
  ],
  [
-  "In ",
-  "Open in "
- ],
- [
   "Gießaufgaben aus Toolya Cloud · ",
   "Watering tasks from Toolya Cloud · "
  ],

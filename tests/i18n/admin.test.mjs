@@ -7,3 +7,4 @@ test('admin label translations do not touch private data, roles or action handle
  assert.equal(document.querySelector('#summary h2').textContent,'Neue Funde');
  applyAdminLocale(document,'de');assert.equal(b.textContent,'Aktualisieren');
 });
+test('admin implicit option values retain German keys during English display',()=>{const {document}=parseHTML('<html><body><select><option>Neue Funde</option></select></body></html>');const opt=document.querySelector('option');applyAdminLocale(document,'en');assert.equal(opt.getAttribute('value'),'Neue Funde');assert.equal(opt.textContent,'New findings');applyAdminLocale(document,'de');assert.equal(opt.hasAttribute('value'),false);});

@@ -1,5 +1,5 @@
 import {dashboardText} from './dashboard-copy.mjs';
-const excluded=new Set(['TASKS','REMINDERS','SHOPPING-ITEMS','FAVORITES','RECENT','USERINFO','CLOUDSTATUS','LOGINMESSAGE','SYNC-STATUS','SYNC-DETAIL','SHOPPING-STATUS','WATERING-CONNECT-STATUS','NOTICE']);
+const excluded=new Set(['TASKS','REMINDERS','SHOPPING-ITEMS','FAVORITES','RECENT','WATERING-CONNECT-PLANT','USERINFO','CLOUDSTATUS','LOGINMESSAGE','SYNC-STATUS','SYNC-DETAIL','SHOPPING-STATUS','WATERING-CONNECT-STATUS','NOTICE']);
 const sourceText=new WeakMap(),sourceAttributes=new WeakMap();
 const attributeNames=['aria-label','title','placeholder','alt'];
 function suppressed(element){
