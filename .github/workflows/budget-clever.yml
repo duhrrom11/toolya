@@ -26,3 +26,29 @@ jobs:
         run: |
           node --check tools/budget/clever-core.js
           node --check tools/budget/clever-ui.js
+
+  budget-browser:
+    name: Clever sparen – Handy und Desktop
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Quellcode laden
+        uses: actions/checkout@v4
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Abhängigkeiten installieren
+        run: npm ci
+      - name: Chromium installieren
+        run: npx playwright install --with-deps chromium
+      - name: Oberfläche im Browser prüfen
+        run: node tests/budget-clever-browser.cjs
+      - name: Screenshots zur visuellen Prüfung sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clever-sparen-desktop-mobil
+          path: tmp/budget-clever-checks/*.png
+          if-no-files-found: ignore
