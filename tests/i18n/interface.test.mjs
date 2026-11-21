@@ -1854,3 +1854,16 @@ test('Sprint A household budget labels use English presentation without changing
  assert.ok(html.includes('const limit = budgets[cat] || 0'),'budget lookups use original keys');
  assert.ok(html.includes('const spent = categoryExpenses[cat] || 0'),'expense lookups use original keys');
 });
+
+
+test('Sprint A plant photo and identifier errors translate without leaking or modifying source errors',()=>{
+ const messages=[
+  ['Pflanzenfoto konnte nicht verarbeitet werden. Nichts gespeichert.','The plant photo could not be processed. Nothing was saved.'],
+  ['Es konnte keine eindeutige Pflanzen-ID erzeugt werden.','Could not generate a unique plant ID.']
+ ];
+ for(const [original,english] of messages){
+  assert.equal(translateToolDialog('plants','en',original),english);
+  assert.equal(translateToolDialog('plants','de',original),original,'German original unchanged');
+ }
+ assert.equal(translateToolDialog('plants','en','Custom server diagnostic 123'),'Custom server diagnostic 123','unknown error messages untouched');
+});
