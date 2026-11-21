@@ -598,7 +598,7 @@ test('Backstudio external runtime localizes calculations, shopping and schedulin
   'Photo recognition unavailable', 'Baking notes saved on this device.',
   'toolya-backstudio-shopping-list.txt'
  ])assert.ok(script.includes(phrase),'missing English Backstudio runtime text: '+phrase);
- assert.match(script,/const fmt=n=>Number\(n\)\.toLocaleString\(langEn\(\)\?'en-GB':'de-DE'/);
+ assert.match(script,/fmt=n=>Number\(n\)\.toLocaleString\(langEn\(\)\?'en-GB':'de-DE'/);
  assert.match(script,/const factor=\(\)=>target\(\)\/Math\.max\(orig\(\),1\)/,'pan conversion still uses original formula');
  assert.match(script,/const KEY='toolya_backstudio_v1'/,'original storage key remains');
  assert.match(script,/localStorage\.setItem\(KEY,JSON\.stringify\(data\)\)/,'original storage schema remains');
