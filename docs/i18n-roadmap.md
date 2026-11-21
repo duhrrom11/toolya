@@ -5,7 +5,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 ## Projektstatus
 - Letzter für alle neun GitHub-Workflows vollständig geprüfter Stand vor diesem Paket: `cadd0a62`; für neuere Commits jeweils den eigenen CI-Lauf prüfen.
 - Die englischen Startseiten und vier Tool-Einstiege sind vorhanden. Die Tool-Oberflächen sind noch nicht durchgängig übersetzt; englische öffentliche Inhalte bleiben vorerst `noindex`.
-- Gesamtfortschritt **ca. 62 % (Planungsschätzung)**, nicht automatisch gemessen: Summe der Paketgewichte × geschätztem Teilfortschritt = **61,7 %**, gerundet 62 %. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
+- Gesamtfortschritt **ca. 62 % (Planungsschätzung)**, nicht automatisch gemessen: Summe der Paketgewichte × geschätztem Teilfortschritt = **62,0 %**, gerundet 62 %. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
 - Datenbanken, Supabase-Berechtigungen, gespeicherte Objekte, Sprach-unabhängige Maskottchen-Einstellung und produktive Seiten bleiben unangetastet.
 
 ## Sechs gebündelte Arbeitspakete
@@ -14,7 +14,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 |---|---:|---:|---|---|
 | 1. Sprachsystem & technische Grundlage | 15 % | 100 % | fertig | DE/EN-Umschaltung reversibel; Präferenz unabhängig; bestehende Daten/Maskottchen unverändert |
 | 2. Englische Startseiten & Ratgeber | 15 % | 80 % | weitgehend | Vier Ratgeber, Startseite und Rechner vollständig redigiert, zugänglich, funktionale Links |
-| 3. Vier Tool-Oberflächen | 30 % | 79 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
+| 3. Vier Tool-Oberflächen | 30 % | 80 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
 | 4. Konten, Datenwege & Exporte | 20 % | 35 % | teilweise | Auth inklusive Recovery, erlaubte Redirects, Datenkonflikte, PDF/QR/CSV/Import/Export in EN und DE E2E |
 | 5. Qualitätssicherung & Sicherheit | 10 % | 40 % | aktiv | vollständige E2E-Tests, 320px/mobile, Keyboard, Screenreader, Auth-Sicherheit, abschließend alle CI erfolgreich |
 | 6. SEO-Freigabe & Veröffentlichung | 10 % | 0 % | gesperrt | hreflang, Canonicals, Sitemap, OG/JSON-LD, noindex nur nach Freigabegates aufheben, kontrollierter Release |
@@ -176,3 +176,12 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - **Regression:** Vier zusätzliche isolierte Laufzeit-/Quelltests decken DE→EN→DE, im Editor ungespeicherte Texte, ausgewählte Tagwerte, unveränderte ID-/Speicherschlüssel und numerische Anzeigefunktionen ab.
 - **Fortschrittsschätzung:** Paket 3 von 77 % auf **79 %**, gewichtetes Gesamtprojekt **61,7 % ≈ 62 %**. Die Prozentwerte sind heuristisch und kein Ersatz für die finale Sprint-A-Abnahme.
 - Weiterhin offen: End-to-End- und Mobilprüfungen über alle vier Tools, dynamische Spezial-/Fehlerzustände sowie die abschließende CI-/Browser-Freigabe. **PR #291 bleibt Draft; kein Merge, Deployment, Supabase-Eingriff oder `noindex`-Wechsel.**
+
+## Sprint A – großes Paket: sichere Sprachwechsel von Standortwahl, Rezeptvorschau und Kontaktformular (2026-11-21)
+
+- **Umzugskisten:** Die Sprachumschaltung ändert jetzt nur die sichtbaren `-- Standort wählen --`-/`-- Choose location --`-Optionen. Die vorherige Neuerstellung beider Standort-`select`-Elemente während der Umschaltung wurde entfernt, da sie eine noch nicht gespeicherte Standortwahl zurücksetzen konnte. Standortdaten und Filter werden unverändert gelesen.
+- **Backstudio:** Die Rezeptanzeige wurde von der speichernden Aktion getrennt. `renderRecipePreview()` erzeugt die übersetzte Vorschau ohne Persistenz, während `calculateRecipe()` weiterhin bei ausdrücklicher Nutzeraktion einmalig speichert. Ein Sprachwechsel aktualisiert nur eine bereits vorhandene Vorschau; Rezepttext und Eingaben bleiben erhalten, keine unbeabsichtigten Rezeptduplikate.
+- **WG-Organisator:** Der Titel eines geöffneten Mitgliederformulars reagiert jetzt auf DE↔EN sowohl im Erstellen- als auch im Bearbeiten-Modus. Der bearbeitete Datensatzindex und alle ungespeicherten Kontaktdaten bleiben erhalten. Geschlossene Formulare bleiben unangetastet.
+- Drei zusätzliche isolierte Regressionstests prüfen reversible Anzeige, unveränderte selektierte Optionen, Formular-Entwürfe und den speicherfreien Vorschaupfad.
+- **Fortschritt: Paket 3 geschätzt 80 %, Gesamt 62,0 %** (heuristische gewichtete Planungsschätzung). Keine Sprint-A-Endabnahme; verbleibend sind vollständige englische End-to-End-Journeys der vier Tools, 320-px-/Accessibility-Prüfungen und restliche Sonderfälle.
+- Veröffentlichungs-Gate unverändert: PR #291 Draft, kein Merge, Deployment, Supabase-Schreibzugriff oder EN-Indexierungsänderung.
