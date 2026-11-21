@@ -27,6 +27,7 @@
 <script src="../../shared/toolya/cloud-page-status.js"></script>
     <link rel="stylesheet" href="../../assets/helferlein-b3.css">
     <link rel="stylesheet" href="../../assets/helferlein-b3-umzugskisten.css">
+<link rel="stylesheet" href="./moving.css">
     <script>
       window.HELFERLEIN_B3 = {
         key:'umzugskisten',
@@ -107,6 +108,8 @@
     <!-- Main Content -->
     <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
         
+        <section id="toolya-moving-planner" hidden aria-label="Umzugsplanung"></section>
+
         <!-- Dashboard Statistiken -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
@@ -497,6 +500,7 @@
         let movingCloudReady = false;
         function movingCloudBlock(state) {
             movingCloudReady = false;
+            window.movingCloudReady=false;
             movingCloudController?.invalidate();
             window.toolyaCloudPageStatus(state);
         }
@@ -526,6 +530,8 @@
                 movingCloudController=prepared.controller;
                 movingCloudUserId=uid;
                 movingCloudReady=true;
+                window.movingCloudReady=true;
+                document.dispatchEvent(new Event("toolya:moving-ready"));
                 document.getElementById('toolya-cloud-gate')?.remove();
                 loadLocationsDropdown();
                 checkDeepLink();
@@ -553,6 +559,7 @@
                     throw Error('Anmeldung nicht mehr gültig.');
                 await movingCloudController.replace(data);
                 window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');
+                document.dispatchEvent(new Event("toolya:moving-saved"));
                 return true;
             } catch(error) {
                 console.error(error);
@@ -1150,5 +1157,6 @@
             document.getElementById('scannerModal').classList.add('hidden');
         }
     </script>
+<script type="module" src="./moving-ui.mjs"></script>
 </body>
 </html>
