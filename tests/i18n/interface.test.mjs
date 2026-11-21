@@ -712,3 +712,25 @@ test('Backstudio Pro translates dynamic camera, 3D, cake and memory messages wit
  const part=code.slice(code.indexOf("document.addEventListener('toolya:locale-change'"),code.indexOf('// Default rating'));
  assert.ok(!part.includes('write(')&&!part.includes('localStorage.setItem'),'language switch does not save data');
 });
+
+test('Backstudio Pro translates already-visible runtime statuses while skipping missing status nodes',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const code=await readFile(new URL('../../tools/baking/backstudio-pro.js',import.meta.url),'utf8');
+ const start=code.indexOf('const proEn=()=>');
+ const end=code.indexOf('const proStaticCopy=',start);
+ assert.ok(start>0&&end>start);
+ const {document}=parseHTML('<html><body><p id="bsp-ocr-status">Waiting</p><p id="bsp-3d-status">Waiting</p></body></html>');
+ const ctx={document,$:id=>document.getElementById(id),window:{__toolyaUILocale:'de'}};
+ createContext(ctx);runInContext(code.slice(start,end),ctx);
+ runInContext("document.getElementById('bsp-ocr-status').textContent=proUi('Foto wurde gelesen.','Photo was read.');",ctx);
+ runInContext("document.getElementById('bsp-3d-status').textContent=proUi('Form wird geladen.','Pan is loading.');",ctx);
+ ctx.window.__toolyaUILocale='en';
+ runInContext('localizeProLiveStatuses()',ctx);
+ assert.equal(document.getElementById('bsp-ocr-status').textContent,'Photo was read.');
+ assert.equal(document.getElementById('bsp-3d-status').textContent,'Pan is loading.');
+ ctx.window.__toolyaUILocale='de';
+ runInContext('localizeProLiveStatuses()',ctx);
+ assert.equal(document.getElementById('bsp-ocr-status').textContent,'Foto wurde gelesen.');
+ assert.equal(document.getElementById('bsp-3d-status').textContent,'Form wird geladen.');
+});
