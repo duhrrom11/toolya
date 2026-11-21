@@ -517,6 +517,10 @@ const extendedFormTranslations = {
 };
 const originals = new WeakMap();
 function updateElement(element, translation, attribute, language) {
+ // Replacing textContent on an interactive element with nested icons/controls
+ // removes its children and can destroy delegated UI state. Only leaf text
+ // nodes are safe for exact text replacements; attributes remain safe.
+ if(!attribute && element.children?.length) return;
  let record=originals.get(element);
  if(!record){record=new Map();originals.set(element,record);}
  const key=attribute || 'text';
