@@ -5,7 +5,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 ## Projektstatus
 - Aktueller geprüfter Implementierungsstand vor diesem Roadmap-Commit: `dd413ec486973d66d7075223afd3284949ec1a3b`; 9 von 9 GitHub-Actions-Workflows erfolgreich.
 - Die englischen Startseiten und vier Tool-Einstiege sind vorhanden. Die Tool-Oberflächen sind noch nicht durchgängig übersetzt; englische öffentliche Inhalte bleiben vorerst `noindex`.
-- Gesamtfortschritt **ca. 60 % (Planungsschätzung, nach Budget- und Pflanzendialog-Lokalisierung)**, nicht automatisch gemessen: Summe aus Paketgewicht × geschätztem Teilfortschritt, 59,0 % gerundet. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
+- Gesamtfortschritt **ca. 61 % (Planungsschätzung, nach dynamischen WG-Finanzlisten)**, nicht automatisch gemessen: Summe aus Paketgewicht × geschätztem Teilfortschritt, 59,0 % gerundet. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
 - Datenbanken, Supabase-Berechtigungen, gespeicherte Objekte, Sprach-unabhängige Maskottchen-Einstellung und produktive Seiten bleiben unangetastet.
 
 ## Sechs gebündelte Arbeitspakete
@@ -14,7 +14,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 |---|---:|---:|---|---|
 | 1. Sprachsystem & technische Grundlage | 15 % | 100 % | fertig | DE/EN-Umschaltung reversibel; Präferenz unabhängig; bestehende Daten/Maskottchen unverändert |
 | 2. Englische Startseiten & Ratgeber | 15 % | 80 % | weitgehend | Vier Ratgeber, Startseite und Rechner vollständig redigiert, zugänglich, funktionale Links |
-| 3. Vier Tool-Oberflächen | 30 % | 74 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
+| 3. Vier Tool-Oberflächen | 30 % | 75 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
 | 4. Konten, Datenwege & Exporte | 20 % | 35 % | teilweise | Auth inklusive Recovery, erlaubte Redirects, Datenkonflikte, PDF/QR/CSV/Import/Export in EN und DE E2E |
 | 5. Qualitätssicherung & Sicherheit | 10 % | 40 % | aktiv | vollständige E2E-Tests, 320px/mobile, Keyboard, Screenreader, Auth-Sicherheit, abschließend alle CI erfolgreich |
 | 6. SEO-Freigabe & Veröffentlichung | 10 % | 0 % | gesperrt | hreflang, Canonicals, Sitemap, OG/JSON-LD, noindex nur nach Freigabegates aufheben, kontrollierter Release |
@@ -117,3 +117,12 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - **Paket 3 geschätzt 74 %, Gesamt 60,2 % (gerundet 60 %).** Sprint A weiterhin nicht vollständig abgenommen; vollständige dynamische Abdeckung und Ende-zu-Ende-Browserprüfung stehen aus.
 - Der letzte zuvor geprüfte Stand `1a10e9a7` hatte bei der Abfrage acht erfolgreiche und einen noch laufenden isolierten Browserworkflow; der endgültige Commit dieses Pakets erfordert einen eigenen grünen CI-Lauf.
 - Kein Merge, Deployment, Supabase-Eingriff oder öffentliches Indexieren englischer Seiten.
+
+## Sprint A – dynamische WG-Schuldenausgleichs- und Beleglisten (2026-11-21)
+
+- Die dynamisch gerenderten Beträge je vorgeschlagener Schuldentilgung, das Gesamtvolumen des Schuldenausgleichs und die Transaktionsbeträge in der Belegliste nutzen `formatHouseholdDisplayAmount` (englische Tausendertrennzeichen und Dezimalpunkt; bisherige deutsche Anzeige unverändert).
+- Das unveränderte Fallback `Privat` erhält bei EN die reine Anzeigeübersetzung `Private`; tatsächlich gespeicherte Zahlernamen bleiben HTML-escaped und unübersetzt.
+- Die Schuldenminimierung (`amount / splitWith.length`, `transactions.push(... amount: min)`) und die Erstellung/Speicherung von Belegdaten bleiben unverändert.
+- Neuer Regressionstest prüft EN/DE-Anzeigewerte, Schulden-/Belegpfade, escaped Nutzerfelder und unveränderte Finanzalgorithmen und Daten-Payloads.
+- **Paket 3 geschätzt 75 %, Gesamt 60,5 % (gerundet 61 %).** Das ist eine Planungsschätzung, keine Vollständigkeitsabnahme.
+- Sprint A noch offen: dynamische Inhalte und Sonderzustände in den vier Tools, verifizierte englische End-to-End-Nutzerwege und finale Browser-/CI-Abnahme. PR bleibt Draft, keine Produktion, keine Supabase-Änderung, englische öffentliche Seiten bleiben vorerst `noindex`.
