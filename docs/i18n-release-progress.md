@@ -67,3 +67,7 @@ Zwei isolierte Chromium-Fälle lösten die echten Download-Knöpfe aus und lasen
 ### Transport und Helferfreigaben
 
 `68cb0080` lokalisiert die Eigentümeransicht für Transportstatus, Vorfälle, Helferlinks und QR-Aktionen einschließlich Statuslabels, Anzahl und Zeitangaben. Ein synthetischer JavaScript-Test bestätigte den Sprachwechsel, die unveränderte Anzeige eines gespeicherten Kistennamens und den Erhalt einer begonnenen Notiz. Die Entwicklungsumgebung war für einen lokalen Node- oder Chromium-Lauf nicht verfügbar. GitHub Actions und die vollständige Browserabnahme sind separat zu prüfen.
+
+### Englische Anleitungen für zusammenhängende Alltagsabläufe
+
+Vier Anleitungen am deutschen Funktionsstand ergänzt: Haushaltsbuch (Monatsrechnung und fehlende Speicherbestätigung), Dashboard (gemeinsamer Einkauf, Druckansicht, lokale und synchronisierte Daten sowie Zählerablesung), Autokosten (Wartung, Reifen, ICS und bestätigte Kostenübernahme) und Tiergesundheit (Kalenderdatum und bestätigte Kostenübernahme). Der Vergleich erfolgte anhand der deutschen Leitfäden und des bereits geprüften ICS-Exports. Statisch geprüft: eindeutige Einfügepunkte, ausgeglichene Abschnitte, englisches Sprachattribut und fortbestehendes `noindex`. Der lokale Checkout war nicht verfügbar. Auf dem vorherigen HEAD `56f2c96c` waren bei der Abfrage 12 von 13 PR-Workflows grün. Der strikte Abgleich der Anwendungsoberflächen bleibt offen.
