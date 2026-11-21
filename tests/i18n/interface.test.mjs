@@ -2173,3 +2173,77 @@ test('Sprint A plant whole-unit cistern and harvest values format English thousa
  assert.ok(html.includes('data.cisternCurrent = data.cisternMax;'),'stored cistern refill logic unchanged');
  assert.ok(html.includes('let totalKg = harvestGrams / 1000;'),'stored harvest conversion unchanged');
 });
+
+
+test('Sprint A moving location prompts change in place without losing unsaved select choices',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const html=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
+ const start=html.indexOf('function refreshMovingLocationPrompts() {');
+ const end=html.indexOf('function loadLocationsDropdown()',start);
+ assert.ok(start>0&&end>start,'in-place moving prompts are present');
+ const {document}=parseHTML('<select id="boxLocationSelect"><option value="">-- Standort wählen --</option><option value="11" selected>🧰 Garage</option></select><select id="editBoxLocSelect"><option value="">-- Standort wählen --</option><option value="22" selected>📦 Keller</option></select><input id="boxName" value="Unfinished packing box">');
+ const chosen=document.querySelector('#boxLocationSelect option[value="11"]');
+ const editChosen=document.querySelector('#editBoxLocSelect option[value="22"]');
+ const input=document.getElementById('boxName');
+ input.value='Edited but unsaved';
+ const context={window:{__toolyaUILocale:'en'},document};
+ createContext(context);runInContext(html.slice(start,end),context);
+ runInContext('refreshMovingLocationPrompts()',context);
+ assert.equal(document.querySelector('#boxLocationSelect option[value=""]').textContent,'-- Choose location --');
+ assert.equal(document.querySelector('#editBoxLocSelect option[value=""]').textContent,'-- Choose location --');
+ assert.equal(chosen.hasAttribute('selected'),true);
+ assert.equal(editChosen.hasAttribute('selected'),true);
+ assert.equal(input.value,'Edited but unsaved');
+ context.window.__toolyaUILocale='de';
+ runInContext('refreshMovingLocationPrompts()',context);
+ assert.equal(document.querySelector('#boxLocationSelect option[value=""]').textContent,'-- Standort wählen --');
+ assert.equal(document.querySelector('#boxLocationSelect option[value="11"]'),chosen,'selected option node is unchanged');
+ assert.equal(input.value,'Edited but unsaved');
+ const listener=html.slice(html.indexOf("document.addEventListener('toolya:locale-change'"),html.indexOf('async function exportInventoryPDF()'));
+ assert.ok(listener.includes('refreshMovingLocationPrompts();'),'language switch refreshes placeholder');
+ assert.ok(!listener.includes('loadLocationsDropdown()'),'language switch does not rebuild selected location options');
+ assert.ok(!listener.includes('saveData('),'language switch does not persist any boxes');
+});
+
+test('Sprint A baking existing recipe preview changes language without adding saved recipes',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const html=await readFile(new URL('../../tools/baking/index.html',import.meta.url),'utf8');
+ const start=html.indexOf('function renderRecipePreview() {');
+ const end=html.indexOf('function calculateRecipe()',start);
+ assert.ok(start>0&&end>start,'recipe preview is isolated from persistence');
+ const escapeStart=html.indexOf('function escapeRecipeHtml(value) {');
+ const escapeEnd=html.indexOf('function renderSavedRecipes()',escapeStart);
+ assert.ok(escapeStart>0&&escapeEnd>escapeStart);
+ const fields={
+  'recipe-input':{value:'2 Eier\n100 g Mehl'},
+  'res-factor':{innerText:'1.50'},
+  'recipe-name':{value:''},
+  'unit-system':{value:'metric'},
+  'print-card':{innerHTML:''}
+ };
+ const context={
+  document:{getElementById:id=>fields[id]},
+  window:{__toolyaUILocale:'en'},
+  saveRecipeToStorage:()=>{throw Error('Preview must never store recipes');}
+ };
+ createContext(context);
+ runInContext(html.slice(escapeStart,escapeEnd),context);
+ runInContext(html.slice(start,end),context);
+ runInContext('renderRecipePreview()',context);
+ assert.match(fields['print-card'].innerHTML,/Untitled recipe \(Factor ×1.5\)/);
+ assert.match(fields['print-card'].innerHTML,/3 eggs/);
+ assert.equal(fields['recipe-input'].value,'2 Eier\n100 g Mehl');
+ context.window.__toolyaUILocale='de';
+ runInContext('renderRecipePreview()',context);
+ assert.match(fields['print-card'].innerHTML,/Unbenanntes Rezept \(Faktor ×1.5\)/);
+ assert.match(fields['print-card'].innerHTML,/3 Eier/);
+ assert.equal(fields['recipe-input'].value,'2 Eier\n100 g Mehl');
+ const renderer=html.slice(start,end);
+ assert.ok(!renderer.includes('saveRecipeToStorage(')&&!renderer.includes('persistRecipes('),'read-only render does not persist');
+ assert.ok(html.includes('saveRecipeToStorage(name, rawText, factor);'),'user-initiated calculation still saves once');
+ const locale=html.slice(html.indexOf("document.addEventListener('toolya:locale-change'"),html.indexOf('// Initialisierung beim Laden'));
+ assert.ok(locale.includes("if (document.getElementById('print-card')?.innerHTML) renderRecipePreview();"));
+ assert.ok(!locale.includes('calculateRecipe();'),'language switch never calls saving handler');
+});
