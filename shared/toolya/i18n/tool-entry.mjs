@@ -41,7 +41,7 @@ function mountToolLanguage(){
  const nativeDialogs={};
  for(const method of ['alert','confirm','prompt']){
    if(typeof uiGlobal[method]!=='function')continue;
-   nativeDialogs[method]=uiGlobal[method].bind(window);
+   nativeDialogs[method]=uiGlobal[method].bind(uiGlobal);
    uiGlobal[method]=function(message,...args){
      return nativeDialogs[method](translateToolDialog(name,selected,message),...args);
    };
