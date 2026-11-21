@@ -5,13 +5,13 @@ const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 const uuid=()=>crypto.randomUUID();
 export const emptyMoving=()=>({schemaVersion:1,projects:[],rooms:[],assignments:[]});
 export function readMoving(data){
-  if(!object(data)||!Array.isArray(data.locations)||!Array.isArray(data.boxes))throw Error('Ungültiges Inventar');
+  if(!object(data)||!Array.isArray(data.locations)||!Array.isArray(data.boxes)||![...data.locations,...data.boxes].every(object))throw Error('Ungültiges Inventar');
   const moving=data.moving??emptyMoving();
   validateMoving(data);
   return moving;
 }
 export function validateMoving(data){
-  if(!object(data)||!Array.isArray(data.locations)||!Array.isArray(data.boxes))throw Error('Ungültiges Inventar');
+  if(!object(data)||!Array.isArray(data.locations)||!Array.isArray(data.boxes)||![...data.locations,...data.boxes].every(object))throw Error('Ungültiges Inventar');
   if(data.moving===undefined)return data;
   const m=data.moving;
   if(!object(m)||m.schemaVersion!==1||!['projects','rooms','assignments'].every(k=>Array.isArray(m[k])))throw Error('Unbekannte oder beschädigte Umzugsdaten');
