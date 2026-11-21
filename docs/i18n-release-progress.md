@@ -87,3 +87,7 @@ Die statische i18n-CI auf `fde5504b` meldete drei Fehler in `marketing.test.mjs`
 ### Zweisprachige Fehler bei Dashboard-Kontoaktionen
 
 Anmeldung, Registrierung, Abmeldung und die Anforderung eines Rücksetzlinks verwenden umschaltbare Meldungen für bekannte Kontofehler und aktionsspezifische Meldungen für unbekannte Fehler. Der DE/EN-Rundlauf, die Zuordnung der Fehlercodes und der Fallback wurden mit synthetischen JavaScript-Daten geprüft. Eine Node-Regression ist Teil der statischen CI. Der vollständige Rücksetzablauf mit Mailzustellung bleibt offen.
+
+### Sprachhinweis beim Öffnen geschützter Tools
+
+Der Kontohinweis auf der Startseite übernimmt Englisch aus dem geschützten Tool. Eine explizite Sprachwahl hat Vorrang vor der gespeicherten Voreinstellung. Vier synthetische Weiterleitungsvarianten wurden geprüft. Der übrige Startseiten-Kontodialog und der vollständige Rücksetzablauf bleiben Teil der Sprachabnahme. Der Standardpfad zur Anmeldung bleibt bestehen.

@@ -289,7 +289,7 @@
             <details id="accountSettings" class="ty-settings-group">
                 <summary>Toolya-Konto</summary>
                 <div class="ty-settings-content space-y-3">
-                    <p id="toolAccessHelp" class="text-sm text-gray-700" hidden>Das Tool konnte gerade nicht geöffnet werden. Melde dich bei Toolya an. Falls du bereits angemeldet bist, prüfe deine Internetverbindung und versuche es erneut.</p>
+                    <p id="toolAccessHelp" class="text-sm text-gray-700" lang="de" hidden>Das Tool konnte gerade nicht geöffnet werden. Melde dich bei Toolya an. Falls du bereits angemeldet bist, prüfe deine Internetverbindung und versuche es erneut.</p>
                     <div id="cloudStatus" role="status" aria-live="polite" class="text-xs bg-gray-100 rounded-lg p-3 text-gray-700">
                         Konto wird geprüft …
                     </div>
@@ -352,6 +352,7 @@
         // Client initialisiert; die tatsächliche Erreichbarkeit wird bei Auth-Anfragen geprüft.
         const settingsQuery = new URLSearchParams(location.search);
         const toolAccessRequired = settingsQuery.get('auth') === 'required';
+        const toolAccessEnglish = toolAccessRequired && settingsQuery.get('lang') === 'en';
         if (toolAccessRequired || settingsQuery.get('settings') === '1') {
             document.addEventListener('DOMContentLoaded',()=>{
                 openSettings({ toolAccess: toolAccessRequired });
@@ -585,7 +586,12 @@
         function openSettings({ toolAccess = false } = {}) {
             const modal = document.getElementById('settingsModal');
             if (modal) {
-                document.getElementById('toolAccessHelp').hidden = !toolAccess;
+                const help = document.getElementById('toolAccessHelp');
+                help.hidden = !toolAccess;
+                if (toolAccessEnglish) {
+                    help.lang = 'en';
+                    help.textContent = "Sign in to Toolya to open this tool. If you are already signed in, check your connection and try again.";
+                }
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
                 document.getElementById("accountSettings").open = true;
