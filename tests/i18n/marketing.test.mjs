@@ -118,3 +118,15 @@ test('English legal and privacy notices preserve disclosure details and reciproc
  assert.match(read('en/privacy.html'),/Google Analytics 4/);
  assert.match(read('en/privacy.html'),/duhrrom-21/);
 });
+
+test('English dashboard CTA preserves opt-in language and public legal footers link to EN translations',()=>{
+ const page=read('en/toolya-dashboard/index.html');
+ const helper=read('shared/toolya/i18n/marketing.mjs');
+ assert.ok(page.includes('data-tool-link href="/dashboard/"'));
+ assert.ok(helper.includes("url.pathname === '/dashboard/'"));
+ for(const p of Object.values(pages)){
+  const html=read(p);
+  if(p==='en/mascots.html')continue;
+  assert.doesNotMatch(html,/Privacy information \(German\)|Legal notice \(German\)/);
+ }
+});
