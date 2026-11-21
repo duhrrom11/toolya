@@ -547,6 +547,11 @@ function updateElement(element, translation, attribute, language) {
    only on leaf controls, never on nested form elements or user content. */
 const formCopy = Object.freeze({
  moving: {
+  // Additional source-exact static labels, never translated in stored objects.
+  "🏢 Büro": "🏢 Office",
+  "-- Standort wählen --": "-- Select location --",
+  "Höchster Wert zuerst": "Highest value first",
+  "✕ Schließen": "✕ Close",
   '📍 Standort anlegen':'📍 Add location','Standort Name':'Location name',
   'Standort speichern':'Save location','📦 Kiste hinzufügen':'📦 Add box',
   'Kisten-Name':'Box name','Wert in € (optional)':'Value in € (optional)',
@@ -563,6 +568,29 @@ const formCopy = Object.freeze({
   '📤 Wiederherstellen':'📤 Restore','📖 Hilfe & Anleitung anzeigen':'📖 View help and guide'
  },
  housemates: {
+  // Additional source-exact static labels, never translated in stored objects.
+  "⚙️ Einstellungen und Konto": "⚙️ Settings and account",
+  "📖 Hilfe & WG-Handbuch": "📖 Help and household guide",
+  "📶 WLAN QR": "📶 Wi-Fi QR",
+  "🏠 Wohnen & Miete": "🏠 Housing and rent",
+  "🚗 Auto, Tanken & ÖPNV": "🚗 Car, fuel and public transport",
+  "📜 Verträge & Abos": "📜 Contracts and subscriptions",
+  "🥦 Ernährungs- & Allergie-Matrix": "🥦 Diet and allergy matrix",
+  "📜 WG-Verträge & Abo-Manager": "📜 Shared contracts and subscriptions",
+  "+ Vertrag": "+ Contract",
+  "🛒 Nützliches WG- & Haushalts-Zubehör auf Amazon": "🛒 Useful household accessories on Amazon",
+  "🌿 Grün": "🌿 Green",
+  "👤 Gäste-Besuch / Übernachtung": "👤 Guest visit / overnight stay",
+  "🎉 Party / Lärm-Ankündigung": "🎉 Party / noise notice",
+  "📜 Verträge": "📜 Contracts",
+  "🐷 Neues Sparziel anlegen": "🐷 Create a savings goal",
+  "📶 Gäste-WLAN QR-Code": "📶 Guest Wi-Fi QR code",
+  "🖨️ Für Küche Drucken": "🖨️ Print for kitchen",
+  "🗑️ Müllabfuhr-Zeiten:": "🗑️ Waste collection times:",
+  "Aufgabe / Bereich *:": "Task / area *:",
+  "Zuständig gestartet mit:": "Initially assigned to:",
+  "📜 Vertrag / Abo eintragen": "📜 Add contract / subscription",
+  "Kündigungsfrist Datum (optional):": "Cancellation deadline (optional):",
   '📌 Digitale WG-Pinnwand & Sticky Notes':'📌 Shared noticeboard and sticky notes',
   '✏️ Neue Sticky Note':'✏️ New sticky note','ℹ️ WG-Stammdaten':'ℹ️ Household details',
   '📊 Visuelle Finanz-Analyse':'📊 Financial analysis',
@@ -594,6 +622,12 @@ const formCopy = Object.freeze({
   'Fertig & Schließen':'Done and close','📶 WLAN-Passwort:':'📶 Wi-Fi password:'
  },
  plants: {
+  // Additional source-exact static labels, never translated in stored objects.
+  "📖 Hilfe & Anleitungen": "📖 Help and guides",
+  "Groß (20 cm ~ 600ml)": "Large (20 cm ~ 600 ml)",
+  "Sehr groß (30+ cm ~ 1.5L)": "Very large (30+ cm ~ 1.5 L)",
+  "Alle Standorte / Räume": "All locations / rooms",
+  "🛒 Empfohlenes Garten-Zubehör auf Amazon": "🛒 Recommended garden supplies on Amazon",
   '📅 Garten-Saisonkalender (Monatstipp)':'📅 Seasonal garden calendar (monthly tip)',
   '🌿 Neue Pflanze / Aussaat erfassen':'🌿 Add plant / sowing',
   'Name':'Name','Art / Sorte':'Species / variety','Standort / Beet':'Location / bed',
@@ -619,6 +653,17 @@ const formCopy = Object.freeze({
   '💧 Gießen':'💧 Water','Ausblenden':'Dismiss','Achtung: Frostgefahr!':'Warning: frost risk!'
  },
  baking: {
+  // Additional source-exact static labels, never translated in stored objects.
+  "📖 Hilfe & Anleitung": "📖 Help and guide",
+  "⭕ Welche Backform passt? Formen-Finder öffnen": "⭕ Which pan fits? Open pan finder",
+  "Zeit laut Rezept (Min.)": "Recipe time (min)",
+  "Temperatur laut Rezept (°C)": "Recipe temperature (°C)",
+  "Gewünschte Stücke": "Desired slices",
+  "Deine Rezept-Originalform:": "Original recipe pan:",
+  "Xylit (ungefähr 1:1)": "Xylitol (approximately 1:1)",
+  "Erythrit (weniger süß)": "Erythritol (less sweet)",
+  "Ei (€/Stück)": "Egg (€/piece)",
+  "Schließen ✕": "Close ✕",
   '1. Backformen wählen':'1. Choose pans','Form im Rezept':'Original recipe pan',
   'Rund (Springform)':'Round (springform)','Kastenform / Eckig':'Loaf / rectangular',
   'Gugelhupf':'Bundt','Deine neue Form':'Your new pan',
