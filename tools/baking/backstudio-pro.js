@@ -12,7 +12,7 @@ const proUi=(de,en)=>{
 };
 function localizeProLiveStatuses(){
  for(const id of ['bsp-ocr-status','bsp-memory-status','bsp-3d-status']){
-  const el=$(id);if(!el)return;
+  const el=$(id);if(!el)continue;
   const pair=proStatusPairs.get(el.textContent);
   if(pair)el.textContent=proEn()?pair[1]:pair[0];
  }
