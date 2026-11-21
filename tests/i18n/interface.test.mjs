@@ -341,6 +341,7 @@ test('baking timer phase labels are localized without mutating timer state',asyn
   currentPhaseIdx:1,timeLeft:125,bakingCloudReady:false,renderSavedRecipes:()=>{throw Error('Unexpected cloud render');}
  };
  createContext(context);runInContext(html.slice(start,end),context);
+ runInContext('updateTimerDisplay()',context);
  assert.equal(elements['timer-phase-title'].innerText,'Phase 2: Bake in the oven');
  assert.equal(elements['timer-display'].innerText,'02:05');
  context.window.__toolyaUILocale='de';
