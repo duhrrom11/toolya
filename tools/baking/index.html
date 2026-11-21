@@ -1117,11 +1117,24 @@
         }
 
         function updateTimerDisplay() {
-            document.getElementById('timer-phase-title').innerText = timerPhases[currentPhaseIdx].title;
+            const englishPhaseTitles = [
+                'Phase 1: Let dough rise / chill',
+                'Phase 2: Bake in the oven',
+                'Phase 3: Cool in the pan'
+            ];
+            document.getElementById('timer-phase-title').innerText = window.__toolyaUILocale === 'en'
+                ? englishPhaseTitles[currentPhaseIdx]
+                : timerPhases[currentPhaseIdx].title;
             const m = Math.floor(timeLeft / 60);
             const s = timeLeft % 60;
             document.getElementById('timer-display').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
         }
+
+        // Re-render read-only labels when the language switch changes.
+        document.addEventListener('toolya:locale-change', () => {
+            updateTimerDisplay();
+            if (bakingCloudReady) renderSavedRecipes();
+        });
 
         // Initialisierung beim Laden
         void bakingCloudBoot();
