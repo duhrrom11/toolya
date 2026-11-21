@@ -72,6 +72,8 @@ function editorRender(){
  btn('Standardlayout',()=>{draft=defaults();paint(draft);editorRender();})
  );
  host.append(actions);
+ // Notify the locale layer after each dynamic editor render.
+ document.dispatchEvent(new Event('toolya:b3-editor-rendered'));
 }
 function init(){
  document.body.classList.add('b3','b3-backform');
