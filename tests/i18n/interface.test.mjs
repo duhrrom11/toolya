@@ -1570,3 +1570,14 @@ test('moving box form accessibility is reversible without mutating values or att
  assert.equal(nodes[4].hasAttribute('title'),false,'added title removed on switching back');
  assert.deepEqual(nodes.map(node=>node.value),values);
 });
+
+test('moving inventory uses English display-only number and date formatting',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
+ const localePattern=/window\\.__toolyaUILocale === 'en' \\? Number\\((?:totalVal|locVal|tagVal|b\\.value \\|\\| 0)\\)\\.toLocaleString\\('en-GB', \\{ minimumFractionDigits: 2, maximumFractionDigits: 2 \\}\\)/g;
+ assert.equal([...html.matchAll(localePattern)].length,4,'all four inventory value displays use English formatting');
+ assert.ok(html.includes("b.expiry.split('-').reverse().join('/')"),'English expiry date');
+ assert.ok(html.includes("b.expiry.split('-').reverse().join('.')"),'original German expiry date');
+ assert.equal((1234.5).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}),'1,234.50');
+ assert.equal((1234.5).toFixed(2).replace('.',','),'1234,50','German legacy presentation remains unchanged');
+});
