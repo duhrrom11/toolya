@@ -406,3 +406,5 @@ Der Abgleich hat die seit dem gemeinsamen Ausgangspunkt hinzugekommenen 82 main-
 Die verifizierten Node-, CloudOnly- und Chromium-Läufe ersetzen die früheren Hinweise auf fehlenden lokalen Checkout für die jeweils geprüften Stände. Release-Gate offen: 34 teilweise übersetzte Anwendungen, weitere vollständige Auth-/Recovery- und Exportprüfungen sowie Accessibility- und CI-Abnahme. Details und etwaige Varianten je Teststand siehe Fortschrittsdatei.
 
 Im nachfolgenden Paket sind Dashboard-Recovery bei 320 px, sichtbare Nachlass-Sprachwahl und verschlüsselter Handover sowie gerenderte Umzugskisten-PDFs mit dekodierten QR-Zielen zusätzlich geprüft. Die Umzugsplanung unterstützt DE/EN einschließlich Datumsanzeige und behält bestehende Projekt-, Kisten- und Raumwerte bei. Für den aktuellen SHA und noch offene Vollabnahmen gilt die Fortschrittsdatei.
+
+Die ICS-Downloads von Autokosten und Tiergesundheit wurden in Chromium auf beiden Sprachpfaden am echten Termin-Knopf geprüft. Die Dateien erhalten Originaltitel und Datum, verwenden DE/EN-Beschreibungen und enthalten einen ganztägigen Kalendereintrag.

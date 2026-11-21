@@ -2221,6 +2221,39 @@ test('i18n Sprint A household: 320/768px budget and cooking editor drafts surviv
 
 // Native-dialog boundary: verify the real locale selector and browser dialog
 // wrappers with synthetic cloud fixtures; no migration, import or database calls.
+for(const calendar of [
+ {tool:'car',collection:'cars',relation:'carId',type:'TÜV',de:'KFZ-Termin',en:'Vehicle appointment'},
+ {tool:'pet-health',collection:'pets',relation:'petId',type:'Impfung',de:'Haustier-Termin',en:'Pet appointment'}
+]){
+ test(calendar.tool+' downloads a bilingual all-day calendar file from the real event button',async({page})=>{
+  const {readFile}=require('node:fs/promises');
+  const name="Mia's favorite";
+  const title='Prüftermin, Pflege & Öl';
+  const event={id:8,[calendar.relation]:3,type:calendar.type,title,date:'2026-11-21',cost:0};
+  await isolated(page,true,true,{
+   [calendar.collection]:[{id:3,name}],events:[event],
+   ...(calendar.tool==='car'?{tires:[]}:{meds:[]})
+  });
+  await page.goto(origin+'/tools/'+calendar.tool+'/index.html?lang=en');
+  if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Reject',exact:true}).or(page.getByRole('button',{name:'Ablehnen',exact:true})).click();
+  const button=page.locator('button[onclick="downloadEventICS(8)"]');
+  await expect(button).toBeVisible();
+  for(const language of ['en','de']){
+   const choice=page.locator('[data-tool-locale="'+language+'"]');
+   await choice.click();
+   await expect(choice).toHaveAttribute('aria-pressed','true');
+   const [download]=await Promise.all([page.waitForEvent('download'),button.click()]);
+   const content=(await readFile(await download.path(),'utf8')).replaceAll('\r\n ','');
+   expect(download.suggestedFilename()).toMatch(/\.ics$/);
+   expect(content).toContain("SUMMARY:Prüftermin\\, Pflege & Öl (Mia's favorite)\r\n");
+   expect(content).toContain('DTSTART;VALUE=DATE:20261121\r\n');
+   expect(content).toContain('DESCRIPTION:'+calendar[language]+'\r\n');
+   expect(content).not.toContain('DTEND');
+  }
+  expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+ });
+}
+
 test('i18n account status: real vehicle UI toggles both languages and signed-out state',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await isolated(page,true,true);

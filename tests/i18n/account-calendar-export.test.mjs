@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {runInNewContext} from 'node:vm';
+import {buildAllDayCalendar} from '../../shared/toolya/calendar-export.mjs';
 
 const readTool=name=>readFile(new URL(`../../tools/${name}/index.html`,import.meta.url),'utf8');
 function functionBody(html,start,end){
@@ -39,28 +40,40 @@ for(const name of ['car','budget','pet-health','meters']){
  });
 }
 
-for(const [name,description] of [['car','Vehicle appointment'],['pet-health','Pet appointment']]){
- test(`${name}: ICS exports translate only presentation and retain calendar contract`,async()=>{
-  const src=functionBody(await readTool(name),'function downloadICS(title, dateStr) {','async function exportPDF()');
-  const clicks=[];let content='';
-  const context={
-   window:{__toolyaUILocale:'en'},
-   Blob:class{constructor(parts,options){content=parts.join('');assert.equal(options.type,'text/calendar;charset=utf-8')}},
-   URL:{createObjectURL:()=> 'blob:synthetic'},
-   document:{createElement:()=>({click(){clicks.push([this.href,this.download])}})},
-   setTimeout:callback=>callback(),Date
-  };
-  runInNewContext(src,context);
-  const title='Private custom title';
-  for(const [language,text] of [['en',description],['de',name==='car'?'KFZ-Termin':'Haustier-Termin']]){
-   context.window.__toolyaUILocale=language;
-   runInNewContext('downloadICS(title, dateStr)',{...context,title,dateStr:'2026-11-21'});
-   assert.match(content,/BEGIN:VCALENDAR\nVERSION:2\.0\nBEGIN:VEVENT\n/);
-   assert.ok(content.includes(`SUMMARY:${title}\n`));
-   assert.ok(content.includes('DTSTART;VALUE=DATE:20261121\n'));
-   assert.ok(content.includes(`DESCRIPTION:${text}\nEND:VEVENT\nEND:VCALENDAR`));
-   assert.deepEqual(clicks.at(-1),['blob:synthetic','Private_custom_title.ics']);
+for(const [tool,collection,relation,en,de] of [
+ ['car','cars','carId','Vehicle appointment','KFZ-Termin'],
+ ['pet-health','pets','petId','Pet appointment','Haustier-Termin']
+]){
+ test(`${tool}: calendar button loads the original record and captures the selected language`,async()=>{
+  const html=await readTool(tool);
+  const source=functionBody(html,'async function downloadEventICS(id) {','async function exportPDF()')
+   .replace("await import('../../shared/toolya/calendar-export.mjs')",'await calendarModule');
+  assert.match(html,/onclick="downloadEventICS\(\$\{Number\(e\.id\)\}\)"/);
+  const data={[collection]:[{id:3,name:"Mia's Lieblingsstück"}],events:[{
+   id:7,[relation]:3,title:'Prüftermin, Öl & Pflege',date:'2026-11-21'
+  }]};
+  const original=JSON.stringify(data);
+  const exported=[];
+  const window={__toolyaUILocale:'en'};
+  for(const [language,description] of [['en',en],['de',de]]){
+   window.__toolyaUILocale=language;
+   let finish;
+   const calendarModule=new Promise(resolve=>{finish=resolve});
+   const pending=runInNewContext(source+';downloadEventICS(7)',{window,getData:()=>data,calendarModule});
+   window.__toolyaUILocale=language==='en'?'de':'en';
+   finish({downloadAllDayCalendar:entry=>exported.push(entry)});
+   await pending;
+   const appointment=exported.at(-1);
+   assert.equal(appointment.title,"Prüftermin, Öl & Pflege (Mia's Lieblingsstück)");
+   assert.equal(appointment.description,description);
+   const output=buildAllDayCalendar({...appointment,now:new Date('2026-11-21T08:00:00Z')});
+   assert.ok(output.includes('UID:'+tool+'-7@toolya.app\r\n'));
+   assert.ok(output.includes('DTSTAMP:20261121T080000Z\r\n'));
+   assert.ok(output.includes('DTSTART;VALUE=DATE:20261121\r\n'));
+   assert.ok(!output.includes('DTEND'));
+   assert.ok(output.includes('DESCRIPTION:'+description+'\r\n'));
   }
+  assert.equal(JSON.stringify(data),original);
  });
 }
 
@@ -83,26 +96,22 @@ test('vehicle PDF export tolerates stored numeric-string fuel consumption withou
  assert.equal(JSON.stringify(data),original,'export does not mutate stored numeric strings');
 });
 
-for (const name of ['car', 'pet-health']) {
- test(`${name}: ICS escapes user titles without injecting calendar fields`, async () => {
-  const src=functionBody(await readTool(name),'function downloadICS(title, dateStr) {','async function exportPDF()');
-  let content='';
-  const context={
-   window:{__toolyaUILocale:'en'},
-   Blob:class{constructor(parts){content=parts.join('')}},
-   URL:{createObjectURL:()=> 'blob:synthetic'},
-   document:{createElement:()=>({click(){}})},
-   setTimeout:fn=>fn(),Date
-  };
-  runInNewContext(src,context);
-  const title='Private, title;\\note\nEND:VEVENT\nBEGIN:VEVENT\nSUMMARY:injected';
-  runInNewContext('downloadICS(title, dateStr)',{...context,title,dateStr:'2026-11-21'});
-  assert.equal((content.match(/^BEGIN:VEVENT$/gm)||[]).length,1);
-  assert.equal((content.match(/^END:VEVENT$/gm)||[]).length,1);
-  assert.ok(content.includes('SUMMARY:Private\\, title\\;\\\\note\\nEND:VEVENT\\nBEGIN:VEVENT\\nSUMMARY:injected\n'));
-  assert.ok(!content.includes('\nBEGIN:VEVENT\nSUMMARY:injected'));
- });
-}
+test('calendar output keeps user punctuation on a single unfolded field and folds UTF-8 safely',()=>{
+ const appointment={
+  title:'Büro, Küche; Öl \\ Küche\n'+ 'Überprüfung '.repeat(8),
+  date:'2026-11-21',description:'Vehicle appointment',uid:'car-7@toolya.app',
+  now:new Date('2026-11-21T08:00:00Z')
+ };
+ const content=buildAllDayCalendar(appointment);
+ const lines=content.split('\r\n');
+ assert.ok(lines.every(line=>Buffer.byteLength(line,'utf8')<=75));
+ assert.ok(lines.some(line=>line.startsWith(' ')));
+ assert.equal(lines.filter(line=>line==='BEGIN:VEVENT').length,1);
+ assert.equal(lines.filter(line=>line==='END:VEVENT').length,1);
+ const summary=content.replaceAll('\r\n ','').split('\r\n').find(line=>line.startsWith('SUMMARY:'));
+ assert.equal(summary,'SUMMARY:Büro\\, Küche\\; Öl \\\\ Küche\\n'+'Überprüfung '.repeat(8));
+ assert.equal(buildAllDayCalendar({...appointment,date:'2026-02-31'}),null);
+});
 
 for (const name of ['car','pet-health','budget','meters']) {
  test(`${name}: DE/EN auth validation, registration and login preserve server errors`,async()=>{

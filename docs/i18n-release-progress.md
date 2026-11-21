@@ -57,3 +57,9 @@ Browserlauf mit der echten Dashboard-Oberfläche bei 320 px und isolierter Auth-
 Der Browser-Volltest auf `647363989c55113483a37beeabae756464ffb26e` bestand lokal mit 159 ausgeführten Fällen und 16 ausgelassenen optionalen Startmessungen. Der separate Plattform-CI-Workflow einschließlich beider Nachlass-Jobs war für diesen Commit grün.
 
 Die darauf aufbauende Änderung übersetzt Zielräume, Kistenzuordnung, 72-Stunden-Übersicht, Projektfortschritt, Eingabeaufforderungen und Fehlermeldungen der Umzugsplanung. Der gezielte isolierte Chromium-Test prüft den Wechsel mit aktivem Projekt, die Formatierung desselben gespeicherten Datums als `05.12.2026` und `5 Dec 2026`, unveränderte Räume und Kistennamen sowie genau die drei vorgesehenen Schreibvorgänge. Die erweiterten 271 Node-Prüfungen sind grün. Der separate Eigentümerbereich für Transport und Helferfreigaben benötigt weitere Übersetzung und Abnahme.
+
+### Ganztägige Kalenderdateien
+
+Der Exportdialog von Autokosten und Tiergesundheit lädt den Termin über seine vorhandene ID. Termintitel und Fahrzeug- beziehungsweise Tiername bleiben wörtliche Daten, auch mit Apostrophen und Umlauten. Die gemeinsam erzeugte ICS-Datei enthält unter anderem eine stabile UID, UTC-Zeitstempel, ganztägigen Start, eine zweisprachige Beschreibung und korrekt umgebrochene UTF-8-Felder. Der gespeicherte Tag bleibt derselbe. [iCalendar-Spezifikation RFC 5545](https://www.rfc-editor.org/rfc/rfc5545.html)
+
+Zwei isolierte Chromium-Fälle lösten die echten Download-Knöpfe aus und lasen vier heruntergeladene ICS-Dateien. Beide Sprachpfade, Originaltitel und Datum waren korrekt, ohne Anwendungsschreibzugriffe. Die zwölf einschlägigen Konto-/Kalender-Node-Tests und die kombinierte Node-Suite wurden ausgeführt. Kalenderimport in externen Kalenderprogrammen bleibt Teil der abschließenden Abnahme.

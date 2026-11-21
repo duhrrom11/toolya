@@ -894,7 +894,7 @@
                             </div>
                             <div class="b3-pet-event-actions flex items-center gap-2 self-end sm:self-center flex-wrap">
                                 ${receiptBtn}
-                                ${e.type !== 'Tagebuch' ? `<a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="b3-action b3-outline px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a><button onclick="downloadICS('${e.title} (${petName})', '${e.date}')" class="b3-action b3-outline px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Kalender">📥 ICS</button>` : ''}
+                                ${e.type !== 'Tagebuch' ? `<a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="b3-action b3-outline px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a><button onclick="downloadEventICS(${Number(e.id)})" class="b3-action b3-outline px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Kalender">📥 ICS</button>` : ''}
                                 <button onclick="deleteEvent(${e.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
@@ -909,17 +909,21 @@
         }
         function closeImageModal() { document.getElementById('imageModal').close(); }
 
-        function downloadICS(title, dateStr) {
-            let d = new Date(dateStr);
-            let dateFormatted = d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8);
-            const safeTitle = String(title).replace(/\\/g, '\\\\').replace(/\r\n|\r|\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
-            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${safeTitle}\nDTSTART;VALUE=DATE:${dateFormatted}\nDTEND;VALUE=DATE:${dateFormatted}\nDESCRIPTION:${window.__toolyaUILocale === 'en' ? 'Pet appointment' : 'Haustier-Termin'}\nEND:VEVENT\nEND:VCALENDAR`;
-            let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a');
-            a.href = url;
-            a.download = `${title.replace(/\s+/g, '_')}.ics`;
-            a.click();
+        async function downloadEventICS(id) {
+            if (!Number.isSafeInteger(id)) return;
+            const data = getData();
+            const event = data.events.find(entry => Number(entry.id) === id);
+            if (!event) return;
+            const english = window.__toolyaUILocale === 'en';
+            const entity = data.pets.find(entry => entry.id === event.petId);
+            const name = entity?.name ?? (english ? 'Unknown' : 'Unbekannt');
+            const { downloadAllDayCalendar } = await import('../../shared/toolya/calendar-export.mjs');
+            downloadAllDayCalendar({
+                title: `${event.title} (${name})`,
+                date: event.date,
+                description: english ? 'Pet appointment' : 'Haustier-Termin',
+                uid: 'pet-health-' + id + '@toolya.app'
+            });
         }
 
         async function exportPDF() {
