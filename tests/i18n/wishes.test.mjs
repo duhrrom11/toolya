@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {parseHTML} from 'linkedom';
-import {WISHES_COPY,wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
+import {WISHES_COPY,WISHES_RUNTIME_COPY,wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
 import {applyWishLocale} from '../../shared/toolya/i18n/wishes-dom.mjs';
 test('Wishlist translation changes only author-owned controls and restores implicit option keys',()=>{
  const {document}=parseHTML('<html><body><h1>Meine Merkliste</h1><button onclick="saveGift()">Abbrechen</button><select><option>Geplant</option></select><input placeholder="Name oder Organisation" value="Private value"><div class="profile-card"><h2>Geplant</h2></div></body></html>');
@@ -52,4 +52,16 @@ test('Wishes direct text node changes are recognised as new app updates',()=>{
  button.firstChild.nodeValue='Aufgabe gelöscht.';
  applyWishLocale(document,'en');assert.equal(button.textContent,'Task deleted.');
  applyWishLocale(document,'de');assert.equal(button.textContent,'Aufgabe gelöscht.');
+});
+
+test('cloud conflict, export/import and occasion notifications have reversible English text',()=>{
+ const cases=[
+  ['Cloud-Konflikte konnten nicht vollständig geprüft werden. Kein Import.','Cloud conflicts could not be fully checked. Nothing was imported.'],
+  ['Importvorschau abgelaufen. Bitte neu prüfen.','Import preview expired. Check again.'],
+  ['Export fehlgeschlagen. Bitte erneut versuchen.','Export failed. Try again.'],
+  ['Wünsche konnten nicht geladen werden. Mit „Erneut laden“ kannst du es noch einmal versuchen.',"Wishes could not be loaded. Select 'Reload' to try again."],
+  ['Diesen Anlass dauerhaft löschen?','Permanently delete this occasion?']
+ ];
+ for(const [de,en] of cases){assert.equal(wishesText(de,'en'),en);assert.equal(wishesText(en,'de'),de)}
+ for(const [de,en]of Object.entries(WISHES_RUNTIME_COPY)){assert.equal(wishesText(de,'en'),en,de);assert.equal(wishesText(en,'de'),de,en)}
 });
