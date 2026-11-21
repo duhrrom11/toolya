@@ -941,11 +941,11 @@
             container.innerHTML = html;
         }
 
-        function calculateRecipe() {
-            calculateAll();
+        function renderRecipePreview() {
+            // Pure display calculation. Locale changes must never save recipes
+            // or replace the source text the user is editing.
             const rawText = document.getElementById('recipe-input').value;
             const factor = parseFloat(document.getElementById('res-factor').innerText);
-            const name = document.getElementById('recipe-name').value || 'Unbenanntes Rezept';
             const displayName = document.getElementById('recipe-name').value || (window.__toolyaUILocale === 'en' ? 'Untitled recipe' : 'Unbenanntes Rezept');
             const unitSys = document.getElementById('unit-system').value;
 
@@ -975,6 +975,14 @@
             });
 
             document.getElementById('print-card').innerHTML = outputHtml;
+        }
+
+        function calculateRecipe() {
+            calculateAll();
+            renderRecipePreview();
+            const rawText = document.getElementById('recipe-input').value;
+            const factor = parseFloat(document.getElementById('res-factor').innerText);
+            const name = document.getElementById('recipe-name').value || 'Unbenanntes Rezept';
             saveRecipeToStorage(name, rawText, factor);
         }
 
@@ -1201,6 +1209,7 @@
             if (document.getElementById('sugar-result')?.innerText) calculateSugar();
             if (document.getElementById('climate-result')?.innerText) checkClimate();
             if (document.getElementById('finder-results')?.innerHTML) runFormFinder();
+            if (document.getElementById('print-card')?.innerHTML) renderRecipePreview();
             if (bakingCloudReady) refreshSavedRecipeLocale();
         });
 
