@@ -66,3 +66,11 @@ details.toolya-appearance .toolya-preferences{max-width:100%;margin:0;padding:7p
 .ty-settings-kofi-button:hover{filter:brightness(1.09)}
 .ty-settings-kofi-button:focus-visible{outline:3px solid #f2a900;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.ty-settings-kofi-button{transition:none}}
+
+/* Accessible, tool-specific illustration when an atlas fails to load. Never fall back to a gift. */
+.ty-frame.ty-sprite-fallback{
+ display:grid;place-items:center;background-image:none!important;
+ font:normal clamp(22px,3vw,48px)/1 system-ui,sans-serif;
+}
+.ty-kofi-action .ty-frame.ty-sprite-fallback{font-size:28px}
+.toolya-idle .ty-frame.ty-sprite-fallback{font-size:32px}
