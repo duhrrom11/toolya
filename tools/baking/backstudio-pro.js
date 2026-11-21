@@ -237,7 +237,7 @@ function initRecipe(){
   if(previewUrl)URL.revokeObjectURL(previewUrl);
   previewUrl=URL.createObjectURL(file);
   thumbnail.src=previewUrl;thumbnail.hidden=false;
-  status('bsp-ocr-status','Foto ausgewählt. Text wird gelesen …');
+  status('bsp-ocr-status',proUi('Foto ausgewählt. Text wird gelesen …','Photo selected. Reading text…'));
   $('bsp-ocr-button')?.click();
  }
  originalInput.addEventListener('change',()=>{
@@ -250,37 +250,37 @@ function initRecipe(){
   if(cameraStream){closeCamera();return}
   if(!navigator.mediaDevices?.getUserMedia){
    nativeButton.hidden=false;
-   status('bsp-ocr-status','Kamera nicht verfügbar. Tippe auf „Handykamera verwenden“.');
+   status('bsp-ocr-status',proUi('Kamera nicht verfügbar. Tippe auf „Handykamera verwenden“.','Camera unavailable. Choose “Use phone camera”.'));
    return;
   }
   cameraButton.disabled=true;
-  status('bsp-ocr-status','Bitte den Zugriff auf die Kamera erlauben.');
+  status('bsp-ocr-status',proUi('Bitte den Zugriff auf die Kamera erlauben.','Allow camera access.'));
   let stream;
   try{
    stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'}}});
    cameraStream=stream;
    video.srcObject=stream;cameraArea.hidden=false;
    await video.play();
-   status('bsp-ocr-status','Halte dein Rezept vor die Kamera und tippe auf „Foto aufnehmen“.');
+   status('bsp-ocr-status',proUi('Halte dein Rezept vor die Kamera und tippe auf „Foto aufnehmen“.','Hold your recipe in front of the camera and choose “Take photo”.'));
   }catch(e){
    if(stream){for(const track of stream.getTracks())track.stop()}
    closeCamera();nativeButton.hidden=false;
-   status('bsp-ocr-status','Kamera konnte nicht geöffnet werden. Versuche „Handykamera verwenden“.');
+   status('bsp-ocr-status',proUi('Kamera konnte nicht geöffnet werden. Versuche „Handykamera verwenden“.','Could not open the camera. Try “Use phone camera”.'));
   }finally{cameraButton.disabled=false}
  }
  function takePhoto(){
   if(!cameraStream||!video.videoWidth||!video.videoHeight){
-   status('bsp-ocr-status','Das Kamerabild ist noch nicht bereit.');
+   status('bsp-ocr-status',proUi('Das Kamerabild ist noch nicht bereit.','Camera preview is not ready yet.'));
    return;
   }
   const canvas=document.createElement('canvas');
   const ratio=Math.min(1,2200/Math.max(video.videoWidth,video.videoHeight));
   canvas.width=Math.max(1,Math.round(video.videoWidth*ratio));
   canvas.height=Math.max(1,Math.round(video.videoHeight*ratio));
-  const context=canvas.getContext('2d');if(!context){status('bsp-ocr-status','Foto konnte nicht aufgenommen werden.');return}
+  const context=canvas.getContext('2d');if(!context){status('bsp-ocr-status',proUi('Foto konnte nicht aufgenommen werden.','Could not take the photo.'));return}
   context.drawImage(video,0,0,canvas.width,canvas.height);
   canvas.toBlob(blob=>{
-   if(!blob){status('bsp-ocr-status','Foto konnte nicht gespeichert werden.');return}
+   if(!blob){status('bsp-ocr-status',proUi('Foto konnte nicht gespeichert werden.','Could not save the photo.'));return}
    const file=new File([blob],'rezeptfoto.jpg',{type:'image/jpeg',lastModified:Date.now()});
    closeCamera();showPhoto(file);
   },'image/jpeg',.9);
@@ -292,9 +292,9 @@ function initRecipe(){
  // shopping list until the user explicitly clicks "Zutaten übernehmen".
  action(ocr,'Foto erneut lesen',async()=>{
   const file=photoFile||originalInput.files?.[0];
-  if(!file)return status('bsp-ocr-status','Bitte ein Foto aufnehmen oder auswählen.');
-  if(!/^image\//.test(file.type)||file.size>20*1024*1024)return status('bsp-ocr-status','Bitte ein Foto bis 20 MB verwenden.');
-  const btn=$('bsp-ocr-button');btn.disabled=true;status('bsp-ocr-status','Rezept wird gelesen …');
+  if(!file)return status('bsp-ocr-status',proUi('Bitte ein Foto aufnehmen oder auswählen.','Take or select a photo first.'));
+  if(!/^image\//.test(file.type)||file.size>20*1024*1024)return status('bsp-ocr-status',proUi('Bitte ein Foto bis 20 MB verwenden.','Use a photo no larger than 20 MB.'));
+  const btn=$('bsp-ocr-button');btn.disabled=true;status('bsp-ocr-status',proUi('Rezept wird gelesen …','Reading recipe…'));
   try{
    if(!window.Tesseract){
     const script=document.createElement('script');
@@ -319,8 +319,8 @@ function initRecipe(){
    }
    const result=await window.Tesseract.recognize(img,'deu+eng');
    input.value=result.data.text||'';reviewRecipe(input.value);
-   status('bsp-ocr-status','Foto gelesen. Bitte Zutaten prüfen und dann übernehmen.');
-  }catch(e){status('bsp-ocr-status','Foto konnte nicht gelesen werden. Bitte anderes Foto versuchen.')}
+   status('bsp-ocr-status',proUi('Foto gelesen. Bitte Zutaten prüfen und dann übernehmen.','Photo read. Check ingredients before applying them.'));
+  }catch(e){status('bsp-ocr-status',proUi('Foto konnte nicht gelesen werden. Bitte anderes Foto versuchen.','Could not read the photo. Try another one.'))}
   finally{btn.disabled=false}
  }).id='bsp-ocr-button';
  txt('p','Bitte die erkannten Zutaten prüfen.',ocr).className='bsp-muted';
@@ -366,12 +366,12 @@ function updateCake(){
  const waste=1+Math.max(0,n('bsp-waste',15))/100;
  const filling=gaps*Math.max(0,n('bs-filling',200));
  for(const t of [
-  'Böden: '+layers+' × '+fmt(coreHeight/layers,2)+' cm',
-  'Füllungen: '+gaps+' × '+fmt(n('bs-filling',200),0)+' g = '+fmt(filling,0)+' g',
-  'Gesamthöhe mit Füllungen: ca. '+fmt(total,1)+' cm',
-  'Außencreme für Oberfläche und Rand: ca. '+fmt(coverage*waste,0)+' g (inklusive Reserve)',
-  'Gesamtmenge Creme (außen + Füllungen): ca. '+fmt((coverage+filling)*waste,0)+' g (wenn dieselbe Creme verwendet wird)',
-  'Flächen- und Cremebedarf sind Näherungen. Bei zwei Formen wird ein gemeinsamer Umfang angenähert.'
+  proUi('Böden: ','Layers: ')+layers+' × '+fmt(coreHeight/layers,2)+' cm',
+  proUi('Füllungen: ','Fillings: ')+gaps+' × '+fmt(n('bs-filling',200),0)+' g = '+fmt(filling,0)+' g',
+  proUi('Gesamthöhe mit Füllungen: ca. ','Total height with fillings: approx. ')+fmt(total,1)+' cm',
+  proUi('Außencreme für Oberfläche und Rand: ca. ','Outer frosting for top and sides: approx. ')+fmt(coverage*waste,0)+proUi(' g (inklusive Reserve)',' g (including extra)'),
+  proUi('Gesamtmenge Creme (außen + Füllungen): ca. ','Total frosting (outside + fillings): approx. ')+fmt((coverage+filling)*waste,0)+proUi(' g (wenn dieselbe Creme verwendet wird)',' g (if using the same frosting)'),
+  proUi('Flächen- und Cremebedarf sind Näherungen. Bei zwei Formen wird ein gemeinsamer Umfang angenähert.','Areas and frosting quantities are estimates. Two pans are approximated with a combined perimeter.')
  ])txt('p',t,host)
 }
 function initMemory(){
