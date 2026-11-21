@@ -8,7 +8,7 @@ const proStaticCopy=new Map([["Deine Backform zum Drehen","Your interactive baki
 const proOriginalText=new WeakMap();
 function localizeProControls(){
  const root=$('toolya-backstudio');if(!root)return;
- for(const node of root.querySelectorAll('.bsp-panel h4,.bsp-panel .bsp-muted,.bsp-panel .bsp-actions > button,.bsp-panel label > span,#toolya-backstudio article > label > span,.bsp-panel option')){
+ for(const node of root.querySelectorAll('.bsp-panel h4,.bsp-panel .bsp-muted,.bsp-panel .bsp-actions > button,.bsp-panel label > span,#toolya-backstudio article > label > span,.bsp-panel option,#bsp-3d-status,#bsp-ocr-status')){
   if(node.children.length)continue;
   const source=proOriginalText.get(node)??node.textContent;
   if(!proStaticCopy.has(source))continue;
@@ -425,7 +425,7 @@ function init(){
  init3D();initFinder();initRecipe();initCake();initMemory();
   document.addEventListener('toolya:locale-change',()=>{
    localizeProControls();
-   renderComparisons();updateCake();renderMemory();
+   renderComparisons();updateCake();renderMemory();redraw3D();
   });
  // Default rating for extended notes (in the original memory card).
  const memory=cardOf('bs-logs');if(memory){const rating=txt('label',null,memory);txt('span','Wie gut hat es geklappt? (1–5 Sterne)',rating);const input=txt('input',null,rating);input.id='bsp-rating';input.type='number';input.min='1';input.max='5';input.value='3'}
