@@ -1049,7 +1049,26 @@ test('global password recovery remains a single token-based flow; tool translati
  assert.match(homepage,/if \(!passwordRecoveryActive\)/,'recovery panel requires active recovery state');
  assert.match(homepage,/first\.value\.length < 8 \|\| first\.value !== second\.value/,'password confirmation is required');
  assert.match(homepage,/redirectTo: "https:\/\/toolya\.app\/index\.html"/,'the recovery token targets the central account page');
- assert.match(authGate,/const reject = \(\) => window\.location\.replace\(home\)/,'unauthenticated tool access routes to central account');
+ const {runInNewContext}=await import('node:vm');
+ for(const [search,saved,expected] of [
+  ['?lang=en','de','../../index.html?auth=required&lang=en'],
+  ['?lang=de','en','../../index.html?auth=required'],
+  ['','en','../../index.html?auth=required&lang=en'],
+  ['',null,'../../index.html?auth=required'],
+ ]){
+  let destination;
+  const window={
+   location:{search,replace:value=>{destination=value}},
+   localStorage:{getItem:()=>saved},
+   supabase:{createClient:()=>({auth:{getUser:()=>Promise.resolve({data:{user:null}}),onAuthStateChange(){}}})},
+  };
+  runInNewContext(authGate,{
+   window,URLSearchParams,document:{documentElement:{},addEventListener(){}},
+   setTimeout:()=>1,clearTimeout() {},
+  });
+  await Promise.resolve();
+  assert.equal(destination,expected);
+ }
  assert.doesNotMatch(authGate,/resetPasswordForEmail|updateUser\(/,'auth gate does not invent another password recovery flow');
 });
 
@@ -2682,5 +2701,38 @@ test('moving inventory renders literal names and labels the QR action in both la
   assert.ok(document.querySelector('#boxLocationSelect option[value="1"]').textContent.includes(name));
   assert.equal(inventory.querySelector('button[title="'+title+'"]').getAttribute('onclick'),'showQrCode(7)');
   assert.equal(JSON.stringify(data),snapshot);
+ }
+});
+
+
+test('move protection, household copy and duplicate transaction dialogs translate',()=>{
+ for(const [tool, entries] of Object.entries({
+  "moving": [
+    [
+      "Dieser Standort enthält Kisten aus einem aktiven Umzug. Bitte den Umzug erst abschließen.",
+      "This location contains boxes assigned to an active move. Finish the move first."
+    ],
+    [
+      "Diese Kiste ist einem aktiven Umzug zugeordnet. Bitte den Umzug erst abschließen.",
+      "This box is assigned to an active move. Finish the move first."
+    ]
+  ],
+  "housemates": [
+    [
+      "Private WG-Kopie erstellt.\nDer alte WG-Link bleibt bestehen.\nBitte teile ab jetzt nur den neuen Link mit freigegebenen Mitgliedern.",
+      "Private household copy created.\nThe old household link stays active.\nFrom now on, share only the new link with approved members."
+    ]
+  ],
+  "budget": [
+    [
+      "Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\n\nTrotzdem erneut speichern?",
+      "A transaction with the same date, title, amount and type already exists.\n\nSave another copy anyway?"
+    ]
+  ]
+})){
+  for(const [de,en] of entries){
+   assert.equal(translateToolDialog(tool,'en',de),en);
+   assert.equal(translateToolDialog(tool,'de',de),de);
+  }
  }
 });

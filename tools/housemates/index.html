@@ -1095,7 +1095,7 @@
                 const newId = SECURE_WG_PREFIX + data.id;
                 const newUrl = new URL(window.location.href);
                 newUrl.searchParams.set('id', newId);
-                alert('Private WG-Kopie erstellt.\\nDer alte WG-Link bleibt bestehen.\\nBitte teile ab jetzt nur den neuen Link mit freigegebenen Mitgliedern.');
+                alert('Private WG-Kopie erstellt.\nDer alte WG-Link bleibt bestehen.\nBitte teile ab jetzt nur den neuen Link mit freigegebenen Mitgliedern.');
                 window.location.assign(newUrl.toString());
             } catch (error) {
                 console.error('WG-Migration fehlgeschlagen:', error);

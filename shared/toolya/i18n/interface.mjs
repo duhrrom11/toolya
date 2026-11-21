@@ -1803,6 +1803,8 @@ export function applyToolInterfaceLocale(document,tool,language){
    email addresses, backend errors and machine-readable exports are untouched. */
 const dialogCopy = Object.freeze({
  moving: {
+  "Dieser Standort enthält Kisten aus einem aktiven Umzug. Bitte den Umzug erst abschließen.": "This location contains boxes assigned to an active move. Finish the move first.",
+  "Diese Kiste ist einem aktiven Umzug zugeordnet. Bitte den Umzug erst abschließen.": "This box is assigned to an active move. Finish the move first.",
   'Dieses Backup enthält keine Umzugsprojekte. Die bestehenden Umzugsplanungen würden verloren gehen. Trotzdem fortfahren?':'This backup contains no moving projects. Restoring it would remove your existing moving plans. Continue?',
   'Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.':'Before importing, download and check a current backup.',
   'Hast du die aktuelle Sicherung erfolgreich heruntergeladen?':'Did you successfully download the current backup?',
@@ -1833,6 +1835,7 @@ const dialogCopy = Object.freeze({
   'Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.':'Confirm that the backup was downloaded.'
  },
  housemates: {
+  "Private WG-Kopie erstellt.\nDer alte WG-Link bleibt bestehen.\nBitte teile ab jetzt nur den neuen Link mit freigegebenen Mitgliedern.": "Private household copy created.\nThe old household link stays active.\nFrom now on, share only the new link with approved members.",
   "Die WG wurde inzwischen an anderer Stelle geändert. Sichere deine Änderungen auf diesem Gerät, bevor du die Seite neu lädst.": "The household was changed elsewhere. Back up your changes on this device before reloading.",
   "WG-Änderungen online gespeichert.": "Household changes saved online.",
   "Bitte zuerst in den Einstellungen anmelden.": "Sign in through settings first.",
@@ -1939,6 +1942,7 @@ const dialogCopy = Object.freeze({
    server responses and free-form user content pass through unchanged. */
 const additionalDialogCopy=Object.freeze({
  "budget": {
+  "Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\n\nTrotzdem erneut speichern?": "A transaction with the same date, title, amount and type already exists.\n\nSave another copy anyway?",
   "Bitte E-Mail und Passwort eingeben.": "Enter your email address and password.",
   "Bitte bestätigen, dass die Cloud-Sicherung tatsächlich heruntergeladen und sicher gespeichert wurde.": "Confirm that the cloud backup has been downloaded and stored safely.",
   "Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden niemals überschrieben. Auf gemeinsam genutzten Geräten bitte zuerst die Zugehörigkeit der Daten prüfen.": "Import existing device data into your Toolya account? Cloud data will never be overwritten. On shared devices, first check who owns the data.",

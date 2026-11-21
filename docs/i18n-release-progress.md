@@ -95,3 +95,7 @@ Der Kontohinweis auf der Startseite übernimmt Englisch aus dem geschützten Too
 ### Übersetzungen direkt in der gemeinsamen Tool-Vorlage
 
 Zehn Werkzeugseiten verwenden dieselbe vorhandene Anwendung für DE und EN. In diesem Paket sind 202 Stellen in den deutschen Vorlagen mit englischen Labels, Hinweisen oder zugänglichen Beschriftungen versehen. Ein gemeinsamer Helfer setzt diese Texte bei Englisch ein und stellt bei Deutsch die Ausgangstexte wieder her. Die statische Kontrolle bestätigte, dass abgesehen von den Übersetzungsattributen alle zehn HTML-Dateien bytegleich sind. Ein synthetischer Test überprüfte den Hin- und Rückwechsel, unveränderte Optionswerte und den Erhalt eines geänderten Laufzeittexts. Vollständige Browserabnahme und weitere Laufzeitmeldungen bleiben offen.
+
+### Laufzeitmeldungen für Umzug, WG-Kopie und Haushaltsbuch
+
+Vier Dialoge für Löschschutz, private WG-Kopie und doppelte Buchungen sind DE/EN erfasst. Die Cloud-Importvorschau des Haushaltsbuchs zeigt verständliche Bereichsnamen und Warnungen in beiden Sprachen. Die Dialogübersetzungen wurden synthetisch ausgeführt. Die statische CI auf `bdb9d622` scheiterte an einer Prüfung der alten Auth-Weiterleitungsform. Die aktualisierte Regression simuliert vier Weiterleitungsvarianten ohne produktiven Auth-Zugriff.

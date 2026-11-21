@@ -1131,7 +1131,7 @@ async function toolyaCloudBoot(tool) {
                     Number(r.price) === price &&
                     (r.entryType === 'einnahme' || r.category === 'Einnahme' ? 'einnahme' : 'ausgabe') ===
                     (entryType === 'einnahme' ? 'einnahme' : 'ausgabe'));
-                if (duplicate && !confirm('Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\\n\\nTrotzdem erneut speichern?')) return;
+                if (duplicate && !confirm('Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\n\nTrotzdem erneut speichern?')) return;
                 const newId = nextReceiptId(data);
                 data.push({
                     id: newId,
@@ -1908,14 +1908,20 @@ async function toolyaCloudBoot(tool) {
        const changes=validateHaushaltsbuchBackup(JSON.parse(e.target.result));
        const snapshot=toolyaCloudSnapshot();
        const map={kassenbon_data:'entries',budgetbuch_budgets:'budgets',budgetbuch_goals:'goals',budgetbuch_clever_sparen:'cleverSparen'};
+       const english=window.__toolyaUILocale==='en';
+       const labels=english
+         ? {entries:'Transactions',budgets:'Budgets',goals:'Savings goals',cleverSparen:'Smart saving'}
+         : {entries:'Buchungen',budgets:'Budgets',goals:'Sparziele',cleverSparen:'Clever sparen'};
        const preview=[];
        for(const [key,json] of changes){
          const next=JSON.parse(json),field=map[key];
          const before=snapshot[field],count=x=>Array.isArray(x)?x.length:Object.keys(x||{}).length;
-         preview.push(field+': '+count(before)+' → '+count(next));
+         preview.push(labels[field]+': '+count(before)+' → '+count(next));
          snapshot[field]=next;
        }
-       if(!confirm('Cloud-Backup-Import ersetzt diese Bereiche:\\n'+preview.join('\\n')+'\\nVorher Cloud-Backup exportieren. Fortsetzen?'))return;
+       const heading=english?'This cloud backup will replace these sections:':'Cloud-Backup-Import ersetzt diese Bereiche:';
+       const warning=english?'Export a cloud backup first. Continue?':'Vorher Cloud-Backup exportieren. Fortsetzen?';
+       if(!confirm([heading,...preview,warning].join('\n')))return;
        if(!await toolyaSafeCloudImport(snapshot))return;
        renderApp();alert('Backup in Toolya Cloud gespeichert.');
      }catch(error){console.error(error);alert('Cloud-Import fehlgeschlagen: '+error.message);}
