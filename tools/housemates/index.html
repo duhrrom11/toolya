@@ -1444,7 +1444,7 @@
                         if (!saved) return false;
                         secureWgSavedVersion = Math.max(secureWgSavedVersion, version);
                         secureWgDirty = secureWgSavedVersion < secureWgChangeVersion;
-                        if(saved)window.toolyaNotice?.('success','WG-Änderungen online gespeichert.');return saved;
+                        if(saved)window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Household changes saved online.' : 'WG-Änderungen online gespeichert.');return saved;
                     } catch (error) {
                         if (wgBinId !== savingWgId) return false;
                         secureWgDirty = true;
