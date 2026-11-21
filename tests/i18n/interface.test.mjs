@@ -100,7 +100,7 @@ test('English PDF labels are localized without modifying user records or export 
  for(const tool of paths){
   const html=await readFile(new URL(`../../tools/${tool}/index.html`,import.meta.url),'utf8');
   assert.match(html,/window\.__toolyaUILocale === ['"]en['"]/,'PDF language gate in '+tool);
-  assert.match(html,tool==='plants' ? /toLocaleDateString\(exportEnglish \? 'en-GB' : 'de-DE'\)/ : /toLocaleDateString\(window\.__toolyaUILocale === 'en' \? 'en-GB' : 'de-DE'\)/,'PDF date format in '+tool);
+  assert.match(html,tool==='plants' ? /toLocaleDateString\(exportEnglish \? 'en-GB' : 'de-DE'\)/ : /toLocaleDateString\((?:window\.__toolyaUILocale|exportLanguage) === 'en' \? 'en-GB' : 'de-DE'\)/,'PDF date format in '+tool);
  }
 });
 
@@ -396,7 +396,7 @@ test('PDF filenames follow selected language while retaining German names and ex
   assert.ok(html.includes(english),tool+': English filename');
   assert.ok(html.includes(german),tool+': German filename retained');
   const saveLine=html.split('\n').find(line=>line.includes('doc.save(') && line.includes(english));
-  assert.ok(saveLine && (saveLine.includes("window.__toolyaUILocale === 'en'") || (tool==='plants' && saveLine.includes('exportEnglish ?'))),tool+': filename is locale-specific');
+  assert.ok(saveLine && (saveLine.includes("window.__toolyaUILocale === 'en'") || (tool==='plants' && saveLine.includes('exportEnglish ?')) || (tool==='moving' && saveLine.includes("exportLanguage === 'en'"))),tool+': filename is locale-specific');
   assert.match(html,/const doc = await createExportPdf\(\)/,tool+': export still uses shared PDF helper');
  }
  const household=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
@@ -1576,12 +1576,9 @@ test('moving inventory uses English display-only number and date formatting',asy
  const {readFile}=await import('node:fs/promises');
  const html=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
  const englishFormat="toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })";
- assert.equal(html.split(englishFormat).length-1,8,'five inventory screen values and three PDF values use English formatting');
+ assert.equal(html.split(englishFormat).length-1,5,'five inventory screen values use English formatting');
  for(const value of ['totalVal','locVal','tagVal','b.value || 0'])
   assert.ok(html.includes('Number('+value+').'+englishFormat),'English formatting covers '+value);
- assert.equal(html.split("toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })").length-1,8,'five screen values plus three PDF numeric values');
- assert.ok(html.includes("Number(b.value || 0).toLocaleString('en-GB'"),'PDF values use English numeric formatting');
- assert.ok(html.includes(": Number(b.value || 0).toFixed(2)"),'German PDF numeric representation remains unchanged');
  assert.ok(html.includes("b.expiry.split('-').reverse().join(window.__toolyaUILocale === 'en' ? '/' : '.')"),'expiry date uses the active language separator');
  assert.ok(html.includes("Number(item.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"),'English subitem preview uses locale formatting');
  assert.ok(html.includes(": Number(item.value || 0).toFixed(2)"),'German subitem preview keeps existing formatting');
@@ -2455,7 +2452,7 @@ test('Sprint A QR export captures request locale before async loading and prints
  const src=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
  const qr=src.slice(src.indexOf('async function exportQrLabelsPDF()'),src.indexOf('async function showQrCode('));
  assert.match(qr,/const exportLanguage = window\.__toolyaUILocale === 'en' \? 'en' : 'de'/);
- assert.match(qr,/Number\(b\.value \|\| 0\)\.toFixed\(2\)/);
+ assert.match(qr,/amounts\.format\(b\.value \|\| 0\)/);
  assert.ok(!qr.slice(qr.indexOf('const QRCode = await loadQrGenerator()')).includes('window.__toolyaUILocale'),'export labels must use request-time language');
  assert.match(qr,/formatMovingTagLabel\(b\.tag, exportLanguage\)/);
  assert.match(qr,/const deepLinkUrl = `\$\{window\.location\.origin\}\$\{window\.location\.pathname\}\?box=\$\{b\.id\}`/);

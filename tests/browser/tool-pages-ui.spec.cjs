@@ -2453,11 +2453,11 @@ test('i18n Sprint A moving PDF report labels translate while source records stay
   expect(result.texts.join(' ')).toContain('Personal item');
   if(lang==='en'){
    expect(result.files.at(-1)).toBe('moving-box-inventory-report.pdf');
-   expect(result.texts.join(' ')).toContain('Total inventory value');
+   expect(result.texts.join(' ')).toContain('Total inventory value: 21.50 EUR');
    expect(result.texts.join(' ')).toContain('Lent to');
   }else{
    expect(result.files.at(-1)).toBe('kisten-inventar-report.pdf');
-   expect(result.texts.join(' ')).toContain('Gesamtwert des Inventars');
+   expect(result.texts.join(' ')).toContain('Gesamtwert des Inventars: 21,50 EUR');
    expect(result.texts.join(' ')).toContain('Ausgeliehen an');
   }
  }
@@ -2530,7 +2530,7 @@ test('i18n Sprint A moving: missing QR library reports localized failure and doe
  await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
  for(const [lang,message] of [['en','The QR code could not be loaded. Please try again.'],['de','Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.']]){
   await page.locator('[data-tool-locale="'+lang+'"]').click();
-  await page.evaluate(()=>exportQrLabelsPDF());
+  await page.evaluate(()=>{window.__movingQrExportForTest=exportQrLabelsPDF();});
   const dialog=page.getByRole('alertdialog',{name:'Toolya'});
   await expect(dialog.locator('#hl-alert-message')).toHaveText(message);
   await expect(dialog.getByRole('button',{name:'OK'})).toBeFocused();

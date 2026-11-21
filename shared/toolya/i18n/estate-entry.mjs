@@ -42,7 +42,7 @@ function mount(){
    const hero=document.querySelector('.ty-tool-hero');
    const host=hero?.querySelector('.ty-tool-hero-copy')||header;
    host.append(nav);
-   (hero||header).after(notice);
+   header.after(notice);
   }
   mountLanguageControls();
   document.addEventListener('toolya:tool-hero-ready',()=>{

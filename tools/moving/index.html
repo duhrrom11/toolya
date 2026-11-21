@@ -286,7 +286,6 @@
     </dialog>
 
     <!-- Unsichtbares Element zur temporären QR-Generierung für den PDF-Export -->
-    <div id="hiddenQrContainer" class="hidden"></div>
 
     <!-- Einstellungs-Modal mit Supabase Auth -->
     <div id="settingsModal" class="b3-tool-dialog fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
@@ -995,17 +994,25 @@
             if (movingCloudReady && document.getElementById('inventoryContainer')) renderInventory();
         });
 
+        function movingPdfAmounts(language) {
+            return new Intl.NumberFormat(language === 'en' ? 'en-GB' : 'de-DE', {
+                minimumFractionDigits: 2, maximumFractionDigits: 2
+            });
+        }
+
         async function exportInventoryPDF() {
+            const exportLanguage = window.__toolyaUILocale === 'en' ? 'en' : 'de';
+            const amounts = movingPdfAmounts(exportLanguage);
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
             const data = getData();
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text(window.__toolyaUILocale === "en" ? "Mini-HomeBox Pro - Inventory Report" : "Mini-HomeBox Pro - Inventar-Report", 14, 20);
+            doc.text(exportLanguage === "en" ? "Mini-HomeBox Pro - Inventory Report" : "Mini-HomeBox Pro - Inventar-Report", 14, 20);
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text(`${window.__toolyaUILocale === 'en' ? 'Created on' : 'Erstellt am'}: ${new Date().toLocaleDateString(window.__toolyaUILocale === 'en' ? 'en-GB' : 'de-DE')}`, 14, 27);
+            doc.text(`${exportLanguage === 'en' ? 'Created on' : 'Erstellt am'}: ${new Date().toLocaleDateString(exportLanguage === 'en' ? 'en-GB' : 'de-DE')}`, 14, 27);
 
             let y = 35;
             const writeWrapped = (value, bold = false, fontSize = 10) => {
@@ -1021,30 +1028,29 @@
 
             data.locations.forEach(loc => {
                 const cleanLocName = String(loc.name || '').replace(/[\u{1F000}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
-                writeWrapped(`${window.__toolyaUILocale === 'en' ? 'Location' : 'Standort'}: ${cleanLocName}`, true, 12);
+                writeWrapped(`${exportLanguage === 'en' ? 'Location' : 'Standort'}: ${cleanLocName}`, true, 12);
                 y += 1;
                 const locBoxes = data.boxes.filter(b => b.locId === loc.id);
                 if (!locBoxes.length) {
-                    writeWrapped(window.__toolyaUILocale === "en" ? "  (No boxes)" : "  (Keine Kisten)");
+                    writeWrapped(exportLanguage === "en" ? "  (No boxes)" : "  (Keine Kisten)");
                 } else {
                     locBoxes.forEach(b => {
-                        const statusText = b.lentTo ? ` [${window.__toolyaUILocale === 'en' ? 'Lent to' : 'Ausgeliehen an'}: ${b.lentTo}]` : '';
-                        const subStr = Array.isArray(b.subItems) && b.subItems.length ? ` | ${window.__toolyaUILocale === 'en' ? 'Items' : 'Artikel'}: ${b.subItems.map(item => item.name).join(', ')}` : '';
-                        writeWrapped(`- ${b.name}${statusText} | ${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${window.__toolyaUILocale === 'en' ? Number(b.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(b.value || 0).toFixed(2)} EUR${subStr}`);
+                        const statusText = b.lentTo ? ` [${exportLanguage === 'en' ? 'Lent to' : 'Ausgeliehen an'}: ${b.lentTo}]` : '';
+                        const subStr = Array.isArray(b.subItems) && b.subItems.length ? ` | ${exportLanguage === 'en' ? 'Items' : 'Artikel'}: ${b.subItems.map(item => item.name).join(', ')}` : '';
+                        writeWrapped(`- ${b.name}${statusText} | ${exportLanguage === 'en' ? 'Value' : 'Wert'}: ${amounts.format(b.value || 0)} EUR${subStr}`);
                     });
                 }
                 y += 4;
             });
             const totalVal = data.boxes.reduce((sum, b) => sum + Number(b.value || 0), 0);
             y += 5;
-            writeWrapped(`${window.__toolyaUILocale === 'en' ? 'Total inventory value' : 'Gesamtwert des Inventars'}: ${window.__toolyaUILocale === 'en' ? Number(totalVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : totalVal.toFixed(2)} EUR`, true, 12);
-            doc.save(window.__toolyaUILocale === 'en' ? 'moving-box-inventory-report.pdf' : 'kisten-inventar-report.pdf');
+            writeWrapped(`${exportLanguage === 'en' ? 'Total inventory value' : 'Gesamtwert des Inventars'}: ${amounts.format(totalVal)} EUR`, true, 12);
+            doc.save(exportLanguage === 'en' ? 'moving-box-inventory-report.pdf' : 'kisten-inventar-report.pdf');
         }
 
         async function generateQrDataUrl(QRCode, text) {
             return new Promise((resolve) => {
-                const tempDiv = document.getElementById('hiddenQrContainer');
-                tempDiv.innerHTML = "";
+                const tempDiv = document.createElement('div');
                 
                 new QRCode(tempDiv, {
                     text: text,
@@ -1068,6 +1074,7 @@
 
         async function exportQrLabelsPDF() {
             const exportLanguage = window.__toolyaUILocale === 'en' ? 'en' : 'de';
+            const amounts = movingPdfAmounts(exportLanguage);
             let data = getData();
             if (data.boxes.length === 0) return alert("Keine Kisten vorhanden.");
 
@@ -1116,7 +1123,7 @@
                 doc.setFontSize(8);
                 doc.text(`${exportLanguage === 'en' ? 'Location' : 'Ort'}: ${cleanLocName}`, textX, y + 14);
                 doc.text(`${exportLanguage === 'en' ? 'Contents' : 'Inhalt'}: ${b.desc || '-'}`, textX, y + 20);
-                doc.text(`${exportLanguage === 'en' ? 'Value' : 'Wert'}: ${exportLanguage === 'en' ? Number(b.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(b.value || 0).toFixed(2)} €`, textX, y + 26);
+                doc.text(`${exportLanguage === 'en' ? 'Value' : 'Wert'}: ${amounts.format(b.value || 0)} €`, textX, y + 26);
                 doc.text(`Tag: ${b.tag ? formatMovingTagLabel(b.tag, exportLanguage) : (exportLanguage === 'en' ? 'Default' : 'Standard')}`, textX, y + 32);
 
                 if (x === 14) { 
