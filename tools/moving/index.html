@@ -694,7 +694,7 @@
         function renderSubItemsModal() {
             const container = document.getElementById('subItemsContainer');
             if (activeSubItemsTemp.length === 0) {
-                container.innerHTML = `<p class="text-[11px] text-gray-400 italic">Keine Unterartikel erfasst.</p>`;
+                container.innerHTML = `<p class="text-[11px] text-gray-400 italic">${window.__toolyaUILocale === 'en' ? 'No items recorded.' : 'Keine Unterartikel erfasst.'}</p>`;
                 return;
             }
             container.innerHTML = activeSubItemsTemp.map((item, idx) => `
@@ -803,7 +803,7 @@
             }
 
             if (totalLocs === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Standorte erfasst.</p>`;
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No locations added yet.' : 'Noch keine Standorte erfasst.'}</p>`;
                 return;
             }
 
@@ -1025,7 +1025,7 @@
                 alert("Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.");
                 return;
             }
-            document.getElementById('qrModalTitle').innerText = `QR-Code für: ${name}`;
+            document.getElementById('qrModalTitle').innerText = `${window.__toolyaUILocale === 'en' ? 'QR code for: ' : 'QR-Code für: '}${name}`;
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = "";
             
