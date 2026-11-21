@@ -1515,6 +1515,7 @@
         let cashflowChartInstance = null;
         let editingReceiptId = null;
         let editingNoteId = null;
+        let householdReadyForLocaleRefresh = false;
 
         document.addEventListener('DOMContentLoaded', async () => {
             rotateKofiText();
@@ -1543,7 +1544,7 @@
                     const retry = document.createElement('button');
                     retry.type = 'button';
                     retry.className = 'block mt-3 px-4 py-2 rounded-xl border border-current font-semibold';
-                    retry.textContent = 'Erneut versuchen';
+                    retry.textContent = window.__toolyaUILocale === 'en' ? 'Try again' : 'Erneut versuchen';
                     retry.addEventListener('click', () => window.location.reload());
                     warning.append(retry);
                     document.getElementById('main-content').append(warning);
@@ -1553,8 +1554,17 @@
                 alert('WG-Cloud nicht erreichbar. Lokale Daten dieser WG werden angezeigt; Änderungen können derzeit nicht zuverlässig synchronisiert werden.');
             }
             renderApp();
+            householdReadyForLocaleRefresh = true;
             // Opening a WG must never write stale local data back over cloud records.
             checkUserSession();
+        });
+
+        // Presentation-only refresh: never run on an unloaded or failed WG.
+        document.addEventListener('toolya:locale-change', () => {
+            if (!householdReadyForLocaleRefresh) return;
+            renderApp();
+            if (!document.getElementById('cookingModal')?.classList.contains('hidden')) openCookingModal();
+            if (!document.getElementById('dietModal')?.classList.contains('hidden')) openDietModal();
         });
 
         /* Storage Helper */
