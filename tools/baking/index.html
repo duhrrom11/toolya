@@ -1048,17 +1048,45 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <h4 class="font-bold text-sm text-slate-800">${escapeRecipeHtml(r.name)}</h4>
-                            <p class="text-[11px] text-slate-500">${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'}: ×${escapeRecipeHtml(r.factor)} | ${escapeRecipeHtml(r.date)}</p>
+                            <p class="text-[11px] text-slate-500" data-recipe-factor>${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'}: ×${escapeRecipeHtml(r.factor)} | ${escapeRecipeHtml(r.date)}</p>
                         </div>
-                        <button onclick="deleteRecipe(${idx})" class="text-red-500 hover:text-red-700 text-xs font-medium"${window.__toolyaUILocale === 'en' ? 'Delete' : 'Löschen'}</button>
+                        <button onclick="deleteRecipe(${idx})" class="text-red-500 hover:text-red-700 text-xs font-medium" data-recipe-delete>${window.__toolyaUILocale === 'en' ? 'Delete' : 'Löschen'}</button>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">${window.__toolyaUILocale === 'en' ? 'Baking notes:' : 'Geling-Protokoll / Notiz:'}</label>
-                        <input type="text" value="${escapeRecipeHtml(r.note)}" onchange="saveNote(${idx}, this.value)" placeholder="${window.__toolyaUILocale === 'en' ? 'e.g. bake 5 minutes less next time…' : 'Z.B. Nächstes Mal 5 Min weniger backen...'}" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">
+                        <label class="block text-[10px] font-semibold text-slate-500 mb-1" data-recipe-note-label>${window.__toolyaUILocale === 'en' ? 'Baking notes:' : 'Geling-Protokoll / Notiz:'}</label>
+                        <input type="text" value="${escapeRecipeHtml(r.note)}" onchange="saveNote(${idx}, this.value)" data-recipe-note-input placeholder="${window.__toolyaUILocale === 'en' ? 'e.g. bake 5 minutes less next time…' : 'Z.B. Nächstes Mal 5 Min weniger backen...'}" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">
                     </div>
                 </div>`;
             });
             container.innerHTML = html;
+        }
+
+        function refreshSavedRecipeLocale() {
+            const container = document.getElementById('saved-recipes-list');
+            if (!container) return;
+            const english = window.__toolyaUILocale === 'en';
+            if (container.querySelector('[data-recipe-factor]')) {
+                container.querySelectorAll('[data-recipe-factor]').forEach(el => {
+                    // Keep the existing factor and date nodes/values unchanged:
+                    // only the leading fixed label is translated.
+                    const text = el.textContent;
+                    const separator = text.indexOf(':');
+                    if (separator >= 0) el.textContent = (english ? 'Factor' : 'Faktor') + text.slice(separator);
+                });
+                container.querySelectorAll('[data-recipe-delete]').forEach(button => {
+                    button.textContent = english ? 'Delete' : 'Löschen';
+                });
+                container.querySelectorAll('[data-recipe-note-label]').forEach(label => {
+                    label.textContent = english ? 'Baking notes:' : 'Geling-Protokoll / Notiz:';
+                });
+                container.querySelectorAll('[data-recipe-note-input]').forEach(input => {
+                    input.placeholder = english ? 'e.g. bake 5 minutes less next time…' : 'Z.B. Nächstes Mal 5 Min weniger backen...';
+                });
+            } else if (bakingCloudReady) {
+                // Empty-state text only, no recipe row/input reconstruction.
+                const empty = container.querySelector('p');
+                if (empty) empty.textContent = english ? 'No saved recipes yet.' : 'Noch keine Rezepte gespeichert.';
+            }
         }
 
         async function saveNote(idx, note) {
@@ -1173,7 +1201,7 @@
             if (document.getElementById('sugar-result')?.innerText) calculateSugar();
             if (document.getElementById('climate-result')?.innerText) checkClimate();
             if (document.getElementById('finder-results')?.innerHTML) runFormFinder();
-            if (bakingCloudReady) renderSavedRecipes();
+            if (bakingCloudReady) refreshSavedRecipeLocale();
         });
 
         // Initialisierung beim Laden
