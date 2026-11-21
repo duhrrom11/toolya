@@ -1,3 +1,5 @@
+import { dashboardText,dashboardDateLocale,dashboardLocale } from '../shared/toolya/i18n/dashboard-copy.mjs';
+const tx=value=>dashboardText(value,dashboardLocale());
 import { createDashboardCloud } from './modules/cloud-sync.mjs';
 import { createUnifiedShopping } from './modules/unified-shopping.mjs';
 import { createWateringConnect, todayLocal } from '../shared/toolya/connect-watering.mjs';
@@ -20,10 +22,10 @@ function read(key) {
   try { const value = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(value) ? value : []; }
   catch { return []; }
 }
-function show(msg) { $('notice').textContent = msg; $('notice').hidden = false; }
+function show(msg) { $('notice').textContent = tx(msg); $('notice').hidden = false; }
 function save(key, items) {
   try { localStorage.setItem(key, JSON.stringify(items)); return true; }
-  catch { show('Lokales Speichern nicht möglich. Bitte überprüfe deinen Browser-Speicher.'); return false; }
+  catch { show(tx('Lokales Speichern nicht möglich. Bitte überprüfe deinen Browser-Speicher.')); return false; }
 }
 function element(tag,text,cls) {
   const e = document.createElement(tag);
@@ -46,7 +48,7 @@ function listTools(id,items,empty) {
   for(const t of items){
     const a=element('a',undefined,'tool-item');a.href=t.url;
     const img=document.createElement('img');img.src=t.img;img.alt='';img.loading='lazy';img.onerror=()=>img.remove();
-    const content=element('span',t.name);content.append(element('small','Tool öffnen'));
+    const content=element('span',tx(t.name));content.append(element('small',tx('Tool öffnen')));
     a.append(img,content);a.addEventListener('click',()=>recordRecent(t.id));host.append(a);
   }
 }
@@ -58,8 +60,8 @@ function renderTools() {
   const fav=[...new Set(read(keys.favorites))].map(id=>byId.get(id)).filter(Boolean);
   const recent=[...new Set(read(keys.recent))].map(id=>byId.get(id)).filter(Boolean);
   $('fav-count').textContent=fav.length;$('recent-count').textContent=recent.length;
-  listTools('favorites',fav,'Du hast noch keine Favoriten. Markiere deine Lieblings-Tools auf der Startseite mit einem Stern.');
-  listTools('recent',recent,'Noch keine letzten Tools gespeichert. Öffne ein Tool über die Startseite oder hier im Dashboard.');
+  listTools('favorites',fav,tx('Du hast noch keine Favoriten. Markiere deine Lieblings-Tools auf der Startseite mit einem Stern.'));
+  listTools('recent',recent,tx('Noch keine letzten Tools gespeichert. Öffne ein Tool über die Startseite oder hier im Dashboard.'));
 }
 function newId(){return globalThis.crypto?.randomUUID?.()||String(Date.now())+'-'+Math.random().toString(36).slice(2)}
 function refreshFocus(host,id) {
@@ -84,7 +86,7 @@ async function mutation(kind, action, item, completed=false) {
         renderItems();return true;
       } else {
         const target=items.find(x=>x.id===item.id);
-        if(!target)throw Error('Eintrag wurde nicht gefunden.');
+        if(!target)throw Error(tx('Eintrag wurde nicht gefunden.'));
         target.done=completed;
       }
       if(!save(key,items))return false;
@@ -92,7 +94,7 @@ async function mutation(kind, action, item, completed=false) {
     renderItems();
     return true;
   } catch(error) {
-    show(error?.message || 'Speichern fehlgeschlagen. Es wurden keine lokalen Daten gelöscht.');
+    show(error?.message || tx('Speichern fehlgeschlagen. Es wurden keine lokalen Daten gelöscht.'));
     if(status==='cloud') await cloud.refresh();
     renderItems();
     return false;
@@ -131,7 +133,7 @@ function renderShopping() {
   const visible=connectedItems.filter(item=>!item.done||$('shopping-show-completed').checked)
     .sort((a,b)=>Number(a.done)-Number(b.done)||a.origin.localeCompare(b.origin,'de')||a.text.localeCompare(b.text,'de'));
   $('shopping-print').disabled=status!=='cloud'||connectedBusy||connectedLoading||!connectedItems.some(x=>!x.done);
-  if(!visible.length){host.append(element('li',connectedItems.length?'Alle Artikel bestätigt.':'Noch keine Einkaufsartikel vorhanden.','empty'));return;}
+  if(!visible.length){host.append(element('li',connectedItems.length?tx('Alle Artikel bestätigt.'):tx('Noch keine Einkaufsartikel vorhanden.'),'empty'));return;}
   for(const item of visible){
     const li=element('li',undefined,'shopping-entry'+(item.done?' done':''));
     const cb=document.createElement('input');
@@ -139,11 +141,11 @@ function renderShopping() {
     cb.setAttribute('aria-label',item.text+' gekauft');cb.onchange=()=>changeConnected(item,cb.checked);
     const details=element('span');
     details.append(element('span',item.text,'shopping-name'),element('small',item.origin,'shopping-source'));
-    const link=element('a','Quelle');link.href=item.url;
+    const link=element('a',tx('Quelle'));link.href=item.url;
     link.setAttribute('aria-label','In '+item.origin+' öffnen');
     li.append(cb,details,link);
     if(item.source==='dashboard'){
-      const remove=element('button','Entfernen');remove.type='button';remove.disabled=connectedBusy;
+      const remove=element('button',tx('Entfernen'));remove.type='button';remove.disabled=connectedBusy;
       remove.setAttribute('aria-label','Artikel entfernen: '+item.text);
       remove.onclick=()=>removeConnected(item);li.append(remove);
     }
@@ -235,14 +237,14 @@ function renderItems() {
   $('task-count').textContent=tasks.filter(t=>!t.done).length+waterTasks.length+extraTasks.length;
   $('reminder-count').textContent=reminders.filter(r=>!r.done).length;
   const taskHost=$('tasks');taskHost.replaceChildren();
-  if(!tasks.length&&!waterTasks.length&&!extraTasks.length)taskHost.append(element('li','Noch keine Aufgaben angelegt.','empty'));
+  if(!tasks.length&&!waterTasks.length&&!extraTasks.length)taskHost.append(element('li',tx('Noch keine Aufgaben angelegt.'),'empty'));
   for(const t of tasks) {
     const li=element('li',undefined,t.done?'done':'');
     const cb=document.createElement('input');cb.type='checkbox';cb.checked=!!t.done;
     cb.setAttribute('aria-label','Aufgabe '+t.text+' erledigt');cb.dataset.entryId=t.id;
     cb.onchange=async()=>{const ok=await mutation('tasks','toggle',t,cb.checked);if(ok)refreshFocus($('tasks'),t.id)};
     const txt=element('span',t.text);
-    const del=element('button','Entfernen');del.type='button';
+    const del=element('button',tx('Entfernen'));del.type='button';
     del.setAttribute('aria-label','Aufgabe entfernen: '+t.text);del.dataset.entryId=t.id;
     del.onclick=()=>removeWithFocus('tasks',t);
     li.append(cb,txt,del);taskHost.append(li);
@@ -250,9 +252,9 @@ function renderItems() {
   for(const item of waterTasks) {
     const li=element('li',undefined,'water-connect-item'+(item.overdue?' overdue':''));
     const txt=element('span','💧 '+item.name);
-    txt.append(element('small','Gießplan · '+new Date(item.due+'T12:00:00Z').toLocaleDateString('de-DE',{dateStyle:'medium'})+
-      (item.overdue?' · überfällig':''),'date'));
-    const button=element('button','Gegossen');button.type='button';
+    txt.append(element('small',tx('Gießplan · ')+new Date(item.due+'T12:00:00Z').toLocaleDateString(dashboardDateLocale(),{dateStyle:'medium'})+
+      (item.overdue?tx(' · überfällig'):''),'date'));
+    const button=element('button',tx('Gegossen'));button.type='button';
     button.setAttribute('aria-label',item.name+' heute gegossen');
     button.disabled=wateringBusy;
     button.onclick=()=>completeWatering(item);
@@ -263,12 +265,12 @@ function renderItems() {
     const cb=document.createElement('input');cb.type='checkbox';cb.checked=false;cb.disabled=connectedBusy;
     cb.setAttribute('aria-label','WG-Aufgabe '+item.text+' erledigt');cb.onchange=()=>changeConnected(item,cb.checked);
     const span=element('span',item.text);
-    span.append(element('small','WG-Putzplan'+(item.assignee?' · '+item.assignee:''),'date'));
-    const link=element('a','Zur WG');link.href=item.url;
+    span.append(element('small',tx('WG-Putzplan')+(item.assignee?' · '+item.assignee:''),'date'));
+    const link=element('a',tx('Zur WG'));link.href=item.url;
     li.append(cb,span,link);taskHost.append(li);
   }
   const remindHost=$('reminders');remindHost.replaceChildren();
-  if(!reminders.length)remindHost.append(element('li','Noch keine Erinnerungen angelegt.','empty'));
+  if(!reminders.length)remindHost.append(element('li',tx('Noch keine Erinnerungen angelegt.'),'empty'));
   for(const r of reminders) {
     const overdue=!r.done&&Date.parse(r.due)<=Date.now();
     const li=element('li',undefined,(r.done?'done ':'')+(overdue?'overdue':''));
@@ -276,8 +278,8 @@ function renderItems() {
     cb.setAttribute('aria-label','Erinnerung '+r.text+' erledigt');cb.dataset.entryId=r.id;
     cb.onchange=async()=>{const ok=await mutation('reminders','toggle',r,cb.checked);if(ok)refreshFocus($('reminders'),r.id)};
     const txt=element('span',r.text);
-    txt.append(element('small',new Date(r.due).toLocaleString('de-DE',{dateStyle:'medium',timeStyle:'short'})+(overdue?' · Fällig':''),'date'));
-    const del=element('button','Entfernen');del.type='button';del.dataset.entryId=r.id;
+    txt.append(element('small',new Date(r.due).toLocaleString(dashboardDateLocale(),{dateStyle:'medium',timeStyle:'short'})+(overdue?tx(' · Fällig'):''),'date'));
+    const del=element('button',tx('Entfernen'));del.type='button';del.dataset.entryId=r.id;
     del.setAttribute('aria-label','Erinnerung entfernen: '+r.text);
     del.onclick=()=>removeWithFocus('reminders',r);
     li.append(cb,txt,del);remindHost.append(li);
@@ -424,4 +426,5 @@ window.addEventListener('storage',e=>{
     if(status==='cloud')$('import-local').hidden=!(validLocal(keys.tasks).length||validLocal(keys.reminders).length);
   }
 });
+document.addEventListener('toolya:dashboard-locale-change',()=>{renderTools();renderItems();renderShopping();});
 renderTools();renderItems();cloud.start();
