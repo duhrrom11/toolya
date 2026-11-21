@@ -706,8 +706,8 @@
             const current = data.cisternCurrent === undefined ? max : Number(data.cisternCurrent);
             const cur = Number.isFinite(current) ? Math.min(max, Math.max(0, current)) : max;
             let percent = Math.round((cur / max) * 100);
-            document.getElementById('statCistern').innerText = cur >= 1000 ? formatPlantDisplayNumber(cur/1000, 1) + ' m³' : cur + ' L';
-            document.getElementById('cisternDisplayLiters').innerText = cur + ' L / ' + max + ' L';
+            document.getElementById('statCistern').innerText = cur >= 1000 ? formatPlantDisplayNumber(cur/1000, 1) + ' m³' : formatPlantDisplayNumber(cur, 0) + ' L';
+            document.getElementById('cisternDisplayLiters').innerText = formatPlantDisplayNumber(cur, 0) + ' L / ' + formatPlantDisplayNumber(max, 0) + ' L';
             document.getElementById('cisternPercentText').innerText = percent + (window.__toolyaUILocale === 'en' ? '% full' : '% gefüllt');
         }
 
@@ -1286,11 +1286,11 @@
             document.getElementById('statPlants').innerText = totalCount;
             document.getElementById('statDueSoon').innerText = dueSoonCount;
             document.getElementById('statOverdue').innerText = overdueCount;
-            document.getElementById('statWaterNeeded').innerText = totalWaterTodayMl >= 1000 ? formatPlantDisplayNumber(totalWaterTodayMl / 1000, 1) + ' L' : totalWaterTodayMl + ' ml';
+            document.getElementById('statWaterNeeded').innerText = totalWaterTodayMl >= 1000 ? formatPlantDisplayNumber(totalWaterTodayMl / 1000, 1) + ' L' : formatPlantDisplayNumber(totalWaterTodayMl, 0) + ' ml';
             const storedHarvest = Number(data.totalHarvestGrams);
             const harvestGrams = Number.isFinite(storedHarvest) && storedHarvest >= 0 ? storedHarvest : 0;
             let totalKg = harvestGrams / 1000;
-            document.getElementById('statTotalHarvest').innerText = totalKg >= 1 ? formatPlantDisplayNumber(totalKg, 1) + ' kg' : harvestGrams + ' g';
+            document.getElementById('statTotalHarvest').innerText = totalKg >= 1 ? formatPlantDisplayNumber(totalKg, 1) + ' kg' : formatPlantDisplayNumber(harvestGrams, 0) + ' g';
         }
 
         async function exportPDF() {
