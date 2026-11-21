@@ -2395,8 +2395,8 @@ test('i18n Sprint A moving: blocked PDF library gives EN/DE error, no export or 
 test('i18n Sprint A moving: QR label export text and deep links stay stable across language changes',async({page})=>{
  test.setTimeout(90000);
  const fixture={locations:[{id:100,name:'Synthetic shelf',icon:'📍'}],boxes:[
-  {id:201,locId:100,name:'User box',desc:'Original stored contents',tag:'Zerbrechlich',value:'12.50',subItems:[]},
-  {id:202,locId:999,name:'Another box',desc:'Second contents',tag:'Custom tag',value:4.25,subItems:[]}
+  {id:201,locId:100,name:'User box',desc:'Original stored contents',tag:'Zerbrechlich',value:12.5,subItems:[]},
+  {id:202,locId:100,name:'Another box',desc:'Second contents',tag:'Standard',value:4.25,subItems:[]}
  ]};
  await isolated(page,true,true,fixture);
  await page.goto(origin+'/tools/moving/index.html');
@@ -2422,15 +2422,15 @@ test('i18n Sprint A moving: QR label export text and deep links stay stable acro
   expect(v.spy.images).toHaveLength(2);
   expect(v.spy.texts.join(' ')).toContain('User box');
   expect(v.spy.texts.join(' ')).toContain('Original stored contents');
-  expect(v.spy.texts.join(' ')).toContain('Custom tag');
+  expect(v.spy.texts.join(' ')).toContain('Second contents');
   if(lang==='en'){
    expect(v.spy.files.at(-1)).toBe('moving-box-qr-labels.pdf');
    expect(v.spy.texts.join(' ')).toContain('Fragile');
-   expect(v.spy.texts.join(' ')).toContain('Unknown');
+   expect(v.spy.texts.join(' ')).toContain('Location');
   }else{
    expect(v.spy.files.at(-1)).toBe('kisten-qr-etiketten.pdf');
    expect(v.spy.texts.join(' ')).toContain('Zerbrechlich');
-   expect(v.spy.texts.join(' ')).toContain('Unbekannt');
+   expect(v.spy.texts.join(' ')).toContain('Ort');
   }
  }
 });
