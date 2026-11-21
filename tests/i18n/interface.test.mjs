@@ -2247,3 +2247,38 @@ test('Sprint A baking existing recipe preview changes language without adding sa
  assert.ok(locale.includes("if (document.getElementById('print-card')?.innerHTML) renderRecipePreview();"));
  assert.ok(!locale.includes('calculateRecipe();'),'language switch never calls saving handler');
 });
+
+
+test('Sprint A open household contact editor title translates without touching unsaved contact details',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const start=html.indexOf('function refreshHouseholdMemberFormTitle() {');
+ const end=html.indexOf('function resetMateForm()',start);
+ assert.ok(start>0&&end>start,'read-only member editor label updater exists');
+ const {document}=parseHTML('<div id="mitbewohnerModal"><h3 id="mateFormTitle">✏️ Mitglied bearbeiten</h3><input id="editMateIndex" value="2"><input id="mateVorname" value="Anna"><input id="mateEmail" value="anna@example.test"></div>');
+ const index=document.getElementById('editMateIndex');
+ const name=document.getElementById('mateVorname'),email=document.getElementById('mateEmail');
+ name.value='Draft Name';email.value='draft@example.test';
+ const context={window:{__toolyaUILocale:'en'},document};
+ createContext(context);runInContext(html.slice(start,end),context);
+ runInContext('refreshHouseholdMemberFormTitle()',context);
+ assert.equal(document.getElementById('mateFormTitle').textContent,'✏️ Edit member');
+ assert.equal(name.value,'Draft Name');
+ assert.equal(email.value,'draft@example.test');
+ assert.equal(index.value,'2');
+ context.window.__toolyaUILocale='de';
+ runInContext('refreshHouseholdMemberFormTitle()',context);
+ assert.equal(document.getElementById('mateFormTitle').textContent,'✏️ Mitglied bearbeiten');
+ index.value='-1';context.window.__toolyaUILocale='en';
+ runInContext('refreshHouseholdMemberFormTitle()',context);
+ assert.equal(document.getElementById('mateFormTitle').textContent,'➕ Add new member');
+ assert.equal(name.value,'Draft Name','unsaved contact text retained');
+ document.getElementById('mitbewohnerModal').classList.add('hidden');
+ context.window.__toolyaUILocale='de';
+ runInContext('refreshHouseholdMemberFormTitle()',context);
+ assert.equal(document.getElementById('mateFormTitle').textContent,'➕ Add new member','closed contact modal not modified');
+ const listener=html.slice(html.indexOf("document.addEventListener('toolya:locale-change'"),html.indexOf('/* Storage Helper */'));
+ assert.ok(listener.includes('refreshHouseholdMemberFormTitle();'));
+ assert.ok(!listener.includes('saveFlatmates('),'language switch never saves contact records');
+});
