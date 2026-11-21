@@ -1213,16 +1213,16 @@
             const plants = data.plants.filter(p => p && typeof p === 'object' && !Array.isArray(p));
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text("Pflanzen- & Garten-Pass Report", 14, 20);
+            doc.text(window.__toolyaUILocale === "en" ? "Plant and Garden Report" : "Pflanzen- & Garten-Pass Report", 14, 20);
             doc.setFont("helvetica", "normal");
             doc.setFontSize(10);
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')} | Pflanzen: ${plants.length}`, 14, 28);
+            doc.text(`${window.__toolyaUILocale === 'en' ? 'Created on' : 'Erstellt am'}: ${new Date().toLocaleDateString(window.__toolyaUILocale === 'en' ? 'en-GB' : 'de-DE')} | ${window.__toolyaUILocale === 'en' ? 'Plants' : 'Pflanzen'}: ${plants.length}`, 14, 28);
             let y = 40;
             if (!plants.length) {
-                doc.text("Keine Pflanzen erfasst.", 14, y);
+                doc.text(window.__toolyaUILocale === "en" ? "No plants recorded." : "Keine Pflanzen erfasst.", 14, y);
             }
             plants.forEach(p => {
-                const line = `- ${String(p.name ?? 'Unbenannt')} (${String(p.species || 'k.A.')}), Ort: ${String(p.location || 'k.A.')}, Gießen: ${String(p.interval ?? '?')}T`;
+                const line = `- ${String(p.name ?? (window.__toolyaUILocale === 'en' ? 'Unnamed' : 'Unbenannt'))} (${String(p.species || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.'))}), ${window.__toolyaUILocale === 'en' ? 'Location' : 'Ort'}: ${String(p.location || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.'))}, ${window.__toolyaUILocale === 'en' ? 'Watering' : 'Gießen'}: ${String(p.interval ?? '?')}${window.__toolyaUILocale === 'en' ? 'd' : 'T'}`;
                 doc.splitTextToSize(line, 180).forEach(textLine => {
                     if (y > 270) { doc.addPage(); y = 20; }
                     doc.text(textLine, 14, y);
