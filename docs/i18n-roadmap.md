@@ -5,7 +5,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 ## Projektstatus
 - Aktueller geprüfter Implementierungsstand vor diesem Roadmap-Commit: `dd413ec486973d66d7075223afd3284949ec1a3b`; 9 von 9 GitHub-Actions-Workflows erfolgreich.
 - Die englischen Startseiten und vier Tool-Einstiege sind vorhanden. Die Tool-Oberflächen sind noch nicht durchgängig übersetzt; englische öffentliche Inhalte bleiben vorerst `noindex`.
-- Gesamtfortschritt **ca. 59 % (Planungsschätzung, nach weiteren Sprint-A-Dynamikarbeiten)**, nicht automatisch gemessen: Summe aus Paketgewicht × geschätztem Teilfortschritt, 59,0 % gerundet. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
+- Gesamtfortschritt **ca. 59 % (Planungsschätzung, nach Anzeige- und Sprachwechsel-Fixes)**, nicht automatisch gemessen: Summe aus Paketgewicht × geschätztem Teilfortschritt, 59,0 % gerundet. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
 - Datenbanken, Supabase-Berechtigungen, gespeicherte Objekte, Sprach-unabhängige Maskottchen-Einstellung und produktive Seiten bleiben unangetastet.
 
 ## Sechs gebündelte Arbeitspakete
@@ -14,7 +14,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 |---|---:|---:|---|---|
 | 1. Sprachsystem & technische Grundlage | 15 % | 100 % | fertig | DE/EN-Umschaltung reversibel; Präferenz unabhängig; bestehende Daten/Maskottchen unverändert |
 | 2. Englische Startseiten & Ratgeber | 15 % | 80 % | weitgehend | Vier Ratgeber, Startseite und Rechner vollständig redigiert, zugänglich, funktionale Links |
-| 3. Vier Tool-Oberflächen | 30 % | 70 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
+| 3. Vier Tool-Oberflächen | 30 % | 71 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
 | 4. Konten, Datenwege & Exporte | 20 % | 35 % | teilweise | Auth inklusive Recovery, erlaubte Redirects, Datenkonflikte, PDF/QR/CSV/Import/Export in EN und DE E2E |
 | 5. Qualitätssicherung & Sicherheit | 10 % | 40 % | aktiv | vollständige E2E-Tests, 320px/mobile, Keyboard, Screenreader, Auth-Sicherheit, abschließend alle CI erfolgreich |
 | 6. SEO-Freigabe & Veröffentlichung | 10 % | 0 % | gesperrt | hreflang, Canonicals, Sitemap, OG/JSON-LD, noindex nur nach Freigabegates aufheben, kontrollierter Release |
@@ -82,3 +82,12 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Zwei neue isolierte Regressionstests prüfen Englisch/Deutsch, negative und größere Zahlen, unveränderte ROI-Formeln sowie den unberührten Umrechnungsfaktor.
 - **Fortschrittsschätzung Paket 3: 70 %; Gesamt: 59,0 %** nach gewichteter Roadmap. Noch keine Sprint-A-Abnahme: dynamische Freitexte/States, übrige vier Tool-Flows und mobile End-to-End-Prüfung fehlen.
 - Keine Cloud-/Supabase-Änderung, kein Merge/Deployment, englische öffentliche Seiten bleiben `noindex`. Für den endgültigen HEAD müssen alle CI-Workflows erneut erfolgreich sein.
+
+## Sprint A – Sprachwechsel in bereits geöffneten Tool-Dialogen (2026-11-21)
+
+- **Pflanzenpflege:** Wenn die Cloud-Daten erfolgreich geladen sind, aktualisiert der Wechsel DE ↔ EN zusätzlich bereits geöffnete Dialoge für ROI, Zisterne, Beetbelegung und Fotogalerie. Dazu werden ausschließlich die vorhandenen Render- und Berechnungsfunktionen verwendet; keine Änderung an Nutzereingaben, Pflanzen-IDs oder gespeicherten Datensätzen.
+- **Backstudio:** Der Sprachwechsel ruft zusätzlich `calculateAll()` zur Aktualisierung der sichtbaren Umrechnungs- und Backzeit-Ergebnisse auf, nicht `convertRecipe()` oder `saveRecipeToStorage()`. Der maschinenlesbare Faktor bleibt weiterhin numerisch mit Punkt, damit `parseFloat` korrekt bleibt.
+- Isolierte Regressionstests prüfen die sichtbaren und noch nicht geladenen Pflanzenansichten, unveränderte Speicher-/Cloud-Pfade sowie die aktualisierten Backstudio-Ergebnisse und Timer.
+- **Paket 3 geschätzt 71 %, Gesamt 59,3 % (gerundet 59 %)**. Die Werte bleiben Planungsannahmen; der Sprint gilt noch nicht als abgeschlossen.
+- Verbleibend in Sprint A: weitere dynamische Renderzustände insbesondere im WG-Organisator, Pflanzen-/Backstudio-Sonderdialoge, das vollständige Durchlaufen sämtlicher Tools und ein englischer Browser-E2E-Nachweis.
+- Kein Merge, Deployment, Eingriff in Supabase, Entfernen von `noindex` oder Veränderung produktiver Daten.
