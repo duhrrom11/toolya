@@ -918,7 +918,13 @@
             alert('Ungültige WG-ID im Link.');
         }
         if (!wgBinId && validWgId(savedWgId)) {
-            window.location.replace(window.location.pathname + "?id=" + encodeURIComponent(savedWgId));
+            const redirectParams = new URLSearchParams();
+            redirectParams.set('id', savedWgId);
+            // Preserve an explicitly chosen locale without carrying arbitrary URL parameters.
+            if (urlParams.get('lang') === 'en' || urlParams.get('lang') === 'de') {
+                redirectParams.set('lang', urlParams.get('lang'));
+            }
+            window.location.replace(window.location.pathname + '?' + redirectParams.toString());
         } else if (wgBinId) {
             localStorage.setItem('wg_active_bin_id', wgBinId);
         }
