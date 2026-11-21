@@ -1545,12 +1545,12 @@ const dialogPrefixes = Object.freeze({
 });
 export function translateToolDialog(tool, language, message) {
  if(language!=='en' || typeof message!=='string') return message;
- const exact=dialogCopy[tool]?.[message];
+ const exact=Object.hasOwn(dialogCopy,tool) && Object.hasOwn(dialogCopy[tool],message) ? dialogCopy[tool][message] : undefined;
  if(exact!==undefined) return exact;
  for(const [prefix,translated] of Object.entries(dialogPrefixes[tool]||{}))
   if(message.startsWith(prefix)) {
    const detail=message.slice(prefix.length);
-   return translated+(dialogCopy[tool]?.[detail]??detail);
+   return translated+(Object.hasOwn(dialogCopy,tool) && Object.hasOwn(dialogCopy[tool],detail) ? dialogCopy[tool][detail] : detail);
   }
  return message;
 }
@@ -1571,7 +1571,7 @@ const accountStatusReverse=Object.freeze(Object.fromEntries(Object.entries(accou
 export function translateAccountStatus(language,message){
  if(typeof message!=='string')return message;
  const target=language==='en'?accountStatusCopy:accountStatusReverse;
- if(target[message]!==undefined)return target[message];
+ if(Object.hasOwn(target,message))return target[message];
  const pairs=language==='en'
   ?[['✅ Angemeldet – ','✅ Signed in – ']]
   :[['✅ Signed in – ','✅ Angemeldet – ']];
