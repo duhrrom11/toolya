@@ -372,3 +372,5 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Added isolated Node regression cases for multiline titles attempting to introduce extra VEVENT fields. A standalone Node check of the escaping expression succeeded; the full repository Node and Chromium suites have **not** been rerun for this commit in this environment.
 - GitHub's PR-run lookup returned no workflows for the previous head `ad795bb5`; CI on the new head is not yet verified. Browser, full auth/recovery, rendered exports, accessibility and translation-completeness gates remain open.
 - PR #291 stays Draft. No merge, deployment, live Supabase access, production fixtures, mascot modifications or removal of English `noindex`.
+
+- **Nachprüfung der ICS-Regression:** Der neue Test verwendet jetzt tatsächliche Zeilenumbrüche im bösartigen Titel und verankerte `^BEGIN:VEVENT$`/`^END:VEVENT$`-Prüfungen. Die vorherige Variante enthielt nur die wörtliche `\\n`-Zeichenfolge und hätte die reale Zeileninjektion nicht ausreichend geprüft. Der Korrektur-Commit ist auf demselben Draft-Branch; vollständige Tests stehen noch aus.
