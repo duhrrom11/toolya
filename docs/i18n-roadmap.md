@@ -389,3 +389,10 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Added `tests/i18n/account-notices-batch.test.mjs`: isolated VM execution of register/login/logout in parking and loans using synthetic in-memory auth stubs, plus source-contract checks for guarded messages in plants, baking and moving. No production Supabase access.
 - These commits were written through GitHub's contents API. The local environment lacks a repository checkout and DNS access to github.com, so the complete Node and Chromium suites **have not been run** on this HEAD. CI must verify the tests before this batch can be considered accepted.
 - The previous calendar-injection regression and four-tool account tests are still part of the same Draft PR. Remaining launch blockers include end-to-end recovery/auth, full English dynamic UI and 34 partial app views, browser/A11y/PDF review and a successful strict coverage audit. No merge, deployment or EN `noindex` removal.
+
+## Account-session robustness batch (2026-11-21)
+
+- Parking and loans now distinguish **signed out** from **unverifiable session/network** in both DE/EN. `AuthSessionMissingError` remains a normal signed-out state; other auth errors or thrown `getUser()` failures show an explicit unavailable-session message rather than incorrectly claiming sign-out.
+- On sign-out or unavailable sessions, both cloud account text and header email are cleared, avoiding stale identity display. Successful sessions retain the actual email; backend auth behavior and stored records are unchanged.
+- Added isolated Node VM regression execution for authenticated, signed-out, network-failure, DE/EN and missing-session states. These tests use only synthetic in-memory auth stubs.
+- Verification caveat: local GitHub DNS is unavailable and no full checkout was available for this continuation. **Full Node, Chromium and current-HEAD CI are not verified.** PR #291 stays Draft; no merge/deploy, no live Supabase access, no EN `noindex` changes.
