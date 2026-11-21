@@ -780,7 +780,7 @@
             let photos = Array.isArray(p.galleryPhotos) ? p.galleryPhotos : [];
             if (photos.length === 0 && p.photo) photos = [p.photo];
             photos = photos.filter(img => typeof img === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(img));
-            document.getElementById('galleryGrid').innerHTML = photos.map((img, idx) => `<div class="relative group border rounded-xl overflow-hidden bg-gray-100"><img src="${escapeHtml(img)}" alt="Pflanzenfoto ${idx + 1}" class="w-full h-32 object-cover"><span class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-[9px] px-1.5 py-0.5 rounded">Foto ${idx+1}</span></div>`).join('') || `<p class="col-span-2 text-xs text-gray-400 text-center py-4">Keine Fotos.</p>`;
+            document.getElementById('galleryGrid').innerHTML = photos.map((img, idx) => `<div class="relative group border rounded-xl overflow-hidden bg-gray-100"><img src="${escapeHtml(img)}" alt="Pflanzenfoto ${idx + 1}" class="w-full h-32 object-cover"><span class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-[9px] px-1.5 py-0.5 rounded">Foto ${idx+1}</span></div>`).join('') || `<p class="col-span-2 text-xs text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No photos.' : 'Keine Fotos.'}</p>`;
         }
         async function addGalleryPhoto() {
             const rawId = document.getElementById('galleryPlantId').value;
@@ -836,7 +836,7 @@
                 plantsCloudController=prepared.controller;plantsCloudUserId=uid;plantsCloudReady=true;
                 document.getElementById('toolya-cloud-gate')?.remove();
                 const month=new Date().getMonth();
-                document.getElementById('calendarTodoText').innerText=gartenKalender[month]||'Pflege deine Pflanzen.';
+                document.getElementById('calendarTodoText').innerText=window.__toolyaUILocale === 'en' ? 'Review your plants and seasonal care tasks.' : (gartenKalender[month]||'Pflege deine Pflanzen.');
                 document.getElementById('plantLastWatered').valueAsDate=new Date();
                 calculateWaterAmount();loadLocationDropdown();renderApp();updateCisternDisplay();
                 checkFrostSeason(month);await checkUserSession();
@@ -1128,7 +1128,7 @@
                 typeof p.location === 'string' && p.location.trim() === locFilter);
 
             if (filteredPlants.length === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Pflanzen erfasst.</p>`;
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No plants added yet.' : 'Keine Pflanzen erfasst.'}</p>`;
             } else {
                 container.innerHTML = filteredPlants.map(p => {
                     const hasValidWaterDate = isValidCalendarDate(p.lastWatered);
