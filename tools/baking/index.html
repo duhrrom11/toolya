@@ -799,7 +799,7 @@
                 const d1 = parseFloat(document.getElementById('combo-d1').value) || 20;
                 const d2 = parseFloat(document.getElementById('combo-d2').value) || 16;
                 targetArea = Math.PI * Math.pow(d1 / 2, 2) + Math.PI * Math.pow(d2 / 2, 2);
-                document.getElementById('combo-result').innerText = `Gesamt-Ratio: ${Math.round((targetArea / origArea) * 100)}%`;
+                document.getElementById('combo-result').innerText = `${window.__toolyaUILocale === 'en' ? 'Overall ratio' : 'Gesamt-Ratio'}: ${Math.round((targetArea / origArea) * 100)}%`;
             } else {
                 const targetShape = document.getElementById('target-shape').value;
                 const targetD = parseFloat(document.getElementById('target-d').value) || 20;
@@ -1006,7 +1006,7 @@
             let recipes = getRecipes();
             const container = document.getElementById('saved-recipes-list');
             if(recipes.length === 0) {
-                container.innerHTML = '<p class="text-xs text-slate-500">Noch keine Rezepte gespeichert.</p>';
+                container.innerHTML = `<p class="text-xs text-slate-500">${window.__toolyaUILocale === 'en' ? 'No saved recipes yet.' : 'Noch keine Rezepte gespeichert.'}</p>`;
                 return;
             }
             let html = '';
