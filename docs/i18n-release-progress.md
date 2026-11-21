@@ -75,3 +75,7 @@ Vier Anleitungen am deutschen Funktionsstand ergänzt: Haushaltsbuch (Monatsrech
 ### Zweites Paket englischer Anleitungen
 
 Sechs englische Leitfäden anhand der deutschen Fassungen ergänzt. WG-Organisator erklärt Teilgruppen, Zugriff und Rückzahlungen, Pflanzenpflege Gießintervalle und Vorräte, Backstudio den Flächenvergleich und die Rezeptumrechnung für zwei Formen. Verliehene Dinge erläutert geänderte Rückgabetermine, Zählerstände den Zählerwechsel und die Gasumrechnung, Parkplatz-Merker die Orientierung im Parkhaus und den Gebührenexport. Einfügepunkte, Abschnittsgrenzen, englische Sprachkennzeichnung und `noindex` statisch geprüft. Die vollständige Funktions- und Sprachabnahme ist weiterhin offen.
+
+### Übergänge von englischen Anleitungen zu den Tools
+
+Die englischen Leitfäden für digitalen Nachlass und öffentliche Amazon-Wunschlisten enthalten jetzt konkrete Schritte für Sicherung, Schlüsselübergabe und Notfallfrist sowie für Linkprüfung, Profilvorschau, Suche und Verwaltung. Alle 13 englischen Tool-Anleitungen übergeben `lang=en` direkt in ihren Anwendungslinks. Das gilt auch ohne das Marketing-Skript auf der Anleitung. Der Profilanker der Wunschliste bleibt erhalten. Geprüft wurden die Linkziele, die Zahl der Links je Seite und `noindex`. Die Sprach- und Browserabnahme in den Anwendungen bleibt offen.
