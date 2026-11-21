@@ -783,6 +783,19 @@ const b3NavigationCopy=Object.freeze({
   '💾 Sicherung herunterladen':'💾 Download backup',
   '📂 Daten importieren':'📂 Import data'
  },
+ plants:{
+  '🌱 Übersicht':'🌱 Overview',
+  '📊 Statistiken':'📊 Statistics',
+  '📅 Gießplan':'📅 Watering schedule',
+  '➕ Pflanze erfassen':'➕ Add plant',
+  '🪴 Meine Pflanzen':'🪴 My plants',
+  '💰 Garten-ROI':'💰 Garden ROI',
+  '🌧️ Zisterne':'🌧️ Rainwater tank',
+  '🌰 Saatgut':'🌰 Seeds',
+  '📦 Lager & Nachbestellen':'📦 Inventory & restocking',
+  '🌿 Beet':'🌿 Garden bed',
+  '📄 PDF exportieren':'📄 Export PDF'
+ },
  housemates:{
   '🏠 Übersicht':'🏠 Overview',
   '📊 Statistiken':'📊 Statistics',
@@ -825,6 +838,20 @@ const b3EditorPanels=Object.freeze({
   'Standort & Kisten erfassen':'Add locations and boxes',
   'Inventar durchsuchen':'Search inventory'
  },
+ plants:{
+  'Pflanzen-Statistiken':'Plant statistics',
+  'Garten-Saisonkalender':'Seasonal garden calendar',
+  'Pflanze erfassen':'Add plant',
+  'Pflanzenliste & Filter':'Plant list and filters',
+  'Empfehlungen':'Recommendations'
+ },
+ baking:{
+  'Rechner':'Calculator',
+  'Formen-Finder':'Pan finder',
+  'Ersatz & Zucker':'Substitutions & sugar',
+  'Extras & Kosten':'Extras & costs',
+  'Gespeicherte Rezepte':'Saved recipes'
+ },
  housemates:{
   'WG-Statistiken':'Household statistics',
   'Pinnwand & Notizen':'Noticeboard and notes',
@@ -847,15 +874,20 @@ const b3EditorCopy=Object.freeze({
  'Sichtbar':'Visible',
  'Speichern':'Save',
  'Abbrechen':'Cancel',
- 'Standardlayout':'Default layout'
+ 'Standardlayout':'Default layout',
+ 'Bereiche sortieren, ein- oder ausblenden und die Größe S / M / L wählen. Änderungen gelten nur für dieses Tool.':'Sort, show or hide sections and choose S / M / L sizes. Changes apply to this tool only.',
+ 'Werkzeuge sortieren und Abstände anpassen. Alle Berechnungen bleiben erreichbar.':'Arrange tools and adjust spacing. All calculations stay available.',
+ 'Kompakt':'Compact',
+ 'Standard':'Standard',
+ 'Großzügig':'Spacious'
 });
 const b3EditorLabelNodes=new WeakMap();
 function applyB3EditorCopy(document,tool,language){
  const names=b3EditorPanels[tool];
- const host=document.querySelector('#b3-editor');
+ const host=document.querySelector(tool==='baking'?'#b3-backform-editor':'#b3-editor');
  if(!host||!names)return;
  if(host.getAttribute('aria-label')==='Dashboard bearbeiten'||originals.get(host)?.has('aria-label'))updateElement(host,'Edit dashboard','aria-label',language);
- for(const el of host.querySelectorAll('h2,p,.b3-editor-row strong,.b3-editor-row label,.flex > button')){
+ for(const el of host.querySelectorAll('h2,h3,p,.b3-editor-row strong,.b3-editor-row label,.b3-backform-editor-row strong,.flex > button,.b3-backform-editor-actions > button,.b3-backform-editor-row option')){
   if(el.closest('[contenteditable="true"]'))continue;
   // A checkbox is nested in a label. Modify only its direct text node to preserve the input.
   for(const node of el.childNodes){
@@ -869,7 +901,7 @@ function applyB3EditorCopy(document,tool,language){
    if(node.textContent!==value)node.textContent=value;
   }
  }
- for(const el of host.querySelectorAll('.b3-editor-row [aria-label]')){
+ for(const el of host.querySelectorAll('.b3-editor-row [aria-label],.b3-backform-editor-row [aria-label]')){
   const original=originals.get(el)?.get('aria-label')??el.getAttribute('aria-label');
   if(!original)continue;
   let translation;
@@ -878,7 +910,16 @@ function applyB3EditorCopy(document,tool,language){
    else if(original===de+' nach unten')translation=en+' move down';
    else if(original===de+' sichtbar')translation=en+' visible';
    else if(original==='Kartengröße '+de)translation='Card size: '+en;
+   else if(original==='Größe: '+de)translation='Size: '+en;
    if(translation)break;
+  }
+  if(!translation&&tool==='baking'){
+    for(const [id,label] of [['rechner','Calculator'],['finder','Pan finder'],['substanz','Substitutions & sugar'],['tools','Extras & costs'],['rezepte','Saved recipes']]){
+      if(original===id+' nach oben')translation=label+' move up';
+      else if(original===id+' nach unten')translation=label+' move down';
+      else if(original==='Kartendichte '+id)translation='Card density: '+label;
+      if(translation)break;
+    }
   }
   if(translation)updateElement(el,translation,'aria-label',language);
  }
