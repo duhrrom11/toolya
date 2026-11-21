@@ -432,10 +432,10 @@
 
             if (user) {
                 if (headerInfo) headerInfo.textContent = "👤 " + user.email;
-                if (cloudStatus) cloudStatus.textContent = "✅ Angemeldet – " + (user.email || "Benutzer");
+                if (cloudStatus) cloudStatus.textContent = (window.toolyaUiText?.("✅ Angemeldet – ") ?? "✅ Angemeldet – ") + (user.email || (window.toolyaUiText?.("Benutzer") ?? "Benutzer"));
             } else {
-                if (headerInfo) headerInfo.textContent = "Nicht angemeldet";
-                if (cloudStatus) cloudStatus.textContent = "Nicht angemeldet";
+                if (headerInfo) headerInfo.textContent = window.toolyaUiText?.("Nicht angemeldet") ?? "Nicht angemeldet";
+                if (cloudStatus) cloudStatus.textContent = window.toolyaUiText?.("Nicht angemeldet") ?? "Nicht angemeldet";
             }
         }
 
