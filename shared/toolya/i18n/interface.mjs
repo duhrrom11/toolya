@@ -1430,6 +1430,9 @@ const dialogCopy = Object.freeze({
   'Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.':'Confirm that the backup was downloaded.'
  },
  housemates: {
+  "Die WG wurde inzwischen an anderer Stelle geändert. Sichere deine Änderungen auf diesem Gerät, bevor du die Seite neu lädst.": "The household was changed elsewhere. Back up your changes on this device before reloading.",
+  "WG-Änderungen online gespeichert.": "Household changes saved online.",
+  "Bitte zuerst in den Einstellungen anmelden.": "Sign in through settings first.",
   "Mitgliederzugriff entfernt.": "Member access revoked.",
   "Mitgliederzugriff erteilt. Der WG-Link kann jetzt geteilt werden.": "Member access granted. You can now share the household link.",
   "Die WG-Änderungen sind auf diesem Gerät gespeichert. Die Online-Sicherung ist noch nicht bestätigt. Prüfe deine Verbindung und nutze die manuelle Synchronisation.": "Household changes are saved on this device. The online backup is not confirmed yet. Check your connection and sync manually.",
