@@ -1081,7 +1081,7 @@
                 }
             }
 
-            doc.save("kisten-qr-etiketten.pdf");
+            doc.save(window.__toolyaUILocale === 'en' ? "moving-box-qr-labels.pdf" : "kisten-qr-etiketten.pdf");
         }
 
         async function showQrCode(boxId, name, desc) {
