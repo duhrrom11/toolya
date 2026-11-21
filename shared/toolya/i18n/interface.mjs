@@ -733,3 +733,24 @@ export function translateToolDialog(tool, language, message) {
   if(message.startsWith(prefix)) return translated+message.slice(prefix.length);
  return message;
 }
+
+/* Localize only known, app-authored status strings. Never translate email
+   addresses, user names, server diagnostics or cloud object fields. */
+const accountStatusCopy=Object.freeze({
+ 'Nicht angemeldet':'Not signed in',
+ 'Status: Verbunden':'Status: Connected',
+ 'Status: Verbunden & Angemeldet':'Status: Connected and signed in',
+ 'Status: Verbindung oder Sitzung nicht überprüfbar':'Status: Unable to verify connection or session',
+ 'Benutzer':'User'
+});
+const accountStatusReverse=Object.freeze(Object.fromEntries(Object.entries(accountStatusCopy).map(([de,en])=>[en,de])));
+export function translateAccountStatus(language,message){
+ if(typeof message!=='string')return message;
+ const target=language==='en'?accountStatusCopy:accountStatusReverse;
+ if(target[message]!==undefined)return target[message];
+ const pairs=language==='en'
+  ?[['✅ Angemeldet – ','✅ Signed in – ']]
+  :[['✅ Signed in – ','✅ Angemeldet – ']];
+ for(const [from,to] of pairs)if(message.startsWith(from))return to+message.slice(from.length);
+ return message;
+}
