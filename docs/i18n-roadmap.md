@@ -150,3 +150,11 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Ein weiterer isolierter Regressionstest prüft beide Sprachen, unbekannte Tage, nicht veränderte Eingaben, weiterhin deutsche Speicher-Keys und geschlossenen Dialog.
 - **Paket 3 geschätzt 77 %, Gesamt 61,1 % (gerundet 61 %)**. Die neue Zahl ist eine vorsichtige Planungsschätzung, keine Abnahme oder gemessene Übersetzungsquote.
 - Sprint A offen: weitere dynamische Stati, vollständige englische E2E-Tests je Tool, finale CI. Kein Merge/Deployment, keine Supabase-Änderung, `noindex` für EN bleibt bestehen.
+
+## Sprint A – Live-Sprachwechsel im geöffneten WG-Kochplaneditor (2026-11-21)
+
+- Neben den bereits englisch dargestellten Wochentagen werden beim Sprachwechsel jetzt auch die Platzhalter für Gericht und Zutaten sowie das Standard-Kochfeld `Frei`/`Unassigned` direkt an bestehenden DOM-Elementen aktualisiert.
+- Die Editorfelder werden **nicht** neu erstellt: ausgewähltes WG-Mitglied, alle `input.value`-Entwürfe, `option.value="Frei"`, `data-idx`, Wochentag-Datenschlüssel und die Speicherlogik bleiben unverändert. Bei geschlossenem Dialog erfolgt keine Veränderung.
+- Der vorhandene isolierte Wochentag-Test wurde um Platzhalter, Standard-Option, den unveränderten ausgewählten Koch und DE→EN→DE erweitert. Der letzte Commit benötigt einen neuen grünen CI-Nachweis.
+- **Roadmap-Schätzung unverändert: Tool-Oberflächen 77 %, Gesamt 61 %.** Die Korrektur zählt als abgesicherter Sonderzustand, noch nicht als vollständige Browser-Abnahme.
+- Sprint A und das Release-Gate bleiben offen; Draft PR #291, kein Merge, Deployment, Entfernen von `noindex` oder Änderungen an Supabase.
