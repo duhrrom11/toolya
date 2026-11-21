@@ -14,6 +14,7 @@ async function call(action,more={}){
  return body;
 }
 async function refresh(){
+ if(!token){data=null;render();return;}
  busy=true;error='';render();
  try{data=await call('view');if(selected&&!data.boxes.some(b=>b.assignmentId===selected))selected='';}
  catch(e){data=null;error=e.message;}
