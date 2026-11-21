@@ -2417,7 +2417,7 @@ test('Sprint A QR labels translate known UI category only; custom tags and QR pa
  assert.match(block,/exportLanguage === 'en' \? \(\{ Standard: 'Standard', Zerbrechlich: 'Fragile'/);
  assert.match(block,/\? 'Unknown' : 'Unbekannt'/);
  assert.match(block,/const deepLinkUrl = `\$\{window\.location\.origin\}\$\{window\.location\.pathname\}\?box=\$\{b\.id\}`/);
- assert.match(block,/doc\.save\(window\.__toolyaUILocale === 'en' \? "moving-box-qr-labels\.pdf"/);
+ assert.match(block,/doc\.save\(exportLanguage === 'en' \? "moving-box-qr-labels\.pdf"/);
  assert.match(src,/try \{ reader\.readAsText\(file\); \}/);
  assert.match(src,/catch \(error\) \{\s*input\.value = '';\s*alert\("Backup-Datei konnte nicht gelesen werden\."\)/);
 });
