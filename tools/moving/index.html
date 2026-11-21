@@ -388,7 +388,12 @@
                 return;
             }
 
-            const { data, error } = await window.supabaseClient.auth.signUp({ email, password });
+            let data, error;
+            try {
+                ({ data, error } = await window.supabaseClient.auth.signUp({ email, password }));
+            } catch (err) {
+                return alert('Registrierung fehlgeschlagen: ' + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
+            }
             if (error) {
                 alert(error.message);
                 return;
@@ -408,7 +413,12 @@
                 return;
             }
 
-            const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+            let error;
+            try {
+                ({ error } = await window.supabaseClient.auth.signInWithPassword({ email, password }));
+            } catch (err) {
+                return alert('Anmeldung fehlgeschlagen: ' + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
+            }
             if (error) {
                 alert(error.message);
                 return;
