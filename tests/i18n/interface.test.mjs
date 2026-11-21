@@ -2408,3 +2408,16 @@ test('Sprint A successful protected-household sync toast uses the active UI loca
  assert.match(html,/secureWgDirty = secureWgSavedVersion < secureWgChangeVersion/);
  assert.match(html,/if \(!saved\) return false/);
 });
+
+
+test('Sprint A QR labels translate known UI category only; custom tags and QR payload are intact',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const src=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
+ const block=src.slice(src.indexOf('async function exportQrLabelsPDF()'),src.indexOf('async function showQrCode('));
+ assert.match(block,/formatMovingTagLabel\(b\.tag\)/);
+ assert.match(block,/\? 'Unknown' : 'Unbekannt'/);
+ assert.match(block,/const deepLinkUrl = `\$\{window\.location\.origin\}\$\{window\.location\.pathname\}\?box=\$\{b\.id\}`/);
+ assert.match(block,/doc\.save\(window\.__toolyaUILocale === 'en' \? "moving-box-qr-labels\.pdf"/);
+ assert.match(src,/try \{ reader\.readAsText\(file\); \}/);
+ assert.match(src,/catch \(error\) \{\s*input\.value = '';\s*alert\("Backup-Datei konnte nicht gelesen werden\."\)/);
+});
