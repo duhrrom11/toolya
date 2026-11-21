@@ -306,3 +306,20 @@ test('baking outputs translate presentation without changing saved recipe names 
  assert.match(html,/escapeRecipeHtml\(r\.note\)/,'user notes are HTML escaped');
  assert.match(html,/escapeRecipeHtml\(r\.date\)/,'saved dates unchanged');
 });
+
+test('plant card watering states and accessible controls localize without modifying records',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/plants/index.html',import.meta.url),'utf8');
+ for(const text of [
+  'Check watering date', "'Overdue' : 'Überfällig'",
+  "'Due in' : 'Fällig in'", "'Diary' : 'Tagebuch'",
+  "'Photo of plant' : 'Foto der Pflanze'",
+  "'Water every' : 'Gießen: alle'", "'💧 Water' : '💧 Gießen'",
+  "'Harvest' : 'Ernte'", "'Gallery' : 'Galerie'", "'Edit' : 'Bearbeiten'"
+ ])assert.ok(html.includes(text),'missing translated plant card: '+text);
+ assert.match(html,/if \(plantsCloudReady\) renderApp\(\)/,'switching locale rerenders cards only when cloud data is ready');
+ assert.match(html,/escapeHtml\(p\.name\)/,'plant name escaped');
+ assert.match(html,/escapeHtml\(p\.interval\)/,'watering interval escaped');
+ assert.match(html,/escapeHtml\(p\.note\)/,'plant note escaped');
+ assert.match(html,/escapeHtml\(d\.text\)/,'diary content escaped');
+});
