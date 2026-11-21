@@ -131,3 +131,9 @@ Stand 2026-11-21. Quelle: vier vorhandene `tools/*/index.html` im Entwicklungsbr
 - Die Übersetzungen beschränken sich auf bekannte einzelne Textabsätze innerhalb der Tooloberflächen; Inhalte mit Kind-Elementen oder `contenteditable` werden übersprungen, Freitext- und Formularwerte nicht beschrieben. Die source-exakten deutschen Originale bleiben für den Rückwechsel erhalten.
 - Drei zusätzliche Regressionstests decken Hin-/Rückwechsel in allen vier Tools, unveränderte Eingaben und fremde Content-Blöcke, den Abgleich aller Katalogschlüssel gegen die Original-HTML-Dateien sowie nicht modifizierte Rezeptwerte ab.
 - Nach vollständiger CI sind im PR zusätzlich die semantische Browserprüfung, noch verbleibende dynamische Texte und die abschließende Entscheidung zum Abbau von `noindex` erforderlich. **Keine produktive Datenbankänderung, kein Merge und kein Deployment.**
+
+## CI-Nachbesserung für den neuen Absatzkatalog (2026-11-21)
+
+- Der erste CI-Lauf für den 37-Text-Katalog schlug mit drei neuen i18n-Tests fehl. Ursache war, dass die Katalogdaten als Arrays von Paaren statt als nach deutschem Quelltext indizierte Objekte serialisiert waren; dadurch fand die Anwendung keinen der Absätze.
+- In `1831df4d` wurde die Katalogstruktur auf Wörterbücher umgestellt. Der anschließende offizielle Workflow `i18n static checks` ist **success**. Die Tests prüfen nun echte Übersetzungen in der DOM-Simulation, die 37 Quelltextschlüssel, Rückwechsel und unveränderte Formwerte.
+- Die Änderung enthält keine Daten-/Berechnungs-/Auth-Operationen. Zusätzliche Integrations- und Browserprüfungen des neuesten HEAD bleiben vor einer Freigabe erforderlich.
