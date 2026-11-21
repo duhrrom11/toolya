@@ -2,6 +2,8 @@
 (() => {
 'use strict';
 const $=id=>document.getElementById(id);
+const proEn=()=>window.__toolyaUILocale==='en';
+const proUi=(de,en)=>proEn()?en:de;
 const proStaticCopy=new Map([["Deine Backform zum Drehen","Your interactive baking pan"],["Form drehen","Rotate pan"],["Wieder von vorn","Reset rotation"],["Drehe die Form, um sie von allen Seiten anzusehen.","Rotate the pan to view it from all sides."],["Hier erscheint deine drehbare Backform.","Your interactive baking pan appears here."],["Welche Form passt?","Which pan fits?"],["Vergleichsziel","Comparison target"],["Rezeptmenge und Teighöhe","Recipe quantity and cake height"],["Meine vorhandene Teigmenge","My available batter"],["Passende Formen finden","Find matching pans"],["Wähle eine Form, die zu deinem Teig passt.","Choose a pan that fits your batter."],["Diese Form nehmen","Use this pan"],["Beide nehmen","Use both pans"],["Rezept einlesen","Import a recipe"],["Kopiere dein Rezept hier hinein. Prüfe danach die Zutaten.","Paste your recipe here, then check the ingredients."],["Zutaten erkennen","Recognize ingredients"],["Mein Rezept prüfen","Check my recipe"],["Zutaten übernehmen","Apply ingredients"],["Nicht erkannte Zeilen bitte selbst prüfen.","Check unrecognized lines manually."],["Rezeptfoto einlesen","Read recipe photo"],["📷 Kamera öffnen","📷 Open camera"],["🖼️ Foto auswählen","🖼️ Choose photo"],["📷 Handykamera verwenden","📷 Use phone camera"],["📸 Foto aufnehmen","📸 Take photo"],["Abbrechen","Cancel"],["Foto besser lesbar machen","Improve photo readability"],["Foto erneut lesen","Read photo again"],["Bitte die erkannten Zutaten prüfen.","Check the recognized ingredients."],["Wähle Kamera oder Foto.","Choose camera or photo."],["Meine Torte","My layered cake"],["Creme außen (mm)","Outer frosting (mm)"],["Creme-Gewicht (g/ml)","Frosting density (g/ml)"],["Etwas Creme extra (%)","Extra frosting (%)"],["Creme zwischen den Böden (cm)","Filling between layers (cm)"],["Neu berechnen","Recalculate"],["Meine Backnotizen","My baking notes"],["Einträge suchen","Search notes"],["Nur Lieblinge","Favorites only"],["Backnotiz speichern","Save baking note"],["Notizen herunterladen","Download notes"],["Die Notizen bleiben auf deinem Gerät.","Notes stay on your device."],["Wie gut hat es geklappt? (1–5 Sterne)","How did it go? (1–5 stars)"]]);
 const proOriginalText=new WeakMap();
 function localizeProControls(){
@@ -22,7 +24,7 @@ function localizeProControls(){
 const KEY='toolya_backstudio_v1';
 const n=(id,d=0)=>{const v=Number($(id)?.value);return Number.isFinite(v)?v:d};
 const txt=(tag,text,parent)=>{const x=document.createElement(tag);if(text!==null)x.textContent=String(text);parent.append(x);return x};
-const fmt=(v,d=1)=>Number(v).toLocaleString('de-DE',{maximumFractionDigits:d});
+const fmt=(v,d=1)=>Number(v).toLocaleString(proEn()?'en-GB':'de-DE',{maximumFractionDigits:d});
 const read=()=>{if(window.toolyaBackstudioState)return window.toolyaBackstudioState;try{const x=JSON.parse(localStorage.getItem(KEY)||'{}');return x&&typeof x==='object'&&!Array.isArray(x)?x:{}}catch{return {}}};
 const write=data=>{try{localStorage.setItem(KEY,JSON.stringify(data));return true}catch{return false}};
 const circle=d=>Math.PI*d*d/4;
@@ -49,7 +51,7 @@ function init3D(){
  const canvas=txt('div',null,pane);canvas.id='bsp-3d';canvas.tabIndex=0;canvas.setAttribute('aria-label','Interaktive 3D-Backform, mit Maus oder Touch drehen, mit Pfeiltasten drehen');canvas.setAttribute('role','img');
  const controls=txt('div',null,pane);controls.className='bsp-actions';
  action(controls,'Form drehen',async()=>{
-  const msg=$('bsp-3d-status');status('bsp-3d-status','Backform wird geladen …');
+  const msg=$('bsp-3d-status');status('bsp-3d-status',proUi('Backform wird geladen …','Loading the baking pan…'));
   try{
    const THREE=await import('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js');
    state.three=THREE;
@@ -65,11 +67,11 @@ function init3D(){
    state.scene.add(new THREE.HemisphereLight(0xffffff,0xb4a3a0,2.5));
    const lamp=new THREE.DirectionalLight(0xffffff,3);lamp.position.set(2,6,5);state.scene.add(lamp);
    state.object=new THREE.Group();state.scene.add(state.object);
-   redraw3D();status('bsp-3d-status','Drehe die Form mit dem Finger oder der Maus.');
+   redraw3D();status('bsp-3d-status',proUi('Drehe die Form mit dem Finger oder der Maus.','Rotate the pan using touch or mouse.'));
    if(state.observer)state.observer.disconnect();
    state.observer=new ResizeObserver(()=>{if(!state.renderer||!canvas.isConnected)return;const width=Math.max(180,canvas.clientWidth);if(width===state.lastW)return;state.lastW=width;const height=canvas.closest('#bsui-stage')?(window.innerWidth<711?320:window.innerWidth<981?335:385):260;state.renderer.setSize(width,height);state.camera.aspect=width/height;state.camera.updateProjectionMatrix();render3D()});
    state.observer.observe(canvas);
-  }catch(e){status('bsp-3d-status','3D konnte nicht gestartet werden (WebGL oder externe Bibliothek nicht verfügbar). Die Füllhöhenanzeige bleibt nutzbar.');}
+  }catch(e){status('bsp-3d-status',proUi('3D konnte nicht gestartet werden (WebGL oder externe Bibliothek nicht verfügbar). Die Füllhöhenanzeige bleibt nutzbar.','3D could not start (WebGL or external library unavailable). The fill-level indicator still works.'));}
  });
  action(controls,'Wieder von vorn',()=>{state.rotX=-.24;state.rotY=.6;render3D()});
  txt('p','Drehe die Form, um sie von allen Seiten anzusehen.',pane).className='bsp-muted';
@@ -102,15 +104,15 @@ function redraw3D(){
  else if(isRect){const a=n('target-l',25),b=n('target-w',11),scale=3/Math.max(a,b,1);build(0,Math.max(.4,a*scale),Math.max(.4,b*scale),false)}
  else build(0,3.25,3.25,true);
  render3D();
- status('bsp-3d-status','3D-Ansicht: ca. '+fmt(fillRatio*100)+' % Füllung. Volumenschätzung setzt gerade Wände voraus.');
+ status('bsp-3d-status',proUi('3D-Ansicht: ca. ','3D view: approx. ')+fmt(fillRatio*100)+proUi(' % Füllung. Volumenschätzung setzt gerade Wände voraus.','% filled. Volume estimates assume straight pan walls.'));
 }
 function render3D(){if(!state.object||!state.renderer)return;state.object.rotation.set(state.rotX,state.rotY,0);state.renderer.render(state.scene,state.camera)}
 function panSpecs(p){
  const h=n('bs-form-height',7),fraction=n('bs-maxfill',.7);
- if(p.shape==='round')return {area:circle(Number(p.a)),capacity:circle(Number(p.a))*h*10*fraction,label:'Rund Ø '+p.a+' cm',shape:'round',a:Number(p.a)};
- if(p.shape==='rect')return {area:Number(p.a)*Number(p.b),capacity:Number(p.a)*Number(p.b)*h*10*fraction,label:'Rechteck '+p.a+' × '+p.b+' cm',shape:'rect',a:Number(p.a),b:Number(p.b)};
- if(p.shape==='volume')return {area:null,capacity:Number(p.a)*fraction,label:'Spezialform '+p.a+' ml',shape:'volume',a:Number(p.a)};
- if(p.shape==='muffin')return {area:null,capacity:Number(p.a)*100*fraction,label:p.a+' Muffinmulden (je ca. 100 ml)',shape:'muffin',a:Number(p.a)};
+ if(p.shape==='round')return {area:circle(Number(p.a)),capacity:circle(Number(p.a))*h*10*fraction,label:proUi('Rund Ø ','Round Ø ')+p.a+' cm',shape:'round',a:Number(p.a)};
+ if(p.shape==='rect')return {area:Number(p.a)*Number(p.b),capacity:Number(p.a)*Number(p.b)*h*10*fraction,label:proUi('Rechteck ','Rectangular ')+p.a+' × '+p.b+' cm',shape:'rect',a:Number(p.a),b:Number(p.b)};
+ if(p.shape==='volume')return {area:null,capacity:Number(p.a)*fraction,label:proUi('Spezialform ','Special pan ')+p.a+' ml',shape:'volume',a:Number(p.a)};
+ if(p.shape==='muffin')return {area:null,capacity:Number(p.a)*100*fraction,label:p.a+proUi(' Muffinmulden (je ca. 100 ml)',' muffin cups (approx. 100 ml each)'),shape:'muffin',a:Number(p.a)};
  return null;
 }
 function initFinder(){
@@ -128,7 +130,7 @@ function initFinder(){
 function renderComparisons(){
  const host=$('bsp-compare-results');if(!host)return;host.replaceChildren();
  const pans=(read().pans||[]).map((p,i)=>({...panSpecs(p),p,i})).filter(p=>p.label&&Number.isFinite(p.capacity)&&p.capacity>0);
- if(!pans.length){txt('p','Trage zuerst deine Backformen ein.',host);return}
+ if(!pans.length){txt('p',proUi('Trage zuerst deine Backformen ein.','Add your baking pans first.'),host);return}
  const want=$('bsp-compare-target')?.value==='mixed'?n('bs-volume',1.5)*1000:desiredVolume();
  const options=pans.map(p=>({pans:[p],capacity:p.capacity,area:p.area}));
  for(let i=0;i<pans.length;i++)for(let j=i;j<pans.length;j++)options.push({pans:[pans[i],pans[j]],capacity:pans[i].capacity+pans[j].capacity,area:pans[i].area!==null&&pans[j].area!==null?pans[i].area+pans[j].area:null});
@@ -140,8 +142,8 @@ function renderComparisons(){
   const row=txt('div',null,host);row.className='bsp-match';
   const label=option.pans.map(p=>p.label).join(' + ');
   const fill=want/option.capacity;
-  txt('strong',(i===0?'★ Empfehlung: ':'')+label,row);
-  txt('span','Füllbedarf '+fmt(want,0)+' ml / Platz für Teig '+fmt(option.capacity,0)+' ml · '+fmt(fill*100)+' % der empfohlenen Füllgrenze'+(fill>1?' – diese Form ist zu klein!':''),row);
+  txt('strong',(i===0?proUi('★ Empfehlung: ','★ Recommended: '):'')+label,row);
+  txt('span',proUi('Füllbedarf ','Batter required ')+fmt(want,0)+proUi(' ml / Platz für Teig ',' ml / pan capacity ')+fmt(option.capacity,0)+' ml · '+fmt(fill*100)+proUi(' % der empfohlenen Füllgrenze','% of recommended fill limit')+(fill>1?proUi(' – diese Form ist zu klein!',' – this pan is too small!'):''),row);
   if(option.pans.length===1&&['round','rect'].includes(option.pans[0].shape)){
    action(row,'Diese Form nehmen',()=>{
     const p=option.pans[0];
@@ -179,7 +181,7 @@ function normalizeRecipe(text){
   else{m=raw.match(last);if(m){name=m[1];qty=parseNumber(m[2]);unit=m[3]}}
   if(!m||!Number.isFinite(qty)||qty<0||!name){warnings.push(raw);continue}
   if(!unit && /^(?:ei|eier|stück|stk\.?|pck\.?)$/i.test(name.trim())){unit=name.trim();name='';}
-  if(/^\s*[-–]\s*\d/.test(name))warnings.push('Mengenbereich bitte prüfen: '+raw);
+  if(/^\s*[-–]\s*\d/.test(name))warnings.push(proUi('Mengenbereich bitte prüfen: ','Check quantity range: ')+raw);
   const standardizedUnit=/^(eier|ei)$/i.test(unit)?'Eier':/^(stk\.?|stück)$/i.test(unit)?'Stück':/^(paket|pck\.?)$/i.test(unit)?'Pck':unit;
   items.push({name:name.trim(),qty,unit:standardizedUnit,source:raw});
  }
@@ -329,10 +331,10 @@ function initRecipe(){
 let reviewed=[];
 function reviewRecipe(source){
  const result=normalizeRecipe(source);reviewed=result.items;const host=$('bsp-preview');host.replaceChildren();
- if(!reviewed.length){txt('p','Keine eindeutig erkennbaren Mengen gefunden. Bitte Text bearbeiten.',host);return}
+ if(!reviewed.length){txt('p',proUi('Keine eindeutig erkennbaren Mengen gefunden. Bitte Text bearbeiten.','No clearly recognized quantities found. Edit the recipe text.'),host);return}
  const table=txt('div',null,host);
  for(const item of reviewed){const row=txt('div',null,table);row.className='bsp-match';txt('span',(fmt(item.qty,2)+' '+item.unit+' '+item.name).trim(),row)}
- if(result.warnings.length){txt('p','Bitte manuell prüfen ('+result.warnings.length+' Zeilen):',host);for(const w of result.warnings.slice(0,30))txt('p',w,host)}
+ if(result.warnings.length){txt('p',proUi('Bitte manuell prüfen (','Check manually (')+result.warnings.length+proUi(' Zeilen):',' lines):'),host);for(const w of result.warnings.slice(0,30))txt('p',w,host)}
 
 }
 function applyReviewed(){
@@ -340,7 +342,7 @@ function applyReviewed(){
  $('recipe-input').value=reviewed.map(i=>fmt(i.qty,2).replace(/\./g,'')+' '+i.unit+' '+i.name).join('\n');
  $('recipe-input').dispatchEvent(new Event('input',{bubbles:true}));
  window.calculateRecipe?.();
- status('bsp-ocr-status','Erkannte Zutaten übernommen. Bitte Mengen und Backformfaktor prüfen.');
+ status('bsp-ocr-status',proUi('Erkannte Zutaten übernommen. Bitte Mengen und Backformfaktor prüfen.','Recognized ingredients applied. Check quantities and the pan scaling factor.'));
 }
 function initCake(){
  const host=cardOf('bs-layers');if(!host)return;const pane=panel(host,'Meine Torte');
@@ -396,25 +398,25 @@ function saveExtendedLog(){
  logs.push({id,date:new Date().toLocaleDateString('de-DE'),iso:new Date().toISOString(),name:($('recipe-name')?.value||'Mein Kuchen').slice(0,80),minutes,temperature:n('base-temp',180),shape:$('target-shape')?.value,diameter:n('target-d',20),height:n('bs-height',4),rating:Math.max(1,Math.min(5,n('bsp-rating',3))),favorite:false,note:($('bs-note')?.value||'').slice(0,250)});
  data.logs=logs.slice(-100);if(!write(data))return;
  renderMemory();window.toolyaBackstudioRenderLogs?.();
- status('bsp-memory-status','Backerfahrung gespeichert.');
+ status('bsp-memory-status',proUi('Backerfahrung gespeichert.','Baking notes saved.'));
 }
 function exportMemory(){
  const logs=(read().logs||[]).filter(x=>x&&typeof x==='object');
  const blob=new Blob([JSON.stringify({app:'Toolya Backstudio',version:1,exported:new Date().toISOString(),logs},null,2)],{type:'application/json'});
- const url=URL.createObjectURL(blob);const a=txt('a','',document.body);a.href=url;a.download='toolya-backgedaechtnis.json';a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
- status('bsp-memory-status','Notizen gespeichert.');
+ const url=URL.createObjectURL(blob);const a=txt('a','',document.body);a.href=url;a.download=proUi('toolya-backgedaechtnis.json','toolya-baking-notes.json');a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ status('bsp-memory-status',proUi('Notizen gespeichert.','Notes exported.'));
 }
 function renderMemory(){
  const host=$('bsp-memory-list');if(!host)return;host.replaceChildren();
  const data=read(),logs=Array.isArray(data.logs)?data.logs:[];const search=($('bsp-memory-search')?.value||'').trim().toLocaleLowerCase('de-DE'),favorites=!!$('bsp-favorites')?.checked;
  const selected=logs.map((x,index)=>({x,index})).filter(({x})=>x&&typeof x==='object'&&(!favorites||x.favorite)&&[x.name,x.note,x.date].join(' ').toLocaleLowerCase('de-DE').includes(search)).reverse().slice(0,50);
- if(!selected.length){txt('p','Keine Notizen gefunden.',host);return}
+ if(!selected.length){txt('p',proUi('Keine Notizen gefunden.','No notes found.'),host);return}
  for(const {x,index} of selected){
   const row=txt('div',null,host);row.className='bsp-match';
-  txt('strong',(x.favorite?'★ ':'')+(x.name||'Backerfahrung')+' · '+(x.date||''),row);
-  txt('span',[x.minutes&&x.minutes+' min',x.temperature&&x.temperature+' °C',x.rating&&x.rating+'/5 Sterne',x.shape&&'Form: '+x.shape,x.note].filter(Boolean).join(' · '),row);
-  action(row,x.favorite?'★ Favorit':'☆ Favorit',()=>{const state=read();if(!Array.isArray(state.logs)||!state.logs[index])return;state.logs[index].favorite=!state.logs[index].favorite;if(write(state))renderMemory()});
-  action(row,'Löschen',()=>{if(!confirm('Diese Notiz löschen?'))return;const state=read();if(!Array.isArray(state.logs))return;state.logs.splice(index,1);if(write(state))renderMemory()})
+  txt('strong',(x.favorite?'★ ':'')+(x.name||proUi('Backerfahrung','Baking note'))+' · '+(x.date||''),row);
+  txt('span',[x.minutes&&x.minutes+' min',x.temperature&&x.temperature+' °C',x.rating&&x.rating+proUi('/5 Sterne','/5 stars'),x.shape&&proUi('Form: ','Pan: ')+x.shape,x.note].filter(Boolean).join(' · '),row);
+  action(row,x.favorite?proUi('★ Favorit','★ Favorite'):proUi('☆ Favorit','☆ Favorite'),()=>{const state=read();if(!Array.isArray(state.logs)||!state.logs[index])return;state.logs[index].favorite=!state.logs[index].favorite;if(write(state))renderMemory()});
+  action(row,proUi('Löschen','Delete'),()=>{if(!confirm(proUi('Diese Notiz löschen?','Delete this note?')))return;const state=read();if(!Array.isArray(state.logs))return;state.logs.splice(index,1);if(write(state))renderMemory()})
  }
 }
 function init(){
