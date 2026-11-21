@@ -5,7 +5,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 ## Projektstatus
 - Aktueller geprüfter Implementierungsstand vor diesem Roadmap-Commit: `dd413ec486973d66d7075223afd3284949ec1a3b`; 9 von 9 GitHub-Actions-Workflows erfolgreich.
 - Die englischen Startseiten und vier Tool-Einstiege sind vorhanden. Die Tool-Oberflächen sind noch nicht durchgängig übersetzt; englische öffentliche Inhalte bleiben vorerst `noindex`.
-- Gesamtfortschritt **ca. 61 % (Planungsschätzung, nach dynamischen Hilfe- und Budgeteditor-Labels)**, nicht automatisch gemessen: Summe aus Paketgewicht × geschätztem Teilfortschritt, 59,0 % gerundet. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
+- Gesamtfortschritt **ca. 61 % (Planungsschätzung, nach Sprachwechsel-Fixes für WG-Editoren)**, nicht automatisch gemessen: Summe aus Paketgewicht × geschätztem Teilfortschritt, 59,0 % gerundet. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
 - Datenbanken, Supabase-Berechtigungen, gespeicherte Objekte, Sprach-unabhängige Maskottchen-Einstellung und produktive Seiten bleiben unangetastet.
 
 ## Sechs gebündelte Arbeitspakete
@@ -14,7 +14,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 |---|---:|---:|---|---|
 | 1. Sprachsystem & technische Grundlage | 15 % | 100 % | fertig | DE/EN-Umschaltung reversibel; Präferenz unabhängig; bestehende Daten/Maskottchen unverändert |
 | 2. Englische Startseiten & Ratgeber | 15 % | 80 % | weitgehend | Vier Ratgeber, Startseite und Rechner vollständig redigiert, zugänglich, funktionale Links |
-| 3. Vier Tool-Oberflächen | 30 % | 76 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
+| 3. Vier Tool-Oberflächen | 30 % | 77 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
 | 4. Konten, Datenwege & Exporte | 20 % | 35 % | teilweise | Auth inklusive Recovery, erlaubte Redirects, Datenkonflikte, PDF/QR/CSV/Import/Export in EN und DE E2E |
 | 5. Qualitätssicherung & Sicherheit | 10 % | 40 % | aktiv | vollständige E2E-Tests, 320px/mobile, Keyboard, Screenreader, Auth-Sicherheit, abschließend alle CI erfolgreich |
 | 6. SEO-Freigabe & Veröffentlichung | 10 % | 0 % | gesperrt | hreflang, Canonicals, Sitemap, OG/JSON-LD, noindex nur nach Freigabegates aufheben, kontrollierter Release |
@@ -142,3 +142,11 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Neuer isolierter Laufzeittest prüft beide Sprachrichtungen, unveränderte Eingabewerte und Node-Identitäten, geschlossenen Dialog sowie fehlende Speicherzugriffe.
 - **Fortschritt unverändert als vorsichtige Schätzung:** Paket 3 **76 %**, Gesamt **61 %**. Der Sprachwechsel-Fix schließt einen konkreten Sonderzustand, ist aber noch kein vollständiges End-to-End-Abnahmekriterium.
 - Unverändert: Sprint A offen, alle relevanten CI-Gates am letzten HEAD erforderlich, PR #291 Draft, kein Merge/Deployment, keine produktiven Supabase-/SEO-Änderungen.
+
+## Sprint A – WG-Wochenkochplan: Wochentage und Live-Sprachwechsel (2026-11-21)
+
+- Der Wochenkochplan verwendet ausschließlich für die Anzeige englische Wochentagsnamen (`Monday` bis `Sunday`). Die gespeicherten Werte `Montag` bis `Sonntag` bleiben unverändert; unbekannte oder frei definierte Wochentage werden nicht übersetzt.
+- Im offenen Kochplan-Editor werden die sichtbar erzeugten Tagesnamen bei DE ↔ EN direkt an ihren `data-cooking-day`-Labels aktualisiert. Die DOM-Formulare, ungespeicherten Speisen, Zutaten und Koch-Zuordnungen werden weder neu aufgebaut noch gespeichert; bei geschlossenem Dialog erfolgt kein Eingriff.
+- Ein weiterer isolierter Regressionstest prüft beide Sprachen, unbekannte Tage, nicht veränderte Eingaben, weiterhin deutsche Speicher-Keys und geschlossenen Dialog.
+- **Paket 3 geschätzt 77 %, Gesamt 61,1 % (gerundet 61 %)**. Die neue Zahl ist eine vorsichtige Planungsschätzung, keine Abnahme oder gemessene Übersetzungsquote.
+- Sprint A offen: weitere dynamische Stati, vollständige englische E2E-Tests je Tool, finale CI. Kein Merge/Deployment, keine Supabase-Änderung, `noindex` für EN bleibt bestehen.
