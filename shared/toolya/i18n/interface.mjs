@@ -1546,7 +1546,10 @@ export function translateToolDialog(tool, language, message) {
  const exact=dialogCopy[tool]?.[message];
  if(exact!==undefined) return exact;
  for(const [prefix,translated] of Object.entries(dialogPrefixes[tool]||{}))
-  if(message.startsWith(prefix)) return translated+message.slice(prefix.length);
+  if(message.startsWith(prefix)) {
+   const detail=message.slice(prefix.length);
+   return translated+(dialogCopy[tool]?.[detail]??detail);
+  }
  return message;
 }
 
