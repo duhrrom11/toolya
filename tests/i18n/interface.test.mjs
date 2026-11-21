@@ -289,3 +289,20 @@ test('seasonal garden calendar has all 12 English months and updates on DE/EN ch
  assert.match(output.textContent,/^Januar:/,'language toggle restores German copy');
  assert.match(html,/renderGardenCalendar\(month\)/,'initial cloud boot uses localized renderer');
 });
+
+test('baking outputs translate presentation without changing saved recipe names or values',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/baking/index.html',import.meta.url),'utf8');
+ for(const phrase of [
+  'Equivalent pans for a', 'Approximately equivalent to',
+  'springform pan', 'small springform pans', 'Untitled recipe',
+  "'Factor' : 'Faktor'", "eggs === 1 ? 'egg' : 'eggs'",
+  "'Delete' : 'Löschen'", "'Baking notes:' : 'Geling-Protokoll / Notiz:'",
+  'bake 5 minutes less next time'
+ ]) assert.ok(html.includes(phrase),'missing localized baking display: '+phrase);
+ assert.match(html,/const name = document\.getElementById\('recipe-name'\)\.value \|\| 'Unbenanntes Rezept'/);
+ assert.match(html,/saveRecipeToStorage\(name, rawText, factor\)/,'original persistence values retained');
+ assert.match(html,/escapeRecipeHtml\(displayName\)/,'display name is HTML escaped');
+ assert.match(html,/escapeRecipeHtml\(r\.note\)/,'user notes are HTML escaped');
+ assert.match(html,/escapeRecipeHtml\(r\.date\)/,'saved dates unchanged');
+});
