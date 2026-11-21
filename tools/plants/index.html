@@ -1168,7 +1168,7 @@
                         ? Math.round((Date.UTC(nextWater.getFullYear(), nextWater.getMonth(), nextWater.getDate()) -
                             Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000) : null;
                     let badge = diffWater === null
-                        ? '<span class="text-[10px] bg-gray-100 text-gray-700 font-semibold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '⚠️ Check watering date' : '⚠️ Gießdatum prüfen'}</span>'
+                        ? `<span class="text-[10px] bg-gray-100 text-gray-700 font-semibold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '⚠️ Check watering date' : '⚠️ Gießdatum prüfen'}</span>`
                         : diffWater < 0 ? `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 ${window.__toolyaUILocale === 'en' ? 'Overdue' : 'Überfällig'} (${Math.abs(diffWater)}${window.__toolyaUILocale === 'en' ? 'd' : 'T'})</span>` :
                                 (diffWater <= 2 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🟡 ${window.__toolyaUILocale === 'en' ? 'Due in' : 'Fällig in'} ${diffWater}${window.__toolyaUILocale === 'en' ? 'd' : 'T'}</span>` :
                                                 `<span class="text-[10px] bg-lime-100 text-lime-800 font-semibold px-2 py-0.5 rounded-full">🟢 ${window.__toolyaUILocale === 'en' ? 'Due in' : 'Fällig in'} ${diffWater}${window.__toolyaUILocale === 'en' ? 'd' : 'T'}</span>`);
