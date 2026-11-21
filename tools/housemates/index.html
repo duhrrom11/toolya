@@ -1016,7 +1016,7 @@
             const syncDot = document.getElementById('sync-status-dot');
 
             if(user) {
-                statusText.innerText = "Status: Verbunden & Angemeldet";
+                statusText.innerText = window.toolyaUiText?.("Status: Verbunden & Angemeldet") ?? "Status: Verbunden & Angemeldet";
                 statusText.className = "font-bold text-emerald-700";
                 if(syncDot) {
                     syncDot.classList.remove('bg-red-500');
@@ -1028,7 +1028,7 @@
                 headerBadge.classList.add('inline-flex');
                 btnLogout.classList.remove('hidden');
             } else {
-                statusText.innerText = sessionError ? "Status: Verbindung oder Sitzung nicht überprüfbar" : "Nicht angemeldet";
+                statusText.innerText = window.toolyaUiText?.(sessionError ? "Status: Verbindung oder Sitzung nicht überprüfbar" : "Nicht angemeldet") ?? (sessionError ? "Status: Verbindung oder Sitzung nicht überprüfbar" : "Nicht angemeldet");
                 statusText.className = "font-bold text-gray-700";
                 if(syncDot) {
                     syncDot.classList.remove('bg-emerald-400', 'animate-pulse');
