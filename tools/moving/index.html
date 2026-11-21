@@ -502,16 +502,20 @@
             setTimeout(() => { updateUserDisplay().catch(() => {}); }, 0);
         });
 
+        function updateMovingHelpToggleLabel() {
+            const helpBox = document.getElementById('helpBox');
+            const label = document.querySelector('#helpToggleBtn span');
+            if (!helpBox || !label) return;
+            const expanded = !helpBox.classList.contains('hidden');
+            label.textContent = window.__toolyaUILocale === 'en'
+                ? (expanded ? 'Hide help and guide' : 'Show help and guide')
+                : (expanded ? 'Hilfe & Anleitung ausblenden' : 'Hilfe & Anleitung anzeigen');
+        }
         function toggleHelp() {
             const helpBox = document.getElementById('helpBox');
-            const toggleBtn = document.getElementById('helpToggleBtn');
-            if (helpBox.classList.contains('hidden')) {
-                helpBox.classList.remove('hidden');
-                toggleBtn.innerHTML = '📖 <span>Hilfe & Anleitung ausblenden</span>';
-            } else {
-                helpBox.classList.add('hidden');
-                toggleBtn.innerHTML = '📖 <span>Hilfe & Anleitung anzeigen</span>';
-            }
+            if (!helpBox) return;
+            helpBox.classList.toggle('hidden');
+            updateMovingHelpToggleLabel();
         }
 
         let movingCloudController = null;
@@ -908,6 +912,7 @@
 
         // Rebuild the visible card list after manual language changes; never save data.
         document.addEventListener('toolya:locale-change', () => {
+            updateMovingHelpToggleLabel();
             if (document.getElementById('inventoryContainer')) renderInventory();
         });
 
