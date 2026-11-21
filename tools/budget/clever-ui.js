@@ -73,11 +73,11 @@ function metric(parent,label,value,note=''){
  const card=e('div',parent,'cs-metric');text(card,label,'cs-metric-label');e('strong',card,'cs-metric-value',value);if(note)text(card,note,'cs-small');return card;
 }
 function renderOverview(host,data,records,prices){
- const w=C.weekly(records,data.weeklyBudget),trend=C.monthCompare(records),shop=C.listEstimate(data.shopping,prices);
+ const w=C.weekly(records,data.weeklyBudget),trend=C.monthCompare(records),shop=C.listEstimate(data.shopping.filter(x=>x.done!==true),prices);
  const due=C.upcomingAnnual(data.annual)[0];
  const metrics=e('div',host,'cs-metrics');
  metric(metrics,'Diese Woche noch',w.remaining==null?'–':money(w.remaining),w.remaining==null?'Wochenbudget festlegen':'Nach bekannten Ausgaben');
- metric(metrics,'Nächster Einkauf',data.shopping.length?money(shop.total):'–',data.shopping.length?(shop.missing?shop.missing+' Preise fehlen':'Aus deinen Preisen'):'Einkaufsliste anlegen');
+ metric(metrics,'Nächster Einkauf',data.shopping.some(x=>x.done!==true)?money(shop.total):'–',data.shopping.some(x=>x.done!==true)?(shop.missing?shop.missing+' Preise fehlen':'Aus deinen Preisen'):'Einkaufsliste anlegen');
  metric(metrics,'Im Vergleich',trend.hasPrior?money(trend.difference):'–',trend.hasPrior?'Mehr (+) oder weniger (−)':'Noch zu wenig Buchungen');
  metric(metrics,'Jahreskosten',data.annual.length?money(data.annual.reduce((x,y)=>x+Number(y.amount||0),0)/12):'–',data.annual.length?'Monatlich zurücklegen':'Jahreskosten eintragen');
  const grid=e('div',host,'cs-grid-two');
@@ -133,35 +133,58 @@ function renderShopping(host,data,priceMap){
  const list=section(grid,'2 · Mein nächster Einkauf','So viel kostet die Einkaufsliste ungefähr.');
  const form=e('form',list,'cs-inline');const name=field(form,'Artikel','text','',{placeholder:'z. B. Milch 1 l'}),quantity=field(form,'Anzahl','number','1',{min:0.01,step:0.25});
  const price=field(form,'Eigener Preis (optional)','number','',{min:0,step:0.01});
- button(form,'Hinzufügen',()=>{},'cs-hide');
  const submit=e('button',form,'cs-button cs-primary','+ Zur Liste');submit.type='submit';
  form.addEventListener('submit',ev=>{
   ev.preventDefault();const nameValue=name.value.trim(),q=Number(quantity.value),own=price.value===''?null:Number(price.value);
   if(!nameValue||nameValue.length>100||!Number.isFinite(q)||q<=0||q>1000||own!==null&&(!Number.isFinite(own)||own<=0||own>100000))return setStatus('Bitte Artikel und Anzahl prüfen.',true);
   void save(s=>{if(s.shopping.length>=150)throw Error('limit');s.shopping.push({id:id(),name:nameValue,unit:'Stück',quantity:q,price:own})});
  });
- const estimate=C.listEstimate(data.shopping,priceMap);
+ const pendingShopping=data.shopping.filter(item=>item.done!==true);
+ const estimate=C.listEstimate(pendingShopping,priceMap);
  if(!data.shopping.length)text(list,'Deine Liste ist noch leer.','cs-soft');
- else for(const row of estimate.rows){
-  const item=itemRow(list,row,()=>save(s=>{s.shopping=s.shopping.filter(x=>x.id!==row.id)}));
-  text(item,'× '+row.quantity+' · '+(row.value===null?'Preis noch unbekannt':money(row.value)),'cs-item-value');
+ else for(const row of data.shopping){
+  const item=e('div',list,'cs-item');
+  const tick=e('input',item);tick.type='checkbox';tick.checked=row.done===true;tick.setAttribute('aria-label',row.name+' eingekauft');
+  tick.addEventListener('change',()=>save(s=>{const match=s.shopping.find(x=>x.id===row.id);if(match)match.done=tick.checked}));
+  const name=e('strong',item,'',row.name);if(row.done)name.className='cs-done';
+  const estimate=C.listEstimate([row],priceMap).rows[0];
+  text(item,'× '+row.quantity+' · '+(estimate.value===null?'Preis noch unbekannt':money(estimate.value)),'cs-item-value');
+  button(item,'Entfernen',()=>save(s=>{s.shopping=s.shopping.filter(x=>x.id!==row.id)}),'cs-quiet');
  }
  e('strong',list,'cs-total','Bekannte Preise: '+money(estimate.total));
  if(estimate.missing)text(list,estimate.missing+' Artikel ohne Preis. Gesamtkosten können höher sein.','cs-warning');
  text(list,'Preise stammen von deinen alten Kassenbons oder deiner Eingabe. Keine Live-Shoppreise.','cs-muted');
- const meal=section(host,'5 · Was kostet unser Essen?','Wähle Zutaten, deren Preise du schon kennst.');
+ const meal=section(host,'5 · Was kostet unser Essen?','Wähle deine Zutaten aus der Preisliste.');
  const mealForm=e('form',meal,'cs-meal-form');
  const title=field(mealForm,'Gericht','text','',{placeholder:'z. B. Nudeln mit Soße'});
  const servings=field(mealForm,'Für wie viele Personen?','number','4',{min:1,step:1});
- const lab=e('label',mealForm,'cs-field');e('span',lab,'cs-label','Zutaten – jede Zeile: Artikel ; Anzahl');
- const ing=e('textarea',lab);ing.rows=3;ing.placeholder='Nudeln 500g ; 1\nTomatensoße ; 2';
+ const ingredients=e('div',mealForm,'cs-recipe-picker');
+ e('h4',ingredients,'','Meine Zutaten');
+ const ingredientForm=e('div',ingredients,'cs-inline');
+ const ingredientName=field(ingredientForm,'Zutat','text','',{placeholder:'z. B. Nudeln 500g'});
+ const datalist=e('datalist',ingredientForm);datalist.id='cs-price-suggestions';ingredientName.setAttribute('list',datalist.id);
+ for(const p of C.priceSummary(priceMap).slice(0,180)){const option=e('option',datalist);option.value=p.name}
+ const ingredientQty=field(ingredientForm,'Wie oft brauchst du es?','number','1',{min:.01,step:.25});
+ const selectedIngredients=[];const selectedHost=e('div',ingredients,'cs-recipe-selected');
+ const drawSelected=()=>{selectedHost.replaceChildren();
+  for(const [index,item] of selectedIngredients.entries()){
+   const r=e('div',selectedHost,'cs-item');
+   e('strong',r,'',item.name+' × '+item.quantity);
+   button(r,'Entfernen',()=>{selectedIngredients.splice(index,1);drawSelected()},'cs-quiet');
+  }
+ };
+ button(ingredientForm,'+ Zutat',()=>{
+  const name=ingredientName.value.trim(),quantity=Number(ingredientQty.value);
+  if(!name||!Number.isFinite(quantity)||quantity<=0||quantity>1000)return setStatus('Bitte Zutat und Anzahl eingeben.',true);
+  if(selectedIngredients.length>=40)return setStatus('Maximal 40 Zutaten pro Gericht.',true);
+  selectedIngredients.push({name:name.slice(0,100),quantity,unit:'Stück'});
+  ingredientName.value='';ingredientQty.value='1';drawSelected();
+ },'cs-outline');
  const saveMeal=e('button',mealForm,'cs-button cs-primary','Gericht speichern');saveMeal.type='submit';
  mealForm.addEventListener('submit',ev=>{
   ev.preventDefault();const name=title.value.trim(),n=Number(servings.value);
-  const items=ing.value.split('\n').map(x=>x.trim()).filter(Boolean).slice(0,40).map(x=>{const pieces=x.split(';');return{name:(pieces[0]||'').trim().slice(0,100),quantity:Number(pieces[1]),unit:'Stück'}})
-   .filter(x=>x.name&&Number.isFinite(x.quantity)&&x.quantity>0);
-  if(!name||!items.length||!Number.isInteger(n)||n<1||n>60)return setStatus('Bitte Gericht, Personen und Zutaten prüfen.',true);
-  void save(s=>{if(s.meals.length>=60)throw Error('limit');s.meals.push({id:id(),name:name.slice(0,80),servings:n,items})});
+  if(!name||!selectedIngredients.length||!Number.isInteger(n)||n<1||n>60)return setStatus('Bitte Gericht, Personen und Zutaten prüfen.',true);
+  void save(s=>{if(s.meals.length>=60)throw Error('limit');s.meals.push({id:id(),name:name.slice(0,80),servings:n,items:selectedIngredients.map(x=>({...x}))})});
  });
  if(!data.meals.length)text(meal,'Noch kein Gericht gespeichert.','cs-soft');
  for(const dish of data.meals){
