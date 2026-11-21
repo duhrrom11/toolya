@@ -214,3 +214,26 @@ test('backup and safety dialogs use exact translations without altering unknown 
   assert.equal(translateToolDialog(tool,'en','Unrecognized server failure'),'Unrecognized server failure');
  }
 });
+
+test('household access dialogs retain ownership and membership identifiers while localizing warnings',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const sourceEnglish=[
+  'Copy the older household to a new account-protected storage area?',
+  'Currently authorized user IDs:',
+  'Revoke access for ',
+  'Grant editing access to ',
+  'The link alone does not grant access.',
+  'Remove \\"${mates[idx].vorname}\\" from the household?'
+ ];
+ for(const message of sourceEnglish)assert.ok(html.includes(message),'missing localized permission copy: '+message);
+ assert.match(html,/existing\.join\('\\n'\)/,'member IDs still assembled from existing records');
+ assert.match(html,/memberId \+ '\?'/,'confirmation keeps targeted member ID');
+ assert.match(html,/mates\[idx\]\.vorname/,'contact name kept in confirmation');
+ const exact=[
+  ['Hinweis: Diese ältere WG verwendet einen ungeschützten Link-Speicher. Wer die WG-ID kennt, kann die Daten möglicherweise lesen oder verändern. Für neue WGs steht geschützter Kontospeicher zur Verfügung.','Notice: This older household uses unprotected link-based storage. Anyone who knows the household ID may be able to read or change the data. Protected account storage is available for new households.'],
+  ['Es muss mindestens ein Mitglied in der WG verbleiben!','At least one household member must remain.'],
+  ['Ungültige Benutzer-ID. Das Mitglied muss sich zuerst registrieren.','Invalid user ID. The member must register first.']
+ ];
+ for(const [de,en] of exact)assert.equal(translateToolDialog('housemates','en',de),en);
+});
