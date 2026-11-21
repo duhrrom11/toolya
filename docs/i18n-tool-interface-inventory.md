@@ -137,3 +137,11 @@ Stand 2026-11-21. Quelle: vier vorhandene `tools/*/index.html` im Entwicklungsbr
 - Der erste CI-Lauf für den 37-Text-Katalog schlug mit drei neuen i18n-Tests fehl. Ursache war, dass die Katalogdaten als Arrays von Paaren statt als nach deutschem Quelltext indizierte Objekte serialisiert waren; dadurch fand die Anwendung keinen der Absätze.
 - In `1831df4d` wurde die Katalogstruktur auf Wörterbücher umgestellt. Der anschließende offizielle Workflow `i18n static checks` ist **success**. Die Tests prüfen nun echte Übersetzungen in der DOM-Simulation, die 37 Quelltextschlüssel, Rückwechsel und unveränderte Formwerte.
 - Die Änderung enthält keine Daten-/Berechnungs-/Auth-Operationen. Zusätzliche Integrations- und Browserprüfungen des neuesten HEAD bleiben vor einer Freigabe erforderlich.
+
+## Kompakte Dashboard-Texte und Backstudio-Checkliste (2026-11-21)
+
+- Vor diesem Paket waren acht von neun Workflows des Commits `2db29206` erfolgreich, darunter `i18n static checks`; der isolierte Browserlauf war zu diesem Zeitpunkt noch aktiv.
+- Ein neuer, source-exakter Katalog `toolSmallCopy` enthält **22 ergänzende Texte**: Umzugskisten-Standorte und Filter, WG-Statistik/Kategorie/Intro, Pflanzen-Fälligkeitsanzeige und Standortfilter sowie Backstudio-Checkliste, Nährwerthinweis und Cloud-Konto. Die WG-Untertitelzeile im B3-Header ist ebenfalls berücksichtigt.
+- Es werden nur bekannte leaf-Elemente im `#main-content`, im Einstellungsdialog oder im ausdrücklich benannten B3-Untertitle bearbeitet. Verschachtelte oder editierbare Nutzerdaten sind ausgeschlossen; bei DE werden Originaltext und Leerzeichen wiederhergestellt. Verlinkungen, Handlers, Tool-IDs, Rezeptformeln und alle gespeicherten Daten bleiben unverändert.
+- Vier neue Regressionstests prüfen die vier Tools, die Backstudio-Zutatencheckliste, den vollständig belegten Wörterbuchkatalog und den WG-Header inklusive unverändertem Toolya-Schriftzug.
+- Vor dem Merge müssen alle Workflows für den jeweils letzten Commit erfolgreich sein; über die abgeschlossene i18n-Suite hinaus ersetzt das keinen manuellen Browser-/Accountsicherheits-Review. **Kein Live-Deployment und keine Supabase-Migration.**
