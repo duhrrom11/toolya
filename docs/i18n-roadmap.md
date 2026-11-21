@@ -230,3 +230,12 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Isolierter Chromium-Fall mit synthetischem Cloud-Snapshot überprüft ungültige und nicht lesbare JSON-Backups bei DE/EN auf 320px einschließlich zugänglicher Fehlermeldung, geleertem Datei-Input und **null Cloud-Schreibvorgängen**. Ein tatsächlich importierter gültiger Backup-Datensatz ist hier bewusst nicht getestet, weil der bestehende Austausch produktiver Daten nicht versehentlich ausgelöst werden soll.
 - Die zuvor geprüften neun Workflows auf `96340786` waren erfolgreich. Für den neuen HEAD sind sämtliche neun Workflows erneut zu prüfen; dies ist **kein** Release-Gate. Auth-Recovery, gültiger Import mit Bestätigung, Export-Inhaltsprüfung und vollständige redaktionelle E2E-Abnahme bleiben offen.
 - PR #291 bleibt Draft. Keine Änderung an Produktiv-Supabase, Maskottchen, EN-`noindex`, kein Merge und kein Deployment.
+
+
+## Sprint A – abgebrochener gültiger Backup-Import und WG-Speicherwarnungen (2026-11-21)
+
+- Die WG-Oberfläche übersetzt nun auch den Konflikt bei paralleler Änderung, die erfolgreiche Online-Sicherung und den Hinweis auf fehlende Anmeldung. Backend-Fehlertexte und Identitäten bleiben im Original.
+- Ergänzter Chromium-Test auf 320px mit isolierter Supabase-Attrappe: gültiges JSON-Backup löst in EN und DE die echte Bestätigungsfrage aus; beide Male wird abgebrochen und **kein Cloud-Schreibvorgang** ausgelöst. Ein künstlich zu großes Backup scheitert vor `FileReader`, mit englischer Fehlermeldung und geprüftem Dialogfokus.
+- Node-Regressionsprüfung für Quellmeldungen, Sprachwechsel und unberührte technische Meldungen hinzugefügt.
+- Die vorherige Basis `c16c9c38` ist mit **9/9 erfolgreichen GitHub-Actions-Workflows** verifiziert, inklusive isolierter Browser-CI. Der neue HEAD benötigt einen eigenen vollständigen Workflow-Durchlauf.
+- **Noch nicht vollständig abgeschlossen:** tatsächlicher bestätigter Restore mit gültigen synthetischen Daten, PDF-Inhaltsprüfung, sämtliche Auth-/Recovery-Journeys, Screenreader-Abnahme und redaktionell vollständige EN-Oberflächen. PR #291 bleibt Draft; kein Merge, Deployment oder Produktivdatenzugriff.
