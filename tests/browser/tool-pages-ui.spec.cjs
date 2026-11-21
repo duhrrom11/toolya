@@ -2011,7 +2011,7 @@ for (const [path, tableCount] of [
 }
 
 
-// Sprint A: real Chromium locale toggles at phone and tablet widths.
+// Sprint A: real DE/EN controls in Chromium at phone and tablet widths.
 // All cloud responses are synthetic and all requests except local preview and
 // display-only CSS are intercepted by isolated(). No production credentials.
 test('i18n Sprint A moving: 320/768px preserve box draft and selected location',async({page},testInfo)=>{
@@ -2028,7 +2028,7 @@ test('i18n Sprint A moving: 320/768px preserve box draft and selected location',
   await page.setViewportSize({width,height:900});
   await page.locator('#boxLocationSelect').selectOption('1');
   await page.locator('#boxName').fill('Unsaved draft box');
-  await page.evaluate(()=>{window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="en"]').click()});
   await expect(page.locator('#boxLocationSelect')).toHaveValue('1');
   await expect(page.locator('#boxName')).toHaveValue('Unsaved draft box');
   await expect(page.locator('#boxLocationSelect option[value=""]')).toHaveText('-- Choose location --');
@@ -2038,7 +2038,7 @@ test('i18n Sprint A moving: 320/768px preserve box draft and selected location',
   await page.evaluate(()=>toggleHelp());
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('i18n-moving-'+width+'.png')});
-  await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="de"]').click()});
   await expect(page.locator('#boxLocationSelect')).toHaveValue('1');
   await expect(page.locator('#boxName')).toHaveValue('Unsaved draft box');
   await expect(page.locator('#tagFilter option[value="Zerbrechlich"]')).toHaveText('Zerbrechlich');
@@ -2059,12 +2059,12 @@ test('i18n Sprint A plants: 320/768px localize cistern without modifying capacit
   await page.setViewportSize({width,height:900});
   const capacity=page.locator('#cisternMaxLiters');
   await capacity.fill('15000');
-  await page.evaluate(()=>{window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="en"]').click()});
   await expect(capacity).toHaveValue('15000');
   await expect(page.locator('#cisternPercentText')).toContainText('% full');
   expect(await page.locator('#cisternModal > div').evaluate(el=>el.scrollWidth<=el.clientWidth+2)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('i18n-plants-'+width+'.png')});
-  await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="de"]').click()});
   await expect(capacity).toHaveValue('15000');
   await expect(page.locator('#cisternPercentText')).toContainText('% gefüllt');
  }
@@ -2085,14 +2085,14 @@ test('i18n Sprint A baking: 320/768px preserve recipe draft and do not resave pr
   await page.evaluate(()=>{
    document.querySelector('[data-recipe-note-input]').value='Unsaved draft note';
    renderRecipePreview();
-   window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'));
+   document.querySelector('[data-tool-locale="en"]').click();
   });
   await expect(page.locator('[data-recipe-note-input]')).toHaveValue('Unsaved draft note');
   await expect(page.locator('[data-recipe-note-label]')).toHaveText('Baking notes:');
   await expect(page.locator('#print-card')).toContainText('Factor');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('i18n-baking-'+width+'.png')});
-  await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="de"]').click()});
   await expect(page.locator('[data-recipe-note-input]')).toHaveValue('Unsaved draft note');
   await expect(page.locator('[data-recipe-note-label]')).toHaveText('Geling-Protokoll / Notiz:');
   await expect(page.locator('#recipe-input')).toHaveValue('2 Eier\n100 g Mehl');
@@ -2120,7 +2120,7 @@ test('i18n Sprint A household: 320/768px budget and cooking editor drafts surviv
   await page.evaluate(()=>openBudgetModal());
   const amount=page.locator('#budgetInputList input[data-cat="Lebensmittel"]');
   await amount.fill('175');
-  await page.evaluate(()=>{window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="en"]').click()});
   await expect(amount).toHaveValue('175');
   await expect(page.locator('label[for="budget-amount-0"]')).toHaveText('Groceries:');
   expect(await page.locator('#budgetModal > div').evaluate(el=>el.scrollWidth<=el.clientWidth+2)).toBe(true);
@@ -2129,17 +2129,17 @@ test('i18n Sprint A household: 320/768px budget and cooking editor drafts surviv
   await page.evaluate(()=>openCookingModal());
   const dish=page.locator('#cookingInputList input.dishInput').first();
   await dish.fill('Unsaved dinner plan');
-  await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="de"]').click()});
   await expect(dish).toHaveValue('Unsaved dinner plan');
   await expect(page.locator('#cookingInputList [data-cooking-day]').first()).toHaveText('Montag');
-  await page.evaluate(()=>{window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="en"]').click()});
   await expect(dish).toHaveValue('Unsaved dinner plan');
   await expect(page.locator('#cookingInputList [data-cooking-day]').first()).toHaveText('Monday');
   await expect(dish).toHaveAttribute('placeholder','Dish');
   expect(await page.locator('#cookingModal > div').evaluate(el=>el.scrollWidth<=el.clientWidth+2)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('i18n-household-cooking-'+width+'.png')});
   await page.evaluate(()=>closeCookingModal());
-  await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="de"]').click()});
  }
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
  expect(errors).toEqual([]);
