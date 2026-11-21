@@ -673,6 +673,7 @@ test('Backstudio Pro English recipe import preserves decimal quantities in the e
  const ctx={
   reviewed:[{qty:1000.5,unit:'g',name:'flour'},{qty:.75,unit:'l',name:'milk'}],
   proEn:()=>ctx.window.__toolyaUILocale==='en',
+  proUi:(de,en)=>ctx.window.__toolyaUILocale==='en'?en:de,
   fmt:(n,d)=>Number(n).toLocaleString('de-DE',{maximumFractionDigits:d}),
   $:id=>id==='recipe-input'?field:null,
   Event:class{constructor(type,params){this.type=type;this.bubbles=params.bubbles}},
