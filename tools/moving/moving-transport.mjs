@@ -59,13 +59,15 @@ root?.addEventListener('click',async e=>{
  if(b.dataset.act==='box-qr'){const id=document.getElementById('mv-qr-assignment')?.value;if(id&&token){const u=new URL('./helper/index.html',location.href);u.hash=new URLSearchParams({t:token,a:id}).toString();qrLink=u.href;render();}return;}
  const p=project();if(!p)return;projectId=p.id;
  const act=b.dataset.act;
+ const inputLabel=document.getElementById('mv-helper-name')?.value.trim();
+ const inputHours=Number(document.getElementById('mv-helper-hours')?.value);
  if(!act&&!b.dataset.status&&!b.dataset.revoke)return;
  if(act==='load'){await load();return;}
  busy=true;error='';render();
  try{
   if(act==='sync'){data=await api('sync');}
   else if(act==='create'){
-    const label=document.getElementById('mv-helper-name')?.value.trim(),hours=Number(document.getElementById('mv-helper-hours')?.value);
+    const label=inputLabel,hours=inputHours;
     if(!label)throw Error('Bitte eine Helferbezeichnung eingeben');
     const x=await api('create',{label,hours});token=x.token;const u=new URL('./helper/index.html',location.href);u.hash=new URLSearchParams({t:token}).toString();share=u.href;data=await api('state');
   }else if(b.dataset.revoke){await api('revoke',{grantId:b.dataset.revoke});data=await api('state');share='';token='';qrLink='';}
