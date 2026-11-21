@@ -797,7 +797,7 @@
                     Number.isFinite(Number(r.value)) && Number(r.value) >= 0;
             });
             if (validReadings.length === 0) return alert("Keine Zählerstände zum Teilen vorhanden.");
-            let text = "⚡ Zählerstände-Übersicht:\n";
+            let text = window.__toolyaUILocale === 'en' ? "⚡ Meter readings overview:\n" : "⚡ Zählerstände-Übersicht:\n";
             let latest = {};
             // Pick the newest reading per distinct meter, regardless of insertion order.
             validReadings.forEach(r => {
@@ -806,7 +806,7 @@
             });
             for (const r of Object.values(latest)) {
                 let unit = r.type.includes('Strom') ? 'kWh' : 'm³';
-                text += `- ${r.type} (${r.name}): ${r.value} ${unit} (vom ${r.date})\n`;
+                text += `- ${r.type} (${r.name}): ${r.value} ${unit} (${window.__toolyaUILocale === 'en' ? 'on' : 'vom'} ${r.date})\n`;
             }
             if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
                 prompt('Zwischenablage nicht verfügbar. Text manuell kopieren:', text);
@@ -846,7 +846,7 @@
             renderChart(displayData);
 
             if (filtered.length === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Einträge gefunden.</p>`;
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No entries found.' : 'Keine Einträge gefunden.'}</p>`;
                 return;
             }
 
@@ -906,6 +906,10 @@
                 `;
             }).join('');
         }
+
+        document.addEventListener('toolya:locale-change', () => {
+            if (metersCloudReady && metersCloudController?.ready) renderApp();
+        });
 
         function renderChart(data) {
             const card = document.getElementById('chartCard');

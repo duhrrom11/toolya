@@ -685,7 +685,7 @@
                 item.returnDate = baseDate.toISOString().split('T')[0];
                 if (!await saveData(data)) return;
                 renderApp();
-                alert(`Rückgabedatum um ${days} Tage verlängert!`);
+                alert(window.__toolyaUILocale === 'en' ? `Return date extended by ${days} days!` : `Rückgabedatum um ${days} Tage verlängert!`);
             }
         }
 
@@ -815,7 +815,7 @@
             const inventory = data.inventory || [];
 
             if (inventory.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 italic">Keine Stamm-Gegenstände im Inventar hinterlegt.</p>`;
+                container.innerHTML = `<p class="text-xs text-gray-400 italic">${window.__toolyaUILocale === 'en' ? 'No inventory items recorded yet.' : 'Keine Stamm-Gegenstände im Inventar hinterlegt.'}</p>`;
                 return;
             }
 
@@ -839,7 +839,13 @@
             `).join('');
         }
 
+        document.addEventListener('toolya:locale-change', () => {
+            if (loansCloudReady && loansCloudController?.ready) { renderInventory(); renderApp(); }
+        });
+
         function renderApp() {
+            const english = window.__toolyaUILocale === 'en';
+            const label = (de,en) => english ? en : de;
             let data = getData();
             const container = document.getElementById('itemsList');
             const categoryFilter = document.getElementById('filterCategory').value;
@@ -887,7 +893,7 @@
             };
 
             if (filteredItems.length === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Gegenstände für diesen Filter gefunden.</p>`;
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${label('Keine Gegenstände für diesen Filter gefunden.','No items match this filter.')}</p>`;
             } else {
                 container.innerHTML = filteredItems.map((i, itemIndex) => {
                     let d = new Date(i.date);
@@ -895,14 +901,14 @@
                     
                     let badge = "";
                     if (i.status === 'returned') {
-                        badge = `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">✅ Zurückgegeben</span>`;
+                        badge = `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">${label('✅ Zurückgegeben','✅ Returned')}</span>`;
                     } else if (i.status === 'lost') {
-                        badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">⚠️ Verloren / Defekt</span>`;
+                        badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">${label('⚠️ Verloren / Defekt','⚠️ Lost / damaged')}</span>`;
                     } else if (diff > 30) {
                         overdueCount++;
-                        badge = `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Seit ${diff} Tagen verliehen</span>`;
+                        badge = `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">${english ? '🔴 Lent for ' + diff + ' days' : '🔴 Seit ' + diff + ' Tagen verliehen'}</span>`;
                     } else {
-                        badge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">🟢 aktiv (${diff}T)</span>`;
+                        badge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">${english ? '🟢 active (' + diff + 'd)' : '🟢 aktiv (' + diff + 'T)'}</span>`;
                     }
 
                     let contact = (data.contacts || []).find(c => c.name === i.person);
@@ -948,9 +954,9 @@
 
                     let statusDropdown = `
                         <select data-loan-action="status" data-loan-index="${itemIndex}" class="p-1.5 bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold border">
-                            <option value="active" ${i.status === 'active' ? 'selected' : ''}>📌 Status: Aktiv</option>
-                            <option value="returned" ${i.status === 'returned' ? 'selected' : ''}>✅ Zurückgegeben</option>
-                            <option value="lost" ${i.status === 'lost' ? 'selected' : ''}>⚠️ Verloren / Defekt</option>
+                            <option value="active" ${i.status === 'active' ? 'selected' : ''}>${label('📌 Status: Aktiv','📌 Status: Active')}</option>
+                            <option value="returned" ${i.status === 'returned' ? 'selected' : ''}>${label('✅ Zurückgegeben','✅ Returned')}</option>
+                            <option value="lost" ${i.status === 'lost' ? 'selected' : ''}>${label('⚠️ Verloren / Defekt','⚠️ Lost / damaged')}</option>
                         </select>
                     `;
 

@@ -113,3 +113,12 @@ Ausgangs-HEAD: `308ba4c0d91b4cbbddc7335414aaa4592afaac2b`. Aktuellen HEAD über 
 - Neue isolierte Node-Regression: `tests/i18n/parking-history-safety.test.mjs`. **Nicht vor erfolgreichem CI-Lauf als bestanden werten.**
 - Vorheriger vollständiger PR-Lauf `a6f2f440`: 13/13 grün. Auf `308ba4c0`: nur statischer Push-i18n-Check nachweislich grün. Neue CI-Ergebnisse auswerten. Ohne lokalen Checkout keine vollständigen lokalen Browser-/Node-Läufe.
 - **Release-Gate OFFEN**: 34 Teilansichten, strikter Coverage-Audit, Auth-Recovery-E2E, Exporte, Accessibility und finale CI ausstehend. Draft/noindex unverändert; kein Merge, Produktion oder produktive Testdaten.
+
+### 22.11.2026 – Verleih/Zähler und erweiterte Test-CI
+
+Ausgangs-HEAD `2912d45e9e3b05a0485541db248bb9e0289d8210` – [statischer i18n-Check grün](https://github.com/duhrrom11/toolya/actions/runs/44964111209). [Aktueller Branch-HEAD](https://github.com/duhrrom11/toolya/commits/feature/i18n-de-en-foundation-20261121/).
+
+- Verleih: DE/EN-Statusanzeige ohne Änderung der persistenten Codes, Leerzustände und Erfolgsmeldung. Zähler: EN-Leerzustand und Teilen-Überschrift. Keine Datenübersetzungen.
+- Lesende Sprachwechsel-Refreshes bei Verleih und Zähler erfordern einen bestätigten CloudOnly-Snapshot. Synthetische Node-Regression ergänzt.
+- Fünf isolierte CI-Workflows für Entwicklungsbranch-Push aktiviert (Chromium, Plattform/Maskottchen, Connect/Postgres und Umzug). Browser-, Node- und Plattform-Ergebnisse müssen erst tatsächlich erfolgreich sein.
+- **Release-Status NOT READY / Draft.** Fehlende Vollabdeckung (34 Teilansichten), strikter Audit, Auth-/Recovery-Mailzustellung, alle Exporte/Druck, mobile und Screenreader-Abnahme bleiben offen. Kein Merge, Deployment, noindex-Entfernung, produktive Supabase-Daten oder Assetänderung.

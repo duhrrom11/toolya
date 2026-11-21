@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - feature/toolya-connect-phase-b
+      - feature/i18n-de-en-foundation-20261121
     paths:
       - '.github/workflows/toolya-isolated-browser.yml'
       - 'tests/browser/**'

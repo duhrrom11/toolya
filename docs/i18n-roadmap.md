@@ -447,3 +447,10 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 - In Parkplatz, Autokosten und Tiergesundheit weitere dynamische DE/EN-Leerzustände ergänzt; Parkzeitpunkt und Beträge englisch formatiert. Beim Sprachwechsel wird die Parkplatzansicht nur nach bestätigter Cloud-Bereitschaft neu gezeichnet, ohne Schreibzugriff.
 - Neue synthetische Node-Sicherheitsregression `tests/i18n/parking-history-safety.test.mjs`. Vollständige Browser-/Node-Suiten und finale GitHub-CI müssen noch nachgewiesen werden. Strikter Coverage-Audit bleibt rot.
 - PR bleibt Draft; kein Merge, Deployment, noindex-Wechsel, Supabase-Produktivtest oder Markenasset-Eingriff.
+
+## 22.11.2026 – Verleih/Zähler und isolierte Branch-CI
+
+- Verleih-Statusbadges, Dauer, Verlängerungsbestätigung und Leermeldungen in DE/EN. Die persistenten Werte `active`, `returned`, `lost` bleiben unverändert.
+- Zähler-Ansicht und Teilen-Übersicht ergänzen EN, ohne Zählertypen oder Nutzerdaten umzuschreiben. Beide Toolansichten reagieren nur bei geladenem CloudOnly-Snapshot lesend auf Sprachwechsel.
+- Neue synthetische Node-Regression `loans-meters-runtime.test.mjs` und fünf bestehende mock-/browserorientierte GitHub-Workflows für Pushes auf dem i18n-Branch freigeschaltet. Produktiver Live-Check bleibt auf main beschränkt.
+- CI-Ergebnisse am finalen HEAD sind offen, vollständiger Coverage-Audit und E2E-/Accessibility-Gates nicht erfüllt. Draft, noindex, Markenassets, Produktionsdaten und Deployment unverändert.

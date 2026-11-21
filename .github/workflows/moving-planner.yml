@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - feature/moving-planner-release1-20261121
+      - feature/i18n-de-en-foundation-20261121
   pull_request:
     paths:
       - 'tools/moving/**'
