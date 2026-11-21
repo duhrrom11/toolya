@@ -797,7 +797,7 @@
 
             document.getElementById('statBoxes').innerText = totalBoxes;
             document.getElementById('statLocs').innerText = totalLocs;
-            document.getElementById('statValue').innerText = totalVal.toFixed(2).replace('.', ',') + ' €';
+            document.getElementById('statValue').innerText = (window.__toolyaUILocale === 'en' ? Number(totalVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : totalVal.toFixed(2).replace('.', ',')) + ' €';
 
             const locStatsCard = document.getElementById('locationValueStatsCard');
             const locStatsList = document.getElementById('locationValueStatsList');
@@ -805,7 +805,7 @@
                 locStatsCard.classList.remove('hidden');
                 locStatsList.innerHTML = data.locations.map(loc => {
                     const locVal = data.boxes.filter(b => b.locId === loc.id).reduce((sum, b) => sum + Number(b.value || 0), 0);
-                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">${loc.icon || '📍'} ${loc.name}</p><p class="text-sm font-bold text-amber-800">${locVal.toFixed(2).replace('.', ',')} €</p></div>`;
+                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">${loc.icon || '📍'} ${loc.name}</p><p class="text-sm font-bold text-amber-800">${window.__toolyaUILocale === 'en' ? Number(locVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : locVal.toFixed(2).replace('.', ',')} €</p></div>`;
                 }).join('');
             } else {
                 locStatsCard.classList.add('hidden');
@@ -818,7 +818,7 @@
                 tagStatsCard.classList.remove('hidden');
                 tagStatsList.innerHTML = tags.map(t => {
                     const tagVal = data.boxes.filter(b => (b.tag || 'Standard') === t).reduce((sum, b) => sum + Number(b.value || 0), 0);
-                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">🏷️ ${t}</p><p class="text-sm font-bold text-amber-800">${tagVal.toFixed(2).replace('.', ',')} €</p></div>`;
+                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">🏷️ ${t}</p><p class="text-sm font-bold text-amber-800">${window.__toolyaUILocale === 'en' ? Number(tagVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : tagVal.toFixed(2).replace('.', ',')} €</p></div>`;
                 }).join('');
             } else {
                 tagStatsCard.classList.add('hidden');
@@ -886,9 +886,9 @@
                                                 <p class="text-xs text-gray-600 mt-0.5">${b.desc || (window.__toolyaUILocale === 'en' ? 'No description' : 'Keine Beschreibung')}</p>
                                                 ${subItemsText ? `<p class="text-[11px] text-indigo-600 font-medium mt-0.5">${window.__toolyaUILocale === 'en' ? 'Contents' : 'Inhalt'}: ${subItemsText}</p>` : ''}
                                                 <div class="flex gap-3 text-[11px] text-gray-500 mt-0.5 b3-moving-box-meta">
-                                                    <span class="font-semibold text-green-600">${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${(b.value || 0).toFixed(2).replace('.', ',')} €</span>
+                                                    <span class="font-semibold text-green-600">${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${window.__toolyaUILocale === 'en' ? Number(b.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (b.value || 0).toFixed(2).replace('.', ',')} €</span>
                                                     ${b.barcode ? `<span class="font-mono text-gray-400">EAN: ${b.barcode}</span>` : ''}
-                                                    ${b.expiry ? `<span>${window.__toolyaUILocale === 'en' ? 'Expires' : 'Ablauf'}: ${b.expiry.split('-').reverse().join('.')}</span>` : ''}
+                                                    ${b.expiry ? `<span>${window.__toolyaUILocale === 'en' ? 'Expires' : 'Ablauf'}: ${window.__toolyaUILocale === 'en' ? b.expiry.split('-').reverse().join('/') : b.expiry.split('-').reverse().join('.')}</span>` : ''}
                                                 </div>
                                             </div>
                                         </div>
