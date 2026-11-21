@@ -803,7 +803,8 @@ function applyB3NavigationCopy(document,tool,language){
  const translations=b3NavigationCopy[tool];
  if(!translations)return;
  const nav=document.querySelector('.b3-nav');
- if(nav){
+ const sourceNavLabel=tool==='moving'?'Umzugskisten & Inventarliste Navigation':'WG-Organisator Navigation';
+ if(nav && (nav.getAttribute('aria-label')===sourceNavLabel || originals.get(nav)?.has('aria-label'))){
   const accessibleLabel=tool==='moving'?'Moving boxes navigation':'Roommate organizer navigation';
   updateElement(nav,accessibleLabel,'aria-label',language);
  }
