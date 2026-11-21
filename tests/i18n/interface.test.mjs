@@ -1630,3 +1630,26 @@ test('Sprint A implicit option value remains the original German storage key',()
  assert.equal(option.textContent,'⚠️ Zerbrechlich');
  assert.equal(option.hasAttribute('value'),false,'implicit value restored');
 });
+
+
+test('Sprint A household finance displays English separators and restores German values without data writes',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const match=html.match(/function formatHouseholdDisplayAmount\(value\) \{([\s\S]*?)\n        \}/);
+ assert.ok(match,'isolated, presentation-only household amount formatter exists');
+ const format=new Function('window','value',match[1]);
+ assert.equal(format({__toolyaUILocale:'en'},1234.5),'1,234.50');
+ assert.equal(format({__toolyaUILocale:'de'},1234.5),'1234.50','legacy German rendering retained');
+ assert.equal(format({__toolyaUILocale:'en'},0),'0.00');
+ assert.equal(format({__toolyaUILocale:'en'},-1020.4),'-1,020.40');
+ assert.equal(html.includes("cashflowChartInstance.data.labels = [window.__toolyaUILocale === 'en' ? 'Income'"),true,'chart labels refresh on locale change');
+ for(const expression of [
+  'formatHouseholdDisplayAmount(totalIncome)','formatHouseholdDisplayAmount(totalExpense)',
+  'formatHouseholdDisplayAmount(balance)','formatHouseholdDisplayAmount(item.price)',
+  'formatHouseholdDisplayAmount(zeitwert)','formatHouseholdDisplayAmount(share)',
+  'formatHouseholdDisplayAmount(totalZeitwert)','formatHouseholdDisplayAmount(g.current)',
+  'formatHouseholdDisplayAmount(g.target)','formatHouseholdDisplayAmount(c.price)'
+ ]) assert.ok(html.includes(expression),'display-only amount reference: '+expression);
+ assert.match(html,/householdReadyForLocaleRefresh\) return;/,'locale switch still guarded against unloaded household');
+ assert.match(html,/item\.price \* \(1 - \(ageYears \/ \(item\.lifespan \|\| 5\)\)\)/,'original remaining-value formula remains intact');
+});
