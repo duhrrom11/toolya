@@ -1097,7 +1097,7 @@ async function toolyaCloudBoot(tool) {
         function downloadICS(title, dateStr) {
             let d = new Date(dateStr);
             let dateFormatted = d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8);
-            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${title}\nDTSTART;VALUE=DATE:${dateFormatted}\nDTEND;VALUE=DATE:${dateFormatted}\nDESCRIPTION:KFZ-Termin\nEND:VEVENT\nEND:VCALENDAR`;
+            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${title}\nDTSTART;VALUE=DATE:${dateFormatted}\nDTEND;VALUE=DATE:${dateFormatted}\nDESCRIPTION:${window.__toolyaUILocale === 'en' ? 'Vehicle appointment' : 'KFZ-Termin'}\nEND:VEVENT\nEND:VCALENDAR`;
             let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
             let url = URL.createObjectURL(blob);
             let a = document.createElement('a');
@@ -1151,7 +1151,7 @@ async function toolyaCloudBoot(tool) {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let treadText = e.tread ? ` | ${e.tread} mm` : "";
                 let tankText = e.litres ? ` | ${e.litres} L` : "";
-                let consText = e.consumption ? ` | ${e.consumption.toFixed(1)} l/100km` : "";
+                let consText = e.consumption ? ` | ${Number(e.consumption).toFixed(1)} l/100km` : "";
                 const eventType = pdfEn ? ({Reparatur:'Repair',Wartung:'Maintenance',Tanken:'Refuelling',Versicherung:'Insurance',Steuer:'Tax',Reifen:'Tyres'})[e.type] || e.type : e.type;
                 const lines = doc.splitTextToSize(`- [${eventType}] ${cName}: ${e.title}${pdfLabel(" am "," on ")}${new Date(e.date).toLocaleDateString(pdfDateLocale)} (${Number(e.cost || 0).toFixed(2)} EUR${treadText}${tankText}${consText})`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });

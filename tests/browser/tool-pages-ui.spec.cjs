@@ -2154,6 +2154,25 @@ test('i18n Sprint A household: 320/768px budget and cooking editor drafts surviv
 
 // Native-dialog boundary: verify the real locale selector and browser dialog
 // wrappers with synthetic cloud fixtures; no migration, import or database calls.
+test('i18n account status: real vehicle UI toggles both languages and signed-out state',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await isolated(page,true);
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/car/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof updateUserDisplay==='function'&&!!window.__toolyaMock)).toBe(true);
+ await page.locator('[data-tool-locale="en"]').click();
+ await page.evaluate(()=>updateUserDisplay());
+ await expect(page.locator('#cloudStatus')).toHaveText('✅ Signed in – mock@example.invalid');
+ await expect(page.locator('#userInfo')).toHaveText('👤 mock@example.invalid');
+ await page.evaluate(async()=>{window.__toolyaMock.signedIn=false;await updateUserDisplay()});
+ await expect(page.locator('#cloudStatus')).toHaveText('Not signed in');
+ await page.locator('[data-tool-locale="de"]').click();
+ await page.evaluate(()=>updateUserDisplay());
+ await expect(page.locator('#cloudStatus')).toHaveText('Nicht angemeldet');
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
 test('i18n Sprint A moving: mobile backup notices follow real DE/EN selector',async({page})=>{
  test.setTimeout(60000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
