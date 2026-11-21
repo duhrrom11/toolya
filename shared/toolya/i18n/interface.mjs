@@ -183,6 +183,11 @@ const extendedFormTranslations = {
    "button[onclick='closeScannerModal()']",
    "Close scanner"
   ]
+  ["#locIcon","","aria-label","Location icon"],
+  ["#boxPhotoInput","","aria-label","Select box photo"],
+  ["#tagFilter","","aria-label","Filter inventory by label"],
+  ["#sortFilter","","aria-label","Sort inventory"],
+  ["#imageModal","","aria-label","Image preview"],
  ],
  "housemates": [
   ["#invTitle", "", "placeholder", "e.g. microwave, coffee machine"],
