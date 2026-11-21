@@ -71,7 +71,7 @@
 <script defer src="../../assets/helferlein-dialogs.js"></script>
 <link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><link rel="stylesheet" href="../../shared/toolya/alpha.css?v=20261115-alpha">
 <script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="./backstudio-layout.css?v=20261120-camera-v1">
-</head>
+<link rel="stylesheet" href="/shared/toolya/i18n/tool-entry.css"><script type="module" src="/shared/toolya/i18n/tool-entry.mjs"></script></head>
 <body class="bg-slate-50 text-slate-800 min-h-full flex flex-col font-sans">
   <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
     <p id="toolya-auth-title"><strong>Backform-Rechner</strong></p>
@@ -686,38 +686,61 @@
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
-            const { error } = await supabaseClient.auth.signUp({ email, password });
+            let data, error;
+            try {
+                ({ data, error } = await supabaseClient.auth.signUp({ email, password }));
+            } catch (err) {
+                return alert('Registrierung fehlgeschlagen: ' + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
+            }
             if(error) alert(error.message);
-            else { alert('Registrierung erfolgreich!'); checkUserSession(); }
+            else { alert(data?.session ? 'Angemeldet. Dein Konto ist einsatzbereit.' : 'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.'); checkUserSession(); }
         }
 
         async function supabaseLogin() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
-            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            let error;
+            try {
+                ({ error } = await supabaseClient.auth.signInWithPassword({ email, password }));
+            } catch (err) {
+                return alert('Anmeldung fehlgeschlagen: ' + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
+            }
             if(error) alert(error.message);
             else { alert('Erfolgreich angemeldet!'); checkUserSession(); closeSettings(); }
         }
 
         async function supabaseLogout() {
-            await supabaseClient.auth.signOut();
+            try {
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) return alert('Abmeldung fehlgeschlagen: ' + (error.message || 'Unbekannter Fehler'));
+            } catch (error) {
+                return alert('Abmeldung fehlgeschlagen: ' + (error?.message || 'Unbekannter Fehler'));
+            }
             checkUserSession();
             alert('Abgemeldet.');
         }
 
         async function checkUserSession() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
+            let user = null;
+            let sessionError = null;
+            try {
+                const result = await supabaseClient.auth.getUser();
+                sessionError = result?.error?.name === 'AuthSessionMissingError' ? null : (result?.error ?? null);
+                user = sessionError ? null : (result?.data?.user ?? null);
+            } catch (error) {
+                sessionError = error;
+            }
             const statusText = document.getElementById('cloud-status-text');
             const userEmailSpan = document.getElementById('cloud-user-email');
             const btnLogout = document.getElementById('btn-logout');
 
             if(user) {
-                statusText.innerText = "Status: Verbunden";
+                statusText.innerText = window.toolyaUiText?.("Status: Verbunden") ?? "Status: Verbunden";
                 userEmailSpan.innerText = user.email;
                 btnLogout.classList.remove('hidden');
             } else {
-                statusText.innerText = "Nicht angemeldet";
+                statusText.innerText = window.toolyaUiText?.(sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet') ?? (sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet');
                 userEmailSpan.innerText = "";
                 btnLogout.classList.add('hidden');
             }
@@ -799,7 +822,7 @@
                 const d1 = parseFloat(document.getElementById('combo-d1').value) || 20;
                 const d2 = parseFloat(document.getElementById('combo-d2').value) || 16;
                 targetArea = Math.PI * Math.pow(d1 / 2, 2) + Math.PI * Math.pow(d2 / 2, 2);
-                document.getElementById('combo-result').innerText = `Gesamt-Ratio: ${Math.round((targetArea / origArea) * 100)}%`;
+                document.getElementById('combo-result').innerText = `${window.__toolyaUILocale === 'en' ? 'Overall ratio' : 'Gesamt-Ratio'}: ${Math.round((targetArea / origArea) * 100)}%`;
             } else {
                 const targetShape = document.getElementById('target-shape').value;
                 const targetD = parseFloat(document.getElementById('target-d').value) || 20;
@@ -838,13 +861,13 @@
             const warningText = document.getElementById('volume-warning-text');
             if (heightRatio > 1.25) {
                 warningBox.className = "p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1";
-                warningText.innerText = "Achtung: Teig steht deutlich höher als im Original! Form zu 2/3 füllen oder größere Form wählen.";
+                warningText.innerText = window.__toolyaUILocale === "en" ? "Warning: Batter is much deeper than in the original pan. Fill the pan no more than two-thirds or choose a larger pan." : "Achtung: Teig steht deutlich höher als im Original! Form zu 2/3 füllen oder größere Form wählen.";
             } else if (heightRatio < 0.75) {
                 warningBox.className = "p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 space-y-1";
-                warningText.innerText = "Hinweis: Teig ist recht flach in dieser Form. Backzeit ggf. 5 Min. verkürzen.";
+                warningText.innerText = window.__toolyaUILocale === "en" ? "Note: Batter is quite shallow in this pan. Consider reducing baking time by 5 minutes." : "Hinweis: Teig ist recht flach in dieser Form. Backzeit ggf. 5 Min. verkürzen.";
             } else {
                 warningBox.className = "p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1";
-                warningText.innerText = "Teighöhe / Füllstand ist optimal im Verhältnis zum Original.";
+                warningText.innerText = window.__toolyaUILocale === "en" ? "Batter depth is well matched to the original pan." : "Teighöhe / Füllstand ist optimal im Verhältnis zum Original.";
             }
 
             const matCost = (2.20 * factor) + (adjTime > 0 ? 0.30 : 0);
@@ -859,7 +882,7 @@
             const count = parseFloat(document.getElementById('slice-count').value) || 12;
             const targetD = parseFloat(document.getElementById('target-d').value) || 20;
             const sliceWidth = ((Math.PI * targetD) / count).toFixed(1);
-            document.getElementById('slice-info').innerText = `ca. ${sliceWidth} cm Stückbreite am Rand.`;
+            document.getElementById('slice-info').innerText = window.__toolyaUILocale === "en" ? `Approx. ${sliceWidth} cm per slice at the edge.` : `ca. ${sliceWidth} cm Stückbreite am Rand.`;
         }
 
         function calculateSugar() {
@@ -870,16 +893,16 @@
 
             if (type === 'xylit') {
                 res.innerText = g + 'g';
-                tip.innerText = 'Xylit ist ungefähr so süß wie Zucker; beim Backen kann sich die Textur ändern.';
+                tip.innerText = window.__toolyaUILocale === 'en' ? 'Xylitol is about as sweet as sugar; baking texture may change.' : 'Xylit ist ungefähr so süß wie Zucker; beim Backen kann sich die Textur ändern.';
             } else if (type === 'erythrit') {
-                res.innerText = Math.round(g * 1.4) + 'g (grober Richtwert)';
-                tip.innerText = 'Erythrit süßt weniger stark als Zucker. Größere Mengen können Textur und Verträglichkeit verändern.';
+                res.innerText = Math.round(g * 1.4) + (window.__toolyaUILocale === 'en' ? 'g (rough estimate)' : 'g (grober Richtwert)');
+                tip.innerText = window.__toolyaUILocale === 'en' ? 'Erythritol is less sweet than sugar. Larger amounts can affect texture and tolerance.' : 'Erythrit süßt weniger stark als Zucker. Größere Mengen können Textur und Verträglichkeit verändern.';
             } else if (type === 'honey') {
-                res.innerText = Math.round(g * 0.8) + 'g (Flüssigkeit im Teig um 20ml reduzieren)';
-                tip.innerText = 'Honig süßt stärker und bringt Feuchtigkeit mit.';
+                res.innerText = Math.round(g * 0.8) + (window.__toolyaUILocale === 'en' ? 'g (reduce batter liquid by 20 ml)' : 'g (Flüssigkeit im Teig um 20ml reduzieren)');
+                tip.innerText = window.__toolyaUILocale === 'en' ? 'Honey is sweeter and adds moisture.' : 'Honig süßt stärker und bringt Feuchtigkeit mit.';
             } else {
-                res.innerText = (g / 200).toFixed(1) + ' TL Konzentrat';
-                tip.innerText = 'Stevia-Konzentrat extrem sparsam dosieren.';
+                res.innerText = (g / 200).toFixed(1) + (window.__toolyaUILocale === 'en' ? ' tsp concentrate' : ' TL Konzentrat');
+                tip.innerText = window.__toolyaUILocale === 'en' ? 'Use stevia concentrate very sparingly.' : 'Stevia-Konzentrat extrem sparsam dosieren.';
             }
         }
 
@@ -887,11 +910,11 @@
             const temp = parseFloat(document.getElementById('room-temp').value) || 21;
             const res = document.getElementById('climate-result');
             if (temp > 26) {
-                res.innerText = "Achtung, warm! Mürbeteig 30 Min. länger kühlen, Hefeteig geht doppelt so schnell.";
+                res.innerText = window.__toolyaUILocale === "en" ? "Warm room: chill shortcrust pastry 30 minutes longer; yeast dough may rise twice as fast." : "Achtung, warm! Mürbeteig 30 Min. länger kühlen, Hefeteig geht doppelt so schnell.";
             } else if (temp < 18) {
-                res.innerText = "Etwas kühl. Hefeteig an einem warmen Ort (z.B. Ofen bei 30°C) gehen lassen.";
+                res.innerText = window.__toolyaUILocale === "en" ? "A little cool. Let yeast dough rise in a warm place (e.g. an oven at 30°C)." : "Etwas kühl. Hefeteig an einem warmen Ort (z.B. Ofen bei 30°C) gehen lassen.";
             } else {
-                res.innerText = "Perfektes Backklima. Keine Anpassung nötig.";
+                res.innerText = window.__toolyaUILocale === "en" ? "Ideal baking conditions. No adjustment needed." : "Perfektes Backklima. Keine Anpassung nötig.";
             }
         }
 
@@ -900,11 +923,11 @@
             const area = Math.PI * Math.pow(origD / 2, 2);
             const container = document.getElementById('finder-results');
 
-            let html = `<p class="text-xs font-bold text-slate-800 mb-2">Äquivalente Formen für Ø ${origD} cm Form:</p>`;
+            let html = `<p class="text-xs font-bold text-slate-800 mb-2">${window.__toolyaUILocale === 'en' ? 'Equivalent pans for a' : 'Äquivalente Formen für'} Ø ${origD} cm ${window.__toolyaUILocale === 'en' ? 'pan:' : 'Form:'}</p>`;
             html += `<div class="space-y-1.5 text-xs">`;
-            html += `<div class="p-2 bg-slate-50 rounded-lg">👉 Entspricht ca. <b>1x Springform Ø ${origD} cm</b></div>`;
-            html += `<div class="p-2 bg-slate-50 rounded-lg">👉 Entspricht ca. <b>2 kleine Springformen Ø ${Math.round(origD * 0.7)} cm</b></div>`;
-            html += `<div class="p-2 bg-slate-50 rounded-lg">👉 Entspricht ca. <b>${Math.round(area / 38)} Muffins</b></div>`;
+            html += `<div class="p-2 bg-slate-50 rounded-lg">👉 ${window.__toolyaUILocale === 'en' ? 'Approximately equivalent to' : 'Entspricht ca.'} <b>1x ${window.__toolyaUILocale === 'en' ? 'springform pan' : 'Springform'} Ø ${origD} cm</b></div>`;
+            html += `<div class="p-2 bg-slate-50 rounded-lg">👉 ${window.__toolyaUILocale === 'en' ? 'Approximately equivalent to' : 'Entspricht ca.'} <b>2 ${window.__toolyaUILocale === 'en' ? 'small springform pans' : 'kleine Springformen'} Ø ${Math.round(origD * 0.7)} cm</b></div>`;
+            html += `<div class="p-2 bg-slate-50 rounded-lg">👉 ${window.__toolyaUILocale === 'en' ? 'Approximately equivalent to' : 'Entspricht ca.'} <b>${Math.round(area / 38)} Muffins</b></div>`;
             html += `</div>`;
             container.innerHTML = html;
         }
@@ -914,10 +937,11 @@
             const rawText = document.getElementById('recipe-input').value;
             const factor = parseFloat(document.getElementById('res-factor').innerText);
             const name = document.getElementById('recipe-name').value || 'Unbenanntes Rezept';
+            const displayName = document.getElementById('recipe-name').value || (window.__toolyaUILocale === 'en' ? 'Untitled recipe' : 'Unbenanntes Rezept');
             const unitSys = document.getElementById('unit-system').value;
 
             const lines = rawText.split('\n');
-            let outputHtml = `<p class="font-bold text-slate-800 mb-1">${escapeRecipeHtml(name)} (Faktor ×${factor})</p>`;
+            let outputHtml = `<p class="font-bold text-slate-800 mb-1">${escapeRecipeHtml(displayName)} (${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'} ×${factor})</p>`;
 
             lines.forEach(line => {
                 if(!line.trim()) return;
@@ -929,10 +953,10 @@
 
                     if (/^(?:ei|eier)$/i.test(unit)) {
                         const eggs = Math.round(val);
-                        outputHtml += `<div><span class="text-orange-600 font-bold">${eggs} Eier</span> ${ingredient}</div>`;
+                        outputHtml += `<div><span class="text-orange-600 font-bold">${eggs} ${window.__toolyaUILocale === 'en' ? (eggs === 1 ? 'egg' : 'eggs') : 'Eier'}</span> ${ingredient}</div>`;
                     } else if (unitSys === 'imperial' && unit === 'g') {
                         let cups = (val / 125).toFixed(1);
-                        outputHtml += `<div><span class="text-orange-600 font-bold">ca. ${cups} Cups</span> ${ingredient}</div>`;
+                        outputHtml += `<div><span class="text-orange-600 font-bold">${window.__toolyaUILocale === 'en' ? 'approx.' : 'ca.'} ${cups} ${window.__toolyaUILocale === 'en' ? 'cups' : 'Cups'}</span> ${ingredient}</div>`;
                     } else {
                         outputHtml += `<div><span class="text-orange-600 font-bold">${val.toFixed(1).replace('.0','')}${unit}</span> ${ingredient}</div>`;
                     }
@@ -1006,7 +1030,7 @@
             let recipes = getRecipes();
             const container = document.getElementById('saved-recipes-list');
             if(recipes.length === 0) {
-                container.innerHTML = '<p class="text-xs text-slate-500">Noch keine Rezepte gespeichert.</p>';
+                container.innerHTML = `<p class="text-xs text-slate-500">${window.__toolyaUILocale === 'en' ? 'No saved recipes yet.' : 'Noch keine Rezepte gespeichert.'}</p>`;
                 return;
             }
             let html = '';
@@ -1015,13 +1039,13 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <h4 class="font-bold text-sm text-slate-800">${escapeRecipeHtml(r.name)}</h4>
-                            <p class="text-[11px] text-slate-500">Faktor: ×${escapeRecipeHtml(r.factor)} | ${escapeRecipeHtml(r.date)}</p>
+                            <p class="text-[11px] text-slate-500">${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'}: ×${escapeRecipeHtml(r.factor)} | ${escapeRecipeHtml(r.date)}</p>
                         </div>
-                        <button onclick="deleteRecipe(${idx})" class="text-red-500 hover:text-red-700 text-xs font-medium">Löschen</button>
+                        <button onclick="deleteRecipe(${idx})" class="text-red-500 hover:text-red-700 text-xs font-medium"${window.__toolyaUILocale === 'en' ? 'Delete' : 'Löschen'}</button>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">Geling-Protokoll / Notiz:</label>
-                        <input type="text" value="${escapeRecipeHtml(r.note)}" onchange="saveNote(${idx}, this.value)" placeholder="Z.B. Nächstes Mal 5 Min weniger backen..." class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">
+                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">${window.__toolyaUILocale === 'en' ? 'Baking notes:' : 'Geling-Protokoll / Notiz:'}</label>
+                        <input type="text" value="${escapeRecipeHtml(r.note)}" onchange="saveNote(${idx}, this.value)" placeholder="${window.__toolyaUILocale === 'en' ? 'e.g. bake 5 minutes less next time…' : 'Z.B. Nächstes Mal 5 Min weniger backen...'}" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">
                     </div>
                 </div>`;
             });
@@ -1116,11 +1140,24 @@
         }
 
         function updateTimerDisplay() {
-            document.getElementById('timer-phase-title').innerText = timerPhases[currentPhaseIdx].title;
+            const englishPhaseTitles = [
+                'Phase 1: Let dough rise / chill',
+                'Phase 2: Bake in the oven',
+                'Phase 3: Cool in the pan'
+            ];
+            document.getElementById('timer-phase-title').innerText = window.__toolyaUILocale === 'en'
+                ? englishPhaseTitles[currentPhaseIdx]
+                : timerPhases[currentPhaseIdx].title;
             const m = Math.floor(timeLeft / 60);
             const s = timeLeft % 60;
             document.getElementById('timer-display').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
         }
+
+        // Re-render read-only labels when the language switch changes.
+        document.addEventListener('toolya:locale-change', () => {
+            updateTimerDisplay();
+            if (bakingCloudReady) renderSavedRecipes();
+        });
 
         // Initialisierung beim Laden
         void bakingCloudBoot();
@@ -1128,6 +1165,6 @@
     </script>
   <script defer src="./backstudio.js?v=20261120-atelier-v1"></script>
   <script defer src="./backstudio-pro.js?v=20261120-camera-v1"></script>
-  <script defer src="./backstudio-layout.js?v=20261120-camera-v1"></script>
+  <script defer src="./backstudio-layout.js?v=20261121-locale"></script>
 </body>
 </html>

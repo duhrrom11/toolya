@@ -78,7 +78,7 @@
     <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="../../assets/helferlein-dialogs.js"></script>
 <link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><link rel="stylesheet" href="../../shared/toolya/alpha.css?v=20261115-alpha">
-<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script></head>
+<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="/shared/toolya/i18n/tool-entry.css"><script type="module" src="/shared/toolya/i18n/tool-entry.mjs"></script></head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
   <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
     <p id="toolya-auth-title"><strong>Umzugskisten</strong></p>
@@ -393,13 +393,18 @@
                 return;
             }
 
-            const { error } = await window.supabaseClient.auth.signUp({ email, password });
+            let data, error;
+            try {
+                ({ data, error } = await window.supabaseClient.auth.signUp({ email, password }));
+            } catch (err) {
+                return alert('Registrierung fehlgeschlagen: ' + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
+            }
             if (error) {
                 alert(error.message);
                 return;
             }
 
-            alert("Registrierung erfolgreich.");
+            alert(data?.session ? 'Angemeldet. Dein Konto ist einsatzbereit.' : 'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.');
             updateUserDisplay();
             closeSettings();
         }
@@ -413,7 +418,12 @@
                 return;
             }
 
-            const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+            let error;
+            try {
+                ({ error } = await window.supabaseClient.auth.signInWithPassword({ email, password }));
+            } catch (err) {
+                return alert('Anmeldung fehlgeschlagen: ' + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
+            }
             if (error) {
                 alert(error.message);
                 return;
@@ -424,23 +434,35 @@
         }
 
         async function logoutUser() {
-            await window.supabaseClient.auth.signOut();
+            try {
+                const { error } = await window.supabaseClient.auth.signOut();
+                if (error) return alert('Abmeldung fehlgeschlagen: ' + (error.message || 'Unbekannter Fehler'));
+            } catch (error) {
+                return alert('Abmeldung fehlgeschlagen: ' + (error?.message || 'Unbekannter Fehler'));
+            }
             updateUserDisplay();
         }
 
         async function updateUserDisplay() {
-            const { data } = await window.supabaseClient.auth.getUser();
-            const user = data?.user;
+            let user = null;
+            let sessionError = null;
+            try {
+                const result = await window.supabaseClient.auth.getUser();
+                sessionError = result?.error?.name === 'AuthSessionMissingError' ? null : (result?.error ?? null);
+                user = sessionError ? null : (result?.data?.user ?? null);
+            } catch (error) {
+                sessionError = error;
+            }
 
             const headerInfo = document.getElementById("userInfo");
             const cloudStatus = document.getElementById("cloudStatus");
 
             if (user) {
                 if (headerInfo) headerInfo.textContent = "👤 " + user.email;
-                if (cloudStatus) cloudStatus.textContent = "✅ Angemeldet – " + (user.email || "Benutzer");
+                if (cloudStatus) cloudStatus.textContent = (window.toolyaUiText?.("✅ Angemeldet – ") ?? "✅ Angemeldet – ") + (user.email || (window.toolyaUiText?.("Benutzer") ?? "Benutzer"));
             } else {
-                if (headerInfo) headerInfo.textContent = "Nicht angemeldet";
-                if (cloudStatus) cloudStatus.textContent = "Nicht angemeldet";
+                if (headerInfo) headerInfo.textContent = window.toolyaUiText?.(sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet') ?? (sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet');
+                if (cloudStatus) cloudStatus.textContent = window.toolyaUiText?.(sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet') ?? (sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet');
             }
         }
 
@@ -710,7 +732,7 @@
         function renderSubItemsModal() {
             const container = document.getElementById('subItemsContainer');
             if (activeSubItemsTemp.length === 0) {
-                container.innerHTML = `<p class="text-[11px] text-gray-400 italic">Keine Unterartikel erfasst.</p>`;
+                container.innerHTML = `<p class="text-[11px] text-gray-400 italic">${window.__toolyaUILocale === 'en' ? 'No items recorded.' : 'Keine Unterartikel erfasst.'}</p>`;
                 return;
             }
             container.innerHTML = activeSubItemsTemp.map((item, idx) => `
@@ -796,7 +818,7 @@
 
             document.getElementById('statBoxes').innerText = totalBoxes;
             document.getElementById('statLocs').innerText = totalLocs;
-            document.getElementById('statValue').innerText = totalVal.toFixed(2).replace('.', ',') + ' €';
+            document.getElementById('statValue').innerText = (window.__toolyaUILocale === 'en' ? Number(totalVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : totalVal.toFixed(2).replace('.', ',')) + ' €';
 
             const locStatsCard = document.getElementById('locationValueStatsCard');
             const locStatsList = document.getElementById('locationValueStatsList');
@@ -804,7 +826,7 @@
                 locStatsCard.classList.remove('hidden');
                 locStatsList.innerHTML = data.locations.map(loc => {
                     const locVal = data.boxes.filter(b => b.locId === loc.id).reduce((sum, b) => sum + Number(b.value || 0), 0);
-                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">${loc.icon || '📍'} ${loc.name}</p><p class="text-sm font-bold text-amber-800">${locVal.toFixed(2).replace('.', ',')} €</p></div>`;
+                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">${loc.icon || '📍'} ${loc.name}</p><p class="text-sm font-bold text-amber-800">${window.__toolyaUILocale === 'en' ? Number(locVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : locVal.toFixed(2).replace('.', ',')} €</p></div>`;
                 }).join('');
             } else {
                 locStatsCard.classList.add('hidden');
@@ -817,14 +839,14 @@
                 tagStatsCard.classList.remove('hidden');
                 tagStatsList.innerHTML = tags.map(t => {
                     const tagVal = data.boxes.filter(b => (b.tag || 'Standard') === t).reduce((sum, b) => sum + Number(b.value || 0), 0);
-                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">🏷️ ${t}</p><p class="text-sm font-bold text-amber-800">${tagVal.toFixed(2).replace('.', ',')} €</p></div>`;
+                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">🏷️ ${t}</p><p class="text-sm font-bold text-amber-800">${window.__toolyaUILocale === 'en' ? Number(tagVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : tagVal.toFixed(2).replace('.', ',')} €</p></div>`;
                 }).join('');
             } else {
                 tagStatsCard.classList.add('hidden');
             }
 
             if (totalLocs === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Standorte erfasst.</p>`;
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No locations added yet.' : 'Noch keine Standorte erfasst.'}</p>`;
                 return;
             }
 
@@ -859,10 +881,10 @@
                 return `
                     <div class="border rounded-2xl p-4 bg-gray-50 space-y-3">
                         <div class="flex justify-between items-center border-b pb-2 b3-moving-location-heading">
-                            <h4 class="font-bold text-md text-amber-800">${loc.icon || '📍'} Standort: ${loc.name}</h4>
+                            <h4 class="font-bold text-md text-amber-800">${loc.icon || '📍'} ${window.__toolyaUILocale === 'en' ? 'Location' : 'Standort'}: ${loc.name}</h4>
                             <div class="flex gap-3">
-                                <button onclick="editLocation(${loc.id})" class="text-xs text-blue-600 hover:underline b3-action b3-outline">✏️ Bearbeiten</button>
-                                <button onclick="deleteLocation(${loc.id})" class="text-xs text-red-500 hover:underline">🗑️ Löschen</button>
+                                <button onclick="editLocation(${loc.id})" class="text-xs text-blue-600 hover:underline b3-action b3-outline">${window.__toolyaUILocale === 'en' ? '✏️ Edit' : '✏️ Bearbeiten'}</button>
+                                <button onclick="deleteLocation(${loc.id})" class="text-xs text-red-500 hover:underline">${window.__toolyaUILocale === 'en' ? '🗑️ Delete' : '🗑️ Löschen'}</button>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -874,36 +896,41 @@
                                 return `
                                     <div class="bg-white p-3 border rounded-xl flex items-center justify-between shadow-sm gap-3 b3-moving-box-card ${isExpired ? 'border-red-400 bg-red-50/30' : ''}">
                                         <div class="flex items-center space-x-3 b3-moving-box-identity">
-                                            ${b.photo ? `<button type="button" class="b3-photo-trigger" aria-label="Kistenfoto vergrößern" onclick="zoomImage(this.firstElementChild.src)"><img alt="Foto der Umzugskiste" src="${b.photo}" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80"></button>` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Kein Bild</div>'}
+                                            ${b.photo ? `<button type="button" class="b3-photo-trigger" aria-label="${window.__toolyaUILocale === 'en' ? 'Enlarge box photo' : 'Kistenfoto vergrößern'}" onclick="zoomImage(this.firstElementChild.src)"><img alt="${window.__toolyaUILocale === 'en' ? 'Photo of moving box' : 'Foto der Umzugskiste'}" src="${b.photo}" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80"></button>` : `<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">${window.__toolyaUILocale === 'en' ? 'No image' : 'Kein Bild'}</div>`}
                                             <div>
                                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                                     <h5 class="font-bold text-sm">📦 ${b.name}</h5>
                                                     <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">${b.tag || 'Standard'}</span>
-                                                    ${isLent ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold" title="Ausgeliehen an: ${b.lentTo}">🤝 Ausgeliehen (${b.lentTo})</span>` : ''}
-                                                    ${isExpired ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 font-bold" title="Ablaufdatum überschritten!">⚠️ Ablauf</span>` : ''}
+                                                    ${isLent ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold" title="${window.__toolyaUILocale === 'en' ? 'Lent to' : 'Ausgeliehen an'}: ${b.lentTo}">${window.__toolyaUILocale === 'en' ? '🤝 Lent' : '🤝 Ausgeliehen'} (${b.lentTo})</span>` : ''}
+                                                    ${isExpired ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 font-bold" title="${window.__toolyaUILocale === 'en' ? 'Expired date!' : 'Ablaufdatum überschritten!'}">${window.__toolyaUILocale === 'en' ? '⚠️ Expired' : '⚠️ Ablauf'}</span>` : ''}
                                                 </div>
-                                                <p class="text-xs text-gray-600 mt-0.5">${b.desc || 'Keine Beschreibung'}</p>
-                                                ${subItemsText ? `<p class="text-[11px] text-indigo-600 font-medium mt-0.5">Inhalt: ${subItemsText}</p>` : ''}
+                                                <p class="text-xs text-gray-600 mt-0.5">${b.desc || (window.__toolyaUILocale === 'en' ? 'No description' : 'Keine Beschreibung')}</p>
+                                                ${subItemsText ? `<p class="text-[11px] text-indigo-600 font-medium mt-0.5">${window.__toolyaUILocale === 'en' ? 'Contents' : 'Inhalt'}: ${subItemsText}</p>` : ''}
                                                 <div class="flex gap-3 text-[11px] text-gray-500 mt-0.5 b3-moving-box-meta">
-                                                    <span class="font-semibold text-green-600">Wert: ${(b.value || 0).toFixed(2).replace('.', ',')} €</span>
+                                                    <span class="font-semibold text-green-600">${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${window.__toolyaUILocale === 'en' ? Number(b.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (b.value || 0).toFixed(2).replace('.', ',')} €</span>
                                                     ${b.barcode ? `<span class="font-mono text-gray-400">EAN: ${b.barcode}</span>` : ''}
-                                                    ${b.expiry ? `<span>Ablauf: ${b.expiry.split('-').reverse().join('.')}</span>` : ''}
+                                                    ${b.expiry ? `<span>${window.__toolyaUILocale === 'en' ? 'Expires' : 'Ablauf'}: ${window.__toolyaUILocale === 'en' ? b.expiry.split('-').reverse().join('/') : b.expiry.split('-').reverse().join('.')}</span>` : ''}
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-1 b3-moving-box-actions">
                                             <button onclick="showQrCode(${b.id}, '${b.name}', '${b.desc}')" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100 b3-action b3-outline" title="QR-Code & Deep-Link">🖨️</button>
-                                            <button onclick="openEditBoxModal(${b.id})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 b3-action b3-outline" title="Bearbeiten">✏️</button>
-                                            <button onclick="deleteBox(${b.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="Löschen">✕</button>
+                                            <button onclick="openEditBoxModal(${b.id})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 b3-action b3-outline" title="${window.__toolyaUILocale === 'en' ? 'Edit' : 'Bearbeiten'}">✏️</button>
+                                            <button onclick="deleteBox(${b.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="${window.__toolyaUILocale === 'en' ? 'Delete' : 'Löschen'}">✕</button>
                                         </div>
                                     </div>
                                 `;
-                            }).join('') : '<p class="text-xs text-gray-400 col-span-2">Keine passenden Kisten an diesem Standort.</p>'}
+                            }).join('') : `<p class="text-xs text-gray-400 col-span-2">${window.__toolyaUILocale === 'en' ? 'No matching boxes at this location.' : 'Keine passenden Kisten an diesem Standort.'}</p>`}
                         </div>
                     </div>
                 `;
-            }).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Einträge gefunden.</p>`;
+            }).join('') || `<p class="text-sm text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No matching entries found.' : 'Keine passenden Einträge gefunden.'}</p>`;
         }
+
+        // Rebuild the visible card list after manual language changes; never save data.
+        document.addEventListener('toolya:locale-change', () => {
+            if (document.getElementById('inventoryContainer')) renderInventory();
+        });
 
         async function exportInventoryPDF() {
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
@@ -912,10 +939,10 @@
             const data = getData();
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text("Mini-HomeBox Pro - Inventar-Report", 14, 20);
+            doc.text(window.__toolyaUILocale === "en" ? "Mini-HomeBox Pro - Inventory Report" : "Mini-HomeBox Pro - Inventar-Report", 14, 20);
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+            doc.text(`${window.__toolyaUILocale === 'en' ? 'Created on' : 'Erstellt am'}: ${new Date().toLocaleDateString(window.__toolyaUILocale === 'en' ? 'en-GB' : 'de-DE')}`, 14, 27);
 
             let y = 35;
             const writeWrapped = (value, bold = false, fontSize = 10) => {
@@ -931,24 +958,24 @@
 
             data.locations.forEach(loc => {
                 const cleanLocName = String(loc.name || '').replace(/[\u{1F000}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
-                writeWrapped(`Standort: ${cleanLocName}`, true, 12);
+                writeWrapped(`${window.__toolyaUILocale === 'en' ? 'Location' : 'Standort'}: ${cleanLocName}`, true, 12);
                 y += 1;
                 const locBoxes = data.boxes.filter(b => b.locId === loc.id);
                 if (!locBoxes.length) {
-                    writeWrapped("  (Keine Kisten)");
+                    writeWrapped(window.__toolyaUILocale === "en" ? "  (No boxes)" : "  (Keine Kisten)");
                 } else {
                     locBoxes.forEach(b => {
-                        const statusText = b.lentTo ? ` [Ausgeliehen an: ${b.lentTo}]` : '';
-                        const subStr = Array.isArray(b.subItems) && b.subItems.length ? ` | Artikel: ${b.subItems.map(item => item.name).join(', ')}` : '';
-                        writeWrapped(`- ${b.name}${statusText} | Wert: ${Number(b.value || 0).toFixed(2)} EUR${subStr}`);
+                        const statusText = b.lentTo ? ` [${window.__toolyaUILocale === 'en' ? 'Lent to' : 'Ausgeliehen an'}: ${b.lentTo}]` : '';
+                        const subStr = Array.isArray(b.subItems) && b.subItems.length ? ` | ${window.__toolyaUILocale === 'en' ? 'Items' : 'Artikel'}: ${b.subItems.map(item => item.name).join(', ')}` : '';
+                        writeWrapped(`- ${b.name}${statusText} | ${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${Number(b.value || 0).toFixed(2)} EUR${subStr}`);
                     });
                 }
                 y += 4;
             });
             const totalVal = data.boxes.reduce((sum, b) => sum + Number(b.value || 0), 0);
             y += 5;
-            writeWrapped(`Gesamtwert des Inventars: ${totalVal.toFixed(2)} EUR`, true, 12);
-            doc.save("kisten-inventar-report.pdf");
+            writeWrapped(`${window.__toolyaUILocale === 'en' ? 'Total inventory value' : 'Gesamtwert des Inventars'}: ${totalVal.toFixed(2)} EUR`, true, 12);
+            doc.save(window.__toolyaUILocale === 'en' ? 'moving-box-inventory-report.pdf' : 'kisten-inventar-report.pdf');
         }
 
         async function generateQrDataUrl(QRCode, text) {
@@ -995,7 +1022,7 @@
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(16);
-            doc.text("Toolya Umzugskisten – QR-Etiketten", 14, 12);
+            doc.text(window.__toolyaUILocale === "en" ? "Toolya Moving Boxes - QR Labels" : "Toolya Umzugskisten – QR-Etiketten", 14, 12);
 
             for (let i = 0; i < data.boxes.length; i++) {
                 let b = data.boxes[i];
@@ -1019,14 +1046,14 @@
                 let textX = x + 40;
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(10);
-                doc.text(`Kiste: ${b.name}`, textX, y + 8);
+                doc.text(`${window.__toolyaUILocale === 'en' ? 'Box' : 'Kiste'}: ${b.name}`, textX, y + 8);
 
                 doc.setFont("helvetica", "normal");
                 doc.setFontSize(8);
-                doc.text(`Ort: ${cleanLocName}`, textX, y + 14);
-                doc.text(`Inhalt: ${b.desc || '-'}`, textX, y + 20);
-                doc.text(`Wert: ${(b.value || 0).toFixed(2)} €`, textX, y + 26);
-                doc.text(`Tag: ${b.tag || 'Standard'}`, textX, y + 32);
+                doc.text(`${window.__toolyaUILocale === 'en' ? 'Location' : 'Ort'}: ${cleanLocName}`, textX, y + 14);
+                doc.text(`${window.__toolyaUILocale === 'en' ? 'Contents' : 'Inhalt'}: ${b.desc || '-'}`, textX, y + 20);
+                doc.text(`${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${(b.value || 0).toFixed(2)} €`, textX, y + 26);
+                doc.text(`Tag: ${b.tag || (window.__toolyaUILocale === 'en' ? 'Default' : 'Standard')}`, textX, y + 32);
 
                 if (x === 14) { 
                     x = 110; 
@@ -1046,7 +1073,7 @@
                 alert("Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.");
                 return;
             }
-            document.getElementById('qrModalTitle').innerText = `QR-Code für: ${name}`;
+            document.getElementById('qrModalTitle').innerText = `${window.__toolyaUILocale === 'en' ? 'QR code for: ' : 'QR-Code für: '}${name}`;
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = "";
             
@@ -1150,7 +1177,7 @@
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 220, height: 150 } },
                 (decodedText) => {
-                    resBox.innerText = `Erkannt: ${decodedText}`;
+                    resBox.innerText = `${window.__toolyaUILocale === 'en' ? 'Detected' : 'Erkannt'}: ${decodedText}`;
                     resBox.classList.remove('hidden');
 
                     if (decodedText.includes('?box=')) {

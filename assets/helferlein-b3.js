@@ -83,6 +83,8 @@
       draft=defaults();renderLayout(draft);editorRender(host);
     },true));
     host.append(actions);
+    // Editor text is added dynamically after the locale switch is mounted.
+    document.dispatchEvent(new Event('toolya:b3-editor-rendered'));
   }
   function move(i,delta){
     const j=i+delta;if(j<0||j>=draft.length)return;
