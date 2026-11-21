@@ -602,6 +602,12 @@
         }
 
         async function deleteLocation(locId) {
+            const current=getData();
+            const moving=current.moving;
+            if(moving?.assignments?.some(a=>current.boxes.some(b=>b.locId===locId&&b.id===a.boxId) && moving.projects.some(p=>p.id===a.projectId&&p.status==='active'))){
+                alert("Dieser Standort enthält Kisten aus einem aktiven Umzug. Bitte den Umzug erst abschließen.");
+                return;
+            }
             if (!confirm("⚠️ Möchtest du diesen Standort und ALLE Kisten darin wirklich löschen?")) return;
             let data = getData();
             data.locations = data.locations.filter(l => l.id !== locId);
@@ -762,6 +768,11 @@
         }
 
         async function deleteBox(boxId) {
+            const moving=getData().moving;
+            if(moving?.assignments?.some(a=>a.boxId===boxId && moving.projects.some(p=>p.id===a.projectId&&p.status==='active'))){
+                alert("Diese Kiste ist einem aktiven Umzug zugeordnet. Bitte den Umzug erst abschließen.");
+                return;
+            }
             if (!confirm("⚠️ Möchtest du diese Kiste wirklich löschen?")) return;
             let data = getData();
             data.boxes = data.boxes.filter(b => b.id !== boxId);
@@ -1085,6 +1096,12 @@
                         !parsed.boxes.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
                         return alert("Ungültiges Backup-Format.");
                     }
+                    const current=getData();
+                    if(current.moving?.projects?.length && !parsed.moving &&
+                       !confirm("Dieses Backup enthält keine Umzugsprojekte. Die bestehenden Umzugsplanungen würden verloren gehen. Trotzdem fortfahren?")) return;
+                    if(!confirm("Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.")) return;
+                    exportBackup();
+                    if(!confirm("Hast du die aktuelle Sicherung erfolgreich heruntergeladen?")) return;
                     if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
                     if (!await saveData(parsed)) return;
                     loadLocationsDropdown();
