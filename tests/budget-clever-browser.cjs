@@ -48,7 +48,7 @@ async function run(){
   await page.getByRole('button',{name:'Planen'}).click();
   assert.match(await page.locator('#cs-panel').innerText(),/Kann ich mir das leisten/);
   await page.getByRole('spinbutton',{name:'Was möchtest du ausgeben? (€)'}).fill('75');
-  assert.match(await page.locator('#cs-panel').innerText(),/75/);
+  assert.match(await page.locator('#cs-panel').innerText(),/Nach diesem Kauf blieben/);
   await page.screenshot({path:path.join(images,'desktop-planen.png'),fullPage:true});
   await page.getByRole('button',{name:'Prüfen'}).click();
   assert.match(await page.locator('#cs-panel').innerText(),/Mögliche Doppelbuchung/);
