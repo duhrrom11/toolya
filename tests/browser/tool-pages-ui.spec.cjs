@@ -2238,7 +2238,11 @@ test('i18n Sprint A moving: valid backup cancellation and oversized backup never
  test.setTimeout(60000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const confirms=[];
- page.on('dialog',async dialog=>{confirms.push({type:dialog.type(),message:dialog.message()});await dialog.dismiss()});
+ page.on('dialog',async dialog=>{
+  confirms.push({type:dialog.type(),message:dialog.message()});
+  if(dialog.message().includes('current backup')||dialog.message().includes('aktuelle Sicherung')) await dialog.accept();
+  else await dialog.dismiss();
+ });
  await isolated(page,true,true,{locations:[],boxes:[]});
  await page.setViewportSize({width:320,height:800});
  await page.goto(origin+'/tools/moving/index.html');
@@ -2246,8 +2250,11 @@ test('i18n Sprint A moving: valid backup cancellation and oversized backup never
  const input=page.locator('input[type="file"][onchange="importBackup(event)"]');
  await page.locator('[data-tool-locale="en"]').click();
  await input.setInputFiles({name:'safe-synthetic-backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({locations:[{id:123,name:'Synthetic location',icon:'📦'}],boxes:[]}))});
- await expect.poll(()=>confirms.length).toBe(1);
- expect(confirms[0]).toEqual({type:'confirm',message:'Import backup? Existing data will be replaced.'});
+ await expect.poll(()=>confirms.length).toBe(2);
+ expect(confirms).toEqual([
+  {type:'confirm',message:'Before importing, download and check a current backup.'},
+  {type:'confirm',message:'Import backup? Existing data will be replaced.'}
+ ]);
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
  await expect(input).toHaveValue('');
  await page.evaluate(()=>importBackup({target:{files:[{size:20*1024*1024+1}],value:'synthetic'}}));
@@ -2257,8 +2264,11 @@ test('i18n Sprint A moving: valid backup cancellation and oversized backup never
  await notice.getByRole('button',{name:'OK'}).click();
  await page.locator('[data-tool-locale="de"]').click();
  await input.setInputFiles({name:'safe-synthetic-backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({locations:[],boxes:[]}))});
- await expect.poll(()=>confirms.length).toBe(2);
- expect(confirms[1]).toEqual({type:'confirm',message:'Backup importieren? Vorhandene Daten werden ersetzt.'});
+ await expect.poll(()=>confirms.length).toBe(4);
+ expect(confirms.slice(2)).toEqual([
+  {type:'confirm',message:'Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.'},
+  {type:'confirm',message:'Backup importieren? Vorhandene Daten werden ersetzt.'}
+ ]);
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
  expect(errors).toEqual([]);
 });
@@ -2301,7 +2311,10 @@ test('i18n Sprint A moving: confirmed restore writes synthetic cloud snapshot on
  const file=page.locator('input[type="file"][onchange="importBackup(event)"]');
  await file.setInputFiles({name:'synthetic-restore.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(snapshot))});
  await expect.poll(()=>page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
- expect(confirmations).toEqual([{type:'confirm',message:'Import backup? Existing data will be replaced.'}]);
+ expect(confirmations).toEqual([
+  {type:'confirm',message:'Before importing, download and check a current backup.'},
+  {type:'confirm',message:'Import backup? Existing data will be replaced.'}
+ ]);
  const writes=await page.evaluate(()=>window.__toolyaMock.writes);
  expect(writes[0].p_data).toEqual(snapshot);
  const dialog=page.getByRole('alertdialog',{name:'Toolya'});
