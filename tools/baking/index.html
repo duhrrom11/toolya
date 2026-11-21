@@ -1168,6 +1168,11 @@
             // values only. It must not change the stored recipe or cloud session.
             calculateAll();
             updateTimerDisplay();
+            // Refresh only previously calculated helper results. Do not run
+            // calculateRecipe(): it stores user recipes and is not read-only.
+            if (document.getElementById('sugar-result')?.innerText) calculateSugar();
+            if (document.getElementById('climate-result')?.innerText) checkClimate();
+            if (document.getElementById('finder-results')?.innerHTML) runFormFinder();
             if (bakingCloudReady) renderSavedRecipes();
         });
 
