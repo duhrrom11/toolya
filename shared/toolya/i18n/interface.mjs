@@ -1410,6 +1410,8 @@ const dialogCopy = Object.freeze({
   "Ungültiges Backup-Format.": "Invalid backup format.",
   "Backup importieren? Vorhandene Daten werden ersetzt.": "Import backup? Existing data will be replaced.",
   "Fehler beim Lesen der Datei.": "Could not read the file.",
+  "Backup erfolgreich importiert!": "Backup imported successfully!",
+  "Backup-Datei konnte nicht gelesen werden.": "The backup file could not be read.",
   "Der QR-Scanner konnte nicht geladen werden. Bitte versuche es erneut.": "The QR scanner could not be loaded. Please try again.",
   "Kamera-Zugriff fehlgeschlagen oder nicht unterstützt.": "Camera access failed or is not supported.",
   'Bitte E-Mail und Passwort eingeben.':'Enter your email address and password.',
@@ -1429,6 +1431,8 @@ const dialogCopy = Object.freeze({
  },
  housemates: {
   "WLAN-Passwort (wird nicht gespeichert):": "Wi-Fi password (not saved):",
+  "WLAN-Name (SSID):": "Wi-Fi network name (SSID):",
+  "Private WG-Kopie erstellt.\\nDer alte WG-Link bleibt bestehen.\\nBitte teile ab jetzt nur den neuen Link mit freigegebenen Mitgliedern.": "Private household copy created.\\nThe old household link remains active.\\nFrom now on, only share the new link with authorized members.",
   'Layout konnte nicht gespeichert werden.':'Could not save the dashboard layout.',
   "Hinweis: Diese ältere WG verwendet einen ungeschützten Link-Speicher. Wer die WG-ID kennt, kann die Daten möglicherweise lesen oder verändern. Für neue WGs steht geschützter Kontospeicher zur Verfügung.": "Notice: This older household uses unprotected link-based storage. Anyone who knows the household ID may be able to read or change the data. Protected account storage is available for new households.",
   "🔗 WG-Link kopiert! Teile ihn nur mit berechtigten Personen.": "🔗 Household link copied! Share it only with authorized people.",
@@ -1526,7 +1530,8 @@ const dialogPrefixes = Object.freeze({
  housemates: {
   'Registrierung fehlgeschlagen: ':'Registration failed: ',
   'Abmeldung fehlgeschlagen: ':'Sign-out failed: ',
-  'Migration fehlgeschlagen: ':'Migration failed: '
+  'Migration fehlgeschlagen: ':'Migration failed: ',
+  'Mitgliederverwaltung: ': 'Member management: '
  }
 });
 export function translateToolDialog(tool, language, message) {
