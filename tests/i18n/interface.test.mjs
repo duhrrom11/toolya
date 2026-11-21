@@ -1562,7 +1562,7 @@ test('moving box form accessibility is reversible without mutating values or att
  const values=nodes.map(node=>node.value);
  applyToolInterfaceLocale(document,'moving','en');
  assert.deepEqual(nodes.map(node=>node.getAttribute('aria-label')),
-  ['Value in euros (optional)','Contents / description','Barcode / EAN (optional)','Box name (e.g. Box #3)','Select box photo']);
+  ['Value in euros (optional)','Contents / description (e.g. string lights)','Barcode / EAN (optional)','Box name (e.g. Box #3)','Select box photo']);
  assert.equal(nodes[4].getAttribute('title'),'Select box photo');
  assert.deepEqual(nodes.map(node=>node.value),values);
  applyToolInterfaceLocale(document,'moving','de');
