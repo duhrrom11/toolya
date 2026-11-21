@@ -853,7 +853,7 @@
 
             document.getElementById('res-factor').innerText = factor.toFixed(2);
             document.getElementById('factor-display').innerText = '× ' + factor.toFixed(2);
-            document.getElementById('res-time').innerText = adjTime + ' Min.';
+            document.getElementById('res-time').innerText = adjTime + (window.__toolyaUILocale === 'en' ? ' min' : ' Min.');
             document.getElementById('res-temp').innerText = adjTemp + ' °C';
 
             const heightRatio = factor;
@@ -871,17 +871,26 @@
             }
 
             const matCost = (2.20 * factor) + (adjTime > 0 ? 0.30 : 0);
-            document.getElementById('res-cost').innerText = matCost.toFixed(2) + ' €';
+            document.getElementById('res-cost').innerText = formatBakingDisplayNumber(matCost) + ' €';
 
             updateSlices();
         }
 
         function toggleOvenFactor() { calculateAll(); }
 
+        // Presentation-only number formatting. Keep res-factor machine-readable,
+        // because the recipe calculator parses it back as an input.
+        function formatBakingDisplayNumber(value, decimals = 2) {
+            const amount = Number(value);
+            return window.__toolyaUILocale === 'en'
+                ? amount.toLocaleString('en-GB', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+                : amount.toFixed(decimals);
+        }
+
         function updateSlices() {
             const count = parseFloat(document.getElementById('slice-count').value) || 12;
             const targetD = parseFloat(document.getElementById('target-d').value) || 20;
-            const sliceWidth = ((Math.PI * targetD) / count).toFixed(1);
+            const sliceWidth = formatBakingDisplayNumber((Math.PI * targetD) / count, 1);
             document.getElementById('slice-info').innerText = window.__toolyaUILocale === "en" ? `Approx. ${sliceWidth} cm per slice at the edge.` : `ca. ${sliceWidth} cm Stückbreite am Rand.`;
         }
 
