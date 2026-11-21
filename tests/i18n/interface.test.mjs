@@ -490,3 +490,15 @@ test('household batch localizes OCR, meal planning and savings without changing 
  assert.match(html,/escapeUserHtml\(info\.allergy === 'Keine'/,'translated allergy defaults remain escaped');
  assert.match(html,/info\.wifi \|\| \(window\.__toolyaUILocale/,'stored Wi-Fi description is not translated');
 });
+
+test('household locale refresh is gated on completed load and preserves unsaved forms',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ assert.match(html,/let householdReadyForLocaleRefresh = false/);
+ assert.match(html,/renderApp\(\);\s*householdReadyForLocaleRefresh = true/);
+ assert.match(html,/document\.addEventListener\('toolya:locale-change', \(\) => \{\s*if \(!householdReadyForLocaleRefresh\) return;\s*renderApp\(\);/);
+ const region=html.slice(html.indexOf('// Presentation-only refresh'),html.indexOf('/* Storage Helper */'));
+ assert.ok(!region.includes('saveData(') && !region.includes('speichereWGinCloud('),'locale switch never persists data');
+ assert.ok(!region.includes('openCookingModal(') && !region.includes('openDietModal('),'locale switch does not reset unsaved modal inputs');
+ assert.ok(html.includes("retry.textContent = window.__toolyaUILocale === 'en' ? 'Try again' : 'Erneut versuchen'"));
+});
