@@ -1787,6 +1787,7 @@ export function applyToolInterfaceLocale(document,tool,language){
    email addresses, backend errors and machine-readable exports are untouched. */
 const dialogCopy = Object.freeze({
  moving: {
+  'Dieses Backup enthält keine Umzugsprojekte. Die bestehenden Umzugsplanungen würden verloren gehen. Trotzdem fortfahren?':'This backup contains no moving projects. Restoring it would remove your existing moving plans. Continue?',
   'Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.':'Before importing, download and check a current backup.',
   'Hast du die aktuelle Sicherung erfolgreich heruntergeladen?':'Did you successfully download the current backup?',
   'Layout konnte nicht gespeichert werden.':'Could not save the dashboard layout.',

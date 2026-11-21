@@ -103,9 +103,9 @@ body.b3-home .ty-tool-card{min-width:0;width:100%;max-width:100%;box-sizing:bord
  .ty-tool-link{display:grid;grid-template-columns:48px minmax(0,1fr);gap:10px 14px;padding:18px;align-items:center}
  .ty-tool-art,.ty-tool-art[src^='assets/vendor/bootstrap-icons/']{width:48px;height:48px;margin:0;grid-column:1;grid-row:1}
  .ty-tool-copy{display:contents}
- body.b3-home .ty-tool-card h3{grid-column:2;grid-row:1;padding-right:38px;font-size:18px;overflow-wrap:normal;hyphens:auto}
+ body.b3-home .ty-tool-card h3{grid-column:2;grid-row:1;padding-right:var(--ty-fav-size);font-size:18px;overflow-wrap:normal;hyphens:auto}
  body.b3-home .ty-tool-card p{grid-column:1/-1;grid-row:2;margin:0;overflow-wrap:normal;font-size:15px!important;line-height:1.45}
- body.b3-home .ty-tool-card .fav-btn{top:20px;right:16px;translate:0 0;width:40px;height:40px}
+ body.b3-home .ty-tool-card .fav-btn{top:18px;right:16px;translate:0 0}
 }
 /* Raster artwork supplies the quiet header waves and light points. */
 body.b3-home .b3-hub-hero{position:relative;isolation:isolate}
@@ -268,7 +268,6 @@ body.b3-home .b3-dashboard-card{
  box-shadow:0 8px 24px #0b53651a;transition:transform .18s,box-shadow .18s;
 }
 body.b3-home .b3-dashboard-card:hover{transform:translateY(-2px);box-shadow:0 14px 32px #0b536522}
-body.b3-home .b3-dashboard-card:focus-visible{outline:3px solid #0a8a9a;outline-offset:3px}
 body.b3-home .b3-dashboard-card-icon{
  display:grid;place-items:center;width:65px;height:65px;flex:0 0 65px;
  border-radius:18px;background:#d5f3f8;color:#095978
@@ -304,7 +303,7 @@ body.b3-home .b3-dashboard-card-arrow{font-size:30px;font-weight:800;color:#078a
   width:44px;height:44px;min-height:44px;padding:9px!important;
  }
  body.b3-home .b3-hero-preview.b3-dashboard-teaser{width:calc(100% - 24px);margin:0 auto 8px}
- body.b3-home .b3-dashboard-card{gap:12px;padding:13px 14px;min-height:82px;border-radius:18px}
+ body.b3-home .b3-dashboard-card{padding:13px 14px;min-height:82px}
  body.b3-home .b3-dashboard-card-icon{width:52px;height:52px;flex-basis:52px;border-radius:14px}
  body.b3-home .b3-dashboard-card-icon img{width:27px;height:27px}
  body.b3-home .b3-dashboard-card-copy strong{font-size:20px}
@@ -325,8 +324,15 @@ body.b3-home .ty-helper-note{display:block;font-size:var(--ty-helper-size);line-
 body.b3-home .b3-dashboard-card-copy .ty-helper-note{margin-top:3px}
 body.b3-home .ty-favorites-guide{order:3;flex-basis:100%;margin:4px 0 0;max-width:76ch}
 body.b3-home .ty-favorites-guide strong{font-weight:800;color:var(--hub-ink)}
-body.b3-home .ty-favorite-feedback{order:4;flex-basis:100%;font-size:var(--ty-helper-size);line-height:1.5;color:var(--hub-primary);font-weight:700}
-body.b3-home .ty-favorite-feedback:empty{display:none}
+body.b3-home .ty-favorite-feedback{
+ position:fixed;z-index:20;bottom:calc(16px + env(safe-area-inset-bottom));left:50%;
+ transform:translateX(-50%);width:max-content;max-width:min(30rem,calc(100% - 32px));
+ margin:0;pointer-events:none;font-size:14px;line-height:1.5;font-weight:700;overflow-wrap:anywhere;
+}
+body.b3-home .ty-favorite-feedback:not(:empty){
+ padding:10px 14px;border:1px solid #c4e5ec;border-radius:14px;
+ background:#ecfbfd;color:#153952;box-shadow:0 8px 24px #0b53652b;
+}
 body.b3-home .ty-tool-card .fav-btn:focus-visible,body.b3-home .b3-dashboard-card:focus-visible{outline:3px solid var(--ty-focus-color);outline-offset:3px}
 @media(max-width:790px){body.b3-home{--ty-radius-card:18px;--ty-space-card:12px}}
-@media(max-width:680px){body.b3-home{--ty-fav-size:40px}body.b3-home .ty-favorites-guide{margin-top:6px}body.b3-home .b3-dashboard-card-copy .ty-helper-note{font-size:11px;line-height:1.35}}
+@media(max-width:680px){body.b3-home .ty-favorites-guide{margin-top:6px}body.b3-home .b3-dashboard-card-copy .ty-helper-note{font-size:11px;line-height:1.35}}

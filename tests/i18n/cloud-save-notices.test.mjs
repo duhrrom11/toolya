@@ -16,13 +16,13 @@ for(const tool of tools){
   assert.ok(begin>0&&end>begin,'isolated existing save function');
   const functionSource=html.slice(begin,end);
   for(const [lang,expected] of [['en','Saved to Toolya Cloud.'],['de','In Toolya Cloud gespeichert.']]){
-   const saved=[],notices=[],blocked=[];
+   const saved=[],notices=[],blocked=[],events=[];
    const payload=tool.name==='baking'?[{name:'Privates Rezept',factor:2}]:{boxes:[{name:'Private box'}],plants:[{name:'Private plant'}]};
    const original=JSON.stringify(payload);
    const auth={getUser:async()=>({data:{user:{id:'fixture-user',is_anonymous:false}},error:null})};
    const controller={ready:true,replace:async data=>saved.push(data)};
    const context={
-    payload,console:{error(){}},
+    payload,console:{error(){}},Event,document:{dispatchEvent:event=>events.push(event.type)},
     window:{__toolyaUILocale:lang,toolyaNotice:(type,text)=>notices.push([type,text]),supabaseClient:{auth}},
     supabaseClient:{auth},[tool.ready]:true,[tool.controller]:controller,[tool.user]:'fixture-user',
     movingCloudBlock:reason=>blocked.push(reason),
@@ -35,12 +35,14 @@ for(const tool of tools){
    assert.equal(JSON.stringify(saved[0]),tool.name==='baking'?JSON.stringify({recipes:payload}):original,'cloud payload retains original schema');
    assert.deepEqual(notices,[['success',expected]]);
    assert.deepEqual(blocked,[]);
+   assert.deepEqual(events,tool.name==='moving'?['toolya:moving-saved']:[]);
    assert.equal(JSON.stringify(payload),original,'user content unchanged');
    // Rejecting the write must not display an optimistic translated success.
    controller.replace=async()=>{throw Error('synthetic save rejection')};
-   notices.length=0;saved.length=0;
+   notices.length=0;saved.length=0;events.length=0;
    assert.equal(await runInNewContext(functionSource+';'+tool.call,context),false);
    assert.deepEqual(notices,[]);
+   assert.deepEqual(events,[]);
    assert.deepEqual(blocked,['save-unconfirmed']);
   }
  });

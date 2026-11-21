@@ -75,7 +75,7 @@
     <link rel="stylesheet" href="assets/helferlein-accessibility.css?v=20261112-3">
     <script src="assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="assets/helferlein-dialogs.js"></script>
-<link rel="stylesheet" href="assets/toolya-home.css?v=20261121-p2-guidance-tokens">
+<link rel="stylesheet" href="assets/toolya-home.css?v=20261121-favorites-feedback">
 <link rel="stylesheet" href="assets/toolya-home-guides.css?v=20261119-guides-v1">
 <link rel="stylesheet" href="assets/toolya-settings.css">
 <link rel="stylesheet" href="shared/toolya/alpha.css?v=20261115-alpha">
@@ -122,6 +122,8 @@
  </aside>
 </header>
 
+<p class="ty-favorite-feedback" id="favoriteFeedback" role="status" aria-atomic="true"></p>
+
 <!-- Main Content -->
     <main id="main-content" tabindex="-1" class="b3-hub-main flex-grow container mx-auto p-4 md:p-8 max-w-7xl space-y-6">
 
@@ -132,7 +134,6 @@
     <p class="b3-section-subtitle" id="b3-result-count" role="status" aria-live="polite">12 von 12 Tools</p></div>
  </div>
  <p class="ty-helper-note ty-favorites-guide" id="favoritesGuide"><strong>Lieblings-Tools merken:</strong> Tippe auf den Stern einer Tool-Karte. Deine Auswahl wird in diesem Browser gespeichert und erscheint in „Mein Dashboard“. Mit erneutem Tippen entfernst du sie.</p>
- <p class="ty-favorite-feedback" id="favoriteFeedback" role="status" aria-live="polite" aria-atomic="true"></p>
  <div class="b3-categories" role="group" aria-label="Tool-Kategorien">
   <button type="button" class="b3-filter" data-b3-category-filter="alle" aria-pressed="true">Alle 12</button>
   <button type="button" class="b3-filter" data-b3-category-filter="finanzen" aria-pressed="false">💶 Finanzen</button>
@@ -249,7 +250,7 @@
         <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2"><h3 class="font-bold text-gray-900">Was macht das drehende Zahnrad?</h3>
           <p>Es öffnet die Einstellungen. Gemeinsame Bereiche betreffen Konto, Datensicherung und Darstellung. Zusätzliche Einstellungen eines Tools bleiben dort verfügbar, wo sie gebraucht werden.</p></div>
         <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2"><h3 class="font-bold text-gray-900">Kann ich meine Tools schneller öffnen?</h3>
-          <p>Markiere deine wichtigsten Tools mit dem Stern ⭐. Deine ersten drei Favoriten erscheinen im Schnellstart auf der Startseite.</p></div>
+          <p>Tippe auf den Stern einer Tool-Karte. Deine Lieblings-Tools findest du unter „Deine Favoriten“ im Dashboard.</p></div>
       </div>
     </section>
 
@@ -615,51 +616,36 @@
             } catch (_) { return []; }
         }
 
+        let favoriteFeedbackTimer;
+
+        function showFavoriteFeedback(message) {
+            const feedback = document.getElementById('favoriteFeedback');
+            clearTimeout(favoriteFeedbackTimer);
+            feedback.textContent = message;
+            favoriteFeedbackTimer = setTimeout(() => { feedback.textContent = ''; }, 5000);
+        }
+
         function toggleFavorite(toolId, event) {
             if(event) { event.preventDefault(); event.stopPropagation(); }
             if (!document.querySelector(`#toolsGrid .tool-card[data-id="${toolId}"]`)) return;
             let favs = readFavorites();
             favs = favs.includes(toolId) ? favs.filter(id => id !== toolId) : [...favs, toolId];
             try { localStorage.setItem('hub_favorites', JSON.stringify(favs)); }
-            catch (_) { alert('Favoriten konnten nicht gespeichert werden.'); return; }
+            catch (_) {
+                showFavoriteFeedback('Deine Favoriten konnten nicht geändert werden.');
+                return;
+            }
             initFavorites();
             const active = favs.includes(toolId);
             const name = document.querySelector('#toolsGrid .tool-card[data-id="' + toolId + '"] h3')?.textContent?.trim() || 'Tool';
-            const feedback = document.getElementById('favoriteFeedback');
-            if (feedback) feedback.textContent = active
-                ? name + ' zu deinen Lieblings-Tools hinzugefügt. Im Dashboard wiederzufinden.'
-                : name + ' aus deinen Lieblings-Tools entfernt.';
+            showFavoriteFeedback(active
+                ? name + ' gespeichert. Du findest das Tool im Dashboard.'
+                : name + ' aus deinen Lieblings-Tools entfernt.');
             window.dispatchEvent(new CustomEvent('toolya:favorite', {detail:{id:toolId, active}}));
         }
 
         function initFavorites() {
             const favs = readFavorites();
-            const quickstart = document.getElementById('b3-quickstart-list');
-            if (quickstart) {
-                quickstart.replaceChildren();
-                const favorites = favs.map(id => document.querySelector('#toolsGrid .tool-card[data-id="' + id + '"]')).filter(Boolean).slice(0, 3);
-                if (!favorites.length) {
-                    const empty = document.createElement('p');
-                    empty.className = 'b3-quickstart-empty';
-                    empty.textContent = 'Markiere unten ein Tool mit ⭐, damit es hier erscheint.';
-                    quickstart.appendChild(empty);
-                } else {
-                    favorites.forEach(card => {
-                        const source = card.querySelector('a[href^="tools/"]');
-                        if (!source) return;
-                        const link = document.createElement('a');
-                        link.href = source.getAttribute('href');
-                        const icon = document.createElement('span');
-                        icon.className = 'b3-preview-icon';
-                        icon.setAttribute('aria-hidden', 'true');
-                        const image = document.createElement('img'); image.src = 'assets/vendor/bootstrap-icons/' + (card.dataset.icon || 'star') + '.svg'; image.alt = ''; image.width = 24; image.height = 24; icon.append(image); link.dataset.toolId = card.dataset.id;
-                        const text = document.createElement('span');
-                        text.textContent = card.querySelector('h3')?.textContent?.trim() || 'Mein Tool';
-                        link.append(icon, text);
-                        quickstart.appendChild(link);
-                    });
-                }
-            }
             document.querySelectorAll('#toolsGrid .tool-card').forEach(c => {
                 const btn = c.querySelector('.fav-btn');
                 if (btn) {
@@ -1030,6 +1016,13 @@
         // JS Funktionen Global machen
         window.openSettings = openSettings;
         window.closeSettings = closeSettings;
+        window.addEventListener('storage', event => {
+            if (event.key === 'hub_favorites' || event.key === null) initFavorites();
+        });
+        window.addEventListener('pageshow', event => {
+            if (event.persisted) initFavorites();
+        });
+
         window.toggleFavorite = toggleFavorite;
         window.filterTools = filterTools;
         window.initFavorites = initFavorites;

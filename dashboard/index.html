@@ -7,13 +7,13 @@
 <meta name="robots" content="noindex,follow">
 <title>Mein Dashboard | Toolya</title>
 <meta name="description" content="Öffne deine Lieblings-Tools und synchronisiere Aufgaben und Erinnerungen sicher über dein Toolya-Konto.">
-<link rel="stylesheet" href="./dashboard.css">
+<link rel="stylesheet" href="./dashboard.css?v=20261121-favorites">
 <link rel="stylesheet" href="../assets/toolya-settings.css">
 <script src="../assets/vendor/supabase-2.57.0.js" defer></script>
 <script src="./account-settings.js" defer></script>
 <script type="module" src="../shared/toolya/platform.mjs"></script>
 <script type="module" src="../shared/toolya/i18n/dashboard-entry.mjs"></script>
-<script type="module" src="./dashboard.js"></script>
+<script type="module" src="./dashboard.js?v=20261121-favorites"></script>
 <link rel="stylesheet" href="/shared/toolya/i18n/dashboard-choice.css">
 </head>
 <body>
@@ -39,13 +39,13 @@
 <p><a href="/toolya-dashboard/">Anleitung zum Toolya-Dashboard</a></p>
 <section class="stats" aria-label="Deine Übersicht">
 <div class="stat"><span>★ Favoriten</span><strong id="fav-count">0</strong></div>
-<div class="stat"><span>↗ Zuletzt genutzt</span><strong id="recent-count">0</strong></div>
+<div class="stat"><span>Zuletzt verwendet</span><strong id="recent-count">0</strong></div>
 <div class="stat"><span>✓ Offene Aufgaben</span><strong id="task-count">0</strong></div>
 <div class="stat"><span>◷ Anstehende Termine</span><strong id="reminder-count">0</strong></div>
 </section>
 <div class="columns">
 <section class="panel" aria-labelledby="fav-heading"><div class="panel-head"><h2 id="fav-heading">★ Deine Favoriten</h2><a href="/#toolDiscovery">Tools entdecken</a></div><div id="favorites" class="tool-list"></div></section>
-<section class="panel" aria-labelledby="recent-heading"><div class="panel-head"><h2 id="recent-heading">↗ Zuletzt verwendet</h2><a href="/#toolDiscovery">Alle Tools</a></div><div id="recent" class="tool-list"></div></section>
+<section class="panel" aria-labelledby="recent-heading"><div class="panel-head"><h2 id="recent-heading">Zuletzt verwendet</h2><a href="/#toolDiscovery">Alle Tools</a></div><div id="recent" class="tool-list"></div></section>
 </div>
 <div class="columns">
 <section class="panel" aria-labelledby="tasks-heading">

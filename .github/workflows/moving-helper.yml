@@ -1,0 +1,73 @@
+name: Moving Helper release 2 security and browser CI
+on:
+  push:
+    branches: [feature/moving-helper-release2-20261121, feature/moving-incidents-20261121]
+  pull_request:
+    paths:
+      - 'tools/moving/**'
+      - 'supabase/migrations/*moving_control*'
+      - 'supabase/migrations/*moving_incidents*'
+      - 'supabase/functions/moving-helper/**'
+      - 'tests/moving-*'
+      - 'tests/browser/moving-*'
+      - '.github/workflows/moving-helper.yml'
+  workflow_dispatch:
+concurrency:
+  group: moving-helper-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  postgres-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: isolated-moving-fixture
+          POSTGRES_DB: moving_isolated
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d moving_isolated"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: moving_isolated
+      PGUSER: postgres
+      PGPASSWORD: isolated-moving-fixture
+    steps:
+      - uses: actions/checkout@v4
+      - run: psql -v ON_ERROR_STOP=1 -f tests/moving-sql-bootstrap.sql
+      - run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261121074155_moving_control_release2.sql
+      - run: psql -v ON_ERROR_STOP=1 -f tests/moving-helper-security.sql
+      - run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261121093000_moving_incidents.sql
+      - run: psql -v ON_ERROR_STOP=1 -f tests/moving-incidents-security.sql
+  edge-typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: deno check --config supabase/functions/moving-helper/deno.json supabase/functions/moving-helper/index.ts
+      - run: node --check tools/moving/moving-transport.mjs
+      - run: node --check tools/moving/helper/helper-client.mjs
+  browser-compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+      - run: node --test tests/moving-model.test.mjs tests/cloud-moving.test.mjs
+      - run: npx playwright test tests/browser/moving-ui.spec.cjs tests/browser/moving-helper.spec.cjs --config=playwright.config.cjs
