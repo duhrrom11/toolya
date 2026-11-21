@@ -158,3 +158,11 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Der vorhandene isolierte Wochentag-Test wurde um Platzhalter, Standard-Option, den unveränderten ausgewählten Koch und DE→EN→DE erweitert. Der letzte Commit benötigt einen neuen grünen CI-Nachweis.
 - **Roadmap-Schätzung unverändert: Tool-Oberflächen 77 %, Gesamt 61 %.** Die Korrektur zählt als abgesicherter Sonderzustand, noch nicht als vollständige Browser-Abnahme.
 - Sprint A und das Release-Gate bleiben offen; Draft PR #291, kein Merge, Deployment, Entfernen von `noindex` oder Änderungen an Supabase.
+
+## Sprint A – bereits geöffneter WG-Ernährungs-/Allergieeditor (2026-11-21)
+
+- Ein geöffnetes Formular für Ernährung und Allergien wechselt seine beiden Platzhalter jetzt unmittelbar zwischen `Diet`/`Ernährung` und `Allergies`/`Allergien`.
+- Die Aktualisierung greift ausschließlich auf bestehende DOM-`input`-Elemente zu. Ausgefüllte, noch nicht gespeicherte Werte, Mitbewohnerzuordnung (`data-mate`), Referenzen der Eingabefelder und Speicherschlüssel bleiben unverändert. Geschlossene Dialoge werden nicht aktualisiert.
+- Neuer isolierter Regressionstest für EN→DE, erhaltene Entwurfswerte, unveränderte Eingaben, den Cloud-Ready-Guard und fehlende Speicheroperationen.
+- **Fortschrittsschätzung unverändert:** Tool-Oberflächen **77 %**, Gesamtprojekt **61 %**. Sprint A bleibt offen: vollständige englische End-to-End-Journeys und letzte dynamische Sonderzustände sind nicht abgenommen.
+- Der vorherige HEAD `cadd0a62` hatte neun erfolgreiche CI-Workflows. Der neue HEAD erfordert eine eigene Prüfung. Draft-PR bleibt unveröffentlicht; kein Merge/Deployment oder Supabase-Eingriff.
