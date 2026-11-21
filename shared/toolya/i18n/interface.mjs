@@ -761,6 +761,54 @@ function applyBackstudioCopy(document,language){
  }
 }
 
+/* B3 menus are generated after page parse; translate only known action labels.
+   Never replace links, handlers, panel keys, user-generated content or account data. */
+const b3NavigationCopy=Object.freeze({
+ common:{
+  '☷ Weitere Tools':'☷ More tools',
+  'Darstellung & Dashboard':'Appearance & dashboard',
+  '✎ Dashboard bearbeiten':'✎ Edit dashboard',
+  '❔ Hilfe & Anleitung':'❔ Help and guide',
+  '☕ Kaffee spendieren':'☕ Buy a coffee',
+  '↗ Entdecke mehr Toolya':'↗ Explore more Toolya'
+ },
+ moving:{
+  '📦 Übersicht':'📦 Overview',
+  '📊 Statistiken':'📊 Statistics',
+  '➕ Kiste erfassen':'➕ Add box',
+  '🗄️ Inventar':'🗄️ Inventory',
+  '🔍 QR- & Barcode-Scanner':'🔍 QR & barcode scanner',
+  '📄 Inventar als PDF':'📄 Inventory as PDF',
+  '🖨️ QR-Etiketten als PDF':'🖨️ QR labels as PDF',
+  '💾 Sicherung herunterladen':'💾 Download backup',
+  '📂 Daten importieren':'📂 Import data'
+ },
+ housemates:{
+  '🏠 Übersicht':'🏠 Overview',
+  '📊 Statistiken':'📊 Statistics',
+  '📌 Pinnwand':'📌 Noticeboard',
+  '💶 Ausgaben':'💶 Expenses',
+  '🧹 Putzplan':'🧹 Cleaning schedule',
+  '📅 Kalender':'📅 Calendar',
+  '👥 Mitglieder / Kontakte':'👥 Members / contacts',
+  '🔄 Jetzt speichern':'🔄 Save now',
+  '📄 Finanzbericht (PDF)':'📄 Financial report (PDF)',
+  '🔐 Alte WG privat kopieren':'🔐 Copy older household privately',
+  '🔐 WG-Zugriff verwalten':'🔐 Manage household access',
+  '🔗 WG-Link teilen':'🔗 Share household link',
+  '📶 WLAN QR-Code':'📶 Wi-Fi QR code'
+ }
+});
+function applyB3NavigationCopy(document,tool,language){
+ const translations=b3NavigationCopy[tool];
+ if(!translations)return;
+ for(const element of document.querySelectorAll('.b3-nav-links > a,.b3-more > summary,.b3-more-content > button,.b3-preferences > h4,.b3-preferences > button,.b3-settings-footer > a')){
+  if(element.children.length||element.isContentEditable)continue;
+  const original=originals.get(element)?.get('text')??element.textContent;
+  const translation=translations[original]??b3NavigationCopy.common[original];
+  if(translation!==undefined)updateElement(element,translation,null,language);
+ }
+}
 export function applyToolInterfaceLocale(document,tool,language){
  for(const [selector,translation,attribute,attributeTranslation] of [...common,...(toolTranslations[tool]||[]),...(extendedFormTranslations[tool]||[])]){
   const translated=attribute?attributeTranslation:translation;
@@ -769,6 +817,7 @@ export function applyToolInterfaceLocale(document,tool,language){
   }
  }
  applyStaticFormCopy(document,tool,language);
+ applyB3NavigationCopy(document,tool,language);
  if(tool==='baking')applyBackstudioCopy(document,language);
 }
 
