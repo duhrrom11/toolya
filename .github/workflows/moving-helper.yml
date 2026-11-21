@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: psql -v ON_ERROR_STOP=1 -f tests/moving-sql-bootstrap.sql
-      - run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261121090000_moving_control.sql
+      - run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261121074155_moving_control_release2.sql
       - run: psql -v ON_ERROR_STOP=1 -f tests/moving-helper-security.sql
   edge-typecheck:
     runs-on: ubuntu-latest
