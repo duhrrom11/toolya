@@ -3,9 +3,9 @@
 Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 
 ## Projektstatus
-- Letzter für alle neun GitHub-Workflows vollständig geprüfter Stand vor diesem Paket: `cadd0a62`; für neuere Commits jeweils den eigenen CI-Lauf prüfen.
+- Letzter vor diesem neuen Paket vollständig geprüfter Stand: `c69838dd` (9/9 CI erfolgreich). Für jeden neueren HEAD ist ein eigener CI-Nachweis erforderlich.
 - Die englischen Startseiten und vier Tool-Einstiege sind vorhanden. Die Tool-Oberflächen sind noch nicht durchgängig übersetzt; englische öffentliche Inhalte bleiben vorerst `noindex`.
-- Gesamtfortschritt **ca. 63 % (Planungsschätzung)**, nicht automatisch gemessen: Summe der Paketgewichte × geschätztem Teilfortschritt = **62,8 %**, gerundet 63 %. Diese Zahl ist keine Aussage über vollständige Testabdeckung oder Releasefähigkeit.
+- Gesamtfortschritt **ca. 63 % (Planungsschätzung)**, nicht automatisch gemessen: Summe der Paketgewichte × geschätztem Teilfortschritt = **63,3 %**, gerundet 63 %. Diese Zahl ist keine Aussage über vollständige Testabdeckung oder Releasefähigkeit.
 - Datenbanken, Supabase-Berechtigungen, gespeicherte Objekte, Sprach-unabhängige Maskottchen-Einstellung und produktive Seiten bleiben unangetastet.
 
 ## Sechs gebündelte Arbeitspakete
@@ -14,9 +14,9 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 |---|---:|---:|---|---|
 | 1. Sprachsystem & technische Grundlage | 15 % | 100 % | fertig | DE/EN-Umschaltung reversibel; Präferenz unabhängig; bestehende Daten/Maskottchen unverändert |
 | 2. Englische Startseiten & Ratgeber | 15 % | 80 % | weitgehend | Vier Ratgeber, Startseite und Rechner vollständig redigiert, zugänglich, funktionale Links |
-| 3. Vier Tool-Oberflächen | 30 % | 81 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
+| 3. Vier Tool-Oberflächen | 30 % | 82 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
 | 4. Konten, Datenwege & Exporte | 20 % | 35 % | teilweise | Auth inklusive Recovery, erlaubte Redirects, Datenkonflikte, PDF/QR/CSV/Import/Export in EN und DE E2E |
-| 5. Qualitätssicherung & Sicherheit | 10 % | 45 % | aktiv | vollständige E2E-Tests, 320px/mobile, Keyboard, Screenreader, Auth-Sicherheit, abschließend alle CI erfolgreich |
+| 5. Qualitätssicherung & Sicherheit | 10 % | 47 % | aktiv | vollständige E2E-Tests, 320px/mobile, Keyboard, Screenreader, Auth-Sicherheit, abschließend alle CI erfolgreich |
 | 6. SEO-Freigabe & Veröffentlichung | 10 % | 0 % | gesperrt | hreflang, Canonicals, Sitemap, OG/JSON-LD, noindex nur nach Freigabegates aufheben, kontrollierter Release |
 
 Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden Strings. Ab sofort wird ein Paket erst auf 100 % gesetzt, wenn sein Abnahmekriterium nachgewiesen ist.
@@ -209,3 +209,14 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - **Schätzung jetzt:** Paket 3 **81 %**, Paket 5 **45 %**, gewichteter Gesamtwert **62,8 % ≈ 63 %**. Die höhere QA-Schätzung betrifft reale synthetische Browserabdeckung, **nicht** ein vollständiges mobiles, barrierefreies oder produktives E2E-Abnahmeergebnis.
 - **Noch offen:** restliche gemischte Sprachabschnitte (insbesondere dynamisch zusammengesetzte B3-Karten), weitere Sonder-/Fehlerzustände, vollständige Routen-/Auth-/Export-Journeys, Screenreader und finaler Release-Gate.
 - Letzter Implementierungsstand vor diesem Abschlusscommit benötigt einen eigenen erfolgreichen CI-Lauf. PR #291 bleibt Draft, keine produktiven Datenbank-/Maskottchen-/SEO-Änderungen, kein Merge oder Deployment.
+
+## Sprint A – gebündelte native Dialoge, Backup und synthetische Browserprüfung (2026-11-21)
+
+- **Umzugskisten (Backup):** Exakte Anwendungsmeldungen `Backup erfolgreich importiert!` und `Backup-Datei konnte nicht gelesen werden.` erhalten englische Varianten. Der bestehende Browserdialog-Wrapper wird verwendet; Backupdatei, Einleseformat, Bestätigungsdialog und gespeicherte Kisten bleiben unverändert.
+- **WG-Organisator (Konto, Migration, QR):** Neue exakte Übersetzungen für die Eingabe des WLAN-Netznamens sowie die mehrzeilige Meldung nach Anlage einer geschützten WG-Kopie; `Mitgliederverwaltung:` als begrenztes Präfix lokalisiert lediglich das durch die Anwendung erzeugte Fehleretikett. Nachgelagerte Backend-/Auth-Fehler bleiben original.
+- **WG-Kontaktimport:** Die dynamische Erfolgsmeldung mit `contacts.length` wird ausdrücklich DE/EN formuliert. Datenimport, gespeicherte Kontaktnamen und -felder bleiben unberührt.
+- **Regression:** Ein neuer Node-Test deckt die statischen Dialogpaare in beiden Richtungen, unbekannte Servermeldungen, dynamisches Mitgliederfehlerpräfix und den Kontaktimport-Quellpfad ab. Die Chromium-Suite enthält zwei zusätzliche mobile 320-px-Browsertests mit den realen DE-/EN-Buttons für Backup-Warnungen, WLAN-Prompt und Mitgliederausnahme. Beide fangen native Browserdialoge lokal ab und verhindern Cloud-Schreibzugriffe.
+- **Befund:** Eine zunächst fehlgeschlagene Regression für die WG-Migrationsmeldung lag an `String.raw` im Test (mehr Backslashes als im tatsächlichen JavaScript-Meldungstext); der Test wurde auf einen normalen Template-String korrigiert, um die echte Nachricht zu prüfen.
+- **Roadmap-Schätzung:** Paket 3 **82 %**, Paket 5 **47 %**, gewichteter Gesamtwert **63,3 % ≈ 63 %**. Die Änderung ist keine Abnahme aller Auth-, Import- oder Export-Journeys.
+- **Noch offen:** vollständige End-to-End-Validierung des echten Backup-Imports (synthetische Daten), Migration und Auth-Recovery, weitere dynamische B3- und Fehlermeldungen, PDF-/QR-Exportinhalte, Screenreader und endgültige redaktionelle EN-Vollständigkeit.
+- **Sicherheitsgrenze:** Isolierte Mocks und lokale Browser-Prompts; keine Produktivkonten, keine Datenbankmigration, kein Supabase-Schreibzugriff, kein Merge/Deployment oder `noindex`-Wechsel. PR #291 bleibt Draft. Den abschließenden HEAD nur nach 9/9 grünen Workflows als CI-geprüft bezeichnen.
