@@ -9,9 +9,15 @@ const SUPPORTED=Object.freeze({
  moving:{heading:'Moving box organizer',subtitle:'Track your boxes, contents and locations',guide:'/en/moving-boxes/',german:'/umzugskisten/'},
  housemates:{heading:'Roommate organizer',subtitle:'Split expenses and plan shared tasks',guide:'/en/roommate-organizer/',german:'/wg-organisator/'},
  plants:{heading:'Plant care tracker',subtitle:'Track watering, plant notes and photos',guide:'/en/plant-care/',german:'/pflanzenpflege/'},
- baking:{heading:'Cake pan and recipe calculator',subtitle:'Resize baking pans and ingredients',guide:'/en/cake-pan-calculator/',german:'/backform-rechner/'}
+ baking:{heading:'Cake pan and recipe calculator',subtitle:'Resize baking pans and ingredients',guide:'/en/cake-pan-calculator/',german:'/backform-rechner/'},
+ "budget":{"heading":"Household budget and receipt scanner","subtitle":"Track income, spending, budgets and scanned receipts","guide":"/en/household-budget/","german":"/haushaltsbuch/"},
+ "car":{"heading":"Vehicle cost tracker","subtitle":"Track vehicle expenses, maintenance and tyres","guide":"/en/vehicle-costs/","german":"/autokosten/"},
+ "loans":{"heading":"Lent item tracker","subtitle":"Track borrowed items, contacts and return dates","guide":"/en/lent-items/","german":"/verliehene-dinge/"},
+ "meters":{"heading":"Meter reading tracker","subtitle":"Record electricity, water and gas readings","guide":"/en/meter-readings/","german":"/zaehlerstaende/"},
+ "parking":{"heading":"Parking spot saver","subtitle":"Record your parking space, time and fees","guide":"/en/parking-spot/","german":"/parkplatz-merker/"},
+ "pet-health":{"heading":"Pet health diary","subtitle":"Track pets, vaccinations and vet visits","guide":"/en/pet-health/","german":"/tiergesundheit/"}
 });
-const name=location.pathname.match(/^\/tools\/(moving|housemates|plants|baking)\/(?:index\.html)?$/)?.[1];
+const name=location.pathname.match(/^\/tools\/(moving|housemates|plants|baking|budget|car|loans|meters|parking|pet-health)\/(?:index\.html)?$/)?.[1];
 const settings=SUPPORTED[name];
 function mountToolLanguage(){
  if(!settings)return;
@@ -52,7 +58,13 @@ function mountToolLanguage(){
    moving:['#userInfo','#cloudStatus'],
    housemates:['#cloud-status-text','#header-user-email'],
    plants:['#cloud-status-text','#header-user-email'],
-   baking:['#cloud-status-text']
+   baking:['#cloud-status-text'],
+   'budget':['#cloud-status-text','#header-user-email','#userInfo','#cloudStatus'],
+   'car':['#cloud-status-text','#header-user-email','#userInfo','#cloudStatus'],
+   'loans':['#cloud-status-text','#header-user-email','#userInfo','#cloudStatus'],
+   'meters':['#cloud-status-text','#header-user-email','#userInfo','#cloudStatus'],
+   'parking':['#cloud-status-text','#header-user-email','#userInfo','#cloudStatus'],
+   'pet-health':['#cloud-status-text','#header-user-email','#userInfo','#cloudStatus']
  };
  function localizeVisibleAccountStatus(lang){
    for(const selector of accountStatusSelectors[name]||[]){

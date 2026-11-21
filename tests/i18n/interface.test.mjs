@@ -2495,3 +2495,17 @@ test('shared error prefixes localize across all tools without changing backend d
   }
  }
 });
+
+test('six additional tools localise source-exact form copy without changing data keys or handlers',()=>{
+ const cases=[{"tool":"budget","de":"Haushaltsbuch mit Kassenbon-Scanner","en":"Household budget and receipt scanner"},{"tool":"car","de":"Autokosten-Rechner","en":"Vehicle cost tracker"},{"tool":"loans","de":"Verliehene Gegenstände verwalten","en":"Manage lent items"},{"tool":"meters","de":"Zählerstände erfassen: Strom, Gas & Wasser","en":"Record electricity, gas and water readings"},{"tool":"parking","de":"Parkplatz-Merker","en":"Parking spot saver"},{"tool":"pet-health","de":"Tiergesundheit – Gesundheitstagebuch für Haustiere","en":"Pet health – health diary"}];
+ for(const {tool,de,en} of cases){
+  const {document}=parseHTML('<html><body><main id="main-content"><button onclick="saveData()">'+de+'</button><input value="user-data" id="x"></main></body></html>');
+  const b=document.querySelector('button'),x=document.querySelector('input');
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(b.textContent,en,tool);
+  assert.equal(x.value,'user-data');
+  assert.equal(b.getAttribute('onclick'),'saveData()');
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(b.textContent,de);
+ }
+});
