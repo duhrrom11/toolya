@@ -263,6 +263,7 @@ test('seasonal garden calendar has all 12 English months and updates on DE/EN ch
  const output={textContent:''},handlers={};
  const context={
   window:{__toolyaUILocale:'de'},
+  plantsCloudReady:false,
   document:{
    getElementById:id=>id==='calendarTodoText'?output:null,
    addEventListener:(name,fn)=>{handlers[name]=fn;}
@@ -642,8 +643,8 @@ test('Backstudio Pro static controls and accessibility reverse without changing 
  assert.equal(document.getElementById('bsp-3d-status').textContent,'Your interactive baking pan appears here.');
  assert.equal(document.getElementById('bsp-ocr-status').textContent,'Choose camera or photo.');
  assert.equal(document.getElementById('find').getAttribute('onclick'),'run()');
- assert.equal(document.getElementById('bsp-compare-target').value,'recipe');
- assert.equal(document.querySelector('option').value,'recipe');
+ assert.equal(document.getElementById('bsp-compare-target').querySelector('option[value="recipe"]').getAttribute('value'),'recipe');
+ assert.equal(document.querySelector('option').getAttribute('value'),'recipe');
  assert.equal(document.querySelector('option').textContent,'Recipe quantity and cake height');
  assert.equal(document.getElementById('bsp-recipe-text').value,'1000.5 g flour');
  assert.equal(document.querySelector('.bsp-match strong').textContent,'Welche Form passt?','dynamic user content stays untouched');
@@ -655,7 +656,7 @@ test('Backstudio Pro static controls and accessibility reverse without changing 
  assert.equal(document.getElementById('find').textContent,'Passende Formen finden');
  assert.equal(document.getElementById('bsp-3d-status').textContent,'Hier erscheint deine drehbare Backform.');
  assert.equal(document.getElementById('bsp-ocr-status').textContent,'Wähle Kamera oder Foto.');
- assert.equal(document.getElementById('bsp-compare-target').value,'recipe');
+ assert.equal(document.getElementById('bsp-compare-target').querySelector('option[value="recipe"]').getAttribute('value'),'recipe');
  assert.equal(document.querySelector('option').textContent,'Rezeptmenge und Teighöhe');
  assert.equal(document.getElementById('bsp-recipe-text').value,'1000.5 g flour');
  assert.equal(document.getElementById('bsp-photo-preview').alt,'Dein ausgewähltes Rezeptfoto');
