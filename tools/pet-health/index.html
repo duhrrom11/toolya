@@ -112,15 +112,15 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-teal-50 text-teal-700 rounded-xl font-bold">🐕</div>
-                <div><p class="text-xs text-gray-500">Registrierte Haustiere</p><h3 id="statPets" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Registered pets">Registrierte Haustiere</p><h3 id="statPets" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">💉</div>
-                <div><p class="text-xs text-gray-500">Gesundheits-Einträge</p><h3 id="statEvents" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Health records">Gesundheits-Einträge</p><h3 id="statEvents" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
-                <div><p class="text-xs text-gray-500">Gesamtkosten</p><h3 id="statCosts" class="text-lg font-bold">0,00 €</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Total costs">Gesamtkosten</p><h3 id="statCosts" class="text-lg font-bold">0,00 €</h3></div>
             </div>
         </div>
 
@@ -135,24 +135,24 @@
             <!-- 1. Haustier anlegen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">🐕 1. Haustier-Profil & Tierarzt-Praxis</h2>
-                <label class="helferlein-field" for="petName"><span class="helferlein-field-label">Name des Haustiers</span><input type="text" id="petName" placeholder="Name des Haustiers (z.B. Luna)" class="w-full p-3 border rounded-xl text-sm" aria-label="Name des Haustiers (z.B. Luna)"></label>
+                <label class="helferlein-field" for="petName"><span class="helferlein-field-label" data-tool-en="Pet name">Name des Haustiers</span><input type="text" id="petName" placeholder="Name des Haustiers (z.B. Luna)" class="w-full p-3 border rounded-xl text-sm" aria-label="Name des Haustiers (z.B. Luna)"></label>
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="petSpecies"><span class="helferlein-field-label">Tierart / Rasse</span><input type="text" id="petSpecies" placeholder="Tierart / Rasse (z.B. Hund / Labrador)" class="p-3 border rounded-xl text-sm" aria-label="Tierart / Rasse (z.B. Hund / Labrador)"></label>
-                    <label class="helferlein-field" for="petChip"><span class="helferlein-field-label">Chip-Nummer</span><input type="text" id="petChip" placeholder="Chip-Nummer" class="p-3 border rounded-xl text-sm" aria-label="Chip-Nummer"></label>
+                    <label class="helferlein-field" for="petSpecies"><span class="helferlein-field-label" data-tool-en="Species / breed">Tierart / Rasse</span><input type="text" id="petSpecies" placeholder="Tierart / Rasse (z.B. Hund / Labrador)" class="p-3 border rounded-xl text-sm" aria-label="Tierart / Rasse (z.B. Hund / Labrador)"></label>
+                    <label class="helferlein-field" for="petChip"><span class="helferlein-field-label" data-tool-en="Microchip number">Chip-Nummer</span><input type="text" id="petChip" placeholder="Chip-Nummer" class="p-3 border rounded-xl text-sm" aria-label="Chip-Nummer" data-tool-en-placeholder="Microchip number" data-tool-en-aria-label="Microchip number"></label>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="petFood"><span class="helferlein-field-label">Futtermarke &amp; Sorte</span><input type="text" id="petFood" placeholder="Futtermarke & Sorte" class="p-3 border rounded-xl text-xs" aria-label="Futtermarke &amp; Sorte"></label>
-                    <label class="helferlein-field" for="petAllergies"><span class="helferlein-field-label">Allergien / Unverträglichkeiten</span><input type="text" id="petAllergies" placeholder="Allergien / Unverträglichkeiten" class="p-3 border rounded-xl text-xs" aria-label="Allergien / Unverträglichkeiten"></label>
+                    <label class="helferlein-field" for="petFood"><span class="helferlein-field-label" data-tool-en="Food brand and variety">Futtermarke &amp; Sorte</span><input type="text" id="petFood" placeholder="Futtermarke & Sorte" class="p-3 border rounded-xl text-xs" aria-label="Futtermarke &amp; Sorte" data-tool-en-placeholder="Food brand and variety" data-tool-en-aria-label="Food brand and variety"></label>
+                    <label class="helferlein-field" for="petAllergies"><span class="helferlein-field-label" data-tool-en="Allergies / intolerances">Allergien / Unverträglichkeiten</span><input type="text" id="petAllergies" placeholder="Allergien / Unverträglichkeiten" class="p-3 border rounded-xl text-xs" aria-label="Allergien / Unverträglichkeiten" data-tool-en-placeholder="Allergies / intolerances" data-tool-en-aria-label="Allergies / intolerances"></label>
                 </div>
                 
                 <div class="border-t pt-2 space-y-2">
                     <p class="text-xs font-bold text-gray-700">🏥 Tierarzt & Praxis-Verzeichnis:</p>
-                    <label class="helferlein-field" for="petVetName"><span class="helferlein-field-label">Praxisname &amp; Tierarzt</span><input type="text" id="petVetName" placeholder="Praxisname & Tierarzt" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Praxisname &amp; Tierarzt"></label>
+                    <label class="helferlein-field" for="petVetName"><span class="helferlein-field-label" data-tool-en="Practice name and vet">Praxisname &amp; Tierarzt</span><input type="text" id="petVetName" placeholder="Praxisname & Tierarzt" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Praxisname &amp; Tierarzt" data-tool-en-placeholder="Practice name and vet" data-tool-en-aria-label="Practice name and vet"></label>
                     <div class="grid grid-cols-2 gap-2">
-                        <label class="helferlein-field" for="petVetTel"><span class="helferlein-field-label">Telefon / Notfall-Nr.</span><input type="text" id="petVetTel" placeholder="Telefon / Notfall-Nr." class="p-2.5 border rounded-xl text-xs" aria-label="Telefon / Notfall-Nr."></label>
+                        <label class="helferlein-field" for="petVetTel"><span class="helferlein-field-label" data-tool-en="Phone / emergency number">Telefon / Notfall-Nr.</span><input type="text" id="petVetTel" placeholder="Telefon / Notfall-Nr." class="p-2.5 border rounded-xl text-xs" aria-label="Telefon / Notfall-Nr." data-tool-en-placeholder="Phone / emergency number" data-tool-en-aria-label="Phone / emergency number"></label>
                         <label class="helferlein-field" for="petVetEmail"><span class="helferlein-field-label">E-Mail-Adresse</span><input type="email" id="petVetEmail" placeholder="E-Mail-Adresse" class="p-2.5 border rounded-xl text-xs" aria-label="E-Mail-Adresse"></label>
                     </div>
-                    <label class="helferlein-field" for="petVetAddress"><span class="helferlein-field-label">Straße, PLZ &amp; Ort der Praxis</span><input type="text" id="petVetAddress" placeholder="Straße, PLZ & Ort der Praxis" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Straße, PLZ &amp; Ort der Praxis"></label>
+                    <label class="helferlein-field" for="petVetAddress"><span class="helferlein-field-label" data-tool-en="Practice street address, postcode and town">Straße, PLZ &amp; Ort der Praxis</span><input type="text" id="petVetAddress" placeholder="Straße, PLZ & Ort der Praxis" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Straße, PLZ &amp; Ort der Praxis" data-tool-en-placeholder="Practice street address, postcode and town" data-tool-en-aria-label="Practice street address, postcode and town"></label>
                 </div>
                 
                 <div class="flex items-center space-x-2 pt-1">
@@ -176,11 +176,11 @@
             <!-- 2. Gesundheits-Eintrag hinzufügen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">💉 2. Gesundheits-Eintrag & Tagebuch</h2>
-                <label class="helferlein-field" for="eventPetSelect"><span class="helferlein-field-label">Haustier für den Eintrag</span><select id="eventPetSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Haustier für den Eintrag">
+                <label class="helferlein-field" for="eventPetSelect"><span class="helferlein-field-label" data-tool-en="Pet for this entry">Haustier für den Eintrag</span><select id="eventPetSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Haustier für den Eintrag" data-tool-en-aria-label="Pet for this entry">
                     <option value="">-- Haustier wählen --</option>
                 </select></label>
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="eventType"><span class="helferlein-field-label">Art des Eintrags</span><select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags">
+                    <label class="helferlein-field" for="eventType"><span class="helferlein-field-label" data-tool-en="Entry type">Art des Eintrags</span><select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags" data-tool-en-aria-label="Entry type">
                         <option value="Impfung">💉 Impfung</option>
                         <option value="Entwurmung">🪱 Entwurmung / Parasiten</option>
                         <option value="Medikament">💊 Medikament / Behandlung</option>
@@ -189,13 +189,13 @@
                         <option value="Tagebuch">📓 Tagebuch / Notiz</option>
                         <option value="Sonstiges">📝 Sonstiges</option>
                     </select></label>
-                    <label class="helferlein-field" for="eventDate"><span class="helferlein-field-label">Datum des Eintrags</span><input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags"></label>
+                    <label class="helferlein-field" for="eventDate"><span class="helferlein-field-label" data-tool-en="Entry date">Datum des Eintrags</span><input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags" data-tool-en-aria-label="Entry date"></label>
                 </div>
-                <label class="helferlein-field" for="eventTitle"><span class="helferlein-field-label">Bezeichnung</span><input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)"></label>
+                <label class="helferlein-field" for="eventTitle"><span class="helferlein-field-label" data-tool-en="Description">Bezeichnung</span><input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)"></label>
                 
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="eventCost"><span class="helferlein-field-label">Kosten in € (optional)</span><input type="text" id="eventCost" placeholder="Kosten in € (optional)" class="p-3 border rounded-xl text-sm" aria-label="Kosten in € (optional)"></label>
-                    <label class="helferlein-field" for="eventWeight"><span class="helferlein-field-label">Gewicht in kg (optional)</span><input type="text" id="eventWeight" placeholder="Gewicht in kg (optional)" class="p-3 border rounded-xl text-sm hidden"></label>
+                    <label class="helferlein-field" for="eventCost"><span class="helferlein-field-label" data-tool-en="Cost in € (optional)">Kosten in € (optional)</span><input type="text" id="eventCost" placeholder="Kosten in € (optional)" class="p-3 border rounded-xl text-sm" aria-label="Kosten in € (optional)" data-tool-en-placeholder="Cost in € (optional)" data-tool-en-aria-label="Cost in € (optional)"></label>
+                    <label class="helferlein-field" for="eventWeight"><span class="helferlein-field-label" data-tool-en="Weight in kg (optional)">Gewicht in kg (optional)</span><input type="text" id="eventWeight" placeholder="Gewicht in kg (optional)" class="p-3 border rounded-xl text-sm hidden" data-tool-en-placeholder="Weight in kg (optional)"></label>
                 </div>
 
                 <div id="vaccineExpiryBox" class="hidden">
@@ -217,8 +217,8 @@
             <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                 <h3 class="font-bold text-lg">💊 Haustier-Apotheke & Medikamenten-Vorrat</h3>
                 <div class="b3-pet-med-fields flex gap-2 w-full sm:w-auto">
-                    <label class="helferlein-field" for="medName"><span class="helferlein-field-label">Medikament / Vorrat</span><input type="text" id="medName" placeholder="Medikament / Vorrat (z.B. Zeckenschutz)" class="p-2 border rounded-xl text-xs" aria-label="Medikament / Vorrat (z.B. Zeckenschutz)"></label>
-                    <label class="helferlein-field" for="medStock"><span class="helferlein-field-label">Stück / Packung</span><input type="text" id="medStock" placeholder="Stück / Packung (z.B. 2)" class="p-2 border rounded-xl text-xs w-28" aria-label="Stück / Packung (z.B. 2)"></label>
+                    <label class="helferlein-field" for="medName"><span class="helferlein-field-label" data-tool-en="Medicine / supplies">Medikament / Vorrat</span><input type="text" id="medName" placeholder="Medikament / Vorrat (z.B. Zeckenschutz)" class="p-2 border rounded-xl text-xs" aria-label="Medikament / Vorrat (z.B. Zeckenschutz)"></label>
+                    <label class="helferlein-field" for="medStock"><span class="helferlein-field-label" data-tool-en="Units / packs">Stück / Packung</span><input type="text" id="medStock" placeholder="Stück / Packung (z.B. 2)" class="p-2 border rounded-xl text-xs w-28" aria-label="Stück / Packung (z.B. 2)"></label>
                     <button onclick="saveMedication()" class="b3-action px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl text-xs">Hinzufügen</button>
                 </div>
             </div>
@@ -241,7 +241,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                     <h3 class="font-bold text-lg">📋 Kalender & Kosten</h3>
-                    <label class="helferlein-field" for="filterPetSelect"><span class="helferlein-field-label">Verlauf nach Haustier filtern</span><select id="filterPetSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Verlauf nach Haustier filtern">
+                    <label class="helferlein-field" for="filterPetSelect"><span class="helferlein-field-label" data-tool-en="Filter history by pet">Verlauf nach Haustier filtern</span><select id="filterPetSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Verlauf nach Haustier filtern" data-tool-en-aria-label="Filter history by pet">
                         <option value="">Alle Haustiere anzeigen</option>
                     </select></label>
                 </div>

@@ -1760,6 +1760,21 @@ function applyAdditionalToolCopy(document,tool,language){
   }
  }
 }
+const templateCopyAttributes=[['data-tool-en',null],['data-tool-en-aria-label','aria-label'],['data-tool-en-title','title'],['data-tool-en-placeholder','placeholder']];
+
+function applyTemplateCopy(document,language){
+ for(const [marker,attribute] of templateCopyAttributes){
+  for(const element of document.querySelectorAll('['+marker+']')){
+   if(element.isContentEditable||element.closest('[contenteditable]')||(!attribute&&element.children.length))continue;
+   const translation=element.getAttribute(marker);
+   const current=attribute?element.getAttribute(attribute):element.textContent;
+   const source=originals.get(element)?.get(attribute||'text')??current;
+   if(current!==source&&current!==translation)continue;
+   if(current!==(language==='en'?translation:source))updateElement(element,translation,attribute,language);
+  }
+ }
+}
+
 export function applyToolInterfaceLocale(document,tool,language){
  for(const [selector,translation,attribute,attributeTranslation] of [...common,...(toolTranslations[tool]||[]),...(extendedFormTranslations[tool]||[])]){
   const translated=attribute?attributeTranslation:translation;
@@ -1777,6 +1792,7 @@ export function applyToolInterfaceLocale(document,tool,language){
  applyToolParagraphCopy(document,tool,language);
  applyToolSmallCopy(document,tool,language);
  applyToolAccessibilityCopy(document,tool,language);
+ applyTemplateCopy(document,language);
  if(tool==='baking'){
   applyBackstudioCopy(document,language);
   applyBakingMixedTextCopy(document,language);

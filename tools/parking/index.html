@@ -169,15 +169,15 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-amber-50 text-amber-700 rounded-xl font-bold">🅿️</div>
-                <div><p class="text-xs text-gray-500">Gespeicherte Parkvorgänge</p><h3 id="statCount" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Saved parking sessions">Gespeicherte Parkvorgänge</p><h3 id="statCount" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
-                <div><p class="text-xs text-gray-500">Gebühren (Gefiltert)</p><h3 id="statCost" class="text-lg font-bold">0,00 €</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Fees (filtered)">Gebühren (Gefiltert)</p><h3 id="statCost" class="text-lg font-bold">0,00 €</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">📍</div>
-                <div><p class="text-xs text-gray-500">GPS-Standort</p><h3 id="statGps" class="text-xs font-bold text-blue-600">Nicht gespeichert</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="GPS location">GPS-Standort</p><h3 id="statGps" class="text-xs font-bold text-blue-600">Nicht gespeichert</h3></div>
             </div>
         </div>
 
@@ -205,7 +205,7 @@
                 
                 <!-- Stamm-Parkplatz Favoriten -->
                 <div class="space-y-1">
-                    <p class="text-[11px] font-semibold text-gray-500">Stamm-Parkplatz wählen:</p>
+                    <p class="text-[11px] font-semibold text-gray-500" data-tool-en="Choose a regular parking spot:">Stamm-Parkplatz wählen:</p>
                     <div class="flex gap-1.5 flex-wrap">
                         <button onclick="setFavorite('⭐ Bahnhof')" class="b3-action b3-outline px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium">⭐ Bahnhof</button>
                         <button onclick="setFavorite('⭐ Arbeit / Büro')" class="b3-action b3-outline px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium">⭐ Arbeit</button>
@@ -213,13 +213,13 @@
                     </div>
                 </div>
 
-                <label class="helferlein-field" for="parkDesc"><span class="helferlein-field-label">Standort / Parkhaus</span><input type="text" id="parkDesc" placeholder="Standort / Parkhaus (z.B. P2 Innenstadt)" class="w-full p-2.5 border rounded-xl text-sm" aria-label="Standort / Parkhaus (z.B. P2 Innenstadt)"></label>
+                <label class="helferlein-field" for="parkDesc"><span class="helferlein-field-label" data-tool-en="Location / car park">Standort / Parkhaus</span><input type="text" id="parkDesc" placeholder="Standort / Parkhaus (z.B. P2 Innenstadt)" class="w-full p-2.5 border rounded-xl text-sm" aria-label="Standort / Parkhaus (z.B. P2 Innenstadt)"></label>
                 <!-- Tiefgaragen-Ebene & Sektor -->
-                <label class="helferlein-field" for="parkSector"><span class="helferlein-field-label">Parkebene / Sektor</span><input type="text" id="parkSector" placeholder="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)" class="w-full p-2.5 border rounded-xl text-sm" aria-label="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)"></label>
+                <label class="helferlein-field" for="parkSector"><span class="helferlein-field-label" data-tool-en="Level / zone">Parkebene / Sektor</span><input type="text" id="parkSector" placeholder="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)" class="w-full p-2.5 border rounded-xl text-sm" aria-label="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)" data-tool-en-placeholder="Level / zone (e.g. level 2, row B, bay 42)" data-tool-en-aria-label="Level / zone (e.g. level 2, row B, bay 42)"></label>
 
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="parkCost"><span class="helferlein-field-label">Gebühr in €</span><input type="text" id="parkCost" placeholder="Gebühr in € (z.B. 2.50)" class="p-2.5 border rounded-xl text-sm" aria-label="Gebühr in € (z.B. 2.50)"></label>
-                    <label class="helferlein-field" for="parkPhotoInput"><span class="helferlein-field-label">Parkplatzfoto auswählen</span><input type="file" id="parkPhotoInput" accept="image/*" capture="environment" class="text-xs p-1.5 border rounded-xl file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Parkplatzfoto auswählen"></label>
+                    <label class="helferlein-field" for="parkCost"><span class="helferlein-field-label" data-tool-en="Fee in €">Gebühr in €</span><input type="text" id="parkCost" placeholder="Gebühr in € (z.B. 2.50)" class="p-2.5 border rounded-xl text-sm" aria-label="Gebühr in € (z.B. 2.50)" data-tool-en-placeholder="Fee in € (e.g. 2.50)" data-tool-en-aria-label="Fee in € (e.g. 2.50)"></label>
+                    <label class="helferlein-field" for="parkPhotoInput"><span class="helferlein-field-label" data-tool-en="Choose a parking photo">Parkplatzfoto auswählen</span><input type="file" id="parkPhotoInput" accept="image/*" capture="environment" class="text-xs p-1.5 border rounded-xl file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Parkplatzfoto auswählen" data-tool-en-aria-label="Choose a parking photo"></label>
                 </div>
                 <button onclick="saveParkingSession()" class="b3-action w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Parkplatz speichern</button>
             </div>
@@ -229,14 +229,14 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="history" id="b3-history">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                 <h3 class="font-bold text-lg">📋 Gespeicherte Parkplätze und Gebühren</h3>
-                <label class="helferlein-field" for="timeFilter"><span class="helferlein-field-label">Parkhistorie nach Zeitraum filtern</span><select id="timeFilter" onchange="renderParkingList()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Parkhistorie nach Zeitraum filtern">
+                <label class="helferlein-field" for="timeFilter"><span class="helferlein-field-label" data-tool-en="Filter parking history by period">Parkhistorie nach Zeitraum filtern</span><select id="timeFilter" onchange="renderParkingList()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Parkhistorie nach Zeitraum filtern" data-tool-en-aria-label="Filter parking history by period">
                     <option value="all">Gesamte Historie anzeigen</option>
                     <option value="month">Aktueller Monat</option>
                     <option value="year">Aktuelles Jahr</option>
                 </select></label>
             </div>
             <div id="parkingList" class="space-y-3">
-                <p class="text-sm text-gray-400 text-center py-4">Keine Parkvorgänge gespeichert.</p>
+                <p class="text-sm text-gray-400 text-center py-4" data-tool-en="No parking sessions saved.">Keine Parkvorgänge gespeichert.</p>
             </div>
         </div>
 

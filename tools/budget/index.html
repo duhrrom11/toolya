@@ -155,12 +155,12 @@
 
     <!-- Main Content -->
     <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-7xl space-y-6">
-        <section id="cs-root" aria-label="Clever sparen" aria-live="off"></section>
+        <section id="cs-root" aria-label="Clever sparen" aria-live="off" data-tool-en-aria-label="Smart saving"></section>
         
         <!-- Combined Dashboard Statistiken -->
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[11px] text-gray-500 font-medium">Monats-Einnahmen</p>
+                <p class="text-[11px] text-gray-500 font-medium" data-tool-en="Monthly income">Monats-Einnahmen</p>
                 <h3 id="statIncome" class="text-base font-bold text-emerald-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
@@ -168,23 +168,23 @@
                 <h3 id="statExpense" class="text-base font-bold text-red-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[11px] text-gray-500 font-medium">Monats-Saldo</p>
+                <p class="text-[11px] text-gray-500 font-medium" data-tool-en="Monthly balance">Monats-Saldo</p>
                 <h3 id="statBalance" class="text-base font-bold text-blue-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[11px] text-gray-500 font-medium">Fixkosten-Quote</p>
+                <p class="text-[11px] text-gray-500 font-medium" data-tool-en="Fixed-cost share">Fixkosten-Quote</p>
                 <h3 id="statFixRatio" class="text-base font-bold text-purple-600">0 %</h3>
             </div>
             <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[11px] text-gray-500 font-medium">Garantiewert aktiv</p>
+                <p class="text-[11px] text-gray-500 font-medium" data-tool-en="Value under warranty">Garantiewert aktiv</p>
                 <h3 id="statTotalWarrantyVal" class="text-base font-bold text-teal-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[11px] text-gray-500 font-medium">Hausrat-Zeitwert</p>
+                <p class="text-[11px] text-gray-500 font-medium" data-tool-en="Current value of household items">Hausrat-Zeitwert</p>
                 <h3 id="statZeitwertTotal" class="text-base font-bold text-amber-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200 col-span-2 md:col-span-1">
-                <p class="text-[11px] text-gray-500 font-medium">Steuer-Gesamtwert</p>
+                <p class="text-[11px] text-gray-500 font-medium" data-tool-en="Total tax-related value">Steuer-Gesamtwert</p>
                 <h3 id="statTaxVal" class="text-base font-bold text-indigo-600">0,00 €</h3>
             </div>
         </div>
@@ -197,12 +197,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <p class="text-xs font-semibold text-gray-500 text-center mb-2">Ausgaben nach Kategorie</p>
-                        <div class="h-48 flex justify-center min-w-0 max-w-full overflow-hidden"><canvas class="max-w-full" id="categoryChart" role="img" aria-label="Diagramm: Haushaltsausgaben nach Kategorie" aria-describedby="categoryChartSummary"></canvas></div>
+                        <div class="h-48 flex justify-center min-w-0 max-w-full overflow-hidden"><canvas class="max-w-full" id="categoryChart" role="img" aria-label="Diagramm: Haushaltsausgaben nach Kategorie" aria-describedby="categoryChartSummary" data-tool-en-aria-label="Chart: household spending by category"></canvas></div>
                         <p id="categoryChartSummary" class="text-xs text-gray-600 mt-2" aria-live="off"></p>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold text-gray-500 text-center mb-2">Monatsverlauf (Cashflow)</p>
-                        <div class="h-48 flex justify-center min-w-0 max-w-full overflow-hidden"><canvas class="max-w-full" id="cashflowChart" role="img" aria-label="Diagramm: monatlicher Cashflow im Haushaltsbuch" aria-describedby="cashflowChartSummary"></canvas></div>
+                        <p class="text-xs font-semibold text-gray-500 text-center mb-2" data-tool-en="Monthly cash flow">Monatsverlauf (Cashflow)</p>
+                        <div class="h-48 flex justify-center min-w-0 max-w-full overflow-hidden"><canvas class="max-w-full" id="cashflowChart" role="img" aria-label="Diagramm: monatlicher Cashflow im Haushaltsbuch" aria-describedby="cashflowChartSummary" data-tool-en-aria-label="Chart: monthly household cash flow"></canvas></div>
                         <p id="cashflowChartSummary" class="text-xs text-gray-600 mt-2" aria-live="off"></p>
                     </div>
                 </div>
@@ -214,8 +214,8 @@
                     <h3 class="font-bold text-base text-gray-900">🎯 Monatsbudgets im Blick</h3>
                     <button onclick="openBudgetModal()" class="px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold b3-action b3-outline">⚙️ Budgets anpassen</button>
                 </div>
-                <div id="budgetProgressList" tabindex="0" role="region" aria-label="Monatsbudgets" tabindex="0" role="region" aria-label="Monatsbudgets" class="space-y-3 max-h-56 overflow-y-auto pr-1">
-                    <p class="text-xs text-gray-400 text-center py-4">Lade Budgets...</p>
+                <div id="budgetProgressList" tabindex="0" role="region" aria-label="Monatsbudgets" tabindex="0" role="region" aria-label="Monatsbudgets" class="space-y-3 max-h-56 overflow-y-auto pr-1" data-tool-en-aria-label="Monthly budgets" data-tool-en-aria-label="Monthly budgets">
+                    <p class="text-xs text-gray-400 text-center py-4" data-tool-en="Loading budgets…">Lade Budgets...</p>
                 </div>
             </div>
         </div>
@@ -251,7 +251,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                     <label for="receiptTitle" class="block text-xs font-semibold text-gray-600 mb-1">Titel / Artikel / Zweck *:</label>
-                    <input type="text" id="receiptTitle" placeholder="z.B. Waschmaschine, Supermarkt, Gehalt" class="w-full p-3 border rounded-xl text-sm">
+                    <input type="text" id="receiptTitle" placeholder="z.B. Waschmaschine, Supermarkt, Gehalt" class="w-full p-3 border rounded-xl text-sm" data-tool-en-placeholder="e.g. washing machine, groceries, salary">
                 </div>
                 <div>
                     <label for="receiptStore" class="block text-xs font-semibold text-gray-600 mb-1">Händler / Partner / Quelle:</label>
@@ -287,10 +287,10 @@
                 <div>
                     <label for="receiptPaymentMethod" class="block text-xs font-semibold text-gray-600 mb-1">Zahlungsart:</label>
                     <select id="receiptPaymentMethod" class="w-full p-3 border rounded-xl text-sm bg-white">
-                        <option value="EC-Karte">💳 EC / Bankkarte</option>
-                        <option value="Bargeld">💵 Bargeld</option>
-                        <option value="Kreditkarte">💳 Kreditkarte</option>
-                        <option value="Überweisung">🏦 Überweisung / Dauerauftrag</option>
+                        <option value="EC-Karte" data-tool-en="💳 Debit card">💳 EC / Bankkarte</option>
+                        <option value="Bargeld" data-tool-en="💵 Cash">💵 Bargeld</option>
+                        <option value="Kreditkarte" data-tool-en="💳 Credit card">💳 Kreditkarte</option>
+                        <option value="Überweisung" data-tool-en="🏦 Bank transfer / standing order">🏦 Überweisung / Dauerauftrag</option>
                         <option value="PayPal">🅿️ PayPal</option>
                     </select>
                 </div>
@@ -304,7 +304,7 @@
                 </div>
                 <div>
                     <label for="receiptLifespan" class="block text-xs font-semibold text-gray-600 mb-1">Nutzung (Jahre):</label>
-                    <input type="number" id="receiptLifespan" value="5" placeholder="5" class="w-full p-3 border rounded-xl text-sm" title="Erforderlich für den Hausrat-Zeitwert">
+                    <input type="number" id="receiptLifespan" value="5" placeholder="5" class="w-full p-3 border rounded-xl text-sm" title="Erforderlich für den Hausrat-Zeitwert" data-tool-en-title="Required to estimate the current value">
                 </div>
             </div>
 
@@ -316,12 +316,12 @@
                 </div>
                 <div>
                     <label for="receiptLocation" class="block text-xs font-semibold text-gray-600 mb-1">Lagerort Karton / Zubehör:</label>
-                    <input type="text" id="receiptLocation" placeholder="z.B. Keller Kiste #2" class="w-full p-2.5 border rounded-lg text-xs bg-white">
+                    <input type="text" id="receiptLocation" placeholder="z.B. Keller Kiste #2" class="w-full p-2.5 border rounded-lg text-xs bg-white" data-tool-en-placeholder="e.g. basement box #2">
                 </div>
                 <div class="flex flex-col justify-center space-y-2 pt-1">
                     <label class="inline-flex items-center cursor-pointer space-x-2">
                         <input type="checkbox" id="receiptIsFixkosten" class="w-4 h-4 text-purple-600 rounded">
-                        <span class="text-xs font-bold text-gray-700">🔄 Wiederkehrende Fixkosten / Abo</span>
+                        <span class="text-xs font-bold text-gray-700" data-tool-en="🔄 Recurring cost / subscription">🔄 Wiederkehrende Fixkosten / Abo</span>
                     </label>
                     <label class="inline-flex items-center cursor-pointer space-x-2">
                         <input type="checkbox" id="receiptIsTax" class="w-4 h-4 text-emerald-600 rounded">
@@ -423,7 +423,7 @@
             <div class="space-y-3 text-xs">
                 <div>
                     <label for="goalTitle" class="block font-semibold mb-1">Bezeichnung des Zieles *:</label>
-                    <input type="text" id="goalTitle" placeholder="z.B. Urlaub, Notgroschen" class="w-full p-2.5 border rounded-xl">
+                    <input type="text" id="goalTitle" placeholder="z.B. Urlaub, Notgroschen" class="w-full p-2.5 border rounded-xl" data-tool-en-placeholder="e.g. holiday, emergency fund">
                 </div>
                 <div>
                     <label for="goalTarget" class="block font-semibold mb-1">Zielbetrag (€) *:</label>

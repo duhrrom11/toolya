@@ -96,10 +96,10 @@
     <!-- B3 Navigation: original tab buttons still call openTab() -->
 <nav class="b3-backform-nav" aria-label="Backform-Werkzeuge">
  <div class="b3-backform-tabs">
-  <button type="button" class="b3-tab bg-orange-50" onclick="openTab('rechner')" id="btn-tab-rechner">🧮 Backform-Rechner</button>
-  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('rezepte')" id="btn-tab-rezepte">📚 Meine Rezepte</button>
-  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('substanz')" id="btn-tab-substanz">🥄 Backhelfer</button>
-  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('tools')" id="btn-tab-tools">💶 Kosten & Planung</button>
+  <button type="button" class="b3-tab bg-orange-50" onclick="openTab('rechner')" id="btn-tab-rechner" data-tool-en="🧮 Cake pan calculator">🧮 Backform-Rechner</button>
+  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('rezepte')" id="btn-tab-rezepte" data-tool-en="📚 My recipes">📚 Meine Rezepte</button>
+  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('substanz')" id="btn-tab-substanz" data-tool-en="🥄 Baking helpers">🥄 Backhelfer</button>
+  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('tools')" id="btn-tab-tools" data-tool-en="💶 Costs and planning">💶 Kosten & Planung</button>
  </div>
  <details class="b3-more" id="b3-backform-more"><summary>☷ Mehr</summary>
  <div class="b3-more-content">
@@ -119,7 +119,7 @@
             <div id="tab-rechner" class="space-y-6">
 <div class="b3-subview-link"><button type="button" onclick="openTab('finder')">⭕ Welche Backform passt? Formen-Finder öffnen</button></div>
                 
-                <div class="b3-workflow-intro"><strong>In 3 Schritten zum passenden Backrezept</strong><p>Wähle zuerst deine Backformen, füge bei Bedarf Zutaten hinzu und passe anschließend die Backbedingungen an. Die Ergebnisse werden automatisch berechnet.</p></div>
+                <div class="b3-workflow-intro"><strong data-tool-en="Adapt your recipe in three steps">In 3 Schritten zum passenden Backrezept</strong><p>Wähle zuerst deine Backformen, füge bei Bedarf Zutaten hinzu und passe anschließend die Backbedingungen an. Die Ergebnisse werden automatisch berechnet.</p></div>
 <!-- Schritt 1: Original- und Zielform -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
@@ -273,7 +273,7 @@
                     <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
                         <div class="flex items-center space-x-3">
                             <input type="checkbox" id="use-oven-factor" checked class="w-4 h-4 text-orange-600 rounded border-slate-300" onchange="toggleOvenFactor()" aria-label="Mein Ofenfaktor">
-                            <span class="text-xs font-medium text-slate-700">Meinen Ofenfaktor nutzen</span>
+                            <span class="text-xs font-medium text-slate-700" data-tool-en="Use my oven factor">Meinen Ofenfaktor nutzen</span>
                         </div>
                         <div class="text-xs font-semibold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-lg">
                             Rezeptmenge: <span id="factor-display">× 1.00</span>
@@ -503,11 +503,11 @@
                         <span id="res-factor" class="text-base font-bold text-slate-900">1.00</span>
                     </div>
                     <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                        <span class="block text-[10px] font-semibold text-slate-500 uppercase">Backzeit (ca.)</span>
+                        <span class="block text-[10px] font-semibold text-slate-500 uppercase" data-tool-en="Approx. baking time">Backzeit (ca.)</span>
                         <span id="res-time" class="text-base font-bold text-slate-900">45 Min.</span>
                     </div>
                     <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                        <span class="block text-[10px] font-semibold text-slate-500 uppercase">Temperatur</span>
+                        <span class="block text-[10px] font-semibold text-slate-500 uppercase" data-tool-en="Temperature">Temperatur</span>
                         <span id="res-temp" class="text-base font-bold text-slate-900">180 °C</span>
                     </div>
                     <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
@@ -518,7 +518,7 @@
 
                 <!-- Volumen & Füllstands-Warnung -->
                 <div id="volume-warning-box" class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1">
-                    <strong class="block font-semibold text-slate-800">So voll wird die Form:</strong>
+                    <strong class="block font-semibold text-slate-800" data-tool-en="How full the pan will be:">So voll wird die Form:</strong>
                     <p id="volume-warning-text">Teighöhe entspricht exakt dem Original.</p>
                 </div>
 
@@ -557,7 +557,7 @@
 
                 <!-- Lagerungs-Tipp -->
                 <div class="p-3 rounded-xl bg-sky-50 border border-sky-100 text-xs text-sky-900">
-                    <strong class="block font-semibold">Lagerungstipp:</strong>
+                    <strong class="block font-semibold" data-tool-en="Storage tip:">Lagerungstipp:</strong>
                     <p id="storage-tip">Rührkuchen: Bei Raumtemperatur in Alufolie luftdicht verpacken (3-4 Tage frisch).</p>
                 </div>
 
@@ -609,7 +609,7 @@
 <section id="b3-backform-preferences" aria-label="Darstellung und Dashboard">
   <h3>⚙ Dashboard anpassen</h3>
 <button type="button" id="b3-backform-edit" class="b3-action">✎ Dashboard bearbeiten</button>
-  <div id="b3-backform-editor" hidden aria-label="Dashboard-Einstellungen"></div>
+  <div id="b3-backform-editor" hidden aria-label="Dashboard-Einstellungen" data-tool-en-aria-label="Dashboard settings"></div>
   <p class="text-xs">Alle Rechenwerkzeuge bleiben erreichbar. Hier kannst du Reihenfolge und Kartendichte anpassen.</p>
   <div class="b3-backform-help"><div id="help-box" class="hidden border-t border-slate-100 bg-orange-50/40 px-4 sm:px-8 py-4">
             <div class="max-w-4xl mx-auto space-y-2">
@@ -654,7 +654,7 @@
             </div>
             <div>
                 <h3 id="timer-phase-title" role="status" aria-live="polite" aria-atomic="true" class="text-xl font-bold text-slate-900">Phase 1: Backen</h3>
-                <p class="text-xs text-slate-500 mt-1">Multi-Timer aktiv</p>
+                <p class="text-xs text-slate-500 mt-1" data-tool-en="Multiple timers running">Multi-Timer aktiv</p>
             </div>
             <div id="timer-display" class="text-5xl font-mono font-bold text-slate-800 tracking-wider">
                 45:00

@@ -187,7 +187,7 @@
         <!-- Dashboard KPIs -->
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Monats-Einnahmen</p>
+                <p class="text-[10px] text-gray-500 font-medium" data-tool-en="Monthly income">Monats-Einnahmen</p>
                 <h3 id="statIncome" class="text-sm md:text-base font-bold text-emerald-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
@@ -195,23 +195,23 @@
                 <h3 id="statExpense" class="text-sm md:text-base font-bold text-red-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Monats-Saldo</p>
+                <p class="text-[10px] text-gray-500 font-medium" data-tool-en="Monthly balance">Monats-Saldo</p>
                 <h3 id="statBalance" class="text-sm md:text-base font-bold text-blue-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Offene WG-Schulden</p>
+                <p class="text-[10px] text-gray-500 font-medium" data-tool-en="Outstanding household balances">Offene WG-Schulden</p>
                 <h3 id="statDebtVolume" class="text-sm md:text-base font-bold text-amber-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Fixkosten-Quote</p>
+                <p class="text-[10px] text-gray-500 font-medium" data-tool-en="Fixed-cost share">Fixkosten-Quote</p>
                 <h3 id="statFixRatio" class="text-sm md:text-base font-bold text-purple-600">0 %</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Inventar Restwert</p>
+                <p class="text-[10px] text-gray-500 font-medium" data-tool-en="Current inventory value">Inventar Restwert</p>
                 <h3 id="statInventoryValue" class="text-sm md:text-base font-bold text-teal-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Aktive Sticky Notes</p>
+                <p class="text-[10px] text-gray-500 font-medium" data-tool-en="Active sticky notes">Aktive Sticky Notes</p>
                 <h3 id="statNoteCount" class="text-sm md:text-base font-bold text-amber-500">0</h3>
             </div>
         </div>
@@ -243,9 +243,9 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 border rounded-2xl text-xs">
-                    <p>📶 <strong>WLAN-Passwort:</strong> <br><span id="infoWifi" class="font-mono bg-white px-2 py-1 rounded border block mt-1 text-center font-bold">Lade...</span></p>
-                    <p>🏠 <strong>Vermieter:</strong> <br><span id="infoLandlord" class="font-semibold text-gray-700 block mt-1">Lade...</span></p>
-                    <p>🛠️ <strong>Hausmeister / Notdienst:</strong> <br><span id="infoCaretaker" class="font-semibold text-gray-700 block mt-1">Lade...</span></p>
+                    <p>📶 <strong data-tool-en="Wi-Fi password:">WLAN-Passwort:</strong> <br><span id="infoWifi" class="font-mono bg-white px-2 py-1 rounded border block mt-1 text-center font-bold">Lade...</span></p>
+                    <p>🏠 <strong data-tool-en="Landlord:">Vermieter:</strong> <br><span id="infoLandlord" class="font-semibold text-gray-700 block mt-1">Lade...</span></p>
+                    <p>🛠️ <strong data-tool-en="Building caretaker / emergency service:">Hausmeister / Notdienst:</strong> <br><span id="infoCaretaker" class="font-semibold text-gray-700 block mt-1">Lade...</span></p>
                     <p>🗑️ <strong>Müllabfuhr:</strong> <br><span id="infoTrash" class="font-semibold text-gray-700 block mt-1">Lade...</span></p>
                 </div>
             </div>
@@ -275,7 +275,7 @@
                     <button onclick="openBudgetModal()" class="b3-action b3-outline px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold">⚙️ Anpassen</button>
                 </div>
                 <div id="budgetProgressList" class="space-y-2.5 max-h-52 overflow-y-auto pr-1">
-                    <p class="text-xs text-gray-400 text-center py-4">Lade Budgets...</p>
+                    <p class="text-xs text-gray-400 text-center py-4" data-tool-en="Loading budgets…">Lade Budgets...</p>
                 </div>
             </div>
         </div>
@@ -408,7 +408,7 @@
                     <button onclick="settleAllDebts()" class="b3-action b3-outline px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">✓ Ausgleichshinweis</button>
                 </div>
                 <div id="settlementList" class="space-y-1.5 text-xs text-gray-700">
-                    <p class="text-gray-400">Berechne Ausgleich...</p>
+                    <p class="text-gray-400" data-tool-en="Calculating balances…">Berechne Ausgleich...</p>
                 </div>
             </div>
 
@@ -571,7 +571,7 @@
                 </div>
                 <div>
                     <label for="noteContentInput" class="block font-semibold mb-1">Nachricht / Notiz (optional):</label>
-                    <textarea id="noteContentInput" rows="3" placeholder="Notiere hier wichtige Infos für die WG..." class="w-full p-2.5 border rounded-xl resize-none"></textarea>
+                    <textarea id="noteContentInput" rows="3" placeholder="Notiere hier wichtige Infos für die WG..." class="w-full p-2.5 border rounded-xl resize-none" data-tool-en-placeholder="Add important household information…"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -812,10 +812,10 @@
                 <input type="hidden" id="editMateIndex" value="-1">
                 <h4 id="mateFormTitle" class="font-bold text-gray-800">➕ Neues Mitglied hinzufügen</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <input type="text" id="mateVorname" placeholder="Vorname *" class="p-2 border rounded-xl bg-white">
-                    <input type="text" id="mateNachname" placeholder="Nachname / Anzeigename *" class="p-2 border rounded-xl bg-white">
+                    <input type="text" id="mateVorname" placeholder="Vorname *" class="p-2 border rounded-xl bg-white" data-tool-en-placeholder="First name *">
+                    <input type="text" id="mateNachname" placeholder="Nachname / Anzeigename *" class="p-2 border rounded-xl bg-white" data-tool-en-placeholder="Last name / display name *">
                     <input type="email" id="mateEmail" placeholder="E-Mail-Adresse" class="p-2 border rounded-xl bg-white">
-                    <input type="tel" id="matePhone" placeholder="WhatsApp / Telefonnummer" class="p-2 border rounded-xl bg-white">
+                    <input type="tel" id="matePhone" placeholder="WhatsApp / Telefonnummer" class="p-2 border rounded-xl bg-white" data-tool-en-placeholder="WhatsApp / phone number">
                     <input type="text" id="mateInsta" placeholder="Instagram (@handle)" class="p-2 border rounded-xl bg-white">
                     <input type="text" id="mateFb" placeholder="Facebook Profile URL / Name" class="p-2 border rounded-xl bg-white">
                 </div>
@@ -886,11 +886,11 @@
                     <input type="text" id="contractName" placeholder="z. B. Vodafone, GEZ" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label for="contractPrice" class="block font-semibold mb-1">Monatliche Kosten (€) *:</label>
+                    <label for="contractPrice" class="block font-semibold mb-1" data-tool-en="Monthly cost (€) *:">Monatliche Kosten (€) *:</label>
                     <input type="number" step="0.01" id="contractPrice" placeholder="39.99" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label for="contractPayer" class="block font-semibold mb-1">Hauptzahler:</label>
+                    <label for="contractPayer" class="block font-semibold mb-1" data-tool-en="Main payer:">Hauptzahler:</label>
                     <select id="contractPayer" class="w-full p-2.5 border rounded-xl bg-white"></select>
                 </div>
                 <div>

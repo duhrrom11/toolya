@@ -110,15 +110,15 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-red-50 text-red-700 rounded-xl font-bold">🚙</div>
-                <div><p class="text-xs text-gray-500">Registrierte Fahrzeuge</p><h3 id="statCars" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Registered vehicles">Registrierte Fahrzeuge</p><h3 id="statCars" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">🛠️</div>
-                <div><p class="text-xs text-gray-500">Einträge (gefiltert)</p><h3 id="statEvents" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Entries (filtered)">Einträge (gefiltert)</p><h3 id="statEvents" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
-                <div><p class="text-xs text-gray-500">Gesamtkosten (gefiltert)</p><h3 id="statCosts" class="text-lg font-bold">0,00 €</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Total costs (filtered)">Gesamtkosten (gefiltert)</p><h3 id="statCosts" class="text-lg font-bold">0,00 €</h3></div>
             </div>
         </div>
 
@@ -133,14 +133,14 @@
             <!-- 1. Fahrzeug anlegen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">🚗 Fahrzeug anlegen und Unterlagen ablegen</h2>
-                <label class="helferlein-field" for="carName"><span class="helferlein-field-label">Fahrzeugname</span><input type="text" id="carName" placeholder="Fahrzeugname (z.B. Familien-Golf)" class="w-full p-3 border rounded-xl text-sm" aria-label="Fahrzeugname (z.B. Familien-Golf)"></label>
+                <label class="helferlein-field" for="carName"><span class="helferlein-field-label" data-tool-en="Vehicle name">Fahrzeugname</span><input type="text" id="carName" placeholder="Fahrzeugname (z.B. Familien-Golf)" class="w-full p-3 border rounded-xl text-sm" aria-label="Fahrzeugname (z.B. Familien-Golf)"></label>
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="carPlate"><span class="helferlein-field-label">Kennzeichen</span><input type="text" id="carPlate" placeholder="Kennzeichen (z.B. B-AB 1234)" class="p-3 border rounded-xl text-sm" aria-label="Kennzeichen (z.B. B-AB 1234)"></label>
-                    <label class="helferlein-field" for="carKm"><span class="helferlein-field-label">KM-Stand</span><input type="text" id="carKm" placeholder="KM-Stand (z.B. 125000)" class="p-3 border rounded-xl text-sm" aria-label="KM-Stand (z.B. 125000)"></label>
+                    <label class="helferlein-field" for="carPlate"><span class="helferlein-field-label" data-tool-en="Registration number">Kennzeichen</span><input type="text" id="carPlate" placeholder="Kennzeichen (z.B. B-AB 1234)" class="p-3 border rounded-xl text-sm" aria-label="Kennzeichen (z.B. B-AB 1234)"></label>
+                    <label class="helferlein-field" for="carKm"><span class="helferlein-field-label" data-tool-en="Odometer reading">KM-Stand</span><input type="text" id="carKm" placeholder="KM-Stand (z.B. 125000)" class="p-3 border rounded-xl text-sm" aria-label="KM-Stand (z.B. 125000)"></label>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="carInsurance"><span class="helferlein-field-label">Versicherung &amp; Pol.-Nr.</span><input type="text" id="carInsurance" placeholder="Versicherung & Pol.-Nr." class="p-3 border rounded-xl text-xs" aria-label="Versicherung &amp; Pol.-Nr."></label>
-                    <label class="helferlein-field" for="carEmergency"><span class="helferlein-field-label">Notfall- / Pannen-Tel.</span><input type="text" id="carEmergency" placeholder="Notfall- / Pannen-Tel." class="p-3 border rounded-xl text-xs" aria-label="Notfall- / Pannen-Tel."></label>
+                    <label class="helferlein-field" for="carInsurance"><span class="helferlein-field-label" data-tool-en="Insurer and policy number">Versicherung &amp; Pol.-Nr.</span><input type="text" id="carInsurance" placeholder="Versicherung & Pol.-Nr." class="p-3 border rounded-xl text-xs" aria-label="Versicherung &amp; Pol.-Nr." data-tool-en-placeholder="Insurer and policy number" data-tool-en-aria-label="Insurer and policy number"></label>
+                    <label class="helferlein-field" for="carEmergency"><span class="helferlein-field-label" data-tool-en="Emergency / breakdown phone number">Notfall- / Pannen-Tel.</span><input type="text" id="carEmergency" placeholder="Notfall- / Pannen-Tel." class="p-3 border rounded-xl text-xs" aria-label="Notfall- / Pannen-Tel." data-tool-en-placeholder="Emergency / breakdown phone number" data-tool-en-aria-label="Emergency / breakdown phone number"></label>
                 </div>
                 <div class="grid grid-cols-2 gap-2 text-xs">
                     <div>
@@ -158,11 +158,11 @@
             <!-- 2. Wartung / Tanken / Reifen erfassen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">🛠️ Autokosten und Belege erfassen</h2>
-                <label class="helferlein-field" for="eventCarSelect"><span class="helferlein-field-label">Fahrzeug für den Eintrag</span><select id="eventCarSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Fahrzeug für den Eintrag">
+                <label class="helferlein-field" for="eventCarSelect"><span class="helferlein-field-label" data-tool-en="Vehicle for this entry">Fahrzeug für den Eintrag</span><select id="eventCarSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Fahrzeug für den Eintrag" data-tool-en-aria-label="Vehicle for this entry">
                     <option value="">-- Fahrzeug wählen --</option>
                 </select></label>
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="eventType"><span class="helferlein-field-label">Art des Eintrags</span><select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags">
+                    <label class="helferlein-field" for="eventType"><span class="helferlein-field-label" data-tool-en="Entry type">Art des Eintrags</span><select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags" data-tool-en-aria-label="Entry type">
                         <option value="TÜV / HU">🔍 TÜV / Hauptuntersuchung</option>
                         <option value="Inspektion">⚙️ Inspektion & Service</option>
                         <option value="Versicherung">🛡️ Versicherung (Fixkosten)</option>
@@ -173,15 +173,15 @@
                         <option value="Reparatur">🔧 Reparatur</option>
                         <option value="Tanken">⛽ Tanken / Kraftstoff</option>
                     </select></label>
-                    <label class="helferlein-field" for="eventDate"><span class="helferlein-field-label">Datum des Eintrags</span><input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags"></label>
+                    <label class="helferlein-field" for="eventDate"><span class="helferlein-field-label" data-tool-en="Entry date">Datum des Eintrags</span><input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags" data-tool-en-aria-label="Entry date"></label>
                 </div>
-                <label class="helferlein-field" for="eventTitle"><span class="helferlein-field-label">Bezeichnung</span><input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Vollkasko Jahresbeitrag)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Vollkasko Jahresbeitrag)"></label>
+                <label class="helferlein-field" for="eventTitle"><span class="helferlein-field-label" data-tool-en="Description">Bezeichnung</span><input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Vollkasko Jahresbeitrag)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Vollkasko Jahresbeitrag)"></label>
                 
                 <div class="grid grid-cols-3 gap-2">
-                    <label class="helferlein-field" for="eventCost"><span class="helferlein-field-label">Kosten in €</span><input type="text" id="eventCost" placeholder="Kosten in €" class="p-3 border rounded-xl text-sm" aria-label="Kosten in €"></label>
-                    <label class="helferlein-field" for="eventTread"><span class="helferlein-field-label">Profil (mm)</span><input type="text" id="eventTread" placeholder="Profil (mm)" class="p-3 border rounded-xl text-sm hidden"></label>
-                    <label class="helferlein-field" for="eventKm"><span class="helferlein-field-label">KM-Stand</span><input type="text" id="eventKm" placeholder="KM-Stand" class="p-3 border rounded-xl text-sm hidden" title="Aktueller KM-Stand beim Tanken"></label>
-                    <label class="helferlein-field" for="eventLitres"><span class="helferlein-field-label">Liter</span><input type="text" id="eventLitres" placeholder="Liter" class="p-3 border rounded-xl text-sm hidden" title="Getankte Liter"></label>
+                    <label class="helferlein-field" for="eventCost"><span class="helferlein-field-label" data-tool-en="Cost in €">Kosten in €</span><input type="text" id="eventCost" placeholder="Kosten in €" class="p-3 border rounded-xl text-sm" aria-label="Kosten in €" data-tool-en-placeholder="Cost in €" data-tool-en-aria-label="Cost in €"></label>
+                    <label class="helferlein-field" for="eventTread"><span class="helferlein-field-label" data-tool-en="Tread depth (mm)">Profil (mm)</span><input type="text" id="eventTread" placeholder="Profil (mm)" class="p-3 border rounded-xl text-sm hidden" data-tool-en-placeholder="Tread depth (mm)"></label>
+                    <label class="helferlein-field" for="eventKm"><span class="helferlein-field-label" data-tool-en="Odometer reading">KM-Stand</span><input type="text" id="eventKm" placeholder="KM-Stand" class="p-3 border rounded-xl text-sm hidden" title="Aktueller KM-Stand beim Tanken" data-tool-en-placeholder="Odometer reading" data-tool-en-title="Current odometer reading when refuelling"></label>
+                    <label class="helferlein-field" for="eventLitres"><span class="helferlein-field-label" data-tool-en="Litres">Liter</span><input type="text" id="eventLitres" placeholder="Liter" class="p-3 border rounded-xl text-sm hidden" title="Getankte Liter" data-tool-en-placeholder="Litres"></label>
                 </div>
 
                 <div>
@@ -209,17 +209,17 @@
                 <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" id="b3-tires">
                     <h3 class="font-bold text-lg">🛞 Reifensätze verwalten</h3>
                     <div class="grid grid-cols-2 gap-2">
-                        <label class="helferlein-field" for="tireCarSelect"><span class="helferlein-field-label">Fahrzeug für den Reifensatz</span><select id="tireCarSelect" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Fahrzeug für den Reifensatz"></select></label>
-                        <label class="helferlein-field" for="tireType"><span class="helferlein-field-label">Reifentyp</span><select id="tireType" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Reifentyp">
+                        <label class="helferlein-field" for="tireCarSelect"><span class="helferlein-field-label" data-tool-en="Vehicle for this tyre set">Fahrzeug für den Reifensatz</span><select id="tireCarSelect" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Fahrzeug für den Reifensatz" data-tool-en-aria-label="Vehicle for this tyre set"></select></label>
+                        <label class="helferlein-field" for="tireType"><span class="helferlein-field-label" data-tool-en="Tyre type">Reifentyp</span><select id="tireType" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Reifentyp" data-tool-en-aria-label="Tyre type">
                             <option value="Sommerreifen">☀️ Sommerreifen</option>
                             <option value="Winterreifen">❄️ Winterreifen</option>
                             <option value="Ganzjahresreifen">🌤️ Ganzjahresreifen</option>
                         </select></label>
                     </div>
                     <div class="grid grid-cols-3 gap-2">
-                        <label class="helferlein-field" for="tireLocation"><span class="helferlein-field-label">Lagerort</span><input type="text" id="tireLocation" placeholder="Lagerort (z.B. Keller Ecke 2)" class="p-2.5 border rounded-xl text-xs" aria-label="Lagerort (z.B. Keller Ecke 2)"></label>
+                        <label class="helferlein-field" for="tireLocation"><span class="helferlein-field-label" data-tool-en="Storage location">Lagerort</span><input type="text" id="tireLocation" placeholder="Lagerort (z.B. Keller Ecke 2)" class="p-2.5 border rounded-xl text-xs" aria-label="Lagerort (z.B. Keller Ecke 2)"></label>
                         <label class="helferlein-field" for="tireDot"><span class="helferlein-field-label">DOT / Jahr</span><input type="text" id="tireDot" placeholder="DOT / Jahr (z.B. 2223)" class="p-2.5 border rounded-xl text-xs" aria-label="DOT / Jahr (z.B. 2223)"></label>
-                        <label class="helferlein-field" for="tireTread"><span class="helferlein-field-label">Profil mm</span><input type="text" id="tireTread" placeholder="Profil mm" class="p-2.5 border rounded-xl text-xs" aria-label="Profil mm"></label>
+                        <label class="helferlein-field" for="tireTread"><span class="helferlein-field-label" data-tool-en="Tread depth in mm">Profil mm</span><input type="text" id="tireTread" placeholder="Profil mm" class="p-2.5 border rounded-xl text-xs" aria-label="Profil mm" data-tool-en-placeholder="Tread depth in mm" data-tool-en-aria-label="Tread depth in mm"></label>
                     </div>
                     <button onclick="saveTireSet()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 rounded-xl text-xs b3-action">Reifensatz speichern</button>
                     <div id="tiresList" class="space-y-2 pt-2"></div>
@@ -230,7 +230,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" id="b3-history">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                     <h3 class="font-bold text-lg">📋 Verlauf, Ausgaben und Termine</h3>
-                    <label class="helferlein-field" for="filterCarSelect"><span class="helferlein-field-label">Historie nach Fahrzeug filtern</span><select id="filterCarSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Historie nach Fahrzeug filtern">
+                    <label class="helferlein-field" for="filterCarSelect"><span class="helferlein-field-label" data-tool-en="Filter history by vehicle">Historie nach Fahrzeug filtern</span><select id="filterCarSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Historie nach Fahrzeug filtern" data-tool-en-aria-label="Filter history by vehicle">
                         <option value="">Alle Fahrzeuge anzeigen</option>
                     </select></label>
                 </div>

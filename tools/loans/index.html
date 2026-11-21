@@ -171,23 +171,23 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold">📦</div>
-                <div><p class="text-[11px] text-gray-500">Aktiv</p><h3 id="statActive" class="text-base font-bold">0</h3></div>
+                <div><p class="text-[11px] text-gray-500" data-tool-en="Active">Aktiv</p><h3 id="statActive" class="text-base font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-red-50 text-red-600 rounded-xl font-bold">⏰</div>
-                <div><p class="text-[11px] text-gray-500">Über 30 Tage verliehen</p><h3 id="statOverdue" class="text-base font-bold">0</h3></div>
+                <div><p class="text-[11px] text-gray-500" data-tool-en="On loan for over 30 days">Über 30 Tage verliehen</p><h3 id="statOverdue" class="text-base font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-amber-50 text-amber-700 rounded-xl font-bold">⚠️</div>
-                <div><p class="text-[11px] text-gray-500">Verloren/Defekt</p><h3 id="statLost" class="text-base font-bold">0</h3></div>
+                <div><p class="text-[11px] text-gray-500" data-tool-en="Lost / damaged">Verloren/Defekt</p><h3 id="statLost" class="text-base font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">✅</div>
-                <div><p class="text-[11px] text-gray-500">Zurück</p><h3 id="statReturned" class="text-base font-bold">0</h3></div>
+                <div><p class="text-[11px] text-gray-500" data-tool-en="Returned">Zurück</p><h3 id="statReturned" class="text-base font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3 sm:col-span-2 md:col-span-1">
                 <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">💶</div>
-                <div><p class="text-[11px] text-gray-500">Offene Kaution</p><h3 id="statDeposit" class="text-base font-bold">0,00 €</h3></div>
+                <div><p class="text-[11px] text-gray-500" data-tool-en="Outstanding deposits">Offene Kaution</p><h3 id="statDeposit" class="text-base font-bold">0,00 €</h3></div>
             </div>
         </div>
 
@@ -199,22 +199,22 @@
                 <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
                     <h2 class="text-base font-bold">👤 Kontakt anlegen</h2>
                     <label class="helferlein-field" for="contactName"><span class="helferlein-field-label">Name</span><input type="text" id="contactName" placeholder="Name (z.B. Nachbar Müller)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Name (z.B. Nachbar Müller)"></label>
-                    <label class="helferlein-field" for="contactPhone"><span class="helferlein-field-label">Telefon (für WhatsApp)</span><input type="text" id="contactPhone" placeholder="Telefon (für WhatsApp)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Telefon (für WhatsApp)"></label>
+                    <label class="helferlein-field" for="contactPhone"><span class="helferlein-field-label" data-tool-en="Phone number (for WhatsApp)">Telefon (für WhatsApp)</span><input type="text" id="contactPhone" placeholder="Telefon (für WhatsApp)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Telefon (für WhatsApp)" data-tool-en-placeholder="Phone number (for WhatsApp)" data-tool-en-aria-label="Phone number (for WhatsApp)"></label>
                     <button onclick="saveContact()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 rounded-xl text-xs b3-action">Kontakt speichern</button>
                 </div>
 
                 <!-- Stamm-Gegenstand (Inventar) anlegen -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
                     <h2 class="text-base font-bold">🛠️ Stamm-Gegenstand anlegen</h2>
-                    <label class="helferlein-field" for="invTitle"><span class="helferlein-field-label">Bezeichnung</span><input type="text" id="invTitle" placeholder="Bezeichnung (z.B. Bosch Bohrhammer)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Bezeichnung (z.B. Bosch Bohrhammer)"></label>
-                    <label class="helferlein-field" for="invCategory"><span class="helferlein-field-label">Kategorie des Gegenstands</span><select id="invCategory" class="w-full p-2.5 border rounded-xl text-xs bg-white" aria-label="Kategorie des Gegenstands">
+                    <label class="helferlein-field" for="invTitle"><span class="helferlein-field-label" data-tool-en="Description">Bezeichnung</span><input type="text" id="invTitle" placeholder="Bezeichnung (z.B. Bosch Bohrhammer)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Bezeichnung (z.B. Bosch Bohrhammer)"></label>
+                    <label class="helferlein-field" for="invCategory"><span class="helferlein-field-label" data-tool-en="Item category">Kategorie des Gegenstands</span><select id="invCategory" class="w-full p-2.5 border rounded-xl text-xs bg-white" aria-label="Kategorie des Gegenstands" data-tool-en-aria-label="Item category">
                         <option value="Werkzeug">🔨 Werkzeug</option>
                         <option value="Elektronik">💻 Elektronik & IT</option>
                         <option value="Bücher & Medien">📚 Bücher & Medien</option>
                         <option value="Sport & Freizeit">⚽ Sport & Freizeit</option>
                         <option value="Sonstiges">📦 Sonstiges</option>
                     </select></label>
-                    <label class="helferlein-field" for="invSerial"><span class="helferlein-field-label">Seriennummer / ISBN / Barcode</span><input type="text" id="invSerial" placeholder="Seriennummer / ISBN / Barcode" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Seriennummer / ISBN / Barcode"></label>
+                    <label class="helferlein-field" for="invSerial"><span class="helferlein-field-label" data-tool-en="Serial number / ISBN / barcode">Seriennummer / ISBN / Barcode</span><input type="text" id="invSerial" placeholder="Seriennummer / ISBN / Barcode" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Seriennummer / ISBN / Barcode" data-tool-en-placeholder="Serial number / ISBN / barcode" data-tool-en-aria-label="Serial number / ISBN / barcode"></label>
                     <label class="helferlein-field" for="invGpsLink"><span class="helferlein-field-label">GPS-Tracker URL / AirTag Link (optional)</span><input type="text" id="invGpsLink" placeholder="GPS-Tracker URL / AirTag Link (optional)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="GPS-Tracker URL / AirTag Link (optional)"></label>
                     <button onclick="saveInventoryItem()" class="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-medium py-2 rounded-xl text-xs b3-action">In Stamm-Inventar speichern</button>
                 </div>
@@ -240,7 +240,7 @@
                         </div>
                     </div>
 
-                    <label class="helferlein-field" for="itemCustomPerson"><span class="helferlein-field-label">Oder neuen Namen direkt eingeben...</span><input type="text" id="itemCustomPerson" placeholder="Oder neuen Namen direkt eingeben..." class="w-full p-3 border rounded-xl text-sm mb-3 hidden"></label>
+                    <label class="helferlein-field" for="itemCustomPerson"><span class="helferlein-field-label" data-tool-en="Or enter a new name…">Oder neuen Namen direkt eingeben...</span><input type="text" id="itemCustomPerson" placeholder="Oder neuen Namen direkt eingeben..." class="w-full p-3 border rounded-xl text-sm mb-3 hidden" data-tool-en-placeholder="Or enter a new name…"></label>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                         <div>
@@ -258,8 +258,8 @@
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                        <label class="helferlein-field" for="itemNote"><span class="helferlein-field-label">Notiz (optional)</span><input type="text" id="itemNote" placeholder="Notiz (optional)" class="p-3 border rounded-xl text-sm" aria-label="Notiz (optional)"></label>
-                        <label class="helferlein-field" for="itemPhotoInput"><span class="helferlein-field-label">Foto des verliehenen Gegenstands auswählen</span><input type="file" id="itemPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700" aria-label="Foto des verliehenen Gegenstands auswählen"></label>
+                        <label class="helferlein-field" for="itemNote"><span class="helferlein-field-label" data-tool-en="Note (optional)">Notiz (optional)</span><input type="text" id="itemNote" placeholder="Notiz (optional)" class="p-3 border rounded-xl text-sm" aria-label="Notiz (optional)" data-tool-en-placeholder="Note (optional)" data-tool-en-aria-label="Note (optional)"></label>
+                        <label class="helferlein-field" for="itemPhotoInput"><span class="helferlein-field-label" data-tool-en="Choose a photo of the lent item">Foto des verliehenen Gegenstands auswählen</span><input type="file" id="itemPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700" aria-label="Foto des verliehenen Gegenstands auswählen" data-tool-en-aria-label="Choose a photo of the lent item"></label>
                     </div>
                 </div>
 
@@ -288,7 +288,7 @@
                         <option value="Sport & Freizeit">⚽ Sport & Freizeit</option>
                         <option value="Sonstiges">📦 Sonstiges</option>
                     </select></label>
-                    <label class="helferlein-field" for="filterPerson"><span class="helferlein-field-label">Verleih nach Person filtern</span><select id="filterPerson" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verleih nach Person filtern">
+                    <label class="helferlein-field" for="filterPerson"><span class="helferlein-field-label" data-tool-en="Filter loans by person">Verleih nach Person filtern</span><select id="filterPerson" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verleih nach Person filtern" data-tool-en-aria-label="Filter loans by person">
                         <option value="">Alle Personen</option>
                     </select></label>
                 </div>
@@ -325,7 +325,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl" onclick="event.stopPropagation()">
             <h3 id="qrTitle" class="font-bold text-lg text-indigo-800">QR-Code</h3>
             <div id="qrcode" class="flex justify-center p-4 bg-gray-50 rounded-xl border"></div>
-            <p class="text-xs text-gray-500">Scannen, um Details aufzurufen.</p>
+            <p class="text-xs text-gray-500" data-tool-en="Scan to view details.">Scannen, um Details aufzurufen.</p>
             <button onclick="closeQrModal()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold b3-action b3-outline">Schließen</button>
         </div>
     </div>
