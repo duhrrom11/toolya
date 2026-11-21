@@ -630,8 +630,8 @@
             renderInventory();
         }
 
-        function formatMovingTagLabel(tag) {
-            if (window.__toolyaUILocale !== 'en') return tag;
+        function formatMovingTagLabel(tag, language = window.__toolyaUILocale) {
+            if (language !== 'en') return tag;
             const labels = { Standard: 'Standard', Zerbrechlich: 'Fragile', Wertvoll: 'Valuable', Saison: 'Seasonal' };
             return Object.hasOwn(labels, tag) ? labels[tag] : tag;
         }
@@ -1072,7 +1072,7 @@
                 doc.text(`${exportLanguage === 'en' ? 'Location' : 'Ort'}: ${cleanLocName}`, textX, y + 14);
                 doc.text(`${exportLanguage === 'en' ? 'Contents' : 'Inhalt'}: ${b.desc || '-'}`, textX, y + 20);
                 doc.text(`${exportLanguage === 'en' ? 'Value' : 'Wert'}: ${exportLanguage === 'en' ? Number(b.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(b.value || 0).toFixed(2)} €`, textX, y + 26);
-                doc.text(`Tag: ${b.tag ? (exportLanguage === 'en' ? ({ Standard: 'Standard', Zerbrechlich: 'Fragile', Wertvoll: 'Valuable', Saison: 'Seasonal' }[b.tag] || b.tag) : b.tag) : (exportLanguage === 'en' ? 'Default' : 'Standard')}`, textX, y + 32);
+                doc.text(`Tag: ${b.tag ? formatMovingTagLabel(b.tag, exportLanguage) : (exportLanguage === 'en' ? 'Default' : 'Standard')}`, textX, y + 32);
 
                 if (x === 14) { 
                     x = 110; 
