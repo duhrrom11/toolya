@@ -28,7 +28,8 @@ test('moving planner creates project, room and box assignment with mocked cloud'
   await expect(planner).toBeVisible({timeout:15000});
   const prompts=['Mein Testumzug','','Küche','EG','16'];
   page.on('dialog',d=>d.type()==='prompt'?d.accept(prompts.shift()??''):d.accept());
-  console.log('moving-button-hit',await page.evaluate(()=>{const e=document.querySelector('#toolya-moving-planner [data-act=project]'),r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2,hit=document.elementFromPoint(x,y);return {at:[x,y],hit:hit?.tagName,hitClass:hit?.className,pointer:getComputedStyle(e).pointerEvents,position:getComputedStyle(e).position,z:getComputedStyle(e).zIndex,htmlClass:document.documentElement.className};}));
+  await page.evaluate(()=>{window.scrollTo(0,0);document.querySelector('#toolya-moving-planner [data-act=project]').scrollIntoView({block:'center',behavior:'instant'});});
+  console.log('moving-button-hit',await page.evaluate(()=>{const e=document.querySelector('#toolya-moving-planner [data-act=project]'),r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2,hit=document.elementFromPoint(x,y);return {at:[x,y],hit:hit?.tagName,hitClass:hit?.className,pointer:getComputedStyle(e).pointerEvents,position:getComputedStyle(e).position,z:getComputedStyle(e).zIndex,htmlClass:document.documentElement.className,scrollY:window.scrollY,viewport:window.innerHeight,panelPosition:getComputedStyle(document.querySelector('#toolya-moving-planner')).position};}));
   await planner.getByRole('button',{name:/Neuen Umzug planen/}).click();
   await expect(planner.getByText('Mein Testumzug')).toBeVisible();
   await planner.getByRole('button',{name:'Räume'}).click();
