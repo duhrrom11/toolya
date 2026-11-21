@@ -1572,6 +1572,7 @@
             refreshOpenBudgetLabels();
             refreshOpenCookingDayLabels();
             refreshOpenDietPlaceholders();
+            refreshOpenHouseholdFormTitles();
             // Refresh labels in place; keep unsaved form values and stored keys untouched.
         });
 
@@ -1844,6 +1845,29 @@
             `).join('');
         }
 
+        function refreshOpenHouseholdFormTitles() {
+            const english = window.__toolyaUILocale === 'en';
+            const noteModal = document.getElementById('noteModal');
+            if (noteModal && !noteModal.classList.contains('hidden')) {
+                const title = document.getElementById('noteModalTitle');
+                if (title) title.textContent = editingNoteId
+                    ? (english ? '✏️ Edit sticky note' : '✏️ Sticky Note bearbeiten')
+                    : (english ? '✏️ New sticky note' : '✏️ Neue Sticky Note');
+            }
+            // Preserve the currently edited receipt and all its unsaved inputs.
+            const formTitle = document.getElementById('formTitle');
+            const saveButton = document.getElementById('saveBtn');
+            if (formTitle && saveButton) {
+                if (editingReceiptId) {
+                    const receipt = getData().find(r => r && r.id === editingReceiptId);
+                    formTitle.textContent = (english ? '✏️ Edit transaction' : '✏️ Buchung bearbeiten') +
+                        ': ' + (receipt?.title || '');
+                } else {
+                    formTitle.textContent = english ? '✍️ Record transaction / receipt' : '✍️ Buchung / WG-Kassenbon erfassen';
+                }
+                saveButton.textContent = english ? 'Save transaction / receipt' : 'Buchung / Kassenbon speichern';
+            }
+        }
         function openNoteModal() {
             editingNoteId = null;
             document.getElementById('noteTitleInput').value = "";
