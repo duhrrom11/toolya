@@ -2377,12 +2377,12 @@ test('i18n Sprint A moving PDF report labels translate while source records stay
 
 test('i18n Sprint A moving: blocked PDF library gives EN/DE error, no export or cloud write',async({page})=>{
  test.setTimeout(60000);
- await isolated(page,true,false,{locations:[],boxes:[]});
+ await isolated(page,true,true,{locations:[],boxes:[]});
  await page.goto(origin+'/tools/moving/index.html');
  await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
  const dialog=page.getByRole('alertdialog',{name:'Toolya'});
  for(const [lang,message] of [['en','Could not create the PDF. Please try again.'],['de','Das PDF konnte nicht erstellt werden. Bitte versuche es erneut.']]){
-  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await page.evaluate(selected=>document.querySelector('[data-tool-locale="'+selected+'"]').click(),lang);
   await expect.poll(()=>page.evaluate(()=>window.__toolyaUILocale)).toBe(lang);
   await page.evaluate(()=>exportInventoryPDF());
   await expect(dialog.locator('#hl-alert-message')).toHaveText(message);
