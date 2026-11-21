@@ -1527,3 +1527,24 @@ test('photo zoom dialog translates its accessible name and alt text while keepin
  applyToolInterfaceLocale(document,'moving','de');
  assert.equal(document.body.innerHTML,initial);
 });
+
+
+test('moving inventory accessibility labels switch reversibly without changing data or handlers',()=>{
+ const {document}=parseHTML(`<html><body>
+ <select id="locIcon" aria-label="Symbol des Standorts"><option value="home">Haus</option></select>
+ <input id="boxPhotoInput" type="file" aria-label="Foto der Kiste auswählen">
+ <select id="tagFilter" aria-label="Inventar nach Kennzeichnung filtern" onchange="renderInventory()"><option value="stored">Gelagert</option></select>
+ <select id="sortFilter" aria-label="Inventar sortieren" onchange="renderInventory()"></select>
+ <dialog id="imageModal" aria-label="Bildvorschau"></dialog>
+ </body></html>`);
+ const original=[...document.querySelectorAll('[aria-label]')].map(el=>el.getAttribute('aria-label'));
+ const option=document.querySelector('#tagFilter option'), handler=document.querySelector('#tagFilter').getAttribute('onchange');
+ applyToolInterfaceLocale(document,'moving','en');
+ assert.deepEqual([...document.querySelectorAll('[aria-label]')].map(el=>el.getAttribute('aria-label')),
+  ['Location icon','Select box photo','Filter inventory by label','Sort inventory','Image preview']);
+ assert.equal(document.querySelector('#tagFilter option'),option);
+ assert.equal(option.value,'stored');
+ assert.equal(document.querySelector('#tagFilter').getAttribute('onchange'),handler);
+ applyToolInterfaceLocale(document,'moving','de');
+ assert.deepEqual([...document.querySelectorAll('[aria-label]')].map(el=>el.getAttribute('aria-label')),original);
+});
