@@ -28,5 +28,5 @@ test('parking history escapes arbitrary user text and rejects unsafe images and 
 });
 test('existing DE and new EN empty states are rendered in three tools',()=>{
  for(const [name,en] of [['parking','No parking sessions saved for this period.'],['car','No tyre sets recorded yet.'],['pet-health','No medicines recorded.']])assert.ok(tool(name).includes(en),name);
- assert.match(tool('car'),/label\('Keine Reifensätze\.', 'No tyre sets\.'/);
+ assert.match(tool('car'),/label\('Keine Reifensätze\.',\s*'No tyre sets\.'/);
 });
