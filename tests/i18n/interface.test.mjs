@@ -1575,9 +1575,12 @@ test('moving inventory uses English display-only number and date formatting',asy
  const {readFile}=await import('node:fs/promises');
  const html=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
  const englishFormat="toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })";
- assert.equal(html.split(englishFormat).length-1,4,'all four inventory value displays use English formatting');
+ assert.equal(html.split(englishFormat).length-1,8,'five inventory screen values and three PDF values use English formatting');
  for(const value of ['totalVal','locVal','tagVal','b.value || 0'])
   assert.ok(html.includes('Number('+value+').'+englishFormat),'English formatting covers '+value);
+ assert.equal(html.split("toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })").length-1,8,'five screen values plus three PDF numeric values');
+ assert.ok(html.includes("Number(b.value || 0).toLocaleString('en-GB'"),'PDF values use English numeric formatting');
+ assert.ok(html.includes(": Number(b.value || 0).toFixed(2)"),'German PDF numeric representation remains unchanged');
  assert.ok(html.includes("b.expiry.split('-').reverse().join('/')"),'English expiry date');
  assert.ok(html.includes("b.expiry.split('-').reverse().join('.')"),'original German expiry date');
  assert.ok(html.includes("Number(item.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"),'English subitem preview uses locale formatting');
