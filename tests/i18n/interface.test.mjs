@@ -318,7 +318,7 @@ test('plant card watering states and accessible controls localize without modify
   "'Water every' : 'Gießen: alle'", "'💧 Water' : '💧 Gießen'",
   "'Harvest' : 'Ernte'", "'Gallery' : 'Galerie'", "'Edit' : 'Bearbeiten'"
  ])assert.ok(html.includes(text),'missing translated plant card: '+text);
- assert.match(html,/if \(plantsCloudReady\) renderApp\(\)/,'switching locale rerenders cards only when cloud data is ready');
+ assert.match(html,/if \(plantsCloudReady\) \{ loadLocationDropdown\(\); renderApp\(\); \}/,'switching locale refreshes locations and cards only when cloud data is ready');
  assert.ok(html.includes('? `<span class="text-[10px] bg-gray-100'), 'missing-date label uses interpolated template');
  assert.match(html,/escapeHtml\(p\.name\)/,'plant name escaped');
  assert.match(html,/escapeHtml\(p\.interval\)/,'watering interval escaped');
@@ -396,7 +396,7 @@ test('PDF filenames follow selected language while retaining German names and ex
   assert.ok(html.includes(english),tool+': English filename');
   assert.ok(html.includes(german),tool+': German filename retained');
   const saveLine=html.split('\n').find(line=>line.includes('doc.save(') && line.includes(english));
-  assert.ok(saveLine && saveLine.includes("window.__toolyaUILocale === 'en'"),tool+': filename is locale-specific');
+  assert.ok(saveLine && (saveLine.includes("window.__toolyaUILocale === 'en'") || (tool==='plants' && saveLine.includes('exportEnglish ?'))),tool+': filename is locale-specific');
   assert.match(html,/const doc = await createExportPdf\(\)/,tool+': export still uses shared PDF helper');
  }
  const household=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
@@ -1732,14 +1732,14 @@ test('Sprint A plant locale change refreshes only visible read-only panels',asyn
    getElementById:id=>id==='plantPotSize'?{value:'18'}:id==='waterMlHint'?{innerText:''}:id==='galleryPlantId'?{value:'7'}:panels.has(id)?{classList:{contains:()=>false}}:null
   },
   renderGardenCalendar:()=>record('calendar'),calculateWaterAmount:()=>record('water'),
-  renderApp:()=>record('cards'),renderSeedList:()=>record('seeds'),
+  loadLocationDropdown:()=>record('locations'),renderApp:()=>record('cards'),renderSeedList:()=>record('seeds'),
   renderInventoryList:()=>record('inventory'),calculateRoiValues:()=>record('roi'),
   updateCisternDisplay:()=>record('cistern'),renderBeetGrid:()=>record('bed'),
   renderGalleryGrid:id=>{assert.equal(id,7);record('gallery');}
  };
  createContext(context);runInContext(html.slice(start,end),context);
  handler['toolya:locale-change']();
- for(const name of ['calendar','water','cards','roi','cistern','bed','gallery'])
+ for(const name of ['calendar','water','locations','cards','roi','cistern','bed','gallery'])
   assert.equal(updates[name],1,'visible read-only panel refreshed: '+name);
  assert.equal(updates.seeds,1,'open seeds list refreshed');
  assert.equal(updates.inventory,1,'open inventory refreshed');
@@ -1747,6 +1747,7 @@ test('Sprint A plant locale change refreshes only visible read-only panels',asyn
  handler['toolya:locale-change']();
  assert.equal(updates.calendar,2);
  assert.equal(updates.cards,1,'unloaded plant data must not render');
+ assert.equal(updates.locations,1,'unloaded locations must not render');
  assert.equal(updates.roi,1,'unloaded ROI must not render');
  assert.equal(updates.gallery,1,'unloaded gallery must not render');
  const region=html.slice(start,end);
@@ -2655,7 +2656,7 @@ test('plant export captures locale before async dependency and leaves user recor
  assert.ok(exportSource.indexOf('const exportEnglish')<exportSource.indexOf('await import('));
  assert.match(exportSource,/doc\.save\(exportEnglish \?/);
  assert.match(exportSource,/p\.name \?\? \(exportEnglish \?/);
- assert.doesNotMatch(exportSource,/window\.__toolyaUILocale/g,'no language rereads during PDF creation after initial capture');
+ assert.doesNotMatch(exportSource.slice(exportSource.indexOf('await import(')),/window\.__toolyaUILocale/g,'no language rereads during PDF creation after initial capture');
  assert.match(html,/Object\.hasOwn\(propagationLabels, p\.propagation\)/);
  assert.match(html,/escapeHtml\(propagationDisplay\)/);
  assert.match(html,/locations\.includes\(selectedLocation\) \? selectedLocation : ''/);
