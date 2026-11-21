@@ -188,6 +188,12 @@ const extendedFormTranslations = {
   ["#tagFilter","","aria-label","Filter inventory by label"],
   ["#sortFilter","","aria-label","Sort inventory"],
   ["#imageModal","","aria-label","Image preview"],
+  ["#boxValue","","aria-label","Value in euros (optional)"],
+  ["#boxDesc","","aria-label","Contents / description"],
+  ["#boxBarcode","","aria-label","Barcode / EAN (optional)"],
+  ["#boxName","","aria-label","Box name (e.g. Box #3)"],
+  ["#boxPhotoInput","","title","Select box photo"],
+  ["#locName","","aria-label","Location name"],
  ],
  "housemates": [
   ["#invTitle", "", "placeholder", "e.g. microwave, coffee machine"],
