@@ -1154,3 +1154,72 @@ test('generated dashboard save errors translate exactly without modifying unknow
   assert.equal(translateToolDialog(tool,'de','Layout konnte nicht gespeichert werden.'),'Layout konnte nicht gespeichert werden.');
  }
 });
+
+test('plant-care dashboard menu translates navigation, shortcuts and landmark without changing actions',()=>{
+ const {document}=parseHTML('<html><body><nav class="b3-nav" aria-label="Pflanzenpflege Navigation"><div class="b3-nav-links"><a href="#b3-stats">📊 Statistiken</a><a href="#b3-plants">🪴 Meine Pflanzen</a></div><details class="b3-more"><summary>☷ Weitere Tools</summary><div class="b3-more-content"><button id="seed" onclick="openSeedsModal()">🌰 Saatgut</button><button onclick="exportPDF()">📄 PDF exportieren</button></div></details></nav><section class="b3-preferences" aria-label="Darstellung und Dashboard"><h4>Darstellung & Dashboard</h4><button>✎ Dashboard bearbeiten</button></section></body></html>');
+ const nav=document.querySelector('.b3-nav'),seed=document.getElementById('seed');
+ const link=document.querySelector('.b3-nav-links a');
+ const href=link.getAttribute('href'),action=seed.getAttribute('onclick');
+ applyToolInterfaceLocale(document,'plants','en');
+ assert.equal(nav.getAttribute('aria-label'),'Plant care navigation');
+ assert.equal(link.textContent,'📊 Statistics');
+ assert.equal(seed.textContent,'🌰 Seeds');
+ assert.equal(document.querySelector('.b3-more > summary').textContent,'☷ More tools');
+ assert.equal(document.querySelector('.b3-preferences h4').textContent,'Appearance & dashboard');
+ assert.equal(link.getAttribute('href'),href);
+ assert.equal(seed.getAttribute('onclick'),action);
+ applyToolInterfaceLocale(document,'plants','de');
+ assert.equal(nav.getAttribute('aria-label'),'Pflanzenpflege Navigation');
+ assert.equal(link.textContent,'📊 Statistiken');
+ assert.equal(seed.textContent,'🌰 Saatgut');
+ assert.equal(seed.getAttribute('onclick'),action);
+});
+
+test('plant care and baking dashboard editors translate dynamically but preserve sizes, controls and original IDs',()=>{
+ for(const [tool,root,panel,english,description,translatedDescription,rowClass] of [
+  ['plants','b3-editor','Garten-Saisonkalender','Seasonal garden calendar',
+   'Bereiche sortieren, ein- oder ausblenden und die Größe S / M / L wählen. Änderungen gelten nur für dieses Tool.',
+   'Sort, show or hide sections and choose S / M / L sizes. Changes apply to this tool only.','b3-editor-row'],
+  ['baking','b3-backform-editor','Formen-Finder','Pan finder',
+   'Werkzeuge sortieren und Abstände anpassen. Alle Berechnungen bleiben erreichbar.',
+   'Arrange tools and adjust spacing. All calculations stay available.','b3-backform-editor-row']
+ ]){
+  const isBaking=tool==='baking';
+  const id=isBaking?'finder':'calendar';
+  const label=isBaking?'Kartendichte '+id:'Größe: '+panel;
+  const opts=isBaking?'<option value="s">Kompakt</option><option value="m" selected>Standard</option><option value="l">Großzügig</option>':'<option value="s">S</option><option value="m" selected>M</option><option value="l">L</option>';
+  const row='<div class="'+rowClass+'"><strong>'+panel+'</strong><button aria-label="'+(isBaking?id:panel)+' nach oben" onclick="up()">↑</button><label><input type="checkbox" checked aria-label="'+panel+' sichtbar">Sichtbar</label><select aria-label="'+label+'">'+opts+'</select></div>';
+  const actions=isBaking?'b3-backform-editor-actions':'flex';
+  const {document}=parseHTML('<html><body><section id="'+root+'" aria-label="Dashboard bearbeiten"><h'+(isBaking?'3':'2')+'>Dashboard bearbeiten</h'+(isBaking?'3':'2')+'><p>'+description+'</p>'+row+'<div class="'+actions+'"><button onclick="save()">Speichern</button><button onclick="cancel()">Abbrechen</button><button onclick="reset()">Standardlayout</button></div></section></body></html>');
+  const host=document.getElementById(root);
+  const original=host.innerHTML;
+  const buttons=[...host.querySelectorAll('button')],actionsBefore=buttons.map(x=>x.getAttribute('onclick'));
+  const select=host.querySelector('select');
+  const optionValues=[...select.querySelectorAll('option')].map(x=>x.getAttribute('value'));
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(host.querySelector('strong').textContent,english);
+  assert.equal(host.querySelector('p').textContent,translatedDescription);
+  assert.equal(host.getAttribute('aria-label'),'Edit dashboard');
+  assert.equal(host.querySelector('button[aria-label]').getAttribute('aria-label'),english+' move up');
+  assert.equal(host.querySelector('select').getAttribute('aria-label'),(isBaking?'Card density: ':'Size: ')+english);
+  assert.deepEqual([...select.querySelectorAll('option')].map(x=>x.getAttribute('value')),optionValues);
+  if(isBaking)assert.equal(select.querySelector('option[value="l"]').textContent,'Spacious');
+  assert.deepEqual(buttons.map(x=>x.getAttribute('onclick')),actionsBefore);
+  assert.equal(host.querySelector('input').hasAttribute('checked'),true);
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(host.innerHTML,original,'dashboard source markup and control state restored exactly');
+ }
+});
+
+test('plants and baking core dashboard editors announce new render events without changing storage schema',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ for(const [file,key] of [
+  ['../../assets/helferlein-b3.js','helferlein_ui_layout_pflanzen_v1'],
+  ['../../assets/helferlein-b3-backform.js','helferlein_ui_layout_backform_v1']
+ ]){
+  const script=await readFile(new URL(file,import.meta.url),'utf8');
+  assert.match(script,/document\.dispatchEvent\(new Event\('toolya:b3-editor-rendered'\)\)/);
+  assert.ok(script.includes(key));
+  assert.match(script,/JSON\.stringify\(draft\)/,'original serialized layout structure is unchanged');
+ }
+});
