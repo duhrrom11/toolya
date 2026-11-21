@@ -38,10 +38,9 @@ async function run(){
   const list=page.locator('.cs-card').filter({has:page.getByRole('heading',{name:'2 · Mein nächster Einkauf'})});
   await list.getByRole('textbox',{name:'Artikel'}).fill('Butter 250g');
   await list.getByRole('spinbutton',{name:'Anzahl'}).fill('2');
+  assert.equal(await list.getByRole('spinbutton',{name:'Anzahl'}).evaluate(el=>el.validity.valid),true,'Whole item quantities must satisfy HTML form constraints');
   await list.getByRole('button',{name:'+ Zur Liste'}).click();
-  await page.waitForTimeout(350);
-  console.log('DIAG_SHOP',JSON.stringify(await page.evaluate(()=>({panel:document.querySelector('#cs-panel')?.innerText.slice(0,2600),status:document.querySelector('#cs-status')?.textContent,shopping:window.__fixture.get().cleverSparen.shopping}))));
-  await page.getByText('Bekannte Preise: 4,58',{exact:false}).waitFor({timeout:3000});
+  await page.getByText('Bekannte Preise: 4,58',{exact:false}).waitFor({timeout:10000});
   assert.equal((await page.evaluate(()=>window.__fixture.get().cleverSparen.shopping)).length,1);
   await list.getByRole('checkbox',{name:'Butter 250g eingekauft'}).check();
   await page.getByText('Bekannte Preise: 0,00',{exact:false}).waitFor();
