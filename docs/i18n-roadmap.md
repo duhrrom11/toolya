@@ -334,3 +334,11 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Neue Node-Regressionsfälle testen die vier Tool-Dialoge, Rückschaltung auf Deutsch, unbekannte Fehlerdetails und Kontostatus. Ein zusätzlicher 320px-Chromium-Fall nutzt eine inerte Same-Origin-Fixture mit gesperrten externen Requests, prüft DE/EN-Ausgaben sowie einen zugänglichen `role="alert"`-Status und erfordert null Cloud-Schreibzugriffe. Die Browser-Fixture prüft **nicht** die echte Account- oder Import-UI.
 - Vollständige End-to-End-Auth-/Recovery-, sämtliche echten Fehler-/Import-/Export-Journeys, PDF/QR-Renderabnahme, Screenreader-Praxis und redaktionelle Restübersetzungen sind weiterhin offen. Die heuristischen Fortschrittsprozente bleiben unverändert; keine neue Abnahme wird behauptet.
 - Die Checks für den aktuellen Commit müssen auf **diesem** HEAD erneut abgeschlossen werden. PR #291 bleibt Draft; kein Merge, Deployment, produktiver Supabase-Zugriff, Maskottchenwechsel oder Entfernen von `noindex`.
+
+## Recovery-Fortsetzung: konkurrierende Formularübermittlungen (21.11.2026)
+
+- Der Dashboard-Recovery-Handler sperrt nun parallele Aufrufe während des asynchronen Passwort-Updates und Sign-outs. Dadurch wird bei Doppelklick nicht zweimal `updateUser` oder `signOut` ausgeführt.
+- Ein `finally` gibt die Sperre auch nach einem Update- oder Sign-out-Fehler wieder frei; der zuvor eingeführte wahrheitsgemäße Fehlerstatus bleibt bestehen.
+- Neuer isolierter Node-Regressionstest mit verzögertem Fake-Auth-Update prüft genau einen Update- und einen Sign-out-Aufruf. Keine echte Supabase-Verbindung.
+- **Teststatus dieses GitHub-API-Pakets:** Node- und Browser-Suite konnten hier nicht erneut lokal ausgeführt werden, da keine lokale Repository-Arbeitskopie vorhanden ist. Die vorherige grüne Node-Suite gilt nur für den vorherigen Stand. Neue GitHub-CI am finalen HEAD erforderlich; keine Releasefreigabe.
+- PR #291 bleibt Draft. Kein Merge, Deployment, produktiver Supabase-Zugriff, Testdaten oder `noindex`-Änderung.
