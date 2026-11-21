@@ -33,7 +33,8 @@ const toolTranslations = {
   ['label[for="locIcon"] .helferlein-field-label','Location icon'],
   ['label[for="locName"] .helferlein-field-label','Location name'],
   ['#locName','','placeholder','Location name'],
-  ['#locName','','aria-label','Location name']
+  ['#locName','','aria-label','Location name'],
+  ['label[for="boxName"] .helferlein-field-label','Box name']
  ],
  housemates: [
   ['#toolya-auth-title strong','Roommate organizer'],
@@ -52,7 +53,9 @@ const toolTranslations = {
   ['label[for="plantInterval"]','Watering interval (days):'],
   ['label[for="plantLastWatered"]','Last watered:'],
   ['label[for="plantPhotoInput"]','Plant photo:'],
-  ['button[onclick="savePlant()"]','Save plant']
+  ['button[onclick="savePlant()"]','Save plant'],
+  ['#cisternModal p.text-sky-700','Remaining volume'],
+  ['button[onclick="closeCisternModal()"]','Close']
  ],
  baking: [
   ['#toolya-auth-title strong','Cake pan calculator'],
@@ -69,6 +72,8 @@ const toolTranslations = {
   ['label[for="target-l"]','Length (cm)'],
   ['label[for="target-w"]','Width (cm)'],
   ['label[for="unit-system"]','Units:'],
+  ['label[for="recipe-name"] .helferlein-field-label','My recipe'],
+  ['label[for="recipe-input"] .helferlein-field-label','My ingredients'],
   ['label[for="base-time"]','Recipe baking time (min)'],
   ['label[for="base-temp"]','Recipe temperature (°C)'],
   ['label[for="oven-mode"]','Oven mode'],
@@ -1352,6 +1357,26 @@ function applyToolAccessibilityCopy(document,tool,language){
   }
  }
 }
+/* Preserve nested Lucide icons and onclick handlers while translating the
+   direct text nodes of two verified, fixed Backstudio controls. */
+const bakingMixedTextOriginals=new WeakMap();
+function applyBakingMixedTextCopy(document,language){
+ for(const [selector,source,target] of [
+  ['h2','2. Deine Zutaten','2. Your ingredients'],
+  ['button[onclick="calculateRecipe()"]','Mengen ausrechnen','Calculate quantities']
+ ]){
+  for(const element of document.querySelectorAll(selector)){
+   for(const node of element.childNodes){
+    if(node.nodeType!==3)continue;
+    const original=bakingMixedTextOriginals.get(node)??node.textContent;
+    if(original.trim()!==source)continue;
+    if(!bakingMixedTextOriginals.has(node))bakingMixedTextOriginals.set(node,original);
+    node.textContent=language==='en'?original.replace(source,target):original;
+   }
+  }
+ }
+}
+
 export function applyToolInterfaceLocale(document,tool,language){
  for(const [selector,translation,attribute,attributeTranslation] of [...common,...(toolTranslations[tool]||[]),...(extendedFormTranslations[tool]||[])]){
   const translated=attribute?attributeTranslation:translation;
@@ -1368,7 +1393,10 @@ export function applyToolInterfaceLocale(document,tool,language){
  applyToolParagraphCopy(document,tool,language);
  applyToolSmallCopy(document,tool,language);
  applyToolAccessibilityCopy(document,tool,language);
- if(tool==='baking')applyBackstudioCopy(document,language);
+ if(tool==='baking'){
+  applyBackstudioCopy(document,language);
+  applyBakingMixedTextCopy(document,language);
+ }
 }
 
 /* Only application-owned, source-exact browser-dialog copy. Dynamic user values,
