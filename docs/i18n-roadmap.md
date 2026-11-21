@@ -350,3 +350,9 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Neuer isolierter Node-Regressionstest mit verzögertem Fake-Auth-Update prüft genau einen Update- und einen Sign-out-Aufruf. Keine echte Supabase-Verbindung.
 - **Teststatus dieses GitHub-API-Pakets:** Node- und Browser-Suite konnten hier nicht erneut lokal ausgeführt werden, da keine lokale Repository-Arbeitskopie vorhanden ist. Die vorherige grüne Node-Suite gilt nur für den vorherigen Stand. Neue GitHub-CI am finalen HEAD erforderlich; keine Releasefreigabe.
 - PR #291 bleibt Draft. Kein Merge, Deployment, produktiver Supabase-Zugriff, Testdaten oder `noindex`-Änderung.
+
+## Account-Status-Fortsetzung (21.11.2026)
+
+- Die dynamischen Konto-Statusmeldungen in Autokosten, Haushaltsbuch, Tiergesundheit und Zählerständen folgen jetzt der aktiven UI-Sprache: `Signed in` / `Not signed in` beziehungsweise `Angemeldet` / `Nicht angemeldet`. E-Mail-Adressen und Benutzerkennungen werden nicht übersetzt; Cloud- und Auth-Operationen sind unverändert.
+- Die vier Quelldateien wurden anhand der exakten vorhandenen Textstellen geprüft und auf dem bestehenden Branch geändert. Für dieses Paket konnten Node und Chromium mangels lokaler Repository-Arbeitskopie nicht erneut ausgeführt werden; eine CI-Abnahme auf dem neuen HEAD ist erforderlich.
+- Weiter offen: Konto-Status in übrigen Tools, vollständige Auth-/Recovery-E2E-Tests, Exporte und 34 teilweise lokalisierte App-Ansichten. PR #291 bleibt Draft; kein Merge, Deployment, produktive Supabase-Schreibzugriffe oder `noindex`-Änderung.
