@@ -89,3 +89,11 @@ Stand 2026-11-21. Quelle: vier vorhandene `tools/*/index.html` im Entwicklungsbr
 - Im ergänzenden Backstudio-Layout ist der 3D-Startbutton auch dann auffindbar, wenn Pro-Steuerelemente zuvor schon auf Englisch lokalisiert wurden. Der Button behält die passende Sprachbeschriftung; WebGL-Kamera-/Maskottchen-/Baking-Datenlogik bleibt unverändert.
 - Neue Regressionstests prüfen den bilingualen 3D-Start und schützen die zentrale Passwort-Wiederherstellung auf `index.html` vor versehentlicher Duplizierung in den Tool-Auth-Gates. Der vorhandene Token-Workflow bleibt unangetastet.
 - Ein neuer vollständiger CI-Lauf für die nachfolgenden Commits muss erneut erfolgreich abgeschlossen sein, bevor ein Merge oder Deployment infrage kommt.
+
+## Dynamische B3-Dashboard-Navigation (2026-11-21)
+
+- Das B3-Core-Skript erstellt Navigation, Mehr-Menü und Einstellungen erst nach dem Laden der Seite. Deshalb wurden die vorhandenen statischen Formularübersetzungen an diesen Elementen nicht angewendet. `applyB3NavigationCopy` übersetzt nun in der zentralen i18n-Oberfläche ausschließlich bekannte, fest hinterlegte Menütexte der Umzugskisten und des WG-Organisators sowie gemeinsame Dashboard- und Footer-Aktionen.
+- Übersetzungen erfolgen direkt an bereits erzeugten Leaf-Elementen. Originale werden mit der bestehenden `WeakMap` verwaltet, einschließlich umgebendem Leerraum. Bei DE werden die ursprünglichen Beschriftungen wiederhergestellt; unbekannte Texte und verschachtelte Bedienelemente werden nicht verändert.
+- Bestehende `href`-Links, Button-Handler, Dashboard-Panel-IDs, Maske/Maskottchen und Cloud-Daten bleiben unverändert. Der Sprachwechsel ruft dieselbe zentrale Anzeigeübersetzung erneut auf, ohne B3 neu zu initialisieren.
+- Zwei Regressionstests prüfen Hin-/Rückwechsel, Link- und Handler-Identität, unbekannte Inhalte sowie die allgemeinen Menüpunkte.
+- Der **vorherige Commit `ec7d2184`** war in allen acht GitHub-Workflows erfolgreich. Für die darauf folgenden Änderungen muss die neue CI erneut erfolgreich abschließen; kein Merge und kein Deployment.
