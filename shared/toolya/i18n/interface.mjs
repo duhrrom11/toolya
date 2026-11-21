@@ -816,9 +816,9 @@ function applyB3NavigationCopy(document,tool,language){
  const translations=b3NavigationCopy[tool];
  if(!translations)return;
  const nav=document.querySelector('.b3-nav');
- const sourceNavLabel=tool==='moving'?'Umzugskisten & Inventarliste Navigation':'WG-Organisator Navigation';
- if(nav && (nav.getAttribute('aria-label')===sourceNavLabel || originals.get(nav)?.has('aria-label'))){
-  const accessibleLabel=tool==='moving'?'Moving boxes navigation':'Roommate organizer navigation';
+ const sourceNavLabel={moving:'Umzugskisten & Inventarliste Navigation',housemates:'WG-Organisator Navigation',plants:'Pflanzenpflege Navigation'}[tool];
+ if(nav && sourceNavLabel && (nav.getAttribute('aria-label')===sourceNavLabel || originals.get(nav)?.has('aria-label'))){
+  const accessibleLabel={moving:'Moving boxes navigation',housemates:'Roommate organizer navigation',plants:'Plant care navigation'}[tool];
   updateElement(nav,accessibleLabel,'aria-label',language);
  }
  for(const element of document.querySelectorAll('.b3-nav-links > a,.b3-more > summary,.b3-more-content > button,.b3-preferences > h4,.b3-preferences > button,.b3-settings-footer > a')){
