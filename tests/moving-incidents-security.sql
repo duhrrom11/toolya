@@ -6,7 +6,7 @@ values('00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000
 insert into public.moving_transport_state(owner_id,project_id,assignment_id,box_id,status)
 values('00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000021',12,'planned');
 do $$
-declare r jsonb; oid uuid;
+declare r jsonb; v_incident_id uuid;
 begin
  if has_table_privilege('anon','public.moving_transport_incidents','select')
  or has_table_privilege('authenticated','public.moving_transport_incidents','insert')
@@ -18,8 +18,8 @@ begin
  select public.moving_helper_report_incident(repeat('a',64),
  '00000000-0000-4000-8000-000000000021','damaged','Glasschaden',
  '00000000-0000-4000-8000-000000000031') into r;
- oid:=(r->>'incidentId')::uuid;
- if oid is null or (r->>'replayed')::boolean then raise exception 'Incident insert failed'; end if;
+ v_incident_id:=(r->>'incidentId')::uuid;
+ if v_incident_id is null or (r->>'replayed')::boolean then raise exception 'Incident insert failed'; end if;
  select public.moving_helper_report_incident(repeat('a',64),
  '00000000-0000-4000-8000-000000000021','damaged','Glasschaden',
  '00000000-0000-4000-8000-000000000031') into r;
