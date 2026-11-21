@@ -1248,3 +1248,18 @@ test('plants and baking layout save warnings translate without altering unknown 
   assert.equal(translateToolDialog(tool,'en','Unbekannte Serverfehlermeldung #903'),'Unbekannte Serverfehlermeldung #903');
  }
 });
+
+test('Wi-Fi QR password prompt and unreadable plant photo feedback are localized without changing entered content',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const household=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const plants=await readFile(new URL('../../tools/plants/index.html',import.meta.url),'utf8');
+ const password='WLAN-Passwort (wird nicht gespeichert):';
+ const feedback='Das Foto konnte nicht gelesen werden.';
+ assert.ok(household.includes(password),'Wi-Fi prompt remains input-only');
+ assert.ok(plants.includes(feedback),'photo error is still produced by the source workflow');
+ assert.equal(translateToolDialog('housemates','en',password),'Wi-Fi password (not saved):');
+ assert.equal(translateToolDialog('plants','en',feedback),'Could not read the photo.');
+ assert.equal(translateToolDialog('housemates','de',password),password);
+ assert.equal(translateToolDialog('plants','de',feedback),feedback);
+ assert.equal(translateToolDialog('housemates','en','private-password-value'),'private-password-value','secret content stays verbatim');
+});
