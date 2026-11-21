@@ -104,3 +104,17 @@ test('English mascot gallery keeps all outfit values and loads matching translat
  assert.match(en,/src="\/shared\/toolya\/gallery\.mjs"/);
  assert.match(en,/href="\/shared\/toolya\/info-pages\.css"/);
 });
+
+test('English legal and privacy notices preserve disclosure details and reciprocal language links',()=>{
+ for(const path of ['legal.html','privacy.html']){
+  const en=read('en/'+path),de=read(path);
+  assert.match(en,/<html lang="en">/);
+  assert.ok(en.includes('href="https://toolya.app/en/'+path+'"'));
+  assert.ok(en.includes('href="/'+path+'"'));
+  assert.ok(de.includes('href="/en/'+path+'" lang="en"'));
+  assert.match(en,/noindex,follow/);
+ }
+ assert.match(read('en/legal.html'),/Section 5 DDG/);
+ assert.match(read('en/privacy.html'),/Google Analytics 4/);
+ assert.match(read('en/privacy.html'),/duhrrom-21/);
+});
