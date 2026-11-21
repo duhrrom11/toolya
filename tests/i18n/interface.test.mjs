@@ -2437,3 +2437,9 @@ test('Sprint A shared PDF dependency failure follows UI language without changin
  assert.match(src,/return new window\.jspdf\.jsPDF\(\)/);
  assert.match(src,/pendingLibrary = undefined/);
 });
+
+test('Sprint A second backup-download acknowledgement is localized, not removed',()=>{
+ const de='Hast du die aktuelle Sicherung erfolgreich heruntergeladen?';
+ assert.equal(translateToolDialog('moving','en',de),'Did you successfully download the current backup?');
+ assert.equal(translateToolDialog('moving','de',de),de);
+});
