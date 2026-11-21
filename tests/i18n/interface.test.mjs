@@ -152,3 +152,28 @@ test('dynamic empty states and labels are localized in each tool without touchin
   for(const translation of expected) assert.ok(html.includes(translation),tool+': '+translation);
  }
 });
+
+test('household inventory, savings and receipt editing localize display copy only',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const pairs=[
+  ['Noch kein Inventar erfasst.','No inventory recorded yet.'],
+  ["'Purchased' : 'Kauf'","Purchased"],
+  ["'Current value' : 'Zeitwert'","Current value"],
+  ["'Share' : 'Anteil'","Share"],
+  ['Buchung bearbeiten','Edit transaction'],
+  ['Buchung / WG-Kassenbon erfassen','Record transaction / receipt'],
+  ['Buchung / Kassenbon speichern','Save transaction / receipt'],
+  ['Noch keine Sparziele angelegt.','No savings goals yet.'],
+  ["'Saved' : 'Gespart'","Saved"],
+  ["'Goal' : 'Ziel'","Goal"],
+  ["'+ Deposit' : '+ Einzahlen'","+ Deposit"]
+ ];
+ for(const [german,english] of pairs){
+  assert.ok(html.includes(german),'German copy preserved: '+german);
+  assert.ok(html.includes(english),'English copy present: '+english);
+ }
+ assert.match(html,/escapeUserHtml\(item\.title\)/,'inventory item names still escaped');
+ assert.match(html,/escapeUserHtml\(g\.title\)/,'savings goal titles still escaped');
+ assert.match(html,/editingReceiptId = id/,'receipt edit identity not replaced');
+});
