@@ -606,3 +606,19 @@ test('Backstudio external runtime localizes calculations, shopping and schedulin
  const listener=script.slice(script.lastIndexOf("document.addEventListener('toolya:locale-change'"));
  assert.ok(!listener.includes('save()')&&!listener.includes('localStorage.setItem'),'language change is read-only');
 });
+
+test('Backstudio affiliate notices and saved pan descriptions localize while identifiers stay stable',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const script=await readFile(new URL('../../tools/baking/backstudio.js',import.meta.url),'utf8');
+ for(const phrase of [
+  'Could not save on this device.', 'Advertisement – Amazon affiliate link',
+  'Round Ø ', 'Rectangular ', 'Difference ', 'Volume transferred to the special pan calculator.',
+  'Enter valid dimensions (maximum 40 pans).', "'en-GB':'de-DE'"
+ ])assert.ok(script.includes(phrase),'missing localized Backstudio label: '+phrase);
+ assert.match(script,/const TAG='duhrrom-21'/,'affiliate tag unchanged');
+ assert.match(script,/const KEY='toolya_backstudio_v1'/,'storage key unchanged');
+ assert.match(script,/const pantryKey=i=>/,'original pantry key generation unchanged');
+ assert.match(script,/data\.pans\.push\(\{shape,a,b\}\)/,'pan storage schema unchanged');
+ assert.match(script,/localStorage\.setItem\(KEY,JSON\.stringify\(data\)\)/,'storage persistence unchanged');
+ assert.match(script,/a\.rel='noopener noreferrer sponsored'/,'sponsored links still disclosed');
+});
