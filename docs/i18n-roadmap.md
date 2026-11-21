@@ -241,3 +241,12 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - **Noch nicht vollständig abgeschlossen:** tatsächlicher bestätigter Restore mit gültigen synthetischen Daten, PDF-Inhaltsprüfung, sämtliche Auth-/Recovery-Journeys, Screenreader-Abnahme und redaktionell vollständige EN-Oberflächen. PR #291 bleibt Draft; kein Merge, Deployment oder Produktivdatenzugriff.
 
 - Nachprüfung des echten UI-Pfads: Die Cloud-Synchronisierung meldet Erfolg über `window.toolyaNotice` statt `alert`. Deshalb wurde die Erfolgsmeldung dort direkt an `window.__toolyaUILocale` gebunden. Für die zusammengesetzte Mitgliedermeldung wird nur ein fest bekannter, anwendungseigener Fehlertext übersetzt; unbekannte Backend-Details bleiben unverändert. Zusätzliche Regressionen schützen beide Pfade.
+
+
+## Sprint A – bestätigter isolierter Restore, Download-Integrität und QR-Anzeige (2026-11-21)
+
+- Umzugskisten: Bei EN-QR-Etiketten werden bekannte Standardkategorien ausschließlich bei der PDF-Anzeige übersetzt; unbekannte Tags bleiben originale Nutzerwerte. Die Ersatzbeschriftung eines nicht zugeordneten Standorts ist `Unknown` (DE: `Unbekannt`). QR-Deep-Links, IDs und gespeicherte Kategorie-Schlüssel bleiben unverändert.
+- Der Backup-Importer zeigt nun auch bei synchroner `FileReader.readAsText`-Exception die vorhandene übersetzte Fehlermeldung und leert das Datei-Input; am Backup-Schema oder an der Bestätigungspflicht wurde nichts gelockert.
+- Zwei weitere isolierte Chromium-Tests: (1) Download des echten JSON-Backups unter beiden Sprachen, Vergleich des gesamten Inhalts gegen einen synthetischen Snapshot und null Cloud-Schreibzugriffe; (2) ausdrückliche Zustimmung zu einem gültigen synthetischen Import, **genau ein** Schreiben über den Fake-Supabase-RPC, identischer Snapshot, englischer Erfolgshinweis und geleertes Datei-Input.
+- Diese Tests verwenden ausschließlich den lokalen Fake-Cloud-Adapter. Es wird weder ein echter Account noch die Produktivdatenbank berührt. PDF-Grafik, echte QR-Druckvorschau und reale Auth-/Recovery-Journeys sind weiterhin nicht vollständig abgenommen.
+- Vorheriger HEAD `367d62b3` hatte bei Prüfung acht grüne Workflows und einen noch laufenden Browserlauf. Neue Änderungen erfordern erneut alle CI-Ergebnisse. PR bleibt Draft, `noindex` unverändert, kein Merge oder Deployment.
