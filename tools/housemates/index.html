@@ -1840,7 +1840,7 @@
             document.getElementById('noteAuthorInput').value = n.author || getFlatmateNames()[0];
             document.getElementById('noteColorInput').value = n.color || "yellow";
             document.getElementById('notePinnedInput').checked = !!n.pinned;
-            document.getElementById('noteModalTitle').innerText = "✏️ Sticky Note bearbeiten";
+            document.getElementById('noteModalTitle').innerText = window.__toolyaUILocale === 'en' ? '✏️ Edit sticky note' : '✏️ Sticky Note bearbeiten';
             document.getElementById('noteModal').classList.remove('hidden'); document.getElementById('noteModal').classList.add('flex');
         }
         function togglePinNote(id) {
@@ -1859,7 +1859,7 @@
                     <div>
                         <div class="flex items-center space-x-1 font-bold"><span>${icons[ev.type] || '📅'}</span><span>${escapeUserHtml(ev.title)}</span></div>
                         <p class="text-[11px] opacity-80 mt-1">📅 ${escapeUserHtml(ev.date)} ${ev.timeStart ? '| ⏰ ' + escapeUserHtml(ev.timeStart) : ''}</p>
-                        <p class="text-[10px] opacity-70">Von: <strong>${escapeUserHtml(ev.owner)}</strong></p>
+                        <p class="text-[10px] opacity-70">${window.__toolyaUILocale === 'en' ? 'By' : 'Von'}: <strong>${escapeUserHtml(ev.owner)}</strong></p>
                     </div>
                     <button onclick="deleteEvent(${safeInlineId(ev.id)})" class="text-gray-400 hover:text-red-500 font-bold text-sm">&times;</button>
                 </div>
@@ -1943,8 +1943,8 @@
                     <div class="p-3 bg-gray-50 border rounded-xl space-y-2">
                         <span class="font-bold text-gray-900">${escapeUserHtml(m)}</span>
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="text" data-mate="${escapeUserHtml(m)}" class="dietPref w-full p-2 border rounded" placeholder="Ernährung" value="${escapeUserHtml(info.pref)}">
-                            <input type="text" data-mate="${escapeUserHtml(m)}" class="dietAllergy w-full p-2 border rounded" placeholder="Allergien" value="${escapeUserHtml(info.allergy)}">
+                            <input type="text" data-mate="${escapeUserHtml(m)}" class="dietPref w-full p-2 border rounded" placeholder="${window.__toolyaUILocale === 'en' ? 'Diet' : 'Ernährung'}" value="${escapeUserHtml(info.pref)}">
+                            <input type="text" data-mate="${escapeUserHtml(m)}" class="dietAllergy w-full p-2 border rounded" placeholder="${window.__toolyaUILocale === 'en' ? 'Allergies' : 'Allergien'}" value="${escapeUserHtml(info.allergy)}">
                         </div>
                     </div>
                 `;
@@ -2033,7 +2033,7 @@
             const file = input.files[0];
             const generation = ++ocrGeneration;
             let worker;
-            const statusEl = document.getElementById('ocrStatus'); statusEl.innerText = "🔍 Scanne Kassenbon..."; statusEl.classList.remove('hidden');
+            const statusEl = document.getElementById('ocrStatus'); statusEl.innerText = window.__toolyaUILocale === 'en' ? '🔍 Scanning receipt…' : '🔍 Scanne Kassenbon...'; statusEl.classList.remove('hidden');
             try {
                 const { loadOcrLibrary } = await import('../../shared/toolya/receipt-ocr.mjs');
                 const library = await loadOcrLibrary();
@@ -2046,7 +2046,7 @@
                 if (priceMatch) document.getElementById('receiptPrice').value = priceMatch[1].replace(',', '.');
                 statusEl.innerText = window.__toolyaUILocale === "en" ? "✅ Text recognition successful!" : "✅ OCR Erfolgreich!";
             } catch {
-                if (generation === ocrGeneration && input.files[0] === file) statusEl.innerText = "❌ Texterkennung fehlgeschlagen.";
+                if (generation === ocrGeneration && input.files[0] === file) statusEl.innerText = window.__toolyaUILocale === 'en' ? '❌ Text recognition failed.' : '❌ Texterkennung fehlgeschlagen.';
             } finally {
                 if (worker) {
                     try { await worker.terminate(); } catch (error) { console.warn('OCR worker cleanup:', error); }
@@ -2136,7 +2136,7 @@
         }
         function depositGoal(id) {
             const goals = getSavingsGoals(); const goal = goals.find(g => g.id === id); if (!goal) return;
-            const amount = parseFloat(prompt(`Betrag auf Sparziel "${goal.title}" einzahlen (€):`, "50"));
+            const amount = parseFloat(prompt(window.__toolyaUILocale === 'en' ? `Deposit into savings goal "${goal.title}" (€):` : `Betrag auf Sparziel "${goal.title}" einzahlen (€):`, "50"));
             if (amount > 0) { goal.current += amount; saveSavingsGoals(goals); renderApp(); }
         }
         function deleteSavingsGoal(id) { saveSavingsGoals(getSavingsGoals().filter(g => g.id !== id)); renderApp(); }
@@ -2208,8 +2208,8 @@
         function deleteShoppingItem(id) { saveShoppingList(getShoppingList().filter(i => i.id !== id)); renderShoppingList(); }
         function transferShoppingToExpense(id) {
             const item = getShoppingList().find(i => i.id === id); if (!item) return; const mateNames = getFlatmateNames();
-            const payer = prompt(`Wer hat "${item.title}" bezahlt?`, mateNames[0]); if (!payer) return;
-            const price = parseFloat(prompt(`Kaufpreis (€):`, "3.50")); if (!price) return;
+            const payer = prompt(window.__toolyaUILocale === 'en' ? `Who paid for "${item.title}"?` : `Wer hat "${item.title}" bezahlt?`, mateNames[0]); if (!payer) return;
+            const price = parseFloat(prompt(window.__toolyaUILocale === 'en' ? 'Purchase price (€):' : 'Kaufpreis (€):', "3.50")); if (!price) return;
             const data = getData(); data.unshift({ id: Date.now(), title: item.title, price: price, payer: payer, date: new Date().toISOString().split('T')[0], category: "Haushalt", entryType: "ausgabe", splitWith: mateNames });
             saveData(data); deleteShoppingItem(id); renderApp();
         }
@@ -2218,7 +2218,7 @@
         function renderCookingPlan() {
             document.getElementById('cookingPlanList').innerHTML = getCookingPlan().map((p, idx) => `
                 <div class="p-2 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
-                    <div><span class="font-bold">${escapeUserHtml(p.day)}:</span> <span class="text-emerald-800">${escapeUserHtml(p.dish || 'Frei')}</span> ${p.chef !== 'Frei' ? `<span class="bg-purple-100 text-purple-800 font-bold px-1 rounded text-[10px]">${escapeUserHtml(p.chef)}</span>` : ''}</div>
+                    <div><span class="font-bold">${escapeUserHtml(p.day)}:</span> <span class="text-emerald-800">${escapeUserHtml(p.dish || (window.__toolyaUILocale === 'en' ? 'Unassigned' : 'Frei'))}</span> ${p.chef !== 'Frei' ? `<span class="bg-purple-100 text-purple-800 font-bold px-1 rounded text-[10px]">${escapeUserHtml(p.chef)}</span>` : ''}</div>
                     ${p.ingredients ? `<button onclick="syncIngredientsToShopping(${idx})" class="b3-action b3-outline px-2 py-0.5 bg-amber-50 text-amber-800 border rounded text-[10px] font-bold">${window.__toolyaUILocale === 'en' ? '🛒 Ingredients' : '🛒 Zutaten'}</button>` : ''}
                 </div>
             `).join('');
@@ -2227,9 +2227,9 @@
             const plan = getCookingPlan(); const mateNames = getFlatmateNames();
             document.getElementById('cookingInputList').innerHTML = plan.map((p, idx) => `
                 <div class="p-2.5 bg-gray-50 border rounded-xl space-y-1.5">
-                    <div class="flex justify-between font-bold"><span>${escapeUserHtml(p.day)}</span><select data-idx="${idx}" class="chefSelect border p-1 rounded bg-white"><option value="Frei">Frei</option>${mateNames.map(m => `<option value="${escapeUserHtml(m)}" ${p.chef === m ? 'selected' : ''}>${escapeUserHtml(m)}</option>`).join('')}</select></div>
-                    <input type="text" data-idx="${idx}" class="dishInput w-full p-1.5 border rounded" placeholder="Gericht" value="${escapeUserHtml(p.dish || '')}">
-                    <input type="text" data-idx="${idx}" class="ingredientsInput w-full p-1.5 border rounded" placeholder="Zutaten (kommagetrennt)" value="${escapeUserHtml(p.ingredients || '')}">
+                    <div class="flex justify-between font-bold"><span>${escapeUserHtml(p.day)}</span><select data-idx="${idx}" class="chefSelect border p-1 rounded bg-white"><option value="Frei">${window.__toolyaUILocale === 'en' ? 'Unassigned' : 'Frei'}</option>${mateNames.map(m => `<option value="${escapeUserHtml(m)}" ${p.chef === m ? 'selected' : ''}>${escapeUserHtml(m)}</option>`).join('')}</select></div>
+                    <input type="text" data-idx="${idx}" class="dishInput w-full p-1.5 border rounded" placeholder="${window.__toolyaUILocale === 'en' ? 'Dish' : 'Gericht'}" value="${escapeUserHtml(p.dish || '')}">
+                    <input type="text" data-idx="${idx}" class="ingredientsInput w-full p-1.5 border rounded" placeholder="${window.__toolyaUILocale === 'en' ? 'Ingredients (comma-separated)' : 'Zutaten (kommagetrennt)'}" value="${escapeUserHtml(p.ingredients || '')}">
                 </div>
             `).join('');
             document.getElementById('cookingModal').classList.remove('hidden'); document.getElementById('cookingModal').classList.add('flex');
@@ -2252,7 +2252,7 @@
             container.innerHTML = contracts.map(c => `
                 <div class="p-2.5 bg-indigo-50 border rounded-xl flex justify-between items-center text-xs">
                     <div><strong>${escapeUserHtml(c.name)}</strong> <span class="text-gray-500">(${escapeUserHtml(c.payer)})</span></div>
-                    <div class="flex items-center gap-2"><span class="font-bold text-indigo-900">${Number.isFinite(Number(c.price)) ? Number(c.price).toFixed(2) : '–'} €/Mo</span><button onclick="deleteContract(${safeInlineId(c.id)})" class="text-red-500 font-bold">&times;</button></div>
+                    <div class="flex items-center gap-2"><span class="font-bold text-indigo-900">${Number.isFinite(Number(c.price)) ? Number(c.price).toFixed(2) : '–'} €/${window.__toolyaUILocale === 'en' ? 'mo' : 'Mo'}</span><button onclick="deleteContract(${safeInlineId(c.id)})" class="text-red-500 font-bold">&times;</button></div>
                 </div>
             `).join('');
         }
