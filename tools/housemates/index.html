@@ -2028,12 +2028,12 @@
                     return `
                         <div class="flex justify-between items-center py-1 border-b border-emerald-100 last:border-0 text-xs">
                             <span>👤 <strong>${escapeUserHtml(s.from)}</strong> ${window.__toolyaUILocale === 'en' ? 'to' : 'an'} <strong>${escapeUserHtml(s.to)}</strong>:</span>
-                            <span class="font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200">${s.amount.toFixed(2)} €</span>
+                            <span class="font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200">${formatHouseholdDisplayAmount(s.amount)} €</span>
                         </div>
                     `;
                 }).join('');
             }
-            document.getElementById('statDebtVolume').innerText = totalVolume.toFixed(2) + " €";
+            document.getElementById('statDebtVolume').innerText = formatHouseholdDisplayAmount(totalVolume) + " €";
 
             const data = getData(); const typeFilter = document.getElementById('filterType').value; const catFilter = document.getElementById('filterCategory').value; const listContainer = document.getElementById('receiptsList');
             let filtered = data;
@@ -2051,7 +2051,7 @@
                             <div class="w-9 h-9 ${isIncome ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'} rounded-xl flex items-center justify-center font-bold text-sm">${isIncome ? '🔺' : '🧾'}</div>
                             <div>
                                 <span class="font-bold text-gray-900">${escapeUserHtml(r.title)}</span>
-                                <p class="text-[11px] text-gray-600"><strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${r.price.toFixed(2)} €</strong> | ${escapeUserHtml(r.payer || 'Privat')} | ${escapeUserHtml(r.date)}</p>
+                                <p class="text-[11px] text-gray-600"><strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${formatHouseholdDisplayAmount(r.price)} €</strong> | ${escapeUserHtml(r.payer || (window.__toolyaUILocale === 'en' ? 'Private' : 'Privat'))} | ${escapeUserHtml(r.date)}</p>
                             </div>
                         </div>
                         <div class="flex gap-1">
