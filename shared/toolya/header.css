@@ -75,3 +75,20 @@
 }
 
 @keyframes ty-tool-gear-spin{to{transform:rotate(360deg)}}
+
+/* The tool avatar uses the corresponding character and role from the shared outfit atlas. */
+.ty-tool-hero-inner>.ty-sprite-wrap{
+ position:relative;z-index:1;flex:0 0 clamp(90px,16vw,185px);
+ width:clamp(90px,16vw,185px);height:clamp(118px,17vw,190px);
+ border-radius:0;
+}
+.ty-tool-hero-inner>.ty-sprite-wrap>.ty-tool-hero-mascot{
+ display:block;width:100%;height:100%;flex:none;max-width:none;filter:none;
+}
+.ty-tool-hero-inner>.ty-sprite-wrap>.ty-frame{
+ inset:auto 0 0;width:100%;height:auto;aspect-ratio:1;border-radius:0;
+ filter:drop-shadow(0 8px 10px #244b5428);
+}
+@media(max-width:500px){
+ .ty-tool-hero-inner>.ty-sprite-wrap{flex-basis:84px;width:84px;height:110px}
+}
