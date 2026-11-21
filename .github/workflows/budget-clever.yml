@@ -4,11 +4,17 @@ on:
     paths:
       - "tools/budget/**"
       - "tests/budget-clever.test.mjs"
+      - "tests/budget-clever-browser.cjs"
+      - "tests/fixtures/budget-clever.html"
+      - ".github/workflows/budget-clever.yml"
   push:
     branches: [main]
     paths:
       - "tools/budget/**"
       - "tests/budget-clever.test.mjs"
+      - "tests/budget-clever-browser.cjs"
+      - "tests/fixtures/budget-clever.html"
+      - ".github/workflows/budget-clever.yml"
 
 permissions:
   contents: read
