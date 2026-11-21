@@ -900,11 +900,11 @@
             const area = Math.PI * Math.pow(origD / 2, 2);
             const container = document.getElementById('finder-results');
 
-            let html = `<p class="text-xs font-bold text-slate-800 mb-2">Äquivalente Formen für Ø ${origD} cm Form:</p>`;
+            let html = `<p class="text-xs font-bold text-slate-800 mb-2">${window.__toolyaUILocale === 'en' ? 'Equivalent pans for a' : 'Äquivalente Formen für'} Ø ${origD} cm ${window.__toolyaUILocale === 'en' ? 'pan:' : 'Form:'}</p>`;
             html += `<div class="space-y-1.5 text-xs">`;
-            html += `<div class="p-2 bg-slate-50 rounded-lg">👉 Entspricht ca. <b>1x Springform Ø ${origD} cm</b></div>`;
-            html += `<div class="p-2 bg-slate-50 rounded-lg">👉 Entspricht ca. <b>2 kleine Springformen Ø ${Math.round(origD * 0.7)} cm</b></div>`;
-            html += `<div class="p-2 bg-slate-50 rounded-lg">👉 Entspricht ca. <b>${Math.round(area / 38)} Muffins</b></div>`;
+            html += `<div class="p-2 bg-slate-50 rounded-lg">👉 ${window.__toolyaUILocale === 'en' ? 'Approximately equivalent to' : 'Entspricht ca.'} <b>1x ${window.__toolyaUILocale === 'en' ? 'springform pan' : 'Springform'} Ø ${origD} cm</b></div>`;
+            html += `<div class="p-2 bg-slate-50 rounded-lg">👉 ${window.__toolyaUILocale === 'en' ? 'Approximately equivalent to' : 'Entspricht ca.'} <b>2 ${window.__toolyaUILocale === 'en' ? 'small springform pans' : 'kleine Springformen'} Ø ${Math.round(origD * 0.7)} cm</b></div>`;
+            html += `<div class="p-2 bg-slate-50 rounded-lg">👉 ${window.__toolyaUILocale === 'en' ? 'Approximately equivalent to' : 'Entspricht ca.'} <b>${Math.round(area / 38)} Muffins</b></div>`;
             html += `</div>`;
             container.innerHTML = html;
         }
@@ -913,11 +913,11 @@
             calculateAll();
             const rawText = document.getElementById('recipe-input').value;
             const factor = parseFloat(document.getElementById('res-factor').innerText);
-            const name = document.getElementById('recipe-name').value || 'Unbenanntes Rezept';
+            const name = document.getElementById('recipe-name').value || (window.__toolyaUILocale === 'en' ? 'Untitled recipe' : 'Unbenanntes Rezept');
             const unitSys = document.getElementById('unit-system').value;
 
             const lines = rawText.split('\n');
-            let outputHtml = `<p class="font-bold text-slate-800 mb-1">${escapeRecipeHtml(name)} (Faktor ×${factor})</p>`;
+            let outputHtml = `<p class="font-bold text-slate-800 mb-1">${escapeRecipeHtml(name)} (${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'} ×${factor})</p>`;
 
             lines.forEach(line => {
                 if(!line.trim()) return;
@@ -929,10 +929,10 @@
 
                     if (/^(?:ei|eier)$/i.test(unit)) {
                         const eggs = Math.round(val);
-                        outputHtml += `<div><span class="text-orange-600 font-bold">${eggs} Eier</span> ${ingredient}</div>`;
+                        outputHtml += `<div><span class="text-orange-600 font-bold">${eggs} ${window.__toolyaUILocale === 'en' ? (eggs === 1 ? 'egg' : 'eggs') : 'Eier'}</span> ${ingredient}</div>`;
                     } else if (unitSys === 'imperial' && unit === 'g') {
                         let cups = (val / 125).toFixed(1);
-                        outputHtml += `<div><span class="text-orange-600 font-bold">ca. ${cups} Cups</span> ${ingredient}</div>`;
+                        outputHtml += `<div><span class="text-orange-600 font-bold">${window.__toolyaUILocale === 'en' ? 'approx.' : 'ca.'} ${cups} ${window.__toolyaUILocale === 'en' ? 'cups' : 'Cups'}</span> ${ingredient}</div>`;
                     } else {
                         outputHtml += `<div><span class="text-orange-600 font-bold">${val.toFixed(1).replace('.0','')}${unit}</span> ${ingredient}</div>`;
                     }
@@ -1015,13 +1015,13 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <h4 class="font-bold text-sm text-slate-800">${escapeRecipeHtml(r.name)}</h4>
-                            <p class="text-[11px] text-slate-500">Faktor: ×${escapeRecipeHtml(r.factor)} | ${escapeRecipeHtml(r.date)}</p>
+                            <p class="text-[11px] text-slate-500">${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'}: ×${escapeRecipeHtml(r.factor)} | ${escapeRecipeHtml(r.date)}</p>
                         </div>
-                        <button onclick="deleteRecipe(${idx})" class="text-red-500 hover:text-red-700 text-xs font-medium">Löschen</button>
+                        <button onclick="deleteRecipe(${idx})" class="text-red-500 hover:text-red-700 text-xs font-medium"${window.__toolyaUILocale === 'en' ? 'Delete' : 'Löschen'}</button>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">Geling-Protokoll / Notiz:</label>
-                        <input type="text" value="${escapeRecipeHtml(r.note)}" onchange="saveNote(${idx}, this.value)" placeholder="Z.B. Nächstes Mal 5 Min weniger backen..." class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">
+                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">${window.__toolyaUILocale === 'en' ? 'Baking notes:' : 'Geling-Protokoll / Notiz:'}</label>
+                        <input type="text" value="${escapeRecipeHtml(r.note)}" onchange="saveNote(${idx}, this.value)" placeholder="${window.__toolyaUILocale === 'en' ? 'e.g. bake 5 minutes less next time…' : 'Z.B. Nächstes Mal 5 Min weniger backen...'}" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">
                     </div>
                 </div>`;
             });
