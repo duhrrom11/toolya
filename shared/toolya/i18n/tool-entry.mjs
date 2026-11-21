@@ -23,6 +23,8 @@ function mountToolLanguage(){
  const header=document.querySelector('header.b3-header');
  const originalHeadings=new WeakMap();
  const originalDocTitle=document.title;
+ const authGuide=document.querySelector('.toolya-auth-status > a');
+ const originalAuthGuideHref=authGuide?.getAttribute('href');
  const switcher=document.createElement('nav');
  switcher.className='ty-tool-language';
  switcher.setAttribute('aria-label','Tool language selection / Sprachauswahl');
@@ -113,6 +115,12 @@ function mountToolLanguage(){
    de.setAttribute('aria-pressed',String(lang==='de'));
    en.setAttribute('aria-pressed',String(lang==='en'));
    notice.hidden=lang!=='en';
+   if(authGuide){
+     // The sign-in gate must lead to the guide in the selected language.
+     if(lang==='en')authGuide.setAttribute('href',settings.guide);
+     else if(originalAuthGuideHref!==null)authGuide.setAttribute('href',originalAuthGuideHref);
+     authGuide.lang=lang;
+   }
    applyToolInterfaceLocale(document,name,lang);
    localizeVisibleAccountStatus(lang);
    document.dispatchEvent(new document.defaultView.Event('toolya:locale-change'));
