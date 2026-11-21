@@ -2250,9 +2250,10 @@ test('i18n Sprint A moving: valid backup cancellation and oversized backup never
  const input=page.locator('input[type="file"][onchange="importBackup(event)"]');
  await page.locator('[data-tool-locale="en"]').click();
  await input.setInputFiles({name:'safe-synthetic-backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({locations:[{id:123,name:'Synthetic location',icon:'📦'}],boxes:[]}))});
- await expect.poll(()=>confirms.length).toBe(2);
+ await expect.poll(()=>confirms.length).toBe(3);
  expect(confirms).toEqual([
   {type:'confirm',message:'Before importing, download and check a current backup.'},
+  {type:'confirm',message:'Did you successfully download the current backup?'},
   {type:'confirm',message:'Import backup? Existing data will be replaced.'}
  ]);
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
@@ -2264,9 +2265,10 @@ test('i18n Sprint A moving: valid backup cancellation and oversized backup never
  await notice.getByRole('button',{name:'OK'}).click();
  await page.locator('[data-tool-locale="de"]').click();
  await input.setInputFiles({name:'safe-synthetic-backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({locations:[],boxes:[]}))});
- await expect.poll(()=>confirms.length).toBe(4);
- expect(confirms.slice(2)).toEqual([
+ await expect.poll(()=>confirms.length).toBe(6);
+ expect(confirms.slice(3)).toEqual([
   {type:'confirm',message:'Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.'},
+  {type:'confirm',message:'Hast du die aktuelle Sicherung erfolgreich heruntergeladen?'},
   {type:'confirm',message:'Backup importieren? Vorhandene Daten werden ersetzt.'}
  ]);
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
@@ -2313,6 +2315,7 @@ test('i18n Sprint A moving: confirmed restore writes synthetic cloud snapshot on
  await expect.poll(()=>page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
  expect(confirmations).toEqual([
   {type:'confirm',message:'Before importing, download and check a current backup.'},
+  {type:'confirm',message:'Did you successfully download the current backup?'},
   {type:'confirm',message:'Import backup? Existing data will be replaced.'}
  ]);
  const writes=await page.evaluate(()=>window.__toolyaMock.writes);
