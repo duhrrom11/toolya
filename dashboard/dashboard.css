@@ -40,7 +40,23 @@
 .dashboard-backup p{font-size:13px;line-height:1.5;color:#526975}
 .dashboard-settings-close{display:flex;justify-content:flex-end;padding-top:16px}
 .dashboard-settings-close button{background:#e9f2f4;color:#20515b}
-@media(max-width:650px){.b3-hub-topbar{align-items:flex-start;flex-direction:column}.b3-hub-nav{width:100%}.b3-hub-nav a,.b3-hub-nav button{font-size:12px;padding:8px}.dashboard-settings-panel{padding:16px}.dashboard-account-actions{grid-template-columns:1fr}}
+@media(max-width:740px){
+ .b3-hub-topbar{gap:6px;padding:10px 12px}
+ .b3-hub-logo{font-size:20px}
+ .b3-hub-logo-mark,.b3-hub-nav [aria-current=page],.b3-hub-nav .ty-settings-label{display:none}
+ .b3-hub-nav{gap:4px;justify-content:flex-end;flex:1;min-width:0;flex-wrap:nowrap}
+ .b3-hub-nav a,.b3-hub-nav button{font-size:12px;padding:6px;white-space:normal;text-align:center;line-height:1.2}
+ .b3-hub-nav #settingsBtn{flex:0 0 44px;width:44px;height:44px}
+ .dashboard-settings-panel{padding:16px}
+ .dashboard-account-actions{grid-template-columns:1fr}
+}
+
+@media(max-width:360px){
+ .b3-hub-topbar{padding-inline:8px;gap:4px}
+ .b3-hub-logo{font-size:19px}
+ .b3-hub-nav a,.b3-hub-nav button{font-size:11px;padding-inline:4px}
+ .b3-hub-nav #userInfo{padding-inline:5px}
+}
 
 /* Dashboard starts directly with the overview; no second hero card below the header. */
 .dashboard-heading{font-size:clamp(24px,3vw,32px);letter-spacing:-.035em;margin:0 0 8px;color:#234d59}

@@ -3,7 +3,7 @@ import { createUnifiedShopping } from './modules/unified-shopping.mjs';
 import { createWateringConnect, todayLocal } from '../shared/toolya/connect-watering.mjs';
 
 const tools = [
-  ['wishlist','Wishlist','wishes','wishlist.webp'],['kassenbon','Haushaltsbuch','budget','budget.webp'],
+  ['wishlist','Amazon-Wunschlisten finden','wishes','wishlist.webp'],['kassenbon','Haushaltsbuch','budget','budget.webp'],
   ['kisten','Umzugskisten','moving','moving.webp'],['pflanzen','Pflanzenpflege','plants','plants.webp'],
   ['wg-kasse','WG-Organisator','housemates','wg-organisator.webp'],['notizen','Digitaler Nachlass','estate','digitaler-nachlass.webp'],
   ['kfz','Autokosten','car','autokosten.webp'],['haustier','Tiergesundheit','pet-health','tiergesundheit.webp'],
@@ -423,5 +423,8 @@ window.addEventListener('storage',e=>{
     if(status==='local')renderItems();
     if(status==='cloud')$('import-local').hidden=!(validLocal(keys.tasks).length||validLocal(keys.reminders).length);
   }
+});
+window.addEventListener('pageshow', event => {
+  if (event.persisted) renderTools();
 });
 renderTools();renderItems();cloud.start();
