@@ -2283,3 +2283,44 @@ test('Sprint A open household contact editor title translates without touching u
  assert.ok(listener.includes('refreshHouseholdMemberFormTitle();'));
  assert.ok(!listener.includes('saveFlatmates('),'language switch never saves contact records');
 });
+
+
+test('Sprint A phone-visible form labels translate reversibly without removing icons, inputs or handlers',()=>{
+ const moving=parseHTML('<main><label for="boxName"><span class="helferlein-field-label">Kisten-Name</span><input id="boxName" value="Unsent draft"></label></main>').document;
+ const input=moving.getElementById('boxName');
+ applyToolInterfaceLocale(moving,'moving','en');
+ assert.equal(moving.querySelector('label[for="boxName"] span').textContent,'Box name');
+ assert.equal(moving.getElementById('boxName'),input);
+ assert.equal(input.getAttribute('value'),'Unsent draft');
+ applyToolInterfaceLocale(moving,'moving','de');
+ assert.equal(moving.querySelector('label[for="boxName"] span').textContent,'Kisten-Name');
+
+ const plants=parseHTML('<main><div id="cisternModal"><p class="text-sky-700">Restbestand</p><button onclick="closeCisternModal()">Schließen</button><input id="cisternMaxLiters" value="15000"></div></main>').document;
+ const close=plants.querySelector('button');
+ applyToolInterfaceLocale(plants,'plants','en');
+ assert.equal(plants.querySelector('#cisternModal p').textContent,'Remaining volume');
+ assert.equal(close.textContent,'Close');
+ assert.equal(close.getAttribute('onclick'),'closeCisternModal()');
+ assert.equal(plants.getElementById('cisternMaxLiters').getAttribute('value'),'15000');
+ applyToolInterfaceLocale(plants,'plants','de');
+ assert.equal(plants.querySelector('#cisternModal p').textContent,'Restbestand');
+ assert.equal(close.textContent,'Schließen');
+
+ const baking=parseHTML('<main><h2><i data-lucide="file-text"></i> 2. Deine Zutaten</h2><label for="recipe-name"><span class="helferlein-field-label">Mein Rezept</span><input id="recipe-name" value="Draft"></label><label for="recipe-input"><span class="helferlein-field-label">Meine Zutaten</span><textarea id="recipe-input">Mehl</textarea></label><button onclick="calculateRecipe()"><i data-lucide="calculator"></i> Mengen ausrechnen</button></main>').document;
+ const heading=baking.querySelector('h2'),headingIcon=heading.querySelector('i');
+ const action=baking.querySelector('button'),actionIcon=action.querySelector('i'),textarea=baking.getElementById('recipe-input');
+ applyToolInterfaceLocale(baking,'baking','en');
+ assert.match(heading.textContent,/2\. Your ingredients/);
+ assert.equal(heading.querySelector('i'),headingIcon,'heading icon preserved');
+ assert.equal(baking.querySelector('label[for="recipe-name"] span').textContent,'My recipe');
+ assert.equal(baking.querySelector('label[for="recipe-input"] span').textContent,'My ingredients');
+ assert.match(action.textContent,/Calculate quantities/);
+ assert.equal(action.querySelector('i'),actionIcon,'button icon preserved');
+ assert.equal(action.getAttribute('onclick'),'calculateRecipe()');
+ assert.equal(baking.getElementById('recipe-input'),textarea,'editable recipe node retained');
+ applyToolInterfaceLocale(baking,'baking','de');
+ assert.match(heading.textContent,/2\. Deine Zutaten/);
+ assert.match(action.textContent,/Mengen ausrechnen/);
+ assert.equal(baking.querySelector('label[for="recipe-name"] span').textContent,'Mein Rezept');
+ assert.equal(baking.querySelector('label[for="recipe-input"] span').textContent,'Meine Zutaten');
+});
