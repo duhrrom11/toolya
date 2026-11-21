@@ -627,7 +627,7 @@
             let totalCost = sessions.reduce((sum, s) => sum + Number(s.cost || 0), 0);
 
             doc.setFont("helvetica", "bold");
-            doc.text(`${pdfLabel("Parkvorgänge: ","Parking sessions: ")}${sessions.length} | Gesamtkosten: ${totalCost.toFixed(2)} EUR`, 14, y);
+            doc.text(`${pdfLabel("Parkvorgänge: ","Parking sessions: ")}${sessions.length} | ${pdfLabel("Gesamtkosten: ","Total costs: ")}${totalCost.toFixed(2)} EUR`, 14, y);
             y += 10;
 
             doc.setFont("helvetica", "underline");

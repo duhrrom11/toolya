@@ -2579,3 +2579,12 @@ test('additional PDF exports display EN labels without modifying storage structu
  const budget=readFileSync(new URL('../../tools/budget/index.html',import.meta.url),'utf8');
  assert.ok(budget.includes("'Haendler', 'Kategorie', 'Preis_EUR'"),'CSV machine-readable headers unchanged');
 });
+
+test('budget PDF uses selected locale for formatted amounts and date ranges',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const budget=readFileSync(new URL('../../tools/budget/index.html',import.meta.url),'utf8');
+ const parking=readFileSync(new URL('../../tools/parking/index.html',import.meta.url),'utf8');
+ assert.ok(budget.includes("pdfEn ? amount.toFixed(2) : amount.toFixed(2).replace('.', ',')"));
+ assert.ok(budget.includes("pdfLabel(' bis ', ' to ')"));
+ assert.ok(parking.includes('pdfLabel("Gesamtkosten: ","Total costs: ")'));
+});

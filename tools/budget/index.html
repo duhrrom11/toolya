@@ -1943,7 +1943,7 @@ async function toolyaCloudBoot(tool) {
                 if (r.entryType === 'einnahme' || r.category === 'Einnahme') totalIncome += price;
                 else totalExpense += price;
             });
-            const money = amount => amount.toFixed(2).replace('.', ',') + ' EUR';
+            const money = amount => (pdfEn ? amount.toFixed(2) : amount.toFixed(2).replace('.', ',')) + ' EUR';
             doc.setFontSize(11);
             doc.text(pdfLabel(pdfLabel("Zusammenfassung (alle Buchungen)","Summary (all transactions)"),"Summary (all transactions)"), 14, 39);
             doc.setFontSize(10);
@@ -1951,8 +1951,8 @@ async function toolyaCloudBoot(tool) {
             doc.text(pdfLabel(pdfLabel("Einnahmen: ","Income: "),"Income: ") + money(totalIncome), 14, 52);
             doc.text(pdfLabel(pdfLabel("Ausgaben: ","Expenses: "),"Expenses: ") + money(totalExpense), 14, 58);
             doc.text(pdfLabel(pdfLabel("Saldo: ","Balance: "),"Balance: ") + money(totalIncome - totalExpense), 14, 64);
-            const formatDate = value => value.slice(8, 10) + '.' + value.slice(5, 7) + '.' + value.slice(0, 4);
-            const period = earliestDate && latestDate ? formatDate(earliestDate) + ' bis ' + formatDate(latestDate) : pdfLabel(pdfLabel("Keine gültigen Buchungsdaten","No valid transaction dates"),"No valid transaction dates");
+            const formatDate = value => value.slice(8, 10) + (pdfEn ? '/' : '.') + value.slice(5, 7) + (pdfEn ? '/' : '.') + value.slice(0, 4);
+            const period = earliestDate && latestDate ? formatDate(earliestDate) + pdfLabel(' bis ', ' to ') + formatDate(latestDate) : pdfLabel(pdfLabel("Keine gültigen Buchungsdaten","No valid transaction dates"),"No valid transaction dates");
             doc.text(pdfLabel(pdfLabel("Zeitraum: ","Period: "),"Period: ") + period, 14, 70);
 
             // Chronologisch ausgeben, ohne die gespeicherte Reihenfolge zu verändern.
