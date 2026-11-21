@@ -912,7 +912,8 @@
         function downloadICS(title, dateStr) {
             let d = new Date(dateStr);
             let dateFormatted = d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8);
-            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${title}\nDTSTART;VALUE=DATE:${dateFormatted}\nDTEND;VALUE=DATE:${dateFormatted}\nDESCRIPTION:${window.__toolyaUILocale === 'en' ? 'Pet appointment' : 'Haustier-Termin'}\nEND:VEVENT\nEND:VCALENDAR`;
+            const safeTitle = String(title).replace(/\\/g, '\\\\').replace(/\r\n|\r|\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${safeTitle}\nDTSTART;VALUE=DATE:${dateFormatted}\nDTEND;VALUE=DATE:${dateFormatted}\nDESCRIPTION:${window.__toolyaUILocale === 'en' ? 'Pet appointment' : 'Haustier-Termin'}\nEND:VEVENT\nEND:VCALENDAR`;
             let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
             let url = URL.createObjectURL(blob);
             let a = document.createElement('a');
