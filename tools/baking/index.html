@@ -967,7 +967,12 @@
                         let cups = (val / 125).toFixed(1);
                         outputHtml += `<div><span class="text-orange-600 font-bold">${window.__toolyaUILocale === 'en' ? 'approx.' : 'ca.'} ${cups} ${window.__toolyaUILocale === 'en' ? 'cups' : 'Cups'}</span> ${ingredient}</div>`;
                     } else {
-                        outputHtml += `<div><span class="text-orange-600 font-bold">${val.toFixed(1).replace('.0','')}${unit}</span> ${ingredient}</div>`;
+                        // Units belong to presentation only; source recipe lines
+                        // and saved ingredient text retain their original spelling.
+                        const displayUnit = window.__toolyaUILocale === 'en'
+                            ? ({ TL: ' tsp', EL: ' tbsp', Stück: ' pcs', Pck: ' packets' }[unit] || unit)
+                            : unit;
+                        outputHtml += `<div><span class="text-orange-600 font-bold">${val.toFixed(1).replace('.0','')}${displayUnit}</span> ${ingredient}</div>`;
                     }
                 } else {
                     outputHtml += `<div>${escapeRecipeHtml(line)}</div>`;

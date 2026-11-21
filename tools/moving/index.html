@@ -757,7 +757,7 @@
             }
             container.innerHTML = activeSubItemsTemp.map((item, idx) => `
                 <div class="flex justify-between items-center bg-gray-50 p-2 border rounded-xl text-xs">
-                    <span><b>${item.name}</b> (${window.__toolyaUILocale === 'en' ? Number(item.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (item.value || 0).toFixed(2)} €)</span>
+                    <span><b>${escapeHtml(String(item.name ?? ''))}</b> (${window.__toolyaUILocale === 'en' ? Number(item.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (item.value || 0).toFixed(2)} €)</span>
                     <button onclick="removeSubItem(${idx})" class="text-red-500 font-bold px-2 py-0.5 hover:bg-red-50 rounded-lg">✕</button>
                 </div>
             `).join('');
@@ -947,6 +947,9 @@
             updateMovingHelpToggleLabel();
             refreshMovingSelectLabels();
             refreshMovingLocationPrompts();
+            // Repaint only the read-only subitem list of an already-open editor.
+            // The box draft, item list and unsaved form inputs stay intact.
+            if (!document.getElementById('editBoxModal')?.classList.contains('hidden')) renderSubItemsModal();
             if (movingCloudReady && document.getElementById('inventoryContainer')) renderInventory();
         });
 

@@ -802,7 +802,7 @@
                 let amazonUrl = `https://www.amazon.de/s?k=${encodeURIComponent(String(item.name ?? ''))}&tag=duhrrom-21`;
                 return `
                     <div class="b3-plant-store-row p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
-                        <div><b>${escapeHtml(item.name)}</b> <span class="text-gray-500">(${escapeHtml(item.qty)})</span></div>
+                        <div><b>${escapeHtml(item.name)}</b> <span class="text-gray-500">(${escapeHtml(window.__toolyaUILocale === 'en' && item.qty === '1 Stk' ? '1 pc' : item.qty)})</span></div>
                         <div class="flex items-center gap-1.5">
                             <a href="${amazonUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg shadow-sm">${window.__toolyaUILocale === 'en' ? '🛒 Reorder' : '🛒 Nachbestellen'}</a>
                             <button onclick="removeInventoryItem(${idx})" class="text-red-500 font-bold px-1.5 hover:text-red-700">✕</button>

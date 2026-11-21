@@ -2,6 +2,15 @@
 
 Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 
+## Fortsetzung – vier konkrete Anzeige- und Sprachwechsel-Lücken (21.11.2026)
+
+- **Umzugskisten:** Ein geöffneter Kisteneditor aktualisiert beim DE/EN-Wechsel die Unterartikel-Anzeige (einschließlich Zahlenformat), ohne unsichere Neuerstellung ungespeicherter Formulare. Unterartikelnamen werden in der HTML-Vorschau escaped; Datenwerte und Lösch-Handler bleiben gleich.
+- **WG:** Bekannte Standardwerte `Allesesser`/`Keine` erscheinen als `Omnivore`/`None` in der Ernährungsübersicht. Freie Ernährungs- und Allergieeinträge bleiben unverändert und escaped; gespeicherte Standardwerte bleiben deutsch.
+- **Pflanzenpflege:** Der bestehende, automatisch gespeicherte Mengenstandard `1 Stk` wird in der Lageransicht als `1 pc` gezeigt, ohne Lagerdaten zu migrieren oder Nutzerfreitext zu verändern.
+- **Backstudio:** Die reine Rezeptvorschau zeigt bekannte Einheiten `TL`, `EL`, `Stück`, `Pck` als `tsp`, `tbsp`, `pcs`, `packets`; Rezept-Eingabetext und persistierte Zutaten bleiben unberührt.
+- Neue isolierte Regressionen in `tests/i18n/remaining-tool-display.test.mjs` sowie aktualisierte bestehende Quellprüfungen. Lokal **171/171 i18n-Node-Tests erfolgreich**. Vollständige Chromium-/Auth-/Export- und CI-Abnahme auf dem finalen Branch-Head steht weiterhin aus.
+- Dies ist ein begrenztes Fortsetzungspaket, **keine Freigabe** oder Behauptung vollständiger Übersetzung. Die 34 App-Ansichten und ihre dynamischen Sonderfälle, reale PDF-/QR-Druckkontrolle, Recovery, Screenreader und SEO bleiben Release-Gates. Keine Supabase- oder Maskottchenänderung, kein Merge/Deployment, `noindex` unverändert.
+
 ## Aktualisierte Bestandsaufnahme nach den großen Übersetzungspaketen (21.11.2026)
 
 > **Die bisherigen Prozent- und Zwischenstandsangaben weiter unten sind historische Planungsschätzungen.** Maßgeblich sind hier die gezählten Seiten und die noch nicht erfüllten Abnahmekriterien, nicht eine geschätzte Prozentzahl.

@@ -477,7 +477,7 @@ test('household batch localizes OCR, meal planning and savings without changing 
   'Who paid for','Purchase price (€):',"'Unassigned' : 'Frei'",
   "'Dish' : 'Gericht'","'Ingredients (comma-separated)' : 'Zutaten (kommagetrennt)'",
   'Deposit into savings goal',"'n/a' : 'k.A.'",
-  "'Omnivore' : info.pref","'None' : info.allergy",
+  "value === 'Allesesser' ? 'Omnivore'","value === 'Keine' ? 'None' : value",
   "'en-GB' : 'de-DE'"
  ];
  for(const phrase of expected)assert.ok(html.includes(phrase),'missing translated household UI: '+phrase);
@@ -489,8 +489,8 @@ test('household batch localizes OCR, meal planning and savings without changing 
  assert.match(html,/diets\[mate\] = \{ pref: input\.value\.trim\(\) \|\| "Allesesser", allergy: allergies\[idx\]\.value\.trim\(\) \|\| "Keine" \}/,'diet storage fallbacks preserved');
  assert.match(html,/goal\.current \+= amount/,'deposit still uses existing savings goal');
  assert.match(html,/escapeUserHtml\(ev\.owner\)/,'event owners remain escaped');
- assert.match(html,/escapeUserHtml\(info\.pref === 'Allesesser'/,'translated diet defaults remain escaped');
- assert.match(html,/escapeUserHtml\(info\.allergy === 'Keine'/,'translated allergy defaults remain escaped');
+ assert.match(html,/escapeUserHtml\(dietDisplay\(info\.pref\)\)/,'translated diet defaults remain escaped');
+ assert.match(html,/escapeUserHtml\(dietDisplay\(info\.allergy\)\)/,'translated allergy defaults remain escaped');
  assert.match(html,/info\.wifi \|\| \(window\.__toolyaUILocale/,'stored Wi-Fi description is not translated');
 });
 

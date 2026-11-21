@@ -1987,14 +1987,18 @@
         /* Ernährung & Allergien */
         function renderDietMatrix() {
             const mateNames = getFlatmateNames(); const diets = getDiets();
+            // Only known defaults are UI labels; custom diets/allergies are user data.
+            const dietDisplay = value => window.__toolyaUILocale === 'en'
+                ? (value === 'Allesesser' ? 'Omnivore' : value === 'Keine' ? 'None' : value)
+                : value;
             document.getElementById('dietMatrixList').innerHTML = mateNames.map(m => {
                 const info = diets[m] || { pref: "Allesesser", allergy: "Keine" };
                 return `
                     <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
                         <span class="font-bold text-gray-800">${escapeUserHtml(m)}</span>
                         <div class="text-right text-[11px]">
-                            <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold">${escapeUserHtml(info.pref === 'Allesesser' && window.__toolyaUILocale === 'en' ? 'Omnivore' : info.pref)}</span>
-                            <span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-semibold ml-1">🚫 ${escapeUserHtml(info.allergy === 'Keine' && window.__toolyaUILocale === 'en' ? 'None' : info.allergy)}</span>
+                            <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold">${escapeUserHtml(dietDisplay(info.pref))}</span>
+                            <span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-semibold ml-1">🚫 ${escapeUserHtml(dietDisplay(info.allergy))}</span>
                         </div>
                     </div>
                 `;
