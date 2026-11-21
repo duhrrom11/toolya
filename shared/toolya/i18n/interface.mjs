@@ -592,7 +592,7 @@ const formCopy = Object.freeze({
   'Abbrechen':'Cancel','Speichern':'Save','Schließen':'Close','Scanner schließen':'Close scanner',
   '⚙️ Einstellungen & Konto':'⚙️ Settings and account','☁️ Konto':'☁️ Account',
   'E-Mail':'Email','Passwort':'Password','💾 Daten sichern und wiederherstellen':'💾 Back up and restore data',
-  '📤 Wiederherstellen':'📤 Restore','📖 Hilfe & Anleitung anzeigen':'📖 View help and guide'
+  '📤 Wiederherstellen':'📤 Restore','📖 Hilfe & Anleitung anzeigen':'📖 View help and guide',
   // Sprint A: audited static controls and options; displayed text only.
   "📊 Wert nach Standorten": "📊 Value by location",
   "🏷️ Wert nach Kategorien (Tags)": "🏷️ Value by category (tags)",
@@ -686,7 +686,7 @@ const formCopy = Object.freeze({
   'Titel / Bezeichnung *:':'Title / description *:','Datum *:':'Date *:',
   'Startzeit (opt.):':'Start time (optional):','Endzeit (opt.):':'End time (optional):',
   'Gebucht von / Wer:':'Booked by:','Mitglied speichern':'Save member',
-  'Fertig & Schließen':'Done and close','📶 WLAN-Passwort:':'📶 Wi-Fi password:'
+  'Fertig & Schließen':'Done and close','📶 WLAN-Passwort:':'📶 Wi-Fi password:',
   // Sprint A: audited static controls and options; displayed text only.
   "⚙️ Anpassen": "⚙️ Customize",
   "Titel / Artikel *:": "Title / item *:",
@@ -772,7 +772,7 @@ const formCopy = Object.freeze({
   'Pflanzen-Steckbrief':'Plant profile','📖 Tagebucheintrag':'📖 Journal entry',
   'Pflanze bearbeiten':'Edit plant','Name:':'Name:','Art:':'Species:',
   'Standort:':'Location:','Gieß-Tage:':'Watering interval:','Anmerkungen:':'Notes:',
-  '💧 Gießen':'💧 Water','Ausblenden':'Dismiss','Achtung: Frostgefahr!':'Warning: frost risk!'
+  '💧 Gießen':'💧 Water','Ausblenden':'Dismiss','Achtung: Frostgefahr!':'Warning: frost risk!',
   // Sprint A: audited static controls and options; displayed text only.
   "☀️ Volle Sonne (ca. 7-8 Std.)": "☀️ Full sun (approx. 7–8 hrs)",
   "⛅ Halbschatten (ca. 4-5 Std.)": "⛅ Partial shade (approx. 4–5 hrs)",
@@ -902,7 +902,7 @@ const b3NavigationCopy=Object.freeze({
   '✎ Dashboard bearbeiten':'✎ Edit dashboard',
   '❔ Hilfe & Anleitung':'❔ Help and guide',
   '☕ Kaffee spendieren':'☕ Buy a coffee',
-  '↗ Entdecke mehr Toolya':'↗ Explore more Toolya'
+  '↗ Entdecke mehr Toolya':'↗ Explore more Toolya',
   // Sprint A: audited static controls and options; displayed text only.
   "⭕ Formen-Finder": "⭕ Pan finder",
   "⏱️ Backtimer": "⏱️ Baking timer",
