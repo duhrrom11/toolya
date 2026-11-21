@@ -1752,3 +1752,42 @@ test('Sprint A plant locale change refreshes only visible read-only panels',asyn
  const region=html.slice(start,end);
  assert.ok(!region.includes('saveData(')&&!region.includes('localStorage.setItem('),'locale change does not persist data');
 });
+
+
+test('Sprint A companion planting advice recognizes English names and restores German without editing species input',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const html=await readFile(new URL('../../tools/plants/index.html',import.meta.url),'utf8');
+ const dataStart=html.indexOf('const mischkulturDb = {');
+ const dataEnd=html.indexOf("document.addEventListener('DOMContentLoaded'",dataStart);
+ const functionStart=html.indexOf('function checkCompanionPlanting(speciesName) {');
+ const functionEnd=html.indexOf('function calculateWaterAmount() {',functionStart);
+ assert.ok(dataStart>0&&dataEnd>dataStart&&functionStart>0&&functionEnd>functionStart);
+ const classNames=new Set(['hidden']);
+ const hint={innerHTML:'',classList:{add:name=>classNames.add(name),remove:name=>classNames.delete(name)}};
+ const species={value:'Tomato'};
+ const context={window:{__toolyaUILocale:'en'},document:{getElementById:id=>id==='companionAlertBox'?hint:id==='plantSpecies'?species:null}};
+ createContext(context);
+ runInContext(html.slice(dataStart,dataEnd).split("document.addEventListener('DOMContentLoaded'")[0],context);
+ runInContext(html.slice(functionStart,functionEnd),context);
+ runInContext('checkCompanionPlanting("Tomato")',context);
+ assert.match(hint.innerHTML,/Grows well alongside basil, lettuce, garlic, carrots/);
+ assert.match(hint.innerHTML,/Avoid potatoes, fennel, peas/);
+ assert.equal(classNames.has('hidden'),false);
+ assert.equal(species.value,'Tomato','species input is untouched');
+ context.window.__toolyaUILocale='de';
+ runInContext('checkCompanionPlanting("Tomato")',context);
+ assert.match(hint.innerHTML,/Liebt Nachbarschaft mit Basilikum, Salat, Knoblauch, Karotten/);
+ assert.equal(species.value,'Tomato','language change never rewrites the species');
+ context.window.__toolyaUILocale='en';
+ runInContext('checkCompanionPlanting("strawberry")',context);
+ assert.match(hint.innerHTML,/garlic, spinach, lettuce/);
+ runInContext('checkCompanionPlanting("unknown species")',context);
+ assert.equal(classNames.has('hidden'),true,'unknown user species do not produce made-up advice');
+ assert.ok(html.includes("if (companionBox && !companionBox.classList.contains('hidden'))"),'only shown hint refreshes');
+ const listenerStart=html.indexOf("document.addEventListener('toolya:locale-change'");
+ const listenerEnd=html.indexOf('const mischkulturDb',listenerStart);
+ const listener=html.slice(listenerStart,listenerEnd);
+ assert.ok(listener.includes("checkCompanionPlanting(document.getElementById('plantSpecies')?.value || '')"));
+ assert.ok(!listener.includes('saveData(')&&!listener.includes('localStorage.setItem('),'language change makes no data writes');
+});
