@@ -11,7 +11,9 @@ const SUPPORTED=Object.freeze({
 });
 const name=location.pathname.match(/^\/tools\/(moving|housemates|plants|baking)\/index\.html$/)?.[1];
 const settings=SUPPORTED[name];
-if(settings){
+function mountToolLanguage(){
+ if(!settings)return;
+ if(document.querySelector('.ty-tool-language'))return;
  let stored=null;
  try { stored=localStorage.getItem(key); } catch (_) { /* storage is optional */ }
  const query=new URLSearchParams(location.search);
@@ -58,3 +60,5 @@ if(settings){
    apply(selected,false);
  }
 }
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mountToolLanguage,{once:true});
+else mountToolLanguage();
