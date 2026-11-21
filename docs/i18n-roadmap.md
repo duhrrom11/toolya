@@ -440,3 +440,10 @@ Der Kontohinweis auf der Startseite übernimmt Englisch aus dem geschützten Too
 Zehn Werkzeugseiten verwenden dieselbe vorhandene Anwendung für DE und EN. In diesem Paket sind 202 Stellen in den deutschen Vorlagen mit englischen Labels, Hinweisen oder zugänglichen Beschriftungen versehen. Ein gemeinsamer Helfer setzt diese Texte bei Englisch ein und stellt bei Deutsch die Ausgangstexte wieder her. Die statische Kontrolle bestätigte, dass abgesehen von den Übersetzungsattributen alle zehn HTML-Dateien bytegleich sind. Ein synthetischer Test überprüfte den Hin- und Rückwechsel, unveränderte Optionswerte und den Erhalt eines geänderten Laufzeittexts. Vollständige Browserabnahme und weitere Laufzeitmeldungen bleiben offen.
 
 Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status und Kalenderaktionen zweisprachig ergänzt und isoliert in Chromium geprüft.
+
+## 22.11.2026 – Sichere dynamische Parkplatz-Historie und Leerzustände
+
+- Parkplatz-Historie HTML-escaped freie Beschreibungen, Sektor- und Datumsanzeigen ausschließlich beim Rendern, filtert Bild-Data-URLs und GPS-Koordinaten und verhindert Lösch-Handler mit ungesicherten IDs. Originaldaten in CloudOnly bleiben unverändert.
+- In Parkplatz, Autokosten und Tiergesundheit weitere dynamische DE/EN-Leerzustände ergänzt; Parkzeitpunkt und Beträge englisch formatiert. Beim Sprachwechsel wird die Parkplatzansicht nur nach bestätigter Cloud-Bereitschaft neu gezeichnet, ohne Schreibzugriff.
+- Neue synthetische Node-Sicherheitsregression `tests/i18n/parking-history-safety.test.mjs`. Vollständige Browser-/Node-Suiten und finale GitHub-CI müssen noch nachgewiesen werden. Strikter Coverage-Audit bleibt rot.
+- PR bleibt Draft; kein Merge, Deployment, noindex-Wechsel, Supabase-Produktivtest oder Markenasset-Eingriff.

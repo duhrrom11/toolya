@@ -904,8 +904,8 @@ async function toolyaCloudBoot(tool) {
             document.getElementById('statCars').innerText = data.cars.length;
 
             if (data.cars.length === 0) {
-                carsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Fahrzeuge erfasst.</p>`;
-                tiresContainer.innerHTML = `<p class="text-xs text-gray-400 text-center">Keine Reifensätze.</p>`;
+                carsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${label('Noch keine Fahrzeuge erfasst.','No vehicles recorded yet.')}</p>`;
+                tiresContainer.innerHTML = `<p class="text-xs text-gray-400 text-center">${label('Keine Reifensätze.','No tyre sets.')}</p>`;
             } else {
                 carsContainer.innerHTML = data.cars.map(c => {
                     const carEvents = data.events.filter(e => e.carId === c.id);
@@ -959,7 +959,7 @@ async function toolyaCloudBoot(tool) {
                 }).join('');
 
                 if (!data.tires || data.tires.length === 0) {
-                    tiresContainer.innerHTML = `<p class="text-xs text-gray-400 text-center italic py-2">Noch keine Reifensätze hinterlegt.</p>`;
+                    tiresContainer.innerHTML = `<p class="text-xs text-gray-400 text-center italic py-2">${label('Noch keine Reifensätze hinterlegt.','No tyre sets recorded yet.')}</p>`;
                 } else {
                     tiresContainer.innerHTML = data.tires.map(t => {
                         let car = data.cars.find(c => c.id === t.carId);

@@ -103,3 +103,13 @@ Vier Dialoge für Löschschutz, private WG-Kopie und doppelte Buchungen sind DE/
 ### Terminverlauf in Autokosten und Tiergesundheit
 
 Terminstatus im Verlauf, Datumsanzeige, Filter-Leerzustände, Kalender-Schaltflächen und das Ablaufdatum bei Tiergesundheit folgen der gewählten Sprache. 205 lokale i18n-Node-Tests und beide gezielten Chromium-Tests bestanden. Die Browserfälle prüften DE/EN-Anzeige, den unveränderten synthetischen Titel, vier ICS-Downloads und null Cloud-Schreibvorgänge. Alle 13 PR-Workflows des Ausgangscommits `a6f2f440` waren grün.
+
+### 22.11.2026 – Parkplatz-Anzeigesicherheit und DE/EN-Laufzeitansichten
+
+Ausgangs-HEAD: `308ba4c0d91b4cbbddc7335414aaa4592afaac2b`. Aktuellen HEAD über [Branch-Verlauf](https://github.com/duhrrom11/toolya/commits/feature/i18n-de-en-foundation-20261121/) prüfen.
+
+- Parkplatz-Historie escaped Nutzertext ausschließlich bei der Anzeige, begrenzt Bilder auf Raster-Data-URLs, validiert GPS und schützt ungültige Lösch-IDs. Keine Änderung an gespeicherten Werten.
+- Parkplatz, Autokosten und Tiergesundheit: weitere zweisprachige Leerzustände, englische Anzeige von Parkplatzbetrag und Datum, lesender Locale-Refresh bei bestätigter CloudOnly-Bereitschaft.
+- Neue isolierte Node-Regression: `tests/i18n/parking-history-safety.test.mjs`. **Nicht vor erfolgreichem CI-Lauf als bestanden werten.**
+- Vorheriger vollständiger PR-Lauf `a6f2f440`: 13/13 grün. Auf `308ba4c0`: nur statischer Push-i18n-Check nachweislich grün. Neue CI-Ergebnisse auswerten. Ohne lokalen Checkout keine vollständigen lokalen Browser-/Node-Läufe.
+- **Release-Gate OFFEN**: 34 Teilansichten, strikter Coverage-Audit, Auth-Recovery-E2E, Exporte, Accessibility und finale CI ausstehend. Draft/noindex unverändert; kein Merge, Produktion oder produktive Testdaten.
