@@ -535,6 +535,8 @@
         document.addEventListener('toolya:locale-change', () => {
             renderGardenCalendar();
             if (plantsCloudReady) renderApp(); // read-only refresh for translated card labels
+            if (plantsCloudReady && !document.getElementById('seedsModal')?.classList.contains('hidden')) renderSeedList();
+            if (plantsCloudReady && !document.getElementById('inventoryModal')?.classList.contains('hidden')) renderInventoryList();
         });
 
         const mischkulturDb = {
@@ -662,13 +664,13 @@
                 const validYear = Number.isInteger(parsedYear) && parsedYear >= 1900 && parsedYear <= currentYear + 1;
                 const age = validYear ? currentYear - parsedYear : null;
                 let warning = age === null
-                    ? '<span class="text-[10px] bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">⚠️ Erntejahr prüfen</span>'
-                    : age < 0 ? '<span class="text-[10px] bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">📅 Zukünftiges Erntejahr</span>'
-                    : age > 3 ? `<span class="text-[10px] bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full font-bold">⚠️ Keimfähigkeit evtl. gering (${age}J)</span>` : `<span class="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold">✅ Gut (${age}J)</span>`;
+                    ? `<span class="text-[10px] bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">${window.__toolyaUILocale === 'en' ? '⚠️ Check harvest year' : '⚠️ Erntejahr prüfen'}</span>`
+                    : age < 0 ? `<span class="text-[10px] bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">${window.__toolyaUILocale === 'en' ? '📅 Future harvest year' : '📅 Zukünftiges Erntejahr'}</span>`
+                    : age > 3 ? `<span class="text-[10px] bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full font-bold">${window.__toolyaUILocale === 'en' ? '⚠️ Germination rate may be low' : '⚠️ Keimfähigkeit evtl. gering'} (${age}${window.__toolyaUILocale === 'en' ? 'y' : 'J'})</span>` : `<span class="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold">${window.__toolyaUILocale === 'en' ? '✅ Good' : '✅ Gut'} (${age}${window.__toolyaUILocale === 'en' ? 'y' : 'J'})</span>`;
                 let amazonSearchUrl = `https://www.amazon.de/s?k=${encodeURIComponent(String(s.name ?? '') + ' saemereien')}&tag=duhrrom-21`;
-                return `<div class="b3-plant-store-row p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs"><div><b>${escapeHtml(s.name)}</b> (Ernte: ${escapeHtml(s.year)})<br>${warning}</div><div class="flex items-center gap-1.5"><a href="${amazonSearchUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">🛒 Neu kaufen</a><button onclick="removeSeedItem(${idx})" class="text-red-500 font-bold px-1.5">✕</button></div></div>`;
+                return `<div class="b3-plant-store-row p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs"><div><b>${escapeHtml(s.name)}</b> (${window.__toolyaUILocale === 'en' ? 'Harvested' : 'Ernte'}: ${escapeHtml(s.year)})<br>${warning}</div><div class="flex items-center gap-1.5"><a href="${amazonSearchUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">${window.__toolyaUILocale === 'en' ? '🛒 Buy again' : '🛒 Neu kaufen'}</a><button onclick="removeSeedItem(${idx})" class="text-red-500 font-bold px-1.5">✕</button></div></div>`;
             }).filter(Boolean).join('');
-            document.getElementById('seedList').innerHTML = seedItems || `<p class="text-xs text-gray-400 text-center py-2">Kein Saatgut im Lager.</p>`;
+            document.getElementById('seedList').innerHTML = seedItems || `<p class="text-xs text-gray-400 text-center py-2">${window.__toolyaUILocale === 'en' ? 'No seeds in stock.' : 'Kein Saatgut im Lager.'}</p>`;
         }
         async function addSeedItem() {
             let name = document.getElementById('seedName').value.trim();
@@ -742,13 +744,13 @@
                     <div class="b3-plant-store-row p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
                         <div><b>${escapeHtml(item.name)}</b> <span class="text-gray-500">(${escapeHtml(item.qty)})</span></div>
                         <div class="flex items-center gap-1.5">
-                            <a href="${amazonUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg shadow-sm">🛒 Nachbestellen</a>
+                            <a href="${amazonUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg shadow-sm">${window.__toolyaUILocale === 'en' ? '🛒 Reorder' : '🛒 Nachbestellen'}</a>
                             <button onclick="removeInventoryItem(${idx})" class="text-red-500 font-bold px-1.5 hover:text-red-700">✕</button>
                         </div>
                     </div>
                 `;
             }).filter(Boolean).join('');
-            document.getElementById('inventoryList').innerHTML = inventoryItems || `<p class="text-xs text-gray-400 text-center py-2">Lager ist leer.</p>`;
+            document.getElementById('inventoryList').innerHTML = inventoryItems || `<p class="text-xs text-gray-400 text-center py-2">${window.__toolyaUILocale === 'en' ? 'Inventory is empty.' : 'Lager ist leer.'}</p>`;
         }
         async function addInventoryItem() {
             let name = document.getElementById('invItemName').value.trim();
