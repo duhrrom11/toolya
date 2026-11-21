@@ -463,3 +463,30 @@ test('household shopping, cleaning, notes and Wi-Fi feedback keep stored content
  assert.match(html,/const wifiString = 'WIFI:T:WPA;S:'/,'Wi-Fi QR payload format remains unchanged');
  assert.match(html,/const price = parseFloat\(prompt\(/,'expense recording keeps original price input');
 });
+
+test('household batch localizes OCR, meal planning and savings without changing persisted keys',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const expected=[
+  '🔍 Scanning receipt…','❌ Text recognition failed.','✏️ Edit sticky note',
+  "'By' : 'Von'","'mo' : 'Mo'",
+  "'Diet' : 'Ernährung'","'Allergies' : 'Allergien'",
+  'Who paid for','Purchase price (€):',"'Unassigned' : 'Frei'",
+  "'Dish' : 'Gericht'","'Ingredients (comma-separated)' : 'Zutaten (kommagetrennt)'",
+  'Deposit into savings goal',"'n/a' : 'k.A.'",
+  "'Omnivore' : info.pref","'None' : info.allergy",
+  "'en-GB' : 'de-DE'"
+ ];
+ for(const phrase of expected)assert.ok(html.includes(phrase),'missing translated household UI: '+phrase);
+ assert.match(html,/worker = await library\.createWorker\('deu'\)/,'receipt OCR recognition language unchanged');
+ assert.match(html,/const price = parseFloat\(prompt\(window\.__toolyaUILocale/,'shopping expense price still parsed');
+ assert.match(html,/category: "Haushalt", entryType: "ausgabe"/,'original expense values preserved');
+ assert.match(html,/<option value="Frei">/,'meal-plan sentinel preserved');
+ assert.match(html,/p\.chef !== 'Frei'/,'meal assignment sentinel preserved');
+ assert.match(html,/diets\[mate\] = \{ pref: input\.value\.trim\(\) \|\| "Allesesser", allergy: allergies\[idx\]\.value\.trim\(\) \|\| "Keine" \}/,'diet storage fallbacks preserved');
+ assert.match(html,/goal\.current \+= amount/,'deposit still uses existing savings goal');
+ assert.match(html,/escapeUserHtml\(ev\.owner\)/,'event owners remain escaped');
+ assert.match(html,/escapeUserHtml\(info\.pref === 'Allesesser'/,'translated diet defaults remain escaped');
+ assert.match(html,/escapeUserHtml\(info\.allergy === 'Keine'/,'translated allergy defaults remain escaped');
+ assert.match(html,/info\.wifi \|\| \(window\.__toolyaUILocale/,'stored Wi-Fi description is not translated');
+});
