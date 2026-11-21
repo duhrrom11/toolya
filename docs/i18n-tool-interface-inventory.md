@@ -114,3 +114,12 @@ Stand 2026-11-21. Quelle: vier vorhandene `tools/*/index.html` im Entwicklungsbr
 - Beide Dashboard-Skripte senden nach jedem Editorrendern ein `toolya:b3-editor-rendered`-Ereignis, das lediglich die bereits vorhandene i18n-Darstellung erneut anwendet. Keine zusätzlichen `localStorage`-/Supabase-Schreibvorgänge.
 - Drei weitere Regressionstests prüfen die Navigation und Editoren einschließlich Rückwechsel auf Deutsch, ihrer Event- und Optionsidentität sowie unveränderter Layoutspeicher-Schlüssel.
 - Nachfolgende Commit-Workflows müssen erneut grün sein; Browser-/Cloud-Tests im realen Nutzerkonto sind dadurch nicht automatisch ersetzt. **Kein Merge/Deployment**.
+
+## Größeres Hilfefenster- und Workflow-Paket (2026-11-21)
+
+- Der letzte freigegebene CI-Stand `f075917e` hat alle neun GitHub-Actions-Workflows erfolgreich durchlaufen.
+- `shared/toolya/i18n/interface.mjs` ergänzt 16 weitere Quelltext-exakte Übersetzungen für WG- und Pflanzenhilfe, wichtige WG-Dialog- und Workflow-Überschriften sowie die Backstudio-Navigation. `summary`-Elemente werden für bekannte Titel berücksichtigt.
+- Die vollständigen **sieben** fest hinterlegten Beschreibungstexte der WG-Hilfe (vier) und Pflanzen-Hilfe (drei) werden jetzt in Englisch angezeigt. Die Übersetzung wird streng auf `#helpModal details > p` und den dortigen offiziellen Anleitungslink beschränkt. Originaltext inklusive Leerzeichen bleibt für die deutsche Anzeige erhalten.
+- Bei DE wird der bisherige Link unter `/wg-organisator/` beziehungsweise `/pflanzenpflege/` wiederhergestellt; bei EN führt die In-Tool-Hilfe zur jeweiligen englischen Anleitung. Nutzer-Notizen, Freitexte, gespeicherte Daten, Links außerhalb des Hilfefensters und Formulareingaben werden nicht verändert.
+- Auch der pflanzenspezifische Frost-Hinweistext und die WG-Mitgliederverwaltung tragen eine vollständige englische Beschriftung, ohne dass Frostwarn- oder Mitgliederlogik verändert wurden.
+- Vier ergänzte Regressionstests prüfen Quelltext-Exaktheit, Hin-/Rückwechsel, Navigation, Frostschutzmeldung, unveränderte Nutzertexte und ursprüngliche Handler. Die vollständige CI des neuen Branch-HEADs bleibt eine eigenständige Freigabeschranke; **kein Merge und kein Deployment**.
