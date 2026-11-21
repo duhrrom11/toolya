@@ -2324,3 +2324,31 @@ test('Sprint A phone-visible form labels translate reversibly without removing i
  assert.equal(baking.querySelector('label[for="recipe-name"] span').textContent,'Mein Rezept');
  assert.equal(baking.querySelector('label[for="recipe-input"] span').textContent,'Meine Zutaten');
 });
+
+
+test('Sprint A backup, migration, membership and Wi-Fi dialogs translate only known source messages',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const moving=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
+ const housemates=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const cases=[
+  ['moving','Backup erfolgreich importiert!','Backup imported successfully!'],
+  ['moving','Backup-Datei konnte nicht gelesen werden.','The backup file could not be read.'],
+  ['housemates','WLAN-Name (SSID):','Wi-Fi network name (SSID):'],
+  ['housemates',String.raw`Private WG-Kopie erstellt.\\nDer alte WG-Link bleibt bestehen.\\nBitte teile ab jetzt nur den neuen Link mit freigegebenen Mitgliedern.`,String.raw`Private household copy created.\\nThe old household link remains active.\\nFrom now on, only share the new link with authorized members.`],
+  ['housemates','Mitgliederverwaltung: Auth request failed','Member management: Auth request failed']
+ ];
+ for(const [tool,source,target] of cases){
+  assert.equal(translateToolDialog(tool,'en',source),target,'known author text translated');
+  assert.equal(translateToolDialog(tool,'de',source),source,'German message intact');
+ }
+ for(const original of ['Unrecognized server error #902','Private WG-Kopie created by user']){
+  assert.equal(translateToolDialog('housemates','en',original),original,'unknown backend text preserved');
+ }
+ assert.ok(moving.includes('alert("Backup erfolgreich importiert!")'),'backup dialog exists in current UI');
+ assert.ok(moving.includes('alert("Backup-Datei konnte nicht gelesen werden.")'),'backup reader error covered');
+ assert.ok(housemates.includes("prompt('WLAN-Name (SSID):', '')"),'Wi-Fi prompt covered');
+ assert.ok(housemates.includes("alert('Mitgliederverwaltung: ' + error.message)"),'dynamic member error retains backend tail');
+ assert.ok(housemates.includes("alert(window.__toolyaUILocale === 'en'"),'contact success explicitly localized');
+ assert.ok(housemates.includes('${contacts.length} contact(s) imported from your phone successfully!'),'only display copies count');
+ assert.ok(housemates.includes('saveFlatmates(mates)'),'contact persistence untouched');
+});
