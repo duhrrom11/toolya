@@ -11,6 +11,15 @@
 
 Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 
+## Fortsetzung – Recovery-Zustandswahrheit und Pflanzen-Regressionen (21.11.2026)
+
+- **Auth / Passwort-Recovery:** Im Dashboard und zentralen Startseiten-Kontoablauf wird eine bereits erfolgreiche Passwortaktualisierung nicht mehr als fehlgeschlagen dargestellt, wenn erst der nachfolgende Sign-out scheitert. Der Zustand zeigt dann ausdrücklich „Passwort geändert, aber Abmelden fehlgeschlagen“ und fordert zum manuellen Abmelden auf; es wird kein abgemeldeter Zustand vorgetäuscht. Der eigentliche Update-Fehler beendet den Pfad weiterhin vor dem Sign-out, und Passwort-/Token-Daten werden nicht protokolliert.
+- **DE/EN-Statuskatalog:** Neue source-exakte, reversible Meldungen für diesen Auth-Sonderzustand, die zentrale Passwort-Recovery-Bestätigung, den Fehlerfall und die Recovery-Überschrift. Unbekannte Supabase-Fehlertexte und E-Mail-Adressen werden nicht übersetzt.
+- **Pflanzen-PDF und Live-Sprachwechsel:** Vier zuvor fehlschlagende i18n-Testannahmen an den tatsächlich implementierten Sprach-Snapshot und den Standort-/Karten-Refresh angepasst. Die PDF-Sprache wird zu Exportbeginn eingefroren; die Standortansicht wird nur bei geladenen Cloud-Daten aktualisiert.
+- **Neue isolierte Auth-Tests:** Erfolgreiche Passwortänderung mit erfolgreichem Sign-out, erfolgreiche Passwortänderung mit fehlgeschlagenem Sign-out sowie fehlgeschlagene Passwortänderung mit erhaltenem Formulardraft und ohne Sign-out. Nur synthetische Auth-Objekte, **keine Verbindung zu Supabase**.
+- **Node-Abnahme:** 175/175 i18n-Tests erfolgreich. Lokaler Chromium-Smoke-Test wurde versucht, konnte in dieser Ausführungsumgebung wegen gesperrtem Prozess-Socket (Operation not permitted) nicht starten. Echte Browser-E2E, 320px, Recovery-Link-Redirect und sämtliche CI-Workflows am endgültigen Commit bleiben Release-Gates.
+- Weiterhin **Draft**, kein Merge, Deployment, Produktivdatenzugriff oder Entfernen von noindex. Dies ist ein weiterer abgesicherter Teilstand, keine vollständige Übersetzungs- oder Release-Abnahme.
+
 ## Fortsetzung – vier konkrete Anzeige- und Sprachwechsel-Lücken (21.11.2026)
 
 - **Umzugskisten:** Ein geöffneter Kisteneditor aktualisiert beim DE/EN-Wechsel die Unterartikel-Anzeige (einschließlich Zahlenformat), ohne unsichere Neuerstellung ungespeicherter Formulare. Unterartikelnamen werden in der HTML-Vorschau escaped; Datenwerte und Lösch-Handler bleiben gleich.
