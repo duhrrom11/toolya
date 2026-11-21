@@ -5,7 +5,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 ## Projektstatus
 - Aktueller geprüfter Implementierungsstand vor diesem Roadmap-Commit: `dd413ec486973d66d7075223afd3284949ec1a3b`; 9 von 9 GitHub-Actions-Workflows erfolgreich.
 - Die englischen Startseiten und vier Tool-Einstiege sind vorhanden. Die Tool-Oberflächen sind noch nicht durchgängig übersetzt; englische öffentliche Inhalte bleiben vorerst `noindex`.
-- Gesamtfortschritt **ca. 58 % (Planungsschätzung)**, nicht automatisch gemessen: Summe aus Paketgewicht × geschätztem Teilfortschritt, 57,5 % gerundet. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
+- Gesamtfortschritt **ca. 58 % (Planungsschätzung, nach Sprint-A-Teilpaket)**, nicht automatisch gemessen: Summe aus Paketgewicht × geschätztem Teilfortschritt, 58,4 % gerundet. Diese Zahl ist keine Aussage über Testabdeckung oder Releasefähigkeit.
 - Datenbanken, Supabase-Berechtigungen, gespeicherte Objekte, Sprach-unabhängige Maskottchen-Einstellung und produktive Seiten bleiben unangetastet.
 
 ## Sechs gebündelte Arbeitspakete
@@ -14,7 +14,7 @@ Stand: 2026-11-21 · PR #291 · Nur Entwicklungsbranch, kein Merge/Deployment.
 |---|---:|---:|---|---|
 | 1. Sprachsystem & technische Grundlage | 15 % | 100 % | fertig | DE/EN-Umschaltung reversibel; Präferenz unabhängig; bestehende Daten/Maskottchen unverändert |
 | 2. Englische Startseiten & Ratgeber | 15 % | 80 % | weitgehend | Vier Ratgeber, Startseite und Rechner vollständig redigiert, zugänglich, funktionale Links |
-| 3. Vier Tool-Oberflächen | 30 % | 65 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
+| 3. Vier Tool-Oberflächen | 30 % | 68 % | aktiv | Umzugskisten, WG, Pflanzen und Backstudio komplett übersetzt: statische und dynamische Zustände, Formulare, Aktionen, Hilfen |
 | 4. Konten, Datenwege & Exporte | 20 % | 35 % | teilweise | Auth inklusive Recovery, erlaubte Redirects, Datenkonflikte, PDF/QR/CSV/Import/Export in EN und DE E2E |
 | 5. Qualitätssicherung & Sicherheit | 10 % | 40 % | aktiv | vollständige E2E-Tests, 320px/mobile, Keyboard, Screenreader, Auth-Sicherheit, abschließend alle CI erfolgreich |
 | 6. SEO-Freigabe & Veröffentlichung | 10 % | 0 % | gesperrt | hreflang, Canonicals, Sitemap, OG/JSON-LD, noindex nur nach Freigabegates aufheben, kontrollierter Release |
@@ -52,3 +52,17 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Nach jedem Umsetzungspaket: Commit, Regressionstests, GitHub CI, aktualisierte Restpunkte und nachgewiesene Abnahme.
 - Keine Prozentzahl allein aus Anzahl der Commits ableiten.
 - Sicherer Release-Gate: **alle 6 Pakete abgenommen, 9/9 finale CI erfolgreich, Auth-/E2E-/SEO-Gates erfüllt**.
+
+## Sprint A – erstes gebündeltes Umsetzungspaket (2026-11-21)
+
+**Branch:** `feature/i18n-de-en-foundation-20261121` · **Scope:** Nur Oberflächentexte und isolierte Tests, nicht Produktion.
+
+- **110 zusätzliche source-exakte feste Übersetzungspaare** in `shared/toolya/i18n/interface.mjs`: Umzugskisten **25**, WG **50**, Pflanzen **8**, Backstudio **27**. Sie betreffen Standort-/Inventarfilter, Kategorien, Finanz- und Haushaltformulare, Pflanzenlicht/-vermehrung, Backformwahl und Kostenoptionen.
+- Die bisherigen UI-Handler, expliziten `value`-Attribute, Datenspeicher-Keys, Original-Maskottchen, Formeln, Währung und Auth bleiben unberührt.
+- Regressionstests prüfen die Sprachumstellung DE → EN → DE in vier Tools, erhaltene Inputwerte, `onclick`-Handler und implizite Optionswerte in deutscher Quellsprache (kein Übersetzen der gespeicherten Filter-/Tag-Keys).
+- Der Fortschritt von Paket 3 wurde **vorsichtig von 65 auf 68 % geschätzt**; global ergibt dies **58,4 %, gerundet 58 %**. Das ist kein Abschlussnachweis für Sprint A.
+- Die neun GitHub-Workflows für den vorherigen Implementierungsstand `dd413ec4` waren vollständig grün. Der neue Sprint-A-Testlauf für den finalen HEAD muss eigens erfolgreich abschließen, bevor weitere Freigaben behauptet werden.
+
+**Sprint A noch offen:** Restliche feste Elemente mit verschachtelten Icons/HTML, dynamische UI-Meldungen aus Inline-/externen Skripten, alle verbliebenen Dialog-/Validierungszustände, systematische Vollabdeckung der vier Tools und echte Browser-Semantik-/Mobilprüfungen. Das folgende Sprint-B-Auth-/Exportpaket ist ebenfalls noch offen.
+
+**Release-Gate unverändert:** PR bleibt Draft; kein Merge, Deployment, SEO-Indexierungswechsel und keine Supabase-Änderungen.
