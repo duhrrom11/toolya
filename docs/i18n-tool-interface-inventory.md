@@ -123,3 +123,11 @@ Stand 2026-11-21. Quelle: vier vorhandene `tools/*/index.html` im Entwicklungsbr
 - Bei DE wird der bisherige Link unter `/wg-organisator/` beziehungsweise `/pflanzenpflege/` wiederhergestellt; bei EN führt die In-Tool-Hilfe zur jeweiligen englischen Anleitung. Nutzer-Notizen, Freitexte, gespeicherte Daten, Links außerhalb des Hilfefensters und Formulareingaben werden nicht verändert.
 - Auch der pflanzenspezifische Frost-Hinweistext und die WG-Mitgliederverwaltung tragen eine vollständige englische Beschriftung, ohne dass Frostwarn- oder Mitgliederlogik verändert wurden.
 - Vier ergänzte Regressionstests prüfen Quelltext-Exaktheit, Hin-/Rückwechsel, Navigation, Frostschutzmeldung, unveränderte Nutzertexte und ursprüngliche Handler. Die vollständige CI des neuen Branch-HEADs bleibt eine eigenständige Freigabeschranke; **kein Merge und kein Deployment**.
+
+## Lesetexte, leere Listen und allgemeine Anleitungen (2026-11-21)
+
+- Der bisherige Commit `6c6103c2` hat die i18n-Prüfung erfolgreich absolviert; die vollständige CI bleibt auf dem jeweiligen endgültigen HEAD nachzuweisen.
+- In `shared/toolya/i18n/interface.mjs` wurde ein source-exakter Katalog mit **37 festen Infotexten** für Umzugskisten (3), WG-Organisator (12), Pflanzenpflege (7) und Backstudio (15) ergänzt. Enthalten sind Einführungen, leere Listen, Hinweise zum QR-Code, zu geteilten Haushalten, Pflanzeninventar und Backform-/Zutatenberechnung.
+- Die Übersetzungen beschränken sich auf bekannte einzelne Textabsätze innerhalb der Tooloberflächen; Inhalte mit Kind-Elementen oder `contenteditable` werden übersprungen, Freitext- und Formularwerte nicht beschrieben. Die source-exakten deutschen Originale bleiben für den Rückwechsel erhalten.
+- Drei zusätzliche Regressionstests decken Hin-/Rückwechsel in allen vier Tools, unveränderte Eingaben und fremde Content-Blöcke, den Abgleich aller Katalogschlüssel gegen die Original-HTML-Dateien sowie nicht modifizierte Rezeptwerte ab.
+- Nach vollständiger CI sind im PR zusätzlich die semantische Browserprüfung, noch verbleibende dynamische Texte und die abschließende Entscheidung zum Abbau von `noindex` erforderlich. **Keine produktive Datenbankänderung, kein Merge und kein Deployment.**
