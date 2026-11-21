@@ -56,6 +56,7 @@ function mountToolLanguage(){
  notice.append('The English interface is being translated. Most forms, account dialogs and messages are still in German. ',guide);
  function apply(lang,persist){
    selected=lang;
+   window.__toolyaUILocale=lang; // presentation only; never changes saved data or units
    if(persist)try{localStorage.setItem(key,lang)}catch(_){}
    if(title)title.textContent=lang==='en'?settings.heading:originalTitle;
    if(subtitle)subtitle.textContent=lang==='en'?settings.subtitle:originalSubtitle;
