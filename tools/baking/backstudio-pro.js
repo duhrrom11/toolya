@@ -3,7 +3,20 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const proEn=()=>window.__toolyaUILocale==='en';
-const proUi=(de,en)=>proEn()?en:de;
+const proStatusPairs=new Map();
+const proUi=(de,en)=>{
+ if(typeof de==='string'&&typeof en==='string'&&de!==en){
+  proStatusPairs.set(de,[de,en]);proStatusPairs.set(en,[de,en]);
+ }
+ return proEn()?en:de;
+};
+function localizeProLiveStatuses(){
+ for(const id of ['bsp-ocr-status','bsp-memory-status','bsp-3d-status']){
+  const el=$(id);if(!el)return;
+  const pair=proStatusPairs.get(el.textContent);
+  if(pair)el.textContent=proEn()?pair[1]:pair[0];
+ }
+}
 const proStaticCopy=new Map([["Deine Backform zum Drehen","Your interactive baking pan"],["Form drehen","Rotate pan"],["Wieder von vorn","Reset rotation"],["Drehe die Form, um sie von allen Seiten anzusehen.","Rotate the pan to view it from all sides."],["Hier erscheint deine drehbare Backform.","Your interactive baking pan appears here."],["Welche Form passt?","Which pan fits?"],["Vergleichsziel","Comparison target"],["Rezeptmenge und Teighöhe","Recipe quantity and cake height"],["Meine vorhandene Teigmenge","My available batter"],["Passende Formen finden","Find matching pans"],["Wähle eine Form, die zu deinem Teig passt.","Choose a pan that fits your batter."],["Diese Form nehmen","Use this pan"],["Beide nehmen","Use both pans"],["Rezept einlesen","Import a recipe"],["Kopiere dein Rezept hier hinein. Prüfe danach die Zutaten.","Paste your recipe here, then check the ingredients."],["Zutaten erkennen","Recognize ingredients"],["Mein Rezept prüfen","Check my recipe"],["Zutaten übernehmen","Apply ingredients"],["Nicht erkannte Zeilen bitte selbst prüfen.","Check unrecognized lines manually."],["Rezeptfoto einlesen","Read recipe photo"],["📷 Kamera öffnen","📷 Open camera"],["🖼️ Foto auswählen","🖼️ Choose photo"],["📷 Handykamera verwenden","📷 Use phone camera"],["📸 Foto aufnehmen","📸 Take photo"],["Abbrechen","Cancel"],["Foto besser lesbar machen","Improve photo readability"],["Foto erneut lesen","Read photo again"],["Bitte die erkannten Zutaten prüfen.","Check the recognized ingredients."],["Wähle Kamera oder Foto.","Choose camera or photo."],["Meine Torte","My layered cake"],["Creme außen (mm)","Outer frosting (mm)"],["Creme-Gewicht (g/ml)","Frosting density (g/ml)"],["Etwas Creme extra (%)","Extra frosting (%)"],["Creme zwischen den Böden (cm)","Filling between layers (cm)"],["Neu berechnen","Recalculate"],["Meine Backnotizen","My baking notes"],["Einträge suchen","Search notes"],["Nur Lieblinge","Favorites only"],["Backnotiz speichern","Save baking note"],["Notizen herunterladen","Download notes"],["Die Notizen bleiben auf deinem Gerät.","Notes stay on your device."],["Wie gut hat es geklappt? (1–5 Sterne)","How did it go? (1–5 stars)"]]);
 const proOriginalText=new WeakMap();
 function localizeProControls(){
@@ -425,6 +438,7 @@ function init(){
  init3D();initFinder();initRecipe();initCake();initMemory();
   document.addEventListener('toolya:locale-change',()=>{
    localizeProControls();
+   localizeProLiveStatuses();
    renderComparisons();updateCake();renderMemory();redraw3D();
   });
  // Default rating for extended notes (in the original memory card).
