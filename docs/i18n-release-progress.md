@@ -71,3 +71,7 @@ Zwei isolierte Chromium-Fälle lösten die echten Download-Knöpfe aus und lasen
 ### Englische Anleitungen für zusammenhängende Alltagsabläufe
 
 Vier Anleitungen am deutschen Funktionsstand ergänzt: Haushaltsbuch (Monatsrechnung und fehlende Speicherbestätigung), Dashboard (gemeinsamer Einkauf, Druckansicht, lokale und synchronisierte Daten sowie Zählerablesung), Autokosten (Wartung, Reifen, ICS und bestätigte Kostenübernahme) und Tiergesundheit (Kalenderdatum und bestätigte Kostenübernahme). Der Vergleich erfolgte anhand der deutschen Leitfäden und des bereits geprüften ICS-Exports. Statisch geprüft: eindeutige Einfügepunkte, ausgeglichene Abschnitte, englisches Sprachattribut und fortbestehendes `noindex`. Der lokale Checkout war nicht verfügbar. Auf dem vorherigen HEAD `56f2c96c` waren bei der Abfrage 12 von 13 PR-Workflows grün. Der strikte Abgleich der Anwendungsoberflächen bleibt offen.
+
+### Zweites Paket englischer Anleitungen
+
+Sechs englische Leitfäden anhand der deutschen Fassungen ergänzt. WG-Organisator erklärt Teilgruppen, Zugriff und Rückzahlungen, Pflanzenpflege Gießintervalle und Vorräte, Backstudio den Flächenvergleich und die Rezeptumrechnung für zwei Formen. Verliehene Dinge erläutert geänderte Rückgabetermine, Zählerstände den Zählerwechsel und die Gasumrechnung, Parkplatz-Merker die Orientierung im Parkhaus und den Gebührenexport. Einfügepunkte, Abschnittsgrenzen, englische Sprachkennzeichnung und `noindex` statisch geprüft. Die vollständige Funktions- und Sprachabnahme ist weiterhin offen.
