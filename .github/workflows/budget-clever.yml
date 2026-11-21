@@ -1,0 +1,28 @@
+name: Budget Clever sparen – Checks
+on:
+  pull_request:
+    paths:
+      - "tools/budget/**"
+      - "tests/budget-clever.test.mjs"
+  push:
+    branches: [main]
+    paths:
+      - "tools/budget/**"
+      - "tests/budget-clever.test.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  budget-clever:
+    name: Preis-, Budget- und OCR-Berechnungen
+    runs-on: ubuntu-latest
+    steps:
+      - name: Quellcode laden
+        uses: actions/checkout@v4
+      - name: Tests ausführen
+        run: node --test tests/budget-clever.test.mjs
+      - name: Browser-JavaScript Syntax prüfen
+        run: |
+          node --check tools/budget/clever-core.js
+          node --check tools/budget/clever-ui.js
