@@ -252,3 +252,11 @@ Die Prozentwerte sind **heuristische Planungswerte**, keine gezählten fehlenden
 - Vorheriger HEAD `367d62b3` hatte bei Prüfung acht grüne Workflows und einen noch laufenden Browserlauf. Neue Änderungen erfordern erneut alle CI-Ergebnisse. PR bleibt Draft, `noindex` unverändert, kein Merge oder Deployment.
 
 - CI-Fehler aus HEAD `367d62b3` untersucht: 161/162 Chromium-Tests erfolgreich, aber ein neuer Importtest übersah die zusätzliche vorgeschaltete Sicherheitsbestätigung „Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.“. Die Anwendung verlangte also mehr, nicht weniger, Bestätigung. Browser-Regressionen berücksichtigen jetzt beide Bestätigungsdialoge (Backup-Warnung und eigentliche destruktive Importfreigabe) in DE/EN. Die vorgelagerte feste Meldung wird unter Englisch übersetzt; ohne beide Zustimmungen kein Import. Der Codepfad wird in der nächsten CI erneut geprüft.
+
+
+## Sprint A – isolierte PDF-Inhalts- und Bibliotheksfehlerprüfung (2026-11-21)
+
+- Die gemeinsam genutzte PDF-Laderoutine meldet fehlende jsPDF-Bibliothek in EN mit „Could not create the PDF. Please try again.“ und in DE unverändert mit der bisherigen Meldung. Beim Fehlschlag bleibt der Retry-Pfad erhalten; es werden weder Cloud-Daten verändert noch externe Diagnosetexte maskiert.
+- Chromium-PDF-Spy prüft den vollständigen Textausgabepfad des Umzugskisten-Inventarberichts unter EN/DE, sprachabhängige Dateinamen und Summenüberschriften sowie identische Nutzerboxen, Entleihernamen, persönliche Gegenstände und **null Cloud-Schreibvorgänge**. Der Spy zeichnet die `doc.text`-/`doc.save`-Aufrufe auf und ist **keine** visuelle PDF-/Druckabnahme.
+- Separater Browserfall simuliert die nicht verfügbare jsPDF-Bibliothek und kontrolliert den zugänglichen Fehlerdialog mit beiden Sprachen. Zusätzliche Node-Quellregressionen prüfen die Fehlermeldung und unveränderte Bibliotheksinitialisierung.
+- Eine tatsächliche PDF-Renderprüfung, Barrierefreiheit der ausgedruckten Datei, QR-Grafik und echte Accounts sind weiterhin Release-Blocker. Nach den Änderungen muss der endgültige HEAD alle CI-Workflows bestehen. Kein Merge oder Deployment.
