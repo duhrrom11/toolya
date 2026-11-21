@@ -7,6 +7,10 @@ const common = [
  ['a[href="#main-content"]','Skip to main content'],
  ['.b3-settings-trigger','', 'aria-label','Open settings'],
  ['.b3-settings-trigger','', 'title','Settings'],
+ ['.b3-preferences','', 'aria-label','Appearance and dashboard'],
+ ['.b3-kofi-link','', 'aria-label','Support Toolya with a coffee'],
+ ['#b3-backform-edit','✎ Edit dashboard'],
+ ['#b3-backform-editor','', 'aria-label','Dashboard settings'],
  ['.b3-brand','', 'aria-label','Toolya home'],
  ['#settingsModal label[for="auth-email"]','Email address'],
  ['#settingsModal label[for="auth-password"]','Password'],
@@ -1009,6 +1013,7 @@ const dialogCopy = Object.freeze({
   'Die Cloud-Daten der alten WG wurden gelesen. Jetzt eine private Kopie für dein Konto erstellen?':'The old household cloud data was read. Create a private copy for your account now?'
  },
  plants: {
+  "Layout konnte nicht gespeichert werden. Bitte Browser-Speicher prüfen.": "Could not save the layout. Check your browser storage.",
   'Angemeldet. Dein Konto ist einsatzbereit.':'Signed in. Your account is ready.',
   'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.':'Request processed. If confirmation is required, check your inbox and verify your email address, then sign in.',
   "Bitte Name und gültiges Gießdatum angeben!": "Enter a name and valid watering date.",
@@ -1038,6 +1043,7 @@ const dialogCopy = Object.freeze({
   'Lokale Pflanzendaten nach Sicherung in die Cloud übernehmen?':'Back up local plant data and then import it into the cloud?'
  },
  baking: {
+  "Layout konnte nicht gespeichert werden.": "Could not save the dashboard layout.",
   'Angemeldet. Dein Konto ist einsatzbereit.':'Signed in. Your account is ready.',
   'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.':'Request processed. If confirmation is required, check your inbox and verify your email address, then sign in.',
   'Bitte E-Mail und Passwort eingeben.':'Enter your email address and password.',
