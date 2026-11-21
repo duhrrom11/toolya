@@ -1712,3 +1712,43 @@ test('Sprint A baking calculation displays localize without modifying machine-re
  assert.ok(html.includes("document.getElementById('res-factor').innerText = factor.toFixed(2);"),'factor stays parseable');
  assert.ok(html.includes("parseFloat(document.getElementById('res-factor').innerText)"),'recipe calculator still parses original factor');
 });
+
+
+test('Sprint A plant locale change refreshes only visible read-only panels',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {createContext,runInContext}=await import('node:vm');
+ const html=await readFile(new URL('../../tools/plants/index.html',import.meta.url),'utf8');
+ const start=html.indexOf("document.addEventListener('toolya:locale-change'");
+ const end=html.indexOf('const mischkulturDb =',start);
+ assert.ok(start>0&&end>start);
+ const updates={};
+ const record=name=>{updates[name]=(updates[name]||0)+1;};
+ const panels=new Set(['roiModal','cisternModal','beetModal','galleryModal']);
+ const handler={};
+ const context={
+  plantsCloudReady:true,
+  document:{
+   addEventListener:(name,fn)=>handler[name]=fn,
+   getElementById:id=>id==='plantPotSize'?{value:'18'}:id==='waterMlHint'?{innerText:''}:id==='galleryPlantId'?{value:'7'}:panels.has(id)?{classList:{contains:()=>false}}:null
+  },
+  renderGardenCalendar:()=>record('calendar'),calculateWaterAmount:()=>record('water'),
+  renderApp:()=>record('cards'),renderSeedList:()=>record('seeds'),
+  renderInventoryList:()=>record('inventory'),calculateRoiValues:()=>record('roi'),
+  updateCisternDisplay:()=>record('cistern'),renderBeetGrid:()=>record('bed'),
+  renderGalleryGrid:id=>{assert.equal(id,7);record('gallery');}
+ };
+ createContext(context);runInContext(html.slice(start,end),context);
+ handler['toolya:locale-change']();
+ for(const name of ['calendar','water','cards','roi','cistern','bed','gallery'])
+  assert.equal(updates[name],1,'visible read-only panel refreshed: '+name);
+ assert.equal(updates.seeds,1,'open seeds list refreshed');
+ assert.equal(updates.inventory,1,'open inventory refreshed');
+ context.plantsCloudReady=false;
+ handler['toolya:locale-change']();
+ assert.equal(updates.calendar,2);
+ assert.equal(updates.cards,1,'unloaded plant data must not render');
+ assert.equal(updates.roi,1,'unloaded ROI must not render');
+ assert.equal(updates.gallery,1,'unloaded gallery must not render');
+ const region=html.slice(start,end);
+ assert.ok(!region.includes('saveData(')&&!region.includes('localStorage.setItem('),'locale change does not persist data');
+});
