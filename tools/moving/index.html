@@ -1050,7 +1050,7 @@
                 }
 
                 const loc = data.locations.find(l => l.id === b.locId);
-                const cleanLocName = loc ? loc.name.replace(/[\u{1F000}-\u{1F6FF}|[\u{1F900}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[📦🏠🚪🏡🚗🏢⛺📍]/gu, '').trim() : "Unbekannt";
+                const cleanLocName = loc ? loc.name.replace(/[\u{1F000}-\u{1F6FF}|[\u{1F900}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[📦🏠🚪🏡🚗🏢⛺📍]/gu, '').trim()  : (window.__toolyaUILocale === 'en' ? 'Unknown' : 'Unbekannt');
                 const deepLinkUrl = `${window.location.origin}${window.location.pathname}?box=${b.id}`;
 
                 doc.setDrawColor(200);
@@ -1071,7 +1071,7 @@
                 doc.text(`${window.__toolyaUILocale === 'en' ? 'Location' : 'Ort'}: ${cleanLocName}`, textX, y + 14);
                 doc.text(`${window.__toolyaUILocale === 'en' ? 'Contents' : 'Inhalt'}: ${b.desc || '-'}`, textX, y + 20);
                 doc.text(`${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${window.__toolyaUILocale === 'en' ? Number(b.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (b.value || 0).toFixed(2)} €`, textX, y + 26);
-                doc.text(`Tag: ${b.tag || (window.__toolyaUILocale === 'en' ? 'Default' : 'Standard')}`, textX, y + 32);
+                doc.text(`Tag: ${b.tag ? formatMovingTagLabel(b.tag) : (window.__toolyaUILocale === 'en' ? 'Default' : 'Standard')}`, textX, y + 32);
 
                 if (x === 14) { 
                     x = 110; 
@@ -1157,7 +1157,11 @@
                 input.value = '';
                 alert("Backup-Datei konnte nicht gelesen werden.");
             };
-            reader.readAsText(file);
+            try { reader.readAsText(file); }
+            catch (error) {
+                input.value = '';
+                alert("Backup-Datei konnte nicht gelesen werden.");
+            }
         }
 
         let scannerOpening = false;
