@@ -2443,3 +2443,10 @@ test('Sprint A second backup-download acknowledgement is localized, not removed'
  assert.equal(translateToolDialog('moving','en',de),'Did you successfully download the current backup?');
  assert.equal(translateToolDialog('moving','de',de),de);
 });
+
+test('Sprint A PDF export error captures the request-time language before async script load',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const source=await readFile(new URL('../../shared/toolya/pdf-export.mjs',import.meta.url),'utf8');
+ assert.match(source,/const requestLanguage = window\.__toolyaUILocale === 'en' \? 'en' : 'de'/);
+ assert.match(source,/window\.alert\(requestLanguage === 'en' \? 'Could not create the PDF/);
+});
