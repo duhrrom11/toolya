@@ -429,8 +429,15 @@
         }
 
         async function updateUserDisplay() {
-            const { data } = await window.supabaseClient.auth.getUser();
-            const user = data?.user;
+            let user = null;
+            let sessionError = null;
+            try {
+                const result = await window.supabaseClient.auth.getUser();
+                sessionError = result?.error?.name === 'AuthSessionMissingError' ? null : (result?.error ?? null);
+                user = sessionError ? null : (result?.data?.user ?? null);
+            } catch (error) {
+                sessionError = error;
+            }
 
             const headerInfo = document.getElementById("userInfo");
             const cloudStatus = document.getElementById("cloudStatus");
@@ -439,8 +446,8 @@
                 if (headerInfo) headerInfo.textContent = "👤 " + user.email;
                 if (cloudStatus) cloudStatus.textContent = (window.toolyaUiText?.("✅ Angemeldet – ") ?? "✅ Angemeldet – ") + (user.email || (window.toolyaUiText?.("Benutzer") ?? "Benutzer"));
             } else {
-                if (headerInfo) headerInfo.textContent = window.toolyaUiText?.("Nicht angemeldet") ?? "Nicht angemeldet";
-                if (cloudStatus) cloudStatus.textContent = window.toolyaUiText?.("Nicht angemeldet") ?? "Nicht angemeldet";
+                if (headerInfo) headerInfo.textContent = window.toolyaUiText?.(sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet') ?? (sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet');
+                if (cloudStatus) cloudStatus.textContent = window.toolyaUiText?.(sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet') ?? (sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet');
             }
         }
 
