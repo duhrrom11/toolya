@@ -563,6 +563,12 @@
             if (plantsCloudReady) renderApp(); // read-only refresh for translated card labels
             if (plantsCloudReady && !document.getElementById('seedsModal')?.classList.contains('hidden')) renderSeedList();
             if (plantsCloudReady && !document.getElementById('inventoryModal')?.classList.contains('hidden')) renderInventoryList();
+            // Companion advice is generated from fixed local catalogue data.
+            // Refresh only an already-visible hint; do not alter the species input.
+            const companionBox = document.getElementById('companionAlertBox');
+            if (companionBox && !companionBox.classList.contains('hidden')) {
+                checkCompanionPlanting(document.getElementById('plantSpecies')?.value || '');
+            }
             // Refresh only already-open calculation and garden planning panels;
             // never repopulate their input fields or persist data on locale changes.
             if (plantsCloudReady && !document.getElementById('roiModal')?.classList.contains('hidden')) calculateRoiValues();
@@ -599,13 +605,24 @@
         function checkCompanionPlanting(speciesName) {
             const box = document.getElementById('companionAlertBox');
             if(!speciesName) { box.classList.add('hidden'); return; }
-            let key = speciesName.toLowerCase().trim();
-            let match = null;
-            for(let k in mischkulturDb) {
-                if(key.includes(k)) { match = mischkulturDb[k]; break; }
-            }
+            const key = speciesName.toLowerCase().trim();
+            const speciesAliases = {
+                tomate: ['tomate', 'tomato'], karotte: ['karotte', 'carrot'],
+                erdbeere: ['erdbeere', 'strawberry']
+            };
+            const matchedKey = Object.keys(speciesAliases).find(k => speciesAliases[k].some(alias => key.includes(alias)));
+            const match = matchedKey ? mischkulturDb[matchedKey] : null;
             if(match) {
-                box.innerHTML = window.__toolyaUILocale === 'en' ? `🤝 <b>Companion planting tip:</b> Grows well alongside ${match.gute.join(', ')}. Avoid ${match.schlechte.join(', ')}.` : `🤝 <b>Mischkultur-Tipp:</b> Liebt Nachbarschaft mit ${match.gute.join(', ')}. Vermeide ${match.schlechte.join(', ')}.`;
+                // These are fixed catalogue terms, never user-provided HTML or stored species.
+                const englishNames = {
+                    Basilikum: 'basil', Salat: 'lettuce', Knoblauch: 'garlic',
+                    Karotten: 'carrots', Kartoffeln: 'potatoes', Fenchel: 'fennel',
+                    Erbsen: 'peas', Zwiebeln: 'onions', Tomaten: 'tomatoes',
+                    Radieschen: 'radishes', Kohl: 'cabbage', Spinat: 'spinach',
+                    Kresse: 'cress'
+                };
+                const names = list => list.map(name => Object.hasOwn(englishNames, name) ? englishNames[name] : name).join(', ');
+                box.innerHTML = window.__toolyaUILocale === 'en' ? `🤝 <b>Companion planting tip:</b> Grows well alongside ${names(match.gute)}. Avoid ${names(match.schlechte)}.` : `🤝 <b>Mischkultur-Tipp:</b> Liebt Nachbarschaft mit ${match.gute.join(', ')}. Vermeide ${match.schlechte.join(', ')}.`;
                 box.classList.remove('hidden');
             } else { box.classList.add('hidden'); }
         }
