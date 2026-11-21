@@ -532,7 +532,10 @@
                 ? (gardenCalendarEn[month] || 'Take care of your plants.')
                 : (gartenKalender[month] || 'Pflege deine Pflanzen.');
         }
-        document.addEventListener('toolya:locale-change', () => renderGardenCalendar());
+        document.addEventListener('toolya:locale-change', () => {
+            renderGardenCalendar();
+            if (plantsCloudReady) renderApp(); // read-only refresh for translated card labels
+        });
 
         const mischkulturDb = {
             "tomate": { gute: ["Basilikum", "Salat", "Knoblauch", "Karotten"], schlechte: ["Kartoffeln", "Fenchel", "Erbsen"] },
@@ -1165,10 +1168,10 @@
                         ? Math.round((Date.UTC(nextWater.getFullYear(), nextWater.getMonth(), nextWater.getDate()) -
                             Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000) : null;
                     let badge = diffWater === null
-                        ? '<span class="text-[10px] bg-gray-100 text-gray-700 font-semibold px-2 py-0.5 rounded-full">⚠️ Gießdatum prüfen</span>'
-                        : diffWater < 0 ? `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Überfällig (${Math.abs(diffWater)}T)</span>` :
-                                (diffWater <= 2 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🟡 Fällig in ${diffWater}T</span>` :
-                                                `<span class="text-[10px] bg-lime-100 text-lime-800 font-semibold px-2 py-0.5 rounded-full">🟢 Fällig in ${diffWater}T</span>`);
+                        ? '<span class="text-[10px] bg-gray-100 text-gray-700 font-semibold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '⚠️ Check watering date' : '⚠️ Gießdatum prüfen'}</span>'
+                        : diffWater < 0 ? `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 ${window.__toolyaUILocale === 'en' ? 'Overdue' : 'Überfällig'} (${Math.abs(diffWater)}${window.__toolyaUILocale === 'en' ? 'd' : 'T'})</span>` :
+                                (diffWater <= 2 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🟡 ${window.__toolyaUILocale === 'en' ? 'Due in' : 'Fällig in'} ${diffWater}${window.__toolyaUILocale === 'en' ? 'd' : 'T'}</span>` :
+                                                `<span class="text-[10px] bg-lime-100 text-lime-800 font-semibold px-2 py-0.5 rounded-full">🟢 ${window.__toolyaUILocale === 'en' ? 'Due in' : 'Fällig in'} ${diffWater}${window.__toolyaUILocale === 'en' ? 'd' : 'T'}</span>`);
 
                     let propBadge = "";
                     if(p.propagation && p.propagation !== 'Standard') {
@@ -1181,13 +1184,13 @@
                     }, 0) : 0;
                     let harvestBadge = harvestSum > 0 ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full">🍅 ${harvestSum >= 1000 ? (harvestSum/1000).toFixed(1)+'kg' : harvestSum+'g'}</span>` : '';
 
-                    let diaryHtml = Array.isArray(p.diary) && p.diary.length > 0 ? `<div class="mt-2 bg-amber-50 border p-2 rounded-xl text-[11px] text-amber-900 space-y-1"><span class="font-bold">📖 Tagebuch:</span>` + 
+                    let diaryHtml = Array.isArray(p.diary) && p.diary.length > 0 ? `<div class="mt-2 bg-amber-50 border p-2 rounded-xl text-[11px] text-amber-900 space-y-1"><span class="font-bold">📖 ${window.__toolyaUILocale === 'en' ? 'Diary' : 'Tagebuch'}:</span>` + 
                         p.diary.filter(d => d && typeof d === 'object').map(d => `<div class="text-[10px] text-gray-600"><span class="font-semibold">${escapeHtml(d.date)}:</span> ${escapeHtml(d.text)}</div>`).join('') + `</div>` : '';
 
                     return `
                         <div class="b3-plant-card p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                             <div class="b3-plant-card-identity flex items-center space-x-3">
-                                ${typeof p.photo === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(p.photo) ? `<img src="${escapeHtml(p.photo)}" alt="Foto der Pflanze ${escapeHtml(p.name)}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" onclick="openGalleryModal(${p.id})">` : `<div onclick="openGalleryModal(${p.id})" class="w-12 h-12 bg-lime-100 text-lime-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer">📸</div>`}
+                                ${typeof p.photo === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(p.photo) ? `<img src="${escapeHtml(p.photo)}" alt="${window.__toolyaUILocale === 'en' ? 'Photo of plant' : 'Foto der Pflanze'} ${escapeHtml(p.name)}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" onclick="openGalleryModal(${p.id})">` : `<div onclick="openGalleryModal(${p.id})" class="w-12 h-12 bg-lime-100 text-lime-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer">📸</div>`}
                                 <div>
                                     <div class="flex items-center space-x-2 flex-wrap gap-1">
                                         <span class="text-xs font-bold text-gray-800">${escapeHtml(p.name)}</span>
@@ -1198,19 +1201,19 @@
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1">
                                         ${p.location ? '📍 ' + escapeHtml(p.location) + ' | ' : ''}
-                                        Gießen: alle ${escapeHtml(p.interval)}T (~${getMlForPot(p.potSize)}ml)${connectWateringDue?.(p) && p.connectDue ? ' · 📅 Toolya Connect: ' + escapeHtml(p.connectDue) : ''}
+                                        ${window.__toolyaUILocale === 'en' ? 'Water every' : 'Gießen: alle'} ${escapeHtml(p.interval)}${window.__toolyaUILocale === 'en' ? 'd' : 'T'} (~${getMlForPot(p.potSize)} ml)${connectWateringDue?.(p) && p.connectDue ? ' · 📅 Toolya Connect: ' + escapeHtml(p.connectDue) : ''}
                                     </p>
                                     ${p.note ? `<p class="text-[11px] text-gray-400 mt-0.5">${escapeHtml(p.note)}</p>` : ''}
                                     ${diaryHtml}
                                 </div>
                             </div>
                             <div class="b3-plant-card-actions flex items-center gap-2 self-end md:self-center flex-wrap">
-                                <button onclick="waterPlant(${p.id})" class="b3-action px-3 py-1.5 bg-lime-600 hover:bg-lime-700 text-white rounded-xl text-xs font-semibold">💧 Gießen</button>
-                                <button onclick="openHarvestModal(${p.id})" class="b3-action b3-outline px-2.5 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-xl text-xs font-semibold" title="Ernte">🍅</button>
-                                <button onclick="openGalleryModal(${p.id})" class="b3-action b3-outline px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-semibold" title="Galerie">📸</button>
-                                <button onclick="openDiaryModal(${p.id})" class="b3-action b3-outline px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-semibold" title="Tagebuch">📖</button>
+                                <button onclick="waterPlant(${p.id})" class="b3-action px-3 py-1.5 bg-lime-600 hover:bg-lime-700 text-white rounded-xl text-xs font-semibold">${window.__toolyaUILocale === 'en' ? '💧 Water' : '💧 Gießen'}</button>
+                                <button onclick="openHarvestModal(${p.id})" class="b3-action b3-outline px-2.5 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-xl text-xs font-semibold" title="${window.__toolyaUILocale === 'en' ? 'Harvest' : 'Ernte'}">🍅</button>
+                                <button onclick="openGalleryModal(${p.id})" class="b3-action b3-outline px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-semibold" title="${window.__toolyaUILocale === 'en' ? 'Gallery' : 'Galerie'}">📸</button>
+                                <button onclick="openDiaryModal(${p.id})" class="b3-action b3-outline px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-semibold" title="${window.__toolyaUILocale === 'en' ? 'Diary' : 'Tagebuch'}">📖</button>
                                 <button onclick="showQrCodeForPlant(${p.id})" class="b3-action b3-outline px-2.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold" title="QR-Code">📱</button>
-                                <button onclick="openEditModal(${p.id})" class="b3-action b3-outline px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
+                                <button onclick="openEditModal(${p.id})" class="b3-action b3-outline px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="${window.__toolyaUILocale === 'en' ? 'Edit' : 'Bearbeiten'}">✏️</button>
                                 <button onclick="deletePlant(${p.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
