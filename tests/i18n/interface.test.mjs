@@ -1624,8 +1624,8 @@ test('Sprint A implicit option value remains the original German storage key',()
  assert.equal(option.hasAttribute('value'),false);
  applyToolInterfaceLocale(document,'moving','en');
  assert.equal(option.textContent,'⚠️ Fragile');
- assert.equal(option.value,'⚠️ Zerbrechlich','English label does not become stored tag value');
- assert.equal(select.value,'⚠️ Zerbrechlich');
+ assert.equal(option.getAttribute('value'),'⚠️ Zerbrechlich','English label does not become stored tag value');
+ assert.equal(option.hasAttribute('value'),true,'implicit option receives stable original value during English display');
  applyToolInterfaceLocale(document,'moving','de');
  assert.equal(option.textContent,'⚠️ Zerbrechlich');
  assert.equal(option.hasAttribute('value'),false,'implicit value restored');
