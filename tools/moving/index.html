@@ -932,7 +932,7 @@
             const totalVal = data.boxes.reduce((sum, b) => sum + Number(b.value || 0), 0);
             y += 5;
             writeWrapped(`${window.__toolyaUILocale === 'en' ? 'Total inventory value' : 'Gesamtwert des Inventars'}: ${totalVal.toFixed(2)} EUR`, true, 12);
-            doc.save("kisten-inventar-report.pdf");
+            doc.save(window.__toolyaUILocale === 'en' ? 'moving-box-inventory-report.pdf' : 'kisten-inventar-report.pdf');
         }
 
         async function generateQrDataUrl(QRCode, text) {
