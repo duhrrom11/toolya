@@ -1337,3 +1337,55 @@ test('frost precautions and member-management headings translate without touchin
  applyToolInterfaceLocale(wg,'housemates','de');
  assert.equal(wg.querySelector('h3').textContent,'👥 Mitglieder- & Kontaktverwaltung');
 });
+
+test('four tool introductions, guidance and empty-state copy reverse DE/EN without touching user fields',()=>{
+ const scenarios=[
+  ['moving','Noch keine Standorte oder Kisten erfasst.','No locations or boxes added yet.'],
+  ['housemates','Die Pinnwand ist noch leer. Erstelle die erste Sticky Note!','The noticeboard is empty. Create your first sticky note!'],
+  ['plants','Keine Pflanzen erfasst.','No plants recorded.'],
+  ['baking','Noch keine Rezepte gespeichert.','No recipes saved yet.']
+ ];
+ for(const [tool,de,en]of scenarios){
+  const {document}=parseHTML('<html><body><main id="main-content"><section><p class="empty">  '+de+'  </p><textarea id="private">Private note</textarea><div id="owned"><p contenteditable="true">'+de+'</p></div><p><span>'+de+'</span></p></section></main><div id="unrelated"><p>'+de+'</p></div></body></html>');
+  const target=document.querySelector('p.empty'),initial=target.textContent;
+  const unchanged=document.querySelector('#unrelated p').textContent;
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(target.textContent,'  '+en+'  ',tool+' translates its own paragraph');
+  assert.equal(document.querySelector('#unrelated p').textContent,unchanged,'outside tool-owned UI unchanged');
+  assert.equal(document.getElementById('owned').querySelector('p').textContent,de,'editable user content unchanged');
+  assert.equal(document.querySelector('#main-content p span').textContent,de,'nested controls not flattened');
+  assert.equal(document.getElementById('private').value,'Private note');
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(target.textContent,initial,'source paragraph restored including whitespace');
+ }
+});
+
+test('tool paragraph translations remain source-exact across all four HTML files',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const source=await readFile(new URL('../../shared/toolya/i18n/interface.mjs',import.meta.url),'utf8');
+ const start=source.indexOf('const toolParagraphCopy=Object.freeze(');
+ const end=source.indexOf('\nfunction applyToolParagraphCopy',start);
+ assert.ok(start>0&&end>start,'static guidance catalog is present');
+ const catalog=JSON.parse(source.slice(start+'const toolParagraphCopy=Object.freeze('.length,end-2));
+ assert.equal(Object.values(catalog).reduce((n,m)=>n+Object.keys(m).length,0),37);
+ for(const tool of ['moving','housemates','plants','baking']){
+  const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
+  for(const [de,en] of Object.entries(catalog[tool])){
+   assert.ok(html.includes(de),'missing source guidance in '+tool+': '+de);
+   assert.ok(en&&en!==de,'untranslated guidance: '+de);
+  }
+ }
+ assert.match(source,/document\.querySelectorAll\('#main-content p,\.ty-tool-hero-copy p,#frostBanner p'\)/);
+ assert.match(source,/el\.children\.length\|\|el\.isContentEditable\|\|el\.closest\('\[contenteditable="true"\]'\)/);
+});
+
+test('baking guidance and plant-care watering tips change only visible copy, not recipe calculations',()=>{
+ const {document}=parseHTML('<html><body><main id="main-content"><p>Richtwerte: Süßkraft und Backeigenschaften hängen vom Produkt und Rezept ab.</p><p>Teighöhe entspricht exakt dem Original.</p><input type="number" id="amount" value="125.5"></main></body></html>');
+ const paragraphs=[...document.querySelectorAll('p')];
+ applyToolInterfaceLocale(document,'baking','en');
+ assert.equal(paragraphs[0].textContent,'Guidance only: sweetness and baking properties depend on the product and recipe.');
+ assert.equal(paragraphs[1].textContent,'Batter height matches the original exactly.');
+ assert.equal(document.getElementById('amount').getAttribute('value'),'125.5');
+ applyToolInterfaceLocale(document,'baking','de');
+ assert.equal(paragraphs[1].textContent,'Teighöhe entspricht exakt dem Original.');
+});
