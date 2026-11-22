@@ -90,3 +90,9 @@ Plant care [i18next run 45003515686](https://github.com/duhrrom11/toolya/actions
 **Still awaiting CI:** baking browser/Node/static runs `45003693451`/`45003693384`; budget `45003751872`/`45003751863`; meters `45003818330`/`45003818353`; car `45004006512`/`45004006463`. All corresponding jobs were queued at the checkpoint; none is accepted or reported as failed.
 
 **Lent items:** integrated `tools/loans/index.html` into the existing pinned i18next UMD, opt-in singleton and legacy CDN-outage fallback; extended the existing isolated fixture to nine tools × two modes (18 cases). Integration commit `dd3eca5f613da46e92b62ea835734a523e154a32`. CI pending, not accepted. `main`, live site and Supabase production data remain unchanged.
+
+## CI queue and pet-health migration (2026-11-22)
+
+No further acceptance: baking `45003693451`/`45003693384`, budget `45003751872`/`45003751863`, meters `45003818330`/`45003818353`, car `45004006512`/`45004006463`, and lent items `45004155786`/`45004155785` each had browser, Node and static-check jobs **queued**. No completed failure to fix. Four previously accepted tools remain parking, moving, housemates, plants.
+
+**Pet health** (`tools/pet-health/index.html`): integrated pinned i18next UMD and existing opt-in singleton with legacy fallback. Expanded isolated browser fixture to ten tools × two modes (20 scenarios); integration commit `c394c209adcee60edd7fb64a566f8fce3f1e78d5`. This is **implementation only, CI pending**; no authenticated production E2E acceptance. No changes to `main`, deployed site or Supabase production data.
