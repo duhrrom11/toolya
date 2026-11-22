@@ -8,6 +8,7 @@ on:
       - 'shared/toolya/i18n/**'
       - 'tests/i18n/**'
       - 'tools/parking/index.html'
+      - 'tests/i18n/parking-i18next-playwright.cjs'
       - '.github/workflows/i18next-pilot.yml'
   workflow_dispatch:
 jobs:
@@ -28,3 +29,17 @@ jobs:
           node --check shared/toolya/i18n/tool-entry.mjs
       - name: Run focused migration regressions
         run: node --test tests/i18n/i18next-legacy-resources.test.mjs tests/i18n/i18next-runtime-adapter.test.mjs tests/i18n/i18next-singleton.test.mjs
+  parking-browser:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Verify parking language switching with and without i18next
+        run: node tests/i18n/parking-i18next-playwright.cjs
