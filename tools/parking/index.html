@@ -449,12 +449,36 @@
             alert("Parkscheibe gestellt auf nächste halbe Stunde + 2 Stunden Parkzeit!");
         }
 
+        // Timer copy changes are display-only: never restart the countdown
+        // or persist a different deadline on language changes.
+        const parkingTimerCopy = Object.freeze({
+            'Kein aktiver Parkschein-Timer': 'No active parking ticket timer',
+            'Parkzeit läuft...': 'Parking time is running...',
+            'Bitte Parkzeit verlängern oder zum Auto gehen!': 'Extend your parking time or return to your car!'
+        });
+        function refreshParkingTimerLocale() {
+            const status = document.getElementById('timerStatus');
+            const display = document.getElementById('timerDisplay');
+            if (!status || !display) return;
+            const english = window.__toolyaUILocale === 'en';
+            const current = status.textContent;
+            for (const [de,en] of Object.entries(parkingTimerCopy)) {
+                if (current === de || current === en) {
+                    status.textContent = english ? en : de;
+                    break;
+                }
+            }
+            if (display.textContent === '⏰ ABGELAUFEN!' || display.textContent === '⏰ EXPIRED!') {
+                display.textContent = english ? '⏰ EXPIRED!' : '⏰ ABGELAUFEN!';
+            }
+        }
+
         async function stopTimer() {
             clearInterval(timerInterval);
             activeEndTime = null;
             if(!await saveData({...getData(),activeEndTime:null}))return;
             document.getElementById("timerDisplay").innerText = "00:00:00";
-            document.getElementById("timerStatus").innerText = "Kein aktiver Parkschein-Timer";
+            document.getElementById("timerStatus").innerText = window.__toolyaUILocale === 'en' ? 'No active parking ticket timer' : 'Kein aktiver Parkschein-Timer';
         }
 
         function runTimerLoop() {
@@ -465,8 +489,8 @@
                 if (distance <= 0) {
                     clearInterval(timerInterval);
                     timerInterval = null;
-                    document.getElementById("timerDisplay").innerText = "⏰ ABGELAUFEN!";
-                    document.getElementById("timerStatus").innerText = "Bitte Parkzeit verlängern oder zum Auto gehen!";
+                    document.getElementById("timerDisplay").innerText = window.__toolyaUILocale === 'en' ? '⏰ EXPIRED!' : '⏰ ABGELAUFEN!';
+                    document.getElementById("timerStatus").innerText = window.__toolyaUILocale === 'en' ? 'Extend your parking time or return to your car!' : 'Bitte Parkzeit verlängern oder zum Auto gehen!';
                     if ("Notification" in window && Notification.permission === "granted") {
                         new Notification(window.__toolyaUILocale === 'en' ? 'Parking alert' : 'Park-Alarm',
                           { body: window.__toolyaUILocale === 'en'
@@ -480,7 +504,7 @@
                 const sec = remaining % 60;
                 document.getElementById("timerDisplay").innerText =
                     (h > 0 ? h + "h " : "") + String(m).padStart(2, '0') + "m " + String(sec).padStart(2, '0') + "s";
-                document.getElementById("timerStatus").innerText = "Parkzeit läuft...";
+                document.getElementById("timerStatus").innerText = window.__toolyaUILocale === 'en' ? 'Parking time is running...' : 'Parkzeit läuft...';
             };
             tick();
             if (Number(activeEndTime) > Date.now()) timerInterval = setInterval(tick, 1000);
@@ -641,6 +665,7 @@
         }
 
         document.addEventListener('toolya:locale-change', () => {
+            refreshParkingTimerLocale();
             if (parkingCloudReady) renderParkingList();
         });
 
