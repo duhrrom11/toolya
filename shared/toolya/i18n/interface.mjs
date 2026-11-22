@@ -2313,3 +2313,19 @@ export function translateAccountStatus(language,message){
  for(const [from,to] of pairs)if(message.startsWith(from))return to+message.slice(from.length);
  return message;
 }
+
+/** Read-only source catalogues for the gradual i18next migration.
+ * Keep legacy runtime translators in place until view-by-view cutover.
+ * Selector-based entries are not source-text dictionaries and must not be
+ * translated by blindly replacing arbitrary DOM text.
+ */
+export const I18N_LEGACY_TOOL_CATALOGUES=Object.freeze({
+ selectors:toolTranslations,
+ dialogs:dialogCopy,
+ additionalDialogs:additionalDialogCopy,
+ dialogPrefixes,
+ sharedDialogPrefixes,
+ runtimeStatus:toolRuntimeStatus,
+ runtimePrefixes:toolRuntimePrefixes,
+ accountStatus:accountStatusCopy
+});
