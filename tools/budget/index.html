@@ -341,7 +341,7 @@
                     <div id="ocrStatus" role="status" aria-live="polite" aria-atomic="true" class="text-xs text-emerald-800 font-semibold hidden">🔍 Scanne Kassenbon... Bitte warten.</div>
                 </div>
 
-                <button type="button" onclick="clearReceiptPhotos()" class="text-xs px-3 py-2 rounded-lg border border-red-200 text-red-700 bg-white hover:bg-red-50">🗑️ Alle Belegbilder entfernen</button>
+                <button type="button" onclick="clearReceiptPhotos()" class="text-xs px-3 py-2 rounded-lg border border-red-200 text-red-700 bg-white hover:bg-red-50" data-tool-en="🗑️ Remove all receipt images">🗑️ Alle Belegbilder entfernen</button>
                 <div id="uploadGalleryPreview" class="flex gap-2 overflow-x-auto py-2 hidden"></div>
 
                 <!-- Canvas Editor für Thermopapier Filter -->
@@ -459,7 +459,7 @@
     <div id="qrModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="text-lg font-bold">🏷️ Geräte-Sticker drucken</h3>
+                <h3 class="text-lg font-bold" data-tool-en="🏷️ Print device sticker">🏷️ Geräte-Sticker drucken</h3>
                 <button onclick="closeQRModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div id="printStickerArea" class="p-4 border-2 border-dashed border-gray-400 rounded-2xl bg-gray-50 flex flex-col items-center text-center space-y-3">
