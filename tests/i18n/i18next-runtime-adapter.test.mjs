@@ -32,3 +32,13 @@ test('invalid language and unknown namespaces do not translate',()=>{
  assert.equal(adapter.translateAccount('fr','Nicht angemeldet'),'Nicht angemeldet');
  assert.equal(adapter.translateTool('moving','en',null),null);
 });
+
+test('marketing and guide strings translate through the shared instance without changing unknown content',()=>{
+ const i18next=fakeI18next();
+ const adapter=createToolyaI18nextAdapter(i18next);
+ assert.equal(adapter.translateExact('en','marketing','Alle Tools'),'All tools');
+ assert.equal(adapter.translateExact('en','marketing','Diese Anleitung auf Deutsch ansehen'),'Read this guide in German');
+ assert.equal(adapter.translateExact('de','marketing','Alle Tools'),'Alle Tools');
+ assert.equal(adapter.translateExact('en','marketing','Private Einkaufsliste'),'Private Einkaufsliste');
+ assert.equal(adapter.translateTool('parking','en','Kein aktiver Parkschein-Timer'),'No active parking timer');
+});
