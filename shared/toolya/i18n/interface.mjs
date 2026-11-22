@@ -2238,10 +2238,81 @@ const dialogPrefixes = Object.freeze({
   'Mitgliederverwaltung: ': 'Member management: '
  }
 });
+/* Source-exact dialog coverage for the shared tool locale wrapper. */
+const auditedDialogAdditions = Object.freeze({
+  "parking": {
+    "Lokale Parkplatzdaten nach Sicherung in die Cloud übernehmen?": "Import local parking data into the cloud after backing them up?",
+    "Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?": "Cloud and device data exist. Keep cloud data and back up local data separately?",
+    "Bitte bestätigen, dass die Sicherung heruntergeladen wurde.": "Please confirm that the backup was downloaded.",
+    "Browser-Benachrichtigungen erlaubt. Lass diese Seite für den Timer geöffnet.": "Browser notifications enabled. Keep this page open for the timer.",
+    "Dein Browser unterstützt keine Benachrichtigungen.": "Your browser does not support notifications.",
+    "Parkscheibe gestellt auf nächste halbe Stunde + 2 Stunden Parkzeit!": "Parking disc set to the next half-hour plus two hours of parking.",
+    "Speichern nicht bestätigt. Cloud-Datenstand prüfen.": "Save not confirmed. Check the cloud data.",
+    "Möchtest du diesen Eintrag wirklich löschen?": "Are you sure you want to delete this entry?"
+  },
+  "loans": {
+    "Bestehende Verleihdaten in dein Toolya-Konto übernehmen? Vorhandene Cloud-Daten werden nicht überschrieben.": "Import existing lending records into your Toolya account? Existing cloud data will not be overwritten.",
+    "Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?": "Cloud and device data exist. Keep cloud data and back up local data separately?",
+    "Bitte bestätigen, dass die Sicherung heruntergeladen wurde.": "Please confirm that the backup was downloaded.",
+    "Bitte einen Namen eingeben!": "Please enter a name!",
+    "Bitte eine Bezeichnung für den Gegenstand angeben!": "Please enter an item description!",
+    "Diesen Stamm-Gegenstand wirklich löschen?": "Delete this saved item?",
+    "Bitte Namen des Gegenstands eingeben:": "Enter the item name:",
+    "Bitte Person und Ausleihdatum angeben!": "Please enter the person and lending date!",
+    "⚠️ Diesen Eintrag wirklich löschen?": "⚠️ Delete this entry?",
+    "Bitte Gegenstand, Person und Ausleihdatum angeben!": "Please enter the item, person and lending date!",
+    "Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.": "The QR code could not be loaded. Please try again."
+  },
+  "meters": {
+    "Bestehende Zählerstände nach Sicherung in Toolya Cloud übernehmen?": "Import existing meter readings into Toolya Cloud after backing them up?",
+    "Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?": "Cloud and device data exist. Keep cloud data and back up local data separately?",
+    "Bitte bestätigen, dass die Sicherung heruntergeladen wurde.": "Please confirm that the backup was downloaded.",
+    "Bitte gültige, nichtnegative Tarife und einen positiven Gasfaktor eingeben.": "Enter valid non-negative tariffs and a positive gas conversion factor.",
+    "Bitte gültiges Ablesedatum und Zählerstand eingeben!": "Enter a valid reading date and meter reading!",
+    "⚠️ Achtung: Der Verbrauch seit der letzten Ablesung ist ungewöhnlich hoch (+50% über Schnitt)! Trotzdem speichern?": "⚠️ Consumption since the last reading is unusually high (over 50% above average). Save anyway?",
+    "Zählerfoto konnte nicht verarbeitet werden. Nichts gespeichert.": "The meter photo could not be processed. Nothing was saved.",
+    "Das Zählerfoto konnte nicht verarbeitet werden. Bitte ein anderes Bild auswählen.": "The meter photo could not be processed. Choose another image.",
+    "Das Zählerfoto konnte nicht geöffnet werden.": "The meter photo could not be opened.",
+    "Das Zählerfoto konnte nicht gelesen werden.": "The meter photo could not be read.",
+    "⚠️ Diesen Zählerstand wirklich löschen?": "⚠️ Delete this meter reading?",
+    "Keine Zählerstände zum Teilen vorhanden.": "No meter readings available to share.",
+    "Zwischenablage nicht verfügbar. Text manuell kopieren:": "Clipboard unavailable. Copy the text manually:",
+    "📋 Zählerstände in die Zwischenablage kopiert! Du kannst sie jetzt direkt in WhatsApp oder E-Mail einfügen.": "📋 Meter readings copied to the clipboard! You can now paste them into WhatsApp or email.",
+    "Backup importieren? Vorhandene Zählerstände und Tarife werden ersetzt.": "Import backup? Existing meter readings and tariffs will be replaced.",
+    "Fehler beim Importieren der Datei.": "Error importing the file."
+  },
+  "car": {
+    "Bitte einen Fahrzeugnamen eingeben!": "Please enter a vehicle name!",
+    "⚠️ Möchtest du dieses Fahrzeug und alle zugehörigen Einträge wirklich unwiderruflich löschen?": "⚠️ Permanently delete this vehicle and all its records?",
+    "Bitte ein Fahrzeug wählen!": "Please select a vehicle!",
+    "Bitte Fahrzeug, Datum und Bezeichnung angeben!": "Please enter a vehicle, date and description!",
+    "Eintrag nicht bestätigt. Bitte den Cloud-Datenstand prüfen, bevor du es erneut versuchst.": "Entry not confirmed. Check cloud data before trying again.",
+    "Beleg konnte nicht verarbeitet werden. Bitte eine andere Bilddatei wählen oder ohne Beleg speichern.": "Receipt could not be processed. Choose another image or save without a receipt.",
+    "Beleg konnte nicht verarbeitet werden. Bitte erneut versuchen.": "Receipt could not be processed. Please try again.",
+    "Bitte Bezeichnung und Datum eingeben!": "Please enter a description and date!",
+    "⚠️ Diesen Eintrag wirklich löschen?": "⚠️ Delete this entry?",
+    "Backup zu groß (maximal 20 MB).": "Backup too large (maximum 20 MB).",
+    "Ungültiges Backup-Format.": "Invalid backup format.",
+    "Ungültige Reifendaten im Backup.": "Invalid tyre data in backup."
+  },
+  "moving": {
+    "Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden nicht überschrieben.": "Import existing device data into your Toolya account? Cloud data will not be overwritten.",
+    "Cloud- und Gerätedaten vorhanden. Cloud-Daten behalten und Gerätedaten separat sichern?": "Cloud and device data exist. Keep cloud data and back up device data separately?",
+    "Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.": "Please confirm that the backup was downloaded.",
+    "Bitte Standort eingeben!": "Please enter a location!",
+    "⚠️ Möchtest du diesen Standort und ALLE Kisten darin wirklich löschen?": "⚠️ Delete this location and ALL boxes inside it?",
+    "Bitte Standort und Kisten-Name angeben!": "Please enter a location and box name!",
+    "Bitte Artikel-Name eingeben!": "Please enter an item name!",
+    "⚠️ Möchtest du diese Kiste wirklich löschen?": "⚠️ Delete this box?",
+    "Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.": "The QR code could not be loaded. Please try again."
+  }
+});
 export function translateToolDialog(tool, language, message) {
  if(language!=='en' || typeof message!=='string') return message;
  const exact=Object.hasOwn(dialogCopy,tool) && Object.hasOwn(dialogCopy[tool],message) ? dialogCopy[tool][message] : undefined;
  if(exact!==undefined) return exact;
+ const audited=Object.hasOwn(auditedDialogAdditions,tool) ? auditedDialogAdditions[tool][message] : undefined;
+ if(audited!==undefined) return audited;
  const additional=Object.hasOwn(additionalDialogCopy,tool)&&Object.hasOwn(additionalDialogCopy[tool],message)
   ? additionalDialogCopy[tool][message] : undefined;
  if(additional!==undefined)return additional;
