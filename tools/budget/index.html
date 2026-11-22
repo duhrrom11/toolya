@@ -1050,14 +1050,14 @@ async function toolyaCloudBoot(tool) {
                     fieldsUpdated++;
                 }
                 if (fieldsUpdated > 0) {
-                    statusEl.innerText = '✅ Texterkennung: ' + fieldsUpdated + ' Feld(er) ausgefüllt. Bitte Angaben prüfen.';
+                    statusEl.innerText = window.__toolyaUILocale === 'en' ? '✅ Text recognition: ' + fieldsUpdated + ' field(s) filled. Please review the details.' : '✅ Texterkennung: ' + fieldsUpdated + ' Feld(er) ausgefüllt. Bitte Angaben prüfen.';
                 } else if (recognizedPrice !== null || recognizedDate !== null) {
-                    statusEl.innerText = 'ℹ️ Angaben erkannt. Bereits ausgefüllte Felder wurden nicht überschrieben.';
+                    statusEl.innerText = window.__toolyaUILocale === 'en' ? 'ℹ️ Details detected. Existing field values were not overwritten.' : 'ℹ️ Angaben erkannt. Bereits ausgefüllte Felder wurden nicht überschrieben.';
                 } else {
-                    statusEl.innerText = '⚠️ Kein eindeutiger Gesamtbetrag oder gültiges Datum erkannt. Bitte manuell eintragen.';
+                    statusEl.innerText = window.__toolyaUILocale === 'en' ? '⚠️ No clear total or valid date detected. Please enter the details manually.' : '⚠️ Kein eindeutiger Gesamtbetrag oder gültiges Datum erkannt. Bitte manuell eintragen.';
                 }
             } catch(e) {
-                if (generation === ocrGeneration) statusEl.innerText = "❌ Texterkennung fehlgeschlagen.";
+                if (generation === ocrGeneration) statusEl.innerText = window.__toolyaUILocale === 'en' ? '❌ Text recognition failed.' : '❌ Texterkennung fehlgeschlagen.';
             } finally {
                 if (worker) {
                     try { await worker.terminate(); } catch (error) { console.warn('OCR worker cleanup:', error); }
