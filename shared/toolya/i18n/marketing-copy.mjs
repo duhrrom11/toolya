@@ -29,5 +29,8 @@ export const MARKETING_COPY=Object.freeze({
  'Tiergesundheit und Impfungen dokumentieren':'Keep a pet health and vaccination diary',
  'Verliehene Dinge und Rückgabetermine verwalten':'Track lent items and their return dates',
  'Strom-, Gas- und Wasserzählerstände erfassen':'Record electricity, gas and water meter readings',
+ 'Digitalen Nachlass und Vertrauenspersonen organisieren':'Organise your digital estate and trusted contacts',
+ 'Öffentliche Amazon-Wunschlisten veröffentlichen und finden':'Publish and find a public Amazon wish list',
+ 'Persönliches Toolya-Dashboard für Favoriten, Aufgaben und Erinnerungen':'Personal Toolya dashboard for favourites, tasks and reminders',
  'Konto wird geprüft …':'Checking your account…'
 });
