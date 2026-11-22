@@ -73,6 +73,7 @@
 <script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="../../shared/toolya/i18n/tool-entry.css">
 <script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script>
 <script type="module" src="../../shared/toolya/i18n/tool-entry.mjs"></script>
+<script defer src="/shared/toolya/register-route.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
   <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
@@ -291,14 +292,7 @@
             document.getElementById('helpModal').classList.toggle('hidden');
         }
 
-        async function supabaseRegister() {
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
-            if(!email || !password) return alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
-            const { error } = await supabaseClient.auth.signUp({ email, password });
-            if(error) alert(error.message);
-            else { alert(window.__toolyaUILocale === 'en' ? 'Registration successful!' : 'Registrierung erfolgreich!'); checkUserSession(); }
-        }
+        function supabaseRegister() { window.toolyaRegister(); }
 
         async function supabaseLogin() {
             const email = document.getElementById('auth-email').value;

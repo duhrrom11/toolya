@@ -1,14 +1,16 @@
 // Check the account before exposing the private tool UI.
 (() => {
   const root = document.documentElement;
-  const home = '../../index.html?auth=required';
+  const home = new URL('../../index.html?auth=required', location.href);
   const reject = () => {
     const explicit = new URLSearchParams(window.location.search).get('lang');
     let language = explicit;
     if (language !== 'de' && language !== 'en') {
       try { language = window.localStorage.getItem('toolya-locale-v1'); } catch { language = null; }
     }
-    window.location.replace(language === 'en' ? home + '&lang=en' : home);
+    if (language === 'en') home.searchParams.set('lang', 'en');
+    home.searchParams.set('next', location.pathname + location.search + location.hash);
+    window.location.replace(home.href);
   };
   const unavailable = () => root.classList.add('toolya-auth-unavailable');
 

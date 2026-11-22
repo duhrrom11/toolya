@@ -26,6 +26,54 @@ let user=null,own=null,page=0,generation=0,authGeneration=0;
 const key='toolya-public-profile-favorites-v1';
 function readFavorites(){try{const a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a.filter(p=>uuid.test(p.user_id)&&typeof p.display_name==='string').slice(0,100):[]}catch{return []}}
 let favorites=readFavorites();
+let accountBookmarks = null;
+function renderAccountBookmarks() {
+ const list = $('accountBookmarkItems');
+ list.replaceChildren();
+ for (const profile of accountBookmarks || []) {
+  const item = text('li','');
+  const link = text('a',profile.display_name);
+  link.href = profileUrl(profile.user_id);
+  item.append(link);
+  list.append(item);
+ }
+ $('accountBookmarks').hidden = !list.children.length;
+}
+function accountBookmark(profile) {
+ const control = text('div','');
+ const button = text('button','','secondary');
+ const feedback = text('span','');
+ feedback.setAttribute('role','status');
+ button.type = 'button';
+ control.append(button, feedback);
+ const sync = () => {
+  const saved = accountBookmarks?.some(item => item.user_id === profile.user_id);
+  button.textContent = saved ? 'Aus meinem Konto entfernen' : 'Im Konto merken';
+  button.setAttribute('aria-pressed',String(Boolean(saved)));
+ };
+ sync();
+ button.onclick = async () => {
+  const viewer = user?.id;
+  if (!viewer || button.disabled) return;
+  button.disabled = true;
+  feedback.textContent = '';
+  try {
+   const saved = accountBookmarks?.some(item => item.user_id === profile.user_id);
+   const result = await db.rpc('universe_wish_bookmark', {p_target:profile.user_id,p_save:!saved});
+   if (viewer !== user?.id || !control.isConnected) return;
+   if (result.error || !Array.isArray(result.data)) throw Error('unconfirmed');
+   accountBookmarks = result.data;
+   sync();
+   renderAccountBookmarks();
+  } catch {
+   if (viewer === user?.id) feedback.textContent = 'Die Änderung konnte nicht gespeichert werden.';
+  } finally {
+   button.disabled = false;
+  }
+ };
+ return control;
+}
+
 const profileUrl=id=>new URL('./public.html?profile='+encodeURIComponent(id)+'#selectedProfile',location.href).href;
 function affiliateLink(label,url){const a=text('a',label,'button');a.href=url;a.target='_blank';a.rel='noopener noreferrer sponsored';return a}
 function renderFavorites(){const wrap=$('favoriteItems');wrap.replaceChildren();$('favorites').hidden=!favorites.length;$('favoriteCount').textContent=String(favorites.length);for(const p of favorites){const a=text('a',p.display_name);a.href=profileUrl(p.user_id);wrap.append(a)}}
@@ -51,7 +99,7 @@ function card(p,detail=false,preview=false){
  if(location)info.append(text('p','📍 '+location,'location'));
  person.append(avatar,info);
  hero.append(person);
- if(!preview)hero.append(favorite(p));
+ if(!preview){hero.append(favorite(p));if(user && accountBookmarks)hero.append(accountBookmark(p));}
  root.append(hero);
  if(p.imported){
   root.append(text('p','Name aus öffentlich verlinkter Quelle · Identität nicht von Toolya bestätigt.','profile-source-note'));
@@ -229,7 +277,14 @@ function payload(){
  if(lists.some(l=>!l.url||!l.name))throw new Error('Bitte gültige Amazon-Wunschlisten-Links und Listennamen eingeben.');
  return {...identity,city:$('city').value.trim(),bio:own?.bio||'',interests:own?.interests||[],lists};
 }
-async function loadProfile(){const g=++authGeneration;const r=await db.auth.getUser();if(g!==authGeneration)return;user=!r.error&&!r.data?.user?.is_anonymous?r.data?.user:null;syncSettingsAccount();$('auth').hidden=!!user;$('profileForm').hidden=!user;$('logoutPublic').hidden=!user;own=null;$('listFields').replaceChildren();if(!user){listField();status('profileStatus','');return}const result=await db.from('wishlist_public_profiles').select('*').eq('user_id',user.id).maybeSingle();if(g!==authGeneration)return;if(result.error){status('profileStatus','Dein Profil konnte nicht geladen werden. Bitte lade die Seite erneut.');$('profileForm').hidden=true;return}own=result.data;
+async function loadProfile(){const g=++authGeneration;const r=await db.auth.getUser();if(g!==authGeneration)return;user=!r.error&&!r.data?.user?.is_anonymous?r.data?.user:null;syncSettingsAccount();$('auth').hidden=!!user;$('profileForm').hidden=!user;$('logoutPublic').hidden=!user;own=null;accountBookmarks=null;renderAccountBookmarks();$('listFields').replaceChildren();if(!user){listField();status('profileStatus','');return}const bookmarkUser=user.id;
+ try {
+  const bookmarks=await db.rpc('universe_wish_bookmarks');
+  if(g!==authGeneration||user?.id!==bookmarkUser)return;
+  if(!bookmarks.error&&Array.isArray(bookmarks.data)){accountBookmarks=bookmarks.data;renderAccountBookmarks();}
+ } catch { /* public discovery remains available */ }
+ if(g!==authGeneration)return;
+ const result=await db.from('wishlist_public_profiles').select('*').eq('user_id',user.id).maybeSingle();if(g!==authGeneration)return;if(result.error){status('profileStatus','Dein Profil konnte nicht geladen werden. Bitte lade die Seite erneut.');$('profileForm').hidden=true;return}own=result.data;
  $('firstName').value=own?.first_name||'';
  $('lastName').value=own?.last_name||'';
  $('organizationName').value=own?.organization_name||'';
@@ -275,7 +330,7 @@ function syncSettingsAccount(){
  $('settingsSignup').hidden=signedIn;
  $('settingsLogout').hidden=!signedIn;
 }
-async function authenticate(signup,source='profile'){
+async function authenticate(source='profile'){
  const modal=source==='settings';
  const emailField=$(modal?'settingsEmail':'email'),passwordField=$(modal?'settingsPassword':'password');
  const feedback=$(modal?'settingsAuthMessage':'profileStatus');
@@ -284,12 +339,10 @@ async function authenticate(signup,source='profile'){
  try{
   const email=emailField.value.trim(),password=passwordField.value;
   if(!email||!password)throw new Error('Bitte E-Mail und Passwort eingeben.');
-  const r=signup
-   ?await db.auth.signUp({email,password,options:{emailRedirectTo:new URL('./public.html#profile',location.href).href}})
-   :await db.auth.signInWithPassword({email,password});
+  const r=await db.auth.signInWithPassword({email,password});
   if(r.error)throw r.error;
   await loadProfile();
-  feedback.textContent=signup&&!r.data?.session?'Bitte bestätige deine E-Mail-Adresse, bevor du dich anmeldest.':'Du bist angemeldet.';
+  feedback.textContent='Du bist angemeldet.';
  }catch(e){feedback.textContent=e.message||'Anmeldung fehlgeschlagen.'}
  finally{passwordField.value='';for(const button of controls)button.disabled=false}
 }
@@ -303,11 +356,11 @@ async function signOut(){
   $('settingsAuthMessage').textContent='Du bist abgemeldet.';
  }
 }
-$('login').onclick=()=>authenticate(false);
-$('signup').onclick=()=>authenticate(true);
+$('login').onclick=()=>authenticate();
+$('signup').onclick=()=>window.toolyaRegister();
 $('logoutPublic').onclick=signOut;
-$('settingsLogin').onclick=()=>authenticate(false,'settings');
-$('settingsSignup').onclick=()=>authenticate(true,'settings');
+$('settingsLogin').onclick=()=>authenticate('settings');
+$('settingsSignup').onclick=()=>window.toolyaRegister();
 $('settingsLogout').onclick=signOut;
 $('settingsForgotPassword').onclick=async()=>{
  const email=$('settingsEmail').value.trim(),message=$('settingsAuthMessage');
@@ -363,5 +416,5 @@ renderFavorites();db.auth.onAuthStateChange(event=>{
   if(!settingsModal.open)settingsModal.showModal();
   $('settingsNewPassword').focus();
  }
- if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event))setTimeout(loadProfile,0);
-});window.addEventListener('storage',e=>{if(e.key===key){favorites=readFavorites();renderFavorites()}});await Promise.all([loadProfile(),filters(),search(),detail()]);
+ if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event))setTimeout(()=>{void loadProfile().then(detail);},0);
+});window.addEventListener('storage',e=>{if(e.key===key){favorites=readFavorites();renderFavorites()}});await Promise.all([loadProfile().then(detail),filters(),search()]);

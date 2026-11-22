@@ -81,7 +81,8 @@
     <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="../../assets/helferlein-dialogs.js"></script>
 <link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><link rel="stylesheet" href="../../shared/toolya/alpha.css?v=20261115-alpha">
-<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="/shared/toolya/i18n/tool-entry.css"><script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script><script type="module" src="/shared/toolya/i18n/tool-entry.mjs"></script></head>
+<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="/shared/toolya/i18n/tool-entry.css"><script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script><script type="module" src="/shared/toolya/i18n/tool-entry.mjs"></script><script defer src="/shared/toolya/register-route.js"></script>
+</head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col font-sans">
   <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
     <p id="toolya-auth-title"><strong>WG-Organisator</strong></p>
@@ -945,26 +946,7 @@
             document.getElementById('helpModal').classList.toggle('hidden');
         }
 
-        async function supabaseRegister() {
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
-            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
-            let data, error;
-            try {
-                ({ data, error } = await supabaseClient.auth.signUp({ email, password }));
-            } finally {
-                document.getElementById('auth-password').value = '';
-            }
-            if (error) return alert('Registrierung fehlgeschlagen: ' + error.message);
-            // Supabase may require email confirmation, or intentionally conceal
-            // whether an address already exists. Never promise an active account.
-            if (data?.session) {
-                alert('Angemeldet. Dein Konto ist einsatzbereit.');
-            } else {
-                alert('Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.');
-            }
-            await checkUserSession();
-        }
+        function supabaseRegister() { window.toolyaRegister(); }
 
         async function supabaseLogin() {
             const email = document.getElementById('auth-email').value;
@@ -1513,7 +1495,6 @@
         // newer unsaved local edits. Use the explicit manual sync action instead.
         // Shared WG editing needs authenticated, conflict-aware cloud storage.
 
-        const AMAZON_AFFILIATE_TAG = "duhrrom-21";
         const daysOfWeek = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
         const defaultCategories = ["Lebensmittel", "Wohnen", "Energie", "Auto", "Freizeit", "Elektronik", "Gesundheit", "Verträge", "Sonstiges"];
 
@@ -2266,7 +2247,6 @@
                         <span class="font-medium text-gray-800 ${item.done ? 'line-through opacity-60' : ''}">${escapeUserHtml(item.title)}</span>
                     </label>
                     <div class="flex gap-1.5">
-                        <a href="https://www.amazon.de/s?k=${encodeURIComponent(item.title)}&tag=${AMAZON_AFFILIATE_TAG}" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded font-bold text-[10px]">📦 Amazon</a>
                         <button onclick="transferShoppingToExpense(${safeInlineId(item.id)})" class="b3-action b3-outline px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">${window.__toolyaUILocale === 'en' ? '🧾 Record expense' : '🧾 Buchen'}</button>
                         <button onclick="deleteShoppingItem(${safeInlineId(item.id)})" class="text-gray-400 hover:text-red-500 font-bold px-1">&times;</button>
                     </div>

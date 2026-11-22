@@ -1,5 +1,8 @@
 # Toolya Universe – verbindliche Produkt-, Gamification- und Monetarisierungs-Roadmap
 
+**Aktiver Entwicklungsstand:** [Status](TOOLYA-UNIVERSE-STATUS.md) · [Welt und Gestaltung](TOOLYA-UNIVERSE-WORLD-BIBLE.md) · [Technische Abnahme](TOOLYA-UNIVERSE-ABNAHME.md). Die ursprünglichen Phasen und Zeitmarken weiter unten dokumentieren die Planung vor dem aktuellen Entwicklungsauftrag.
+
+
 **Status:** Konzept beschlossen als Arbeitsrichtung; Details/Features sind Vorschläge, keine automatische Implementierungsfreigabe.  
 **Stand:** 22.11.2026  
 **Repository:** `duhrrom11/toolya` · **Domain:** `https://toolya.app` (nicht tooly.app)  

@@ -40,7 +40,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  await page.waitForTimeout(200);
  assert(await page.evaluate(()=>window.__signedOutEvents<3),'guest status must not create a SIGNED_OUT loop');
  await page.goto(origin+'/tools/parking/');
- // The homepage consumes auth=required when opening settings, then removes the query via replaceState.
+ // A direct tool visit retains its destination while the homepage opens sign-in.
  await page.waitForURL(url=>url.origin===origin&&url.pathname==='/index.html', {waitUntil:'commit'});
  await page.locator('#toolAccessHelp').waitFor({state:'visible'});
  assert.match(await page.locator('#toolAccessHelp').textContent(),/Melde dich bei Toolya an/);
@@ -54,7 +54,8 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  await backup.locator('summary').click();
  await page.locator('#loginEmail').fill(user.email);await page.locator('#loginPassword').fill('synthetic-only-password');
  await page.locator('#loginSubmit').click();
- await page.waitForFunction(()=>document.querySelector('#settingsModal').classList.contains('hidden'),{},{timeout:5000});
+ await page.waitForURL(origin+'/tools/parking/');
+ await page.goto(origin);
  await page.waitForFunction(()=>document.querySelector('#userInfo').textContent==='Angemeldet',{},{timeout:5000});
  await page.reload();await page.waitForFunction(()=>document.querySelector('#userInfo').textContent==='Angemeldet',{},{timeout:5000});
  await page.getByRole('button',{name:'Angemeldet. Kontoeinstellungen öffnen',exact:true}).waitFor();

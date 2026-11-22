@@ -71,7 +71,8 @@
 <script defer src="../../assets/helferlein-dialogs.js"></script>
 <link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><link rel="stylesheet" href="../../shared/toolya/alpha.css?v=20261115-alpha">
 <script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="./backstudio-layout.css?v=20261120-camera-v1">
-<link rel="stylesheet" href="/shared/toolya/i18n/tool-entry.css"><script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script><script type="module" src="/shared/toolya/i18n/tool-entry.mjs"></script></head>
+<link rel="stylesheet" href="/shared/toolya/i18n/tool-entry.css"><script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script><script type="module" src="/shared/toolya/i18n/tool-entry.mjs"></script><script defer src="/shared/toolya/register-route.js"></script>
+</head>
 <body class="bg-slate-50 text-slate-800 min-h-full flex flex-col font-sans">
   <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
     <p id="toolya-auth-title"><strong>Backform-Rechner</strong></p>
@@ -682,19 +683,7 @@
             setTimeout(() => { checkUserSession().catch(() => {}); }, 0);
         });
 
-        async function supabaseRegister() {
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
-            if(!email || !password) return alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
-            let data, error;
-            try {
-                ({ data, error } = await supabaseClient.auth.signUp({ email, password }));
-            } catch (err) {
-                return alert((window.__toolyaUILocale === 'en' ? 'Registration failed: ' : 'Registrierung fehlgeschlagen: ') + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
-            }
-            if(error) alert(error.message);
-            else { alert(data?.session ? (window.__toolyaUILocale === 'en' ? 'Signed in. Your account is ready.' : 'Angemeldet. Dein Konto ist einsatzbereit.') : (window.__toolyaUILocale === 'en' ? 'Request processed. If confirmation is required, check your inbox, confirm your email address, then sign in.' : 'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.')); checkUserSession(); }
-        }
+        function supabaseRegister() { window.toolyaRegister(); }
 
         async function supabaseLogin() {
             const email = document.getElementById('auth-email').value;
@@ -988,7 +977,7 @@
             const rawText = document.getElementById('recipe-input').value;
             const factor = parseFloat(document.getElementById('res-factor').innerText);
             const name = document.getElementById('recipe-name').value || 'Unbenanntes Rezept';
-            saveRecipeToStorage(name, rawText, factor);
+            if (rawText.trim() && Number.isFinite(factor) && factor > 0) void saveRecipeToStorage(name, rawText, factor);
         }
 
         let bakingCloudReady=false,bakingCloudUserId=null,bakingCloudController=null;

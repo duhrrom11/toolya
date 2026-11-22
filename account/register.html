@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://yheogmeaosuigyaxkwth.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Toolya-Konto erstellen</title>
+  <link rel="stylesheet" href="../shared/toolya/tokens.css">
+  <link rel="stylesheet" href="../tools/gamification/universe.css">
+  <script defer src="../assets/vendor/supabase-2.57.0.js"></script>
+  <script type="module" src="./register.mjs"></script>
+</head>
+<body>
+  <header class="shell top"><a class="brand" href="../">Toolya</a><a id="back" href="../" data-copy="back">Zurück</a></header>
+  <main class="shell"><section class="panel">
+    <h1 data-copy="title">Toolya-Konto erstellen</h1>
+    <p data-copy="description">Mit einem Konto kannst du deine Tools auf mehreren Geräten verwenden. Dein Name bleibt privat.</p>
+    <form id="signup">
+      <div class="fields">
+        <label><span data-copy="first">Vorname</span><input name="first" required maxlength="80" autocomplete="given-name"></label>
+        <label><span data-copy="last">Nachname</span><input name="last" required maxlength="80" autocomplete="family-name"></label>
+        <label><span data-copy="email">E-Mail-Adresse</span><input name="email" type="email" required maxlength="254" autocomplete="email"></label>
+        <label><span data-copy="password">Passwort (mindestens 8 Zeichen)</span><input name="password" type="password" required minlength="8" autocomplete="new-password"></label>
+        <label><span data-copy="country">Land (freiwillig)</span><select name="country" data-country></select></label>
+        <label><span data-copy="avatar">Profilbild-Link (freiwillig)</span><input name="avatar" type="url" maxlength="1000"></label>
+      </div>
+      <button data-copy="submit">Konto erstellen</button>
+    </form>
+    <p id="result" role="status"></p>
+    <a id="login" href="../index.html?auth=required" data-copy="login">Bereits ein Konto? Anmelden</a>
+    <p><a href="../privacy.html" data-copy="privacy">Datenschutz</a></p>
+  </section></main>
+</body></html>

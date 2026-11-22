@@ -1,0 +1,69 @@
+name: Toolya Universe isolated checks
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/toolya-universe.yml'
+      - 'account/**'
+      - 'assets/toolya/universe/**'
+      - 'shared/toolya/**'
+      - 'supabase/migrations/*_toolya_universe.sql'
+      - 'tests/universe/**'
+      - 'tools/**'
+      - 'index.html'
+  push:
+    branches: [feature/gamification-mascot-levels-v1]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: universe-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  isolated:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: universe
+          POSTGRES_PASSWORD: isolated-only
+          POSTGRES_DB: universe_fixture
+        ports: ['5432:5432']
+        options: --health-cmd "pg_isready -U universe -d universe_fixture" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGUSER: universe
+      PGPASSWORD: isolated-only
+      PGDATABASE: universe_fixture
+      UNIVERSE_CHROMIUM: /usr/bin/google-chrome
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Verify migration reapplication and account isolation
+        run: |
+          psql -v ON_ERROR_STOP=1 -f tests/universe/fixture.sql
+          for run in 1 2; do
+            psql -v ON_ERROR_STOP=1 -f "$(find supabase/migrations -name '*_toolya_universe.sql')"
+          done
+          psql -v ON_ERROR_STOP=1 -f tests/universe/verify.sql
+      - name: Verify original mascots
+        working-directory: assets/toolya/originals
+        run: sha256sum --check SHA256SUMS
+      - name: Test signed-in and signed-out Universe and registration
+        run: node tests/universe/browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: universe-browser-evidence
+          path: test-results/universe-*.png
+          if-no-files-found: ignore

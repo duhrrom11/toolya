@@ -1,79 +1,112 @@
 <!doctype html>
-<html lang="de"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Maskottchen-Level | Toolya</title><meta name="description" content="Entdecke Toolya-Tools und entwickle deinen persönlichen Toolya-Begleiter weiter.">
-<link rel="canonical" href="https://toolya.app/tools/gamification/">
-<link rel="icon" href="/favicon.ico"><link rel="manifest" href="/manifest.json">
-<link rel="stylesheet" href="../../shared/toolya/alpha.css">
-<script type="module" src="../../shared/toolya/platform.mjs"></script>
-<style>
-:root{font-family:system-ui,-apple-system,sans-serif;color:#193b49;background:#f0f8fa}*{box-sizing:border-box}
-body{margin:0;min-height:100vh;line-height:1.5}a{color:#087e82}a:focus-visible,button:focus-visible{outline:3px solid #0c9298;outline-offset:3px}
-header{background:#fff;border-bottom:1px solid #daedef;padding:17px max(20px,calc((100% - 1080px)/2));display:flex;align-items:center;justify-content:space-between;gap:15px}
-.brand{font-size:1.45rem;font-weight:900;text-decoration:none;color:#087d83}.nav{font-weight:700;font-size:.94rem}
-main{max-width:1080px;margin:0 auto;padding:34px 20px 70px}
-.intro{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(230px,.8fr);align-items:center;gap:30px;background:linear-gradient(130deg,#d6faf6,#f5e8ff);border:1px solid #c5e9e9;border-radius:28px;padding:clamp(22px,4vw,45px)}
-.eyebrow{color:#117b7f;font-size:.81rem;letter-spacing:.13em;font-weight:800;text-transform:uppercase}h1{font-size:clamp(2.1rem,5vw,3.45rem);line-height:1.13;margin:12px 0}h2{font-size:1.3rem;margin:0 0 10px}
-.lead{max-width:54ch;color:#37515d;font-size:1.07rem}
-.mascot{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:295px}.mascot img{width:min(100%,295px);max-height:280px;object-fit:contain;filter:drop-shadow(0 15px 15px #1a54532a)}
-.mascot small{font-weight:700;text-align:center;color:#476575}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;margin-top:22px}
-.panel{background:#fff;border:1px solid #dce9ea;border-radius:23px;padding:26px;box-shadow:0 6px 30px #2448520a}
-.levelrow{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}.level{font-weight:900;font-size:2.3rem;color:#087f83}.subtitle{color:#50636c}
-.progress{height:17px;background:#e5edef;border-radius:99px;overflow:hidden;margin:16px 0 7px}.bar{height:100%;width:0;background:linear-gradient(90deg,#06b6ae,#9a76ed);border-radius:99px;transition:width .5s}
-.muted{color:#60727a;font-size:.93rem}.stat{display:flex;justify-content:space-between;gap:12px;margin-top:13px}
-.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.pill{border-radius:999px;padding:7px 12px;background:#edf7f8;font-size:.86rem;font-weight:700}.pill.locked{background:#f4f4f5;color:#7f8b90}
-.btn{display:inline-block;border-radius:14px;background:#0b868a;color:#fff;text-decoration:none;padding:12px 18px;font-weight:800;margin-top:14px}.btn:hover{background:#07666a}
-.note{margin-top:23px;padding:18px 22px;background:#e6f4f5;border-radius:17px;color:#405c65;font-size:.95rem}
-footer{text-align:center;padding:30px 18px;color:#607078}
-@media(max-width:700px){.intro,.grid{grid-template-columns:1fr}.mascot{min-height:190px}.mascot img{max-height:230px}.panel{padding:21px}}
-@media(prefers-reduced-motion:reduce){.bar{transition:none}}
-</style></head><body>
-<a href="#main" style="position:absolute;left:-9999px" onfocus="this.style.left='10px'" onblur="this.style.left='-9999px'">Zum Inhalt</a>
-<header><a class="brand" href="/" aria-label="Toolya Startseite">Toolya</a><nav class="nav"><a href="/">Alle Tools</a> · <a href="/dashboard/">Dashboard</a></nav></header>
-<main id="main">
-<section class="intro" aria-labelledby="title"><div><span class="eyebrow">Toolya Abenteuer · Version 1</span><h1 id="title">Dein Begleiter. Dein Level.</h1>
-<p class="lead">Entdecke unterschiedliche Toolya-Tools und sammle dabei Erfahrung. Dein ausgewähltes Maskottchen begleitet dich – ohne Zeitdruck und ohne tägliche Pflicht.</p>
-<a class="btn" href="/#toolDiscovery">Tools entdecken</a></div>
-<div class="mascot"><img id="mascot-image" src="../../assets/toolya/originals/toolya_wishlist_turquoise_welcome_1024.png" alt="Dein türkisfarbener Toolya-Begleiter"><small id="mascot-caption">Dein Toolya-Begleiter</small></div></section>
-<div class="grid">
-<section class="panel" aria-labelledby="level-heading"><h2 id="level-heading">Dein Fortschritt</h2><div class="levelrow"><strong id="level" class="level">Level 1</strong><span id="rank" class="subtitle">Neuling</span></div>
-<div class="progress" role="progressbar" aria-label="Fortschritt zum nächsten Level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><div id="progress-bar" class="bar"></div></div>
-<div class="stat"><span id="xp">0 XP</span><span id="next" class="muted">150 XP bis Level 2</span></div>
-<p class="muted" id="level-announcement" role="status" aria-live="polite">Jedes erstmals entdeckte Tool bringt 50 XP.</p></section>
-<section class="panel" aria-labelledby="collection-heading"><h2 id="collection-heading">Entdecker-Sammlung</h2><p class="muted">Bis zu 12 verschiedene Alltagstools warten auf dich.</p>
-<div class="levelrow"><strong id="count" class="level">0 / 12</strong><span class="subtitle">entdeckt</span></div>
-<div class="pills" id="milestones"><span class="pill">🌱 Neuling</span><span class="pill locked">🔎 Entdecker</span><span class="pill locked">⭐ Profi</span><span class="pill locked">🏆 Experte</span><span class="pill locked">✨ Legende</span></div></section>
-</div>
-<div class="note"><strong>So funktioniert's:</strong> Wenn du auf der Toolya-Startseite ein unterschiedliches Alltagstool öffnest, wird es einmalig als entdeckt markiert (50 XP). Wiederholtes Öffnen gibt keine zusätzlichen Punkte. Es werden keine Aufgabeninhalte oder persönlichen Tool-Daten erfasst. Die Punkte liegen vorerst nur in diesem Browser; die Synchronisation über dein Konto ist noch nicht verfügbar.</div>
-</main><footer>Toolya · Dein Levelsystem ist freiwillig. Erreichte XP verfallen nicht.</footer>
-<script>
-(function(){
-'use strict';
-const KEY='toolya_gamification_discoveries_v1';
-const PREF='helferlein-toolya-preferences-v1';
-const IDS=['wishlist','kassenbon','kisten','pflanzen','wg-kasse','notizen','kfz','haustier','parken','verleih','energie','backform'];
-const LABELS=['Neuling','Entdecker','Profi','Experte','Legende'];
-function read(){
- try{const value=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(value)?[...new Set(value.filter(id=>IDS.includes(id)))]:[]}catch{return []}
-}
-function render(){
- const count=read().length,xp=count*50,level=Math.min(5,Math.floor(xp/150)+1),name=LABELS[level-1];
- document.getElementById('level').textContent='Level '+level;
- document.getElementById('rank').textContent=name;
- document.getElementById('xp').textContent=xp+' XP';
- document.getElementById('count').textContent=count+' / '+IDS.length;
- const complete=level===5,pct=complete?100:((xp%150)/150)*100;
- const progress=document.getElementById('progress');progress.setAttribute('aria-valuenow',String(Math.round(pct)));
- document.getElementById('progress-bar').style.width=pct+'%';
- document.getElementById('next').textContent=complete?'Maximallevel erreicht':(150-(xp%150))+' XP bis Level '+(level+1);
- const badges=[...document.getElementById('milestones').children];badges.forEach((badge,i)=>badge.classList.toggle('locked',i>=level));
- let pref={};try{pref=JSON.parse(localStorage.getItem(PREF)||'{}')||{}}catch{}
- const character=pref.character==='purple'?'purple':'turquoise';
- const img=document.getElementById('mascot-image');
- img.src='../../assets/toolya/originals/toolya_wishlist_'+character+'_welcome_1024.png';
- img.alt='Dein '+(character==='purple'?'lilafarbener':'türkisfarbener')+' Toolya-Begleiter';
- document.getElementById('mascot-caption').textContent='Dein '+(character==='purple'?'lilafarbener':'türkisfarbener')+' Begleiter · '+name;
-}
-render();window.addEventListener('storage',e=>{if(!e.key||[KEY,PREF].includes(e.key))render()});window.addEventListener('pageshow',render);
-})();
-</script></body></html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://yheogmeaosuigyaxkwth.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'; img-src 'self'; style-src 'self'; script-src 'self'">
+  <title>Toolya Universe</title>
+  <link rel="icon" href="../../favicon.ico">
+  <link rel="stylesheet" href="../../shared/toolya/tokens.css">
+  <link rel="stylesheet" href="universe.css">
+  <script defer src="../../assets/vendor/supabase-2.57.0.js"></script>
+  <script type="module" src="universe.mjs"></script>
+</head>
+<body>
+  <a class="skip" href="#main" data-copy="skip">Zum Inhalt</a>
+  <header class="shell top">
+    <a class="brand" href="../../" aria-label="Toolya">Toolya</a>
+    <nav aria-label="Toolya">
+      <a href="../../" data-copy="tools">Alle Tools</a>
+      <a href="../../dashboard/">Dashboard</a>
+      <a id="language" href="?lang=en" lang="en">English</a>
+    </nav>
+  </header>
+  <main class="shell" id="main">
+    <section class="hero" aria-labelledby="title">
+      <div class="hero-text">
+        <p class="series">TOOLYA UNIVERSE</p>
+        <h1 id="title" data-copy="title">Die Nebelinseln</h1>
+        <p data-copy="intro">Zwölf Inseln schweben über dem Nebel. Seit letzter Nacht fehlt das Licht, das sie verbindet. In einem Papierboot wartet die erste Spur.</p>
+        <a class="button" href="#map" data-copy="map">Landkarte</a>
+        <a class="secondary button" href="#adventure" data-copy="adventure">Abenteuer</a>
+      </div>
+      <picture>
+        <source media="(max-width: 680px)" srcset="../../assets/toolya/universe/inseln-klein.webp">
+        <img src="../../assets/toolya/universe/inseln.webp" width="1280" height="854" alt="" fetchpriority="high">
+      </picture>
+    </section>
+
+    <section class="panel player" aria-labelledby="home-title">
+      <div class="player-scene">
+        <div class="player-art"><span id="room-symbol" aria-hidden="true"></span><img id="buddy" hidden width="190" height="190" alt=""></div>
+        <details id="secret" hidden>
+          <summary data-copy="secret">Blick aus dem Fenster</summary>
+          <p data-copy="secret-text">Unter dem Nebel blinkt ein Licht zurück. Jemand auf einer Insel ohne Namen hat die Laterne gesehen.</p>
+        </details>
+      </div>
+      <div>
+        <h2 id="home-title" data-copy="hideout">Dein Versteck</h2>
+        <p id="buddy-line" hidden></p>
+        <p id="status" role="status"></p>
+        <a href="../../index.html?auth=required" class="button" id="sign-in" data-copy="signin" hidden>Anmelden</a>
+        <form id="enable" hidden>
+          <p data-copy="consent">Wenn du mitspielst, speichert Toolya deine Abenteuer und einmalige Tool-Erfolge in deinem Konto. Deine Anzeigen in der Rangliste kannst du separat einschalten.</p>
+          <button data-copy="enable">Mitspielen</button>
+        </form>
+        <div id="player" hidden>
+          <p id="level-line"></p>
+          <progress id="level-progress" max="100" value="0" aria-labelledby="level-line"></progress>
+          <p id="next"></p>
+          <h3 data-copy="badges">Abzeichen und Fundstücke</h3>
+          <ul id="badges" class="badges"></ul>
+          <form id="collect"><button class="secondary" data-copy="collect">Tool-Erfolge abholen</button></form>
+          <details><summary data-copy="collect-quiet">Private Meilensteine prüfen</summary><p data-copy="quiet-info"></p><form id="collect-quiet"><button class="secondary" data-copy="collect-quiet">Private Meilensteine prüfen</button></form></details>
+          <form id="decoration"><label><span data-copy="decor">Dekoration</span><select name="decor" id="decor"></select></label><button data-copy="save">Speichern</button></form>
+        </div>
+      </div>
+    </section>
+
+    <section id="map" aria-labelledby="map-title">
+      <h2 id="map-title" data-copy="map">Landkarte</h2>
+      <div class="regions" id="regions"></div>
+    </section>
+
+    <section class="panel" id="adventure" aria-labelledby="adventure-title">
+      <h2 id="adventure-title" data-copy="adventure">Abenteuer</h2>
+      <p class="series" data-copy="chapter">Die verschwundene Laterne</p>
+      <h3 id="quest-title"></h3><p id="quest-text"></p>
+      <form id="quest" hidden>
+        <fieldset><legend data-copy="question">Wohin gehst du?</legend><div id="answers"></div></fieldset>
+        <button data-copy="continue">Weiter</button>
+      </form>
+      <p id="quest-result" role="status"></p>
+    </section>
+
+    <section class="panel" id="profile" hidden aria-labelledby="profile-title">
+      <h2 id="profile-title" data-copy="profile">Mein Profil</h2>
+      <p data-copy="private">Diese Angaben bleiben in deinem Konto. Die Rangliste verwendet einen eigenen Anzeigenamen.</p>
+      <form id="profile-form">
+        <div class="fields">
+          <label><span data-copy="first">Vorname</span><input name="first" required maxlength="80" autocomplete="given-name"></label>
+          <label><span data-copy="last">Nachname</span><input name="last" required maxlength="80" autocomplete="family-name"></label>
+          <label><span data-copy="country">Land (freiwillig)</span><select name="country" data-country></select></label>
+          <label><span data-copy="avatar">Profilbild-Link (freiwillig)</span><input name="avatar" type="url" maxlength="1000" autocomplete="off"></label>
+        </div>
+        <button data-copy="save">Speichern</button>
+      </form>
+      <form id="ranking-form" hidden>
+        <h3 data-copy="rank">Rangliste</h3>
+        <p data-copy="rank-info">In der Rangliste sehen angemeldete Mitspieler deinen Anzeigenamen und deine Punkte aus allgemeinen Tools.</p>
+        <label class="check"><input type="checkbox" name="visible"> <span data-copy="visible">In der Rangliste erscheinen</span></label>
+        <label><span data-copy="handle">Anzeigename (3–24 Zeichen)</span><input name="handle" minlength="3" maxlength="24" autocomplete="off"></label>
+        <button data-copy="save">Speichern</button>
+        <ol id="ranking"></ol>
+      </form>
+      <form id="pause" hidden><button class="secondary" data-copy="pause">Spiel pausieren</button><p data-copy="pause-info">Dein Fortschritt bleibt gespeichert. Während der Pause sammelst du keine Punkte und erscheinst in keiner Rangliste.</p></form>
+    </section>
+  </main>
+  <footer class="shell end"><a class="brand" href="../../">Toolya</a><a href="https://ko-fi.com/duhrrom" rel="noopener noreferrer" data-copy="support">Toolya freiwillig unterstützen</a><a href="../../privacy.html" data-copy="privacy">Datenschutz</a></footer>
+</body>
+</html>

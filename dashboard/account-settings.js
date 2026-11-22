@@ -76,16 +76,7 @@ async function login(){
  }catch(error){message(accountErrorMessage(error,'Anmeldung momentan nicht erreichbar.'))}
  finally{$('loginPassword').value='';button.disabled=false;button.textContent='🔑 Anmelden'}
 }
-async function register(){
- const values=credentials();if(!values||!client)return;
- try{
-  const {data,error}=await client.auth.signUp(values);
-  if(error)throw error;
-  message(data?.session?'Registrierung erfolgreich.':'Registrierung eingereicht. Bitte prüfe deine E-Mails zur Bestätigung.');
-  await refresh(data?.session?.access_token);
- }catch(error){message(accountErrorMessage(error,'Registrierung momentan nicht erreichbar.'))}
- finally{$('loginPassword').value=''}
-}
+function register(){ window.toolyaRegister(); }
 async function logout(){
  if(!client)return;
  try{const {error}=await client.auth.signOut();if(error)throw error;++authRequest;renderUser(null);$('loginPassword').value='';message('Abgemeldet.');if($('settingsModal').open)$('loginEmail').focus({preventScroll:true})}

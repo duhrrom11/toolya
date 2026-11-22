@@ -108,14 +108,17 @@ function add(){
 // Do not inject generic Amazon searches: show only curated, concrete products.
 async function loadCatalog(){
  const tool=location.pathname.match(/\/tools\/([^/]+)\//)?.[1];
- if(!tool||tool==='wishes'||tool==='estate')return;
+ if(!tool||['wishes','estate','pet-health'].includes(tool))return;
  let catalog;
  try{const response=await fetch('/shared/toolya/amazon-catalog.json',{credentials:'omit'});if(!response.ok)return;catalog=await response.json()}catch{return}
  const products=Array.isArray(catalog[tool])?catalog[tool]:[];
  const main=document.querySelector('main');
- if(!main||!products.length)return;
+ if(tool==='moving' && (!window.movingCloudReady || !document.documentElement.hasAttribute('data-toolya-moving-boxes')))return;
+ if(!main||!products.length||main.querySelector('.toolya-affiliate-suggestions'))return;
  const section=document.createElement('section');section.className='toolya-affiliate-suggestions';
  const title=document.createElement('h2');title.textContent='Passende Produkte';section.append(title);
+ const disclosure=document.createElement('p');
+ disclosure.textContent='Als Amazon-Partner verdiene ich an qualifizierten Verkäufen.';section.append(disclosure);
  const group=document.createElement('div');group.className='toolya-affiliate-links';
  for(const p of products){
   if(!/^[A-Z0-9]{10}$/.test(p.asin||'')||typeof p.title!=='string'||!p.title.trim())continue;
@@ -135,6 +138,14 @@ async function loadCatalog(){
   a.remove();
  });
 }
-function start(){existing();loadCatalog();}
+function start(){
+ existing();
+ if(location.pathname.startsWith('/tools/moving/')){
+  document.addEventListener('toolya:moving-boxes', event=>{
+   if(event.detail)void loadCatalog();
+   else document.querySelector('.toolya-affiliate-suggestions')?.remove();
+  });
+ }else void loadCatalog();
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
