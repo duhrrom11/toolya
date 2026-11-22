@@ -82,3 +82,11 @@ CI verification at this checkpoint: plant care [run 45003515686](https://github.
 Plant care [i18next run 45003515686](https://github.com/duhrrom11/toolya/actions/runs/45003515686): `parking-browser` job `137149961866` passed all eight cases and `node-regressions` job `137149962099` passed; **static i18n run 45003515564 still queued**, so complete acceptance is withheld. Baking (i18next `45003693451`, static `45003693384`), budget (i18next `45003751872`, static `45003751863`) and meter readings (i18next `45003818330`, static `45003818353`) had their browser/node/static jobs queued. No actual regression failure was found in the completed jobs.
 
 **Vehicle costs:** integrated `tools/car/index.html` with pinned i18next UMD, the existing singleton opt-in, catalogues and CDN-outage fallback. Existing isolated browser fixture now includes eight tools × two CDN modes (16 scenarios). Implementation commit `55ea80ec92ea7124deca6b02311cf81cfb86b15e`; **not CI accepted yet**. The migration changes neither business logic nor `main`, live website or production Supabase data.
+
+## Plant care accepted; lent items integrated (2026-11-22)
+
+**Plant care isolated i18next pilot accepted:** commit `f898345b73231976ca9219cd928d2a5821a6e377`. [Browser and Node run 45003515686](https://github.com/duhrrom11/toolya/actions/runs/45003515686): browser job `137149961866` passed all eight cases and Node regression job `137149962099` passed. [Static i18n run 45003515564](https://github.com/duhrrom11/toolya/actions/runs/45003515564): `i18n-tests` job `137149961564` passed. Acceptance is limited to the isolated pilot and does not cover authenticated production end-to-end flows.
+
+**Still awaiting CI:** baking browser/Node/static runs `45003693451`/`45003693384`; budget `45003751872`/`45003751863`; meters `45003818330`/`45003818353`; car `45004006512`/`45004006463`. All corresponding jobs were queued at the checkpoint; none is accepted or reported as failed.
+
+**Lent items:** integrated `tools/loans/index.html` into the existing pinned i18next UMD, opt-in singleton and legacy CDN-outage fallback; extended the existing isolated fixture to nine tools × two modes (18 cases). Integration commit `dd3eca5f613da46e92b62ea835734a523e154a32`. CI pending, not accepted. `main`, live site and Supabase production data remain unchanged.
