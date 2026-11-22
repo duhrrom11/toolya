@@ -196,3 +196,9 @@ Basis `cc9876d92ce5dfefc1504098ea73a3fd03969dac`: 209/209 statische Node-i18n-Te
 - Auf dem ersten Main-Integrations-HEAD `d8d57f057650eda03c1d46cd896efae6306f8ae1` schlugen die beiden Connect-Browser-Workflows [44992417252](https://github.com/duhrrom11/toolya/actions/runs/44992417252) und [44992417364](https://github.com/duhrrom11/toolya/actions/runs/44992417364) fehl: die isolierte Chromium-Prüfung erwartet für den Verleih-Checkbox-Accessible-Name den Quellnamen `Verliehene Dinge` vor dem Rückgabetitel. Die neue i18n-Beschriftung hatte den Quellnamen versehentlich entfernt; 11/11 und 12/12 vorherige Node-Tests waren grün.
 - Korrektur: Zugängliche Checkbox-Namen erhalten in DE die originalen Quellnamen und den wörtlichen Aufgabentext; EN übersetzt nur den bekannten Quellnamen und die UI-Aktionsformulierung. Persistierte Statuscodes, Nutzertexte und Aufgabenhoheit bleiben unverändert. Isolierte Node-Regression dafür ergänzt.
 - **Verifikation der Korrektur steht aus, bis die neuen CI-Läufe grün sind.** Release weiterhin NOT READY und PR Draft.
+
+### 22.11.2026 – EN-Connect-Fristen ohne Nutzerdatenübersetzung
+
+- Quellseitig abgeleitete, nicht persistierte `display`-Metadaten für Loan/Car/Pet ergänzt; EN-Dashboard nutzt die Struktur für bekannte Wortbestandteile der Rückgaben, Fahrzeugfristen, Impf- und Entwurmungstermine. Personen-, Tier-, Gegenstands- und Ereignisnamen bleiben wörtlich. Originaltext, ID, readonly und CloudOnly-Mutationspfade bleiben unverändert.
+- Neues Modul `shared/toolya/i18n/connect-due-display.mjs` und synthetischer Node-Test `tests/i18n/connect-due-display.test.mjs`. Die Tests dürfen erst nach GitHub-CI-Ergebnis als bestanden erklärt werden.
+- Release weiterhin NOT READY / Draft; keine produktiven Daten, kein Merge nach main, keine Indexierung oder Markenasset-Änderung.

@@ -84,3 +84,7 @@ Aktueller i18n-Audit aus dem grünen Node-CI-Lauf: **72 HTML-Seiten**, **121 JS-
 ## Ergänzung 22.11.2026 – Nachgezogener Main-Commit für neue Connect-Fristen
 
 Das Dashboard-Connect-Paket `c75b247ad3401bd75cf38f3b4d4da4df314d67a2` wurde in den Entwicklungsbranch übernommen; die abweichende i18n-Ansicht von `dashboard/dashboard.js` mit der Main-Logik zusammengeführt und eine isolierte Node-Regression für Readonly-Termine ergänzt. Die bisherige vollständige 18/18-CI-Aussage gilt für den dokumentierten Code-HEAD `6b606891`, **nicht automatisch** für den neuen Zwei-Eltern-Merge. Aktuelle Merge-CI und Release-Gates sind erneut zu verifizieren. PR bleibt Draft, kein Produktionsmerge/-deployment und keine Änderung an `noindex`.
+
+### Zusatz: Übersetzbare Connect-Fristen mit strukturierten Anzeigeelementen
+
+Für abgeleitete Verleih-, Auto- und Haustierfristen werden Anwendungswörter vom wörtlich eingegebenen Titel getrennt. Der neue Code ändert weder gespeicherte CloudOnly-Werte noch Bestätigungsrechte. Die neuen Tests und GitHub-Workflows müssen am finalen SHA geprüft werden; der ältere 18/18-Nachweis ist kein Ersatz.

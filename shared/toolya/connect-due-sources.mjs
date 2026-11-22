@@ -34,20 +34,23 @@ export function projectDueTasks(source,snapshot,today=new Date().toLocaleDateStr
  let result=[];
  if(source==='loans')result=snapshot.items.filter(i=>
   i&&safeId(i.id)&&i.status==='active'&&validDay(i.returnDate)&&i.returnDate<=horizon&&label(i.title))
-  .map(i=>task(source,i.id,'Rückgabe: '+i.title+(label(i.person)?' · '+i.person:''),i.returnDate,false));
+  .map(i=>task(source,i.id,'Rückgabe: '+i.title+(label(i.person)?' · '+i.person:''),i.returnDate,false,
+    {display:{kind:'loan-return',title:label(i.title),person:label(i.person)}}));
  if(source==='car'){
   const names=new Map(snapshot.cars.filter(c=>c&&safeId(c.id)).map(c=>[String(c.id),label(c.name)]));
   result=snapshot.events.filter(e=>e&&safeId(e.id)&&
     ['TÜV / HU','Inspektion','Versicherung','Kfz-Steuer'].includes(e.type)&&
     validDay(e.date)&&e.date>=today&&e.date<=horizon)
-    .map(e=>task(source,e.id,(names.get(String(e.carId))||'Fahrzeug')+' · '+e.type+(label(e.title)?' · '+e.title:''),e.date,true));
+    .map(e=>task(source,e.id,(names.get(String(e.carId))||'Fahrzeug')+' · '+e.type+(label(e.title)?' · '+e.title:''),e.date,true,
+      {display:{kind:'car-deadline',vehicle:names.get(String(e.carId))||'',type:e.type,title:label(e.title)}}));
  }
  if(source==='pet'){
   const names=new Map(snapshot.pets.filter(p=>p&&safeId(p.id)).map(p=>[String(p.id),label(p.name)]));
   result=snapshot.events.filter(e=>e&&safeId(e.id)&&e.type==='Impfung'&&
     validDay(e.expiryDate)&&e.expiryDate<=horizon)
     .map(e=>task(source,'vaccine-'+e.id,(names.get(String(e.petId))||'Haustier')+
-      ' · Impfung auffrischen'+(label(e.title)?' · '+e.title:''),e.expiryDate,true));
+      ' · Impfung auffrischen'+(label(e.title)?' · '+e.title:''),e.expiryDate,true,
+      {display:{kind:'pet-vaccine',pet:names.get(String(e.petId))||'',title:label(e.title)}}));
   // Worming is calculated by the source tool from the last recorded event +90 days.
   const latest=new Map();
   for(const e of snapshot.events){
@@ -58,7 +61,8 @@ export function projectDueTasks(source,snapshot,today=new Date().toLocaleDateStr
   for(const [petId,e] of latest){
    const due=addDays(e.date,90);
    if(due<=horizon)result.push(task(source,'worm-'+petId,
-     (names.get(petId)||'Haustier')+' · Entwurmung prüfen',due,true));
+     (names.get(petId)||'Haustier')+' · Entwurmung prüfen',due,true,
+     {display:{kind:'pet-deworming',pet:names.get(petId)||''}}));
   }
  }
  return result.filter(x=>x.text&&validDay(x.due)).sort((a,b)=>a.due.localeCompare(b.due)||a.id.localeCompare(b.id));

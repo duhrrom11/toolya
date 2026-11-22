@@ -1,4 +1,5 @@
 import { dashboardText,dashboardDateLocale,dashboardLocale } from '../shared/toolya/i18n/dashboard-copy.mjs';
+import { formatDueTaskDisplay } from '../shared/toolya/i18n/connect-due-display.mjs';
 const tx=value=>dashboardText(value,dashboardLocale());
 import { createDashboardCloud } from './modules/cloud-sync.mjs';
 import { createUnifiedShopping } from './modules/unified-shopping.mjs';
@@ -262,18 +263,19 @@ function renderItems() {
   }
   for(const item of extraTasks) {
     const li=element('li',undefined,'connect-task');
+    const title=formatDueTaskDisplay(item,dashboardLocale());
     if(!item.readonly) {
       const cb=document.createElement('input');cb.type='checkbox';cb.checked=false;cb.disabled=connectedBusy;
       cb.setAttribute('aria-label',dashboardLocale()==='en'
-        ? 'Mark '+tx(item.origin)+' · '+item.text+' as completed'
-        : item.origin+' · '+item.text+' erledigt');
+        ? 'Mark '+tx(item.origin)+' · '+title+' as completed'
+        : item.origin+' · '+title+' erledigt');
       cb.onchange=()=>changeConnected(item,cb.checked);
       li.append(cb);
     } else {
       const marker=element('span','📅','connect-task-marker');
       marker.setAttribute('aria-hidden','true');li.append(marker);
     }
-    const span=element('span',item.text);
+    const span=element('span',title);
     const due=item.due&&/^\d{4}-\d{2}-\d{2}$/.test(item.due)?
       ' · '+new Date(item.due+'T12:00:00Z').toLocaleDateString(dashboardDateLocale(),{dateStyle:'medium'}):'';
     span.append(element('small',tx(item.origin)+(item.assignee?' · '+item.assignee:'')+due,'date'));

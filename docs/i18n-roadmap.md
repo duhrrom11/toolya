@@ -515,3 +515,8 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 
 - Zwei isolierte Chromium-Workflows meldeten nicht wiedergefundene Quellen-Checkbox nach dem Main-Merge, da der zugängliche Name den Quellnamen verlor. DE behält `WG-Putzplan` beziehungsweise `Verliehene Dinge` plus wörtlichen Titel, EN übersetzt nur die UI-Markierung und den feststehenden Quellnamen. Ergänzende Regression hinzugefügt.
 - Ziel: beide Connect-Browser-Workflows vollständig grün, keine Änderung an Rückgabestatus/Readonly-Hinweisen. Tests müssen neu ausgeführt werden.
+
+## 22.11.2026 – Quellgetrennte EN-Labels für Connect-Fristen
+
+- Rückgabe-, Kfz- und Haustier-Termine erhalten zur Laufzeit strukturierte `display`-Metadaten, die fixe UI-Wörter von wörtlichen Nutzernamen, Titeln und Anmerkungen trennen. Englische Anzeige übersetzt ausschließlich bekannte UI-Teile; originaler Quelltext, IDs, Statuscodes und readonly bleiben unverändert.
+- Neues reines Präsentationsmodul für EN-Fristen plus Node-Sicherheitsregression mit Sonderzeichen und scheinbar übersetzbaren Nutzerdaten. Die vollständige Browser- und CI-Verifikation bleibt für den neuen HEAD verpflichtend.
