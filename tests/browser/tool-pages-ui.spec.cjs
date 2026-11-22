@@ -2679,3 +2679,25 @@ test('i18n loan ICS download preserves title, stable UID and all-day date in DE/
  }
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
 });
+
+test('i18n account dialog keyboard trap restores normal interaction after Escape without Tailwind CDN',async({page})=>{
+ await isolated(page,true,false,{sessions:[],activeEndTime:null});
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/parking/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>parkingCloudReady)).toBe(true);
+ const dialog=page.locator('#settingsModal');
+ await expect(dialog).toBeHidden();
+ expect(await page.evaluate(()=>!!document.querySelector('.b3-shell')?.inert)).toBe(false);
+ const opener=page.locator('.ty-tool-hero .b3-settings-trigger');
+ await opener.scrollIntoViewIfNeeded();
+ await opener.click();
+ await expect(dialog).toBeVisible();
+ await expect(dialog).toHaveAttribute('aria-modal','true');
+ await expect.poll(()=>page.evaluate(()=>!!document.querySelector('.b3-shell')?.inert)).toBe(true);
+ expect(await page.evaluate(()=>document.getElementById('settingsModal').contains(document.activeElement))).toBe(true);
+ await page.keyboard.press('Escape');
+ await expect(dialog).toBeHidden();
+ await expect(dialog).toHaveAttribute('aria-modal','false');
+ await expect.poll(()=>page.evaluate(()=>!!document.querySelector('.b3-shell')?.inert)).toBe(false);
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});

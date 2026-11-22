@@ -492,3 +492,8 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 - Main-HEAD `23507b160bc8779ef4f197863cb9304de866c39e` (#306) hat nach dem bisherigen Abzweig 8 Pfade für themenspezifische Maskottchen/Header und Tests geändert. Sieben Pfade waren auf dem i18n-Branch seit der gemeinsamen Basis unverändert, ein Pfad enthielt nur ein eigenes Hero-Ready-Event.
 - Main-Änderungen als Zwei-Eltern-Merge **in den Entwicklungsbranch** übernommen; das bestehende Hero-Ready-Event nach dem neuen `refreshFrames`-Aufruf erhalten. Keine Markenbild-Dateien überschrieben, keine Freigabe/Deployment/Indexierung ausgeführt.
 - Neuer Merge-HEAD und alle relevanten GitHub-Workflows sind Pflichtprüfungen vor Freigabebewertung.
+
+## 22.11.2026 – Tastatur und Fokus nach Modal-Fallback
+
+- Eigener synthetischer Playwright-Fall im 320px-Viewport: englisches Parkplatz-Tool ohne Tailwind-CDN, geschlossener Dialog nicht sichtbar und Tool-Shell interaktiv; tatsächlicher Einstellungen-Klick setzt `aria-modal=true`, verschiebt Fokus in den Dialog und macht den Hintergrund `inert`; Escape schließt den Dialog, stellt die Bedienbarkeit wieder her und löst keinen Cloud-Schreibzugriff aus.
+- Der kurze Runtime-Chromium-Workflow führt diesen A11y-Fall zusammen mit den vier bisherigen DE/EN-/ICS-Smoketests aus. Erst mit grüner CI als bestätigt markieren.

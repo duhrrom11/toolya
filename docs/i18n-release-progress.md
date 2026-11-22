@@ -168,3 +168,10 @@ Basis `cc9876d92ce5dfefc1504098ea73a3fd03969dac`: 209/209 statische Node-i18n-Te
 - Echter Merge-Commit mit zwei Eltern, **ausschließlich auf dem Feature-Branch**, kein Push zu main. Keine Bild-/Maskottchen-Assets verändert, nur bereits auf main veröffentlichte Darstellungs-/Teständerungen übernommen.
 - Vor dem Merge: 214/214 i18n-Node-Tests und 4/4 mobile Chromium-Smoke-Tests auf `ebfecf17` bestanden, vollständige Browser-/Plattform-CI war noch im Lauf. Nach Merge **alle relevanten CI-Workflows auf dem neuen Merge-HEAD erneut prüfen**.
 - **Release bleibt NOT READY / Draft**, weil vollständige 34 Teilansichten, 48 dynamische Dateiquellen, Auth-E2E und A11y offen sind.
+
+### 22.11.2026 – zusätzliche Tastatur-Abnahme (synthetisches Chromium)
+
+- Ausgangsstand `288011ce`: Zwei-Eltern-Merge von main, Branch 0 Commits hinter main. Erster Pull-Request-CI-Batch war bis 15/17 erfolgreich, zwei Chromiumläufe noch offen; PR bleibt Draft.
+- Neuer echter 320px-Chromium-Test für Account-Dialog ohne Tailwind-CDN: initial `hidden`, interaktive B3-Shell, Öffnen per Button, `aria-modal`, Hintergrund-`inert`, Fokusfalle, Escape schließt und restauriert Hintergrund, null CloudOnly-Schreibvorgänge.
+- Workflow i18n-runtime-browser erweitert, für neuen HEAD erneut Node-/Chromium-/Plattform-CI auswerten. Tests wurden beim Schreiben noch nicht erfolgreich ausgeführt.
+- Release-Gate bleibt NOT READY: vollständige Sprach-/Auth-/Export-/A11y-Abnahme offen.
