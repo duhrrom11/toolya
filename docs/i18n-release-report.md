@@ -88,3 +88,9 @@ Das Dashboard-Connect-Paket `c75b247ad3401bd75cf38f3b4d4da4df314d67a2` wurde in 
 ### Zusatz: Übersetzbare Connect-Fristen mit strukturierten Anzeigeelementen
 
 Für abgeleitete Verleih-, Auto- und Haustierfristen werden Anwendungswörter vom wörtlich eingegebenen Titel getrennt. Der neue Code ändert weder gespeicherte CloudOnly-Werte noch Bestätigungsrechte. Die neuen Tests und GitHub-Workflows müssen am finalen SHA geprüft werden; der ältere 18/18-Nachweis ist kein Ersatz.
+
+## Nachtrag: Code-HEAD `f2ca109737f262149b7f64801496c08abe7fd928` (22.11.2026)
+
+- Neue Main-Connect-Dashboard-Integration, Readonly-Termine, DE/EN-Deadline-Beschriftungen und source-aware Checkbox-Accessibility, Verleih-Dropdowns mit unveränderten Werten, lokalisierte ICS-/Budgetvalidierung. Keine Produktivdaten-/Produktionsaktion.
+- **Nachgewiesen:** [223/223 i18n-Node-Tests auf diesem Code-HEAD](https://github.com/duhrrom11/toolya/actions/runs/44993279217). [6/6 gezielte Chromium-Tests auf Vorgänger `930d21d3`](https://github.com/duhrrom11/toolya/actions/runs/44992912002). Die vollständige CI-Matrix dieses neuen Codes war beim Schreiben noch nicht abgeschlossen; niemals ältere 18/18 als automatisch aktuelle Freigabe behandeln.
+- [Einzelansichten und geschützte Release-Gates](i18n-release-checklist.md). **NOT READY / PR Draft**; 34 partielle Ansichten, 48 Dateien, Auth-Mail-E2E, vollständige Exporte und Screenreader-Abnahme bleiben offen.

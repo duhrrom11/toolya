@@ -535,3 +535,8 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 
 - Die dynamische Fehlermeldung für ungültige Kategoriebudgets ist jetzt sprachabhängig; der freie Kategoriename wird im Meldungstext unverändert durchgereicht und weder übersetzt noch persistiert verändert.
 - Drei tatsächlich ausführbare isolierte Node-Prüffälle für DE/EN-Fehler ohne Schreibzugriff und für gültige Werte mit bytegleichem Kategorienamen ergänzt. CI-Ergebnisse auf dem neuen HEAD nachprüfen; kein Produktionsdatenzugriff.
+
+## 22.11.2026 – Dauerhafte vollständige Release-Checkliste
+
+- [docs/i18n-release-checklist.md](i18n-release-checklist.md) listet die 34 noch partiell lokalisierten Ansichten und nicht bestandene bzw. nicht vollständig durchgeführte Gates explizit auf. Status darf nur nach echten Node-/Chromium-/Accessibility-/Funktionsprüfungen je Bereich geändert werden.
+- Getesteter neuer Code-HEAD `f2ca1097`: 223/223 Node-i18n-Regressionen grün, übrige GitHub-CI noch in Ausführung. Release ist nicht freigegeben; Draft, noindex, Produktionsdaten und Markenassets unverändert.

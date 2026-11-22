@@ -2,11 +2,14 @@
 
 ## Aktueller Wiederaufnahmepunkt – 22.11.2026
 
-**Getesteter Code-HEAD:** `6b6068913309084c29c9d0591c78835fff8a6799` · [aktueller Feature-HEAD](https://github.com/duhrrom11/toolya/commits/feature/i18n-de-en-foundation-20261121/) · [Release-Bericht](https://github.com/duhrrom11/toolya/blob/feature/i18n-de-en-foundation-20261121/docs/i18n-release-report.md).
+**Aktueller Code-HEAD:** `f2ca109737f262149b7f64801496c08abe7fd928` · [Feature-Branch](https://github.com/duhrrom11/toolya/commits/feature/i18n-de-en-foundation-20261121/) · [PR #291](https://github.com/duhrrom11/toolya/pull/291), weiterhin Draft. Der Branch enthält den Hauptbranch-Stand `c75b247a`, 0 Commits hinter main.
 
-**Belegter CI-Stand:** 18/18 GitHub-Workflows erfolgreich; 214/214 i18n-Node-Tests, 5/5 mobiler Chromium-Smoke, 178/178 vollständige CloudOnly-PR-Browsertests, 166 isolierte Browserprüfungen plus 16 übersprungen, 124/124 Plattform-Node-Tests; Plattform-Security, Connect/Planner/Dashboard und übrige Workflows grün. Kein produktiver Testdatenzugriff. Vollständige Nachweise im neuen Release-Bericht.
+**Verifizierter Zwischenstand:** **223/223 isolierte i18n-Node-Tests** auf dem Code-HEAD grün ([CI](https://github.com/duhrrom11/toolya/actions/runs/44993279217)). Auf dem Vorgänger `930d21d3` **6/6 Chromium-Smoke-Tests grün**. Die größere CI-Matrix für den aktuellen Code-HEAD war bei dieser Dokumentationsänderung **noch in Ausführung**. Historischer gesicherter kompletter grüner Lauf: 18/18 Workflows auf `6b606891`; nicht auf neue Commits übertragen.
 
-**Release-Status:** **NOT READY, PR #291 Draft**. Noch 34 teilweise DE/EN-lokalisierte Toolansichten, 48 heuristisch gefundene Laufzeit-Dateien, echter isolierter Recovery-Mailrückweg, weitere Exporte/Druck/QR und A11y-/Mobile-Abnahmen. `noindex` bleibt, kein Merge/Deployment. Mit den 10 partiellen Haupttools und strikter Audit-Triage weiterarbeiten. Die ältere Chronik folgt unten.
+**Neue Pakete seit dem letzten vollständigen Bericht:** Main-Connect-Rückgabe- und readonly-Auto-/Tier-Termine in i18n-Branch integriert; quellbezogene Accessible Names erhalten; feste EN-Frist-Begriffe über nicht persistierte Display-Metadaten übersetzt; tatsächliche Dashboard-Chromium-Sprachwechsel auf Datenintegrität geprüft; Verleih-Select-Platzhalter und ICS-Validierungen DE/EN; dynamische Budgetvalidierung DE/EN. Alle Commits nur auf dem Feature-Branch.
+
+**Release-Status NOT READY:** 34 teilweise lokalisierte Ansichten, 48 zu prüfende Laufzeit-Dateien, vollständige Auth-Recovery-Mail-E2E-, Export-/Druck-/QR-/Screenreader- und mobile Abnahme fehlen. `noindex` bleibt geschützt. [Checkliste](i18n-release-checklist.md) · [Release-Bericht](i18n-release-report.md) · [Roadmap](i18n-roadmap.md).
+
 
 Stand 21.11.2026. **Release-Gate offen.** [Draft-PR #291](https://github.com/duhrrom11/toolya/pull/291) · [aktueller Branch-HEAD und Actions](https://github.com/duhrrom11/toolya/commits/feature/i18n-de-en-foundation-20261121/). Maßgeblich für CI ist der SHA des aktuell geprüften Kandidaten, nicht ein älterer grüner Lauf.
 
