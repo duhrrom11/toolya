@@ -41,6 +41,7 @@ test('invalid loan date aborts before calendar import',async()=>{
 test('calendar and reminder UI follows selected locale, preserving item IDs',()=>{
  for(const phrase of ['Friendly reminder','Urgent return','Just checking when','in the next few days','Item due for return','Google Calendar','en-GB'])
   assert.ok(src.includes(phrase),phrase);
- assert.match(src,/case 'ics': void downloadICS\(item\.title, item\.returnDate, item\.person, item\.id\)/);
+ assert.match(src,/case 'ics': void downloadICS\(item\.title,item\.returnDate,item\.person,item\.id\)/);
  assert.match(src,/new Date\(rd\.getTime\(\) \+ 86400000\)/);
+ assert.match(src,/document\.addEventListener\('click',event=>loanItemAction\(event,'click'\)\)/);
 });

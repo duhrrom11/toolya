@@ -43,6 +43,14 @@ function mountToolLanguage(){
    switcher.append(button);
    button.addEventListener('click',()=>apply(lang,true));
  }
+ // B3 layouts may reconstruct tool headings. Event delegation also handles
+ // cloned language controls, whose direct event listeners are not retained.
+ document.addEventListener('click',event=>{
+   const button=event.target?.closest?.('.ty-tool-language [data-tool-locale]');
+   if(!button || button===de || button===en)return;
+   const code=button.dataset.toolLocale;
+   if(code==='de'||code==='en')apply(code,true);
+ },true);
  // Wrap native dialogs once. Preserve return values, user input, and unknown errors.
  // The wrapper only changes known application-authored German messages.
  const nativeDialogs={};
@@ -147,6 +155,9 @@ function mountToolLanguage(){
    document.title=lang==='en'?settings.heading+' | Toolya':originalDocTitle;
    de.setAttribute('aria-pressed',String(lang==='de'));
    en.setAttribute('aria-pressed',String(lang==='en'));
+   // Keep reconstructed controls in sync with the active locale.
+   for(const button of document.querySelectorAll('.ty-tool-language [data-tool-locale]'))
+     button.setAttribute('aria-pressed',String(button.dataset.toolLocale===lang));
    notice.hidden=lang!=='en';
    document.querySelector('.toolya-auth-status')?.setAttribute('lang',lang);
    if(authGuide){

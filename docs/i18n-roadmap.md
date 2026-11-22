@@ -474,3 +474,9 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 - Bei einem isolierten Chromium-Lauf waren 161 Tests erfolgreich, drei neue Listen-Sprachwechseltests schlugen fehl. Zusätzliche `controller.ready`-Abfragen in den Event-Listenern waren strenger als die bereits vorhandene CloudOnly-Bereitschaftsmarke; die UI-Reaktion wird auf diese bestehende Marke abgestimmt. Die Snapshot-Lesefunktion prüft weiterhin die Controller-Bereitschaft intern, und der Listener führt keine Schreiboperationen aus.
 - Regressionserwartungen für die read-only Locale-Events wurden entsprechend angepasst. Der Browser prüft zusätzlich explizit die tatsächlich aktivierte DE-Taste und den UI-Locale-Wert, bevor die Listenanzeige beurteilt wird.
 - Die geänderten Node-/Chromium-Prüfungen müssen am neuen HEAD erfolgreich sein, bevor der Fehler als behoben gilt.
+
+## 22.11.2026 – DOM-Neuaufbau und stabile Sprach-/Verleih-Events
+
+- Browserfehler: DE/EN-Sprachschalter blieb nach Klick unbetätigt (`aria-pressed=false`), also kein Problem der Cloud-Speicherwerte. Die Header-Lokalisierung nutzt ergänzende delegierte Click-Events für rekonstruierte Sprach-Buttons und aktualisiert den angezeigten Tastenzustand auch bei geklonten DOM-Elementen; originale Event-Handler bleiben aktiv.
+- Verleihklicks und Statuswechsel sind nur einmal auf `document` registriert; die aktuelle Filterauswahl und der CloudOnly-Snapshot bestimmen den Eintrag. Ereignisse gehen damit bei nachträglich neu aufgebauten B3-Listen nicht verloren. Keine duplizierten Cloud-Schreibaktionen und keine user-kontrollierten Inline-JavaScript-Parameter.
+- Neuer enger Chromium-Smoke-Workflow für vier synthetische 320px-Laufzeit-/Kalendertests, zusätzlich zu den vollständigen isolierten Workflows. Freigabe erst nach nachweislich grünen CI-Läufen.

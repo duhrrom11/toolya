@@ -146,3 +146,10 @@ Basis `cc9876d92ce5dfefc1504098ea73a3fd03969dac`: 209/209 statische Node-i18n-Te
 - [Run 44964495544](https://github.com/duhrrom11/toolya/actions/runs/44964495544): 161/164 ausgeführte Playwright-Tests grün, 3 fehlgeschlagen (Parkplatz-, Verleih-, Zählerlisten nach DE-Toggle); 16 übersprungen. Der andere isolierte Browser-Workflow, Connect, Moving, Plattform und 209 i18n-Node-Tests waren auf dem vorherigen HEAD grün.
 - Locale-Listener auf das bestehende CloudReady-Lade-Gate ausgerichtet; `getData()` bleibt zusätzlich durch controller.ready geschützt. Tests für dieses Gate aktualisiert, Browser prüft aktiven Sprachschalter. Diese Änderung ist noch nicht browser-verifiziert.
 - Draft/NOINDEX/Prod-Sperren bleiben. **Release-Status OFFEN**.
+
+### 22.11.2026 – Ungebundene DOM-Ereignisse in Chromium
+
+- [Run 44964965114](https://github.com/duhrrom11/toolya/actions/runs/44964965114): 161 Playwright-Tests bestanden, 16 übersprungen, 4 fehlgeschlagen (die 3 DE-Listenwechsel plus echter Verleih-ICS-Download). Der DE-Schalter blieb nach Klick im Test `aria-pressed=false`; damit war die Ursache nicht die CloudOnly-Ready-Bedingung allein.
+- Ergänzende dokumentweite Delegation für neu konstruierte Sprachschalter und aktualisierte `aria-pressed`-Werte. Verleihaktionen werden nun einmalig auf Dokumentebene behandelt und verwenden aktuelle gefilterte CloudOnly-Snapshots statt potenziell verlorener Listener auf DOM-Rekonstruktionen. Synthetische Node-Regression aktualisiert.
+- Neuer kurzer Chromium-Smoke-Workflow im Feature-Branch für Parkplatz, Verleih, Zähler und ICS. Er muss erst als grün bestätigt werden; vollständige Browser/Plattform-CI bleibt erforderlich.
+- **Release-Status weiterhin NOT READY / PR Draft**, auch bei erfolgreichem Smoke bleiben 34 partielle Tools, 48 Laufzeitdateien, echte Auth-Mailrunde und manuelle A11y-Abnahmen offen. Kein Merge/Deploy/Produktivzugriff.

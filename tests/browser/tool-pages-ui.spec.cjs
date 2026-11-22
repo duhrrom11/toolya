@@ -2595,7 +2595,9 @@ test('i18n parking history renders historic ISO timestamps and escapes user cont
  await expect(list).toContainText(unsafe);
  await expect(list.locator('img')).toHaveCount(0);
  await expect(list.locator('a[href*="google.com/maps/search/"]')).toHaveCount(1);
+ await page.evaluate(()=>{window.__localeClickProbe=0;document.addEventListener('click',event=>{if(event.target?.closest?.('[data-tool-locale]'))window.__localeClickProbe++;},true);});
  await page.locator('[data-tool-locale="de"]').click();
+ expect(await page.evaluate(()=>window.__localeClickProbe)).toBeGreaterThan(0);
  await expect(page.locator('[data-tool-locale="de"]')).toHaveAttribute('aria-pressed','true');
  expect(await page.evaluate(()=>window.__toolyaUILocale)).toBe('de');
  await expect(list).toContainText('Datum: 17.11.2026 13:00');

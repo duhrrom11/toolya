@@ -835,6 +835,41 @@
             if (loansCloudReady) { renderInventory(); renderApp(); }
         });
 
+        // Bind once on document: B3 panels can replace the item-list element.
+        // Resolve the visible item from the current read-only CloudOnly snapshot,
+        // not from stale closures or user-controlled inline JavaScript.
+        function loanVisibleItems() {
+            const data=getData();
+            const category=document.getElementById('filterCategory')?.value || '';
+            const person=document.getElementById('filterPerson')?.value || '';
+            return (data.items || []).filter(item =>
+                (!category || item.category===category) && (!person || item.person===person));
+        }
+        function loanItemAction(event,kind) {
+            const list=document.getElementById('itemsList');
+            const action=event.target.closest?.('[data-loan-action]');
+            if(!list || !action || !list.contains(action))return;
+            const index=Number(action.dataset.loanIndex),items=loanVisibleItems();
+            if(!Number.isSafeInteger(index)||index<0||index>=items.length)return;
+            const item=items[index];
+            if(kind==='change') {
+                if(action.dataset.loanAction==='status' && ['active','returned','lost'].includes(action.value))
+                    void setStatus(item.id,action.value);
+                return;
+            }
+            switch(action.dataset.loanAction) {
+                case 'ics': void downloadICS(item.title,item.returnDate,item.person,item.id)
+                    .catch(()=>alert(window.__toolyaUILocale==='en' ? 'Calendar file could not be created.' : 'Die Kalenderdatei konnte nicht erstellt werden.')); break;
+                case 'qr': void showQrCode(item.title,item.person); break;
+                case 'extend7': void extendReturnDate(item.id,7); break;
+                case 'extend14': void extendReturnDate(item.id,14); break;
+                case 'edit': openEditModal(item.id); break;
+                case 'delete': void deleteItem(item.id); break;
+            }
+        }
+        document.addEventListener('click',event=>loanItemAction(event,'click'));
+        document.addEventListener('change',event=>loanItemAction(event,'change'));
+
         function renderApp() {
             const english = window.__toolyaUILocale === 'en';
             const label = (de,en) => english ? en : de;
@@ -857,32 +892,6 @@
             if (personFilter !== "") {
                 filteredItems = filteredItems.filter(i => i.person === personFilter);
             }
-
-            // Event-Delegation: keine benutzerkontrollierten Zeichen in Inline-JavaScript.
-            container.onclick = event => {
-                const trigger = event.target.closest('[data-loan-action]');
-                if (!trigger || !container.contains(trigger)) return;
-                const index = Number(trigger.dataset.loanIndex);
-                if (!Number.isInteger(index) || index < 0 || index >= filteredItems.length) return;
-                const item = filteredItems[index];
-                switch (trigger.dataset.loanAction) {
-                    case 'ics': void downloadICS(item.title, item.returnDate, item.person, item.id); break;
-                    case 'qr': showQrCode(item.title, item.person); break;
-                    case 'extend7': extendReturnDate(item.id, 7); break;
-                    case 'extend14': extendReturnDate(item.id, 14); break;
-                    case 'edit': openEditModal(item.id); break;
-                    case 'delete': deleteItem(item.id); break;
-                }
-            };
-            container.onchange = event => {
-                const trigger = event.target.closest('[data-loan-action="status"]');
-                if (!trigger || !container.contains(trigger)) return;
-                const index = Number(trigger.dataset.loanIndex);
-                if (!Number.isInteger(index) || index < 0 || index >= filteredItems.length) return;
-                if (['active', 'returned', 'lost'].includes(trigger.value)) {
-                    setStatus(filteredItems[index].id, trigger.value);
-                }
-            };
 
             if (filteredItems.length === 0) {
                 container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${label('Keine Gegenstände für diesen Filter gefunden.','No items match this filter.')}</p>`;
