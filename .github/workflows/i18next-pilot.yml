@@ -61,6 +61,8 @@ jobs:
           node --check shared/toolya/i18n/tool-entry.mjs
           node --check shared/toolya/i18n/dashboard-entry.mjs
           node --check shared/toolya/i18n/dashboard-dom.mjs
+          node --check shared/toolya/i18n/marketing.mjs
+          node --check shared/toolya/i18n/switcher.mjs
       - name: Run focused migration regressions
         run: node --test tests/i18n/i18next-legacy-resources.test.mjs tests/i18n/i18next-runtime-adapter.test.mjs tests/i18n/i18next-singleton.test.mjs tests/i18n/dashboard-dom.test.mjs
   parking-browser:
