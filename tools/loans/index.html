@@ -96,7 +96,7 @@
  <a class="b3-brand" href="../../index.html" aria-label="Toolya Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Toolya</a>
  <span class="b3-tool-icon" aria-hidden="true">🤝</span>
  <div class="b3-tool-title"><h1 data-tool-en="Manage lent items">Verliehene Gegenstände verwalten</h1><p>Verliehene Gegenstände erfassen und Rückgabetermine und Kautionen im Blick behalten</p></div>
- <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()">⚙</button>
+ <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()" data-tool-en-aria-label="Open settings">⚙</button>
 </div></header>
 
     <!-- MODAL: Einstellungen & Supabase Auth -->
@@ -137,7 +137,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-indigo-900">📖 Hilfe & Anleitungen</h3>
-                <button onclick="toggleHelpModal()" aria-label="Anleitung schließen" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleHelpModal()" aria-label="Anleitung schließen" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600" data-tool-en-aria-label="Close guide">✕</button>
             </div>
             <div class="space-y-3 text-xs">
                 <details class="bg-gray-50 border rounded-xl p-3">
@@ -198,7 +198,7 @@
                 <!-- Kontakt anlegen -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
                     <h2 class="text-base font-bold">👤 Kontakt anlegen</h2>
-                    <label class="helferlein-field" for="contactName"><span class="helferlein-field-label">Name</span><input type="text" id="contactName" placeholder="Name (z.B. Nachbar Müller)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Name (z.B. Nachbar Müller)" data-tool-en-placeholder="Name (e.g. neighbour)"></label>
+                    <label class="helferlein-field" for="contactName"><span class="helferlein-field-label">Name</span><input type="text" id="contactName" placeholder="Name (z.B. Nachbar Müller)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Name (z.B. Nachbar Müller)" data-tool-en-placeholder="Name (e.g. neighbour)" data-tool-en-aria-label="Name (e.g. neighbour)"></label>
                     <label class="helferlein-field" for="contactPhone"><span class="helferlein-field-label" data-tool-en="Phone number (for WhatsApp)">Telefon (für WhatsApp)</span><input type="text" id="contactPhone" placeholder="Telefon (für WhatsApp)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Telefon (für WhatsApp)" data-tool-en-placeholder="Phone number (for WhatsApp)" data-tool-en-aria-label="Phone number (for WhatsApp)"></label>
                     <button onclick="saveContact()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 rounded-xl text-xs b3-action">Kontakt speichern</button>
                 </div>
