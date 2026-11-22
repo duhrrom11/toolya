@@ -2261,7 +2261,8 @@ const auditedDialogAdditions = Object.freeze({
     "Bitte Person und Ausleihdatum angeben!": "Please enter the person and lending date!",
     "⚠️ Diesen Eintrag wirklich löschen?": "⚠️ Delete this entry?",
     "Bitte Gegenstand, Person und Ausleihdatum angeben!": "Please enter the item, person and lending date!",
-    "Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.": "The QR code could not be loaded. Please try again."
+    "Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.": "The QR code could not be loaded. Please try again.",
+    "Bild konnte nicht verarbeitet werden. Nichts gespeichert.": "Image could not be processed. Nothing was saved."
   },
   "meters": {
     "Bestehende Zählerstände nach Sicherung in Toolya Cloud übernehmen?": "Import existing meter readings into Toolya Cloud after backing them up?",
@@ -2279,7 +2280,8 @@ const auditedDialogAdditions = Object.freeze({
     "Zwischenablage nicht verfügbar. Text manuell kopieren:": "Clipboard unavailable. Copy the text manually:",
     "📋 Zählerstände in die Zwischenablage kopiert! Du kannst sie jetzt direkt in WhatsApp oder E-Mail einfügen.": "📋 Meter readings copied to the clipboard! You can now paste them into WhatsApp or email.",
     "Backup importieren? Vorhandene Zählerstände und Tarife werden ersetzt.": "Import backup? Existing meter readings and tariffs will be replaced.",
-    "Fehler beim Importieren der Datei.": "Error importing the file."
+    "Fehler beim Importieren der Datei.": "Error importing the file.",
+    "Backup-Datei konnte nicht gelesen werden.": "The backup file could not be read."
   },
   "car": {
     "Bitte einen Fahrzeugnamen eingeben!": "Please enter a vehicle name!",
@@ -2293,7 +2295,9 @@ const auditedDialogAdditions = Object.freeze({
     "⚠️ Diesen Eintrag wirklich löschen?": "⚠️ Delete this entry?",
     "Backup zu groß (maximal 20 MB).": "Backup too large (maximum 20 MB).",
     "Ungültiges Backup-Format.": "Invalid backup format.",
-    "Ungültige Reifendaten im Backup.": "Invalid tyre data in backup."
+    "Ungültige Reifendaten im Backup.": "Invalid tyre data in backup.",
+    "Bild konnte nicht verarbeitet werden.": "Image could not be processed.",
+    "Backup-Datei konnte nicht gelesen werden.": "The backup file could not be read."
   },
   "moving": {
     "Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden nicht überschrieben.": "Import existing device data into your Toolya account? Cloud data will not be overwritten.",
@@ -2304,7 +2308,9 @@ const auditedDialogAdditions = Object.freeze({
     "Bitte Standort und Kisten-Name angeben!": "Please enter a location and box name!",
     "Bitte Artikel-Name eingeben!": "Please enter an item name!",
     "⚠️ Möchtest du diese Kiste wirklich löschen?": "⚠️ Delete this box?",
-    "Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.": "The QR code could not be loaded. Please try again."
+    "Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.": "The QR code could not be loaded. Please try again.",
+    "Keine Kisten vorhanden.": "No boxes available.",
+    "Bild konnte nicht gelesen werden. Nichts gespeichert.": "Image could not be read. Nothing was saved."
   },
   "plants": {
     "Bitte ein gültiges Fassungsvermögen größer als 0 eingeben.": "Enter a valid capacity greater than zero.",
@@ -2344,7 +2350,11 @@ const auditedDialogAdditions = Object.freeze({
     "⚠️ Diese Buchung wirklich löschen?": "⚠️ Delete this transaction?",
     "Bitte gültigen Titel, positiven Zielbetrag und Startbetrag ab 0 € eingeben!": "Enter a valid title, positive target amount and starting amount of at least €0!",
     "Sparziel löschen?": "Delete savings goal?",
-    "Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.": "This receipt is missing a valid purchase date or warranty duration."
+    "Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.": "This receipt is missing a valid purchase date or warranty duration.",
+    "Keine Buchungen für den CSV-Export vorhanden.": "No transactions available for CSV export.",
+    "Keine steuerrelevanten Buchungen gefunden!": "No tax-relevant transactions found!",
+    "Backup in Toolya Cloud gespeichert.": "Backup saved to Toolya Cloud.",
+    "Backup-Datei konnte nicht gelesen werden.": "The backup file could not be read."
   },
   "housemates": {
     "Ungültige WG-ID im Link.": "Invalid household ID in the link.",
@@ -2367,7 +2377,13 @@ const auditedDialogAdditions = Object.freeze({
     "Bitte Pflichtfelder ausfüllen!": "Please complete the required fields!",
     "Bitte Belegfoto auswählen!": "Please select a receipt photo!",
     "Bitte mindestens Titel, Datum und Betrag angeben!": "Please enter at least a title, date and amount!",
-    "Bitte Titel und Zielbetrag angeben!": "Please enter a title and target amount!"
+    "Bitte Titel und Zielbetrag angeben!": "Please enter a title and target amount!",
+    "Keine WG-ID aktiv.": "No household ID is active.",
+    "Bitte zuerst ein WG-Mitglied anlegen.": "Please add a household member first.",
+    "Bitte Aufgabe angeben!": "Please enter a task!",
+    "Bitte Bezeichnung eingeben!": "Please enter a description!",
+    "Zutaten übernommen!": "Ingredients added!",
+    "Bitte Name und gültige Kosten angeben!": "Please enter a name and valid costs!"
   },
   "baking": {
     "Lokale Rezepte nach Sicherung in die Cloud übernehmen?": "Import local recipes into the cloud after backing them up?",
