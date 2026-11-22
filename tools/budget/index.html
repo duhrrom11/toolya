@@ -1512,7 +1512,7 @@ async function toolyaCloudBoot(tool) {
                         <div class="flex items-start space-x-3">
                             ${photos.length > 0 
                                 ? `<div class="relative cursor-pointer" onclick="openGalleryModal(${safeHaushaltsId(r.id)})">
-                                     <img src="${photos[0]}" alt="Belegfoto zur Buchung" class="w-16 h-16 object-cover rounded-xl border shadow-sm">
+                                     <img src="${photos[0]}" alt="${window.__toolyaUILocale === 'en' ? 'Receipt photo for transaction' : 'Belegfoto zur Buchung'}" class="w-16 h-16 object-cover rounded-xl border shadow-sm">
                                      ${photos.length > 1 ? `<span class="absolute bottom-0 right-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-br-xl">+${photos.length - 1}</span>` : ''}
                                    </div>` 
                                 : `<div class="w-16 h-16 ${isIncome ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'} rounded-xl flex items-center justify-center font-bold text-xl">${isIncome ? '🔺' : '🧾'}</div>`
@@ -1640,7 +1640,7 @@ async function toolyaCloudBoot(tool) {
             document.getElementById('galleryTitle').innerText = `🖼️ Galerie: ${r.title || 'Beleg'}`;
             container.innerHTML = photos.map((src, idx) => `
                 <div class="space-y-1 text-center">
-                    <img src="${src}" alt="Belegfoto ${idx + 1} zur Buchung" class="w-full object-contain rounded-xl border max-h-80 bg-gray-100">
+                    <img src="${src}" alt="${window.__toolyaUILocale === 'en' ? 'Receipt photo' : 'Belegfoto'} ${idx + 1} ${window.__toolyaUILocale === 'en' ? 'for transaction' : 'zur Buchung'}" class="w-full object-contain rounded-xl border max-h-80 bg-gray-100">
                     <span class="text-xs text-gray-500">Seite ${idx + 1} von ${photos.length}</span>
                 </div>
             `).join('');
