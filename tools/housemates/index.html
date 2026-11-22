@@ -103,7 +103,7 @@
       <h1>WG-Organisator mit Haushaltsbuch</h1>
       <p>WG-Ausgaben aufteilen, Putzplan, Kalender und gemeinsame Aufgaben organisieren</p>
     </div>
-    <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()">⚙</button>
+    <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()" data-tool-en-aria-label="Open settings">⚙</button>
   </div>
 </header>
 
@@ -392,7 +392,7 @@
                         <label class="block font-bold text-emerald-900">📷 Belegfoto & OCR Scanner</label>
                         <button type="button" onclick="runOCR()" class="b3-action b3-outline px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">🔍 Texterkennung</button>
                     </div>
-                    <label class="helferlein-field" for="receiptPhotoInput"><span class="helferlein-field-label">Belegfoto auswählen</span><input type="file" id="receiptPhotoInput" accept="image/*" class="text-xs p-1.5 border rounded-xl bg-white w-full" aria-label="Belegfoto auswählen"></label>
+                    <label class="helferlein-field" for="receiptPhotoInput"><span class="helferlein-field-label">Belegfoto auswählen</span><input type="file" id="receiptPhotoInput" accept="image/*" class="text-xs p-1.5 border rounded-xl bg-white w-full" aria-label="Belegfoto auswählen" data-tool-en-aria-label="Choose receipt photo"></label>
                     <p id="ocrStatus" class="text-emerald-800 font-semibold hidden"></p>
                 </div>
             </div>
@@ -489,7 +489,7 @@
                     <span class="text-xs text-gray-500">Inkl. Amazon-Link & Kassen-Sync</span>
                 </div>
                 <div class="b3-wg-shopping-fields flex gap-2">
-                    <label class="helferlein-field" for="newShoppingItem"><span class="helferlein-field-label">z. B. Hafermilch, Spülmittel, Tabs</span><input type="text" id="newShoppingItem" placeholder="z. B. Hafermilch, Spülmittel, Tabs" class="flex-grow p-2.5 border rounded-xl text-xs" aria-label="z. B. Hafermilch, Spülmittel, Tabs" data-tool-en-placeholder="e.g. oat milk, dish soap, tablets"></label>
+                    <label class="helferlein-field" for="newShoppingItem"><span class="helferlein-field-label">z. B. Hafermilch, Spülmittel, Tabs</span><input type="text" id="newShoppingItem" placeholder="z. B. Hafermilch, Spülmittel, Tabs" class="flex-grow p-2.5 border rounded-xl text-xs" aria-label="z. B. Hafermilch, Spülmittel, Tabs" data-tool-en-placeholder="e.g. oat milk, dish soap, tablets" data-tool-en-aria-label="e.g. oat milk, dish soap, tablets"></label>
                     <button onclick="addShoppingItem()" class="b3-action px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-sm">Hinzufügen</button>
                 </div>
                 <div id="shoppingList" class="space-y-2 max-h-52 overflow-y-auto pr-1"></div>
