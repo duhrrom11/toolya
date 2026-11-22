@@ -30,7 +30,15 @@ const {chromium}=require('playwright');
        notes:[{text:'existing-data'}],data:[{id:7,price:3}]}};
    const own=[{id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',user_id:uid,title:'Spülmittel',
      completed:false,revision:1,deleted_at:null,created_at:'2026-11-20T17:00:00Z'}];
-   const fixture={uid,wg,own,writes:[],printCalls:0};
+   const today=new Date().toLocaleDateString('sv-SE');
+   const plusDays=n=>new Date(Date.parse(today+'T00:00:00Z')+n*86400000).toISOString().slice(0,10);
+   const tools={
+    'verliehene-gegenstaende-verwalten':{items:[{id:91,title:'Bohrmaschine',person:'Tim',date:plusDays(-10),returnDate:plusDays(-1),status:'active',note:'Beleg bleibt'}],contacts:[],inventory:[]},
+    'autokosten-reifenwechsel':{cars:[{id:4,name:'Kombi'}],events:[{id:9,carId:4,type:'TÜV / HU',date:plusDays(7),title:'HU prüfen'}],tires:[]},
+    'haustier-gesundheitspass':{pets:[{id:3,name:'Milo'}],events:[{id:13,petId:3,type:'Impfung',date:plusDays(-340),expiryDate:plusDays(10),title:'Auffrischung'}],meds:[]}
+   };
+   const snapshots=Object.fromEntries(Object.entries(tools).map(([tool,data])=>[tool,{id:6,user_id:uid,tool,data,revision:1}]));
+   const fixture={uid,wg,own,snapshots,writes:[],printCalls:0};
    window.__shoppingFixture=fixture;
    window.print=()=>{fixture.printCalls++;};
    const client={
@@ -53,10 +61,10 @@ const {chromium}=require('playwright');
       then(resolve,reject){return Promise.resolve(run()).then(resolve,reject);}
      };
      const source=()=>table==='wg_spaces'?[fixture.wg]:
-       table==='dashboard_shopping_items'?fixture.own:[];
+       table==='dashboard_shopping_items'?fixture.own:
+       table==='user_data'?Object.values(fixture.snapshots):[];
      function run(single=false){
-      if(table==='user_data')return {data:single?null:[],error:null};
-      if(!['wg_spaces','dashboard_shopping_items','dashboard_tasks','dashboard_reminders'].includes(table))
+      if(!['wg_spaces','dashboard_shopping_items','dashboard_tasks','dashboard_reminders','user_data'].includes(table))
         return {data:null,error:{message:'unsupported table'}};
       if(mode==='insert'){
        const row={id:'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',revision:1,deleted_at:null,
@@ -74,6 +82,16 @@ const {chromium}=require('playwright');
       return {data:single?structuredClone(data[0]||null):structuredClone(data),error:null};
      }
      return q;
+    },
+    async rpc(name,args) {
+      if(name!=='toolya_save_snapshot'||!fixture.snapshots[args.p_tool])
+        return {data:null,error:{message:'unavailable'}};
+      const row=fixture.snapshots[args.p_tool];
+      if(row.revision!==args.p_expected_revision)return {data:null,error:{code:'40001',message:'revision conflict'}};
+      row.data=structuredClone(args.p_data);
+      row.revision++;
+      fixture.writes.push({table:'user_data',tool:args.p_tool,mode:'rpc'});
+      return {data:[{data:structuredClone(row.data),revision:row.revision}],error:null};
     }
    };
    window.supabase={createClient(){return client}};
@@ -89,7 +107,11 @@ const {chromium}=require('playwright');
   assert.equal(response.status(),200);
   await page.waitForFunction(()=>document.querySelector('#shopping-items')?.querySelectorAll('li.shopping-entry').length===3,{timeout:15000});
   assert.equal(await page.locator('#shopping-items .shopping-entry').count(),3);
-  assert.equal(await page.locator('#tasks li.connect-task').count(),1);
+  await page.waitForFunction(()=>document.querySelectorAll('#tasks li.connect-task').length===4,{timeout:15000});
+  assert.equal(await page.locator('#tasks li.connect-task').count(),4);
+  assert.equal(await page.getByRole('checkbox',{name:/Verliehene Dinge.*Rückgabe: Bohrmaschine/}).count(),1);
+  assert.equal(await page.getByText(/Kombi.*TÜV/).count(),1);
+  assert.equal(await page.getByText(/Milo.*Impfung auffrischen/).count(),1);
   assert.equal(await page.locator('#shopping-print').isEnabled(),true);
   await page.getByRole('checkbox',{name:'Hafermilch gekauft'}).click();
   await page.waitForFunction(()=>document.querySelector('#shopping-items').querySelectorAll('li.shopping-entry').length===2);
@@ -106,9 +128,15 @@ const {chromium}=require('playwright');
   await page.locator('#shopping-form button[type=submit]').click();
   await page.waitForFunction(()=>document.querySelector('#shopping-items')?.textContent.includes('Reis'));
   assert.equal(await page.locator('#shopping-items li.shopping-entry').count(),4);
-  await page.locator('#tasks li.connect-task input[type=checkbox]').click();
+  await page.getByRole('checkbox',{name:/WG-Putzplan.*Küche reinigen/}).click();
   await page.waitForFunction(()=>window.__shoppingFixture.wg.payload.cleaning[0].done===true);
-  assert.equal(await page.locator('#tasks li.connect-task').count(),0);
+  assert.equal(await page.locator('#tasks li.connect-task').count(),3);
+  await page.getByRole('checkbox',{name:/Verliehene Dinge.*Rückgabe: Bohrmaschine/}).click();
+  await page.waitForFunction(()=>window.__shoppingFixture.snapshots['verliehene-gegenstaende-verwalten'].data.items[0].status==='returned');
+  assert.equal(await page.locator('#tasks li.connect-task').count(),2);
+  assert.equal(await page.locator('#tasks li.connect-task input[type=checkbox]').count(),0);
+  assert.equal(await page.evaluate(()=>window.__shoppingFixture.snapshots['verliehene-gegenstaende-verwalten'].data.items[0].note),'Beleg bleibt');
+  assert.equal(await page.evaluate(()=>window.__shoppingFixture.writes.filter(w=>w.table==='user_data').length),1);
   const rest=await page.evaluate(()=>({notes:window.__shoppingFixture.wg.payload.notes,entries:window.__shoppingFixture.wg.payload.data}));
   assert.deepEqual(rest,{notes:[{text:'existing-data'}],entries:[{id:7,price:3}]},'WG data outside lists is not touched');
   assert.deepEqual(errors,[],'no unhandled browser errors');
