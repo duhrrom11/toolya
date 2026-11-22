@@ -39,7 +39,7 @@ const server=http.createServer((req,res)=>{
    await english.click();
    await page.waitForURL(base+'/en/');
    assert.equal(await page.locator('html').getAttribute('lang'),'en');
-   assert.equal(await page.locator('h3[data-i18n-marketing]').count(),10);
+   assert.equal(await page.locator('h3[data-i18n-marketing]').count(),13);
    assert.equal(await page.locator('h3[data-i18n-marketing]').first().textContent(),'Organize moving boxes with QR labels');
    const german=page.locator('a[data-set-locale="de"][href="/"]').first();
    assert.equal(await german.count(),1,'English homepage must link to German homepage');
