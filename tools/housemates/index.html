@@ -310,11 +310,11 @@
             <div class="b3-wg-identity-grid grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                 <div>
                     <label for="receiptTitle" class="block font-semibold text-gray-600 mb-1">Titel / Artikel *:</label>
-                    <input type="text" id="receiptTitle" placeholder="z. B. Spülmittel, Miete, Gehalt" required class="w-full p-2.5 border rounded-xl">
+                    <input type="text" id="receiptTitle" placeholder="z. B. Spülmittel, Miete, Gehalt" required class="w-full p-2.5 border rounded-xl" data-tool-en-placeholder="e.g. dish soap, rent, salary">
                 </div>
                 <div>
                     <label for="receiptStore" class="block font-semibold text-gray-600 mb-1">Händler / Partner / Quelle (optional):</label>
-                    <input type="text" id="receiptStore" placeholder="z. B. Rewe, MediaMarkt, Arbeitgeber" class="w-full p-2.5 border rounded-xl">
+                    <input type="text" id="receiptStore" placeholder="z. B. Rewe, MediaMarkt, Arbeitgeber" class="w-full p-2.5 border rounded-xl" data-tool-en-placeholder="e.g. supermarket, electronics store, employer">
                 </div>
                 <div>
                     <label for="receiptDate" class="block font-semibold text-gray-600 mb-1">Kaufdatum *:</label>
@@ -363,11 +363,11 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 p-3.5 bg-gray-50 rounded-xl border border-gray-200 text-xs">
                 <div>
                     <label for="receiptSN" class="block font-semibold text-gray-600 mb-1">Seriennummer / S/N (optional):</label>
-                    <input type="text" id="receiptSN" placeholder="z. B. SN-987456123" class="w-full p-2 border rounded-lg bg-white">
+                    <input type="text" id="receiptSN" placeholder="z. B. SN-987456123" class="w-full p-2 border rounded-lg bg-white" data-tool-en-placeholder="e.g. SN-987456123">
                 </div>
                 <div>
                     <label for="receiptLocation" class="block font-semibold text-gray-600 mb-1">Lagerort Karton (optional):</label>
-                    <input type="text" id="receiptLocation" placeholder="z. B. Keller Regal 2" class="w-full p-2 border rounded-lg bg-white">
+                    <input type="text" id="receiptLocation" placeholder="z. B. Keller Regal 2" class="w-full p-2 border rounded-lg bg-white" data-tool-en-placeholder="e.g. basement shelf 2">
                 </div>
                 <div class="flex flex-col justify-center space-y-1.5 pt-1">
                     <label class="inline-flex items-center cursor-pointer space-x-2">
@@ -489,7 +489,7 @@
                     <span class="text-xs text-gray-500">Inkl. Amazon-Link & Kassen-Sync</span>
                 </div>
                 <div class="b3-wg-shopping-fields flex gap-2">
-                    <label class="helferlein-field" for="newShoppingItem"><span class="helferlein-field-label">z. B. Hafermilch, Spülmittel, Tabs</span><input type="text" id="newShoppingItem" placeholder="z. B. Hafermilch, Spülmittel, Tabs" class="flex-grow p-2.5 border rounded-xl text-xs" aria-label="z. B. Hafermilch, Spülmittel, Tabs"></label>
+                    <label class="helferlein-field" for="newShoppingItem"><span class="helferlein-field-label">z. B. Hafermilch, Spülmittel, Tabs</span><input type="text" id="newShoppingItem" placeholder="z. B. Hafermilch, Spülmittel, Tabs" class="flex-grow p-2.5 border rounded-xl text-xs" aria-label="z. B. Hafermilch, Spülmittel, Tabs" data-tool-en-placeholder="e.g. oat milk, dish soap, tablets"></label>
                     <button onclick="addShoppingItem()" class="b3-action px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-sm">Hinzufügen</button>
                 </div>
                 <div id="shoppingList" class="space-y-2 max-h-52 overflow-y-auto pr-1"></div>
