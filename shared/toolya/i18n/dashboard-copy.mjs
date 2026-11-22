@@ -2,6 +2,7 @@
    Use source-exact keys so arbitrary user data and Supabase diagnostics stay intact. */
 export const DASHBOARD_COPY=Object.freeze(Object.fromEntries([
  ["E-Mail-Adresse oder Passwort stimmt nicht.","The email address or password is incorrect."],
+ ["Zuletzt verwendet","Recently used"],
  ["Bitte bestätige zuerst deine E-Mail-Adresse.","Confirm your email address first."],
  ["Das Passwort ist zu schwach. Wähle ein längeres Passwort.","Your password is too weak. Choose a longer password."],
  ["Zu viele Anfragen. Bitte versuche es später erneut.","Too many requests. Try again later."],
