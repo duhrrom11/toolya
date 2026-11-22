@@ -883,12 +883,35 @@ async function toolyaCloudBoot(tool) {
             const options = `<option value="">${window.__toolyaUILocale === 'en' ? '-- Select vehicle --' : '-- Fahrzeug wählen --'}</option>` + 
                 data.cars.map(c => `<option value="${c.id}">${c.name} (${c.plate || (window.__toolyaUILocale === 'en' ? 'no registration' : 'kein Kennzeichen')})</option>`).join('');
             
-            const filterOptions = '<option value="" data-tool-en="Show all vehicles">Alle Fahrzeuge anzeigen</option>' + 
+            const filterOptions = `<option value="">${window.__toolyaUILocale === 'en' ? 'Show all vehicles' : 'Alle Fahrzeuge anzeigen'}</option>` + 
                 data.cars.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
             eventSelect.innerHTML = options;
             tireSelect.innerHTML = options;
             filterSelect.innerHTML = filterOptions;
+        }
+
+        // In-place option updates: preserve selected vehicle IDs and unsaved
+        // form choices. Translating display text never rewrites stored data.
+        function refreshCarDropdownLocale() {
+            const english = window.__toolyaUILocale === 'en';
+            const cars = getData().cars;
+            for (const selectId of ['eventCarSelect','tireCarSelect']) {
+                const select = document.getElementById(selectId);
+                if (!select) continue;
+                const placeholder = select.querySelector('option[value=""]');
+                if (placeholder) placeholder.textContent = english ? '-- Select vehicle --' : '-- Fahrzeug wählen --';
+                for (const option of select.querySelectorAll('option')) {
+                    if (!option.value) continue;
+                    const car = cars.find(c => String(c.id) === option.value);
+                    if (!car) continue;
+                    option.textContent = String(car.name) + ' (' +
+                        (car.plate || (english ? 'no registration' : 'kein Kennzeichen')) + ')';
+                }
+            }
+            const filter = document.getElementById('filterCarSelect');
+            const all = filter?.querySelector('option[value=""]');
+            if (all) all.textContent = english ? 'Show all vehicles' : 'Alle Fahrzeuge anzeigen';
         }
 
         function renderApp() {
@@ -1095,6 +1118,7 @@ async function toolyaCloudBoot(tool) {
         }
 
         document.addEventListener('toolya:locale-change', () => {
+            if (toolyaCloudReady) refreshCarDropdownLocale();
             if (toolyaCloudReady) renderApp();
         });
 
