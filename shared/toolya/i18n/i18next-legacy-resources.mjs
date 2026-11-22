@@ -3,6 +3,7 @@
  * Legacy translators remain active until each view has been explicitly migrated.
  */
 import {DASHBOARD_COPY} from './dashboard-copy.mjs';
+import {MARKETING_COPY} from './marketing-copy.mjs';
 import {WISHES_COPY,WISHES_RUNTIME_COPY} from './wishes-copy.mjs';
 import {ESTATE_COPY,ESTATE_RUNTIME_COPY} from './estate-copy.mjs';
 import {ADMIN_COPY} from './admin-copy.mjs';
@@ -10,6 +11,7 @@ import {I18N_LEGACY_TOOL_CATALOGUES as toolCopy} from './interface.mjs';
 
 const sources=Object.freeze({
  dashboard:[DASHBOARD_COPY],
+ marketing:[MARKETING_COPY],
  wishes:[WISHES_COPY,WISHES_RUNTIME_COPY],
  estate:[ESTATE_COPY,ESTATE_RUNTIME_COPY],
  admin:[ADMIN_COPY],
