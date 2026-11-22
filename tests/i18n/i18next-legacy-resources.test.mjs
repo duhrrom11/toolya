@@ -33,3 +33,10 @@ test('reviewed homepage and guide translations share the same i18next resource i
  assert.equal(resources.en.marketing['Diese Anleitung auf Deutsch ansehen'],'Read this guide in German');
  assert.equal(resources.de.marketing['Alle Tools'],'Alle Tools');
 });
+
+test('marketing translations only resolve explicitly catalogued keys',()=>{
+ const resources=createLegacyI18nextResources();
+ assert.equal(resources.en.marketing['Alle Tools'],'All tools');
+ assert.equal(Object.hasOwn(resources.en.marketing,'Private user note'),false);
+ assert.equal(resources.en.marketing['Parkplatz-Merker'],'Parking spot saver');
+});
