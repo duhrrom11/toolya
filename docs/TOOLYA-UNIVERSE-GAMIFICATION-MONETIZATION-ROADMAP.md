@@ -9,12 +9,15 @@
 
 > **WICHTIGE NEUERE NUTZERENTSCHEIDUNG (22.11.2026):** Das neue Gamification-Tool und alle Arbeiten an Toolya Universe und an der in diesem Dokument beschriebenen Monetarisierung **nicht live stellen**. Änderungen ausschließlich auf dem Entwicklungsbranch oder einem davon abgeleiteten, nicht veröffentlichten Feature-Branch. **Keine Merges in `main`, keine Produktionseinsätze, keine Änderungen an produktiven Datenbankschemata oder echten Nutzerdaten ohne eine neue, ausdrückliche Freigabe für die jeweilige Veröffentlichung.** Die allgemeineren früheren Freigaben in älteren Roadmaps/AGENTS.md gelten dafür nicht. Die bereits versehentlich gemergte Gamification wurde anschließend aus `main` zurückgenommen; PR #311 ist historische, bereits rückgängig gemachte Veröffentlichung, **kein** Release-Nachweis.
 
+
+> **NEUE VERBINDLICHE ENTSCHEIDUNG (22.11.2026, nach P0):** Für alle zwölf Tools soll künftig eine **registrierte Anmeldung Pflicht** sein. Registrierung mit **Vorname und Nachname als Pflichtfeldern**; **Land und Profilbild-Link freiwillig**. Eigene Profile später editierbar, XP/Badges im Profil, **Ranglisten geplant**. **Auch Digitaler Nachlass und Tiergesundheit erhalten sichere, diskrete Meilenstein-Belohnungen**; keine privaten/medizinischen/Tresor-Inhalte oder kritischen Aktionen werden zum XP-Ziel. Die ältere P0-Matrix mit „0 XP“ in sensiblen Tools ist insoweit überholt. **Verbindliches Detailkonzept:** [Konten, Profile, sensible Belohnungen, Badges und Ranglisten](TOOLYA-UNIVERSE-ACCOUNT-PROFILES-REWARDS-LEADERBOARDS.md). Veröffentlichung weiterhin gesperrt.
+
 ## A. Lies dies zuerst – Übergabe an neue Chats / ChatGPT Work
 
 1. Die Dateien **`AGENTS.md`**, **diese Roadmap**, **`docs/TOOLYA-MASCOT-UNIVERSE-WORK-ROADMAP.md`** (für bestehendes Maskottchensystem und historischen Live-Release), **`README.md`** und den aktuellen Branch-/PR-/CI-Status lesen. `AGENTS.md` und diese Roadmap bei Konflikten mit älteren Veröffentlichungsfreigaben für das neue Projekt bevorzugen.
 2. Bei neuer Arbeit zunächst GitHub-Stand auf `feature/gamification-mascot-levels-v1` feststellen. Keine Annahme, dass ältere Chatinhalte den aktuellen Branchzustand wiedergeben.
 3. **Stand am 22.11.2026:** Die prototypische Seite `tools/gamification/index.html` und die 13. Startseitenkarte liegen im Entwicklungsbranch. V1 zählt erstmalige Klicks auf unterschiedliche Tool-Karten mit 50 XP, speichert in `localStorage`, hat fünf Level und folgt der bestehenden Türkis-/Lila-Auswahl. **Das ist ein früher Prototyp, nicht die fertige Vision, und keinesfalls konto-/servergesichert.** Produktive Seite wurde auf zwölf Tool-Karten zurückgesetzt.
-4. Nutzerwunsch derzeit: **detailliert konzipieren und planen, nicht implementieren**. Neue Aufgaben nur im konkret vom Nutzer beauftragten Umfang durchführen. Vor einem späteren Live-Release ausdrücklich fragen – die allgemeine Autonomiefreigabe hebt die konkrete Release-Sperre nicht auf.
+4. Nutzerwunsch derzeit: **detailliert konzipieren und planen, nicht implementieren**. Die neuere Entscheidung zu Pflichtanmeldung, Profilen, Badges, Ranglisten und diskreten Belohnungen auch für sensible Tools steht im oben verlinkten Detailkonzept. Neue Aufgaben nur im konkret vom Nutzer beauftragten Umfang durchführen. Vor einem späteren Live-Release ausdrücklich fragen – die allgemeine Autonomiefreigabe hebt die konkrete Release-Sperre nicht auf.
 5. Nach Änderungen Roadmap mit Datum, tatsächlicher Datei/Commit/Branch, Testergebnissen, Entscheidungsstand und offenem nächsten Schritt aktualisieren. Keine fiktiven Fortschritte oder 'erledigt'-Markierungen.
 6. Bei Bedarf vorhandene GitHub-, Figma-, Supabase-, Analytics-, SEO-Tools nutzen. Keine Produktionstestdatensätze; keine stillen Datenmigrationen.
 
@@ -25,7 +28,7 @@
 - **Emotionales Zentrum:** Genau **zwei bestehende, vom Nutzer festgelegte Original-Maskottchen** – türkis-weiß und lila-creme. Der Nutzer wählt eines; diese Auswahl gilt toolübergreifend für Header, Footer, Hideout und Universe. Ein Themenfarbwechsel darf den Charakter nicht austauschen. Original-PNGs niemals überschreiben oder verändern. Die historische Idee Comic-Chef/Maskottchen ist offen, nicht beschlossen.
 - **Marke:** 'Toolya' im Header und Footer mit derselben bestehenden Wortmarke/demselben Asset. Bestehende Hauptseite bleibt über die später ausdrücklich vereinbarten Tool-Karten/Integrationen hinaus unverändert. Der bereits gewählte gemeinsame Footer bleibt erhalten.
 - **Fairness:** Kein Pay-to-win, keine gekauften XP, keine käuflichen Zugänge zu Hauptgeschichten, Rätseln, Levels oder spielrelevanten Gegenständen. Kein Verlust angesammelter XP, keine Streak-Strafen, kein Zwangslogin, keine Belohnung für Werbeklicks oder Käufe.
-- **Wahlfreiheit:** Universe ist optional, abschaltbar und für Tools nicht erforderlich; reduzierte Animation, stille Ansicht, Tastatur/Screenreader und mobile Geräte unterstützen.
+- **Wahlfreiheit:** Anmeldung für alle Tools ist das geplante künftige Zugangsmodell; Universe selbst bleibt optional, abschaltbar und für Tools nicht erforderlich; reduzierte Animation, stille Ansicht, Tastatur/Screenreader und mobile Geräte unterstützen.
 - **Wahrhaftigkeit:** XP nur bei nachweisbaren sinnvollen Vorgängen; nicht für beliebige Seitenaufrufe oder per Client manipulierbare Signale. Kritische Tools wie digitaler Nachlass und Tiergesundheit von lockeren Dialogen/Spendenunterbrechungen ausnehmen.
 - **Datensparsamkeit:** Keine Inhalte von Haushaltsbuch, Nachlass, Tiergesundheit oder anderen sensitiven Tools in Gamification-/Tracking-Ereignisse kopieren. Nur erlaubte minimale Ereignisse, Einwilligungen und anonyme/aggregierte Kennzahlen wo möglich.
 
@@ -115,7 +118,7 @@ Alle Phasen **nur im Entwicklungsbranch** bis zum separaten Release-Gate. Reihen
 ### P1 – Gamification-V1 sachlich korrekt (Entwicklung)
 **Arbeiten:** vorhandenen Prototyp prüfen, verlässliche XP-Ereignisse definieren; Level-System und Maskottchenpräferenzen vereinheitlichen; klare Fortschrittsanzeige, freiwilliges Opt-in; Analytics-Events datensparsam designen.
 **Akzeptanz:** reproduzierbare, idempotente XP-Vergabe; kein Vorteil durch Reload/Klick-Farming; fehlerfreie mobile und Tastaturansicht; keine Kontodatenverluste; keine persistente Behauptung bei Browser-lokalem Zustand.
-**Status:** [~] Früher lokaler Prototyp im Branch; für echte Nutzung und Cloud-Sync noch nicht produktionsreif.
+**Status:** [~] Früher lokaler Prototyp im Branch; für echte Nutzung und Cloud-Sync noch nicht produktionsreif. **Vor P1-Abschluss Pflichtanmeldung, editierbare Profile, gesicherte XP und Bestandskonten-Migration berücksichtigen** gemäß dem neueren Profilkonzept.
 
 ### P2 – Lebendiger Begleiter & erstes echtes Hideout (Entwicklung)
 **Arbeiten:** Charakteraktionen, kurze Dialog-Events, ein interaktiver Start-Raum, anpassbare kosmetische Objekte, Speichern/Wiederherstellen; möglichst bestehende Assets/Sprites wiederverwenden.
@@ -158,9 +161,9 @@ Alle Phasen **nur im Entwicklungsbranch** bis zum separaten Release-Gate. Reihen
 1. Endgültiger Name ('Toolya Universe', 'Funken', 'Hideout') und Hintergrundgeschichte.
 2. Detaillierter Stil: bevorzugte Arbeitsrichtung ist hochwertige Cozy Fantasy + leichte Erfinder-/Steampunk-Elemente + Geheimnisse, **noch keine finale Designfreigabe**.
 3. Persönlichkeiten beider Maskottchen als optionale Varianten statt geschlechtsgebundene Charaktereigenschaften; genaue Dialogstimmen.
-4. XP-Schwellen und gesicherte fachliche Ereignisse der einzelnen Tools; auch Umgang mit Gästen, bestehenden Nutzern und Altfortschritt.
+4. XP-Schwellen und gesicherte fachliche Ereignisse der einzelnen Tools; **Pflichtanmeldung ist beschlossen**, Bestandsnutzer und lokaler Altfortschritt brauchen einen Migrationsplan.
 5. Wie tief Hideout-/Deko-Individualisierung in V1 gehen soll; Assetbudget/Animationstechnik.
-6. Ob und wie Konto, Sync, optionale Analytik und Community-Funktionen zusammenspielen.
+6. Konto, geräteübergreifendes Profil, Badge-Anzeige und Ranglisten sind als Ziel beschlossen; genaue Privacy-/RLS-/Moderations- und Sync-Architektur ist noch offen.
 7. Auswahl erstes Pilot-Tool für Affiliate-Platzierung und Kennzeichnungskonzept nach Prüfung aktueller Regeln.
 8. Inhalt/Preis digitaler Produkte, optionale Ko-fi-Mitgliedschaft, konkrete Support-Ziele, Aufwand/Nutzen.
 9. Messbare Zielwerte erst nach Baseline: etwa +Wiederkehr, +nützlich abgeschlossene Tool-Aufgaben, keine höhere Beschwerde-/Abbruchrate.
@@ -187,3 +190,5 @@ Alle Phasen **nur im Entwicklungsbranch** bis zum separaten Release-Gate. Reihen
 **P0 nächste Vertiefung:** Die erstellte [12-Tool-Matrix](TOOLYA-UNIVERSE-P0-TOOL-MATRIX.md) als Ausgangspunkt nutzen und für Umzugskisten, Pflanzenpflege und Backform-Rechner die tatsächlichen Speicherbestätigungen, fachlichen Eventgrenzen und visuelle User Journeys/Wireframes detaillieren. Offizielle aktuelle Amazon-/Ko-fi-Bedingungen vor Umsetzungsentscheidung verifizieren. **Nur Spezifikation/Design, kein Live-Code.**
 
 - **22.11.2026 / P0-Tool-Matrix:** Zwölf Tool-Routen und Handler aus dem Entwicklungsbranch geprüft. Spezifikation `docs/TOOLYA-UNIVERSE-P0-TOOL-MATRIX.md` neu erstellt. Prio A: Umzugskisten, Pflanzenpflege, Backform-Rechner; XP für Nachlass und Tiergesundheit ausgeschlossen; Wunschlisten-Suche ohne XP. Monetarisierung bleibt optional und deutlich gekennzeichnet. **Keine Feature-Implementierung und keine Veröffentlichung.**
+
+- **22.11.2026 / neue Nutzerentscheidung:** Jeder Toolzugriff künftig registriert; Vor-/Nachname bei Registrierung Pflicht, Land und Profilbild-Link optional. Editierbare Profile, XP-/Badge-Anzeige und Ranglisten. Nachlass und Tiergesundheit sollen ebenfalls sichere, diskrete Erfolge ermöglichen. Ältere restriktive Matrixzeilen werden durch [das neue Detailkonzept](TOOLYA-UNIVERSE-ACCOUNT-PROFILES-REWARDS-LEADERBOARDS.md) übersteuert. Kein Feature-Code oder Live-Release.
