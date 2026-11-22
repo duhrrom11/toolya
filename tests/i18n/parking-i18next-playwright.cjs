@@ -30,6 +30,7 @@ const fakeI18next=`window.i18next={
    const context=await browser.newContext();
    // Prevent any external traffic and avoid production auth/storage.
    await context.route('**/*',route=>route.request().url().startsWith('http://127.0.0.1:')?route.continue():route.abort());
+   await context.addInitScript({content:'window.__lastDialog=null;window.alert=message=>{window.__lastDialog=message};'});
    if(mode==='loaded')await context.addInitScript({content:fakeI18next});
    const page=await context.newPage();
    const errors=[];page.on('pageerror',error=>errors.push(error.message));
@@ -37,7 +38,7 @@ const fakeI18next=`window.i18next={
    await page.locator('.ty-tool-language [data-tool-locale="en"]').click();
    assert.equal(await page.locator('#timerStatus').textContent(),'No active parking timer',mode+' English status');
    assert.equal(await page.locator('.ty-tool-language [data-tool-locale="en"]').getAttribute('aria-pressed'),'true');
-   const translated=await page.evaluate(()=>new Promise(resolve=>{window.alert=message=>resolve(message);window.alert('Anmeldung fehlgeschlagen: Error 401')}));
+   const translated=await page.evaluate(()=>{window.alert('Anmeldung fehlgeschlagen: Error 401');return window.__lastDialog;});
    assert.equal(translated,'Sign-in failed: Error 401',mode+' dialog prefix');
    await page.locator('.ty-tool-language [data-tool-locale="de"]').click();
    assert.equal(await page.locator('#timerStatus').textContent(),'Kein aktiver Parkschein-Timer',mode+' German status');
