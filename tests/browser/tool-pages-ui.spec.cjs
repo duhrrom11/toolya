@@ -1797,6 +1797,10 @@ for (const [tool, action] of [
     });
     await page.goto(origin + '/tools/' + tool + '/index.html');
     expect(downloads).toBe(0);
+    // Cloud-only vehicle reports require a verified snapshot; await the isolated fixture.
+    if (tool === 'car') {
+      await expect.poll(() => page.evaluate(() => typeof toolyaCloudReady !== 'undefined' && toolyaCloudReady && !!toolyaCloudController?.ready)).toBe(true);
+    }
     await page.evaluate(() => { window.alert = message => { window.pdfExportError = message; }; });
     await page.evaluate(handler => window[handler](), action);
     await expect.poll(() => page.evaluate(() => window.pdfExportError)).toContain('Bitte versuche es erneut');

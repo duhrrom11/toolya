@@ -2793,3 +2793,15 @@ test('additional vehicle pet meter and lending static text remains reversible',(
   assert.equal(document.querySelector('span').textContent,de);
  }
 });
+
+test('remaining source-owned baking, budget, household and form labels reverse without editing values',()=>{
+ const cases=[{"tool":"baking","de":"1 EL Chiasamen + 3 EL Wasser ODER 2 EL Apfelmark.","en":"1 tbsp chia seeds + 3 tbsp water OR 2 tbsp applesauce."},{"tool":"baking","de":"1 TL Natron + 1 TL Zitronensaft oder Essig.","en":"1 tsp baking soda + 1 tsp lemon juice or vinegar."},{"tool":"baking","de":"250ml Milch + 1 EL Zitronensaft (5 Min. ruhen lassen).","en":"250 ml milk + 1 tbsp lemon juice (rest for 5 minutes)."},{"tool":"baking","de":"Finde passende Silikonformen, Teigschaber oder Spritzbeutel direkt online.","en":"Find suitable silicone pans, spatulas or piping bags online."},{"tool":"baking","de":"Ca. 180g Glasur","en":"Approx. 180 g icing"},{"tool":"baking","de":"Konto wird geprüft …","en":"Checking account…"},{"tool":"budget","de":"Lade Budgets...","en":"Loading budgets…"},{"tool":"budget","de":"Belegfoto auswählen","en":"Choose receipt photo"},{"tool":"housemates","de":"Lade...","en":"Loading…"},{"tool":"housemates","de":"Lade Budgets...","en":"Loading budgets…"},{"tool":"housemates","de":"Belegfoto auswählen","en":"Choose receipt photo"},{"tool":"housemates","de":"Spendier dem Entwickler einen Kaffee","en":"Buy the developer a coffee"},{"tool":"plants","de":"Wichtige Anmerkungen & Pflegehinweise...","en":"Important notes and care instructions…"},{"tool":"car","de":"Versicherung & Pol.-Nr.","en":"Insurance & policy no."},{"tool":"pet-health","de":"Futtermarke & Sorte","en":"Food brand & variety"},{"tool":"pet-health","de":"Praxisname & Tierarzt","en":"Practice name & veterinarian"}];
+ for(const {tool,de,en} of cases){
+  const {document}=parseHTML('<html><body><main id="main-content"><span>'+de.replaceAll('&','&amp;')+'</span><input id="note" value="untranslated private text"></main></body></html>');
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(document.querySelector('span').textContent,en,tool+': '+de);
+  assert.equal(document.querySelector('#note').value,'untranslated private text');
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(document.querySelector('span').textContent,de);
+ }
+});

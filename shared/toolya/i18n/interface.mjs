@@ -1423,7 +1423,8 @@ const extendedSmallCopy=Object.freeze({
     "2. Wartung & Tanken": "2. Maintenance and refuelling",
     "3. Wartung und Tankkosten": "3. Maintenance and fuel costs",
     "4. Reifen & Backup": "4. Tyres and backup",
-    "Hilfe & Anleitung ausblenden": "Hide help and guide"
+    "Hilfe & Anleitung ausblenden": "Hide help and guide",
+    "Versicherung & Pol.-Nr.": "Insurance & policy no."
   },
   "pet-health": {
     "Impfungen, Tierarztbesuche, Medikamente und Gesundheitsdaten für Hund und Katze": "Vaccinations, vet visits, medication and health records for cats and dogs",
@@ -1455,7 +1456,9 @@ const extendedSmallCopy=Object.freeze({
     "3. Apotheke & Vorräte": "3. Medicine and stock",
     "4. Kalender & Export": "4. Calendar and export",
     "Hilfe & Anleitung ausblenden": "Hide help and guide",
-    "🛡️ TASSO / Register": "🛡️ TASSO / registry"
+    "🛡️ TASSO / Register": "🛡️ TASSO / registry",
+    "Futtermarke & Sorte": "Food brand & variety",
+    "Praxisname & Tierarzt": "Practice name & veterinarian"
   },
   "moving": {
     "Erfasste Kisten": "Recorded boxes",
@@ -1484,7 +1487,8 @@ const extendedSmallCopy=Object.freeze({
     "Sorte": "Variety",
     "Erntejahr": "Harvest year",
     "Gewinnbilanz": "Profit overview",
-    "Restbestand": "Remaining stock"
+    "Restbestand": "Remaining stock",
+    "Wichtige Anmerkungen & Pflegehinweise...": "Important notes and care instructions…"
   },
   "baking": {
     "In 3 Schritten zum passenden Backrezept": "Find your baking recipe in three steps",
@@ -1505,7 +1509,13 @@ const extendedSmallCopy=Object.freeze({
     "1. Rezept & Basis": "1. Recipe and basics",
     "2. Form vergleichen": "2. Compare pans",
     "4. Kochmodus": "4. Cooking mode",
-    "Multi-Timer aktiv": "Multi-timer active"
+    "Multi-Timer aktiv": "Multi-timer active",
+    "1 EL Chiasamen + 3 EL Wasser ODER 2 EL Apfelmark.": "1 tbsp chia seeds + 3 tbsp water OR 2 tbsp applesauce.",
+    "1 TL Natron + 1 TL Zitronensaft oder Essig.": "1 tsp baking soda + 1 tsp lemon juice or vinegar.",
+    "250ml Milch + 1 EL Zitronensaft (5 Min. ruhen lassen).": "250 ml milk + 1 tbsp lemon juice (rest for 5 minutes).",
+    "Finde passende Silikonformen, Teigschaber oder Spritzbeutel direkt online.": "Find suitable silicone pans, spatulas or piping bags online.",
+    "Ca. 180g Glasur": "Approx. 180 g icing",
+    "Konto wird geprüft …": "Checking account…"
   },
   "budget": {
     "Ausgaben erfassen, Budget planen, Belege scannen und Garantien verwalten": "Track expenses, plan budgets, scan receipts and manage warranties",
@@ -1525,7 +1535,9 @@ const extendedSmallCopy=Object.freeze({
     "⚡ Thermopapier-Filter (Helligkeit/Kontrast anpassen):": "⚡ Thermal paper filter (adjust brightness/contrast):",
     "🔄 Fixkosten": "🔄 Fixed costs",
     "💼 Steuer": "💼 Tax",
-    "Garantie abgelaufen": "Warranty expired"
+    "Garantie abgelaufen": "Warranty expired",
+    "Lade Budgets...": "Loading budgets…",
+    "Belegfoto auswählen": "Choose receipt photo"
   },
   "housemates": {
     "Monats-Einnahmen": "Monthly income",
@@ -1544,7 +1556,11 @@ const extendedSmallCopy=Object.freeze({
     "Inkl. Amazon-Link & Kassen-Sync": "Includes Amazon link and receipt sync",
     "Putz- & Reinigungsmittel": "Cleaning supplies",
     "📌 Oben anpinnen (Wichtige Notiz)": "📌 Pin to top (important note)",
-    "📇 Smartphone-Kontakte importieren:": "📇 Import phone contacts:"
+    "📇 Smartphone-Kontakte importieren:": "📇 Import phone contacts:",
+    "Lade...": "Loading…",
+    "Lade Budgets...": "Loading budgets…",
+    "Belegfoto auswählen": "Choose receipt photo",
+    "Spendier dem Entwickler einen Kaffee": "Buy the developer a coffee"
   }
 });
 const toolSmallCopy=Object.freeze({
