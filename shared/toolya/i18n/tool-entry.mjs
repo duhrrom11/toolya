@@ -34,16 +34,20 @@ function mountToolLanguage(){
  if(name==='parking' && initializeToolyaI18next(uiGlobal.i18next)){
    try{i18nextAdapter=createToolyaI18nextAdapter(uiGlobal.i18next);}catch(_){/* legacy fallback */}
  }
- const localizeDialog=(message)=>i18nextAdapter
-   ?(i18nextAdapter.translateTool(name,selected,message)!==message
-      ?i18nextAdapter.translateTool(name,selected,message)
-      :i18nextAdapter.translatePrefix(name,selected,message,'dialog'))
-   :translateToolDialog(name,selected,message);
- const localizeStatus=(message)=>i18nextAdapter
-   ?(i18nextAdapter.translateTool(name,selected,message)!==message
-      ?i18nextAdapter.translateTool(name,selected,message)
-      :i18nextAdapter.translatePrefix(name,selected,message))
-   :translateToolRuntimeStatus(name,selected,message);
+ const localizeDialog=(message)=>{
+   if(!i18nextAdapter||selected!=='en')return translateToolDialog(name,selected,message);
+   const exact=i18nextAdapter.translateTool(name,selected,message);
+   if(exact!==message)return exact;
+   const prefixed=i18nextAdapter.translatePrefix(name,selected,message,'dialog');
+   return prefixed!==message?prefixed:translateToolDialog(name,selected,message);
+ };
+ const localizeStatus=(message)=>{
+   if(!i18nextAdapter||selected!=='en')return translateToolRuntimeStatus(name,selected,message);
+   const exact=i18nextAdapter.translateTool(name,selected,message);
+   if(exact!==message)return exact;
+   const prefixed=i18nextAdapter.translatePrefix(name,selected,message);
+   return prefixed!==message?prefixed:translateToolRuntimeStatus(name,selected,message);
+ };
  const header=document.querySelector('header.b3-header');
  const originalHeadings=new WeakMap();
  const originalDocTitle=document.title;
