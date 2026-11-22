@@ -6,12 +6,14 @@ import {DASHBOARD_COPY} from './dashboard-copy.mjs';
 import {WISHES_COPY,WISHES_RUNTIME_COPY} from './wishes-copy.mjs';
 import {ESTATE_COPY,ESTATE_RUNTIME_COPY} from './estate-copy.mjs';
 import {ADMIN_COPY} from './admin-copy.mjs';
+import {I18N_LEGACY_TOOL_CATALOGUES as toolCopy} from './interface.mjs';
 
 const sources=Object.freeze({
  dashboard:[DASHBOARD_COPY],
  wishes:[WISHES_COPY,WISHES_RUNTIME_COPY],
  estate:[ESTATE_COPY,ESTATE_RUNTIME_COPY],
- admin:[ADMIN_COPY]
+ admin:[ADMIN_COPY],
+ account:[toolCopy.accountStatus]
 });
 function toResource(tables,locale){
  const result=Object.create(null);
@@ -28,6 +30,21 @@ export function createLegacyI18nextResources(){
  for(const [namespace,tables] of Object.entries(sources)){
    de[namespace]=toResource(tables,'de');
    en[namespace]=toResource(tables,'en');
+ }
+ const tools=new Set([...Object.keys(toolCopy.selectors),...Object.keys(toolCopy.dialogs),...Object.keys(toolCopy.additionalDialogs),...Object.keys(toolCopy.runtimeStatus)]);
+ for(const tool of tools){
+  const ns='tool_'+tool.replace(/[^a-z0-9_-]/gi,'_');
+  const tables=[toolCopy.dialogs[tool]||{},toolCopy.additionalDialogs[tool]||{},toolCopy.runtimeStatus[tool]||{}];
+  de[ns]=toResource(tables,'de');en[ns]=toResource(tables,'en');
+  // Selector mappings are stored as metadata, not translated source strings.
+  const selectorEntries=Object.create(null);
+  for(const [selector,translated,attribute,attributeTranslation] of toolCopy.selectors[tool]||[]){
+   if(typeof selector!=='string'||!selector)continue;
+   const value=attribute?attributeTranslation:translated;
+   if(typeof value==='string'&&value)selectorEntries[selector+(attribute?'@'+attribute:'')]=value;
+  }
+  en[ns+'_selectors']=selectorEntries;
+  de[ns+'_selectors']=Object.create(null);
  }
  return {de,en};
 }
