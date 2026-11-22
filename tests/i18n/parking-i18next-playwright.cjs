@@ -11,7 +11,7 @@ const html=`<!doctype html><html lang="de"><head><title>Parkplatz-Merker</title>
 </body></html>`;
 const server=http.createServer((req,res)=>{
  const pathname=new URL(req.url,'http://localhost').pathname;
- if(pathname==='/tools/parking/index.html'||pathname==='/tools/moving/index.html'||pathname==='/tools/housemates/index.html'||pathname==='/tools/plants/index.html'){
+ if(pathname==='/tools/parking/index.html'||pathname==='/tools/moving/index.html'||pathname==='/tools/housemates/index.html'||pathname==='/tools/plants/index.html'||pathname==='/tools/baking/index.html'){
   const content=new URL(req.url,'http://localhost').searchParams.has('full')?fs.readFileSync(path.join(root,pathname)):html;
   res.writeHead(200,{'content-type':'text/html; charset=utf-8'}).end(content);return;
  }
@@ -25,7 +25,7 @@ const server=http.createServer((req,res)=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const browser=await chromium.launch({headless:true});
  try{
-  for(const tool of ['parking','moving','housemates','plants'])for(const mode of ['loaded','cdn-blocked']){
+  for(const tool of ['parking','moving','housemates','plants','baking'])for(const mode of ['loaded','cdn-blocked']){
    const context=await browser.newContext();
    // Prevent any external traffic and avoid production auth/storage.
    await context.route('**/*',route=>route.request().url().startsWith('http://127.0.0.1:')?route.continue():route.abort());
