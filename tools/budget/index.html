@@ -801,6 +801,7 @@ async function toolyaCloudBoot(tool) {
             renderTransactionList();
             refreshBudgetChartSummaries();
             refreshBudgetChartLabels();
+            refreshBudgetStickerLabels();
         }
         document.addEventListener('toolya:locale-change', refreshBudgetDynamicLocale);
 
@@ -1736,6 +1737,31 @@ async function toolyaCloudBoot(tool) {
             document.getElementById('galleryModal').classList.add('hidden');
         }
 
+        // Private receipt data remain in-memory and on the device. Only the
+        // printed sticker labels are localized; the QR payload stays untouched.
+        let budgetStickerDisplaySnapshot = null;
+        function refreshBudgetStickerLabels() {
+            const r = budgetStickerDisplaySnapshot;
+            const modal = document.getElementById('qrModal');
+            if (!r || !modal || modal.classList.contains('hidden')) return;
+            const english = window.__toolyaUILocale === 'en';
+            document.getElementById('stickerTitle').textContent = r.title || '';
+            document.getElementById('stickerStoreDate').textContent =
+                (english ? 'Purchased: ' : 'Kauf: ') + r.date +
+                ' (' + (r.store || (english ? 'Warranty receipt' : 'Garantie-Beleg')) + ')';
+            document.getElementById('stickerSN').textContent =
+                'S/N: ' + (r.serial || (english ? 'none' : 'keine'));
+            const buyDate = parseReceiptDate(r.date);
+            const months = Number(r.warrantyMonths);
+            let warrantyLabel = english ? 'No valid warranty details' : 'Keine gültige Garantieangabe';
+            if (Number.isFinite(buyDate.getTime()) && Number.isFinite(months) && months > 0) {
+                const expiry = addWarrantyMonths(buyDate,months);
+                if (expiry) warrantyLabel = (english ? 'Warranty until: ' : 'Garantie bis: ') +
+                    expiry.toLocaleDateString(english ? 'en-GB' : 'de-DE');
+            }
+            document.getElementById('stickerWarranty').textContent = warrantyLabel;
+        }
+
         async function openQRModal(id) {
             const data = getData();
             const r = data.find(item => item && item.id === id);
@@ -1750,17 +1776,11 @@ async function toolyaCloudBoot(tool) {
             modal.classList.remove('hidden');
             modal.classList.add('flex');
 
-            document.getElementById('stickerTitle').innerText = r.title;
-            document.getElementById('stickerStoreDate').innerText = `Kauf: ${r.date} (${r.store || 'Garantie-Beleg'})`;
-            document.getElementById('stickerSN').innerText = `S/N: ${r.sn || 'keine'}`;
-            const buyDate = parseReceiptDate(r.date);
-            const warrantyMonths = Number(r.warrantyMonths);
-            let warrantyLabel = 'Keine gültige Garantieangabe';
-            if (Number.isFinite(buyDate.getTime()) && Number.isFinite(warrantyMonths) && warrantyMonths > 0) {
-                const expDate = addWarrantyMonths(buyDate, warrantyMonths);
-                if (expDate) warrantyLabel = 'Garantie bis: ' + expDate.toLocaleDateString('de-DE');
-            }
-            document.getElementById('stickerWarranty').innerText = warrantyLabel;
+            budgetStickerDisplaySnapshot = {
+                title: r.title, date: r.date, store: r.store, serial: r.sn,
+                warrantyMonths: r.warrantyMonths
+            };
+            refreshBudgetStickerLabels();
 
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = "";
@@ -1778,6 +1798,7 @@ async function toolyaCloudBoot(tool) {
         function closeQRModal() {
             document.getElementById('qrModal').classList.remove('flex');
             document.getElementById('qrModal').classList.add('hidden');
+            budgetStickerDisplaySnapshot = null;
         }
 
         function openGoogleCalendar(id) {
