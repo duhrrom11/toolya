@@ -110,7 +110,7 @@ Alle Phasen **nur im Entwicklungsbranch** bis zum separaten Release-Gate. Reihen
 **Arbeiten:** Bestehende Tools/Maskottchen/Ko-fi/Amazon-Integration und aktuelle Startseite dokumentieren; genaue gewünschte Bildsprache, Lore, fünf Level, UX-Flows, Einwilligungs-/Sicherheitsgrenzen, Einnahmehypothesen, vorhandene SEO-/Analytics-Daten sichten.
 **Lieferobjekte:** verbindliche Feature-Matrix, Wireframe-Konzept, technisches Ist-Inventar, klar benannte Nicht-Ziele.
 **Akzeptanz:** Freie Tools bleiben unabhängig; zwei Originalfiguren korrekt; kein Pay-to-win; Monetarisierung offen erkennbar; alle offenen Entscheidungen sichtbar.
-**Status:** [ ] Ausführliche Bestandsaufnahme/Designbrief noch offen. Grobe Vision in dieser Roadmap festgehalten.
+**Status:** [~] **P0-Tool-Matrix fertig als Planung (22.11.2026):** alle zwölf vorhandenen Tools mit Code-Ankern, potenziellen fachlichen Erfolgen, vorgeschlagenen XP-Regeln, Maskottchen-/Hideout-Konzepten, Amazon-/Ko-fi-Platzierungen und Prioritäten dokumentiert in [TOOLYA-UNIVERSE-P0-TOOL-MATRIX.md](TOOLYA-UNIVERSE-P0-TOOL-MATRIX.md). Noch offen: bestätigte Speicher-/Cloud-Callgraphs für die Piloten, visuelle Wireframes, aktuelle Amazon-/Ko-fi-Richtlinien, Analytics-Baseline. Kein Feature-Code geändert.
 
 ### P1 – Gamification-V1 sachlich korrekt (Entwicklung)
 **Arbeiten:** vorhandenen Prototyp prüfen, verlässliche XP-Ereignisse definieren; Level-System und Maskottchenpräferenzen vereinheitlichen; klare Fortschrittsanzeige, freiwilliges Opt-in; Analytics-Events datensparsam designen.
@@ -184,4 +184,6 @@ Alle Phasen **nur im Entwicklungsbranch** bis zum separaten Release-Gate. Reihen
 
 ## J. Nächster sinnvoller Auftrag
 
-**P0 vertiefen:** Vorhandene 12 Tools und ihre realen Abschlussereignisse inventarisieren; konkrete Zuordnung Tool → nützlicher Erfolg → sichere XP-Regel → optionale Affiliate-Empfehlung → Ko-fi-Kontaktpunkt skizzieren. Dazu erste User Journey (Gast vs. angemeldeter Nutzer) und Hideout-Wireframes entwickeln. **Alles zunächst als Spezifikation/Design, nicht als Live-Code.**
+**P0 nächste Vertiefung:** Die erstellte [12-Tool-Matrix](TOOLYA-UNIVERSE-P0-TOOL-MATRIX.md) als Ausgangspunkt nutzen und für Umzugskisten, Pflanzenpflege und Backform-Rechner die tatsächlichen Speicherbestätigungen, fachlichen Eventgrenzen und visuelle User Journeys/Wireframes detaillieren. Offizielle aktuelle Amazon-/Ko-fi-Bedingungen vor Umsetzungsentscheidung verifizieren. **Nur Spezifikation/Design, kein Live-Code.**
+
+- **22.11.2026 / P0-Tool-Matrix:** Zwölf Tool-Routen und Handler aus dem Entwicklungsbranch geprüft. Spezifikation `docs/TOOLYA-UNIVERSE-P0-TOOL-MATRIX.md` neu erstellt. Prio A: Umzugskisten, Pflanzenpflege, Backform-Rechner; XP für Nachlass und Tiergesundheit ausgeschlossen; Wunschlisten-Suche ohne XP. Monetarisierung bleibt optional und deutlich gekennzeichnet. **Keine Feature-Implementierung und keine Veröffentlichung.**
