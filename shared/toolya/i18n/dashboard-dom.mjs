@@ -7,7 +7,7 @@ function suppressed(element){
   if(excluded.has(p.id?.toUpperCase())||['SCRIPT','STYLE','NOSCRIPT','TEXTAREA'].includes(p.tagName))return true;
  return false;
 }
-export function applyDashboardPageLocale(document,lang){
+export function applyDashboardPageLocale(document,lang,translate=dashboardText){
  const nodes=[document.body,...document.body.querySelectorAll('*')];
  for(const el of nodes){
   if(suppressed(el)||el.closest?.('.ty-dashboard-locale'))continue;
@@ -17,7 +17,7 @@ export function applyDashboardPageLocale(document,lang){
    if(!sourceText.has(node))sourceText.set(node,initial);
    const match=/^(\s*)([\s\S]*?)(\s*)$/.exec(initial);
    if(!match)continue;
-   const converted=dashboardText(match[2],lang);
+   const converted=translate(match[2],lang);
    const output=match[1]+converted+match[3];
    if(node.nodeValue!==output)node.nodeValue=output;
   }
@@ -26,7 +26,7 @@ export function applyDashboardPageLocale(document,lang){
    let attrs=sourceAttributes.get(el);
    if(!attrs){attrs=new Map();sourceAttributes.set(el,attrs)}
    if(!attrs.has(attr))attrs.set(attr,el.getAttribute(attr));
-   const output=dashboardText(attrs.get(attr),lang);
+   const output=translate(attrs.get(attr),lang);
    if(el.getAttribute(attr)!==output)el.setAttribute(attr,output);
   }
  }
