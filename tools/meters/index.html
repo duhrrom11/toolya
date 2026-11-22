@@ -193,7 +193,7 @@
             
             <div class="b3-meter-identity-grid grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div>
-                    <label for="meterType" class="block text-xs font-semibold text-gray-600 mb-1">Zähler-Typ:</label>
+                    <label for="meterType" class="block text-xs font-semibold text-gray-600 mb-1" data-tool-en="Meter type:">Zähler-Typ:</label>
                     <select id="meterType" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="toggleTarifSelect()">
                         <option value="Strom">⚡ Strom (HT / Einzeltarif)</option>
                         <option value="Strom-NT">🌙 Strom (NT / Nachttarif)</option>
@@ -203,7 +203,7 @@
                     </select>
                 </div>
                 <div>
-                    <label for="meterName" class="block text-xs font-semibold text-gray-600 mb-1">Zählername / Nummer:</label>
+                    <label for="meterName" class="block text-xs font-semibold text-gray-600 mb-1" data-tool-en="Meter name / number:">Zählername / Nummer:</label>
                     <input type="text" id="meterName" placeholder="z.B. Hauptzähler #12345" class="w-full p-3 border rounded-xl text-sm" data-tool-en-placeholder="e.g. main meter #12345">
                 </div>
                 <div>
@@ -228,7 +228,7 @@
                     <input type="number" step="0.001" id="meterValue" placeholder="z.B. 45230.5" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
-                    <label for="meterPhotoInput" class="block text-xs font-semibold text-gray-600 mb-1">Zählerfoto-Nachweis:</label>
+                    <label for="meterPhotoInput" class="block text-xs font-semibold text-gray-600 mb-1" data-tool-en="Meter photo evidence:">Zählerfoto-Nachweis:</label>
                     <input type="file" id="meterPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700">
                 </div>
                 <div>
