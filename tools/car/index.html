@@ -163,13 +163,13 @@
                 </select></label>
                 <div class="grid grid-cols-2 gap-2">
                     <label class="helferlein-field" for="eventType"><span class="helferlein-field-label" data-tool-en="Entry type">Art des Eintrags</span><select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags" data-tool-en-aria-label="Entry type">
-                        <option value="TÜV / HU">🔍 TÜV / Hauptuntersuchung</option>
+                        <option value="TÜV / HU" data-tool-en="🔍 Vehicle inspection">🔍 TÜV / Hauptuntersuchung</option>
                         <option value="Inspektion">⚙️ Inspektion & Service</option>
                         <option value="Versicherung">🛡️ Versicherung (Fixkosten)</option>
                         <option value="Kfz-Steuer">🏛️ Kfz-Steuer (Fixkosten)</option>
                         <option value="Reifenwechsel">🛞 Reifenwechsel</option>
                         <option value="Reifentiefe">📏 Reifentiefe-Check</option>
-                        <option value="Ölwechsel">🛢️ Ölwechsel</option>
+                        <option value="Ölwechsel" data-tool-en="🛢️ Oil change">🛢️ Ölwechsel</option>
                         <option value="Reparatur">🔧 Reparatur</option>
                         <option value="Tanken">⛽ Tanken / Kraftstoff</option>
                     </select></label>
@@ -231,7 +231,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                     <h3 class="font-bold text-lg">📋 Verlauf, Ausgaben und Termine</h3>
                     <label class="helferlein-field" for="filterCarSelect"><span class="helferlein-field-label" data-tool-en="Filter history by vehicle">Historie nach Fahrzeug filtern</span><select id="filterCarSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Historie nach Fahrzeug filtern" data-tool-en-aria-label="Filter history by vehicle">
-                        <option value="">Alle Fahrzeuge anzeigen</option>
+                        <option value="" data-tool-en="Show all vehicles">Alle Fahrzeuge anzeigen</option>
                     </select></label>
                 </div>
                 <!-- Monatliche Sprit-Statistik -->
@@ -255,13 +255,13 @@
             <div>
                 <label for="editType" class="block text-xs font-semibold text-gray-600 mb-1">Kategorie:</label>
                 <select id="editType" class="w-full p-3 border rounded-xl text-sm bg-white">
-                    <option value="TÜV / HU">🔍 TÜV / Hauptuntersuchung</option>
+                    <option value="TÜV / HU" data-tool-en="🔍 Vehicle inspection">🔍 TÜV / Hauptuntersuchung</option>
                     <option value="Inspektion">⚙️ Inspektion & Service</option>
                     <option value="Versicherung">🛡️ Versicherung (Fixkosten)</option>
                     <option value="Kfz-Steuer">🏛️ Kfz-Steuer (Fixkosten)</option>
                     <option value="Reifenwechsel">🛞 Reifenwechsel</option>
                     <option value="Reifentiefe">📏 Reifentiefe-Check</option>
-                    <option value="Ölwechsel">🛢️ Ölwechsel</option>
+                    <option value="Ölwechsel" data-tool-en="🛢️ Oil change">🛢️ Ölwechsel</option>
                     <option value="Reparatur">🔧 Reparatur</option>
                     <option value="Tanken">⛽ Tanken / Kraftstoff</option>
                 </select>
@@ -880,10 +880,10 @@ async function toolyaCloudBoot(tool) {
             const tireSelect = document.getElementById('tireCarSelect');
             const filterSelect = document.getElementById('filterCarSelect');
 
-            const options = '<option value="">-- Fahrzeug wählen --</option>' + 
+            const options = '<option value="" data-tool-en="-- Select vehicle --">-- Fahrzeug wählen --</option>' + 
                 data.cars.map(c => `<option value="${c.id}">${c.name} (${c.plate || 'kein Kennzeichen'})</option>`).join('');
             
-            const filterOptions = '<option value="">Alle Fahrzeuge anzeigen</option>' + 
+            const filterOptions = '<option value="" data-tool-en="Show all vehicles">Alle Fahrzeuge anzeigen</option>' + 
                 data.cars.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
             eventSelect.innerHTML = options;
