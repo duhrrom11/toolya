@@ -1388,8 +1388,80 @@ const toolSmallCopy=Object.freeze({
     "3. Cloud-Konto": "3. Cloud account"
   }
 });
+/* Source-verified static leaf labels across five tools. */
+const extendedSmallCopy=Object.freeze({
+  "parking": {
+    "Standort / Parkhaus": "Location / parking garage",
+    "Parkebene / Sektor": "Parking level / section",
+    "Gebühr in €": "Fee in €",
+    "Parkplatzfoto auswählen": "Choose parking photo",
+    "Parkhistorie nach Zeitraum filtern": "Filter parking history by date",
+    "KFZ Smartphone-Halterungen": "Car phone mounts"
+  },
+  "meters": {
+    "Verbrauch erfassen, Kosten auswerten und Ablesetermine im Blick behalten": "Record consumption, review costs and track meter-reading dates",
+    "📖 Ausklappbare Anleitung: Richtig ablesen & Energie sparen": "📖 Expandable guide: Read meters correctly and save energy",
+    "Erfasste Ablesungen": "Recorded readings",
+    "Verlauf nach Zählertyp filtern": "Filter history by meter type",
+    "Der Wechsel auf hochwertige LEDs spart bis zu 85 % Beleuchtungsstrom.": "Switching to quality LEDs can save up to 85% of lighting electricity.",
+    "Smarte Thermostate senken die Heizkosten im Schnitt um 10 bis 15 %.": "Smart thermostats can reduce heating costs by around 10–15%.",
+    "🔄 Zählerwechsel Start": "🔄 Meter replacement start"
+  },
+  "loans": {
+    "Verliehene Dinge": "Lent items",
+    "Aktiv": "Active",
+    "Verloren/Defekt": "Lost / damaged",
+    "Zurück": "Returned",
+    "Offene Kaution": "Outstanding deposit",
+    "Telefon (für WhatsApp)": "Phone (for WhatsApp)",
+    "Kategorie des Gegenstands": "Item category",
+    "Seriennummer / ISBN / Barcode": "Serial number / ISBN / barcode",
+    "GPS-Tracker URL / AirTag Link (optional)": "GPS tracker URL / AirTag link (optional)",
+    "Oder neuen Namen direkt eingeben...": "Or enter a new name directly…",
+    "Notiz (optional)": "Note (optional)",
+    "Foto des verliehenen Gegenstands auswählen": "Choose a photo of the lent item",
+    "Verleih nach Person filtern": "Filter lending records by person",
+    "Bluetooth & GPS Tracker (AirTags)": "Bluetooth and GPS trackers (AirTags)",
+    "Werkzeugkoffer & Boxen": "Tool cases and boxes",
+    "Scannen, um Details aufzurufen.": "Scan to view details."
+  },
+  "car": {
+    "Registrierte Fahrzeuge": "Registered vehicles",
+    "Gesamtkosten (gefiltert)": "Total costs (filtered)",
+    "Fahrzeugname": "Vehicle name",
+    "Kennzeichen": "Registration plate",
+    "KM-Stand": "Mileage",
+    "Notfall- / Pannen-Tel.": "Emergency / breakdown phone",
+    "Fahrzeug für den Eintrag": "Vehicle for this record",
+    "Art des Eintrags": "Record type",
+    "Datum des Eintrags": "Record date",
+    "Fahrzeug für den Reifensatz": "Vehicle for tyre set",
+    "Reifentyp": "Tyre type",
+    "Lagerort": "Storage location",
+    "Historie nach Fahrzeug filtern": "Filter history by vehicle",
+    "⛽ Kraftstoff- & Tank-Statistik (Aktueller Monat)": "⛽ Fuel statistics (current month)"
+  },
+  "pet-health": {
+    "Impfungen, Tierarztbesuche, Medikamente und Gesundheitsdaten für Hund und Katze": "Vaccinations, vet visits, medication and health records for cats and dogs",
+    "Registrierte Haustiere": "Registered pets",
+    "Gesundheits-Einträge": "Health records",
+    "Name des Haustiers": "Pet name",
+    "Tierart / Rasse": "Species / breed",
+    "Chip-Nummer": "Microchip number",
+    "Allergien / Unverträglichkeiten": "Allergies / intolerances",
+    "Straße, PLZ &amp; Ort der Praxis": "Practice street, postal code and city",
+    "Haustier für den Eintrag": "Pet for this record",
+    "Gewicht in kg (optional)": "Weight in kg (optional)",
+    "Medikament / Vorrat": "Medication / stock",
+    "Stück / Packung": "Pieces / packs",
+    "Keine Medikamente in der Apotheke hinterlegt.": "No medications recorded.",
+    "Noch keine Haustiere erfasst.": "No pets recorded yet.",
+    "Verlauf nach Haustier filtern": "Filter history by pet",
+    "Keine Termine erfasst.": "No appointments recorded."
+  }
+});
 function applyToolSmallCopy(document,tool,language){
- const dictionary=toolSmallCopy[tool];if(!dictionary)return;
+ const dictionary={...(toolSmallCopy[tool]||{}),...(extendedSmallCopy[tool]||{})};if(!Object.keys(dictionary).length)return;
  for(const el of document.querySelectorAll('#main-content span,#main-content strong,#main-content li,#main-content p,#settingsModal strong,#settingsModal span,.b3-tool-title p')){
   if(el.children.length||el.isContentEditable||el.closest('[contenteditable="true"]'))continue;
   const original=originals.get(el)?.get('text')??el.textContent;
@@ -2448,15 +2520,15 @@ export function translateToolDialog(tool, language, message) {
  if(language!=='en' || typeof message!=='string') return message;
  const exact=Object.hasOwn(dialogCopy,tool) && Object.hasOwn(dialogCopy[tool],message) ? dialogCopy[tool][message] : undefined;
  if(exact!==undefined) return exact;
- const audited=Object.hasOwn(auditedDialogAdditions,tool) && Object.hasOwn(auditedDialogAdditions[tool],message)
-  ? auditedDialogAdditions[tool][message] : undefined;
- if(audited!==undefined) return audited;
- const extended=Object.hasOwn(extendedDialogAdditions,tool) && Object.hasOwn(extendedDialogAdditions[tool],message)
-  ? extendedDialogAdditions[tool][message] : undefined;
- if(extended!==undefined) return extended;
  const additional=Object.hasOwn(additionalDialogCopy,tool)&&Object.hasOwn(additionalDialogCopy[tool],message)
   ? additionalDialogCopy[tool][message] : undefined;
  if(additional!==undefined)return additional;
+ const audited=Object.hasOwn(auditedDialogAdditions,tool) && Object.hasOwn(auditedDialogAdditions[tool],message) ? auditedDialogAdditions[tool][message] : undefined;
+ if(audited!==undefined)return audited;
+ const extended=Object.hasOwn(extendedDialogAdditions,tool) && Object.hasOwn(extendedDialogAdditions[tool],message)
+  ? extendedDialogAdditions[tool][message] : undefined;
+ if(extended!==undefined) return extended;
+ 
  for(const [prefix,translated] of Object.entries({...sharedDialogPrefixes,...(dialogPrefixes[tool]||{})}))
   if(message.startsWith(prefix)) {
    const detail=message.slice(prefix.length);
