@@ -3298,7 +3298,7 @@ test('car deadlines and vehicle actions have reversible source-backed DE/EN text
  assert.match(source,/let carName = car \? car\.name : label\("Unbekannt","Unknown"\)/,'unknown vehicles are display-only');
  assert.match(source,/e\.carId === parseInt\(selectedFilter\)/,'vehicle filter still uses original IDs');
  assert.match(source,/e\.type === 'Tanken'/,'fuel event type is not translated in storage');
- assert.match(source,/const totalTankCost = monthTankEvents\.reduce/,'numeric fuel aggregation remains');
+ assert.match(source,/let totalTankCost = monthTankEvents\.reduce/,'numeric fuel aggregation remains');
  assert.match(source,/const label = \(de, en\) => english \? en : de/,'labels use active locale');
  assert.match(source,/window\.__toolyaUILocale === 'en' \? '-- Select vehicle --' : '-- Fahrzeug wählen --'/,'selector language does not depend on render-local closure');
 });
