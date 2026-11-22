@@ -1,6 +1,13 @@
 import {initializeToolyaI18next} from './i18next-singleton.mjs';
-// Reuse the optional shared runtime; existing translated HTML remains the fallback.
-initializeToolyaI18next(globalThis.i18next);
+import {createToolyaI18nextAdapter} from './i18next-runtime-adapter.mjs';
+const runtime=initializeToolyaI18next(globalThis.i18next);
+const translator=runtime?createToolyaI18nextAdapter(runtime):null;
+for(const el of document.querySelectorAll('[data-i18n-marketing]')){
+ const source=el.dataset.i18nMarketing;
+ if(!source||!translator)continue;
+ const translated=translator.translateExact('de','marketing',source);
+ if(translated!==source)el.textContent=translated;
+}
 // Language preference changes only on an explicit language link click.
 import {normalizeLocale} from './locale.mjs';
 for (const link of document.querySelectorAll('a[data-set-locale]')) {
