@@ -288,7 +288,7 @@
                             <i data-lucide="pie-chart" class="w-4 h-4 text-orange-500"></i> Torte teilen
                         </h3>
                         <div>
-                            <label for="slice-count" class="block text-xs font-medium text-slate-600 mb-1">Gewünschte Stücke</label>
+                            <label for="slice-count" class="block text-xs font-medium text-slate-600 mb-1" data-tool-en="Desired servings">Gewünschte Stücke</label>
                             <input type="number" id="slice-count" value="12" oninput="updateSlices()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
                         </div>
                         <p id="slice-info" class="text-xs text-slate-500">Stückbreite am Rand.</p>
@@ -394,7 +394,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Benötigte Menge</label>
+                            <label class="block text-xs font-medium text-slate-600 mb-1" data-tool-en="Required amount">Benötigte Menge</label>
                             <div id="sugar-result" class="px-3 py-2 rounded-xl bg-orange-50 border border-orange-100 text-sm font-bold text-orange-600">200g</div>
                         </div>
                     </div>
@@ -662,7 +662,7 @@
             <div class="b3-dialog-actions flex justify-center gap-3">
                 <button onclick="startTimer()" class="b3-action px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-sm transition">Start</button>
                 <button onclick="pauseTimer()" class="b3-action b3-outline px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-medium rounded-xl text-sm transition">Pause</button>
-                <button onclick="nextTimerPhase()" class="b3-action b3-outline px-5 py-2.5 bg-slate-900 text-white font-medium rounded-xl text-sm transition">Nächste Phase</button>
+                <button onclick="nextTimerPhase()" class="b3-action b3-outline px-5 py-2.5 bg-slate-900 text-white font-medium rounded-xl text-sm transition" data-tool-en="Next step">Nächste Phase</button>
             </div>
             <button onclick="closeCookMode()" class="b3-action b3-outline text-xs text-slate-400 hover:text-slate-600 underline pt-2">Schließen</button>
         </div>
