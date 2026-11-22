@@ -4,6 +4,14 @@ on:
     branches:
       - feature/moving-planner-release1-20261121
       - feature/i18n-de-en-foundation-20261121
+    paths:
+      - 'tools/moving/**'
+      - 'shared/toolya/cloud-controller.mjs'
+      - 'tests/moving-model.test.mjs'
+      - 'tests/cloud-moving.test.mjs'
+      - 'tests/cloud-controller.test.mjs'
+      - 'tests/cloud-repository.test.mjs'
+      - '.github/workflows/moving-planner.yml'
   pull_request:
     paths:
       - 'tools/moving/**'
