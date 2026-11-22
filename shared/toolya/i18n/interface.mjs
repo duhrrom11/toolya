@@ -2274,7 +2274,8 @@ const toolRuntimeStatus=Object.freeze({
   '⏰ ABGELAUFEN!':'⏰ TIME EXPIRED!',
   'Bitte Parkzeit verlängern oder zum Auto gehen!':'Extend parking time or return to your car!',
   'Parkzeit läuft...':'Parking timer running…',
-  'Gespeichert ✓':'Saved ✓'
+  'Gespeichert ✓':'Saved ✓',
+  'Nicht gespeichert':'Not saved'
  }
 });
 const toolRuntimeReverse=Object.freeze(Object.fromEntries(Object.entries(toolRuntimeStatus).map(([name,labels])=>[name,Object.fromEntries(Object.entries(labels).map(([de,en])=>[en,de]))])));
