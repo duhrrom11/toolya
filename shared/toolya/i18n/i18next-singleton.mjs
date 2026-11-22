@@ -4,7 +4,7 @@
  */
 import {registerLegacyCatalogues} from './i18next-legacy-resources.mjs';
 export function initializeToolyaI18next(instance){
- if(!instance||typeof instance.init!=='function'||typeof instance.addResourceBundle!=='function')
+ if(!instance||typeof instance.init!=='function')
   return null;
  if(instance.isInitialized){registerLegacyCatalogues(instance);return instance;}
  // initImmediate:false makes resources available before tool-entry mounts.
@@ -15,7 +15,7 @@ export function initializeToolyaI18next(instance){
   interpolation:{escapeValue:true}
  });
  if(result&&typeof result.catch==='function')result.catch(()=>{});
- if(!instance.isInitialized)return null;
+ if(!instance.isInitialized||typeof instance.addResourceBundle!=='function')return null;
  registerLegacyCatalogues(instance);
  return instance;
 }
