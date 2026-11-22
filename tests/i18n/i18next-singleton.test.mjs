@@ -26,3 +26,14 @@ test('missing CDN i18next fails closed and leaves legacy fallback available',()=
 test('already initialized runtime without resource API fails closed',()=>{
  assert.equal(initializeToolyaI18next({isInitialized:true,init(){}}),null);
 });
+
+test('pre-initialized shared instance registers resources exactly once',()=>{
+ let registrations=0;
+ const instance={isInitialized:true,init(){throw new Error('must not initialize again');},
+  addResourceBundle(){registrations++;}};
+ assert.equal(initializeToolyaI18next(instance),instance);
+ const first=registrations;
+ assert.ok(first>0);
+ assert.equal(initializeToolyaI18next(instance),instance);
+ assert.equal(registrations,first);
+});
