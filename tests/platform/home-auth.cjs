@@ -40,7 +40,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  await page.waitForTimeout(200);
  assert(await page.evaluate(()=>window.__signedOutEvents<3),'guest status must not create a SIGNED_OUT loop');
  await page.goto(origin+'/tools/parking/');
- await page.waitForURL(origin+'/index.html?auth=required');
+ await page.waitForURL(origin+'/index.html?auth=required', {waitUntil:'commit'});
  await page.locator('#toolAccessHelp').waitFor({state:'visible'});
  assert.match(await page.locator('#toolAccessHelp').textContent(),/Melde dich bei Toolya an/);
  await page.keyboard.press('Escape');
