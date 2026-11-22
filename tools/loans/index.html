@@ -210,7 +210,7 @@
                     <label class="helferlein-field" for="invCategory"><span class="helferlein-field-label" data-tool-en="Item category">Kategorie des Gegenstands</span><select id="invCategory" class="w-full p-2.5 border rounded-xl text-xs bg-white" aria-label="Kategorie des Gegenstands" data-tool-en-aria-label="Item category">
                         <option value="Werkzeug">🔨 Werkzeug</option>
                         <option value="Elektronik">💻 Elektronik & IT</option>
-                        <option value="Bücher & Medien">📚 Bücher & Medien</option>
+                        <option value="Bücher & Medien" data-tool-en="📚 Books &amp; media">📚 Bücher & Medien</option>
                         <option value="Sport & Freizeit">⚽ Sport & Freizeit</option>
                         <option value="Sonstiges">📦 Sonstiges</option>
                     </select></label>
@@ -229,13 +229,13 @@
                         <div>
                             <label for="itemInventorySelect" class="block text-[11px] font-semibold text-gray-600 mb-1">Gegenstand aus Inventar wählen:</label>
                             <select id="itemInventorySelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="fillInventoryData(this)">
-                                <option value="">-- Gegenstand wählen --</option>
+                                <option value="" data-tool-en="-- Select item --">-- Gegenstand wählen --</option>
                             </select>
                         </div>
                         <div>
                             <label for="itemPersonSelect" class="block text-[11px] font-semibold text-gray-600 mb-1">Ausleiher wählen:</label>
                             <select id="itemPersonSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="checkCustomPerson(this)">
-                                <option value="">-- Kontakt wählen --</option>
+                                <option value="" data-tool-en="-- Select contact --">-- Kontakt wählen --</option>
                             </select>
                         </div>
                     </div>
@@ -281,15 +281,15 @@
                 <h3 class="font-bold text-lg">📋 Verleih-Zentrale & Historie</h3>
                 <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                     <label class="helferlein-field" for="filterCategory"><span class="helferlein-field-label">Nach Kategorie filtern</span><select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Nach Kategorie filtern">
-                        <option value="">Alle Kategorien</option>
+                        <option value="" data-tool-en="All categories">Alle Kategorien</option>
                         <option value="Werkzeug">🔨 Werkzeug</option>
                         <option value="Elektronik">💻 Elektronik & IT</option>
-                        <option value="Bücher & Medien">📚 Bücher & Medien</option>
+                        <option value="Bücher & Medien" data-tool-en="📚 Books &amp; media">📚 Bücher & Medien</option>
                         <option value="Sport & Freizeit">⚽ Sport & Freizeit</option>
                         <option value="Sonstiges">📦 Sonstiges</option>
                     </select></label>
                     <label class="helferlein-field" for="filterPerson"><span class="helferlein-field-label" data-tool-en="Filter loans by person">Verleih nach Person filtern</span><select id="filterPerson" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verleih nach Person filtern" data-tool-en-aria-label="Filter loans by person">
-                        <option value="">Alle Personen</option>
+                        <option value="" data-tool-en="All people">Alle Personen</option>
                     </select></label>
                 </div>
             </div>
