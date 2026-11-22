@@ -42,6 +42,8 @@ function mountToolLanguage(){
  for(const [button,lang,text] of [[de,'de','DE'],[en,'en','EN']]){
    button.type='button';button.textContent=text;button.lang=lang;
    button.dataset.toolLocale=lang;
+   button.setAttribute('aria-label',lang==='de'?'Deutsch auswählen':'Select English');
+   button.setAttribute('title',lang==='de'?'Deutsch auswählen':'Select English');
    switcher.append(button);
    button.addEventListener('click',()=>apply(lang,true));
  }
@@ -158,6 +160,7 @@ function mountToolLanguage(){
    // Localize search/browser summaries without altering canonical URLs or stored content.
    if(descriptionMeta && originalDescription!==null)
      descriptionMeta.setAttribute('content',lang==='en'?settings.subtitle+'.':originalDescription);
+   switcher.setAttribute('aria-label',lang==='en'?'Choose interface language':'Sprache der Oberfläche wählen');
    de.setAttribute('aria-pressed',String(lang==='de'));
    en.setAttribute('aria-pressed',String(lang==='en'));
    // Keep reconstructed controls in sync with the active locale.
