@@ -965,7 +965,7 @@
                 let tassoText = p.tasso ? " [TASSO]" : "";
                 let vetText = p.vet && p.vet.name ? ` | ${pdfLabel("TA: ","Vet: ")}${p.vet.name} (${p.vet.tel || '-'})` : "";
                 const species = pdfEn ? ({Hund:'Dog',Katze:'Cat',Vogel:'Bird',Kaninchen:'Rabbit',Pferd:'Horse'})[p.species] || p.species : p.species;
-                const lines = doc.splitTextToSize(`- ${p.name} (${species || pdfLabel("Haustier","Pet")}), Chip: ${p.chip || pdfLabel("k.A.","n/a")}${tassoText}${vetText}`, 180);
+                const lines = doc.splitTextToSize(`- ${p.name} (${species || pdfLabel("Haustier","Pet")}), ${pdfLabel('Chip','Microchip')}: ${p.chip || pdfLabel("k.A.","n/a")}${tassoText}${vetText}`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
@@ -984,7 +984,7 @@
                 if (y > 270) { doc.addPage(); y = 20; }
                 let weightText = e.weight ? ` | ${e.weight} kg` : "";
                 let expText = e.expiryDate ? ` (${pdfLabel("Gültig bis: ","Valid until: ")}${new Date(e.expiryDate).toLocaleDateString(pdfDateLocale)})` : "";
-                const eventType = pdfEn ? ({Impfung:'Vaccination',Behandlung:'Treatment',Medikament:'Medication',Kontrolle:'Check-up',Operation:'Surgery'})[e.type] || e.type : e.type;
+                const eventType = pdfEn ? ({Impfung:'Vaccination',Behandlung:'Treatment',Medikament:'Medication',Kontrolle:'Check-up',Operation:'Surgery',Entwurmung:'Deworming',Gewicht:'Weight',Tagebuch:'Journal'})[e.type] || e.type : e.type;
                 const lines = doc.splitTextToSize(`- [${eventType}] ${pName}: ${e.title}${pdfLabel(" am "," on ")}${new Date(e.date).toLocaleDateString(pdfDateLocale)} (${Number(e.cost || 0).toFixed(2)} EUR${weightText})${expText}`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
@@ -1014,7 +1014,7 @@
             if (!file) return;
             if (file.size > 20 * 1024 * 1024) {
                 input.value = '';
-                return alert("Backup zu groß (maximal 20 MB).");
+                return alert(window.__toolyaUILocale === 'en' ? 'Backup is too large (maximum 20 MB).' : 'Backup zu groß (maximal 20 MB).');
             }
             const reader = new FileReader();
             reader.onload = async function(e) {
@@ -1025,20 +1025,20 @@
                         !Array.isArray(parsed.pets) || !Array.isArray(parsed.events) ||
                         !parsed.pets.every(item => item && typeof item === 'object' && !Array.isArray(item)) ||
                         !parsed.events.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
-                        return alert("Ungültiges Backup-Format.");
+                        return alert(window.__toolyaUILocale === 'en' ? 'Invalid backup format.' : 'Ungültiges Backup-Format.');
                     }
-                    if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
+                    if (!confirm(window.__toolyaUILocale === 'en' ? 'Import backup? Existing data will be replaced.' : 'Backup importieren? Vorhandene Daten werden ersetzt.')) return;
                     if(!await saveData({...parsed,meds:parsed.meds??[]}))return;
                     loadPetDropdowns();
                         renderApp();
-                    alert("Backup erfolgreich importiert!");
+                    alert(window.__toolyaUILocale === 'en' ? 'Backup imported successfully!' : 'Backup erfolgreich importiert!');
                 } catch (err) {
-                    alert("Fehler beim Lesen der Datei.");
+                    alert(window.__toolyaUILocale === 'en' ? 'Error reading the file.' : 'Fehler beim Lesen der Datei.');
                 }
             };
             reader.onerror = () => {
                 input.value = '';
-                alert("Backup-Datei konnte nicht gelesen werden.");
+                alert(window.__toolyaUILocale === 'en' ? 'Could not read the backup file.' : 'Backup-Datei konnte nicht gelesen werden.');
             };
             reader.readAsText(file);
         }
