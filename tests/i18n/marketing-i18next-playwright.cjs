@@ -27,6 +27,7 @@ const server=http.createServer((req,res)=>{
    const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.goto('http://127.0.0.1:'+server.address().port+(locale==='de'?'/de':'/'),{waitUntil:'load'});
    await page.waitForFunction(()=>document.querySelector('[data-i18n-marketing]')?.textContent===(window.i18next&&document.documentElement.lang==='en'?'All tools':'Alle Tools'));
+   await page.waitForFunction(()=>document.querySelector('p[data-i18n-marketing]')?.textContent===(window.i18next&&document.documentElement.lang==='en'?'Read this guide in German':'Diese Anleitung auf Deutsch ansehen'));
    assert.equal(await page.locator('h1').textContent(),mode==='loaded'&&locale==='en'?'All tools':'Alle Tools');
    assert.equal(await page.locator('p[data-i18n-marketing]').textContent(),mode==='loaded'&&locale==='en'?'Read this guide in German':'Diese Anleitung auf Deutsch ansehen');
    assert.equal(await page.locator('#user-content').textContent(),'Meine privaten Notizen');
