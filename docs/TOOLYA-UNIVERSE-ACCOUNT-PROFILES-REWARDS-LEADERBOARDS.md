@@ -15,6 +15,12 @@
 6. **Badges im persönlichen Profil anzeigen** und spätere Ranglisten anbieten. **Ranglistenbeitritt und öffentliche Profildaten opt-in; standardmäßig privat**, voller Name nie automatisch öffentlich. Keine Anzeige des Nutzungszwecks sensibler Tools auf öffentlichen Badges/Rankings.
 7. **Kein Pay-to-win:** keine käuflichen XP/Plätze/Badges, keine Belohnung für Werbung, Ko-fi oder Amazon-Käufe, keine erzwungenen Tages-Streaks.
 
+### 1.1 Spezielle Pflichtangaben für öffentliche Amazon-Wunschlisten (neu bestätigt)
+
+**Verbindliche Nutzerentscheidung:** Beim **Veröffentlichen/Eintragen einer Amazon-Wunschliste** ist bei einer Privatperson **Vorname UND Nachname Pflicht**; bei Organisation/Verein stattdessen **der vollständige Organisations-/Vereinsname Pflicht**. Das sind Angaben für den **öffentlich auffindbaren Wunschlisten-Eintrag**, nicht dieselben Felder wie im **privaten Toolya-Benutzerkonto**. Eine Organisation benötigt bei der Toolya-Kontoanmeldung weiterhin einen persönlich registrierten Kontoinhaber nach dem allgemeinen Profilmodell; der veröffentlichte Listeninhaber darf als Organisation/Verein angezeigt werden. Niemals automatisch den privaten Konto-Vor-/Nachnamen in einen öffentlichen Wunschlisten-Eintrag übernehmen oder auf Ranglisten offenlegen. Vor dem Veröffentlichen ausdrücklich anzeigen, welche Angaben öffentlich sichtbar und ggf. suchmaschinenauffindbar sind. Änderungen/Berichtigungen müssen später möglich bleiben.
+
+**Aus dem Code überprüft:** In `tools/wishes/public.html` gibt es bereits den Umschalter `profileKind` (person/organization), `firstName` und `lastName` mit required für Privatpersonen sowie `organizationName` für Organisationen. Die tatsächlich bedingte Validierung der Felder ist bei späterer Umsetzung in der zugehörigen Formularlogik nachzuprüfen. Das Wunschlistenformular weist derzeit **Land ebenfalls als Pflichtfeld** aus; dies widerspricht **nicht** der neuen Regel **'Land optional im Toolya-Kontoprofil'**, weil es ein separates öffentliches Wunschlistenprofil ist. Der Nutzer hat die Land-Pflicht der Wunschliste hier nicht geändert – nicht stillschweigend entfernen.
+
 ## 2. Ergebnis der Bestandsprüfung – nach Code-Lesung im Entwicklungsbranch
 
 - `index.html` prüft beim Klick auf `.ty-tool-link` bereits `supabaseClient.auth.getUser()` und öffnet bei fehlender registrierter Sitzung das Anmeldemodal statt der Tool-Seite. `registerUser()` verwendet derzeit `signUp({ email, password })`, **ohne Vor-/Nachname, Land, Profilbild-Link**.
