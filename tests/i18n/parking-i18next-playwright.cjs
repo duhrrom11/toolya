@@ -60,6 +60,7 @@ const server=http.createServer((req,res)=>{
    if(mode==='loaded'){
     const state=await page.evaluate(()=>({type:typeof window.i18next,initialized:window.i18next?.isInitialized,initType:typeof window.i18next?.init,bundles:window.i18next?.hasResourceBundle?.('en','tool'),probe:window.__i18nProbe,pathname:location.pathname}));
     assert.equal(state.initialized,true,'real i18next initialization: '+JSON.stringify(state));
+    assert.equal(await page.evaluate(()=>window.i18next.hasResourceBundle('en','tool')),true,'real i18next legacy tool catalogue registered');
    }
    else assert.equal(await page.evaluate(()=>typeof window.i18next),'undefined');
    await context.close();
