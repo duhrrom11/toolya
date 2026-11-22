@@ -13,7 +13,7 @@ function fixture(){
    status:'open',archived_at:TS,updated_at:TS},
   {id:'cccccccc-cccc-4ccc-8ccc-cccccccccccc',user_id:B,title:'Fremd',
    status:'open',archived_at:null,updated_at:TS}];
- const client={auth:{async getUser(){return {data:{user:{id:uid,is_anonymous:false}},error:null}}}}},
+ const client={auth:{async getUser(){return {data:{user:{id:uid,is_anonymous:false}},error:null}}},
   from(table){
    assert.equal(table,'wishlist_gift_tasks');
    let filters=[],mode='select',update;
