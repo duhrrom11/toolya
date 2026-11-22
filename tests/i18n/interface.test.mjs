@@ -2736,3 +2736,12 @@ test('move protection, household copy and duplicate transaction dialogs translat
   }
  }
 });
+
+
+test('audited dialog catalogue never resolves inherited object keys',()=>{
+ for(const key of ['__proto__','constructor','toString']){
+  assert.equal(translateToolDialog('moving','en',key),key);
+  assert.equal(translateToolDialog('housemates','en',key),key);
+  assert.equal(translateToolDialog('housemates','en','Mitgliederverwaltung: '+key),'Member management: '+key);
+ }
+});
