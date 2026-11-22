@@ -734,6 +734,22 @@ async function toolyaCloudBoot(tool) {
                 ? budgetCategoryEn[category] : category;
         }
 
+        // Read-only locale refresh: keep open budget inputs (including unsaved edits)
+        // and the German category IDs unchanged. Do not emit a data-change event.
+        function refreshBudgetDynamicLocale() {
+            if (!toolyaCloudReady) return;
+            for (const label of document.querySelectorAll('[data-budget-category]')) {
+                label.textContent = budgetCategoryLabel(label.getAttribute('data-budget-category'));
+            }
+            for (const input of document.querySelectorAll('#budgetInputList input[data-cat]')) {
+                const label = document.querySelector('label[for="' + input.id + '"]');
+                if (label) label.textContent = budgetCategoryLabel(input.getAttribute('data-cat')) + ':';
+            }
+            renderSavingsGoals();
+            renderTransactionList();
+        }
+        document.addEventListener('toolya:locale-change', refreshBudgetDynamicLocale);
+
         document.addEventListener('DOMContentLoaded', () => {
             const receiptDateInput = document.getElementById('receiptDate');
             receiptDateInput.valueAsDate = new Date();
@@ -1399,7 +1415,7 @@ async function toolyaCloudBoot(tool) {
                 return `
                     <div class="space-y-1">
                         <div class="flex justify-between text-xs">
-                            <span class="font-bold text-gray-700">${escapeHaushaltsHtml(budgetCategoryLabel(cat))}</span>
+                            <span class="font-bold text-gray-700" data-budget-category="${cat}">${escapeHaushaltsHtml(budgetCategoryLabel(cat))}</span>
                             <span class="text-gray-500">${spent.toFixed(2)} € / <strong>${limit.toFixed(2)} €</strong></span>
                         </div>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
