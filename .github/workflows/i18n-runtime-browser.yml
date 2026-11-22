@@ -10,6 +10,7 @@ on:
       - 'tools/meters/index.html'
       - 'shared/toolya/i18n/tool-entry.mjs'
       - 'tests/browser/tool-pages-ui.spec.cjs'
+      - 'assets/helferlein-accessibility.js'
       - '.github/workflows/i18n-runtime-browser.yml'
   workflow_dispatch:
 

@@ -5,8 +5,18 @@
     const ids = ['settingsModal', 'settings-modal', 'helpModal', 'budgetModal', 'savingsModal', 'cook-modal', 'energyTipsModal'];
     // Garden utilities have the same IDs as some unrelated WG editors.
     if (document.getElementById('plantName')) ids.push('inventoryModal', 'seedsModal', 'roiModal', 'cisternModal', 'beetModal');
+    // These dialogs use Tailwind's .hidden utility. In isolated/offline views the CDN
+    // may be unavailable: keep closed dialogs truly hidden before the modal manager
+    // decides whether to make the rest of the tool inert.
+    if (!document.getElementById('helferlein-dialog-visibility-fallback')) {
+      const fallback = document.createElement('style');
+      fallback.id = 'helferlein-dialog-visibility-fallback';
+      fallback.textContent = ids.map(id => '#' + id + '.hidden').join(',') + '{display:none!important}';
+      (document.head || document.documentElement).append(fallback);
+    }
     const visible = node => {
-      if (!node?.isConnected || node.hidden || getComputedStyle(node).visibility === 'hidden' || !node.getClientRects().length) return false;
+      if (!node?.isConnected || node.hidden || node.classList?.contains('hidden') ||
+          getComputedStyle(node).visibility === 'hidden' || !node.getClientRects().length) return false;
       const closed = node.closest('details:not([open])');
       return !closed || closed.querySelector('summary')?.contains(node);
     };

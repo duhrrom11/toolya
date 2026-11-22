@@ -480,3 +480,9 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 - Browserfehler: DE/EN-Sprachschalter blieb nach Klick unbetätigt (`aria-pressed=false`), also kein Problem der Cloud-Speicherwerte. Die Header-Lokalisierung nutzt ergänzende delegierte Click-Events für rekonstruierte Sprach-Buttons und aktualisiert den angezeigten Tastenzustand auch bei geklonten DOM-Elementen; originale Event-Handler bleiben aktiv.
 - Verleihklicks und Statuswechsel sind nur einmal auf `document` registriert; die aktuelle Filterauswahl und der CloudOnly-Snapshot bestimmen den Eintrag. Ereignisse gehen damit bei nachträglich neu aufgebauten B3-Listen nicht verloren. Keine duplizierten Cloud-Schreibaktionen und keine user-kontrollierten Inline-JavaScript-Parameter.
 - Neuer enger Chromium-Smoke-Workflow für vier synthetische 320px-Laufzeit-/Kalendertests, zusätzlich zu den vollständigen isolierten Workflows. Freigabe erst nach nachweislich grünen CI-Läufen.
+
+## 22.11.2026 – Fix für Offline-Tailwind-Modal-Inert-Sperre
+
+- Echtes Chromium-Protokoll: Sprache umschalten lieferte Klickziel `BODY` statt `DE`, und der Verleih-ICS-Button hatte den Vorfahren `.b3-shell[inert]`. Die isolierten UI-Tests blockieren Tailwind-CDN absichtlich; dadurch fehlte die `hidden`-Utility für native modale Overlays, worauf der Accessibility-Manager andere Bereiche deaktivierte.
+- Die zentrale Accessibility-Schicht enthält nun einen engen `.hidden`-Fallback nur für bekannte Dialog-IDs und berücksichtigt die Klasse zusätzlich beim Sichtbarkeitstest. Dadurch kann ein als geschlossen markierter Dialog auch offline/ohne CDN keine Interaktion mit dem Tool blockieren. Gewünschte aktive Dialog-Fokusfalle und Hintergrundsperre bleiben bestehen.
+- Die vier Chromium-Tests prüfen reale klickbare Sprachschalter und ICS-Buttons, `display:none` auf verborgenem Kontodialog sowie `!b3-shell.inert`. Neue isolierte Node-Regression ergänzt. Erfolgreiches CI muss das Paket bestätigen.

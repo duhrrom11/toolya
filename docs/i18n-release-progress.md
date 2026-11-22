@@ -153,3 +153,10 @@ Basis `cc9876d92ce5dfefc1504098ea73a3fd03969dac`: 209/209 statische Node-i18n-Te
 - Ergänzende dokumentweite Delegation für neu konstruierte Sprachschalter und aktualisierte `aria-pressed`-Werte. Verleihaktionen werden nun einmalig auf Dokumentebene behandelt und verwenden aktuelle gefilterte CloudOnly-Snapshots statt potenziell verlorener Listener auf DOM-Rekonstruktionen. Synthetische Node-Regression aktualisiert.
 - Neuer kurzer Chromium-Smoke-Workflow im Feature-Branch für Parkplatz, Verleih, Zähler und ICS. Er muss erst als grün bestätigt werden; vollständige Browser/Plattform-CI bleibt erforderlich.
 - **Release-Status weiterhin NOT READY / PR Draft**, auch bei erfolgreichem Smoke bleiben 34 partielle Tools, 48 Laufzeitdateien, echte Auth-Mailrunde und manuelle A11y-Abnahmen offen. Kein Merge/Deploy/Produktivzugriff.
+
+### 22.11.2026 – Root-Cause-Fix: fehlende versteckte Dialog-CSS bei isolierten Browsern
+
+- [Diagnose 44965929859](https://github.com/duhrrom11/toolya/actions/runs/44965929859): Sprachbutton stand bei scrollY=1242 oberhalb des Viewports und der Klick traf BODY. Wichtiger: der Verleih-ICS-Button hatte den Vorfahren `.b3-shell[inert]`, obwohl keine modale Interaktion erwartet war.
+- Die isolierten Tests blockieren die externe Tailwind-CDN-Datei. `assets/helferlein-accessibility.js` behandelte deswegen den dialogeigenen `.hidden`-Wert ohne CSS-Effekt als sichtbaren Dialog und blockierte die übrige App. Enger `display:none!important`-Fallback für bekannte `.hidden`-Dialoge und CSS-unabhängige Sichtbarkeitsprüfung ergänzt. Das behebt zugleich einen realen Offline-/CDN-Ausfallpfad.
+- Browser-Regression prüft versteckten Dialog, fehlendes `inert` am Tool-Shell, 320px-Sprachwechsel und echten ICS-Download. Node-Regression ergänzt. Noch keine positive Aussage zu den neu ausgelösten CI-Läufen.
+- Release weiterhin **NOT READY** bis vollständiger CI-Nachweis plus breite Auth-/A11y-/Coverage-Abnahme. Keine produktiven Änderungen.
