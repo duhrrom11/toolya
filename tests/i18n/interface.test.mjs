@@ -2805,3 +2805,17 @@ test('remaining source-owned baking, budget, household and form labels reverse w
   assert.equal(document.querySelector('span').textContent,de);
  }
 });
+
+
+test('budget category options localize without changing stored category values', () => {
+ const {document}=parseHTML('<html><body><main id="main-content"><select id="receiptCategory"><option value="Freizeit">🎉 Freizeit, Gastronomie & Urlaub</option><option value="Haustiere">🐾 Haustiere</option></select></main></body></html>');
+ const options=[...document.querySelectorAll('option')];
+ const original=options.map(option=>option.textContent);
+ const values=options.map(option=>option.value);
+ applyToolInterfaceLocale(document,'budget','en');
+ assert.deepEqual(options.map(option=>option.textContent),['🎉 Leisure, dining and holidays','🐾 Pets']);
+ assert.deepEqual(options.map(option=>option.value),values,'category values remain stable');
+ applyToolInterfaceLocale(document,'budget','de');
+ assert.deepEqual(options.map(option=>option.textContent),original,'German labels restored');
+ assert.deepEqual(options.map(option=>option.value),values,'category values remain stable after switching back');
+});
