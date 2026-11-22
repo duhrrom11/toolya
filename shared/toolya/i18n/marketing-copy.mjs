@@ -19,5 +19,9 @@ export const MARKETING_COPY=Object.freeze({
  'Tiergesundheit':'Pet health',
  'WG-Organisator':'Roommate organizer',
  'Backform-Rechner':'Cake pan calculator',
+ 'Parkplatz finden und merken':'Save your parking spot and find your car',
+ 'Umzugskisten mit QR-Etiketten organisieren':'Organize moving boxes with QR labels',
+ 'Gießen und Pflanzenpflege im Blick behalten':'Keep track of watering and plant care',
+ 'Haushaltseinnahmen, Ausgaben und Budgets verwalten':'Track household income, spending and budgets',
  'Konto wird geprüft …':'Checking your account…'
 });
