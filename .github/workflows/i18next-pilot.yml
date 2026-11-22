@@ -8,6 +8,7 @@ on:
       - 'shared/toolya/i18n/**'
       - 'tests/i18n/**'
       - 'tools/parking/index.html'
+      - 'tools/moving/index.html'
       - 'tests/i18n/parking-i18next-playwright.cjs'
       - '.github/workflows/i18next-pilot.yml'
   workflow_dispatch:
