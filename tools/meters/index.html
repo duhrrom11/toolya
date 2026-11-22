@@ -89,7 +89,7 @@
   <span class="b3-tool-icon" aria-hidden="true">⚡</span>
   <div class="b3-tool-title"><h1>Zählerstände erfassen: Strom, Gas & Wasser</h1>
     <p>Verbrauch erfassen, Kosten auswerten und Ablesetermine im Blick behalten</p></div>
-  <button type="button" id="settingsBtn" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()">⚙</button>
+  <button type="button" id="settingsBtn" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()" data-tool-en-aria-label="Open settings">⚙</button>
 </div></header>
 
     <!-- Main Content -->
@@ -886,7 +886,7 @@
                 return `
                     <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                         <div class="b3-meter-card-identity flex items-center space-x-3">
-                            ${typeof r.photo === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(r.photo) ? `<button type="button" class="b3-photo-trigger" aria-label="Zählerfoto vergrößern" onclick="openPhotoModal(this.firstElementChild.src)"><img alt="Zählerfoto" src="${escapeHtml(r.photo)}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer hover:opacity-80 transition-opacity"></button>` : `<div class="w-12 h-12 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center font-bold text-lg">${icon}</div>`}
+                            ${typeof r.photo === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(r.photo) ? `<button type="button" class="b3-photo-trigger" aria-label="Zählerfoto vergrößern" onclick="openPhotoModal(this.firstElementChild.src)" data-tool-en-aria-label="Enlarge meter photo"><img alt="Zählerfoto" src="${escapeHtml(r.photo)}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer hover:opacity-80 transition-opacity"></button>` : `<div class="w-12 h-12 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center font-bold text-lg">${icon}</div>`}
                             <div>
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="text-xs font-bold text-gray-800">${escapeHtml(r.name)}</span>
