@@ -20,7 +20,11 @@ export function projectDashboardShopping(rows,userId) {
 export function createUnifiedShopping(client) {
   if(!client?.auth?.getUser || !client.from)throw TypeError('Supabase nicht verfügbar.');
   const wg=createWgConnect(client);
-  const dueSources=['loans','car','pet'].map(id=>({id,...createDueSource(client,id)}));
+  const dueSources=['loans','car','pet'].map(id=>{
+    let adapter=null;
+    const instance=()=>adapter||(adapter=createDueSource(client,id));
+    return {id,load:()=>instance().load(),setDone:(item,done)=>instance().setDone(item,done)};
+  });
   const registry=createConnectRegistry([{id:'wg',load:()=>wg.load(),setDone:(item,done)=>wg.setDone(item,done)},...dueSources]);
   let owner=null,rows=[],shopping=[],tasks=[],partial=false;
   async function user() {
