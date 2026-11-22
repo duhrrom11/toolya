@@ -1223,13 +1223,13 @@
                 kofiEl.innerText = (window.__toolyaUILocale === 'en' ? kofiSpruecheEn : kofiSprueche)[idx];
             }
         }
-        document.addEventListener('toolya:locale-change', () => {
+        function refreshVisibleKofiText() {
             const kofiEl = document.getElementById('kofiText');
             if (!kofiEl) return;
             const idx = Number(kofiEl.dataset.kofiCopyIndex);
             if (!Number.isInteger(idx) || idx < 0 || idx >= kofiSprueche.length) return;
             kofiEl.innerText = (window.__toolyaUILocale === 'en' ? kofiSpruecheEn : kofiSprueche)[idx];
-        });
+        }
 
         async function manuelleSynchronisation() {
             if (!wgBinId) return alert("Keine WG-ID aktiv.");
@@ -1584,6 +1584,7 @@
 
         // Presentation-only refresh: never run on an unloaded or failed WG.
         document.addEventListener('toolya:locale-change', () => {
+            refreshVisibleKofiText();
             if (!householdReadyForLocaleRefresh) return;
             renderApp();
             refreshOpenBudgetLabels();
