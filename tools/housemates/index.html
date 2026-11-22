@@ -1584,9 +1584,9 @@
 
         // Presentation-only refresh: never run on an unloaded or failed WG.
         document.addEventListener('toolya:locale-change', () => {
-            refreshVisibleKofiText();
             if (!householdReadyForLocaleRefresh) return;
             renderApp();
+            refreshVisibleKofiText();
             refreshOpenBudgetLabels();
             refreshOpenCookingDayLabels();
             refreshOpenDietPlaceholders();
