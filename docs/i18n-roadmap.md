@@ -497,3 +497,10 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 
 - Eigener synthetischer Playwright-Fall im 320px-Viewport: englisches Parkplatz-Tool ohne Tailwind-CDN, geschlossener Dialog nicht sichtbar und Tool-Shell interaktiv; tatsächlicher Einstellungen-Klick setzt `aria-modal=true`, verschiebt Fokus in den Dialog und macht den Hintergrund `inert`; Escape schließt den Dialog, stellt die Bedienbarkeit wieder her und löst keinen Cloud-Schreibzugriff aus.
 - Der kurze Runtime-Chromium-Workflow führt diesen A11y-Fall zusammen mit den vier bisherigen DE/EN-/ICS-Smoketests aus. Erst mit grüner CI als bestätigt markieren.
+
+## 22.11.2026 – Geprüfter Integrationsstand und Release-Gates (18/18 CI erfolgreich)
+
+- Code-HEAD `6b6068913309084c29c9d0591c78835fff8a6799` mit **18/18 GitHub-Workflows erfolgreich**: 214/214 i18n-Node, 5/5 gezielte mobile Chromium-Fälle, 178 vollständige CloudOnly-PR-Chromium-Fälle, 166 zusätzliche Mock-Fälle (+16 übersprungen), 124 Plattform-Node sowie Connect/Planner/Security-/Plattform-CI grün. Nachweise und offene Prüfpunkte unter [i18n-release-report.md](i18n-release-report.md).
+- **Kein Release-READY:** i18n-Audit weiter mit 34 nur teilübersetzten Ansichten und 48 heuristischen Laufzeit-Dateien, 17 EN-Seiten mit geschütztem `noindex`; isolierte echte Recovery-Mailrunde, Gesamt-Export-/Druck-/QR-/Screenreader- und Mobile-Abnahme fehlen.
+- Priorität für nächste Ausführung: (P0) 10 Haupttools vollständig lokalisieren, (P0) 17 Wünsche/4 Nachlass/1 Dashboard/2 Admin, (P1) dynamische Fehlermeldungen und Exportpfade je Tool mit Mocks prüfen, (P1) isolierter Auth-Mail-E2E, (P2) A11y/Responsive/strikter Audit, (P3) erst dann geschützte Release-Freigabe einholen.
+- Dokumentationsänderung nach dem getesteten Code-HEAD ist von den Quellcode-CI-Nachweisen zu unterscheiden. Aktuellen Branch-SHA bei Wiederaufnahme erneut prüfen.

@@ -1,5 +1,13 @@
 # Toolya DE/EN – Release-Fortschritt
 
+## Aktueller Wiederaufnahmepunkt – 22.11.2026
+
+**Getesteter Code-HEAD:** `6b6068913309084c29c9d0591c78835fff8a6799` · [aktueller Feature-HEAD](https://github.com/duhrrom11/toolya/commits/feature/i18n-de-en-foundation-20261121/) · [Release-Bericht](https://github.com/duhrrom11/toolya/blob/feature/i18n-de-en-foundation-20261121/docs/i18n-release-report.md).
+
+**Belegter CI-Stand:** 18/18 GitHub-Workflows erfolgreich; 214/214 i18n-Node-Tests, 5/5 mobiler Chromium-Smoke, 178/178 vollständige CloudOnly-PR-Browsertests, 166 isolierte Browserprüfungen plus 16 übersprungen, 124/124 Plattform-Node-Tests; Plattform-Security, Connect/Planner/Dashboard und übrige Workflows grün. Kein produktiver Testdatenzugriff. Vollständige Nachweise im neuen Release-Bericht.
+
+**Release-Status:** **NOT READY, PR #291 Draft**. Noch 34 teilweise DE/EN-lokalisierte Toolansichten, 48 heuristisch gefundene Laufzeit-Dateien, echter isolierter Recovery-Mailrückweg, weitere Exporte/Druck/QR und A11y-/Mobile-Abnahmen. `noindex` bleibt, kein Merge/Deployment. Mit den 10 partiellen Haupttools und strikter Audit-Triage weiterarbeiten. Die ältere Chronik folgt unten.
+
 Stand 21.11.2026. **Release-Gate offen.** [Draft-PR #291](https://github.com/duhrrom11/toolya/pull/291) · [aktueller Branch-HEAD und Actions](https://github.com/duhrrom11/toolya/commits/feature/i18n-de-en-foundation-20261121/). Maßgeblich für CI ist der SHA des aktuell geprüften Kandidaten, nicht ein älterer grüner Lauf.
 
 | Commit | Arbeitspaket |
