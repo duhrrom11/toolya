@@ -732,7 +732,7 @@
             document.getElementById('statEvents').innerText = data.events.length;
                         
             let totalCosts = data.events.reduce((sum, e) => sum + Number(e.cost || 0), 0);
-            document.getElementById('statCosts').innerText = totalCosts.toFixed(2).replace('.', ',') + ' €';
+            document.getElementById('statCosts').innerText = totalCosts.toLocaleString(displayLocale, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
 
             if (data.pets.length === 0) {
                 petsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${label('Noch keine Haustiere erfasst.','No pets recorded yet.')}</p>`;
@@ -749,11 +749,11 @@
                     let vetHtml = "";
                     if (p.vet && (p.vet.name || p.vet.tel)) {
                         vetHtml = `<div class="text-[11px] text-teal-700 mt-1 bg-white p-2 border rounded-xl space-y-0.5">
-                            <p class="font-bold">🏥 ${p.vet.name || 'Tierarzt'}</p>
+                            <p class="font-bold">🏥 ${p.vet.name || label('Tierarzt', 'Veterinarian')}</p>
                             ${p.vet.address ? `<p class="text-gray-500">${p.vet.address}</p>` : ''}
                             <div class="b3-pet-vet-contacts flex gap-3 pt-0.5">
                                 ${p.vet.tel ? `<a href="tel:${p.vet.tel}" class="font-bold hover:underline">📞 ${p.vet.tel}</a>` : ''}
-                                ${p.vet.email ? `<a href="mailto:${p.vet.email}" class="text-blue-600 hover:underline">✉️ E-Mail</a>` : ''}
+                                ${p.vet.email ? `<a href="mailto:${p.vet.email}" class="text-blue-600 hover:underline">✉️ ${label('E-Mail', 'Email')}</a>` : ''}
                             </div>
                         </div>`;
                     }
@@ -765,16 +765,16 @@
                                     ${p.photo ? `<button type="button" class="b3-photo-trigger" aria-label="Haustierfoto vergrößern" onclick="zoomImage(this.firstElementChild.src)" data-tool-en-aria-label="Enlarge pet photo"><img alt="${window.__toolyaUILocale === 'en' ? 'Pet photo' : 'Haustierfoto'}" src="${p.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0"></button>` : defaultPetIcon}
                                     <div>
                                         <h4 class="font-bold text-sm text-teal-800">${p.name}</h4>
-                                        <p class="text-xs text-gray-600">${p.species || 'k.A.'} ${p.chip ? '| Chip: ' + p.chip : ''}</p>
+                                        <p class="text-xs text-gray-600">${p.species || label('k.A.', 'N/A')} ${p.chip ? '| Chip: ' + p.chip : ''}</p>
                                     </div>
                                 </div>
-                                <button onclick="deletePet(${p.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
+                                <button onclick="deletePet(${p.id})" class="text-xs text-red-500 hover:underline">${label('Löschen', 'Delete')}</button>
                             </div>
                             <div class="text-[11px] flex flex-wrap gap-2 text-gray-600 pt-1">
-                                ${p.tasso ? `<span class="bg-teal-100 text-teal-800 font-semibold px-2 py-0.5 rounded-full">🛡️ TASSO / Register</span>` : `<span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">Nicht registriert</span>`}
+                                ${p.tasso ? `<span class="bg-teal-100 text-teal-800 font-semibold px-2 py-0.5 rounded-full">🛡️ TASSO / Register</span>` : `<span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">${label('Nicht registriert', 'Not registered')}</span>`}
                                 ${p.food ? `<span>🥣 ${p.food}</span>` : ''}
-                                ${p.allergies ? `<span class="text-red-700 font-semibold">⚠️ Allergie: ${p.allergies}</span>` : ''}
-                                ${p.passport ? `<button onclick="zoomImage('${p.passport}')" class="b3-action b3-outline text-blue-600 font-semibold underline">📄 EU-Ausweis anzeigen</button>` : ''}
+                                ${p.allergies ? `<span class="text-red-700 font-semibold">⚠️ ${label('Allergie', 'Allergy')}: ${p.allergies}</span>` : ''}
+                                ${p.passport ? `<button onclick="zoomImage('${p.passport}')" class="b3-action b3-outline text-blue-600 font-semibold underline">📄 ${label('EU-Ausweis anzeigen', 'View EU pet passport')}</button>` : ''}
                             </div>
                             ${vetHtml}
                         </div>
@@ -793,8 +793,8 @@
                         <div class="b3-pet-med-card p-3 border rounded-xl flex justify-between items-center text-xs ${stockBg}">
                             <div>
                                 <p class="font-bold">${m.name}</p>
-                                <p class="text-[11px] ${isLowStock ? 'text-red-600 font-bold' : 'text-gray-600'}">Vorrat: ${m.stock} ${isLowStock ? '⚠️ Fast leer!' : ''}</p>
-                                <a href="https://www.amazon.de/s?k=${encodeURIComponent(String(m.name || '').trim())}&amp;tag=duhrrom-21" target="_blank" rel="noopener noreferrer sponsored" aria-label="Auf Amazon nach ${String(m.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')} suchen (Partnerlink)" class="inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-lg bg-amber-400 hover:bg-amber-500 text-gray-900 font-semibold text-[11px]">🛒 Amazon</a>
+                                <p class="text-[11px] ${isLowStock ? 'text-red-600 font-bold' : 'text-gray-600'}">${label('Vorrat', 'Stock')}: ${m.stock} ${isLowStock ? label('⚠️ Fast leer!', '⚠️ Almost empty!') : ''}</p>
+                                <a href="https://www.amazon.de/s?k=${encodeURIComponent(String(m.name || '').trim())}&amp;tag=duhrrom-21" target="_blank" rel="noopener noreferrer sponsored" aria-label="${label('Auf Amazon suchen nach', 'Search Amazon for')} ${String(m.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')} ${label('(Partnerlink)', '(affiliate link)')}" class="inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-lg bg-amber-400 hover:bg-amber-500 text-gray-900 font-semibold text-[11px]">🛒 Amazon</a>
                             </div>
                             <button onclick="deleteMedication(${m.id})" class="text-red-500 font-bold px-2 hover:bg-red-100 rounded">✕</button>
                         </div>
@@ -811,7 +811,7 @@
                 deadlinesCard.classList.remove('hidden');
                 deadlinesList.innerHTML = timelyEvents.map(e => {
                     let pet = data.pets.find(p => p.id === e.petId);
-                    let petName = pet ? pet.name : "Unbekannt";
+                    let petName = pet ? pet.name : label('Unbekannt', 'Unknown');
                     let d = new Date(e.date);
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
                     
@@ -820,7 +820,7 @@
                         let expD = new Date(e.expiryDate);
                         let expDiff = Math.ceil((expD - today) / (1000 * 60 * 60 * 24));
                         let expColor = expDiff < 0 ? "text-red-700 font-bold" : (expDiff <= 30 ? "text-amber-700 font-bold" : "text-teal-700");
-                        expiryHint = `<p class="text-[10px] ${expColor} mt-0.5">📅 Impf-Gültigkeit bis: ${expD.toLocaleDateString(displayLocale)} (${expDiff < 0 ? 'Abgelaufen!' : 'in ' + expDiff + ' Tagen'})</p>`;
+                        expiryHint = `<p class="text-[10px] ${expColor} mt-0.5">📅 ${label('Impf-Gültigkeit bis', 'Vaccination valid until')}: ${expD.toLocaleDateString(displayLocale)} (${expDiff < 0 ? label('Abgelaufen!', 'Expired!') : label('in', 'in') + ' ' + expDiff + ' ' + label('Tagen', 'days')})</p>`;
                     }
 
                     let intervalHint = "";
@@ -828,7 +828,7 @@
                         let nextWormDate = new Date(d);
                         nextWormDate.setDate(nextWormDate.getDate() + 90);
                         let wormDiff = Math.ceil((nextWormDate - today) / (1000 * 60 * 60 * 24));
-                        intervalHint = `<p class="text-[10px] text-teal-700 mt-0.5">🪱 Nächste Entwurmung: in ${wormDiff} Tagen (${nextWormDate.toLocaleDateString(displayLocale)})</p>`;
+                        intervalHint = `<p class="text-[10px] text-teal-700 mt-0.5">🪱 ${label('Nächste Entwurmung', 'Next deworming')}: ${label('in', 'in')} ${wormDiff} ${label('Tagen', 'days')} (${nextWormDate.toLocaleDateString(displayLocale)})</p>`;
                     }
 
                     let statusColor = diff < 0 ? "border-red-400 bg-red-50 text-red-800" : (diff <= 14 ? "border-amber-400 bg-amber-50 text-amber-800" : "border-gray-200 bg-gray-50 text-gray-800");
@@ -837,7 +837,7 @@
                         <div class="p-3 border rounded-xl ${statusColor}">
                             <p class="text-[11px] font-bold text-gray-500">${petName} (${e.type})</p>
                             <p class="text-xs font-bold mt-0.5">${e.title}</p>
-                            <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString(displayLocale)})</p>
+                            <p class="text-[11px] mt-1">${diff < 0 ? label('🔴 Überfällig seit', '🔴 Overdue by') + ' ' + Math.abs(diff) + ' ' + label('Tagen', 'days') : (diff === 0 ? label('🟡 Heute fällig!', '🟡 Due today!') : label('🟢 Fällig in', '🟢 Due in') + ' ' + diff + ' ' + label('Tagen', 'days'))} (${d.toLocaleDateString(displayLocale)})</p>
                             ${expiryHint}
                             ${intervalHint}
                         </div>
@@ -857,7 +857,7 @@
             } else {
                 eventsContainer.innerHTML = filteredEvents.map(e => {
                     let pet = data.pets.find(p => p.id === e.petId);
-                    let petName = pet ? pet.name : "Unbekannt";
+                    let petName = pet ? pet.name : label('Unbekannt', 'Unknown');
                     let d = new Date(e.date);
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
                     const days = label(diff === 1 ? 'Tag' : 'Tagen', diff === 1 ? 'day' : 'days');
@@ -881,9 +881,9 @@
                         weightBadge = `<span class="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">${trendIcon} ${e.weight} kg</span>`;
                     }
 
-                    let receiptBtn = e.receipt ? `<button onclick="zoomImage('${e.receipt}')" class="b3-action b3-outline px-2 py-1 bg-teal-50 text-teal-700 rounded-lg text-xs font-semibold hover:bg-teal-100" title="Beleg anzeigen">🧾 Beleg</button>` : '';
+                    let receiptBtn = e.receipt ? `<button onclick="zoomImage('${e.receipt}')" class="b3-action b3-outline px-2 py-1 bg-teal-50 text-teal-700 rounded-lg text-xs font-semibold hover:bg-teal-100" title="${label('Beleg anzeigen', 'View receipt')}">🧾 ${label('Beleg', 'Receipt')}</button>` : '';
 
-                    let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title + ' (' + petName + ')')}&dates=${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('Haustier-Termin für ' + petName)}`;
+                    let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title + ' (' + petName + ')')}&dates=${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent(label('Haustier-Termin für ', 'Pet appointment for ') + petName)}`;
                     
                     return `
                         <div class="b3-pet-event-card p-4 bg-gray-50 border rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -891,7 +891,7 @@
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="text-[10px] bg-teal-100 text-teal-800 font-semibold px-2 py-0.5 rounded-full">${e.type}</span>
                                     <span class="text-xs font-bold text-gray-700">${petName}</span>
-                                    ${e.cost > 0 ? `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">${e.cost.toFixed(2).replace('.', ',')} €</span>` : ''}
+                                    ${e.cost > 0 ? `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">${Number(e.cost).toLocaleString(displayLocale, {minimumFractionDigits: 2, maximumFractionDigits: 2})} €</span>` : ''}
                                     ${weightBadge}
                                 </div>
                                 <h4 class="font-bold text-sm mt-1">${e.title} <span class="text-xs font-normal text-gray-500">${e.type === 'Tagebuch' ? '' : '(' + badge + ')'}</span></h4>
