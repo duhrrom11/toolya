@@ -7,7 +7,7 @@ const cdn="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"
 const html=`<!doctype html><html lang="de"><head><title>Parkplatz-Merker</title></head><body>
 <header class="b3-header"><div class="b3-tool-title"><h1>Parkplatz-Merker</h1><p>Parken verwalten</p></div></header>
 <div id="timerStatus">Kein aktiver Parkschein-Timer</div>\n<button onclick="saveLocation()">Standort speichern</button>\n<span class="toolya-auth-loading" data-tool-en="Checking your sign-in…">Wir prüfen deine Anmeldung …</span>\n<a href="/umzugskisten/" data-tool-en="Step-by-step guide to moving boxes">Schritt-für-Schritt-Anleitung für Umzugskisten</a>
-<script src="${cdn}"></script>\n<script type="module" src="/shared/toolya/i18n/tool-entry.mjs"></script>
+<script src="${cdn}"></script><script>window.__i18nProbe={loaded:typeof window.i18next,initCalls:0};if(window.i18next){const originalInit=window.i18next.init.bind(window.i18next);window.i18next.init=function(...args){window.__i18nProbe.initCalls++;return originalInit(...args)}};</script>\n<script type="module" src="/shared/toolya/i18n/tool-entry.mjs"></script>
 </body></html>`;
 const server=http.createServer((req,res)=>{
  const pathname=new URL(req.url,'http://localhost').pathname;
@@ -58,7 +58,7 @@ const server=http.createServer((req,res)=>{
    assert.equal(await page.locator('.ty-tool-language [data-tool-locale="de"]').getAttribute('aria-pressed'),'true');
    assert.deepEqual(errors,[],mode+' page errors');
    if(mode==='loaded'){
-    const state=await page.evaluate(()=>({type:typeof window.i18next,initialized:window.i18next?.isInitialized,initType:typeof window.i18next?.init,bundles:window.i18next?.hasResourceBundle?.('en','tool')}));
+    const state=await page.evaluate(()=>({type:typeof window.i18next,initialized:window.i18next?.isInitialized,initType:typeof window.i18next?.init,bundles:window.i18next?.hasResourceBundle?.('en','tool'),probe:window.__i18nProbe,pathname:location.pathname}));
     assert.equal(state.initialized,true,'real i18next initialization: '+JSON.stringify(state));
    }
    else assert.equal(await page.evaluate(()=>typeof window.i18next),'undefined');
