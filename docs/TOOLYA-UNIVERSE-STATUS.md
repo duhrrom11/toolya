@@ -11,6 +11,6 @@ Ausgangspunkt ist der Übergabe-Commit `88769b3` auf `feature/gamification-masco
 | W5 | Isoliertes CI und lokale Vorschau eingerichtet. Ausstehend sind die Prüfung gegen die spätere gehostete Konfiguration und die abschließende Datenschutzprüfung der Pflichtnamen. Im Umzugskatalog steht noch kein aktuell bestätigter Artikel. |
 | W6 | Merge, Live-Veröffentlichung und produktive Migration erfordern Endabnahme. |
 
-Die Anschlussprüfung für Draft-PR #312 hat alle 16 grünen Workflows auf dem Ausgangscommit `fbc0279` bestätigt. Danach wurden die Registrierungsdaten aus den Auth-Zugriffstokens entfernt. Die isolierte PostgreSQL-Prüfung und der echte GoTrue-Bestätigungsablauf prüfen die Änderung. Der Supabase-Abgleich ergab keine getrennte gehostete Toolya-Testumgebung.
+Alle 16 Workflows auf `2cfe3e5` waren grün, einschließlich der Korrektur für private Registrierungsdaten in Auth-Zugriffstokens. Die nächste Etappe ergänzt echtes PostgREST hinter dem GoTrue-Bestätigungsablauf. Supabase hat einen gehosteten Testbranch im Free-Tarif abgelehnt. Der erneute Abruf des Umzugsartikels mit dem vorhandenen Amazon-Scraper ergab HTTP 503.
 
 [Weltbeschreibung und Gestaltung](TOOLYA-UNIVERSE-WORLD-BIBLE.md) · [Abnahme, Vorschau und offene Punkte](TOOLYA-UNIVERSE-ABNAHME.md)

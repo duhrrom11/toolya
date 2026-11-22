@@ -13,12 +13,13 @@ Die bestehende Wishlist unter `/tools/wishes/` und ihr Amazon-Importer bleiben e
 
 [Verbindliche Universe-Roadmap und Übergabe für neue Chats](docs/TOOLYA-UNIVERSE-GAMIFICATION-MONETIZATION-ROADMAP.md).
 
-**Achtung:** Das geplante Maskottchen-Level-Tool, Hideout, Abenteuer und zusätzliche Monetarisierung sind ein **separates Entwicklungsprojekt** im Branch `feature/gamification-mascot-levels-v1`. Keine Änderungen daran nach `main` oder live auf toolya.app übernehmen, solange der Nutzer keinen **ausdrücklichen neuen Go-live-Auftrag** erteilt. Die Live-Seite hat weiterhin zwölf Tools. Der lokal gespeicherte Level-V1-Prototyp ist nicht produktionsreif. Für weiterführende Arbeit zuerst die verlinkte Roadmap und AGENTS.md lesen.
+**Die Nebelinseln** stehen im Entwicklungsbranch `feature/gamification-mascot-levels-v1` zur Abnahme bereit. Dort gibt es eine optionale Spielwelt mit persönlichem Versteck, erstem Abenteuer und kontogebundenen Tool-Erfolgen. Die Live-Seite hat weiterhin zwölf Tools. Die Endabnahme und ein ausdrücklicher Go-live-Auftrag sind Voraussetzungen für die Veröffentlichung.
 
+[Entwicklungsstatus](docs/TOOLYA-UNIVERSE-STATUS.md) · [Lokale Vorschau und Abnahme](docs/TOOLYA-UNIVERSE-ABNAHME.md)
 
 ### Newer profile / rewards decisions (22.11.2026)
 
-[Mandatory login, profile fields, sensitive-tool rewards and leaderboard plan](docs/TOOLYA-UNIVERSE-ACCOUNT-PROFILES-REWARDS-LEADERBOARDS.md). The future model requires first and last name during registration, optional country and avatar URL, editable profiles, account XP/badges and optional public rankings; safe neutral XP may be awarded for sensitive tools. These plans replace older P0 restrictions where contradictory. **Only planning; not live.**
+[Konten, Profile, Meilensteine und Rangliste](docs/TOOLYA-UNIVERSE-ACCOUNT-PROFILES-REWARDS-LEADERBOARDS.md) dokumentiert die Produktentscheidungen. Den tatsächlich umgesetzten und geprüften Umfang beschreibt das Abnahmeprotokoll.
 
 
 ### Autonomous ChatGPT Work / Codex handoff (latest)

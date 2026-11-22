@@ -57,10 +57,11 @@ jobs:
             psql -v ON_ERROR_STOP=1 -f "$(find supabase/migrations -name '*_toolya_universe.sql')"
           done
           psql -v ON_ERROR_STOP=1 -f tests/universe/verify.sql
-      - name: Verify account creation and local email with real GoTrue
+      - name: Verify account creation, local email and data API with real GoTrue and PostgREST
         env:
           UNIVERSE_AUTH_TEST_DB: postgres://universe:isolated-only@127.0.0.1:5432/universe_auth_fixture
           UNIVERSE_GOTRUE: /tmp/universe-gotrue
+          UNIVERSE_POSTGREST: /tmp/universe-postgrest/postgrest
         run: |
           auth_image=supabase/gotrue@sha256:d27676aa4d70689de720f0f73e29edd2383267473003e2944576a323efdad1c8
           docker pull "$auth_image"
@@ -68,6 +69,12 @@ jobs:
           trap 'docker rm "$auth_container"' EXIT
           docker cp "$auth_container:/usr/local/bin/auth" "$UNIVERSE_GOTRUE"
           chmod +x "$UNIVERSE_GOTRUE"
+          mkdir -p /tmp/universe-postgrest
+          curl --fail --silent --show-error --location --retry 2 \
+            https://github.com/PostgREST/postgrest/releases/download/v14.8/postgrest-v14.8-linux-static-x86-64.tar.xz \
+            --output /tmp/universe-postgrest.tar.xz
+          printf '%s\n' '172a55aebcee6d7be2c3ea16476fca69a215afcd68d3d1849b7555878909f0b0  /tmp/universe-postgrest.tar.xz' | sha256sum --check
+          tar -xf /tmp/universe-postgrest.tar.xz -C /tmp/universe-postgrest
           createdb universe_auth_fixture
           node tests/universe/auth.cjs
       - name: Verify original mascots
