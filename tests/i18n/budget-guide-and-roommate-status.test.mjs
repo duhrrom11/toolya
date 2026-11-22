@@ -28,3 +28,21 @@ test('roommate cloud setup status is reversible but server diagnostics remain un
  assert.equal(translateToolRuntimeStatus('housemates','de','Creating private cloud storage…'),'Erstelle Cloud-Speicher im Hintergrund...');
  assert.equal(translateToolRuntimeStatus('housemates','en','PostgrestError: permission denied'),'PostgrestError: permission denied');
 });
+
+test('budget OCR outcomes have matching English and German branches without changing recognized values',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../../tools/budget/index.html',import.meta.url),'utf8');
+ const start=html.indexOf('if (fieldsUpdated > 0)');
+ const end=html.indexOf('function nextReceiptId',start);
+ assert.ok(start>=0&&end>start);
+ const block=html.slice(start,end);
+ for(const message of [
+  'Text recognition: ',
+  'Details detected. Existing field values were not overwritten.',
+  'No clear total or valid date detected.',
+  'Text recognition failed.'
+ ])assert.ok(block.includes(message),'missing English OCR outcome: '+message);
+ assert.match(block,/fieldsUpdated \+ ' field\(s\) filled/);
+ assert.match(block,/fieldsUpdated \+ ' Feld\(er\) ausgefüllt/);
+ assert.doesNotMatch(block,/receiptPrice\.value\s*=|receiptTitle\.value\s*=/);
+});
