@@ -1,0 +1,30 @@
+name: i18next migration pilot
+on:
+  push:
+    branches:
+      - feature/i18n-de-en-foundation-20261121
+  pull_request:
+    paths:
+      - 'shared/toolya/i18n/**'
+      - 'tests/i18n/**'
+      - 'tools/parking/index.html'
+      - '.github/workflows/i18next-pilot.yml'
+  workflow_dispatch:
+jobs:
+  node-regressions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate i18next syntax
+        run: |
+          node --check shared/toolya/i18n/i18next-legacy-resources.mjs
+          node --check shared/toolya/i18n/i18next-runtime-adapter.mjs
+          node --check shared/toolya/i18n/i18next-singleton.mjs
+          node --check shared/toolya/i18n/tool-entry.mjs
+      - name: Run focused migration regressions
+        run: node --test tests/i18n/i18next-legacy-resources.test.mjs tests/i18n/i18next-runtime-adapter.test.mjs tests/i18n/i18next-singleton.test.mjs
