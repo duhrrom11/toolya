@@ -2395,7 +2395,8 @@ export function translateToolDialog(tool, language, message) {
  if(language!=='en' || typeof message!=='string') return message;
  const exact=Object.hasOwn(dialogCopy,tool) && Object.hasOwn(dialogCopy[tool],message) ? dialogCopy[tool][message] : undefined;
  if(exact!==undefined) return exact;
- const audited=Object.hasOwn(auditedDialogAdditions,tool) ? auditedDialogAdditions[tool][message] : undefined;
+ const audited=Object.hasOwn(auditedDialogAdditions,tool) && Object.hasOwn(auditedDialogAdditions[tool],message)
+  ? auditedDialogAdditions[tool][message] : undefined;
  if(audited!==undefined) return audited;
  const additional=Object.hasOwn(additionalDialogCopy,tool)&&Object.hasOwn(additionalDialogCopy[tool],message)
   ? additionalDialogCopy[tool][message] : undefined;
