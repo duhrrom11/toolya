@@ -11,6 +11,7 @@
    Scope to this tool so no other tool or mascot layout is affected. */
 @media(max-width:1279px){body.b3.b3-backform main.b3-backform-main{grid-template-columns:minmax(0,1fr)!important}}
 
-/* Keep language selection reachable even when a tool header is collapsed,
-   replaced by the B3 hero, or clipped on narrow screens. */
-.ty-tool-language{position:fixed!important;right:max(12px,env(safe-area-inset-right))!important;bottom:max(12px,env(safe-area-inset-bottom))!important;z-index:10020!important;margin:0!important;box-shadow:0 4px 18px rgba(0,0,0,.22)!important}
+/* Language selection belongs in the visible tool header, not at page bottom. */
+header.b3-header .ty-tool-language,.ty-tool-hero .ty-tool-language{position:relative!important;right:auto!important;bottom:auto!important;z-index:5!important;margin:.35rem 0 0!important;box-shadow:none!important}
+/* Fallback only when a tool genuinely has no usable header. */
+body>.ty-tool-language{position:fixed!important;right:max(12px,env(safe-area-inset-right))!important;bottom:max(12px,env(safe-area-inset-bottom))!important;z-index:10020!important}
