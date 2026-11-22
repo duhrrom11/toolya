@@ -11,7 +11,7 @@ const html=locale=>'<!doctype html><html lang="'+locale+'"><body><h1 data-i18n-m
 const guidePaths=['en/parking-spot/index.html','en/moving-boxes/index.html','en/plant-care/index.html','en/household-budget/index.html'];
 const guideHeadings=guidePaths.map(file=>{
  const source=fs.readFileSync(path.join(root,file),'utf8');
- const heading=source.match(/<h1\\b[^>]*data-i18n-marketing="[^"]+"[^>]*>[^<]+<\\/h1>/);
+ const heading=source.match(/<h1\b[^>]*data-i18n-marketing="[^"]+"[^>]*>[^<]+<\/h1>/);
  assert.ok(heading,'Missing i18next heading in '+file);
  return {file,heading:heading[0]};
 });
