@@ -12,6 +12,9 @@ on:
       - 'tests/i18n/parking-i18next-playwright.cjs'
       - '.github/workflows/i18next-pilot.yml'
   workflow_dispatch:
+concurrency:
+  group: i18next-pilot-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 jobs:
   node-regressions:
     runs-on: ubuntu-latest
