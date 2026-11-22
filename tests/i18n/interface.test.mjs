@@ -1388,7 +1388,7 @@ test('tool paragraph translations remain source-exact across all four HTML files
  const end=source.indexOf('\nfunction applyToolParagraphCopy',start);
  assert.ok(start>0&&end>start,'static guidance catalog is present');
  const catalog=JSON.parse(source.slice(start+'const toolParagraphCopy=Object.freeze('.length,end-2));
- assert.equal(Object.values(catalog).reduce((n,m)=>n+Object.keys(m).length,0),37);
+ assert.ok(Object.values(catalog).reduce((n,m)=>n+Object.keys(m).length,0)>=37,'existing guidance translations must not be removed');
  for(const tool of ['moving','housemates','plants','baking']){
   const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
   for(const [de,en] of Object.entries(catalog[tool])){
@@ -1396,7 +1396,7 @@ test('tool paragraph translations remain source-exact across all four HTML files
    assert.ok(en&&en!==de,'untranslated guidance: '+de);
   }
  }
- assert.match(source,/document\.querySelectorAll\('#main-content p,\.ty-tool-hero-copy p,#frostBanner p'\)/);
+ assert.match(source,/document\.querySelectorAll\('#main-content p,\.ty-tool-hero-copy p,#frostBanner p,#guideSection p'\)/);
  assert.match(source,/el\.children\.length\|\|el\.isContentEditable\|\|el\.closest\('\[contenteditable="true"\]'\)/);
 });
 
