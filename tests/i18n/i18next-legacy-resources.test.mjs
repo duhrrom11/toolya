@@ -14,6 +14,15 @@ test('registers without initializing a second i18next runtime',()=>{
  const calls=[];
  const instance={addResourceBundle:(...args)=>calls.push(args)};
  assert.equal(registerLegacyCatalogues(instance),instance);
- assert.equal(calls.length,8);
+ assert.equal(calls.length,Object.keys(createLegacyI18nextResources().de).length*2);
  assert.ok(calls.every(([, , ,deep,overwrite])=>deep===true&&overwrite===false));
+});
+
+test('existing tool dialogues and runtime statuses are available for i18next',()=>{
+ const resources=createLegacyI18nextResources();
+ assert.equal(resources.en.tool_parking['Kein aktiver Parkschein-Timer'],'No active parking timer');
+ assert.equal(resources.de.tool_parking['Kein aktiver Parkschein-Timer'],'Kein aktiver Parkschein-Timer');
+ assert.equal(resources.en.account['Nicht angemeldet'],'Not signed in');
+ assert.ok(Object.keys(resources.en.tool_moving_selectors).length>0);
+ assert.ok(Object.keys(resources.en.tool_budget).length>0);
 });
