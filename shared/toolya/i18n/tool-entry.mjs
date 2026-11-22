@@ -3,6 +3,7 @@
    Incomplete translation is explicitly disclosed; account and tool workflows still need end-to-end verification. */
 import {normalizeLocale} from './locale.mjs';
 import {createToolyaI18nextAdapter} from './i18next-runtime-adapter.mjs';
+import {initializeToolyaI18next} from './i18next-singleton.mjs';
 import {applyToolInterfaceLocale,translateToolDialog,translateAccountStatus,translateToolRuntimeStatus} from './interface.mjs';
 const key='toolya-locale-v1';
 const uiGlobal=typeof window === 'undefined' ? globalThis : window;
@@ -30,7 +31,7 @@ function mountToolLanguage(){
  // Pilot: use an existing i18next singleton only when it has been initialized.
  // Do not initialize a second runtime or change any tool/account data.
  let i18nextAdapter=null;
- if(name==='parking' && uiGlobal.i18next?.isInitialized){
+ if(name==='parking' && initializeToolyaI18next(uiGlobal.i18next)){
    try{i18nextAdapter=createToolyaI18nextAdapter(uiGlobal.i18next);}catch(_){/* legacy fallback */}
  }
  const localizeDialog=(message)=>i18nextAdapter
