@@ -36,7 +36,11 @@ test('invalid loan date aborts before calendar import',async()=>{
  const context={window:{__toolyaUILocale:'en'},calendarModule:{then(){read++}},alert:v=>alerts.push(v),Date,Number};
  await runInNewContext(fn+";downloadICS('test','2026-02-31','borrower',7)",context);
  assert.equal(read,0);
- assert.equal(alerts[0],'Ungültiges Rückgabedatum.');
+ assert.equal(alerts[0],'Invalid return date.');
+ const german=[];
+ await runInNewContext(fn+";downloadICS('test','2026-02-31','borrower',7)",
+  {window:{__toolyaUILocale:'de'},calendarModule:{then(){throw Error('unexpected import')}},alert:v=>german.push(v),Date,Number});
+ assert.equal(german[0],'Ungültiges Rückgabedatum.');
 });
 test('calendar and reminder UI follows selected locale, preserving item IDs',()=>{
  for(const phrase of ['Friendly reminder','Urgent return','Just checking when','in the next few days','Item due for return','Google Calendar','en-GB'])

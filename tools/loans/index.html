@@ -530,6 +530,22 @@
             renderInventory();
         }
 
+        // Display-only: never change user-controlled option values or selected entries.
+        function localizeLoanSelectPlaceholders() {
+            const english=window.__toolyaUILocale==='en';
+            const entries=[
+                ['itemInventorySelect','','-- Inventar-Gegenstand wählen --','-- Choose inventory item --'],
+                ['itemPersonSelect','','-- Kontakt wählen --','-- Choose contact --'],
+                ['itemPersonSelect','custom','+ Neuen Namen eingeben','+ Enter a new name'],
+                ['filterPerson','','Alle Personen','All people']
+            ];
+            for(const [id,value,de,en] of entries) {
+                const select=document.getElementById(id);
+                const option=select && [...select.options].find(item=>item.value===value);
+                if(option)option.textContent=english?en:de;
+            }
+        }
+
         function loadDropdowns() {
             let data = getData();
             const invSelect = document.getElementById('itemInventorySelect');
@@ -560,6 +576,7 @@
             filterPerson.replaceChildren();
             addOption(filterPerson, '', 'Alle Personen');
             [...new Set(data.items.map(i => i.person))].forEach(p => addOption(filterPerson, p, p));
+            localizeLoanSelectPlaceholders();
         }
 
         function fillInventoryData(select) {
@@ -767,12 +784,13 @@
 
         async function downloadICS(title, dateStr, person, itemId) {
             // A presentation-only calendar: preserve the stored title and date.
+            const english = window.__toolyaUILocale === 'en';
+            const invalidDate=english ? 'Invalid return date.' : 'Ungültiges Rückgabedatum.';
             const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateStr));
-            if (!match) return alert('Ungültiges Rückgabedatum.');
+            if (!match) return alert(invalidDate);
             const day = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
             if (!Number.isFinite(day.getTime()) || day.toISOString().slice(0,10) !== dateStr)
-                return alert('Ungültiges Rückgabedatum.');
-            const english = window.__toolyaUILocale === 'en';
+                return alert(invalidDate);
             const event = {
                 title: `${english ? 'Return' : 'Rückgabe'}: ${title} (${person})`,
                 date: dateStr,
@@ -832,7 +850,7 @@
         }
 
         document.addEventListener('toolya:locale-change', () => {
-            if (loansCloudReady) { renderInventory(); renderApp(); }
+            if (loansCloudReady) { localizeLoanSelectPlaceholders(); renderInventory(); renderApp(); }
         });
 
         // Bind once on document: B3 panels can replace the item-list element.

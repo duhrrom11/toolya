@@ -207,3 +207,9 @@ Basis `cc9876d92ce5dfefc1504098ea73a3fd03969dac`: 209/209 statische Node-i18n-Te
 
 - Im isolierten Chromium-Test des Dashboards wird jetzt nach Verleih-/WG-Abschluss der reale EN-Sprachbutton gedrückt. Die schreibgeschützten Fahrzeug-/Haustiertermine müssen wörtliche Benutzerwerte und englische Anwendungsbegriffe anzeigen, ohne Bestätigungs-Checkboxen und ohne neue CloudOnly-Mock-Schreibvorgänge. DE-Rückwechsel geprüft.
 - Testdatei `tests/platform/dashboard-shopping-browser.cjs` erweitert; tatsächlichen neuen CI-Lauf vor Erfolgsbehauptung abwarten. Release bleibt Draft/NOT READY.
+
+### 22.11.2026 – Verleih: DE/EN-Dropdowns ohne Datenverlust
+
+- Systemeigene Kontakt-/Inventar-/Custom-/Filter-Optionsbeschriftungen folgen DE/EN sowohl nach `loadDropdowns()` als auch beim Sprachwechsel; ausgewählte Werte und frei eingegebene Namen bleiben unverändert. Kalenderdatei-Validierungsfehler zweisprachig.
+- Node-Regression für deutsche und englische ICS-Fehler sowie echter 320px-Chromiumtest der Dropdowns mit Sonderzeichen und ohne Cloud-Schreiboperationen hinzugefügt. CI-Ergebnis auf diesem HEAD noch offen.
+- Draft/noindex/Prod-Daten/Markenassets unverändert. Release-Gate offen.

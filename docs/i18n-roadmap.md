@@ -524,3 +524,9 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 ## 22.11.2026 – Browser-Nachweis für EN-Connect-Fristen
 
 - Zusätzliche echte Chromium-Prüfung im isolierten Dashboard-Connect-Test: Sprachwechsel DE→EN→DE, Übersetzung von Fahrzeug- und Impf-Fristen bei unveränderten Nutzertiteln, reine readonly-Darstellung und Null neue Cloud-Schreiboperationen. Bei Fehlschlag Root Cause beheben und erneut prüfen.
+
+## 22.11.2026 – Dynamische Verleih-Auswahl und ICS-Validierung
+
+- Kontakt-, Inventar- und Personenfilter-Platzhalter werden auch nach dem Cloud-Neuaufbau DE/EN angezeigt. Bei Sprachwechsel werden nur systemeigene Platzhaltertexte verändert, niemals Optionswerte, ausgewählte Kontakt-/Inventar-/Filterwerte oder Nutzereingaben.
+- Ungültige ganztägige Verleih-ICS-Termine melden die Validierung jetzt in DE/EN. Synthetische Node-Tests und isolierter 320px-Chromiumfall ergänzt; im Runtime-Smoke enthalten.
+- CI auf dem neuen HEAD prüfen, Release weiterhin NOT READY/Draft und noindex geschützt.

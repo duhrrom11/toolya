@@ -2701,3 +2701,36 @@ test('i18n account dialog keyboard trap restores normal interaction after Escape
  await expect.poll(()=>page.evaluate(()=>!!document.querySelector('.b3-shell')?.inert)).toBe(false);
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
 });
+
+test('i18n loans dynamic contact and inventory options preserve selected values on DE/EN change',async({page})=>{
+ const fixture={contacts:[{id:15,name:'Ada & Bob',phone:''}],
+ inventory:[{id:17,title:'Kabel <1>',category:'Werkzeug',serial:'',gpsLink:''}],
+ items:[{id:19,title:'Kabel <1>',person:'Ada & Bob',category:'Werkzeug',date:'2026-11-17',returnDate:'2026-12-05',status:'active',photo:''}]};
+ await isolated(page,true,false,fixture);
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/loans/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>loansCloudReady&&!!loansCloudController?.ready)).toBe(true);
+ const person=page.locator('#itemPersonSelect'),inv=page.locator('#itemInventorySelect'),filter=page.locator('#filterPerson');
+ await expect(person.locator('option[value="custom"]')).toHaveText('+ Enter a new name');
+ await expect(inv.locator('option[value=""]')).toHaveText('-- Choose inventory item --');
+ await expect(filter.locator('option[value=""]')).toHaveText('All people');
+ await person.selectOption({label:'Ada & Bob'});
+ await inv.selectOption({label:'Kabel <1> (Werkzeug)'});
+ await filter.selectOption({label:'Ada & Bob'});
+ const selected=await page.evaluate(()=>({
+  person:document.getElementById('itemPersonSelect').value,
+  inventory:document.getElementById('itemInventorySelect').value,
+  filter:document.getElementById('filterPerson').value
+ }));
+ await page.locator('[data-tool-locale="de"]').click();
+ await expect(person.locator('option[value="custom"]')).toHaveText('+ Neuen Namen eingeben');
+ await expect(filter.locator('option[value=""]')).toHaveText('Alle Personen');
+ await page.locator('[data-tool-locale="en"]').click();
+ await expect(inv.locator('option[value=""]')).toHaveText('-- Choose inventory item --');
+ expect(await page.evaluate(()=>({
+  person:document.getElementById('itemPersonSelect').value,
+  inventory:document.getElementById('itemInventorySelect').value,
+  filter:document.getElementById('filterPerson').value
+ }))).toEqual(selected);
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
