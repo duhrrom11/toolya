@@ -20,6 +20,11 @@ const guideHeadings=guidePaths.map(file=>{
 });
 const server=http.createServer((req,res)=>{
  const pathname=new URL(req.url,'http://localhost').pathname;
+ if(pathname.startsWith('/homepage-fixture/')){
+  const locale=pathname.endsWith('/de')?'de':'en';
+  const cards=homepageCards[locale==='de'?0:1].headings.map(item=>'<h3 data-i18n-marketing="'+item.key+'">'+item.label+'</h3>').join('');
+  res.writeHead(200,{'content-type':'text/html'}).end('<!doctype html><html lang="'+locale+'"><body>'+cards+'<script src="'+cdn+'"></script><script type="module" src="/shared/toolya/i18n/'+(locale==='de'?'switcher':'marketing')+'.mjs"></script></body></html>');return;
+ }
  if(pathname.startsWith('/guide-fixture/')){
   const index=Number(pathname.slice('/guide-fixture/'.length));
   if(!Number.isInteger(index)||!guideHeadings[index]){res.writeHead(404).end();return;}
