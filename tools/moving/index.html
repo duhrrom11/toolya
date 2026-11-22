@@ -196,7 +196,7 @@
                 <h3 class="font-bold text-lg">🗄️ Kisten und Inhalte finden</h3>
                 <div class="flex flex-wrap gap-2 w-full md:w-auto b3-moving-filters">
                     <label class="helferlein-field" for="tagFilter"><span class="helferlein-field-label">Inventar nach Kennzeichnung filtern</span><select id="tagFilter" onchange="renderInventory()" class="p-2 border rounded-xl text-sm bg-white" aria-label="Inventar nach Kennzeichnung filtern">
-                        <option value="">Alle Tags</option>
+                        <option value=" data-tool-en="All tags">>Alle Tags</option>
                         <option value="Standard">Standard</option>
                         <option value="Zerbrechlich">Zerbrechlich</option>
                         <option value="Wertvoll">Wertvoll</option>
@@ -204,7 +204,7 @@
                     </select></label>
                     <label class="helferlein-field" for="sortFilter"><span class="helferlein-field-label">Inventar sortieren</span><select id="sortFilter" onchange="renderInventory()" class="p-2 border rounded-xl text-sm bg-white" aria-label="Inventar sortieren">
                         <option value="name">Sortierung: Name</option>
-                        <option value="value-desc">Höchster Wert zuerst</option>
+                        <option value="value-desc data-tool-en="Highest value first">>Höchster Wert zuerst</option>
                         <option value="value-asc">Geringster Wert zuerst</option>
                     </select></label>
                     <label class="helferlein-field" for="searchBox"><span class="helferlein-field-label">🔍 Suchen (Kiste, Artikel, Barcode)...</span><input type="text" id="searchBox" oninput="renderInventory()" placeholder="🔍 Suchen (Kiste, Artikel, Barcode)..." class="p-2 border rounded-xl text-sm flex-grow md:w-56" aria-label="🔍 Suchen (Kiste, Artikel, Barcode)..."></label>
