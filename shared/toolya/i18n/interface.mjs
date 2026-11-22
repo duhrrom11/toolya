@@ -1821,6 +1821,38 @@ function applyTemplateCopy(document,language){
  }
 }
 
+/* Preserve inline emphasis in the budget guide: translate only known authored
+   text nodes, never replace HTML, links, controls or user-generated content. */
+const budgetGuideFragments=Object.freeze({
+ 'Wähle ':'Choose ',
+ 'Ausgabe':'Expense',
+ 'Einnahme':'Income',
+ ' oder erstelle wiederkehrende ':' or create recurring ',
+ 'Fixkosten/Abos':'Fixed costs/subscriptions',
+ '. Gib Betrag, Datum, Kategorie und Zahlungsart ein. Alle Monats-Salden und Fixkosten-Quoten werden live berechnet.':'. Enter the amount, date, category and payment method. Monthly balances and recurring-cost ratios update automatically.',
+ 'Scanne Belege mit dem ':'Scan receipts with the ',
+ 'OCR-Scanner':'OCR scanner',
+ ', lade mehrere Dokumentenfotos hoch oder schärfe verblasste Thermobons über den Helligkeits-/Kontrastfilter nach.':', upload multiple document photos or improve faded thermal receipts with the brightness and contrast controls.'
+});
+const budgetGuideOriginals=new WeakMap();
+function applyBudgetGuideFragments(document,language){
+ const guide=document.querySelector('#guideSection');
+ if(!guide)return;
+ const paragraphs=guide.querySelectorAll('p');
+ for(const index of [0,2]){
+  const paragraph=paragraphs[index];
+  if(!paragraph)continue;
+  const walker=document.createTreeWalker(paragraph,4);
+  while(walker.nextNode()){
+   const node=walker.currentNode;
+   if(!budgetGuideOriginals.has(node))budgetGuideOriginals.set(node,node.nodeValue);
+   const original=budgetGuideOriginals.get(node);
+   if(Object.hasOwn(budgetGuideFragments,original))
+    node.nodeValue=language==='en'?budgetGuideFragments[original]:original;
+  }
+ }
+}
+
 export function applyToolInterfaceLocale(document,tool,language){
  for(const [selector,translation,attribute,attributeTranslation] of [...common,...(toolTranslations[tool]||[]),...(extendedFormTranslations[tool]||[])]){
   const translated=attribute?attributeTranslation:translation;
@@ -1836,6 +1868,7 @@ export function applyToolInterfaceLocale(document,tool,language){
  applyToolHelpBodyCopy(document,tool,language);
  applyToolAlertCopy(document,tool,language);
  applyToolParagraphCopy(document,tool,language);
+ if(tool==='budget')applyBudgetGuideFragments(document,language);
  applyToolSmallCopy(document,tool,language);
  applyToolAccessibilityCopy(document,tool,language);
  applyTemplateCopy(document,language);
