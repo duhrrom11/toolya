@@ -2178,6 +2178,9 @@ export function translateToolDialog(tool, language, message) {
    Translate only exact application-owned messages or a fixed prefix. Never
    translate account identifiers, free-form descriptions or calculated values. */
 const toolRuntimeStatus=Object.freeze({
+ housemates:{
+  'Erstelle Cloud-Speicher im Hintergrund...':'Creating private cloud storage…'
+ },
  budget:{
   '🔍 Scanne Kassenbon... Bitte warten.':'🔍 Scanning receipt… Please wait.',
   'ℹ️ Angaben erkannt. Bereits ausgefüllte Felder wurden nicht überschrieben.':'ℹ️ Details recognised. Existing fields were not overwritten.',
