@@ -2819,3 +2819,31 @@ test('budget category options localize without changing stored category values',
  assert.deepEqual(options.map(option=>option.textContent),original,'German labels restored');
  assert.deepEqual(options.map(option=>option.value),values,'category values remain stable after switching back');
 });
+
+
+test('tool browser titles switch DE → EN → DE for all ten tool pages without replacing custom titles', () => {
+ const titles={
+  moving:['Umzugskisten und Inventarliste | Toolya','Moving boxes and inventory | Toolya'],
+  housemates:['WG-Organisator mit Haushaltsbuch | Toolya','Roommate organiser and household budget | Toolya'],
+  plants:['Pflanzenpflege-App mit Gießplan | Toolya','Plant care and watering planner | Toolya'],
+  baking:['Backform-Umrechner & Rezeptrechner | Toolya','Cake pan and recipe calculator | Toolya'],
+  budget:['Haushaltsbuch mit Kassenbon-Scanner | Toolya','Household budget and receipt scanner | Toolya'],
+  car:['Autokosten-Rechner | Toolya','Car expense calculator | Toolya'],
+  loans:['Verliehene Gegenstände verwalten | Toolya','Track lent items | Toolya'],
+  'pet-health':['Tiergesundheit – Gesundheitstagebuch für Haustiere | Toolya','Pet health journal | Toolya'],
+  parking:['Parkplatz-Merker | Toolya','Parking spot tracker | Toolya'],
+  meters:['Zählerstände erfassen: Strom, Gas & Wasser | Toolya','Meter readings: electricity, gas and water | Toolya']
+ };
+ for(const [tool,[de,en]] of Object.entries(titles)){
+  const {document}=parseHTML('<html><head><title></title></head><body><input id="record" value="private entry"></body></html>');
+  document.title=de;
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(document.title,en,tool+' English browser tab');
+  assert.equal(document.querySelector('#record').value,'private entry','stored input untouched');
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(document.title,de,tool+' German browser tab restored');
+  document.title='User-defined page title';
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(document.title,'User-defined page title','non-catalog title preserved');
+ }
+});
