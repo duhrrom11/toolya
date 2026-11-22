@@ -227,7 +227,7 @@
                 <button onclick="openAddGoalModal()" class="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-sm b3-action">+ Neues Sparziel</button>
             </div>
             <div id="savingsGoalsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <p class="text-xs text-gray-400 text-center col-span-3 py-2">Noch keine Sparziele angelegt.</p>
+                <p class="text-xs text-gray-400 text-center col-span-3 py-2">${window.__toolyaUILocale === 'en' ? 'No savings goals yet.' : 'Noch keine Sparziele angelegt.'}</p>
             </div>
         </div>
 
@@ -721,6 +721,18 @@ async function toolyaCloudBoot(tool) {
             "Lebensmittel", "Wohnen", "Energie", "Auto", "Freizeit", 
             "Elektronik", "Gesundheit", "Haustiere", "Verträge", "Sonstiges"
         ];
+        // Display-only: preserve German category keys in storage and filters.
+        const budgetCategoryEn = Object.freeze({
+            Lebensmittel:'Groceries', Wohnen:'Housing', Energie:'Energy',
+            Auto:'Car', Freizeit:'Leisure', Elektronik:'Electronics',
+            Gesundheit:'Health', Haustiere:'Pets', Verträge:'Contracts',
+            Sonstiges:'Other'
+        });
+        function budgetCategoryLabel(category) {
+            return window.__toolyaUILocale === 'en' && typeof category === 'string'
+                && Object.hasOwn(budgetCategoryEn,category)
+                ? budgetCategoryEn[category] : category;
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             const receiptDateInput = document.getElementById('receiptDate');
@@ -1387,7 +1399,7 @@ async function toolyaCloudBoot(tool) {
                 return `
                     <div class="space-y-1">
                         <div class="flex justify-between text-xs">
-                            <span class="font-bold text-gray-700">${cat}</span>
+                            <span class="font-bold text-gray-700">${escapeHaushaltsHtml(budgetCategoryLabel(cat))}</span>
                             <span class="text-gray-500">${spent.toFixed(2)} € / <strong>${limit.toFixed(2)} €</strong></span>
                         </div>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
@@ -1423,7 +1435,7 @@ async function toolyaCloudBoot(tool) {
             const goals = getSavingsGoals();
             const container = document.getElementById('savingsGoalsGrid');
             if (goals.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-2">Noch keine Sparziele angelegt.</p>`;
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-2">${window.__toolyaUILocale === 'en' ? 'No savings goals yet.' : 'Noch keine Sparziele angelegt.'}</p>`;
                 return;
             }
             container.innerHTML = goals.filter(g => g && typeof g === 'object').map(g => {
@@ -1439,14 +1451,14 @@ async function toolyaCloudBoot(tool) {
                             <button onclick="deleteSavingsGoal(${safeHaushaltsId(g.id)})" class="text-red-500 text-xs font-bold hover:opacity-80">✕</button>
                         </div>
                         <div class="flex justify-between text-xs text-gray-600">
-                            <span>Gespart: <strong>${saved.toFixed(2)} €</strong></span>
-                            <span>Ziel: ${goal.toFixed(2)} €</span>
+                            <span>${window.__toolyaUILocale === 'en' ? 'Saved:' : 'Gespart:'} <strong>${saved.toFixed(2)} €</strong></span>
+                            <span>${window.__toolyaUILocale === 'en' ? 'Target:' : 'Ziel:'} ${goal.toFixed(2)} €</span>
                         </div>
                         <div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden">
                             <div class="bg-emerald-600 h-2.5 transition-all" style="width: ${percent}%"></div>
                         </div>
                         <div class="flex gap-2 pt-1">
-                            <button onclick="depositGoal(${safeHaushaltsId(g.id)})" class="flex-1 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold b3-action">+ Einzahlen</button>
+                            <button onclick="depositGoal(${safeHaushaltsId(g.id)})" class="flex-1 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold b3-action">${window.__toolyaUILocale === 'en' ? '+ Deposit' : '+ Einzahlen'}</button>
                         </div>
                     </div>
                 `;
@@ -1520,22 +1532,22 @@ async function toolyaCloudBoot(tool) {
                             <div class="space-y-1">
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="text-sm font-bold text-gray-900">${escapeHaushaltsHtml(r.title)}</span>
-                                    <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-semibold">${escapeHaushaltsHtml(r.category)}</span>
-                                    ${r.isFixkosten ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">🔄 Fixkosten</span>` : ''}
-                                    ${r.isTax ? `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">💼 Steuer</span>` : ''}
-                                    ${hasWarranty ? (isWarrantyActive ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">Garantie aktiv (${diffDaysWarranty} T)</span>` : `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">Garantie abgelaufen</span>`) : ''}
-                                    ${isReturnActive ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">⏱️ Rückgabe: ${diffDaysReturn} T</span>` : ''}
+                                    <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-semibold">${escapeHaushaltsHtml(budgetCategoryLabel(r.category))}</span>
+                                    ${r.isFixkosten ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '🔄 Recurring cost' : '🔄 Fixkosten'}</span>` : ''}
+                                    ${r.isTax ? `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '💼 Tax' : '💼 Steuer'}</span>` : ''}
+                                    ${hasWarranty ? (isWarrantyActive ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? 'Warranty active (' + diffDaysWarranty + ' d)' : 'Garantie aktiv (' + diffDaysWarranty + ' T)'}</span>` : `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">Garantie abgelaufen</span>`) : ''}
+                                    ${isReturnActive ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '⏱️ Return: ' + diffDaysReturn + ' d' : '⏱️ Rückgabe: ' + diffDaysReturn + ' T'}</span>` : ''}
                                 </div>
                                 <p class="text-xs text-gray-600">
-                                    Betrag: <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${displayPrice} €</strong> | Datum: ${escapeHaushaltsHtml(r.date)} | Zahlungsart: ${r.paymentMethod || 'k.A.'}
+                                    ${window.__toolyaUILocale === 'en' ? 'Amount:' : 'Betrag:'} <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${displayPrice} €</strong> | ${window.__toolyaUILocale === 'en' ? 'Date:' : 'Datum:'} ${escapeHaushaltsHtml(r.date)} | ${window.__toolyaUILocale === 'en' ? 'Payment method:' : 'Zahlungsart:'} ${escapeHaushaltsHtml(r.paymentMethod || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.'))}
                                 </p>
                                 <p class="text-[11px] text-gray-500">
-                                    ${r.store ? 'Partner: ' + escapeHaushaltsHtml(r.store) + ' | ' : ''} ${r.sn ? 'S/N: ' + escapeHaushaltsHtml(r.sn) + ' | ' : ''} ${r.location ? 'Karton: ' + escapeHaushaltsHtml(r.location) + ' | ' : ''} ${r.note ? 'Notiz: ' + r.note : ''}
+                                    ${r.store ? 'Partner: ' + escapeHaushaltsHtml(r.store) + ' | ' : ''} ${r.sn ? 'S/N: ' + escapeHaushaltsHtml(r.sn) + ' | ' : ''} ${r.location ? (window.__toolyaUILocale === 'en' ? 'Box: ' : 'Karton: ') + escapeHaushaltsHtml(r.location) + ' | ' : ''} ${r.note ? (window.__toolyaUILocale === 'en' ? 'Note: ' : 'Notiz: ') + r.note : ''}
                                 </p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
-                            <button onclick="editReceipt(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-bold b3-action b3-outline">✏️ Bearbeiten</button>
+                            <button onclick="editReceipt(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-bold b3-action b3-outline">${window.__toolyaUILocale === 'en' ? '✏️ Edit' : '✏️ Bearbeiten'}</button>
                             ${hasWarranty ? `<button onclick="openQRModal(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold b3-action b3-outline">🏷️ QR</button>` : ''}
                             ${hasWarranty ? `<button onclick="openGoogleCalendar(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold b3-action b3-outline">📅 Google</button>` : ''}
                             ${hasWarranty ? `<button onclick="downloadICS(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold b3-action b3-outline">📄 .ics</button>` : ''}
@@ -1552,7 +1564,7 @@ async function toolyaCloudBoot(tool) {
             const container = document.getElementById('budgetInputList');
             container.innerHTML = defaultCategories.map((cat, index) => `
                 <div class="flex justify-between items-center gap-2">
-                    <label for="budget-amount-${index}" class="font-semibold text-gray-700">${cat}:</label>
+                    <label for="budget-amount-${index}" class="font-semibold text-gray-700">${escapeHaushaltsHtml(budgetCategoryLabel(cat))}:</label>
                     <input id="budget-amount-${index}" type="number" step="10" data-cat="${cat}" value="${Number.isFinite(Number(budgets[cat])) && Number(budgets[cat]) >= 0 ? Number(budgets[cat]) : 0}" class="p-2 border rounded-xl w-32 text-right font-bold">
                 </div>
             `).join('');
