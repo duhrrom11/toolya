@@ -2914,7 +2914,7 @@ test('dynamic budget cards and receipt badges provide paired, display-only DE/EN
  ]){
   assert.ok(source.includes(de) && source.includes(en),'paired source copy: '+de);
  }
- assert.match(source,/escapeHaushaltsHtml\(r\.paymentMethod \|\|/,'payment values escaped but not translated');
+ assert.match(source,/escapeHaushaltsHtml\(budgetPaymentLabel\(r\.paymentMethod \|\|/,'payment values localized only for display and HTML-escaped');
  assert.match(source,/escapeHaushaltsHtml\(r\.title\)/,'user-supplied savings title untouched');
  assert.match(source,/escapeHaushaltsHtml\(r\.date\)/,'recorded dates untouched');
 });
@@ -3004,4 +3004,36 @@ test('budget accessible chart summaries switch DE/EN using read-only computed va
  const refresh=source.slice(source.indexOf('function refreshBudgetChartSummaries()'),end);
  assert.ok(!refresh.includes('saveBudgets(') && !refresh.includes('localStorage.setItem('),'summary refresh has no writes');
  assert.match(source,/refreshBudgetChartSummaries\(\);\s*\}\s*document\.addEventListener\('toolya:locale-change', refreshBudgetDynamicLocale\)/,'locale change refreshes accessible summaries');
+});
+
+
+test('budget payment methods translate only known display values and retain saved IDs', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {fileURLToPath}=await import('node:url');
+ const {resolve,dirname}=await import('node:path');
+ const {createContext,runInContext}=await import('node:vm');
+ const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../../tools/budget/index.html'),'utf8');
+ const dictionary=source.match(/const budgetPaymentEn = Object\.freeze\((\{[\s\S]*?\})\);/);
+ const formatter=source.match(/function budgetPaymentLabel\(method\) \{[\s\S]*?\n        \}/);
+ assert.ok(dictionary && formatter,'payment translation uses source-verified identifiers');
+ const context={window:{__toolyaUILocale:'en'}};
+ createContext(context);
+ runInContext(dictionary[0]+'\n'+formatter[0],context);
+ const pairs={
+  'EC-Karte':'Debit card',Bargeld:'Cash',Kreditkarte:'Credit card',
+  'Überweisung':'Bank transfer / standing order',PayPal:'PayPal'
+ };
+ for(const [key,expected] of Object.entries(pairs)){
+  assert.equal(context.budgetPaymentLabel(key),expected);
+  context.window.__toolyaUILocale='de';
+  assert.equal(context.budgetPaymentLabel(key),key,'persisted German code remains unchanged');
+  context.window.__toolyaUILocale='en';
+  assert.match(source,new RegExp('value="'+key+'"'),'source select keeps the original payment code');
+ }
+ for(const key of ['__proto__','constructor','toString','Custom method','<img src=x>']){
+  assert.equal(context.budgetPaymentLabel(key),key,'untrusted or prototype key stays verbatim');
+ }
+ assert.match(source,/escapeHaushaltsHtml\(budgetPaymentLabel\(r\.paymentMethod/,'transaction display escapes payment label');
+ assert.match(source,/escapeHaushaltsHtml\(r\.note\)/,'free-form notes are escaped before dynamic insertion');
+ assert.match(source,/receiptPaymentMethod'\)\.value = r\.paymentMethod/,'saved payment method unchanged when editing');
 });
