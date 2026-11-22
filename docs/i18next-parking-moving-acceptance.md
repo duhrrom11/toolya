@@ -22,3 +22,12 @@ This is an isolated i18n-pilot acceptance, not an end-to-end acceptance of the a
 ## Extended validation pending (2026-11-22)
 
 Commit `12e73556b079aa964328aae9504003a642c5198b` replaces the i18next API test double with the pinned real `i18next@23.16.8` UMD browser bundle, served locally by Playwright interception of the CDN URL. The outage scenario aborts that request and verifies fallback. Both tools additionally receive an offline full-page HTML smoke check with remote services blocked; these smoke checks do **not** verify authentication, storage, or complete end-to-end functionality. CI results for this new commit have not yet been confirmed. The earlier pilot acceptance remains valid only for the earlier tested scope. The full browser workflow for commit `3b71ca8` (run 44999742893) was still in progress when last checked.
+
+## Confirmed CI update (2026-11-22)
+
+- The complete isolated browser workflow for commit `3b71ca8` **passed**: run [44999742893](https://github.com/duhrrom11/toolya/actions/runs/44999742893), job `137138433969`.
+- The i18next node regression job `137139247807` for run [45000005671](https://github.com/duhrrom11/toolya/actions/runs/45000005671) **passed**. Its browser job `137139247963` was still running at verification time; no browser acceptance is claimed for that run.
+- The i18next run [45000016709](https://github.com/duhrrom11/toolya/actions/runs/45000016709) was queued when checked.
+- Latest smoke-test adjustment: commit `fb65397b53d1d3184cf8af70810f6409b5d9f599` uses DOM `textContent` rather than rendered `innerText` so the expected authentication visibility gate does not invalidate the offline HTML smoke test. Its runs `45000079415` (static checks), `45000079358` (i18next pilot), and `45000079373` (isolated browser tests) had not completed when checked.
+
+**Acceptance decision:** earlier isolated pilot and comprehensive browser checks are green. Real i18next UMD / CDN-fallback and full-page smoke changes are **pending their own successful browser CI results**. No release approval or production changes.
