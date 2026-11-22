@@ -3,13 +3,13 @@
  * No DOM observers, user-data rewriting, authentication or storage access.
  */
 import {I18N_LEGACY_TOOL_CATALOGUES as legacy} from './interface.mjs';
-import {registerLegacyCatalogues} from './i18next-legacy-resources.mjs';
+import {initializeToolyaI18next} from './i18next-singleton.mjs';
 
 const safeTool=/^[a-z0-9_-]+$/i;
 export function createToolyaI18nextAdapter(i18next){
  if(!i18next||typeof i18next.t!=='function'||typeof i18next.addResourceBundle!=='function')
   throw new TypeError('An initialized i18next instance is required');
- registerLegacyCatalogues(i18next);
+ if(!initializeToolyaI18next(i18next))throw new TypeError('An initialized i18next instance is required');
  const translateExact=(locale,namespace,value)=>{
   if(typeof value!=='string'||!['de','en'].includes(locale))return value;
   const bundle=i18next.getResourceBundle?.(locale,namespace);
