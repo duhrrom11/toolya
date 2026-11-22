@@ -1296,6 +1296,10 @@ const toolParagraphCopy=Object.freeze({
     "Rührkuchen: Bei Raumtemperatur in Alufolie luftdicht verpacken (3-4 Tage frisch).": "Pound cake: wrap airtight in foil and store at room temperature (fresh for 3–4 days).",
     "Alle Rechenwerkzeuge bleiben erreichbar. Hier kannst du Reihenfolge und Kartendichte anpassen.": "All calculators remain accessible. Adjust their order and card density here."
   },
+  "budget": {
+    "Setze Monats-Limits pro Kategorie mit visuellen Ampel-Fortschrittsbalken. Erstelle eigene Sparschwein-Ziele (Urlaub, Notgroschen) und zahle flexibel Beträge ein.": "Set monthly spending limits by category and track progress visually. Create savings goals for holidays or emergencies and add contributions whenever you like.",
+    "Trage bei einem Kaufbeleg die Garantiedauer und die Rückgabefrist ein. Das Garantieende kannst du in Google Kalender übernehmen oder als Kalenderdatei (ICS) herunterladen. Für Geräte kannst du einen QR-Sticker zum Beleg drucken. Steuerrelevante Buchungen exportierst du als CSV. Den allgemeinen Finanzbericht erhältst du als PDF.": "Record warranty periods and return deadlines for purchases. Add warranty expiry dates to Google Calendar or download an ICS file. Print receipt QR labels for devices, export tax-relevant transactions as CSV, or download a financial report as PDF."
+  },
   "parking": {
     "Speichere deinen Parkplatz mit Standort, Notiz oder Foto. Behalte Parkzeit und Gebühren im Blick.": "Save your parking spot with its location, notes or a photo. Keep track of parking time and fees.",
     "Über „PDF-Report“ erstellst du eine Übersicht deiner Parkvorgänge und Gebühren.": "Use the PDF report to review your parking sessions and fees.",
@@ -1342,7 +1346,7 @@ const toolParagraphCopy=Object.freeze({
 function applyToolParagraphCopy(document,tool,language){
  const dictionary=toolParagraphCopy[tool];
  if(!dictionary)return;
- for(const el of document.querySelectorAll('#main-content p,.ty-tool-hero-copy p,#frostBanner p')){
+ for(const el of document.querySelectorAll('#main-content p,.ty-tool-hero-copy p,#frostBanner p,#guideSection p')){
   if(el.children.length||el.isContentEditable||el.closest('[contenteditable="true"]'))continue;
   const source=originals.get(el)?.get('text')??el.textContent;
   const key=source.trim();
