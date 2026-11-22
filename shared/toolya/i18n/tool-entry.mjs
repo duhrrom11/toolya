@@ -87,7 +87,15 @@ function mountToolLanguage(){
      return nativeDialogs[method](localizeDialog(message),...args);
    };
  }
- uiGlobal.toolyaUiText=(value)=>i18nextAdapter&&selected==='en'?i18nextAdapter.translateAccount(selected,value):translateAccountStatus(selected,value);
+ uiGlobal.toolyaUiText=(value)=>{
+   if(i18nextAdapter&&selected==='en'){
+     const exact=i18nextAdapter.translateAccount(selected,value);
+     if(exact!==value)return exact;
+   }
+   // The account namespace contains exact keys; retain approved dynamic
+   // prefixes (for example a signed-in email) without translating user data.
+   return translateAccountStatus(selected,value);
+ };
  const accountStatusSelectors={
    moving:['#userInfo','#cloudStatus'],
    housemates:['#cloud-status-text','#header-user-email'],
