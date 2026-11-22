@@ -508,7 +508,7 @@
 
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
-                    <h3 class="font-bold text-base text-gray-900">🥦 Ernährungs- & Allergie-Matrix</h3>
+                    <h3 class="font-bold text-base text-gray-900" data-tool-en="🥦 Dietary &amp; allergy matrix">🥦 Ernährungs- & Allergie-Matrix</h3>
                     <button onclick="openDietModal()" class="b3-action b3-outline px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold">✏️ Bearbeiten</button>
                 </div>
                 <div id="dietMatrixList" class="space-y-2 text-xs"></div>
@@ -518,7 +518,7 @@
         <!-- VERTRÄGE -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="contracts" id="b3-contracts">
             <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="font-bold text-base text-gray-900">📜 WG-Verträge & Abo-Manager</h3>
+                <h3 class="font-bold text-base text-gray-900" data-tool-en="📜 Household contracts &amp; subscriptions">📜 WG-Verträge & Abo-Manager</h3>
                 <button onclick="openContractModal()" class="b3-action px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold">+ Vertrag</button>
             </div>
             <div id="contractList" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
@@ -561,7 +561,7 @@
     <div id="noteModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 id="noteModalTitle" class="text-lg font-bold">✏️ Neue Sticky Note</h3>
+                <h3 id="noteModalTitle" class="text-lg font-bold" data-tool-en="✏️ New sticky note">✏️ Neue Sticky Note</h3>
                 <button onclick="closeNoteModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div class="space-y-3 text-xs">
@@ -689,7 +689,7 @@
     <div id="dietModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="text-lg font-bold">🥦 Ernährungs- & Allergie-Matrix</h3>
+                <h3 class="text-lg font-bold" data-tool-en="🥦 Dietary &amp; allergy matrix">🥦 Ernährungs- & Allergie-Matrix</h3>
                 <button onclick="closeDietModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div id="dietInputContainer" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
