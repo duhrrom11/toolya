@@ -31,3 +31,19 @@ Commit `12e73556b079aa964328aae9504003a642c5198b` replaces the i18next API test 
 - Latest smoke-test adjustment: commit `fb65397b53d1d3184cf8af70810f6409b5d9f599` uses DOM `textContent` rather than rendered `innerText` so the expected authentication visibility gate does not invalidate the offline HTML smoke test. Its runs `45000079415` (static checks), `45000079358` (i18next pilot), and `45000079373` (isolated browser tests) had not completed when checked.
 
 **Acceptance decision:** earlier isolated pilot and comprehensive browser checks are green. Real i18next UMD / CDN-fallback and full-page smoke changes are **pending their own successful browser CI results**. No release approval or production changes.
+
+## Final real-library pilot acceptance (2026-11-22)
+
+**Accepted pilot commit:** `68870a26dfb80f7ec9cfbae25a3f531b15d3ba3d`.
+**Successful CI:** [i18next migration pilot run 45003183191](https://github.com/duhrrom11/toolya/actions/runs/45003183191); `parking-browser` job `137148956140` and `node-regressions` job `137148956345` both passed. [i18n static checks run 45003183237](https://github.com/duhrrom11/toolya/actions/runs/45003183237) passed.
+
+The Playwright browser job logged four successful scenarios with pinned **real i18next@23.16.8 UMD**, served from a local interception of the CDN URL, or an intentionally blocked CDN request:
+
+- `PASS parking DE/EN/DE and prefix translation (loaded)`
+- `PASS parking DE/EN/DE and prefix translation (cdn-blocked)`
+- `PASS moving DE/EN/DE and prefix translation (loaded)`
+- `PASS moving DE/EN/DE and prefix translation (cdn-blocked)`
+
+The real-library scenarios assert initialization and registered English `tool_parking`/`tool_moving` resource namespaces. The CDN-blocked scenarios assert that the legacy translation fallback still works. The successful browser job also executes offline full-page HTML smoke checks for both tools. Those smoke checks validate the HTTP response and source HTML structure, **not** authenticated, interactive end-to-end page behavior; all external traffic is blocked.
+
+**Decision:** the isolated i18next parking/moving migration pilot is accepted for the scope above. This does **not** authorize a production release or imply all Toolya views are fully bilingual. The previous pending notes above describe historical intermediate runs and are superseded by this final pilot acceptance. `main`, live website, and production Supabase data remain untouched.
