@@ -8,8 +8,20 @@ const root=process.cwd();
 const bundle=fs.readFileSync(path.join(root,'node_modules/i18next/dist/umd/i18next.min.js'));
 const cdn='https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js';
 const html=locale=>'<!doctype html><html lang="'+locale+'"><body><h1 data-i18n-marketing="Alle Tools">Alle Tools</h1><p data-i18n-marketing="Diese Anleitung auf Deutsch ansehen">Diese Anleitung auf Deutsch ansehen</p><p id="user-content">Meine privaten Notizen</p><script src="'+cdn+'"></script><script type="module" src="/shared/toolya/i18n/marketing.mjs"></script></body></html>';
+const guidePaths=['en/parking-spot/index.html','en/moving-boxes/index.html','en/plant-care/index.html','en/household-budget/index.html'];
+const guideHeadings=guidePaths.map(file=>{
+ const source=fs.readFileSync(path.join(root,file),'utf8');
+ const heading=source.match(/<h1\\b[^>]*data-i18n-marketing="[^"]+"[^>]*>[^<]+<\\/h1>/);
+ assert.ok(heading,'Missing i18next heading in '+file);
+ return {file,heading:heading[0]};
+});
 const server=http.createServer((req,res)=>{
  const pathname=new URL(req.url,'http://localhost').pathname;
+ if(pathname.startsWith('/guide-fixture/')){
+  const index=Number(pathname.slice('/guide-fixture/'.length));
+  if(!Number.isInteger(index)||!guideHeadings[index]){res.writeHead(404).end();return;}
+  res.writeHead(200,{'content-type':'text/html'}).end('<!doctype html><html lang="en"><body>'+guideHeadings[index].heading+'<script src="'+cdn+'"></script><script type="module" src="/shared/toolya/i18n/marketing.mjs"></script></body></html>');return;
+ }
  if(pathname==='/'||pathname==='/de'){res.writeHead(200,{'content-type':'text/html'}).end(html(pathname==='/de'?'de':'en'));return;}
  if(!pathname.startsWith('/shared/')){res.writeHead(404).end();return;}
  const file=path.resolve(root,'.'+pathname);
@@ -32,6 +44,16 @@ const server=http.createServer((req,res)=>{
    assert.equal(await page.locator('p[data-i18n-marketing]').textContent(),mode==='loaded'&&locale==='en'?'Read this guide in German':'Diese Anleitung auf Deutsch ansehen');
    assert.equal(await page.locator('#user-content').textContent(),'Meine privaten Notizen');
    assert.deepEqual(errors,[]);
+   await context.close();
+  }
+  for(let index=0;index<guideHeadings.length;index++){
+   const context=await browser.newContext();
+   await context.route('**/*',route=>route.request().url().startsWith('http://127.0.0.1:')?route.continue():route.abort());
+   await context.route(cdn,route=>route.fulfill({status:200,contentType:'text/javascript',body:bundle}));
+   const page=await context.newPage();
+   await page.goto('http://127.0.0.1:'+server.address().port+'/guide-fixture/'+index);
+   await page.waitForFunction(()=>document.querySelector('h1[data-i18n-marketing]')?.textContent===window.i18next?.t(document.querySelector('h1').dataset.i18nMarketing,{lng:'en',ns:'marketing'}));
+   assert.ok((await page.locator('h1').textContent()).length>8);
    await context.close();
   }
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
