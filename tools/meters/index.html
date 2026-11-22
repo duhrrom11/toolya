@@ -211,9 +211,9 @@
                     <select id="meterLocation" class="w-full p-3 border rounded-xl text-sm bg-white">
                         <option value="Hauptwohnung">🏠 Hauptwohnung / Keller</option>
                         <option value="Garage">🚗 Garage / Carport</option>
-                        <option value="Garten">🌱 Garten / Außenbereich</option>
+                        <option value="Garten" data-tool-en="🌱 Garden / outdoor area">🌱 Garten / Außenbereich</option>
                         <option value="Einliegerwohnung">🔑 Einliegerwohnung / Vermietung</option>
-                        <option value="Wärmepumpe">🌡️ Wärmepumpe / Heizung</option>
+                        <option value="Wärmepumpe" data-tool-en="🌡️ Heat pump / heating">🌡️ Wärmepumpe / Heizung</option>
                     </select>
                 </div>
                 <div>
@@ -270,7 +270,7 @@
                 <h3 class="font-bold text-lg">📋 Zählerstände & Verlauf</h3>
                 <div class="flex gap-2">
                     <label class="helferlein-field" for="filterType"><span class="helferlein-field-label" data-tool-en="Filter history by meter type">Verlauf nach Zählertyp filtern</span><select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verlauf nach Zählertyp filtern" data-tool-en-aria-label="Filter history by meter type">
-                        <option value="All">Alle Zähler anzeigen</option>
+                        <option value="All" data-tool-en="Show all meters">Alle Zähler anzeigen</option>
                         <option value="Strom">⚡ Strom (HT)</option>
                         <option value="Strom-NT">🌙 Strom (NT)</option>
                         <option value="Kaltwasser">💧 Kaltwasser</option>
