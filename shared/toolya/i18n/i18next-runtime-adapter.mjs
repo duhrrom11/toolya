@@ -28,7 +28,7 @@ export function createToolyaI18nextAdapter(i18next){
   if(typeof value!=='string'||!['de','en'].includes(locale)||!safeTool.test(tool))return value;
   const pairs=kind==='dialog'
    ? Object.entries({...legacy.sharedDialogPrefixes,...(legacy.dialogPrefixes[tool]||{})})
-   : (legacy.runtimePrefixes[tool]||[]);
+   : [...Object.entries(legacy.sharedDialogPrefixes),...(legacy.runtimePrefixes[tool]||[])];
   for(const [de,en] of pairs){
    const source=locale==='en'?de:en,target=locale==='en'?en:de;
    if(value.startsWith(source))return target+value.slice(source.length);
