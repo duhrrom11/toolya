@@ -880,8 +880,8 @@ async function toolyaCloudBoot(tool) {
             const tireSelect = document.getElementById('tireCarSelect');
             const filterSelect = document.getElementById('filterCarSelect');
 
-            const options = '<option value="" data-tool-en="-- Select vehicle --">-- Fahrzeug wählen --</option>' + 
-                data.cars.map(c => `<option value="${c.id}">${c.name} (${c.plate || 'kein Kennzeichen'})</option>`).join('');
+            const options = `<option value="">${label('-- Fahrzeug wählen --','-- Select vehicle --')}</option>` + 
+                data.cars.map(c => `<option value="${c.id}">${c.name} (${c.plate || label('kein Kennzeichen','no registration')})</option>`).join('');
             
             const filterOptions = '<option value="" data-tool-en="Show all vehicles">Alle Fahrzeuge anzeigen</option>' + 
                 data.cars.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
@@ -919,7 +919,7 @@ async function toolyaCloudBoot(tool) {
                         let daysDiff = Math.max(1, (new Date() - new Date(firstEvent.date)) / (1000 * 60 * 60 * 24));
                         let kmPerDay = (kmNum - firstEvent.km) / daysDiff;
                         let annualKm = Math.round(kmPerDay * 365);
-                        kmPrognoseText = `<p class="text-[11px] text-gray-500">Prognose: ca. <b>${annualKm.toLocaleString()} km</b> / Jahr</p>`;
+                        kmPrognoseText = `<p class="text-[11px] text-gray-500">${label('Prognose: ca.','Forecast: approx.')} <b>${annualKm.toLocaleString(displayLocale)} km</b> / ${label('Jahr','year')}</p>`;
                     }
 
                     const defaultCarIcon = `
@@ -938,22 +938,22 @@ async function toolyaCloudBoot(tool) {
                                     ${c.photo ? `<button type="button" class="b3-photo-trigger" aria-label="Fahrzeugfoto vergrößern" onclick="zoomImage(this.firstElementChild.src)" data-tool-en-aria-label="Enlarge vehicle photo"><img alt="${window.__toolyaUILocale === 'en' ? 'Vehicle photo' : 'Fahrzeugfoto'}" src="${c.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0"></button>` : defaultCarIcon}
                                     <div>
                                         <h4 class="font-bold text-sm text-red-800">${c.name}</h4>
-                                        <p class="text-xs text-gray-600">${c.plate || 'k.Kennzeichen'} ${c.km ? '| ' + c.km + ' km' : ''}</p>
+                                        <p class="text-xs text-gray-600">${c.plate || label('k.Kennzeichen','no registration')} ${c.km ? '| ' + c.km + ' km' : ''}</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1.5 b3-car-card-actions">
-                                    <button onclick="updateCarKm(${c.id})" class="px-2.5 py-1 bg-red-50 text-red-700 hover:bg-red-100 rounded-xl text-xs font-semibold b3-action b3-outline" title="KM aktualisieren">⚡ KM</button>
-                                    <button onclick="deleteCar(${c.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
+                                    <button onclick="updateCarKm(${c.id})" class="px-2.5 py-1 bg-red-50 text-red-700 hover:bg-red-100 rounded-xl text-xs font-semibold b3-action b3-outline" title="${label('KM aktualisieren','Update mileage')}">⚡ KM</button>
+                                    <button onclick="deleteCar(${c.id})" class="text-xs text-red-500 hover:underline">${label('Löschen','Delete')}</button>
                                 </div>
                             </div>
                             
                             <div class="text-[11px] flex flex-wrap gap-2 text-gray-600 pt-1">
                                 ${c.insurance ? `<span>🛡️ ${c.insurance}</span>` : ''}
-                                ${c.emergency ? `<a href="tel:${c.emergency}" class="text-red-700 font-bold hover:underline">📞 Notruf: ${c.emergency}</a>` : ''}
-                                ${c.papers ? `<button onclick="zoomImage('${c.papers}')" class="text-blue-600 font-semibold underline b3-action b3-outline">📄 Fahrzeugschein anzeigen</button>` : ''}
+                                ${c.emergency ? `<a href="tel:${c.emergency}" class="text-red-700 font-bold hover:underline">📞 ${label('Notruf:','Emergency:')} ${c.emergency}</a>` : ''}
+                                ${c.papers ? `<button onclick="zoomImage('${c.papers}')" class="text-blue-600 font-semibold underline b3-action b3-outline">${label('📄 Fahrzeugschein anzeigen','📄 View vehicle registration')}</button>` : ''}
                             </div>
                             ${kmPrognoseText}
-                            ${costPerKm ? `<div class="text-[11px] bg-white p-2 border rounded-xl flex justify-between text-gray-600"><span>Gesamtkosten: <b>${carTotalCost.toFixed(2).replace('.', ',')} €</b></span><span class="text-red-700 font-semibold">Kosten ÷ Kilometerstand: ${costPerKm.replace('.', ',')} € / km</span></div>` : ''}
+                            ${costPerKm ? `<div class="text-[11px] bg-white p-2 border rounded-xl flex justify-between text-gray-600"><span>${label('Gesamtkosten:','Total costs:')} <b>${carTotalCost.toFixed(2).replace('.', ',')} €</b></span><span class="text-red-700 font-semibold">${label('Kosten ÷ Kilometerstand:','Costs ÷ mileage:')} ${costPerKm.replace('.', ',')} € / km</span></div>` : ''}
                         </div>
                     `;
                 }).join('');
@@ -968,7 +968,7 @@ async function toolyaCloudBoot(tool) {
                             <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
                                 <div>
                                     <p class="font-bold text-red-800">${t.type} <span class="text-gray-500 font-normal">(${carName})</span></p>
-                                    <p class="text-[11px] text-gray-600">Ort: ${t.location || '-'} | DOT: ${t.dot || '-'} | ${t.tread ? t.tread + ' mm' : ''}</p>
+                                    <p class="text-[11px] text-gray-600">${label('Ort:','Location:')} ${t.location || '-'} | DOT: ${t.dot || '-'} | ${t.tread ? t.tread + ' mm' : ''}</p>
                                 </div>
                                 <button onclick="deleteTireSet(${t.id})" class="text-red-500 font-bold px-2 hover:bg-red-50 rounded">✕</button>
                             </div>
@@ -986,7 +986,7 @@ async function toolyaCloudBoot(tool) {
                 deadlinesCard.classList.remove('hidden');
                 deadlinesList.innerHTML = timelyEvents.map(e => {
                     let car = data.cars.find(c => c.id === e.carId);
-                    let carName = car ? car.name : "Unbekannt";
+                    let carName = car ? car.name : label("Unbekannt","Unknown");
                     let d = new Date(e.date);
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
                     let statusColor = diff < 0 ? "border-red-400 bg-red-50 text-red-800" : (diff <= 14 ? "border-amber-400 bg-amber-50 text-amber-800" : "border-gray-200 bg-gray-50 text-gray-800");
@@ -995,7 +995,7 @@ async function toolyaCloudBoot(tool) {
                         <div class="p-3 border rounded-xl ${statusColor}">
                             <p class="text-[11px] font-bold text-gray-500">${carName} (${e.type})</p>
                             <p class="text-xs font-bold mt-0.5">${e.title}</p>
-                            <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString(displayLocale)})</p>
+                            <p class="text-[11px] mt-1">${diff < 0 ? label('🔴 Überfällig seit ','🔴 Overdue by ') + Math.abs(diff) + label(' Tagen',' days') : (diff === 0 ? label('🟡 Heute fällig!','🟡 Due today!') : label('🟢 Fällig in ','🟢 Due in ') + diff + label(' Tagen',' days'))} (${d.toLocaleDateString(displayLocale)})</p>
                         </div>
                     `;
                 }).join('');
@@ -1023,7 +1023,7 @@ async function toolyaCloudBoot(tool) {
                 let totalTankCost = monthTankEvents.reduce((s, e) => s + (e.cost || 0), 0);
                 let validCons = monthTankEvents.filter(e => e.consumption).map(e => e.consumption);
                 let avgCons = validCons.length > 0 ? (validCons.reduce((a,b)=>a+b,0) / validCons.length).toFixed(1) : "-";
-                fuelStatsContent.innerHTML = `Getankt: <b>${totalLitres.toFixed(1)} Liter</b> | Kosten: <b>${totalTankCost.toFixed(2).replace('.', ',')} €</b> | Ø Verbrauch: <b>${avgCons.replace('.', ',')} l/100km</b>`;
+                fuelStatsContent.innerHTML = `${label('Getankt:', 'Fuelled:')} <b>${totalLitres.toFixed(1)} ${label('Liter','litres')}</b> | ${label('Kosten:','Costs:')} <b>${totalTankCost.toFixed(2).replace('.', ',')} €</b> | ${label('Ø Verbrauch:','Avg. consumption:')} <b>${avgCons.replace('.', ',')} l/100km</b>`;
             } else {
                 fuelStatsBox.classList.add('hidden');
             }
@@ -1037,7 +1037,7 @@ async function toolyaCloudBoot(tool) {
             } else {
                 eventsContainer.innerHTML = filteredEvents.map(e => {
                     let car = data.cars.find(c => c.id === e.carId);
-                    let carName = car ? car.name : "Unbekannt";
+                    let carName = car ? car.name : label("Unbekannt","Unknown");
                     let d = new Date(e.date);
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
                     const days = label(diff === 1 ? 'Tag' : 'Tagen', diff === 1 ? 'day' : 'days');
