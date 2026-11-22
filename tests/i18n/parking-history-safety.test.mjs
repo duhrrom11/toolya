@@ -23,7 +23,7 @@ test('parking history escapes arbitrary user text and rejects unsafe images and 
  assert.match(render,/safeParkingPhoto\(s\.photo\)/);
  assert.match(render,/safeParkingGps\(s\.gps\)/);
  assert.match(render,/Number\.isSafeInteger\(s\.id\)/);
- assert.match(render,/parkingCloudReady && parkingCloudController\?\.ready/);
+ assert.match(render,/if \(parkingCloudReady\) renderParkingList\(\)/);
  assert.doesNotMatch(render,/saveData\(|parkingCloudController\.replace\(/);
 });
 test('existing DE and new EN empty states are rendered in three tools',()=>{

@@ -908,7 +908,7 @@
         }
 
         document.addEventListener('toolya:locale-change', () => {
-            if (metersCloudReady && metersCloudController?.ready) renderApp();
+            if (metersCloudReady) renderApp();
         });
 
         function renderChart(data) {

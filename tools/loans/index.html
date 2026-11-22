@@ -832,7 +832,7 @@
         }
 
         document.addEventListener('toolya:locale-change', () => {
-            if (loansCloudReady && loansCloudController?.ready) { renderInventory(); renderApp(); }
+            if (loansCloudReady) { renderInventory(); renderApp(); }
         });
 
         function renderApp() {

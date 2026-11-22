@@ -140,3 +140,9 @@ Basis `cc9876d92ce5dfefc1504098ea73a3fd03969dac`: 209/209 statische Node-i18n-Te
 - Dynamische Verleihkarten zeigen weitere DE/EN-Labels, Datum, Kaution und zugängliche Titel. Keine Persistenz- oder Auth-Änderung.
 - Isolierte Node- und Chromium-Regression für realen DE/EN-Kalenderdownload ergänzt. **Testlauf auf dem neuen HEAD noch auswerten.**
 - **Release-Status: NOT READY / Draft.** Weitere 34 Teilansichten/48 Laufzeitdateien, Auth-Recovery-Mailrückweg, weitere Exporte, mobile A11y und finale GitHub-CI offen. Kein Merge, Deployment, noindex-Wechsel oder Zugriff auf produktive Daten.
+
+### 22.11.2026 – Chromium-Fehler nach Sprachwechsel analysiert
+
+- [Run 44964495544](https://github.com/duhrrom11/toolya/actions/runs/44964495544): 161/164 ausgeführte Playwright-Tests grün, 3 fehlgeschlagen (Parkplatz-, Verleih-, Zählerlisten nach DE-Toggle); 16 übersprungen. Der andere isolierte Browser-Workflow, Connect, Moving, Plattform und 209 i18n-Node-Tests waren auf dem vorherigen HEAD grün.
+- Locale-Listener auf das bestehende CloudReady-Lade-Gate ausgerichtet; `getData()` bleibt zusätzlich durch controller.ready geschützt. Tests für dieses Gate aktualisiert, Browser prüft aktiven Sprachschalter. Diese Änderung ist noch nicht browser-verifiziert.
+- Draft/NOINDEX/Prod-Sperren bleiben. **Release-Status OFFEN**.

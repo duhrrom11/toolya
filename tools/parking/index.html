@@ -640,7 +640,7 @@
         }
 
         document.addEventListener('toolya:locale-change', () => {
-            if (parkingCloudReady && parkingCloudController?.ready) renderParkingList();
+            if (parkingCloudReady) renderParkingList();
         });
 
         function zoomImage(src) {

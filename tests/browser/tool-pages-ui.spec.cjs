@@ -2596,6 +2596,8 @@ test('i18n parking history renders historic ISO timestamps and escapes user cont
  await expect(list.locator('img')).toHaveCount(0);
  await expect(list.locator('a[href*="google.com/maps/search/"]')).toHaveCount(1);
  await page.locator('[data-tool-locale="de"]').click();
+ await expect(page.locator('[data-tool-locale="de"]')).toHaveAttribute('aria-pressed','true');
+ expect(await page.evaluate(()=>window.__toolyaUILocale)).toBe('de');
  await expect(list).toContainText('Datum: 17.11.2026 13:00');
  await expect(list).toContainText('Gebühr: 4,50 €');
  await page.locator('[data-tool-locale="en"]').click();

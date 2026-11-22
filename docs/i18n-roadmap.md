@@ -468,3 +468,9 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 - Google Calendar verlinkt denselben Tag mit exklusivem Enddatum am Folgetag, lokalisiert Betreff/Beschreibung. WhatsApp-Erinnerungstexte, Verleih-Details, Datums-/Geldanzeigen und Accessibility-Titel ergänzend EN/DE. Keine Änderung an gespeicherten Nutzerdaten.
 - Node-Regression für Kalender und Browser-Downloadtest für beide Sprachen mit synthetischen Datensätzen ergänzt. CI-Ergebnisse des finalen Kandidaten abwarten.
 - Release-Gates offen; Draft-PR, noindex, Assets, Produktionssystem und Supabase unverändert.
+
+## 22.11.2026 – Chromium-Korrektur des Locale-Refresh-Gates
+
+- Bei einem isolierten Chromium-Lauf waren 161 Tests erfolgreich, drei neue Listen-Sprachwechseltests schlugen fehl. Zusätzliche `controller.ready`-Abfragen in den Event-Listenern waren strenger als die bereits vorhandene CloudOnly-Bereitschaftsmarke; die UI-Reaktion wird auf diese bestehende Marke abgestimmt. Die Snapshot-Lesefunktion prüft weiterhin die Controller-Bereitschaft intern, und der Listener führt keine Schreiboperationen aus.
+- Regressionserwartungen für die read-only Locale-Events wurden entsprechend angepasst. Der Browser prüft zusätzlich explizit die tatsächlich aktivierte DE-Taste und den UI-Locale-Wert, bevor die Listenanzeige beurteilt wird.
+- Die geänderten Node-/Chromium-Prüfungen müssen am neuen HEAD erfolgreich sein, bevor der Fehler als behoben gilt.
