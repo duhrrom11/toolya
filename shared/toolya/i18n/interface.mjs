@@ -2238,6 +2238,59 @@ const dialogPrefixes = Object.freeze({
   'Mitgliederverwaltung: ': 'Member management: '
  }
 });
+/* Source-exact native dialog additions; no stored data changes. */
+const extendedDialogAdditions = Object.freeze({
+  "car": {
+    "Aktuellen Kilometerstand aktualisieren:": "Update current mileage:",
+    "Bitte bestätigen, dass die Cloud-Sicherung tatsächlich heruntergeladen und sicher gespeichert wurde.": "Confirm the cloud backup was downloaded and saved securely.",
+    "Backup erfolgreich importiert!": "Backup imported successfully!"
+  },
+  "budget": {
+    "Bitte bestätigen, dass die Cloud-Sicherung tatsächlich heruntergeladen und sicher gespeichert wurde.": "Confirm the cloud backup was downloaded and saved securely.",
+    "Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.": "The QR code could not be loaded. Please try again."
+  },
+  "moving": {
+    "Standort umbenennen:": "Rename location:",
+    "Dieser Standort enthält Kisten aus einem aktiven Umzug. Bitte den Umzug erst abschließen.": "This location contains boxes from an active move. Finish the move first.",
+    "Diese Kiste ist einem aktiven Umzug zugeordnet. Bitte den Umzug erst abschließen.": "This box belongs to an active move. Finish the move first.",
+    "Dieses Backup enthält keine Umzugsprojekte. Die bestehenden Umzugsplanungen würden verloren gehen. Trotzdem fortfahren?": "This backup contains no moving projects. Existing move plans would be lost. Continue anyway?",
+    "Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.": "Before importing, download and verify a current backup.",
+    "Hast du die aktuelle Sicherung erfolgreich heruntergeladen?": "Did you download the current backup successfully?",
+    "Der QR-Scanner konnte nicht geladen werden. Bitte versuche es erneut.": "The QR scanner could not be loaded. Please try again.",
+    "Kamera-Zugriff fehlgeschlagen oder nicht unterstützt.": "Camera access failed or is unsupported."
+  },
+  "plants": {
+    "Nicht gefunden.": "Not found.",
+    "Pflanzenfoto konnte nicht verarbeitet werden. Nichts gespeichert.": "Plant photo could not be processed. Nothing was saved.",
+    "Das Foto konnte nicht gelesen werden.": "The photo could not be read.",
+    "Es konnte keine eindeutige Pflanzen-ID erzeugt werden.": "A unique plant ID could not be generated.",
+    "⚠️ Pflanze wirklich löschen?": "⚠️ Delete this plant?",
+    "Ungültige Pflanzen-ID. Die Änderungen wurden nicht gespeichert.": "Invalid plant ID. Changes were not saved.",
+    "Pflanze nicht gefunden. Die Änderungen wurden nicht gespeichert.": "Plant not found. Changes were not saved.",
+    "Bitte einen Pflanzennamen eingeben.": "Enter a plant name.",
+    "Bitte ein gültiges Gießdatum eingeben.": "Enter a valid watering date."
+  },
+  "housemates": {
+    "Mitgliederzugriff entfernt.": "Member access removed.",
+    "Mitgliederzugriff erteilt. Der WG-Link kann jetzt geteilt werden.": "Member access granted. The household link can now be shared.",
+    "🔗 WG-Link kopiert! Teile ihn nur mit berechtigten Personen.": "🔗 Household link copied! Share only with authorised people.",
+    "WG-Link manuell kopieren:": "Copy household link manually:",
+    "Der automatische Schuldenausgleich ist vorübergehend deaktiviert, damit keine Buchungen gelöscht werden. Bitte die vorgeschlagenen Überweisungen manuell durchführen und die Buchungen zur Dokumentation aufbewahren.": "Automatic debt settlement is temporarily disabled to prevent deleting transactions. Make suggested transfers manually and keep transaction records."
+  },
+  "baking": {
+    "Timer abgelaufen!": "Timer finished!"
+  },
+  "loans": {
+    "Gespeichert": "Saved"
+  },
+  "meters": {
+    "Gespeichert": "Saved",
+    "Backup erfolgreich importiert!": "Backup imported successfully!"
+  },
+  "pet-health": {
+    "Lokale Haustierdaten nach Sicherung in die Cloud übernehmen?": "Import local pet records into the cloud after backing them up?"
+  }
+});
 /* Source-exact dialog coverage for the shared tool locale wrapper. */
 const auditedDialogAdditions = Object.freeze({
   "parking": {
@@ -2341,7 +2394,7 @@ const auditedDialogAdditions = Object.freeze({
     "Ein Belegbild konnte nicht gelesen werden. Bitte die Bildauswahl erneut versuchen.": "A receipt image could not be read. Select the images again.",
     "Ein Belegbild konnte nicht geöffnet werden. Bitte die Bildauswahl erneut versuchen.": "A receipt image could not be opened. Select the images again.",
     "Die Bildanpassung ist fehlgeschlagen. Bitte das Belegfoto erneut auswählen.": "Image adjustment failed. Select the receipt photo again.",
-    "Bitte wähle zuerst ein Belegfoto aus!": "Please choose a receipt photo first!",
+    "Bitte wähle zuerst ein Belegfoto aus!": "Select a receipt photo first.",
     "Mindestens ein Belegbild konnte nicht geladen werden. Bitte Bilder erneut auswählen oder entfernen.": "At least one receipt image could not be loaded. Select the images again or remove them.",
     "Die Belegbilder werden noch geladen. Bitte kurz warten und erneut speichern.": "Receipt images are still loading. Wait briefly and save again.",
     "Bitte Titel, gültiges Kaufdatum und einen positiven Betrag angeben!": "Enter a title, valid purchase date and positive amount!",
@@ -2398,6 +2451,9 @@ export function translateToolDialog(tool, language, message) {
  const audited=Object.hasOwn(auditedDialogAdditions,tool) && Object.hasOwn(auditedDialogAdditions[tool],message)
   ? auditedDialogAdditions[tool][message] : undefined;
  if(audited!==undefined) return audited;
+ const extended=Object.hasOwn(extendedDialogAdditions,tool) && Object.hasOwn(extendedDialogAdditions[tool],message)
+  ? extendedDialogAdditions[tool][message] : undefined;
+ if(extended!==undefined) return extended;
  const additional=Object.hasOwn(additionalDialogCopy,tool)&&Object.hasOwn(additionalDialogCopy[tool],message)
   ? additionalDialogCopy[tool][message] : undefined;
  if(additional!==undefined)return additional;
