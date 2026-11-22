@@ -3,6 +3,20 @@ on:
   push:
     branches:
       - feature/i18n-de-en-foundation-20261121
+    paths:
+      - 'shared/toolya/i18n/**'
+      - 'tests/i18n/**'
+      - 'tools/parking/index.html'
+      - 'tools/moving/index.html'
+      - 'tools/housemates/index.html'
+      - 'tools/plants/index.html'
+      - 'tools/baking/index.html'
+      - 'tools/budget/index.html'
+      - 'tools/meters/index.html'
+      - 'tools/car/index.html'
+      - 'tools/loans/index.html'
+      - 'tools/pet-health/index.html'
+      - '.github/workflows/i18next-pilot.yml'
   pull_request:
     paths:
       - 'shared/toolya/i18n/**'
