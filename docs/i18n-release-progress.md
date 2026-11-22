@@ -202,3 +202,8 @@ Basis `cc9876d92ce5dfefc1504098ea73a3fd03969dac`: 209/209 statische Node-i18n-Te
 - Quellseitig abgeleitete, nicht persistierte `display`-Metadaten für Loan/Car/Pet ergänzt; EN-Dashboard nutzt die Struktur für bekannte Wortbestandteile der Rückgaben, Fahrzeugfristen, Impf- und Entwurmungstermine. Personen-, Tier-, Gegenstands- und Ereignisnamen bleiben wörtlich. Originaltext, ID, readonly und CloudOnly-Mutationspfade bleiben unverändert.
 - Neues Modul `shared/toolya/i18n/connect-due-display.mjs` und synthetischer Node-Test `tests/i18n/connect-due-display.test.mjs`. Die Tests dürfen erst nach GitHub-CI-Ergebnis als bestanden erklärt werden.
 - Release weiterhin NOT READY / Draft; keine produktiven Daten, kein Merge nach main, keine Indexierung oder Markenasset-Änderung.
+
+### 22.11.2026 – Echte DE/EN-Connect-Browserabnahme ergänzt
+
+- Im isolierten Chromium-Test des Dashboards wird jetzt nach Verleih-/WG-Abschluss der reale EN-Sprachbutton gedrückt. Die schreibgeschützten Fahrzeug-/Haustiertermine müssen wörtliche Benutzerwerte und englische Anwendungsbegriffe anzeigen, ohne Bestätigungs-Checkboxen und ohne neue CloudOnly-Mock-Schreibvorgänge. DE-Rückwechsel geprüft.
+- Testdatei `tests/platform/dashboard-shopping-browser.cjs` erweitert; tatsächlichen neuen CI-Lauf vor Erfolgsbehauptung abwarten. Release bleibt Draft/NOT READY.

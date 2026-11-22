@@ -139,7 +139,24 @@ const {chromium}=require('playwright');
   assert.equal(await page.evaluate(()=>window.__shoppingFixture.writes.filter(w=>w.table==='user_data').length),1);
   const rest=await page.evaluate(()=>({notes:window.__shoppingFixture.wg.payload.notes,entries:window.__shoppingFixture.wg.payload.data}));
   assert.deepEqual(rest,{notes:[{text:'existing-data'}],entries:[{id:7,price:3}]},'WG data outside lists is not touched');
+  // Switch the actual dashboard UI, not a synthetic text replacement. The two
+  // remaining car/pet deadlines are read-only, including in the English view.
+  const writesBefore=await page.evaluate(()=>window.__shoppingFixture.writes.length);
+  await page.locator('[data-dashboard-locale="en"]').click();
+  await page.waitForFunction(()=>document.documentElement.dataset.dashboardLocale==='en' &&
+    document.querySelectorAll('#tasks li.connect-task').length===2);
+  const translated=await page.locator('#tasks').innerText();
+  assert.match(translated,/Kombi · Vehicle inspection · HU prüfen/);
+  assert.match(translated,/Milo · Vaccination booster due · Auffrischung/);
+  assert.match(translated,/Open tool/);
+  assert.equal(await page.locator('#tasks li.connect-task input[type=checkbox]').count(),0);
+  assert.equal(await page.evaluate(()=>window.__shoppingFixture.writes.length),writesBefore,
+    'display-only EN switch must not write any CloudOnly data');
+  await page.locator('[data-dashboard-locale="de"]').click();
+  await page.waitForFunction(()=>document.documentElement.dataset.dashboardLocale==='de');
+  assert.match(await page.locator('#tasks').innerText(),/Kombi · TÜV \/ HU · HU prüfen/);
+  assert.equal(await page.evaluate(()=>window.__shoppingFixture.writes.length),writesBefore);
   assert.deepEqual(errors,[],'no unhandled browser errors');
-  console.log('PASS: three source-owned shopping rows, acknowledgement, print-only, add and WG task callback');
+  console.log('PASS: DE/EN source-owned shopping, readonly due dates, print and safe locale change');
  }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

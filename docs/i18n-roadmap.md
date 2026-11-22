@@ -520,3 +520,7 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 
 - Rückgabe-, Kfz- und Haustier-Termine erhalten zur Laufzeit strukturierte `display`-Metadaten, die fixe UI-Wörter von wörtlichen Nutzernamen, Titeln und Anmerkungen trennen. Englische Anzeige übersetzt ausschließlich bekannte UI-Teile; originaler Quelltext, IDs, Statuscodes und readonly bleiben unverändert.
 - Neues reines Präsentationsmodul für EN-Fristen plus Node-Sicherheitsregression mit Sonderzeichen und scheinbar übersetzbaren Nutzerdaten. Die vollständige Browser- und CI-Verifikation bleibt für den neuen HEAD verpflichtend.
+
+## 22.11.2026 – Browser-Nachweis für EN-Connect-Fristen
+
+- Zusätzliche echte Chromium-Prüfung im isolierten Dashboard-Connect-Test: Sprachwechsel DE→EN→DE, Übersetzung von Fahrzeug- und Impf-Fristen bei unveränderten Nutzertiteln, reine readonly-Darstellung und Null neue Cloud-Schreiboperationen. Bei Fehlschlag Root Cause beheben und erneut prüfen.
