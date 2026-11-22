@@ -881,7 +881,7 @@ async function toolyaCloudBoot(tool) {
             const filterSelect = document.getElementById('filterCarSelect');
 
             const options = `<option value="">${window.__toolyaUILocale === 'en' ? '-- Select vehicle --' : '-- Fahrzeug wählen --'}</option>` + 
-                data.cars.map(c => `<option value="${c.id}">${c.name} (${c.plate || label('kein Kennzeichen','no registration')})</option>`).join('');
+                data.cars.map(c => `<option value="${c.id}">${c.name} (${c.plate || (window.__toolyaUILocale === 'en' ? 'no registration' : 'kein Kennzeichen')})</option>`).join('');
             
             const filterOptions = '<option value="" data-tool-en="Show all vehicles">Alle Fahrzeuge anzeigen</option>' + 
                 data.cars.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
