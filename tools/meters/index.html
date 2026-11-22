@@ -861,7 +861,7 @@
                     let diff = 0;
                     if (r.isExchange) {
                         diff = r.value;
-                        diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel (Start: ${escapeHtml(r.value)})</span>`;
+                        diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '🔄 Meter replaced (start:' : '🔄 Zählerwechsel (Start:'} ${escapeHtml(r.value)})</span>`;
                     } else {
                         const currentValue = Number(r.value);
                         const previousValue = Number(prev.value);
@@ -870,11 +870,11 @@
                         let unit = r.type.includes('Strom') ? 'kWh' : 'm³';
                         if (diff !== null) {
                             let badgeColor = diff >= 0 ? 'bg-sky-100 text-sky-800' : 'bg-red-100 text-red-800';
-                            diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${escapeHtml(prev.date)})</span>`;
+                            diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? 'Difference:' : 'Differenz:'} ${diff > 0 ? '+' + diff : diff} ${unit} (${window.__toolyaUILocale === 'en' ? 'since' : 'seit'} ${escapeHtml(prev.date)})</span>`;
                         }
                     }
                 } else if (r.isExchange) {
-                    diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel Start</span>`;
+                    diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '🔄 Meter replacement start' : '🔄 Zählerwechsel Start'}</span>`;
                 }
 
                 let icon = '📊';
@@ -894,13 +894,13 @@
                                     ${diffText}
                                 </div>
                                 <p class="text-xs text-gray-600 mt-1">
-                                    Stand: <strong class="text-gray-900">${escapeHtml(r.value)} ${unitLabel}</strong> | Datum: ${escapeHtml(r.date)}
-                                    ${r.note ? ' | Notiz: ' + escapeHtml(r.note) : ''}
+                                    ${window.__toolyaUILocale === 'en' ? 'Reading:' : 'Stand:'} <strong class="text-gray-900">${escapeHtml(r.value)} ${unitLabel}</strong> | ${window.__toolyaUILocale === 'en' ? 'Date:' : 'Datum:'} ${escapeHtml(r.date)}
+                                    ${r.note ? (window.__toolyaUILocale === 'en' ? ' | Note: ' : ' | Notiz: ') + escapeHtml(r.note) : ''}
                                 </p>
                             </div>
                         </div>
                         <div class="b3-meter-card-actions flex items-center gap-2 self-end md:self-center">
-                            ${typeof r.id === 'number' && Number.isSafeInteger(r.id) ? `<button onclick="deleteReading(${r.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕ Löschen</button>` : ''}
+                            ${typeof r.id === 'number' && Number.isSafeInteger(r.id) ? `<button onclick="deleteReading(${r.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">${window.__toolyaUILocale === 'en' ? '✕ Delete' : '✕ Löschen'}</button>` : ''}
                         </div>
                     </div>
                 `;
@@ -943,8 +943,8 @@
                 return `
                     <div class="space-y-1">
                         <div class="flex justify-between text-[11px] font-semibold text-gray-600">
-                            <span>Monat: ${k}</span>
-                            <span>Ablesungen: ${val}</span>
+                            <span>${window.__toolyaUILocale === 'en' ? 'Month:' : 'Monat:'} ${k}</span>
+                            <span>${window.__toolyaUILocale === 'en' ? 'Readings:' : 'Ablesungen:'} ${val}</span>
                         </div>
                         <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                             <div class="bg-sky-600 h-3 rounded-full transition-all duration-500" style="width: ${percent}%"></div>
@@ -1009,17 +1009,17 @@
 
                         html += `
                             <div class="p-4 bg-gray-50 border rounded-xl space-y-1.5">
-                                <h4 class="font-bold text-sm">${t} Prognose & Live-Kosten</h4>
-                                <p class="text-xs">Hochrechnung / Jahr: <strong>${yearlyEst} ${unit}</strong></p>
+                                <h4 class="font-bold text-sm">${escapeHtml(window.__toolyaUILocale === 'en' ? ({Strom:'Electricity',Kaltwasser:'Cold water',Gas:'Gas'}[t] || t) : t)} ${window.__toolyaUILocale === 'en' ? 'forecast & current costs' : 'Prognose & Live-Kosten'}</h4>
+                                <p class="text-xs">${window.__toolyaUILocale === 'en' ? 'Estimate / year:' : 'Hochrechnung / Jahr:'} <strong>${yearlyEst} ${unit}</strong></p>
                                 ${yearlyCost === null
-                                    ? '<p class="text-xs text-amber-700">Für die Kostenprognose bitte Tarifpreis und bei Gas auch den Umrechnungsfaktor hinterlegen.</p>'
-                                    : `<p class="text-xs">Tages-Schnitt: <strong class="text-sky-700">${(yearlyCost / 365).toFixed(2)} € / Tag</strong></p>
-                                       <p class="text-xs">Kosten: <strong>${yearlyCost.toFixed(2)} €</strong>${yearlyAbschlag === null ? ' (Abschlag nicht hinterlegt)' : ` (Bezahlt: ${yearlyAbschlag.toFixed(2)} €)`}</p>
+                                    ? (window.__toolyaUILocale === 'en' ? '<p class="text-xs text-amber-700">To estimate costs, enter a tariff price and, for gas, a conversion factor.</p>' : '<p class="text-xs text-amber-700">Für die Kostenprognose bitte Tarifpreis und bei Gas auch den Umrechnungsfaktor hinterlegen.</p>')
+                                    : `<p class="text-xs">${window.__toolyaUILocale === 'en' ? 'Daily average:' : 'Tages-Schnitt:'} <strong class="text-sky-700">${(yearlyCost / 365).toFixed(2)} € / ${window.__toolyaUILocale === 'en' ? 'day' : 'Tag'}</strong></p>
+                                       <p class="text-xs">${window.__toolyaUILocale === 'en' ? 'Costs:' : 'Kosten:'} <strong>${yearlyCost.toFixed(2)} €</strong>${yearlyAbschlag === null ? (window.__toolyaUILocale === 'en' ? ' (Advance payment not entered)' : ' (Abschlag nicht hinterlegt)') : ` (\${window.__toolyaUILocale === 'en' ? 'Paid:' : 'Bezahlt:'} \${yearlyAbschlag.toFixed(2)} €)`}</p>
                                        ${yearlyAbschlag === null ? '' : `<p class="text-xs font-bold ${yearlyCost > yearlyAbschlag ? 'text-red-600' : 'text-emerald-600'}">
-                                           ${yearlyCost > yearlyAbschlag ? '⚠️ Nachzahlung: ca. ' + (yearlyCost - yearlyAbschlag).toFixed(2) + ' €' : '🎉 Guthaben: ca. ' + (yearlyAbschlag - yearlyCost).toFixed(2) + ' €'}
+                                           ${yearlyCost > yearlyAbschlag ? (window.__toolyaUILocale === 'en' ? '⚠️ Additional payment: approx. ' : '⚠️ Nachzahlung: ca. ') + (yearlyCost - yearlyAbschlag).toFixed(2) + ' €' : (window.__toolyaUILocale === 'en' ? '🎉 Credit: approx. ' : '🎉 Guthaben: ca. ') + (yearlyAbschlag - yearlyCost).toFixed(2) + ' €'}
                                        </p>`}
                                        <p class="text-xs bg-white p-2 rounded-lg border font-semibold text-sky-900">
-                                           💡 Neuer Abschlag: <span class="text-sky-700 text-sm">${(Math.ceil((yearlyCost / 12) / 10) * 10).toFixed(0)} € / Monat</span>
+                                           ${window.__toolyaUILocale === 'en' ? '💡 New advance payment:' : '💡 Neuer Abschlag:'} <span class="text-sky-700 text-sm">${(Math.ceil((yearlyCost / 12) / 10) * 10).toFixed(0)} € / ${window.__toolyaUILocale === 'en' ? 'month' : 'Monat'}</span>
                                        </p>`}
                             </div>
                         `;
