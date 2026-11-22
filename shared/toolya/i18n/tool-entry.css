@@ -10,3 +10,7 @@
 /* The baking calculator must remain a single-column grid below desktop width.
    Scope to this tool so no other tool or mascot layout is affected. */
 @media(max-width:1279px){body.b3.b3-backform main.b3-backform-main{grid-template-columns:minmax(0,1fr)!important}}
+
+/* Keep language selection reachable even when a tool header is collapsed,
+   replaced by the B3 hero, or clipped on narrow screens. */
+.ty-tool-language{position:fixed!important;right:max(12px,env(safe-area-inset-right))!important;bottom:max(12px,env(safe-area-inset-bottom))!important;z-index:10020!important;margin:0!important;box-shadow:0 4px 18px rgba(0,0,0,.22)!important}
