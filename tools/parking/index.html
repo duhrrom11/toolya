@@ -70,7 +70,10 @@
     <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="../../assets/helferlein-dialogs.js"></script>
 <link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><link rel="stylesheet" href="../../shared/toolya/alpha.css?v=20261115-alpha">
-<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script></head>
+<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="../../shared/toolya/i18n/tool-entry.css">
+<script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script>
+<script type="module" src="../../shared/toolya/i18n/tool-entry.mjs"></script>
+</head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
   <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
     <p id="toolya-auth-title"><strong>Parkplatz-Merker</strong></p>
@@ -167,15 +170,15 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-amber-50 text-amber-700 rounded-xl font-bold">🅿️</div>
-                <div><p class="text-xs text-gray-500">Gespeicherte Parkvorgänge</p><h3 id="statCount" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Saved parking sessions">Gespeicherte Parkvorgänge</p><h3 id="statCount" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
-                <div><p class="text-xs text-gray-500">Gebühren (Gefiltert)</p><h3 id="statCost" class="text-lg font-bold">0,00 €</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Fees (filtered)">Gebühren (Gefiltert)</p><h3 id="statCost" class="text-lg font-bold">0,00 €</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">📍</div>
-                <div><p class="text-xs text-gray-500">GPS-Standort</p><h3 id="statGps" class="text-xs font-bold text-blue-600">Nicht gespeichert</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="GPS location">GPS-Standort</p><h3 id="statGps" class="text-xs font-bold text-blue-600">Nicht gespeichert</h3></div>
             </div>
         </div>
 
@@ -203,7 +206,7 @@
                 
                 <!-- Stamm-Parkplatz Favoriten -->
                 <div class="space-y-1">
-                    <p class="text-[11px] font-semibold text-gray-500">Stamm-Parkplatz wählen:</p>
+                    <p class="text-[11px] font-semibold text-gray-500" data-tool-en="Choose a regular parking spot:">Stamm-Parkplatz wählen:</p>
                     <div class="flex gap-1.5 flex-wrap">
                         <button onclick="setFavorite('⭐ Bahnhof')" class="b3-action b3-outline px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium">⭐ Bahnhof</button>
                         <button onclick="setFavorite('⭐ Arbeit / Büro')" class="b3-action b3-outline px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium">⭐ Arbeit</button>
@@ -211,13 +214,13 @@
                     </div>
                 </div>
 
-                <label class="helferlein-field" for="parkDesc"><span class="helferlein-field-label">Standort / Parkhaus</span><input type="text" id="parkDesc" placeholder="Standort / Parkhaus (z.B. P2 Innenstadt)" class="w-full p-2.5 border rounded-xl text-sm" aria-label="Standort / Parkhaus (z.B. P2 Innenstadt)"></label>
+                <label class="helferlein-field" for="parkDesc"><span class="helferlein-field-label" data-tool-en="Location / car park">Standort / Parkhaus</span><input type="text" id="parkDesc" placeholder="Standort / Parkhaus (z.B. P2 Innenstadt)" class="w-full p-2.5 border rounded-xl text-sm" aria-label="Standort / Parkhaus (z.B. P2 Innenstadt)"></label>
                 <!-- Tiefgaragen-Ebene & Sektor -->
-                <label class="helferlein-field" for="parkSector"><span class="helferlein-field-label">Parkebene / Sektor</span><input type="text" id="parkSector" placeholder="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)" class="w-full p-2.5 border rounded-xl text-sm" aria-label="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)"></label>
+                <label class="helferlein-field" for="parkSector"><span class="helferlein-field-label" data-tool-en="Level / zone">Parkebene / Sektor</span><input type="text" id="parkSector" placeholder="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)" class="w-full p-2.5 border rounded-xl text-sm" aria-label="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)" data-tool-en-placeholder="Level / zone (e.g. level 2, row B, bay 42)" data-tool-en-aria-label="Level / zone (e.g. level 2, row B, bay 42)"></label>
 
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="parkCost"><span class="helferlein-field-label">Gebühr in €</span><input type="text" id="parkCost" placeholder="Gebühr in € (z.B. 2.50)" class="p-2.5 border rounded-xl text-sm" aria-label="Gebühr in € (z.B. 2.50)"></label>
-                    <label class="helferlein-field" for="parkPhotoInput"><span class="helferlein-field-label">Parkplatzfoto auswählen</span><input type="file" id="parkPhotoInput" accept="image/*" capture="environment" class="text-xs p-1.5 border rounded-xl file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Parkplatzfoto auswählen"></label>
+                    <label class="helferlein-field" for="parkCost"><span class="helferlein-field-label" data-tool-en="Fee in €">Gebühr in €</span><input type="text" id="parkCost" placeholder="Gebühr in € (z.B. 2.50)" class="p-2.5 border rounded-xl text-sm" aria-label="Gebühr in € (z.B. 2.50)" data-tool-en-placeholder="Fee in € (e.g. 2.50)" data-tool-en-aria-label="Fee in € (e.g. 2.50)"></label>
+                    <label class="helferlein-field" for="parkPhotoInput"><span class="helferlein-field-label" data-tool-en="Choose a parking photo">Parkplatzfoto auswählen</span><input type="file" id="parkPhotoInput" accept="image/*" capture="environment" class="text-xs p-1.5 border rounded-xl file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Parkplatzfoto auswählen" data-tool-en-aria-label="Choose a parking photo"></label>
                 </div>
                 <button onclick="saveParkingSession()" class="b3-action w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Parkplatz speichern</button>
             </div>
@@ -227,14 +230,14 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="history" id="b3-history">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                 <h3 class="font-bold text-lg">📋 Gespeicherte Parkplätze und Gebühren</h3>
-                <label class="helferlein-field" for="timeFilter"><span class="helferlein-field-label">Parkhistorie nach Zeitraum filtern</span><select id="timeFilter" onchange="renderParkingList()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Parkhistorie nach Zeitraum filtern">
+                <label class="helferlein-field" for="timeFilter"><span class="helferlein-field-label" data-tool-en="Filter parking history by period">Parkhistorie nach Zeitraum filtern</span><select id="timeFilter" onchange="renderParkingList()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Parkhistorie nach Zeitraum filtern" data-tool-en-aria-label="Filter parking history by period">
                     <option value="all">Gesamte Historie anzeigen</option>
                     <option value="month">Aktueller Monat</option>
                     <option value="year">Aktuelles Jahr</option>
                 </select></label>
             </div>
             <div id="parkingList" class="space-y-3">
-                <p class="text-sm text-gray-400 text-center py-4">Keine Parkvorgänge gespeichert.</p>
+                <p class="text-sm text-gray-400 text-center py-4" data-tool-en="No parking sessions saved.">Keine Parkvorgänge gespeichert.</p>
             </div>
         </div>
 
@@ -291,29 +294,37 @@
         async function supabaseRegister() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            if(!email || !password) return alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
             const { error } = await supabaseClient.auth.signUp({ email, password });
             if(error) alert(error.message);
-            else { alert('Registrierung erfolgreich!'); checkUserSession(); }
+            else { alert(window.__toolyaUILocale === 'en' ? 'Registration successful!' : 'Registrierung erfolgreich!'); checkUserSession(); }
         }
 
         async function supabaseLogin() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            if(!email || !password) return alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
             const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if(error) alert(error.message);
-            else { alert('Erfolgreich angemeldet!'); checkUserSession(); toggleSettingsModal(); }
+            else { alert(window.__toolyaUILocale === 'en' ? 'Signed in successfully!' : 'Erfolgreich angemeldet!'); checkUserSession(); toggleSettingsModal(); }
         }
 
         async function supabaseLogout() {
             await supabaseClient.auth.signOut();
             checkUserSession();
-            alert('Abgemeldet.');
+            alert(window.__toolyaUILocale === 'en' ? 'Signed out.' : 'Abgemeldet.');
         }
 
         async function checkUserSession() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
+            let user = null;
+            let sessionError = null;
+            try {
+                const result = await supabaseClient.auth.getUser();
+                sessionError = result?.error?.name === 'AuthSessionMissingError' ? null : (result?.error ?? null);
+                user = sessionError ? null : (result?.data?.user ?? null);
+            } catch (error) {
+                sessionError = error;
+            }
             const statusText = document.getElementById('cloud-status-text');
             const userDisplay = document.getElementById('cloud-user-display');
             const headerBadge = document.getElementById('header-user-badge');
@@ -321,15 +332,16 @@
             const btnLogout = document.getElementById('btn-logout');
 
             if(user) {
-                statusText.innerText = "Status: Verbunden & Angemeldet";
-                userDisplay.innerText = user.email;
-                headerEmail.innerText = user.email;
+                statusText.innerText = window.__toolyaUILocale === 'en' ? 'Status: Connected and signed in' : 'Status: Verbunden & Angemeldet';
+                userDisplay.innerText = user.email || '';
+                headerEmail.innerText = user.email || '';
                 headerBadge.classList.remove('hidden');
                 headerBadge.classList.add('inline-flex');
                 btnLogout.classList.remove('hidden');
             } else {
-                statusText.innerText = "Nicht angemeldet";
+                statusText.innerText = sessionError ? (window.__toolyaUILocale === 'en' ? 'Status: Unable to verify connection or session' : 'Status: Verbindung oder Sitzung nicht überprüfbar') : (window.__toolyaUILocale === 'en' ? 'Not signed in' : 'Nicht angemeldet');
                 userDisplay.innerText = "";
+                headerEmail.innerText = "";
                 headerBadge.classList.add('hidden');
                 headerBadge.classList.remove('inline-flex');
                 btnLogout.classList.add('hidden');
@@ -397,7 +409,7 @@
                 const {data:auth,error}=await supabaseClient.auth.getUser();
                 if(error||auth?.user?.id!==parkingCloudUserId||auth.user.is_anonymous)throw Error('Anmeldung nicht gültig.');
                 await parkingCloudController.replace(data);
-                window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');return true;
+                window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Saved to Toolya Cloud.' : 'In Toolya Cloud gespeichert.');return true;
             }catch(error){console.error(error);parkingCloudBlock('save-unconfirmed');return false;}
         }
 
@@ -456,7 +468,9 @@
                     document.getElementById("timerDisplay").innerText = "⏰ ABGELAUFEN!";
                     document.getElementById("timerStatus").innerText = "Bitte Parkzeit verlängern oder zum Auto gehen!";
                     if ("Notification" in window && Notification.permission === "granted") {
-                        new Notification("Park-Alarm", { body: "Deine Parkzeit ist abgelaufen!" });
+                        new Notification(window.__toolyaUILocale === 'en' ? 'Parking alert' : 'Park-Alarm',
+                          { body: window.__toolyaUILocale === 'en'
+                            ? 'Your parking time has expired!' : 'Deine Parkzeit ist abgelaufen!' });
                     }
                     return;
                 }
@@ -545,10 +559,28 @@
             renderParkingList();
         }
 
+
+        // Escape only the displayed values; CloudOnly records remain unchanged.
+        function escapeParkingHtml(value) {
+            const map = {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'};
+            return String(value ?? '').replace(/[&<>"']/g, ch => map[ch]);
+        }
+        function safeParkingPhoto(value) {
+            const url = String(value ?? '');
+            return /^data:image\/(?:png|jpeg|gif|webp);base64,[a-z0-9+/=]+$/i.test(url) ? url : '';
+        }
+        function safeParkingGps(value) {
+            if (!value || typeof value !== 'object' || value.lat == null || value.lng == null ||
+                String(value.lat).trim() === '' || String(value.lng).trim() === '') return null;
+            const lat=Number(value.lat),lng=Number(value.lng);
+            return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat)<=90 && Math.abs(lng)<=180 ? {lat,lng} : null;
+        }
+
         function renderParkingList() {
             let data = getData();
             const list = document.getElementById('parkingList');
             const filter = document.getElementById('timeFilter').value;
+            const english = window.__toolyaUILocale === 'en';
 
             let filteredSessions = data.sessions;
             let now = new Date();
@@ -567,31 +599,50 @@
 
             document.getElementById('statCount').innerText = data.sessions.length;
             let totalCost = filteredSessions.reduce((sum, s) => sum + Number(s.cost || 0), 0);
-            document.getElementById('statCost').innerText = totalCost.toFixed(2).replace('.', ',') + ' €';
+            document.getElementById('statCost').innerText = (english ? totalCost.toFixed(2) : totalCost.toFixed(2).replace('.', ',')) + ' €';
 
             if (filteredSessions.length === 0) {
-                list.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Parkvorgänge für diesen Zeitraum gespeichert.</p>`;
+                list.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${english ? 'No parking sessions saved for this period.' : 'Keine Parkvorgänge für diesen Zeitraum gespeichert.'}</p>`;
                 return;
             }
 
-            list.innerHTML = filteredSessions.map(s => `
+            list.innerHTML = filteredSessions.map(s => {
+                const photoSrc=safeParkingPhoto(s.photo),gps=safeParkingGps(s.gps);
+                const safeId=Number.isSafeInteger(s.id)?s.id:null;
+
+                // Historic records may hold ISO strings; newer ones use epoch milliseconds.
+                const rawTime=s.timestamp;
+                const numericTime=(typeof rawTime==='number'||/^\d{12,13}$/.test(String(rawTime)))
+                    ? Number(rawTime) : NaN;
+                const parsedTime=Number.isFinite(numericTime) && numericTime>0
+                    ? new Date(numericTime)
+                    : typeof rawTime==='string' && /^\d{4}-\d{2}-\d{2}T/.test(rawTime)
+                        ? new Date(rawTime) : null;
+                const displayDate=english && parsedTime && Number.isFinite(parsedTime.getTime())
+                    ? parsedTime.toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}) : s.date;
+                return `
                 <div class="b3-park-card p-4 bg-gray-50 border rounded-2xl flex items-center justify-between shadow-sm gap-3">
                     <div class="b3-park-card-identity flex items-center space-x-3">
-                        ${s.photo ? `<button type="button" class="b3-photo-trigger" aria-label="Parkplatzfoto vergrößern" onclick="zoomImage(this.firstElementChild.src)"><img alt="Foto des Parkplatzes" src="${s.photo}" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80"></button>` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Beleg</div>'}
+                        ${photoSrc ? `<button type="button" class="b3-photo-trigger" aria-label="${english ? 'Enlarge parking photo' : 'Parkplatzfoto vergrößern'}" onclick="zoomImage(this.firstElementChild.src)"><img alt="${english ? 'Parking photo' : 'Foto des Parkplatzes'}" src="${photoSrc}" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80"></button>` : `<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">${english ? 'Photo' : 'Beleg'}</div>`}
                         <div>
-                            <h4 class="font-bold text-sm">📍 ${s.desc}</h4>
-                            ${s.sector ? `<p class="text-xs font-semibold text-amber-700">🅿️ Sektor: ${s.sector}</p>` : ''}
-                            <p class="text-xs text-gray-500">Datum: ${s.date} | Gebühr: <span class="font-semibold text-green-600">${Number(s.cost || 0).toFixed(2).replace('.', ',')} €</span></p>
-                            ${s.gps ? `<p class="text-[10px] text-blue-600 mt-0.5">GPS: ${Number(s.gps.lat).toFixed(4)}, ${Number(s.gps.lng).toFixed(4)}</p>` : ''}
+                            <h4 class="font-bold text-sm">📍 ${escapeParkingHtml(s.desc)}</h4>
+                            ${s.sector ? `<p class="text-xs font-semibold text-amber-700">🅿️ ${english ? 'Zone' : 'Sektor'}: ${escapeParkingHtml(s.sector)}</p>` : ''}
+                            <p class="text-xs text-gray-500">${english ? 'Date' : 'Datum'}: ${escapeParkingHtml(displayDate)} | ${english ? 'Fee' : 'Gebühr'}: <span class="font-semibold text-green-600">${english ? Number(s.cost || 0).toFixed(2) : Number(s.cost || 0).toFixed(2).replace('.', ',')} €</span></p>
+                            ${gps ? `<p class="text-[10px] text-blue-600 mt-0.5">GPS: ${Number(gps.lat).toFixed(4)}, ${Number(gps.lng).toFixed(4)}</p>` : ''}
                         </div>
                     </div>
                     <div class="b3-park-card-actions flex items-center gap-2">
-                        ${s.gps ? `<a href="https://www.google.com/maps/search/?api=1&query=${s.gps.lat},${s.gps.lng}" target="_blank" rel="noopener noreferrer" class="b3-action b3-outline px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold">🧭 Route</a>` : ''}
-                        <button onclick="deleteSession(${s.id})" class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                        ${gps ? `<a href="https://www.google.com/maps/search/?api=1&query=${gps.lat},${gps.lng}" target="_blank" rel="noopener noreferrer" class="b3-action b3-outline px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold">🧭 Route</a>` : ''}
+                        <button onclick="deleteSession(${safeId === null ? 0 : safeId})" ${safeId === null ? 'disabled' : ''} class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
+
+        document.addEventListener('toolya:locale-change', () => {
+            if (parkingCloudReady) renderParkingList();
+        });
 
         function zoomImage(src) {
             document.getElementById('zoomedImage').src = src;
@@ -601,6 +652,10 @@
 
         // PDF Report Export via jsPDF
         async function exportPDF() {
+            const pdfEn = window.__toolyaUILocale === 'en';
+            const pdfLabel = (de,en) => pdfEn ? en : de;
+            const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
@@ -608,34 +663,34 @@
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text("Parkschein- & Parkplatz-Report", 14, 20);
+            doc.text(pdfLabel("Parkschein- & Parkplatz-Report","Parking session and location report"), 14, 20);
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+            doc.text(`${pdfLabel("Erstellt am: ","Created on: ")}${new Date().toLocaleDateString(pdfDateLocale)}`, 14, 27);
 
             const sessions = data.sessions.filter(s => s && typeof s === 'object' && !Array.isArray(s));
             let y = 35;
             let totalCost = sessions.reduce((sum, s) => sum + Number(s.cost || 0), 0);
 
             doc.setFont("helvetica", "bold");
-            doc.text(`Parkvorgänge: ${sessions.length} | Gesamtkosten: ${totalCost.toFixed(2)} EUR`, 14, y);
+            doc.text(`${pdfLabel("Parkvorgänge: ","Parking sessions: ")}${sessions.length} | ${pdfLabel("Gesamtkosten: ","Total costs: ")}${totalCost.toFixed(2)} EUR`, 14, y);
             y += 10;
 
             doc.setFont("helvetica", "underline");
-            doc.text("Parkhistorie:", 14, y);
+            doc.text(pdfLabel("Parkhistorie:","Parking history:"), 14, y);
             y += 7;
 
             doc.setFont("helvetica", "normal");
-            if (!sessions.length) doc.text("Keine Parkvorgänge erfasst.", 14, y);
+            if (!sessions.length) doc.text(pdfLabel("Keine Parkvorgänge erfasst.","No parking sessions recorded."), 14, y);
             sessions.forEach((s, idx) => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                let sectorText = s.sector ? ` [Sektor: ${s.sector}]` : "";
-                const lines = doc.splitTextToSize(`${idx + 1}. Standort: ${s.desc}${sectorText} | ${s.date} | ${Number(s.cost || 0).toFixed(2)} EUR`, 180);
+                let sectorText = s.sector ? ` [${pdfLabel("Sektor: ","Sector: ")}${s.sector}]` : "";
+                const lines = doc.splitTextToSize(`${idx + 1}. ${pdfLabel("Standort: ","Location: ")}${s.desc}${sectorText} | ${s.date} | ${Number(s.cost || 0).toFixed(2)} EUR`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
-            doc.save("park-report.pdf");
+            doc.save(pdfLabel("park-report.pdf","parking-report.pdf"));
         }
     </script>
 </body>

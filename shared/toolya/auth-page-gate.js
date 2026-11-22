@@ -2,7 +2,14 @@
 (() => {
   const root = document.documentElement;
   const home = '../../index.html?auth=required';
-  const reject = () => window.location.replace(home);
+  const reject = () => {
+    const explicit = new URLSearchParams(window.location.search).get('lang');
+    let language = explicit;
+    if (language !== 'de' && language !== 'en') {
+      try { language = window.localStorage.getItem('toolya-locale-v1'); } catch { language = null; }
+    }
+    window.location.replace(language === 'en' ? home + '&lang=en' : home);
+  };
   const unavailable = () => root.classList.add('toolya-auth-unavailable');
 
   document.addEventListener('DOMContentLoaded', () => {

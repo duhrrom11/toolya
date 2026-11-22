@@ -9,7 +9,12 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
  const allowed=new Set(['/tools/estate/handover.html','/tools/estate/print-key.html','/favicon.ico','/assets/heir-e2ee-handoff.js','/assets/helferlein-dialogs.js','/assets/toolya-consent.js','/assets/toolya-consent.css','/assets/estate-print.css','/assets/estate-print-ready.js','/shared/toolya/platform.mjs','/shared/toolya/settings-unify.mjs','/shared/toolya/settings-accordion.css','/shared/toolya/buddy.mjs','/shared/toolya/tokens.css','/shared/toolya/buddy.css','/shared/toolya/platform.css','/shared/toolya/footer.css','/shared/toolya/header.css','/shared/toolya/alpha.css','/assets/toolya/outfits.webp','/assets/toolya/emotions-turquoise.webp','/assets/toolya/emotions-purple.webp',...['turquoise','purple'].flatMap(c=>[
    '/assets/toolya/headers/toolya_wishlist_'+c+'_welcome_400.webp',
    ...['welcome','error','tip','success'].map(p=>'/assets/toolya/originals/toolya_wishlist_'+c+'_'+p+'_1024.png')
- ])]);
+ ]),
+  '/shared/toolya/i18n/estate-choice.css',
+  '/shared/toolya/i18n/estate-entry.mjs',
+  '/shared/toolya/i18n/estate-copy.mjs',
+  '/shared/toolya/i18n/estate-dom.mjs'
+ ]);
  const marker='synthetic-private-content-marker',passphrase='Synthetic passphrase marker 1234';
  const traffic=[],unexpected=[],errors=[];let browser;
  try{
@@ -54,7 +59,10 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
   await page.locator('#privateKeyFile').setInputFiles(privateFile);await page.locator('#estateFile').setInputFiles(estateFile);await page.locator('#unlockPassphrase').fill(passphrase);await page.locator('#openEstate').click();await page.locator('#estateOutput pre').waitFor();
   assert((await page.locator('#estateOutput').textContent()).includes(marker),'real RSA/AES file roundtrip works');assert.equal(await page.locator('#estateOutput img').count(),0,'decrypted markup remains text');assert.equal(await page.locator('#unlockPassphrase').inputValue(),'');
   await page.locator('#unlockPassphrase').fill('Incorrect synthetic password');await page.locator('#openEstate').click();await page.waitForFunction(()=>document.querySelector('#openStatus').textContent.includes('fehlgeschlagen'));assert.equal(await page.locator('#estateOutput').textContent(),'','failed unlock clears prior plaintext');
+  await page.locator('[data-estate-locale="en"]').click();
+  assert.equal(await page.locator('[data-estate-locale="en"]').getAttribute('aria-pressed'),'true');
   await page.goto(origin+'/tools/estate/print-key.html');assert.equal(await page.locator('script[src*="toolya-consent"]').count(),0,'print page stays isolated');assert.equal(await page.evaluate(()=>typeof window.dataLayer),'undefined');
+  await page.getByRole('button',{name:'Print / Save as PDF',exact:true}).waitFor();
   assert.deepEqual(unexpected,[],'only fixed same-origin assets requested');
   const network=JSON.stringify(traffic);for(const secret of [marker,passphrase,masterHex])assert(!network.includes(secret),'no synthetic secret in any network URL, headers or body');
   assert.deepEqual(errors,[]);console.log('PASS: handover 320/768/1440 light layout, focus, same-origin CSS, unchanged data/network guards, consent exclusion, protected key/export/roundtrip/wrong-password/text-only rendering; '+traffic.length+' audited static GETs. Synthetic files only.');

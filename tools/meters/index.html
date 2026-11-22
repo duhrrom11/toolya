@@ -68,7 +68,9 @@
     <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="../../assets/helferlein-dialogs.js"></script>
 <link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><link rel="stylesheet" href="../../shared/toolya/alpha.css?v=20261115-alpha">
-<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script></head>
+<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="../../shared/toolya/i18n/tool-entry.css">
+<script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script><script type="module" src="../../shared/toolya/i18n/tool-entry.mjs"></script>
+</head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
   <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
     <p id="toolya-auth-title"><strong>Zählerstände</strong></p>
@@ -99,7 +101,7 @@
                 <span class="text-2xl">🔔</span>
                 <div>
                     <h4 class="font-bold text-sm">Ablese-Erinnerung (Über 30 Tage vergangen!)</h4>
-                    <p class="text-xs opacity-95">Erfasse jetzt deine aktuellen Zählerstände für genaue Tageskosten und Prognosen.</p>
+                    <p class="text-xs opacity-95" data-tool-en="Record your latest meter readings to see estimated daily costs and forecasts.">Erfasse jetzt deine aktuellen Zählerstände für genaue Tageskosten und Prognosen.</p>
                 </div>
             </div>
             <div class="flex gap-2">
@@ -118,17 +120,17 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="p-4 bg-sky-50/50 rounded-xl border border-sky-100 space-y-2">
                         <h4 class="font-bold text-sky-900 text-sm">⚡ Strom (HT / NT)</h4>
-                        <p>Notiere die Ziffern vor dem Komma. Bei HT/NT-Zählern beide Register getrennt erfassen.</p>
+                        <p data-tool-en="Record the digits before the decimal point. For dual-rate meters, record each register separately.">Notiere die Ziffern vor dem Komma. Bei HT/NT-Zählern beide Register getrennt erfassen.</p>
                         <a href="https://www.amazon.de/s?k=stromzähler+wlan+smart+steckdose&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2">🛒 Brennenstuhl Primera-Line PM 231 E bei Amazon</a>
                     </div>
                     <div class="p-4 bg-blue-50/50 rounded-xl border border-blue-100 space-y-2">
                         <h4 class="font-bold text-blue-900 text-sm">💧 Wasser</h4>
-                        <p>Die großen Ziffern zeigen volle m³, die roten Zeiger Liter.</p>
+                        <p data-tool-en="The large digits show whole cubic metres. The red dials show litres.">Die großen Ziffern zeigen volle m³, die roten Zeiger Liter.</p>
                         <a href="https://www.amazon.de/s?k=wasserzähler+aufsatz+digital&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2">🛒 Wasserzubehör auf Amazon</a>
                     </div>
                     <div class="p-4 bg-orange-50/50 rounded-xl border border-orange-100 space-y-2">
                         <h4 class="font-bold text-orange-900 text-sm">♨️ Gas</h4>
-                        <p>Gaszählerstand in m³ eintragen. Für die Kostenschätzung verwendet Toolya den hinterlegten Umrechnungsfaktor in kWh/m³.</p>
+                        <p data-tool-en="Enter the gas meter reading in m³. Toolya uses your saved conversion factor in kWh/m³ to estimate costs.">Gaszählerstand in m³ eintragen. Für die Kostenschätzung verwendet Toolya den hinterlegten Umrechnungsfaktor in kWh/m³.</p>
                         <a href="https://www.amazon.de/s?k=gasmesser+detektor+smart&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2">🛒 Gas-Detektoren auf Amazon</a>
                     </div>
                 </div>
@@ -139,19 +141,19 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-sky-50 text-sky-700 rounded-xl font-bold">📊</div>
-                <div><p class="text-xs text-gray-500">Erfasste Ablesungen</p><h3 id="statTotalReadings" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Recorded readings">Erfasste Ablesungen</p><h3 id="statTotalReadings" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">⚡</div>
-                <div><p class="text-xs text-gray-500">Stromzähler aktiv</p><h3 id="statStrom" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Active electricity meters">Stromzähler aktiv</p><h3 id="statStrom" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">💧</div>
-                <div><p class="text-xs text-gray-500">Wasserzähler aktiv</p><h3 id="statWasser" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Active water meters">Wasserzähler aktiv</p><h3 id="statWasser" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-orange-50 text-orange-600 rounded-xl font-bold">♨️</div>
-                <div><p class="text-xs text-gray-500">Gaszähler aktiv</p><h3 id="statGas" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Active gas meters">Gaszähler aktiv</p><h3 id="statGas" class="text-lg font-bold">0</h3></div>
             </div>
         </div>
 
@@ -202,7 +204,7 @@
                 </div>
                 <div>
                     <label for="meterName" class="block text-xs font-semibold text-gray-600 mb-1">Zählername / Nummer:</label>
-                    <input type="text" id="meterName" placeholder="z.B. Hauptzähler #12345" class="w-full p-3 border rounded-xl text-sm">
+                    <input type="text" id="meterName" placeholder="z.B. Hauptzähler #12345" class="w-full p-3 border rounded-xl text-sm" data-tool-en-placeholder="e.g. main meter #12345">
                 </div>
                 <div>
                     <label for="meterLocation" class="block text-xs font-semibold text-gray-600 mb-1">Standort / Bereich:</label>
@@ -231,7 +233,7 @@
                 </div>
                 <div>
                     <label for="meterNote" class="block text-xs font-semibold text-gray-600 mb-1">Notiz / Bemerkung:</label>
-                    <input type="text" id="meterNote" placeholder="z.B. Nach Jahresabrechnung" class="w-full p-3 border rounded-xl text-sm">
+                    <input type="text" id="meterNote" placeholder="z.B. Nach Jahresabrechnung" class="w-full p-3 border rounded-xl text-sm" data-tool-en-placeholder="e.g. after annual billing">
                 </div>
             </div>
 
@@ -267,7 +269,7 @@
             <div class="flex justify-between items-center flex-wrap gap-2">
                 <h3 class="font-bold text-lg">📋 Zählerstände & Verlauf</h3>
                 <div class="flex gap-2">
-                    <label class="helferlein-field" for="filterType"><span class="helferlein-field-label">Verlauf nach Zählertyp filtern</span><select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verlauf nach Zählertyp filtern">
+                    <label class="helferlein-field" for="filterType"><span class="helferlein-field-label" data-tool-en="Filter history by meter type">Verlauf nach Zählertyp filtern</span><select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verlauf nach Zählertyp filtern" data-tool-en-aria-label="Filter history by meter type">
                         <option value="All">Alle Zähler anzeigen</option>
                         <option value="Strom">⚡ Strom (HT)</option>
                         <option value="Strom-NT">🌙 Strom (NT)</option>
@@ -426,7 +428,7 @@
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
-                alert("Bitte E-Mail und Passwort eingeben.");
+                alert(window.__toolyaUILocale === "en" ? "Please enter your email and password." : "Bitte E-Mail und Passwort eingeben.");
                 return;
             }
 
@@ -436,7 +438,7 @@
                 return;
             }
 
-            alert("Registrierung erfolgreich.");
+            alert(window.__toolyaUILocale === "en" ? "Registration successful." : "Registrierung erfolgreich.");
             updateUserDisplay();
             closeSettings();
         }
@@ -446,7 +448,7 @@
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
-                alert("Bitte E-Mail und Passwort eingeben.");
+                alert(window.__toolyaUILocale === "en" ? "Please enter your email and password." : "Bitte E-Mail und Passwort eingeben.");
                 return;
             }
 
@@ -474,10 +476,11 @@
 
             if (user) {
                 if (headerInfo) headerInfo.textContent = "👤 " + user.email;
-                if (cloudStatus) cloudStatus.textContent = "✅ Angemeldet – " + (user.email || "Benutzer");
+                if (cloudStatus) cloudStatus.textContent = (window.__toolyaUILocale === "en" ? "✅ Signed in – " : "✅ Angemeldet – ") + (user.email || (window.__toolyaUILocale === "en" ? "User" : "Benutzer"));
             } else {
-                if (headerInfo) headerInfo.textContent = "Nicht angemeldet";
-                if (cloudStatus) cloudStatus.textContent = "Nicht angemeldet";
+                const signedOutLabel = window.__toolyaUILocale === "en" ? "Not signed in" : "Nicht angemeldet";
+                if (headerInfo) headerInfo.textContent = signedOutLabel;
+                if (cloudStatus) cloudStatus.textContent = signedOutLabel;
             }
         }
 
@@ -590,7 +593,7 @@
                 if(error||auth?.user?.id!==metersCloudUserId||auth.user.is_anonymous)
                     throw Error('Anmeldung nicht mehr gültig.');
                 await metersCloudController.replace(data);
-                window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');
+                window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Saved to Toolya Cloud.' : 'In Toolya Cloud gespeichert.');
                 return true;
             }catch(error){console.error(error);metersCloudBlock('save-unconfirmed');return false;}
         }
@@ -794,7 +797,7 @@
                     Number.isFinite(Number(r.value)) && Number(r.value) >= 0;
             });
             if (validReadings.length === 0) return alert("Keine Zählerstände zum Teilen vorhanden.");
-            let text = "⚡ Zählerstände-Übersicht:\n";
+            let text = window.__toolyaUILocale === 'en' ? "⚡ Meter readings overview:\n" : "⚡ Zählerstände-Übersicht:\n";
             let latest = {};
             // Pick the newest reading per distinct meter, regardless of insertion order.
             validReadings.forEach(r => {
@@ -803,7 +806,7 @@
             });
             for (const r of Object.values(latest)) {
                 let unit = r.type.includes('Strom') ? 'kWh' : 'm³';
-                text += `- ${r.type} (${r.name}): ${r.value} ${unit} (vom ${r.date})\n`;
+                text += `- ${r.type} (${r.name}): ${r.value} ${unit} (${window.__toolyaUILocale === 'en' ? 'on' : 'vom'} ${r.date})\n`;
             }
             if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
                 prompt('Zwischenablage nicht verfügbar. Text manuell kopieren:', text);
@@ -843,7 +846,7 @@
             renderChart(displayData);
 
             if (filtered.length === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Einträge gefunden.</p>`;
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No entries found.' : 'Keine Einträge gefunden.'}</p>`;
                 return;
             }
 
@@ -903,6 +906,10 @@
                 `;
             }).join('');
         }
+
+        document.addEventListener('toolya:locale-change', () => {
+            if (metersCloudReady) renderApp();
+        });
 
         function renderChart(data) {
             const card = document.getElementById('chartCard');
@@ -1029,24 +1036,28 @@
         }
 
         async function exportHandoverPDF() {
+            const pdfEn = window.__toolyaUILocale === 'en';
+            const pdfLabel = (de,en) => pdfEn ? en : de;
+            const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
             const data = getData();
 
             doc.setFontSize(18);
-            doc.text("Wohnungs- & Zählerübergabe-Protokoll", 14, 20);
+            doc.text(pdfLabel("Wohnungs- & Zählerübergabe-Protokoll","Property and meter handover report"), 14, 20);
             doc.setFontSize(10);
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
-            doc.text("Dieses Dokument dient als formeller Nachweis der aktuellen Zählerstände.", 14, 34);
+            doc.text(`${pdfLabel("Erstellt am: ","Created on: ")}${new Date().toLocaleDateString(pdfDateLocale)}`, 14, 28);
+            doc.text(pdfLabel("Dieses Dokument dient als formeller Nachweis der aktuellen Zählerstände.","This document records the current meter readings for handover."), 14, 34);
 
             let y = 48;
             data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string').forEach((r, idx) => {
                 const unit = r.type.includes('Strom') ? 'kWh' : 'm³';
                 const lines = [
                     ...doc.splitTextToSize(`${idx + 1}. [${r.type}] ${r.name} (${r.location || 'Haupt'})`, 180),
-                    ...doc.splitTextToSize(`Ablesedatum: ${r.date} | Zählerstand: ${r.value} ${unit}`, 180),
-                    ...(r.note ? doc.splitTextToSize(`Bemerkung: ${r.note}`, 180) : [])
+                    ...doc.splitTextToSize(`${pdfLabel("Ablesedatum: ","Reading date: ")}${r.date} | ${pdfLabel("Zählerstand: ","Reading: ")}${r.value} ${unit}`, 180),
+                    ...(r.note ? doc.splitTextToSize(`${pdfLabel("Bemerkung: ","Note: ")}${r.note}`, 180) : [])
                 ];
                 lines.forEach(line => {
                     if (y > 270) { doc.addPage(); y = 20; }
@@ -1059,12 +1070,12 @@
             if (y + 24 > 280) { doc.addPage(); y = 20; }
             y += 10;
             doc.text("___________________________", 14, y);
-            doc.text("Unterschrift Übergeber / Mieter", 14, y + 6);
+            doc.text(pdfLabel("Unterschrift Übergeber / Mieter","Signature of outgoing occupant / tenant"), 14, y + 6);
 
             doc.text("___________________________", 120, y);
-            doc.text("Unterschrift Übernehmer / Vermieter", 120, y + 6);
+            doc.text(pdfLabel("Unterschrift Übernehmer / Vermieter","Signature of incoming occupant / landlord"), 120, y + 6);
 
-            doc.save(`zaehler-uebergabeprotokoll-${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.save(`${pdfLabel("zaehler-uebergabeprotokoll-","meter-handover-report-")}${new Date().toISOString().split('T')[0]}.pdf`);
         }
 
         function exportBackup() {
@@ -1118,25 +1129,30 @@
         }
 
         async function exportPDF() {
+            const pdfEn = window.__toolyaUILocale === 'en';
+            const pdfLabel = (de,en) => pdfEn ? en : de;
+            const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
             const data = getData();
 
             doc.setFontSize(16);
-            doc.text("Zählerstands-Bericht & Prognose", 14, 20);
+            doc.text(pdfLabel("Zählerstands-Bericht & Prognose","Meter readings and forecast"), 14, 20);
             doc.setFontSize(10);
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
+            doc.text(`${pdfLabel("Erstellt am: ","Created on: ")}${new Date().toLocaleDateString(pdfDateLocale)}`, 14, 28);
 
             const readings = data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string');
-            doc.text(`Erfasste Ablesungen: ${readings.length}`, 14, 34);
+            doc.text(`${pdfLabel("Erfasste Ablesungen: ","Recorded readings: ")}${readings.length}`, 14, 34);
             let y = 44;
             if (!readings.length) {
-                doc.text("Keine Zählerstände erfasst.", 14, y);
+                doc.text(pdfLabel("Keine Zählerstände erfasst.","No meter readings recorded."), 14, y);
             }
             readings.forEach((r) => {
                 const unit = r.type.includes('Strom') ? 'kWh' : 'm³';
-                const line = `${r.date} | ${r.type} (${r.name} - ${r.location || 'Haupt'}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`;
+                const typeLabel = pdfEn ? ({Strom:'Electricity',Wasser:'Water',Gas:'Gas',Heizung:'Heating'})[r.type] || r.type : r.type;
+                const line = `${r.date} | ${typeLabel} (${r.name} - ${r.location || pdfLabel('Haupt','Main')}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`;
                 const lines = doc.splitTextToSize(line, 180);
                 lines.forEach(textLine => {
                     if (y > 275) { doc.addPage(); y = 20; }
@@ -1146,7 +1162,7 @@
                 y += 2;
             });
 
-            doc.save(`zaehlerstaende-${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.save(`${pdfLabel("zaehlerstaende-","meter-readings-")}${new Date().toISOString().split('T')[0]}.pdf`);
         }
     </script>
 </body>

@@ -1,0 +1,116 @@
+name: i18next migration pilot
+on:
+  push:
+    branches:
+      - feature/i18n-de-en-foundation-20261121
+    paths:
+      - 'shared/toolya/i18n/**'
+      - 'tests/i18n/**'
+      - 'dashboard/index.html'
+      - 'en/parking-spot/index.html'
+      - 'en/moving-boxes/index.html'
+      - 'en/plant-care/index.html'
+      - 'en/household-budget/index.html'
+      - 'en/toolya-dashboard/index.html'
+      - 'en/publish-amazon-wishlist/index.html'
+      - 'en/meter-readings/index.html'
+      - 'en/lent-items/index.html'
+      - 'en/pet-health/index.html'
+      - 'en/digital-estate/index.html'
+      - 'en/vehicle-costs/index.html'
+      - 'en/cake-pan-calculator/index.html'
+      - 'en/roommate-organizer/index.html'
+      - 'index.html'
+      - 'en/index.html'
+      - 'tools/parking/index.html'
+      - 'tools/moving/index.html'
+      - 'tools/housemates/index.html'
+      - 'tools/plants/index.html'
+      - 'tools/baking/index.html'
+      - 'tools/budget/index.html'
+      - 'tools/meters/index.html'
+      - 'tools/car/index.html'
+      - 'tools/loans/index.html'
+      - 'tools/pet-health/index.html'
+      - '.github/workflows/i18next-pilot.yml'
+  pull_request:
+    paths:
+      - 'shared/toolya/i18n/**'
+      - 'tests/i18n/**'
+      - 'dashboard/index.html'
+      - 'en/parking-spot/index.html'
+      - 'en/moving-boxes/index.html'
+      - 'en/plant-care/index.html'
+      - 'en/household-budget/index.html'
+      - 'en/toolya-dashboard/index.html'
+      - 'en/publish-amazon-wishlist/index.html'
+      - 'en/meter-readings/index.html'
+      - 'en/lent-items/index.html'
+      - 'en/pet-health/index.html'
+      - 'en/digital-estate/index.html'
+      - 'en/vehicle-costs/index.html'
+      - 'en/cake-pan-calculator/index.html'
+      - 'en/roommate-organizer/index.html'
+      - 'index.html'
+      - 'en/index.html'
+      - 'tools/parking/index.html'
+      - 'tools/moving/index.html'
+      - 'tools/housemates/index.html'
+      - 'tools/plants/index.html'
+      - 'tools/baking/index.html'
+      - 'tools/budget/index.html'
+      - 'tools/meters/index.html'
+      - 'tools/car/index.html'
+      - 'tools/loans/index.html'
+      - 'tools/pet-health/index.html'
+      - 'tests/i18n/parking-i18next-playwright.cjs'
+      - '.github/workflows/i18next-pilot.yml'
+  workflow_dispatch:
+concurrency:
+  group: i18next-pilot-${{ github.event_name }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+jobs:
+  node-regressions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate i18next syntax
+        run: |
+          node --check shared/toolya/i18n/i18next-legacy-resources.mjs
+          node --check shared/toolya/i18n/i18next-runtime-adapter.mjs
+          node --check shared/toolya/i18n/i18next-singleton.mjs
+          node --check shared/toolya/i18n/tool-entry.mjs
+          node --check shared/toolya/i18n/dashboard-entry.mjs
+          node --check shared/toolya/i18n/dashboard-dom.mjs
+          node --check shared/toolya/i18n/marketing-copy.mjs
+          node --check shared/toolya/i18n/marketing.mjs
+          node --check shared/toolya/i18n/switcher.mjs
+          node --check tests/i18n/marketing-i18next-playwright.cjs
+          node --check tests/i18n/marketing-real-pages-playwright.cjs
+          node --check tests/i18n/parking-i18next-playwright.cjs
+      - name: Run focused migration regressions
+        run: node --test tests/i18n/i18next-legacy-resources.test.mjs tests/i18n/i18next-runtime-adapter.test.mjs tests/i18n/i18next-singleton.test.mjs tests/i18n/dashboard-dom.test.mjs
+  parking-browser:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Install real i18next browser bundle for offline tests
+        run: npm install --no-save --package-lock=false i18next@23.16.8
+      - run: npx playwright install --with-deps chromium
+      - name: Verify parking language switching with and without i18next
+        run: |
+          node tests/i18n/parking-i18next-playwright.cjs
+          node tests/i18n/marketing-i18next-playwright.cjs
+          node tests/i18n/marketing-real-pages-playwright.cjs

@@ -76,7 +76,9 @@
     <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="../../assets/helferlein-dialogs.js"></script>
 <link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><link rel="stylesheet" href="../../shared/toolya/alpha.css?v=20261115-alpha">
-<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script></head>
+<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="../../shared/toolya/i18n/tool-entry.css">
+<script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script><script type="module" src="../../shared/toolya/i18n/tool-entry.mjs"></script>
+</head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
   <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
     <p id="toolya-auth-title"><strong>Verliehene Dinge</strong></p>
@@ -169,23 +171,23 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold">📦</div>
-                <div><p class="text-[11px] text-gray-500">Aktiv</p><h3 id="statActive" class="text-base font-bold">0</h3></div>
+                <div><p class="text-[11px] text-gray-500" data-tool-en="Active">Aktiv</p><h3 id="statActive" class="text-base font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-red-50 text-red-600 rounded-xl font-bold">⏰</div>
-                <div><p class="text-[11px] text-gray-500">Über 30 Tage verliehen</p><h3 id="statOverdue" class="text-base font-bold">0</h3></div>
+                <div><p class="text-[11px] text-gray-500" data-tool-en="On loan for over 30 days">Über 30 Tage verliehen</p><h3 id="statOverdue" class="text-base font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-amber-50 text-amber-700 rounded-xl font-bold">⚠️</div>
-                <div><p class="text-[11px] text-gray-500">Verloren/Defekt</p><h3 id="statLost" class="text-base font-bold">0</h3></div>
+                <div><p class="text-[11px] text-gray-500" data-tool-en="Lost / damaged">Verloren/Defekt</p><h3 id="statLost" class="text-base font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">✅</div>
-                <div><p class="text-[11px] text-gray-500">Zurück</p><h3 id="statReturned" class="text-base font-bold">0</h3></div>
+                <div><p class="text-[11px] text-gray-500" data-tool-en="Returned">Zurück</p><h3 id="statReturned" class="text-base font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3 sm:col-span-2 md:col-span-1">
                 <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">💶</div>
-                <div><p class="text-[11px] text-gray-500">Offene Kaution</p><h3 id="statDeposit" class="text-base font-bold">0,00 €</h3></div>
+                <div><p class="text-[11px] text-gray-500" data-tool-en="Outstanding deposits">Offene Kaution</p><h3 id="statDeposit" class="text-base font-bold">0,00 €</h3></div>
             </div>
         </div>
 
@@ -197,22 +199,22 @@
                 <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
                     <h2 class="text-base font-bold">👤 Kontakt anlegen</h2>
                     <label class="helferlein-field" for="contactName"><span class="helferlein-field-label">Name</span><input type="text" id="contactName" placeholder="Name (z.B. Nachbar Müller)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Name (z.B. Nachbar Müller)"></label>
-                    <label class="helferlein-field" for="contactPhone"><span class="helferlein-field-label">Telefon (für WhatsApp)</span><input type="text" id="contactPhone" placeholder="Telefon (für WhatsApp)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Telefon (für WhatsApp)"></label>
+                    <label class="helferlein-field" for="contactPhone"><span class="helferlein-field-label" data-tool-en="Phone number (for WhatsApp)">Telefon (für WhatsApp)</span><input type="text" id="contactPhone" placeholder="Telefon (für WhatsApp)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Telefon (für WhatsApp)" data-tool-en-placeholder="Phone number (for WhatsApp)" data-tool-en-aria-label="Phone number (for WhatsApp)"></label>
                     <button onclick="saveContact()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 rounded-xl text-xs b3-action">Kontakt speichern</button>
                 </div>
 
                 <!-- Stamm-Gegenstand (Inventar) anlegen -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
                     <h2 class="text-base font-bold">🛠️ Stamm-Gegenstand anlegen</h2>
-                    <label class="helferlein-field" for="invTitle"><span class="helferlein-field-label">Bezeichnung</span><input type="text" id="invTitle" placeholder="Bezeichnung (z.B. Bosch Bohrhammer)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Bezeichnung (z.B. Bosch Bohrhammer)"></label>
-                    <label class="helferlein-field" for="invCategory"><span class="helferlein-field-label">Kategorie des Gegenstands</span><select id="invCategory" class="w-full p-2.5 border rounded-xl text-xs bg-white" aria-label="Kategorie des Gegenstands">
+                    <label class="helferlein-field" for="invTitle"><span class="helferlein-field-label" data-tool-en="Description">Bezeichnung</span><input type="text" id="invTitle" placeholder="Bezeichnung (z.B. Bosch Bohrhammer)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Bezeichnung (z.B. Bosch Bohrhammer)"></label>
+                    <label class="helferlein-field" for="invCategory"><span class="helferlein-field-label" data-tool-en="Item category">Kategorie des Gegenstands</span><select id="invCategory" class="w-full p-2.5 border rounded-xl text-xs bg-white" aria-label="Kategorie des Gegenstands" data-tool-en-aria-label="Item category">
                         <option value="Werkzeug">🔨 Werkzeug</option>
                         <option value="Elektronik">💻 Elektronik & IT</option>
                         <option value="Bücher & Medien">📚 Bücher & Medien</option>
                         <option value="Sport & Freizeit">⚽ Sport & Freizeit</option>
                         <option value="Sonstiges">📦 Sonstiges</option>
                     </select></label>
-                    <label class="helferlein-field" for="invSerial"><span class="helferlein-field-label">Seriennummer / ISBN / Barcode</span><input type="text" id="invSerial" placeholder="Seriennummer / ISBN / Barcode" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Seriennummer / ISBN / Barcode"></label>
+                    <label class="helferlein-field" for="invSerial"><span class="helferlein-field-label" data-tool-en="Serial number / ISBN / barcode">Seriennummer / ISBN / Barcode</span><input type="text" id="invSerial" placeholder="Seriennummer / ISBN / Barcode" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Seriennummer / ISBN / Barcode" data-tool-en-placeholder="Serial number / ISBN / barcode" data-tool-en-aria-label="Serial number / ISBN / barcode"></label>
                     <label class="helferlein-field" for="invGpsLink"><span class="helferlein-field-label">GPS-Tracker URL / AirTag Link (optional)</span><input type="text" id="invGpsLink" placeholder="GPS-Tracker URL / AirTag Link (optional)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="GPS-Tracker URL / AirTag Link (optional)"></label>
                     <button onclick="saveInventoryItem()" class="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-medium py-2 rounded-xl text-xs b3-action">In Stamm-Inventar speichern</button>
                 </div>
@@ -238,7 +240,7 @@
                         </div>
                     </div>
 
-                    <label class="helferlein-field" for="itemCustomPerson"><span class="helferlein-field-label">Oder neuen Namen direkt eingeben...</span><input type="text" id="itemCustomPerson" placeholder="Oder neuen Namen direkt eingeben..." class="w-full p-3 border rounded-xl text-sm mb-3 hidden"></label>
+                    <label class="helferlein-field" for="itemCustomPerson"><span class="helferlein-field-label" data-tool-en="Or enter a new name…">Oder neuen Namen direkt eingeben...</span><input type="text" id="itemCustomPerson" placeholder="Oder neuen Namen direkt eingeben..." class="w-full p-3 border rounded-xl text-sm mb-3 hidden" data-tool-en-placeholder="Or enter a new name…"></label>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                         <div>
@@ -256,8 +258,8 @@
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                        <label class="helferlein-field" for="itemNote"><span class="helferlein-field-label">Notiz (optional)</span><input type="text" id="itemNote" placeholder="Notiz (optional)" class="p-3 border rounded-xl text-sm" aria-label="Notiz (optional)"></label>
-                        <label class="helferlein-field" for="itemPhotoInput"><span class="helferlein-field-label">Foto des verliehenen Gegenstands auswählen</span><input type="file" id="itemPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700" aria-label="Foto des verliehenen Gegenstands auswählen"></label>
+                        <label class="helferlein-field" for="itemNote"><span class="helferlein-field-label" data-tool-en="Note (optional)">Notiz (optional)</span><input type="text" id="itemNote" placeholder="Notiz (optional)" class="p-3 border rounded-xl text-sm" aria-label="Notiz (optional)" data-tool-en-placeholder="Note (optional)" data-tool-en-aria-label="Note (optional)"></label>
+                        <label class="helferlein-field" for="itemPhotoInput"><span class="helferlein-field-label" data-tool-en="Choose a photo of the lent item">Foto des verliehenen Gegenstands auswählen</span><input type="file" id="itemPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700" aria-label="Foto des verliehenen Gegenstands auswählen" data-tool-en-aria-label="Choose a photo of the lent item"></label>
                     </div>
                 </div>
 
@@ -286,7 +288,7 @@
                         <option value="Sport & Freizeit">⚽ Sport & Freizeit</option>
                         <option value="Sonstiges">📦 Sonstiges</option>
                     </select></label>
-                    <label class="helferlein-field" for="filterPerson"><span class="helferlein-field-label">Verleih nach Person filtern</span><select id="filterPerson" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verleih nach Person filtern">
+                    <label class="helferlein-field" for="filterPerson"><span class="helferlein-field-label" data-tool-en="Filter loans by person">Verleih nach Person filtern</span><select id="filterPerson" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verleih nach Person filtern" data-tool-en-aria-label="Filter loans by person">
                         <option value="">Alle Personen</option>
                     </select></label>
                 </div>
@@ -323,7 +325,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl" onclick="event.stopPropagation()">
             <h3 id="qrTitle" class="font-bold text-lg text-indigo-800">QR-Code</h3>
             <div id="qrcode" class="flex justify-center p-4 bg-gray-50 rounded-xl border"></div>
-            <p class="text-xs text-gray-500">Scannen, um Details aufzurufen.</p>
+            <p class="text-xs text-gray-500" data-tool-en="Scan to view details.">Scannen, um Details aufzurufen.</p>
             <button onclick="closeQrModal()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold b3-action b3-outline">Schließen</button>
         </div>
     </div>
@@ -371,29 +373,37 @@
         async function supabaseRegister() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            if(!email || !password) return alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
             const { error } = await supabaseClient.auth.signUp({ email, password });
             if(error) alert(error.message);
-            else { alert('Registrierung erfolgreich!'); checkUserSession(); }
+            else { alert(window.__toolyaUILocale === 'en' ? 'Registration successful!' : 'Registrierung erfolgreich!'); checkUserSession(); }
         }
 
         async function supabaseLogin() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            if(!email || !password) return alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
             const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if(error) alert(error.message);
-            else { alert('Erfolgreich angemeldet!'); checkUserSession(); toggleSettingsModal(); }
+            else { alert(window.__toolyaUILocale === 'en' ? 'Signed in successfully!' : 'Erfolgreich angemeldet!'); checkUserSession(); toggleSettingsModal(); }
         }
 
         async function supabaseLogout() {
             await supabaseClient.auth.signOut();
             checkUserSession();
-            alert('Abgemeldet.');
+            alert(window.__toolyaUILocale === 'en' ? 'Signed out.' : 'Abgemeldet.');
         }
 
         async function checkUserSession() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
+            let user = null;
+            let sessionError = null;
+            try {
+                const result = await supabaseClient.auth.getUser();
+                sessionError = result?.error?.name === 'AuthSessionMissingError' ? null : (result?.error ?? null);
+                user = sessionError ? null : (result?.data?.user ?? null);
+            } catch (error) {
+                sessionError = error;
+            }
             const statusText = document.getElementById('cloud-status-text');
             const userDisplay = document.getElementById('cloud-user-display');
             const headerBadge = document.getElementById('header-user-badge');
@@ -401,15 +411,16 @@
             const btnLogout = document.getElementById('btn-logout');
 
             if(user) {
-                statusText.innerText = "Status: Verbunden & Angemeldet";
-                userDisplay.innerText = user.email;
-                headerEmail.innerText = user.email;
+                statusText.innerText = window.__toolyaUILocale === 'en' ? 'Status: Connected and signed in' : 'Status: Verbunden & Angemeldet';
+                userDisplay.innerText = user.email || '';
+                headerEmail.innerText = user.email || '';
                 headerBadge.classList.remove('hidden');
                 headerBadge.classList.add('inline-flex');
                 btnLogout.classList.remove('hidden');
             } else {
-                statusText.innerText = "Nicht angemeldet";
+                statusText.innerText = sessionError ? (window.__toolyaUILocale === 'en' ? 'Status: Unable to verify connection or session' : 'Status: Verbindung oder Sitzung nicht überprüfbar') : (window.__toolyaUILocale === 'en' ? 'Not signed in' : 'Nicht angemeldet');
                 userDisplay.innerText = "";
+                headerEmail.innerText = "";
                 headerBadge.classList.add('hidden');
                 headerBadge.classList.remove('inline-flex');
                 btnLogout.classList.add('hidden');
@@ -468,7 +479,7 @@
                 if(error||auth?.user?.id!==loansCloudUserId||auth.user.is_anonymous)
                     throw Error('Anmeldung nicht mehr gültig.');
                 await loansCloudController.replace(data);
-                window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');
+                window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Saved to Toolya Cloud.' : 'In Toolya Cloud gespeichert.');
                 return true;
             }catch(error){console.error(error);loansCloudBlock('save-unconfirmed');return false;}
         }
@@ -519,6 +530,22 @@
             renderInventory();
         }
 
+        // Display-only: never change user-controlled option values or selected entries.
+        function localizeLoanSelectPlaceholders() {
+            const english=window.__toolyaUILocale==='en';
+            const entries=[
+                ['itemInventorySelect','','-- Inventar-Gegenstand wählen --','-- Choose inventory item --'],
+                ['itemPersonSelect','','-- Kontakt wählen --','-- Choose contact --'],
+                ['itemPersonSelect','custom','+ Neuen Namen eingeben','+ Enter a new name'],
+                ['filterPerson','','Alle Personen','All people']
+            ];
+            for(const [id,value,de,en] of entries) {
+                const select=document.getElementById(id);
+                const option=select && [...select.options].find(item=>item.value===value);
+                if(option)option.textContent=english?en:de;
+            }
+        }
+
         function loadDropdowns() {
             let data = getData();
             const invSelect = document.getElementById('itemInventorySelect');
@@ -549,6 +576,7 @@
             filterPerson.replaceChildren();
             addOption(filterPerson, '', 'Alle Personen');
             [...new Set(data.items.map(i => i.person))].forEach(p => addOption(filterPerson, p, p));
+            localizeLoanSelectPlaceholders();
         }
 
         function fillInventoryData(select) {
@@ -674,7 +702,7 @@
                 item.returnDate = baseDate.toISOString().split('T')[0];
                 if (!await saveData(data)) return;
                 renderApp();
-                alert(`Rückgabedatum um ${days} Tage verlängert!`);
+                alert(window.__toolyaUILocale === 'en' ? `Return date extended by ${days} days!` : `Rückgabedatum um ${days} Tage verlängert!`);
             }
         }
 
@@ -754,30 +782,23 @@
             document.getElementById('qrModal').classList.add('hidden');
         }
 
-        function downloadICS(title, dateStr, person) {
+        async function downloadICS(title, dateStr, person, itemId) {
+            // A presentation-only calendar: preserve the stored title and date.
+            const english = window.__toolyaUILocale === 'en';
+            const invalidDate=english ? 'Invalid return date.' : 'Ungültiges Rückgabedatum.';
             const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateStr));
-            if (!match) return alert("Ungültiges Rückgabedatum.");
-            const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
-            if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== dateStr)
-                return alert("Ungültiges Rückgabedatum.");
-            const formatDate = value => value.toISOString().slice(0, 10).replace(/-/g, '');
-            const startDate = formatDate(date);
-            date.setUTCDate(date.getUTCDate() + 1);
-            const endDate = formatDate(date);
-            const escapeIcs = value => String(value ?? '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
-            const icsContent = [
-                "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Toolya//Verleih//DE",
-                "BEGIN:VEVENT", `SUMMARY:${escapeIcs(`Rückgabe: ${title} (${person})`)}`,
-                `DTSTART;VALUE=DATE:${startDate}`, `DTEND;VALUE=DATE:${endDate}`,
-                "DESCRIPTION:Verleih-Rückgabe fällig", "END:VEVENT", "END:VCALENDAR", ""
-            ].join("\r\n");
-            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `Rueckgabe_${String(title).replace(/[^a-z0-9_-]+/gi, '_')}.ics`;
-            link.click();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            if (!match) return alert(invalidDate);
+            const day = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+            if (!Number.isFinite(day.getTime()) || day.toISOString().slice(0,10) !== dateStr)
+                return alert(invalidDate);
+            const event = {
+                title: `${english ? 'Return' : 'Rückgabe'}: ${title} (${person})`,
+                date: dateStr,
+                description: english ? 'Item due for return' : 'Verleih-Rückgabe fällig',
+                uid: 'loan-' + String(itemId).replace(/[^a-z0-9_-]/gi,'_') + '@toolya.app'
+            };
+            const { downloadAllDayCalendar } = await import('../../shared/toolya/calendar-export.mjs');
+            downloadAllDayCalendar(event);
         }
 
         function escapeHtml(value) {
@@ -804,7 +825,7 @@
             const inventory = data.inventory || [];
 
             if (inventory.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 italic">Keine Stamm-Gegenstände im Inventar hinterlegt.</p>`;
+                container.innerHTML = `<p class="text-xs text-gray-400 italic">${window.__toolyaUILocale === 'en' ? 'No inventory items recorded yet.' : 'Keine Stamm-Gegenstände im Inventar hinterlegt.'}</p>`;
                 return;
             }
 
@@ -828,7 +849,48 @@
             `).join('');
         }
 
+        document.addEventListener('toolya:locale-change', () => {
+            if (loansCloudReady) { localizeLoanSelectPlaceholders(); renderInventory(); renderApp(); }
+        });
+
+        // Bind once on document: B3 panels can replace the item-list element.
+        // Resolve the visible item from the current read-only CloudOnly snapshot,
+        // not from stale closures or user-controlled inline JavaScript.
+        function loanVisibleItems() {
+            const data=getData();
+            const category=document.getElementById('filterCategory')?.value || '';
+            const person=document.getElementById('filterPerson')?.value || '';
+            return (data.items || []).filter(item =>
+                (!category || item.category===category) && (!person || item.person===person));
+        }
+        function loanItemAction(event,kind) {
+            const list=document.getElementById('itemsList');
+            const action=event.target.closest?.('[data-loan-action]');
+            if(!list || !action || !list.contains(action))return;
+            const index=Number(action.dataset.loanIndex),items=loanVisibleItems();
+            if(!Number.isSafeInteger(index)||index<0||index>=items.length)return;
+            const item=items[index];
+            if(kind==='change') {
+                if(action.dataset.loanAction==='status' && ['active','returned','lost'].includes(action.value))
+                    void setStatus(item.id,action.value);
+                return;
+            }
+            switch(action.dataset.loanAction) {
+                case 'ics': void downloadICS(item.title,item.returnDate,item.person,item.id)
+                    .catch(()=>alert(window.__toolyaUILocale==='en' ? 'Calendar file could not be created.' : 'Die Kalenderdatei konnte nicht erstellt werden.')); break;
+                case 'qr': void showQrCode(item.title,item.person); break;
+                case 'extend7': void extendReturnDate(item.id,7); break;
+                case 'extend14': void extendReturnDate(item.id,14); break;
+                case 'edit': openEditModal(item.id); break;
+                case 'delete': void deleteItem(item.id); break;
+            }
+        }
+        document.addEventListener('click',event=>loanItemAction(event,'click'));
+        document.addEventListener('change',event=>loanItemAction(event,'change'));
+
         function renderApp() {
+            const english = window.__toolyaUILocale === 'en';
+            const label = (de,en) => english ? en : de;
             let data = getData();
             const container = document.getElementById('itemsList');
             const categoryFilter = document.getElementById('filterCategory').value;
@@ -849,34 +911,8 @@
                 filteredItems = filteredItems.filter(i => i.person === personFilter);
             }
 
-            // Event-Delegation: keine benutzerkontrollierten Zeichen in Inline-JavaScript.
-            container.onclick = event => {
-                const trigger = event.target.closest('[data-loan-action]');
-                if (!trigger || !container.contains(trigger)) return;
-                const index = Number(trigger.dataset.loanIndex);
-                if (!Number.isInteger(index) || index < 0 || index >= filteredItems.length) return;
-                const item = filteredItems[index];
-                switch (trigger.dataset.loanAction) {
-                    case 'ics': downloadICS(item.title, item.returnDate, item.person); break;
-                    case 'qr': showQrCode(item.title, item.person); break;
-                    case 'extend7': extendReturnDate(item.id, 7); break;
-                    case 'extend14': extendReturnDate(item.id, 14); break;
-                    case 'edit': openEditModal(item.id); break;
-                    case 'delete': deleteItem(item.id); break;
-                }
-            };
-            container.onchange = event => {
-                const trigger = event.target.closest('[data-loan-action="status"]');
-                if (!trigger || !container.contains(trigger)) return;
-                const index = Number(trigger.dataset.loanIndex);
-                if (!Number.isInteger(index) || index < 0 || index >= filteredItems.length) return;
-                if (['active', 'returned', 'lost'].includes(trigger.value)) {
-                    setStatus(filteredItems[index].id, trigger.value);
-                }
-            };
-
             if (filteredItems.length === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Gegenstände für diesen Filter gefunden.</p>`;
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${label('Keine Gegenstände für diesen Filter gefunden.','No items match this filter.')}</p>`;
             } else {
                 container.innerHTML = filteredItems.map((i, itemIndex) => {
                     let d = new Date(i.date);
@@ -884,14 +920,14 @@
                     
                     let badge = "";
                     if (i.status === 'returned') {
-                        badge = `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">✅ Zurückgegeben</span>`;
+                        badge = `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">${label('✅ Zurückgegeben','✅ Returned')}</span>`;
                     } else if (i.status === 'lost') {
-                        badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">⚠️ Verloren / Defekt</span>`;
+                        badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">${label('⚠️ Verloren / Defekt','⚠️ Lost / damaged')}</span>`;
                     } else if (diff > 30) {
                         overdueCount++;
-                        badge = `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Seit ${diff} Tagen verliehen</span>`;
+                        badge = `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">${english ? '🔴 Lent for ' + diff + ' days' : '🔴 Seit ' + diff + ' Tagen verliehen'}</span>`;
                     } else {
-                        badge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">🟢 aktiv (${diff}T)</span>`;
+                        badge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">${english ? '🟢 active (' + diff + 'd)' : '🟢 aktiv (' + diff + 'T)'}</span>`;
                     }
 
                     let contact = (data.contacts || []).find(c => c.name === i.person);
@@ -899,14 +935,14 @@
                     let whatsappDropdown = "";
                     if (phone && i.status === 'active') {
                         let cleanPhone = phone.replace(/[^0-9+]/g, '');
-                        let msgFriendly = encodeURIComponent(`Hi ${i.person}! Wollte kurz nachhören, wie es mit meinem "${i.title}" läuft und wann du es ca. zurückbringen kannst? Liebe Grüße!`);
-                        let msgUrgent = encodeURIComponent(`Hallo ${i.person}, ich benötige meinen Gegenstand "${i.title}" in den nächsten Tagen wieder. Sag mir bitte Bescheid, wann das klappt. Danke!`);
+                        let msgFriendly = encodeURIComponent(english ? `Hi ${i.person}! Just checking when you might be able to return my "${i.title}". Thanks!` : `Hi ${i.person}! Wollte kurz nachhören, wie es mit meinem "${i.title}" läuft und wann du es ca. zurückbringen kannst? Liebe Grüße!`);
+                        let msgUrgent = encodeURIComponent(english ? `Hi ${i.person}, I need my "${i.title}" back in the next few days. Please let me know when you can return it. Thank you!` : `Hallo ${i.person}, ich benötige meinen Gegenstand "${i.title}" in den nächsten Tagen wieder. Sag mir bitte Bescheid, wann das klappt. Danke!`);
                         
                         whatsappDropdown = `
                             <select onchange="if(this.value) { window.open(this.value, '_blank'); this.value=''; }" class="p-1.5 bg-green-50 text-green-700 hover:bg-green-100 rounded-xl text-xs font-semibold border border-green-200">
                                 <option value="">💬 WhatsApp...</option>
-                                <option value="https://wa.me/${cleanPhone}?text=${msgFriendly}">Freundliche Erinnerung</option>
-                                <option value="https://wa.me/${cleanPhone}?text=${msgUrgent}">Dringende Rückgabe</option>
+                                <option value="https://wa.me/${cleanPhone}?text=${msgFriendly}">${label('Freundliche Erinnerung','Friendly reminder')}</option>
+                                <option value="https://wa.me/${cleanPhone}?text=${msgUrgent}">${label('Dringende Rückgabe','Urgent return')}</option>
                             </select>
                         `;
                     }
@@ -921,43 +957,49 @@
 
                     if (i.status === 'active') {
                         extendButtons = `
-                            <button data-loan-action="extend7" data-loan-index="${itemIndex}" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold b3-action b3-outline" title="+7 Tage">+7T</button>
-                            <button data-loan-action="extend14" data-loan-index="${itemIndex}" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold b3-action b3-outline" title="+14 Tage">+14T</button>
+                            <button data-loan-action="extend7" data-loan-index="${itemIndex}" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold b3-action b3-outline" title="${label('+7 Tage','+7 days')}">${label('+7T','+7d')}</button>
+                            <button data-loan-action="extend14" data-loan-index="${itemIndex}" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold b3-action b3-outline" title="${label('+14 Tage','+14 days')}">${label('+14T','+14d')}</button>
                         `;
 
-                        if (i.returnDate) {
-                            let rd = new Date(i.returnDate);
-                            let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Rückgabe: ' + i.title + ' (' + i.person + ')')}&dates=${rd.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${rd.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('Verleih-Rückgabe fällig')}`;
+                        if (typeof i.returnDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(i.returnDate)) {
+                            const rd = new Date(i.returnDate + 'T00:00:00Z');
+                            if (Number.isFinite(rd.getTime()) && rd.toISOString().slice(0,10) === i.returnDate) {
+                            const firstDay = i.returnDate.replace(/-/g,'');
+                            const nextDay = new Date(rd.getTime() + 86400000).toISOString().slice(0,10).replace(/-/g,'');
+                            const summary = (english ? 'Return: ' : 'Rückgabe: ') + i.title + ' (' + i.person + ')';
+                            const details = english ? 'Item due for return' : 'Verleih-Rückgabe fällig';
+                            let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(summary)}&dates=${firstDay}/${nextDay}&details=${encodeURIComponent(details)}`;
                             calButtons = `
-                                <a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="px-2 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
-                                <button data-loan-action="ics" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="ICS Kalender">📥 ICS</button>
+                                <a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="px-2 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="${label('Google Kalender','Google Calendar')}">📅 Google</a>
+                                <button data-loan-action="ics" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="${label('ICS Kalender','Download calendar file')}">📥 ICS</button>
                             `;
+                            }
                         }
                     }
 
                     let statusDropdown = `
                         <select data-loan-action="status" data-loan-index="${itemIndex}" class="p-1.5 bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold border">
-                            <option value="active" ${i.status === 'active' ? 'selected' : ''}>📌 Status: Aktiv</option>
-                            <option value="returned" ${i.status === 'returned' ? 'selected' : ''}>✅ Zurückgegeben</option>
-                            <option value="lost" ${i.status === 'lost' ? 'selected' : ''}>⚠️ Verloren / Defekt</option>
+                            <option value="active" ${i.status === 'active' ? 'selected' : ''}>${label('📌 Status: Aktiv','📌 Status: Active')}</option>
+                            <option value="returned" ${i.status === 'returned' ? 'selected' : ''}>${label('✅ Zurückgegeben','✅ Returned')}</option>
+                            <option value="lost" ${i.status === 'lost' ? 'selected' : ''}>${label('⚠️ Verloren / Defekt','⚠️ Lost / damaged')}</option>
                         </select>
                     `;
 
                     return `
                         <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 b3-loan-card ${i.status !== 'active' ? 'opacity-60' : ''}">
                             <div class="flex items-center space-x-3 b3-loan-card-identity">
-                                ${safeImageUrl(i.photo) ? `<img src="${safeImageUrl(i.photo)}" alt="Foto des verliehenen Gegenstands" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" data-loan-action="qr" data-loan-index="${itemIndex}">` : `<div data-loan-action="qr" data-loan-index="${itemIndex}" class="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer" title="QR-Code anzeigen">📱 QR</div>`}
+                                ${safeImageUrl(i.photo) ? `<img src="${safeImageUrl(i.photo)}" alt="${label('Foto des verliehenen Gegenstands','Photo of lent item')}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" data-loan-action="qr" data-loan-index="${itemIndex}">` : `<div data-loan-action="qr" data-loan-index="${itemIndex}" class="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer" title="${label('QR-Code anzeigen','Show QR code')}">📱 QR</div>`}
                                 <div>
                                     <div class="flex items-center space-x-2 flex-wrap gap-1">
                                         <span class="text-xs font-bold text-gray-800">📦 ${escapeHtml(i.title)}</span>
-                                        <span class="text-[10px] bg-gray-200 text-gray-700 font-semibold px-2 py-0.5 rounded-full">${escapeHtml(i.category || 'Sonstiges')}</span>
+                                        <span class="text-[10px] bg-gray-200 text-gray-700 font-semibold px-2 py-0.5 rounded-full">${escapeHtml(i.category || label('Sonstiges','Other'))}</span>
                                         <span class="text-xs text-indigo-600 font-semibold">→ ${escapeHtml(i.person)}</span>
                                         ${badge}
                                         ${i.serial ? `<span class="text-[10px] font-mono bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border">SN: ${escapeHtml(i.serial)}</span>` : ''}
-                                        ${i.deposit > 0 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">Kaution: ${Number(i.deposit).toFixed(2).replace('.', ',')} €</span>` : ''}
+                                        ${i.deposit > 0 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">${label('Kaution','Deposit')}: ${english ? Number(i.deposit).toFixed(2) : Number(i.deposit).toFixed(2).replace('.', ',')} €</span>` : ''}
                                     </div>
-                                    <p class="text-xs text-gray-500 mt-1">Ausleihe: ${d.toLocaleDateString('de-DE')} ${i.returnDate ? '| Rückgabe: ' + new Date(i.returnDate).toLocaleDateString('de-DE') : ''} ${i.note ? '| Notiz: ' + escapeHtml(i.note) : ''}</p>
-                                    ${i.status === 'active' ? `<div class="flex gap-1 mt-1.5 items-center b3-loan-extend"><span class="text-[10px] text-gray-400">Verlängern:</span> ${extendButtons}</div>` : ''}
+                                    <p class="text-xs text-gray-500 mt-1">${label('Ausleihe','Loaned')}: ${d.toLocaleDateString(english ? 'en-GB' : 'de-DE')} ${i.returnDate ? '| ' + label('Rückgabe','Return') + ': ' + new Date(i.returnDate).toLocaleDateString(english ? 'en-GB' : 'de-DE') : ''} ${i.note ? '| ' + label('Notiz','Note') + ': ' + escapeHtml(i.note) : ''}</p>
+                                    ${i.status === 'active' ? `<div class="flex gap-1 mt-1.5 items-center b3-loan-extend"><span class="text-[10px] text-gray-400">${label('Verlängern:','Extend:')}</span> ${extendButtons}</div>` : ''}
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 self-end md:self-center flex-wrap b3-loan-card-actions">
@@ -965,7 +1007,7 @@
                                 ${whatsappDropdown}
                                 ${calButtons}
                                 ${statusDropdown}
-                                <button data-loan-action="edit" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="Bearbeiten">✏️</button>
+                                <button data-loan-action="edit" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="${label('Bearbeiten','Edit')}">✏️</button>
                                 <button data-loan-action="delete" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
@@ -977,10 +1019,14 @@
             document.getElementById('statOverdue').innerText = overdueCount;
             document.getElementById('statLost').innerText = lostCount;
             document.getElementById('statReturned').innerText = returnedCount;
-            document.getElementById('statDeposit').innerText = totalDeposit.toFixed(2).replace('.', ',') + ' €';
+            document.getElementById('statDeposit').innerText = (english ? totalDeposit.toFixed(2) : totalDeposit.toFixed(2).replace('.', ',')) + ' €';
         }
 
         async function exportPDF() {
+            const pdfEn = window.__toolyaUILocale === 'en';
+            const pdfLabel = (de,en) => pdfEn ? en : de;
+            const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
@@ -988,34 +1034,34 @@
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text("Leih- & Verleih-Report Pro", 14, 20);
+            doc.text(pdfLabel("Leih- & Verleih-Report Pro","Lending and borrowing report"), 14, 20);
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+            doc.text(`${pdfLabel("Erstellt am: ","Created on: ")}${new Date().toLocaleDateString(pdfDateLocale)}`, 14, 27);
 
             let y = 35;
             let totalDeposit = data.items.filter(i => i.status === 'active').reduce((sum, i) => sum + Number(i.deposit || 0), 0);
 
             doc.setFont("helvetica", "bold");
-            doc.text(`Offene Kaution / Wert: ${totalDeposit.toFixed(2)} EUR`, 14, y);
+            doc.text(`${pdfLabel("Offene Kaution / Wert: ","Outstanding deposit / value: ")}${totalDeposit.toFixed(2)} EUR`, 14, y);
             y += 10;
 
             doc.setFont("helvetica", "underline");
-            doc.text("Verleih-Historie:", 14, y);
+            doc.text(pdfLabel("Verleih-Historie:","Loan history:"), 14, y);
             y += 7;
 
             doc.setFont("helvetica", "normal");
             data.items.forEach(i => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                let statusLabel = i.status === 'returned' ? "[ZURÜCK]" : (i.status === 'lost' ? "[VERLOREN/DEFEKT]" : "[AKTIV]");
+                let statusLabel = i.status === 'returned' ? pdfLabel("[ZURÜCK]","[RETURNED]") : (i.status === 'lost' ? pdfLabel("[VERLOREN/DEFEKT]","[LOST/DAMAGED]") : pdfLabel("[AKTIV]","[ACTIVE]"));
                 let serialText = i.serial ? ` (SN: ${i.serial})` : "";
-                let depText = Number(i.deposit || 0) > 0 ? ` [Kaution: ${Number(i.deposit).toFixed(2)} EUR]` : "";
-                const lines = doc.splitTextToSize(`- ${statusLabel} ${i.title}${serialText} an ${i.person} (seit ${new Date(i.date).toLocaleDateString('de-DE')})${depText}`, 180);
+                let depText = Number(i.deposit || 0) > 0 ? ` [${pdfLabel("Kaution: ","Deposit: ")}${Number(i.deposit).toFixed(2)} EUR]` : "";
+                const lines = doc.splitTextToSize(`- ${statusLabel} ${i.title}${serialText}${pdfLabel(" an "," to ")}${i.person} (${pdfLabel("seit ","since ")}${new Date(i.date).toLocaleDateString(pdfDateLocale)})${depText}`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
-            doc.save("verleih-report-pro.pdf");
+            doc.save(pdfLabel("verleih-report-pro.pdf","lending-report.pdf"));
         }
     </script>
 </body>

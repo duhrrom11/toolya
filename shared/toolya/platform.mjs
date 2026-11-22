@@ -242,6 +242,7 @@ function mountToolHero(){
  if(old.matches('.b3-header')){old.classList.add('ty-tool-original-header');heading?.setAttribute('aria-hidden','true');}
  else {if(heading){heading.hidden=true;}const oldBack=old.previousElementSibling;if(oldBack?.tagName==='A'&&oldBack.getAttribute('href')?.includes('index.html'))oldBack.hidden=true;}
  refreshFrames();
+ document.dispatchEvent(new Event('toolya:tool-hero-ready'));
 }
 function finalizeToolSettingsAndHeader(){
  // Some tool dialogs are inserted after the initial preference pass.

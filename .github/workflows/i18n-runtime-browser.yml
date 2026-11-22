@@ -1,0 +1,45 @@
+name: Toolya i18n runtime Chromium smoke
+
+on:
+  push:
+    branches:
+      - feature/i18n-de-en-foundation-20261121
+    paths:
+      - 'tools/parking/index.html'
+      - 'tools/loans/index.html'
+      - 'tools/meters/index.html'
+      - 'shared/toolya/i18n/tool-entry.mjs'
+      - 'tests/browser/tool-pages-ui.spec.cjs'
+      - 'assets/helferlein-accessibility.js'
+      - '.github/workflows/i18n-runtime-browser.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  mock-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Verify mobile DE/EN histories and real ICS downloads with synthetic data
+        run: npx playwright test tests/browser/tool-pages-ui.spec.cjs --grep 'i18n parking history|i18n loans history|i18n meter empty|i18n loan ICS download|i18n account dialog keyboard trap|i18n loans dynamic contact' --reporter=line
+      - name: Preserve Chromium failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: i18n-runtime-smoke-failures
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

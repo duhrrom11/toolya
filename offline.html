@@ -16,9 +16,17 @@
 </head>
 <body>
   <main>
-    <h1>Toolya ist gerade offline</h1>
+    <div id="ty-message-de" lang="de"><h1>Toolya ist gerade offline</h1>
     <p>Bitte prüfe deine Internetverbindung. Persönliche Tool-Daten werden nicht im Offline-Cache gespeichert.</p>
-    <a href="/">Erneut versuchen</a>
+    <a href="/">Erneut versuchen</a></div>
+<div id="ty-message-en" lang="en" hidden><h1>Toolya is offline</h1>
+<p>Check your internet connection. Personal tool data is not stored in the offline cache.</p>
+<a href="/en/">Try again</a></div>
   </main>
-</body>
+<script>
+(()=>{let chosen='de';try{if(location.pathname.startsWith('/en/')||localStorage.getItem('toolya-locale-v1')==='en')chosen='en'}catch{}
+document.documentElement.lang=chosen;document.title=(chosen==='en'?'Currently offline':'Gerade offline')+' | Toolya';
+for(const lang of ['de','en'])document.getElementById('ty-message-'+lang).hidden=lang!==chosen;
+})();
+</script></body>
 </html>

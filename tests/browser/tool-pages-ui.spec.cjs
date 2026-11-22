@@ -21,7 +21,10 @@ async function isolated(page,authenticated,displayCss=false,initialSnapshot=null
               auth:{
                 async getUser(){return {data:{user:m.signedIn?{id:'ui-fixture-user',email:'mock@example.invalid',is_anonymous:false}:null},error:null}},
                 async getSession(){return {data:{session:null},error:null}},
-                onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}},
+                onAuthStateChange(listener){
+                  if(m.fixture?.__recovery)(m.authListeners??=[]).push(listener);
+                  return {data:{subscription:{unsubscribe(){}}}};
+                },
                 async signOut(){m.signedIn=false;return {error:null}},
                 async signInWithPassword(){m.signedIn=true;return {data:{user:{id:'ui-fixture-user'}},error:null}}
               },
@@ -1470,6 +1473,60 @@ test('dashboard: shared actions, task rows and account dialog at three widths',a
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);expect(errors).toEqual([]);
 });
 
+test('dashboard recovery keeps English and restores manual sign-out after an auth failure',async({page})=>{
+ await isolated(page,true,true,{__dashboard:true,__recovery:true});
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/dashboard/?auth=1&lang=en');
+ await expect(page).toHaveURL(new RegExp('/dashboard/\\?lang=en$'));
+ await expect(page.locator('button[data-dashboard-locale="en"]')).toHaveAttribute('aria-pressed','true');
+ await page.evaluate(()=>{
+  const mock=window.__toolyaMock;
+  const auth=window.toolyaDashboardAuthClient.auth;
+  mock.recoveryCalls=[];
+  auth.updateUser=()=>new Promise(resolve=>{
+   mock.recoveryCalls.push('update');
+   mock.finishUpdate=(error)=>resolve({error});
+  });
+  auth.signOut=async()=>{
+   mock.recoveryCalls.push('signOut');
+   if(mock.recoveryCalls.filter(call=>call==='signOut').length===1)return {error:{message:'Synthetic network error'}};
+   mock.signedIn=false;
+   return {error:null};
+  };
+  for(const listener of mock.authListeners)listener('PASSWORD_RECOVERY',{access_token:'synthetic-token'});
+ });
+ const panel=page.locator('#passwordRecoveryPanel');
+ const password=page.locator('#recoveryPassword');
+ const confirmation=page.locator('#recoveryPasswordConfirm');
+ const submit=page.locator('#saveRecovery');
+ const status=page.locator('#loginMessage');
+ const signOut=page.locator('#logoutUser');
+ await expect(panel).toBeVisible();
+ await expect(password).toBeFocused();
+ await password.fill('synthetic-password');
+ await confirmation.fill('synthetic-password');
+ await submit.click();
+ await expect(submit).toBeDisabled();
+ await submit.dispatchEvent('click');
+ expect(await page.evaluate(()=>window.__toolyaMock.recoveryCalls)).toEqual(['update']);
+ await page.evaluate(()=>window.__toolyaMock.finishUpdate({message:'Synthetic update failure'}));
+ await expect(status).toHaveText('The password could not be changed. Request a new reset link.');
+ await expect(submit).toBeEnabled();
+ await expect(password).toHaveValue('synthetic-password');
+ await submit.click();
+ await page.evaluate(()=>window.__toolyaMock.finishUpdate(null));
+ await expect(panel).toBeHidden();
+ await expect(password).toHaveValue('');
+ await expect(confirmation).toHaveValue('');
+ await expect(status).toHaveText('Password changed, but signing out failed. Please sign out manually.');
+ await expect(signOut).toBeVisible();
+ await signOut.click();
+ await expect(status).toHaveText('Signed out.');
+ await expect(page.locator('#signedOutControls')).toBeVisible();
+ expect(await page.evaluate(()=>window.__toolyaMock.recoveryCalls)).toEqual(['update','update','signOut','signOut']);
+ expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+});
+
 for(const kind of ['car','budget','moving','meters','pet-health'])test(kind+': help and backup controls stay readable and keyboard accessible',async({page},testInfo)=>{
  test.setTimeout(60000);await isolated(page,true,true);
  await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
@@ -2019,3 +2076,661 @@ for (const [path, tableCount] of [
     }
   });
 }
+
+
+// Sprint A: real DE/EN controls in Chromium at phone and tablet widths.
+// All cloud responses are synthetic and all requests except local preview and
+// display-only CSS are intercepted by isolated(). No production credentials.
+test('i18n Sprint A moving: 320/768px preserve box draft and selected location',async({page},testInfo)=>{
+ test.setTimeout(60000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await isolated(page,true,true,{
+  locations:[{id:1,name:'Synthetic storage',icon:'📦'}],
+  boxes:[{id:2,locId:1,name:'Synthetic box',desc:'Sample',value:12.5,tag:'Zerbrechlich',barcode:'',expiry:'',lentTo:'',subItems:[]}]
+ });
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady&&!!movingCloudController?.ready)).toBe(true);
+ if(await page.locator('#toolya-consent-panel').isVisible()) await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+ for(const width of [320,768]){
+  await page.setViewportSize({width,height:900});
+  await page.locator('#boxLocationSelect').selectOption('1');
+  await page.locator('#boxName').fill('Unsaved draft box');
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="en"]').click()});
+  await expect(page.locator('#boxLocationSelect')).toHaveValue('1');
+  await expect(page.locator('#boxName')).toHaveValue('Unsaved draft box');
+  await expect(page.locator('label[for="boxName"] .helferlein-field-label')).toHaveText('Box name');
+  await expect(page.locator('#boxLocationSelect option[value=""]')).toHaveText('-- Choose location --');
+  await expect(page.locator('#tagFilter option[value="Zerbrechlich"]')).toHaveText('Fragile');
+  await page.evaluate(()=>toggleHelp());
+  await expect(page.locator('#helpToggleBtn span')).toHaveText('Hide help and guide');
+  await page.evaluate(()=>toggleHelp());
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
+  await page.screenshot({path:testInfo.outputPath('i18n-moving-'+width+'.png')});
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="de"]').click()});
+  await expect(page.locator('#boxLocationSelect')).toHaveValue('1');
+  await expect(page.locator('#boxName')).toHaveValue('Unsaved draft box');
+  await expect(page.locator('#tagFilter option[value="Zerbrechlich"]')).toHaveText('Zerbrechlich');
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
+test('i18n Sprint A plants: 320/768px localize cistern without modifying capacity',async({page},testInfo)=>{
+ test.setTimeout(60000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await isolated(page,true,true);
+ await page.goto(origin+'/tools/plants/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof plantsCloudReady!=='undefined'&&plantsCloudReady&&!!plantsCloudController?.ready)).toBe(true);
+ if(await page.locator('#toolya-consent-panel').isVisible()) await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+ await page.evaluate(()=>openCisternModal());
+ for(const width of [320,768]){
+  await page.setViewportSize({width,height:900});
+  const capacity=page.locator('#cisternMaxLiters');
+  await capacity.fill('15000');
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="en"]').click()});
+  await expect(capacity).toHaveValue('15000');
+  await expect(page.locator('#cisternPercentText')).toContainText('% full');
+  await expect(page.locator('#cisternModal p.text-sky-700')).toHaveText('Remaining volume');
+  await expect(page.locator('#cisternModal button[onclick="closeCisternModal()"]')).toHaveText('Close');
+  expect(await page.locator('#cisternModal > div').evaluate(el=>el.scrollWidth<=el.clientWidth+2)).toBe(true);
+  await page.screenshot({path:testInfo.outputPath('i18n-plants-'+width+'.png')});
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="de"]').click()});
+  await expect(capacity).toHaveValue('15000');
+  await expect(page.locator('#cisternPercentText')).toContainText('% gefüllt');
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
+test('i18n Sprint A baking: 320/768px preserve recipe draft and do not resave previews',async({page},testInfo)=>{
+ test.setTimeout(60000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await isolated(page,true,true,{recipes:[{name:'Synthetic recipe',text:'100 g flour',factor:1,date:'2026-11-20',note:'Existing saved note'}]});
+ await page.goto(origin+'/tools/baking/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof bakingCloudReady!=='undefined'&&bakingCloudReady&&!!bakingCloudController?.ready)).toBe(true);
+ if(await page.locator('#toolya-consent-panel').isVisible()) await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+ for(const width of [320,768]){
+  await page.setViewportSize({width,height:900});
+  await page.locator('#recipe-input').fill('2 Eier\n100 g Mehl');
+  await page.evaluate(()=>{
+   document.querySelector('[data-recipe-note-input]').value='Unsaved draft note';
+   renderRecipePreview();
+   document.querySelector('[data-tool-locale="en"]').click();
+  });
+  await expect(page.locator('[data-recipe-note-input]')).toHaveValue('Unsaved draft note');
+  await expect(page.locator('[data-recipe-note-label]')).toHaveText('Baking notes:');
+  await expect(page.locator('#print-card')).toContainText('Factor');
+  await expect(page.locator('label[for="recipe-name"] .helferlein-field-label')).toHaveText('My recipe');
+  await expect(page.locator('label[for="recipe-input"] .helferlein-field-label')).toHaveText('My ingredients');
+  await expect(page.locator('button[onclick="calculateRecipe()"]')).toContainText('Calculate quantities');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
+  await page.screenshot({path:testInfo.outputPath('i18n-baking-'+width+'.png')});
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="de"]').click()});
+  await expect(page.locator('[data-recipe-note-input]')).toHaveValue('Unsaved draft note');
+  await expect(page.locator('[data-recipe-note-label]')).toHaveText('Geling-Protokoll / Notiz:');
+  await expect(page.locator('#recipe-input')).toHaveValue('2 Eier\n100 g Mehl');
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
+test('i18n Sprint A household: 320/768px budget and cooking editor drafts survive language changes',async({page},testInfo)=>{
+ test.setTimeout(90000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const fixture={__wg:{id:'00000000-0000-4000-8000-000000000109',updated_at:'2026-11-17T00:00:00Z',payload:{
+  flatmates:[{vorname:'Mia',nachname:'Test'},{vorname:'Ben',nachname:'Test'}],
+  notes:[],data:[],budgets:{Lebensmittel:100},goals:[],events:[],inventory:[],
+  diets:{},cleaning:[],shopping:[],contracts:[],
+  cooking:['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'].map(day=>({day,chef:'Frei',dish:'',ingredients:''})),
+  infoboard:{wifi:'',landlord:'',caretaker:'',trash:''}
+ }}};
+ await isolated(page,true,true,fixture);
+ await page.goto(origin+'/tools/housemates/index.html?id=secure_00000000-0000-4000-8000-000000000109');
+ await expect.poll(()=>page.evaluate(()=>typeof secureWgRevision!=='undefined'&&!!secureWgRevision)).toBe(true);
+ if(await page.locator('#toolya-consent-panel').isVisible()) await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+ for(const width of [320,768]){
+  await page.setViewportSize({width,height:900});
+  await page.evaluate(()=>openBudgetModal());
+  const amount=page.locator('#budgetInputList input[data-cat="Lebensmittel"]');
+  await amount.fill('175');
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="en"]').click()});
+  await expect(amount).toHaveValue('175');
+  await expect(page.locator('label[for="budget-amount-0"]')).toHaveText('Groceries:');
+  expect(await page.locator('#budgetModal > div').evaluate(el=>el.scrollWidth<=el.clientWidth+2)).toBe(true);
+  await page.screenshot({path:testInfo.outputPath('i18n-household-budget-'+width+'.png')});
+  await page.evaluate(()=>closeBudgetModal());
+  await page.evaluate(()=>openCookingModal());
+  const dish=page.locator('#cookingInputList input.dishInput').first();
+  await dish.fill('Unsaved dinner plan');
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="de"]').click()});
+  await expect(dish).toHaveValue('Unsaved dinner plan');
+  await expect(page.locator('#cookingInputList [data-cooking-day]').first()).toHaveText('Montag');
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="en"]').click()});
+  await expect(dish).toHaveValue('Unsaved dinner plan');
+  await expect(page.locator('#cookingInputList [data-cooking-day]').first()).toHaveText('Monday');
+  await expect(dish).toHaveAttribute('placeholder','Dish');
+  expect(await page.locator('#cookingModal > div').evaluate(el=>el.scrollWidth<=el.clientWidth+2)).toBe(true);
+  await page.screenshot({path:testInfo.outputPath('i18n-household-cooking-'+width+'.png')});
+  await page.evaluate(()=>closeCookingModal());
+  await page.evaluate(()=>{document.querySelector('[data-tool-locale="de"]').click()});
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
+
+// Native-dialog boundary: verify the real locale selector and browser dialog
+// wrappers with synthetic cloud fixtures; no migration, import or database calls.
+for(const calendar of [
+ {tool:'car',collection:'cars',relation:'carId',type:'TÜV',de:'KFZ-Termin',en:'Vehicle appointment'},
+ {tool:'pet-health',collection:'pets',relation:'petId',type:'Impfung',de:'Haustier-Termin',en:'Pet appointment'}
+]){
+ test(calendar.tool+' downloads a bilingual all-day calendar file from the real event button',async({page})=>{
+  const {readFile}=require('node:fs/promises');
+  const name="Mia's favorite";
+  const title='Prüftermin, Pflege & Öl';
+  const event={id:8,[calendar.relation]:3,type:calendar.type,title,date:'2026-11-21',cost:0};
+  await isolated(page,true,true,{
+   [calendar.collection]:[{id:3,name}],events:[event],
+   ...(calendar.tool==='car'?{tires:[]}:{meds:[]})
+  });
+  await page.goto(origin+'/tools/'+calendar.tool+'/index.html?lang=en');
+  if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Reject',exact:true}).or(page.getByRole('button',{name:'Ablehnen',exact:true})).click();
+  const button=page.locator('button[onclick="downloadEventICS(8)"]');
+  await expect(button).toBeVisible();
+  for(const language of ['en','de']){
+   const choice=page.locator('[data-tool-locale="'+language+'"]');
+   await choice.click();
+   await expect(choice).toHaveAttribute('aria-pressed','true');
+   await expect(button).toHaveAttribute('title',language==='en'?'Download calendar file':calendar.tool==='car'?'Apple / ICS Kalender':'ICS Kalender');
+   await expect(page.locator('#eventsList')).toContainText(language==='en'?'Date: 21/11/2026':'Datum: 21.11.2026');
+   await expect(page.locator('#eventsList')).toContainText(title);
+   const [download]=await Promise.all([page.waitForEvent('download'),button.click()]);
+   const content=(await readFile(await download.path(),'utf8')).replaceAll('\r\n ','');
+   expect(download.suggestedFilename()).toMatch(/\.ics$/);
+   expect(content).toContain("SUMMARY:Prüftermin\\, Pflege & Öl (Mia's favorite)\r\n");
+   expect(content).toContain('DTSTART;VALUE=DATE:20261121\r\n');
+   expect(content).toContain('DESCRIPTION:'+calendar[language]+'\r\n');
+   expect(content).not.toContain('DTEND');
+  }
+  expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+ });
+}
+
+test('i18n account status: real vehicle UI toggles both languages and signed-out state',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await isolated(page,true,true);
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/car/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof updateUserDisplay==='function'&&!!window.__toolyaMock)).toBe(true);
+ const english = page.locator('[data-tool-locale="en"]');
+ await english.click();
+ await expect(english).toHaveAttribute('aria-pressed','true');
+ await page.evaluate(()=>updateUserDisplay());
+ await expect(page.locator('#cloudStatus')).toHaveText('✅ Signed in – mock@example.invalid');
+ await expect(page.locator('#userInfo')).toHaveText('👤 mock@example.invalid');
+ await page.evaluate(async()=>{window.__toolyaMock.signedIn=false;await updateUserDisplay()});
+ await expect(page.locator('#cloudStatus')).toHaveText('Not signed in');
+ await page.locator('[data-tool-locale="de"]').click();
+ await page.evaluate(()=>updateUserDisplay());
+ await expect(page.locator('#cloudStatus')).toHaveText('Nicht angemeldet');
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
+test('i18n Sprint A moving: mobile backup notices follow real DE/EN selector',async({page})=>{
+ test.setTimeout(60000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await isolated(page,true,true,{locations:[],boxes:[]});
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ await page.locator('[data-tool-locale="en"]').click();
+ const notice=page.getByRole('alertdialog',{name:'Toolya'});
+ await page.evaluate(()=>alert('Backup erfolgreich importiert!'));
+ await expect(notice.locator('#hl-alert-message')).toHaveText('Backup imported successfully!');
+ await expect(notice.getByRole('button',{name:'OK'})).toBeFocused();
+ expect(await notice.evaluate(el=>el.scrollWidth<=el.clientWidth+2)).toBe(true);
+ await notice.getByRole('button',{name:'OK'}).press('Enter');
+ await expect(notice).toHaveCount(0);
+ await page.evaluate(()=>alert('Backup-Datei konnte nicht gelesen werden.'));
+ await expect(notice.locator('#hl-alert-message')).toHaveText('The backup file could not be read.');
+ await notice.getByRole('button',{name:'OK'}).click();
+ await page.locator('[data-tool-locale="de"]').click();
+ await page.evaluate(()=>alert('Backup erfolgreich importiert!'));
+ await expect(notice.locator('#hl-alert-message')).toHaveText('Backup erfolgreich importiert!');
+ await notice.getByRole('button',{name:'OK'}).click();
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
+test('i18n Sprint A household: mobile Wi-Fi prompt and custom member notice localize without writes',async({page})=>{
+ test.setTimeout(90000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const seen=[];page.on('dialog',async d=>{seen.push({type:d.type(),message:d.message()});await d.dismiss()});
+ const fixture={__wg:{id:'00000000-0000-4000-8000-000000000109',updated_at:'2026-11-17T00:00:00Z',payload:{
+  flatmates:[{vorname:'Mia',nachname:'Test'}],notes:[],data:[],budgets:{},goals:[],events:[],inventory:[],diets:{},
+  cleaning:[],shopping:[],contracts:[],cooking:[],infoboard:{wifi:'',landlord:'',caretaker:'',trash:''}
+ }}};
+ await isolated(page,true,true,fixture);
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/housemates/index.html?id=secure_00000000-0000-4000-8000-000000000109');
+ await expect.poll(()=>page.evaluate(()=>typeof secureWgRevision!=='undefined'&&!!secureWgRevision)).toBe(true);
+ await page.locator('[data-tool-locale="en"]').click();
+ await page.evaluate(()=>prompt('WLAN-Name (SSID):',''));
+ expect(seen.at(-1)).toEqual({type:'prompt',message:'Wi-Fi network name (SSID):'});
+ const notice=page.getByRole('alertdialog',{name:'Toolya'});
+ await page.evaluate(()=>alert('Mitgliederverwaltung: Auth request failed'));
+ await expect(notice.locator('#hl-alert-message')).toHaveText('Member management: Auth request failed');
+ await expect(notice.getByRole('button',{name:'OK'})).toBeFocused();
+ await notice.getByRole('button',{name:'OK'}).press('Enter');
+ await expect(notice).toHaveCount(0);
+ await page.locator('[data-tool-locale="de"]').click();
+ await page.evaluate(()=>prompt('WLAN-Name (SSID):',''));
+ expect(seen.at(-1)).toEqual({type:'prompt',message:'WLAN-Name (SSID):'});
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
+
+test('i18n Sprint A moving: malformed backup is rejected in isolated Chromium before cloud writes',async({page})=>{
+ test.setTimeout(60000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await isolated(page,true,true,{locations:[],boxes:[]});
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ await page.locator('[data-tool-locale="en"]').click();
+ const input=page.locator('input[type="file"][onchange="importBackup(event)"]');
+ await input.setInputFiles({name:'invalid-backup.json',mimeType:'application/json',buffer:Buffer.from('{"locations":[],"boxes":"not-an-array"}')});
+ const dialog=page.getByRole('alertdialog',{name:'Toolya'});
+ await expect(dialog.locator('#hl-alert-message')).toHaveText('Invalid backup format.');
+ await expect(dialog.getByRole('button',{name:'OK'})).toBeFocused();
+ await dialog.getByRole('button',{name:'OK'}).click();
+ await expect(input).toHaveValue('');
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ await page.locator('[data-tool-locale="de"]').click();
+ await input.setInputFiles({name:'invalid-backup.json',mimeType:'application/json',buffer:Buffer.from('not json')});
+ await expect(dialog.locator('#hl-alert-message')).toHaveText('Fehler beim Lesen der Datei.');
+ await dialog.getByRole('button',{name:'OK'}).click();
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
+
+test('i18n Sprint A moving: valid backup cancellation and oversized backup never touch cloud',async({page})=>{
+ test.setTimeout(60000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const confirms=[];
+ page.on('dialog',async dialog=>{
+  confirms.push({type:dialog.type(),message:dialog.message()});
+  if(dialog.message().includes('current backup')||dialog.message().includes('aktuelle Sicherung')) await dialog.accept();
+  else await dialog.dismiss();
+ });
+ await isolated(page,true,true,{locations:[],boxes:[]});
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ const input=page.locator('input[type="file"][onchange="importBackup(event)"]');
+ await page.locator('[data-tool-locale="en"]').click();
+ await input.setInputFiles({name:'safe-synthetic-backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({locations:[{id:123,name:'Synthetic location',icon:'📦'}],boxes:[]}))});
+ await expect.poll(()=>confirms.length).toBe(3);
+ expect(confirms).toEqual([
+  {type:'confirm',message:'Before importing, download and check a current backup.'},
+  {type:'confirm',message:'Did you successfully download the current backup?'},
+  {type:'confirm',message:'Import backup? Existing data will be replaced.'}
+ ]);
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ await expect(input).toHaveValue('');
+ await page.evaluate(()=>importBackup({target:{files:[{size:20*1024*1024+1}],value:'synthetic'}}));
+ const notice=page.getByRole('alertdialog',{name:'Toolya'});
+ await expect(notice.locator('#hl-alert-message')).toHaveText('Backup too large (maximum 20 MB).');
+ await expect(notice.getByRole('button',{name:'OK'})).toBeFocused();
+ await notice.getByRole('button',{name:'OK'}).click();
+ await page.locator('[data-tool-locale="de"]').click();
+ await input.setInputFiles({name:'safe-synthetic-backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({locations:[],boxes:[]}))});
+ await expect.poll(()=>confirms.length).toBe(6);
+ expect(confirms.slice(3)).toEqual([
+  {type:'confirm',message:'Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.'},
+  {type:'confirm',message:'Hast du die aktuelle Sicherung erfolgreich heruntergeladen?'},
+  {type:'confirm',message:'Backup importieren? Vorhandene Daten werden ersetzt.'}
+ ]);
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
+
+test('i18n Sprint A moving: exported synthetic JSON matches stored snapshot byte-for-byte across locales',async({page})=>{
+ test.setTimeout(60000);
+ const fixture={locations:[{id:811,name:'Synthetic attic',icon:'📦'}],boxes:[{id:812,locId:811,name:'Demo crate',desc:'Synthetic only',tag:'Standard',value:12.5,subItems:[]}]};
+ await isolated(page,true,true,fixture);
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ for(const lang of ['en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  const downloadPromise=page.waitForEvent('download');
+  await page.evaluate(()=>exportBackup());
+  const download=await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/^homebox-backup-\d{4}-\d{2}-\d{2}\.json$/);
+  const parts=[];for await(const chunk of await download.createReadStream())parts.push(chunk);
+  const payload=JSON.parse(Buffer.concat(parts).toString('utf8'));
+  expect(payload).toEqual(fixture);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ }
+});
+
+test('i18n Sprint A moving: confirmed restore writes synthetic cloud snapshot only after consent',async({page})=>{
+ test.setTimeout(90000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const confirmations=[];
+ page.on('dialog',async dialog=>{
+  confirmations.push({type:dialog.type(),message:dialog.message()});
+  if(dialog.type()==='confirm')await dialog.accept();
+  else await dialog.dismiss();
+ });
+ await isolated(page,true,true,{locations:[],boxes:[]});
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ await page.locator('[data-tool-locale="en"]').click();
+ // Initial synthetic snapshot exists at revision 1. Honor the repository's
+ // compare-and-swap response contract (next revision must be 2).
+ await page.evaluate(()=>{
+  const base=window.supabaseClient.rpc.bind(window.supabaseClient);
+  window.supabaseClient.rpc=async(name,args)=>{
+   const result=await base(name,args);
+   if(result.data?.[0]) result.data[0].revision=(args.p_expected_revision??0)+1;
+   return result;
+  };
+ });
+ const snapshot={locations:[{id:911,name:'Synthetic pantry',icon:'📍'}],boxes:[{id:912,locId:911,name:'Synthetic box',desc:'Only mocked',tag:'Standard',value:5,subItems:[]}]};
+ const file=page.locator('input[type="file"][onchange="importBackup(event)"]');
+ await file.setInputFiles({name:'synthetic-restore.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(snapshot))});
+ await expect.poll(()=>page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
+ expect(confirmations).toEqual([
+  {type:'confirm',message:'Before importing, download and check a current backup.'},
+  {type:'confirm',message:'Did you successfully download the current backup?'},
+  {type:'confirm',message:'Import backup? Existing data will be replaced.'}
+ ]);
+ const writes=await page.evaluate(()=>window.__toolyaMock.writes);
+ expect(writes[0].p_data).toEqual(snapshot);
+ const dialog=page.getByRole('alertdialog',{name:'Toolya'});
+ await expect(dialog.locator('#hl-alert-message')).toHaveText('Backup imported successfully!');
+ await dialog.getByRole('button',{name:'OK'}).click();
+ await expect(file).toHaveValue('');
+ expect(errors).toEqual([]);
+});
+
+
+test('i18n Sprint A moving PDF report labels translate while source records stay untouched',async({page})=>{
+ test.setTimeout(60000);
+ const fixture={locations:[{id:501,name:'Synthetic loft',icon:'📍'}],boxes:[{id:502,locId:501,name:'My custom stored box',desc:'User description',lentTo:'Test borrower',tag:'Standard',value:21.5,subItems:[{name:'Personal item'}]}]};
+ await isolated(page,true,true,fixture);
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ await page.evaluate(()=>{
+  window.__pdfSpy={texts:[],files:[]};
+  window.jspdf={jsPDF:class {
+   setFont(){return this}setFontSize(){return this}
+   splitTextToSize(v){return [String(v)]}
+   text(v){window.__pdfSpy.texts.push(String(v));return this}
+   addPage(){return this}
+   save(v){window.__pdfSpy.files.push(v)}
+  }};
+ });
+ for(const lang of ['en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await page.evaluate(()=>{window.__pdfSpy.texts.length=0;return exportInventoryPDF()});
+  const result=await page.evaluate(()=>({texts:window.__pdfSpy.texts.slice(),files:window.__pdfSpy.files.slice(),snapshot:getData(),writes:window.__toolyaMock.writes.length}));
+  expect(result.snapshot).toEqual(fixture);
+  expect(result.writes).toBe(0);
+  expect(result.texts.join(' ')).toContain('My custom stored box');
+  expect(result.texts.join(' ')).toContain('Test borrower');
+  expect(result.texts.join(' ')).toContain('Personal item');
+  if(lang==='en'){
+   expect(result.files.at(-1)).toBe('moving-box-inventory-report.pdf');
+   expect(result.texts.join(' ')).toContain('Total inventory value: 21.50 EUR');
+   expect(result.texts.join(' ')).toContain('Lent to');
+  }else{
+   expect(result.files.at(-1)).toBe('kisten-inventar-report.pdf');
+   expect(result.texts.join(' ')).toContain('Gesamtwert des Inventars: 21,50 EUR');
+   expect(result.texts.join(' ')).toContain('Ausgeliehen an');
+  }
+ }
+});
+
+test('i18n Sprint A moving: blocked PDF library gives EN/DE error, no export or cloud write',async({page})=>{
+ test.setTimeout(60000);
+ await isolated(page,true,true,{locations:[],boxes:[]});
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ const dialog=page.getByRole('alertdialog',{name:'Toolya'});
+ for(const [lang,message] of [['en','Could not create the PDF. Please try again.'],['de','Das PDF konnte nicht erstellt werden. Bitte versuche es erneut.']]){
+  await page.evaluate(selected=>document.querySelector('[data-tool-locale="'+selected+'"]').click(),lang);
+  await expect.poll(()=>page.evaluate(()=>window.__toolyaUILocale)).toBe(lang);
+  await page.evaluate(()=>exportInventoryPDF());
+  await expect(dialog.locator('#hl-alert-message')).toHaveText(message);
+  await dialog.getByRole('button',{name:'OK'}).click();
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+
+
+test('i18n Sprint A moving: QR label export text and deep links stay stable across language changes',async({page})=>{
+ test.setTimeout(90000);
+ const fixture={locations:[{id:100,name:'Synthetic shelf',icon:'📍'}],boxes:[
+  {id:201,locId:100,name:'User box',desc:'Original stored contents',tag:'Zerbrechlich',value:12.5,subItems:[]},
+  {id:202,locId:100,name:'Another box',desc:'Second contents',tag:'Standard',value:4.25,subItems:[]}
+ ]};
+ await isolated(page,true,true,fixture);
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ await page.evaluate(()=>{
+  window.__qrPdfSpy={texts:[],images:[],files:[],urls:[]};
+  window.QRCode=class{constructor(node,opts){window.__qrPdfSpy.urls.push(opts.text);const img=document.createElement('img');img.src='data:image/png;base64,iVBORw0KGgo=';node.append(img)}};
+  window.jspdf={jsPDF:class{
+   setFont(){return this}setFontSize(){return this}setDrawColor(){return this}
+   roundedRect(){return this}addPage(){return this}
+   text(v){window.__qrPdfSpy.texts.push(String(v));return this}
+   addImage(v){window.__qrPdfSpy.images.push(v);return this}
+   save(v){window.__qrPdfSpy.files.push(v)}
+  }};
+ });
+ for(const lang of ['en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await page.evaluate(()=>{window.__qrPdfSpy.texts=[];window.__qrPdfSpy.images=[];window.__qrPdfSpy.urls=[];return exportQrLabelsPDF()});
+  const v=await page.evaluate(()=>({spy:window.__qrPdfSpy,snapshot:getData(),writes:window.__toolyaMock.writes.length}));
+  expect(v.writes).toBe(0);
+  expect(v.snapshot).toEqual(fixture);
+  expect(v.spy.urls).toEqual([origin+'/tools/moving/index.html?box=201',origin+'/tools/moving/index.html?box=202']);
+  expect(v.spy.images).toHaveLength(2);
+  expect(v.spy.texts.join(' ')).toContain('User box');
+  expect(v.spy.texts.join(' ')).toContain('Original stored contents');
+  expect(v.spy.texts.join(' ')).toContain('Second contents');
+  if(lang==='en'){
+   expect(v.spy.files.at(-1)).toBe('moving-box-qr-labels.pdf');
+   expect(v.spy.texts.join(' ')).toContain('Fragile');
+   expect(v.spy.texts.join(' ')).toContain('Location');
+  }else{
+   expect(v.spy.files.at(-1)).toBe('kisten-qr-etiketten.pdf');
+   expect(v.spy.texts.join(' ')).toContain('Zerbrechlich');
+   expect(v.spy.texts.join(' ')).toContain('Ort');
+  }
+ }
+});
+
+test('i18n Sprint A moving: missing QR library reports localized failure and does not create a PDF',async({page})=>{
+ test.setTimeout(60000);
+ await isolated(page,true,true,{locations:[{id:1,name:'Synthetic',icon:'📍'}],boxes:[{id:2,locId:1,name:'Box',desc:'Synthetic',tag:'Standard',value:1}]});
+ await page.goto(origin+'/tools/moving/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof movingCloudReady!=='undefined'&&movingCloudReady)).toBe(true);
+ for(const [lang,message] of [['en','The QR code could not be loaded. Please try again.'],['de','Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.']]){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await page.evaluate(()=>{window.__movingQrExportForTest=exportQrLabelsPDF();});
+  const dialog=page.getByRole('alertdialog',{name:'Toolya'});
+  await expect(dialog.locator('#hl-alert-message')).toHaveText(message);
+  await expect(dialog.getByRole('button',{name:'OK'})).toBeFocused();
+  await dialog.getByRole('button',{name:'OK'}).click();
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+
+// Real mobile UI, isolated Supabase stub. No production accounts or external calls.
+test('i18n parking history renders historic ISO timestamps and escapes user content in both languages',async({page})=>{
+ const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ const unsafe='<img src=x onerror="alert(1)">';
+ const fixture={sessions:[{
+  id:19,desc:unsafe,sector:'Zone <B> & C',date:'17.11.2026 13:00',
+  timestamp:'2026-11-17T12:00:00Z',cost:4.5,
+  gps:{lat:49.4,lng:7.1},photo:'javascript:alert(2)'
+ }],activeEndTime:null};
+ await isolated(page,true,false,fixture);
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/parking/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>parkingCloudReady&&!!parkingCloudController?.ready)).toBe(true);
+ const list=page.locator('#parkingList');
+ await expect(list).toContainText('Date: 17/11/2026');
+ await expect(list).toContainText('Fee: 4.50 €');
+ await expect(list).toContainText('Zone <B> & C');
+ await expect(list).toContainText(unsafe);
+ await expect(list.locator('img')).toHaveCount(0);
+ await expect(list.locator('a[href*="google.com/maps/search/"]')).toHaveCount(1);
+ const authState=await page.evaluate(()=>({
+  shellInert:document.querySelector('.b3-shell')?.inert || false,
+  dialogHidden:getComputedStyle(document.getElementById('settingsModal')).display==='none'
+ }));
+ expect(authState.shellInert).toBe(false);
+ expect(authState.dialogHidden).toBe(true);
+ await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
+ const deButton=page.locator('[data-tool-locale="de"]');
+ await deButton.scrollIntoViewIfNeeded();
+ await expect(deButton).toBeInViewport();
+ await deButton.click();
+ await expect(page.locator('[data-tool-locale="de"]')).toHaveAttribute('aria-pressed','true');
+ expect(await page.evaluate(()=>window.__toolyaUILocale)).toBe('de');
+ await expect(list).toContainText('Datum: 17.11.2026 13:00');
+ await expect(list).toContainText('Gebühr: 4,50 €');
+ await page.locator('[data-tool-locale="en"]').click();
+ await expect(list).toContainText('Date: 17/11/2026');
+ const snapshot=await page.evaluate(()=>parkingCloudController.snapshot());
+ expect(snapshot.sessions[0].desc).toBe(unsafe);
+ expect(snapshot.sessions[0].sector).toBe('Zone <B> & C');
+ expect(snapshot.sessions[0].timestamp).toBe(fixture.sessions[0].timestamp);
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
+test('i18n loans history translates returned status on mobile without rewriting the record',async({page})=>{
+ const fixture={contacts:[],inventory:[],items:[{
+  id:4,title:'Original <Widget>',person:'Borrower & friend',date:'2026-11-17',
+  returnDate:'2026-12-17',category:'Werkzeug',status:'returned',deposit:12,photo:''
+ }]};
+ await isolated(page,true,false,fixture);
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/loans/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>loansCloudReady&&!!loansCloudController?.ready)).toBe(true);
+ const list=page.locator('#itemsList');
+ await expect(list).toContainText('✅ Returned');
+ await page.locator('[data-tool-locale="de"]').click();
+ await expect(list).toContainText('✅ Zurückgegeben');
+ await page.locator('[data-tool-locale="en"]').click();
+ await expect(list).toContainText('✅ Returned');
+ const snapshot=await page.evaluate(()=>loansCloudController.snapshot());
+ expect(snapshot.items[0].status).toBe('returned');
+ expect(snapshot.items[0].title).toBe('Original <Widget>');
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+
+test('i18n meter empty history changes only its presentation on mobile',async({page})=>{
+ await isolated(page,true,false,{readings:[],tarifs:{}});
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/meters/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>metersCloudReady&&!!metersCloudController?.ready)).toBe(true);
+ const list=page.locator('#readingsList');
+ await expect(list).toContainText('No entries found.');
+ await page.locator('[data-tool-locale="de"]').click();
+ await expect(list).toContainText('Keine Einträge gefunden.');
+ await page.locator('[data-tool-locale="en"]').click();
+ await expect(list).toContainText('No entries found.');
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+
+test('i18n loan ICS download preserves title, stable UID and all-day date in DE/EN',async({page})=>{
+ const {readFile}=require('node:fs/promises');
+ const record={id:42,title:"Mia's Öl, Küche & Co",person:'Friend & neighbor',date:'2026-11-15',returnDate:'2026-12-05',category:'Sonstiges',status:'active',deposit:0,photo:''};
+ await isolated(page,true,false,{contacts:[],inventory:[],items:[record]});
+ await page.goto(origin+'/tools/loans/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>loansCloudReady&&!!loansCloudController?.ready)).toBe(true);
+ for(const lang of ['en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  const list=page.locator('#itemsList');
+  await expect(list).toContainText(lang==='en'?'Loaned:':'Ausleihe:');
+  const action=list.locator('[data-loan-action="ics"]');
+  expect(await action.evaluate(button=>!!button.closest('[inert]'))).toBe(false);
+  await action.scrollIntoViewIfNeeded();
+  await expect(action).toBeInViewport();
+  const [download]=await Promise.all([page.waitForEvent('download',{timeout:15000}),action.click()]);
+  const content=(await readFile(await download.path(),'utf8')).replaceAll('\r\n ','');
+  expect(content).toContain('UID:loan-42@toolya.app\r\n');
+  expect(content).toContain('DTSTART;VALUE=DATE:20261205\r\n');
+  expect(content).toContain("Mia's Öl\\, Küche & Co (Friend & neighbor)");
+  expect(content).toContain('DESCRIPTION:'+(lang==='en'?'Item due for return':'Verleih-Rückgabe fällig')+'\r\n');
+  expect(content).toContain('SUMMARY:'+(lang==='en'?'Return: ':'Rückgabe: '));
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+
+test('i18n account dialog keyboard trap restores normal interaction after Escape without Tailwind CDN',async({page})=>{
+ await isolated(page,true,false,{sessions:[],activeEndTime:null});
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/parking/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>parkingCloudReady)).toBe(true);
+ const dialog=page.locator('#settingsModal');
+ await expect(dialog).toBeHidden();
+ expect(await page.evaluate(()=>!!document.querySelector('.b3-shell')?.inert)).toBe(false);
+ const opener=page.locator('.ty-tool-hero .b3-settings-trigger');
+ await opener.scrollIntoViewIfNeeded();
+ await opener.click();
+ await expect(dialog).toBeVisible();
+ await expect(dialog).toHaveAttribute('aria-modal','true');
+ await expect.poll(()=>page.evaluate(()=>!!document.querySelector('.b3-shell')?.inert)).toBe(true);
+ expect(await page.evaluate(()=>document.getElementById('settingsModal').contains(document.activeElement))).toBe(true);
+ await page.keyboard.press('Escape');
+ await expect(dialog).toBeHidden();
+ await expect(dialog).toHaveAttribute('aria-modal','false');
+ await expect.poll(()=>page.evaluate(()=>!!document.querySelector('.b3-shell')?.inert)).toBe(false);
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+
+test('i18n loans dynamic contact and inventory options preserve selected values on DE/EN change',async({page})=>{
+ const fixture={contacts:[{id:15,name:'Ada & Bob',phone:''}],
+ inventory:[{id:17,title:'Kabel <1>',category:'Werkzeug',serial:'',gpsLink:''}],
+ items:[{id:19,title:'Kabel <1>',person:'Ada & Bob',category:'Werkzeug',date:'2026-11-17',returnDate:'2026-12-05',status:'active',photo:''}]};
+ await isolated(page,true,false,fixture);
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/loans/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>loansCloudReady&&!!loansCloudController?.ready)).toBe(true);
+ const person=page.locator('#itemPersonSelect'),inv=page.locator('#itemInventorySelect'),filter=page.locator('#filterPerson');
+ await expect(person.locator('option[value="custom"]')).toHaveText('+ Enter a new name');
+ await expect(inv.locator('option[value=""]')).toHaveText('-- Choose inventory item --');
+ await expect(filter.locator('option[value=""]')).toHaveText('All people');
+ await person.selectOption({label:'Ada & Bob'});
+ await inv.selectOption({label:'Kabel <1> (Werkzeug)'});
+ await filter.selectOption({label:'Ada & Bob'});
+ const selected=await page.evaluate(()=>({
+  person:document.getElementById('itemPersonSelect').value,
+  inventory:document.getElementById('itemInventorySelect').value,
+  filter:document.getElementById('filterPerson').value
+ }));
+ await page.locator('[data-tool-locale="de"]').click();
+ await expect(person.locator('option[value="custom"]')).toHaveText('+ Neuen Namen eingeben');
+ await expect(filter.locator('option[value=""]')).toHaveText('Alle Personen');
+ await page.locator('[data-tool-locale="en"]').click();
+ await expect(inv.locator('option[value=""]')).toHaveText('-- Choose inventory item --');
+ expect(await page.evaluate(()=>({
+  person:document.getElementById('itemPersonSelect').value,
+  inventory:document.getElementById('itemInventorySelect').value,
+  filter:document.getElementById('filterPerson').value
+ }))).toEqual(selected);
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});

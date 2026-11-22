@@ -99,6 +99,7 @@ const root=path.resolve(__dirname,'../..');
   await trustee.goto(origin+'/tools/estate/heirs.html');
   await trustee.locator('.ty-tool-hero[data-tool="estate"]').waitFor();
   assert.equal(await trustee.locator('.ty-tool-hero h1').innerText(),'Zugang für Vertrauenspersonen');
+  await trustee.locator('.ty-tool-hero .ty-estate-locale').waitFor({state:'visible'});
   assert.equal(await trustee.locator('.estate-trustee-home').isHidden(),true);
   assert.equal(await trustee.locator('.ty-tool-hero a[aria-label="Toolya Startseite"]').isVisible(),true);
   const ownerLink=trustee.getByRole('link',{name:'Mein eigener Tresor'});

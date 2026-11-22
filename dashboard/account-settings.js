@@ -8,8 +8,18 @@ const $=id=>document.getElementById(id);
 const client=window.supabase?.createClient(URL,KEY);
 // Share the same GoTrue client with Dashboard cloud storage to avoid competing auth instances.
 window.toolyaDashboardAuthClient=client;
-let authRequest=0,recoveryActive=false,lastFocus=null;
+let authRequest=0,recoveryActive=false,recoverySaving=false,lastFocus=null;
 const message=text=>{$('loginMessage').textContent=text};
+function accountErrorMessage(error,fallback){
+ switch(error?.code){
+  case 'invalid_credentials': return "E-Mail-Adresse oder Passwort stimmt nicht.";
+  case 'email_not_confirmed': return "Bitte bestätige zuerst deine E-Mail-Adresse.";
+  case 'weak_password': return "Das Passwort ist zu schwach. Wähle ein längeres Passwort.";
+  case 'over_request_rate_limit': return "Zu viele Anfragen. Bitte versuche es später erneut.";
+  case 'over_email_send_rate_limit': return "Zu viele Anfragen. Bitte versuche es später erneut.";
+  default: return fallback;
+ }
+}
 function renderUser(user,error){
  const button=$('userInfo');
  button.classList.toggle('b3-auth-signed-in',!!user);
@@ -61,9 +71,9 @@ async function login(){
  try{
   const {data,error}=await client.auth.signInWithPassword(values);
   if(error)throw error;
-  if(!data?.user||!data?.session?.access_token)throw Error('Keine bestätigte Anmeldung erhalten.');
+  if(!data?.user||!data?.session?.access_token){message('Keine bestätigte Anmeldung erhalten.');return}
   ++authRequest;renderUser(data.user);message('Erfolgreich angemeldet.');closeSettings();
- }catch(error){message(error?.message||'Anmeldung momentan nicht erreichbar.')}
+ }catch(error){message(accountErrorMessage(error,'Anmeldung momentan nicht erreichbar.'))}
  finally{$('loginPassword').value='';button.disabled=false;button.textContent='🔑 Anmelden'}
 }
 async function register(){
@@ -73,13 +83,13 @@ async function register(){
   if(error)throw error;
   message(data?.session?'Registrierung erfolgreich.':'Registrierung eingereicht. Bitte prüfe deine E-Mails zur Bestätigung.');
   await refresh(data?.session?.access_token);
- }catch(error){message(error?.message||'Registrierung momentan nicht erreichbar.')}
+ }catch(error){message(accountErrorMessage(error,'Registrierung momentan nicht erreichbar.'))}
  finally{$('loginPassword').value=''}
 }
 async function logout(){
  if(!client)return;
  try{const {error}=await client.auth.signOut();if(error)throw error;++authRequest;renderUser(null);$('loginPassword').value='';message('Abgemeldet.');if($('settingsModal').open)$('loginEmail').focus({preventScroll:true})}
- catch(error){message('Abmeldung fehlgeschlagen: '+(error?.message||'Bitte erneut versuchen.'))}
+ catch(error){message(accountErrorMessage(error,'Abmeldung fehlgeschlagen. Bitte versuche es erneut.'))}
 }
 async function reset(){
  const input=$('loginEmail'),email=input.value.trim().toLowerCase();
@@ -88,18 +98,35 @@ async function reset(){
   const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:'https://toolya.app/index.html'});
   if(error)throw error;
   message('Falls ein Konto für diese E-Mail-Adresse existiert, erhältst du einen Link zum Zurücksetzen des Passworts.');
- }catch{message('Die Anfrage konnte gerade nicht verarbeitet werden. Bitte versuche es später erneut.')}
+ }catch(error){message(accountErrorMessage(error,'Die Anfrage konnte gerade nicht verarbeitet werden. Bitte versuche es später erneut.'))}
 }
 function showRecovery(){recoveryActive=true;$('signedOutControls').hidden=true;$('logoutUser').hidden=true;$('accountSettings').open=true;$('passwordRecoveryPanel').hidden=false;openSettings();$('recoveryPassword').focus()}
 async function saveRecovery(){
+ if(recoverySaving)return;
  if(!recoveryActive){message('Bitte öffne zuerst den Link aus deiner Passwort-E-Mail.');return}
  const a=$('recoveryPassword'),b=$('recoveryPasswordConfirm');
  if(a.value.length<8||a.value!==b.value){message('Bitte zwei identische Passwörter mit mindestens 8 Zeichen eingeben.');return}
+ recoverySaving=true;
+ const saveButton=$('saveRecovery');
+ saveButton.disabled=true;
  try{
-  const {error}=await client.auth.updateUser({password:a.value});if(error)throw error;
+  try{
+   const {error}=await client.auth.updateUser({password:a.value});if(error)throw error;
+  }catch{message('Passwort konnte nicht geändert werden. Bitte fordere einen neuen Link an.');return}
+  // A successful update must not be reported as a failed password change if
+  // the subsequent sign-out fails. Never display a false signed-out state.
   a.value='';b.value='';recoveryActive=false;$('passwordRecoveryPanel').hidden=true;
-  await client.auth.signOut();++authRequest;renderUser(null);message('Passwort geändert. Bitte erneut anmelden.');
- }catch{message('Passwort konnte nicht geändert werden. Bitte fordere einen neuen Link an.')}
+  try{
+   const {error}=await client.auth.signOut();if(error)throw error;
+   ++authRequest;renderUser(null);message('Passwort geändert. Bitte erneut anmelden.');
+  }catch{
+   void refresh();
+   message('Passwort geändert, aber Abmelden fehlgeschlagen. Bitte melde dich manuell ab.');
+  }
+ }finally{
+  recoverySaving=false;
+  saveButton.disabled=false;
+ }
 }
 $('settingsBtn').addEventListener('click',openSettings);
 $('userInfo').addEventListener('click',openSettings);
@@ -111,8 +138,13 @@ $('registerUser').addEventListener('click',register);
 $('logoutUser').addEventListener('click',logout);
 $('forgotPassword').addEventListener('click',reset);
 $('saveRecovery').addEventListener('click',saveRecovery);
-if(new URLSearchParams(location.search).has('auth')||new URLSearchParams(location.search).has('settings')){
- openSettings();history.replaceState(null,'',location.pathname+location.hash);
+const params=new URLSearchParams(location.search);
+if(params.has('auth')||params.has('settings')){
+ openSettings();
+ params.delete('auth');
+ params.delete('settings');
+ const query=params.toString();
+ history.replaceState(history.state,'',location.pathname+(query?'?'+query:'')+location.hash);
 }
 if(client){
  client.auth.onAuthStateChange((event,session)=>{

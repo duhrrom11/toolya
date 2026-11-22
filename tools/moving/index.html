@@ -78,12 +78,12 @@
     <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="../../assets/helferlein-dialogs.js"></script>
 <link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><link rel="stylesheet" href="../../shared/toolya/alpha.css?v=20261115-alpha">
-<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script></head>
+<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="/shared/toolya/i18n/tool-entry.css"><script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script><script type="module" src="/shared/toolya/i18n/tool-entry.mjs"></script></head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
   <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
     <p id="toolya-auth-title"><strong>Umzugskisten</strong></p>
     <p role="status">
-      <span class="toolya-auth-loading">Wir prüfen deine Anmeldung …</span>
+      <span class="toolya-auth-loading" data-tool-en="Checking your sign-in…">Wir prüfen deine Anmeldung …</span>
       <span class="toolya-auth-error">Deine Anmeldung konnte gerade nicht geprüft werden. Prüfe deine Internetverbindung und versuche es erneut.</span>
     </p>
     <button class="toolya-auth-error" id="toolya-auth-retry" type="button">Erneut versuchen</button>
@@ -99,7 +99,7 @@
     <div class="b3-tool-title">
       <h1>Umzugskisten und Inventarliste</h1>
       <p>Erfasse Umzugskisten mit Standort und Inhalt und finde deine Sachen über die Suche oder per QR-Code wieder.</p>
-      <p><a href="/umzugskisten/" class="underline">Schritt-für-Schritt-Anleitung für Umzugskisten</a></p>
+      <p><a href="/umzugskisten/" class="underline" data-tool-en="Step-by-step guide to moving boxes">Schritt-für-Schritt-Anleitung für Umzugskisten</a></p>
     </div>
     <button type="button" id="settingsBtn" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()">⚙</button>
   </div>
@@ -109,22 +109,22 @@
     <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
         
         <nav id="mv-journey" hidden aria-label="Umzugskisten: Bereich und Umzugsphase wählen"></nav>
-        <section id="toolya-moving-planner" hidden aria-label="Umzugsplanung"></section>
-        <section id="toolya-moving-transport" hidden aria-label="Transport und Helfer"></section>
+        <section id="toolya-moving-planner" hidden aria-label="Umzugsplanung" data-tool-en-aria-label="Moving planner"></section>
+        <section id="toolya-moving-transport" hidden aria-label="Transport und Helfer" data-tool-en-aria-label="Transport and helpers"></section>
 
         <!-- Dashboard Statistiken -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-amber-50 text-amber-700 rounded-xl font-bold">📦</div>
-                <div><p class="text-xs text-gray-500">Erfasste Kisten</p><h3 id="statBoxes" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Recorded boxes">Erfasste Kisten</p><h3 id="statBoxes" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">📍</div>
-                <div><p class="text-xs text-gray-500">Standorte</p><h3 id="statLocs" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Locations">Standorte</p><h3 id="statLocs" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
-                <div><p class="text-xs text-gray-500">Gesamtwert Inventar</p><h3 id="statValue" class="text-lg font-bold">0,00 €</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Total inventory value">Gesamtwert Inventar</p><h3 id="statValue" class="text-lg font-bold">0,00 €</h3></div>
             </div>
         </div>
 
@@ -237,14 +237,14 @@
                 <div><label for="editBoxExpiry" class="block text-xs font-semibold text-gray-600 mb-1">Ablauf:</label><input type="date" id="editBoxExpiry" class="w-full p-3 border rounded-xl text-sm bg-white"></div>
             </div>
 
-            <div><label for="editBoxLentTo" class="block text-xs font-semibold text-gray-600 mb-1">Ausgeliehen an (leer = im Regal):</label><input type="text" id="editBoxLentTo" placeholder="z.B. Max" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div><label for="editBoxLentTo" class="block text-xs font-semibold text-gray-600 mb-1">Ausgeliehen an (leer = im Regal):</label><input type="text" id="editBoxLentTo" placeholder="z.B. Max" class="w-full p-3 border rounded-xl text-sm" data-tool-en-placeholder="e.g. Alex"></div>
 
             <div class="border-t pt-3 space-y-2">
                 <label class="block text-xs font-bold text-gray-700">🔎 Unterartikel in dieser Kiste:</label>
                 <div id="subItemsContainer" class="space-y-2 max-h-36 overflow-y-auto pr-1"></div>
                 <div class="flex gap-2 pt-1 b3-moving-subitem-form">
-                    <input type="text" id="newSubItemName" placeholder="Artikel-Name (z.B. Bohrhammer)" class="p-2 border rounded-xl text-xs flex-grow">
-                    <input type="text" id="newSubItemVal" placeholder="Wert €" class="p-2 border rounded-xl text-xs w-20">
+                    <input type="text" id="newSubItemName" placeholder="Artikel-Name (z.B. Bohrhammer)" class="p-2 border rounded-xl text-xs flex-grow" data-tool-en-placeholder="Item name (e.g. hammer drill)">
+                    <input type="text" id="newSubItemVal" placeholder="Wert €" class="p-2 border rounded-xl text-xs w-20" data-tool-en-placeholder="Value in €">
                     <button onclick="addSubItem()" class="px-3 py-2 bg-gray-800 text-white rounded-xl text-xs font-bold b3-action">+ Hinzufügen</button>
                 </div>
             </div>
@@ -286,7 +286,6 @@
     </dialog>
 
     <!-- Unsichtbares Element zur temporären QR-Generierung für den PDF-Export -->
-    <div id="hiddenQrContainer" class="hidden"></div>
 
     <!-- Einstellungs-Modal mit Supabase Auth -->
     <div id="settingsModal" class="b3-tool-dialog fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
@@ -358,11 +357,11 @@
                         Füge Kisten hinzu und erfasse bei Bedarf feine <b>Unterartikel</b> mit Einzelwerten.
                     </div>
                     <div class="bg-amber-800/50 p-2.5 rounded-xl border border-amber-600/30">
-                        <span class="font-bold text-amber-200 block mb-0.5">3. QR-Code drucken</span>
+                        <span class="font-bold text-amber-200 block mb-0.5" data-tool-en="3. Print the QR code">3. QR-Code drucken</span>
                         Drucke den QR-Code aus und klebe ihn auf die physische Kiste.
                     </div>
                     <div class="bg-amber-800/50 p-2.5 rounded-xl border border-amber-600/30">
-                        <span class="font-bold text-amber-200 block mb-0.5">4. Scanne & Finde</span>
+                        <span class="font-bold text-amber-200 block mb-0.5" data-tool-en="4. Scan and find">4. Scanne & Finde</span>
                         Scanne den Code mit der Handykamera (Deep-Link), um den Inhalt sofort zu öffnen!
                     </div>
                 </div>
@@ -389,17 +388,29 @@
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
-                alert("Bitte E-Mail und Passwort eingeben.");
+                alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
                 return;
             }
 
-            const { error } = await window.supabaseClient.auth.signUp({ email, password });
+            let data, error;
+            try {
+                ({ data, error } = await window.supabaseClient.auth.signUp({ email, password }));
+            } catch (err) {
+                return alert((window.__toolyaUILocale === 'en' ? 'Registration failed: ' : 'Registrierung fehlgeschlagen: ') + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
+            }
             if (error) {
-                alert(error.message);
+                alert((window.__toolyaUILocale === 'en' ? 'Registration failed: ' : 'Registrierung fehlgeschlagen: ') + (error.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
                 return;
             }
 
-            alert("Registrierung erfolgreich.");
+            const english = window.__toolyaUILocale === 'en';
+            if (data?.session) {
+                alert(english ? 'Signed in. Your account is ready.' : 'Angemeldet. Dein Konto ist einsatzbereit.');
+            } else {
+                alert(english
+                    ? 'Request processed. If confirmation is required, check your inbox and confirm your email address. Then sign in.'
+                    : 'Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.');
+            }
             updateUserDisplay();
             closeSettings();
         }
@@ -409,13 +420,18 @@
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
-                alert("Bitte E-Mail und Passwort eingeben.");
+                alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
                 return;
             }
 
-            const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+            let error;
+            try {
+                ({ error } = await window.supabaseClient.auth.signInWithPassword({ email, password }));
+            } catch (err) {
+                return alert((window.__toolyaUILocale === 'en' ? 'Sign-in failed: ' : 'Anmeldung fehlgeschlagen: ') + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
+            }
             if (error) {
-                alert(error.message);
+                alert((window.__toolyaUILocale === 'en' ? 'Sign-in failed: ' : 'Anmeldung fehlgeschlagen: ') + (error.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
                 return;
             }
 
@@ -424,23 +440,40 @@
         }
 
         async function logoutUser() {
-            await window.supabaseClient.auth.signOut();
+            try {
+                const { error } = await window.supabaseClient.auth.signOut();
+                if (error) return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
+            } catch (error) {
+                return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
+            }
             updateUserDisplay();
         }
 
+        let userDisplayRequest = 0;
+
         async function updateUserDisplay() {
-            const { data } = await window.supabaseClient.auth.getUser();
-            const user = data?.user;
+            const request = ++userDisplayRequest;
+            let user = null;
+            let sessionError = null;
+            try {
+                const result = await window.supabaseClient.auth.getUser();
+                sessionError = result?.error?.name === 'AuthSessionMissingError' ? null : (result?.error ?? null);
+                user = sessionError ? null : (result?.data?.user ?? null);
+            } catch (error) {
+                sessionError = error;
+            }
+
+            if (request !== userDisplayRequest) return;
 
             const headerInfo = document.getElementById("userInfo");
             const cloudStatus = document.getElementById("cloudStatus");
 
             if (user) {
                 if (headerInfo) headerInfo.textContent = "👤 " + user.email;
-                if (cloudStatus) cloudStatus.textContent = "✅ Angemeldet – " + (user.email || "Benutzer");
+                if (cloudStatus) cloudStatus.textContent = (window.toolyaUiText?.("✅ Angemeldet – ") ?? "✅ Angemeldet – ") + (user.email || (window.toolyaUiText?.("Benutzer") ?? "Benutzer"));
             } else {
-                if (headerInfo) headerInfo.textContent = "Nicht angemeldet";
-                if (cloudStatus) cloudStatus.textContent = "Nicht angemeldet";
+                if (headerInfo) headerInfo.textContent = window.toolyaUiText?.(sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet') ?? (sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet');
+                if (cloudStatus) cloudStatus.textContent = window.toolyaUiText?.(sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet') ?? (sessionError ? 'Status: Verbindung oder Sitzung nicht überprüfbar' : 'Nicht angemeldet');
             }
         }
 
@@ -485,16 +518,20 @@
             setTimeout(() => { updateUserDisplay().catch(() => {}); }, 0);
         });
 
+        function updateMovingHelpToggleLabel() {
+            const helpBox = document.getElementById('helpBox');
+            const label = document.querySelector('#helpToggleBtn span');
+            if (!helpBox || !label) return;
+            const expanded = !helpBox.classList.contains('hidden');
+            label.textContent = window.__toolyaUILocale === 'en'
+                ? (expanded ? 'Hide help and guide' : 'Show help and guide')
+                : (expanded ? 'Hilfe & Anleitung ausblenden' : 'Hilfe & Anleitung anzeigen');
+        }
         function toggleHelp() {
             const helpBox = document.getElementById('helpBox');
-            const toggleBtn = document.getElementById('helpToggleBtn');
-            if (helpBox.classList.contains('hidden')) {
-                helpBox.classList.remove('hidden');
-                toggleBtn.innerHTML = '📖 <span>Hilfe & Anleitung ausblenden</span>';
-            } else {
-                helpBox.classList.add('hidden');
-                toggleBtn.innerHTML = '📖 <span>Hilfe & Anleitung anzeigen</span>';
-            }
+            if (!helpBox) return;
+            helpBox.classList.toggle('hidden');
+            updateMovingHelpToggleLabel();
         }
 
         let movingCloudController = null;
@@ -561,7 +598,7 @@
                 if (error || !auth?.user?.id || auth.user.id!==movingCloudUserId || auth.user.is_anonymous)
                     throw Error('Anmeldung nicht mehr gültig.');
                 await movingCloudController.replace(data);
-                window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');
+                window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Saved to Toolya Cloud.' : 'In Toolya Cloud gespeichert.');
                 document.dispatchEvent(new Event("toolya:moving-saved"));
                 return true;
             } catch(error) {
@@ -620,10 +657,51 @@
             renderInventory();
         }
 
+        function formatMovingTagLabel(tag, language = window.__toolyaUILocale) {
+            if (language !== 'en') return tag;
+            const labels = { Standard: 'Standard', Zerbrechlich: 'Fragile', Wertvoll: 'Valuable', Saison: 'Seasonal' };
+            return Object.hasOwn(labels, tag) ? labels[tag] : tag;
+        }
+        function refreshMovingSelectLabels() {
+            // Replace only visible option text, never the selected values or the form.
+            document.querySelectorAll('#boxTag option, #editBoxTag option, #tagFilter option').forEach(option => {
+                const value = option.value;
+                if (!value) {
+                    if (option.parentElement?.id === 'tagFilter')
+                        option.textContent = window.__toolyaUILocale === 'en' ? 'All tags' : 'Alle Tags';
+                    return;
+                }
+                const prefix = option.parentElement?.id === 'tagFilter' ? '' :
+                    ({ Standard: '🏷️ ', Zerbrechlich: '⚠️ ', Wertvoll: '💎 ', Saison: '❄️ ' }[value] || '');
+                const suffix = value === 'Saison' && option.parentElement?.id !== 'tagFilter'
+                    ? (window.__toolyaUILocale === 'en' ? ' / decoration' : ' / Deko') : '';
+                option.textContent = prefix + formatMovingTagLabel(value) + suffix;
+            });
+        }
+
+        function refreshMovingLocationPrompts() {
+            // Update just the placeholder: rebuilding the selects would drop
+            // unsaved location choices in the add/edit box forms.
+            for (const id of ['boxLocationSelect', 'editBoxLocSelect']) {
+                const option = document.getElementById(id)?.querySelector('option[value=""]');
+                if (option) option.textContent = window.__toolyaUILocale === 'en'
+                    ? '-- Choose location --' : '-- Standort wählen --';
+            }
+        }
+
+        function escapeInventoryText(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
         function loadLocationsDropdown() {
             let data = getData();
-            const html = '<option value="">-- Standort wählen --</option>' + 
-                data.locations.map(l => `<option value="${l.id}">${l.icon || '📍'} ${l.name}</option>`).join('');
+            const html = '<option value="">' + (window.__toolyaUILocale === 'en' ? '-- Choose location --' : '-- Standort wählen --') + '</option>' + 
+                data.locations.map(l => `<option value="${escapeInventoryText(l.id)}">${escapeInventoryText(l.icon || '📍')} ${escapeInventoryText(l.name)}</option>`).join('');
             document.getElementById('boxLocationSelect').innerHTML = html;
             document.getElementById('editBoxLocSelect').innerHTML = html;
         }
@@ -710,12 +788,12 @@
         function renderSubItemsModal() {
             const container = document.getElementById('subItemsContainer');
             if (activeSubItemsTemp.length === 0) {
-                container.innerHTML = `<p class="text-[11px] text-gray-400 italic">Keine Unterartikel erfasst.</p>`;
+                container.innerHTML = `<p class="text-[11px] text-gray-400 italic">${window.__toolyaUILocale === 'en' ? 'No items recorded.' : 'Keine Unterartikel erfasst.'}</p>`;
                 return;
             }
             container.innerHTML = activeSubItemsTemp.map((item, idx) => `
                 <div class="flex justify-between items-center bg-gray-50 p-2 border rounded-xl text-xs">
-                    <span><b>${item.name}</b> (${(item.value || 0).toFixed(2)} €)</span>
+                    <span><b>${escapeInventoryText(item.name)}</b> (${window.__toolyaUILocale === 'en' ? Number(item.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.value || 0).toFixed(2)} €)</span>
                     <button onclick="removeSubItem(${idx})" class="text-red-500 font-bold px-2 py-0.5 hover:bg-red-50 rounded-lg">✕</button>
                 </div>
             `).join('');
@@ -796,7 +874,7 @@
 
             document.getElementById('statBoxes').innerText = totalBoxes;
             document.getElementById('statLocs').innerText = totalLocs;
-            document.getElementById('statValue').innerText = totalVal.toFixed(2).replace('.', ',') + ' €';
+            document.getElementById('statValue').innerText = (window.__toolyaUILocale === 'en' ? Number(totalVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : totalVal.toFixed(2).replace('.', ',')) + ' €';
 
             const locStatsCard = document.getElementById('locationValueStatsCard');
             const locStatsList = document.getElementById('locationValueStatsList');
@@ -804,7 +882,7 @@
                 locStatsCard.classList.remove('hidden');
                 locStatsList.innerHTML = data.locations.map(loc => {
                     const locVal = data.boxes.filter(b => b.locId === loc.id).reduce((sum, b) => sum + Number(b.value || 0), 0);
-                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">${loc.icon || '📍'} ${loc.name}</p><p class="text-sm font-bold text-amber-800">${locVal.toFixed(2).replace('.', ',')} €</p></div>`;
+                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">${escapeInventoryText(loc.icon || '📍')} ${escapeInventoryText(loc.name)}</p><p class="text-sm font-bold text-amber-800">${window.__toolyaUILocale === 'en' ? Number(locVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : locVal.toFixed(2).replace('.', ',')} €</p></div>`;
                 }).join('');
             } else {
                 locStatsCard.classList.add('hidden');
@@ -817,14 +895,14 @@
                 tagStatsCard.classList.remove('hidden');
                 tagStatsList.innerHTML = tags.map(t => {
                     const tagVal = data.boxes.filter(b => (b.tag || 'Standard') === t).reduce((sum, b) => sum + Number(b.value || 0), 0);
-                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">🏷️ ${t}</p><p class="text-sm font-bold text-amber-800">${tagVal.toFixed(2).replace('.', ',')} €</p></div>`;
+                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">🏷️ ${formatMovingTagLabel(t)}</p><p class="text-sm font-bold text-amber-800">${window.__toolyaUILocale === 'en' ? Number(tagVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : tagVal.toFixed(2).replace('.', ',')} €</p></div>`;
                 }).join('');
             } else {
                 tagStatsCard.classList.add('hidden');
             }
 
             if (totalLocs === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Standorte erfasst.</p>`;
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No locations added yet.' : 'Noch keine Standorte erfasst.'}</p>`;
                 return;
             }
 
@@ -859,63 +937,82 @@
                 return `
                     <div class="border rounded-2xl p-4 bg-gray-50 space-y-3">
                         <div class="flex justify-between items-center border-b pb-2 b3-moving-location-heading">
-                            <h4 class="font-bold text-md text-amber-800">${loc.icon || '📍'} Standort: ${loc.name}</h4>
+                            <h4 class="font-bold text-md text-amber-800">${escapeInventoryText(loc.icon || '📍')} ${window.__toolyaUILocale === 'en' ? 'Location' : 'Standort'}: ${escapeInventoryText(loc.name)}</h4>
                             <div class="flex gap-3">
-                                <button onclick="editLocation(${loc.id})" class="text-xs text-blue-600 hover:underline b3-action b3-outline">✏️ Bearbeiten</button>
-                                <button onclick="deleteLocation(${loc.id})" class="text-xs text-red-500 hover:underline">🗑️ Löschen</button>
+                                <button onclick="editLocation(${Number(loc.id)})" class="text-xs text-blue-600 hover:underline b3-action b3-outline">${window.__toolyaUILocale === 'en' ? '✏️ Edit' : '✏️ Bearbeiten'}</button>
+                                <button onclick="deleteLocation(${Number(loc.id)})" class="text-xs text-red-500 hover:underline">${window.__toolyaUILocale === 'en' ? '🗑️ Delete' : '🗑️ Löschen'}</button>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             ${locBoxes.length > 0 ? locBoxes.map(b => {
                                 const isExpired = b.expiry && b.expiry < today;
                                 const isLent = b.lentTo && b.lentTo.trim() !== "";
-                                const subItemsText = b.subItems && b.subItems.length > 0 ? b.subItems.map(s => `• ${s.name}`).join(' | ') : '';
+                                const subItemsText = b.subItems && b.subItems.length > 0 ? b.subItems.map(s => `• ${escapeInventoryText(s.name)}`).join(' | ') : '';
 
                                 return `
                                     <div class="bg-white p-3 border rounded-xl flex items-center justify-between shadow-sm gap-3 b3-moving-box-card ${isExpired ? 'border-red-400 bg-red-50/30' : ''}">
                                         <div class="flex items-center space-x-3 b3-moving-box-identity">
-                                            ${b.photo ? `<button type="button" class="b3-photo-trigger" aria-label="Kistenfoto vergrößern" onclick="zoomImage(this.firstElementChild.src)"><img alt="Foto der Umzugskiste" src="${b.photo}" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80"></button>` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Kein Bild</div>'}
+                                            ${b.photo ? `<button type="button" class="b3-photo-trigger" aria-label="${window.__toolyaUILocale === 'en' ? 'Enlarge box photo' : 'Kistenfoto vergrößern'}" onclick="zoomImage(this.firstElementChild.src)"><img alt="${window.__toolyaUILocale === 'en' ? 'Photo of moving box' : 'Foto der Umzugskiste'}" src="${escapeInventoryText(b.photo)}" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80"></button>` : `<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">${window.__toolyaUILocale === 'en' ? 'No image' : 'Kein Bild'}</div>`}
                                             <div>
                                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
-                                                    <h5 class="font-bold text-sm">📦 ${b.name}</h5>
-                                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">${b.tag || 'Standard'}</span>
-                                                    ${isLent ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold" title="Ausgeliehen an: ${b.lentTo}">🤝 Ausgeliehen (${b.lentTo})</span>` : ''}
-                                                    ${isExpired ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 font-bold" title="Ablaufdatum überschritten!">⚠️ Ablauf</span>` : ''}
+                                                    <h5 class="font-bold text-sm">📦 ${escapeInventoryText(b.name)}</h5>
+                                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">${escapeInventoryText(formatMovingTagLabel(b.tag || 'Standard'))}</span>
+                                                    ${isLent ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold" title="${window.__toolyaUILocale === 'en' ? 'Lent to' : 'Ausgeliehen an'}: ${escapeInventoryText(b.lentTo)}">${window.__toolyaUILocale === 'en' ? '🤝 Lent' : '🤝 Ausgeliehen'} (${escapeInventoryText(b.lentTo)})</span>` : ''}
+                                                    ${isExpired ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 font-bold" title="${window.__toolyaUILocale === 'en' ? 'Expired date!' : 'Ablaufdatum überschritten!'}">${window.__toolyaUILocale === 'en' ? '⚠️ Expired' : '⚠️ Ablauf'}</span>` : ''}
                                                 </div>
-                                                <p class="text-xs text-gray-600 mt-0.5">${b.desc || 'Keine Beschreibung'}</p>
-                                                ${subItemsText ? `<p class="text-[11px] text-indigo-600 font-medium mt-0.5">Inhalt: ${subItemsText}</p>` : ''}
+                                                <p class="text-xs text-gray-600 mt-0.5">${escapeInventoryText(b.desc || (window.__toolyaUILocale === 'en' ? 'No description' : 'Keine Beschreibung'))}</p>
+                                                ${subItemsText ? `<p class="text-[11px] text-indigo-600 font-medium mt-0.5">${window.__toolyaUILocale === 'en' ? 'Contents' : 'Inhalt'}: ${subItemsText}</p>` : ''}
                                                 <div class="flex gap-3 text-[11px] text-gray-500 mt-0.5 b3-moving-box-meta">
-                                                    <span class="font-semibold text-green-600">Wert: ${(b.value || 0).toFixed(2).replace('.', ',')} €</span>
-                                                    ${b.barcode ? `<span class="font-mono text-gray-400">EAN: ${b.barcode}</span>` : ''}
-                                                    ${b.expiry ? `<span>Ablauf: ${b.expiry.split('-').reverse().join('.')}</span>` : ''}
+                                                    <span class="font-semibold text-green-600">${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${window.__toolyaUILocale === 'en' ? Number(b.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(b.value || 0).toFixed(2).replace('.', ',')} €</span>
+                                                    ${b.barcode ? `<span class="font-mono text-gray-400">EAN: ${escapeInventoryText(b.barcode)}</span>` : ''}
+                                                    ${b.expiry ? `<span>${window.__toolyaUILocale === 'en' ? 'Expires' : 'Ablauf'}: ${escapeInventoryText(b.expiry.split('-').reverse().join(window.__toolyaUILocale === 'en' ? '/' : '.'))}</span>` : ''}
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-1 b3-moving-box-actions">
-                                            <button onclick="showQrCode(${b.id}, '${b.name}', '${b.desc}')" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100 b3-action b3-outline" title="QR-Code & Deep-Link">🖨️</button>
-                                            <button onclick="openEditBoxModal(${b.id})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 b3-action b3-outline" title="Bearbeiten">✏️</button>
-                                            <button onclick="deleteBox(${b.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="Löschen">✕</button>
+                                            <button onclick="showQrCode(${Number(b.id)})" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100 b3-action b3-outline" title="${window.__toolyaUILocale === 'en' ? 'QR code and deep link' : 'QR-Code & Deep-Link'}">🖨️</button>
+                                            <button onclick="openEditBoxModal(${Number(b.id)})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 b3-action b3-outline" title="${window.__toolyaUILocale === 'en' ? 'Edit' : 'Bearbeiten'}">✏️</button>
+                                            <button onclick="deleteBox(${Number(b.id)})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="${window.__toolyaUILocale === 'en' ? 'Delete' : 'Löschen'}">✕</button>
                                         </div>
                                     </div>
                                 `;
-                            }).join('') : '<p class="text-xs text-gray-400 col-span-2">Keine passenden Kisten an diesem Standort.</p>'}
+                            }).join('') : `<p class="text-xs text-gray-400 col-span-2">${window.__toolyaUILocale === 'en' ? 'No matching boxes at this location.' : 'Keine passenden Kisten an diesem Standort.'}</p>`}
                         </div>
                     </div>
                 `;
-            }).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Einträge gefunden.</p>`;
+            }).join('') || `<p class="text-sm text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No matching entries found.' : 'Keine passenden Einträge gefunden.'}</p>`;
+        }
+
+        // Rebuild the visible card list after manual language changes; never save data.
+        document.addEventListener('toolya:locale-change', () => {
+            updateMovingHelpToggleLabel();
+            refreshMovingSelectLabels();
+            refreshMovingLocationPrompts();
+            // Repaint only the read-only subitem list of an already-open editor.
+            // The box draft, item list and unsaved form inputs stay intact.
+            if (!document.getElementById('editBoxModal')?.classList.contains('hidden')) renderSubItemsModal();
+            if (movingCloudReady && document.getElementById('inventoryContainer')) renderInventory();
+        });
+
+        function movingPdfAmounts(language) {
+            return new Intl.NumberFormat(language === 'en' ? 'en-GB' : 'de-DE', {
+                minimumFractionDigits: 2, maximumFractionDigits: 2
+            });
         }
 
         async function exportInventoryPDF() {
+            const exportLanguage = window.__toolyaUILocale === 'en' ? 'en' : 'de';
+            const amounts = movingPdfAmounts(exportLanguage);
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
             const data = getData();
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text("Mini-HomeBox Pro - Inventar-Report", 14, 20);
+            doc.text(exportLanguage === "en" ? "Mini-HomeBox Pro - Inventory Report" : "Mini-HomeBox Pro - Inventar-Report", 14, 20);
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+            doc.text(`${exportLanguage === 'en' ? 'Created on' : 'Erstellt am'}: ${new Date().toLocaleDateString(exportLanguage === 'en' ? 'en-GB' : 'de-DE')}`, 14, 27);
 
             let y = 35;
             const writeWrapped = (value, bold = false, fontSize = 10) => {
@@ -931,30 +1028,29 @@
 
             data.locations.forEach(loc => {
                 const cleanLocName = String(loc.name || '').replace(/[\u{1F000}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
-                writeWrapped(`Standort: ${cleanLocName}`, true, 12);
+                writeWrapped(`${exportLanguage === 'en' ? 'Location' : 'Standort'}: ${cleanLocName}`, true, 12);
                 y += 1;
                 const locBoxes = data.boxes.filter(b => b.locId === loc.id);
                 if (!locBoxes.length) {
-                    writeWrapped("  (Keine Kisten)");
+                    writeWrapped(exportLanguage === "en" ? "  (No boxes)" : "  (Keine Kisten)");
                 } else {
                     locBoxes.forEach(b => {
-                        const statusText = b.lentTo ? ` [Ausgeliehen an: ${b.lentTo}]` : '';
-                        const subStr = Array.isArray(b.subItems) && b.subItems.length ? ` | Artikel: ${b.subItems.map(item => item.name).join(', ')}` : '';
-                        writeWrapped(`- ${b.name}${statusText} | Wert: ${Number(b.value || 0).toFixed(2)} EUR${subStr}`);
+                        const statusText = b.lentTo ? ` [${exportLanguage === 'en' ? 'Lent to' : 'Ausgeliehen an'}: ${b.lentTo}]` : '';
+                        const subStr = Array.isArray(b.subItems) && b.subItems.length ? ` | ${exportLanguage === 'en' ? 'Items' : 'Artikel'}: ${b.subItems.map(item => item.name).join(', ')}` : '';
+                        writeWrapped(`- ${b.name}${statusText} | ${exportLanguage === 'en' ? 'Value' : 'Wert'}: ${amounts.format(b.value || 0)} EUR${subStr}`);
                     });
                 }
                 y += 4;
             });
             const totalVal = data.boxes.reduce((sum, b) => sum + Number(b.value || 0), 0);
             y += 5;
-            writeWrapped(`Gesamtwert des Inventars: ${totalVal.toFixed(2)} EUR`, true, 12);
-            doc.save("kisten-inventar-report.pdf");
+            writeWrapped(`${exportLanguage === 'en' ? 'Total inventory value' : 'Gesamtwert des Inventars'}: ${amounts.format(totalVal)} EUR`, true, 12);
+            doc.save(exportLanguage === 'en' ? 'moving-box-inventory-report.pdf' : 'kisten-inventar-report.pdf');
         }
 
         async function generateQrDataUrl(QRCode, text) {
             return new Promise((resolve) => {
-                const tempDiv = document.getElementById('hiddenQrContainer');
-                tempDiv.innerHTML = "";
+                const tempDiv = document.createElement('div');
                 
                 new QRCode(tempDiv, {
                     text: text,
@@ -977,6 +1073,8 @@
         }
 
         async function exportQrLabelsPDF() {
+            const exportLanguage = window.__toolyaUILocale === 'en' ? 'en' : 'de';
+            const amounts = movingPdfAmounts(exportLanguage);
             let data = getData();
             if (data.boxes.length === 0) return alert("Keine Kisten vorhanden.");
 
@@ -995,7 +1093,7 @@
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(16);
-            doc.text("Toolya Umzugskisten – QR-Etiketten", 14, 12);
+            doc.text(exportLanguage === "en" ? "Toolya Moving Boxes - QR Labels" : "Toolya Umzugskisten – QR-Etiketten", 14, 12);
 
             for (let i = 0; i < data.boxes.length; i++) {
                 let b = data.boxes[i];
@@ -1005,7 +1103,7 @@
                 }
 
                 const loc = data.locations.find(l => l.id === b.locId);
-                const cleanLocName = loc ? loc.name.replace(/[\u{1F000}-\u{1F6FF}|[\u{1F900}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[📦🏠🚪🏡🚗🏢⛺📍]/gu, '').trim() : "Unbekannt";
+                const cleanLocName = loc ? loc.name.replace(/[\u{1F000}-\u{1F6FF}|[\u{1F900}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[📦🏠🚪🏡🚗🏢⛺📍]/gu, '').trim()  : (exportLanguage === 'en' ? 'Unknown' : 'Unbekannt');
                 const deepLinkUrl = `${window.location.origin}${window.location.pathname}?box=${b.id}`;
 
                 doc.setDrawColor(200);
@@ -1019,14 +1117,14 @@
                 let textX = x + 40;
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(10);
-                doc.text(`Kiste: ${b.name}`, textX, y + 8);
+                doc.text(`${exportLanguage === 'en' ? 'Box' : 'Kiste'}: ${b.name}`, textX, y + 8);
 
                 doc.setFont("helvetica", "normal");
                 doc.setFontSize(8);
-                doc.text(`Ort: ${cleanLocName}`, textX, y + 14);
-                doc.text(`Inhalt: ${b.desc || '-'}`, textX, y + 20);
-                doc.text(`Wert: ${(b.value || 0).toFixed(2)} €`, textX, y + 26);
-                doc.text(`Tag: ${b.tag || 'Standard'}`, textX, y + 32);
+                doc.text(`${exportLanguage === 'en' ? 'Location' : 'Ort'}: ${cleanLocName}`, textX, y + 14);
+                doc.text(`${exportLanguage === 'en' ? 'Contents' : 'Inhalt'}: ${b.desc || '-'}`, textX, y + 20);
+                doc.text(`${exportLanguage === 'en' ? 'Value' : 'Wert'}: ${amounts.format(b.value || 0)} €`, textX, y + 26);
+                doc.text(`Tag: ${b.tag ? formatMovingTagLabel(b.tag, exportLanguage) : (exportLanguage === 'en' ? 'Default' : 'Standard')}`, textX, y + 32);
 
                 if (x === 14) { 
                     x = 110; 
@@ -1036,17 +1134,18 @@
                 }
             }
 
-            doc.save("kisten-qr-etiketten.pdf");
+            doc.save(exportLanguage === 'en' ? "moving-box-qr-labels.pdf" : "kisten-qr-etiketten.pdf");
         }
 
-        async function showQrCode(boxId, name, desc) {
+        async function showQrCode(boxId, name = getData().boxes.find(box => Number(box.id) === boxId)?.name) {
+            if (name == null) return;
             const { loadQrGenerator } = await import('../../shared/toolya/qr-generator.mjs');
             const QRCode = await loadQrGenerator();
             if (!QRCode) {
                 alert("Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.");
                 return;
             }
-            document.getElementById('qrModalTitle').innerText = `QR-Code für: ${name}`;
+            document.getElementById('qrModalTitle').innerText = `${window.__toolyaUILocale === 'en' ? 'QR code for: ' : 'QR-Code für: '}${name}`;
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = "";
             
@@ -1108,7 +1207,7 @@
                     if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
                     if (!await saveData(parsed)) return;
                     loadLocationsDropdown();
-                        renderInventory();
+                    renderInventory();
                     alert("Backup erfolgreich importiert!");
                 } catch (err) {
                     alert("Fehler beim Lesen der Datei.");
@@ -1118,7 +1217,11 @@
                 input.value = '';
                 alert("Backup-Datei konnte nicht gelesen werden.");
             };
-            reader.readAsText(file);
+            try { reader.readAsText(file); }
+            catch (error) {
+                input.value = '';
+                alert("Backup-Datei konnte nicht gelesen werden.");
+            }
         }
 
         let scannerOpening = false;
@@ -1150,7 +1253,7 @@
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 220, height: 150 } },
                 (decodedText) => {
-                    resBox.innerText = `Erkannt: ${decodedText}`;
+                    resBox.innerText = `${window.__toolyaUILocale === 'en' ? 'Detected' : 'Erkannt'}: ${decodedText}`;
                     resBox.classList.remove('hidden');
 
                     if (decodedText.includes('?box=')) {

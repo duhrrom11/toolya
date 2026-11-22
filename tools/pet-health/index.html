@@ -77,7 +77,9 @@
     <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="../../assets/helferlein-dialogs.js"></script>
 <link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><link rel="stylesheet" href="../../shared/toolya/alpha.css?v=20261115-alpha">
-<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script></head>
+<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="../../shared/toolya/i18n/tool-entry.css">
+<script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script><script type="module" src="../../shared/toolya/i18n/tool-entry.mjs"></script>
+</head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
   <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
     <p id="toolya-auth-title"><strong>Tiergesundheit</strong></p>
@@ -110,15 +112,15 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-teal-50 text-teal-700 rounded-xl font-bold">🐕</div>
-                <div><p class="text-xs text-gray-500">Registrierte Haustiere</p><h3 id="statPets" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Registered pets">Registrierte Haustiere</p><h3 id="statPets" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">💉</div>
-                <div><p class="text-xs text-gray-500">Gesundheits-Einträge</p><h3 id="statEvents" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Health records">Gesundheits-Einträge</p><h3 id="statEvents" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
-                <div><p class="text-xs text-gray-500">Gesamtkosten</p><h3 id="statCosts" class="text-lg font-bold">0,00 €</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Total costs">Gesamtkosten</p><h3 id="statCosts" class="text-lg font-bold">0,00 €</h3></div>
             </div>
         </div>
 
@@ -133,24 +135,24 @@
             <!-- 1. Haustier anlegen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">🐕 1. Haustier-Profil & Tierarzt-Praxis</h2>
-                <label class="helferlein-field" for="petName"><span class="helferlein-field-label">Name des Haustiers</span><input type="text" id="petName" placeholder="Name des Haustiers (z.B. Luna)" class="w-full p-3 border rounded-xl text-sm" aria-label="Name des Haustiers (z.B. Luna)"></label>
+                <label class="helferlein-field" for="petName"><span class="helferlein-field-label" data-tool-en="Pet name">Name des Haustiers</span><input type="text" id="petName" placeholder="Name des Haustiers (z.B. Luna)" class="w-full p-3 border rounded-xl text-sm" aria-label="Name des Haustiers (z.B. Luna)"></label>
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="petSpecies"><span class="helferlein-field-label">Tierart / Rasse</span><input type="text" id="petSpecies" placeholder="Tierart / Rasse (z.B. Hund / Labrador)" class="p-3 border rounded-xl text-sm" aria-label="Tierart / Rasse (z.B. Hund / Labrador)"></label>
-                    <label class="helferlein-field" for="petChip"><span class="helferlein-field-label">Chip-Nummer</span><input type="text" id="petChip" placeholder="Chip-Nummer" class="p-3 border rounded-xl text-sm" aria-label="Chip-Nummer"></label>
+                    <label class="helferlein-field" for="petSpecies"><span class="helferlein-field-label" data-tool-en="Species / breed">Tierart / Rasse</span><input type="text" id="petSpecies" placeholder="Tierart / Rasse (z.B. Hund / Labrador)" class="p-3 border rounded-xl text-sm" aria-label="Tierart / Rasse (z.B. Hund / Labrador)"></label>
+                    <label class="helferlein-field" for="petChip"><span class="helferlein-field-label" data-tool-en="Microchip number">Chip-Nummer</span><input type="text" id="petChip" placeholder="Chip-Nummer" class="p-3 border rounded-xl text-sm" aria-label="Chip-Nummer" data-tool-en-placeholder="Microchip number" data-tool-en-aria-label="Microchip number"></label>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="petFood"><span class="helferlein-field-label">Futtermarke &amp; Sorte</span><input type="text" id="petFood" placeholder="Futtermarke & Sorte" class="p-3 border rounded-xl text-xs" aria-label="Futtermarke &amp; Sorte"></label>
-                    <label class="helferlein-field" for="petAllergies"><span class="helferlein-field-label">Allergien / Unverträglichkeiten</span><input type="text" id="petAllergies" placeholder="Allergien / Unverträglichkeiten" class="p-3 border rounded-xl text-xs" aria-label="Allergien / Unverträglichkeiten"></label>
+                    <label class="helferlein-field" for="petFood"><span class="helferlein-field-label" data-tool-en="Food brand and variety">Futtermarke &amp; Sorte</span><input type="text" id="petFood" placeholder="Futtermarke & Sorte" class="p-3 border rounded-xl text-xs" aria-label="Futtermarke &amp; Sorte" data-tool-en-placeholder="Food brand and variety" data-tool-en-aria-label="Food brand and variety"></label>
+                    <label class="helferlein-field" for="petAllergies"><span class="helferlein-field-label" data-tool-en="Allergies / intolerances">Allergien / Unverträglichkeiten</span><input type="text" id="petAllergies" placeholder="Allergien / Unverträglichkeiten" class="p-3 border rounded-xl text-xs" aria-label="Allergien / Unverträglichkeiten" data-tool-en-placeholder="Allergies / intolerances" data-tool-en-aria-label="Allergies / intolerances"></label>
                 </div>
                 
                 <div class="border-t pt-2 space-y-2">
                     <p class="text-xs font-bold text-gray-700">🏥 Tierarzt & Praxis-Verzeichnis:</p>
-                    <label class="helferlein-field" for="petVetName"><span class="helferlein-field-label">Praxisname &amp; Tierarzt</span><input type="text" id="petVetName" placeholder="Praxisname & Tierarzt" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Praxisname &amp; Tierarzt"></label>
+                    <label class="helferlein-field" for="petVetName"><span class="helferlein-field-label" data-tool-en="Practice name and vet">Praxisname &amp; Tierarzt</span><input type="text" id="petVetName" placeholder="Praxisname & Tierarzt" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Praxisname &amp; Tierarzt" data-tool-en-placeholder="Practice name and vet" data-tool-en-aria-label="Practice name and vet"></label>
                     <div class="grid grid-cols-2 gap-2">
-                        <label class="helferlein-field" for="petVetTel"><span class="helferlein-field-label">Telefon / Notfall-Nr.</span><input type="text" id="petVetTel" placeholder="Telefon / Notfall-Nr." class="p-2.5 border rounded-xl text-xs" aria-label="Telefon / Notfall-Nr."></label>
+                        <label class="helferlein-field" for="petVetTel"><span class="helferlein-field-label" data-tool-en="Phone / emergency number">Telefon / Notfall-Nr.</span><input type="text" id="petVetTel" placeholder="Telefon / Notfall-Nr." class="p-2.5 border rounded-xl text-xs" aria-label="Telefon / Notfall-Nr." data-tool-en-placeholder="Phone / emergency number" data-tool-en-aria-label="Phone / emergency number"></label>
                         <label class="helferlein-field" for="petVetEmail"><span class="helferlein-field-label">E-Mail-Adresse</span><input type="email" id="petVetEmail" placeholder="E-Mail-Adresse" class="p-2.5 border rounded-xl text-xs" aria-label="E-Mail-Adresse"></label>
                     </div>
-                    <label class="helferlein-field" for="petVetAddress"><span class="helferlein-field-label">Straße, PLZ &amp; Ort der Praxis</span><input type="text" id="petVetAddress" placeholder="Straße, PLZ & Ort der Praxis" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Straße, PLZ &amp; Ort der Praxis"></label>
+                    <label class="helferlein-field" for="petVetAddress"><span class="helferlein-field-label" data-tool-en="Practice street address, postcode and town">Straße, PLZ &amp; Ort der Praxis</span><input type="text" id="petVetAddress" placeholder="Straße, PLZ & Ort der Praxis" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Straße, PLZ &amp; Ort der Praxis" data-tool-en-placeholder="Practice street address, postcode and town" data-tool-en-aria-label="Practice street address, postcode and town"></label>
                 </div>
                 
                 <div class="flex items-center space-x-2 pt-1">
@@ -174,11 +176,11 @@
             <!-- 2. Gesundheits-Eintrag hinzufügen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">💉 2. Gesundheits-Eintrag & Tagebuch</h2>
-                <label class="helferlein-field" for="eventPetSelect"><span class="helferlein-field-label">Haustier für den Eintrag</span><select id="eventPetSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Haustier für den Eintrag">
+                <label class="helferlein-field" for="eventPetSelect"><span class="helferlein-field-label" data-tool-en="Pet for this entry">Haustier für den Eintrag</span><select id="eventPetSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Haustier für den Eintrag" data-tool-en-aria-label="Pet for this entry">
                     <option value="">-- Haustier wählen --</option>
                 </select></label>
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="eventType"><span class="helferlein-field-label">Art des Eintrags</span><select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags">
+                    <label class="helferlein-field" for="eventType"><span class="helferlein-field-label" data-tool-en="Entry type">Art des Eintrags</span><select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags" data-tool-en-aria-label="Entry type">
                         <option value="Impfung">💉 Impfung</option>
                         <option value="Entwurmung">🪱 Entwurmung / Parasiten</option>
                         <option value="Medikament">💊 Medikament / Behandlung</option>
@@ -187,13 +189,13 @@
                         <option value="Tagebuch">📓 Tagebuch / Notiz</option>
                         <option value="Sonstiges">📝 Sonstiges</option>
                     </select></label>
-                    <label class="helferlein-field" for="eventDate"><span class="helferlein-field-label">Datum des Eintrags</span><input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags"></label>
+                    <label class="helferlein-field" for="eventDate"><span class="helferlein-field-label" data-tool-en="Entry date">Datum des Eintrags</span><input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags" data-tool-en-aria-label="Entry date"></label>
                 </div>
-                <label class="helferlein-field" for="eventTitle"><span class="helferlein-field-label">Bezeichnung</span><input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)"></label>
+                <label class="helferlein-field" for="eventTitle"><span class="helferlein-field-label" data-tool-en="Description">Bezeichnung</span><input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)"></label>
                 
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="eventCost"><span class="helferlein-field-label">Kosten in € (optional)</span><input type="text" id="eventCost" placeholder="Kosten in € (optional)" class="p-3 border rounded-xl text-sm" aria-label="Kosten in € (optional)"></label>
-                    <label class="helferlein-field" for="eventWeight"><span class="helferlein-field-label">Gewicht in kg (optional)</span><input type="text" id="eventWeight" placeholder="Gewicht in kg (optional)" class="p-3 border rounded-xl text-sm hidden"></label>
+                    <label class="helferlein-field" for="eventCost"><span class="helferlein-field-label" data-tool-en="Cost in € (optional)">Kosten in € (optional)</span><input type="text" id="eventCost" placeholder="Kosten in € (optional)" class="p-3 border rounded-xl text-sm" aria-label="Kosten in € (optional)" data-tool-en-placeholder="Cost in € (optional)" data-tool-en-aria-label="Cost in € (optional)"></label>
+                    <label class="helferlein-field" for="eventWeight"><span class="helferlein-field-label" data-tool-en="Weight in kg (optional)">Gewicht in kg (optional)</span><input type="text" id="eventWeight" placeholder="Gewicht in kg (optional)" class="p-3 border rounded-xl text-sm hidden" data-tool-en-placeholder="Weight in kg (optional)"></label>
                 </div>
 
                 <div id="vaccineExpiryBox" class="hidden">
@@ -215,8 +217,8 @@
             <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                 <h3 class="font-bold text-lg">💊 Haustier-Apotheke & Medikamenten-Vorrat</h3>
                 <div class="b3-pet-med-fields flex gap-2 w-full sm:w-auto">
-                    <label class="helferlein-field" for="medName"><span class="helferlein-field-label">Medikament / Vorrat</span><input type="text" id="medName" placeholder="Medikament / Vorrat (z.B. Zeckenschutz)" class="p-2 border rounded-xl text-xs" aria-label="Medikament / Vorrat (z.B. Zeckenschutz)"></label>
-                    <label class="helferlein-field" for="medStock"><span class="helferlein-field-label">Stück / Packung</span><input type="text" id="medStock" placeholder="Stück / Packung (z.B. 2)" class="p-2 border rounded-xl text-xs w-28" aria-label="Stück / Packung (z.B. 2)"></label>
+                    <label class="helferlein-field" for="medName"><span class="helferlein-field-label" data-tool-en="Medicine / supplies">Medikament / Vorrat</span><input type="text" id="medName" placeholder="Medikament / Vorrat (z.B. Zeckenschutz)" class="p-2 border rounded-xl text-xs" aria-label="Medikament / Vorrat (z.B. Zeckenschutz)"></label>
+                    <label class="helferlein-field" for="medStock"><span class="helferlein-field-label" data-tool-en="Units / packs">Stück / Packung</span><input type="text" id="medStock" placeholder="Stück / Packung (z.B. 2)" class="p-2 border rounded-xl text-xs w-28" aria-label="Stück / Packung (z.B. 2)"></label>
                     <button onclick="saveMedication()" class="b3-action px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl text-xs">Hinzufügen</button>
                 </div>
             </div>
@@ -239,7 +241,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                     <h3 class="font-bold text-lg">📋 Kalender & Kosten</h3>
-                    <label class="helferlein-field" for="filterPetSelect"><span class="helferlein-field-label">Verlauf nach Haustier filtern</span><select id="filterPetSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Verlauf nach Haustier filtern">
+                    <label class="helferlein-field" for="filterPetSelect"><span class="helferlein-field-label" data-tool-en="Filter history by pet">Verlauf nach Haustier filtern</span><select id="filterPetSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Verlauf nach Haustier filtern" data-tool-en-aria-label="Filter history by pet">
                         <option value="">Alle Haustiere anzeigen</option>
                     </select></label>
                 </div>
@@ -361,7 +363,7 @@
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
-                alert("Bitte E-Mail und Passwort eingeben.");
+                alert(window.__toolyaUILocale === "en" ? "Please enter your email and password." : "Bitte E-Mail und Passwort eingeben.");
                 return;
             }
 
@@ -371,7 +373,7 @@
                 return;
             }
 
-            alert("Registrierung erfolgreich.");
+            alert(window.__toolyaUILocale === "en" ? "Registration successful." : "Registrierung erfolgreich.");
             updateUserDisplay();
             closeSettings();
         }
@@ -381,7 +383,7 @@
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
-                alert("Bitte E-Mail und Passwort eingeben.");
+                alert(window.__toolyaUILocale === "en" ? "Please enter your email and password." : "Bitte E-Mail und Passwort eingeben.");
                 return;
             }
 
@@ -409,10 +411,11 @@
 
             if (user) {
                 if (headerInfo) headerInfo.textContent = "👤 " + user.email;
-                if (cloudStatus) cloudStatus.textContent = "✅ Angemeldet – " + (user.email || "Benutzer");
+                if (cloudStatus) cloudStatus.textContent = (window.__toolyaUILocale === "en" ? "✅ Signed in – " : "✅ Angemeldet – ") + (user.email || (window.__toolyaUILocale === "en" ? "User" : "Benutzer"));
             } else {
-                if (headerInfo) headerInfo.textContent = "Nicht angemeldet";
-                if (cloudStatus) cloudStatus.textContent = "Nicht angemeldet";
+                const signedOutLabel = window.__toolyaUILocale === "en" ? "Not signed in" : "Nicht angemeldet";
+                if (headerInfo) headerInfo.textContent = signedOutLabel;
+                if (cloudStatus) cloudStatus.textContent = signedOutLabel;
             }
         }
 
@@ -505,7 +508,7 @@
                 const {data:auth,error}=await supabaseClient.auth.getUser();
                 if(error||auth?.user?.id!==petCloudUserId||auth.user.is_anonymous)throw Error('Anmeldung nicht gültig.');
                 await petCloudController.replace(data);
-                window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');return true;
+                window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Saved to Toolya Cloud.' : 'In Toolya Cloud gespeichert.');return true;
             }catch(error){console.error(error);petCloudBlock('save-unconfirmed');return false;}
         }
         async function petImage(file){
@@ -716,6 +719,9 @@
         }
 
         function renderApp() {
+            const english = window.__toolyaUILocale === 'en';
+            const displayLocale = english ? 'en-GB' : 'de-DE';
+            const label = (de, en) => english ? en : de;
             let data = getData();
             const petsContainer = document.getElementById('petsList');
             const eventsContainer = document.getElementById('eventsList');
@@ -729,7 +735,7 @@
             document.getElementById('statCosts').innerText = totalCosts.toFixed(2).replace('.', ',') + ' €';
 
             if (data.pets.length === 0) {
-                petsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Haustiere erfasst.</p>`;
+                petsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${label('Noch keine Haustiere erfasst.','No pets recorded yet.')}</p>`;
             } else {
                 const defaultPetIcon = `
                     <div class="w-12 h-12 bg-teal-50 text-teal-700 rounded-full flex items-center justify-center border border-teal-100 shadow-sm flex-shrink-0">
@@ -777,7 +783,7 @@
             }
 
             if (!data.meds || data.meds.length === 0) {
-                medsContainer.innerHTML = `<p class="text-xs text-gray-400 italic">Keine Medikamente in der Apotheke hinterlegt.</p>`;
+                medsContainer.innerHTML = `<p class="text-xs text-gray-400 italic">${label('Keine Medikamente in der Apotheke hinterlegt.','No medicines recorded.')}</p>`;
             } else {
                 medsContainer.innerHTML = data.meds.map(m => {
                     let isLowStock = m.stock.toLowerCase().includes('0') || m.stock.toLowerCase().includes('1 stück') || m.stock.toLowerCase().includes('fast leer');
@@ -814,7 +820,7 @@
                         let expD = new Date(e.expiryDate);
                         let expDiff = Math.ceil((expD - today) / (1000 * 60 * 60 * 24));
                         let expColor = expDiff < 0 ? "text-red-700 font-bold" : (expDiff <= 30 ? "text-amber-700 font-bold" : "text-teal-700");
-                        expiryHint = `<p class="text-[10px] ${expColor} mt-0.5">📅 Impf-Gültigkeit bis: ${expD.toLocaleDateString('de-DE')} (${expDiff < 0 ? 'Abgelaufen!' : 'in ' + expDiff + ' Tagen'})</p>`;
+                        expiryHint = `<p class="text-[10px] ${expColor} mt-0.5">📅 Impf-Gültigkeit bis: ${expD.toLocaleDateString(displayLocale)} (${expDiff < 0 ? 'Abgelaufen!' : 'in ' + expDiff + ' Tagen'})</p>`;
                     }
 
                     let intervalHint = "";
@@ -822,7 +828,7 @@
                         let nextWormDate = new Date(d);
                         nextWormDate.setDate(nextWormDate.getDate() + 90);
                         let wormDiff = Math.ceil((nextWormDate - today) / (1000 * 60 * 60 * 24));
-                        intervalHint = `<p class="text-[10px] text-teal-700 mt-0.5">🪱 Nächste Entwurmung: in ${wormDiff} Tagen (${nextWormDate.toLocaleDateString('de-DE')})</p>`;
+                        intervalHint = `<p class="text-[10px] text-teal-700 mt-0.5">🪱 Nächste Entwurmung: in ${wormDiff} Tagen (${nextWormDate.toLocaleDateString(displayLocale)})</p>`;
                     }
 
                     let statusColor = diff < 0 ? "border-red-400 bg-red-50 text-red-800" : (diff <= 14 ? "border-amber-400 bg-amber-50 text-amber-800" : "border-gray-200 bg-gray-50 text-gray-800");
@@ -831,7 +837,7 @@
                         <div class="p-3 border rounded-xl ${statusColor}">
                             <p class="text-[11px] font-bold text-gray-500">${petName} (${e.type})</p>
                             <p class="text-xs font-bold mt-0.5">${e.title}</p>
-                            <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString('de-DE')})</p>
+                            <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString(displayLocale)})</p>
                             ${expiryHint}
                             ${intervalHint}
                         </div>
@@ -847,14 +853,17 @@
             }
 
             if (filteredEvents.length === 0) {
-                eventsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Termine für diesen Filter erfasst.</p>`;
+                eventsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${label('Keine Termine für diesen Filter erfasst.','No appointments match this filter.')}</p>`;
             } else {
                 eventsContainer.innerHTML = filteredEvents.map(e => {
                     let pet = data.pets.find(p => p.id === e.petId);
                     let petName = pet ? pet.name : "Unbekannt";
                     let d = new Date(e.date);
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
-                    let badge = diff < 0 ? "🔴 Überfällig" : (diff <= 30 ? `🟡 in ${diff} Tagen` : "🟢 Planmäßig");
+                    const days = label(diff === 1 ? 'Tag' : 'Tagen', diff === 1 ? 'day' : 'days');
+                    const badge = diff < 0 ? label('🔴 Überfällig', '🔴 Overdue')
+                        : diff === 0 ? label('🟡 Heute fällig', '🟡 Due today')
+                        : diff <= 30 ? `🟡 in ${diff} ${days}` : label('🟢 Planmäßig', '🟢 On schedule');
 
                     let weightBadge = "";
                     if (e.weight !== null && e.weight !== undefined) {
@@ -886,12 +895,12 @@
                                     ${weightBadge}
                                 </div>
                                 <h4 class="font-bold text-sm mt-1">${e.title} <span class="text-xs font-normal text-gray-500">${e.type === 'Tagebuch' ? '' : '(' + badge + ')'}</span></h4>
-                                <p class="text-xs text-gray-500">Datum: ${d.toLocaleDateString('de-DE')}</p>
-                                ${e.expiryDate ? `<p class="text-[11px] text-teal-700 mt-0.5">📅 Gültig bis: ${new Date(e.expiryDate).toLocaleDateString('de-DE')}</p>` : ''}
+                                <p class="text-xs text-gray-500">${label('Datum','Date')}: ${d.toLocaleDateString(displayLocale)}</p>
+                                ${e.expiryDate ? `<p class="text-[11px] text-teal-700 mt-0.5">📅 ${label('Gültig bis','Valid until')}: ${new Date(e.expiryDate).toLocaleDateString(displayLocale)}</p>` : ''}
                             </div>
                             <div class="b3-pet-event-actions flex items-center gap-2 self-end sm:self-center flex-wrap">
                                 ${receiptBtn}
-                                ${e.type !== 'Tagebuch' ? `<a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="b3-action b3-outline px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a><button onclick="downloadICS('${e.title} (${petName})', '${e.date}')" class="b3-action b3-outline px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Kalender">📥 ICS</button>` : ''}
+                                ${e.type !== 'Tagebuch' ? `<a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="b3-action b3-outline px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="${label('Google Kalender','Google Calendar')}">📅 Google</a><button onclick="downloadEventICS(${Number(e.id)})" class="b3-action b3-outline px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="${label('ICS Kalender','Download calendar file')}">📥 ICS</button>` : ''}
                                 <button onclick="deleteEvent(${e.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
@@ -900,25 +909,38 @@
             }
         }
 
+        document.addEventListener('toolya:locale-change', () => {
+            if (petCloudReady) renderApp();
+        });
+
         function zoomImage(src) {
             document.getElementById('zoomedImage').src = src;
             document.getElementById('imageModal').showModal();
         }
         function closeImageModal() { document.getElementById('imageModal').close(); }
 
-        function downloadICS(title, dateStr) {
-            let d = new Date(dateStr);
-            let dateFormatted = d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8);
-            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${title}\nDTSTART;VALUE=DATE:${dateFormatted}\nDTEND;VALUE=DATE:${dateFormatted}\nDESCRIPTION:Haustier-Termin\nEND:VEVENT\nEND:VCALENDAR`;
-            let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a');
-            a.href = url;
-            a.download = `${title.replace(/\s+/g, '_')}.ics`;
-            a.click();
+        async function downloadEventICS(id) {
+            if (!Number.isSafeInteger(id)) return;
+            const data = getData();
+            const event = data.events.find(entry => Number(entry.id) === id);
+            if (!event) return;
+            const english = window.__toolyaUILocale === 'en';
+            const entity = data.pets.find(entry => entry.id === event.petId);
+            const name = entity?.name ?? (english ? 'Unknown' : 'Unbekannt');
+            const { downloadAllDayCalendar } = await import('../../shared/toolya/calendar-export.mjs');
+            downloadAllDayCalendar({
+                title: `${event.title} (${name})`,
+                date: event.date,
+                description: english ? 'Pet appointment' : 'Haustier-Termin',
+                uid: 'pet-health-' + id + '@toolya.app'
+            });
         }
 
         async function exportPDF() {
+            const pdfEn = window.__toolyaUILocale === 'en';
+            const pdfLabel = (de,en) => pdfEn ? en : de;
+            const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
@@ -926,29 +948,30 @@
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text("Haustier-Gesundheits-Pass Report", 14, 20);
+            doc.text(pdfLabel("Haustier-Gesundheits-Pass Report","Pet health report"), 14, 20);
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+            doc.text(`${pdfLabel("Erstellt am: ","Created on: ")}${new Date().toLocaleDateString(pdfDateLocale)}`, 14, 27);
 
             let y = 35;
             doc.setFont("helvetica", "bold");
-            doc.text("Haustiere & Tierarzt:", 14, y);
+            doc.text(pdfLabel("Haustiere & Tierarzt:","Pets and veterinarian:"), 14, y);
             y += 7;
 
             doc.setFont("helvetica", "normal");
             data.pets.forEach(p => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let tassoText = p.tasso ? " [TASSO]" : "";
-                let vetText = p.vet && p.vet.name ? ` | TA: ${p.vet.name} (${p.vet.tel || '-'})` : "";
-                const lines = doc.splitTextToSize(`- ${p.name} (${p.species || 'Haustier'}), Chip: ${p.chip || 'k.A.'}${tassoText}${vetText}`, 180);
+                let vetText = p.vet && p.vet.name ? ` | ${pdfLabel("TA: ","Vet: ")}${p.vet.name} (${p.vet.tel || '-'})` : "";
+                const species = pdfEn ? ({Hund:'Dog',Katze:'Cat',Vogel:'Bird',Kaninchen:'Rabbit',Pferd:'Horse'})[p.species] || p.species : p.species;
+                const lines = doc.splitTextToSize(`- ${p.name} (${species || pdfLabel("Haustier","Pet")}), Chip: ${p.chip || pdfLabel("k.A.","n/a")}${tassoText}${vetText}`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 4;
             doc.setFont("helvetica", "bold");
-            doc.text("Gesundheits-Einträge & Kosten:", 14, y);
+            doc.text(pdfLabel("Gesundheits-Einträge & Kosten:","Health records and costs:"), 14, y);
             y += 7;
 
             let totalCosts = 0;
@@ -960,17 +983,18 @@
 
                 if (y > 270) { doc.addPage(); y = 20; }
                 let weightText = e.weight ? ` | ${e.weight} kg` : "";
-                let expText = e.expiryDate ? ` (Gültig bis: ${new Date(e.expiryDate).toLocaleDateString('de-DE')})` : "";
-                const lines = doc.splitTextToSize(`- [${e.type}] ${pName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${Number(e.cost || 0).toFixed(2)} EUR${weightText})${expText}`, 180);
+                let expText = e.expiryDate ? ` (${pdfLabel("Gültig bis: ","Valid until: ")}${new Date(e.expiryDate).toLocaleDateString(pdfDateLocale)})` : "";
+                const eventType = pdfEn ? ({Impfung:'Vaccination',Behandlung:'Treatment',Medikament:'Medication',Kontrolle:'Check-up',Operation:'Surgery'})[e.type] || e.type : e.type;
+                const lines = doc.splitTextToSize(`- [${eventType}] ${pName}: ${e.title}${pdfLabel(" am "," on ")}${new Date(e.date).toLocaleDateString(pdfDateLocale)} (${Number(e.cost || 0).toFixed(2)} EUR${weightText})${expText}`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 6;
             doc.setFont("helvetica", "bold");
             if (y > 270) { doc.addPage(); y = 20; }
-            doc.text(`Gesamtkosten: ${totalCosts.toFixed(2)} EUR`, 14, y);
+            doc.text(`${pdfLabel("Gesamtkosten: ","Total costs: ")}${totalCosts.toFixed(2)} EUR`, 14, y);
 
-            doc.save("haustier-gesundheits-report.pdf");
+            doc.save(pdfLabel("haustier-gesundheits-report.pdf","pet-health-report.pdf"));
         }
 
         function exportBackup() {

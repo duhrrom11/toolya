@@ -2,6 +2,7 @@
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
+const text=(de,en)=>window.__toolyaUILocale==='en'?en:de;
 const make=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node};
 function button(text,cls,action){const node=make('button',cls,text);node.type='button';node.addEventListener('click',action);return node}
 const cleanNumber=(id,fallback)=>{const value=Number($(id)?.value);return Number.isFinite(value)&&value>0?value:fallback};
@@ -153,7 +154,7 @@ function init(){
  function renderStandardRecommendations(){
   suggested.replaceChildren();
   const mode=$('combinator-mode')?.value;
-  if(mode==='double'){suggested.append(make('p','bsui-empty','Du hast zwei Formen gewählt.'));return}
+  if(mode==='double'){suggested.append(make('p','bsui-empty',text('Du hast zwei Formen gewählt.','You selected two pans.')));return}
   const shape=$('target-shape')?.value,area=shape==='rect'?cleanNumber('target-l',25)*cleanNumber('target-w',11):Math.PI*Math.pow(cleanNumber('target-d',20)/2,2);
   const d=Math.max(8,Math.round(Math.sqrt(4*area/Math.PI)));
   const options=[d,Math.max(8,d-2),d+2].filter((x,i,a)=>a.indexOf(x)===i);
@@ -164,8 +165,12 @@ function init(){
     $('target-d').dispatchEvent(new Event('input',{bubbles:true}));
    });
    const ratio=area/(Math.PI*Math.pow(diameter/2,2));
-   const optionLabel=make('strong','', '◉ Runde Form: '+diameter+' cm');
-   const info=make('span','',i===0?'Ähnliche Größe':ratio>1.05?'Gleiche Teigmenge: Kuchen wird höher.':ratio<.95?'Gleiche Teigmenge: Kuchen wird flacher.':'Fast gleich hoch.');
+   const optionLabel=make('strong','',text('◉ Runde Form: ', '◉ Round pan: ')+diameter+' cm');
+   let advice=text('Fast gleich hoch.','Almost the same height.');
+   if(i===0)advice=text('Ähnliche Größe','Similar size');
+   else if(ratio>1.05)advice=text('Gleiche Teigmenge: Kuchen wird höher.','The same batter will make a taller cake.');
+   else if(ratio<.95)advice=text('Gleiche Teigmenge: Kuchen wird flacher.','The same batter will make a shallower cake.');
+   const info=make('span','',advice);
    if(i===0)info.className='bsui-option-best';
    row.append(optionLabel,info);suggested.append(row);
   }
@@ -173,17 +178,27 @@ function init(){
  function sync(){
   renderStandardRecommendations();
   const shape=$('target-shape')?.value||'round',double=$('combinator-mode')?.value==='double';
-  const target=double?'2 Formen Ø '+cleanNumber('combo-d1',20)+' / '+cleanNumber('combo-d2',16)+' cm':
-   shape==='rect'?'Rechteck '+cleanNumber('target-l',25)+' × '+cleanNumber('target-w',11)+' cm':
-   shape==='bundt'?'Gugelhupf Ø '+cleanNumber('target-d',20)+' cm':'Rund Ø '+cleanNumber('target-d',20)+' cm';
+  const roundLabel=shape==='bundt'?text('Gugelhupf Ø ','Bundt Ø '):text('Rund Ø ','Round Ø ');
+  let target=roundLabel+cleanNumber('target-d',20)+' cm';
+  if(double)target=text('2 Formen Ø ','2 pans Ø ')+cleanNumber('combo-d1',20)+' / '+cleanNumber('combo-d2',16)+' cm';
+  else if(shape==='rect')target=text('Rechteck ','Rectangular ')+cleanNumber('target-l',25)+' × '+cleanNumber('target-w',11)+' cm';
   dims.textContent=target;
   const factor=$('res-factor')?.textContent||'';
   const amount=Number(String(factor).replace(/[×\s]/g,'').replace(',','.'));
-  $('bsui-hero-factor').textContent=Number.isFinite(amount)?'Du brauchst '+Math.round(amount*100)+' % des Rezepts.':'Mengen werden angepasst.';
+  const recipePercentage=Math.round(amount*100);
+  $('bsui-hero-factor').textContent=Number.isFinite(amount)
+   ?text(`Du brauchst ${recipePercentage} % des Rezepts.`,`Use ${recipePercentage}% of the recipe.`)
+   :text('Mengen werden angepasst.','Adjusting the quantities.');
   const fillStatus=$('bs-filltext')?.textContent||'';
   const match=fillStatus.match(/(\d+(?:[,.]\d+)?)\s*%/);
   const percent=match?Number(match[1].replace(',','.')):null;
-  $('bsui-hero-description').textContent=percent===null?'Füllhöhe ansehen':percent>75?'Achtung, die Form könnte zu voll sein!':'Die Form ist etwa '+Math.round(percent)+' % gefüllt.';
+  let fill=text('Füllhöhe ansehen','See how full the pan is.');
+  if(percent>75)fill=text('Achtung, die Form könnte zu voll sein!','The pan may be too full!');
+  else if(percent!==null){
+   const rounded=Math.round(percent);
+   fill=text(`Die Form ist etwa ${rounded} % gefüllt.`,`The pan is about ${rounded}% full.`);
+  }
+  $('bsui-hero-description').textContent=fill;
   const count=ingredients.querySelector('#bs-scaled')?.children.length||0;
   empty.hidden=count>0;
  }
@@ -197,9 +212,9 @@ function init(){
   stage.classList.toggle('bsui-webgl-ready',!!webglBox.querySelector('canvas'));
  }).observe(webglBox,{childList:true});
  // Allow users to opt into WebGL; an accessible image fallback is visible without network.
- const orig3dOpen=[...webgl.querySelectorAll('button')].find(n=>/Form drehen|3D öffnen/.test(n.textContent||''));
+ const orig3dOpen=[...webgl.querySelectorAll('button')].find(n=>/Form drehen|3D öffnen|Rotate pan|Open 3D/.test(n.textContent||''));
  if(orig3dOpen){
-  orig3dOpen.textContent='↻ Form drehen';
+  orig3dOpen.textContent=text('↻ Form drehen','↻ Rotate pan');
   // Start the interactive view when it first enters the viewport; data-saver users can launch it manually.
   if('IntersectionObserver' in window&&!window.navigator?.connection?.saveData){
    const observer=new IntersectionObserver(entries=>{
@@ -213,7 +228,9 @@ function init(){
  // Keep existing message observable for accessibility while showing a concise status at the top.
  const existingMessage=$('bs-message');if(existingMessage){existingMessage.setAttribute('aria-live','polite');existingMessage.classList.add('bsui-site-message');header.after(existingMessage)}
  if($('recipe-input')?.value.trim())recipeDetails.open=false;
+ document.addEventListener('toolya:locale-change',requestSync);
  sync();showView('core');
+ document.dispatchEvent(new Event('toolya:backstudio-layout-ready'));
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();

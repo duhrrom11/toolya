@@ -75,7 +75,9 @@
     <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="../../assets/helferlein-dialogs.js"></script>
 <link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><link rel="stylesheet" href="../../shared/toolya/alpha.css?v=20261115-alpha">
-<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script></head>
+<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="../../shared/toolya/i18n/tool-entry.css">
+<script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script><script type="module" src="../../shared/toolya/i18n/tool-entry.mjs"></script>
+</head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
   <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
     <p id="toolya-auth-title"><strong>Autokosten</strong></p>
@@ -108,15 +110,15 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-red-50 text-red-700 rounded-xl font-bold">🚙</div>
-                <div><p class="text-xs text-gray-500">Registrierte Fahrzeuge</p><h3 id="statCars" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Registered vehicles">Registrierte Fahrzeuge</p><h3 id="statCars" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">🛠️</div>
-                <div><p class="text-xs text-gray-500">Einträge (gefiltert)</p><h3 id="statEvents" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Entries (filtered)">Einträge (gefiltert)</p><h3 id="statEvents" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
-                <div><p class="text-xs text-gray-500">Gesamtkosten (gefiltert)</p><h3 id="statCosts" class="text-lg font-bold">0,00 €</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="Total costs (filtered)">Gesamtkosten (gefiltert)</p><h3 id="statCosts" class="text-lg font-bold">0,00 €</h3></div>
             </div>
         </div>
 
@@ -131,14 +133,14 @@
             <!-- 1. Fahrzeug anlegen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">🚗 Fahrzeug anlegen und Unterlagen ablegen</h2>
-                <label class="helferlein-field" for="carName"><span class="helferlein-field-label">Fahrzeugname</span><input type="text" id="carName" placeholder="Fahrzeugname (z.B. Familien-Golf)" class="w-full p-3 border rounded-xl text-sm" aria-label="Fahrzeugname (z.B. Familien-Golf)"></label>
+                <label class="helferlein-field" for="carName"><span class="helferlein-field-label" data-tool-en="Vehicle name">Fahrzeugname</span><input type="text" id="carName" placeholder="Fahrzeugname (z.B. Familien-Golf)" class="w-full p-3 border rounded-xl text-sm" aria-label="Fahrzeugname (z.B. Familien-Golf)"></label>
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="carPlate"><span class="helferlein-field-label">Kennzeichen</span><input type="text" id="carPlate" placeholder="Kennzeichen (z.B. B-AB 1234)" class="p-3 border rounded-xl text-sm" aria-label="Kennzeichen (z.B. B-AB 1234)"></label>
-                    <label class="helferlein-field" for="carKm"><span class="helferlein-field-label">KM-Stand</span><input type="text" id="carKm" placeholder="KM-Stand (z.B. 125000)" class="p-3 border rounded-xl text-sm" aria-label="KM-Stand (z.B. 125000)"></label>
+                    <label class="helferlein-field" for="carPlate"><span class="helferlein-field-label" data-tool-en="Registration number">Kennzeichen</span><input type="text" id="carPlate" placeholder="Kennzeichen (z.B. B-AB 1234)" class="p-3 border rounded-xl text-sm" aria-label="Kennzeichen (z.B. B-AB 1234)"></label>
+                    <label class="helferlein-field" for="carKm"><span class="helferlein-field-label" data-tool-en="Odometer reading">KM-Stand</span><input type="text" id="carKm" placeholder="KM-Stand (z.B. 125000)" class="p-3 border rounded-xl text-sm" aria-label="KM-Stand (z.B. 125000)"></label>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="carInsurance"><span class="helferlein-field-label">Versicherung &amp; Pol.-Nr.</span><input type="text" id="carInsurance" placeholder="Versicherung & Pol.-Nr." class="p-3 border rounded-xl text-xs" aria-label="Versicherung &amp; Pol.-Nr."></label>
-                    <label class="helferlein-field" for="carEmergency"><span class="helferlein-field-label">Notfall- / Pannen-Tel.</span><input type="text" id="carEmergency" placeholder="Notfall- / Pannen-Tel." class="p-3 border rounded-xl text-xs" aria-label="Notfall- / Pannen-Tel."></label>
+                    <label class="helferlein-field" for="carInsurance"><span class="helferlein-field-label" data-tool-en="Insurer and policy number">Versicherung &amp; Pol.-Nr.</span><input type="text" id="carInsurance" placeholder="Versicherung & Pol.-Nr." class="p-3 border rounded-xl text-xs" aria-label="Versicherung &amp; Pol.-Nr." data-tool-en-placeholder="Insurer and policy number" data-tool-en-aria-label="Insurer and policy number"></label>
+                    <label class="helferlein-field" for="carEmergency"><span class="helferlein-field-label" data-tool-en="Emergency / breakdown phone number">Notfall- / Pannen-Tel.</span><input type="text" id="carEmergency" placeholder="Notfall- / Pannen-Tel." class="p-3 border rounded-xl text-xs" aria-label="Notfall- / Pannen-Tel." data-tool-en-placeholder="Emergency / breakdown phone number" data-tool-en-aria-label="Emergency / breakdown phone number"></label>
                 </div>
                 <div class="grid grid-cols-2 gap-2 text-xs">
                     <div>
@@ -156,11 +158,11 @@
             <!-- 2. Wartung / Tanken / Reifen erfassen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">🛠️ Autokosten und Belege erfassen</h2>
-                <label class="helferlein-field" for="eventCarSelect"><span class="helferlein-field-label">Fahrzeug für den Eintrag</span><select id="eventCarSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Fahrzeug für den Eintrag">
+                <label class="helferlein-field" for="eventCarSelect"><span class="helferlein-field-label" data-tool-en="Vehicle for this entry">Fahrzeug für den Eintrag</span><select id="eventCarSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Fahrzeug für den Eintrag" data-tool-en-aria-label="Vehicle for this entry">
                     <option value="">-- Fahrzeug wählen --</option>
                 </select></label>
                 <div class="grid grid-cols-2 gap-2">
-                    <label class="helferlein-field" for="eventType"><span class="helferlein-field-label">Art des Eintrags</span><select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags">
+                    <label class="helferlein-field" for="eventType"><span class="helferlein-field-label" data-tool-en="Entry type">Art des Eintrags</span><select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags" data-tool-en-aria-label="Entry type">
                         <option value="TÜV / HU">🔍 TÜV / Hauptuntersuchung</option>
                         <option value="Inspektion">⚙️ Inspektion & Service</option>
                         <option value="Versicherung">🛡️ Versicherung (Fixkosten)</option>
@@ -171,15 +173,15 @@
                         <option value="Reparatur">🔧 Reparatur</option>
                         <option value="Tanken">⛽ Tanken / Kraftstoff</option>
                     </select></label>
-                    <label class="helferlein-field" for="eventDate"><span class="helferlein-field-label">Datum des Eintrags</span><input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags"></label>
+                    <label class="helferlein-field" for="eventDate"><span class="helferlein-field-label" data-tool-en="Entry date">Datum des Eintrags</span><input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags" data-tool-en-aria-label="Entry date"></label>
                 </div>
-                <label class="helferlein-field" for="eventTitle"><span class="helferlein-field-label">Bezeichnung</span><input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Vollkasko Jahresbeitrag)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Vollkasko Jahresbeitrag)"></label>
+                <label class="helferlein-field" for="eventTitle"><span class="helferlein-field-label" data-tool-en="Description">Bezeichnung</span><input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Vollkasko Jahresbeitrag)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Vollkasko Jahresbeitrag)"></label>
                 
                 <div class="grid grid-cols-3 gap-2">
-                    <label class="helferlein-field" for="eventCost"><span class="helferlein-field-label">Kosten in €</span><input type="text" id="eventCost" placeholder="Kosten in €" class="p-3 border rounded-xl text-sm" aria-label="Kosten in €"></label>
-                    <label class="helferlein-field" for="eventTread"><span class="helferlein-field-label">Profil (mm)</span><input type="text" id="eventTread" placeholder="Profil (mm)" class="p-3 border rounded-xl text-sm hidden"></label>
-                    <label class="helferlein-field" for="eventKm"><span class="helferlein-field-label">KM-Stand</span><input type="text" id="eventKm" placeholder="KM-Stand" class="p-3 border rounded-xl text-sm hidden" title="Aktueller KM-Stand beim Tanken"></label>
-                    <label class="helferlein-field" for="eventLitres"><span class="helferlein-field-label">Liter</span><input type="text" id="eventLitres" placeholder="Liter" class="p-3 border rounded-xl text-sm hidden" title="Getankte Liter"></label>
+                    <label class="helferlein-field" for="eventCost"><span class="helferlein-field-label" data-tool-en="Cost in €">Kosten in €</span><input type="text" id="eventCost" placeholder="Kosten in €" class="p-3 border rounded-xl text-sm" aria-label="Kosten in €" data-tool-en-placeholder="Cost in €" data-tool-en-aria-label="Cost in €"></label>
+                    <label class="helferlein-field" for="eventTread"><span class="helferlein-field-label" data-tool-en="Tread depth (mm)">Profil (mm)</span><input type="text" id="eventTread" placeholder="Profil (mm)" class="p-3 border rounded-xl text-sm hidden" data-tool-en-placeholder="Tread depth (mm)"></label>
+                    <label class="helferlein-field" for="eventKm"><span class="helferlein-field-label" data-tool-en="Odometer reading">KM-Stand</span><input type="text" id="eventKm" placeholder="KM-Stand" class="p-3 border rounded-xl text-sm hidden" title="Aktueller KM-Stand beim Tanken" data-tool-en-placeholder="Odometer reading" data-tool-en-title="Current odometer reading when refuelling"></label>
+                    <label class="helferlein-field" for="eventLitres"><span class="helferlein-field-label" data-tool-en="Litres">Liter</span><input type="text" id="eventLitres" placeholder="Liter" class="p-3 border rounded-xl text-sm hidden" title="Getankte Liter" data-tool-en-placeholder="Litres"></label>
                 </div>
 
                 <div>
@@ -207,17 +209,17 @@
                 <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" id="b3-tires">
                     <h3 class="font-bold text-lg">🛞 Reifensätze verwalten</h3>
                     <div class="grid grid-cols-2 gap-2">
-                        <label class="helferlein-field" for="tireCarSelect"><span class="helferlein-field-label">Fahrzeug für den Reifensatz</span><select id="tireCarSelect" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Fahrzeug für den Reifensatz"></select></label>
-                        <label class="helferlein-field" for="tireType"><span class="helferlein-field-label">Reifentyp</span><select id="tireType" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Reifentyp">
+                        <label class="helferlein-field" for="tireCarSelect"><span class="helferlein-field-label" data-tool-en="Vehicle for this tyre set">Fahrzeug für den Reifensatz</span><select id="tireCarSelect" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Fahrzeug für den Reifensatz" data-tool-en-aria-label="Vehicle for this tyre set"></select></label>
+                        <label class="helferlein-field" for="tireType"><span class="helferlein-field-label" data-tool-en="Tyre type">Reifentyp</span><select id="tireType" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Reifentyp" data-tool-en-aria-label="Tyre type">
                             <option value="Sommerreifen">☀️ Sommerreifen</option>
                             <option value="Winterreifen">❄️ Winterreifen</option>
                             <option value="Ganzjahresreifen">🌤️ Ganzjahresreifen</option>
                         </select></label>
                     </div>
                     <div class="grid grid-cols-3 gap-2">
-                        <label class="helferlein-field" for="tireLocation"><span class="helferlein-field-label">Lagerort</span><input type="text" id="tireLocation" placeholder="Lagerort (z.B. Keller Ecke 2)" class="p-2.5 border rounded-xl text-xs" aria-label="Lagerort (z.B. Keller Ecke 2)"></label>
+                        <label class="helferlein-field" for="tireLocation"><span class="helferlein-field-label" data-tool-en="Storage location">Lagerort</span><input type="text" id="tireLocation" placeholder="Lagerort (z.B. Keller Ecke 2)" class="p-2.5 border rounded-xl text-xs" aria-label="Lagerort (z.B. Keller Ecke 2)"></label>
                         <label class="helferlein-field" for="tireDot"><span class="helferlein-field-label">DOT / Jahr</span><input type="text" id="tireDot" placeholder="DOT / Jahr (z.B. 2223)" class="p-2.5 border rounded-xl text-xs" aria-label="DOT / Jahr (z.B. 2223)"></label>
-                        <label class="helferlein-field" for="tireTread"><span class="helferlein-field-label">Profil mm</span><input type="text" id="tireTread" placeholder="Profil mm" class="p-2.5 border rounded-xl text-xs" aria-label="Profil mm"></label>
+                        <label class="helferlein-field" for="tireTread"><span class="helferlein-field-label" data-tool-en="Tread depth in mm">Profil mm</span><input type="text" id="tireTread" placeholder="Profil mm" class="p-2.5 border rounded-xl text-xs" aria-label="Profil mm" data-tool-en-placeholder="Tread depth in mm" data-tool-en-aria-label="Tread depth in mm"></label>
                     </div>
                     <button onclick="saveTireSet()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 rounded-xl text-xs b3-action">Reifensatz speichern</button>
                     <div id="tiresList" class="space-y-2 pt-2"></div>
@@ -228,7 +230,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" id="b3-history">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                     <h3 class="font-bold text-lg">📋 Verlauf, Ausgaben und Termine</h3>
-                    <label class="helferlein-field" for="filterCarSelect"><span class="helferlein-field-label">Historie nach Fahrzeug filtern</span><select id="filterCarSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Historie nach Fahrzeug filtern">
+                    <label class="helferlein-field" for="filterCarSelect"><span class="helferlein-field-label" data-tool-en="Filter history by vehicle">Historie nach Fahrzeug filtern</span><select id="filterCarSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Historie nach Fahrzeug filtern" data-tool-en-aria-label="Filter history by vehicle">
                         <option value="">Alle Fahrzeuge anzeigen</option>
                     </select></label>
                 </div>
@@ -390,7 +392,7 @@ async function toolyaCloudSave(patch) {
     const next = toolyaCloudController.snapshot();
     Object.assign(next, patch);
     await toolyaCloudController.replace(next);
-    window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');
+    window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Saved to Toolya Cloud.' : 'In Toolya Cloud gespeichert.');
     return true;
   } catch(error) {
     toolyaCloudReady = false;
@@ -476,7 +478,7 @@ async function toolyaCloudBoot(tool) {
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
-                alert("Bitte E-Mail und Passwort eingeben.");
+                alert(window.__toolyaUILocale === "en" ? "Please enter your email and password." : "Bitte E-Mail und Passwort eingeben.");
                 return;
             }
 
@@ -486,7 +488,7 @@ async function toolyaCloudBoot(tool) {
                 return;
             }
 
-            alert("Registrierung erfolgreich.");
+            alert(window.__toolyaUILocale === "en" ? "Registration successful." : "Registrierung erfolgreich.");
             updateUserDisplay();
             closeSettings();
         }
@@ -496,7 +498,7 @@ async function toolyaCloudBoot(tool) {
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
-                alert("Bitte E-Mail und Passwort eingeben.");
+                alert(window.__toolyaUILocale === "en" ? "Please enter your email and password." : "Bitte E-Mail und Passwort eingeben.");
                 return;
             }
 
@@ -524,10 +526,11 @@ async function toolyaCloudBoot(tool) {
 
             if (user) {
                 if (headerInfo) headerInfo.textContent = "👤 " + user.email;
-                if (cloudStatus) cloudStatus.textContent = "✅ Angemeldet – " + (user.email || "Benutzer");
+                if (cloudStatus) cloudStatus.textContent = (window.__toolyaUILocale === "en" ? "✅ Signed in – " : "✅ Angemeldet – ") + (user.email || (window.__toolyaUILocale === "en" ? "User" : "Benutzer"));
             } else {
-                if (headerInfo) headerInfo.textContent = "Nicht angemeldet";
-                if (cloudStatus) cloudStatus.textContent = "Nicht angemeldet";
+                const signedOutLabel = window.__toolyaUILocale === "en" ? "Not signed in" : "Nicht angemeldet";
+                if (headerInfo) headerInfo.textContent = signedOutLabel;
+                if (cloudStatus) cloudStatus.textContent = signedOutLabel;
             }
         }
 
@@ -889,6 +892,9 @@ async function toolyaCloudBoot(tool) {
         }
 
         function renderApp() {
+            const english = window.__toolyaUILocale === 'en';
+            const displayLocale = english ? 'en-GB' : 'de-DE';
+            const label = (de, en) => english ? en : de;
             let data = getData();
             const carsContainer = document.getElementById('carsList');
             const tiresContainer = document.getElementById('tiresList');
@@ -898,8 +904,8 @@ async function toolyaCloudBoot(tool) {
             document.getElementById('statCars').innerText = data.cars.length;
 
             if (data.cars.length === 0) {
-                carsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Fahrzeuge erfasst.</p>`;
-                tiresContainer.innerHTML = `<p class="text-xs text-gray-400 text-center">Keine Reifensätze.</p>`;
+                carsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${label('Noch keine Fahrzeuge erfasst.','No vehicles recorded yet.')}</p>`;
+                tiresContainer.innerHTML = `<p class="text-xs text-gray-400 text-center">${label('Keine Reifensätze.','No tyre sets.')}</p>`;
             } else {
                 carsContainer.innerHTML = data.cars.map(c => {
                     const carEvents = data.events.filter(e => e.carId === c.id);
@@ -953,7 +959,7 @@ async function toolyaCloudBoot(tool) {
                 }).join('');
 
                 if (!data.tires || data.tires.length === 0) {
-                    tiresContainer.innerHTML = `<p class="text-xs text-gray-400 text-center italic py-2">Noch keine Reifensätze hinterlegt.</p>`;
+                    tiresContainer.innerHTML = `<p class="text-xs text-gray-400 text-center italic py-2">${label('Noch keine Reifensätze hinterlegt.','No tyre sets recorded yet.')}</p>`;
                 } else {
                     tiresContainer.innerHTML = data.tires.map(t => {
                         let car = data.cars.find(c => c.id === t.carId);
@@ -989,7 +995,7 @@ async function toolyaCloudBoot(tool) {
                         <div class="p-3 border rounded-xl ${statusColor}">
                             <p class="text-[11px] font-bold text-gray-500">${carName} (${e.type})</p>
                             <p class="text-xs font-bold mt-0.5">${e.title}</p>
-                            <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString('de-DE')})</p>
+                            <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString(displayLocale)})</p>
                         </div>
                     `;
                 }).join('');
@@ -1027,14 +1033,17 @@ async function toolyaCloudBoot(tool) {
             document.getElementById('statCosts').innerText = totalCosts.toFixed(2).replace('.', ',') + ' €';
 
             if (filteredEvents.length === 0) {
-                eventsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Einträge für diesen Filter erfasst.</p>`;
+                eventsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${label('Keine Einträge für diesen Filter erfasst.','No entries match this filter.')}</p>`;
             } else {
                 eventsContainer.innerHTML = filteredEvents.map(e => {
                     let car = data.cars.find(c => c.id === e.carId);
                     let carName = car ? car.name : "Unbekannt";
                     let d = new Date(e.date);
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
-                    let badge = diff < 0 ? "🔴 Überfällig" : (diff <= 30 ? `🟡 in ${diff} Tagen` : "🟢 Planmäßig");
+                    const days = label(diff === 1 ? 'Tag' : 'Tagen', diff === 1 ? 'day' : 'days');
+                    const badge = diff < 0 ? label('🔴 Überfällig', '🔴 Overdue')
+                        : diff === 0 ? label('🟡 Heute fällig', '🟡 Due today')
+                        : diff <= 30 ? `🟡 in ${diff} ${days}` : label('🟢 Planmäßig', '🟢 On schedule');
 
                     let treadBadge = "";
                     if (e.tread !== null && e.tread !== undefined && !isNaN(e.tread)) {
@@ -1055,8 +1064,8 @@ async function toolyaCloudBoot(tool) {
                     if (!['Reifentiefe', 'Tanken', 'Reparatur'].includes(e.type)) {
                         let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title + ' (' + carName + ')')}&dates=${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('KFZ-Termin für ' + carName)}`;
                         calendarButtons = `
-                            <a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
-                            <button onclick="downloadICS('${e.title} (${carName})', '${e.date}')" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="Apple / ICS Kalender">📥 ICS</button>
+                            <a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="${label('Google Kalender','Google Calendar')}">📅 Google</a>
+                            <button onclick="downloadEventICS(${Number(e.id)})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="${label('Apple / ICS Kalender','Download calendar file')}">📥 ICS</button>
                         `;
                     }
 
@@ -1071,7 +1080,7 @@ async function toolyaCloudBoot(tool) {
                                     ${tankBadge}
                                 </div>
                                 <h4 class="font-bold text-sm mt-1">${e.title} <span class="text-xs font-normal text-gray-500">(${badge})</span></h4>
-                                <p class="text-xs text-gray-500">Datum: ${d.toLocaleDateString('de-DE')}</p>
+                                <p class="text-xs text-gray-500">${label('Datum','Date')}: ${d.toLocaleDateString(displayLocale)}</p>
                             </div>
                             <div class="flex items-center gap-2 self-end sm:self-center flex-wrap">
                                 ${receiptBtn}
@@ -1085,25 +1094,38 @@ async function toolyaCloudBoot(tool) {
             }
         }
 
+        document.addEventListener('toolya:locale-change', () => {
+            if (toolyaCloudReady) renderApp();
+        });
+
         function zoomImage(src) {
             document.getElementById('zoomedImage').src = src;
             document.getElementById('imageModal').showModal();
         }
         function closeImageModal() { document.getElementById('imageModal').close(); }
 
-        function downloadICS(title, dateStr) {
-            let d = new Date(dateStr);
-            let dateFormatted = d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8);
-            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${title}\nDTSTART;VALUE=DATE:${dateFormatted}\nDTEND;VALUE=DATE:${dateFormatted}\nDESCRIPTION:KFZ-Termin\nEND:VEVENT\nEND:VCALENDAR`;
-            let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a');
-            a.href = url;
-            a.download = `${title.replace(/\s+/g, '_')}.ics`;
-            a.click();
+        async function downloadEventICS(id) {
+            if (!Number.isSafeInteger(id)) return;
+            const data = getData();
+            const event = data.events.find(entry => Number(entry.id) === id);
+            if (!event) return;
+            const english = window.__toolyaUILocale === 'en';
+            const entity = data.cars.find(entry => entry.id === event.carId);
+            const name = entity?.name ?? (english ? 'Unknown' : 'Unbekannt');
+            const { downloadAllDayCalendar } = await import('../../shared/toolya/calendar-export.mjs');
+            downloadAllDayCalendar({
+                title: `${event.title} (${name})`,
+                date: event.date,
+                description: english ? 'Vehicle appointment' : 'KFZ-Termin',
+                uid: 'car-' + id + '@toolya.app'
+            });
         }
 
         async function exportPDF() {
+            const pdfEn = window.__toolyaUILocale === 'en';
+            const pdfLabel = (de,en) => pdfEn ? en : de;
+            const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
@@ -1111,27 +1133,27 @@ async function toolyaCloudBoot(tool) {
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text("KFZ- & Wartungs-Report", 14, 20);
+            doc.text(pdfLabel("KFZ- & Wartungs-Report","Vehicle and maintenance report"), 14, 20);
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+            doc.text(`${pdfLabel("Erstellt am: ","Created on: ")}${new Date().toLocaleDateString(pdfDateLocale)}`, 14, 27);
 
             let y = 35;
             doc.setFont("helvetica", "bold");
-            doc.text("Fahrzeuge & Bordmappe:", 14, y);
+            doc.text(pdfLabel("Fahrzeuge & Bordmappe:","Vehicles and documents:"), 14, y);
             y += 7;
 
             doc.setFont("helvetica", "normal");
             data.cars.forEach(c => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                const lines = doc.splitTextToSize(`- ${c.name} (${c.plate || 'k.A.'}), KM: ${c.km || 'k.A.'} | Vers.: ${c.insurance || '-'}`, 180);
+                const lines = doc.splitTextToSize(`- ${c.name} (${c.plate || pdfLabel("k.A.","n/a")}), ${pdfLabel("KM: ","Mileage: ")}${c.km || pdfLabel("k.A.","n/a")} | ${pdfLabel("Vers.: ","Insurance: ")}${c.insurance || '-'}`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 4;
             doc.setFont("helvetica", "bold");
-            doc.text("Wartungen, Fixkosten & Tanken:", 14, y);
+            doc.text(pdfLabel("Wartungen, Fixkosten & Tanken:","Maintenance, fixed costs and fuel:"), 14, y);
             y += 7;
 
             let totalCosts = 0;
@@ -1144,17 +1166,18 @@ async function toolyaCloudBoot(tool) {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let treadText = e.tread ? ` | ${e.tread} mm` : "";
                 let tankText = e.litres ? ` | ${e.litres} L` : "";
-                let consText = e.consumption ? ` | ${e.consumption.toFixed(1)} l/100km` : "";
-                const lines = doc.splitTextToSize(`- [${e.type}] ${cName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${Number(e.cost || 0).toFixed(2)} EUR${treadText}${tankText}${consText})`, 180);
+                let consText = e.consumption ? ` | ${Number(e.consumption).toFixed(1)} l/100km` : "";
+                const eventType = pdfEn ? ({Reparatur:'Repair',Wartung:'Maintenance',Tanken:'Refuelling',Versicherung:'Insurance',Steuer:'Tax',Reifen:'Tyres'})[e.type] || e.type : e.type;
+                const lines = doc.splitTextToSize(`- [${eventType}] ${cName}: ${e.title}${pdfLabel(" am "," on ")}${new Date(e.date).toLocaleDateString(pdfDateLocale)} (${Number(e.cost || 0).toFixed(2)} EUR${treadText}${tankText}${consText})`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 6;
             doc.setFont("helvetica", "bold");
             if (y > 270) { doc.addPage(); y = 20; }
-            doc.text(`Gesamtkosten: ${totalCosts.toFixed(2)} EUR`, 14, y);
+            doc.text(`${pdfLabel("Gesamtkosten: ","Total costs: ")}${totalCosts.toFixed(2)} EUR`, 14, y);
 
-            doc.save("kfz-wartungs-report.pdf");
+            doc.save(pdfLabel("kfz-wartungs-report.pdf","vehicle-maintenance-report.pdf"));
         }
 
         function exportBackup() {

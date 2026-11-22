@@ -1,0 +1,12 @@
+.ty-tool-language{display:flex;width:max-content;margin-top:.5rem;gap:.25rem;align-items:center;padding:.22rem;border:1px solid #a2cad0;border-radius:99px;background:white;flex-shrink:0}
+.ty-tool-language button{font:inherit;font-size:.82rem;font-weight:750;padding:.3rem .65rem;background:transparent;border:0;border-radius:99px;color:#28465b;cursor:pointer}
+.ty-tool-language button[aria-pressed="true"]{background:#126d77;color:white}
+.ty-tool-language button:focus-visible{outline:3px solid #6941ba;outline-offset:2px}
+.ty-tool-language-notice{background:#fff7e7;color:#4b3a21;border:1px solid #e8c98a;border-radius:12px;max-width:1100px;margin:.75rem auto 0;padding:.8rem 1rem;font:500 .91rem/1.5 system-ui,sans-serif}
+.ty-tool-language-notice[hidden]{display:none!important}
+.ty-tool-language-notice a{color:#185b73;text-decoration:underline;font-weight:700}
+@media(max-width:650px){.ty-tool-language{margin-left:auto}.ty-tool-language-notice{margin-inline:1rem}}
+
+/* The baking calculator must remain a single-column grid below desktop width.
+   Scope to this tool so no other tool or mascot layout is affected. */
+@media(max-width:1279px){body.b3.b3-backform main.b3-backform-main{grid-template-columns:minmax(0,1fr)!important}}

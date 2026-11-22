@@ -1,0 +1,6 @@
+.ty-wishes-language{display:inline-flex;gap:.15rem;padding:.25rem;margin:.4rem;border:1px solid #8ebdc6;border-radius:999px;background:#fff}
+.ty-wishes-language button{min-height:32px;min-width:35px;border:0;border-radius:999px;background:transparent;color:#164d59;font-weight:750;cursor:pointer}
+.ty-wishes-language button[aria-pressed="true"]{background:#126f79;color:#fff}
+.ty-wishes-language button:focus-visible{outline:3px solid #714ac2;outline-offset:3px}
+.ty-wishes-language-notice{padding:.65rem 1rem;margin:.5rem auto;max-width:1100px;border-left:3px solid #9071d6;background:#f7f4ff;color:#54436f;font-size:.875rem}
+.ty-wishes-language-notice[hidden]{display:none}

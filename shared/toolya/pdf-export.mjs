@@ -2,6 +2,7 @@ const libraryUrl = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd
 let pendingLibrary;
 
 export async function createExportPdf() {
+  const requestLanguage = window.__toolyaUILocale === 'en' ? 'en' : 'de';
   if (!window.jspdf?.jsPDF) {
     pendingLibrary ??= new Promise((resolve, reject) => {
       const script = document.createElement('script');
@@ -21,7 +22,7 @@ export async function createExportPdf() {
     await pendingLibrary;
     return new window.jspdf.jsPDF();
   } catch {
-    window.alert('Das PDF konnte nicht erstellt werden. Bitte versuche es erneut.');
+    window.alert(requestLanguage === 'en' ? 'Could not create the PDF. Please try again.' : 'Das PDF konnte nicht erstellt werden. Bitte versuche es erneut.');
     return null;
   }
 }

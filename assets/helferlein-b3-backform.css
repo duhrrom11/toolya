@@ -109,3 +109,11 @@ body.b3.b3-backform :is(#keep-recipe-amount,#use-oven-factor,#glaze-sides){flex-
 }
 
 body.b3.b3-backform:not(.b3-dark) :is(main,#settings-modal,#cook-modal) button.b3-action:not(.b3-outline){background:var(--b3-control-accent);color:#fff}
+
+/* Browser regression: all narrow baking layouts must use one main column. */
+@media (max-width:1279px){body.b3.b3-backform main.b3-backform-main{grid-template-columns:minmax(0,1fr)!important}}
+
+/* Prevent inherited grid-column spans from creating an implicit second track on compact screens. */
+@media (max-width:1279px){
+ body.b3.b3-backform main.b3-backform-main > div{grid-column:1 / -1!important;min-width:0}
+}

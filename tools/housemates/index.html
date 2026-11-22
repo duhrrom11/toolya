@@ -81,7 +81,7 @@
     <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="../../assets/helferlein-dialogs.js"></script>
 <link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><link rel="stylesheet" href="../../shared/toolya/alpha.css?v=20261115-alpha">
-<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script></head>
+<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="/shared/toolya/i18n/tool-entry.css"><script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script><script type="module" src="/shared/toolya/i18n/tool-entry.mjs"></script></head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col font-sans">
   <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
     <p id="toolya-auth-title"><strong>WG-Organisator</strong></p>
@@ -187,7 +187,7 @@
         <!-- Dashboard KPIs -->
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Monats-Einnahmen</p>
+                <p class="text-[10px] text-gray-500 font-medium" data-tool-en="Monthly income">Monats-Einnahmen</p>
                 <h3 id="statIncome" class="text-sm md:text-base font-bold text-emerald-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
@@ -195,23 +195,23 @@
                 <h3 id="statExpense" class="text-sm md:text-base font-bold text-red-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Monats-Saldo</p>
+                <p class="text-[10px] text-gray-500 font-medium" data-tool-en="Monthly balance">Monats-Saldo</p>
                 <h3 id="statBalance" class="text-sm md:text-base font-bold text-blue-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Offene WG-Schulden</p>
+                <p class="text-[10px] text-gray-500 font-medium" data-tool-en="Outstanding household balances">Offene WG-Schulden</p>
                 <h3 id="statDebtVolume" class="text-sm md:text-base font-bold text-amber-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Fixkosten-Quote</p>
+                <p class="text-[10px] text-gray-500 font-medium" data-tool-en="Fixed-cost share">Fixkosten-Quote</p>
                 <h3 id="statFixRatio" class="text-sm md:text-base font-bold text-purple-600">0 %</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Inventar Restwert</p>
+                <p class="text-[10px] text-gray-500 font-medium" data-tool-en="Current inventory value">Inventar Restwert</p>
                 <h3 id="statInventoryValue" class="text-sm md:text-base font-bold text-teal-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Aktive Sticky Notes</p>
+                <p class="text-[10px] text-gray-500 font-medium" data-tool-en="Active sticky notes">Aktive Sticky Notes</p>
                 <h3 id="statNoteCount" class="text-sm md:text-base font-bold text-amber-500">0</h3>
             </div>
         </div>
@@ -243,9 +243,9 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 border rounded-2xl text-xs">
-                    <p>📶 <strong>WLAN-Passwort:</strong> <br><span id="infoWifi" class="font-mono bg-white px-2 py-1 rounded border block mt-1 text-center font-bold">Lade...</span></p>
-                    <p>🏠 <strong>Vermieter:</strong> <br><span id="infoLandlord" class="font-semibold text-gray-700 block mt-1">Lade...</span></p>
-                    <p>🛠️ <strong>Hausmeister / Notdienst:</strong> <br><span id="infoCaretaker" class="font-semibold text-gray-700 block mt-1">Lade...</span></p>
+                    <p>📶 <strong data-tool-en="Wi-Fi password:">WLAN-Passwort:</strong> <br><span id="infoWifi" class="font-mono bg-white px-2 py-1 rounded border block mt-1 text-center font-bold">Lade...</span></p>
+                    <p>🏠 <strong data-tool-en="Landlord:">Vermieter:</strong> <br><span id="infoLandlord" class="font-semibold text-gray-700 block mt-1">Lade...</span></p>
+                    <p>🛠️ <strong data-tool-en="Building caretaker / emergency service:">Hausmeister / Notdienst:</strong> <br><span id="infoCaretaker" class="font-semibold text-gray-700 block mt-1">Lade...</span></p>
                     <p>🗑️ <strong>Müllabfuhr:</strong> <br><span id="infoTrash" class="font-semibold text-gray-700 block mt-1">Lade...</span></p>
                 </div>
             </div>
@@ -275,7 +275,7 @@
                     <button onclick="openBudgetModal()" class="b3-action b3-outline px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold">⚙️ Anpassen</button>
                 </div>
                 <div id="budgetProgressList" class="space-y-2.5 max-h-52 overflow-y-auto pr-1">
-                    <p class="text-xs text-gray-400 text-center py-4">Lade Budgets...</p>
+                    <p class="text-xs text-gray-400 text-center py-4" data-tool-en="Loading budgets…">Lade Budgets...</p>
                 </div>
             </div>
         </div>
@@ -408,7 +408,7 @@
                     <button onclick="settleAllDebts()" class="b3-action b3-outline px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">✓ Ausgleichshinweis</button>
                 </div>
                 <div id="settlementList" class="space-y-1.5 text-xs text-gray-700">
-                    <p class="text-gray-400">Berechne Ausgleich...</p>
+                    <p class="text-gray-400" data-tool-en="Calculating balances…">Berechne Ausgleich...</p>
                 </div>
             </div>
 
@@ -571,7 +571,7 @@
                 </div>
                 <div>
                     <label for="noteContentInput" class="block font-semibold mb-1">Nachricht / Notiz (optional):</label>
-                    <textarea id="noteContentInput" rows="3" placeholder="Notiere hier wichtige Infos für die WG..." class="w-full p-2.5 border rounded-xl resize-none"></textarea>
+                    <textarea id="noteContentInput" rows="3" placeholder="Notiere hier wichtige Infos für die WG..." class="w-full p-2.5 border rounded-xl resize-none" data-tool-en-placeholder="Add important household information…"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -812,10 +812,10 @@
                 <input type="hidden" id="editMateIndex" value="-1">
                 <h4 id="mateFormTitle" class="font-bold text-gray-800">➕ Neues Mitglied hinzufügen</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <input type="text" id="mateVorname" placeholder="Vorname *" class="p-2 border rounded-xl bg-white">
-                    <input type="text" id="mateNachname" placeholder="Nachname / Anzeigename *" class="p-2 border rounded-xl bg-white">
+                    <input type="text" id="mateVorname" placeholder="Vorname *" class="p-2 border rounded-xl bg-white" data-tool-en-placeholder="First name *">
+                    <input type="text" id="mateNachname" placeholder="Nachname / Anzeigename *" class="p-2 border rounded-xl bg-white" data-tool-en-placeholder="Last name / display name *">
                     <input type="email" id="mateEmail" placeholder="E-Mail-Adresse" class="p-2 border rounded-xl bg-white">
-                    <input type="tel" id="matePhone" placeholder="WhatsApp / Telefonnummer" class="p-2 border rounded-xl bg-white">
+                    <input type="tel" id="matePhone" placeholder="WhatsApp / Telefonnummer" class="p-2 border rounded-xl bg-white" data-tool-en-placeholder="WhatsApp / phone number">
                     <input type="text" id="mateInsta" placeholder="Instagram (@handle)" class="p-2 border rounded-xl bg-white">
                     <input type="text" id="mateFb" placeholder="Facebook Profile URL / Name" class="p-2 border rounded-xl bg-white">
                 </div>
@@ -886,11 +886,11 @@
                     <input type="text" id="contractName" placeholder="z. B. Vodafone, GEZ" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label for="contractPrice" class="block font-semibold mb-1">Monatliche Kosten (€) *:</label>
+                    <label for="contractPrice" class="block font-semibold mb-1" data-tool-en="Monthly cost (€) *:">Monatliche Kosten (€) *:</label>
                     <input type="number" step="0.01" id="contractPrice" placeholder="39.99" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label for="contractPayer" class="block font-semibold mb-1">Hauptzahler:</label>
+                    <label for="contractPayer" class="block font-semibold mb-1" data-tool-en="Main payer:">Hauptzahler:</label>
                     <select id="contractPayer" class="w-full p-2.5 border rounded-xl bg-white"></select>
                 </div>
                 <div>
@@ -918,7 +918,13 @@
             alert('Ungültige WG-ID im Link.');
         }
         if (!wgBinId && validWgId(savedWgId)) {
-            window.location.replace(window.location.pathname + "?id=" + encodeURIComponent(savedWgId));
+            const redirectParams = new URLSearchParams();
+            redirectParams.set('id', savedWgId);
+            // Preserve an explicitly chosen locale without carrying arbitrary URL parameters.
+            if (urlParams.get('lang') === 'en' || urlParams.get('lang') === 'de') {
+                redirectParams.set('lang', urlParams.get('lang'));
+            }
+            window.location.replace(window.location.pathname + '?' + redirectParams.toString());
         } else if (wgBinId) {
             localStorage.setItem('wg_active_bin_id', wgBinId);
         }
@@ -1016,7 +1022,7 @@
             const syncDot = document.getElementById('sync-status-dot');
 
             if(user) {
-                statusText.innerText = "Status: Verbunden & Angemeldet";
+                statusText.innerText = window.toolyaUiText?.("Status: Verbunden & Angemeldet") ?? "Status: Verbunden & Angemeldet";
                 statusText.className = "font-bold text-emerald-700";
                 if(syncDot) {
                     syncDot.classList.remove('bg-red-500');
@@ -1028,7 +1034,7 @@
                 headerBadge.classList.add('inline-flex');
                 btnLogout.classList.remove('hidden');
             } else {
-                statusText.innerText = sessionError ? "Status: Verbindung oder Sitzung nicht überprüfbar" : "Nicht angemeldet";
+                statusText.innerText = window.toolyaUiText?.(sessionError ? "Status: Verbindung oder Sitzung nicht überprüfbar" : "Nicht angemeldet") ?? (sessionError ? "Status: Verbindung oder Sitzung nicht überprüfbar" : "Nicht angemeldet");
                 statusText.className = "font-bold text-gray-700";
                 if(syncDot) {
                     syncDot.classList.remove('bg-emerald-400', 'animate-pulse');
@@ -1054,7 +1060,9 @@
             const sourceId = wgBinId;
             try {
                 const user = await getAuthenticatedWgUser();
-                if (!confirm('Die ältere WG in einen neuen, kontogeschützten Speicher kopieren?\\n' +
+                if (!confirm(window.__toolyaUILocale === 'en'
+                    ? 'Copy the older household to a new account-protected storage area?\\nThe existing household remains unchanged and accessible through its old link.\\nOther members will need access to the new household later.'
+                    : 'Die ältere WG in einen neuen, kontogeschützten Speicher kopieren?\\n' +
                     'Die bisherige WG bleibt unverändert und ist weiterhin über ihren alten Link erreichbar.\\n' +
                     'Andere Mitglieder müssen später für die neue WG freigegeben werden.')) return;
                 // Use the same legacy providers as normal WG loading.
@@ -1087,7 +1095,7 @@
                 const newId = SECURE_WG_PREFIX + data.id;
                 const newUrl = new URL(window.location.href);
                 newUrl.searchParams.set('id', newId);
-                alert('Private WG-Kopie erstellt.\\nDer alte WG-Link bleibt bestehen.\\nBitte teile ab jetzt nur den neuen Link mit freigegebenen Mitgliedern.');
+                alert('Private WG-Kopie erstellt.\nDer alte WG-Link bleibt bestehen.\nBitte teile ab jetzt nur den neuen Link mit freigegebenen Mitgliedern.');
                 window.location.assign(newUrl.toString());
             } catch (error) {
                 console.error('WG-Migration fehlgeschlagen:', error);
@@ -1115,16 +1123,20 @@
                     .select('user_id').eq('wg_id', id);
                 if (error) throw new Error(error.message);
                 const existing = (members || []).map(m => m.user_id);
-                const action = prompt('WG-Mitglieder (nur Eigentümer).\nAktuell freigegebene Benutzer-IDs:\n' +
-                    (existing.join('\n') || '(keine)') +
-                    '\n\nNeue Benutzer-ID eintragen oder -ID zum Entfernen mit Minuszeichen voran:');
+                const action = prompt((window.__toolyaUILocale === 'en'
+                    ? 'Household members (owner only).\nCurrently authorized user IDs:\n'
+                    : 'WG-Mitglieder (nur Eigentümer).\nAktuell freigegebene Benutzer-IDs:\n') +
+                    (existing.join('\n') || (window.__toolyaUILocale === 'en' ? '(none)' : '(keine)')) +
+                    (window.__toolyaUILocale === 'en'
+                    ? '\n\nEnter a new user ID, or prefix an ID with a minus sign to revoke access:'
+                    : '\n\nNeue Benutzer-ID eintragen oder -ID zum Entfernen mit Minuszeichen voran:'));
                 if (action === null || !action.trim()) return;
                 const remove = action.trim().startsWith('-');
                 const memberId = action.trim().replace(/^-/, '').trim();
                 if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(memberId))
                     throw new Error('Ungültige Benutzer-ID. Das Mitglied muss sich zuerst registrieren.');
                 if (memberId === ownId) throw new Error('Der Eigentümer ist bereits berechtigt.');
-                if (!confirm((remove ? 'Zugriff entziehen für ' : 'Bearbeitungszugriff erteilen für ') + memberId + '?')) return;
+                if (!confirm((window.__toolyaUILocale === 'en' ? (remove ? 'Revoke access for ' : 'Grant editing access to ') : (remove ? 'Zugriff entziehen für ' : 'Bearbeitungszugriff erteilen für ')) + memberId + '?')) return;
                 if (remove) {
                     const { error: deleteError } = await supabaseClient.from('wg_members')
                         .delete().eq('wg_id', id).eq('user_id', memberId);
@@ -1232,7 +1244,7 @@
 
         async function erstelleNeueWGKonfiguration() {
             const statusText = document.getElementById('setup-status');
-            if (statusText) statusText.innerText = "Erstelle Cloud-Speicher im Hintergrund...";
+            if (statusText) statusText.innerText = window.__toolyaUILocale === 'en' ? 'Creating private cloud storage…' : 'Erstelle Cloud-Speicher im Hintergrund...';
 
             const leereWG = {
                 erstelltAm: new Date().toISOString(),
@@ -1432,7 +1444,7 @@
                         if (!saved) return false;
                         secureWgSavedVersion = Math.max(secureWgSavedVersion, version);
                         secureWgDirty = secureWgSavedVersion < secureWgChangeVersion;
-                        if(saved)window.toolyaNotice?.('success','WG-Änderungen online gespeichert.');return saved;
+                        if(saved)window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Household changes saved online.' : 'WG-Änderungen online gespeichert.');return saved;
                     } catch (error) {
                         if (wgBinId !== savingWgId) return false;
                         secureWgDirty = true;
@@ -1484,7 +1496,7 @@
 
         async function kopiereWGLink() {
             if (isSecureWgId(wgBinId)) {
-                const manage = confirm('Geschützte WG: Der Link allein erteilt keinen Zugriff.\nOK: Mitgliederzugriff verwalten / eigene Benutzer-ID anzeigen.\nAbbrechen: Link kopieren.');
+                const manage = confirm(window.__toolyaUILocale === 'en' ? 'Protected household: The link alone does not grant access.\nOK: Manage member access / show your user ID.\nCancel: Copy the link.' : 'Geschützte WG: Der Link allein erteilt keinen Zugriff.\nOK: Mitgliederzugriff verwalten / eigene Benutzer-ID anzeigen.\nAbbrechen: Link kopieren.');
                 if (manage) return showWgMemberAccess();
             }
             if (!validWgId(wgBinId)) return alert('Keine gültige WG-ID vorhanden.');
@@ -1509,6 +1521,7 @@
         let cashflowChartInstance = null;
         let editingReceiptId = null;
         let editingNoteId = null;
+        let householdReadyForLocaleRefresh = false;
 
         document.addEventListener('DOMContentLoaded', async () => {
             rotateKofiText();
@@ -1533,11 +1546,11 @@
                     const warning = document.createElement('section');
                     warning.className = 'p-6 bg-amber-50 border border-amber-300 rounded-2xl text-amber-900';
                     warning.setAttribute('role', 'alert');
-                    warning.textContent = 'Die WG konnte gerade nicht sicher geladen werden. Prüfe deine Verbindung und versuche es erneut.';
+                    warning.textContent = window.__toolyaUILocale === 'en' ? 'The household could not be loaded safely. Check your connection and try again.' : 'Die WG konnte gerade nicht sicher geladen werden. Prüfe deine Verbindung und versuche es erneut.';
                     const retry = document.createElement('button');
                     retry.type = 'button';
                     retry.className = 'block mt-3 px-4 py-2 rounded-xl border border-current font-semibold';
-                    retry.textContent = 'Erneut versuchen';
+                    retry.textContent = window.__toolyaUILocale === 'en' ? 'Try again' : 'Erneut versuchen';
                     retry.addEventListener('click', () => window.location.reload());
                     warning.append(retry);
                     document.getElementById('main-content').append(warning);
@@ -1547,8 +1560,21 @@
                 alert('WG-Cloud nicht erreichbar. Lokale Daten dieser WG werden angezeigt; Änderungen können derzeit nicht zuverlässig synchronisiert werden.');
             }
             renderApp();
+            householdReadyForLocaleRefresh = true;
             // Opening a WG must never write stale local data back over cloud records.
             checkUserSession();
+        });
+
+        // Presentation-only refresh: never run on an unloaded or failed WG.
+        document.addEventListener('toolya:locale-change', () => {
+            if (!householdReadyForLocaleRefresh) return;
+            renderApp();
+            refreshOpenBudgetLabels();
+            refreshOpenCookingDayLabels();
+            refreshOpenDietPlaceholders();
+            refreshOpenHouseholdFormTitles();
+            refreshHouseholdMemberFormTitle();
+            // Refresh labels in place; keep unsaved form values and stored keys untouched.
         });
 
         /* Storage Helper */
@@ -1617,6 +1643,26 @@
             else if (catSelect.value === 'Einnahme') catSelect.value = 'Lebensmittel';
         }
 
+        // Display-only money formatting: German remains byte-for-byte compatible
+        // with existing decimal output; English uses localized separators.
+        function formatHouseholdDisplayAmount(value) {
+            const amount = Number(value);
+            return window.__toolyaUILocale === 'en'
+                ? amount.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                : amount.toFixed(2);
+        }
+
+        // Translate only known chart labels, never receipt category storage keys.
+        function formatHouseholdCategoryLabel(category) {
+            if (window.__toolyaUILocale !== 'en') return category;
+            const labels = {
+                Lebensmittel: 'Groceries', Wohnen: 'Housing', Energie: 'Energy',
+                Auto: 'Car', Freizeit: 'Leisure', Elektronik: 'Electronics',
+                Gesundheit: 'Health', 'Verträge': 'Contracts', Sonstiges: 'Other'
+            };
+            return Object.hasOwn(labels, category) ? labels[category] : category;
+        }
+
         /* Charts */
         function initCharts() {
             const ctxCat = document.getElementById('categoryChart').getContext('2d');
@@ -1629,7 +1675,7 @@
             const ctxCF = document.getElementById('cashflowChart').getContext('2d');
             cashflowChartInstance = new Chart(ctxCF, {
                 type: 'bar',
-                data: { labels: ['Einnahmen', 'Ausgaben'], datasets: [{ label: 'Betrag €', data: [0, 0], backgroundColor: ['#10b981', '#ef4444'] }] },
+                data: { labels: [window.__toolyaUILocale === 'en' ? 'Income' : 'Einnahmen', window.__toolyaUILocale === 'en' ? 'Expenses' : 'Ausgaben'], datasets: [{ label: window.__toolyaUILocale === 'en' ? 'Amount €' : 'Betrag €', data: [0, 0], backgroundColor: ['#10b981', '#ef4444'] }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
@@ -1702,11 +1748,11 @@
                 }
             });
 
-            document.getElementById('statIncome').innerText = totalIncome.toFixed(2) + " €";
-            document.getElementById('statExpense').innerText = totalExpense.toFixed(2) + " €";
+            document.getElementById('statIncome').innerText = formatHouseholdDisplayAmount(totalIncome) + " €";
+            document.getElementById('statExpense').innerText = formatHouseholdDisplayAmount(totalExpense) + " €";
             const balance = totalIncome - totalExpense;
             const balanceEl = document.getElementById('statBalance');
-            balanceEl.innerText = balance.toFixed(2) + " €";
+            balanceEl.innerText = formatHouseholdDisplayAmount(balance) + " €";
             balanceEl.className = `text-sm md:text-base font-bold ${balance >= 0 ? 'text-emerald-600' : 'text-red-600'}`;
             document.getElementById('statFixRatio').innerText = totalExpense > 0 ? ((fixExpense / totalExpense) * 100).toFixed(0) + " %" : "0 %";
             document.getElementById('statNoteCount').innerText = notes.length;
@@ -1714,25 +1760,27 @@
             if (categoryChartInstance && cashflowChartInstance) {
                 const catLabels = Object.keys(categoryExpenses).filter(k => categoryExpenses[k] > 0);
                 const catValues = catLabels.map(k => categoryExpenses[k]);
-                categoryChartInstance.data.labels = catLabels.length ? catLabels : ['Keine Ausgaben'];
+                categoryChartInstance.data.labels = catLabels.length ? catLabels.map(formatHouseholdCategoryLabel) : [window.__toolyaUILocale === 'en' ? 'No expenses' : 'Keine Ausgaben'];
                 categoryChartInstance.data.datasets[0].data = catValues.length ? catValues : [1];
                 categoryChartInstance.update();
 
+                cashflowChartInstance.data.labels = [window.__toolyaUILocale === 'en' ? 'Income' : 'Einnahmen', window.__toolyaUILocale === 'en' ? 'Expenses' : 'Ausgaben'];
+                cashflowChartInstance.data.datasets[0].label = window.__toolyaUILocale === 'en' ? 'Amount €' : 'Betrag €';
                 cashflowChartInstance.data.datasets[0].data = [totalIncome, totalExpense];
                 cashflowChartInstance.update();
             }
 
             // Text alternatives share the exact calculated values used by the charts.
             // textContent prevents category names from becoming executable markup.
-            const formatChartAmount = value => Number(value).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+            const formatChartAmount = value => Number(value).toLocaleString(window.__toolyaUILocale === 'en' ? 'en-GB' : 'de-DE', { style: 'currency', currency: 'EUR' });
             const categoryChartSummary = Object.entries(categoryExpenses)
                 .filter(([, amount]) => amount > 0)
-                .map(([category, amount]) => category + ': ' + formatChartAmount(amount))
+                .map(([category, amount]) => formatHouseholdCategoryLabel(category) + ': ' + formatChartAmount(amount))
                 .join('; ');
-            document.getElementById('categoryChartSummary').textContent = categoryChartSummary || 'Keine Ausgaben in diesem Monat.';
+            document.getElementById('categoryChartSummary').textContent = categoryChartSummary || (window.__toolyaUILocale === 'en' ? 'No expenses this month.' : 'Keine Ausgaben in diesem Monat.');
             document.getElementById('cashflowChartSummary').textContent =
-                'Einnahmen: ' + formatChartAmount(totalIncome) + '; Ausgaben: ' + formatChartAmount(totalExpense) +
-                '; Saldo: ' + formatChartAmount(totalIncome - totalExpense) + '.';
+                (window.__toolyaUILocale === 'en' ? 'Income: ' : 'Einnahmen: ') + formatChartAmount(totalIncome) + (window.__toolyaUILocale === 'en' ? '; Expenses: ' : '; Ausgaben: ') + formatChartAmount(totalExpense) +
+                (window.__toolyaUILocale === 'en' ? '; Balance: ' : '; Saldo: ') + formatChartAmount(totalIncome - totalExpense) + '.';
 
             const budgetContainer = document.getElementById('budgetProgressList');
             budgetContainer.innerHTML = defaultCategories.map(cat => {
@@ -1746,8 +1794,8 @@
                 return `
                     <div class="space-y-1">
                         <div class="flex justify-between text-xs">
-                            <span class="font-bold text-gray-700">${escapeUserHtml(cat)}</span>
-                            <span class="text-gray-500">${spent.toFixed(2)} € / <strong>${limit.toFixed(2)} €</strong></span>
+                            <span class="font-bold text-gray-700">${escapeUserHtml(formatHouseholdCategoryLabel(cat))}</span>
+                            <span class="text-gray-500">${formatHouseholdDisplayAmount(spent)} € / <strong>${formatHouseholdDisplayAmount(limit)} €</strong></span>
                         </div>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
                             <div class="${barColor} h-2 transition-all" style="width: ${percent}%"></div>
@@ -1775,7 +1823,7 @@
             const notes = getNotes();
             const container = document.getElementById('stickyNotesGrid');
             if (notes.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-4 py-6">Die Pinnwand ist noch leer. Erstelle die erste Sticky Note!</p>`;
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-4 py-6">${window.__toolyaUILocale === 'en' ? 'The noticeboard is empty. Create your first sticky note!' : 'Die Pinnwand ist noch leer. Erstelle die erste Sticky Note!'}</p>`;
                 return;
             }
             const sortedNotes = [...notes].sort((a, b) => (b.pinned === a.pinned) ? 0 : b.pinned ? 1 : -1);
@@ -1787,7 +1835,7 @@
                         ${n.content ? `<p class="text-xs leading-relaxed whitespace-pre-line opacity-90">${escapeUserHtml(n.content)}</p>` : ''}
                     </div>
                     <div class="pt-2 border-t border-black/10 flex justify-between items-center text-[10px] font-semibold opacity-80">
-                        <span>👤 ${escapeUserHtml(n.author)} (${escapeUserHtml(n.date || 'Heute')})</span>
+                        <span>👤 ${escapeUserHtml(n.author)} (${escapeUserHtml(n.date || (window.__toolyaUILocale === 'en' ? 'Today' : 'Heute'))})</span>
                         <div class="flex items-center gap-1">
                             <button onclick="togglePinNote(${safeInlineId(n.id)})" class="p-0.5">${n.pinned ? '📌' : '📍'}</button>
                             <button onclick="editNote(${safeInlineId(n.id)})" class="b3-action b3-outline p-0.5">✏️</button>
@@ -1798,13 +1846,36 @@
             `).join('');
         }
 
+        function refreshOpenHouseholdFormTitles() {
+            const english = window.__toolyaUILocale === 'en';
+            const noteModal = document.getElementById('noteModal');
+            if (noteModal && !noteModal.classList.contains('hidden')) {
+                const title = document.getElementById('noteModalTitle');
+                if (title) title.textContent = editingNoteId
+                    ? (english ? '✏️ Edit sticky note' : '✏️ Sticky Note bearbeiten')
+                    : (english ? '✏️ New sticky note' : '✏️ Neue Sticky Note');
+            }
+            // Preserve the currently edited receipt and all its unsaved inputs.
+            const formTitle = document.getElementById('formTitle');
+            const saveButton = document.getElementById('saveBtn');
+            if (formTitle && saveButton) {
+                if (editingReceiptId) {
+                    const receipt = getData().find(r => r && r.id === editingReceiptId);
+                    formTitle.textContent = (english ? '✏️ Edit transaction' : '✏️ Buchung bearbeiten') +
+                        ': ' + (receipt?.title || '');
+                } else {
+                    formTitle.textContent = english ? '✍️ Record transaction / receipt' : '✍️ Buchung / WG-Kassenbon erfassen';
+                }
+                saveButton.textContent = english ? 'Save transaction / receipt' : 'Buchung / Kassenbon speichern';
+            }
+        }
         function openNoteModal() {
             editingNoteId = null;
             document.getElementById('noteTitleInput').value = "";
             document.getElementById('noteContentInput').value = "";
             document.getElementById('noteColorInput').value = "yellow";
             document.getElementById('notePinnedInput').checked = false;
-            document.getElementById('noteModalTitle').innerText = "✏️ Neue Sticky Note";
+            document.getElementById('noteModalTitle').innerText = window.__toolyaUILocale === "en" ? "✏️ New sticky note" : "✏️ Neue Sticky Note";
             document.getElementById('noteModal').classList.remove('hidden');
             document.getElementById('noteModal').classList.add('flex');
         }
@@ -1834,7 +1905,7 @@
             document.getElementById('noteAuthorInput').value = n.author || getFlatmateNames()[0];
             document.getElementById('noteColorInput').value = n.color || "yellow";
             document.getElementById('notePinnedInput').checked = !!n.pinned;
-            document.getElementById('noteModalTitle').innerText = "✏️ Sticky Note bearbeiten";
+            document.getElementById('noteModalTitle').innerText = window.__toolyaUILocale === 'en' ? '✏️ Edit sticky note' : '✏️ Sticky Note bearbeiten';
             document.getElementById('noteModal').classList.remove('hidden'); document.getElementById('noteModal').classList.add('flex');
         }
         function togglePinNote(id) {
@@ -1846,14 +1917,14 @@
         /* Events */
         function renderEvents() {
             const events = getEvents(); const container = document.getElementById('eventList');
-            if (events.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-4">Keine anstehenden Termine oder Slots.</p>`; return; }
+            if (events.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-4">${window.__toolyaUILocale === 'en' ? 'No upcoming events or slots.' : 'Keine anstehenden Termine oder Slots.'}</p>`; return; }
             const icons = { "Waschmaschine": "🧺", "Trockner": "💨", "Gäste": "👤", "Party": "🎉", "Allgemein": "📅" };
             container.innerHTML = events.map(ev => `
                 <div class="p-3 border rounded-xl flex justify-between items-start text-xs bg-gray-50">
                     <div>
                         <div class="flex items-center space-x-1 font-bold"><span>${icons[ev.type] || '📅'}</span><span>${escapeUserHtml(ev.title)}</span></div>
                         <p class="text-[11px] opacity-80 mt-1">📅 ${escapeUserHtml(ev.date)} ${ev.timeStart ? '| ⏰ ' + escapeUserHtml(ev.timeStart) : ''}</p>
-                        <p class="text-[10px] opacity-70">Von: <strong>${escapeUserHtml(ev.owner)}</strong></p>
+                        <p class="text-[10px] opacity-70">${window.__toolyaUILocale === 'en' ? 'By' : 'Von'}: <strong>${escapeUserHtml(ev.owner)}</strong></p>
                     </div>
                     <button onclick="deleteEvent(${safeInlineId(ev.id)})" class="text-gray-400 hover:text-red-500 font-bold text-sm">&times;</button>
                 </div>
@@ -1879,7 +1950,7 @@
         function renderInventory() {
             const items = getInventory(); const container = document.getElementById('inventoryList');
             const flatmates = getFlatmates(); const now = new Date(); let totalZeitwert = 0;
-            if (items.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-4">Noch kein Inventar erfasst.</p>`; document.getElementById('statInventoryValue').innerText = "0,00 €"; return; }
+            if (items.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-4">${window.__toolyaUILocale === 'en' ? 'No inventory recorded yet.' : 'Noch kein Inventar erfasst.'}</p>`; document.getElementById('statInventoryValue').innerText = formatHouseholdDisplayAmount(0) + " €"; return; }
             container.innerHTML = items.map(item => {
                 const buyDate = new Date(item.date);
                 const ageYears = (now - buyDate) / (1000 * 60 * 60 * 24 * 365.25);
@@ -1891,15 +1962,15 @@
                         <div class="flex justify-between font-bold text-teal-950">
                             <span>📦 ${escapeUserHtml(item.title)}</span><button onclick="deleteInventoryItem(${safeInlineId(item.id)})" class="text-red-500">&times;</button>
                         </div>
-                        <p class="text-gray-600 text-[11px]">Kauf: ${item.price.toFixed(2)} € (${item.date})</p>
+                        <p class="text-gray-600 text-[11px]">${window.__toolyaUILocale === 'en' ? 'Purchased' : 'Kauf'}: ${formatHouseholdDisplayAmount(item.price)} € (${item.date})</p>
                         <div class="pt-1 border-t border-teal-200 flex justify-between items-center text-[11px]">
-                            <span>Zeitwert: <strong class="text-teal-900">${zeitwert.toFixed(2)} €</strong></span>
-                            <span class="text-teal-800 font-semibold">Anteil: ${share.toFixed(2)} €/p.P.</span>
+                            <span>${window.__toolyaUILocale === 'en' ? 'Current value' : 'Zeitwert'}: <strong class="text-teal-900">${formatHouseholdDisplayAmount(zeitwert)} €</strong></span>
+                            <span class="text-teal-800 font-semibold">${window.__toolyaUILocale === 'en' ? 'Share' : 'Anteil'}: ${formatHouseholdDisplayAmount(share)} €/${window.__toolyaUILocale === 'en' ? 'person' : 'p.P.'}</span>
                         </div>
                     </div>
                 `;
             }).join('');
-            document.getElementById('statInventoryValue').innerText = totalZeitwert.toFixed(2) + " €";
+            document.getElementById('statInventoryValue').innerText = formatHouseholdDisplayAmount(totalZeitwert) + " €";
         }
         function openAddInventoryModal() { document.getElementById('inventoryModal').classList.remove('hidden'); document.getElementById('inventoryModal').classList.add('flex'); }
         function closeAddInventoryModal() { document.getElementById('inventoryModal').classList.remove('flex'); document.getElementById('inventoryModal').classList.add('hidden'); }
@@ -1916,18 +1987,35 @@
         /* Ernährung & Allergien */
         function renderDietMatrix() {
             const mateNames = getFlatmateNames(); const diets = getDiets();
+            // Only known defaults are UI labels; custom diets/allergies are user data.
+            const dietDisplay = value => window.__toolyaUILocale === 'en'
+                ? (value === 'Allesesser' ? 'Omnivore' : value === 'Keine' ? 'None' : value)
+                : value;
             document.getElementById('dietMatrixList').innerHTML = mateNames.map(m => {
                 const info = diets[m] || { pref: "Allesesser", allergy: "Keine" };
                 return `
                     <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
                         <span class="font-bold text-gray-800">${escapeUserHtml(m)}</span>
                         <div class="text-right text-[11px]">
-                            <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold">${escapeUserHtml(info.pref)}</span>
-                            <span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-semibold ml-1">🚫 ${escapeUserHtml(info.allergy)}</span>
+                            <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold">${escapeUserHtml(dietDisplay(info.pref))}</span>
+                            <span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-semibold ml-1">🚫 ${escapeUserHtml(dietDisplay(info.allergy))}</span>
                         </div>
                     </div>
                 `;
             }).join('');
+        }
+        function refreshOpenDietPlaceholders() {
+            const modal = document.getElementById('dietModal');
+            if (!modal || modal.classList.contains('hidden')) return;
+            // Only the placeholders change. Preserve unsaved diet and allergy text
+            // and each input's data-mate identity.
+            const english = window.__toolyaUILocale === 'en';
+            document.querySelectorAll('#dietInputContainer input.dietPref').forEach(input => {
+                input.placeholder = english ? 'Diet' : 'Ernährung';
+            });
+            document.querySelectorAll('#dietInputContainer input.dietAllergy').forEach(input => {
+                input.placeholder = english ? 'Allergies' : 'Allergien';
+            });
         }
         function openDietModal() {
             const mateNames = getFlatmateNames(); const diets = getDiets();
@@ -1937,8 +2025,8 @@
                     <div class="p-3 bg-gray-50 border rounded-xl space-y-2">
                         <span class="font-bold text-gray-900">${escapeUserHtml(m)}</span>
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="text" data-mate="${escapeUserHtml(m)}" class="dietPref w-full p-2 border rounded" placeholder="Ernährung" value="${escapeUserHtml(info.pref)}">
-                            <input type="text" data-mate="${escapeUserHtml(m)}" class="dietAllergy w-full p-2 border rounded" placeholder="Allergien" value="${escapeUserHtml(info.allergy)}">
+                            <input type="text" data-mate="${escapeUserHtml(m)}" class="dietPref w-full p-2 border rounded" placeholder="${window.__toolyaUILocale === 'en' ? 'Diet' : 'Ernährung'}" value="${escapeUserHtml(info.pref)}">
+                            <input type="text" data-mate="${escapeUserHtml(m)}" class="dietAllergy w-full p-2 border rounded" placeholder="${window.__toolyaUILocale === 'en' ? 'Allergies' : 'Allergien'}" value="${escapeUserHtml(info.allergy)}">
                         </div>
                     </div>
                 `;
@@ -1978,19 +2066,19 @@
 
         function renderSettlementAndExpenses() {
             const settlements = calculateSettlements(); const container = document.getElementById('settlementList'); let totalVolume = 0;
-            if (settlements.length === 0) { container.innerHTML = `<p class="text-emerald-700 font-medium">✨ Alle Schulden ausgeglichen!</p>`; } 
+            if (settlements.length === 0) { container.innerHTML = `<p class="text-emerald-700 font-medium">${window.__toolyaUILocale === 'en' ? '✨ All debts settled!' : '✨ Alle Schulden ausgeglichen!'}</p>`; } 
             else {
                 container.innerHTML = settlements.map(s => {
                     totalVolume += s.amount;
                     return `
                         <div class="flex justify-between items-center py-1 border-b border-emerald-100 last:border-0 text-xs">
-                            <span>👤 <strong>${escapeUserHtml(s.from)}</strong> an <strong>${escapeUserHtml(s.to)}</strong>:</span>
-                            <span class="font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200">${s.amount.toFixed(2)} €</span>
+                            <span>👤 <strong>${escapeUserHtml(s.from)}</strong> ${window.__toolyaUILocale === 'en' ? 'to' : 'an'} <strong>${escapeUserHtml(s.to)}</strong>:</span>
+                            <span class="font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200">${formatHouseholdDisplayAmount(s.amount)} €</span>
                         </div>
                     `;
                 }).join('');
             }
-            document.getElementById('statDebtVolume').innerText = totalVolume.toFixed(2) + " €";
+            document.getElementById('statDebtVolume').innerText = formatHouseholdDisplayAmount(totalVolume) + " €";
 
             const data = getData(); const typeFilter = document.getElementById('filterType').value; const catFilter = document.getElementById('filterCategory').value; const listContainer = document.getElementById('receiptsList');
             let filtered = data;
@@ -1999,7 +2087,7 @@
             if (typeFilter === 'fixkosten') filtered = filtered.filter(r => r.isFixkosten);
             if (catFilter !== 'All') filtered = filtered.filter(r => r.category === catFilter);
 
-            if (filtered.length === 0) { listContainer.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Keine passenden Buchungen.</p>`; return; }
+            if (filtered.length === 0) { listContainer.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No matching bookings.' : 'Keine passenden Buchungen.'}</p>`; return; }
             listContainer.innerHTML = filtered.map(r => {
                 const isIncome = r.entryType === 'einnahme' || r.category === 'Einnahme';
                 return `
@@ -2008,7 +2096,7 @@
                             <div class="w-9 h-9 ${isIncome ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'} rounded-xl flex items-center justify-center font-bold text-sm">${isIncome ? '🔺' : '🧾'}</div>
                             <div>
                                 <span class="font-bold text-gray-900">${escapeUserHtml(r.title)}</span>
-                                <p class="text-[11px] text-gray-600"><strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${r.price.toFixed(2)} €</strong> | ${escapeUserHtml(r.payer || 'Privat')} | ${escapeUserHtml(r.date)}</p>
+                                <p class="text-[11px] text-gray-600"><strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${formatHouseholdDisplayAmount(r.price)} €</strong> | ${escapeUserHtml(r.payer || (window.__toolyaUILocale === 'en' ? 'Private' : 'Privat'))} | ${escapeUserHtml(r.date)}</p>
                             </div>
                         </div>
                         <div class="flex gap-1">
@@ -2027,7 +2115,7 @@
             const file = input.files[0];
             const generation = ++ocrGeneration;
             let worker;
-            const statusEl = document.getElementById('ocrStatus'); statusEl.innerText = "🔍 Scanne Kassenbon..."; statusEl.classList.remove('hidden');
+            const statusEl = document.getElementById('ocrStatus'); statusEl.innerText = window.__toolyaUILocale === 'en' ? '🔍 Scanning receipt…' : '🔍 Scanne Kassenbon...'; statusEl.classList.remove('hidden');
             try {
                 const { loadOcrLibrary } = await import('../../shared/toolya/receipt-ocr.mjs');
                 const library = await loadOcrLibrary();
@@ -2038,9 +2126,9 @@
                 if (generation !== ocrGeneration || input.files[0] !== file) return;
                 const priceMatch = ret.data.text.match(/(\d+[\.,]\d{2})\s*(€|EUR)?/i);
                 if (priceMatch) document.getElementById('receiptPrice').value = priceMatch[1].replace(',', '.');
-                statusEl.innerText = "✅ OCR Erfolgreich!";
+                statusEl.innerText = window.__toolyaUILocale === "en" ? "✅ Text recognition successful!" : "✅ OCR Erfolgreich!";
             } catch {
-                if (generation === ocrGeneration && input.files[0] === file) statusEl.innerText = "❌ Texterkennung fehlgeschlagen.";
+                if (generation === ocrGeneration && input.files[0] === file) statusEl.innerText = window.__toolyaUILocale === 'en' ? '❌ Text recognition failed.' : '❌ Texterkennung fehlgeschlagen.';
             } finally {
                 if (worker) {
                     try { await worker.terminate(); } catch (error) { console.warn('OCR worker cleanup:', error); }
@@ -2083,8 +2171,8 @@
             document.getElementById('receiptPaymentPayer').value = r.payer || '';
             document.getElementById('receiptIsFixkosten').checked = !!r.isFixkosten;
             document.getElementById('receiptIsTax').checked = !!r.isTax;
-            document.getElementById('formTitle').innerText = `✏️ Buchung bearbeiten: ${r.title}`;
-            document.getElementById('saveBtn').innerText = "💾 Speichern";
+            document.getElementById('formTitle').innerText = `✏️ ${window.__toolyaUILocale === 'en' ? 'Edit transaction' : 'Buchung bearbeiten'}: ${r.title}`;
+            document.getElementById('saveBtn').innerText = window.__toolyaUILocale === "en" ? "💾 Save" : "💾 Speichern";
             document.getElementById('cancelEditBtn').classList.remove('hidden');
             document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
         }
@@ -2094,8 +2182,8 @@
             document.getElementById('receiptTitle').value = "";
             document.getElementById('receiptStore').value = "";
             document.getElementById('receiptPrice').value = "";
-            document.getElementById('formTitle').innerText = "✍️ Buchung / WG-Kassenbon erfassen";
-            document.getElementById('saveBtn').innerText = "Buchung / Kassenbon speichern";
+            document.getElementById('formTitle').innerText = window.__toolyaUILocale === "en" ? "✍️ Record transaction / receipt" : "✍️ Buchung / WG-Kassenbon erfassen";
+            document.getElementById('saveBtn').innerText = window.__toolyaUILocale === "en" ? "Save transaction / receipt" : "Buchung / Kassenbon speichern";
             document.getElementById('cancelEditBtn').classList.add('hidden');
             document.getElementById('receiptDate').valueAsDate = new Date();
         }
@@ -2105,15 +2193,15 @@
         /* Sparziele */
         function renderSavingsGoals() {
             const goals = getSavingsGoals(); const container = document.getElementById('savingsGoalsGrid');
-            if (goals.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-2">Noch keine Sparziele angelegt.</p>`; return; }
+            if (goals.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-2">${window.__toolyaUILocale === 'en' ? 'No savings goals yet.' : 'Noch keine Sparziele angelegt.'}</p>`; return; }
             container.innerHTML = goals.map(g => {
                 const percent = Math.min(100, (g.current / g.target) * 100);
                 return `
                     <div class="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2 text-xs">
                         <div class="flex justify-between font-bold text-emerald-900"><span>${escapeUserHtml(g.title)}</span><button onclick="deleteSavingsGoal(${safeInlineId(g.id)})" class="text-red-500">✕</button></div>
-                        <div class="flex justify-between text-[11px]"><span>Gespart: <strong>${g.current.toFixed(2)} €</strong></span><span>Ziel: ${g.target.toFixed(2)} €</span></div>
+                        <div class="flex justify-between text-[11px]"><span>${window.__toolyaUILocale === 'en' ? 'Saved' : 'Gespart'}: <strong>${formatHouseholdDisplayAmount(g.current)} €</strong></span><span>${window.__toolyaUILocale === 'en' ? 'Goal' : 'Ziel'}: ${formatHouseholdDisplayAmount(g.target)} €</span></div>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden"><div class="bg-emerald-600 h-2 transition-all" style="width: ${percent}%"></div></div>
-                        <button onclick="depositGoal(${safeInlineId(g.id)})" class="b3-action w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">+ Einzahlen</button>
+                        <button onclick="depositGoal(${safeInlineId(g.id)})" class="b3-action w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">${window.__toolyaUILocale === 'en' ? '+ Deposit' : '+ Einzahlen'}</button>
                     </div>
                 `;
             }).join('');
@@ -2130,7 +2218,7 @@
         }
         function depositGoal(id) {
             const goals = getSavingsGoals(); const goal = goals.find(g => g.id === id); if (!goal) return;
-            const amount = parseFloat(prompt(`Betrag auf Sparziel "${goal.title}" einzahlen (€):`, "50"));
+            const amount = parseFloat(prompt(window.__toolyaUILocale === 'en' ? `Deposit into savings goal "${goal.title}" (€):` : `Betrag auf Sparziel "${goal.title}" einzahlen (€):`, "50"));
             if (amount > 0) { goal.current += amount; saveSavingsGoals(goals); renderApp(); }
         }
         function deleteSavingsGoal(id) { saveSavingsGoals(getSavingsGoals().filter(g => g.id !== id)); renderApp(); }
@@ -2138,7 +2226,7 @@
         /* Putzplan */
         function renderCleaningPlan() {
             const plan = getCleaningPlan(); const container = document.getElementById('cleaningPlanList');
-            if (plan.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Putzplan ist leer.</p>`; return; }
+            if (plan.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'Cleaning schedule is empty.' : 'Putzplan ist leer.'}</p>`; return; }
             container.innerHTML = plan.map(p => `
                 <div class="p-2.5 ${p.done ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200'} border rounded-xl flex justify-between items-center text-xs">
                     <div class="flex items-center space-x-2">
@@ -2170,16 +2258,16 @@
         /* Einkaufsliste */
         function renderShoppingList() {
             const items = getShoppingList(); const container = document.getElementById('shoppingList');
-            if (items.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Einkaufsliste ist leer.</p>`; return; }
+            if (items.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'Shopping list is empty.' : 'Einkaufsliste ist leer.'}</p>`; return; }
             container.innerHTML = items.map(item => `
                 <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs gap-2">
                     <label class="flex items-center gap-2 min-w-0 flex-1">
-                        <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleShoppingItem(${safeInlineId(item.id)})" aria-label="${escapeUserHtml(item.title)} gekauft" class="w-4 h-4 accent-emerald-700 shrink-0">
+                        <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleShoppingItem(${safeInlineId(item.id)})" aria-label="${escapeUserHtml(item.title)} ${window.__toolyaUILocale === 'en' ? 'purchased' : 'gekauft'}" class="w-4 h-4 accent-emerald-700 shrink-0">
                         <span class="font-medium text-gray-800 ${item.done ? 'line-through opacity-60' : ''}">${escapeUserHtml(item.title)}</span>
                     </label>
                     <div class="flex gap-1.5">
                         <a href="https://www.amazon.de/s?k=${encodeURIComponent(item.title)}&tag=${AMAZON_AFFILIATE_TAG}" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded font-bold text-[10px]">📦 Amazon</a>
-                        <button onclick="transferShoppingToExpense(${safeInlineId(item.id)})" class="b3-action b3-outline px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">🧾 Buchen</button>
+                        <button onclick="transferShoppingToExpense(${safeInlineId(item.id)})" class="b3-action b3-outline px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">${window.__toolyaUILocale === 'en' ? '🧾 Record expense' : '🧾 Buchen'}</button>
                         <button onclick="deleteShoppingItem(${safeInlineId(item.id)})" class="text-gray-400 hover:text-red-500 font-bold px-1">&times;</button>
                     </div>
                 </div>
@@ -2202,18 +2290,46 @@
         function deleteShoppingItem(id) { saveShoppingList(getShoppingList().filter(i => i.id !== id)); renderShoppingList(); }
         function transferShoppingToExpense(id) {
             const item = getShoppingList().find(i => i.id === id); if (!item) return; const mateNames = getFlatmateNames();
-            const payer = prompt(`Wer hat "${item.title}" bezahlt?`, mateNames[0]); if (!payer) return;
-            const price = parseFloat(prompt(`Kaufpreis (€):`, "3.50")); if (!price) return;
+            const payer = prompt(window.__toolyaUILocale === 'en' ? `Who paid for "${item.title}"?` : `Wer hat "${item.title}" bezahlt?`, mateNames[0]); if (!payer) return;
+            const price = parseFloat(prompt(window.__toolyaUILocale === 'en' ? 'Purchase price (€):' : 'Kaufpreis (€):', "3.50")); if (!price) return;
             const data = getData(); data.unshift({ id: Date.now(), title: item.title, price: price, payer: payer, date: new Date().toISOString().split('T')[0], category: "Haushalt", entryType: "ausgabe", splitWith: mateNames });
             saveData(data); deleteShoppingItem(id); renderApp();
         }
 
         /* Kochplaner */
+        function formatHouseholdWeekday(day) {
+            if (window.__toolyaUILocale !== 'en') return day;
+            const names = {
+                Montag: 'Monday', Dienstag: 'Tuesday', Mittwoch: 'Wednesday',
+                Donnerstag: 'Thursday', Freitag: 'Friday', Samstag: 'Saturday',
+                Sonntag: 'Sunday'
+            };
+            return Object.hasOwn(names, day) ? names[day] : day;
+        }
+        function refreshOpenCookingDayLabels() {
+            const modal = document.getElementById('cookingModal');
+            if (!modal || modal.classList.contains('hidden')) return;
+            // Do not rebuild open cooking inputs: their draft dishes and ingredients
+            // must remain exactly as entered by the user.
+            document.querySelectorAll('#cookingInputList [data-cooking-day]').forEach(label => {
+                label.textContent = formatHouseholdWeekday(label.getAttribute('data-cooking-day'));
+            });
+            const english = window.__toolyaUILocale === 'en';
+            document.querySelectorAll('#cookingInputList select.chefSelect option[value="Frei"]').forEach(option => {
+                option.textContent = english ? 'Unassigned' : 'Frei';
+            });
+            document.querySelectorAll('#cookingInputList input.dishInput').forEach(input => {
+                input.placeholder = english ? 'Dish' : 'Gericht';
+            });
+            document.querySelectorAll('#cookingInputList input.ingredientsInput').forEach(input => {
+                input.placeholder = english ? 'Ingredients (comma-separated)' : 'Zutaten (kommagetrennt)';
+            });
+        }
         function renderCookingPlan() {
             document.getElementById('cookingPlanList').innerHTML = getCookingPlan().map((p, idx) => `
                 <div class="p-2 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
-                    <div><span class="font-bold">${escapeUserHtml(p.day)}:</span> <span class="text-emerald-800">${escapeUserHtml(p.dish || 'Frei')}</span> ${p.chef !== 'Frei' ? `<span class="bg-purple-100 text-purple-800 font-bold px-1 rounded text-[10px]">${escapeUserHtml(p.chef)}</span>` : ''}</div>
-                    ${p.ingredients ? `<button onclick="syncIngredientsToShopping(${idx})" class="b3-action b3-outline px-2 py-0.5 bg-amber-50 text-amber-800 border rounded text-[10px] font-bold">🛒 Zutaten</button>` : ''}
+                    <div><span class="font-bold">${escapeUserHtml(formatHouseholdWeekday(p.day))}:</span> <span class="text-emerald-800">${escapeUserHtml(p.dish || (window.__toolyaUILocale === 'en' ? 'Unassigned' : 'Frei'))}</span> ${p.chef !== 'Frei' ? `<span class="bg-purple-100 text-purple-800 font-bold px-1 rounded text-[10px]">${escapeUserHtml(p.chef)}</span>` : ''}</div>
+                    ${p.ingredients ? `<button onclick="syncIngredientsToShopping(${idx})" class="b3-action b3-outline px-2 py-0.5 bg-amber-50 text-amber-800 border rounded text-[10px] font-bold">${window.__toolyaUILocale === 'en' ? '🛒 Ingredients' : '🛒 Zutaten'}</button>` : ''}
                 </div>
             `).join('');
         }
@@ -2221,9 +2337,9 @@
             const plan = getCookingPlan(); const mateNames = getFlatmateNames();
             document.getElementById('cookingInputList').innerHTML = plan.map((p, idx) => `
                 <div class="p-2.5 bg-gray-50 border rounded-xl space-y-1.5">
-                    <div class="flex justify-between font-bold"><span>${escapeUserHtml(p.day)}</span><select data-idx="${idx}" class="chefSelect border p-1 rounded bg-white"><option value="Frei">Frei</option>${mateNames.map(m => `<option value="${escapeUserHtml(m)}" ${p.chef === m ? 'selected' : ''}>${escapeUserHtml(m)}</option>`).join('')}</select></div>
-                    <input type="text" data-idx="${idx}" class="dishInput w-full p-1.5 border rounded" placeholder="Gericht" value="${escapeUserHtml(p.dish || '')}">
-                    <input type="text" data-idx="${idx}" class="ingredientsInput w-full p-1.5 border rounded" placeholder="Zutaten (kommagetrennt)" value="${escapeUserHtml(p.ingredients || '')}">
+                    <div class="flex justify-between font-bold"><span data-cooking-day="${escapeUserHtml(p.day)}">${escapeUserHtml(formatHouseholdWeekday(p.day))}</span><select data-idx="${idx}" class="chefSelect border p-1 rounded bg-white"><option value="Frei">${window.__toolyaUILocale === 'en' ? 'Unassigned' : 'Frei'}</option>${mateNames.map(m => `<option value="${escapeUserHtml(m)}" ${p.chef === m ? 'selected' : ''}>${escapeUserHtml(m)}</option>`).join('')}</select></div>
+                    <input type="text" data-idx="${idx}" class="dishInput w-full p-1.5 border rounded" placeholder="${window.__toolyaUILocale === 'en' ? 'Dish' : 'Gericht'}" value="${escapeUserHtml(p.dish || '')}">
+                    <input type="text" data-idx="${idx}" class="ingredientsInput w-full p-1.5 border rounded" placeholder="${window.__toolyaUILocale === 'en' ? 'Ingredients (comma-separated)' : 'Zutaten (kommagetrennt)'}" value="${escapeUserHtml(p.ingredients || '')}">
                 </div>
             `).join('');
             document.getElementById('cookingModal').classList.remove('hidden'); document.getElementById('cookingModal').classList.add('flex');
@@ -2242,11 +2358,11 @@
         /* Verträge */
         function renderContracts() {
             const contracts = getContracts(); const container = document.getElementById('contractList');
-            if (contracts.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Keine Verträge eingetragen.</p>`; return; }
+            if (contracts.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No contracts added.' : 'Keine Verträge eingetragen.'}</p>`; return; }
             container.innerHTML = contracts.map(c => `
                 <div class="p-2.5 bg-indigo-50 border rounded-xl flex justify-between items-center text-xs">
                     <div><strong>${escapeUserHtml(c.name)}</strong> <span class="text-gray-500">(${escapeUserHtml(c.payer)})</span></div>
-                    <div class="flex items-center gap-2"><span class="font-bold text-indigo-900">${Number.isFinite(Number(c.price)) ? Number(c.price).toFixed(2) : '–'} €/Mo</span><button onclick="deleteContract(${safeInlineId(c.id)})" class="text-red-500 font-bold">&times;</button></div>
+                    <div class="flex items-center gap-2"><span class="font-bold text-indigo-900">${Number.isFinite(Number(c.price)) ? formatHouseholdDisplayAmount(c.price) : '–'} €/${window.__toolyaUILocale === 'en' ? 'mo' : 'Mo'}</span><button onclick="deleteContract(${safeInlineId(c.id)})" class="text-red-500 font-bold">&times;</button></div>
                 </div>
             `).join('');
         }
@@ -2266,10 +2382,10 @@
         /* Infoboard & WLAN QR */
         function renderInfoBoard() {
             const info = getInfoData();
-            document.getElementById('infoWifi').innerText = info.wifi || 'k.A.';
-            document.getElementById('infoLandlord').innerText = info.landlord || 'k.A.';
-            document.getElementById('infoCaretaker').innerText = info.caretaker || 'k.A.';
-            document.getElementById('infoTrash').innerText = info.trash || 'k.A.';
+            document.getElementById('infoWifi').innerText = info.wifi || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.');
+            document.getElementById('infoLandlord').innerText = info.landlord || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.');
+            document.getElementById('infoCaretaker').innerText = info.caretaker || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.');
+            document.getElementById('infoTrash').innerText = info.trash || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.');
         }
         function openInfoboardModal() {
             const info = getInfoData();
@@ -2296,9 +2412,9 @@
             // Ask for the actual credentials; never mistake the infoboard's free-text
             // Wi-Fi description for a password or transmit credentials to a QR service.
             const ssid = prompt('WLAN-Name (SSID):', '')?.trim();
-            if (!ssid) { qrContainer.textContent = 'Kein WLAN-Name angegeben.'; return; }
+            if (!ssid) { qrContainer.textContent = window.__toolyaUILocale === 'en' ? 'No Wi-Fi network name provided.' : 'Kein WLAN-Name angegeben.'; return; }
             const password = prompt('WLAN-Passwort (wird nicht gespeichert):');
-            if (password === null) { qrContainer.textContent = 'QR-Erstellung abgebrochen.'; return; }
+            if (password === null) { qrContainer.textContent = window.__toolyaUILocale === 'en' ? 'QR code creation cancelled.' : 'QR-Erstellung abgebrochen.'; return; }
             const escapeWifi = value => String(value).replace(/([\\;,:"])/g, '\\$1');
             const wifiString = 'WIFI:T:WPA;S:' + escapeWifi(ssid) + ';P:' + escapeWifi(password) + ';;';
             new QRCode(qrContainer, { text: wifiString, width: 140, height: 140 });
@@ -2306,10 +2422,21 @@
         function closeWLANQRModal() { document.getElementById('wlanQrModal').classList.remove('flex'); document.getElementById('wlanQrModal').classList.add('hidden'); }
 
         /* Budgets */
+        function refreshOpenBudgetLabels() {
+            const modal = document.getElementById('budgetModal');
+            if (!modal || modal.classList.contains('hidden')) return;
+            // Source-exact labels from immutable category IDs. Never recreate
+            // an open form: unsaved amount input values must survive locale changes.
+            document.querySelectorAll('#budgetInputList input[data-cat]').forEach(input => {
+                const label = input.parentElement?.querySelector('label');
+                if (!label) return;
+                label.textContent = formatHouseholdCategoryLabel(input.getAttribute('data-cat')) + ':';
+            });
+        }
         function openBudgetModal() {
             const budgets = getBudgets();
             document.getElementById('budgetInputList').innerHTML = defaultCategories.map((cat, index) => `
-                <div class="flex justify-between items-center"><label for="budget-amount-${index}" class="font-semibold">${escapeUserHtml(cat)}:</label><input id="budget-amount-${index}" type="number" step="10" data-cat="${escapeUserHtml(cat)}" value="${escapeUserHtml(budgets[cat] || 0)}" class="p-2 border rounded-xl w-28 text-right font-bold"></div>
+                <div class="flex justify-between items-center"><label for="budget-amount-${index}" class="font-semibold">${escapeUserHtml(formatHouseholdCategoryLabel(cat))}:</label><input id="budget-amount-${index}" type="number" step="10" data-cat="${escapeUserHtml(cat)}" value="${escapeUserHtml(budgets[cat] || 0)}" class="p-2 border rounded-xl w-28 text-right font-bold"></div>
             `).join('');
             document.getElementById('budgetModal').classList.remove('hidden'); document.getElementById('budgetModal').classList.add('flex');
         }
@@ -2334,7 +2461,7 @@
             const mates = getFlatmates();
             const container = document.getElementById('flatmateList');
             if (mates.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Keine Mitglieder vorhanden.</p>`;
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No members yet.' : 'Keine Mitglieder vorhanden.'}</p>`;
                 return;
             }
             container.innerHTML = mates.map((m, idx) => `
@@ -2350,7 +2477,7 @@
                     </div>
                     <div class="flex gap-1.5 self-end sm:self-center">
                         <button onclick="editFlatmateContact(${idx})" class="b3-action b3-outline px-2.5 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg font-bold">✏️</button>
-                        <button onclick="removeFlatmateContact(${idx})" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg font-bold">✕ Löschen</button>
+                        <button onclick="removeFlatmateContact(${idx})" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg font-bold">${window.__toolyaUILocale === 'en' ? '✕ Delete' : '✕ Löschen'}</button>
                     </div>
                 </div>
             `).join('');
@@ -2394,8 +2521,22 @@
             document.getElementById('mateInsta').value = m.insta || '';
             document.getElementById('mateFb').value = m.fb || '';
 
-            document.getElementById('mateFormTitle').innerText = "✏️ Mitglied bearbeiten";
+            document.getElementById('mateFormTitle').innerText = window.__toolyaUILocale === "en" ? "✏️ Edit member" : "✏️ Mitglied bearbeiten";
             document.getElementById('mateCancelBtn').classList.remove('hidden');
+        }
+
+        function refreshHouseholdMemberFormTitle() {
+            // Only update a displayed title for an already-open member editor;
+            // the edited contact and unsaved fields must not be reloaded.
+            const modal = document.getElementById('mitbewohnerModal');
+            if (!modal || modal.classList.contains('hidden')) return;
+            const title = document.getElementById('mateFormTitle');
+            const index = document.getElementById('editMateIndex');
+            if (!title || !index) return;
+            const editing = Number.isInteger(Number(index.value)) && Number(index.value) >= 0;
+            title.textContent = editing
+                ? (window.__toolyaUILocale === 'en' ? '✏️ Edit member' : '✏️ Mitglied bearbeiten')
+                : (window.__toolyaUILocale === 'en' ? '➕ Add new member' : '➕ Neues Mitglied hinzufügen');
         }
 
         function resetMateForm() {
@@ -2406,7 +2547,7 @@
             document.getElementById('matePhone').value = "";
             document.getElementById('mateInsta').value = "";
             document.getElementById('mateFb').value = "";
-            document.getElementById('mateFormTitle').innerText = "➕ Neues Mitglied hinzufügen";
+            document.getElementById('mateFormTitle').innerText = window.__toolyaUILocale === "en" ? "➕ Add new member" : "➕ Neues Mitglied hinzufügen";
             document.getElementById('mateCancelBtn').classList.add('hidden');
             renderFlatmateModalList();
         }
@@ -2414,7 +2555,7 @@
         function removeFlatmateContact(idx) {
             const mates = getFlatmates();
             if (mates.length <= 1) return alert("Es muss mindestens ein Mitglied in der WG verbleiben!");
-            if (confirm(`Möchtest du "${mates[idx].vorname}" wirklich entfernen?`)) {
+            if (confirm(window.__toolyaUILocale === 'en' ? `Remove "${mates[idx].vorname}" from the household?` : `Möchtest du "${mates[idx].vorname}" wirklich entfernen?`)) {
                 mates.splice(idx, 1);
                 saveFlatmates(mates);
                 renderApp();
@@ -2444,7 +2585,9 @@
                         });
                         saveFlatmates(mates);
                         renderApp();
-                        alert(`✅ ${contacts.length} Kontakt(e) erfolgreich aus dem Handy importiert!`);
+                        alert(window.__toolyaUILocale === 'en'
+                            ? `✅ ${contacts.length} contact(s) imported from your phone successfully!`
+                            : `✅ ${contacts.length} Kontakt(e) erfolgreich aus dem Handy importiert!`);
                     }
                 } catch (ex) {
                     console.warn("Kontakt-Import abgebrochen oder nicht erlaubt:", ex);
@@ -2460,12 +2603,12 @@
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
-            doc.setFontSize(16); doc.text("WG- & Haushaltsbuch Abrechnung", 14, 20);
-            doc.setFontSize(10); doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
+            doc.setFontSize(16); doc.text(window.__toolyaUILocale === "en" ? "Household Finance Report" : "WG- & Haushaltsbuch Abrechnung", 14, 20);
+            doc.setFontSize(10); doc.text(`${window.__toolyaUILocale === 'en' ? 'Created on' : 'Erstellt am'}: ${new Date().toLocaleDateString(window.__toolyaUILocale === 'en' ? 'en-GB' : 'de-DE')}`, 14, 28);
             const entries = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r));
-            doc.text(`Buchungen: ${entries.length}`, 14, 35);
+            doc.text(`${window.__toolyaUILocale === 'en' ? 'Transactions' : 'Buchungen'}: ${entries.length}`, 14, 35);
             let y = 43;
-            if (!entries.length) doc.text("Keine Buchungen erfasst.", 14, y);
+            if (!entries.length) doc.text(window.__toolyaUILocale === "en" ? "No transactions recorded." : "Keine Buchungen erfasst.", 14, y);
             entries.forEach(r => {
                 const price = Number(r.price);
                 const line = `${r.date || '-'} | ${r.title || '-'} (${r.category || '-'}): ${Number.isFinite(price) ? price.toFixed(2) : '-'} EUR [${r.payer || 'Privat'}]`;
@@ -2475,7 +2618,7 @@
                     y += 6;
                 });
             });
-            doc.save(`haushaltsbericht-${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.save(`${window.__toolyaUILocale === 'en' ? 'household-finance-report' : 'haushaltsbericht'}-${new Date().toISOString().split('T')[0]}.pdf`);
         }
     </script>
 </body>

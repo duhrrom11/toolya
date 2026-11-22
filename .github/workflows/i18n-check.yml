@@ -1,0 +1,73 @@
+name: i18n static checks
+on:
+  push:
+    branches:
+      - 'feature/i18n-de-en-foundation-20261121'
+    paths:
+      - 'en/**'
+      - 'shared/toolya/i18n/**'
+      - 'tests/i18n/**'
+      - 'scripts/i18n-coverage-audit.mjs'
+      - 'tools/**'
+      - 'dashboard/**'
+      - 'admin-stats-dashboard/**'
+      - 'legal.html'
+      - 'privacy.html'
+      - '404.html'
+      - 'offline.html'
+      - '.github/workflows/i18n-check.yml'
+  pull_request:
+    paths:
+      - 'en/**'
+      - 'shared/toolya/i18n/**'
+      - 'tests/i18n/**'
+      - 'index.html'
+      - 'umzugskisten/index.html'
+      - 'wg-organisator/index.html'
+      - 'pflanzenpflege/index.html'
+      - 'backform-rechner/index.html'
+      - '.github/workflows/i18n-check.yml'
+      - 'scripts/i18n-coverage-audit.mjs'
+      - 'tools/**'
+      - 'dashboard/**'
+      - 'admin-stats-dashboard/**'
+      - 'legal.html'
+      - 'privacy.html'
+      - '404.html'
+      - 'offline.html'
+  workflow_dispatch:
+    inputs:
+      release_gate:
+        description: 'Fail unless DE/EN coverage is complete'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  i18n-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm ci --ignore-scripts
+      - name: Test DE/EN locale and public landing pages
+        run: node --test tests/i18n/*.test.mjs
+      - name: Inventory every page, dialog and application message
+        run: node scripts/i18n-coverage-audit.mjs
+      - name: Enforce strict international release gate
+        if: inputs.release_gate
+        run: node scripts/i18n-coverage-audit.mjs --strict
+      - name: Preserve coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: i18n-page-and-message-audit
+          path: i18n-coverage-report.md
+          if-no-files-found: ignore

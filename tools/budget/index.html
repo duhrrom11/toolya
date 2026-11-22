@@ -95,7 +95,9 @@
     <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="../../assets/helferlein-dialogs.js"></script>
 <link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><link rel="stylesheet" href="../../shared/toolya/alpha.css?v=20261115-alpha">
-<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="./clever.css?v=20261121-v2">
+<script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="../../shared/toolya/i18n/tool-entry.css">
+<script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script><script type="module" src="../../shared/toolya/i18n/tool-entry.mjs"></script>
+<link rel="stylesheet" href="./clever.css?v=20261121-v2">
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col font-sans">
   <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
@@ -153,12 +155,12 @@
 
     <!-- Main Content -->
     <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-7xl space-y-6">
-        <section id="cs-root" aria-label="Clever sparen" aria-live="off"></section>
+        <section id="cs-root" aria-label="Clever sparen" aria-live="off" data-tool-en-aria-label="Smart saving"></section>
         
         <!-- Combined Dashboard Statistiken -->
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[11px] text-gray-500 font-medium">Monats-Einnahmen</p>
+                <p class="text-[11px] text-gray-500 font-medium" data-tool-en="Monthly income">Monats-Einnahmen</p>
                 <h3 id="statIncome" class="text-base font-bold text-emerald-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
@@ -166,23 +168,23 @@
                 <h3 id="statExpense" class="text-base font-bold text-red-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[11px] text-gray-500 font-medium">Monats-Saldo</p>
+                <p class="text-[11px] text-gray-500 font-medium" data-tool-en="Monthly balance">Monats-Saldo</p>
                 <h3 id="statBalance" class="text-base font-bold text-blue-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[11px] text-gray-500 font-medium">Fixkosten-Quote</p>
+                <p class="text-[11px] text-gray-500 font-medium" data-tool-en="Fixed-cost share">Fixkosten-Quote</p>
                 <h3 id="statFixRatio" class="text-base font-bold text-purple-600">0 %</h3>
             </div>
             <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[11px] text-gray-500 font-medium">Garantiewert aktiv</p>
+                <p class="text-[11px] text-gray-500 font-medium" data-tool-en="Value under warranty">Garantiewert aktiv</p>
                 <h3 id="statTotalWarrantyVal" class="text-base font-bold text-teal-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[11px] text-gray-500 font-medium">Hausrat-Zeitwert</p>
+                <p class="text-[11px] text-gray-500 font-medium" data-tool-en="Current value of household items">Hausrat-Zeitwert</p>
                 <h3 id="statZeitwertTotal" class="text-base font-bold text-amber-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200 col-span-2 md:col-span-1">
-                <p class="text-[11px] text-gray-500 font-medium">Steuer-Gesamtwert</p>
+                <p class="text-[11px] text-gray-500 font-medium" data-tool-en="Total tax-related value">Steuer-Gesamtwert</p>
                 <h3 id="statTaxVal" class="text-base font-bold text-indigo-600">0,00 €</h3>
             </div>
         </div>
@@ -195,12 +197,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <p class="text-xs font-semibold text-gray-500 text-center mb-2">Ausgaben nach Kategorie</p>
-                        <div class="h-48 flex justify-center min-w-0 max-w-full overflow-hidden"><canvas class="max-w-full" id="categoryChart" role="img" aria-label="Diagramm: Haushaltsausgaben nach Kategorie" aria-describedby="categoryChartSummary"></canvas></div>
+                        <div class="h-48 flex justify-center min-w-0 max-w-full overflow-hidden"><canvas class="max-w-full" id="categoryChart" role="img" aria-label="Diagramm: Haushaltsausgaben nach Kategorie" aria-describedby="categoryChartSummary" data-tool-en-aria-label="Chart: household spending by category"></canvas></div>
                         <p id="categoryChartSummary" class="text-xs text-gray-600 mt-2" aria-live="off"></p>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold text-gray-500 text-center mb-2">Monatsverlauf (Cashflow)</p>
-                        <div class="h-48 flex justify-center min-w-0 max-w-full overflow-hidden"><canvas class="max-w-full" id="cashflowChart" role="img" aria-label="Diagramm: monatlicher Cashflow im Haushaltsbuch" aria-describedby="cashflowChartSummary"></canvas></div>
+                        <p class="text-xs font-semibold text-gray-500 text-center mb-2" data-tool-en="Monthly cash flow">Monatsverlauf (Cashflow)</p>
+                        <div class="h-48 flex justify-center min-w-0 max-w-full overflow-hidden"><canvas class="max-w-full" id="cashflowChart" role="img" aria-label="Diagramm: monatlicher Cashflow im Haushaltsbuch" aria-describedby="cashflowChartSummary" data-tool-en-aria-label="Chart: monthly household cash flow"></canvas></div>
                         <p id="cashflowChartSummary" class="text-xs text-gray-600 mt-2" aria-live="off"></p>
                     </div>
                 </div>
@@ -212,8 +214,8 @@
                     <h3 class="font-bold text-base text-gray-900">🎯 Monatsbudgets im Blick</h3>
                     <button onclick="openBudgetModal()" class="px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold b3-action b3-outline">⚙️ Budgets anpassen</button>
                 </div>
-                <div id="budgetProgressList" tabindex="0" role="region" aria-label="Monatsbudgets" tabindex="0" role="region" aria-label="Monatsbudgets" class="space-y-3 max-h-56 overflow-y-auto pr-1">
-                    <p class="text-xs text-gray-400 text-center py-4">Lade Budgets...</p>
+                <div id="budgetProgressList" tabindex="0" role="region" aria-label="Monatsbudgets" tabindex="0" role="region" aria-label="Monatsbudgets" class="space-y-3 max-h-56 overflow-y-auto pr-1" data-tool-en-aria-label="Monthly budgets" data-tool-en-aria-label="Monthly budgets">
+                    <p class="text-xs text-gray-400 text-center py-4" data-tool-en="Loading budgets…">Lade Budgets...</p>
                 </div>
             </div>
         </div>
@@ -249,7 +251,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                     <label for="receiptTitle" class="block text-xs font-semibold text-gray-600 mb-1">Titel / Artikel / Zweck *:</label>
-                    <input type="text" id="receiptTitle" placeholder="z.B. Waschmaschine, Supermarkt, Gehalt" class="w-full p-3 border rounded-xl text-sm">
+                    <input type="text" id="receiptTitle" placeholder="z.B. Waschmaschine, Supermarkt, Gehalt" class="w-full p-3 border rounded-xl text-sm" data-tool-en-placeholder="e.g. washing machine, groceries, salary">
                 </div>
                 <div>
                     <label for="receiptStore" class="block text-xs font-semibold text-gray-600 mb-1">Händler / Partner / Quelle:</label>
@@ -285,10 +287,10 @@
                 <div>
                     <label for="receiptPaymentMethod" class="block text-xs font-semibold text-gray-600 mb-1">Zahlungsart:</label>
                     <select id="receiptPaymentMethod" class="w-full p-3 border rounded-xl text-sm bg-white">
-                        <option value="EC-Karte">💳 EC / Bankkarte</option>
-                        <option value="Bargeld">💵 Bargeld</option>
-                        <option value="Kreditkarte">💳 Kreditkarte</option>
-                        <option value="Überweisung">🏦 Überweisung / Dauerauftrag</option>
+                        <option value="EC-Karte" data-tool-en="💳 Debit card">💳 EC / Bankkarte</option>
+                        <option value="Bargeld" data-tool-en="💵 Cash">💵 Bargeld</option>
+                        <option value="Kreditkarte" data-tool-en="💳 Credit card">💳 Kreditkarte</option>
+                        <option value="Überweisung" data-tool-en="🏦 Bank transfer / standing order">🏦 Überweisung / Dauerauftrag</option>
                         <option value="PayPal">🅿️ PayPal</option>
                     </select>
                 </div>
@@ -302,7 +304,7 @@
                 </div>
                 <div>
                     <label for="receiptLifespan" class="block text-xs font-semibold text-gray-600 mb-1">Nutzung (Jahre):</label>
-                    <input type="number" id="receiptLifespan" value="5" placeholder="5" class="w-full p-3 border rounded-xl text-sm" title="Erforderlich für den Hausrat-Zeitwert">
+                    <input type="number" id="receiptLifespan" value="5" placeholder="5" class="w-full p-3 border rounded-xl text-sm" title="Erforderlich für den Hausrat-Zeitwert" data-tool-en-title="Required to estimate the current value">
                 </div>
             </div>
 
@@ -314,12 +316,12 @@
                 </div>
                 <div>
                     <label for="receiptLocation" class="block text-xs font-semibold text-gray-600 mb-1">Lagerort Karton / Zubehör:</label>
-                    <input type="text" id="receiptLocation" placeholder="z.B. Keller Kiste #2" class="w-full p-2.5 border rounded-lg text-xs bg-white">
+                    <input type="text" id="receiptLocation" placeholder="z.B. Keller Kiste #2" class="w-full p-2.5 border rounded-lg text-xs bg-white" data-tool-en-placeholder="e.g. basement box #2">
                 </div>
                 <div class="flex flex-col justify-center space-y-2 pt-1">
                     <label class="inline-flex items-center cursor-pointer space-x-2">
                         <input type="checkbox" id="receiptIsFixkosten" class="w-4 h-4 text-purple-600 rounded">
-                        <span class="text-xs font-bold text-gray-700">🔄 Wiederkehrende Fixkosten / Abo</span>
+                        <span class="text-xs font-bold text-gray-700" data-tool-en="🔄 Recurring cost / subscription">🔄 Wiederkehrende Fixkosten / Abo</span>
                     </label>
                     <label class="inline-flex items-center cursor-pointer space-x-2">
                         <input type="checkbox" id="receiptIsTax" class="w-4 h-4 text-emerald-600 rounded">
@@ -421,7 +423,7 @@
             <div class="space-y-3 text-xs">
                 <div>
                     <label for="goalTitle" class="block font-semibold mb-1">Bezeichnung des Zieles *:</label>
-                    <input type="text" id="goalTitle" placeholder="z.B. Urlaub, Notgroschen" class="w-full p-2.5 border rounded-xl">
+                    <input type="text" id="goalTitle" placeholder="z.B. Urlaub, Notgroschen" class="w-full p-2.5 border rounded-xl" data-tool-en-placeholder="e.g. holiday, emergency fund">
                 </div>
                 <div>
                     <label for="goalTarget" class="block font-semibold mb-1">Zielbetrag (€) *:</label>
@@ -549,7 +551,7 @@ async function toolyaCloudSave(patch) {
     const next = toolyaCloudController.snapshot();
     Object.assign(next, patch);
     await toolyaCloudController.replace(next);
-    window.toolyaNotice?.('success','In Toolya Cloud gespeichert.');
+    window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Saved to Toolya Cloud.' : 'In Toolya Cloud gespeichert.');
     return true;
   } catch(error) {
     toolyaCloudReady = false;
@@ -632,7 +634,7 @@ async function toolyaCloudBoot(tool) {
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
-                alert("Bitte E-Mail und Passwort eingeben.");
+                alert(window.__toolyaUILocale === "en" ? "Please enter your email and password." : "Bitte E-Mail und Passwort eingeben.");
                 return;
             }
 
@@ -642,7 +644,7 @@ async function toolyaCloudBoot(tool) {
                 return;
             }
 
-            alert("Registrierung erfolgreich.");
+            alert(window.__toolyaUILocale === "en" ? "Registration successful." : "Registrierung erfolgreich.");
             updateUserDisplay();
             closeSettings();
         }
@@ -652,7 +654,7 @@ async function toolyaCloudBoot(tool) {
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
-                alert("Bitte E-Mail und Passwort eingeben.");
+                alert(window.__toolyaUILocale === "en" ? "Please enter your email and password." : "Bitte E-Mail und Passwort eingeben.");
                 return;
             }
 
@@ -680,10 +682,11 @@ async function toolyaCloudBoot(tool) {
 
             if (user) {
                 if (headerInfo) headerInfo.textContent = "👤 " + user.email;
-                if (cloudStatus) cloudStatus.textContent = "✅ Angemeldet – " + (user.email || "Benutzer");
+                if (cloudStatus) cloudStatus.textContent = (window.__toolyaUILocale === "en" ? "✅ Signed in – " : "✅ Angemeldet – ") + (user.email || (window.__toolyaUILocale === "en" ? "User" : "Benutzer"));
             } else {
-                if (headerInfo) headerInfo.textContent = "Nicht angemeldet";
-                if (cloudStatus) cloudStatus.textContent = "Nicht angemeldet";
+                const signedOutLabel = window.__toolyaUILocale === "en" ? "Not signed in" : "Nicht angemeldet";
+                if (headerInfo) headerInfo.textContent = signedOutLabel;
+                if (cloudStatus) cloudStatus.textContent = signedOutLabel;
             }
         }
 
@@ -1047,14 +1050,14 @@ async function toolyaCloudBoot(tool) {
                     fieldsUpdated++;
                 }
                 if (fieldsUpdated > 0) {
-                    statusEl.innerText = '✅ Texterkennung: ' + fieldsUpdated + ' Feld(er) ausgefüllt. Bitte Angaben prüfen.';
+                    statusEl.innerText = window.__toolyaUILocale === 'en' ? '✅ Text recognition: ' + fieldsUpdated + ' field(s) filled. Please review the details.' : '✅ Texterkennung: ' + fieldsUpdated + ' Feld(er) ausgefüllt. Bitte Angaben prüfen.';
                 } else if (recognizedPrice !== null || recognizedDate !== null) {
-                    statusEl.innerText = 'ℹ️ Angaben erkannt. Bereits ausgefüllte Felder wurden nicht überschrieben.';
+                    statusEl.innerText = window.__toolyaUILocale === 'en' ? 'ℹ️ Details detected. Existing field values were not overwritten.' : 'ℹ️ Angaben erkannt. Bereits ausgefüllte Felder wurden nicht überschrieben.';
                 } else {
-                    statusEl.innerText = '⚠️ Kein eindeutiger Gesamtbetrag oder gültiges Datum erkannt. Bitte manuell eintragen.';
+                    statusEl.innerText = window.__toolyaUILocale === 'en' ? '⚠️ No clear total or valid date detected. Please enter the details manually.' : '⚠️ Kein eindeutiger Gesamtbetrag oder gültiges Datum erkannt. Bitte manuell eintragen.';
                 }
             } catch(e) {
-                if (generation === ocrGeneration) statusEl.innerText = "❌ Texterkennung fehlgeschlagen.";
+                if (generation === ocrGeneration) statusEl.innerText = window.__toolyaUILocale === 'en' ? '❌ Text recognition failed.' : '❌ Texterkennung fehlgeschlagen.';
             } finally {
                 if (worker) {
                     try { await worker.terminate(); } catch (error) { console.warn('OCR worker cleanup:', error); }
@@ -1128,7 +1131,7 @@ async function toolyaCloudBoot(tool) {
                     Number(r.price) === price &&
                     (r.entryType === 'einnahme' || r.category === 'Einnahme' ? 'einnahme' : 'ausgabe') ===
                     (entryType === 'einnahme' ? 'einnahme' : 'ausgabe'));
-                if (duplicate && !confirm('Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\\n\\nTrotzdem erneut speichern?')) return;
+                if (duplicate && !confirm('Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\n\nTrotzdem erneut speichern?')) return;
                 const newId = nextReceiptId(data);
                 data.push({
                     id: newId,
@@ -1472,7 +1475,7 @@ async function toolyaCloudBoot(tool) {
             if (catFilter !== 'All') filtered = filtered.filter(r => r.category === catFilter);
 
             if (filtered.length === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Buchungen gefunden.</p>`;
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No matching transactions found.' : 'Keine passenden Buchungen gefunden.'}</p>`;
                 return;
             }
 
@@ -1568,7 +1571,9 @@ async function toolyaCloudBoot(tool) {
                 const category = input.getAttribute('data-cat');
                 const amount = input.value.trim() === '' ? 0 : Number(input.value);
                 if (!Number.isFinite(amount) || amount < 0) {
-                    alert('Bitte für ' + category + ' einen gültigen Budgetbetrag ab 0 € eingeben.');
+                    alert(window.__toolyaUILocale === 'en'
+                        ? 'Enter a valid budget amount of at least €0 for ' + category + '.'
+                        : 'Bitte für ' + category + ' einen gültigen Budgetbetrag ab 0 € eingeben.');
                     input.focus();
                     return;
                 }
@@ -1905,14 +1910,20 @@ async function toolyaCloudBoot(tool) {
        const changes=validateHaushaltsbuchBackup(JSON.parse(e.target.result));
        const snapshot=toolyaCloudSnapshot();
        const map={kassenbon_data:'entries',budgetbuch_budgets:'budgets',budgetbuch_goals:'goals',budgetbuch_clever_sparen:'cleverSparen'};
+       const english=window.__toolyaUILocale==='en';
+       const labels=english
+         ? {entries:'Transactions',budgets:'Budgets',goals:'Savings goals',cleverSparen:'Smart saving'}
+         : {entries:'Buchungen',budgets:'Budgets',goals:'Sparziele',cleverSparen:'Clever sparen'};
        const preview=[];
        for(const [key,json] of changes){
          const next=JSON.parse(json),field=map[key];
          const before=snapshot[field],count=x=>Array.isArray(x)?x.length:Object.keys(x||{}).length;
-         preview.push(field+': '+count(before)+' → '+count(next));
+         preview.push(labels[field]+': '+count(before)+' → '+count(next));
          snapshot[field]=next;
        }
-       if(!confirm('Cloud-Backup-Import ersetzt diese Bereiche:\\n'+preview.join('\\n')+'\\nVorher Cloud-Backup exportieren. Fortsetzen?'))return;
+       const heading=english?'This cloud backup will replace these sections:':'Cloud-Backup-Import ersetzt diese Bereiche:';
+       const warning=english?'Export a cloud backup first. Continue?':'Vorher Cloud-Backup exportieren. Fortsetzen?';
+       if(!confirm([heading,...preview,warning].join('\n')))return;
        if(!await toolyaSafeCloudImport(snapshot))return;
        renderApp();alert('Backup in Toolya Cloud gespeichert.');
      }catch(error){console.error(error);alert('Cloud-Import fehlgeschlagen: '+error.message);}
@@ -1923,15 +1934,19 @@ async function toolyaCloudBoot(tool) {
  }
 
         async function exportPDF() {
+            const pdfEn = window.__toolyaUILocale === 'en';
+            const pdfLabel = (de,en) => pdfEn ? en : de;
+            const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
             const data = getData();
 
             doc.setFontSize(16);
-            doc.text("Haushalts-, Finanz- & Kassenbon-Übersicht", 14, 20);
+            doc.text(pdfLabel("Haushalts-, Finanz- & Kassenbon-Übersicht","Household finances and receipts overview"), 14, 20);
             doc.setFontSize(10);
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
+            doc.text(`${pdfLabel("Erstellt am: ","Created on: ")}${new Date().toLocaleDateString(pdfDateLocale)}`, 14, 28);
 
             let totalIncome = 0;
             let totalExpense = 0;
@@ -1951,17 +1966,17 @@ async function toolyaCloudBoot(tool) {
                 if (r.entryType === 'einnahme' || r.category === 'Einnahme') totalIncome += price;
                 else totalExpense += price;
             });
-            const money = amount => amount.toFixed(2).replace('.', ',') + ' EUR';
+            const money = amount => (pdfEn ? amount.toFixed(2) : amount.toFixed(2).replace('.', ',')) + ' EUR';
             doc.setFontSize(11);
-            doc.text('Zusammenfassung (alle Buchungen)', 14, 39);
+            doc.text(pdfLabel("Zusammenfassung (alle Buchungen)","Summary (all transactions)"), 14, 39);
             doc.setFontSize(10);
-            doc.text('Buchungen: ' + validEntries, 14, 46);
-            doc.text('Einnahmen: ' + money(totalIncome), 14, 52);
-            doc.text('Ausgaben: ' + money(totalExpense), 14, 58);
-            doc.text('Saldo: ' + money(totalIncome - totalExpense), 14, 64);
-            const formatDate = value => value.slice(8, 10) + '.' + value.slice(5, 7) + '.' + value.slice(0, 4);
-            const period = earliestDate && latestDate ? formatDate(earliestDate) + ' bis ' + formatDate(latestDate) : 'Keine gültigen Buchungsdaten';
-            doc.text('Zeitraum: ' + period, 14, 70);
+            doc.text(pdfLabel("Buchungen: ","Transactions: ") + validEntries, 14, 46);
+            doc.text(pdfLabel("Einnahmen: ","Income: ") + money(totalIncome), 14, 52);
+            doc.text(pdfLabel("Ausgaben: ","Expenses: ") + money(totalExpense), 14, 58);
+            doc.text(pdfLabel("Saldo: ","Balance: ") + money(totalIncome - totalExpense), 14, 64);
+            const formatDate = value => value.slice(8, 10) + (pdfEn ? '/' : '.') + value.slice(5, 7) + (pdfEn ? '/' : '.') + value.slice(0, 4);
+            const period = earliestDate && latestDate ? formatDate(earliestDate) + pdfLabel(' bis ', ' to ') + formatDate(latestDate) : pdfLabel("Keine gültigen Buchungsdaten","No valid transaction dates");
+            doc.text(pdfLabel("Zeitraum: ","Period: ") + period, 14, 70);
 
             // Chronologisch ausgeben, ohne die gespeicherte Reihenfolge zu verändern.
             const bookingDate = r => {
@@ -1981,8 +1996,8 @@ async function toolyaCloudBoot(tool) {
             sortedData.forEach((r) => {
                 const sign = (r.entryType === 'einnahme' || r.category === 'Einnahme') ? '+' : '-';
                 const price = Number(r.price);
-                const amount = Number.isFinite(price) ? sign + price.toFixed(2) : 'k.A.';
-                const line = `${r.date || 'k.A.'} | ${r.title || 'Ohne Titel'} (${r.category || 'Sonstiges'}): ${amount} € [${r.paymentMethod || 'k.A.'}]`;
+                const amount = Number.isFinite(price) ? sign + price.toFixed(2) : pdfLabel("k.A.","n/a");
+                const line = `${r.date || pdfLabel("k.A.","n/a")} | ${r.title || pdfLabel("Ohne Titel","Untitled")} (${r.category || pdfLabel("Sonstiges","Other")}): ${amount} € [${r.paymentMethod || pdfLabel("k.A.","n/a")}]`;
                 const lines = doc.splitTextToSize(line, 180);
                 for (const textLine of lines) {
                     if (y > 275) { doc.addPage(); y = 20; }
@@ -1992,7 +2007,7 @@ async function toolyaCloudBoot(tool) {
                 y += 2;
             });
 
-            doc.save(`finanz-bericht-${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.save(`${pdfLabel("finanz-bericht-","financial-report-")}${new Date().toISOString().split('T')[0]}.pdf`);
         }
     </script>
 
