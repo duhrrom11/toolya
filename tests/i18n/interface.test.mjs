@@ -2864,7 +2864,7 @@ test('housemate rotating support text provides six paired, locale-aware labels',
  assert.ok(translatedLabels.every((entry)=>entry.length>5 && !originalLabels.includes(entry)));
  assert.match(source,/kofiEl\.dataset\.kofiCopyIndex = String\(idx\)/,'selected message index is preserved');
  assert.match(source,/function refreshVisibleKofiText\(\) \{\s*const kofiEl = document\.getElementById\('kofiText'\)/,'visible-message refresh reads existing selected index');
- assert.match(source,/document\.addEventListener\('toolya:locale-change', \(\) => \{\s*refreshVisibleKofiText\(\)/,'the single existing locale handler invokes the refresh');
+ assert.match(source,/document\.addEventListener\('toolya:locale-change', \(\) => \{\s*if \(!householdReadyForLocaleRefresh\) return;\s*renderApp\(\);\s*refreshVisibleKofiText\(\)/,'existing guarded locale handler invokes the read-only refresh');
 });
 
 
