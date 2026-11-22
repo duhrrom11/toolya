@@ -3012,7 +3012,7 @@ test('budget accessible chart summaries switch DE/EN using read-only computed va
  assert.match(source,/income: totalIncome, expense: totalExpense/,'snapshot retains calculated totals');
  const refresh=source.slice(source.indexOf('function refreshBudgetChartSummaries()'),end);
  assert.ok(!refresh.includes('saveBudgets(') && !refresh.includes('localStorage.setItem('),'summary refresh has no writes');
- assert.match(source,/refreshBudgetChartSummaries\(\);\s*\}\s*document\.addEventListener\('toolya:locale-change', refreshBudgetDynamicLocale\)/,'locale change refreshes accessible summaries');
+ assert.match(source,/refreshBudgetChartSummaries\(\);\s*refreshBudgetChartLabels\(\);\s*refreshBudgetStickerLabels\(\);\s*\}\s*document\.addEventListener\('toolya:locale-change', refreshBudgetDynamicLocale\)/,'locale change refreshes accessible summaries, chart labels and sticker display');
 });
 
 
