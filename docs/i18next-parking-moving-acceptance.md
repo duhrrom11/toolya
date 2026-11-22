@@ -56,3 +56,9 @@ The validated parking/moving pilot remains accepted at commit `68870a26` (run `4
 - Plant care (`tools/plants/index.html`): same opt-in adapter and fallback, integration commit `f898345b73231976ca9219cd928d2a5821a6e377`. i18next browser [run 45003515686](https://github.com/duhrrom11/toolya/actions/runs/45003515686), static checks `45003515564`, and isolated browser run `45003515742` were queued when inspected. **Eight browser scenarios not yet confirmed.**
 
 No browser failures or application defects have been established for either follow-on tool. Do not create diagnostic-only commits or mark these migrations accepted until CI has completed. The additional coverage uses the existing isolated fixture; authenticated full-page end-to-end behavior remains out of scope. No changes to `main`, production website, or Supabase production data.
+
+## Housemates acceptance update (2026-11-22)
+
+**Accepted isolated housemates i18next pilot:** commit `2f54e4294a2faa862d6c1556969fa122b9ac35af`, [run 45003404335](https://github.com/duhrrom11/toolya/actions/runs/45003404335). The `parking-browser` job `137149635127` and `node-regressions` job `137149635433` both passed; static i18n run `45003404381` passed. Browser log explicitly confirms six successful cases: parking, moving, housemates × real pinned i18next loaded or CDN blocked, each with DE→EN→DE and prefix translation. Offline HTML smoke checks were included in the successful browser job. This acceptance covers the isolated pilot, **not** authenticated end-to-end workflows.
+
+**Plant care remains pending:** commit `f898345b73231976ca9219cd928d2a5821a6e377`, [run 45003515686](https://github.com/duhrrom11/toolya/actions/runs/45003515686), had both browser and node jobs queued when checked; do not claim acceptance until they pass.
