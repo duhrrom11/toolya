@@ -57,7 +57,7 @@ const server=http.createServer((req,res)=>{
    await page.goto('http://127.0.0.1:'+server.address().port+'/guide-fixture/'+index);
    await page.waitForFunction(()=>window.i18next?.isInitialized===true);
    const actual=await page.locator('h1[data-i18n-marketing]').textContent();
-   const expected=guideHeadings[index].heading.match(/>([^<]+)<\\/h1>$/)[1];
+   const expected=guideHeadings[index].heading.split('>')[1].split('<')[0];
    assert.equal(actual,expected,'Guide heading changed unexpectedly: '+guideHeadings[index].file);
    assert.equal(await page.locator('h1').getAttribute('data-i18n-marketing')!==null,true);
    await context.close();
