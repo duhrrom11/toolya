@@ -3182,3 +3182,68 @@ test('parking countdown statuses switch DE/EN without changing running deadline 
  assert.ok(!/saveData\(|localStorage\.|setInterval\(|activeEndTime\s*=|runTimerLoop\(/.test(helper),'locale refresh has no deadline or persistence side effects');
  assert.match(source,/refreshParkingTimerLocale\(\);\s*if \(parkingCloudReady\) renderParkingList\(\)/,'locale event refreshes countdown');
 });
+
+
+test('meter monthly chart labels round-trip DE/EN without changing reading counts', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {fileURLToPath}=await import('node:url');
+ const {resolve,dirname}=await import('node:path');
+ const {createContext,runInContext}=await import('node:vm');
+ const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../../tools/meters/index.html'),'utf8');
+ const begin=source.indexOf('function renderChart(data) {');
+ const end=source.indexOf('function renderPrognosis(data) {',begin);
+ assert.ok(begin>0 && end>begin,'source monthly chart renderer exists');
+ const {document}=parseHTML('<section id="chartCard" class="hidden"><div id="chartContainer"></div></section>');
+ const context={document,window:{__toolyaUILocale:'en'}};
+ createContext(context);
+ runInContext(source.slice(begin,end),context);
+ const readings=[
+  {date:'2026-10-01',value:100},
+  {date:'2026-11-01',value:110},
+  {date:'2026-11-15',value:120}
+ ];
+ context.readings=readings;
+ runInContext('renderChart({readings})',context);
+ const english=document.getElementById('chartContainer').textContent;
+ assert.match(english,/Month: 2026-10/);
+ assert.match(english,/Readings: 2/);
+ context.window.__toolyaUILocale='de';
+ runInContext('renderChart({readings})',context);
+ const german=document.getElementById('chartContainer').textContent;
+ assert.match(german,/Monat: 2026-10/);
+ assert.match(german,/Ablesungen: 2/);
+ assert.deepEqual(readings.map(x=>x.value),[100,110,120],'readings stay unchanged');
+ assert.ok(!/saveData\(|localStorage\.setItem\(/.test(source.slice(begin,end)),'chart render never saves readings');
+ assert.match(source,/if \(metersCloudReady\) renderApp\(\)/,'existing locale event re-renders meter charts only after cloud ready');
+});
+
+test('meter forecast and reading badge copy has paired DE/EN labels with escaped user fields', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {fileURLToPath}=await import('node:url');
+ const {resolve,dirname}=await import('node:path');
+ const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../../tools/meters/index.html'),'utf8');
+ const pairs=[
+  ['Prognose & Live-Kosten','forecast & current costs'],
+  ['Hochrechnung / Jahr:','Estimate / year:'],
+  ['Tages-Schnitt:','Daily average:'],
+  ['Abschlag nicht hinterlegt','Advance payment not entered'],
+  ['Nachzahlung: ca. ','Additional payment: approx. '],
+  ['Guthaben: ca. ','Credit: approx. '],
+  ['Neuer Abschlag:','New advance payment:'],
+  ['Zählerwechsel (Start:','Meter replaced (start:'],
+  ['Differenz:','Difference:'],
+  ['Zählerwechsel Start','Meter replacement start'],
+  ['Stand:','Reading:'],
+  ['Notiz:','Note:'],
+  ['✕ Löschen','✕ Delete']
+ ];
+ for(const [de,en] of pairs) assert.ok(source.includes(de) && source.includes(en),'source DE/EN copy '+de);
+ assert.match(source,/const matching = data\.readings\.filter\(r =>/,'forecast filters recorded readings');
+ assert.match(source,/const yearlyCost = hasPrice && hasConversionFactor/,'forecast calculations unchanged');
+ assert.match(source,/escapeHtml\(r\.name\)/,'meter names escaped');
+ assert.match(source,/escapeHtml\(r\.note\)/,'meter notes escaped');
+ assert.match(source,/escapeHtml\(prev\.date\)/,'previous date escaped');
+ assert.match(source,/escapeHtml\(r\.value\)/,'reading values escaped');
+ assert.match(source,/r\.type === filter/,'filter identifiers remain German');
+ assert.match(source,/data\.readings\.filter\(r =>/,'no reading data migration');
+});
