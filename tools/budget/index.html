@@ -1475,7 +1475,7 @@ async function toolyaCloudBoot(tool) {
             if (catFilter !== 'All') filtered = filtered.filter(r => r.category === catFilter);
 
             if (filtered.length === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Buchungen gefunden.</p>`;
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No matching transactions found.' : 'Keine passenden Buchungen gefunden.'}</p>`;
                 return;
             }
 
