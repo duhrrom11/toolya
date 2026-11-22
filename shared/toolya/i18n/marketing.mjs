@@ -1,6 +1,15 @@
 import {initializeToolyaI18next} from './i18next-singleton.mjs';
-// Reuse the optional shared runtime; existing translated HTML remains the fallback.
-initializeToolyaI18next(globalThis.i18next);
+import {createToolyaI18nextAdapter} from './i18next-runtime-adapter.mjs';
+const runtime=initializeToolyaI18next(globalThis.i18next);
+const translator=runtime?createToolyaI18nextAdapter(runtime):null;
+const locale=document.documentElement.lang==='en'?'en':'de';
+// Translate only app-authored, explicitly marked elements; never user content.
+for(const el of document.querySelectorAll('[data-i18n-marketing]')){
+ const source=el.dataset.i18nMarketing;
+ if(!source||!translator)continue;
+ const translated=translator.translateExact(locale,'marketing',source);
+ if(translated!==source)el.textContent=translated;
+}
 // Explicit user choice only. Does not touch Toolya buddy, auth, or application storage.
 import {normalizeLocale} from './locale.mjs';
 const key='toolya-locale-v1';
