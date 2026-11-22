@@ -4,7 +4,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
 const root=process.cwd();
 const html=`<!doctype html><html lang="de"><head><title>Parkplatz-Merker</title></head><body>
 <header class="b3-header"><div class="b3-tool-title"><h1>Parkplatz-Merker</h1><p>Parken verwalten</p></div></header>
-<div id="timerStatus">Kein aktiver Parkschein-Timer</div>\n<button onclick="saveLocation()">Standort speichern</button>
+<div id="timerStatus">Kein aktiver Parkschein-Timer</div>\n<button onclick="saveLocation()">Standort speichern</button>\n<span class="toolya-auth-loading" data-tool-en="Checking your sign-in…">Wir prüfen deine Anmeldung …</span>\n<a href="/umzugskisten/" data-tool-en="Step-by-step guide to moving boxes">Schritt-für-Schritt-Anleitung für Umzugskisten</a>
 <script type="module" src="/shared/toolya/i18n/tool-entry.mjs"></script>
 </body></html>`;
 const server=http.createServer((req,res)=>{
@@ -38,7 +38,11 @@ const fakeI18next=`window.i18next={
    await page.locator('.ty-tool-language [data-tool-locale="en"]').click();
    if(tool==='parking')assert.equal(await page.locator('#timerStatus').textContent(),'No active parking timer',mode+' English status');
    assert.equal(await page.locator('.ty-tool-language [data-tool-locale="en"]').getAttribute('aria-pressed'),'true');
-   if(tool==='moving')assert.equal(await page.locator('button[onclick="saveLocation()"]' ).textContent(),'Save location',mode+' moving selector');
+   if(tool==='moving'){
+    assert.equal(await page.locator('button[onclick="saveLocation()"]' ).textContent(),'Save location',mode+' moving selector');
+    assert.equal(await page.locator('.toolya-auth-loading').textContent(),'Checking your sign-in…',mode+' moving sign-in text');
+    assert.equal(await page.locator('a[href="/umzugskisten/"]').textContent(),'Step-by-step guide to moving boxes',mode+' moving guide');
+   }
    const translated=await page.evaluate(()=>{window.alert('Anmeldung fehlgeschlagen: Error 401');return window.__lastDialog;});
    assert.equal(translated,'Sign-in failed: Error 401',mode+' dialog prefix');
    if(tool==='moving'){
@@ -47,7 +51,11 @@ const fakeI18next=`window.i18next={
    }
    await page.locator('.ty-tool-language [data-tool-locale="de"]').click();
    if(tool==='parking')assert.equal(await page.locator('#timerStatus').textContent(),'Kein aktiver Parkschein-Timer',mode+' German status');
-   if(tool==='moving')assert.equal(await page.locator('button[onclick="saveLocation()"]' ).textContent(),'Standort speichern',mode+' German moving selector');
+   if(tool==='moving'){
+    assert.equal(await page.locator('button[onclick="saveLocation()"]' ).textContent(),'Standort speichern',mode+' German moving selector');
+    assert.equal(await page.locator('.toolya-auth-loading').textContent(),'Wir prüfen deine Anmeldung …',mode+' German sign-in text');
+    assert.equal(await page.locator('a[href="/umzugskisten/"]').textContent(),'Schritt-für-Schritt-Anleitung für Umzugskisten',mode+' German guide');
+   }
    assert.equal(await page.locator('.ty-tool-language [data-tool-locale="de"]').getAttribute('aria-pressed'),'true');
    assert.deepEqual(errors,[],mode+' page errors');
    if(mode==='loaded')assert.equal(await page.evaluate(()=>window.i18next.isInitialized),true);
