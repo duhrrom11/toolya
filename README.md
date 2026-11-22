@@ -14,3 +14,8 @@ Die bestehende Wishlist unter `/tools/wishes/` und ihr Amazon-Importer bleiben e
 [Verbindliche Universe-Roadmap und Übergabe für neue Chats](docs/TOOLYA-UNIVERSE-GAMIFICATION-MONETIZATION-ROADMAP.md).
 
 **Achtung:** Das geplante Maskottchen-Level-Tool, Hideout, Abenteuer und zusätzliche Monetarisierung sind ein **separates Entwicklungsprojekt** im Branch `feature/gamification-mascot-levels-v1`. Keine Änderungen daran nach `main` oder live auf toolya.app übernehmen, solange der Nutzer keinen **ausdrücklichen neuen Go-live-Auftrag** erteilt. Die Live-Seite hat weiterhin zwölf Tools. Der lokal gespeicherte Level-V1-Prototyp ist nicht produktionsreif. Für weiterführende Arbeit zuerst die verlinkte Roadmap und AGENTS.md lesen.
+
+
+### Newer profile / rewards decisions (22.11.2026)
+
+[Mandatory login, profile fields, sensitive-tool rewards and leaderboard plan](docs/TOOLYA-UNIVERSE-ACCOUNT-PROFILES-REWARDS-LEADERBOARDS.md). The future model requires first and last name during registration, optional country and avatar URL, editable profiles, account XP/badges and optional public rankings; safe neutral XP may be awarded for sensitive tools. These plans replace older P0 restrictions where contradictory. **Only planning; not live.**
