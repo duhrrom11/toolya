@@ -179,7 +179,11 @@ function mountToolLanguage(){
  function syncHeader(lang){
    const hero=document.querySelector('.ty-tool-hero');
    const titleContainer=hero?.querySelector('.ty-tool-hero-copy') || header?.querySelector('.b3-tool-title');
-   if(!titleContainer)return;
+   if(!titleContainer){
+     // A tool may replace or omit its header; language access must survive.
+     if(!switcher.isConnected)document.body.append(switcher);
+     return;
+   }
    const heading=titleContainer.querySelector('h1');
    const title=[...(heading?.childNodes||[])].find(node=>node.nodeType===3 && node.textContent.trim());
    const subtitle=titleContainer.querySelector('p');
