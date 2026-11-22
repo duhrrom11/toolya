@@ -260,12 +260,21 @@ function renderItems() {
   }
   for(const item of extraTasks) {
     const li=element('li',undefined,'connect-task');
-    const cb=document.createElement('input');cb.type='checkbox';cb.checked=false;cb.disabled=connectedBusy;
-    cb.setAttribute('aria-label','WG-Aufgabe '+item.text+' erledigt');cb.onchange=()=>changeConnected(item,cb.checked);
+    if(!item.readonly) {
+      const cb=document.createElement('input');cb.type='checkbox';cb.checked=false;cb.disabled=connectedBusy;
+      cb.setAttribute('aria-label',item.origin+' · '+item.text+' erledigt');
+      cb.onchange=()=>changeConnected(item,cb.checked);
+      li.append(cb);
+    } else {
+      const marker=element('span','📅','connect-task-marker');
+      marker.setAttribute('aria-hidden','true');li.append(marker);
+    }
     const span=element('span',item.text);
-    span.append(element('small','WG-Putzplan'+(item.assignee?' · '+item.assignee:''),'date'));
-    const link=element('a','Zur WG');link.href=item.url;
-    li.append(cb,span,link);taskHost.append(li);
+    const due=item.due&&/^\d{4}-\d{2}-\d{2}$/.test(item.due)?
+      ' · '+new Date(item.due+'T12:00:00Z').toLocaleDateString('de-DE',{dateStyle:'medium'}):'';
+    span.append(element('small',item.origin+(item.assignee?' · '+item.assignee:'')+due,'date'));
+    const link=element('a','Tool öffnen');link.href=item.url;
+    li.append(span,link);taskHost.append(li);
   }
   const remindHost=$('reminders');remindHost.replaceChildren();
   if(!reminders.length)remindHost.append(element('li','Noch keine Erinnerungen angelegt.','empty'));
