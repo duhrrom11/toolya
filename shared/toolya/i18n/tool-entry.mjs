@@ -29,6 +29,8 @@ function mountToolLanguage(){
  const header=document.querySelector('header.b3-header');
  const originalHeadings=new WeakMap();
  const originalDocTitle=document.title;
+ const descriptionMeta=document.querySelector('meta[name="description"]');
+ const originalDescription=descriptionMeta?.getAttribute('content');
  const authGuide=document.querySelector('.toolya-auth-status > a');
  const originalAuthGuideHref=authGuide?.getAttribute('href');
  const modalHelpGuide=document.querySelector('#helpModal > div > p > a');
@@ -153,6 +155,9 @@ function mountToolLanguage(){
    }
    syncHeader(lang);
    document.title=lang==='en'?settings.heading+' | Toolya':originalDocTitle;
+   // Localize search/browser summaries without altering canonical URLs or stored content.
+   if(descriptionMeta && originalDescription!==null)
+     descriptionMeta.setAttribute('content',lang==='en'?settings.subtitle+'.':originalDescription);
    de.setAttribute('aria-pressed',String(lang==='de'));
    en.setAttribute('aria-pressed',String(lang==='en'));
    // Keep reconstructed controls in sync with the active locale.
