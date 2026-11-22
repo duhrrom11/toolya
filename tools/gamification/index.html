@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="de"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maskottchen-Level | Toolya</title><meta name="description" content="Entdecke Toolya-Tools und entwickle deinen persönlichen Toolya-Begleiter weiter.">
+<link rel="canonical" href="https://toolya.app/tools/gamification/">
+<link rel="icon" href="/favicon.ico"><link rel="manifest" href="/manifest.json">
+<link rel="stylesheet" href="../../shared/toolya/alpha.css">
+<script type="module" src="../../shared/toolya/platform.mjs"></script>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#193b49;background:#f0f8fa}*{box-sizing:border-box}
+body{margin:0;min-height:100vh;line-height:1.5}a{color:#087e82}a:focus-visible,button:focus-visible{outline:3px solid #0c9298;outline-offset:3px}
+header{background:#fff;border-bottom:1px solid #daedef;padding:17px max(20px,calc((100% - 1080px)/2));display:flex;align-items:center;justify-content:space-between;gap:15px}
+.brand{font-size:1.45rem;font-weight:900;text-decoration:none;color:#087d83}.nav{font-weight:700;font-size:.94rem}
+main{max-width:1080px;margin:0 auto;padding:34px 20px 70px}
+.intro{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(230px,.8fr);align-items:center;gap:30px;background:linear-gradient(130deg,#d6faf6,#f5e8ff);border:1px solid #c5e9e9;border-radius:28px;padding:clamp(22px,4vw,45px)}
+.eyebrow{color:#117b7f;font-size:.81rem;letter-spacing:.13em;font-weight:800;text-transform:uppercase}h1{font-size:clamp(2.1rem,5vw,3.45rem);line-height:1.13;margin:12px 0}h2{font-size:1.3rem;margin:0 0 10px}
+.lead{max-width:54ch;color:#37515d;font-size:1.07rem}
+.mascot{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:295px}.mascot img{width:min(100%,295px);max-height:280px;object-fit:contain;filter:drop-shadow(0 15px 15px #1a54532a)}
+.mascot small{font-weight:700;text-align:center;color:#476575}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;margin-top:22px}
+.panel{background:#fff;border:1px solid #dce9ea;border-radius:23px;padding:26px;box-shadow:0 6px 30px #2448520a}
+.levelrow{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}.level{font-weight:900;font-size:2.3rem;color:#087f83}.subtitle{color:#50636c}
+.progress{height:17px;background:#e5edef;border-radius:99px;overflow:hidden;margin:16px 0 7px}.bar{height:100%;width:0;background:linear-gradient(90deg,#06b6ae,#9a76ed);border-radius:99px;transition:width .5s}
+.muted{color:#60727a;font-size:.93rem}.stat{display:flex;justify-content:space-between;gap:12px;margin-top:13px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.pill{border-radius:999px;padding:7px 12px;background:#edf7f8;font-size:.86rem;font-weight:700}.pill.locked{background:#f4f4f5;color:#7f8b90}
+.btn{display:inline-block;border-radius:14px;background:#0b868a;color:#fff;text-decoration:none;padding:12px 18px;font-weight:800;margin-top:14px}.btn:hover{background:#07666a}
+.note{margin-top:23px;padding:18px 22px;background:#e6f4f5;border-radius:17px;color:#405c65;font-size:.95rem}
+footer{text-align:center;padding:30px 18px;color:#607078}
+@media(max-width:700px){.intro,.grid{grid-template-columns:1fr}.mascot{min-height:190px}.mascot img{max-height:230px}.panel{padding:21px}}
+@media(prefers-reduced-motion:reduce){.bar{transition:none}}
+</style></head><body>
+<a href="#main" style="position:absolute;left:-9999px" onfocus="this.style.left='10px'" onblur="this.style.left='-9999px'">Zum Inhalt</a>
+<header><a class="brand" href="/" aria-label="Toolya Startseite">Toolya</a><nav class="nav"><a href="/">Alle Tools</a> · <a href="/dashboard/">Dashboard</a></nav></header>
+<main id="main">
+<section class="intro" aria-labelledby="title"><div><span class="eyebrow">Toolya Abenteuer · Version 1</span><h1 id="title">Dein Begleiter. Dein Level.</h1>
+<p class="lead">Entdecke unterschiedliche Toolya-Tools und sammle dabei Erfahrung. Dein ausgewähltes Maskottchen begleitet dich – ohne Zeitdruck und ohne tägliche Pflicht.</p>
+<a class="btn" href="/#toolDiscovery">Tools entdecken</a></div>
+<div class="mascot"><img id="mascot-image" src="../../assets/toolya/originals/toolya_wishlist_turquoise_welcome_1024.png" alt="Dein türkisfarbener Toolya-Begleiter"><small id="mascot-caption">Dein Toolya-Begleiter</small></div></section>
+<div class="grid">
+<section class="panel" aria-labelledby="level-heading"><h2 id="level-heading">Dein Fortschritt</h2><div class="levelrow"><strong id="level" class="level">Level 1</strong><span id="rank" class="subtitle">Neuling</span></div>
+<div class="progress" role="progressbar" aria-label="Fortschritt zum nächsten Level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><div id="progress-bar" class="bar"></div></div>
+<div class="stat"><span id="xp">0 XP</span><span id="next" class="muted">150 XP bis Level 2</span></div>
+<p class="muted" id="level-announcement" role="status" aria-live="polite">Jedes erstmals entdeckte Tool bringt 50 XP.</p></section>
+<section class="panel" aria-labelledby="collection-heading"><h2 id="collection-heading">Entdecker-Sammlung</h2><p class="muted">Bis zu 12 verschiedene Alltagstools warten auf dich.</p>
+<div class="levelrow"><strong id="count" class="level">0 / 12</strong><span class="subtitle">entdeckt</span></div>
+<div class="pills" id="milestones"><span class="pill">🌱 Neuling</span><span class="pill locked">🔎 Entdecker</span><span class="pill locked">⭐ Profi</span><span class="pill locked">🏆 Experte</span><span class="pill locked">✨ Legende</span></div></section>
+</div>
+<div class="note"><strong>So funktioniert's:</strong> Wenn du auf der Toolya-Startseite ein unterschiedliches Alltagstool öffnest, wird es einmalig als entdeckt markiert (50 XP). Wiederholtes Öffnen gibt keine zusätzlichen Punkte. Es werden keine Aufgabeninhalte oder persönlichen Tool-Daten erfasst. Die Punkte liegen vorerst nur in diesem Browser; die Synchronisation über dein Konto ist noch nicht verfügbar.</div>
+</main><footer>Toolya · Dein Levelsystem ist freiwillig. Erreichte XP verfallen nicht.</footer>
+<script>
+(function(){
+'use strict';
+const KEY='toolya_gamification_discoveries_v1';
+const PREF='helferlein-toolya-preferences-v1';
+const IDS=['wishlist','kassenbon','kisten','pflanzen','wg-kasse','notizen','kfz','haustier','parken','verleih','energie','backform'];
+const LABELS=['Neuling','Entdecker','Profi','Experte','Legende'];
+function read(){
+ try{const value=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(value)?[...new Set(value.filter(id=>IDS.includes(id)))]:[]}catch{return []}
+}
+function render(){
+ const count=read().length,xp=count*50,level=Math.min(5,Math.floor(xp/150)+1),name=LABELS[level-1];
+ document.getElementById('level').textContent='Level '+level;
+ document.getElementById('rank').textContent=name;
+ document.getElementById('xp').textContent=xp+' XP';
+ document.getElementById('count').textContent=count+' / '+IDS.length;
+ const complete=level===5,pct=complete?100:((xp%150)/150)*100;
+ const progress=document.getElementById('progress');progress.setAttribute('aria-valuenow',String(Math.round(pct)));
+ document.getElementById('progress-bar').style.width=pct+'%';
+ document.getElementById('next').textContent=complete?'Maximallevel erreicht':(150-(xp%150))+' XP bis Level '+(level+1);
+ const badges=[...document.getElementById('milestones').children];badges.forEach((badge,i)=>badge.classList.toggle('locked',i>=level));
+ let pref={};try{pref=JSON.parse(localStorage.getItem(PREF)||'{}')||{}}catch{}
+ const character=pref.character==='purple'?'purple':'turquoise';
+ const img=document.getElementById('mascot-image');
+ img.src='../../assets/toolya/originals/toolya_wishlist_'+character+'_welcome_1024.png';
+ img.alt='Dein '+(character==='purple'?'lilafarbener':'türkisfarbener')+' Toolya-Begleiter';
+ document.getElementById('mascot-caption').textContent='Dein '+(character==='purple'?'lilafarbener':'türkisfarbener')+' Begleiter · '+name;
+}
+render();window.addEventListener('storage',e=>{if(!e.key||[KEY,PREF].includes(e.key))render()});window.addEventListener('pageshow',render);
+})();
+</script></body></html>
