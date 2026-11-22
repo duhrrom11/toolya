@@ -2603,7 +2603,10 @@ test('i18n parking history renders historic ISO timestamps and escapes user cont
    rect:{x:rect.x,y:rect.y,width:rect.width,height:rect.height},
    centerElement:document.elementFromPoint(rect.x+rect.width/2,rect.y+rect.height/2)?.outerHTML.slice(0,350),
    pointer:getComputedStyle(button).pointerEvents,
-   ancestor:button.parentElement?.outerHTML.slice(0,550),clicks:[]
+   ancestor:button.parentElement?.outerHTML.slice(0,550),
+   parents:(()=>{const parents=[];for(let n=button;n&&parents.length<12;n=n.parentElement)parents.push({tag:n.tagName,id:n.id,cls:String(n.className).slice(0,90),inert:n.inert,hidden:n.hidden,ariaHidden:n.getAttribute('aria-hidden'),pointer:getComputedStyle(n).pointerEvents,rectY:n.getBoundingClientRect().y});return parents})(),
+   modals:[...document.querySelectorAll(':modal')].map(x=>({tag:x.tagName,id:x.id})),
+   scrollY:window.scrollY,clicks:[]
   };
   document.addEventListener('click',event=>{
    const hit=event.target?.closest?.('[data-tool-locale]');
@@ -2612,7 +2615,12 @@ test('i18n parking history renders historic ISO timestamps and escapes user cont
   },true);
  });
  await page.locator('[data-tool-locale="de"]').click();
- const trace=await page.evaluate(()=>({probe:window.__localeClickProbe,debug:window.__localeDebug,locale:window.__toolyaUILocale,pressed:document.querySelector('[data-tool-locale="de"]')?.getAttribute('aria-pressed')}));
+ const trace=await page.evaluate(()=>({
+  probe:window.__localeClickProbe,debug:window.__localeDebug,locale:window.__toolyaUILocale,
+  pressed:document.querySelector('[data-tool-locale="de"]')?.getAttribute('aria-pressed'),
+  afterRect:(()=>{const r=document.querySelector('[data-tool-locale="de"]').getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,atPoint:document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)?.outerHTML.slice(0,300)}})(),
+  afterScroll:window.scrollY
+ }));
  console.log('I18N LOCALE CLICK TRACE',JSON.stringify(trace));
  expect(trace.probe).toBeGreaterThan(0);
  await expect(page.locator('[data-tool-locale="de"]')).toHaveAttribute('aria-pressed','true');
@@ -2674,7 +2682,10 @@ test('i18n loan ICS download preserves title, stable UID and all-day date in DE/
   await page.locator('[data-tool-locale="'+lang+'"]').click();
   const list=page.locator('#itemsList');
   await expect(list).toContainText(lang==='en'?'Loaned:':'Ausleihe:');
-  const [download]=await Promise.all([page.waitForEvent('download'),list.locator('[data-loan-action="ics"]').click()]);
+  const action=list.locator('[data-loan-action="ics"]');
+  const probe=await action.evaluate(button=>{const r=button.getBoundingClientRect(),parents=[];for(let n=button;n&&parents.length<10;n=n.parentElement)parents.push({tag:n.tagName,id:n.id,cls:String(n.className).slice(0,50),inert:n.inert,ariaHidden:n.getAttribute('aria-hidden')});return {rect:{y:r.y,x:r.x,width:r.width,height:r.height},parents,scrollY:window.scrollY,modals:[...document.querySelectorAll(':modal')].map(x=>x.id)}});
+  console.log('I18N LOAN ICS CLICK TRACE',JSON.stringify(probe));
+  const [download]=await Promise.all([page.waitForEvent('download',{timeout:8500}),action.click()]);
   const content=(await readFile(await download.path(),'utf8')).replaceAll('\r\n ','');
   expect(content).toContain('UID:loan-42@toolya.app\r\n');
   expect(content).toContain('DTSTART;VALUE=DATE:20261205\r\n');
