@@ -1295,6 +1295,48 @@ const toolParagraphCopy=Object.freeze({
     "Füge links ein Rezept ein...": "Enter a recipe on the left…",
     "Rührkuchen: Bei Raumtemperatur in Alufolie luftdicht verpacken (3-4 Tage frisch).": "Pound cake: wrap airtight in foil and store at room temperature (fresh for 3–4 days).",
     "Alle Rechenwerkzeuge bleiben erreichbar. Hier kannst du Reihenfolge und Kartendichte anpassen.": "All calculators remain accessible. Adjust their order and card density here."
+  },
+  "parking": {
+    "Speichere deinen Parkplatz mit Standort, Notiz oder Foto. Behalte Parkzeit und Gebühren im Blick.": "Save your parking spot with its location, notes or a photo. Keep track of parking time and fees.",
+    "Über „PDF-Report“ erstellst du eine Übersicht deiner Parkvorgänge und Gebühren.": "Use the PDF report to review your parking sessions and fees.",
+    "Gespeicherte Parkvorgänge": "Saved parking sessions",
+    "Gebühren (Gefiltert)": "Fees (filtered)",
+    "GPS-Standort": "GPS location",
+    "Kein aktiver Parkschein-Timer": "No active parking timer",
+    "Stamm-Parkplatz wählen:": "Choose a favourite parking spot:",
+    "Keine Parkvorgänge gespeichert.": "No parking sessions saved.",
+    "Digitale Parkscheiben": "Digital parking discs",
+    "Mit Zulassung für die Windschutzscheibe →": "Approved for use on windscreens →",
+    "Für sichere Navigation zum Parkplatz →": "For reliable navigation back to your car →"
+  },
+  "loans": {
+    "Verliehene Gegenstände erfassen und Rückgabetermine und Kautionen im Blick behalten": "Track lent items, return dates and deposits",
+    "Für aktive Verleihvorgänge mit Rückgabedatum kannst du direkt einen Google-Kalender-Eintrag generieren oder eine ICS-Datei herunterladen, um rechtzeitig erinnert zu werden.": "For active loans with a return date, create a Google Calendar event or download an ICS reminder.",
+    "Mit dem Button „📄 PDF-Report“ erstellst du jederzeit eine übersichtliche Dokumentation aller verliehenen Gegenstände und offenen Kautionen für deine Unterlagen.": "Use the PDF report to document lent items and outstanding deposits.",
+    "Über 30 Tage verliehen": "Lent for over 30 days",
+    "Keine Stamm-Gegenstände im Inventar hinterlegt.": "No inventory items recorded yet.",
+    "Keine verliehenen Gegenstände erfasst.": "No lent items recorded.",
+    "Ideal zur Sicherung von Werkzeug & Geräten →": "Ideal for securing tools and equipment →",
+    "Für die geordnete Aufbewahrung im Schuppen →": "For organised storage in your shed →"
+  },
+  "car": {
+    "Erfasse Fahrzeugausgaben, führe dein Tankbuch und behalte Wartung und Reifen im Blick.": "Record vehicle expenses and fuel costs, and track maintenance and tyres.",
+    "Einträge (gefiltert)": "Entries (filtered)",
+    "Noch keine Fahrzeuge erfasst.": "No vehicles recorded yet.",
+    "Keine Einträge erfasst.": "No entries recorded."
+  },
+  "meters": {
+    "Erfasse jetzt deine aktuellen Zählerstände für genaue Tageskosten und Prognosen.": "Record your current meter readings to estimate daily costs and forecasts.",
+    "Notiere die Ziffern vor dem Komma. Bei HT/NT-Zählern beide Register getrennt erfassen.": "Enter the digits before the decimal separator. For dual-rate meters, record both registers separately.",
+    "Die großen Ziffern zeigen volle m³, die roten Zeiger Liter.": "The large digits show whole cubic metres; the red dials show litres.",
+    "Gaszählerstand in m³ eintragen. Für die Kostenschätzung verwendet Toolya den hinterlegten Umrechnungsfaktor in kWh/m³.": "Enter gas readings in m³. Toolya uses your saved kWh/m³ conversion factor to estimate costs.",
+    "Stromzähler aktiv": "Electricity meter active",
+    "Wasserzähler aktiv": "Water meter active",
+    "Gaszähler aktiv": "Gas meter active",
+    "Noch keine Zählerstände erfasst.": "No meter readings recorded yet.",
+    "Fernseher und Konsolen im Standby verbrauchen unnötig Strom. Master-Slave-Leisten schalten automatisch ab.": "TVs and consoles use electricity in standby. Smart power strips can switch them off automatically.",
+    "Spüre Wärmeverluste an Fenstern und Wänden auf, um gezielt abzudichten.": "Find heat loss around windows and walls so you can seal gaps.",
+    "Für die Kostenprognose bitte Tarifpreis und bei Gas auch den Umrechnungsfaktor hinterlegen.": "To forecast costs, enter your tariff price and, for gas, the conversion factor."
   }
 });
 function applyToolParagraphCopy(document,tool,language){
