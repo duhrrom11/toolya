@@ -2934,11 +2934,12 @@ test('budget locale-change refresh keeps unsaved budget inputs and record keys s
  const {document}=parseHTML('<div id="budgetProgressList"><span data-budget-category="Wohnen">Wohnen</span></div><div id="budgetInputList"><label for="budget-amount-0">Lebensmittel:</label><input id="budget-amount-0" data-cat="Lebensmittel" value="150"></div>');
  const input=document.getElementById('budget-amount-0');
  input.value='175';
- let savingsRefresh=0,receiptRefresh=0;
+ let savingsRefresh=0,receiptRefresh=0,chartRefresh=0;
  const context={
   window:{__toolyaUILocale:'en'},document,toolyaCloudReady:true,
   renderSavingsGoals:()=>{savingsRefresh++;},
-  renderTransactionList:()=>{receiptRefresh++;}
+  renderTransactionList:()=>{receiptRefresh++;},
+  refreshBudgetChartSummaries:()=>{chartRefresh++;}
  };
  createContext(context);
  runInContext(dictionary[0]+'\n'+formatter[0]+'\n'+source.slice(start,end),context);
@@ -2954,12 +2955,14 @@ test('budget locale-change refresh keeps unsaved budget inputs and record keys s
  assert.equal(input.value,'175');
  assert.equal(savingsRefresh,2);
  assert.equal(receiptRefresh,2);
+ assert.equal(chartRefresh,2,'accessible summaries refreshed without mutating the form');
  context.toolyaCloudReady=false;
  context.window.__toolyaUILocale='en';
  runInContext('refreshBudgetDynamicLocale()',context);
  assert.equal(document.querySelector('#budgetInputList label').textContent,'Lebensmittel:','cloud-gated refresh leaves inputs alone');
  assert.equal(savingsRefresh,2);
  assert.equal(receiptRefresh,2);
+ assert.equal(chartRefresh,2,'cloud gate also prevents chart refresh');
  assert.ok(!source.slice(start,end).includes('saveBudgets('),'locale refresh never persists budgets');
  assert.ok(!source.slice(start,end).includes('localStorage.setItem('),'locale refresh never writes storage');
 });
