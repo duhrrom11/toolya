@@ -164,8 +164,17 @@ function mountToolLanguage(){
    de.setAttribute('aria-pressed',String(lang==='de'));
    en.setAttribute('aria-pressed',String(lang==='en'));
    // Keep reconstructed controls in sync with the active locale.
-   for(const button of document.querySelectorAll('.ty-tool-language [data-tool-locale]'))
-     button.setAttribute('aria-pressed',String(button.dataset.toolLocale===lang));
+   for(const button of document.querySelectorAll('.ty-tool-language [data-tool-locale]')){
+     const code=button.dataset.toolLocale;
+     button.setAttribute('aria-pressed',String(code===lang));
+     if(code==='de'||code==='en'){
+       const label=code==='de'
+         ?(lang==='en'?'Switch to German':'Deutsch auswählen')
+         :(lang==='en'?'English selected':'Englisch auswählen');
+       button.setAttribute('aria-label',label);
+       button.setAttribute('title',label);
+     }
+   }
    notice.hidden=lang!=='en';
    document.querySelector('.toolya-auth-status')?.setAttribute('lang',lang);
    if(authGuide){
