@@ -734,6 +734,27 @@ async function toolyaCloudBoot(tool) {
                 ? budgetCategoryEn[category] : category;
         }
 
+        let budgetChartDisplaySnapshot = null;
+        function refreshBudgetChartSummaries() {
+            const snapshot = budgetChartDisplaySnapshot;
+            if (!snapshot) return;
+            const english = window.__toolyaUILocale === 'en';
+            const formatAmount = value => Number(value).toLocaleString(english ? 'en-GB' : 'de-DE', {
+                style: 'currency', currency: 'EUR'
+            });
+            const categorySummary = snapshot.categories
+                .map(([category, amount]) => budgetCategoryLabel(category) + ': ' + formatAmount(amount))
+                .join('; ');
+            const categoryNode = document.getElementById('categoryChartSummary');
+            const cashflowNode = document.getElementById('cashflowChartSummary');
+            if (categoryNode) categoryNode.textContent = categorySummary ||
+                (english ? 'No expenses this month.' : 'Keine Ausgaben in diesem Monat.');
+            if (cashflowNode) cashflowNode.textContent =
+                (english ? 'Income: ' : 'Einnahmen: ') + formatAmount(snapshot.income) +
+                (english ? '; Expenses: ' : '; Ausgaben: ') + formatAmount(snapshot.expense) +
+                (english ? '; Balance: ' : '; Saldo: ') + formatAmount(snapshot.income - snapshot.expense) + '.';
+        }
+
         // Read-only locale refresh: keep open budget inputs (including unsaved edits)
         // and the German category IDs unchanged. Do not emit a data-change event.
         function refreshBudgetDynamicLocale() {
@@ -747,6 +768,7 @@ async function toolyaCloudBoot(tool) {
             }
             renderSavingsGoals();
             renderTransactionList();
+            refreshBudgetChartSummaries();
         }
         document.addEventListener('toolya:locale-change', refreshBudgetDynamicLocale);
 
@@ -1391,16 +1413,13 @@ async function toolyaCloudBoot(tool) {
             }
 
             // Text alternatives share the exact calculated values used by the charts.
-            // textContent prevents category names from becoming executable markup.
-            const formatChartAmount = value => Number(value).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
-            const categoryChartSummary = Object.entries(categoryExpenses)
-                .filter(([, amount]) => amount > 0)
-                .map(([category, amount]) => category + ': ' + formatChartAmount(amount))
-                .join('; ');
-            document.getElementById('categoryChartSummary').textContent = categoryChartSummary || 'Keine Ausgaben in diesem Monat.';
-            document.getElementById('cashflowChartSummary').textContent =
-                'Einnahmen: ' + formatChartAmount(totalIncome) + '; Ausgaben: ' + formatChartAmount(totalExpense) +
-                '; Saldo: ' + formatChartAmount(totalIncome - totalExpense) + '.';
+            // Keep calculated numeric chart data in memory; only render their
+            // accessible summaries on locale changes (no cloud reads or writes).
+            budgetChartDisplaySnapshot = {
+                categories: Object.entries(categoryExpenses).filter(([, amount]) => amount > 0),
+                income: totalIncome, expense: totalExpense
+            };
+            refreshBudgetChartSummaries();
 
             const budgetContainer = document.getElementById('budgetProgressList');
             budgetContainer.innerHTML = defaultCategories.map(cat => {
