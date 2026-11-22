@@ -60,7 +60,12 @@ async function run() {
   await new Promise(resolve => smtp.listen(55261, '127.0.0.1', resolve));
   let server;
   try {
-    sql('create schema auth;');
+    sql(`create schema auth;
+      do $$ begin
+        if not exists (select 1 from pg_roles where rolname = 'postgres') then create role postgres; end if;
+        if not exists (select 1 from pg_roles where rolname = 'anon') then create role anon; end if;
+        if not exists (select 1 from pg_roles where rolname = 'authenticated') then create role authenticated; end if;
+      end $$;`);
     const backend = new URL(database);
     backend.searchParams.set('search_path', 'auth,public');
     const env = {
@@ -77,10 +82,6 @@ async function run() {
     if (migration.status !== 0) throw Error(migration.stderr || migration.error?.message);
     server = spawn(authBinary, ['serve'], { env, stdio: 'ignore' });
     await waitReady();
-    sql(`do $$ begin
-      if not exists (select 1 from pg_roles where rolname = 'anon') then create role anon; end if;
-      if not exists (select 1 from pg_roles where rolname = 'authenticated') then create role authenticated; end if;
-    end $$;`);
     sql(readFileSync('tests/universe/tool-fixture.sql', 'utf8'));
     const file = readdirSync('supabase/migrations').find(name => name.endsWith('_toolya_universe.sql'));
     sql(readFileSync('supabase/migrations/' + file, 'utf8'));
