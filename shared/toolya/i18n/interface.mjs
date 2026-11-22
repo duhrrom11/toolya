@@ -2062,7 +2062,28 @@ function applyBudgetGuideFragments(document,language){
  }
 }
 
-export function applyToolInterfaceLocale(document,tool,language){
+export /* Browser tab titles are application-owned UI, not persisted records.
+   Only replace exact known titles to avoid overwriting runtime/custom titles. */
+const toolPageTitles=Object.freeze({
+ moving:['Umzugskisten und Inventarliste | Toolya','Moving boxes and inventory | Toolya'],
+ housemates:['WG-Organisator mit Haushaltsbuch | Toolya','Roommate organiser and household budget | Toolya'],
+ plants:['Pflanzenpflege-App mit Gießplan | Toolya','Plant care and watering planner | Toolya'],
+ baking:['Backform-Umrechner & Rezeptrechner | Toolya','Cake pan and recipe calculator | Toolya'],
+ budget:['Haushaltsbuch mit Kassenbon-Scanner | Toolya','Household budget and receipt scanner | Toolya'],
+ car:['Autokosten-Rechner | Toolya','Car expense calculator | Toolya'],
+ loans:['Verliehene Gegenstände verwalten | Toolya','Track lent items | Toolya'],
+ 'pet-health':['Tiergesundheit – Gesundheitstagebuch für Haustiere | Toolya','Pet health journal | Toolya'],
+ parking:['Parkplatz-Merker | Toolya','Parking spot tracker | Toolya'],
+ meters:['Zählerstände erfassen: Strom, Gas & Wasser | Toolya','Meter readings: electricity, gas and water | Toolya']
+});
+function applyToolPageTitle(document,tool,language){
+ const titles=toolPageTitles[tool];
+ if(!titles || (language!=='en' && language!=='de'))return;
+ if(document.title===titles[0] || document.title===titles[1]) document.title=titles[language==='en'?1:0];
+}
+
+function applyToolInterfaceLocale(document,tool,language){
+ applyToolPageTitle(document,tool,language);
  for(const [selector,translation,attribute,attributeTranslation] of [...common,...(toolTranslations[tool]||[]),...(extendedFormTranslations[tool]||[])]){
   const translated=attribute?attributeTranslation:translation;
   for(const element of document.querySelectorAll(selector)){
