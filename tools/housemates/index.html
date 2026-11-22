@@ -1244,7 +1244,7 @@
 
         async function erstelleNeueWGKonfiguration() {
             const statusText = document.getElementById('setup-status');
-            if (statusText) statusText.innerText = "Erstelle Cloud-Speicher im Hintergrund...";
+            if (statusText) statusText.innerText = window.__toolyaUILocale === 'en' ? 'Creating private cloud storage…' : 'Erstelle Cloud-Speicher im Hintergrund...';
 
             const leereWG = {
                 erstelltAm: new Date().toISOString(),
