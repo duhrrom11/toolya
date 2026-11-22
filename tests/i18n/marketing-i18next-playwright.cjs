@@ -9,6 +9,9 @@ const bundle=fs.readFileSync(path.join(root,'node_modules/i18next/dist/umd/i18ne
 const cdn='https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js';
 const html=locale=>'<!doctype html><html lang="'+locale+'"><body><h1 data-i18n-marketing="Alle Tools">Alle Tools</h1><p data-i18n-marketing="Diese Anleitung auf Deutsch ansehen">Diese Anleitung auf Deutsch ansehen</p><p id="user-content">Meine privaten Notizen</p><script src="'+cdn+'"></script><script type="module" src="/shared/toolya/i18n/marketing.mjs"></script></body></html>';
 const guidePaths=['en/parking-spot/index.html','en/moving-boxes/index.html','en/plant-care/index.html','en/household-budget/index.html'];
+const homepageCards=['index.html','en/index.html'].map(file=>({file,headings:[...fs.readFileSync(path.join(root,file),'utf8').matchAll(/<h3\b[^>]*data-i18n-marketing="([^"]+)"[^>]*>([^<]+)<\/h3>/g)].map(match=>({key:match[1],label:match[2]}))}));
+assert.equal(homepageCards[0].headings.length,10,'German homepage must bind ten tool cards');
+assert.equal(homepageCards[1].headings.length,10,'English homepage must bind ten tool cards');
 const guideHeadings=guidePaths.map(file=>{
  const source=fs.readFileSync(path.join(root,file),'utf8');
  const heading=source.match(/<h1\b[^>]*data-i18n-marketing="[^"]+"[^>]*>[^<]+<\/h1>/);
