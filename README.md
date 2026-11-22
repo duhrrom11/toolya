@@ -19,3 +19,8 @@ Die bestehende Wishlist unter `/tools/wishes/` und ihr Amazon-Importer bleiben e
 ### Newer profile / rewards decisions (22.11.2026)
 
 [Mandatory login, profile fields, sensitive-tool rewards and leaderboard plan](docs/TOOLYA-UNIVERSE-ACCOUNT-PROFILES-REWARDS-LEADERBOARDS.md). The future model requires first and last name during registration, optional country and avatar URL, editable profiles, account XP/badges and optional public rankings; safe neutral XP may be awarded for sensitive tools. These plans replace older P0 restrictions where contradictory. **Only planning; not live.**
+
+
+### Autonomous ChatGPT Work / Codex handoff (latest)
+
+[Full autonomous development mandate – release candidate first, no live deployment](docs/TOOLYA-UNIVERSE-WORK-AUTONOMOUS-HANDOFF.md). This newer instruction authorizes independent concept-to-build work **once a Work/Codex run is actually started**, with final user review and explicit authorization required before production release. 'Werkstätten' is rejected as the world name. Previous 'concept only' notes are historical for subsequent Work runs.
