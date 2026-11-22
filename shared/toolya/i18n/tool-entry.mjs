@@ -101,6 +101,7 @@ function mountToolLanguage(){
  // Observe only known, application-owned status nodes. Never observe user
  // records, shopping items, receipt descriptions or arbitrary new elements.
  const runtimeStatusSelectors={
+  housemates:['#setup-status'],
   budget:['#ocrStatus','#saveBtn','#formTitle','#categoryChartSummary'],
   parking:['#timerStatus','#timerDisplay','#statGps']
  };
