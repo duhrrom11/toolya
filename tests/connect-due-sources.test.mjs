@@ -15,8 +15,8 @@ const car={cars:[{id:3,name:'VW Golf'}],events:[
  {id:10,carId:3,date:'2027-01-15',type:'Versicherung',title:'Jahresbeitrag'}],tires:[]};
 const pet={pets:[{id:5,name:'Milo'}],meds:[],events:[
  {id:20,petId:5,type:'Impfung',title:'Tollwut',date:'2025-11-01',expiryDate:'2026-11-25'},
- {id:21,petId:5,type:'Entwurmung',date:'2026-09-01'},
- {id:22,petId:5,type:'Entwurmung',date:'2026-10-01'},
+ {id:21,petId:5,type:'Entwurmung',date:'2026-08-01'},
+ {id:22,petId:5,type:'Entwurmung',date:'2026-09-01'},
  {id:23,petId:5,type:'Medikament',date:'2026-11-27',expiryDate:'2026-12-01'}]};
 test('strict date and loan return task projection preserves original status',()=>{
  assert.equal(validDay('2026-02-29'),false);
