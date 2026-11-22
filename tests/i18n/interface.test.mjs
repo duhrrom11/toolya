@@ -2865,3 +2865,55 @@ test('housemate rotating support text provides six paired, locale-aware labels',
  assert.match(source,/kofiEl\.dataset\.kofiCopyIndex = String\(idx\)/,'selected message index is preserved');
  assert.match(source,/document\.addEventListener\('toolya:locale-change', \(\) => \{\s*const kofiEl = document\.getElementById\('kofiText'\)/,'visible message refreshes when the locale changes');
 });
+
+
+test('dynamic budget labels translate recognised categories without touching stored identifiers', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {fileURLToPath}=await import('node:url');
+ const {resolve,dirname}=await import('node:path');
+ const {runInNewContext}=await import('node:vm');
+ const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../../tools/budget/index.html'),'utf8');
+ const dictionary=source.match(/const budgetCategoryEn = Object\.freeze\((\{[\s\S]*?\})\);/);
+ const helper=source.match(/function budgetCategoryLabel\(category\) \{[\s\S]*?\n        \}/);
+ assert.ok(dictionary && helper,'source-backed display dictionary and locale helper exist');
+ const context={window:{__toolyaUILocale:'en'}};
+ runInNewContext(dictionary[0]+'\n'+helper[0]+'\nthis.categoryLabel=budgetCategoryLabel;',context);
+ const cases={
+  Lebensmittel:'Groceries',Wohnen:'Housing',Energie:'Energy',Auto:'Car',
+  Freizeit:'Leisure',Elektronik:'Electronics',Gesundheit:'Health',
+  Haustiere:'Pets',Verträge:'Contracts',Sonstiges:'Other'
+ };
+ for(const [key,value] of Object.entries(cases)){
+  assert.equal(context.categoryLabel(key),value,'English display for '+key);
+  context.window.__toolyaUILocale='de';
+  assert.equal(context.categoryLabel(key),key,'German stored key survives '+key);
+  context.window.__toolyaUILocale='en';
+ }
+ for(const value of ['__proto__','constructor','toString','Custom user category','<img src=x>']){
+  assert.equal(context.categoryLabel(value),value,'no prototype lookups or untrusted translation');
+ }
+ assert.match(source,/data-cat="\$\{cat\}"/,'budget input retains persisted category IDs');
+ assert.match(source,/r\.category === catFilter/,'filter retains persisted category IDs');
+ assert.match(source,/escapeHaushaltsHtml\(budgetCategoryLabel\(r\.category\)\)/,'receipt category output escaped');
+ assert.match(source,/escapeHaushaltsHtml\(budgetCategoryLabel\(cat\)\)/,'budget labels escaped');
+});
+
+test('dynamic budget cards and receipt badges provide paired, display-only DE/EN copy', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {fileURLToPath}=await import('node:url');
+ const {resolve,dirname}=await import('node:path');
+ const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../../tools/budget/index.html'),'utf8');
+ for(const [de,en] of [
+  ['Noch keine Sparziele angelegt.','No savings goals yet.'],
+  ['Gespart:','Saved:'],['Ziel:','Target:'],['+ Einzahlen','+ Deposit'],
+  ['🔄 Fixkosten','🔄 Recurring cost'],['💼 Steuer','💼 Tax'],
+  ['Garantie aktiv (','Warranty active ('],['⏱️ Rückgabe: ','⏱️ Return: '],
+  ['Betrag:','Amount:'],['Datum:','Date:'],['Zahlungsart:','Payment method:'],
+  ['Karton: ','Box: '],['Notiz: ','Note: '],['✏️ Bearbeiten','✏️ Edit']
+ ]){
+  assert.ok(source.includes(de) && source.includes(en),'paired source copy: '+de);
+ }
+ assert.match(source,/escapeHaushaltsHtml\(r\.paymentMethod \|\|/,'payment values escaped but not translated');
+ assert.match(source,/escapeHaushaltsHtml\(r\.title\)/,'user-supplied savings title untouched');
+ assert.match(source,/escapeHaushaltsHtml\(r\.date\)/,'recorded dates untouched');
+});
