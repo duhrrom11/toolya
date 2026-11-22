@@ -73,6 +73,7 @@ jobs:
           node --check shared/toolya/i18n/marketing.mjs
           node --check shared/toolya/i18n/switcher.mjs
           node --check tests/i18n/marketing-i18next-playwright.cjs
+          node --check tests/i18n/marketing-real-pages-playwright.cjs
           node --check tests/i18n/parking-i18next-playwright.cjs
       - name: Run focused migration regressions
         run: node --test tests/i18n/i18next-legacy-resources.test.mjs tests/i18n/i18next-runtime-adapter.test.mjs tests/i18n/i18next-singleton.test.mjs tests/i18n/dashboard-dom.test.mjs
@@ -94,3 +95,4 @@ jobs:
         run: |
           node tests/i18n/parking-i18next-playwright.cjs
           node tests/i18n/marketing-i18next-playwright.cjs
+          node tests/i18n/marketing-real-pages-playwright.cjs
