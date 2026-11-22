@@ -67,3 +67,10 @@
 @media(prefers-reduced-motion:reduce){
  .ty-kofi-button-hearts span{animation:none!important;opacity:1;transform:none}
 }
+
+/* The Ko-fi companion wears the current tool's outfit, not a Wishlist costume. */
+.ty-kofi-action>.ty-sprite-wrap{width:46px;height:46px;flex:0 0 46px;border-radius:0}
+.ty-kofi-action>.ty-sprite-wrap>.ty-frame{border-radius:0;filter:drop-shadow(0 3px 5px #00182565)}
+@media(max-width:360px){
+ .ty-kofi-action>.ty-sprite-wrap{width:42px;height:42px;flex-basis:42px}
+}

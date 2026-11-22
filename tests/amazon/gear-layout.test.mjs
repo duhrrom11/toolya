@@ -15,6 +15,6 @@ test('settings gear sits in text column instead of floating over mascot', () => 
 
 test('header asset is cache-busted and original tool settings are retained',()=>{
  const js=readFileSync('shared/toolya/platform.mjs','utf8');
- assert.match(js,/20261119-gear-no-overlap-v2/);
+ assert.match(js,/20261121-thematic-hero-v1/);
  assert.match(js,/actions\.append\(originalSettings\)/);
 });

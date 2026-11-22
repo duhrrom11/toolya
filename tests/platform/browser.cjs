@@ -67,6 +67,24 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
 
  await page.goto(origin+'/tools/plants/');await page.waitForFunction(()=>document.getElementById('toolya-cloud-gate')===null,null,{timeout:10000}).catch(async e=>{console.error('PLANTS FIXTURE DIAGNOSTIC',await page.evaluate(()=>({gate:document.getElementById('toolya-cloud-gate')?.textContent?.slice(0,180)||null,ready:typeof plantsCloudReady!=='undefined'?plantsCloudReady:null})));throw e;});await page.waitForFunction(()=>window.toolyaBuddy);await page.evaluate(()=>{toolyaBuddy.dismiss();toolyaBuddy.setMotion('off')});
  await page.waitForFunction(()=>{const f=document.querySelector('.toolya-idle .ty-frame');return f&&!f.hidden});
+ await page.waitForFunction(()=>{
+  const frame=document.querySelector('.ty-tool-hero-inner>.ty-sprite-wrap>.ty-frame');
+  return frame&&!frame.hidden&&frame.style.backgroundImage.includes('outfits.webp');
+ });
+ const themed=await page.evaluate(()=>{
+  const hero=document.querySelector('.ty-tool-hero');
+  const frame=hero.querySelector(':scope>.ty-tool-hero-inner>.ty-sprite-wrap>.ty-frame');
+  const img=hero.querySelector('.ty-tool-hero-mascot');
+  return {tool:hero.dataset.tool,character:hero.dataset.character,src:img.src,
+   x:parseFloat(frame.style.getPropertyValue('--ty-a')),
+   y:parseFloat(frame.style.getPropertyValue('--ty-y')),
+   outfit:frame.style.backgroundImage};
+ });
+ assert.equal(themed.tool,'plants','plant header stays contextual');
+ assert.equal(themed.character,'turquoise','default character preserved');
+ assert(themed.src.startsWith('data:image/gif;'),'header never loads a wishlist gift image');
+ assert(Math.abs(themed.x-2*100/7)<.01 && Math.abs(themed.y-2*100/3)<.01,
+  'plant header must show outfit role 9, not wishlist role 0: '+JSON.stringify(themed));
  assert.equal(await page.locator('.toolya-idle .ty-frame').evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)','sprite frame must not add a white image background');
  await page.addStyleTag({content:'.ty-frame{background-color:#fff}'});
  assert.equal(await page.locator('.toolya-idle .ty-frame').evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)','alpha stylesheet wins over cached white CSS');
@@ -235,7 +253,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
    continue;
   }
   if(await page.locator('#settingsModal[aria-modal="true"]').isVisible().catch(()=>false))await page.keyboard.press('Escape');
-  await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.locator('details.toolya-appearance').evaluate(e=>{e.open=true});await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route+' single preferences panel');await page.keyboard.press('Escape');await page.screenshot({path:'test-results/mascot-'+route+'-mobile.png',fullPage:true});assert.equal(await page.locator('.toolya-idle').isVisible(),false,route+' redundant strip hidden');if(await page.locator('.ty-tool-hero-mascot').count())await page.locator('.ty-tool-hero-mascot').screenshot({path:'test-results/mascot-'+route+'-detail.png'});
+  await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.locator('details.toolya-appearance').evaluate(e=>{e.open=true});await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route+' single preferences panel');await page.keyboard.press('Escape');await page.screenshot({path:'test-results/mascot-'+route+'-mobile.png',fullPage:true});assert.equal(await page.locator('.toolya-idle').isVisible(),false,route+' redundant strip hidden');if(await page.locator('.ty-tool-hero-inner>.ty-sprite-wrap').count())await page.locator('.ty-tool-hero-inner>.ty-sprite-wrap').screenshot({path:'test-results/mascot-'+route+'-detail.png'});
  }
  await page.goto(origin+'/dashboard/');await page.locator('#welcome-heading').waitFor();
  assert.equal(await page.locator('.buddy-panel').count(),0,'dashboard has no duplicate companion card');

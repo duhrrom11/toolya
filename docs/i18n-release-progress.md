@@ -160,3 +160,11 @@ Basis `cc9876d92ce5dfefc1504098ea73a3fd03969dac`: 209/209 statische Node-i18n-Te
 - Die isolierten Tests blockieren die externe Tailwind-CDN-Datei. `assets/helferlein-accessibility.js` behandelte deswegen den dialogeigenen `.hidden`-Wert ohne CSS-Effekt als sichtbaren Dialog und blockierte die übrige App. Enger `display:none!important`-Fallback für bekannte `.hidden`-Dialoge und CSS-unabhängige Sichtbarkeitsprüfung ergänzt. Das behebt zugleich einen realen Offline-/CDN-Ausfallpfad.
 - Browser-Regression prüft versteckten Dialog, fehlendes `inert` am Tool-Shell, 320px-Sprachwechsel und echten ICS-Download. Node-Regression ergänzt. Noch keine positive Aussage zu den neu ausgelösten CI-Läufen.
 - Release weiterhin **NOT READY** bis vollständiger CI-Nachweis plus breite Auth-/A11y-/Coverage-Abnahme. Keine produktiven Änderungen.
+
+### 22.11.2026 – Veröffentlichung auf main nachgezogen, ohne geschützten Merge
+
+- Verglichen: `main` bei `23507b160bc8779ef4f197863cb9304de866c39e` (PR #306: ausgewählte Toolya-Maskottchen mit korrekter thematischer Kleidung). Feature war einen Commit hinter main; 7 von 8 geänderten Pfaden hatten keine Feature-Abweichung.
+- Neuester akzeptierter main-Code aus Footer/Header/Platform-CSS, Platform-MJS und zugehörigen Tests wurde in den Feature-Branch übernommen. Die **einzige** branch-eigene Zeile `document.dispatchEvent(new Event('toolya:tool-hero-ready'))` blieb im neuen Mount-Flow unmittelbar nach `refreshFrames()` erhalten; notwendig für reaktiven DE/EN-Header.
+- Echter Merge-Commit mit zwei Eltern, **ausschließlich auf dem Feature-Branch**, kein Push zu main. Keine Bild-/Maskottchen-Assets verändert, nur bereits auf main veröffentlichte Darstellungs-/Teständerungen übernommen.
+- Vor dem Merge: 214/214 i18n-Node-Tests und 4/4 mobile Chromium-Smoke-Tests auf `ebfecf17` bestanden, vollständige Browser-/Plattform-CI war noch im Lauf. Nach Merge **alle relevanten CI-Workflows auf dem neuen Merge-HEAD erneut prüfen**.
+- **Release bleibt NOT READY / Draft**, weil vollständige 34 Teilansichten, 48 dynamische Dateiquellen, Auth-E2E und A11y offen sind.

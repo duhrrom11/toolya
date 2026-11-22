@@ -486,3 +486,9 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 - Echtes Chromium-Protokoll: Sprache umschalten lieferte Klickziel `BODY` statt `DE`, und der Verleih-ICS-Button hatte den Vorfahren `.b3-shell[inert]`. Die isolierten UI-Tests blockieren Tailwind-CDN absichtlich; dadurch fehlte die `hidden`-Utility für native modale Overlays, worauf der Accessibility-Manager andere Bereiche deaktivierte.
 - Die zentrale Accessibility-Schicht enthält nun einen engen `.hidden`-Fallback nur für bekannte Dialog-IDs und berücksichtigt die Klasse zusätzlich beim Sichtbarkeitstest. Dadurch kann ein als geschlossen markierter Dialog auch offline/ohne CDN keine Interaktion mit dem Tool blockieren. Gewünschte aktive Dialog-Fokusfalle und Hintergrundsperre bleiben bestehen.
 - Die vier Chromium-Tests prüfen reale klickbare Sprachschalter und ICS-Buttons, `display:none` auf verborgenem Kontodialog sowie `!b3-shell.inert`. Neue isolierte Node-Regression ergänzt. Erfolgreiches CI muss das Paket bestätigen.
+
+## 22.11.2026 – Main-Drift und Markenintegrität abgeglichen
+
+- Main-HEAD `23507b160bc8779ef4f197863cb9304de866c39e` (#306) hat nach dem bisherigen Abzweig 8 Pfade für themenspezifische Maskottchen/Header und Tests geändert. Sieben Pfade waren auf dem i18n-Branch seit der gemeinsamen Basis unverändert, ein Pfad enthielt nur ein eigenes Hero-Ready-Event.
+- Main-Änderungen als Zwei-Eltern-Merge **in den Entwicklungsbranch** übernommen; das bestehende Hero-Ready-Event nach dem neuen `refreshFrames`-Aufruf erhalten. Keine Markenbild-Dateien überschrieben, keine Freigabe/Deployment/Indexierung ausgeführt.
+- Neuer Merge-HEAD und alle relevanten GitHub-Workflows sind Pflichtprüfungen vor Freigabebewertung.
