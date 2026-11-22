@@ -2082,7 +2082,7 @@ function applyToolPageTitle(document,tool,language){
  if(document.title===titles[0] || document.title===titles[1]) document.title=titles[language==='en'?1:0];
 }
 
-function applyToolInterfaceLocale(document,tool,language){
+export function applyToolInterfaceLocale(document,tool,language){
  applyToolPageTitle(document,tool,language);
  for(const [selector,translation,attribute,attributeTranslation] of [...common,...(toolTranslations[tool]||[]),...(extendedFormTranslations[tool]||[])]){
   const translated=attribute?attributeTranslation:translation;
