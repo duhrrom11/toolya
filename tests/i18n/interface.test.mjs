@@ -2847,3 +2847,21 @@ test('tool browser titles switch DE → EN → DE for all ten tool pages without
   assert.equal(document.title,'User-defined page title','non-catalog title preserved');
  }
 });
+
+
+test('housemate rotating support text provides six paired, locale-aware labels', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {fileURLToPath}=await import('node:url');
+ const {resolve,dirname}=await import('node:path');
+ const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../../tools/housemates/index.html'),'utf8');
+ const german=source.match(/const kofiSprueche = \[([\s\S]*?)\];/);
+ const english=source.match(/const kofiSpruecheEn = \[([\s\S]*?)\];/);
+ assert.ok(german && english,'both source-backed language catalogues exist');
+ const labels=(block)=>[...block.matchAll(/^\s*"([^"]+)"\s*,?\s*$/gm)].map(match=>match[1]);
+ const originalLabels=labels(german[1]),translatedLabels=labels(english[1]);
+ assert.equal(originalLabels.length,6,'six original rotating messages');
+ assert.equal(translatedLabels.length,6,'six corresponding English messages');
+ assert.ok(translatedLabels.every((entry)=>entry.length>5 && !originalLabels.includes(entry)));
+ assert.match(source,/kofiEl\.dataset\.kofiCopyIndex = String\(idx\)/,'selected message index is preserved');
+ assert.match(source,/document\.addEventListener\('toolya:locale-change', \(\) => \{\s*const kofiEl = document\.getElementById\('kofiText'\)/,'visible message refreshes when the locale changes');
+});
