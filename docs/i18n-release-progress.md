@@ -183,3 +183,10 @@ Basis `cc9876d92ce5dfefc1504098ea73a3fd03969dac`: 209/209 statische Node-i18n-Te
 - Neuer echter 320px-Chromium-Test für Account-Dialog ohne Tailwind-CDN: initial `hidden`, interaktive B3-Shell, Öffnen per Button, `aria-modal`, Hintergrund-`inert`, Fokusfalle, Escape schließt und restauriert Hintergrund, null CloudOnly-Schreibvorgänge.
 - Workflow i18n-runtime-browser erweitert, für neuen HEAD erneut Node-/Chromium-/Plattform-CI auswerten. Tests wurden beim Schreiben noch nicht erfolgreich ausgeführt.
 - Release-Gate bleibt NOT READY: vollständige Sprach-/Auth-/Export-/A11y-Abnahme offen.
+
+### 22.11.2026 – Neues Connect-Dashboard von main konfliktarm übernommen
+
+- Neueren Stand von `main` (Commit `c75b247ad3401bd75cf38f3b4d4da4df314d67a2`, PR mit Rückgaben aus Verleih und read-only Auto-/Tiergesundheitsterminen) auf den **Entwicklungsbranch** integriert. Die sechs unberührten Pfade wurden exakt übernommen; in `dashboard/dashboard.js` wurde der neue Aufgabenrenderer dreiseitig mit der bestehenden DE/EN-Darstellung zusammengeführt. **Zwei Eltern im Merge-Commit, keine Änderung an main.**
+- Im Dashboard bleiben Leih-Rückgaben als abschließbare Aufgaben und Auto-/Tier-Fristen strikt nur als lesbare Hinweise markiert; englische Beschriftung, Quellnamen und Datumsformat ergänzt, Freitexte bleiben unverändert. Isolierte Node-Regression für Readonly und Datenintegrität ergänzt.
+- Vor diesem Integrationspaket: 18/18 Actions grün auf `6b606891`; Dokumentations-HEAD `e72f4d304b27f54d82ba72c9138967605123261f` war ebenfalls grün, aber nicht jede der 18 Prüfungen wurde auf einem reinen Dokumentationscommit neu angestoßen. **CI für den neuen Merge-HEAD ist separat nachzuweisen.**
+- Release weiterhin **NOT READY / Draft**: i18n-Gesamtaudit, 34 Tool-Ansichten, 48 Laufzeitdateien und Auth-/Export-/A11y-Prüfungen offen. Keine produktiven Daten, kein Deployment, kein Entfernen von `noindex`, keine Markenasset-Änderungen.

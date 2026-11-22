@@ -504,3 +504,9 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 - **Kein Release-READY:** i18n-Audit weiter mit 34 nur teilübersetzten Ansichten und 48 heuristischen Laufzeit-Dateien, 17 EN-Seiten mit geschütztem `noindex`; isolierte echte Recovery-Mailrunde, Gesamt-Export-/Druck-/QR-/Screenreader- und Mobile-Abnahme fehlen.
 - Priorität für nächste Ausführung: (P0) 10 Haupttools vollständig lokalisieren, (P0) 17 Wünsche/4 Nachlass/1 Dashboard/2 Admin, (P1) dynamische Fehlermeldungen und Exportpfade je Tool mit Mocks prüfen, (P1) isolierter Auth-Mail-E2E, (P2) A11y/Responsive/strikter Audit, (P3) erst dann geschützte Release-Freigabe einholen.
 - Dokumentationsänderung nach dem getesteten Code-HEAD ist von den Quellcode-CI-Nachweisen zu unterscheiden. Aktuellen Branch-SHA bei Wiederaufnahme erneut prüfen.
+
+## 22.11.2026 – Main-Integration: neue Connect-Fristen und Dashboard-i18n
+
+- Neue produktive Main-Erweiterung als nichtdestruktiver Zwei-Eltern-Merge ausschließlich in den Feature-Branch übernommen: Verleih-Rückgaben, Fahrzeug- und Haustier-Termine in der Dashboard-Aufgabenaggregation. Quelle und CloudOnly-Verantwortlichkeit bleiben unverändert.
+- Konfliktstelle in Dashboard-Renderer mit i18n kombiniert: übersetzbare Quellnamen/Links, localeabhängiges Datum, keine Checkbox bei schreibgeschützten Terminen, Readonly-Marker nicht als Bestätigung verwendbar. Neue Node-Regression zur Funktions- und Datenintegrität.
+- Alle neuen Node-/Browser-/Connect-/Dashboard-CI-Prüfungen am Merge-HEAD auswerten. Release-Gate bleibt offen; PR #291 Draft und noindex unverändert.

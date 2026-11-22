@@ -137,3 +137,8 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(-
  #unified-shopping .shopping-source{color:#555!important}
  #unified-shopping input[type=checkbox]{appearance:auto;print-color-adjust:exact}
 }
+
+/* Source-owned deadline rows: open original tool without recording false completion. */
+.items li.connect-task > a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:5px 9px;color:#116c71;font-size:12px;font-weight:750;text-decoration:underline;text-underline-offset:3px}
+.items li.connect-task .connect-task-marker{display:inline-flex;align-items:center;justify-content:center;min-width:20px;font-size:16px}
+@media(max-width:500px){.items li.connect-task > a{grid-column:2;justify-self:end}}
