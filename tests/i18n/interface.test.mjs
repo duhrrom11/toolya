@@ -2918,3 +2918,48 @@ test('dynamic budget cards and receipt badges provide paired, display-only DE/EN
  assert.match(source,/escapeHaushaltsHtml\(r\.title\)/,'user-supplied savings title untouched');
  assert.match(source,/escapeHaushaltsHtml\(r\.date\)/,'recorded dates untouched');
 });
+
+
+test('budget locale-change refresh keeps unsaved budget inputs and record keys stable', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {fileURLToPath}=await import('node:url');
+ const {resolve,dirname}=await import('node:path');
+ const {createContext,runInContext}=await import('node:vm');
+ const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../../tools/budget/index.html'),'utf8');
+ const dictionary=source.match(/const budgetCategoryEn = Object\.freeze\((\{[\s\S]*?\})\);/);
+ const formatter=source.match(/function budgetCategoryLabel\(category\) \{[\s\S]*?\n        \}/);
+ const start=source.indexOf('function refreshBudgetDynamicLocale() {');
+ const end=source.indexOf("document.addEventListener('toolya:locale-change', refreshBudgetDynamicLocale)",start);
+ assert.ok(dictionary && formatter && start>0 && end>start,'source-backed budget locale refresh exists');
+ const {document}=parseHTML('<div id="budgetProgressList"><span data-budget-category="Wohnen">Wohnen</span></div><div id="budgetInputList"><label for="budget-amount-0">Lebensmittel:</label><input id="budget-amount-0" data-cat="Lebensmittel" value="150"></div>');
+ const input=document.getElementById('budget-amount-0');
+ input.value='175';
+ let savingsRefresh=0,receiptRefresh=0;
+ const context={
+  window:{__toolyaUILocale:'en'},document,toolyaCloudReady:true,
+  renderSavingsGoals:()=>{savingsRefresh++;},
+  renderTransactionList:()=>{receiptRefresh++;}
+ };
+ createContext(context);
+ runInContext(dictionary[0]+'\n'+formatter[0]+'\n'+source.slice(start,end),context);
+ runInContext('refreshBudgetDynamicLocale()',context);
+ assert.equal(document.querySelector('[data-budget-category]').textContent,'Housing');
+ assert.equal(document.querySelector('#budgetInputList label').textContent,'Groceries:');
+ assert.equal(input.value,'175','unsaved input preserved');
+ assert.equal(input.getAttribute('data-cat'),'Lebensmittel','stored category key unchanged');
+ context.window.__toolyaUILocale='de';
+ runInContext('refreshBudgetDynamicLocale()',context);
+ assert.equal(document.querySelector('[data-budget-category]').textContent,'Wohnen');
+ assert.equal(document.querySelector('#budgetInputList label').textContent,'Lebensmittel:');
+ assert.equal(input.value,'175');
+ assert.equal(savingsRefresh,2);
+ assert.equal(receiptRefresh,2);
+ context.toolyaCloudReady=false;
+ context.window.__toolyaUILocale='en';
+ runInContext('refreshBudgetDynamicLocale()',context);
+ assert.equal(document.querySelector('#budgetInputList label').textContent,'Lebensmittel:','cloud-gated refresh leaves inputs alone');
+ assert.equal(savingsRefresh,2);
+ assert.equal(receiptRefresh,2);
+ assert.ok(!source.slice(start,end).includes('saveBudgets('),'locale refresh never persists budgets');
+ assert.ok(!source.slice(start,end).includes('localStorage.setItem('),'locale refresh never writes storage');
+});
