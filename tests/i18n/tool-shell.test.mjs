@@ -60,10 +60,10 @@ test('language selection works in an isolated document without changing mascot p
  }
 });
 
-test('marketing only adds English locale to same-origin tool URLs',()=>{
+test('marketing passes page locale only to same-origin tool URLs',()=>{
  const js=read('shared/toolya/i18n/marketing.mjs');
  assert.match(js,/url\.origin!==location\.origin/);
  assert.match(js,/url\.pathname\.startsWith\('\/tools\/'\)/);
- assert.match(js,/url\.searchParams\.set\('lang','en'\)/);
+ assert.match(js,/url\.searchParams\.set\('lang',locale\)/);
  assert.doesNotMatch(js,/service_role|supabase\.auth/i);
 });
