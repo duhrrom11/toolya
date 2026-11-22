@@ -3247,3 +3247,58 @@ test('meter forecast and reading badge copy has paired DE/EN labels with escaped
  assert.match(source,/r\.type === filter/,'filter identifiers remain German');
  assert.match(source,/data\.readings\.filter\(r =>/,'no reading data migration');
 });
+
+
+test('car monthly fuel summary switches DE/EN with unchanged consumption and cost', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {fileURLToPath}=await import('node:url');
+ const {resolve,dirname}=await import('node:path');
+ const {createContext,runInContext}=await import('node:vm');
+ const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../../tools/car/index.html'),'utf8');
+ const begin=source.indexOf('if (monthTankEvents.length > 0) {');
+ const end=source.indexOf("document.getElementById('statEvents')",begin);
+ assert.ok(begin>0 && end>begin,'source-backed fuel renderer exists');
+ const {document}=parseHTML('<div id="fuelStatsBox" class="hidden"><div id="fuelStatsContent"></div></div>');
+ const fuelStatsBox=document.getElementById('fuelStatsBox');
+ const fuelStatsContent=document.getElementById('fuelStatsContent');
+ const events=[{litres:40,cost:72,consumption:6.4},{litres:20,cost:36,consumption:5.6}];
+ const context={window:{__toolyaUILocale:'en'},fuelStatsBox,fuelStatsContent,monthTankEvents:events};
+ createContext(context);
+ runInContext("const label=(de,en)=>window.__toolyaUILocale==='en'?en:de;\n"+source.slice(begin,end),context);
+ const english=fuelStatsContent.textContent;
+ assert.match(english,/Fuelled:/);
+ assert.match(english,/60\.0 litres/);
+ assert.match(english,/108,00 €/);
+ assert.match(english,/Avg\. consumption:/);
+ assert.match(english,/6,0 l\/100km/);
+ context.window.__toolyaUILocale='de';
+ runInContext(source.slice(begin,end),context);
+ const german=fuelStatsContent.textContent;
+ assert.match(german,/Getankt:/);
+ assert.match(german,/60\.0 Liter/);
+ assert.match(german,/Kosten:/);
+ assert.match(german,/Ø Verbrauch:/);
+ assert.deepEqual(events.map(e=>e.litres),[40,20]);
+ assert.deepEqual(events.map(e=>e.cost),[72,36]);
+ assert.ok(!/saveData\(|localStorage\.setItem\(/.test(source.slice(begin,end)),'render has no writes');
+ assert.match(source,/if \(toolyaCloudReady\) renderApp\(\)/,'existing locale event refreshes only after cloud ready');
+});
+
+test('car deadlines and vehicle actions have reversible source-backed DE/EN text', async () => {
+ const {readFileSync}=await import('node:fs');
+ const source=readFileSync(new URL('../../tools/car/index.html',import.meta.url),'utf8');
+ for(const [de,en] of [
+  ['Prognose: ca.','Forecast: approx.'],['Jahr','year'],
+  ['KM aktualisieren','Update mileage'],['Löschen','Delete'],
+  ['Notruf:','Emergency:'],['Fahrzeugschein anzeigen','View vehicle registration'],
+  ['Gesamtkosten:','Total costs:'],['Kosten ÷ Kilometerstand:','Costs ÷ mileage:'],
+  ['Überfällig seit ','Overdue by '],['Heute fällig!','Due today!'],
+  ['Fällig in ','Due in '],['kein Kennzeichen','no registration']
+ ]) assert.ok(source.includes(de) && source.includes(en),'missing paired car copy: '+de);
+ assert.match(source,/let carName = car \? car\.name : label\("Unbekannt","Unknown"\)/,'unknown vehicles are display-only');
+ assert.match(source,/e\.carId === parseInt\(selectedFilter\)/,'vehicle filter still uses original IDs');
+ assert.match(source,/e\.type === 'Tanken'/,'fuel event type is not translated in storage');
+ assert.match(source,/const totalTankCost = monthTankEvents\.reduce/,'numeric fuel aggregation remains');
+ assert.match(source,/const label = \(de, en\) => english \? en : de/,'labels use active locale');
+ assert.match(source,/window\.__toolyaUILocale === 'en' \? '-- Select vehicle --' : '-- Fahrzeug wählen --'/,'selector language does not depend on render-local closure');
+});
