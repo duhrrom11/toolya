@@ -2,10 +2,12 @@
 const {chromium}=require('playwright');
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const root=process.cwd();
+const i18nextBundle=path.join(root,"node_modules/i18next/dist/umd/i18next.min.js");
+const cdn="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js";
 const html=`<!doctype html><html lang="de"><head><title>Parkplatz-Merker</title></head><body>
 <header class="b3-header"><div class="b3-tool-title"><h1>Parkplatz-Merker</h1><p>Parken verwalten</p></div></header>
 <div id="timerStatus">Kein aktiver Parkschein-Timer</div>\n<button onclick="saveLocation()">Standort speichern</button>\n<span class="toolya-auth-loading" data-tool-en="Checking your sign-in…">Wir prüfen deine Anmeldung …</span>\n<a href="/umzugskisten/" data-tool-en="Step-by-step guide to moving boxes">Schritt-für-Schritt-Anleitung für Umzugskisten</a>
-<script type="module" src="/shared/toolya/i18n/tool-entry.mjs"></script>
+<script src="${cdn}"></script>\n<script type="module" src="/shared/toolya/i18n/tool-entry.mjs"></script>
 </body></html>`;
 const server=http.createServer((req,res)=>{
  const pathname=new URL(req.url,'http://localhost').pathname;
@@ -16,12 +18,6 @@ const server=http.createServer((req,res)=>{
  try{res.writeHead(200,{'content-type':'text/javascript'}).end(fs.readFileSync(file));}
  catch{res.writeHead(404).end();}
 });
-const fakeI18next=`window.i18next={
- isInitialized:false,bundles:{},init(options){this.isInitialized=true;this.options=options;return Promise.resolve(this)},
- addResourceBundle(lang,ns,data){(this.bundles[lang]??={})[ns]={...(this.bundles[lang]?.[ns]||{}),...data}},
- getResourceBundle(lang,ns){return this.bundles[lang]?.[ns]},
- t(key,o){return this.bundles[o.lng]?.[o.ns]?.[key]??o.defaultValue}
-};`;
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const browser=await chromium.launch({headless:true});
@@ -31,7 +27,7 @@ const fakeI18next=`window.i18next={
    // Prevent any external traffic and avoid production auth/storage.
    await context.route('**/*',route=>route.request().url().startsWith('http://127.0.0.1:')?route.continue():route.abort());
    await context.addInitScript({content:'window.__lastDialog=null;window.alert=message=>{window.__lastDialog=message};'});
-   if(mode==='loaded')await context.addInitScript({content:fakeI18next});
+   await context.route(cdn,route=>mode==='loaded'?route.fulfill({status:200,contentType:'text/javascript',body:fs.readFileSync(i18nextBundle)}):route.abort());
    const page=await context.newPage();
    const errors=[];page.on('pageerror',error=>errors.push(error.message));
    await page.goto('http://127.0.0.1:'+server.address().port+'/tools/'+tool+'/index.html');
@@ -59,6 +55,7 @@ const fakeI18next=`window.i18next={
    assert.equal(await page.locator('.ty-tool-language [data-tool-locale="de"]').getAttribute('aria-pressed'),'true');
    assert.deepEqual(errors,[],mode+' page errors');
    if(mode==='loaded')assert.equal(await page.evaluate(()=>window.i18next.isInitialized),true);
+   else assert.equal(await page.evaluate(()=>typeof window.i18next),'undefined');
    await context.close();
    console.log('PASS '+tool+' DE/EN/DE and prefix translation ('+mode+')');
   }
