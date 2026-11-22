@@ -508,11 +508,14 @@
         let movingCloudController = null;
         let movingCloudUserId = null;
         let movingCloudReady = false;
+        function updateMovingAffiliate(hasBoxes) {
+            document.documentElement.toggleAttribute('data-toolya-moving-boxes', hasBoxes);
+            document.dispatchEvent(new CustomEvent('toolya:moving-boxes', {detail:hasBoxes}));
+        }
         function movingCloudBlock(state) {
             movingCloudReady = false;
             window.movingCloudReady=false;
-            document.documentElement.removeAttribute('data-toolya-moving-boxes');
-            document.dispatchEvent(new CustomEvent('toolya:moving-boxes',{detail:false}));
+            updateMovingAffiliate(false);
             document.dispatchEvent(new Event("toolya:moving-ready"));
             movingCloudController?.invalidate();
             window.toolyaCloudPageStatus(state);
@@ -544,6 +547,7 @@
                 movingCloudUserId=uid;
                 movingCloudReady=true;
                 window.movingCloudReady=true;
+                updateMovingAffiliate(getData().boxes.length > 0);
                 document.dispatchEvent(new Event("toolya:moving-ready"));
                 document.getElementById('toolya-cloud-gate')?.remove();
                 loadLocationsDropdown();
@@ -571,6 +575,7 @@
                 if (error || !auth?.user?.id || auth.user.id!==movingCloudUserId || auth.user.is_anonymous)
                     throw Error('Anmeldung nicht mehr gültig.');
                 await movingCloudController.replace(data);
+                updateMovingAffiliate(data.boxes.length > 0);
                 window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Saved to Toolya Cloud.' : 'In Toolya Cloud gespeichert.');
                 document.dispatchEvent(new Event("toolya:moving-saved"));
                 return true;
@@ -835,9 +840,6 @@
         }
 
         function renderInventory() {
-            const hasBoxes = movingCloudReady && getData().boxes.length > 0;
-            document.documentElement.toggleAttribute('data-toolya-moving-boxes', hasBoxes);
-            document.dispatchEvent(new CustomEvent('toolya:moving-boxes', {detail:hasBoxes}));
             const container = document.getElementById('inventoryContainer');
             const search = document.getElementById('searchBox').value.toLowerCase();
             const tagFilter = document.getElementById('tagFilter').value;

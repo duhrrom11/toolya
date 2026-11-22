@@ -44,7 +44,11 @@ const pairs=new Map([
  ['privacy.html','en/privacy.html']
 ]);
 const bilingualPages=new Set(['404.html','offline.html']);
-const bilingualApps=new Map([['tools/moving/helper/index.html','helper-client.mjs']]);
+const bilingualApps=new Map([
+ ['tools/moving/helper/index.html',['helper-client.mjs','[data-helper-locale="en"]']],
+ ['account/register.html',['register.mjs','a#language[href="?lang=en"]']],
+ ['tools/gamification/index.html',['universe.mjs','a#language[href="?lang=en"]']],
+]);
 const redirectPages=new Set(['tools/wishes/index.html']);
 const supportedTools=new Set(['dashboard/index.html','admin-stats-dashboard/index.html','admin-stats-dashboard/wishlist-finder.html',
  ...['index','heirs','handover','print-key'].map(x=>'tools/estate/'+x+'.html'),
@@ -75,7 +79,8 @@ for(const f of html){
   :f==='dashboard/index.html'?'dashboard-entry.mjs'
   :'tool-entry.mjs';
  const appSwitch=supportedTools.has(f)&&source.includes(entrypoint);
- const bilingualApp=bilingualApps.has(f)&&source.includes(bilingualApps.get(f))&&Boolean(document.querySelector('[data-helper-locale="en"]'));
+ const bilingualEntry=bilingualApps.get(f);
+ const bilingualApp=Boolean(bilingualEntry&&source.includes(bilingualEntry[0])&&document.querySelector(bilingualEntry[1]));
  const hasEnglishRoute=isEnglish||appSwitch||bilingualApp||bilingualPages.has(f)||redirectPages.has(f)||Boolean(counterpart&&fileSet.has(counterpart));
  const noindex=Boolean(document.querySelector('meta[name="robots"]')?.getAttribute('content')?.includes('noindex'));
  const hasENLink=Boolean(document.querySelector('[data-set-locale="en"]'));

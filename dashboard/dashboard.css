@@ -43,7 +43,7 @@
 @media(max-width:740px){
  .b3-hub-topbar{gap:6px;padding:10px 12px}
  .b3-hub-logo{font-size:20px}
- .b3-hub-logo-mark,.b3-hub-nav [aria-current=page],.b3-hub-nav .ty-settings-label{display:none}
+ .b3-hub-logo-mark,.b3-hub-nav > [aria-current=page],.b3-hub-nav .ty-settings-label{display:none}
  .b3-hub-nav{gap:4px;justify-content:flex-end;flex:1;min-width:0;flex-wrap:nowrap}
  .b3-hub-nav a,.b3-hub-nav button{font-size:12px;padding:6px;white-space:normal;text-align:center;line-height:1.2}
  .b3-hub-nav #settingsBtn{flex:0 0 44px;width:44px;height:44px}
@@ -55,7 +55,8 @@
  .b3-hub-topbar{padding-inline:8px;gap:4px}
  .b3-hub-logo{font-size:19px}
  .b3-hub-nav a,.b3-hub-nav button{font-size:11px;padding-inline:4px}
- .b3-hub-nav #userInfo{padding-inline:5px}
+ .b3-hub-nav #userInfo{min-width:0;padding-inline:5px}
+ .b3-hub-nav .ty-dashboard-locale button{min-width:26px;padding-inline:3px}
 }
 
 /* Dashboard starts directly with the overview; no second hero card below the header. */

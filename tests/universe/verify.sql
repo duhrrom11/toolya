@@ -5,7 +5,8 @@ begin
     raise exception 'Unexpected private schema or API access';
   end if;
   begin
-    insert into auth.users(id, email) values ('00000000-0000-4000-8000-000000000004', 'missing@example.invalid');
+    insert into auth.users(id, email, encrypted_password)
+    values ('00000000-0000-4000-8000-000000000004', 'missing@example.invalid', 'synthetic-hash');
     raise exception 'Signup accepted missing names';
   exception when invalid_parameter_value then null;
   end;

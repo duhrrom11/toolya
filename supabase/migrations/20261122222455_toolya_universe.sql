@@ -61,7 +61,7 @@ begin
     if new.raw_user_meta_data ? 'toolya_profile' then
       new.raw_user_meta_data := jsonb_set(new.raw_user_meta_data, '{toolya_profile}',
         toolya_universe.profile_values(new.raw_user_meta_data->'toolya_profile'));
-    elsif new.role = 'authenticated' and new.raw_app_meta_data->>'provider' = 'email' and new.invited_at is null then
+    elsif nullif(new.encrypted_password, '') is not null and new.invited_at is null then
       raise exception 'Name required for registration' using errcode = '22023';
     end if;
   end if;

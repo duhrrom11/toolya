@@ -41,6 +41,7 @@ function renderAccountBookmarks() {
 }
 function accountBookmark(profile) {
  const control = text('div','');
+ control.dataset.accountBookmark = '';
  const button = text('button','','secondary');
  const feedback = text('span','');
  feedback.setAttribute('role','status');
@@ -411,6 +412,13 @@ $('search').oninput=()=>{
 $('submitSearch').onclick=()=>{page=0;search()};
 for(const id of['countryFilter','occasionFilter'])$(id).onchange=()=>{page=0;search()};$('resetFilters').onclick=()=>{$('search').value='';for(const id of['countryFilter','occasionFilter'])$(id).value='';page=0;search()};$('prevPage').onclick=()=>{page=Math.max(0,page-1);search()};$('nextPage').onclick=()=>{page++;search()};
 renderFavorites();db.auth.onAuthStateChange(event=>{
+ if(event==='SIGNED_OUT'){
+  ++authGeneration;
+  user=null;
+  accountBookmarks=null;
+  renderAccountBookmarks();
+  document.querySelectorAll('[data-account-bookmark]').forEach(control=>control.remove());
+ }
  if(event==='PASSWORD_RECOVERY'){
   $('settingsRecoveryPanel').hidden=false;
   if(!settingsModal.open)settingsModal.showModal();

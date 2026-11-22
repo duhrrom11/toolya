@@ -8,14 +8,13 @@ const readTool = name => readFile(new URL('../../tools/' + name + '/index.html',
 for (const name of ['parking', 'loans']) {
  test(name + ': bilingual register/login/logout without production backend', async () => {
   const html = await readTool(name);
-  const start = html.indexOf('async function supabaseRegister()');
+  const start = html.indexOf('function supabaseRegister()');
   const end = html.indexOf('async function checkUserSession()', start);
   assert.ok(start >= 0 && end > start, 'auth functions found');
   const alerts = [], calls = [];
   const fields = { 'auth-email': {value: ''}, 'auth-password': {value: ''} };
-  const window = {__toolyaUILocale:'en'};
+  const window = {__toolyaUILocale:'en',toolyaRegister:()=>calls.push(['register-page'])};
   const auth = {
-   async signUp(values){calls.push(['register',values]);return {error:null}},
    async signInWithPassword(values){calls.push(['login',values]);return {error:null}},
    async signOut(){calls.push(['logout']);return {error:null}}
   };
@@ -27,32 +26,31 @@ for (const name of ['parking', 'loans']) {
   runInNewContext(html.slice(start,end),context);
   const invoke = name => runInNewContext(name + '()',context);
   await invoke('supabaseRegister');
+  assert.deepEqual(calls,[['register-page']]);
   await invoke('supabaseLogin');
-  assert.deepEqual(alerts,['Please enter your email and password.','Please enter your email and password.']);
-  assert.equal(calls.length,0);
+  assert.deepEqual(alerts,['Please enter your email and password.']);
   window.__toolyaUILocale='de';
-  await invoke('supabaseRegister');
+  await invoke('supabaseLogin');
   assert.equal(alerts.at(-1),'Bitte E-Mail und Passwort eingeben.');
   fields['auth-email'].value='fake@example.invalid';
   fields['auth-password'].value='fake-password';
   window.__toolyaUILocale='en';
-  await invoke('supabaseRegister');
   await invoke('supabaseLogin');
   await invoke('supabaseLogout');
-  assert.deepEqual(alerts.slice(-3),['Registration successful!','Signed in successfully!','Signed out.']);
-  assert.deepEqual(calls.map(x=>x[0]),['register','refresh','login','refresh','close','logout','refresh']);
-  assert.equal(calls[0][1].email,'fake@example.invalid');
-  assert.equal(calls[0][1].password,'fake-password');
+  assert.deepEqual(alerts.slice(-2),['Signed in successfully!','Signed out.']);
+  assert.deepEqual(calls.map(x=>x[0]),['register-page','login','refresh','close','logout','refresh']);
+  assert.equal(calls[1][1].email,'fake@example.invalid');
+  assert.equal(calls[1][1].password,'fake-password');
  });
 }
 
 for (const name of ['plants','baking','moving']) {
  test(name + ': guarded auth messages retain original DE and offer EN',async()=>{
   const html=await readTool(name);
-  for(const text of ['Please enter your email and password.','Registration failed: ','Sign-in failed: ','Sign-out failed: ','Signed in. Your account is ready.','Request processed. If confirmation is required']) {
+  for(const text of ['Please enter your email and password.','Sign-in failed: ','Sign-out failed: ']) {
    assert.ok(html.includes(text),name+' missing '+text);
   }
-  for(const text of ['Bitte E-Mail und Passwort eingeben.','Registrierung fehlgeschlagen: ','Anmeldung fehlgeschlagen: ','Abmeldung fehlgeschlagen: ']) {
+  for(const text of ['Bitte E-Mail und Passwort eingeben.','Anmeldung fehlgeschlagen: ','Abmeldung fehlgeschlagen: ']) {
    assert.ok(html.includes(text),name+' DE changed '+text);
   }
   assert.ok(html.includes('window.__toolyaUILocale'),name+' missing locale switch');
@@ -94,9 +92,9 @@ for (const name of ['parking','loans']) {
  });
 }
 
-test('moving: registration and session refresh keep the active language and latest identity', async () => {
+test('moving: session refresh keeps the latest identity when an older request resolves later', async () => {
  const html = await readTool('moving');
- const start = html.indexOf('async function registerUser()');
+ const start = html.indexOf('function registerUser()');
  const end = html.indexOf('function openSettings()', start);
  assert.ok(start >= 0 && end > start);
  const fields = {
@@ -106,20 +104,18 @@ test('moving: registration and session refresh keep the active language and late
  const alerts = [];
  const pending = [];
  const window = {__toolyaUILocale:'en', supabaseClient:{auth:{
-  async signUp(){return {data:{session:null},error:null}},
   getUser(){return new Promise(resolve=>pending.push(resolve))}
  }}};
  const context = {window, document:{getElementById:id=>fields[id]}, alert:value=>alerts.push(value), closeSettings(){}};
  runInNewContext(html.slice(start,end),context);
- await runInNewContext('registerUser()',context);
- assert.match(alerts.at(-1),/^Request processed\. If confirmation is required/);
+ const previousRefresh = runInNewContext('updateUserDisplay()',context);
  const latestRefresh = runInNewContext('updateUserDisplay()',context);
  assert.equal(pending.length,2);
  pending[1]({data:{user:null},error:{name:'AuthSessionMissingError'}});
  await latestRefresh;
  assert.equal(fields.userInfo.textContent,'Nicht angemeldet');
  pending[0]({data:{user:{email:'old-account@example.invalid'}},error:null});
- await Promise.resolve();
+ await previousRefresh;
  assert.equal(fields.userInfo.textContent,'Nicht angemeldet');
  assert.equal(fields.cloudStatus.textContent,'Nicht angemeldet');
 });

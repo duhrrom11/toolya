@@ -26,6 +26,7 @@ for(const tool of tools){
     window:{__toolyaUILocale:lang,toolyaNotice:(type,text)=>notices.push([type,text]),supabaseClient:{auth}},
     supabaseClient:{auth},[tool.ready]:true,[tool.controller]:controller,[tool.user]:'fixture-user',
     movingCloudBlock:reason=>blocked.push(reason),
+    updateMovingAffiliate:()=>{},
     plantsCloudBlock:reason=>blocked.push(reason),
     bakingCloudBlock:reason=>blocked.push(reason)
    };

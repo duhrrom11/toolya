@@ -10,6 +10,12 @@ translate({
   login: ['Bereits ein Konto? Anmelden', 'Already have an account? Sign in'], privacy: ['Datenschutz', 'Privacy'],
 });
 installCountries();
+const language = document.querySelector('#language');
+const otherLanguage = new URL(location.href);
+otherLanguage.searchParams.set('lang', t('en', 'de'));
+language.href = otherLanguage.href;
+language.lang = t('en', 'de');
+language.textContent = t('English', 'Deutsch');
 const form = document.querySelector('#signup');
 const result = document.querySelector('#result');
 const destination = safeReturn(new URLSearchParams(location.search).get('next'));

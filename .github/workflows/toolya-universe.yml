@@ -52,10 +52,24 @@ jobs:
       - name: Verify migration reapplication and account isolation
         run: |
           psql -v ON_ERROR_STOP=1 -f tests/universe/fixture.sql
+          psql -v ON_ERROR_STOP=1 -f tests/universe/tool-fixture.sql
           for run in 1 2; do
             psql -v ON_ERROR_STOP=1 -f "$(find supabase/migrations -name '*_toolya_universe.sql')"
           done
           psql -v ON_ERROR_STOP=1 -f tests/universe/verify.sql
+      - name: Verify account creation and local email with real GoTrue
+        env:
+          UNIVERSE_AUTH_TEST_DB: postgres://universe:isolated-only@127.0.0.1:5432/universe_auth_fixture
+          UNIVERSE_GOTRUE: /tmp/universe-gotrue
+        run: |
+          auth_image=supabase/gotrue@sha256:d27676aa4d70689de720f0f73e29edd2383267473003e2944576a323efdad1c8
+          docker pull "$auth_image"
+          auth_container=$(docker create "$auth_image")
+          trap 'docker rm "$auth_container"' EXIT
+          docker cp "$auth_container:/usr/local/bin/auth" "$UNIVERSE_GOTRUE"
+          chmod +x "$UNIVERSE_GOTRUE"
+          createdb universe_auth_fixture
+          node tests/universe/auth.cjs
       - name: Verify original mascots
         working-directory: assets/toolya/originals
         run: sha256sum --check SHA256SUMS

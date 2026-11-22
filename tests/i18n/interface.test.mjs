@@ -824,42 +824,20 @@ test('saved household redirect keeps explicitly requested DE/EN and does not for
  }
 });
 
-test('registration outcome messages require an actual auth session across three tools',async()=>{
+test('tools share one registration form with required names and bilingual confirmation messages',async()=>{
  const {readFile}=await import('node:fs/promises');
- const {createContext,runInContext}=await import('node:vm');
- const pending='Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.';
- const ready='Angemeldet. Dein Konto ist einsatzbereit.';
- for(const [tool,method,nextMethod] of [
-  ['moving','registerUser','loginUser'],
-  ['plants','supabaseRegister','supabaseLogin'],
-  ['baking','supabaseRegister','supabaseLogin']
- ]){
+ for(const tool of ['moving','plants','baking']){
   const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
-  const start=html.indexOf('async function '+method+'() {');
-  const end=html.indexOf('async function '+nextMethod+'()',start);
-  assert.ok(start>0&&end>start,tool+' registration function exists');
-  const fragment=html.slice(start,end);
-  for(const [session,expected] of [[null,pending],[{access_token:'opaque'},ready]]){
-   const messages=[];
-   const mockClient={auth:{signUp:async()=>({data:{session},error:null})}};
-   const values={'loginEmail':'someone@example.org','loginPassword':'example','auth-email':'someone@example.org','auth-password':'example'};
-   const ctx={
-    document:{getElementById:id=>({value:values[id]||''})},
-    window:{supabaseClient:mockClient},
-    supabaseClient:mockClient,
-    alert:msg=>messages.push(msg),
-    updateUserDisplay:async()=>{},
-    checkUserSession:async()=>{},
-    closeSettings:()=>{}
-   };
-   createContext(ctx);
-   runInContext(fragment,ctx);
-   await runInContext(method+'()',ctx);
-   assert.deepEqual(messages,[expected],tool+' message depends on a real session');
-   assert.equal(mockClient.auth.signUp instanceof Function,true);
-   assert.equal(translateToolDialog(tool,'en',expected),session?'Signed in. Your account is ready.':'Request processed. If confirmation is required, check your inbox and verify your email address, then sign in.');
-  }
+  assert.match(html,/function (?:registerUser|supabaseRegister)\(\) \{ window\.toolyaRegister\(\); \}/);
+  assert.doesNotMatch(html,/\.auth\.signUp\(/);
  }
+ const form=await readFile(new URL('../../account/register.html',import.meta.url),'utf8');
+ const flow=await readFile(new URL('../../account/register.mjs',import.meta.url),'utf8');
+ assert.match(form,/name="first" required/);
+ assert.match(form,/name="last" required/);
+ assert.match(flow,/Bestätige deine Adresse|bestätige deine Adresse/);
+ assert.match(flow,/Check your inbox to confirm your email address/);
+ assert.match(flow,/data\?\.session/);
 });
 
 test('sign-out errors across moving, plants and baking do not claim success or refresh the account',async()=>{
@@ -964,17 +942,16 @@ test('account verification distinguishes a missing session from temporary Supaba
  }
 });
 
-test('authentication network failures are reported without claiming registration or login success',async()=>{
+test('authentication network failures are reported without claiming login success',async()=>{
  const {readFile}=await import('node:fs/promises');
  const {createContext,runInContext}=await import('node:vm');
- for(const [tool,register,login,logout] of [
-  ['moving','registerUser','loginUser','logoutUser'],
-  ['plants','supabaseRegister','supabaseLogin','supabaseLogout'],
-  ['baking','supabaseRegister','supabaseLogin','supabaseLogout']
+ for(const [tool,login,logout] of [
+  ['moving','loginUser','logoutUser'],
+  ['plants','supabaseLogin','supabaseLogout'],
+  ['baking','supabaseLogin','supabaseLogout']
  ]){
   const html=await readFile(new URL('../../tools/'+tool+'/index.html',import.meta.url),'utf8');
   for(const [method,next,verb,prefix,translated] of [
-   [register,login,'signUp','Registrierung fehlgeschlagen: ','Registration failed: '],
    [login,logout,'signInWithPassword','Anmeldung fehlgeschlagen: ','Sign-in failed: ']
   ]){
    const start=html.indexOf('async function '+method+'() {');
@@ -1050,24 +1027,26 @@ test('global password recovery remains a single token-based flow; tool translati
  assert.match(homepage,/first\.value\.length < 8 \|\| first\.value !== second\.value/,'password confirmation is required');
  assert.match(homepage,/redirectTo: "https:\/\/toolya\.app\/index\.html"/,'the recovery token targets the central account page');
  const {runInNewContext}=await import('node:vm');
- for(const [search,saved,expected] of [
-  ['?lang=en','de','../../index.html?auth=required&lang=en'],
-  ['?lang=de','en','../../index.html?auth=required'],
-  ['','en','../../index.html?auth=required&lang=en'],
-  ['',null,'../../index.html?auth=required'],
+ for(const [search,saved,language] of [
+  ['?lang=en','de','en'], ['?lang=de','en',null], ['','en','en'], ['',null,null],
  ]){
   let destination;
+  const href='https://toolya.test/tools/moving/index.html'+search+'#room';
   const window={
-   location:{search,replace:value=>{destination=value}},
+   location:{href,pathname:'/tools/moving/index.html',search,hash:'#room',replace:value=>{destination=value}},
    localStorage:{getItem:()=>saved},
    supabase:{createClient:()=>({auth:{getUser:()=>Promise.resolve({data:{user:null}}),onAuthStateChange(){}}})},
   };
   runInNewContext(authGate,{
-   window,URLSearchParams,document:{documentElement:{},addEventListener(){}},
+   window,URL,URLSearchParams,location:window.location,document:{documentElement:{},addEventListener(){}},
    setTimeout:()=>1,clearTimeout() {},
   });
   await Promise.resolve();
-  assert.equal(destination,expected);
+  const url=new URL(destination);
+  assert.equal(url.pathname,'/index.html');
+  assert.equal(url.searchParams.get('auth'),'required');
+  assert.equal(url.searchParams.get('lang'),language);
+  assert.equal(url.searchParams.get('next'),'/tools/moving/index.html'+search+'#room');
  }
  assert.doesNotMatch(authGate,/resetPasswordForEmail|updateUser\(/,'auth gate does not invent another password recovery flow');
 });
