@@ -96,3 +96,11 @@ Plant care [i18next run 45003515686](https://github.com/duhrrom11/toolya/actions
 No further acceptance: baking `45003693451`/`45003693384`, budget `45003751872`/`45003751863`, meters `45003818330`/`45003818353`, car `45004006512`/`45004006463`, and lent items `45004155786`/`45004155785` each had browser, Node and static-check jobs **queued**. No completed failure to fix. Four previously accepted tools remain parking, moving, housemates, plants.
 
 **Pet health** (`tools/pet-health/index.html`): integrated pinned i18next UMD and existing opt-in singleton with legacy fallback. Expanded isolated browser fixture to ten tools × two modes (20 scenarios); integration commit `c394c209adcee60edd7fb64a566f8fce3f1e78d5`. This is **implementation only, CI pending**; no authenticated production E2E acceptance. No changes to `main`, deployed site or Supabase production data.
+
+## Baking and budget acceptance (2026-11-22)
+
+**Baking accepted (isolated i18next pilot):** commit `067b4d73c58034c92b200cc1e202981e8c076f58`; [i18next run 45003693451](https://github.com/duhrrom11/toolya/actions/runs/45003693451) passed browser job `137150501333` and Node job `137150501172`. Browser log confirms ten successful DE→EN→DE / prefix cases across parking, moving, housemates, plants and baking, with pinned i18next loaded and CDN blocked. [Static run 45003693384](https://github.com/duhrrom11/toolya/actions/runs/45003693384) passed `i18n-tests` job `137150500687`.
+
+**Budget accepted (isolated i18next pilot):** commit `f7cacb993a4ecf4d7a14f8c5d11203d63673be3e`; [i18next run 45003751872](https://github.com/duhrrom11/toolya/actions/runs/45003751872) passed browser job `137150683099` and Node job `137150683276`. Browser log confirms twelve successful DE→EN→DE / prefix cases across the previous five tools and budget, with i18next loaded and CDN blocked. [Static run 45003751863](https://github.com/duhrrom11/toolya/actions/runs/45003751863) passed `i18n-tests` job `137150683301`.
+
+Acceptance covers isolated pilot scenarios, not authenticated production E2E. Meter readings, car costs and lent items remain pending browser/Node CI at this checkpoint. Six tools accepted in total; no changes to `main`, production website or Supabase production data.
