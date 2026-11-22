@@ -2863,7 +2863,8 @@ test('housemate rotating support text provides six paired, locale-aware labels',
  assert.equal(translatedLabels.length,6,'six corresponding English messages');
  assert.ok(translatedLabels.every((entry)=>entry.length>5 && !originalLabels.includes(entry)));
  assert.match(source,/kofiEl\.dataset\.kofiCopyIndex = String\(idx\)/,'selected message index is preserved');
- assert.match(source,/document\.addEventListener\('toolya:locale-change', \(\) => \{\s*const kofiEl = document\.getElementById\('kofiText'\)/,'visible message refreshes when the locale changes');
+ assert.match(source,/function refreshVisibleKofiText\(\) \{\s*const kofiEl = document\.getElementById\('kofiText'\)/,'visible-message refresh reads existing selected index');
+ assert.match(source,/document\.addEventListener\('toolya:locale-change', \(\) => \{\s*refreshVisibleKofiText\(\)/,'the single existing locale handler invokes the refresh');
 });
 
 
