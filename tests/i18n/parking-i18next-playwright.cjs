@@ -4,7 +4,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
 const root=process.cwd();
 const html=`<!doctype html><html lang="de"><head><title>Parkplatz-Merker</title></head><body>
 <header class="b3-header"><div class="b3-tool-title"><h1>Parkplatz-Merker</h1><p>Parken verwalten</p></div></header>
-<div id="timerStatus">Kein aktiver Parkschein-Timer</div>
+<div id="timerStatus">Kein aktiver Parkschein-Timer</div>\n<button onclick="saveLocation()">Standort speichern</button>
 <script type="module" src="/shared/toolya/i18n/tool-entry.mjs"></script>
 </body></html>`;
 const server=http.createServer((req,res)=>{
@@ -38,10 +38,16 @@ const fakeI18next=`window.i18next={
    await page.locator('.ty-tool-language [data-tool-locale="en"]').click();
    if(tool==='parking')assert.equal(await page.locator('#timerStatus').textContent(),'No active parking timer',mode+' English status');
    assert.equal(await page.locator('.ty-tool-language [data-tool-locale="en"]').getAttribute('aria-pressed'),'true');
+   if(tool==='moving')assert.equal(await page.locator('button[onclick="saveLocation()"]' ).textContent(),'Save location',mode+' moving selector');
    const translated=await page.evaluate(()=>{window.alert('Anmeldung fehlgeschlagen: Error 401');return window.__lastDialog;});
    assert.equal(translated,'Sign-in failed: Error 401',mode+' dialog prefix');
+   if(tool==='moving'){
+    const dialog=await page.evaluate(()=>{window.alert('Diese Kiste ist einem aktiven Umzug zugeordnet. Bitte den Umzug erst abschließen.');return window.__lastDialog;});
+    assert.equal(dialog,'This box is assigned to an active move. Finish the move first.',mode+' moving dialog');
+   }
    await page.locator('.ty-tool-language [data-tool-locale="de"]').click();
    if(tool==='parking')assert.equal(await page.locator('#timerStatus').textContent(),'Kein aktiver Parkschein-Timer',mode+' German status');
+   if(tool==='moving')assert.equal(await page.locator('button[onclick="saveLocation()"]' ).textContent(),'Standort speichern',mode+' German moving selector');
    assert.equal(await page.locator('.ty-tool-language [data-tool-locale="de"]').getAttribute('aria-pressed'),'true');
    assert.deepEqual(errors,[],mode+' page errors');
    if(mode==='loaded')assert.equal(await page.evaluate(()=>window.i18next.isInitialized),true);
