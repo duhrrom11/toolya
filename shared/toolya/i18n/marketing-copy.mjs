@@ -23,5 +23,11 @@ export const MARKETING_COPY=Object.freeze({
  'Umzugskisten mit QR-Etiketten organisieren':'Organize moving boxes with QR labels',
  'Gießen und Pflanzenpflege im Blick behalten':'Keep track of watering and plant care',
  'Haushaltseinnahmen, Ausgaben und Budgets verwalten':'Track household income, spending and budgets',
+ 'WG-Ausgaben teilen und Aufgaben organisieren':'Split roommate expenses and organize shared tasks',
+ 'Kuchenrezepte für unterschiedliche Backformen umrechnen':'Resize cake recipes for different baking pans',
+ 'Autokosten, Kraftstoff und Wartung erfassen':'Track car costs, fuel and maintenance',
+ 'Tiergesundheit und Impfungen dokumentieren':'Keep a pet health and vaccination diary',
+ 'Verliehene Dinge und Rückgabetermine verwalten':'Track lent items and their return dates',
+ 'Strom-, Gas- und Wasserzählerstände erfassen':'Record electricity, gas and water meter readings',
  'Konto wird geprüft …':'Checking your account…'
 });
