@@ -69,7 +69,7 @@ const server=http.createServer((req,res)=>{
     const actual=await full.newPage();
     await actual.goto('http://127.0.0.1:'+server.address().port+'/tools/'+tool+'/index.html?full=1',{waitUntil:'domcontentloaded'});
     assert.ok(await actual.locator('body').count(),tool+' full HTML loads');
-    assert.ok((await actual.locator('body').innerText()).length>100,tool+' full HTML contains interface');
+    assert.ok((await actual.locator('body').textContent()).length>100,tool+' full HTML contains interface');
     await full.close();
    }
    console.log('PASS '+tool+' DE/EN/DE and prefix translation ('+mode+')');
