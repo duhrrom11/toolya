@@ -110,3 +110,17 @@ Acceptance covers isolated pilot scenarios, not authenticated production E2E. Me
 **Meter readings accepted (isolated pilot):** integration commit `5e61430d1480185f5e7461b0bfb220624d24bd00`. [i18next run 45003818330](https://github.com/duhrrom11/toolya/actions/runs/45003818330) passed browser job `137150889511` and Node job `137150889370`. Browser logs confirm 14 passing DE→EN→DE scenarios across seven tools with i18next loaded and CDN blocked. [Static run 45003818353](https://github.com/duhrrom11/toolya/actions/runs/45003818353) passed i18n-tests job `137150889744`. This is isolated pilot acceptance only, not authenticated production E2E.
 
 **Queue controls:** `budget-live-health.yml` now deduplicates superseded PR runs while retaining main checks (`ce6f5f59`). `i18next-pilot.yml` separates PR from push concurrency and extends PR path coverage to all migrated tools (`c35291df`); required PR checks are preserved. Other queued workflow runs remain; runner quota/capacity root cause is unverified. Car and loans still lack completed browser/Node jobs at this checkpoint. No production changes.
+
+## Final isolated i18next pilot acceptances (2026-11-22)
+
+All ten migrated tools have now passed their scoped isolated i18next pilot acceptance. The following previously pending integrations were independently verified via GitHub job conclusions and browser logs:
+
+| Tool | i18next run | Browser job | Node job | Static run / job | Browser checks |
+| --- | --- | --- | --- | --- | --- |
+| Car costs (`car`) | [45004006512](https://github.com/duhrrom11/toolya/actions/runs/45004006512) | `137151466288` success | `137151466098` success | [45004006463](https://github.com/duhrrom11/toolya/actions/runs/45004006463) / `137151466087` success | 16/16 PASS (8 tools × loaded/CDN-blocked) |
+| Loans (`loans`) | [45004155786](https://github.com/duhrrom11/toolya/actions/runs/45004155786) | `137151912340` success | `137151912528` success | [45004155785](https://github.com/duhrrom11/toolya/actions/runs/45004155785) / `137151912005` success | 18/18 PASS (9 tools × loaded/CDN-blocked) |
+| Pet health (`pet-health`) | [45004312268](https://github.com/duhrrom11/toolya/actions/runs/45004312268) | `137152379505` success | `137152379753` success | [45004312287](https://github.com/duhrrom11/toolya/actions/runs/45004312287) / `137152379574` success | 20/20 PASS (10 tools × loaded/CDN-blocked) |
+
+Each browser check verifies DE→EN→DE and prefix translation in an isolated fixture. **Not** an authenticated live-site end-to-end or production deployment acceptance.
+
+**Queue observation:** For documentation commit `5659b883`, 15 associated PR workflow runs were returned: 11 successful, one failed (`Toolya platform and mascot release`), two in progress, one queued (`Budget Clever sparen – Checks`). This shows substantial queue processing compared with the earlier 13 queued / 2 pending snapshot, but does not establish the root cause of earlier runner delays. The failed workflow is unrelated to the above i18next pilot conclusions and requires separate investigation.
