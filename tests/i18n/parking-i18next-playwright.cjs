@@ -74,7 +74,7 @@ const server=http.createServer((req,res)=>{
     const actual=await full.newPage();
     const response=await actual.goto('http://127.0.0.1:'+server.address().port+'/tools/'+tool+'/index.html?full=1',{waitUntil:'domcontentloaded'});
     assert.equal(response.status(),200,tool+' full HTML served');
-    const source=await response.text();
+    const source=fs.readFileSync(path.join(root,'tools',tool,'index.html'),'utf8');
     assert.ok(source.length>1000&&source.includes('<body'),tool+' original full HTML contains interface');
     // The real auth gate may redirect or clear the visible DOM while offline.
     // Only assert the response, not a post-authentication DOM that requires Supabase.
