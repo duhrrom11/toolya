@@ -207,7 +207,7 @@
                         <option value="value-desc" data-tool-en="Highest value first">Höchster Wert zuerst</option>
                         <option value="value-asc">Geringster Wert zuerst</option>
                     </select></label>
-                    <label class="helferlein-field" for="searchBox"><span class="helferlein-field-label">🔍 Suchen (Kiste, Artikel, Barcode)...</span><input type="text" id="searchBox" oninput="renderInventory()" placeholder="🔍 Suchen (Kiste, Artikel, Barcode)..." class="p-2 border rounded-xl text-sm flex-grow md:w-56" aria-label="🔍 Suchen (Kiste, Artikel, Barcode)..."></label>
+                    <label class="helferlein-field" for="searchBox"><span class="helferlein-field-label">🔍 Suchen (Kiste, Artikel, Barcode)...</span><input type="text" id="searchBox" oninput="renderInventory()" placeholder="🔍 Suchen (Kiste, Artikel, Barcode)..." class="p-2 border rounded-xl text-sm flex-grow md:w-56" aria-label="🔍 Suchen (Kiste, Artikel, Barcode)..." data-tool-en-placeholder="🔍 Search (box, item, barcode)…" data-tool-en-aria-label="🔍 Search (box, item, barcode)…"></label>
                 </div>
             </div>
             <div id="inventoryContainer" class="space-y-4">
@@ -280,7 +280,7 @@
     <!-- MODAL: Foto Zoom -->
     <dialog id="imageModal" class="b3-photo-dialog" aria-label="Bildvorschau" onclick="if (event.target === this) closeImageModal()">
         <div class="b3-photo-panel">
-            <img id="zoomedImage" src="" alt="Vergrößertes Foto der Umzugskiste" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain">
+            <img id="zoomedImage" src="" alt="Vergrößertes Foto der Umzugskiste" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain" data-tool-en-alt="Enlarged moving box photo">
             <button type="button" class="b3-action b3-outline" onclick="closeImageModal()" autofocus>Schließen</button>
         </div>
     </dialog>
