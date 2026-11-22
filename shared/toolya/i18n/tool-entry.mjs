@@ -31,7 +31,7 @@ function mountToolLanguage(){
  // Pilot: use an existing i18next singleton only when it has been initialized.
  // Do not initialize a second runtime or change any tool/account data.
  let i18nextAdapter=null;
- if((['parking','moving','housemates','plants','baking','budget','meters'].includes(name)) && initializeToolyaI18next(uiGlobal.i18next)){
+ if((['parking','moving','housemates','plants','baking','budget','meters','car'].includes(name)) && initializeToolyaI18next(uiGlobal.i18next)){
    try{i18nextAdapter=createToolyaI18nextAdapter(uiGlobal.i18next);}catch(_){/* legacy fallback */}
  }
  const localizeDialog=(message)=>{
