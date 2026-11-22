@@ -12,6 +12,8 @@ test('DE/EN dashboard preserves source-owned due-task permissions and localizes 
  const section=html.slice(start,end);
  assert.match(section,/if\(!item\.readonly\)/);
  assert.match(section,/cb\.onchange=\(\)=>changeConnected\(item,cb\.checked\)/);
+ assert.match(section,/item\.origin\+' · '\+item\.text\+' erledigt'/);
+ assert.match(section,/tx\(item\.origin\)\+' · '\+item\.text\+' as completed'/);
  assert.match(section,/connect-task-marker/);
  assert.match(section,/marker\.setAttribute\('aria-hidden','true'\)/);
  assert.match(section,/toLocaleDateString\(dashboardDateLocale\(\)/);

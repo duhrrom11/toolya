@@ -510,3 +510,8 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 - Neue produktive Main-Erweiterung als nichtdestruktiver Zwei-Eltern-Merge ausschließlich in den Feature-Branch übernommen: Verleih-Rückgaben, Fahrzeug- und Haustier-Termine in der Dashboard-Aufgabenaggregation. Quelle und CloudOnly-Verantwortlichkeit bleiben unverändert.
 - Konfliktstelle in Dashboard-Renderer mit i18n kombiniert: übersetzbare Quellnamen/Links, localeabhängiges Datum, keine Checkbox bei schreibgeschützten Terminen, Readonly-Marker nicht als Bestätigung verwendbar. Neue Node-Regression zur Funktions- und Datenintegrität.
 - Alle neuen Node-/Browser-/Connect-/Dashboard-CI-Prüfungen am Merge-HEAD auswerten. Release-Gate bleibt offen; PR #291 Draft und noindex unverändert.
+
+## 22.11.2026 – Accessible-Name-Regression nach Dashboard/Main-Merge
+
+- Zwei isolierte Chromium-Workflows meldeten nicht wiedergefundene Quellen-Checkbox nach dem Main-Merge, da der zugängliche Name den Quellnamen verlor. DE behält `WG-Putzplan` beziehungsweise `Verliehene Dinge` plus wörtlichen Titel, EN übersetzt nur die UI-Markierung und den feststehenden Quellnamen. Ergänzende Regression hinzugefügt.
+- Ziel: beide Connect-Browser-Workflows vollständig grün, keine Änderung an Rückgabestatus/Readonly-Hinweisen. Tests müssen neu ausgeführt werden.

@@ -190,3 +190,9 @@ Basis `cc9876d92ce5dfefc1504098ea73a3fd03969dac`: 209/209 statische Node-i18n-Te
 - Im Dashboard bleiben Leih-Rückgaben als abschließbare Aufgaben und Auto-/Tier-Fristen strikt nur als lesbare Hinweise markiert; englische Beschriftung, Quellnamen und Datumsformat ergänzt, Freitexte bleiben unverändert. Isolierte Node-Regression für Readonly und Datenintegrität ergänzt.
 - Vor diesem Integrationspaket: 18/18 Actions grün auf `6b606891`; Dokumentations-HEAD `e72f4d304b27f54d82ba72c9138967605123261f` war ebenfalls grün, aber nicht jede der 18 Prüfungen wurde auf einem reinen Dokumentationscommit neu angestoßen. **CI für den neuen Merge-HEAD ist separat nachzuweisen.**
 - Release weiterhin **NOT READY / Draft**: i18n-Gesamtaudit, 34 Tool-Ansichten, 48 Laufzeitdateien und Auth-/Export-/A11y-Prüfungen offen. Keine produktiven Daten, kein Deployment, kein Entfernen von `noindex`, keine Markenasset-Änderungen.
+
+### 22.11.2026 – Dashboard-Connect-A11y-CI: Regression und Korrektur
+
+- Auf dem ersten Main-Integrations-HEAD `d8d57f057650eda03c1d46cd896efae6306f8ae1` schlugen die beiden Connect-Browser-Workflows [44992417252](https://github.com/duhrrom11/toolya/actions/runs/44992417252) und [44992417364](https://github.com/duhrrom11/toolya/actions/runs/44992417364) fehl: die isolierte Chromium-Prüfung erwartet für den Verleih-Checkbox-Accessible-Name den Quellnamen `Verliehene Dinge` vor dem Rückgabetitel. Die neue i18n-Beschriftung hatte den Quellnamen versehentlich entfernt; 11/11 und 12/12 vorherige Node-Tests waren grün.
+- Korrektur: Zugängliche Checkbox-Namen erhalten in DE die originalen Quellnamen und den wörtlichen Aufgabentext; EN übersetzt nur den bekannten Quellnamen und die UI-Aktionsformulierung. Persistierte Statuscodes, Nutzertexte und Aufgabenhoheit bleiben unverändert. Isolierte Node-Regression dafür ergänzt.
+- **Verifikation der Korrektur steht aus, bis die neuen CI-Läufe grün sind.** Release weiterhin NOT READY und PR Draft.

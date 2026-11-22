@@ -265,8 +265,8 @@ function renderItems() {
     if(!item.readonly) {
       const cb=document.createElement('input');cb.type='checkbox';cb.checked=false;cb.disabled=connectedBusy;
       cb.setAttribute('aria-label',dashboardLocale()==='en'
-        ? 'Mark task as completed: '+item.text
-        : 'Aufgabe erledigt: '+item.text);
+        ? 'Mark '+tx(item.origin)+' · '+item.text+' as completed'
+        : item.origin+' · '+item.text+' erledigt');
       cb.onchange=()=>changeConnected(item,cb.checked);
       li.append(cb);
     } else {
