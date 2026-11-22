@@ -1206,13 +1206,30 @@
             "Werkzeuge wie dieses kostenlos halten & Kaffee spendieren ☕"
         ];
 
+        const kofiSpruecheEn = [
+            "Buy the developer a coffee ☕",
+            "Fuel the roommate planner with a coffee 🍕",
+            "Keep the peace at home and buy a coffee 🚀",
+            "Code runs on caffeine – support us on Ko-fi ☕",
+            "Like this tool? Buy us a coffee! 🎉",
+            "Help keep tools like this free with a coffee ☕"
+        ];
+
         function rotateKofiText() {
             const kofiEl = document.getElementById('kofiText');
             if (kofiEl) {
                 const idx = Math.floor(Math.random() * kofiSprueche.length);
-                kofiEl.innerText = kofiSprueche[idx];
+                kofiEl.dataset.kofiCopyIndex = String(idx);
+                kofiEl.innerText = (window.__toolyaUILocale === 'en' ? kofiSpruecheEn : kofiSprueche)[idx];
             }
         }
+        document.addEventListener('toolya:locale-change', () => {
+            const kofiEl = document.getElementById('kofiText');
+            if (!kofiEl) return;
+            const idx = Number(kofiEl.dataset.kofiCopyIndex);
+            if (!Number.isInteger(idx) || idx < 0 || idx >= kofiSprueche.length) return;
+            kofiEl.innerText = (window.__toolyaUILocale === 'en' ? kofiSpruecheEn : kofiSprueche)[idx];
+        });
 
         async function manuelleSynchronisation() {
             if (!wgBinId) return alert("Keine WG-ID aktiv.");
