@@ -210,8 +210,8 @@
                     <select id="plantPotSize" onchange="calculateWaterAmount()" class="w-full p-3 border rounded-xl text-sm bg-white">
                         <option value="10">Klein (10 cm ~ 120ml)</option>
                         <option value="15" selected>Mittel (15 cm ~ 300ml)</option>
-                        <option value="20">Groß (20 cm ~ 600ml)</option>
-                        <option value="30">Sehr groß (30+ cm ~ 1.5L)</option>
+                        <option value="20" data-tool-en="Large (20 cm ~ 600 ml)">Groß (20 cm ~ 600ml)</option>
+                        <option value="30" data-tool-en="Very large (30+ cm ~ 1.5 L)">Sehr groß (30+ cm ~ 1.5L)</option>
                     </select>
                 </div>
                 <div>
@@ -259,7 +259,7 @@
             <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
                 <h3 class="font-bold text-lg">📋 Meine Pflanzen &amp; Vermehrung</h3>
                 <label class="helferlein-field" for="filterLocation"><span class="helferlein-field-label">Pflanzen nach Standort filtern</span><select id="filterLocation" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Pflanzen nach Standort filtern">
-                    <option value="">Alle Standorte / Räume</option>
+                    <option value="" data-tool-en="All locations / rooms">Alle Standorte / Räume</option>
                 </select></label>
             </div>
             <div id="plantsList" class="space-y-3">
