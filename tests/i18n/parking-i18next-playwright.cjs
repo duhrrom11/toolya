@@ -9,7 +9,7 @@ const html=`<!doctype html><html lang="de"><head><title>Parkplatz-Merker</title>
 </body></html>`;
 const server=http.createServer((req,res)=>{
  const pathname=new URL(req.url,'http://localhost').pathname;
- if(pathname==='/tools/parking/index.html'||pathname==='/tools/moving/index.html'){res.writeHead(200,{'content-type':'text/html'}).end(html);return;}
+ if(pathname==='/tools/parking/index.html'||pathname==='/tools/moving/index.html'){res.writeHead(200,{'content-type':'text/html; charset=utf-8'}).end(html);return;}
  if(!pathname.startsWith('/shared/toolya/i18n/')){res.writeHead(404).end();return;}
  const file=path.resolve(root,'.'+pathname);
  if(!file.startsWith(path.join(root,'shared','toolya','i18n')+path.sep)){res.writeHead(403).end();return;}
