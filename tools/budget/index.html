@@ -734,6 +734,18 @@ async function toolyaCloudBoot(tool) {
                 ? budgetCategoryEn[category] : category;
         }
 
+        // Payment-method IDs are saved in German. Translate only the displayed
+        // value, never the select value, receipt record or export fields.
+        const budgetPaymentEn = Object.freeze({
+            'EC-Karte':'Debit card', Bargeld:'Cash', Kreditkarte:'Credit card',
+            'Überweisung':'Bank transfer / standing order', PayPal:'PayPal'
+        });
+        function budgetPaymentLabel(method) {
+            return window.__toolyaUILocale === 'en' && typeof method === 'string'
+                && Object.hasOwn(budgetPaymentEn,method)
+                ? budgetPaymentEn[method] : method;
+        }
+
         let budgetChartDisplaySnapshot = null;
         function refreshBudgetChartSummaries() {
             const snapshot = budgetChartDisplaySnapshot;
@@ -1574,10 +1586,10 @@ async function toolyaCloudBoot(tool) {
                                     ${isReturnActive ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '⏱️ Return: ' + diffDaysReturn + ' d' : '⏱️ Rückgabe: ' + diffDaysReturn + ' T'}</span>` : ''}
                                 </div>
                                 <p class="text-xs text-gray-600">
-                                    ${window.__toolyaUILocale === 'en' ? 'Amount:' : 'Betrag:'} <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${displayPrice} €</strong> | ${window.__toolyaUILocale === 'en' ? 'Date:' : 'Datum:'} ${escapeHaushaltsHtml(r.date)} | ${window.__toolyaUILocale === 'en' ? 'Payment method:' : 'Zahlungsart:'} ${escapeHaushaltsHtml(r.paymentMethod || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.'))}
+                                    ${window.__toolyaUILocale === 'en' ? 'Amount:' : 'Betrag:'} <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${displayPrice} €</strong> | ${window.__toolyaUILocale === 'en' ? 'Date:' : 'Datum:'} ${escapeHaushaltsHtml(r.date)} | ${window.__toolyaUILocale === 'en' ? 'Payment method:' : 'Zahlungsart:'} ${escapeHaushaltsHtml(budgetPaymentLabel(r.paymentMethod || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.')))}
                                 </p>
                                 <p class="text-[11px] text-gray-500">
-                                    ${r.store ? 'Partner: ' + escapeHaushaltsHtml(r.store) + ' | ' : ''} ${r.sn ? 'S/N: ' + escapeHaushaltsHtml(r.sn) + ' | ' : ''} ${r.location ? (window.__toolyaUILocale === 'en' ? 'Box: ' : 'Karton: ') + escapeHaushaltsHtml(r.location) + ' | ' : ''} ${r.note ? (window.__toolyaUILocale === 'en' ? 'Note: ' : 'Notiz: ') + r.note : ''}
+                                    ${r.store ? 'Partner: ' + escapeHaushaltsHtml(r.store) + ' | ' : ''} ${r.sn ? 'S/N: ' + escapeHaushaltsHtml(r.sn) + ' | ' : ''} ${r.location ? (window.__toolyaUILocale === 'en' ? 'Box: ' : 'Karton: ') + escapeHaushaltsHtml(r.location) + ' | ' : ''} ${r.note ? (window.__toolyaUILocale === 'en' ? 'Note: ' : 'Notiz: ') + escapeHaushaltsHtml(r.note) : ''}
                                 </p>
                             </div>
                         </div>
