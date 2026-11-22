@@ -2258,7 +2258,10 @@ export function translateToolDialog(tool, language, message) {
    translate account identifiers, free-form descriptions or calculated values. */
 const toolRuntimeStatus=Object.freeze({
  housemates:{
-  'Erstelle Cloud-Speicher im Hintergrund...':'Creating private cloud storage…'
+  'Erstelle Cloud-Speicher im Hintergrund...':'Creating private cloud storage…',
+  '🔍 Scanne Kassenbon...':'🔍 Scanning receipt…',
+  '✅ OCR Erfolgreich!':'✅ Text recognition successful!',
+  '❌ Texterkennung fehlgeschlagen.':'❌ Text recognition failed.'
  },
  budget:{
   '🔍 Scanne Kassenbon... Bitte warten.':'🔍 Scanning receipt… Please wait.',
