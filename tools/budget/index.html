@@ -767,6 +767,25 @@ async function toolyaCloudBoot(tool) {
                 (english ? '; Balance: ' : '; Saldo: ') + formatAmount(snapshot.income - snapshot.expense) + '.';
         }
 
+        // Chart labels mirror the same trusted in-memory totals as the accessible
+        // summary. The underlying category identifiers and datasets are unchanged.
+        function refreshBudgetChartLabels() {
+            if (!budgetChartDisplaySnapshot) return;
+            if (categoryChartInstance) {
+                const categories = budgetChartDisplaySnapshot.categories;
+                categoryChartInstance.data.labels = categories.length
+                    ? categories.map(([category]) => budgetCategoryLabel(category))
+                    : [window.__toolyaUILocale === 'en' ? 'No expenses' : 'Keine Ausgaben'];
+                categoryChartInstance.update();
+            }
+            if (cashflowChartInstance) {
+                const english = window.__toolyaUILocale === 'en';
+                cashflowChartInstance.data.labels = english ? ['Income', 'Expenses'] : ['Einnahmen', 'Ausgaben'];
+                cashflowChartInstance.data.datasets[0].label = english ? 'Amount €' : 'Betrag €';
+                cashflowChartInstance.update();
+            }
+        }
+
         // Read-only locale refresh: keep open budget inputs (including unsaved edits)
         // and the German category IDs unchanged. Do not emit a data-change event.
         function refreshBudgetDynamicLocale() {
@@ -781,6 +800,7 @@ async function toolyaCloudBoot(tool) {
             renderSavingsGoals();
             renderTransactionList();
             refreshBudgetChartSummaries();
+            refreshBudgetChartLabels();
         }
         document.addEventListener('toolya:locale-change', refreshBudgetDynamicLocale);
 
@@ -1416,10 +1436,14 @@ async function toolyaCloudBoot(tool) {
             if (categoryChartInstance && cashflowChartInstance) {
                 const catLabels = Object.keys(categoryExpenses).filter(k => categoryExpenses[k] > 0);
                 const catValues = catLabels.map(k => categoryExpenses[k]);
-                categoryChartInstance.data.labels = catLabels.length ? catLabels : ['Keine Ausgaben'];
+                categoryChartInstance.data.labels = catLabels.length
+                    ? catLabels.map(budgetCategoryLabel)
+                    : [window.__toolyaUILocale === 'en' ? 'No expenses' : 'Keine Ausgaben'];
                 categoryChartInstance.data.datasets[0].data = catValues.length ? catValues : [1];
                 categoryChartInstance.update();
 
+                cashflowChartInstance.data.labels = window.__toolyaUILocale === 'en' ? ['Income', 'Expenses'] : ['Einnahmen', 'Ausgaben'];
+                cashflowChartInstance.data.datasets[0].label = window.__toolyaUILocale === 'en' ? 'Amount €' : 'Betrag €';
                 cashflowChartInstance.data.datasets[0].data = [totalIncome, totalExpense];
                 cashflowChartInstance.update();
             }
