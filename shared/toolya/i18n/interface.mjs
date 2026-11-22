@@ -1806,7 +1806,7 @@ function applyAdditionalToolCopy(document,tool,language){
   }
  }
 }
-const templateCopyAttributes=[['data-tool-en',null],['data-tool-en-aria-label','aria-label'],['data-tool-en-title','title'],['data-tool-en-placeholder','placeholder']];
+const templateCopyAttributes=[['data-tool-en',null],['data-tool-en-aria-label','aria-label'],['data-tool-en-title','title'],['data-tool-en-placeholder','placeholder'],['data-tool-en-alt','alt']];
 
 function applyTemplateCopy(document,language){
  for(const [marker,attribute] of templateCopyAttributes){
