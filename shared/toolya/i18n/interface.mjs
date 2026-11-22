@@ -1356,38 +1356,6 @@ function applyToolParagraphCopy(document,tool,language){
 }
 /* Small labels in the tool-owned layout that are not covered by form labels
    or paragraph descriptions. Source exact, leaf-only and reversible. */
-const toolSmallCopy=Object.freeze({
-  "moving": {
-    "Standort der Kiste": "Box location",
-    "Kennzeichnung der Kiste": "Box label",
-    "🔍 Suchen (Kiste, Artikel, Barcode)...": "🔍 Search (box, item, barcode)…",
-    "Standort anlegen": "Add location",
-    "2. Kiste & Artikel": "2. Boxes and items"
-  },
-  "housemates": {
-    "WG-Ausgaben aufteilen, Putzplan, Kalender und gemeinsame Aufgaben organisieren": "Split household expenses, organize cleaning, calendars and shared tasks",
-    "Monats-Ausgaben": "Monthly expenses",
-    "Müllabfuhr:": "Waste collection:",
-    "Ausgaben nach Kategorie": "Expenses by category",
-    "Cashflow (Einnahmen vs. Ausgaben)": "Cash flow (income vs. expenses)",
-    "Nach Kategorie filtern": "Filter by category",
-    "z. B. Hafermilch, Spülmittel, Tabs": "e.g. oat milk, dish soap, tablets"
-  },
-  "plants": {
-    "Bald fällig": "Due soon",
-    "Überfällig": "Overdue",
-    "Pflanzen nach Standort filtern": "Filter plants by location"
-  },
-  "baking": {
-    "Butter 2 Std. vorher aus dem Kühlschrank nehmen.": "Take butter out of the fridge two hours ahead.",
-    "Springform fetten und mit Mehl/Semmelbröseln ausstreuen.": "Grease the cake pan and dust with flour or breadcrumbs.",
-    "Ofen rechtzeitig auf Ziel-Temperatur vorheizen.": "Preheat the oven to the target temperature in good time.",
-    "Alle Zutaten abwiegen und bereitstellen.": "Weigh out and prepare all ingredients.",
-    "Nährwerte (geschätzt):": "Nutrition (estimated):",
-    "💡 Fehlendes Zubehör?": "💡 Need baking equipment?",
-    "3. Cloud-Konto": "3. Cloud account"
-  }
-});
 /* Source-verified static leaf labels across five tools. */
 const extendedSmallCopy=Object.freeze({
   "parking": {
@@ -1458,6 +1426,38 @@ const extendedSmallCopy=Object.freeze({
     "Noch keine Haustiere erfasst.": "No pets recorded yet.",
     "Verlauf nach Haustier filtern": "Filter history by pet",
     "Keine Termine erfasst.": "No appointments recorded."
+  }
+});
+const toolSmallCopy=Object.freeze({
+  "moving": {
+    "Standort der Kiste": "Box location",
+    "Kennzeichnung der Kiste": "Box label",
+    "🔍 Suchen (Kiste, Artikel, Barcode)...": "🔍 Search (box, item, barcode)…",
+    "Standort anlegen": "Add location",
+    "2. Kiste & Artikel": "2. Boxes and items"
+  },
+  "housemates": {
+    "WG-Ausgaben aufteilen, Putzplan, Kalender und gemeinsame Aufgaben organisieren": "Split household expenses, organize cleaning, calendars and shared tasks",
+    "Monats-Ausgaben": "Monthly expenses",
+    "Müllabfuhr:": "Waste collection:",
+    "Ausgaben nach Kategorie": "Expenses by category",
+    "Cashflow (Einnahmen vs. Ausgaben)": "Cash flow (income vs. expenses)",
+    "Nach Kategorie filtern": "Filter by category",
+    "z. B. Hafermilch, Spülmittel, Tabs": "e.g. oat milk, dish soap, tablets"
+  },
+  "plants": {
+    "Bald fällig": "Due soon",
+    "Überfällig": "Overdue",
+    "Pflanzen nach Standort filtern": "Filter plants by location"
+  },
+  "baking": {
+    "Butter 2 Std. vorher aus dem Kühlschrank nehmen.": "Take butter out of the fridge two hours ahead.",
+    "Springform fetten und mit Mehl/Semmelbröseln ausstreuen.": "Grease the cake pan and dust with flour or breadcrumbs.",
+    "Ofen rechtzeitig auf Ziel-Temperatur vorheizen.": "Preheat the oven to the target temperature in good time.",
+    "Alle Zutaten abwiegen und bereitstellen.": "Weigh out and prepare all ingredients.",
+    "Nährwerte (geschätzt):": "Nutrition (estimated):",
+    "💡 Fehlendes Zubehör?": "💡 Need baking equipment?",
+    "3. Cloud-Konto": "3. Cloud account"
   }
 });
 function applyToolSmallCopy(document,tool,language){
