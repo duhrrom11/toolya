@@ -2,6 +2,7 @@
    Stays strictly outside business logic, data, auth gates and maskot state.
    Incomplete translation is explicitly disclosed; account and tool workflows still need end-to-end verification. */
 import {normalizeLocale} from './locale.mjs';
+import {createToolyaI18nextAdapter} from './i18next-runtime-adapter.mjs';
 import {applyToolInterfaceLocale,translateToolDialog,translateAccountStatus,translateToolRuntimeStatus} from './interface.mjs';
 const key='toolya-locale-v1';
 const uiGlobal=typeof window === 'undefined' ? globalThis : window;
@@ -26,6 +27,22 @@ function mountToolLanguage(){
  try { stored=localStorage.getItem(key); } catch (_) { /* storage is optional */ }
  const query=new URLSearchParams(location.search);
  let selected=normalizeLocale(query.get('lang'))||normalizeLocale(stored)||'de';
+ // Pilot: use an existing i18next singleton only when it has been initialized.
+ // Do not initialize a second runtime or change any tool/account data.
+ let i18nextAdapter=null;
+ if(name==='parking' && uiGlobal.i18next?.isInitialized){
+   try{i18nextAdapter=createToolyaI18nextAdapter(uiGlobal.i18next);}catch(_){/* legacy fallback */}
+ }
+ const localizeDialog=(message)=>i18nextAdapter
+   ?(i18nextAdapter.translateTool(name,selected,message)!==message
+      ?i18nextAdapter.translateTool(name,selected,message)
+      :i18nextAdapter.translatePrefix(name,selected,message,'dialog'))
+   :translateToolDialog(name,selected,message);
+ const localizeStatus=(message)=>i18nextAdapter
+   ?(i18nextAdapter.translateTool(name,selected,message)!==message
+      ?i18nextAdapter.translateTool(name,selected,message)
+      :i18nextAdapter.translatePrefix(name,selected,message))
+   :translateToolRuntimeStatus(name,selected,message);
  const header=document.querySelector('header.b3-header');
  const originalHeadings=new WeakMap();
  const originalDocTitle=document.title;
@@ -62,7 +79,7 @@ function mountToolLanguage(){
    if(typeof uiGlobal[method]!=='function')continue;
    nativeDialogs[method]=uiGlobal[method].bind(uiGlobal);
    uiGlobal[method]=function(message,...args){
-     return nativeDialogs[method](translateToolDialog(name,selected,message),...args);
+     return nativeDialogs[method](localizeDialog(message),...args);
    };
  }
  uiGlobal.toolyaUiText=(value)=>translateAccountStatus(selected,value);
@@ -122,7 +139,7 @@ function mountToolLanguage(){
   attachRuntimeNodes();
   for(const el of runtimeNodes){
    if(!el.isConnected||el.children.length||el.isContentEditable)continue;
-   const before=el.textContent,after=translateToolRuntimeStatus(name,selected,before);
+   const before=el.textContent,after=localizeStatus(before);
    if(before!==after)el.textContent=after;
   }
  }
