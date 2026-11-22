@@ -1373,7 +1373,9 @@ const extendedSmallCopy=Object.freeze({
     "Verlauf nach Zählertyp filtern": "Filter history by meter type",
     "Der Wechsel auf hochwertige LEDs spart bis zu 85 % Beleuchtungsstrom.": "Switching to quality LEDs can save up to 85% of lighting electricity.",
     "Smarte Thermostate senken die Heizkosten im Schnitt um 10 bis 15 %.": "Smart thermostats can reduce heating costs by around 10–15%.",
-    "🔄 Zählerwechsel Start": "🔄 Meter replacement start"
+    "🔄 Zählerwechsel Start": "🔄 Meter replacement start",
+    "Zählerstände": "Meter readings",
+    "Reduziere deine Jahres-Nachzahlung effektiv mit diesen praxiserprobten Spar-Tipps und passenden Amazon-Empfehlungen:": "Reduce your annual utility bill adjustment with these practical saving tips and related Amazon recommendations:"
   },
   "loans": {
     "Verliehene Dinge": "Lent items",
@@ -1407,7 +1409,21 @@ const extendedSmallCopy=Object.freeze({
     "Reifentyp": "Tyre type",
     "Lagerort": "Storage location",
     "Historie nach Fahrzeug filtern": "Filter history by vehicle",
-    "⛽ Kraftstoff- & Tank-Statistik (Aktueller Monat)": "⛽ Fuel statistics (current month)"
+    "⛽ Kraftstoff- & Tank-Statistik (Aktueller Monat)": "⛽ Fuel statistics (current month)",
+    "Autokosten": "Vehicle costs",
+    "Bezeichnung": "Description",
+    "Kosten in €": "Cost in €",
+    "Profil (mm)": "Tread (mm)",
+    "Liter": "Litres",
+    "DOT / Jahr": "DOT / year",
+    "Profil mm": "Tread mm",
+    "Hilfe & Anleitung anzeigen": "Show help and guide",
+    "📖 Kurzanleitung – So funktioniert's:": "📖 Quick guide – How it works:",
+    "1. Fahrzeug & Papiere": "1. Vehicle and documents",
+    "2. Wartung & Tanken": "2. Maintenance and refuelling",
+    "3. Wartung und Tankkosten": "3. Maintenance and fuel costs",
+    "4. Reifen & Backup": "4. Tyres and backup",
+    "Hilfe & Anleitung ausblenden": "Hide help and guide"
   },
   "pet-health": {
     "Impfungen, Tierarztbesuche, Medikamente und Gesundheitsdaten für Hund und Katze": "Vaccinations, vet visits, medication and health records for cats and dogs",
@@ -1425,7 +1441,21 @@ const extendedSmallCopy=Object.freeze({
     "Keine Medikamente in der Apotheke hinterlegt.": "No medications recorded.",
     "Noch keine Haustiere erfasst.": "No pets recorded yet.",
     "Verlauf nach Haustier filtern": "Filter history by pet",
-    "Keine Termine erfasst.": "No appointments recorded."
+    "Keine Termine erfasst.": "No appointments recorded.",
+    "Tiergesundheit": "Pet health",
+    "Gesamtkosten": "Total costs",
+    "🏥 Tierarzt & Praxis-Verzeichnis:": "🏥 Vet and practice directory:",
+    "Telefon / Notfall-Nr.": "Phone / emergency number",
+    "Bezeichnung": "Description",
+    "Kosten in € (optional)": "Cost in € (optional)",
+    "Hilfe & Anleitung anzeigen": "Show help and guide",
+    "📖 Kurzanleitung – So funktioniert's:": "📖 Quick guide – How it works:",
+    "1. Haustier & Praxis": "1. Pet and vet practice",
+    "2. Gewicht & Trends": "2. Weight and trends",
+    "3. Apotheke & Vorräte": "3. Medicine and stock",
+    "4. Kalender & Export": "4. Calendar and export",
+    "Hilfe & Anleitung ausblenden": "Hide help and guide",
+    "🛡️ TASSO / Register": "🛡️ TASSO / registry"
   },
   "moving": {
     "Erfasste Kisten": "Recorded boxes",

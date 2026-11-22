@@ -2781,3 +2781,15 @@ test('additional source-verified small labels localise reversibly in five tools'
   assert.equal(document.querySelector('span').textContent,de);
  }
 });
+
+test('additional vehicle pet meter and lending static text remains reversible',()=>{
+ const cases=[{"tool":"car","de":"Autokosten","en":"Vehicle costs"},{"tool":"car","de":"Bezeichnung","en":"Description"},{"tool":"car","de":"Kosten in €","en":"Cost in €"},{"tool":"car","de":"Profil (mm)","en":"Tread (mm)"},{"tool":"car","de":"Liter","en":"Litres"},{"tool":"car","de":"DOT / Jahr","en":"DOT / year"},{"tool":"car","de":"Profil mm","en":"Tread mm"},{"tool":"car","de":"Hilfe & Anleitung anzeigen","en":"Show help and guide"},{"tool":"car","de":"📖 Kurzanleitung – So funktioniert's:","en":"📖 Quick guide – How it works:"},{"tool":"car","de":"1. Fahrzeug & Papiere","en":"1. Vehicle and documents"},{"tool":"car","de":"2. Wartung & Tanken","en":"2. Maintenance and refuelling"},{"tool":"car","de":"3. Wartung und Tankkosten","en":"3. Maintenance and fuel costs"},{"tool":"car","de":"4. Reifen & Backup","en":"4. Tyres and backup"},{"tool":"car","de":"Hilfe & Anleitung ausblenden","en":"Hide help and guide"},{"tool":"pet-health","de":"Tiergesundheit","en":"Pet health"},{"tool":"pet-health","de":"Gesamtkosten","en":"Total costs"},{"tool":"pet-health","de":"🏥 Tierarzt & Praxis-Verzeichnis:","en":"🏥 Vet and practice directory:"},{"tool":"pet-health","de":"Telefon / Notfall-Nr.","en":"Phone / emergency number"},{"tool":"pet-health","de":"Bezeichnung","en":"Description"},{"tool":"pet-health","de":"Kosten in € (optional)","en":"Cost in € (optional)"},{"tool":"pet-health","de":"Hilfe & Anleitung anzeigen","en":"Show help and guide"},{"tool":"pet-health","de":"📖 Kurzanleitung – So funktioniert's:","en":"📖 Quick guide – How it works:"},{"tool":"pet-health","de":"1. Haustier & Praxis","en":"1. Pet and vet practice"},{"tool":"pet-health","de":"2. Gewicht & Trends","en":"2. Weight and trends"},{"tool":"pet-health","de":"3. Apotheke & Vorräte","en":"3. Medicine and stock"},{"tool":"pet-health","de":"4. Kalender & Export","en":"4. Calendar and export"},{"tool":"pet-health","de":"Hilfe & Anleitung ausblenden","en":"Hide help and guide"},{"tool":"pet-health","de":"🛡️ TASSO / Register","en":"🛡️ TASSO / registry"},{"tool":"meters","de":"Zählerstände","en":"Meter readings"},{"tool":"meters","de":"Reduziere deine Jahres-Nachzahlung effektiv mit diesen praxiserprobten Spar-Tipps und passenden Amazon-Empfehlungen:","en":"Reduce your annual utility bill adjustment with these practical saving tips and related Amazon recommendations:"}];
+ for(const {tool,de,en} of cases){
+  const {document}=parseHTML('<html><body><main id="main-content"><span>'+de+'</span><input id="private" value="Private information"></main></body></html>');
+  applyToolInterfaceLocale(document,tool,'en');
+  assert.equal(document.querySelector('span').textContent,en,tool+': '+de);
+  assert.equal(document.querySelector('#private').value,'Private information');
+  applyToolInterfaceLocale(document,tool,'de');
+  assert.equal(document.querySelector('span').textContent,de);
+ }
+});
