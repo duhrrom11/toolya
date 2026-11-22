@@ -3131,3 +3131,54 @@ test('budget QR sticker labels round-trip without changing private QR payload', 
  assert.match(source,/budgetStickerDisplaySnapshot = null;\s*\}/,'closing the modal clears private render snapshot');
  assert.ok(!/localStorage\.setItem\(|saveData\(/.test(source.slice(start,end)),'sticker locale refresh does not persist');
 });
+
+
+test('parking countdown statuses switch DE/EN without changing running deadline or persistence', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {fileURLToPath}=await import('node:url');
+ const {resolve,dirname}=await import('node:path');
+ const {createContext,runInContext}=await import('node:vm');
+ const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../../tools/parking/index.html'),'utf8');
+ const start=source.indexOf('const parkingTimerCopy = Object.freeze(');
+ const end=source.indexOf('async function stopTimer()',start);
+ assert.ok(start>0 && end>start,'parking status locale helper exists in source');
+ const {document}=parseHTML('<div id="timerDisplay">00:12:45</div><p id="timerStatus">Parkzeit läuft...</p><input id="parkDesc" value="My private car park">');
+ const state={window:{__toolyaUILocale:'en'},document};
+ createContext(state);
+ runInContext(source.slice(start,end),state);
+ const status=document.getElementById('timerStatus');
+ const display=document.getElementById('timerDisplay');
+ runInContext('refreshParkingTimerLocale()',state);
+ assert.equal(status.textContent,'Parking time is running...');
+ assert.equal(display.textContent,'00:12:45');
+ assert.equal(document.getElementById('parkDesc').value,'My private car park');
+ state.window.__toolyaUILocale='de';
+ runInContext('refreshParkingTimerLocale()',state);
+ assert.equal(status.textContent,'Parkzeit läuft...');
+ for(const [de,en] of [
+  ['Kein aktiver Parkschein-Timer','No active parking ticket timer'],
+  ['Bitte Parkzeit verlängern oder zum Auto gehen!','Extend your parking time or return to your car!']
+ ]) {
+  status.textContent=de;
+  state.window.__toolyaUILocale='en';
+  runInContext('refreshParkingTimerLocale()',state);
+  assert.equal(status.textContent,en);
+  state.window.__toolyaUILocale='de';
+  runInContext('refreshParkingTimerLocale()',state);
+  assert.equal(status.textContent,de);
+ }
+ display.textContent='⏰ ABGELAUFEN!';
+ state.window.__toolyaUILocale='en';
+ runInContext('refreshParkingTimerLocale()',state);
+ assert.equal(display.textContent,'⏰ EXPIRED!');
+ state.window.__toolyaUILocale='de';
+ runInContext('refreshParkingTimerLocale()',state);
+ assert.equal(display.textContent,'⏰ ABGELAUFEN!');
+ status.textContent='User-added status';
+ state.window.__toolyaUILocale='en';
+ runInContext('refreshParkingTimerLocale()',state);
+ assert.equal(status.textContent,'User-added status','unknown status preserved');
+ const helper=source.slice(start,end);
+ assert.ok(!/saveData\(|localStorage\.|setInterval\(|activeEndTime\s*=|runTimerLoop\(/.test(helper),'locale refresh has no deadline or persistence side effects');
+ assert.match(source,/refreshParkingTimerLocale\(\);\s*if \(parkingCloudReady\) renderParkingList\(\)/,'locale event refreshes countdown');
+});
