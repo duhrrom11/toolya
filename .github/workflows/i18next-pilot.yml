@@ -41,6 +41,8 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - name: Install real i18next browser bundle for offline tests
+        run: npm install --no-save --package-lock=false i18next@23.16.8
       - run: npx playwright install --with-deps chromium
       - name: Verify parking language switching with and without i18next
         run: node tests/i18n/parking-i18next-playwright.cjs
