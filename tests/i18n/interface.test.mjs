@@ -2934,13 +2934,14 @@ test('budget locale-change refresh keeps unsaved budget inputs and record keys s
  const {document}=parseHTML('<div id="budgetProgressList"><span data-budget-category="Wohnen">Wohnen</span></div><div id="budgetInputList"><label for="budget-amount-0">Lebensmittel:</label><input id="budget-amount-0" data-cat="Lebensmittel" value="150"></div>');
  const input=document.getElementById('budget-amount-0');
  input.value='175';
- let savingsRefresh=0,receiptRefresh=0,chartRefresh=0,axisRefresh=0;
+ let savingsRefresh=0,receiptRefresh=0,chartRefresh=0,axisRefresh=0,stickerRefresh=0;
  const context={
   window:{__toolyaUILocale:'en'},document,toolyaCloudReady:true,
   renderSavingsGoals:()=>{savingsRefresh++;},
   renderTransactionList:()=>{receiptRefresh++;},
   refreshBudgetChartSummaries:()=>{chartRefresh++;},
-  refreshBudgetChartLabels:()=>{axisRefresh++;}
+  refreshBudgetChartLabels:()=>{axisRefresh++;},
+  refreshBudgetStickerLabels:()=>{stickerRefresh++;}
  };
  createContext(context);
  runInContext(dictionary[0]+'\n'+formatter[0]+'\n'+source.slice(start,end),context);
@@ -2958,6 +2959,7 @@ test('budget locale-change refresh keeps unsaved budget inputs and record keys s
  assert.equal(receiptRefresh,2);
  assert.equal(chartRefresh,2,'accessible summaries refreshed without mutating the form');
  assert.equal(axisRefresh,2,'visual chart labels refreshed without touching data');
+ assert.equal(stickerRefresh,2,'sticker labels refreshed without changing a draft');
  context.toolyaCloudReady=false;
  context.window.__toolyaUILocale='en';
  runInContext('refreshBudgetDynamicLocale()',context);
@@ -2966,6 +2968,7 @@ test('budget locale-change refresh keeps unsaved budget inputs and record keys s
  assert.equal(receiptRefresh,2);
  assert.equal(chartRefresh,2,'cloud gate also prevents chart refresh');
  assert.equal(axisRefresh,2,'cloud gate prevents visual chart updates');
+ assert.equal(stickerRefresh,2,'cloud gate prevents sticker updates');
  assert.ok(!source.slice(start,end).includes('saveBudgets('),'locale refresh never persists budgets');
  assert.ok(!source.slice(start,end).includes('localStorage.setItem('),'locale refresh never writes storage');
 });
@@ -3089,4 +3092,42 @@ test('budget dynamic charts localize only legend labels and preserve numeric ser
  const updater=source.slice(begin,end);
  assert.ok(!/saveBudgets\(|localStorage\.setItem\(|\.datasets\[0\]\.data\s*=/.test(updater),'visual locale updater has no writes');
  assert.match(source,/catLabels\.map\(budgetCategoryLabel\)/,'initial chart render is locale-aware');
+});
+
+
+test('budget QR sticker labels round-trip without changing private QR payload', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {fileURLToPath}=await import('node:url');
+ const {resolve,dirname}=await import('node:path');
+ const {createContext,runInContext}=await import('node:vm');
+ const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../../tools/budget/index.html'),'utf8');
+ const start=source.indexOf('let budgetStickerDisplaySnapshot = null;');
+ const end=source.indexOf('async function openQRModal(id) {',start);
+ assert.ok(start>0 && end>start,'source backed QR sticker helper exists');
+ const {document}=parseHTML('<div id="qrModal"><span id="stickerTitle"></span><span id="stickerStoreDate"></span><span id="stickerSN"></span><span id="stickerWarranty"></span></div>');
+ const context={
+  document,window:{__toolyaUILocale:'en'},
+  parseReceiptDate:(date)=>new Date(date+'T00:00:00Z'),
+  addWarrantyMonths:()=>new Date('2027-01-15T00:00:00Z')
+ };
+ createContext(context);
+ runInContext(source.slice(start,end),context);
+ runInContext("budgetStickerDisplaySnapshot={title:'Private <project>',date:'2026-11-22',store:'',serial:'',warrantyMonths:12}; refreshBudgetStickerLabels();",context);
+ assert.equal(document.getElementById('stickerTitle').textContent,'Private <project>');
+ assert.equal(document.getElementById('stickerStoreDate').textContent,'Purchased: 2026-11-22 (Warranty receipt)');
+ assert.equal(document.getElementById('stickerSN').textContent,'S/N: none');
+ assert.match(document.getElementById('stickerWarranty').textContent,/Warranty until: 15\/01\/2027/);
+ assert.equal(document.querySelector('project'),null,'title is assigned as text, not HTML');
+ context.window.__toolyaUILocale='de';
+ runInContext('refreshBudgetStickerLabels()',context);
+ assert.equal(document.getElementById('stickerStoreDate').textContent,'Kauf: 2026-11-22 (Garantie-Beleg)');
+ assert.equal(document.getElementById('stickerSN').textContent,'S/N: keine');
+ assert.match(document.getElementById('stickerWarranty').textContent,/Garantie bis: 15\.1\.2027/);
+ document.getElementById('qrModal').classList.add('hidden');
+ context.window.__toolyaUILocale='en';
+ runInContext('refreshBudgetStickerLabels()',context);
+ assert.equal(document.getElementById('stickerSN').textContent,'S/N: keine','closed dialog not updated');
+ assert.ok(source.includes('const qrText = `GERÄT: ${r.title}\\nKAUFDATUM: ${r.date}\\nHÄNDLER: ${r.store || \'k.A.\'}\\nSERIENNR: ${r.sn || \'k.A.\'}`'),'QR data payload unchanged');
+ assert.match(source,/budgetStickerDisplaySnapshot = null;\s*\}/,'closing the modal clears private render snapshot');
+ assert.ok(!/localStorage\.setItem\(|saveData\(/.test(source.slice(start,end)),'sticker locale refresh does not persist');
 });
