@@ -105,18 +105,37 @@ function mountToolLanguage(){
   budget:['#ocrStatus','#saveBtn','#formTitle','#categoryChartSummary'],
   parking:['#timerStatus','#timerDisplay','#statGps']
  };
- const runtimeNodes=(runtimeStatusSelectors[name]||[])
-  .map(selector=>document.querySelector(selector)).filter(Boolean);
+ const runtimeNodes=[];
+ const observedRuntimeNodes=new WeakSet();
+ const runtimeObserver=typeof MutationObserver!=='undefined'
+  ?new MutationObserver(localizeRuntimeStatus):null;
+ function attachRuntimeNodes(){
+  for(const selector of runtimeStatusSelectors[name]||[]){
+   const el=document.querySelector(selector);
+   if(!el||observedRuntimeNodes.has(el))continue;
+   observedRuntimeNodes.add(el);
+   runtimeNodes.push(el);
+   runtimeObserver?.observe(el,{childList:true,characterData:true,subtree:true});
+  }
+ }
  function localizeRuntimeStatus(){
+  attachRuntimeNodes();
   for(const el of runtimeNodes){
-   if(el.children.length||el.isContentEditable)continue;
+   if(!el.isConnected||el.children.length||el.isContentEditable)continue;
    const before=el.textContent,after=translateToolRuntimeStatus(name,selected,before);
    if(before!==after)el.textContent=after;
   }
  }
- if(typeof MutationObserver!=='undefined'&&runtimeNodes.length){
-  const observer=new MutationObserver(localizeRuntimeStatus);
-  for(const el of runtimeNodes)observer.observe(el,{childList:true,characterData:true,subtree:true});
+ attachRuntimeNodes();
+ // The roommate setup panel is inserted after initialization. Observe its
+ // insertion only until its status node is found; do not watch user content.
+ if(name==='housemates'&&runtimeObserver&&document.body&&!document.querySelector('#setup-status')){
+  const setupObserver=new MutationObserver(()=>{
+   if(!document.querySelector('#setup-status'))return;
+   setupObserver.disconnect();
+   localizeRuntimeStatus();
+  });
+  setupObserver.observe(document.body,{childList:true,subtree:true});
  }
  const notice=document.createElement('p');
  notice.className='ty-tool-language-notice';
