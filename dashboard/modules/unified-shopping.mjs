@@ -3,6 +3,7 @@
  * Tools keep ownership of their data. This module never writes snapshots into another table.
  */
 import {createWgConnect} from '../../shared/toolya/connect-wg-lists.mjs';
+import {createDueSource} from '../../shared/toolya/connect-due-sources.mjs';
 import {createConnectRegistry} from '../../shared/toolya/connect-source-registry.mjs';
 const TABLE='dashboard_shopping_items';
 const normalizeTitle = title => {
@@ -19,7 +20,8 @@ export function projectDashboardShopping(rows,userId) {
 export function createUnifiedShopping(client) {
   if(!client?.auth?.getUser || !client.from)throw TypeError('Supabase nicht verfügbar.');
   const wg=createWgConnect(client);
-  const registry=createConnectRegistry([{id:'wg',load:()=>wg.load(),setDone:(item,done)=>wg.setDone(item,done)}]);
+  const dueSources=['loans','car','pet'].map(id=>({id,...createDueSource(client,id)}));
+  const registry=createConnectRegistry([{id:'wg',load:()=>wg.load(),setDone:(item,done)=>wg.setDone(item,done)},...dueSources]);
   let owner=null,rows=[],shopping=[],tasks=[],partial=false;
   async function user() {
     const {data,error}=await client.auth.getUser();
@@ -63,10 +65,10 @@ export function createUnifiedShopping(client) {
   }
   async function setDone(item,done) {
     const uid=await guard();
-    if(item?.source==='wg') {
-      if(item.kind!=='shopping'&&item.kind!=='task')throw Error('Ungültiger WG-Eintrag.');
+    if(item?.source==='wg'||['loans','car','pet'].includes(item?.source)) {
+      if(item.kind!=='shopping'&&item.kind!=='task')throw Error('Ungültiger Connect-Eintrag.');
       await registry.setDone(item,Boolean(done));
-      if(await user()!==uid)throw Error('Konto während des WG-Speicherns gewechselt.');
+      if(await user()!==uid)throw Error('Konto während des Connect-Speicherns gewechselt.');
       return load();
     }
     if(item?.source!=='dashboard'||item.kind!=='shopping')throw Error('Unbekannte Einkaufslisten-Quelle.');
