@@ -57,7 +57,10 @@ const server=http.createServer((req,res)=>{
    }
    assert.equal(await page.locator('.ty-tool-language [data-tool-locale="de"]').getAttribute('aria-pressed'),'true');
    assert.deepEqual(errors,[],mode+' page errors');
-   if(mode==='loaded')assert.equal(await page.evaluate(()=>window.i18next.isInitialized),true);
+   if(mode==='loaded'){
+    const state=await page.evaluate(()=>({type:typeof window.i18next,initialized:window.i18next?.isInitialized,initType:typeof window.i18next?.init,bundles:window.i18next?.hasResourceBundle?.('en','tool')}));
+    assert.equal(state.initialized,true,'real i18next initialization: '+JSON.stringify(state));
+   }
    else assert.equal(await page.evaluate(()=>typeof window.i18next),'undefined');
    await context.close();
    // Smoke-check the actual HTML, with all remote services blocked. Auth workflows
