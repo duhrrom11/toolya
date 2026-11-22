@@ -2,9 +2,20 @@
    task/shopping content, account sessions, saved keys, or selected mascots. */
 import {dashboardText,dashboardLocale} from './dashboard-copy.mjs';
 import {applyDashboardPageLocale} from './dashboard-dom.mjs';
+import {initializeToolyaI18next} from './i18next-singleton.mjs';
+import {createToolyaI18nextAdapter} from './i18next-runtime-adapter.mjs';
 const key='toolya-locale-v1';
 const dynamicSelectors=['#userInfo','#cloudStatus','#loginMessage','#sync-status','#sync-detail','#shopping-status','#watering-connect-status','#notice'];
 function mount(){
+ const runtime=initializeToolyaI18next(globalThis.i18next);
+ const adapter=runtime?createToolyaI18nextAdapter(runtime):null;
+ const translate=(value,lang)=>{
+  if(lang==='en'&&adapter){
+   const result=adapter.translateExact('en','dashboard',value);
+   if(result!==value)return result;
+  }
+  return dashboardText(value,lang);
+ };
  const nav=document.querySelector('.b3-hub-nav');
  if(!nav||document.querySelector('.ty-dashboard-locale'))return;
  const group=document.createElement('span');
@@ -24,10 +35,10 @@ function mount(){
   for(const el of nodes){
    if(el.children.length)continue;
    const txt=el.textContent;
-   const translated=dashboardText(txt,lang);
+   const translated=translate(txt,lang);
    if(txt!==translated)el.textContent=translated;
    for(const attr of ['aria-label','title'])if(el.hasAttribute(attr)){
-    const old=el.getAttribute(attr),next=dashboardText(old,lang);
+    const old=el.getAttribute(attr),next=translate(old,lang);
     if(old!==next)el.setAttribute(attr,next);
    }
   }
@@ -39,7 +50,7 @@ function mount(){
    const url=new URL(location.href);url.searchParams.set('lang',lang);
    history.replaceState(history.state,'',url.pathname+url.search+url.hash);
   }
-  applyDashboardPageLocale(document,lang);
+  applyDashboardPageLocale(document,lang,translate);
   // English presentation is still only partly verified; avoid pretending all
   // dynamically generated third-party messages have an English document language.
   document.documentElement.dataset.dashboardLocale=lang;
