@@ -1742,6 +1742,8 @@ function applyBakingMixedTextCopy(document,language){
    links, aria-controls, handlers or calculation inputs. */
 const extraFormCopy=Object.freeze({
  "budget": {
+  "🎉 Freizeit, Gastronomie & Urlaub": "🎉 Leisure, dining and holidays",
+  "🐾 Haustiere": "🐾 Pets",
   "Haushaltsbuch mit Kassenbon-Scanner": "Household budget and receipt scanner",
   "📘 Kombinierte Gebrauchsanleitung": "📘 Combined user guide",
   "1. Buchungen & Finanzen": "1. Transactions and finances",
