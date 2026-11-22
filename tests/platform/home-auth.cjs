@@ -40,7 +40,20 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  await page.waitForTimeout(200);
  assert(await page.evaluate(()=>window.__signedOutEvents<3),'guest status must not create a SIGNED_OUT loop');
  await page.goto(origin+'/tools/parking/');
- await page.waitForURL(origin+'/index.html?auth=required', {waitUntil:'commit'});
+ try {
+  await page.waitForURL(origin+'/index.html?auth=required', {waitUntil:'commit', timeout:12000});
+ } catch (error) {
+  console.error('Guest redirect diagnostic:', JSON.stringify(await page.evaluate(() => ({
+   url: location.href,
+   readyState: document.readyState,
+   authPending: document.documentElement.classList.contains('toolya-auth-pending'),
+   authUnavailable: document.documentElement.classList.contains('toolya-auth-unavailable'),
+   supabaseLoaded: !!window.supabase?.createClient,
+   authGateLoaded: !!document.querySelector('script[src*="auth-page-gate.js"]'),
+   authStatus: document.querySelector('.toolya-auth-status')?.textContent?.trim().slice(0,300)
+  }))));
+  throw error;
+ }
  await page.locator('#toolAccessHelp').waitFor({state:'visible'});
  assert.match(await page.locator('#toolAccessHelp').textContent(),/Melde dich bei Toolya an/);
  await page.keyboard.press('Escape');
