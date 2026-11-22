@@ -7,6 +7,7 @@ on:
       - 'tools/housemates/index.html'
       - 'supabase/migrations/*dashboard_unified_shopping.sql'
       - 'tests/connect-shopping.test.mjs'
+      - 'tests/connect-gift-tasks.test.mjs'
       - 'tests/platform/dashboard-shopping-browser.cjs'
       - '.github/workflows/dashboard-shopping-connect.yml'
   push:
@@ -37,8 +38,9 @@ jobs:
           node --input-type=module --check < dashboard/dashboard.js
           node --check dashboard/modules/unified-shopping.mjs
           node --check shared/toolya/connect-wg-lists.mjs
+          node --check shared/toolya/connect-gift-tasks.mjs
           node --check shared/toolya/connect-source-registry.mjs
-          node --test tests/connect-shopping.test.mjs tests/connect-watering.test.mjs tests/cloud-plants.test.mjs tests/dashboard-cloud.test.mjs
+          node --test tests/connect-gift-tasks.test.mjs tests/connect-shopping.test.mjs tests/connect-watering.test.mjs tests/cloud-plants.test.mjs tests/dashboard-cloud.test.mjs
       - name: Run isolated guest browser regression without production services
         run: |
           npm ci --ignore-scripts
