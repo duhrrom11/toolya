@@ -104,3 +104,9 @@ No further acceptance: baking `45003693451`/`45003693384`, budget `45003751872`/
 **Budget accepted (isolated i18next pilot):** commit `f7cacb993a4ecf4d7a14f8c5d11203d63673be3e`; [i18next run 45003751872](https://github.com/duhrrom11/toolya/actions/runs/45003751872) passed browser job `137150683099` and Node job `137150683276`. Browser log confirms twelve successful DE→EN→DE / prefix cases across the previous five tools and budget, with i18next loaded and CDN blocked. [Static run 45003751863](https://github.com/duhrrom11/toolya/actions/runs/45003751863) passed `i18n-tests` job `137150683301`.
 
 Acceptance covers isolated pilot scenarios, not authenticated production E2E. Meter readings, car costs and lent items remain pending browser/Node CI at this checkpoint. Six tools accepted in total; no changes to `main`, production website or Supabase production data.
+
+## Meter readings acceptance and PR queue mitigation (2026-11-22)
+
+**Meter readings accepted (isolated pilot):** integration commit `5e61430d1480185f5e7461b0bfb220624d24bd00`. [i18next run 45003818330](https://github.com/duhrrom11/toolya/actions/runs/45003818330) passed browser job `137150889511` and Node job `137150889370`. Browser logs confirm 14 passing DE→EN→DE scenarios across seven tools with i18next loaded and CDN blocked. [Static run 45003818353](https://github.com/duhrrom11/toolya/actions/runs/45003818353) passed i18n-tests job `137150889744`. This is isolated pilot acceptance only, not authenticated production E2E.
+
+**Queue controls:** `budget-live-health.yml` now deduplicates superseded PR runs while retaining main checks (`ce6f5f59`). `i18next-pilot.yml` separates PR from push concurrency and extends PR path coverage to all migrated tools (`c35291df`); required PR checks are preserved. Other queued workflow runs remain; runner quota/capacity root cause is unverified. Car and loans still lack completed browser/Node jobs at this checkpoint. No production changes.
