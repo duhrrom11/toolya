@@ -122,3 +122,12 @@ Ausgangs-HEAD `2912d45e9e3b05a0485541db248bb9e0289d8210` – [statischer i18n-Ch
 - Lesende Sprachwechsel-Refreshes bei Verleih und Zähler erfordern einen bestätigten CloudOnly-Snapshot. Synthetische Node-Regression ergänzt.
 - Fünf isolierte CI-Workflows für Entwicklungsbranch-Push aktiviert (Chromium, Plattform/Maskottchen, Connect/Postgres und Umzug). Browser-, Node- und Plattform-Ergebnisse müssen erst tatsächlich erfolgreich sein.
 - **Release-Status NOT READY / Draft.** Fehlende Vollabdeckung (34 Teilansichten), strikter Audit, Auth-/Recovery-Mailzustellung, alle Exporte/Druck, mobile und Screenreader-Abnahme bleiben offen. Kein Merge, Deployment, noindex-Entfernung, produktive Supabase-Daten oder Assetänderung.
+
+### 22.11.2026 – Browser-Regressionspaket zu DE/EN-Laufzeitlisten
+
+Basis `394d42d6d2fa874dd103a6eb431fb0a52893f33a`: statische i18n-CI, Connect-CI mit isoliertem PostgreSQL und Umzugsplaner-CI nachweislich grün. Browser- und Plattformjobs waren bei der Abfrage noch in Arbeit. [Actions](https://github.com/duhrrom11/toolya/actions).
+
+- Parking-Historie: ISO-8601-Zeitstempel in vorhandenen CloudOnly-Daten werden beim englischen Anzeigen korrekt lokalisiert; ungültige Strings verbleiben beim gespeicherten Anzeigewert. Foto-Platzhalter zweisprachig.
+- Drei zusätzliche Chromium-Fälle in `tests/browser/tool-pages-ui.spec.cjs`: realer 320px-Sprachwechsel, XSS-escaped Parkplatz-Daten, originale Verleihstatus-/Nutzerdaten und leere Zählerliste. Strikt synthetischer Mock-Snapshot, Prüfung ohne DB-Schreibzugriffe.
+- Browser- und vollständige Node-/CI-Ergebnisse der neuen Revision auswerten, ggf. Fehler beseitigen. **Die Erstellung der Browsertests ist keine Abnahme.**
+- Release-Status weiterhin **NOT READY**, kein Merge/Deployment, `noindex` bleibt, keine produktiven Daten/Assets verändert.

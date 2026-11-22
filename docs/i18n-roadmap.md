@@ -454,3 +454,10 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 - Zähler-Ansicht und Teilen-Übersicht ergänzen EN, ohne Zählertypen oder Nutzerdaten umzuschreiben. Beide Toolansichten reagieren nur bei geladenem CloudOnly-Snapshot lesend auf Sprachwechsel.
 - Neue synthetische Node-Regression `loans-meters-runtime.test.mjs` und fünf bestehende mock-/browserorientierte GitHub-Workflows für Pushes auf dem i18n-Branch freigeschaltet. Produktiver Live-Check bleibt auf main beschränkt.
 - CI-Ergebnisse am finalen HEAD sind offen, vollständiger Coverage-Audit und E2E-/Accessibility-Gates nicht erfüllt. Draft, noindex, Markenassets, Produktionsdaten und Deployment unverändert.
+
+## 22.11.2026 – Mobile Chromium-Abnahme der Laufzeitlisten
+
+- Historische Parkplatz-Zeitstempel werden zusätzlich als ISO-8601-Zeichenfolgen erkannt und beim EN-Wechsel im Anzeigezweig formatiert. Epoch-Millisekunden und unveränderte deutsche Speicherwerte werden weiter unterstützt; ungültige Zeitstempel fallen auf den ursprünglichen Anzeigewert zurück.
+- Dynamischer Bild-Platzhalter in der Parkplatzliste ist EN/DE, bisherige Bild-/GPS-/XSS-Schutzmechanismen bleiben bestehen.
+- Drei isolierte echte Chromium-Fälle für 320px ergänzt: Parkplatztext mit HTML-Sonderzeichen/Foto-URL und ISO-Datum, Verleih-Status DE/EN/DE samt Persistenzcode, Zähler-Leerzustand. Alle prüfen null Cloud-Schreibaufrufe über Mocks. Der CI-Lauf muss diese Fälle erst bestätigen.
+- Vollständige DE/EN-Release-Gates weiterhin offen, PR Draft, keine Produktivänderungen oder SEO-Indexierung.

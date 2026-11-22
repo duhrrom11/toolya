@@ -2574,3 +2574,71 @@ test('i18n Sprint A moving: missing QR library reports localized failure and doe
  }
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
 });
+
+// Real mobile UI, isolated Supabase stub. No production accounts or external calls.
+test('i18n parking history renders historic ISO timestamps and escapes user content in both languages',async({page})=>{
+ const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ const unsafe='<img src=x onerror="alert(1)">';
+ const fixture={sessions:[{
+  id:19,desc:unsafe,sector:'Zone <B> & C',date:'17.11.2026 13:00',
+  timestamp:'2026-11-17T12:00:00Z',cost:4.5,
+  gps:{lat:49.4,lng:7.1},photo:'javascript:alert(2)'
+ }],activeEndTime:null};
+ await isolated(page,true,false,fixture);
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/parking/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>parkingCloudReady&&!!parkingCloudController?.ready)).toBe(true);
+ const list=page.locator('#parkingList');
+ await expect(list).toContainText('Date: 17/11/2026');
+ await expect(list).toContainText('Fee: 4.50 €');
+ await expect(list).toContainText('Zone <B> & C');
+ await expect(list).toContainText(unsafe);
+ await expect(list.locator('img')).toHaveCount(0);
+ await expect(list.locator('a[href*="google.com/maps/search/"]')).toHaveCount(1);
+ await page.locator('[data-tool-locale="de"]').click();
+ await expect(list).toContainText('Datum: 17.11.2026 13:00');
+ await expect(list).toContainText('Gebühr: 4,50 €');
+ await page.locator('[data-tool-locale="en"]').click();
+ await expect(list).toContainText('Date: 17/11/2026');
+ const snapshot=await page.evaluate(()=>parkingCloudController.snapshot());
+ expect(snapshot.sessions[0].desc).toBe(unsafe);
+ expect(snapshot.sessions[0].sector).toBe('Zone <B> & C');
+ expect(snapshot.sessions[0].timestamp).toBe(fixture.sessions[0].timestamp);
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ expect(errors).toEqual([]);
+});
+
+test('i18n loans history translates returned status on mobile without rewriting the record',async({page})=>{
+ const fixture={contacts:[],inventory:[],items:[{
+  id:4,title:'Original <Widget>',person:'Borrower & friend',date:'2026-11-17',
+  returnDate:'2026-12-17',category:'Werkzeug',status:'returned',deposit:12,photo:''
+ }]};
+ await isolated(page,true,false,fixture);
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/loans/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>loansCloudReady&&!!loansCloudController?.ready)).toBe(true);
+ const list=page.locator('#itemsList');
+ await expect(list).toContainText('✅ Returned');
+ await page.locator('[data-tool-locale="de"]').click();
+ await expect(list).toContainText('✅ Zurückgegeben');
+ await page.locator('[data-tool-locale="en"]').click();
+ await expect(list).toContainText('✅ Returned');
+ const snapshot=await page.evaluate(()=>loansCloudController.snapshot());
+ expect(snapshot.items[0].status).toBe('returned');
+ expect(snapshot.items[0].title).toBe('Original <Widget>');
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+
+test('i18n meter empty history changes only its presentation on mobile',async({page})=>{
+ await isolated(page,true,false,{readings:[],tarifs:{}});
+ await page.setViewportSize({width:320,height:800});
+ await page.goto(origin+'/tools/meters/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>metersCloudReady&&!!metersCloudController?.ready)).toBe(true);
+ const list=page.locator('#readingsList');
+ await expect(list).toContainText('No entries found.');
+ await page.locator('[data-tool-locale="de"]').click();
+ await expect(list).toContainText('Keine Einträge gefunden.');
+ await page.locator('[data-tool-locale="en"]').click();
+ await expect(list).toContainText('No entries found.');
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
