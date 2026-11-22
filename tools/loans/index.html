@@ -227,13 +227,13 @@
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                         <div>
-                            <label for="itemInventorySelect" class="block text-[11px] font-semibold text-gray-600 mb-1">Gegenstand aus Inventar wählen:</label>
+                            <label for="itemInventorySelect" class="block text-[11px] font-semibold text-gray-600 mb-1" data-tool-en="Choose item from inventory:">Gegenstand aus Inventar wählen:</label>
                             <select id="itemInventorySelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="fillInventoryData(this)">
                                 <option value="" data-tool-en="-- Select item --">-- Gegenstand wählen --</option>
                             </select>
                         </div>
                         <div>
-                            <label for="itemPersonSelect" class="block text-[11px] font-semibold text-gray-600 mb-1">Ausleiher wählen:</label>
+                            <label for="itemPersonSelect" class="block text-[11px] font-semibold text-gray-600 mb-1" data-tool-en="Choose borrower:">Ausleiher wählen:</label>
                             <select id="itemPersonSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="checkCustomPerson(this)">
                                 <option value="" data-tool-en="-- Select contact --">-- Kontakt wählen --</option>
                             </select>
@@ -248,7 +248,7 @@
                             <input type="date" id="itemDate" class="w-full p-3 border rounded-xl text-sm">
                         </div>
                         <div>
-                            <label for="itemReturnDate" class="block text-[11px] font-semibold text-gray-600 mb-1">Geplante Rückgabe:</label>
+                            <label for="itemReturnDate" class="block text-[11px] font-semibold text-gray-600 mb-1" data-tool-en="Planned return:">Geplante Rückgabe:</label>
                             <input type="date" id="itemReturnDate" class="w-full p-3 border rounded-xl text-sm">
                         </div>
                         <div>
@@ -339,7 +339,7 @@
             <div><label for="editPerson" class="block text-xs font-semibold text-gray-600 mb-1">Ausleiher:</label><input type="text" id="editPerson" class="w-full p-3 border rounded-xl text-sm"></div>
             <div class="grid grid-cols-2 gap-2">
                 <div><label for="editDate" class="block text-xs font-semibold text-gray-600 mb-1">Ausleihdatum:</label><input type="date" id="editDate" class="w-full p-3 border rounded-xl text-sm"></div>
-                <div><label for="editReturnDate" class="block text-xs font-semibold text-gray-600 mb-1">Geplante Rückgabe:</label><input type="date" id="editReturnDate" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label for="editReturnDate" class="block text-xs font-semibold text-gray-600 mb-1" data-tool-en="Planned return:">Geplante Rückgabe:</label><input type="date" id="editReturnDate" class="w-full p-3 border rounded-xl text-sm"></div>
             </div>
             <div><label for="editDeposit" class="block text-xs font-semibold text-gray-600 mb-1">Kaution / Wert (€):</label><input type="text" id="editDeposit" class="w-full p-3 border rounded-xl text-sm"></div>
             <div><label for="editNote" class="block text-xs font-semibold text-gray-600 mb-1">Notiz:</label><input type="text" id="editNote" class="w-full p-3 border rounded-xl text-sm"></div>
