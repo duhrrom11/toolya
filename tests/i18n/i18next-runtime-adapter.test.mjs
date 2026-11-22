@@ -5,6 +5,8 @@ import {createToolyaI18nextAdapter} from '../../shared/toolya/i18n/i18next-runti
 function fakeI18next(){
  const bundles={};
  return {
+  isInitialized:false,
+  init(){this.isInitialized=true;return this;},
   addResourceBundle(locale,ns,entries){(bundles[locale]??={})[ns]={...(bundles[locale]?.[ns]||{}),...entries};},
   getResourceBundle(locale,ns){return bundles[locale]?.[ns];},
   t(key,options){return bundles[options.lng]?.[options.ns]?.[key]??options.defaultValue;}
