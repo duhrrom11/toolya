@@ -101,7 +101,7 @@
       <h1>Tiergesundheit – Gesundheitstagebuch für Haustiere</h1>
       <p>Impfungen, Tierarztbesuche, Medikamente und Gesundheitsdaten für Hund und Katze</p>
     </div>
-    <button type="button" id="settingsBtn" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()">⚙</button>
+    <button type="button" id="settingsBtn" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()" data-tool-en-aria-label="Open settings">⚙</button>
   </div>
 </header>
 
@@ -191,7 +191,7 @@
                     </select></label>
                     <label class="helferlein-field" for="eventDate"><span class="helferlein-field-label" data-tool-en="Entry date">Datum des Eintrags</span><input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags" data-tool-en-aria-label="Entry date"></label>
                 </div>
-                <label class="helferlein-field" for="eventTitle"><span class="helferlein-field-label" data-tool-en="Description">Bezeichnung</span><input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)" data-tool-en-placeholder="Description (e.g. rabies vaccination or symptom)"></label>
+                <label class="helferlein-field" for="eventTitle"><span class="helferlein-field-label" data-tool-en="Description">Bezeichnung</span><input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)" data-tool-en-placeholder="Description (e.g. rabies vaccination or symptom)" data-tool-en-aria-label="Description (e.g. rabies vaccination or symptom)"></label>
                 
                 <div class="grid grid-cols-2 gap-2">
                     <label class="helferlein-field" for="eventCost"><span class="helferlein-field-label" data-tool-en="Cost in € (optional)">Kosten in € (optional)</span><input type="text" id="eventCost" placeholder="Kosten in € (optional)" class="p-3 border rounded-xl text-sm" aria-label="Kosten in € (optional)" data-tool-en-placeholder="Cost in € (optional)" data-tool-en-aria-label="Cost in € (optional)"></label>
@@ -218,7 +218,7 @@
                 <h3 class="font-bold text-lg">💊 Haustier-Apotheke & Medikamenten-Vorrat</h3>
                 <div class="b3-pet-med-fields flex gap-2 w-full sm:w-auto">
                     <label class="helferlein-field" for="medName"><span class="helferlein-field-label" data-tool-en="Medicine / supplies">Medikament / Vorrat</span><input type="text" id="medName" placeholder="Medikament / Vorrat (z.B. Zeckenschutz)" class="p-2 border rounded-xl text-xs" aria-label="Medikament / Vorrat (z.B. Zeckenschutz)"></label>
-                    <label class="helferlein-field" for="medStock"><span class="helferlein-field-label" data-tool-en="Units / packs">Stück / Packung</span><input type="text" id="medStock" placeholder="Stück / Packung (z.B. 2)" class="p-2 border rounded-xl text-xs w-28" aria-label="Stück / Packung (z.B. 2)" data-tool-en-placeholder="Units / pack (e.g. 2)"></label>
+                    <label class="helferlein-field" for="medStock"><span class="helferlein-field-label" data-tool-en="Units / packs">Stück / Packung</span><input type="text" id="medStock" placeholder="Stück / Packung (z.B. 2)" class="p-2 border rounded-xl text-xs w-28" aria-label="Stück / Packung (z.B. 2)" data-tool-en-placeholder="Units / pack (e.g. 2)" data-tool-en-aria-label="Units / pack (e.g. 2)"></label>
                     <button onclick="saveMedication()" class="b3-action px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl text-xs">Hinzufügen</button>
                 </div>
             </div>
@@ -762,7 +762,7 @@
                         <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
                             <div class="b3-pet-profile-heading flex items-center justify-between gap-3">
                                 <div class="b3-pet-profile-identity flex items-center space-x-3">
-                                    ${p.photo ? `<button type="button" class="b3-photo-trigger" aria-label="Haustierfoto vergrößern" onclick="zoomImage(this.firstElementChild.src)"><img alt="Haustierfoto" src="${p.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0"></button>` : defaultPetIcon}
+                                    ${p.photo ? `<button type="button" class="b3-photo-trigger" aria-label="Haustierfoto vergrößern" onclick="zoomImage(this.firstElementChild.src)" data-tool-en-aria-label="Enlarge pet photo"><img alt="Haustierfoto" src="${p.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0"></button>` : defaultPetIcon}
                                     <div>
                                         <h4 class="font-bold text-sm text-teal-800">${p.name}</h4>
                                         <p class="text-xs text-gray-600">${p.species || 'k.A.'} ${p.chip ? '| Chip: ' + p.chip : ''}</p>
