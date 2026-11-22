@@ -9,7 +9,7 @@ const html=`<!doctype html><html lang="de"><head><title>Parkplatz-Merker</title>
 </body></html>`;
 const server=http.createServer((req,res)=>{
  const pathname=new URL(req.url,'http://localhost').pathname;
- if(pathname==='/tools/parking/index.html'){res.writeHead(200,{'content-type':'text/html'}).end(html);return;}
+ if(pathname==='/tools/parking/index.html'||pathname==='/tools/moving/index.html'){res.writeHead(200,{'content-type':'text/html'}).end(html);return;}
  if(!pathname.startsWith('/shared/toolya/i18n/')){res.writeHead(404).end();return;}
  const file=path.resolve(root,'.'+pathname);
  if(!file.startsWith(path.join(root,'shared','toolya','i18n')+path.sep)){res.writeHead(403).end();return;}
@@ -26,7 +26,7 @@ const fakeI18next=`window.i18next={
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const browser=await chromium.launch({headless:true});
  try{
-  for(const mode of ['loaded','cdn-blocked']){
+  for(const tool of ['parking','moving'])for(const mode of ['loaded','cdn-blocked']){
    const context=await browser.newContext();
    // Prevent any external traffic and avoid production auth/storage.
    await context.route('**/*',route=>route.request().url().startsWith('http://127.0.0.1:')?route.continue():route.abort());
@@ -34,19 +34,19 @@ const fakeI18next=`window.i18next={
    if(mode==='loaded')await context.addInitScript({content:fakeI18next});
    const page=await context.newPage();
    const errors=[];page.on('pageerror',error=>errors.push(error.message));
-   await page.goto('http://127.0.0.1:'+server.address().port+'/tools/parking/index.html');
+   await page.goto('http://127.0.0.1:'+server.address().port+'/tools/'+tool+'/index.html');
    await page.locator('.ty-tool-language [data-tool-locale="en"]').click();
-   assert.equal(await page.locator('#timerStatus').textContent(),'No active parking timer',mode+' English status');
+   if(tool==='parking')assert.equal(await page.locator('#timerStatus').textContent(),'No active parking timer',mode+' English status');
    assert.equal(await page.locator('.ty-tool-language [data-tool-locale="en"]').getAttribute('aria-pressed'),'true');
    const translated=await page.evaluate(()=>{window.alert('Anmeldung fehlgeschlagen: Error 401');return window.__lastDialog;});
    assert.equal(translated,'Sign-in failed: Error 401',mode+' dialog prefix');
    await page.locator('.ty-tool-language [data-tool-locale="de"]').click();
-   assert.equal(await page.locator('#timerStatus').textContent(),'Kein aktiver Parkschein-Timer',mode+' German status');
+   if(tool==='parking')assert.equal(await page.locator('#timerStatus').textContent(),'Kein aktiver Parkschein-Timer',mode+' German status');
    assert.equal(await page.locator('.ty-tool-language [data-tool-locale="de"]').getAttribute('aria-pressed'),'true');
    assert.deepEqual(errors,[],mode+' page errors');
    if(mode==='loaded')assert.equal(await page.evaluate(()=>window.i18next.isInitialized),true);
    await context.close();
-   console.log('PASS parking DE/EN/DE and prefix translation ('+mode+')');
+   console.log('PASS '+tool+' DE/EN/DE and prefix translation ('+mode+')');
   }
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;server.close();});
