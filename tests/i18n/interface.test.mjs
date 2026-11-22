@@ -2934,12 +2934,13 @@ test('budget locale-change refresh keeps unsaved budget inputs and record keys s
  const {document}=parseHTML('<div id="budgetProgressList"><span data-budget-category="Wohnen">Wohnen</span></div><div id="budgetInputList"><label for="budget-amount-0">Lebensmittel:</label><input id="budget-amount-0" data-cat="Lebensmittel" value="150"></div>');
  const input=document.getElementById('budget-amount-0');
  input.value='175';
- let savingsRefresh=0,receiptRefresh=0,chartRefresh=0;
+ let savingsRefresh=0,receiptRefresh=0,chartRefresh=0,axisRefresh=0;
  const context={
   window:{__toolyaUILocale:'en'},document,toolyaCloudReady:true,
   renderSavingsGoals:()=>{savingsRefresh++;},
   renderTransactionList:()=>{receiptRefresh++;},
-  refreshBudgetChartSummaries:()=>{chartRefresh++;}
+  refreshBudgetChartSummaries:()=>{chartRefresh++;},
+  refreshBudgetChartLabels:()=>{axisRefresh++;}
  };
  createContext(context);
  runInContext(dictionary[0]+'\n'+formatter[0]+'\n'+source.slice(start,end),context);
@@ -2956,6 +2957,7 @@ test('budget locale-change refresh keeps unsaved budget inputs and record keys s
  assert.equal(savingsRefresh,2);
  assert.equal(receiptRefresh,2);
  assert.equal(chartRefresh,2,'accessible summaries refreshed without mutating the form');
+ assert.equal(axisRefresh,2,'visual chart labels refreshed without touching data');
  context.toolyaCloudReady=false;
  context.window.__toolyaUILocale='en';
  runInContext('refreshBudgetDynamicLocale()',context);
@@ -2963,6 +2965,7 @@ test('budget locale-change refresh keeps unsaved budget inputs and record keys s
  assert.equal(savingsRefresh,2);
  assert.equal(receiptRefresh,2);
  assert.equal(chartRefresh,2,'cloud gate also prevents chart refresh');
+ assert.equal(axisRefresh,2,'cloud gate prevents visual chart updates');
  assert.ok(!source.slice(start,end).includes('saveBudgets('),'locale refresh never persists budgets');
  assert.ok(!source.slice(start,end).includes('localStorage.setItem('),'locale refresh never writes storage');
 });
@@ -3039,4 +3042,51 @@ test('budget payment methods translate only known display values and retain save
  assert.match(source,/escapeHaushaltsHtml\(budgetPaymentLabel\(r\.paymentMethod/,'transaction display escapes payment label');
  assert.match(source,/escapeHaushaltsHtml\(r\.note\)/,'free-form notes are escaped before dynamic insertion');
  assert.match(source,/receiptPaymentMethod'\)\.value = r\.paymentMethod/,'saved payment method unchanged when editing');
+});
+
+
+test('budget dynamic charts localize only legend labels and preserve numeric series', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {fileURLToPath}=await import('node:url');
+ const {resolve,dirname}=await import('node:path');
+ const {createContext,runInContext}=await import('node:vm');
+ const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../../tools/budget/index.html'),'utf8');
+ const dictionary=source.match(/const budgetCategoryEn = Object\.freeze\((\{[\s\S]*?\})\);/);
+ const formatter=source.match(/function budgetCategoryLabel\(category\) \{[\s\S]*?\n        \}/);
+ const begin=source.indexOf('function refreshBudgetChartLabels() {');
+ const end=source.indexOf('// Read-only locale refresh:',begin);
+ assert.ok(dictionary && formatter && begin>0 && end>begin,'source-backed chart label updater present');
+ let categoryUpdates=0,cashUpdates=0;
+ const category={data:{labels:['Wohnen','Freizeit'],datasets:[{data:[25,40]}]},update:()=>{categoryUpdates++;}};
+ const cash={data:{labels:['Einnahmen','Ausgaben'],datasets:[{label:'Betrag €',data:[100,65]}]},update:()=>{cashUpdates++;}};
+ const context={
+  window:{__toolyaUILocale:'en'},
+  categoryChartInstance:category,cashflowChartInstance:cash
+ };
+ createContext(context);
+ runInContext(dictionary[0]+'\n'+formatter[0]+'\nlet budgetChartDisplaySnapshot = {categories:[["Wohnen",25],["Freizeit",40]],income:100,expense:65};\n'+source.slice(begin,end),context);
+ runInContext('refreshBudgetChartLabels()',context);
+ assert.deepEqual(category.data.labels,['Housing','Leisure']);
+ assert.deepEqual(cash.data.labels,['Income','Expenses']);
+ assert.equal(cash.data.datasets[0].label,'Amount €');
+ assert.deepEqual(category.data.datasets[0].data,[25,40]);
+ assert.deepEqual(cash.data.datasets[0].data,[100,65]);
+ context.window.__toolyaUILocale='de';
+ runInContext('refreshBudgetChartLabels()',context);
+ assert.deepEqual(category.data.labels,['Wohnen','Freizeit']);
+ assert.deepEqual(cash.data.labels,['Einnahmen','Ausgaben']);
+ assert.equal(cash.data.datasets[0].label,'Betrag €');
+ assert.equal(categoryUpdates,2);
+ assert.equal(cashUpdates,2);
+ runInContext('budgetChartDisplaySnapshot={categories:[],income:0,expense:0}; refreshBudgetChartLabels()',context);
+ assert.deepEqual(category.data.labels,['Keine Ausgaben']);
+ context.window.__toolyaUILocale='en';
+ runInContext('refreshBudgetChartLabels()',context);
+ assert.deepEqual(category.data.labels,['No expenses']);
+ runInContext('budgetChartDisplaySnapshot={categories:[["__proto__",3],["Custom <tag>",2]],income:5,expense:5}; refreshBudgetChartLabels()',context);
+ assert.deepEqual(category.data.labels,['__proto__','Custom <tag>'],'unknown categories remain unchanged');
+ assert.deepEqual(category.data.datasets[0].data,[25,40],'no chart data rewrite');
+ const updater=source.slice(begin,end);
+ assert.ok(!/saveBudgets\(|localStorage\.setItem\(|\.datasets\[0\]\.data\s*=/.test(updater),'visual locale updater has no writes');
+ assert.match(source,/catLabels\.map\(budgetCategoryLabel\)/,'initial chart render is locale-aware');
 });
