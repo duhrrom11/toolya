@@ -13,8 +13,15 @@ begin
 end $$;
 insert into auth.users(id, email, raw_user_meta_data)
 values ('00000000-0000-4000-8000-000000000004', 'new@example.invalid',
-        '{"toolya_profile":{"first":" Éva ","last":"Nguyễn","country":"DE","avatar":"https://example.invalid/profile.png"}}');
+        '{"provider_marker":"fixture","toolya_profile":{"first":" Éva ","last":"Nguyễn","country":"DE","avatar":"https://example.invalid/profile.png"}}');
 update auth.users set email_confirmed_at = now() where email = 'new@example.invalid';
+do $$
+begin
+  if (select raw_user_meta_data from auth.users where email = 'new@example.invalid')
+      is distinct from '{"provider_marker":"fixture"}'::jsonb then
+    raise exception 'Confirmation did not remove only temporary registration fields';
+  end if;
+end $$;
 
 insert into public.user_data values
  ('00000000-0000-4000-8000-000000000001', 'haushaltsbuch-kassenbon', '{"entries":[{"id":1}]}'),

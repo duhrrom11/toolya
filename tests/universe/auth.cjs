@@ -104,13 +104,21 @@ async function run() {
     assert(verifyURL, 'Confirmation link must arrive in the local mailbox');
     const confirmation = await fetch(verifyURL, { redirect: 'manual' });
     assert.equal(confirmation.status, 303);
-    assert.equal(new URL(confirmation.headers.get('location')).searchParams.get('next'), '/tools/moving/');
+    const confirmedLocation = new URL(confirmation.headers.get('location'));
+    assert.equal(confirmedLocation.searchParams.get('next'), '/tools/moving/');
+    const confirmationToken = new URLSearchParams(confirmedLocation.hash.slice(1)).get('access_token');
+    assert(confirmationToken, 'Confirmation must issue a session for the return flow');
+    const initialClaims = JSON.parse(Buffer.from(confirmationToken.split('.')[1], 'base64url'));
+    assert.equal(initialClaims.user_metadata.toolya_profile, undefined);
     const signIn = await post('/token?grant_type=password', credentials);
     assert(signIn.ok, 'Confirmed account can sign in');
-    const { user } = await signIn.json();
+    const { user, access_token: accessToken } = await signIn.json();
     assert.match(user.id, /^[a-f0-9-]{36}$/);
     assert.deepEqual(JSON.parse(sql("select profile from toolya_universe.players where user_id='" + user.id + "';")), profile);
-    console.log('GoTrue: required names, local email confirmation, original route and private profile verified');
+    assert.equal(user.user_metadata.toolya_profile, undefined);
+    const token = JSON.parse(Buffer.from(accessToken.split('.')[1], 'base64url'));
+    assert.equal(token.user_metadata.toolya_profile, undefined);
+    console.log('GoTrue: required names, local email confirmation, original route and private profile without duplicated Auth metadata verified');
   } finally {
     if (server) server.kill();
     smtp.close();

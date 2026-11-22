@@ -16,6 +16,8 @@ create table if not exists toolya_universe.players (
 );
 create unique index if not exists toolya_universe_unique_handle on toolya_universe.players (lower(handle)) where visible;
 alter table toolya_universe.players enable row level security;
+-- Registration writes the private row just before Auth inserts its user in the same transaction.
+alter table toolya_universe.players alter constraint players_user_id_fkey deferrable initially deferred;
 
 create table if not exists toolya_universe.wish_bookmarks (
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -56,42 +58,27 @@ $$;
 create or replace function toolya_universe.signup_profile()
 returns trigger language plpgsql security definer set search_path = '' as $$
 begin
-  if new.is_anonymous or new.email is null then return new; end if;
-  if tg_op = 'INSERT' then
-    if new.raw_user_meta_data ? 'toolya_profile' then
-      new.raw_user_meta_data := jsonb_set(new.raw_user_meta_data, '{toolya_profile}',
-        toolya_universe.profile_values(new.raw_user_meta_data->'toolya_profile'));
-    elsif nullif(new.encrypted_password, '') is not null and new.invited_at is null then
-      raise exception 'Name required for registration' using errcode = '22023';
-    end if;
+  if tg_op = 'UPDATE' then
+    new.raw_user_meta_data := new.raw_user_meta_data - 'toolya_profile';
+    return new;
   end if;
-  return new;
-end;
-$$;
-
-create or replace function toolya_universe.confirm_profile()
-returns trigger language plpgsql security definer set search_path = '' as $$
-begin
-  if new.email_confirmed_at is not null and not new.is_anonymous and new.raw_user_meta_data ? 'toolya_profile' then
-    begin
-      insert into toolya_universe.players(user_id, profile)
-        values (new.id, toolya_universe.profile_values(new.raw_user_meta_data->'toolya_profile'))
-        on conflict (user_id) do nothing;
-    exception when invalid_parameter_value then
-      -- A preexisting account with stale metadata can complete its profile in the UI.
-      null;
-    end;
+  if new.is_anonymous or new.email is null then return new; end if;
+  if new.raw_user_meta_data ? 'toolya_profile' then
+    insert into toolya_universe.players(user_id, profile)
+      values (new.id, toolya_universe.profile_values(new.raw_user_meta_data->'toolya_profile'));
+    new.raw_user_meta_data := new.raw_user_meta_data - 'toolya_profile';
+  elsif nullif(new.encrypted_password, '') is not null and new.invited_at is null then
+    raise exception 'Name required for registration' using errcode = '22023';
   end if;
   return new;
 end;
 $$;
 
 drop trigger if exists toolya_universe_signup_profile on auth.users;
-create trigger toolya_universe_signup_profile before insert on auth.users
+create trigger toolya_universe_signup_profile before insert or update of raw_user_meta_data on auth.users
 for each row execute function toolya_universe.signup_profile();
 drop trigger if exists toolya_universe_confirm_profile on auth.users;
-create trigger toolya_universe_confirm_profile after insert or update of email_confirmed_at on auth.users
-for each row execute function toolya_universe.confirm_profile();
+drop function if exists toolya_universe.confirm_profile();
 
 create or replace function toolya_universe.account()
 returns uuid language plpgsql stable set search_path = '' as $$
