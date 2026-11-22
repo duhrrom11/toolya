@@ -47,3 +47,12 @@ The Playwright browser job logged four successful scenarios with pinned **real i
 The real-library scenarios assert initialization and registered English `tool_parking`/`tool_moving` resource namespaces. The CDN-blocked scenarios assert that the legacy translation fallback still works. The successful browser job also executes offline full-page HTML smoke checks for both tools. Those smoke checks validate the HTTP response and source HTML structure, **not** authenticated, interactive end-to-end page behavior; all external traffic is blocked.
 
 **Decision:** the isolated i18next parking/moving migration pilot is accepted for the scope above. This does **not** authorize a production release or imply all Toolya views are fully bilingual. The previous pending notes above describe historical intermediate runs and are superseded by this final pilot acceptance. `main`, live website, and production Supabase data remain untouched.
+
+## Follow-on migration status (2026-11-22)
+
+The validated parking/moving pilot remains accepted at commit `68870a26` (run `45003183191`, success). Two further tools have been **integrated but not accepted**:
+
+- Housemates (`tools/housemates/index.html`): real pinned i18next UMD loading, opt-in singleton adapter, existing namespaced translations, and legacy CDN-failure fallback. Integration commit `2f54e4294a2faa862d6c1556969fa122b9ac35af`. Static checks [run 45003404381](https://github.com/duhrrom11/toolya/actions/runs/45003404381) passed; i18next browser [run 45003404335](https://github.com/duhrrom11/toolya/actions/runs/45003404335) and isolated browser run `45003404320` were still queued when inspected. **Six browser scenarios not yet confirmed.**
+- Plant care (`tools/plants/index.html`): same opt-in adapter and fallback, integration commit `f898345b73231976ca9219cd928d2a5821a6e377`. i18next browser [run 45003515686](https://github.com/duhrrom11/toolya/actions/runs/45003515686), static checks `45003515564`, and isolated browser run `45003515742` were queued when inspected. **Eight browser scenarios not yet confirmed.**
+
+No browser failures or application defects have been established for either follow-on tool. Do not create diagnostic-only commits or mark these migrations accepted until CI has completed. The additional coverage uses the existing isolated fixture; authenticated full-page end-to-end behavior remains out of scope. No changes to `main`, production website, or Supabase production data.
