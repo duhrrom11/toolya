@@ -23,11 +23,19 @@ on:
       - 'tests/i18n/**'
       - 'tools/parking/index.html'
       - 'tools/moving/index.html'
+      - 'tools/housemates/index.html'
+      - 'tools/plants/index.html'
+      - 'tools/baking/index.html'
+      - 'tools/budget/index.html'
+      - 'tools/meters/index.html'
+      - 'tools/car/index.html'
+      - 'tools/loans/index.html'
+      - 'tools/pet-health/index.html'
       - 'tests/i18n/parking-i18next-playwright.cjs'
       - '.github/workflows/i18next-pilot.yml'
   workflow_dispatch:
 concurrency:
-  group: i18next-pilot-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  group: i18next-pilot-${{ github.event_name }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 jobs:
   node-regressions:
