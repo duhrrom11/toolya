@@ -1571,7 +1571,9 @@ async function toolyaCloudBoot(tool) {
                 const category = input.getAttribute('data-cat');
                 const amount = input.value.trim() === '' ? 0 : Number(input.value);
                 if (!Number.isFinite(amount) || amount < 0) {
-                    alert('Bitte für ' + category + ' einen gültigen Budgetbetrag ab 0 € eingeben.');
+                    alert(window.__toolyaUILocale === 'en'
+                        ? 'Enter a valid budget amount of at least €0 for ' + category + '.'
+                        : 'Bitte für ' + category + ' einen gültigen Budgetbetrag ab 0 € eingeben.');
                     input.focus();
                     return;
                 }

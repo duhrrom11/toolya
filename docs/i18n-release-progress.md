@@ -213,3 +213,8 @@ Basis `cc9876d92ce5dfefc1504098ea73a3fd03969dac`: 209/209 statische Node-i18n-Te
 - Systemeigene Kontakt-/Inventar-/Custom-/Filter-Optionsbeschriftungen folgen DE/EN sowohl nach `loadDropdowns()` als auch beim Sprachwechsel; ausgewählte Werte und frei eingegebene Namen bleiben unverändert. Kalenderdatei-Validierungsfehler zweisprachig.
 - Node-Regression für deutsche und englische ICS-Fehler sowie echter 320px-Chromiumtest der Dropdowns mit Sonderzeichen und ohne Cloud-Schreiboperationen hinzugefügt. CI-Ergebnis auf diesem HEAD noch offen.
 - Draft/noindex/Prod-Daten/Markenassets unverändert. Release-Gate offen.
+
+### 22.11.2026 – DE/EN-Budgetvalidierung mit dynamischem Namen
+
+- Haushaltsbuch-Meldung bei negativem/nicht numerischem Kategoriebudget lokalisiert; Benutzerkategorie wird nicht übersetzt. Neue synthetische Node-Regression `tests/i18n/budget-amount-validation.test.mjs` prüft 2 Fehlerpfade ohne Schreiboperationen und den positiven Persistenzpfad mit unverändertem Kategorienamen.
+- Ziel-CI für diesen Code-HEAD steht vor der Prüfung; Release weiterhin NOT READY / PR Draft und keine produktiven Datenbankaktionen.

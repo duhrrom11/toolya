@@ -530,3 +530,8 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 - Kontakt-, Inventar- und Personenfilter-Platzhalter werden auch nach dem Cloud-Neuaufbau DE/EN angezeigt. Bei Sprachwechsel werden nur systemeigene Platzhaltertexte verändert, niemals Optionswerte, ausgewählte Kontakt-/Inventar-/Filterwerte oder Nutzereingaben.
 - Ungültige ganztägige Verleih-ICS-Termine melden die Validierung jetzt in DE/EN. Synthetische Node-Tests und isolierter 320px-Chromiumfall ergänzt; im Runtime-Smoke enthalten.
 - CI auf dem neuen HEAD prüfen, Release weiterhin NOT READY/Draft und noindex geschützt.
+
+## 22.11.2026 – Haushaltsbuch: Budgetvalidierung DE/EN
+
+- Die dynamische Fehlermeldung für ungültige Kategoriebudgets ist jetzt sprachabhängig; der freie Kategoriename wird im Meldungstext unverändert durchgereicht und weder übersetzt noch persistiert verändert.
+- Drei tatsächlich ausführbare isolierte Node-Prüffälle für DE/EN-Fehler ohne Schreibzugriff und für gültige Werte mit bytegleichem Kategorienamen ergänzt. CI-Ergebnisse auf dem neuen HEAD nachprüfen; kein Produktionsdatenzugriff.
