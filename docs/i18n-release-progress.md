@@ -221,3 +221,10 @@ Basis `cc9876d92ce5dfefc1504098ea73a3fd03969dac`: 209/209 statische Node-i18n-Te
 
 - Haushaltsbuch-Meldung bei negativem/nicht numerischem Kategoriebudget lokalisiert; Benutzerkategorie wird nicht übersetzt. Neue synthetische Node-Regression `tests/i18n/budget-amount-validation.test.mjs` prüft 2 Fehlerpfade ohne Schreiboperationen und den positiven Persistenzpfad mit unverändertem Kategorienamen.
 - Ziel-CI für diesen Code-HEAD steht vor der Prüfung; Release weiterhin NOT READY / PR Draft und keine produktiven Datenbankaktionen.
+
+### 22.11.2026 – Wiederaufnahme nach Budget-Validierung: aktuelle CI-Matrix
+
+- GitHub-HEAD bei Wiederaufnahme: `2725d849e29ce49b830f0e4c96d0087a3c10f4ce`; Branch-Vergleich zu `main`: **539 Commits voraus, 0 zurück**, PR #291 weiterhin Draft. HEAD enthält den neuen Budget-Validierungs-/Dokumentationsstand; keine automatische Freigabe aus früheren CI-Läufen.
+- **15 von 16 am HEAD erfassten Actions-Läufen abgeschlossen und erfolgreich**, darunter [i18n static checks #44993409414](https://github.com/duhrrom11/toolya/actions/runs/44993409414), [Connect-Browser #44993409468](https://github.com/duhrrom11/toolya/actions/runs/44993409468), [Plattform-/Maskottchen #44993409444](https://github.com/duhrrom11/toolya/actions/runs/44993409444), [Security/Moving #44993409387](https://github.com/duhrrom11/toolya/actions/runs/44993409387), Budget, Dashboard und Amazon. **Isolated Toolya browser tests #44993409442 lief zum Abfragezeitpunkt noch**, daher keine vollständige CI-Freigabe behaupten.
+- 34 Teilansichten, 48 heuristische Laufzeitdateien und Auth-Mail-/Export-/A11y-Gates unverändert offen. Die bestehenden 223/223 Node-i18n-Tests sind auf dem vorherigen Code-HEAD `f2ca1097` dokumentiert; die aktuelle CI ist erfolgreich, ohne die exakte neue Testzahl hier zu behaupten.
+- Nächste Schritte: vollständigen Chromiumlauf auswerten; danach Haupttool-Coverage, Wünsche/Nachlass, Auth-E2E und Exporte isoliert bearbeiten. Release weiterhin **NOT READY**, keine produktiven Aktionen.

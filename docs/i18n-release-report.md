@@ -94,3 +94,9 @@ Für abgeleitete Verleih-, Auto- und Haustierfristen werden Anwendungswörter vo
 - Neue Main-Connect-Dashboard-Integration, Readonly-Termine, DE/EN-Deadline-Beschriftungen und source-aware Checkbox-Accessibility, Verleih-Dropdowns mit unveränderten Werten, lokalisierte ICS-/Budgetvalidierung. Keine Produktivdaten-/Produktionsaktion.
 - **Nachgewiesen:** [223/223 i18n-Node-Tests auf diesem Code-HEAD](https://github.com/duhrrom11/toolya/actions/runs/44993279217). [6/6 gezielte Chromium-Tests auf Vorgänger `930d21d3`](https://github.com/duhrrom11/toolya/actions/runs/44992912002). Die vollständige CI-Matrix dieses neuen Codes war beim Schreiben noch nicht abgeschlossen; niemals ältere 18/18 als automatisch aktuelle Freigabe behandeln.
 - [Einzelansichten und geschützte Release-Gates](i18n-release-checklist.md). **NOT READY / PR Draft**; 34 partielle Ansichten, 48 Dateien, Auth-Mail-E2E, vollständige Exporte und Screenreader-Abnahme bleiben offen.
+
+## Nachtrag: CI-Abgleich auf HEAD `2725d849e29ce49b830f0e4c96d0087a3c10f4ce`
+
+Zum Wiederaufnahmezeitpunkt waren **15/16 aktuelle GitHub-Actions-Läufe erfolgreich abgeschlossen**, ein vollständiger isolierter Chromiumlauf ([#44993409442](https://github.com/duhrrom11/toolya/actions/runs/44993409442)) noch in Bearbeitung. Der aktuelle statische i18n-Lauf ([#44993409414](https://github.com/duhrrom11/toolya/actions/runs/44993409414)) war erfolgreich. Die 223/223 Node-Tests wurden auf dem unmittelbar vorherigen Code-HEAD nachgewiesen; kein unbestätigter Browserlauf wird als grün eingetragen.
+
+Branch liegt 0 Commits hinter main; die 34 Ansichts- und 48 Runtime-Auditpunkte sowie Auth-Mail, PDF/QR/Druck und Screenreader sind weiterhin **nicht abgenommen**. Status bleibt **NOT READY / Draft**. Dieser Dokumentationsnachtrag ist selbst kein neuer Testlauf.

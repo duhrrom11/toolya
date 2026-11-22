@@ -1,6 +1,6 @@
 # Toolya DE/EN – Technische Release-Checkliste
 
-**Code-HEAD:** `f2ca109737f262149b7f64801496c08abe7fd928` · [PR #291 (Draft)](https://github.com/duhrrom11/toolya/pull/291) · **Status: NOT READY.** Kein Merge nach main, kein Deployment, kein noindex-Wechsel.
+**Zuletzt geprüfter Branch-HEAD:** `2725d849e29ce49b830f0e4c96d0087a3c10f4ce` (15/16 CI abgeschlossen; vollständiger Chromiumlauf noch offen). **Letzter expliziter 223/223-Node-Nachweis:** `f2ca109737f262149b7f64801496c08abe7fd928` · [PR #291 (Draft)](https://github.com/duhrrom11/toolya/pull/291) · **Status: NOT READY.** Kein Merge nach main, kein Deployment, kein noindex-Wechsel.
 
 Diese Checkliste erfasst die 34 durch den automatischen i18n-Audit als nur teilweise lokalisiert markierten Ansichten. Die Markierung ist ein Review-Auftrag: vorhandene Regressionstests sind nicht mit vollständiger Sprach-/Funktionsabnahme gleichzusetzen. Nutzerdaten und gespeicherte Statuscodes dürfen durch Übersetzungen niemals verändert werden.
 
