@@ -1,3 +1,6 @@
+import {initializeToolyaI18next} from './i18next-singleton.mjs';
+// Reuse the optional shared runtime; existing translated HTML remains the fallback.
+initializeToolyaI18next(globalThis.i18next);
 // Explicit user choice only. Does not touch Toolya buddy, auth, or application storage.
 import {normalizeLocale} from './locale.mjs';
 const key='toolya-locale-v1';
