@@ -3302,3 +3302,34 @@ test('car deadlines and vehicle actions have reversible source-backed DE/EN text
  assert.match(source,/const label = \(de, en\) => english \? en : de/,'labels use active locale');
  assert.match(source,/window\.__toolyaUILocale === 'en' \? '-- Select vehicle --' : '-- Fahrzeug wählen --'/,'selector language does not depend on render-local closure');
 });
+
+
+test('car dropdown labels localize in place without replacing selected vehicle options', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {createContext,runInContext}=await import('node:vm');
+ const source=readFileSync(new URL('../../tools/car/index.html',import.meta.url),'utf8');
+ const begin=source.indexOf('function refreshCarDropdownLocale() {');
+ const end=source.indexOf('function renderApp() {',begin);
+ assert.ok(begin>0 && end>begin,'read-only dropdown refresh exists in source');
+ const {document}=parseHTML('<select id="eventCarSelect"><option value="">-- Fahrzeug wählen --</option><option value="42" selected>Private car (kein Kennzeichen)</option></select><select id="tireCarSelect"><option value="">-- Fahrzeug wählen --</option><option value="42" selected>Private car (kein Kennzeichen)</option></select><select id="filterCarSelect"><option value="">Alle Fahrzeuge anzeigen</option><option value="42" selected>Private car</option></select>');
+ const cars=[{id:42,name:'Private <car>',plate:''}];
+ const selected=[...document.querySelectorAll('option[selected]')];
+ const context={document,window:{__toolyaUILocale:'en'},getData:()=>({cars})};
+ createContext(context);
+ runInContext(source.slice(begin,end),context);
+ runInContext('refreshCarDropdownLocale()',context);
+ assert.equal(document.querySelector('#eventCarSelect option[value=""]').textContent,'-- Select vehicle --');
+ assert.equal(document.querySelector('#filterCarSelect option[value=""]').textContent,'Show all vehicles');
+ assert.equal(document.querySelector('#eventCarSelect option[value="42"]').textContent,'Private <car> (no registration)');
+ assert.equal(document.querySelector('#tireCarSelect option[value="42"]').textContent,'Private <car> (no registration)');
+ assert.equal(document.querySelector('#eventCarSelect car'),null,'user-owned vehicle name remains text');
+ context.window.__toolyaUILocale='de';
+ runInContext('refreshCarDropdownLocale()',context);
+ assert.equal(document.querySelector('#eventCarSelect option[value="42"]').textContent,'Private <car> (kein Kennzeichen)');
+ assert.equal(document.querySelector('#filterCarSelect option[value=""]').textContent,'Alle Fahrzeuge anzeigen');
+ assert.deepEqual([...document.querySelectorAll('option[selected]')],selected,'selected option nodes unchanged');
+ assert.deepEqual(cars,[{id:42,name:'Private <car>',plate:''}],'source vehicle details untouched');
+ const refresh=source.slice(begin,end);
+ assert.ok(!/saveData\(|localStorage\.setItem\(|innerHTML\s*=/.test(refresh),'refresh never saves or recreates inputs');
+ assert.match(source,/if \(toolyaCloudReady\) refreshCarDropdownLocale\(\)/,'locale refresh gated on cloud state');
+});
