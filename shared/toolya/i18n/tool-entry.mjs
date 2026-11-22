@@ -87,7 +87,7 @@ function mountToolLanguage(){
      return nativeDialogs[method](localizeDialog(message),...args);
    };
  }
- uiGlobal.toolyaUiText=(value)=>translateAccountStatus(selected,value);
+ uiGlobal.toolyaUiText=(value)=>i18nextAdapter&&selected==='en'?i18nextAdapter.translateAccount(selected,value):translateAccountStatus(selected,value);
  const accountStatusSelectors={
    moving:['#userInfo','#cloudStatus'],
    housemates:['#cloud-status-text','#header-user-email'],
