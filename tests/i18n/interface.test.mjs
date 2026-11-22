@@ -2963,3 +2963,45 @@ test('budget locale-change refresh keeps unsaved budget inputs and record keys s
  assert.ok(!source.slice(start,end).includes('saveBudgets('),'locale refresh never persists budgets');
  assert.ok(!source.slice(start,end).includes('localStorage.setItem('),'locale refresh never writes storage');
 });
+
+
+test('budget accessible chart summaries switch DE/EN using read-only computed values', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {fileURLToPath}=await import('node:url');
+ const {resolve,dirname}=await import('node:path');
+ const {createContext,runInContext}=await import('node:vm');
+ const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../../tools/budget/index.html'),'utf8');
+ const dictionary=source.match(/const budgetCategoryEn = Object\.freeze\((\{[\s\S]*?\})\);/);
+ const formatter=source.match(/function budgetCategoryLabel\(category\) \{[\s\S]*?\n        \}/);
+ const begin=source.indexOf('let budgetChartDisplaySnapshot = null;');
+ const end=source.indexOf('// Read-only locale refresh:',begin);
+ assert.ok(dictionary && formatter && begin>0 && end>begin,'accessibility helper is source-backed');
+ const {document}=parseHTML('<div id="categoryChartSummary"></div><div id="cashflowChartSummary"></div>');
+ const context={document,window:{__toolyaUILocale:'en'}};
+ createContext(context);
+ runInContext(dictionary[0]+'\n'+formatter[0]+'\n'+source.slice(begin,end),context);
+ runInContext("budgetChartDisplaySnapshot={categories:[['Wohnen',25],['<private>',8]],income:100,expense:33}; refreshBudgetChartSummaries();",context);
+ const category=document.getElementById('categoryChartSummary');
+ const cashflow=document.getElementById('cashflowChartSummary');
+ assert.match(category.textContent,/Housing:/);
+ assert.match(category.textContent,/<private>:/,'custom category is not translated');
+ assert.match(cashflow.textContent,/Income:/);
+ assert.match(cashflow.textContent,/Expenses:/);
+ assert.match(cashflow.textContent,/Balance:/);
+ assert.ok(!category.querySelector('private'),'category renders as text rather than HTML');
+ context.window.__toolyaUILocale='de';
+ runInContext('refreshBudgetChartSummaries()',context);
+ assert.match(category.textContent,/Wohnen:/);
+ assert.match(cashflow.textContent,/Einnahmen:/);
+ assert.match(cashflow.textContent,/Ausgaben:/);
+ assert.match(cashflow.textContent,/Saldo:/);
+ runInContext("budgetChartDisplaySnapshot={categories:[],income:0,expense:0}; refreshBudgetChartSummaries();",context);
+ assert.equal(category.textContent,'Keine Ausgaben in diesem Monat.');
+ context.window.__toolyaUILocale='en';
+ runInContext('refreshBudgetChartSummaries()',context);
+ assert.equal(category.textContent,'No expenses this month.');
+ assert.match(source,/income: totalIncome, expense: totalExpense/,'snapshot retains calculated totals');
+ const refresh=source.slice(source.indexOf('function refreshBudgetChartSummaries()'),end);
+ assert.ok(!refresh.includes('saveBudgets(') && !refresh.includes('localStorage.setItem('),'summary refresh has no writes');
+ assert.match(source,/refreshBudgetChartSummaries\(\);\s*\}\s*document\.addEventListener\('toolya:locale-change', refreshBudgetDynamicLocale\)/,'locale change refreshes accessible summaries');
+});
