@@ -82,6 +82,9 @@
 <script defer src="/assets/toolya-pwa.js"></script>
 <script type="module" src="shared/toolya/platform.mjs"></script>
 <script type="module" src="shared/toolya/home.mjs?v=20261115-auth-loop-fixed"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script>
+<script defer src="/assets/toolya-i18n.js?v=1"></script>
+<link rel="stylesheet" href="/assets/toolya-i18n.css?v=1">
 </head>
 <body class="b3-home bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -97,8 +100,8 @@
  </div>
  <div class="b3-hub-hero">
   <div class="ty-hero-copy">
-   <h1>Kostenlose Online-Tools <span>für den Alltag</span></h1>
-   <p>Praktische, kostenlose Online-Tools für Finanzen, Zuhause, Organisation und unterwegs.</p>
+   <h1><span data-i18n="headline">Kostenlose Online-Tools</span> <span data-i18n="headlineSuffix">für den Alltag</span></h1>
+   <p data-i18n="intro">Praktische, kostenlose Online-Tools für Finanzen, Zuhause, Organisation und unterwegs.</p>
   </div>
   <div class="ty-hero-stage" aria-label="Unsere beiden Toolya-Maskottchen">
    <img class="ty-hero-art" src="assets/toolya/home/hero-duo.webp"
@@ -113,7 +116,7 @@
  <aside class="b3-hero-preview b3-dashboard-teaser" aria-label="Direkt zum persönlichen Dashboard">
   <a class="b3-dashboard-card" href="dashboard/">
    <span class="b3-dashboard-card-icon" aria-hidden="true"><img src="assets/vendor/bootstrap-icons/star-fill.svg" width="34" height="34" alt=""></span>
-   <span class="b3-dashboard-card-copy"><strong>Mein Dashboard</strong><span>Dein persönlicher Bereich: Lieblings-Tools, Aufgaben und Erinnerungen an einem Ort.</span><small class="ty-helper-note">Deine mit ★ markierten Tools findest du hier wieder.</small></span>
+   <span class="b3-dashboard-card-copy"><strong data-i18n="dashboard">Mein Dashboard</strong><span data-i18n="dashboardDescription">Dein persönlicher Bereich: Lieblings-Tools, Aufgaben und Erinnerungen an einem Ort.</span><small class="ty-helper-note">Deine mit ★ markierten Tools findest du hier wieder.</small></span>
    <span class="b3-dashboard-card-arrow" aria-hidden="true">→</span>
   </a>
  </aside>
@@ -127,7 +130,7 @@
         <!-- B3 Kategorie- und Suchbereich: rein lokale Filterung der vorhandenen Karten -->
 <section class="b3-discovery" id="toolDiscovery" aria-label="Werkzeugfinder">
  <div class="b3-discovery-top">
-  <div><h2 class="b3-section-heading">Tools entdecken</h2>
+  <div><h2 class="b3-section-heading" data-i18n="discover">Tools entdecken</h2>
     <p class="b3-section-subtitle" id="b3-result-count" role="status" aria-live="polite">12 von 12 Tools</p></div>
  </div>
  <p class="ty-helper-note ty-favorites-guide" id="favoritesGuide"><strong>Lieblings-Tools merken:</strong> Tippe auf den Stern einer Tool-Karte. Deine Auswahl wird in diesem Browser gespeichert und erscheint in „Mein Dashboard“. Mit erneutem Tippen entfernst du sie.</p>
