@@ -70,3 +70,9 @@ No browser failures or application defects have been established for either foll
 - **Budget:** opt-in i18next singleton and legacy CDN-failure fallback now integrated on the feature branch, plus the existing isolated browser fixture expanded to twelve cases. Implementation commit `f7cacb993a4ecf4d7a14f8c5d11203d63673be3e`. **No CI acceptance yet**.
 
 Only isolated browser scenarios are covered; authenticated production workflows are not. All changes remain on `feature/i18n-de-en-foundation-20261121`; no `main`, live-site or production database changes.
+
+## Migration progress: meter readings (2026-11-22)
+
+CI verification at this checkpoint: plant care [run 45003515686](https://github.com/duhrrom11/toolya/actions/runs/45003515686) browser job `137149961866` **passed all eight** DE→EN→DE / loaded and CDN-blocked cases, but node job `137149962099` was still queued. Baking [run 45003693451](https://github.com/duhrrom11/toolya/actions/runs/45003693451) browser and node jobs were queued; budget [run 45003751872](https://github.com/duhrrom11/toolya/actions/runs/45003751872) and static run `45003751863` were queued. **No full acceptance is claimed** for plants, baking or budget.
+
+**Meter readings:** integrated `tools/meters/index.html` with pinned real i18next CDN UMD and the existing opt-in singleton/legacy fallback, without modifying business logic. Existing isolated browser fixture now covers seven tools × two CDN modes (14 scenarios). Integration commit `5e61430d1480185f5e7461b0bfb220624d24bd00`. This new migration is **not yet CI-accepted**. Production `main`, website and Supabase data unchanged.
