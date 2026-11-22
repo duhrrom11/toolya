@@ -92,7 +92,7 @@
   <span class="b3-tool-icon" aria-hidden="true">🅿️</span>
   <div class="b3-tool-title"><h1>Parkplatz-Merker</h1>
     <p>Speichere deinen Parkplatz mit Standort, Notiz oder Foto. Behalte Parkzeit und Gebühren im Blick.</p></div>
-  <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()">⚙</button>
+  <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()" data-tool-en-aria-label="Open settings">⚙</button>
 </div></header>
 
     <!-- MODAL: Einstellungen & Supabase Auth -->
@@ -192,7 +192,7 @@
                         <button onclick="startTimer(30)" class="b3-action px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">30 Min</button>
                         <button onclick="startTimer(60)" class="b3-action px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">1 Std</button>
                         <button onclick="startTimer(120)" class="b3-action px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">2 Std</button>
-                        <button onclick="startParkscheibe()" class="b3-action b3-outline px-2.5 py-1.5 bg-blue-100 text-blue-800 font-bold rounded-xl text-xs" title="Rundet auf die nächste halbe Stunde auf (Parkscheiben-Regel)">🔵 Parkscheibe</button>
+                        <button onclick="startParkscheibe()" class="b3-action b3-outline px-2.5 py-1.5 bg-blue-100 text-blue-800 font-bold rounded-xl text-xs" title="Rundet auf die nächste halbe Stunde auf (Parkscheiben-Regel)" data-tool-en-title="Rounds up to the next half hour (parking disc rule)">🔵 Parkscheibe</button>
                     </div>
                     <div id="timerDisplay" class="text-3xl font-bold text-amber-600 my-2">00:00:00</div>
                     <p id="timerStatus" class="text-xs text-gray-500">Kein aktiver Parkschein-Timer</p>
