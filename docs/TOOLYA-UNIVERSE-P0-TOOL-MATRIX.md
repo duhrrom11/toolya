@@ -5,7 +5,7 @@
 **Vorgabe:** Nur im Entwicklungsbranch arbeiten; **kein Merge, keine Veröffentlichung, keine produktive DB-Änderung ohne neue explizite Freigabe**.  
 **Übergeordnete Roadmap:** [TOOLYA-UNIVERSE-GAMIFICATION-MONETIZATION-ROADMAP.md](TOOLYA-UNIVERSE-GAMIFICATION-MONETIZATION-ROADMAP.md).
 
-## 1. Was wurde tatsächlich geprüft?
+> **NACHGELAGERTE NUTZERENTSCHEIDUNG (22.11.2026):** Die Einträge „0 XP“ für Digitaler Nachlass und Tiergesundheit sowie das frühere Gastmodell sind **überholt**. Neue Vorgabe: **Pflichtanmeldung für jedes Tool**; Vor-/Nachname obligatorisch bei Registrierung, Land/Profilbild-Link optional, editierbares Konto mit XP/Badges und freiwilligen Ranglisten. **Sensible Tools dürfen sichere, diskrete XP für neutrale bestätigte Meilensteine bekommen**, keinesfalls für Inhalte oder risikoreiche Aktionen. Bei Widersprüchen hat das [neuere verbindliche Profil- und Belohnungskonzept](TOOLYA-UNIVERSE-ACCOUNT-PROFILES-REWARDS-LEADERBOARDS.md) Vorrang. Die ursprünglichen Matrixzeilen bleiben nur als historischer P0-Arbeitsstand erhalten, nicht als aktuelle Entscheidung.\n\n## 1. Was wurde tatsächlich geprüft?
 
 Quellcodebasiertes Inventar der zwölf Startseiten-Toolkarten aus `index.html` im Entwicklungsbranch (ohne die dort zusätzlich vorhandene Prototyp-Karte „Maskottchen-Level“). Jede dieser zwölf Zielseiten wurde aus GitHub gelesen; existierende HTML-Aktions-Buttons und wesentliche vorhandene Handler wurden exemplarisch geprüft. Gemeinsame Integrationsmodule `shared/toolya/platform.mjs` (Maskottchen-Rollen), `shared/toolya/amazon-affiliate.js` (vorhandenes Amazon-Tag, kataloggestützte Produktlinks) und `tools/gamification/index.html` (aktueller lokaler 50-XP-Entdeckungsprototyp) wurden gelesen.
 
