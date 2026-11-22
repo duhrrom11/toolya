@@ -2908,7 +2908,7 @@ test('dynamic budget cards and receipt badges provide paired, display-only DE/EN
   ['Noch keine Sparziele angelegt.','No savings goals yet.'],
   ['Gespart:','Saved:'],['Ziel:','Target:'],['+ Einzahlen','+ Deposit'],
   ['🔄 Fixkosten','🔄 Recurring cost'],['💼 Steuer','💼 Tax'],
-  ['Garantie aktiv (','Warranty active ('],['⏱️ Rückgabe: ','⏱️ Return: '],
+  ['Garantie aktiv (','Warranty active ('],['Garantie abgelaufen','Warranty expired'],['⏱️ Rückgabe: ','⏱️ Return: '],
   ['Betrag:','Amount:'],['Datum:','Date:'],['Zahlungsart:','Payment method:'],
   ['Karton: ','Box: '],['Notiz: ','Note: '],['✏️ Bearbeiten','✏️ Edit']
  ]){
