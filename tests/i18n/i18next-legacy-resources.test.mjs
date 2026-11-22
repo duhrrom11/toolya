@@ -40,3 +40,12 @@ test('marketing translations only resolve explicitly catalogued keys',()=>{
  assert.equal(Object.hasOwn(resources.en.marketing,'Private user note'),false);
  assert.equal(resources.en.marketing['Parkplatz-Merker'],'Parking spot saver');
 });
+
+test('ten tool guide labels are available in both marketing locales',()=>{
+ const resources=createLegacyI18nextResources();
+ const labels={'Parkplatz-Merker':'Parking spot saver','Umzugskisten':'Moving boxes','Pflanzenpflege':'Plant care','Haushaltsbuch':'Household budget','Zählerstände':'Meter readings','Autokosten':'Vehicle costs','Verliehene Dinge':'Lent items','Tiergesundheit':'Pet health','WG-Organisator':'Roommate organizer','Backform-Rechner':'Cake pan calculator'};
+ for(const [de,en] of Object.entries(labels)){
+  assert.equal(resources.de.marketing[de],de);
+  assert.equal(resources.en.marketing[de],en);
+ }
+});
