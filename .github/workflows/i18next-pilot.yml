@@ -6,6 +6,7 @@ on:
     paths:
       - 'shared/toolya/i18n/**'
       - 'tests/i18n/**'
+      - 'dashboard/index.html'
       - 'tools/parking/index.html'
       - 'tools/moving/index.html'
       - 'tools/housemates/index.html'
@@ -53,6 +54,8 @@ jobs:
           node --check shared/toolya/i18n/i18next-runtime-adapter.mjs
           node --check shared/toolya/i18n/i18next-singleton.mjs
           node --check shared/toolya/i18n/tool-entry.mjs
+          node --check shared/toolya/i18n/dashboard-entry.mjs
+          node --check shared/toolya/i18n/dashboard-dom.mjs
       - name: Run focused migration regressions
         run: node --test tests/i18n/i18next-legacy-resources.test.mjs tests/i18n/i18next-runtime-adapter.test.mjs tests/i18n/i18next-singleton.test.mjs
   parking-browser:
