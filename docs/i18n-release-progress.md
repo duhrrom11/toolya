@@ -131,3 +131,12 @@ Basis `394d42d6d2fa874dd103a6eb431fb0a52893f33a`: statische i18n-CI, Connect-CI 
 - Drei zusätzliche Chromium-Fälle in `tests/browser/tool-pages-ui.spec.cjs`: realer 320px-Sprachwechsel, XSS-escaped Parkplatz-Daten, originale Verleihstatus-/Nutzerdaten und leere Zählerliste. Strikt synthetischer Mock-Snapshot, Prüfung ohne DB-Schreibzugriffe.
 - Browser- und vollständige Node-/CI-Ergebnisse der neuen Revision auswerten, ggf. Fehler beseitigen. **Die Erstellung der Browsertests ist keine Abnahme.**
 - Release-Status weiterhin **NOT READY**, kein Merge/Deployment, `noindex` bleibt, keine produktiven Daten/Assets verändert.
+
+### 22.11.2026 – Verleih-Kalender und lokalisierte Erinnerungen
+
+Basis `cc9876d92ce5dfefc1504098ea73a3fd03969dac`: 209/209 statische Node-i18n-Tests, Umzug, Connect und Plattform-CI grün; Browser-Abnahme zum Abfragezeitpunkt noch offen. [Aktueller HEAD](https://github.com/duhrrom11/toolya/commits/feature/i18n-de-en-foundation-20261121/).
+
+- Verleih-ICS über gemeinsamen UTF-8-/RFC-5545-Exporter mit stabiler UID und DE/EN-Betreff/Beschreibung, ursprüngliche Nutzertexte und Datum unverändert. Google Calendar mit korrektem exklusivem Tagesende und lokalisierter Beschreibung, Reminder via WhatsApp auf DE/EN.
+- Dynamische Verleihkarten zeigen weitere DE/EN-Labels, Datum, Kaution und zugängliche Titel. Keine Persistenz- oder Auth-Änderung.
+- Isolierte Node- und Chromium-Regression für realen DE/EN-Kalenderdownload ergänzt. **Testlauf auf dem neuen HEAD noch auswerten.**
+- **Release-Status: NOT READY / Draft.** Weitere 34 Teilansichten/48 Laufzeitdateien, Auth-Recovery-Mailrückweg, weitere Exporte, mobile A11y und finale GitHub-CI offen. Kein Merge, Deployment, noindex-Wechsel oder Zugriff auf produktive Daten.

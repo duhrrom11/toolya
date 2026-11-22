@@ -2642,3 +2642,24 @@ test('i18n meter empty history changes only its presentation on mobile',async({p
  await expect(list).toContainText('No entries found.');
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
 });
+
+test('i18n loan ICS download preserves title, stable UID and all-day date in DE/EN',async({page})=>{
+ const {readFile}=require('node:fs/promises');
+ const record={id:42,title:"Mia's Öl, Küche & Co",person:'Friend & neighbor',date:'2026-11-15',returnDate:'2026-12-05',category:'Sonstiges',status:'active',deposit:0,photo:''};
+ await isolated(page,true,false,{contacts:[],inventory:[],items:[record]});
+ await page.goto(origin+'/tools/loans/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>loansCloudReady&&!!loansCloudController?.ready)).toBe(true);
+ for(const lang of ['en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  const list=page.locator('#itemsList');
+  await expect(list).toContainText(lang==='en'?'Loaned:':'Ausleihe:');
+  const [download]=await Promise.all([page.waitForEvent('download'),list.locator('[data-loan-action="ics"]').click()]);
+  const content=(await readFile(await download.path(),'utf8')).replaceAll('\r\n ','');
+  expect(content).toContain('UID:loan-42@toolya.app\r\n');
+  expect(content).toContain('DTSTART;VALUE=DATE:20261205\r\n');
+  expect(content).toContain("Mia's Öl\\, Küche & Co (Friend & neighbor)");
+  expect(content).toContain('DESCRIPTION:'+(lang==='en'?'Item due for return':'Verleih-Rückgabe fällig')+'\r\n');
+  expect(content).toContain('SUMMARY:'+(lang==='en'?'Return: ':'Rückgabe: '));
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});

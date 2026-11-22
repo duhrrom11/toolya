@@ -765,30 +765,22 @@
             document.getElementById('qrModal').classList.add('hidden');
         }
 
-        function downloadICS(title, dateStr, person) {
+        async function downloadICS(title, dateStr, person, itemId) {
+            // A presentation-only calendar: preserve the stored title and date.
             const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateStr));
-            if (!match) return alert("Ungültiges Rückgabedatum.");
-            const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
-            if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== dateStr)
-                return alert("Ungültiges Rückgabedatum.");
-            const formatDate = value => value.toISOString().slice(0, 10).replace(/-/g, '');
-            const startDate = formatDate(date);
-            date.setUTCDate(date.getUTCDate() + 1);
-            const endDate = formatDate(date);
-            const escapeIcs = value => String(value ?? '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
-            const icsContent = [
-                "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Toolya//Verleih//DE",
-                "BEGIN:VEVENT", `SUMMARY:${escapeIcs(`Rückgabe: ${title} (${person})`)}`,
-                `DTSTART;VALUE=DATE:${startDate}`, `DTEND;VALUE=DATE:${endDate}`,
-                "DESCRIPTION:Verleih-Rückgabe fällig", "END:VEVENT", "END:VCALENDAR", ""
-            ].join("\r\n");
-            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `Rueckgabe_${String(title).replace(/[^a-z0-9_-]+/gi, '_')}.ics`;
-            link.click();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            if (!match) return alert('Ungültiges Rückgabedatum.');
+            const day = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+            if (!Number.isFinite(day.getTime()) || day.toISOString().slice(0,10) !== dateStr)
+                return alert('Ungültiges Rückgabedatum.');
+            const english = window.__toolyaUILocale === 'en';
+            const event = {
+                title: `${english ? 'Return' : 'Rückgabe'}: ${title} (${person})`,
+                date: dateStr,
+                description: english ? 'Item due for return' : 'Verleih-Rückgabe fällig',
+                uid: 'loan-' + String(itemId).replace(/[^a-z0-9_-]/gi,'_') + '@toolya.app'
+            };
+            const { downloadAllDayCalendar } = await import('../../shared/toolya/calendar-export.mjs');
+            downloadAllDayCalendar(event);
         }
 
         function escapeHtml(value) {
@@ -874,7 +866,7 @@
                 if (!Number.isInteger(index) || index < 0 || index >= filteredItems.length) return;
                 const item = filteredItems[index];
                 switch (trigger.dataset.loanAction) {
-                    case 'ics': downloadICS(item.title, item.returnDate, item.person); break;
+                    case 'ics': void downloadICS(item.title, item.returnDate, item.person, item.id); break;
                     case 'qr': showQrCode(item.title, item.person); break;
                     case 'extend7': extendReturnDate(item.id, 7); break;
                     case 'extend14': extendReturnDate(item.id, 14); break;
@@ -916,14 +908,14 @@
                     let whatsappDropdown = "";
                     if (phone && i.status === 'active') {
                         let cleanPhone = phone.replace(/[^0-9+]/g, '');
-                        let msgFriendly = encodeURIComponent(`Hi ${i.person}! Wollte kurz nachhören, wie es mit meinem "${i.title}" läuft und wann du es ca. zurückbringen kannst? Liebe Grüße!`);
-                        let msgUrgent = encodeURIComponent(`Hallo ${i.person}, ich benötige meinen Gegenstand "${i.title}" in den nächsten Tagen wieder. Sag mir bitte Bescheid, wann das klappt. Danke!`);
+                        let msgFriendly = encodeURIComponent(english ? `Hi ${i.person}! Just checking when you might be able to return my "${i.title}". Thanks!` : `Hi ${i.person}! Wollte kurz nachhören, wie es mit meinem "${i.title}" läuft und wann du es ca. zurückbringen kannst? Liebe Grüße!`);
+                        let msgUrgent = encodeURIComponent(english ? `Hi ${i.person}, I need my "${i.title}" back in the next few days. Please let me know when you can return it. Thank you!` : `Hallo ${i.person}, ich benötige meinen Gegenstand "${i.title}" in den nächsten Tagen wieder. Sag mir bitte Bescheid, wann das klappt. Danke!`);
                         
                         whatsappDropdown = `
                             <select onchange="if(this.value) { window.open(this.value, '_blank'); this.value=''; }" class="p-1.5 bg-green-50 text-green-700 hover:bg-green-100 rounded-xl text-xs font-semibold border border-green-200">
                                 <option value="">💬 WhatsApp...</option>
-                                <option value="https://wa.me/${cleanPhone}?text=${msgFriendly}">Freundliche Erinnerung</option>
-                                <option value="https://wa.me/${cleanPhone}?text=${msgUrgent}">Dringende Rückgabe</option>
+                                <option value="https://wa.me/${cleanPhone}?text=${msgFriendly}">${label('Freundliche Erinnerung','Friendly reminder')}</option>
+                                <option value="https://wa.me/${cleanPhone}?text=${msgUrgent}">${label('Dringende Rückgabe','Urgent return')}</option>
                             </select>
                         `;
                     }
@@ -938,17 +930,23 @@
 
                     if (i.status === 'active') {
                         extendButtons = `
-                            <button data-loan-action="extend7" data-loan-index="${itemIndex}" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold b3-action b3-outline" title="+7 Tage">+7T</button>
-                            <button data-loan-action="extend14" data-loan-index="${itemIndex}" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold b3-action b3-outline" title="+14 Tage">+14T</button>
+                            <button data-loan-action="extend7" data-loan-index="${itemIndex}" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold b3-action b3-outline" title="${label('+7 Tage','+7 days')}">${label('+7T','+7d')}</button>
+                            <button data-loan-action="extend14" data-loan-index="${itemIndex}" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold b3-action b3-outline" title="${label('+14 Tage','+14 days')}">${label('+14T','+14d')}</button>
                         `;
 
-                        if (i.returnDate) {
-                            let rd = new Date(i.returnDate);
-                            let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Rückgabe: ' + i.title + ' (' + i.person + ')')}&dates=${rd.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${rd.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('Verleih-Rückgabe fällig')}`;
+                        if (typeof i.returnDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(i.returnDate)) {
+                            const rd = new Date(i.returnDate + 'T00:00:00Z');
+                            if (Number.isFinite(rd.getTime()) && rd.toISOString().slice(0,10) === i.returnDate) {
+                            const firstDay = i.returnDate.replace(/-/g,'');
+                            const nextDay = new Date(rd.getTime() + 86400000).toISOString().slice(0,10).replace(/-/g,'');
+                            const summary = (english ? 'Return: ' : 'Rückgabe: ') + i.title + ' (' + i.person + ')';
+                            const details = english ? 'Item due for return' : 'Verleih-Rückgabe fällig';
+                            let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(summary)}&dates=${firstDay}/${nextDay}&details=${encodeURIComponent(details)}`;
                             calButtons = `
-                                <a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="px-2 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
-                                <button data-loan-action="ics" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="ICS Kalender">📥 ICS</button>
+                                <a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="px-2 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="${label('Google Kalender','Google Calendar')}">📅 Google</a>
+                                <button data-loan-action="ics" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="${label('ICS Kalender','Download calendar file')}">📥 ICS</button>
                             `;
+                            }
                         }
                     }
 
@@ -963,18 +961,18 @@
                     return `
                         <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 b3-loan-card ${i.status !== 'active' ? 'opacity-60' : ''}">
                             <div class="flex items-center space-x-3 b3-loan-card-identity">
-                                ${safeImageUrl(i.photo) ? `<img src="${safeImageUrl(i.photo)}" alt="Foto des verliehenen Gegenstands" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" data-loan-action="qr" data-loan-index="${itemIndex}">` : `<div data-loan-action="qr" data-loan-index="${itemIndex}" class="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer" title="QR-Code anzeigen">📱 QR</div>`}
+                                ${safeImageUrl(i.photo) ? `<img src="${safeImageUrl(i.photo)}" alt="${label('Foto des verliehenen Gegenstands','Photo of lent item')}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" data-loan-action="qr" data-loan-index="${itemIndex}">` : `<div data-loan-action="qr" data-loan-index="${itemIndex}" class="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer" title="${label('QR-Code anzeigen','Show QR code')}">📱 QR</div>`}
                                 <div>
                                     <div class="flex items-center space-x-2 flex-wrap gap-1">
                                         <span class="text-xs font-bold text-gray-800">📦 ${escapeHtml(i.title)}</span>
-                                        <span class="text-[10px] bg-gray-200 text-gray-700 font-semibold px-2 py-0.5 rounded-full">${escapeHtml(i.category || 'Sonstiges')}</span>
+                                        <span class="text-[10px] bg-gray-200 text-gray-700 font-semibold px-2 py-0.5 rounded-full">${escapeHtml(i.category || label('Sonstiges','Other'))}</span>
                                         <span class="text-xs text-indigo-600 font-semibold">→ ${escapeHtml(i.person)}</span>
                                         ${badge}
                                         ${i.serial ? `<span class="text-[10px] font-mono bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border">SN: ${escapeHtml(i.serial)}</span>` : ''}
-                                        ${i.deposit > 0 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">Kaution: ${Number(i.deposit).toFixed(2).replace('.', ',')} €</span>` : ''}
+                                        ${i.deposit > 0 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">${label('Kaution','Deposit')}: ${english ? Number(i.deposit).toFixed(2) : Number(i.deposit).toFixed(2).replace('.', ',')} €</span>` : ''}
                                     </div>
-                                    <p class="text-xs text-gray-500 mt-1">Ausleihe: ${d.toLocaleDateString('de-DE')} ${i.returnDate ? '| Rückgabe: ' + new Date(i.returnDate).toLocaleDateString('de-DE') : ''} ${i.note ? '| Notiz: ' + escapeHtml(i.note) : ''}</p>
-                                    ${i.status === 'active' ? `<div class="flex gap-1 mt-1.5 items-center b3-loan-extend"><span class="text-[10px] text-gray-400">Verlängern:</span> ${extendButtons}</div>` : ''}
+                                    <p class="text-xs text-gray-500 mt-1">${label('Ausleihe','Loaned')}: ${d.toLocaleDateString(english ? 'en-GB' : 'de-DE')} ${i.returnDate ? '| ' + label('Rückgabe','Return') + ': ' + new Date(i.returnDate).toLocaleDateString(english ? 'en-GB' : 'de-DE') : ''} ${i.note ? '| ' + label('Notiz','Note') + ': ' + escapeHtml(i.note) : ''}</p>
+                                    ${i.status === 'active' ? `<div class="flex gap-1 mt-1.5 items-center b3-loan-extend"><span class="text-[10px] text-gray-400">${label('Verlängern:','Extend:')}</span> ${extendButtons}</div>` : ''}
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 self-end md:self-center flex-wrap b3-loan-card-actions">
@@ -982,7 +980,7 @@
                                 ${whatsappDropdown}
                                 ${calButtons}
                                 ${statusDropdown}
-                                <button data-loan-action="edit" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="Bearbeiten">✏️</button>
+                                <button data-loan-action="edit" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="${label('Bearbeiten','Edit')}">✏️</button>
                                 <button data-loan-action="delete" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
@@ -994,7 +992,7 @@
             document.getElementById('statOverdue').innerText = overdueCount;
             document.getElementById('statLost').innerText = lostCount;
             document.getElementById('statReturned').innerText = returnedCount;
-            document.getElementById('statDeposit').innerText = totalDeposit.toFixed(2).replace('.', ',') + ' €';
+            document.getElementById('statDeposit').innerText = (english ? totalDeposit.toFixed(2) : totalDeposit.toFixed(2).replace('.', ',')) + ' €';
         }
 
         async function exportPDF() {

@@ -461,3 +461,10 @@ Die Terminverläufe von Autokosten und Tiergesundheit wurden für Datum, Status 
 - Dynamischer Bild-Platzhalter in der Parkplatzliste ist EN/DE, bisherige Bild-/GPS-/XSS-Schutzmechanismen bleiben bestehen.
 - Drei isolierte echte Chromium-Fälle für 320px ergänzt: Parkplatztext mit HTML-Sonderzeichen/Foto-URL und ISO-Datum, Verleih-Status DE/EN/DE samt Persistenzcode, Zähler-Leerzustand. Alle prüfen null Cloud-Schreibaufrufe über Mocks. Der CI-Lauf muss diese Fälle erst bestätigen.
 - Vollständige DE/EN-Release-Gates weiterhin offen, PR Draft, keine Produktivänderungen oder SEO-Indexierung.
+
+## 22.11.2026 – Verleih: Kalender und Erinnerungen
+
+- Verleih-ICS jetzt über den gemeinsamen RFC-5545-Exporter: stabile UID, UTF-8-Faltung, sicher escaped wörtlicher Nutzertitel, DE/EN-Terminbeschreibung und validierter Kalendertag.
+- Google Calendar verlinkt denselben Tag mit exklusivem Enddatum am Folgetag, lokalisiert Betreff/Beschreibung. WhatsApp-Erinnerungstexte, Verleih-Details, Datums-/Geldanzeigen und Accessibility-Titel ergänzend EN/DE. Keine Änderung an gespeicherten Nutzerdaten.
+- Node-Regression für Kalender und Browser-Downloadtest für beide Sprachen mit synthetischen Datensätzen ergänzt. CI-Ergebnisse des finalen Kandidaten abwarten.
+- Release-Gates offen; Draft-PR, noindex, Assets, Produktionssystem und Supabase unverändert.
