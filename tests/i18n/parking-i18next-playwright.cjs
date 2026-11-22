@@ -11,11 +11,14 @@ const html=`<!doctype html><html lang="de"><head><title>Parkplatz-Merker</title>
 </body></html>`;
 const server=http.createServer((req,res)=>{
  const pathname=new URL(req.url,'http://localhost').pathname;
- if(pathname==='/tools/parking/index.html'||pathname==='/tools/moving/index.html'){res.writeHead(200,{'content-type':'text/html; charset=utf-8'}).end(html);return;}
- if(!pathname.startsWith('/shared/toolya/i18n/')){res.writeHead(404).end();return;}
+ if(pathname==='/tools/parking/index.html'||pathname==='/tools/moving/index.html'){
+  const content=new URL(req.url,'http://localhost').searchParams.has('full')?fs.readFileSync(path.join(root,pathname)):html;
+  res.writeHead(200,{'content-type':'text/html; charset=utf-8'}).end(content);return;
+ }
+ if(!pathname.startsWith('/shared/')&&!pathname.startsWith('/assets/')&&!pathname.startsWith('/tools/')){res.writeHead(404).end();return;}
  const file=path.resolve(root,'.'+pathname);
- if(!file.startsWith(path.join(root,'shared','toolya','i18n')+path.sep)){res.writeHead(403).end();return;}
- try{res.writeHead(200,{'content-type':'text/javascript'}).end(fs.readFileSync(file));}
+ if(!file.startsWith(root+path.sep)||pathname.includes('..')){res.writeHead(403).end();return;}
+ try{const mime=file.endsWith('.css')?'text/css':file.endsWith('.html')?'text/html; charset=utf-8':file.endsWith('.json')?'application/json':'text/javascript';res.writeHead(200,{'content-type':mime}).end(fs.readFileSync(file));}
  catch{res.writeHead(404).end();}
 });
 (async()=>{
@@ -57,6 +60,18 @@ const server=http.createServer((req,res)=>{
    if(mode==='loaded')assert.equal(await page.evaluate(()=>window.i18next.isInitialized),true);
    else assert.equal(await page.evaluate(()=>typeof window.i18next),'undefined');
    await context.close();
+   // Smoke-check the actual HTML, with all remote services blocked. Auth workflows
+   // cannot be completed without a backend and are deliberately not exercised.
+   if(mode==='loaded'){
+    const full=await browser.newContext();
+    await full.route('**/*',route=>route.request().url().startsWith('http://127.0.0.1:')?route.continue():route.abort());
+    await full.route(cdn,route=>route.fulfill({status:200,contentType:'text/javascript',body:fs.readFileSync(i18nextBundle)}));
+    const actual=await full.newPage();
+    await actual.goto('http://127.0.0.1:'+server.address().port+'/tools/'+tool+'/index.html?full=1',{waitUntil:'domcontentloaded'});
+    assert.ok(await actual.locator('body').count(),tool+' full HTML loads');
+    assert.ok((await actual.locator('body').innerText()).length>100,tool+' full HTML contains interface');
+    await full.close();
+   }
    console.log('PASS '+tool+' DE/EN/DE and prefix translation ('+mode+')');
   }
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
