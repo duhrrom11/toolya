@@ -62,3 +62,11 @@ No browser failures or application defects have been established for either foll
 **Accepted isolated housemates i18next pilot:** commit `2f54e4294a2faa862d6c1556969fa122b9ac35af`, [run 45003404335](https://github.com/duhrrom11/toolya/actions/runs/45003404335). The `parking-browser` job `137149635127` and `node-regressions` job `137149635433` both passed; static i18n run `45003404381` passed. Browser log explicitly confirms six successful cases: parking, moving, housemates × real pinned i18next loaded or CDN blocked, each with DE→EN→DE and prefix translation. Offline HTML smoke checks were included in the successful browser job. This acceptance covers the isolated pilot, **not** authenticated end-to-end workflows.
 
 **Plant care remains pending:** commit `f898345b73231976ca9219cd928d2a5821a6e377`, [run 45003515686](https://github.com/duhrrom11/toolya/actions/runs/45003515686), had both browser and node jobs queued when checked; do not claim acceptance until they pass.
+
+## Subsequent migration verification (2026-11-22)
+
+- **Plant care browser scenarios verified:** [run 45003515686](https://github.com/duhrrom11/toolya/actions/runs/45003515686), browser job `137149961866` **passed**. Its log contains eight `PASS` cases: parking, moving, housemates, plants × loaded real i18next or CDN blocked, DE→EN→DE and prefix translation. The node-regressions job `137149962099` and static-check run `45003515564` were still queued at inspection; therefore **full plant care CI acceptance is pending**.
+- **Baking:** commit `067b4d73c58034c92b200cc1e202981e8c076f58`; [i18next run 45003693451](https://github.com/duhrrom11/toolya/actions/runs/45003693451), static checks `45003693384` and isolated browser checks `45003693391` were queued. No successful baking browser claim yet.
+- **Budget:** opt-in i18next singleton and legacy CDN-failure fallback now integrated on the feature branch, plus the existing isolated browser fixture expanded to twelve cases. Implementation commit `f7cacb993a4ecf4d7a14f8c5d11203d63673be3e`. **No CI acceptance yet**.
+
+Only isolated browser scenarios are covered; authenticated production workflows are not. All changes remain on `feature/i18n-de-en-foundation-20261121`; no `main`, live-site or production database changes.
