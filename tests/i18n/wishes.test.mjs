@@ -396,3 +396,40 @@ test('Wishes yearly checklist archive and rollover confirmations remain reversib
  assert.match(source,/db\.rpc\('wishlist_archive_occasion_checklist_year',\{p_occasion_id:occasionId,p_year:year,p_archive:archive\}\)/);
  assert.match(source,/\$\('title'\)\.value=template\.title/);
 });
+
+test('Wishes historical gift analytics source-exact labels translate reversibly in both languages',()=>{
+ const source=readFileSync(new URL('../../tools/wishes/gift-analytics.mjs',import.meta.url),'utf8');
+ const labels=[...source.matchAll(/ui\(("(?:\\.|[^"\\])*")\)/g)].map(match=>JSON.parse(match[1]));
+ assert.ok(new Set(labels).size>=80,'expected substantial historical analytics coverage');
+ for(const original of new Set(labels)){
+  const english=wishesText(original,'en');
+  assert.notEqual(english,original,'missing translation: '+original);
+  assert.equal(wishesText(english,'de'),original,'non-reversible translation: '+original);
+ }
+ const examples=[
+  ['Abgeschlossene Jahre','Closed years'],
+  ['Historische Ausgaben','Historical spending'],
+  ['Mehrjährige Entwicklung','Multi-year trends'],
+  ['Budgetplanung überprüfen','Review budget planning'],
+  ['Aufgabenhistorie berücksichtigen','Consider task history'],
+  ['Mein Geschenk-Jahr ','My gift year '],
+  ['🎂 Erfolgreich abgeschlossene Anlässe','🎂 Successfully completed occasions'],
+  ['Dieser ältere Jahresabschluss enthält keinen historischen Aufgaben-Snapshot.','This older year-end summary has no historical task snapshot.']
+ ];
+ for(const [de,en] of examples)assert.equal(wishesText(de,'en'),en,de);
+ assert.equal(wishesText('Private occasion: Mein Geschenk-Jahr 2026','en'),'Private occasion: Mein Geschenk-Jahr 2026');
+});
+test('Wishes year-end review locale update only repaints read-only snapshots and retains stored financial data',()=>{
+ const source=readFileSync(new URL('../../tools/wishes/gift-analytics.mjs',import.meta.url),'utf8');
+ assert.match(source,/const ui=value=>wishesText/);
+ assert.match(source,/new Intl.NumberFormat\(locale\(\),\{style:'currency',currency:'EUR'\}/);
+ assert.match(source,/new Date\(d.closed_at\)\.toLocaleDateString\(locale\(\)\)/);
+ assert.match(source,/document\.addEventListener\('toolya:wishes-locale-change',\(\)=>\{if\(!userId\)return;renderInsights\(\);renderGiftStory\(\);renderReview\(\);renderChronicle\(\)\}\)/);
+ assert.ok(!source.includes('document.addEventListener(\'toolya:wishes-locale-change\',render)'));
+ assert.match(source,/if\(\[\.\.\.select.options\]\.some\(o=>o.value===existing\)\)select.value=existing/);
+ assert.match(source,/report:reviewData\(c\)/);
+ assert.match(source,/db\.rpc\('wishlist_close_gift_year',\{p_year:year,p_confirm:true\}\)/);
+ assert.match(source,/db\.rpc\('wishlist_set_gift_year',\{p_plan_id:g.id,p_year:y\}\)/);
+ assert.match(source,/o\.title/);
+ assert.match(source,/g\.title/);
+});
