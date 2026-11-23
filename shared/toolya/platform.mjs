@@ -9,7 +9,12 @@ export const TOOLS={wishes:{role:0,name:'Geschenkexperte',greeting:'Hier ist Pla
 const TOOL_SYMBOLS=['🎁','🧮','🏠','📦','🛡️','🔧','🐾','🅿️','📋','🪴','⚡','🧁','✨'];
 const parts=decodeURI(location.pathname).split('/').filter(Boolean);
 export const tool=parts.includes('tools')?parts[parts.indexOf('tools')+1]:'home';
-const context=TOOLS[tool]||TOOLS.home, key='helferlein-toolya-preferences-v1';
+// Only explicit, unknown tool drafts may borrow an existing outfit. Canonical tools
+// always keep their own configuration; this does not register or publish routes.
+const draftOutfit = document.documentElement.dataset.toolyaDraft === 'true' && !TOOLS[tool] && tool !== 'home'
+  ? document.querySelector('meta[name="toolya-draft-outfit"]')?.getAttribute('content') : null;
+const draftContext = Object.hasOwn(TOOLS, draftOutfit || '') ? TOOLS[draftOutfit] : null;
+const context=TOOLS[tool]||draftContext||TOOLS.home, key='helferlein-toolya-preferences-v1';
 const read=()=>{try{const p=JSON.parse(localStorage.getItem(key)||'{}');return p&&typeof p==='object'?p:{}}catch{return {}}};
 export const buddy=new ToolyaBuddy({root:document.querySelector('main')||document.body,assetBase:ASSETS+'originals/'});
 window.toolyaBuddy=buddy;
@@ -196,7 +201,7 @@ function syncToolHeroMascot(){
  hero.dataset.character=character;
 }
 function mountToolHero(){
- if(tool==='home'||!TOOLS[tool]||document.querySelector('.ty-tool-hero'))return;
+ if(tool==='home'||(!TOOLS[tool]&&!draftContext)||document.querySelector('.ty-tool-hero'))return;
  const old=document.querySelector('header.b3-header,header.wishlist-header,header');
  if(!old)return;
  const heading=old.querySelector('h1');
