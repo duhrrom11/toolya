@@ -2942,14 +2942,15 @@ test('budget locale-change refresh keeps unsaved budget inputs and record keys s
  const {document}=parseHTML('<div id="budgetProgressList"><span data-budget-category="Wohnen">Wohnen</span></div><div id="budgetInputList"><label for="budget-amount-0">Lebensmittel:</label><input id="budget-amount-0" data-cat="Lebensmittel" value="150"></div>');
  const input=document.getElementById('budget-amount-0');
  input.value='175';
- let savingsRefresh=0,receiptRefresh=0,chartRefresh=0,axisRefresh=0,stickerRefresh=0;
+ let savingsRefresh=0,receiptRefresh=0,chartRefresh=0,axisRefresh=0,stickerRefresh=0,photoPreviewRefresh=0;
  const context={
   window:{__toolyaUILocale:'en'},document,toolyaCloudReady:true,
   renderSavingsGoals:()=>{savingsRefresh++;},
   renderTransactionList:()=>{receiptRefresh++;},
   refreshBudgetChartSummaries:()=>{chartRefresh++;},
   refreshBudgetChartLabels:()=>{axisRefresh++;},
-  refreshBudgetStickerLabels:()=>{stickerRefresh++;}
+  refreshBudgetStickerLabels:()=>{stickerRefresh++;},
+  refreshBudgetPhotoPreviewLocale:()=>{photoPreviewRefresh++;}
  };
  createContext(context);
  runInContext(dictionary[0]+'\n'+formatter[0]+'\n'+source.slice(start,end),context);
@@ -2968,6 +2969,7 @@ test('budget locale-change refresh keeps unsaved budget inputs and record keys s
  assert.equal(chartRefresh,2,'accessible summaries refreshed without mutating the form');
  assert.equal(axisRefresh,2,'visual chart labels refreshed without touching data');
  assert.equal(stickerRefresh,2,'sticker labels refreshed without changing a draft');
+ assert.equal(photoPreviewRefresh,2,'photo preview accessible names refreshed without rebuilding drafts');
  context.toolyaCloudReady=false;
  context.window.__toolyaUILocale='en';
  runInContext('refreshBudgetDynamicLocale()',context);
@@ -2977,6 +2979,7 @@ test('budget locale-change refresh keeps unsaved budget inputs and record keys s
  assert.equal(chartRefresh,2,'cloud gate also prevents chart refresh');
  assert.equal(axisRefresh,2,'cloud gate prevents visual chart updates');
  assert.equal(stickerRefresh,2,'cloud gate prevents sticker updates');
+ assert.equal(photoPreviewRefresh,2,'cloud gate prevents preview updates');
  assert.ok(!source.slice(start,end).includes('saveBudgets('),'locale refresh never persists budgets');
  assert.ok(!source.slice(start,end).includes('localStorage.setItem('),'locale refresh never writes storage');
 });
@@ -3020,7 +3023,7 @@ test('budget accessible chart summaries switch DE/EN using read-only computed va
  assert.match(source,/income: totalIncome, expense: totalExpense/,'snapshot retains calculated totals');
  const refresh=source.slice(source.indexOf('function refreshBudgetChartSummaries()'),end);
  assert.ok(!refresh.includes('saveBudgets(') && !refresh.includes('localStorage.setItem('),'summary refresh has no writes');
- assert.match(source,/refreshBudgetChartSummaries\(\);\s*refreshBudgetChartLabels\(\);\s*refreshBudgetStickerLabels\(\);\s*\}\s*document\.addEventListener\('toolya:locale-change', refreshBudgetDynamicLocale\)/,'locale change refreshes accessible summaries, chart labels and sticker display');
+ assert.match(source,/refreshBudgetChartSummaries\(\);\s*refreshBudgetChartLabels\(\);\s*refreshBudgetStickerLabels\(\);\s*refreshBudgetPhotoPreviewLocale\(\);\s*\}\s*document\.addEventListener\('toolya:locale-change', refreshBudgetDynamicLocale\)/,'locale change refreshes accessible summaries, chart labels, sticker and photo preview display');
 });
 
 
