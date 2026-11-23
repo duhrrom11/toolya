@@ -472,14 +472,14 @@
                 const uid=auth.user.id;
                 const prepared=await prepareCloudTool({
                     client:supabaseClient,tool:'haustier-gesundheitspass',storage:localStorage,
-                    confirmMigration:async()=>confirm('Lokale Haustierdaten nach Sicherung in die Cloud übernehmen?'),
-                    reviewExistingCloud:async()=>confirm('Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?'),
+                    confirmMigration:async()=>confirm(window.__toolyaUILocale === 'en' ? 'Import local pet data into the cloud after backing it up?' : 'Lokale Haustierdaten nach Sicherung in die Cloud übernehmen?'),
+                    reviewExistingCloud:async()=>confirm(window.__toolyaUILocale === 'en' ? 'Cloud and device data both exist. Keep cloud data and back up local data separately?' : 'Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?'),
                     exportBackup:async data=>{
                         const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
                         const url=URL.createObjectURL(blob),a=document.createElement('a');
                         a.href=url;a.download='toolya-haustiere-vor-cloud.json';a.click();
                         setTimeout(()=>URL.revokeObjectURL(url),60000);
-                        return confirm('Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
+                        return confirm(window.__toolyaUILocale === 'en' ? 'Please confirm that you downloaded the backup.' : 'Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
                     }
                 });
                 const {data:again,error:againError}=await supabaseClient.auth.getUser();
@@ -551,7 +551,7 @@
             const photoInput = document.getElementById('petPhotoInput');
             const passportInput = document.getElementById('petPassportInput');
 
-            if (!name) return alert("Bitte einen Namen für das Haustier eingeben!");
+            if (!name) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a pet name!' : 'Bitte einen Namen für das Haustier eingeben!');
 
             let photoData = "";
             let passportData = "";
@@ -619,7 +619,7 @@
         }
 
         async function deletePet(id) {
-            if (!confirm("⚠️ Möchtest du dieses Haustier und alle zugehörigen Einträge wirklich löschen?")) return;
+            if (!confirm(window.__toolyaUILocale === 'en' ? '⚠️ Delete this pet and all associated records?' : '⚠️ Möchtest du dieses Haustier und alle zugehörigen Einträge wirklich löschen?')) return;
             let data = getData();
             data.pets = data.pets.filter(p => p.id !== id);
             data.events = data.events.filter(e => e.petId !== id);
@@ -631,7 +631,7 @@
         async function saveMedication() {
             const name = document.getElementById('medName').value.trim();
             const stock = document.getElementById('medStock').value.trim();
-            if (!name) return alert("Bitte Medikamenten-Namen angeben!");
+            if (!name) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a medication name!' : 'Bitte Medikamenten-Namen angeben!');
 
             let data = getData();
             if (!data.meds) data.meds = [];
@@ -661,7 +661,7 @@
             const weight=parseFloat(document.getElementById('eventWeight').value.replace(',','.'))||null;
             const expiryDate=document.getElementById('eventExpiryDate').value||null;
             const receiptInput=document.getElementById('eventReceiptInput');
-            if(!petId||!date||!title)return alert('Bitte Haustier, Datum und Bezeichnung angeben!');
+            if(!petId||!date||!title)return alert(window.__toolyaUILocale === 'en' ? 'Please enter a pet, date and description!' : 'Bitte Haustier, Datum und Bezeichnung angeben!');
             const connectRequested=Boolean(window.toolyaPetConnect?.selected);
             const button=document.querySelector('[onclick="saveEvent()"]');
             petEventSaveInProgress=true;
@@ -671,7 +671,7 @@
                 await storeEventData(parseInt(petId),type,date,title,cost,weight,expiryDate,receipt,connectRequested);
             }catch(error){
                 console.error('Haustier-Eintrag nicht bestätigt',error);
-                alert('Eintrag oder Beleg konnte nicht gespeichert werden. Cloud-Datenstand prüfen.');
+                alert(window.__toolyaUILocale === 'en' ? 'Record or receipt could not be saved. Check the cloud data status.' : 'Eintrag oder Beleg konnte nicht gespeichert werden. Cloud-Datenstand prüfen.');
             }finally{
                 petEventSaveInProgress=false;
                 if(button)button.disabled=false;
@@ -696,7 +696,7 @@
         }
 
         async function deleteEvent(id) {
-            if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
+            if (!confirm(window.__toolyaUILocale === 'en' ? '⚠️ Really delete this record?' : '⚠️ Diesen Eintrag wirklich löschen?')) return;
             let data = getData();
             data.events = data.events.filter(e => e.id !== id);
             if (!await saveData(data)) return;
