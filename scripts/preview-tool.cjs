@@ -19,13 +19,16 @@ const CSP = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inl
 
 function parsePreviewOptions(args) {
   const options = {port:4173};
+  const seen = new Set();
   for (let i = 0; i < args.length; i++) {
     const key = args[i];
     if (key === '--help' || key === '-h') {options.help = true; continue;}
     if (!['--slug','--port'].includes(key)) throw new Error('Unknown flag: ' + key);
     const value = args[++i];
-    if (!value || value.startsWith('--') || options[key.slice(2)] !== undefined &&
-        key === '--slug') throw new Error('Missing or duplicate option: ' + key);
+    if (!value || value.startsWith('--') || seen.has(key)) {
+      throw new Error('Missing or duplicate option: ' + key);
+    }
+    seen.add(key);
     options[key.slice(2)] = value;
   }
   const port = Number(options.port);
