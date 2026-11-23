@@ -2842,3 +2842,48 @@ test('i18n meter history and both PDFs translate stored labels without modifying
  expect(await page.evaluate(() => getData().readings)).toEqual(readings);
  expect(await page.evaluate(() => window.__toolyaMock.writes.length)).toBe(0);
 });
+
+
+/*
+ * Bilingual shell smoke for all ten main tools. This exercises the actual
+ * pages behind a synthetic, local-only Supabase stub. Never edits or asserts
+ * ownership of user-created records; only a disposable test input is added.
+ * Full dynamic/auth/export acceptance is tracked separately in the release audit.
+ */
+for(const slug of ['moving','housemates','loans','plants','baking','budget','car','parking','meters','pet-health']){
+ test('i18n ten-tool shell: '+slug+' changes DE/EN at 320, 375 and 768 without rewriting drafts',async({page})=>{
+  const requests=await isolated(page,true);
+  await page.setViewportSize({width:375,height:840});
+  await page.goto(origin+'/tools/'+slug+'/index.html?lang=en',{waitUntil:'domcontentloaded'});
+  const en=page.locator('.ty-tool-language [data-tool-locale="en"]:visible').first();
+  const de=page.locator('.ty-tool-language [data-tool-locale="de"]:visible').first();
+  await expect(en).toBeVisible({timeout:20000});
+  await expect(de).toBeVisible();
+  await expect(en).toHaveAttribute('aria-pressed','true');
+  await page.evaluate(()=>{
+    const fixture=document.createElement('input');
+    fixture.type='text';fixture.id='i18n-synthetic-unchanged';
+    fixture.value='Privat gespeicherte Notiz <Test> & 2040';
+    document.body.append(fixture);
+  });
+  const saved='Privat gespeicherte Notiz <Test> & 2040';
+  for(const width of [320,375,768]){
+    await page.setViewportSize({width,height:840});
+    await expect(en).toBeVisible();
+    await en.focus();
+    expect(await en.evaluate(el=>el===document.activeElement)).toBe(true);
+    await de.click();
+    await expect(de).toHaveAttribute('aria-pressed','true');
+    await expect(page.locator('#i18n-synthetic-unchanged')).toHaveValue(saved);
+    await en.click();
+    await expect(en).toHaveAttribute('aria-pressed','true');
+    await expect(page.locator('#i18n-synthetic-unchanged')).toHaveValue(saved);
+    const layout=await page.evaluate(()=>({width:innerWidth,
+      excess:Math.max(0,document.documentElement.scrollWidth-innerWidth)}));
+    if(layout.excess>2)console.log('[i18n-mobile-review] '+slug+' '+width+
+      'px: '+layout.excess+'px horizontal overflow; visual review needed');
+  }
+  expect(await page.evaluate(()=>window.__toolyaMock?.writes?.length||0)).toBe(0);
+  expect(requests.every(url=>!url.startsWith(origin))).toBe(true);
+ });
+}
