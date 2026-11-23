@@ -96,3 +96,33 @@ test('safety-critical Wishes messages remain present in their source modules and
   assert.equal(wishesText(en,'de'),de,file);
  }
 });
+
+test('Wishes planning and privacy notices render in English and restore German safely',()=>{
+ const pairs=[
+  ['Die Vorschläge sind ausschließlich für dein angemeldetes Konto sichtbar.','Suggestions are visible only to your signed-in account.'],
+  ['Dieser Bericht ist ausschließlich für das angemeldete Konto sichtbar.','This report is visible only to the signed-in account.'],
+  ['Kalenderwochen nach tatsächlichem Ereigniszeitpunkt, nicht nach Fälligkeitsdatum.','Calendar weeks are based on when events occurred, not on due dates.'],
+  ['Reservierungen werden geladen …','Loading reservations…'],
+  ['Anlässe in 30 Tagen','Occasions in 30 days'],
+  ['← Wünsche','← Wishes'],
+  ['Öffentliche Sammlungen werden geladen …','Loading public collections…'],
+  ['Wähle, welche Arten von Hinweisen in deiner Benachrichtigungszentrale erscheinen.','Choose which types of notifications appear in your notification centre.']
+ ];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en);assert.equal(wishesText(en,'de'),de)}
+ const {document}=parseHTML('<html><body><main><p data-wish-copy>Dieser Bericht ist ausschließlich für das angemeldete Konto sichtbar.</p><a href="/tools/wishes/" data-wish-copy>← Wünsche</a><div data-user-content><p data-wish-copy>Dieser Bericht ist ausschließlich für das angemeldete Konto sichtbar.</p></div><input value="private note"></main></body></html>');
+ applyWishLocale(document,'en');
+ assert.equal(document.querySelector('main > p').textContent,pairs[1][1]);
+ assert.equal(document.querySelector('main > a').textContent,'← Wishes');
+ assert.equal(document.querySelector('[data-user-content] p').textContent,pairs[1][0]);
+ assert.equal(document.querySelector('input').value,'private note');
+ assert.equal(document.querySelector('main > a').getAttribute('href'),'/tools/wishes/');
+ applyWishLocale(document,'de');
+ assert.equal(document.querySelector('main > p').textContent,pairs[1][0]);
+ assert.equal(document.querySelector('main > a').textContent,'← Wünsche');
+});
+test('Wishes translated long-form notices are explicitly marked in source HTML',()=>{
+ for(const name of ['assistant','planner','report','occasions','reservations','dashboard','cockpit','notifications','gift-analytics','bookmarks','feed']){
+  const html=readFileSync(new URL('../../tools/wishes/'+name+'.html',import.meta.url),'utf8');
+  assert.match(html,/data-wish-copy/,name);
+ }
+});
