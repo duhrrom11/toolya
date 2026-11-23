@@ -256,3 +256,23 @@ test('gift assistant dynamic task UI translates reversibly without mutating priv
  assert.match(source,/e\.task_title/);
  assert.equal(wishesText('Private task: Heute fällig','en'),'Private task: Heute fällig');
 });
+
+test('assistant task confirmations translate prompts but preserve the task name, dates and write contract',()=>{
+ const pairs=[
+  ['Aufgabe „','Task “'],
+  ['“ wirklich als erledigt markieren?','”: mark as completed?'],
+  ['“ wirklich auf ','”: move to '],
+  [' verschieben?','?']
+ ];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en);assert.equal(wishesText(en,'de'),de)}
+ const title='Private title / Benutzername',date='2026-12-04';
+ const german='Aufgabe „'+title+'“ wirklich auf '+date+' verschieben?';
+ const english=wishesText('Aufgabe „','en')+title+wishesText('“ wirklich auf ','en')+date+wishesText(' verschieben?','en');
+ assert.equal(english,'Task “'+title+'”: move to '+date+'?');
+ assert.equal(german,'Aufgabe „'+title+'“ wirklich auf '+date+' verschieben?');
+ const source=readFileSync(new URL('../../tools/wishes/gift-assistant.mjs',import.meta.url),'utf8');
+ assert.match(source,/if\(!window\.confirm\(confirmation\)\)return/);
+ assert.match(source,/task\.title\+\(field==='status'/);
+ assert.match(source,/new Intl\.NumberFormat\(locale\(\)/);
+ assert.match(source,/\.update\(\{\[field\]:newValue,updated_at:/);
+});
