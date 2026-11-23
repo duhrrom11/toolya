@@ -1497,6 +1497,7 @@ test('home recovery retains the tool link and waits for the password form',async
   return emailRedirect;
  });
  expect(redirect).toBe(login.href);
+ await page.goto('about:blank');
  await page.goto(redirect+'#type=recovery');
  await page.evaluate(()=>{
   const fixture=window.__toolyaMock;
