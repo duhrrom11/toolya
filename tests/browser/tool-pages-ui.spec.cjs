@@ -1624,6 +1624,7 @@ for(const routeName of ['assistant','bookmarks','cockpit','collection','dashboar
  `}));
  await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
  await page.goto(origin+'/tools/wishes/'+routeName+'.html');await page.locator('.toolya-signature-footer').waitFor();await page.waitForLoadState('networkidle');
+ if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
  if(routeName==='assistant'){
   await expect(page.locator('#status')).toHaveText('Bitte anmelden.');
   // Exercise the actual language selector: it synchronizes the locale module's
@@ -1633,7 +1634,6 @@ for(const routeName of ['assistant','bookmarks','cockpit','collection','dashboar
   await page.locator('[data-wishes-locale="de"]').click();
   await expect(page.locator('#status')).toHaveText('Bitte anmelden.');
  }
- if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
  await page.waitForFunction(()=>!!window.__legacyMock);
  if(routeName==='discover'){
   await expect(page.locator('#status')).toContainText('1 öffentliche Sammlungen gefunden');
