@@ -128,3 +128,45 @@ test('baking notes search and delete confirmation localize reversibly, preservin
  await expect(page.locator('#bsp-memory-list')).toHaveText('No notes found.');
  expect(await page.locator('#bs-note').inputValue()).toBe('Meine geheime Füllung: Omas Sahne');
 });
+
+test('real Backstudio redesigned subview headings switch DE/EN/DE without touching private recipe text',async({page})=>{
+ await page.goto('/404.html');
+ const cards=[
+  ['orig-shape','Choose the original pan'],
+  ['recipe-input','Recipe'],
+  ['base-time','Baking time']
+ ].map(([id,title])=>'<section class="bg-white"><h2>'+title+'</h2>'+
+  (id==='recipe-input'?'<textarea id="recipe-input">Omas geheimes Rezept</textarea>':
+   '<input id="'+id+'" value="'+(id==='base-time'?'45':'round')+'">')+'</section>').join('');
+ const panels=['bs-scaled','bs-fillbar','bs-garage-items','bs-special',
+  'bs-photo','bs-layers','bs-logs','bs-shopping-items','bs-shopping-export',
+  'bs-pantry','bs-serving','bs-height'].map(id=>'<article><div id="'+id+'"></div></article>').join('');
+ await page.setContent('<html><body><div class="b3-tool-title"><h1>Backstudio</h1><p>Original</p></div>'+
+  '<div id="tab-rechner">'+cards+'<div id="toolya-backstudio"><div class="bs-grid">'+panels+'</div></div></div>'+
+  '<div id="b3-baking-results"><span id="res-factor">1.25</span><div id="bs-filltext">60 %</div></div></body></html>');
+ await page.evaluate(()=>{window.__toolyaUILocale='de'});
+ await page.addScriptTag({path:resolve(__dirname,'../../tools/baking/backstudio-layout.js')});
+ const titles={
+  finder:['Meine Backformen','My baking pans'],
+  import:['Rezept einlesen','Import recipe'],
+  cake:['Meine Torte planen','Plan my cake'],
+  memory:['Meine Backnotizen','My baking notes'],
+  shopping:['Meine Einkaufsliste','My shopping list']
+ };
+ for(const [view,[de]] of Object.entries(titles)){
+  await expect(page.locator('.bsui-tool-view[data-view="'+view+'"] .bsui-tool-head h2')).toHaveText(de);
+ }
+ const original=await page.locator('#recipe-input').inputValue();
+ await page.evaluate(()=>{window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'))});
+ for(const [view,[,en]] of Object.entries(titles)){
+  await expect(page.locator('.bsui-tool-view[data-view="'+view+'"] .bsui-tool-head h2')).toHaveText(en);
+ }
+ await page.locator('.bsui-nav[data-view="import"]').click();
+ await expect(page.locator('.bsui-tool-view[data-view="import"]')).toBeVisible();
+ await expect(page.locator('#recipe-input')).toHaveValue(original);
+ await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
+ for(const [view,[de]] of Object.entries(titles)){
+  await expect(page.locator('.bsui-tool-view[data-view="'+view+'"] .bsui-tool-head h2')).toHaveText(de);
+ }
+ expect(await page.locator('#recipe-input').inputValue()).toBe(original);
+});
