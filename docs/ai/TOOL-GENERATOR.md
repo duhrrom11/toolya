@@ -1,5 +1,7 @@
 # Toolya Tool Generator – Version 0.2 (gemeinsame Plattform im Entwurf)
 
+**Erweiterung V0.3:** `--template counter|percentage|checklist`, automatisch erzeugte Unit-Tests und eine sichere Vorschau sind unter [Tool Builder](TOOL-BUILDER.md) dokumentiert. Standard `starter` und bestehende Entwürfe bleiben erhalten.
+
 Ein lokaler, dependency-freier Generator für **neue, unveröffentlichte** Tool-Prototypen.
 Er erzeugt drei Dateien unter `tools/<slug>/`. Er ruft weder GitHub noch Supabase auf,
 verändert keine Produktivtabellen und überschreibt niemals bestehende Tool-Verzeichnisse.
