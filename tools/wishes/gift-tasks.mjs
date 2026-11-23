@@ -1,13 +1,18 @@
 import {db} from './toolya-client.mjs';
+import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
+const ui=text=>wishesText(text,globalThis.__toolyaWishesLocale==='en'?'en':'de');
+const locale=()=>globalThis.__toolyaWishesLocale==='en'?'en-GB':'de-DE';
 const $=id=>document.getElementById(id);
 const labels={open:'⬜ Offen',in_progress:'🔄 In Arbeit',done:'✅ Erledigt'};
 const priorities={1:'🔴 Hoch',2:'🟡 Mittel',3:'🟢 Niedrig'};
-let user=null,tasks=[],occasions=[],gifts=[],editing=null,weekOffset=0;
+let user=null,tasks=[],occasions=[],gifts=[],editing=null,weekOffset=0,loaded=false,pendingWrites=0,localePending=false;
 const dayMs=86400000;
 function today(){const d=new Date();return Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())}
 function days(date){const [y,m,d]=date.split('-').map(Number);return Math.round((Date.UTC(y,m-1,d)-today())/dayMs)}
 function option(el,value,label){const o=document.createElement('option');o.value=value;o.textContent=label;el.append(o)}
-function choices(){for(const id of ['occasion','gift'])$(id).replaceChildren();option($('occasion'),'','Ohne Anlass');option($('gift'),'','Ohne Geschenk');
+function refreshLocale(){if(!loaded)return;if(pendingWrites){localePending=true;return}const occasion=$('occasion').value,gift=$('gift').value;choices();$('occasion').value=occasion;refreshGifts();$('gift').value=gift;for(const template of document.querySelectorAll('[data-task-template]'))template.textContent=ui(templates.find(t=>t.title===template.dataset.taskTemplate)?.label||'');render()}
+function settleWrite(){pendingWrites--;if(!pendingWrites&&localePending){localePending=false;refreshLocale()}}
+function choices(){for(const id of ['occasion','gift'])$(id).replaceChildren();option($('occasion'),'',ui('Ohne Anlass'));option($('gift'),'',ui('Ohne Geschenk'));
  for(const o of occasions)option($('occasion'),o.id,o.title);
  for(const g of gifts)if(!$('occasion').value||g.occasion_id===$('occasion').value)option($('gift'),g.id,g.title)}
 function refreshGifts(){const selected=$('gift').value;const el=$('gift');el.replaceChildren();option(el,'','Ohne Geschenk');for(const g of gifts)if(!$('occasion').value||g.occasion_id===$('occasion').value)option(el,g.id,g.title);if([...el.options].some(x=>x.value===selected))el.value=selected}
@@ -23,11 +28,11 @@ function render(){renderWeek();renderChecklistProgress();renderYearBalance();
  for(const t of visible){
   const item=document.createElement('article'),h=document.createElement('h3');item.className='item';h.textContent=t.title;
   const occasion=occasions.find(o=>o.id===t.occasion_id),gift=gifts.find(g=>g.id===t.gift_plan_id);
-  const meta=document.createElement('p');meta.textContent=[labels[t.status],priorities[t.priority],t.due_date?'Fällig: '+new Date(t.due_date+'T12:00:00').toLocaleDateString('de-DE'):'Ohne Fälligkeit',occasion?.title,gift?.title].filter(Boolean).join(' · ');
+  const meta=document.createElement('p');meta.textContent=[ui(labels[t.status]),ui(priorities[t.priority]),t.due_date?ui('Fällig: ')+new Date(t.due_date+'T12:00:00').toLocaleDateString(locale()):ui(ui('Ohne Fälligkeit')),occasion?.title,gift?.title].filter(Boolean).join(' · ');
   const controls=document.createElement('div');controls.className='controls';
-  const edit=document.createElement('button');edit.type='button';edit.textContent='Bearbeiten';edit.addEventListener('click',()=>{editing=t.id;$('title').value=t.title;$('occasion').value=t.occasion_id||'';refreshGifts();$('gift').value=t.gift_plan_id||'';$('due').value=t.due_date||'';$('reminder').value=t.reminder_days;$('priority').value=t.priority;$('taskStatus').value=t.status;$('notes').value=t.notes||'';$('formTitle').textContent='✏️ Aufgabe bearbeiten';$('save').textContent='Änderungen speichern';$('cancel').hidden=false;$('form').scrollIntoView({behavior:'smooth',block:'start'})});
-  const toggle=document.createElement('button');toggle.type='button';toggle.textContent=t.status==='done'?'Wieder öffnen':'✓ Erledigt';toggle.addEventListener('click',async()=>{toggle.disabled=true;const next=t.status==='done'?'open':'done';const {error}=await db.from('wishlist_gift_tasks').update({status:next,updated_at:new Date().toISOString()}).eq('id',t.id).eq('user_id',user.id);toggle.disabled=false;if(error){$('status').textContent='Statuswechsel fehlgeschlagen.';return}t.status=next;render();$('status').textContent='Aufgabe aktualisiert.'});
-  const remove=document.createElement('button');remove.type='button';remove.textContent='Löschen';remove.addEventListener('click',async()=>{if(!confirm('Aufgabe wirklich löschen?'))return;remove.disabled=true;const {error}=await db.from('wishlist_gift_tasks').delete().eq('id',t.id).eq('user_id',user.id);if(error){remove.disabled=false;$('status').textContent='Löschen fehlgeschlagen.';return}tasks=tasks.filter(x=>x.id!==t.id);if(editing===t.id)reset();render();$('status').textContent='Aufgabe gelöscht.'});
+  const edit=document.createElement('button');edit.type='button';edit.textContent=ui('Bearbeiten');edit.addEventListener('click',()=>{editing=t.id;$('title').value=t.title;$('occasion').value=t.occasion_id||'';refreshGifts();$('gift').value=t.gift_plan_id||'';$('due').value=t.due_date||'';$('reminder').value=t.reminder_days;$('priority').value=t.priority;$('taskStatus').value=t.status;$('notes').value=t.notes||'';$('formTitle').textContent='✏️ Aufgabe bearbeiten';$('save').textContent='Änderungen speichern';$('cancel').hidden=false;$('form').scrollIntoView({behavior:'smooth',block:'start'})});
+  const toggle=document.createElement('button');toggle.type='button';toggle.textContent=ui(t.status==='done'?'Wieder öffnen':'✓ Erledigt');toggle.addEventListener('click',async()=>{toggle.disabled=true;const next=t.status==='done'?'open':'done';const {error}=await db.from('wishlist_gift_tasks').update({status:next,updated_at:new Date().toISOString()}).eq('id',t.id).eq('user_id',user.id);toggle.disabled=false;if(error){$('status').textContent='Statuswechsel fehlgeschlagen.';return}t.status=next;render();$('status').textContent='Aufgabe aktualisiert.'});
+  const remove=document.createElement('button');remove.type='button';remove.textContent=ui('Löschen');remove.addEventListener('click',async()=>{if(!confirm('Aufgabe wirklich löschen?'))return;remove.disabled=true;const {error}=await db.from('wishlist_gift_tasks').delete().eq('id',t.id).eq('user_id',user.id);if(error){remove.disabled=false;$('status').textContent='Löschen fehlgeschlagen.';return}tasks=tasks.filter(x=>x.id!==t.id);if(editing===t.id)reset();render();$('status').textContent='Aufgabe gelöscht.'});
   controls.append(edit,toggle,remove);item.append(h,meta,controls);root.append(item);
  }
 }
@@ -43,7 +48,7 @@ $('form').addEventListener('submit',async event=>{event.preventDefault();if(!use
 async function main(){
  const {data,error}=await db.auth.getUser();user=data?.user;if(error||!user){$('login').hidden=false;$('status').textContent='Bitte anmelden.';return}
  const [t,o,g]=await Promise.all([db.from('wishlist_gift_tasks').select('id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,checklist_key,checklist_year,archived_at,created_at').eq('user_id',user.id).limit(1000),db.from('wishlist_occasions').select('id,title,occasion_date,repeats_yearly').eq('user_id',user.id).limit(1000),db.from('wishlist_gift_plans').select('id,title,occasion_id').eq('user_id',user.id).limit(1000)]);
- if(t.error||o.error||g.error)throw t.error||o.error||g.error;tasks=t.data||[];occasions=o.data||[];gifts=g.data||[];choices();for(const occasion of occasions)option($('checklistOccasion'),occasion.id,occasion.title);renderRolloverSelection();$('content').hidden=false;render();$('status').textContent='Deine Geschenk-To-dos sind aktuell.';
+ if(t.error||o.error||g.error)throw t.error||o.error||g.error;tasks=t.data||[];occasions=o.data||[];gifts=g.data||[];choices();for(const occasion of occasions)option($('checklistOccasion'),occasion.id,occasion.title);renderRolloverSelection();$('content').hidden=false;render();loaded=true;$('status').textContent='Deine Geschenk-To-dos sind aktuell.';
 }
 
 const templates=[
@@ -68,11 +73,11 @@ function suggestDate(offset=0){
  if(date===null){$('dueHint').textContent='Bitte zuerst einen Anlass mit Datum auswählen.';return false}
  const suggestion=localDate(date-offset*dayMs);
  $('due').value=suggestion;
- $('dueHint').textContent='Vorschlag: '+new Date(suggestion+'T12:00:00').toLocaleDateString('de-DE')+' ('+offset+' Tage vor '+occasion.title+'). Du kannst das Datum ändern.';
+ $('dueHint').textContent='Vorschlag: '+new Date(suggestion+'T12:00:00').toLocaleDateString(locale())+' ('+offset+' Tage vor '+occasion.title+'). Du kannst das Datum ändern.';
  return true;
 }
 for(const template of templates){
- const button=document.createElement('button');button.type='button';button.textContent=template.label;
+ const button=document.createElement('button');button.type='button';button.textContent=ui(template.label);button.dataset.taskTemplate=template.title;
  button.addEventListener('click',()=>{$('title').value=template.title;$('reminder').value=String(template.reminder);$('priority').value=String(template.priority);$('taskStatus').value='open';suggestDate(template.offset);$('templateHint').textContent='Vorlage '+template.label+' übernommen. Prüfe die Angaben und speichere die Aufgabe selbst.';$('title').focus()});
  $('templates').append(button);
 }
@@ -83,18 +88,18 @@ function weekStart(){
 }
 function renderWeek(){
  const root=$('weekGrid');root.replaceChildren();const start=weekStart();
- $('weekLabel').textContent=new Date(start).toLocaleDateString('de-DE',{day:'2-digit',month:'short'})+' – '+new Date(start+6*dayMs).toLocaleDateString('de-DE',{day:'2-digit',month:'short',year:'numeric'});
- const daysShort=['Mo','Di','Mi','Do','Fr','Sa','So'];
+ $('weekLabel').textContent=new Date(start).toLocaleDateString(locale(),{day:'2-digit',month:'short'})+' – '+new Date(start+6*dayMs).toLocaleDateString(locale(),{day:'2-digit',month:'short',year:'numeric'});
+ const daysShort=locale()==='en-GB'?['Mon','Tue','Wed','Thu','Fri','Sat','Sun']:['Mo','Di','Mi','Do','Fr','Sa','So'];
  for(let i=0;i<7;i++){
   const utc=start+i*dayMs,iso=localDate(utc),card=document.createElement('article');card.className='week-day'+(utc===today()?' today':'');
-  const heading=document.createElement('strong');heading.textContent=daysShort[i]+' '+new Date(utc).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});card.append(heading);
+  const heading=document.createElement('strong');heading.textContent=daysShort[i]+' '+new Date(utc).toLocaleDateString(locale(),{day:'2-digit',month:'2-digit'});card.append(heading);
   const matching=tasks.filter(t=>!t.archived_at&&t.status!=='done'&&t.due_date===iso).sort((a,b)=>a.priority-b.priority);
   if(!matching.length){const p=document.createElement('p');p.textContent='–';card.append(p)}
   for(const task of matching){const chip=document.createElement('span');chip.className='task-chip';chip.textContent=(task.priority===1?'🔴 ':'')+task.title;card.append(chip)}
   root.append(card);
  }
  const overdue=tasks.filter(t=>!t.archived_at&&t.status!=='done'&&t.due_date&&days(t.due_date)<0);
- if(overdue.length){const p=document.createElement('p');p.className='warn';p.textContent='⚠️ '+overdue.length+' überfällige Aufgaben – Details unter Erinnerungen.';root.append(p)}
+ if(overdue.length){const p=document.createElement('p');p.className='warn';p.textContent='⚠️ '+overdue.length+ui(' überfällige Aufgaben – Details unter Erinnerungen.');root.append(p)}
 }
 $('weekPrev').addEventListener('click',()=>{weekOffset--;renderWeek()});
 $('weekNext').addEventListener('click',()=>{weekOffset++;renderWeek()});
@@ -107,8 +112,8 @@ function renderChecklistProgress(){
  const bucket=grouped.get(key)||{occasionId:task.occasion_id,year,total:0,done:0,archived:0};bucket.total++;if(task.status==='done')bucket.done++;if(task.archived_at)bucket.archived++;grouped.set(key,bucket)}
  if(!grouped.size){const p=document.createElement('p');p.className='empty';p.textContent='Noch keine Aufgabenpakete erstellt.';root.append(p);return}
  for(const group of [...grouped.values()].sort((a,b)=>b.year.localeCompare(a.year))){const occasion=occasions.find(o=>o.id===group.occasionId);if(!occasion)continue;
- const row=document.createElement('div');row.className='checklist-row';const heading=document.createElement('strong');heading.textContent=occasion.title+' · '+(group.year==='legacy'?'Bisherige Checkliste (ohne Jahr)':group.year)+(group.archived===group.total?' · 📦 Archiviert':group.archived?' · teilweise archiviert':'');
- const meter=document.createElement('progress');meter.className='checklist-meter';meter.max=group.total;meter.value=group.done;meter.setAttribute('aria-label','Checklistenfortschritt '+occasion.title+' '+group.year);
+ const row=document.createElement('div');row.className='checklist-row';const heading=document.createElement('strong');heading.textContent=occasion.title+' · '+(group.year==='legacy'?ui('Bisherige Checkliste (ohne Jahr)'):group.year)+(group.archived===group.total?' · 📦 Archiviert':group.archived?ui(' · teilweise archiviert'):'');
+ const meter=document.createElement('progress');meter.className='checklist-meter';meter.max=group.total;meter.value=group.done;meter.setAttribute('aria-label',ui('Checklistenfortschritt ')+occasion.title+' '+group.year);
  const summary=document.createElement('p');summary.textContent=group.done+' von '+group.total+' erledigt · '+Math.round(group.done/group.total*100)+' %';row.append(heading,meter,summary);root.append(row)}
 }
 function setupYears(){
@@ -147,7 +152,7 @@ function renderYearBalance(){
  const occasion=occasions.find(o=>o.id===b.occasionId);if(!occasion)continue;
  const box=document.createElement('div');box.className='year-summary';
  const heading=document.createElement('strong');heading.textContent=occasion.title+' · '+(b.year??'Altbestand');
- const info=document.createElement('p');info.textContent='Erledigt: '+b.done+'/'+b.total+' · Offen: '+(b.total-b.done)+' · Überfällig: '+b.overdue+' · Archiviert: '+b.archived;
+ const info=document.createElement('p');info.textContent=ui('Erledigt: ')+b.done+'/'+b.total+ui(' · Offen: ')+(b.total-b.done)+ui(' · Überfällig: ')+b.overdue+ui(' · Archiviert: ')+b.archived;
  box.append(heading,info);balance.append(box)}
  if(!grouped.size){const p=document.createElement('p');p.className='empty';p.textContent='Noch keine Jahresbilanzen vorhanden.';balance.append(p)}
 }
@@ -171,3 +176,5 @@ $('rolloverCreate').addEventListener('click',async()=>{
  catch{$('rolloverStatus').textContent='Übernahme fehlgeschlagen. Bitte Auswahl und Jahr prüfen.'}finally{$('rolloverCreate').disabled=false}
 });
 main().catch(()=>{$('status').textContent='Aufgaben konnten nicht geladen werden.'});
+
+document.addEventListener('toolya:wishes-locale-change',refreshLocale);
