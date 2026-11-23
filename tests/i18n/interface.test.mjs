@@ -301,7 +301,7 @@ test('baking outputs translate presentation without changing saved recipe names 
   "'Delete' : 'Löschen'", "'Baking notes:' : 'Geling-Protokoll / Notiz:'",
   'bake 5 minutes less next time'
  ]) assert.ok(html.includes(phrase),'missing localized baking display: '+phrase);
- assert.match(html,/const name = document\.getElementById\('recipe-name'\)\.value \|\| 'Unbenanntes Rezept'/);
+ assert.ok(html.includes("const name = document.getElementById('recipe-name').value || (window.__toolyaUILocale === 'en' ? 'Untitled recipe' : 'Unbenanntes Rezept');"),'new unnamed recipe uses the selected locale while named recipes stay verbatim');
  assert.match(html,/saveRecipeToStorage\(name, rawText, factor\)/,'original persistence values retained');
  assert.match(html,/escapeRecipeHtml\(displayName\)/,'display name is HTML escaped');
  assert.match(html,/escapeRecipeHtml\(r\.note\)/,'user notes are HTML escaped');
