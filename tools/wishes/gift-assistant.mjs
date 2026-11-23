@@ -100,7 +100,7 @@ function renderWeek(){
  const now=new Date(),today=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()),dow=(new Date(today).getUTCDay()+6)%7,start=today-dow*day+weekOffset*7*day,end=start+6*day;
  $('weekLabel').textContent=dateLabel(start)+' – '+dateLabel(end)+' · '+new Date(start).getUTCFullYear();
  const root=$('planningWeek');root.replaceChildren();
- for(let i=0;i<7;i++){const current=start+i*day,box=el('article','','week-day');box.append(el('strong',(locale()==='en-GB'?['Mon','Tue','Wed','Thu','Fri','Sat','Sun']:['Mo','Di','Mi','Do','Fr','Sa','So'])[i]+' '+dateLabel(current)));
+ for(let i=0;i<7;i++){const current=start+i*day,box=el('article','','week-day');box.append(el('strong',(locale()==='en-GB'?['Mon','Tue','Wed','Thu','Fri','Sat','Sun']:(globalThis.__toolyaWishesLocale==='en'?['Mon','Tue','Wed','Thu','Fri','Sat','Sun']:['Mo','Di','Mi','Do','Fr','Sa','So'])[i]+' '+dateLabel(current)));
  for(const e of calendarEvents.filter(e=>e.date===current))box.append(el('span',e.label,'week-event'));root.append(box)}
 }
 $('weekPrev').addEventListener('click',()=>{weekOffset--;renderWeek()});
@@ -162,4 +162,11 @@ async function main(){
 main().catch(()=>{showAssistantStatus('Die privaten Planungsvorschläge konnten nicht vollständig geladen werden. Bitte später erneut versuchen.')});
 
 // Repaint read-only task summaries after DE/EN changes; defer while an update is pending.
-document.addEventListener('toolya:wishes-locale-change',()=>{if(assistantStatusKey)showAssistantStatus(assistantStatusKey);if(!assistantReady)return;if(taskBusy||checklistBusy){localePending=true;return}refreshTaskDisplay()});
+document.addEventListener('toolya:wishes-locale-change',()=>{
+ const statusKey=assistantStatusKey||(!$('login').hidden?'Bitte anmelden.':null);
+ // Reapply runtime status after shared translation listeners repaint data-wish-copy.
+ if(statusKey)queueMicrotask(()=>showAssistantStatus(statusKey));
+ if(!assistantReady)return;
+ if(taskBusy||checklistBusy){localePending=true;return}
+ refreshTaskDisplay();
+});
