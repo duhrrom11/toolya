@@ -9,7 +9,11 @@ let data;try{data=JSON.parse(localStorage.getItem(KEY)||'{}')}catch{data={}}data
 // Share the same in-memory state with the additive pro controls to avoid overwriting newer entries.
 window.toolyaBackstudioState=data;
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(data))}catch{message(ui('Lokales Speichern fehlgeschlagen.','Could not save on this device.'))}};
-const message=m=>el('bs-message').textContent=m;
+const statusTranslations=new Map();
+const message=m=>{const node=el('bs-message');if(node)node.textContent=m};
+// Preserve the original pair for live statuses when DE/EN is toggled without rerunning actions.
+const rememberStatus=(de,en)=>{statusTranslations.set(de,[de,en]);statusTranslations.set(en,[de,en]);return ui(de,en)};
+const showStatus=(de,en)=>message(rememberStatus(de,en));
 const area=(s,a,b)=>s==='rect'?a*b:Math.PI*a*a/4;
 const orig=()=>area(el('orig-shape').value,el('orig-shape').value==='rect'?number('orig-l',30):number('orig-d',26),number('orig-w',10));
 const target=()=>el('combinator-mode').value==='double'?area('round',number('combo-d1',20))+area('round',number('combo-d2',16)):area(el('target-shape').value,el('target-shape').value==='rect'?number('target-l',25):number('target-d',20),number('target-w',11));
@@ -185,14 +189,17 @@ function init(){
  el('bs-shopping-export').onclick=exportShopping;
  ['bs-serving','bs-prep','bs-cool','base-time'].forEach(id=>el(id)?.addEventListener('input',renderSchedule));
 
- el('bs-refresh').onclick=()=>{renderPantry();update();message(ui('Rezept neu analysiert.','Recipe analysed again.'))};
- el('bs-log').onclick=()=>{const n=number('bs-time');if(n<1||n>3000)return message(ui('Ungültige Backzeit.','Invalid baking time.'));data.logs.push({date:new Date().toLocaleDateString('de-DE'),name:(el('recipe-name').value||'Mein Kuchen').slice(0,80),minutes:n,note:el('bs-note').value.slice(0,250)});data.logs=data.logs.slice(-30);save();logs();message(ui('Backerfahrung lokal gespeichert.','Baking notes saved on this device.'))};
- el('bs-ocr').onclick=async()=>{const file=el('bs-photo').files?.[0];if(!file)return message(ui('Bitte Foto auswählen.','Select a photo.'));if(file.size>8*1024*1024)return message(ui('Foto darf maximal 8 MB groß sein.','Photo must be 8 MB or smaller.'));const btn=el('bs-ocr');btn.disabled=true;message(ui('Foto wird lokal analysiert …','Analysing the photo on your device…'));try{if(!window.Tesseract){const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';await new Promise((resolve,reject)=>{script.onload=resolve;script.onerror=reject;document.head.append(script)})}const r=await window.Tesseract.recognize(file,'deu');el('recipe-input').value=r.data.text;renderPantry();update();message(ui('Erkanntes Rezept unbedingt prüfen.','Check the recognised recipe carefully.'))}catch{message(ui('Foto-Erkennung nicht verfügbar; Text bitte einfügen.','Photo recognition unavailable; paste the recipe text instead.'))}finally{btn.disabled=false}};
+ el('bs-refresh').onclick=()=>{renderPantry();update();showStatus('Rezept neu analysiert.','Recipe analysed again.')};
+ el('bs-log').onclick=()=>{const n=number('bs-time');if(n<1||n>3000)return message(ui('Ungültige Backzeit.','Invalid baking time.'));data.logs.push({date:new Date().toLocaleDateString('de-DE'),name:(el('recipe-name').value||'Mein Kuchen').slice(0,80),minutes:n,note:el('bs-note').value.slice(0,250)});data.logs=data.logs.slice(-30);save();logs();showStatus('Backerfahrung lokal gespeichert.','Baking notes saved on this device.')};
+ el('bs-ocr').onclick=async()=>{const file=el('bs-photo').files?.[0];if(!file)return message(ui('Bitte Foto auswählen.','Select a photo.'));if(file.size>8*1024*1024)return message(ui('Foto darf maximal 8 MB groß sein.','Photo must be 8 MB or smaller.'));const btn=el('bs-ocr');btn.disabled=true;message(ui('Foto wird lokal analysiert …','Analysing the photo on your device…'));try{if(!window.Tesseract){const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';await new Promise((resolve,reject)=>{script.onload=resolve;script.onerror=reject;document.head.append(script)})}const r=await window.Tesseract.recognize(file,'deu');el('recipe-input').value=r.data.text;renderPantry();update();showStatus('Erkanntes Rezept unbedingt prüfen.','Check the recognised recipe carefully.')}catch{message(ui('Foto-Erkennung nicht verfügbar; Text bitte einfügen.','Photo recognition unavailable; paste the recipe text instead.'))}finally{btn.disabled=false}};
  ['bs-height','bs-original-height','bs-volume','bs-form-height','bs-maxfill','bs-dough','bs-material','bs-layers','bs-filling','bs-special','bs-practical'].forEach(id=>el(id).addEventListener('input',()=>{renderPantry();renderGarage();update()}));
  ['orig-shape','orig-d','orig-l','orig-w','target-shape','target-d','target-l','target-w','combo-d1','combo-d2','base-time','recipe-input'].forEach(id=>el(id)?.addEventListener('input',()=>{renderGarage();renderPantry();update()}));
  renderBackstudioStaticCopy();
  renderGarage();renderPantry();renderShopping();logs();update();renderSchedule();
  document.addEventListener('toolya:locale-change',()=>{
+  const status=el('bs-message');
+  const pair=statusTranslations.get(status?.textContent);
+  if(pair&&status)status.textContent=langEn()?pair[1]:pair[0];
   renderBackstudioStaticCopy();
   renderGarage();renderShopping();logs();update();renderSchedule();renderMissing();
  });
