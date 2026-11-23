@@ -3333,3 +3333,66 @@ test('car dropdown labels localize in place without replacing selected vehicle o
  assert.ok(!/saveData\(|localStorage\.setItem\(|innerHTML\s*=/.test(refresh),'refresh never saves or recreates inputs');
  assert.match(source,/if \(toolyaCloudReady\) refreshCarDropdownLocale\(\)/,'locale refresh gated on cloud state');
 });
+
+
+test('pet health confirmations, validation and cloud feedback use source-backed bilingual messages', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {runInNewContext}=await import('node:vm');
+ const source=readFileSync(new URL('../../tools/pet-health/index.html',import.meta.url),'utf8');
+ const expected=[
+  ['Lokale Haustierdaten nach Sicherung in die Cloud übernehmen?','Import local pet data into the cloud after backing it up?'],
+  ['Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?','Cloud and device data both exist. Keep cloud data and back up local data separately?'],
+  ['Bitte bestätigen, dass die Sicherung heruntergeladen wurde.','Please confirm that you downloaded the backup.'],
+  ['Bitte einen Namen für das Haustier eingeben!','Please enter a pet name!'],
+  ['⚠️ Möchtest du dieses Haustier und alle zugehörigen Einträge wirklich löschen?','⚠️ Delete this pet and all associated records?'],
+  ['Bitte Medikamenten-Namen angeben!','Please enter a medication name!'],
+  ['Bitte Haustier, Datum und Bezeichnung angeben!','Please enter a pet, date and description!'],
+  ['Eintrag oder Beleg konnte nicht gespeichert werden. Cloud-Datenstand prüfen.','Record or receipt could not be saved. Check the cloud data status.'],
+  ['⚠️ Diesen Eintrag wirklich löschen?','⚠️ Really delete this record?']
+ ];
+ const pairs=[...source.matchAll(/(?:alert|confirm)\(window\.__toolyaUILocale === 'en' \? '([^']+)' : '([^']+)'\)/g)]
+  .map(match=>({english:match[1],german:match[2]}));
+ for(const [de,en] of expected) {
+  assert.ok(pairs.some(pair=>pair.german===de&&pair.english===en),'missing exact pet DE/EN pair: '+de);
+  const expr="window.__toolyaUILocale === 'en' ? "+JSON.stringify(en)+' : '+JSON.stringify(de);
+  assert.equal(runInNewContext(expr,{window:{__toolyaUILocale:'en'}}),en);
+  assert.equal(runInNewContext(expr,{window:{__toolyaUILocale:'de'}}),de);
+ }
+ assert.match(source,/if \(!confirm\(window\.__toolyaUILocale === 'en' \? '⚠️ Delete this pet and all associated records\?'/,'pet deletion still requires confirmation');
+ assert.match(source,/if \(!confirm\(window\.__toolyaUILocale === 'en' \? '⚠️ Really delete this record\?'/,'record deletion still requires confirmation');
+ assert.match(source,/confirmMigration:async\(\)=>confirm\(/,'backup migration remains opt-in');
+ assert.match(source,/reviewExistingCloud:async\(\)=>confirm\(/,'cloud conflict remains opt-in');
+ assert.match(source,/if \(!name\) return alert\(/,'pet validation still blocks invalid input');
+});
+
+test('lending backup and destructive messages localize with unchanged confirmation guards', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {runInNewContext}=await import('node:vm');
+ const source=readFileSync(new URL('../../tools/loans/index.html',import.meta.url),'utf8');
+ const expected=[
+  ['Bestehende Verleihdaten in dein Toolya-Konto übernehmen? Vorhandene Cloud-Daten werden nicht überschrieben.','Import existing loan data into your Toolya account? Existing cloud data will not be overwritten.'],
+  ['Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?','Cloud and device data both exist. Keep cloud data and back up local data separately?'],
+  ['Bitte bestätigen, dass die Sicherung heruntergeladen wurde.','Please confirm that you downloaded the backup.'],
+  ['Bitte einen Namen eingeben!','Please enter a name!'],
+  ['Bitte eine Bezeichnung für den Gegenstand angeben!','Please enter an item description!'],
+  ['Diesen Stamm-Gegenstand wirklich löschen?','Really delete this inventory item?'],
+  ['Bitte Person und Ausleihdatum angeben!','Please enter a person and loan date!'],
+  ['⚠️ Diesen Eintrag wirklich löschen?','⚠️ Really delete this record?'],
+  ['Bitte Gegenstand, Person und Ausleihdatum angeben!','Please enter an item, person and loan date!'],
+  ['Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.','The QR code could not be loaded. Please try again.']
+ ];
+ const pairs=[...source.matchAll(/(?:alert|confirm)\(window\.__toolyaUILocale === 'en' \? '([^']+)' : '([^']+)'\)/g)]
+  .map(match=>({english:match[1],german:match[2]}));
+ for(const [de,en] of expected) {
+  assert.ok(pairs.some(pair=>pair.german===de&&pair.english===en),'missing exact lending DE/EN pair: '+de);
+  const expression="window.__toolyaUILocale === 'en' ? "+JSON.stringify(en)+' : '+JSON.stringify(de);
+  assert.equal(runInNewContext(expression,{window:{__toolyaUILocale:'en'}}),en);
+  assert.equal(runInNewContext(expression,{window:{__toolyaUILocale:'de'}}),de);
+ }
+ assert.match(source,/if \(!confirm\(window\.__toolyaUILocale === 'en' \? 'Really delete this inventory item\?'/,'inventory deletion confirmation retained');
+ assert.match(source,/if \(!confirm\(window\.__toolyaUILocale === 'en' \? '⚠️ Really delete this record\?'/,'loan deletion confirmation retained');
+ assert.match(source,/confirmMigration:async\(\)=>confirm\(/,'cloud migration not automatic');
+ assert.match(source,/if \(!title\) return alert\(/,'item validation preserved');
+ assert.match(source,/if \(!person \|\| !date\) return alert\(/,'loan validation preserved');
+ assert.match(source,/i\.status === 'active'/,'persisted status keys stay untouched');
+});
