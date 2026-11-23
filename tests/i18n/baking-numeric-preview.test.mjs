@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
 import {parseHTML} from 'linkedom';
+import {applyToolInterfaceLocale} from '../../shared/toolya/i18n/interface.mjs';
 
 const html=readFileSync(new URL('../../tools/baking/index.html',import.meta.url),'utf8');
 function extract(start,end){
@@ -79,4 +80,25 @@ test('only a newly saved unnamed recipe gets a localized default title; the orig
  calculateRecipe();
  assert.deepEqual(records[2],['Omas privater Kuchen','Private Zutaten: 300 g Mehl',1.25]);
  assert.equal(fields['recipe-input'].value,'Private Zutaten: 300 g Mehl');
+});
+
+test('baking display-only scaling labels round-trip without changing machine factor or recipe input',()=>{
+ assert.match(html,/data-tool-en="Recipe quantity">Rezeptmenge<\/span>/);
+ assert.match(html,/data-tool-en="Factor">Faktor<\/span>/);
+ assert.match(html,/document\.getElementById\('factor-display'\)\.innerText = '× ' \+ formatBakingDisplayNumber\(factor, 2\)/);
+ assert.match(html,/res\.innerText = formatBakingDisplayNumber\(g, 1, 0\) \+ ' g'/);
+ const {document}=parseHTML('<html><body><main id="main-content">'+
+  '<div><span data-tool-en="Recipe quantity">Rezeptmenge</span>: <span id="factor-display">× 1.00</span></div>'+
+  '<span data-tool-en="Factor">Faktor</span>'+
+  '<input id="recipe-input" value="Omas geheime Zutaten"></main></body></html>');
+ const labels=[...document.querySelectorAll('[data-tool-en]')];
+ const scale=document.querySelector('#factor-display');
+ const recipe=document.querySelector('#recipe-input');
+ for(const [locale,expected] of [['en',['Recipe quantity','Factor']],['de',['Rezeptmenge','Faktor']]]){
+  applyToolInterfaceLocale(document,'baking',locale);
+  assert.deepEqual(labels.map(el=>el.textContent),expected);
+  assert.equal(document.querySelector('#factor-display'),scale);
+  assert.equal(scale.textContent,'× 1.00');
+  assert.equal(recipe.value,'Omas geheime Zutaten');
+ }
 });
