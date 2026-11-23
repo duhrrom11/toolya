@@ -165,7 +165,21 @@ function update(){
  renderMissing();
  const heightWarning=el('bs-height-warning');if(heightWarning)heightWarning.textContent=h>ph*number('bs-maxfill',.7)?ui('Achtung: Die gewünschte Teighöhe ist größer als die eingestellte Füllgrenze der Backform.','Warning: the desired cake height exceeds the pan fill limit.'):ui('Wunschhöhe innerhalb der eingestellten Füllgrenze (bei geraden Wänden).','Desired height is within the fill limit (straight-walled pan).');
 }
-function logs(){const root=el('bs-logs');root.replaceChildren();data.logs.slice(-12).reverse().forEach(x=>make('p',root,x.date+' · '+x.name+' · '+x.minutes+ui(' Min. · ',' min · ')+x.note))}
+function displayLogDate(entry){
+ const fallback=entry.date||'';
+ if(entry.iso){
+  const date=new Date(entry.iso);
+  if(Number.isFinite(date.getTime()))return date.toLocaleDateString(langEn()?'en-GB':'de-DE');
+ }
+ if(!langEn())return fallback;
+ const match=/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(fallback);
+ if(!match)return fallback;
+ const day=Number(match[1]),month=Number(match[2]),year=Number(match[3]);
+ const date=new Date(Date.UTC(year,month-1,day,12));
+ return date.getUTCFullYear()===year&&date.getUTCMonth()===month-1&&date.getUTCDate()===day
+  ?date.toLocaleDateString('en-GB',{timeZone:'UTC'}):fallback;
+}
+function logs(){const root=el('bs-logs');root.replaceChildren();data.logs.slice(-12).reverse().forEach(x=>make('p',root,displayLogDate(x)+' · '+x.name+' · '+x.minutes+ui(' Min. · ',' min · ')+x.note))}
 window.toolyaBackstudioRenderLogs=logs;
 function init(){
  const root=el('tab-rechner');if(!root)return;
