@@ -31,7 +31,7 @@ test('recipe preview re-renders localized quantities without changing private in
   '<select id="unit-system"><option value="metric">Metric</option></select>'+
   '<span id="res-factor"></span><div id="print-card"></div></body></html>');
  const factor=document.querySelector('#res-factor');
- factor.innerText='0.75';
+ Object.defineProperty(factor,'innerText',{configurable:true,value:'0.75'});
  const window={__toolyaUILocale:'de'};
  const {renderRecipePreview}=runInNewContext(source+'\n({renderRecipePreview})',{document,window});
  const name=document.querySelector('#recipe-name'),recipe=document.querySelector('#recipe-input');
