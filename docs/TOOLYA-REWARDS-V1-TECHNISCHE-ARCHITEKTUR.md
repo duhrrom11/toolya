@@ -168,3 +168,8 @@ Prüfung des aktuellen `main` im Repository `duhrrom11/toolya` und **lesende** S
 ## 9. Fachlich geprüfter Pilot: Umzugskisten (23.11.2026)
 
 [Detailaudit des tatsächlichen `saveBox`→`storeBoxData`→`saveData`→`toolya_save_snapshot`-Pfads und Implementierungsdesign für einen einmaligen Erstkisten-Erfolg](TOOLYA-REWARDS-V1-PILOT-UMZUGSKISTEN.md). **Wichtige Korrektur:** Die Cloud-Revisionsbestätigung belegt Persistenz, **nicht** die Echtheit einer vom Client geschriebenen Kiste. Deshalb nur ein begrenzter einmaliger Reward mit serverseitiger Differenzprüfung und Idempotenz; keine wiederholbare XP-Vergabe für bloße JSON-Neueinträge. Dokumentation-only; keine produktive Änderung.
+
+
+## 10. Erstes nicht produktives Backend-Grundgerüst (23.11.2026)
+
+[Quellcode und Hinweise: `prototypes/rewards-v1-backend/README.md`](../prototypes/rewards-v1-backend/README.md). Erstellt wurden ein privater SQL-Schemaentwurf mit einzigem serverinternen Pilotgrant, eine deterministische JS-Leseprojektion für XP/fünf Kompetenzbereiche/neun Badges und neun Unit-Testfälle. Die SQL-Datei ist absichtlich **keine aktive Migration**. **Noch kein vertrauenswürdiger fachlicher Reward-Trigger und kein produktiv ausführbarer Clientendpunkt.** Vier Dateien wurden aus dem GitHub-Planungsbranch erneut geladen und sieben statische Sicherheits-/Konsistenzmerkmale bestätigt. Node-Unit-Tests und SQL-Staging-Ausführung sind **noch nicht erfolgt**, weil der lokale Container die GitHub-Quelldateien nicht abrufen konnte und keine lokale PostgreSQL-Umgebung eingerichtet ist. Kein `main`-Merge, kein Supabase-Schreibvorgang, kein Deployment.
