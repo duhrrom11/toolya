@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "sourceLocale": "de",
+  "targetLocale": "en",
+  "entries": [
+    {
+      "de": "Toolya",
+      "en": "Toolya",
+      "rule": "brand",
+      "context": "Identische Wortmarke, niemals übersetzen"
+    },
+    {
+      "de": "Dashboard",
+      "en": "dashboard",
+      "rule": "preferred",
+      "context": "Anwendungsübersicht"
+    },
+    {
+      "de": "Mein Dashboard",
+      "en": "My dashboard",
+      "rule": "preferred",
+      "context": "Navigation"
+    },
+    {
+      "de": "Alle Tools",
+      "en": "All tools",
+      "rule": "preferred",
+      "context": "Navigation"
+    },
+    {
+      "de": "Einstellungen",
+      "en": "Settings",
+      "rule": "preferred",
+      "context": "Schaltfläche oder Panel"
+    },
+    {
+      "de": "Anmelden",
+      "en": "Sign in",
+      "rule": "preferred",
+      "context": "Kontozugang"
+    },
+    {
+      "de": "Abmelden",
+      "en": "Sign out",
+      "rule": "preferred",
+      "context": "Kontozugang"
+    },
+    {
+      "de": "Registrieren",
+      "en": "Register",
+      "rule": "preferred",
+      "context": "Kontozugang"
+    },
+    {
+      "de": "Speichern",
+      "en": "Save",
+      "rule": "preferred",
+      "context": "Formularaktion"
+    },
+    {
+      "de": "Abbrechen",
+      "en": "Cancel",
+      "rule": "preferred",
+      "context": "Formularaktion"
+    },
+    {
+      "de": "Zurück",
+      "en": "Back",
+      "rule": "preferred",
+      "context": "Navigation"
+    },
+    {
+      "de": "Wunschliste",
+      "en": "wish list",
+      "rule": "preferred",
+      "context": "Allgemeine öffentliche Amazon-Wunschliste; Zusammensetzungen kontextabhängig"
+    },
+    {
+      "de": "Öffentliche Amazon-Wunschlisten",
+      "en": "public Amazon wish lists",
+      "rule": "preferred",
+      "context": "Öffentliche Sichtbarkeit"
+    },
+    {
+      "de": "Haushaltsbuch",
+      "en": "household budget",
+      "rule": "preferred",
+      "context": "Tool-Benennung"
+    },
+    {
+      "de": "Umzugskisten",
+      "en": "moving boxes",
+      "rule": "preferred",
+      "context": "Tool-Benennung"
+    },
+    {
+      "de": "Pflanzenpflege",
+      "en": "plant care",
+      "rule": "preferred",
+      "context": "Tool-Benennung"
+    },
+    {
+      "de": "Digitaler Nachlass",
+      "en": "digital estate",
+      "rule": "preferred",
+      "context": "Vorsorgefunktion, nicht rechtliche Zusage"
+    },
+    {
+      "de": "Parkplatz-Merker",
+      "en": "parking spot saver",
+      "rule": "preferred",
+      "context": "Tool-Benennung"
+    },
+    {
+      "de": "Verliehene Dinge",
+      "en": "lent items",
+      "rule": "preferred",
+      "context": "Tool-Benennung"
+    },
+    {
+      "de": "Zählerstände",
+      "en": "meter readings",
+      "rule": "preferred",
+      "context": "Tool-Benennung"
+    },
+    {
+      "de": "Tiergesundheit",
+      "en": "pet health",
+      "rule": "preferred",
+      "context": "Tool-Benennung"
+    },
+    {
+      "de": "Datenschutz",
+      "en": "Privacy",
+      "rule": "preferred",
+      "context": "Footer/Legal"
+    },
+    {
+      "de": "Impressum",
+      "en": "Legal notice",
+      "rule": "preferred",
+      "context": "Footer/Legal"
+    },
+    {
+      "de": "TÜV / HU",
+      "en": "Vehicle inspection",
+      "rule": "preferred",
+      "context": "Fahrzeugtermin"
+    },
+    {
+      "de": "WG",
+      "en": "shared household",
+      "rule": "contextual",
+      "context": "Wohn-/Kassenkontext; in 'WG-Organisator' auch roommate organizer"
+    }
+  ],
+  "protectedTokens": [
+    "Toolya",
+    "Amazon"
+  ],
+  "notes": "Preferred translations for new reviews; variations in existing approved source strings are not automatically rewritten. Personal names, entered content, passwords, tokens and backend diagnostics must never be machine-translated."
+}
