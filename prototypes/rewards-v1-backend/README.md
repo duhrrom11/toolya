@@ -68,3 +68,16 @@ node --test prototypes/rewards-v1-backend/*.test.mjs
 5. `service_role`-Schlüssel ausschließlich als Supabase-Edge-Secret; niemals Client, Github-Pages-JavaScript oder App-Payload. Die Origin-Prüfung ergänzt die JWT-Prüfung, ersetzt sie aber nicht.
 6. Vor Staging mit echten Supabase-Migrationskommandos: aktuelle Dokumentation prüfen, SQL-Parser/Schema/RPC-Signaturen und RLS-Rechte isoliert testen, kritische Fehlerpfade und gleichzeitige Requests prüfen.
 
+
+
+## Vollständiger Kistenvertrag und Cache-Reconciliation (23.11.2026)
+
+**Neue, nicht produktive Komponenten:**
+- [`moving-box-contract.mjs`](moving-box-contract.mjs) und [`moving-box-contract.test.mjs`](moving-box-contract.test.mjs): Der geplante Endpoint nimmt **alle neun originalen Felder** aus `storeBoxData` an: `name`, `desc`, `value`, `tag`, `barcode`, `expiry`, `lentTo`, `subItems`, `photo`. Zusätzlich erwartet er die vorhandene Cloud-`expectedRevision` und `locationId`; Benutzer-ID und XP bleiben ausschließlich serverseitig. Maximal 4 MB Request und 3 MB Foto-Daten-URL, begrenzte Textlängen und Teilobjekte. Ein nicht unterstütztes Fotoformat (z. B. GIF/HEIC) oder größere Dateien dürfen **nicht** stillschweigend zerstört werden: bestehende Tool-Speicherung beibehalten, dafür kein Rewards-Pilot.
+- [`moving-first-box-ui-adapter.mjs`](moving-first-box-ui-adapter.mjs) mit [Tests](moving-first-box-ui-adapter.test.mjs): Ergänzt optional den ersten Cloud-Kisten-Save, nur wenn der Cache zuvor keine Kiste enthielt. Nach dem Endpunkt-Aufruf muss `controller.load()` die neue Revision / Kisten-ID bestätigen. Bei fehlender Serverantwort ist der Ausgang **ungewiss**; kein automatischer neuer Save, kein versprochenes XP, Datenstand erneut laden. Auth-Kontowechsel vor/nach Save abweisen.
+- [`edge-first-box-draft.ts`](edge-first-box-draft.ts) und [`first-box-transaction-draft.sql`](first-box-transaction-draft.sql) wurden auf den vollständigen Vertrag mit `p_box jsonb` umgestellt. Die SQL-RPC schreibt die neun Felder und beachtet das bekannte Snapshot-Größenlimit; `toolya_save_snapshot` und RLS bleiben unverändert.
+
+**Laufzeitprüfungen:** 8/8 gespeicherte Contract-Unit-Tests, 8/8 gespeicherte Cache-Adapter-Tests und 13/13 simulierte Edge-HTTP-Verhaltenstests erfolgreich in einer isolierten JS-V8-Testumgebung mit gemockten Auth-/RPC-Diensten. Die bereits zuvor geprüften Bridge-/Regeltests bleiben unabhängig davon bestehen. **Kein echter Deno-HTTP-Server, keine PostgreSQL-Instanz und kein Ende-zu-Ende-Supabase-Staging-Test wurde ausgeführt.**
+
+**Noch offen:** Eine vollständige Produktintegration erfordert besonders die Wahl des UI-Pfads für bestehende sehr große oder nicht unterstützte Fotos, Anlegen der erforderlichen Kisten-/Standortdaten im Serverpfad, Absicherung aller RPC-Rechte, SQL-Staging-/Parallelitätsprüfung sowie den Umgang mit einem Konto-/Netzwerkwechsel während des Speicherns. Die jetzigen Dateien sind **kein** aktiver Deployment-Einstiegspunkt. Die produktive UI verwendet weiterhin den bisherigen `saveBox → storeBoxData → saveData`-Weg.
+
