@@ -880,11 +880,11 @@
 
         // Presentation-only number formatting. Keep res-factor machine-readable,
         // because the recipe calculator parses it back as an input.
-        function formatBakingDisplayNumber(value, decimals = 2) {
+        function formatBakingDisplayNumber(value, decimals = 2, minimumDecimals = decimals) {
             const amount = Number(value);
-            return window.__toolyaUILocale === 'en'
-                ? amount.toLocaleString('en-GB', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
-                : amount.toFixed(decimals);
+            return amount.toLocaleString(window.__toolyaUILocale === 'en' ? 'en-GB' : 'de-DE', {
+                minimumFractionDigits: minimumDecimals, maximumFractionDigits: decimals
+            });
         }
 
         function updateSlices() {
@@ -910,7 +910,7 @@
                 res.innerText = Math.round(g * 0.8) + (window.__toolyaUILocale === 'en' ? 'g (reduce batter liquid by 20 ml)' : 'g (Flüssigkeit im Teig um 20ml reduzieren)');
                 tip.innerText = window.__toolyaUILocale === 'en' ? 'Honey is sweeter and adds moisture.' : 'Honig süßt stärker und bringt Feuchtigkeit mit.';
             } else {
-                res.innerText = (g / 200).toFixed(1) + (window.__toolyaUILocale === 'en' ? ' tsp concentrate' : ' TL Konzentrat');
+                res.innerText = formatBakingDisplayNumber(g / 200, 1) + (window.__toolyaUILocale === 'en' ? ' tsp concentrate' : ' TL Konzentrat');
                 tip.innerText = window.__toolyaUILocale === 'en' ? 'Use stevia concentrate very sparingly.' : 'Stevia-Konzentrat extrem sparsam dosieren.';
             }
         }
@@ -950,7 +950,7 @@
             const unitSys = document.getElementById('unit-system').value;
 
             const lines = rawText.split('\n');
-            let outputHtml = `<p class="font-bold text-slate-800 mb-1">${escapeRecipeHtml(displayName)} (${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'} ×${factor})</p>`;
+            let outputHtml = `<p class="font-bold text-slate-800 mb-1">${escapeRecipeHtml(displayName)} (${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'} ×${formatBakingDisplayNumber(factor,2)})</p>`;
 
             lines.forEach(line => {
                 if(!line.trim()) return;
@@ -964,7 +964,7 @@
                         const eggs = Math.round(val);
                         outputHtml += `<div><span class="text-orange-600 font-bold">${eggs} ${window.__toolyaUILocale === 'en' ? (eggs === 1 ? 'egg' : 'eggs') : 'Eier'}</span> ${ingredient}</div>`;
                     } else if (unitSys === 'imperial' && unit === 'g') {
-                        let cups = (val / 125).toFixed(1);
+                        let cups = formatBakingDisplayNumber(val / 125, 1);
                         outputHtml += `<div><span class="text-orange-600 font-bold">${window.__toolyaUILocale === 'en' ? 'approx.' : 'ca.'} ${cups} ${window.__toolyaUILocale === 'en' ? 'cups' : 'Cups'}</span> ${ingredient}</div>`;
                     } else {
                         // Units belong to presentation only; source recipe lines
@@ -972,7 +972,7 @@
                         const displayUnit = window.__toolyaUILocale === 'en'
                             ? ({ TL: ' tsp', EL: ' tbsp', Stück: ' pcs', Pck: ' packets' }[unit] || unit)
                             : unit;
-                        outputHtml += `<div><span class="text-orange-600 font-bold">${val.toFixed(1).replace('.0','')}${displayUnit}</span> ${ingredient}</div>`;
+                        outputHtml += `<div><span class="text-orange-600 font-bold">${formatBakingDisplayNumber(val, 1, 0)}${displayUnit}</span> ${ingredient}</div>`;
                     }
                 } else {
                     outputHtml += `<div>${escapeRecipeHtml(line)}</div>`;
