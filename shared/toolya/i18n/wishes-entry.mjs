@@ -55,7 +55,11 @@ function mount(){
   button.dataset.wishesLocale=lang;
   button.addEventListener('click',()=>apply(lang,true));nav.append(button);
  }
- header.append(nav);header.after(notice);
+ // Legacy Wishes replaces the old header with a shared shell. Its original
+ // header is display:none, so putting the locale controls inside it makes
+ // the actual DE/EN buttons inaccessible (including to keyboard users).
+ if(header.matches('body[data-toolya-legacy-wishes] > header'))header.after(nav,notice);
+ else{header.append(nav);header.after(notice)}
  function apply(lang,persist){
   active=lang;globalThis.__toolyaWishesLocale=lang;
   if(persist){
