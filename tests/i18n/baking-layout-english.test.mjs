@@ -35,3 +35,21 @@ test('Backstudio action status retains DE/EN source pair across locale switches'
  assert.match(backstudio,/showStatus\('Backerfahrung lokal gespeichert\.','Baking notes saved on this device\.'\)/);
  assert.match(backstudio,/showStatus\('Erkanntes Rezept unbedingt prüfen\.','Check the recognised recipe carefully\.'\)/);
 });
+
+test('Backstudio subview headings are included in reversible shell translation without traversing private content',()=>{
+ // The view wrapper contains nested h2 elements; translating only the wrapper's
+ // direct text nodes leaves every tool subview heading in German.
+ assert.match(layout,/\.bsui-tool-head h2/);
+ for(const [de,en] of [
+  ['Meine Backformen','My baking pans'],
+  ['Rezept einlesen','Import recipe'],
+  ['Meine Torte planen','Plan my cake'],
+  ['Meine Backnotizen','My baking notes'],
+  ['Meine Einkaufsliste','My shopping list']
+ ]){
+  assert.ok(layout.includes(JSON.stringify(de))||layout.includes("'"+de+"'"),de);
+  assert.ok(layout.includes(JSON.stringify(en))||layout.includes("'"+en+"'"),en);
+ }
+ assert.match(layout,/for\(const child of node\.childNodes\)/);
+ assert.ok(!layout.includes('shell.querySelectorAll(\'*\')'));
+});
