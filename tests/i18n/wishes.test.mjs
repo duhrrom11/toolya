@@ -371,3 +371,28 @@ test('Wishes task-manager locale updates preserve form inputs, selection and wri
  assert.match(source,/\.eq\('user_id',user\.id\)/);
  assert.match(source,/h\.textContent=t\.title/);
 });
+
+test('Wishes yearly checklist archive and rollover confirmations remain reversible',()=>{
+ const pairs=[
+  ['Alle Checklistenaufgaben dieses Jahres archivieren?','Archive all checklist tasks for this year?'],
+  ['Archivierung dieses Jahres aufheben?', "Restore this year's archive?"],
+  [' Die Aufgaben bleiben gespeichert.',' The tasks will remain saved.'],
+  [' Aufgaben ',' tasks '],
+  [' neue Aufgaben angelegt. ',' new tasks created. '],
+  ['Das Paket ist bereits vorhanden.','This bundle already exists.'],
+  ['Die Aufgaben können einzeln bearbeitet werden.','Tasks can be edited individually.'],
+  [' ausgewählte Aufgaben aus ',' selected tasks from '],
+  [' nach ',' into '],
+  [' übernehmen? Bestehende Aufgaben bleiben unverändert.','? Existing tasks will not be changed.'],
+  [' Aufgaben übernommen. Bestehende Aufgaben wurden nicht überschrieben.',' tasks copied. Existing tasks were not overwritten.']
+ ];
+ for(const [de,en]of pairs){assert.equal(wishesText(de,'en'),en,de);assert.equal(wishesText(en,'de'),de,en)}
+ const privateTitle='Birthday present for Samuel';
+ assert.equal(wishesText(privateTitle,'en'),privateTitle);
+ const source=readFileSync(new URL('../../tools/wishes/gift-tasks.mjs',import.meta.url),'utf8');
+ assert.match(source,/ui\(' ausgewählte Aufgaben aus '\)/);
+ assert.match(source,/ui\(' übernehmen\? Bestehende Aufgaben bleiben unverändert\.'\)/);
+ assert.match(source,/db\.rpc\('wishlist_rollover_gift_tasks',\{p_occasion_id:occasionId,p_from_year:year-1,p_to_year:year,p_task_ids:ids\}\)/);
+ assert.match(source,/db\.rpc\('wishlist_archive_occasion_checklist_year',\{p_occasion_id:occasionId,p_year:year,p_archive:archive\}\)/);
+ assert.match(source,/\$\('title'\)\.value=template\.title/);
+});
