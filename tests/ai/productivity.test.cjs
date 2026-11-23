@@ -99,3 +99,20 @@ test('CLI smoke is offline, stable and does not create any files',()=>{
     assert.ok(r.stdout.length>50);
   }
 });
+
+
+test('optional Promptfoo adapter returns only approved synthetic fixture output',async()=>{
+  const Provider=require('../../docs/ai/productivity/promptfoo/fixture-provider.cjs');
+  const provider=new Provider();
+  assert.equal(provider.id(),'toolya:synthetic-productivity-fixture');
+  const good=await provider.callApi('ignored prompt',{vars:{fixture:'research-pass'}});
+  assert.match(good.output,/### Belege/);
+  const rejected=await provider.callApi('ignored prompt',{vars:{fixture:'research-fail-no-evidence'}});
+  assert.match(rejected.error,/Unknown or nonpositive/);
+  const missing=await provider.callApi('ignored prompt',{vars:{fixture:'nonexistent'}});
+  assert.ok(missing.error);
+  const config=fs.readFileSync(path.join(ROOT,'docs/ai/productivity/promptfoo/promptfooconfig.yaml'),'utf8');
+  assert.match(config,/file:\/\/\.\/fixture-provider\.cjs/);
+  assert.match(config,/contains-all/);
+  assert.doesNotMatch(config,/OPENAI_API_KEY|ANTHROPIC_API_KEY|https:\/\/api\./);
+});
