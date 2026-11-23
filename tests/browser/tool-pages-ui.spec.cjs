@@ -2723,7 +2723,8 @@ test('i18n loans dynamic contact and inventory options preserve selected values 
  await expect(inv.locator('option[value=""]')).toHaveText('-- Choose inventory item --');
  await expect(filter.locator('option[value=""]')).toHaveText('All people');
  await person.selectOption({label:'Ada & Bob'});
- await inv.selectOption({label:'Kabel <1> (Werkzeug)'});
+ await expect(inv.locator('option[value="Kabel <1>"]')).toHaveText('Kabel <1> (Tools)');
+ await inv.selectOption({label:'Kabel <1> (Tools)'});
  await filter.selectOption({label:'Ada & Bob'});
  const selected=await page.evaluate(()=>({
   person:document.getElementById('itemPersonSelect').value,
@@ -2732,9 +2733,11 @@ test('i18n loans dynamic contact and inventory options preserve selected values 
  }));
  await page.locator('[data-tool-locale="de"]').click();
  await expect(person.locator('option[value="custom"]')).toHaveText('+ Neuen Namen eingeben');
+ await expect(inv.locator('option[value="Kabel <1>"]')).toHaveText('Kabel <1> (Werkzeug)');
  await expect(filter.locator('option[value=""]')).toHaveText('Alle Personen');
  await page.locator('[data-tool-locale="en"]').click();
  await expect(inv.locator('option[value=""]')).toHaveText('-- Choose inventory item --');
+ await expect(inv.locator('option[value="Kabel <1>"]')).toHaveText('Kabel <1> (Tools)');
  expect(await page.evaluate(()=>({
   person:document.getElementById('itemPersonSelect').value,
   inventory:document.getElementById('itemInventorySelect').value,
