@@ -59,7 +59,7 @@ const shellCopy=new Map([
 function localizeShell(shell,sub,side,stepper,header,quick,navButtons,views){
  const nodes=[sub,side,stepper,header,quick,
   ...navButtons.values(),...Object.values(views).map(item=>item.view),
-  ...shell.querySelectorAll('.bsui-side-title,.bsui-side-nav,.bsui-baker[role="img"],.bsui-section-eyebrow,.bsui-title,.bsui-subtitle,.bsui-recipe-details > summary,.bsui-empty,.bsui-stage-top,.bsui-stage-top strong,.bsui-stage-tag,.bsui-stage-pan img,.bsui-hero-status,.bsui-hero-status span,.bsui-hero-status strong,.bsui-recommend-detail > summary,.bsui-finder > h2,.bsui-return,.bsui-additional > summary,.bsui-step,.bsui-step span,.bsui-quick,.bsui-quick strong,.bsui-quick small,.bsui-nav span:last-child,.bsui-tool-head,.bsui-tool-head h2,.bsp-actions > button')];
+  ...shell.querySelectorAll('.bsui-side-title,.bsui-side-nav,.bsui-baker[role="img"],.bsui-section-eyebrow,.bsui-title,.bsui-subtitle,.bsui-recipe-details > summary,.bsui-empty,.bsui-stage-top,.bsui-stage-top strong,.bsui-stage-tag,.bsui-stage-pan img,.bsui-hero-status,.bsui-hero-status span,.bsui-hero-status strong,.bsui-recommend-detail > summary,.bsui-finder > h2,.bsui-return,.bsui-additional > summary,.bsui-step,.bsui-step span,.bsui-quick,.bsui-quick strong,.bsui-quick small,.bsui-nav span:last-child,.bsui-tool-head,.bsui-tool-head h2,.bsui-webgl button,.bsp-actions > button')];
  for(const node of new Set(nodes)){
   if(!node)continue;
   for(const attr of ['aria-label','alt']){
