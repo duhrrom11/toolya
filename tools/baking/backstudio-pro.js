@@ -195,7 +195,7 @@ function normalizeRecipe(text){
  const first=new RegExp('^('+q+')\\s*('+units+')?\\s+(.+)$','i');
  const last=new RegExp('^(.+?)\\s+('+q+')\\s*('+units+')\\s*$','i');
  for(const line of lines){
-  const raw=line.trim().replace(/^[•*–\-]\s*/,'').replace(/^\d+[.)]\s*/,'');
+  const raw=line.trim().replace(/^[•*–\-]\s*/,'').replace(/^\d+[.)]\s+/,'');
   if(!raw||/^(zutaten|zubereitung|anleitung|für den teig|für die füllung)\s*:?$/i.test(raw))continue;
   let m=raw.match(first),name,unit,qty;
   if(m){qty=parseNumber(m[1]);unit=m[2]||'';name=m[3]}
