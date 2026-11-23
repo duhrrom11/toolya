@@ -96,7 +96,7 @@ begin
   -- One box only. The full legacy fields are preserved unchanged except trim name.
   -- A millisecond timestamp remains the old tool's ID shape, but its uniqueness
   -- and first-box-only assumption must be validated in real staging.
-  v_box_id := pg_catalog.floor(pg_catalog.extract(epoch from pg_catalog.clock_timestamp())*1000)::bigint;
+  v_box_id := floor(extract(epoch from clock_timestamp())*1000)::bigint;
   v_box := pg_catalog.jsonb_build_object(
     'id',v_box_id,
     'locId',p_location_id,
