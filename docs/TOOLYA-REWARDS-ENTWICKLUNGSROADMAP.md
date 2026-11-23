@@ -1,4 +1,4 @@
-# Toolya Rewards – Entwicklungsroadmap mit zehnteiliger Mystery-Serie
+> **NEUERE NUTZERENTSCHEIDUNG VOM 23.11.2026 – ERSTE AUSBAUSTUFE STARK REDUZIERT:** V1 umfasst **ausschließlich XP, Kompetenzpunkte und Badges** als Belohnungen für sinnvolle Tool-Nutzung. Die zehn Mystery-Videos, Ranglisten, Ko-fi-Spenden-XP und alle übrigen Spielmechaniken dieser älteren Roadmap sind **auf später verschoben**, nicht Bestandteil des V1-Auftrags. **Verbindliche aktuelle V1-Roadmap:** [Toolya Rewards V1 – XP, Kompetenzpunkte und Badges](TOOLYA-REWARDS-V1-XP-KOMPETENZEN-BADGES.md). Keine Feature-Implementierung und kein Live-Release beauftragt.\n\n# Toolya Rewards – Entwicklungsroadmap mit zehnteiliger Mystery-Serie
 
 **Stand:** 23.11.2026  
 **Status:** **Planung / Spezifikation; noch nichts aus dieser Roadmap implementiert**  
