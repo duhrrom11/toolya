@@ -6,6 +6,7 @@ const text=(de,en)=>window.__toolyaUILocale==='en'?en:de;
 const make=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node};
 function button(text,cls,action){const node=make('button',cls,text);node.type='button';node.addEventListener('click',action);return node}
 const cleanNumber=(id,fallback)=>{const value=Number($(id)?.value);return Number.isFinite(value)&&value>0?value:fallback};
+const displayNumber=value=>new Intl.NumberFormat(window.__toolyaUILocale==='en'?'en-GB':'de-DE',{maximumFractionDigits:2}).format(value);
 const atlas='../../assets/toolya/outfits.webp?v=20261115-alpha';
 
 // Only the redesigned shell's fixed copy is localized. Never traverse recipe,
@@ -235,7 +236,7 @@ function init(){
     $('target-d').dispatchEvent(new Event('input',{bubbles:true}));
    });
    const ratio=area/(Math.PI*Math.pow(diameter/2,2));
-   const optionLabel=make('strong','',text('◉ Runde Form: ', '◉ Round pan: ')+diameter+' cm');
+   const optionLabel=make('strong','',text('◉ Runde Form: ', '◉ Round pan: ')+displayNumber(diameter)+' cm');
    let advice=text('Fast gleich hoch.','Almost the same height.');
    if(i===0)advice=text('Ähnliche Größe','Similar size');
    else if(ratio>1.05)advice=text('Gleiche Teigmenge: Kuchen wird höher.','The same batter will make a taller cake.');
@@ -249,9 +250,9 @@ function init(){
   renderStandardRecommendations();
   const shape=$('target-shape')?.value||'round',double=$('combinator-mode')?.value==='double';
   const roundLabel=shape==='bundt'?text('Gugelhupf Ø ','Bundt Ø '):text('Rund Ø ','Round Ø ');
-  let target=roundLabel+cleanNumber('target-d',20)+' cm';
-  if(double)target=text('2 Formen Ø ','2 pans Ø ')+cleanNumber('combo-d1',20)+' / '+cleanNumber('combo-d2',16)+' cm';
-  else if(shape==='rect')target=text('Rechteck ','Rectangular ')+cleanNumber('target-l',25)+' × '+cleanNumber('target-w',11)+' cm';
+  let target=roundLabel+displayNumber(cleanNumber('target-d',20))+' cm';
+  if(double)target=text('2 Formen Ø ','2 pans Ø ')+displayNumber(cleanNumber('combo-d1',20))+' / '+displayNumber(cleanNumber('combo-d2',16))+' cm';
+  else if(shape==='rect')target=text('Rechteck ','Rectangular ')+displayNumber(cleanNumber('target-l',25))+' × '+displayNumber(cleanNumber('target-w',11))+' cm';
   dims.textContent=target;
   const factor=$('res-factor')?.textContent||'';
   const amount=Number(String(factor).replace(/[×\s]/g,'').replace(',','.'));
