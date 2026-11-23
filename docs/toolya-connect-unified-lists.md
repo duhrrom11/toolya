@@ -11,6 +11,7 @@ Das Dashboard zeigt **Projektionen der Originaldaten**, keine heimlich kopierten
 | Dashboard-Einkaufsartikel | Gemeinsame Einkaufsliste | Eigener Cloud-Eintrag mit RLS/CAS |
 | WG-Organisator: `shopping[]` aller berechtigten `wg_spaces` | Gemeinsame Einkaufsliste | `done` im jeweiligen WG-Snapshot via `updated_at`-CAS |
 | WG-Organisator: `cleaning[]` | „Meine Aufgaben“ | `done` im jeweiligen WG-Snapshot via `updated_at`-CAS |
+| Geschenkeplaner: eigene, nicht archivierte Geschenkaufgaben | „Meine Aufgaben“ | `status` in `wishlist_gift_tasks` mit `updated_at`-Konfliktprüfung und Eigentümer-RLS |
 | Pflanzenpflege-Gießplan | Fällige Aufgaben | Bestehender Gießplan-Adapter: Gießhistorie, Zisterne, Rhythmus via Cloud-CAS |
 
 Gleichlautende Artikel werden nicht durch Titelvergleich zusammengefasst. Jeder Eintrag behält seine `source`, `groupId`, `itemId` und den Originallink.
@@ -45,3 +46,7 @@ Die überprüfte Tool-Landschaft enthält als echte Einkaufsliste das Feld `wg_s
 - WG- und Gießplan-Bestände bleiben in ihren ursprünglichen Strukturen.
 - Keine automatischen Einträge im Produktivkonto und keine Löschmigrationen.
 - Merge erst bei grünen Tests inklusive Plattform- und Browser-Regressionen.
+
+### Geschenkeplaner-Anbindung
+
+Die Aufgaben aus `/tools/wishes/gift-tasks.html` erscheinen unter „Meine Aufgaben“. Eine Bestätigung setzt ausschließlich den Aufgabenstatus der eigenen, nicht archivierten Zeile auf `done`; erneutes Öffnen setzt ihn auf `open`. Anlass, Geschenk, Priorität, Fälligkeit und Notizen bleiben unverändert. Keine Übernahme der Geschenkwünsche als Einkaufsartikel. Der Adapter prüft Benutzeridentität vor und nach Cloud-Operationen und verweigert veraltete Statusänderungen über `updated_at` und den bisherigen Status.

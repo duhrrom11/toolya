@@ -4,6 +4,7 @@
  */
 import {createWgConnect} from '../../shared/toolya/connect-wg-lists.mjs';
 import {createDueSource} from '../../shared/toolya/connect-due-sources.mjs';
+import {createGiftTasksConnect} from '../../shared/toolya/connect-gift-tasks.mjs';
 import {createConnectRegistry} from '../../shared/toolya/connect-source-registry.mjs';
 const TABLE='dashboard_shopping_items';
 const normalizeTitle = title => {
@@ -20,12 +21,13 @@ export function projectDashboardShopping(rows,userId) {
 export function createUnifiedShopping(client) {
   if(!client?.auth?.getUser || !client.from)throw TypeError('Supabase nicht verfügbar.');
   const wg=createWgConnect(client);
+  const gift=createGiftTasksConnect(client);
   const dueSources=['loans','car','pet'].map(id=>{
     let adapter=null;
     const instance=()=>adapter||(adapter=createDueSource(client,id));
     return {id,load:()=>instance().load(),setDone:(item,done)=>instance().setDone(item,done)};
   });
-  const registry=createConnectRegistry([{id:'wg',load:()=>wg.load(),setDone:(item,done)=>wg.setDone(item,done)},...dueSources]);
+  const registry=createConnectRegistry([{id:'wg',load:()=>wg.load(),setDone:(item,done)=>wg.setDone(item,done)},...dueSources,{id:'gift',load:()=>gift.load(),setDone:(item,done)=>gift.setDone(item,done)}]);
   let owner=null,rows=[],shopping=[],tasks=[],partial=false;
   async function user() {
     const {data,error}=await client.auth.getUser();
