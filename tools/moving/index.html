@@ -554,14 +554,14 @@
                 const uid = auth.user.id;
                 const prepared = await prepareCloudTool({
                     client:window.supabaseClient,tool:'umzugskisten-inventar',storage:localStorage,
-                    confirmMigration:async()=>confirm('Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden nicht überschrieben.'),
-                    reviewExistingCloud:async()=>confirm('Cloud- und Gerätedaten vorhanden. Cloud-Daten behalten und Gerätedaten separat sichern?'),
+                    confirmMigration:async()=>confirm(window.__toolyaUILocale === 'en' ? 'Import existing device data into your Toolya account? Cloud data will not be overwritten.' : 'Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden nicht überschrieben.'),
+                    reviewExistingCloud:async()=>confirm(window.__toolyaUILocale === 'en' ? 'Cloud and device data both exist. Keep cloud data and back up device data separately?' : 'Cloud- und Gerätedaten vorhanden. Cloud-Daten behalten und Gerätedaten separat sichern?'),
                     exportBackup:async data=>{
                         const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
                         const url=URL.createObjectURL(blob),a=document.createElement('a');
                         a.href=url;a.download='toolya-umzugskisten-vor-cloud.json';a.click();
                         setTimeout(()=>URL.revokeObjectURL(url),60000);
-                        return confirm('Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.');
+                        return confirm(window.__toolyaUILocale === 'en' ? 'Please confirm that the backup was downloaded successfully.' : 'Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.');
                     }
                 });
                 const {data:again,error:againError}=await window.supabaseClient.auth.getUser();
@@ -619,7 +619,7 @@
         async function saveLocation() {
             const name = document.getElementById('locName').value.trim();
             const icon = document.getElementById('locIcon').value;
-            if (!name) return alert("Bitte Standort eingeben!");
+            if (!name) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a location!' : 'Bitte Standort eingeben!');
             let data = getData();
             data.locations.push({ id: Date.now(), name, icon });
             if (!await saveData(data)) return;
@@ -645,10 +645,10 @@
             const current=getData();
             const moving=current.moving;
             if(moving?.assignments?.some(a=>current.boxes.some(b=>b.locId===locId&&b.id===a.boxId) && moving.projects.some(p=>p.id===a.projectId&&p.status==='active'))){
-                alert("Dieser Standort enthält Kisten aus einem aktiven Umzug. Bitte den Umzug erst abschließen.");
+                alert(window.__toolyaUILocale === 'en' ? 'This location contains boxes from an active move. Complete the move first.' : 'Dieser Standort enthält Kisten aus einem aktiven Umzug. Bitte den Umzug erst abschließen.');
                 return;
             }
-            if (!confirm("⚠️ Möchtest du diesen Standort und ALLE Kisten darin wirklich löschen?")) return;
+            if (!confirm(window.__toolyaUILocale === 'en' ? '⚠️ Really delete this location and ALL boxes inside it?' : '⚠️ Möchtest du diesen Standort und ALLE Kisten darin wirklich löschen?')) return;
             let data = getData();
             data.locations = data.locations.filter(l => l.id !== locId);
             data.boxes = data.boxes.filter(b => b.locId !== locId);
@@ -716,7 +716,7 @@
             const expiry = document.getElementById('boxExpiry').value;
             const photoInput = document.getElementById('boxPhotoInput');
 
-            if (!locId || !name) return alert("Bitte Standort und Kisten-Name angeben!");
+            if (!locId || !name) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a location and box name!' : 'Bitte Standort und Kisten-Name angeben!');
 
             let photo = "";
             if (photoInput.files && photoInput.files[0]) {
@@ -728,7 +728,7 @@
                         reader.readAsDataURL(photoInput.files[0]);
                     });
                 } catch(error) {
-                    alert('Bild konnte nicht gelesen werden. Nichts gespeichert.');
+                    alert(window.__toolyaUILocale === 'en' ? 'Image could not be read. Nothing was saved.' : 'Bild konnte nicht gelesen werden. Nichts gespeichert.');
                     return;
                 }
             }
@@ -805,7 +805,7 @@
             const name = nameInput.value.trim();
             const value = parseFloat(valInput.value.replace(',', '.')) || 0;
 
-            if (!name) return alert("Bitte Artikel-Name eingeben!");
+            if (!name) return alert(window.__toolyaUILocale === 'en' ? 'Please enter an item name!' : 'Bitte Artikel-Name eingeben!');
             activeSubItemsTemp.push({ name, value });
             nameInput.value = "";
             valInput.value = "";
@@ -828,7 +828,7 @@
             const expiry = document.getElementById('editBoxExpiry').value;
             const lentTo = document.getElementById('editBoxLentTo').value.trim();
 
-            if (!locId || !name) return alert("Bitte Standort und Kisten-Name angeben!");
+            if (!locId || !name) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a location and box name!' : 'Bitte Standort und Kisten-Name angeben!');
 
             let data = getData();
             let box = data.boxes.find(b => b.id === boxId);
@@ -851,10 +851,10 @@
         async function deleteBox(boxId) {
             const moving=getData().moving;
             if(moving?.assignments?.some(a=>a.boxId===boxId && moving.projects.some(p=>p.id===a.projectId&&p.status==='active'))){
-                alert("Diese Kiste ist einem aktiven Umzug zugeordnet. Bitte den Umzug erst abschließen.");
+                alert(window.__toolyaUILocale === 'en' ? 'This box is assigned to an active move. Complete the move first.' : 'Diese Kiste ist einem aktiven Umzug zugeordnet. Bitte den Umzug erst abschließen.');
                 return;
             }
-            if (!confirm("⚠️ Möchtest du diese Kiste wirklich löschen?")) return;
+            if (!confirm(window.__toolyaUILocale === 'en' ? '⚠️ Really delete this box?' : '⚠️ Möchtest du diese Kiste wirklich löschen?')) return;
             let data = getData();
             data.boxes = data.boxes.filter(b => b.id !== boxId);
             if (!await saveData(data)) return;
@@ -1076,12 +1076,12 @@
             const exportLanguage = window.__toolyaUILocale === 'en' ? 'en' : 'de';
             const amounts = movingPdfAmounts(exportLanguage);
             let data = getData();
-            if (data.boxes.length === 0) return alert("Keine Kisten vorhanden.");
+            if (data.boxes.length === 0) return alert(window.__toolyaUILocale === 'en' ? 'No boxes available.' : 'Keine Kisten vorhanden.');
 
             const { loadQrGenerator } = await import('../../shared/toolya/qr-generator.mjs');
             const QRCode = await loadQrGenerator();
             if (!QRCode) {
-                alert("Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.");
+                alert(window.__toolyaUILocale === 'en' ? 'The QR code could not be loaded. Please try again.' : 'Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.');
                 return;
             }
 
@@ -1142,7 +1142,7 @@
             const { loadQrGenerator } = await import('../../shared/toolya/qr-generator.mjs');
             const QRCode = await loadQrGenerator();
             if (!QRCode) {
-                alert("Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.");
+                alert(window.__toolyaUILocale === 'en' ? 'The QR code could not be loaded. Please try again.' : 'Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.');
                 return;
             }
             document.getElementById('qrModalTitle').innerText = `${window.__toolyaUILocale === 'en' ? 'QR code for: ' : 'QR-Code für: '}${name}`;
@@ -1185,7 +1185,7 @@
             if (!file) return;
             if (file.size > 20 * 1024 * 1024) {
                 input.value = '';
-                return alert("Backup zu groß (maximal 20 MB).");
+                return alert(window.__toolyaUILocale === 'en' ? 'Backup is too large (maximum 20 MB).' : 'Backup zu groß (maximal 20 MB).');
             }
             const reader = new FileReader();
             reader.onload = async function(e) {
@@ -1196,31 +1196,31 @@
                         !Array.isArray(parsed.locations) || !Array.isArray(parsed.boxes) ||
                         !parsed.locations.every(item => item && typeof item === 'object' && !Array.isArray(item)) ||
                         !parsed.boxes.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
-                        return alert("Ungültiges Backup-Format.");
+                        return alert(window.__toolyaUILocale === 'en' ? 'Invalid backup format.' : 'Ungültiges Backup-Format.');
                     }
                     const current=getData();
                     if(current.moving?.projects?.length && !parsed.moving &&
-                       !confirm("Dieses Backup enthält keine Umzugsprojekte. Die bestehenden Umzugsplanungen würden verloren gehen. Trotzdem fortfahren?")) return;
-                    if(!confirm("Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.")) return;
+                       !confirm(window.__toolyaUILocale === 'en' ? 'This backup contains no moving projects. Existing move plans would be lost. Continue anyway?' : 'Dieses Backup enthält keine Umzugsprojekte. Die bestehenden Umzugsplanungen würden verloren gehen. Trotzdem fortfahren?')) return;
+                    if(!confirm(window.__toolyaUILocale === 'en' ? 'Before importing, download and verify a current backup.' : 'Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.')) return;
                     exportBackup();
                     if(!confirm("Hast du die aktuelle Sicherung erfolgreich heruntergeladen?")) return;
-                    if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
+                    if (!confirm(window.__toolyaUILocale === 'en' ? 'Import backup? Existing data will be replaced.' : 'Backup importieren? Vorhandene Daten werden ersetzt.')) return;
                     if (!await saveData(parsed)) return;
                     loadLocationsDropdown();
                     renderInventory();
-                    alert("Backup erfolgreich importiert!");
+                    alert(window.__toolyaUILocale === 'en' ? 'Backup imported successfully!' : 'Backup erfolgreich importiert!');
                 } catch (err) {
                     alert("Fehler beim Lesen der Datei.");
                 }
             };
             reader.onerror = () => {
                 input.value = '';
-                alert("Backup-Datei konnte nicht gelesen werden.");
+                alert(window.__toolyaUILocale === 'en' ? 'Backup file could not be read.' : 'Backup-Datei konnte nicht gelesen werden.');
             };
             try { reader.readAsText(file); }
             catch (error) {
                 input.value = '';
-                alert("Backup-Datei konnte nicht gelesen werden.");
+                alert(window.__toolyaUILocale === 'en' ? 'Backup file could not be read.' : 'Backup-Datei konnte nicht gelesen werden.');
             }
         }
 
@@ -1239,7 +1239,7 @@
                     });
                 }
             } catch {
-                alert("Der QR-Scanner konnte nicht geladen werden. Bitte versuche es erneut.");
+                alert(window.__toolyaUILocale === 'en' ? 'The QR scanner could not be loaded. Please try again.' : 'Der QR-Scanner konnte nicht geladen werden. Bitte versuche es erneut.');
                 return;
             } finally {
                 scannerOpening = false;
@@ -1268,7 +1268,7 @@
                 },
                 (errorMessage) => {}
             ).catch(err => {
-                alert("Kamera-Zugriff fehlgeschlagen oder nicht unterstützt.");
+                alert(window.__toolyaUILocale === 'en' ? 'Camera access failed or is not supported.' : 'Kamera-Zugriff fehlgeschlagen oder nicht unterstützt.');
                 closeScannerModal();
             });
         }
