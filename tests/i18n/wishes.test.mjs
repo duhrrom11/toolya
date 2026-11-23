@@ -146,3 +146,27 @@ test('Wishes notifications, occasions and community metadata translate reversibl
  assert.equal(document.querySelector('[data-user-content] span').textContent,'Neu seit Besuch');
  applyWishLocale(document,'de');assert.equal(document.querySelector('section > span').textContent,'Neu seit Besuch');
 });
+
+test('notification and social feed presentation text is reversible, titles are not translated',()=>{
+ const pairs=[
+  ['🌈 Neue Wunschwelt: ','🌈 New wish list: '],
+  ['👥 Jemand folgt dir','👥 Someone follows you'],
+  ['❤️ Like auf: ','❤️ Like on: '],
+  ['Dein Profil hat einen neuen Follower.','Your profile has a new follower.'],
+  ['Als gelesen markieren','Mark as read'],
+  [' ungelesen (geladen)',' unread (loaded)'],
+  ['Neue öffentliche Sammlungen der Profile, denen du folgst.','New public collections from profiles you follow.'],
+  ['Noch keine gemerkten Sammlungen. Öffne Entdecken und tippe auf „Merken“.','No bookmarked collections yet. Open Discover and select “Save”.'],
+  ['Titelbild der Sammlung: ','Collection cover image: ']
+ ];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en);assert.equal(wishesText(en,'de'),de)}
+ assert.equal(wishesText('Private custom list title','en'),'Private custom list title');
+ const notification=readFileSync(new URL('../../tools/wishes/notifications.mjs',import.meta.url),'utf8');
+ const feed=readFileSync(new URL('../../tools/wishes/social-feed.mjs',import.meta.url),'utf8');
+ assert.match(notification,/ui\('🌈 Neue Wunschwelt: '\)\+item\.title/);
+ assert.match(notification,/ui\('❤️ Like auf: '\)\+item\.title/);
+ assert.match(notification,/document\.addEventListener\('toolya:wishes-locale-change'/);
+ assert.match(feed,/img\.alt=ui\('Titelbild der Sammlung: '\)\+\(item\.title/);
+ assert.match(feed,/document\.addEventListener\('toolya:wishes-locale-change'/);
+ assert.match(feed,/title\.textContent=item\.title/);
+});
