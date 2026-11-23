@@ -362,7 +362,7 @@ test('Wishes task-manager locale updates preserve form inputs, selection and wri
  assert.match(source,/selection=new Map\(\[\.\.\.\$\('rolloverSelection'\)/);
  assert.match(source,/selection\.has\(input\.value\)/);
  assert.match(source,/const occasion=\$\('occasion'\)\.value,gift=\$\('gift'\)\.value/);
- assert.match(source,/template\.title=.+/);
+ assert.match(source,/template\.label/);
  assert.match(source,/button\.dataset\.taskTemplate=template\.title/);
  assert.match(source,/\$\('title'\)\.value=template\.title/);
  assert.match(source,/new Date\(t\.due_date\+'T12:00:00'\)\.toLocaleDateString\(locale\(\)\)/);
