@@ -132,7 +132,17 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
     })
    );
    assert(header.every(box => box.left >= 0 && box.right <= width && Math.abs(box.center - header[0].center) < 2),
-    'dashboard navigation fits on one row at '+width);
+    'dashboard navigation fits on one row at '+width+': '+JSON.stringify(header));
+   if (width === 320) {
+    const language = await dashboard.locator('.b3-hub-nav [aria-label="Sprache wählen"]').evaluate(node => {
+     const r=node.getBoundingClientRect();
+     const style=getComputedStyle(node);
+     return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,visible:style.display!=='none'};
+    });
+    assert(language.visible && language.left>=0 && language.right<=width &&
+      language.top > header[0].center,
+      'language selector remains visible in its own mobile row: '+JSON.stringify(language));
+   }
   }
   await dashboard.setViewportSize({width:320,height:900});
   assert(await dashboard.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));

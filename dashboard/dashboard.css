@@ -142,3 +142,24 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(-
 .items li.connect-task > a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:5px 9px;color:#116c71;font-size:12px;font-weight:750;text-decoration:underline;text-underline-offset:3px}
 .items li.connect-task .connect-task-marker{display:inline-flex;align-items:center;justify-content:center;min-width:20px;font-size:16px}
 @media(max-width:500px){.items li.connect-task > a{grid-column:2;justify-self:end}}
+
+
+/* 320px dashboard regression: keep the primary controls aligned and the
+   language switch visible on a second row instead of squeezing five items. */
+@media(max-width:360px){
+  .b3-hub-topbar{padding-bottom:64px}
+  .b3-hub-nav{position:relative}
+  .b3-hub-nav > [role="group"][aria-label="Sprache wählen"]{
+    position:absolute!important;
+    top:calc(100% + 8px);
+    right:0;
+    margin:0;
+  }
+  .b3-hub-nav #userInfo{
+    min-width:0;
+    max-width:84px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+}
