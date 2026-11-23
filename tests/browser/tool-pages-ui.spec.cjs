@@ -2738,3 +2738,40 @@ test('i18n loans dynamic contact and inventory options preserve selected values 
  }))).toEqual(selected);
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
 });
+
+test('i18n meter share text localizes known types and keeps original records', async ({ page }) => {
+ const readings = [
+  { id: 1, type: 'Strom-NT', name: 'Strom Küche', date: '2026-11-19', value: 24 },
+  { id: 2, type: 'Strom-NT', name: 'Strom Küche', date: '2026-11-18', value: 20 },
+  { id: 3, type: 'Eigener Typ', name: 'Privater Zähler', date: '2026-11-19', value: 17 }
+ ];
+ await isolated(page, true, false, { readings, tarifs: {} });
+ await page.addInitScript(() => {
+  Object.defineProperty(navigator, 'clipboard', {
+   value: { writeText: () => Promise.reject(new Error('Synthetic clipboard denial')) }
+  });
+ });
+ await page.goto(origin + '/tools/meters/index.html?lang=en');
+ await expect.poll(() => page.evaluate(() => metersCloudReady && !!metersCloudController?.ready)).toBe(true);
+ for (const [locale, message, heading, reading] of [
+  ['en', 'Clipboard unavailable. Copy the text manually:', '⚡ Meter readings overview:', '- Electricity (night tariff) (Strom Küche): 24 kWh (on 2026-11-19)'],
+  ['de', 'Zwischenablage nicht verfügbar. Text manuell kopieren:', '⚡ Zählerstände-Übersicht:', '- Strom-NT (Strom Küche): 24 kWh (vom 2026-11-19)']
+ ]) {
+  await page.locator('[data-tool-locale="' + locale + '"]').click();
+  const prompt = page.waitForEvent('dialog').then(async dialog => {
+   const result = { type: dialog.type(), message: dialog.message(), text: dialog.defaultValue() };
+   await dialog.dismiss();
+   return result;
+  });
+  await page.evaluate(() => copyShareText());
+  const result = await prompt;
+  expect(result).toMatchObject({ type: 'prompt', message });
+  expect(result.text.trimEnd().split('\n')).toEqual([
+   heading,
+   reading,
+   '- Eigener Typ (Privater Zähler): 17 m³ (' + (locale === 'en' ? 'on' : 'vom') + ' 2026-11-19)'
+  ]);
+ }
+ expect(await page.evaluate(() => metersCloudController.snapshot().readings)).toEqual(readings);
+ expect(await page.evaluate(() => window.__toolyaMock.writes.length)).toBe(0);
+});

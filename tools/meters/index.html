@@ -785,7 +785,8 @@
         function closeEnergyTipsModal() { document.getElementById('energyTipsModal').classList.add('hidden'); }
 
         function copyShareText() {
-            let data = getData();
+            const data = getData();
+            const isEnglish = window.__toolyaUILocale === 'en';
             const validReadings = data.readings.filter(r => {
                 if (!r || typeof r !== 'object' || Array.isArray(r) ||
                     typeof r.type !== 'string' || !r.type.trim() ||
@@ -796,26 +797,34 @@
                     r.value !== '' && r.value !== null && r.value !== undefined &&
                     Number.isFinite(Number(r.value)) && Number(r.value) >= 0;
             });
-            if (validReadings.length === 0) return alert("Keine Zählerstände zum Teilen vorhanden.");
-            let text = window.__toolyaUILocale === 'en' ? "⚡ Meter readings overview:\n" : "⚡ Zählerstände-Übersicht:\n";
-            let latest = {};
+            if (validReadings.length === 0) return alert(isEnglish ? "No meter readings available to share." : "Keine Zählerstände zum Teilen vorhanden.");
+            let text = isEnglish ? "⚡ Meter readings overview:\n" : "⚡ Zählerstände-Übersicht:\n";
+            const latest = {};
             // Pick the newest reading per distinct meter, regardless of insertion order.
             validReadings.forEach(r => {
                 const key = JSON.stringify([r.type, r.name]);
                 if (!latest[key] || r.date > latest[key].date) latest[key] = r;
             });
+            const englishMeterTypes = new Map([
+                ['Strom', 'Electricity'],
+                ['Strom-NT', 'Electricity (night tariff)'],
+                ['Kaltwasser', 'Cold water'],
+                ['Warmwasser', 'Hot water']
+            ]);
             for (const r of Object.values(latest)) {
-                let unit = r.type.includes('Strom') ? 'kWh' : 'm³';
-                text += `- ${r.type} (${r.name}): ${r.value} ${unit} (${window.__toolyaUILocale === 'en' ? 'on' : 'vom'} ${r.date})\n`;
+                const unit = r.type.includes('Strom') ? 'kWh' : 'm³';
+                const typeLabel = isEnglish ? (englishMeterTypes.get(r.type) ?? r.type) : r.type;
+                text += `- ${typeLabel} (${r.name}): ${r.value} ${unit} (${isEnglish ? 'on' : 'vom'} ${r.date})\n`;
             }
+            const copyPrompt = isEnglish ? 'Clipboard unavailable. Copy the text manually:' : 'Zwischenablage nicht verfügbar. Text manuell kopieren:';
             if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
-                prompt('Zwischenablage nicht verfügbar. Text manuell kopieren:', text);
+                prompt(copyPrompt, text);
                 return;
             }
             navigator.clipboard.writeText(text).then(() => {
-                alert("📋 Zählerstände in die Zwischenablage kopiert! Du kannst sie jetzt direkt in WhatsApp oder E-Mail einfügen.");
+                alert(isEnglish ? "📋 Meter readings copied to the clipboard! You can now paste them into WhatsApp or email." : "📋 Zählerstände in die Zwischenablage kopiert! Du kannst sie jetzt direkt in WhatsApp oder E-Mail einfügen.");
             }).catch(() => {
-                prompt('Zwischenablage nicht verfügbar. Text manuell kopieren:', text);
+                prompt(copyPrompt, text);
             });
         }
 
