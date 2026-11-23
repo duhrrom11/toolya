@@ -2358,8 +2358,8 @@ test('Sprint A backup, migration, membership and Wi-Fi dialogs translate only kn
  for(const original of ['Unrecognized server error #902','Private WG-Kopie created by user']){
   assert.equal(translateToolDialog('housemates','en',original),original,'unknown backend text preserved');
  }
- assert.ok(moving.includes('alert("Backup erfolgreich importiert!")'),'backup dialog exists in current UI');
- assert.ok(moving.includes('alert("Backup-Datei konnte nicht gelesen werden.")'),'backup reader error covered');
+ assert.ok(moving.includes("alert(window.__toolyaUILocale === 'en' ? 'Backup imported successfully!' : 'Backup erfolgreich importiert!')"),'backup dialog exists in current UI');
+ assert.ok(moving.includes("alert(window.__toolyaUILocale === 'en' ? 'Backup file could not be read.' : 'Backup-Datei konnte nicht gelesen werden.')"),'backup reader error covered');
  assert.ok(housemates.includes("prompt('WLAN-Name (SSID):', '')"),'Wi-Fi prompt covered');
  assert.ok(housemates.includes("alert('Mitgliederverwaltung: ' + error.message)"),'dynamic member error retains backend tail');
  assert.ok(housemates.includes("alert(window.__toolyaUILocale === 'en'"),'contact success explicitly localized');
@@ -2387,9 +2387,9 @@ test('Sprint A QR export uses only locale-specific filenames, never rewrites bac
  const src=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
  assert.match(src,/doc\.save\(exportLanguage === 'en' \? "moving-box-qr-labels\.pdf" : "kisten-qr-etiketten\.pdf"\)/);
  assert.match(src,/homebox-backup-\$\{new Date\(\)\.toISOString\(\)\.split\('T'\)\[0\]\}\.json/);
- assert.match(src,/if \(!confirm\("Backup importieren\? Vorhandene Daten werden ersetzt\."\)\) return;/);
- const invalid=src.indexOf('return alert("Ungültiges Backup-Format.");');
- const confirmation=src.indexOf('if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt."))');
+ assert.match(src,/if \(!confirm\(window\.__toolyaUILocale === 'en' \? 'Import backup\? Existing data will be replaced\.' : 'Backup importieren\? Vorhandene Daten werden ersetzt\.'\)\) return;/);
+ const invalid=src.indexOf("return alert(window.__toolyaUILocale === 'en' ? 'Invalid backup format.' : 'Ungültiges Backup-Format.');");
+ const confirmation=src.indexOf("if (!confirm(window.__toolyaUILocale === 'en' ? 'Import backup? Existing data will be replaced.' : 'Backup importieren? Vorhandene Daten werden ersetzt.'))");
  const storage=src.indexOf('if (!await saveData(parsed))');
  assert.ok(invalid>=0&&invalid<confirmation&&confirmation<storage,'schema check and explicit confirmation precede any import write');
 });
@@ -2433,7 +2433,7 @@ test('Sprint A QR labels translate known UI category only; custom tags and QR pa
  assert.match(block,/const deepLinkUrl = `\$\{window\.location\.origin\}\$\{window\.location\.pathname\}\?box=\$\{b\.id\}`/);
  assert.match(block,/doc\.save\(exportLanguage === 'en' \? "moving-box-qr-labels\.pdf"/);
  assert.match(src,/try \{ reader\.readAsText\(file\); \}/);
- assert.match(src,/catch \(error\) \{\s*input\.value = '';\s*alert\("Backup-Datei konnte nicht gelesen werden\."\)/);
+ assert.match(src,/catch \(error\) \{\s*input\.value = '';\s*alert\(window\.__toolyaUILocale === 'en' \? 'Backup file could not be read\.' : 'Backup-Datei konnte nicht gelesen werden\.'\)/);
 });
 
 
@@ -3427,7 +3427,7 @@ test('moving planner dynamic dialogs translate DE/EN while backup and deletion g
   ['Der QR-Scanner konnte nicht geladen werden. Bitte versuche es erneut.','The QR scanner could not be loaded. Please try again.'],
   ['Kamera-Zugriff fehlgeschlagen oder nicht unterstützt.','Camera access failed or is not supported.']
  ];
- const found=[...source.matchAll(/(?:alert|confirm)\(window\.__toolyaUILocale === 'en' \? '([^']+)' : '([^']+)'\)/g)]
+ const found=[...source.matchAll(/(?:alert|confirm)\((?:window\.__toolyaUILocale|exportLanguage) === 'en' \? '([^']+)' : '([^']+)'\)/g)]
   .map(m=>({en:m[1],de:m[2]}));
  for(const [de,en] of pairs){
   assert.ok(found.some(x=>x.de===de&&x.en===en),'missing moving DE/EN pair: '+de);
