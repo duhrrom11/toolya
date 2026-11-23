@@ -56,3 +56,7 @@ Diese Exporte können künftig durch `i18n-check` separat geprüft werden; **die
 Die Prüfungen erzeugen ausschließlich lokale Reports und GitHub-Actions-Artefakte. Bei einem echten Übersetzungs-PR müssen die Inhalte, rechtliche Texte, Fachbegriffe, Account-/Nachlass-Meldungen, mobile Layouts und die beiden Maskottchen separat geprüft werden. Keine neuen öffentlichen englischen SEO-Seiten indexieren, solange die App-Übersetzung unvollständig ist. **Kein Merge oder Deployment allein aufgrund dieses Inventars.**
 
 **Referenzen:** `AGENTS.md`, `docs/ai/ARCHITECTURE.md`, `tests/i18n/marketing.test.mjs`, `tests/i18n/interface.test.mjs` sowie die bestehenden `shared/toolya/i18n/*.mjs`-Module.
+
+## Gezielte fachliche Korrekturen
+
+Der erste priorisierte Übersetzungs-Follow-up ist die [öffentliche Wunschlisten-Seite](WISHES-EDITORIAL.md). Dort werden ausschließlich 28 ausdrücklich markierte redaktionelle Paragraphen/Spans und der öffentliche Seitentitel übersetzt. Der separate Browser-Regressionstest blockiert alle produktiven Netzwerkanfragen. Dies ersetzt **nicht** das noch offene Gesamt-Review sämtlicher dynamischer App-Zustände.
