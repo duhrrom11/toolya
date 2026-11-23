@@ -24,7 +24,7 @@ test('Wishes notification settings and privacy notice translate reversibly witho
  assert.match(notice.textContent,/No push notifications or emails are sent/);
  assert.ok(!notice.textContent.includes('Die Hinweise'));
  assert.deepEqual(inputs.map(x=>x.id),ids);
- assert.ok(inputs.every(x=>x.checked));
+ assert.ok(inputs.every(x=>x.hasAttribute('checked')));
  applyWishLocale(document,'de');
  assert.deepEqual(labels.map(x=>x.textContent),originals);
  assert.equal(notice.textContent,originalNotice);
