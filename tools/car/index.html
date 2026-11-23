@@ -1081,7 +1081,7 @@ async function toolyaCloudBoot(tool) {
                         if (e.km) tankBadge += `<span class="text-[10px] bg-gray-100 text-gray-800 font-semibold px-2 py-0.5 rounded-full">📍 ${e.km} km</span>`;
                     }
 
-                    let receiptBtn = e.receipt ? `<button onclick="zoomImage('${e.receipt}')" class="px-2 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-100 b3-action b3-outline" title="Beleg anzeigen">🧾 Beleg</button>` : '';
+                    let receiptBtn = e.receipt ? `<button onclick="zoomImage('${e.receipt}')" class="px-2 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-100 b3-action b3-outline" title="${label('Beleg anzeigen','View receipt')}">🧾 ${label('Beleg','Receipt')}</button>` : '';
 
                     let calendarButtons = "";
                     if (!['Reifentiefe', 'Tanken', 'Reparatur'].includes(e.type)) {
