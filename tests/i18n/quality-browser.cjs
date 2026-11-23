@@ -58,7 +58,9 @@ async function main(){
   const page=await context.newPage();
   try{
    for(const entry of config.marketingPages){
-    await page.goto(origin+'/'+entry.en,{waitUntil:'domcontentloaded'});
+    await page.goto(origin+'/'+entry.en,{waitUntil:'networkidle'});
+    // Measure after local styles, modules and two complete layout frames settle.
+    await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
     const state=await page.evaluate(()=>{
       const switcher=document.querySelector('[data-set-locale="de"]');
       const r=switcher?.getBoundingClientRect();
