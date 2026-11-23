@@ -27,7 +27,7 @@ test('calculator presentation formats decimals in DE and EN without changing mac
 test('recipe preview re-renders localized quantities without changing private ingredients or HTML safety',()=>{
  const {document}=parseHTML('<html><body>'+
   '<input id="recipe-name" value="Omas <geheime> Torte">'+
-  '<textarea id="recipe-input">1000.5 g Omas Spezialmehl\n1500 g <img onerror=alert(1)> Kakao</textarea>'+
+  '<textarea id="recipe-input">1000.5 g Omas Spezialmehl\n1500 g <img onerror=alert(1)> Kakao\n1 Ei Omas Eigelb</textarea>'+
   '<select id="unit-system"><option value="metric">Metric</option></select>'+
   '<span id="res-factor"></span><div id="print-card"></div></body></html>');
  const factor=document.querySelector('#res-factor');
@@ -39,11 +39,13 @@ test('recipe preview re-renders localized quantities without changing private in
  renderRecipePreview();
  assert.match(document.querySelector('#print-card').textContent,/750,4g Omas Spezialmehl/);
  assert.match(document.querySelector('#print-card').textContent,/1\.125g/);
+ assert.match(document.querySelector('#print-card').textContent,/1 Ei Omas Eigelb/);
  assert.equal(document.querySelector('#print-card img'),null,'source ingredient markup must be escaped');
  window.__toolyaUILocale='en';
  renderRecipePreview();
  assert.match(document.querySelector('#print-card').textContent,/750.4g Omas Spezialmehl/);
  assert.match(document.querySelector('#print-card').textContent,/1,125g/);
+ assert.match(document.querySelector('#print-card').textContent,/1 egg Omas Eigelb/);
  assert.match(document.querySelector('#print-card').textContent,/Factor ×0.75/);
  window.__toolyaUILocale='de';
  renderRecipePreview();
@@ -51,4 +53,30 @@ test('recipe preview re-renders localized quantities without changing private in
  assert.equal(recipe.value,raw);
  assert.equal(name.value,privateName);
  assert.equal(factor.innerText,'0.75');
+});
+
+test('only a newly saved unnamed recipe gets a localized default title; the original text is untouched',()=>{
+ const sourceSave=extract('function calculateRecipe(','let bakingCloudReady');
+ const window={__toolyaUILocale:'en'};
+ const fields={
+  'recipe-name':{value:''},
+  'recipe-input':{value:'Private Zutaten: 300 g Mehl'},
+  'res-factor':{innerText:'1.25'}
+ };
+ const records=[];
+ const document={getElementById:id=>fields[id]};
+ const {calculateRecipe}=runInNewContext(sourceSave+'\n({calculateRecipe})',{
+  window,document,calculateAll(){},renderRecipePreview(){},
+  saveRecipeToStorage(...args){records.push(args)}
+ });
+ calculateRecipe();
+ assert.deepEqual(records[0],['Untitled recipe','Private Zutaten: 300 g Mehl',1.25]);
+ window.__toolyaUILocale='de';
+ calculateRecipe();
+ assert.deepEqual(records[1],['Unbenanntes Rezept','Private Zutaten: 300 g Mehl',1.25]);
+ fields['recipe-name'].value='Omas privater Kuchen';
+ window.__toolyaUILocale='en';
+ calculateRecipe();
+ assert.deepEqual(records[2],['Omas privater Kuchen','Private Zutaten: 300 g Mehl',1.25]);
+ assert.equal(fields['recipe-input'].value,'Private Zutaten: 300 g Mehl');
 });
