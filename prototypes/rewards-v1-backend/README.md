@@ -50,3 +50,21 @@ Zusätzlicher Testbefehl für eine später geklonte lokale Arbeitskopie:
 node --test prototypes/rewards-v1-backend/*.test.mjs
 ```
 
+
+
+## Geschützter First-Box-Endpunkt (Entwurf vom 23.11.2026)
+
+**Zusätzliche Dateien:**
+- [`first-box-transaction-draft.sql`](first-box-transaction-draft.sql): **nicht ausgeführte**, transaktionale SQL-RPC für eine einfach angelegte erste Kiste; sperrt und liest `public.user_data` serverseitig, kontrolliert Benutzerkonto/Revision/Standort/Leere der bisherigen Kistenliste, erstellt serverseitig genau eine minimale Kiste und schreibt die einmalige Rewards-Gutschrift im selben Transaktionspfad. `EXECUTE` ausschließlich `service_role`; RLS und bestehende `toolya_save_snapshot` bleiben unangetastet.
+- [`edge-first-box-draft.ts`](edge-first-box-draft.ts): **nicht deployter** Supabase-Edge-Function-Entwurf. Prüft die Supabase-Bearer-Session über `getUser`, weist anonyme Nutzer ab, kontrolliert HTTP-Methode, erlaubte Origins, Body-Größe und strikt drei Eingabefelder (`expectedRevision`, `locationId`, `boxName`). Leitet die geprüfte Benutzer-ID an die interne service-role-only RPC weiter. Keine vom Client gelieferten XP/KP-Werte, Snapshots oder Reward-Belege.
+
+**Prüfergebnis:** 11/11 isolierte HTTP-Verhaltensprüfungen mit gemocktem Auth-/RPC-Dienst in einer JavaScript-V8-Testumgebung erfolgreich (OPTIONS 204, POST-only, CORS-Origin, fehlende JWT, zurückgewiesenes XP-Feld, ungültiger Standort/Kistenname, gültige Antwort, private RPC- und Auth-Bindung). Drei SQL-Code-Invarianten geprüft: Transaktionssperre + Revisionskontrolle, interner Grant-Aufruf und entzogene öffentlichen EXECUTE-Rechte. **Kein echter Deno-/Node- oder PostgreSQL-Staging-Integrationstest.**
+
+**Grenzen und Risiken:**
+1. Es handelt sich um einen **separaten, stark vereinfachten** Anlegeweg: nur Kistenname und Standort. Die bisherige reichhaltige Umzugskistenmaske unterstützt auch Beschreibung, Wert, Tag, Barcode, Ablaufdatum, Unterartikel und Foto. Diese Funktionen sind im Entwurf **nicht** abgedeckt. Vor einer späteren Integration muss ein kompatibler, datensicherer Save-Pfad definiert werden.
+2. `user_data` erlaubt angemeldeten Nutzern weiterhin direkte eigene JSON-Schreibzugriffe. Kein Beweis realer physischer Arbeit; einmalige Low-Stakes-Gutschrift statt Farming pro Kiste.
+3. Eine Rewards-/SQL-Transaktionsstörung lässt **diesen neuen Pilot-Endpunkt** fehlschlagen; die reguläre aktuelle Tool-Speicherung bleibt unberührt. Vor Integration sind Fehlerverhalten, Retries und möglicher reiner Tool-Save-Fallback ausdrücklich zu prüfen.
+4. Die SQL-Entwürfe sind **keine aktiven Migrationen** und wurden nicht angewendet. Die Edge Function ist nicht in `supabase/functions/` eingecheckt, nicht deployt und nicht in `main` eingebunden.
+5. `service_role`-Schlüssel ausschließlich als Supabase-Edge-Secret; niemals Client, Github-Pages-JavaScript oder App-Payload. Die Origin-Prüfung ergänzt die JWT-Prüfung, ersetzt sie aber nicht.
+6. Vor Staging mit echten Supabase-Migrationskommandos: aktuelle Dokumentation prüfen, SQL-Parser/Schema/RPC-Signaturen und RLS-Rechte isoliert testen, kritische Fehlerpfade und gleichzeitige Requests prüfen.
+
