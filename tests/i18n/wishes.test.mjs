@@ -126,3 +126,12 @@ test('Wishes translated long-form notices are explicitly marked in source HTML',
   assert.match(html,/data-wish-copy/,name);
  }
 });
+
+test('Wishes community and navigation text remains reversible and excludes user content',()=>{
+ const pairs=[["Entdecke öffentliche Sammlungen, lerne ihre Ersteller kennen und finde neue Geschenkideen. Private Sammlungen werden nicht angezeigt.","Explore public collections, meet their creators and discover new gift ideas. Private collections are not displayed."],["Meine Merkliste öffnen ↗","Open my bookmarks ↗"],["Neue öffentliche Sammlungen gefolgter Profile, deine gemerkten Wunschwelten und passende Inspiration an einem Ort.","New public collections from profiles you follow, your bookmarked wish lists and relevant inspiration in one place."],["Öffentliche Wunschsammlung","Public wish collection"],["🔖 Meine Merkliste","🔖 My bookmarks"],["🎀 Meine Geschenkreservierungen verwalten","🎀 Manage my gift reservations"],["Profil wird geladen …","Loading profile…"],["ÖFFENTLICHES WISHES-PROFIL","PUBLIC WISHES PROFILE"],["💝 Öffentliche Wünsche ansehen","💝 View public wishes"],["Neue öffentliche Wunschwelten gefolgter Profile, neue Follower und Likes auf deine Sammlungen – alles aus den vorhandenen Community-Daten.","New public wish lists from followed profiles, new followers and likes on your collections, all based on existing community data."],["🎀 Meine Reservierungen","🎀 My reservations"],["Alle Aufgaben verwalten ↗","Manage all tasks ↗"],["🌈 Weitere Sammlungen entdecken","🌈 Discover more collections"]];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en);assert.equal(wishesText(en,'de'),de)}
+ const {document}=parseHTML('<html><body><main><a data-wish-copy href="discover.html">Meine Merkliste öffnen ↗</a><p data-wish-copy>Entdecke öffentliche Sammlungen, lerne ihre Ersteller kennen und finde neue Geschenkideen. Private Sammlungen werden nicht angezeigt.</p><div data-user-content><a data-wish-copy>Meine Merkliste öffnen ↗</a></div></main></body></html>');
+ applyWishLocale(document,'en');assert.equal(document.querySelector('main > a').textContent,'Open my bookmarks ↗');assert.equal(document.querySelector('main > a').getAttribute('href'),'discover.html');
+ assert.equal(document.querySelector('[data-user-content] a').textContent,'Meine Merkliste öffnen ↗');
+ applyWishLocale(document,'de');assert.equal(document.querySelector('main > a').textContent,'Meine Merkliste öffnen ↗');
+});
