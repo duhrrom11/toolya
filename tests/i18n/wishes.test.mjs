@@ -135,3 +135,14 @@ test('Wishes community and navigation text remains reversible and excludes user 
  assert.equal(document.querySelector('[data-user-content] a').textContent,'Meine Merkliste öffnen ↗');
  applyWishLocale(document,'de');assert.equal(document.querySelector('main > a').textContent,'Meine Merkliste öffnen ↗');
 });
+
+test('Wishes notifications, occasions and community metadata translate reversibly',()=>{
+ const pairs=[["🌈 Weitere Wunschwelten","🌈 More wish lists"],["🏠 Mein Feed","🏠 My feed"],["Neu seit Besuch","New since last visit"],["Termine werden geladen …","Loading dates…"],["Anlässe","Occasions"],["Privat · Mein Überblick","Private · My overview"],["Benachrichtigungen werden geladen …","Loading notifications…"],["Für wen?","For whom?"],["Anlässe filtern","Filter occasions"],["Deine Social-Zahlen","Your social metrics"]];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en);assert.equal(wishesText(en,'de'),de)}
+ const {document}=parseHTML('<html><body><section><span data-wish-copy>Neu seit Besuch</span><p data-wish-copy>Benachrichtigungen werden geladen …</p><input placeholder="Für wen?" value="private name"><div data-user-content><span data-wish-copy>Neu seit Besuch</span></div></section></body></html>');
+ applyWishLocale(document,'en');assert.equal(document.querySelector('section > span').textContent,'New since last visit');
+ assert.equal(document.querySelector('section > p').textContent,'Loading notifications…');
+ assert.equal(document.querySelector('input').getAttribute('placeholder'),'For whom?');assert.equal(document.querySelector('input').value,'private name');
+ assert.equal(document.querySelector('[data-user-content] span').textContent,'Neu seit Besuch');
+ applyWishLocale(document,'de');assert.equal(document.querySelector('section > span').textContent,'Neu seit Besuch');
+});
