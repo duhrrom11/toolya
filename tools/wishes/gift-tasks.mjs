@@ -28,11 +28,11 @@ function render(){renderWeek();renderChecklistProgress();renderYearBalance();
  for(const t of visible){
   const item=document.createElement('article'),h=document.createElement('h3');item.className='item';h.textContent=t.title;
   const occasion=occasions.find(o=>o.id===t.occasion_id),gift=gifts.find(g=>g.id===t.gift_plan_id);
-  const meta=document.createElement('p');meta.textContent=[ui(labels[t.status]),ui(priorities[t.priority]),t.due_date?ui('Fällig: ')+new Date(t.due_date+'T12:00:00').toLocaleDateString(locale()):ui(ui('Ohne Fälligkeit')),occasion?.title,gift?.title].filter(Boolean).join(' · ');
+  const meta=document.createElement('p');meta.textContent=[ui(labels[t.status]),ui(priorities[t.priority]),t.due_date?ui('Fällig: ')+new Date(t.due_date+'T12:00:00').toLocaleDateString(locale()):ui('Ohne Fälligkeit'),occasion?.title,gift?.title].filter(Boolean).join(' · ');
   const controls=document.createElement('div');controls.className='controls';
   const edit=document.createElement('button');edit.type='button';edit.textContent=ui('Bearbeiten');edit.addEventListener('click',()=>{editing=t.id;$('title').value=t.title;$('occasion').value=t.occasion_id||'';refreshGifts();$('gift').value=t.gift_plan_id||'';$('due').value=t.due_date||'';$('reminder').value=t.reminder_days;$('priority').value=t.priority;$('taskStatus').value=t.status;$('notes').value=t.notes||'';$('formTitle').textContent='✏️ Aufgabe bearbeiten';$('save').textContent='Änderungen speichern';$('cancel').hidden=false;$('form').scrollIntoView({behavior:'smooth',block:'start'})});
-  const toggle=document.createElement('button');toggle.type='button';toggle.textContent=ui(t.status==='done'?'Wieder öffnen':'✓ Erledigt');toggle.addEventListener('click',async()=>{toggle.disabled=true;const next=t.status==='done'?'open':'done';const {error}=await db.from('wishlist_gift_tasks').update({status:next,updated_at:new Date().toISOString()}).eq('id',t.id).eq('user_id',user.id);toggle.disabled=false;if(error){$('status').textContent='Statuswechsel fehlgeschlagen.';return}t.status=next;render();$('status').textContent='Aufgabe aktualisiert.'});
-  const remove=document.createElement('button');remove.type='button';remove.textContent=ui('Löschen');remove.addEventListener('click',async()=>{if(!confirm('Aufgabe wirklich löschen?'))return;remove.disabled=true;const {error}=await db.from('wishlist_gift_tasks').delete().eq('id',t.id).eq('user_id',user.id);if(error){remove.disabled=false;$('status').textContent='Löschen fehlgeschlagen.';return}tasks=tasks.filter(x=>x.id!==t.id);if(editing===t.id)reset();render();$('status').textContent='Aufgabe gelöscht.'});
+  const toggle=document.createElement('button');toggle.type='button';toggle.textContent=ui(t.status==='done'?'Wieder öffnen':'✓ Erledigt');toggle.addEventListener('click',async()=>{toggle.disabled=true;pendingWrites++;const next=t.status==='done'?'open':'done';const {error}=await db.from('wishlist_gift_tasks').update({status:next,updated_at:new Date().toISOString()}).eq('id',t.id).eq('user_id',user.id);toggle.disabled=false;settleWrite();if(error){$('status').textContent='Statuswechsel fehlgeschlagen.';return}t.status=next;render();$('status').textContent='Aufgabe aktualisiert.'});
+  const remove=document.createElement('button');remove.type='button';remove.textContent=ui('Löschen');remove.addEventListener('click',async()=>{if(!confirm('Aufgabe wirklich löschen?'))return;remove.disabled=true;pendingWrites++;const {error}=await db.from('wishlist_gift_tasks').delete().eq('id',t.id).eq('user_id',user.id);if(error){remove.disabled=false;settleWrite();$('status').textContent='Löschen fehlgeschlagen.';return}tasks=tasks.filter(x=>x.id!==t.id);if(editing===t.id)reset();render();$('status').textContent='Aufgabe gelöscht.';settleWrite()});
   controls.append(edit,toggle,remove);item.append(h,meta,controls);root.append(item);
  }
 }
@@ -43,7 +43,7 @@ $('form').addEventListener('submit',async event=>{event.preventDefault();if(!use
  const title=$('title').value.trim();if(!title){$('status').textContent='Bitte Aufgabe eingeben.';return}
  const giftId=$('gift').value||null,linked=gifts.find(g=>g.id===giftId);
  const payload={title,occasion_id:$('occasion').value||linked?.occasion_id||null,gift_plan_id:giftId,due_date:$('due').value||null,reminder_days:Number($('reminder').value),priority:Number($('priority').value),status:$('taskStatus').value,notes:$('notes').value.trim()||null,updated_at:new Date().toISOString()};
- $('save').disabled=true;try{const fields='id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,checklist_key,checklist_year,archived_at,created_at';const r=editing?await db.from('wishlist_gift_tasks').update(payload).eq('id',editing).eq('user_id',user.id).select(fields).single():await db.from('wishlist_gift_tasks').insert({...payload,user_id:user.id}).select(fields).single();if(r.error)throw r.error;tasks=tasks.filter(x=>x.id!==r.data.id);tasks.push(r.data);reset();render();$('status').textContent='Aufgabe gespeichert.'}catch{$('status').textContent='Aufgabe konnte nicht gespeichert werden.'}finally{$('save').disabled=false}
+ $('save').disabled=true;pendingWrites++;try{const fields='id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,checklist_key,checklist_year,archived_at,created_at';const r=editing?await db.from('wishlist_gift_tasks').update(payload).eq('id',editing).eq('user_id',user.id).select(fields).single():await db.from('wishlist_gift_tasks').insert({...payload,user_id:user.id}).select(fields).single();if(r.error)throw r.error;tasks=tasks.filter(x=>x.id!==r.data.id);tasks.push(r.data);reset();render();$('status').textContent='Aufgabe gespeichert.'}catch{$('status').textContent='Aufgabe konnte nicht gespeichert werden.'}finally{$('save').disabled=false;settleWrite()}
 });
 async function main(){
  const {data,error}=await db.auth.getUser();user=data?.user;if(error||!user){$('login').hidden=false;$('status').textContent='Bitte anmelden.';return}
@@ -130,18 +130,18 @@ for(const [id,archive] of [['archiveYear',true],['restoreYear',false]])$(id).add
  const occasionId=$('checklistOccasion').value,year=Number($('checklistYear').value);
  if(!occasionId){$('checklistStatus').textContent='Bitte zuerst einen Anlass wählen.';return}
  if(!confirm((archive?'Alle Checklistenaufgaben dieses Jahres archivieren?':'Archivierung dieses Jahres aufheben?')+' Die Aufgaben bleiben gespeichert.'))return;
- $(id).disabled=true;
+ $(id).disabled=true;pendingWrites++;
  try{const {data,error}=await db.rpc('wishlist_archive_occasion_checklist_year',{p_occasion_id:occasionId,p_year:year,p_archive:archive});if(error)throw error;await refreshTasks();$('checklistStatus').textContent=data+' Aufgaben '+(archive?'archiviert.':'wiederhergestellt.')}
- catch{$('checklistStatus').textContent='Jahresarchiv konnte nicht geändert werden.'}finally{$(id).disabled=false}
+ catch{$('checklistStatus').textContent='Jahresarchiv konnte nicht geändert werden.'}finally{$(id).disabled=false;settleWrite()}
 });
 for(const button of document.querySelectorAll('[data-checklist]'))button.addEventListener('click',async()=>{
  const occasionId=$('checklistOccasion').value;if(!occasionId){$('checklistStatus').textContent='Bitte zuerst einen Anlass auswählen.';return}
  const template=button.dataset.checklist;if(!['standard','last_minute','shipping'].includes(template))return;
  if(!confirm('Aufgabenpaket für den gewählten Anlass erstellen? Vorhandene Aufgaben desselben Pakets bleiben erhalten.'))return;
- button.disabled=true;
+ button.disabled=true;pendingWrites++;
  try{const {data,error}=await db.rpc('wishlist_create_occasion_checklist_year',{p_occasion_id:occasionId,p_template:template,p_year:Number($('checklistYear').value)});if(error)throw error;
   await refreshTasks();$('checklistStatus').textContent=data+' neue Aufgaben angelegt. '+(data===0?'Das Paket ist bereits vorhanden.':'Die Aufgaben können einzeln bearbeitet werden.');
- }catch{$('checklistStatus').textContent='Aufgabenpaket konnte nicht erstellt werden.'}finally{button.disabled=false}
+ }catch{$('checklistStatus').textContent='Aufgabenpaket konnte nicht erstellt werden.'}finally{button.disabled=false;settleWrite()}
 });
 
 function renderYearBalance(){
@@ -171,9 +171,9 @@ $('rolloverCreate').addEventListener('click',async()=>{
  if(!occasionId||!ids.length){$('rolloverStatus').textContent='Bitte Anlass und mindestens eine Aufgabe auswählen.';return}
  if(ids.length>100){$('rolloverStatus').textContent='Maximal 100 Aufgaben gleichzeitig.';return}
  if(!confirm(ids.length+' ausgewählte Aufgaben aus '+(year-1)+' nach '+year+' übernehmen? Bestehende Aufgaben bleiben unverändert.'))return;
- $('rolloverCreate').disabled=true;
+ $('rolloverCreate').disabled=true;pendingWrites++;
  try{const {data,error}=await db.rpc('wishlist_rollover_gift_tasks',{p_occasion_id:occasionId,p_from_year:year-1,p_to_year:year,p_task_ids:ids});if(error)throw error;await refreshTasks();$('rolloverStatus').textContent=data+' Aufgaben übernommen. Bestehende Aufgaben wurden nicht überschrieben.'}
- catch{$('rolloverStatus').textContent='Übernahme fehlgeschlagen. Bitte Auswahl und Jahr prüfen.'}finally{$('rolloverCreate').disabled=false}
+ catch{$('rolloverStatus').textContent='Übernahme fehlgeschlagen. Bitte Auswahl und Jahr prüfen.'}finally{$('rolloverCreate').disabled=false;settleWrite()}
 });
 main().catch(()=>{$('status').textContent='Aufgaben konnten nicht geladen werden.'});
 
