@@ -35,6 +35,8 @@ function renderBackstudioStaticCopy(){
  }
  const custom=el('bs-shopping-custom');
  if(custom)custom.placeholder=ui('z. B. Vanillezucker','e.g. vanilla sugar');
+ const fill=host.querySelector('.bs-tank[role="img"]');
+ if(fill)fill.setAttribute('aria-label',ui('Schematischer Füllstand','Illustration of the pan fill level'));
 }
 function missingIngredients(){
  return parsed().filter(i=>Number.isFinite(i.qty)&&i.qty>0).flatMap(i=>{
