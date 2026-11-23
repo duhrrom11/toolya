@@ -61,3 +61,14 @@ test('Relocated 3D launch controls repaint on DE/EN switches',()=>{
  // 3D launch is moved into the redesigned stage, not necessarily .bsp-actions.
  assert.match(layout,/webgl\.append\(threePanel\)/);
 });
+
+test('Pan dimension presentation uses selected locale without changing numeric inputs',()=>{
+ assert.match(layout,/const displayNumber=value=>new Intl\.NumberFormat\(window\.__toolyaUILocale==='en'\?'en-GB':'de-DE'/);
+ assert.match(layout,/displayNumber\(cleanNumber\('target-d',20\)\)/);
+ assert.match(layout,/displayNumber\(cleanNumber\('combo-d1',20\)\)/);
+ assert.match(layout,/displayNumber\(cleanNumber\('combo-d2',16\)\)/);
+ assert.match(layout,/displayNumber\(cleanNumber\('target-l',25\)\)/);
+ assert.match(layout,/displayNumber\(cleanNumber\('target-w',11\)\)/);
+ assert.match(layout,/document\.addEventListener\('toolya:locale-change',requestSync\)/);
+ assert.match(layout,/\$\('target-d'\)\.value=diameter/);
+});
