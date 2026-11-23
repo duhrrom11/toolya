@@ -1,5 +1,10 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+ "Aktivitäten": "Activities",
+ "Neue öffentliche Wunschwelten gefolgter Profile": "New public wish worlds from followed profiles",
+ "Neue Follower": "New followers",
+ "Likes auf meine öffentlichen Wunschwelten": "Likes on my public wish worlds",
+ "Die Hinweise werden aus bestehenden Aktivitäten erzeugt und beim Öffnen aktualisiert. Der Gelesen-Status und deine Einstellungen bleiben in Supabase erhalten, auch wenn du das Gerät wechselst. Es werden keine Push-Mitteilungen oder E-Mails versendet. Aktivitäten zu inzwischen privaten oder archivierten Sammlungen erscheinen nicht.": "Notifications are generated from existing activity and refreshed when you open this page. Read status and preferences are retained in Supabase even when you change devices. No push notifications or emails are sent. Activity concerning collections that are now private or archived is not shown.",
  "✨ Geschenkideen entdecken": "✨ Discover gift ideas",
  "anmelden": "sign in",
  "Tages- & Wochenplanung": "Daily & weekly planning",
