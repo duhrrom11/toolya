@@ -6,12 +6,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
+const OUTFITS = Object.freeze(['home', 'wishes', 'budget', 'housemates', 'moving', 'estate', 'car', 'pet-health', 'parking', 'loans', 'plants', 'meters', 'baking']);
 const HELP = [
   'Toolya tool scaffold (offline, not a deployment)',
   'Usage:',
-  '  node scripts/create-tool.cjs --slug example-tool --title "Beispieltool" --description "Ein neues Tool fuer den Alltag." [--dry-run]',
+  '  node scripts/create-tool.cjs --slug example-tool --title "Beispieltool" --description "Ein neues Tool fuer den Alltag." [--outfit home|plants|wishes|...] [--dry-run]',
   '',
   'Creates tools/<slug>/{index.html,app.mjs,README.md} only if the folder is new.',
+  'Outfit: borrow an existing Toolya role (default: home); mascot color follows saved user choice.',
   'Generated pages are noindex prototypes, not registered or published tools.'
 ].join('\n');
 
@@ -21,7 +23,7 @@ function parseOptions(argv) {
     const arg = argv[i];
     if (arg === '--help' || arg === '-h') { options.help = true; continue; }
     if (arg === '--dry-run') { options.dryRun = true; continue; }
-    if (!['--slug', '--title', '--description'].includes(arg)) {
+    if (!['--slug', '--title', '--description', '--outfit'].includes(arg)) {
       throw new Error('Unknown argument: ' + arg);
     }
     const value = argv[++i];
@@ -33,7 +35,8 @@ function parseOptions(argv) {
   return options;
 }
 
-function validateToolArgs({slug, title, description}) {
+function validateToolArgs({slug, title, description, outfit = 'home'}) {
+  if (!OUTFITS.includes(outfit)) throw new Error('Unknown mascot outfit: ' + outfit);
   if (typeof slug !== 'string' || slug.length > 40 ||
       !/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(slug)) {
     throw new Error('Slug must be 1-40 lowercase ASCII letters, digits or single hyphens.');
@@ -55,16 +58,17 @@ function escapeHtml(value) {
 
 function renderToolFiles(args) {
   validateToolArgs(args);
-  const {slug, title, description} = args;
+  const {slug, title, description, outfit = 'home'} = args;
   const safeTitle = escapeHtml(title);
   const safeDescription = escapeHtml(description);
   const html = [
     '<!doctype html>',
-    '<html lang="de">',
+    '<html lang="de" data-toolya-draft="true">',
     '<head>',
     '  <meta charset="utf-8">',
     '  <meta name="viewport" content="width=device-width,initial-scale=1">',
     '  <meta name="robots" content="noindex,nofollow">',
+    '  <meta name="toolya-draft-outfit" content="' + outfit + '">',
     '  <title>' + safeTitle + ' | Toolya (Entwurf)</title>',
     '  <meta name="description" content="' + safeDescription + '">',
     '  <link rel="stylesheet" href="../../shared/toolya/alpha.css">',
@@ -73,16 +77,25 @@ function renderToolFiles(args) {
     '  <style>',
     '    body{margin:0;background:#f4faf9;color:#16383d;font:16px/1.6 system-ui,sans-serif}',
     '    .draft-wrap{max-width:880px;margin:auto;padding:2rem 1rem 4rem}',
+    '    .b3-header{padding:1rem 1.25rem;background:#e7f7f7}',
+    '    .b3-header-inner{max-width:880px;margin:auto}',
+    '    .b3-tool-title h1{margin:.4rem 0;font-size:clamp(1.4rem,4vw,2rem)}',
+    '    .b3-tool-title p{margin:.5rem 0}',
     '    .draft-panel{padding:1.5rem;border:1px solid #d5e7e6;background:#fff;border-radius:1rem}',
     '    .draft-action{border:0;border-radius:.7rem;background:#087e82;color:white;padding:.8rem 1.2rem;font:inherit;cursor:pointer}',
     '    :focus-visible{outline:3px solid #087e82;outline-offset:3px}',
     '  </style>',
     '</head>',
     '<body>',
-    '  <header class="draft-wrap">',
-    '    <a href="/">Zur Toolya-Startseite</a>',
-    '    <h1>' + safeTitle + '</h1>',
-    '    <p>' + safeDescription + '</p>',
+    '  <header class="b3-header">',
+    '    <div class="b3-header-inner">',
+    '      <a href="/">Zur Toolya-Startseite</a>',
+    '      <span class="b3-tool-icon" aria-hidden="true">🧩</span>',
+    '      <div class="b3-tool-title">',
+    '        <h1>' + safeTitle + '</h1>',
+    '        <p>' + safeDescription + '</p>',
+    '      </div>',
+    '    </div>',
     '  </header>',
     '  <main id="main" class="draft-wrap">',
     '    <section class="draft-panel" aria-labelledby="draft-title">',
@@ -116,8 +129,9 @@ function renderToolFiles(args) {
     'Vor einem Release:',
     '- [ ] Fachfunktion und isolierte Tests implementieren.',
     '- [ ] Neue Route in Navigation/SEO nur nach Entscheidung aufnehmen.',
-    '- [ ] Tool-Mapping, thematisches Outfit und Nutzerauswahl in shared/toolya/platform.mjs pruefen.',
-    '- [ ] Vorhandene Header-, Footer- und Wortmarken-Assets statt Eigenbauten verwenden.',
+    '- [x] Vorhandene Toolya-Hero-/Footer-Integration im Entwurf; Outfit: ' + outfit + '.',
+    '- [ ] Zum Release eigenen Slug und Tool-Mapping bewusst registrieren; Outfit-/Maskottchenwahl erneut pruefen.',
+    '- [x] Gemeinsamer Header/Footer/Wortmarke werden vom Plattformmodul erzeugt (nur mit aktivem JavaScript).',
     '- [ ] Cloud-Funktionen ausschliesslich mit Auth/RLS, Fail-Closed-Verhalten und separater Freigabe.',
     '- [ ] Barrierefreiheit, Mobilansicht, Locale, Datenschutz und Tests pruefen.',
     '- [ ] noindex-Entwurfsstatus erst im Release-PR anhand der SEO-Strategie anpassen.',
@@ -128,8 +142,8 @@ function renderToolFiles(args) {
   return Object.freeze({'index.html': html, 'app.mjs': app, 'README.md': readme});
 }
 
-function generateTool({repoRoot = ROOT, slug, title, description, dryRun = false}) {
-  const files = renderToolFiles({slug, title, description});
+function generateTool({repoRoot = ROOT, slug, title, description, outfit = 'home', dryRun = false}) {
+  const files = renderToolFiles({slug, title, description, outfit});
   const toolsDir = path.resolve(repoRoot, 'tools');
   if (!fs.existsSync(toolsDir) || !fs.statSync(toolsDir).isDirectory()) {
     throw new Error('Missing tools/ folder in target repository.');
@@ -164,4 +178,4 @@ if (require.main === module) {
     process.exitCode = 1;
   }
 }
-module.exports = {parseOptions, validateToolArgs, renderToolFiles, generateTool};
+module.exports = {OUTFITS, parseOptions, validateToolArgs, renderToolFiles, generateTool};
