@@ -102,3 +102,8 @@ Die 30-KP-Grenzen sind **vorläufig**, müssen bei der eventbasierten Vergabe oh
 ## I. Visuelles Design / Umsetzungsvorgaben (23.11.2026)
 
 [Konkrete UX-/UI-Spezifikation für Dashboard, fünf Kompetenzkarten, Badge-Vitrine, Responsivität, Farb-/Typografietokens und Accessibility](TOOLYA-REWARDS-V1-UX-UI-DESIGN.md). Die bewusst minimalistische Ansicht orientiert sich an `dashboard/dashboard.css` des produktiven `main`. V1 bleibt auf XP, KP und Badges begrenzt. Konzept – kein UI-Release.
+
+
+## J. Technische Architektur und XP-Integrität (23.11.2026)
+
+[Technisches Konzept nach lesender Prüfung von GitHub-`main` und dem vorhandenen Supabase-Projekt](TOOLYA-REWARDS-V1-TECHNISCHE-ARCHITEKTUR.md): serverseitig fachlich verifizierbare Tool-Erfolge, privates idempotentes XP-/KP-Ledger, atomare Badges, RLS-Sicherheitsgrenzen, Tooladapter-Risikomatrix und QA-Szenarien. Wichtig: mehrere Tools nutzen Browser-Daten und/oder allgemeine Supabase-Cloud-Snapshots; bloße Frontend-Klickereignisse dürfen daher keine XP erzeugen. Kein Code / keine Migration / kein Live-Release.
