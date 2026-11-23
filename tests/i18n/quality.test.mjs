@@ -54,7 +54,7 @@ test('catalogue checker reports missing and empty translations with an explicit 
  const quality=validateReport(report);
  assert.equal(quality.ok,false);
  assert.ok(quality.critical.some(x=>x.kind==='empty-translation'));
- assert.ok(quality.review.some(x=>x.kind==='placeholder-review'));
+ assert.ok(quality.critical.some(x=>x.kind==='placeholder-review'));
  fixture.en.test={Hallo:'Hello'};
  assert.ok(catalogAnalysis(fixture).issues.some(x=>x.kind==='missing-translation'));
 });
