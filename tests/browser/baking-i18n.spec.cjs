@@ -170,3 +170,24 @@ test('real Backstudio redesigned subview headings switch DE/EN/DE without touchi
  }
  expect(await page.locator('#recipe-input').inputValue()).toBe(original);
 });
+
+test('recipe OCR review preserves decimal ingredient quantities and private names in both languages',async({page})=>{
+ await mountBackstudio(page);
+ const recipe=page.locator('#recipe-input');
+ const source=page.locator('#bsp-recipe-text');
+ const apply=page.locator('#bsp-apply');
+ await page.evaluate(()=>{window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'))});
+ await source.fill('1000.5 g Omas Spezialmehl');
+ await page.locator('.bsp-panel button').filter({hasText:'Recognize ingredients'}).click();
+ await expect(page.locator('#bsp-preview')).toContainText('Omas Spezialmehl');
+ await apply.click();
+ await expect(recipe).toHaveValue('1000.5 g Omas Spezialmehl');
+ await expect(page.locator('#bsp-ocr-status')).toContainText('Recognized ingredients applied');
+ await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
+ await expect(recipe).toHaveValue('1000.5 g Omas Spezialmehl');
+ await source.fill('1000,5 g Omas Spezialmehl');
+ await page.locator('.bsp-panel button').filter({hasText:'Zutaten erkennen'}).click();
+ await apply.click();
+ await expect(recipe).toHaveValue('1000,5 g Omas Spezialmehl');
+ await expect(page.locator('#bsp-ocr-status')).toContainText('Erkannte Zutaten übernommen');
+});
