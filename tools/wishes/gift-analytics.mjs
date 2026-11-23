@@ -24,7 +24,7 @@ function repaintEditorLabels(){
   const amount=budget?Number(budget.budget_amount):null;
   row.querySelector('p').textContent=budgetSummary(amount,planned,spent);
   row.querySelector('button').textContent=ui('Jahresbudget speichern');
-  row.querySelector('input').setAttribute('aria-label',ui('Budget ')+o.title+' '+year);
+  row.querySelector('input').setAttribute('aria-label','Budget '+o.title+' '+year);
  }
  const giftRows=[...$('giftYearEditor').querySelectorAll('div.row')];
  const yearGifts=giftsIn(year).slice(0,80);
@@ -45,7 +45,7 @@ function render(){
  const budgets=$('budgetDetails');budgets.replaceChildren();if(!relevant.length)budgets.append(el('p',ui('Keine Anlässe für dieses Jahr vorhanden.'),'empty'));
  for(const o of relevant){const gs=giftsIn(year).filter(g=>g.occasion_id===o.id),planned=gs.reduce((n,g)=>n+Number(g.planned_amount||0),0),spent=gs.reduce((n,g)=>n+Number(g.actual_amount||0),0),historical=annualBudgets.find(b=>b.occasion_id===o.id&&b.budget_year===year),amount=historical?Number(historical.budget_amount):null,row=el('article','','row');
  row.append(el('strong',o.title),el('p',budgetSummary(amount,planned,spent)));
- const controls=el('div','','edit-controls'),input=document.createElement('input'),save=el('button',ui('Jahresbudget speichern'));input.type='number';input.min='0';input.max='9999999999.99';input.step='0.01';input.value=amount===null?'':String(amount);input.setAttribute('aria-label',ui('Budget ')+o.title+' '+year);
+ const controls=el('div','','edit-controls'),input=document.createElement('input'),save=el('button',ui('Jahresbudget speichern'));input.type='number';input.min='0';input.max='9999999999.99';input.step='0.01';input.value=amount===null?'':String(amount);input.setAttribute('aria-label','Budget '+o.title+' '+year);
  save.addEventListener('click',async()=>{const n=Number(input.value);if(!input.value||!Number.isFinite(n)||n<0||n>9999999999.99){$('status').textContent=ui('Bitte ein gültiges Budget eingeben.');return}save.disabled=true;const {data,error}=await db.from('wishlist_occasion_budget_years').upsert({user_id:userId,occasion_id:o.id,budget_year:year,budget_amount:n},{onConflict:'user_id,occasion_id,budget_year'}).select('id,occasion_id,budget_year,budget_amount').single();save.disabled=false;if(error){$('status').textContent=ui('Budget konnte nicht gespeichert werden.');return}annualBudgets=annualBudgets.filter(b=>!(b.occasion_id===o.id&&b.budget_year===year));annualBudgets.push(data);render();$('status').textContent=ui('Historisches Jahresbudget gespeichert.')});controls.append(input,save);row.append(controls);budgets.append(row)}
 
  renderGiftYearEditor(year);
