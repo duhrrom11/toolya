@@ -202,7 +202,7 @@ function normalizeRecipe(text){
   else{m=raw.match(last);if(m){name=m[1];qty=parseNumber(m[2]);unit=m[3]}}
   if(!m||!Number.isFinite(qty)||qty<0||!name){warnings.push(raw);continue}
   if(!unit && /^(?:ei|eier|stück|stk\.?|pck\.?)$/i.test(name.trim())){unit=name.trim();name='';}
-  if(/^\s*[-–]\s*\d/.test(name))warnings.push(proUi('Mengenbereich bitte prüfen: ','Check quantity range: ')+raw);
+  if(/^\s*[-–]\s*\d/.test(name))warnings.push({type:'range',raw});
   const standardizedUnit=/^(eier|ei)$/i.test(unit)?'Eier':/^(stk\.?|stück)$/i.test(unit)?'Stück':/^(paket|pck\.?)$/i.test(unit)?'Pck':unit;
   items.push({name:name.trim(),qty,unit:standardizedUnit,source:raw});
  }
@@ -349,14 +349,23 @@ function initRecipe(){
  cameraStatus.id='bsp-ocr-status';cameraStatus.setAttribute('role','status');cameraStatus.setAttribute('aria-live','polite');
 
 }
-let reviewed=[];
-function reviewRecipe(source){
- const result=normalizeRecipe(source);reviewed=result.items;const host=$('bsp-preview');host.replaceChildren();
+let reviewed=[],reviewWarnings=[],hasReviewedRecipe=false;
+// Repaint the last OCR review without reparsing, saving or modifying recipe inputs.
+function renderReviewedPreview(){
+ if(!hasReviewedRecipe)return;
+ const host=$('bsp-preview');if(!host)return;host.replaceChildren();
  if(!reviewed.length){txt('p',proUi('Keine eindeutig erkennbaren Mengen gefunden. Bitte Text bearbeiten.','No clearly recognized quantities found. Edit the recipe text.'),host);return}
  const table=txt('div',null,host);
  for(const item of reviewed){const row=txt('div',null,table);row.className='bsp-match';txt('span',(fmt(item.qty,2)+' '+item.unit+' '+item.name).trim(),row)}
- if(result.warnings.length){txt('p',proUi('Bitte manuell prüfen (','Check manually (')+result.warnings.length+proUi(' Zeilen):',' lines):'),host);for(const w of result.warnings.slice(0,30))txt('p',w,host)}
-
+ if(reviewWarnings.length){
+  txt('p',proUi('Bitte manuell prüfen (','Check manually (')+reviewWarnings.length+proUi(' Zeilen):',' lines):'),host);
+  for(const warning of reviewWarnings.slice(0,30))txt('p',typeof warning==='string'?warning:proUi('Mengenbereich bitte prüfen: ','Check quantity range: ')+warning.raw,host);
+ }
+}
+function reviewRecipe(source){
+ const result=normalizeRecipe(source);
+ reviewed=result.items;reviewWarnings=result.warnings;hasReviewedRecipe=true;
+ renderReviewedPreview();
 }
 function applyReviewed(){
  if(!reviewed.length)return;
@@ -429,6 +438,12 @@ function exportMemory(){
  const url=URL.createObjectURL(blob);const a=txt('a','',document.body);a.href=url;a.download=proUi('toolya-backgedaechtnis.json','toolya-baking-notes.json');a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
  status('bsp-memory-status',proUi('Notizen gespeichert.','Notes exported.'));
 }
+function displayMemoryDate(entry){
+ const fallback=entry.date||'';
+ if(!entry.iso)return fallback; // Older notes have only the original date.
+ const date=new Date(entry.iso);
+ return Number.isFinite(date.getTime())?date.toLocaleDateString(proEn()?'en-GB':'de-DE'):fallback;
+}
 function renderMemory(){
  const host=$('bsp-memory-list');if(!host)return;host.replaceChildren();
  const data=read(),logs=Array.isArray(data.logs)?data.logs:[];const search=($('bsp-memory-search')?.value||'').trim().toLocaleLowerCase('de-DE'),favorites=!!$('bsp-favorites')?.checked;
@@ -436,7 +451,7 @@ function renderMemory(){
  if(!selected.length){txt('p',proUi('Keine Notizen gefunden.','No notes found.'),host);return}
  for(const {x,index} of selected){
   const row=txt('div',null,host);row.className='bsp-match';
-  txt('strong',(x.favorite?'★ ':'')+(x.name||proUi('Backerfahrung','Baking note'))+' · '+(x.date||''),row);
+  txt('strong',(x.favorite?'★ ':'')+(x.name||proUi('Backerfahrung','Baking note'))+' · '+displayMemoryDate(x),row);
   txt('span',[x.minutes&&x.minutes+' min',x.temperature&&x.temperature+' °C',x.rating&&x.rating+proUi('/5 Sterne','/5 stars'),x.shape&&proUi('Form: ','Pan: ')+({'round':proUi('Rund','Round'),'rect':proUi('Rechteck','Rectangular'),'volume':proUi('Spezialform','Special pan'),'muffin':proUi('Muffinmulden','Muffin cups')}[x.shape]||x.shape),x.note].filter(Boolean).join(' · '),row);
   action(row,x.favorite?proUi('★ Favorit','★ Favorite'):proUi('☆ Favorit','☆ Favorite'),()=>{const state=read();if(!Array.isArray(state.logs)||!state.logs[index])return;state.logs[index].favorite=!state.logs[index].favorite;if(write(state))renderMemory()});
   action(row,proUi('Löschen','Delete'),()=>{if(!confirm(proUi('Diese Notiz löschen?','Delete this note?')))return;const state=read();if(!Array.isArray(state.logs))return;state.logs.splice(index,1);if(write(state))renderMemory()})
@@ -449,7 +464,7 @@ function init(){
   document.addEventListener('toolya:locale-change',()=>{
    localizeProControls();
    localizeProLiveStatuses();
-   renderComparisons();updateCake();renderMemory();redraw3D();
+   renderReviewedPreview();renderComparisons();updateCake();renderMemory();redraw3D();
   });
  // Default rating for extended notes (in the original memory card).
  const memory=cardOf('bs-logs');if(memory){const rating=txt('label',null,memory);txt('span','Wie gut hat es geklappt? (1–5 Sterne)',rating);const input=txt('input',null,rating);input.id='bsp-rating';input.type='number';input.min='1';input.max='5';input.value='3'}
