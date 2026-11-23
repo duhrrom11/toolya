@@ -3438,8 +3438,8 @@ test('moving planner dynamic dialogs translate DE/EN while backup and deletion g
  assert.match(source,/if \(!confirm\(window\.__toolyaUILocale === 'en' \? '⚠️ Really delete this location and ALL boxes inside it\?'/,'location deletion still guarded');
  assert.match(source,/if \(!confirm\(window\.__toolyaUILocale === 'en' \? '⚠️ Really delete this box\?'/,'box deletion still guarded');
  assert.match(source,/!confirm\(window\.__toolyaUILocale === 'en' \? 'This backup contains no moving projects/,'potential destructive moving import still requires approval');
- assert.match(source,/if\(!confirm\(window\.__toolyaUILocale === 'en' \? 'Before importing, download and verify a current backup\.'/,'backup-before-import guard retained');
- assert.match(source,/if\(!confirm\(window\.__toolyaUILocale === 'en' \? 'Have you successfully downloaded the current backup\?'/,'download confirmation retained');
+ assert.match(source,/if\(!confirm\(window\.__toolyaUILocale === 'en' \? 'Before importing, download and check a current backup\.'/,'backup-before-import guard retained');
+ assert.match(source,/if\(!confirm\(window\.__toolyaUILocale === 'en' \? 'Did you successfully download the current backup\?'/,'download confirmation retained');
  assert.match(source,/if \(!confirm\(window\.__toolyaUILocale === 'en' \? 'Import backup\? Existing data will be replaced\.'/,'overwrite approval retained');
  assert.match(source,/if \(!await saveData\(parsed\)\) return;/,'import write remains behind guards');
  assert.match(source,/confirmMigration:async\(\)=>confirm\(/,'cloud migration still opt in');
