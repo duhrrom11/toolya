@@ -196,3 +196,33 @@ test('Wishes private cockpit display copy is reversible and private task data re
  assert.match(source,/x\.o\.title/);
  assert.equal(wishesText('A private task: Überfällig','en'),'A private task: Überfällig');
 });
+
+test('Wishes gift dashboard labels translate without changing saved gifts or priority persistence',()=>{
+ const pairs=[
+  ['Noch keine Geschenk-Checklisten angelegt.','No gift checklists created yet.'],
+  ['Keine fälligen Aufgaben-Erinnerungen.','No task reminders due.'],
+  ['Keine Anlässe in den nächsten 30 Tagen.','No occasions in the next 30 days.'],
+  ['Keine offenen Geschenke für diese Priorität.','No pending gifts for this priority.'],
+  ['Priorität für ','Priority for '],
+  ['Priorität ändern','Change priority'],
+  ['Geschenk bearbeiten ↗','Edit gift ↗'],
+  ['Weitere ','Another '],
+  [' Aufgaben findest du in der Geschenkplanung.',' tasks can be found in the gift planner.'],
+  ['Aktuell keine Budgetüberschreitungen bei Anlässen mit festgelegtem Budget.','No budget overruns for occasions with a set budget at present.'],
+  [' eigene Reservierungen, davon ',' own reservations, including '],
+  [' mit deiner Geschenkplanung verknüpft.',' linked to your gift planner.']
+ ];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en,de);assert.equal(wishesText(en,'de'),de,en)}
+ const source=readFileSync(new URL('../../tools/wishes/gift-dashboard.mjs',import.meta.url),'utf8');
+ assert.match(source,/const ui=source=>wishesText/);
+ assert.match(source,/new Intl.NumberFormat\(locale\(\)/);
+ assert.match(source,/document\.addEventListener\('toolya:wishes-locale-change'/);
+ assert.match(source,/if\(priorityWrites\)\{localeUpdatePending=true;return\}/);
+ assert.match(source,/if\(!priorityWrites&&localeUpdatePending\)\{localeUpdatePending=false;render\(\)\}/);
+ assert.match(source,/ui\(labels\[g\.status\]\)/);
+ assert.match(source,/ui\(priority\[next\]\)/);
+ assert.match(source,/g\.title/);
+ assert.match(source,/o\.title/);
+ assert.match(source,/\.update\(\{priority:next,updated_at:/);
+ assert.equal(wishesText('Private wish: Keine Anlässe in den nächsten 30 Tagen.','en'),'Private wish: Keine Anlässe in den nächsten 30 Tagen.');
+});
