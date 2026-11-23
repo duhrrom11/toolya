@@ -2594,6 +2594,7 @@ test('i18n parking history renders historic ISO timestamps and escapes user cont
  await expect.poll(()=>page.evaluate(()=>parkingCloudReady&&!!parkingCloudController?.ready)).toBe(true);
  const list=page.locator('#parkingList');
  await expect(list).toContainText('Date: 17/11/2026');
+ await expect(list.getByRole('button', {name:'Delete parking session'})).toHaveCount(1);
  await expect(list).toContainText('Fee: 4.50 €');
  await expect(list).toContainText('Zone <B> & C');
  await expect(list).toContainText(unsafe);
@@ -2613,6 +2614,7 @@ test('i18n parking history renders historic ISO timestamps and escapes user cont
  await expect(page.locator('[data-tool-locale="de"]')).toHaveAttribute('aria-pressed','true');
  expect(await page.evaluate(()=>window.__toolyaUILocale)).toBe('de');
  await expect(list).toContainText('Datum: 17.11.2026 13:00');
+ await expect(list.getByRole('button', {name:'Parkvorgang löschen'})).toHaveCount(1);
  await expect(list).toContainText('Gebühr: 4,50 €');
  await page.locator('[data-tool-locale="en"]').click();
  await expect(list).toContainText('Date: 17/11/2026');

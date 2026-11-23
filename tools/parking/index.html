@@ -100,7 +100,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-amber-900">⚙️ Einstellungen und Konto</h3>
-                <button onclick="toggleSettingsModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleSettingsModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             
             <div class="p-3 bg-gray-50 rounded-xl border text-xs space-y-1">
@@ -135,7 +135,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-amber-900">📖 Hilfe & Anleitungen</h3>
-                <button onclick="toggleHelpModal()" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleHelpModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             <div class="space-y-3 text-xs">
                 <p><a href="/parkplatz-merker/" class="underline">Öffentliche Schritt-für-Schritt-Anleitung zum Parkplatz-Merker</a></p>
@@ -657,7 +657,7 @@
                     </div>
                     <div class="b3-park-card-actions flex items-center gap-2">
                         ${gps ? `<a href="https://www.google.com/maps/search/?api=1&query=${gps.lat},${gps.lng}" target="_blank" rel="noopener noreferrer" class="b3-action b3-outline px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold">🧭 Route</a>` : ''}
-                        <button onclick="deleteSession(${safeId === null ? 0 : safeId})" ${safeId === null ? 'disabled' : ''} class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                        <button aria-label="${english ? 'Delete parking session' : 'Parkvorgang löschen'}" onclick="deleteSession(${safeId === null ? 0 : safeId})" ${safeId === null ? 'disabled' : ''} class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                     </div>
                 </div>
             `;

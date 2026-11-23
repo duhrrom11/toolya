@@ -67,7 +67,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-lime-900">⚙️ Einstellungen und Konto</h3>
-                <button onclick="toggleSettingsModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleSettingsModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             
             <div id="header-user-badge" class="hidden text-xs font-semibold mb-2" aria-live="polite">
@@ -102,7 +102,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-lime-900">📖 Hilfe & Anleitungen</h3>
-                <button onclick="toggleHelpModal()" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleHelpModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             <div class="space-y-3 text-xs">
                 <details class="bg-gray-50 border rounded-xl p-3">
@@ -295,7 +295,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-lime-900">📦 Garten-Lager & Amazon Nachbestellung</h3>
-                <button onclick="closeInventoryModal()" class="b3-action b3-outline text-gray-400 font-bold">✕</button>
+                <button onclick="closeInventoryModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="b3-action b3-outline text-gray-400 font-bold">✕</button>
             </div>
             <p class="text-xs text-gray-500">Verwalte dein Schuppen-Inventar. Nutze den Nachbestell-Button, um Artikel direkt über deine Partner-ID bei Amazon zu ordern:</p>
             <div class="grid grid-cols-3 gap-2">
@@ -312,7 +312,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-amber-900">🌰 Saatgut-Lager</h3>
-                <button onclick="closeSeedsModal()" class="b3-action b3-outline text-gray-400 font-bold">✕</button>
+                <button onclick="closeSeedsModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="b3-action b3-outline text-gray-400 font-bold">✕</button>
             </div>
             <div class="flex justify-between items-center bg-amber-50 p-3 rounded-xl border border-amber-200">
                 <span class="text-xs text-amber-900 font-medium">Neues Saatgut gesucht?</span>
@@ -350,7 +350,7 @@
 
     <div id="beetModal" class="b3-tool-dialog fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeBeetModal()">
         <div class="bg-white p-6 rounded-2xl max-w-xl w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center"><h3 class="font-bold text-lg text-emerald-900">🌿 Beet-Planer</h3><button onclick="closeBeetModal()" class="b3-action b3-outline text-gray-400 font-bold">✕</button></div>
+            <div class="flex justify-between items-center"><h3 class="font-bold text-lg text-emerald-900">🌿 Beet-Planer</h3><button onclick="closeBeetModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="b3-action b3-outline text-gray-400 font-bold">✕</button></div>
             <div id="beetGrid" class="grid grid-cols-4 gap-3"></div>
             <button onclick="closeBeetModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
         </div>
@@ -367,7 +367,7 @@
 
     <div id="galleryModal" class="b3-tool-dialog fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50" onclick="closeGalleryModal()">
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center"><h3 class="font-bold text-lg text-lime-800">📸 Wachstums-Verlauf</h3><button onclick="closeGalleryModal()" class="b3-action b3-outline text-gray-400 font-bold">✕</button></div>
+            <div class="flex justify-between items-center"><h3 class="font-bold text-lg text-lime-800">📸 Wachstums-Verlauf</h3><button onclick="closeGalleryModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="b3-action b3-outline text-gray-400 font-bold">✕</button></div>
             <input type="hidden" id="galleryPlantId">
             <input type="file" id="newGalleryPhoto" accept="image/*" class="text-xs p-2 border rounded-xl w-full">
             <button onclick="addGalleryPhoto()" class="b3-action w-full py-2 bg-lime-600 text-white rounded-xl text-xs font-bold">Foto hinzufügen</button>
@@ -728,7 +728,7 @@
                     : age < 0 ? `<span class="text-[10px] bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">${window.__toolyaUILocale === 'en' ? '📅 Future harvest year' : '📅 Zukünftiges Erntejahr'}</span>`
                     : age > 3 ? `<span class="text-[10px] bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full font-bold">${window.__toolyaUILocale === 'en' ? '⚠️ Germination rate may be low' : '⚠️ Keimfähigkeit evtl. gering'} (${age}${window.__toolyaUILocale === 'en' ? 'y' : 'J'})</span>` : `<span class="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold">${window.__toolyaUILocale === 'en' ? '✅ Good' : '✅ Gut'} (${age}${window.__toolyaUILocale === 'en' ? 'y' : 'J'})</span>`;
                 let amazonSearchUrl = `https://www.amazon.de/s?k=${encodeURIComponent(String(s.name ?? '') + ' saemereien')}&tag=duhrrom-21`;
-                return `<div class="b3-plant-store-row p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs"><div><b>${escapeHtml(s.name)}</b> (${window.__toolyaUILocale === 'en' ? 'Harvested' : 'Ernte'}: ${escapeHtml(s.year)})<br>${warning}</div><div class="flex items-center gap-1.5"><a href="${amazonSearchUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">${window.__toolyaUILocale === 'en' ? '🛒 Buy again' : '🛒 Neu kaufen'}</a><button onclick="removeSeedItem(${idx})" class="text-red-500 font-bold px-1.5">✕</button></div></div>`;
+                return `<div class="b3-plant-store-row p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs"><div><b>${escapeHtml(s.name)}</b> (${window.__toolyaUILocale === 'en' ? 'Harvested' : 'Ernte'}: ${escapeHtml(s.year)})<br>${warning}</div><div class="flex items-center gap-1.5"><a href="${amazonSearchUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">${window.__toolyaUILocale === 'en' ? '🛒 Buy again' : '🛒 Neu kaufen'}</a><button aria-label="${window.__toolyaUILocale === 'en' ? 'Remove seeds' : 'Saatgut entfernen'}" onclick="removeSeedItem(${idx})" class="text-red-500 font-bold px-1.5">✕</button></div></div>`;
             }).filter(Boolean).join('');
             document.getElementById('seedList').innerHTML = seedItems || `<p class="text-xs text-gray-400 text-center py-2">${window.__toolyaUILocale === 'en' ? 'No seeds in stock.' : 'Kein Saatgut im Lager.'}</p>`;
         }
@@ -805,7 +805,7 @@
                         <div><b>${escapeHtml(item.name)}</b> <span class="text-gray-500">(${escapeHtml(window.__toolyaUILocale === 'en' && item.qty === '1 Stk' ? '1 pc' : item.qty)})</span></div>
                         <div class="flex items-center gap-1.5">
                             <a href="${amazonUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg shadow-sm">${window.__toolyaUILocale === 'en' ? '🛒 Reorder' : '🛒 Nachbestellen'}</a>
-                            <button onclick="removeInventoryItem(${idx})" class="text-red-500 font-bold px-1.5 hover:text-red-700">✕</button>
+                            <button aria-label="${window.__toolyaUILocale === 'en' ? 'Remove inventory item' : 'Lagerartikel entfernen'}" onclick="removeInventoryItem(${idx})" class="text-red-500 font-bold px-1.5 hover:text-red-700">✕</button>
                         </div>
                     </div>
                 `;
@@ -1279,7 +1279,7 @@
                                 <button onclick="openDiaryModal(${p.id})" class="b3-action b3-outline px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-semibold" title="${window.__toolyaUILocale === 'en' ? 'Diary' : 'Tagebuch'}">📖</button>
                                 <button onclick="showQrCodeForPlant(${p.id})" class="b3-action b3-outline px-2.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold" title="QR-Code">📱</button>
                                 <button onclick="openEditModal(${p.id})" class="b3-action b3-outline px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="${window.__toolyaUILocale === 'en' ? 'Edit' : 'Bearbeiten'}">✏️</button>
-                                <button onclick="deletePlant(${p.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                                <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete plant' : 'Pflanze löschen'}" onclick="deletePlant(${p.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
                     `;

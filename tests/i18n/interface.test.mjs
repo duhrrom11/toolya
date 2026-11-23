@@ -3548,3 +3548,40 @@ test('household and parking PDFs localize report values without modifying stored
   }
  }
 });
+
+test('icon-only tool actions have distinct accessible names in German and English', async () => {
+ const {readFileSync} = await import('node:fs');
+ const {runInNewContext} = await import('node:vm');
+ const cases = [
+  ['housemates', 2, [
+   ['deleteReceipt', 'Buchung löschen', 'Delete transaction'],
+   ['deleteSavingsGoal', 'Sparziel löschen', 'Delete savings goal']
+  ]],
+  ['parking', 2, [['deleteSession', 'Parkvorgang löschen', 'Delete parking session']]],
+  ['plants', 6, [
+   ['removeSeedItem', 'Saatgut entfernen', 'Remove seeds'],
+   ['removeInventoryItem', 'Lagerartikel entfernen', 'Remove inventory item'],
+   ['deletePlant', 'Pflanze löschen', 'Delete plant']
+  ]],
+  ['meters', 1, []]
+ ];
+ for (const [tool, closeCount, actions] of cases) {
+  const html = readFileSync(new URL('../../tools/' + tool + '/index.html', import.meta.url), 'utf8');
+  const {document} = parseHTML(html);
+  const closeButtons = [...document.querySelectorAll('button[data-tool-en-aria-label="Close"]')]
+   .filter(button => button.textContent.trim() === '✕');
+  assert.equal(closeButtons.length, closeCount, tool);
+  for (const [locale, expected] of [['en', 'Close'], ['de', 'Schließen']]) {
+   applyToolInterfaceLocale(document, tool, locale);
+   for (const button of closeButtons) assert.equal(button.getAttribute('aria-label'), expected);
+   for (const [action, german, english] of actions) {
+    const marker = 'onclick="' + action + '(';
+    const start = html.lastIndexOf('<button', html.indexOf(marker));
+    const expression = html.slice(start, html.indexOf(marker)).match(/aria-label="\$\{([^}]+)\}"/)?.[1];
+    assert.ok(expression, action);
+    assert.equal(runInNewContext(expression, {window: {__toolyaUILocale: locale}, english: locale === 'en'}),
+     locale === 'en' ? english : german, action);
+   }
+  }
+ }
+});
