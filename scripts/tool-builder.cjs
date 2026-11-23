@@ -49,7 +49,7 @@ const specs = Object.freeze({
       '        <label for="percentage-part">Teil</label>',
       '        <input id="percentage-part" name="part" type="number" min="0" step="any" required inputmode="decimal">',
       '        <label for="percentage-total">Gesamt</label>',
-      '        <input id="percentage-total" name="total" type="number" min="0.000001" step="any" required inputmode="decimal">',
+      '        <input id="percentage-total" name="total" type="number" min="0" step="any" required inputmode="decimal">',
       '        <button class="draft-action" type="submit">Berechnen</button>',
       '      </form>',
       '      <output id="percentage-result" aria-label="Prozentergebnis">–</output>',
