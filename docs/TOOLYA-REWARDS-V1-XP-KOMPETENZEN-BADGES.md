@@ -92,3 +92,8 @@ Die 30-KP-Grenzen sind **vorläufig**, müssen bei der eventbasierten Vergabe oh
 **Jetzt erledigt:** Nur diese Spezifikation und eine korrigierende Prioritätsnotiz in der bisherigen Roadmap im Planungsbranch.  
 **Nicht erledigt:** Code, Datenbankmigrationen, Filmproduktion, Live-Änderungen.  
 **Weitergeltend:** Ein späteres separates Projekt darf sich den zehn Mystery-Videos widmen, nachdem das Kernsystem zufriedenstellend funktioniert und der Nutzer es ausdrücklich wieder aufgreift. Bis dahin keine Zeit/Credits für Medienproduktion oder öffentliche Rankings einsetzen.
+
+
+## H. Konkretisierung von XP, Kompetenzpunkten und Badges (23.11.2026)
+
+[Verbindliches V1-Detailregelwerk mit Werteentwurf, allen zwölf Tool-Events, Badge-Meilensteinen, Datenschutz-/Anti-Farming-Regeln und präzisen Abnahmetests](TOOLYA-REWARDS-V1-REGELWERK-UND-ABNAHME.md). Diese neuere Spezifikation präzisiert die offenen Beispielwerte dieser Übersicht. Kein Live-Code und keine Änderung an `main`.
