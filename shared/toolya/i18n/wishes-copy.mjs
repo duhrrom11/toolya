@@ -1,5 +1,18 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+ "Entdecke öffentliche Sammlungen, lerne ihre Ersteller kennen und finde neue Geschenkideen. Private Sammlungen werden nicht angezeigt.": "Explore public collections, meet their creators and discover new gift ideas. Private collections are not displayed.",
+ "Meine Merkliste öffnen ↗": "Open my bookmarks ↗",
+ "Neue öffentliche Sammlungen gefolgter Profile, deine gemerkten Wunschwelten und passende Inspiration an einem Ort.": "New public collections from profiles you follow, your bookmarked wish lists and relevant inspiration in one place.",
+ "Öffentliche Wunschsammlung": "Public wish collection",
+ "🔖 Meine Merkliste": "🔖 My bookmarks",
+ "🎀 Meine Geschenkreservierungen verwalten": "🎀 Manage my gift reservations",
+ "Profil wird geladen …": "Loading profile…",
+ "ÖFFENTLICHES WISHES-PROFIL": "PUBLIC WISHES PROFILE",
+ "💝 Öffentliche Wünsche ansehen": "💝 View public wishes",
+ "Neue öffentliche Wunschwelten gefolgter Profile, neue Follower und Likes auf deine Sammlungen – alles aus den vorhandenen Community-Daten.": "New public wish lists from followed profiles, new followers and likes on your collections, all based on existing community data.",
+ "🎀 Meine Reservierungen": "🎀 My reservations",
+ "Alle Aufgaben verwalten ↗": "Manage all tasks ↗",
+ "🌈 Weitere Sammlungen entdecken": "🌈 Discover more collections",
  "Budgetvorschläge, Checklisten und frühzeitige Hinweise für kommende Anlässe – nachvollziehbar aus deinen historischen Jahresabschlüssen.": "Budget suggestions, checklists and early reminders for upcoming occasions, based on historical year-end summaries.",
  "📅 Anlässe verwalten": "📅 Manage occasions",
  "📊 Historische Abschlüsse": "📊 Historical summaries",
