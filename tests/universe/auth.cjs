@@ -74,9 +74,10 @@ async function openMailLink(message) {
   return new URL(verification.headers.get('location'));
 }
 
-async function verifyRest(accessToken, profile) {
+async function verifyRest(accessToken, profile, userId) {
   const guest = await rpc('state', {});
   assert.equal(guest.status, 401, 'The anonymous API role cannot read an account');
+  assert.equal((await rpc('export', {})).status, 401);
   const state = await rpc('state', {}, accessToken);
   const initialState = await state.json();
   assert.equal(state.status, 200, initialState.message);
@@ -110,6 +111,11 @@ async function verifyRest(accessToken, profile) {
   const pausedState = await paused.json();
   assert.equal(pausedState.visible, false);
   assert.deepEqual(await readRanking(), []);
+  const exported = await rpc('export', {}, accessToken);
+  assert.equal(exported.status, 200);
+  assert.deepEqual(await exported.json(), {
+    version: 1, account_id: userId, player: pausedState, milestones: [], wishlist_bookmarks: [],
+  });
   return pausedState;
 }
 
@@ -187,7 +193,7 @@ async function run() {
         PGRST_SERVER_PORT: '55262', PGRST_LOG_LEVEL: 'warn',
       } });
       await waitReady(rest + '/', 'PostgREST');
-      savedState = await verifyRest(confirmationToken, profile);
+      savedState = await verifyRest(confirmationToken, profile, user.id);
       console.log('PostgREST: confirmed GoTrue session, anonymous denial, private schema, quest persistence and leaderboard opt-in verified');
     }
 

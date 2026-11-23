@@ -14,6 +14,7 @@ translate({
   decor: ['Dekoration', 'Decoration'], save: ['Speichern', 'Save'],
   chapter: ['Die verschwundene Laterne', 'The Missing Lantern'], question: ['Wohin gehst du?', 'Where do you go?'],
   continue: ['Weiter', 'Continue'], profile: ['Mein Profil', 'My profile'],
+  export: ['Meine Universe-Daten herunterladen', 'Download my Universe data'],
   private: ['Diese Angaben bleiben in deinem Konto. Die Rangliste verwendet einen eigenen Anzeigenamen.', 'These details stay in your account. The leaderboard uses a separate display name.'],
   first: ['Vorname', 'First name'], last: ['Nachname', 'Last name'],
   country: ['Land (freiwillig)', 'Country (optional)'], avatar: ['Profilbild-Link (freiwillig)', 'Profile image link (optional)'],
@@ -113,6 +114,7 @@ function render() {
   renderQuest();
   if (!state) {
     $('profile-form').reset();
+    $('export-status').textContent = '';
     $('ranking-form').reset();
     $('ranking').replaceChildren();
     $('room-symbol').textContent = '';
@@ -216,6 +218,32 @@ function submit(id, action) {
     }
   });
 }
+
+const exportButton = $('export-data');
+exportButton.addEventListener('click', async () => {
+  if (!state || !account || exportButton.disabled) return;
+  const epoch = request;
+  const owner = account;
+  exportButton.disabled = true;
+  const status = $('export-status');
+  status.textContent = '';
+  try {
+    const data = await rpc('export');
+    if (epoch !== request) return;
+    if (data?.account_id !== owner) throw new Error('Unexpected account in export');
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+    const download = element('a');
+    download.href = url;
+    download.download = 'toolya-universe.json';
+    download.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    status.textContent = t('Deine Universe-Daten sind zum Download bereit.', 'Your Universe data is ready to download.');
+  } catch {
+    if (epoch === request) status.textContent = t('Der Download ist gerade nicht möglich. Bitte versuche es erneut.', 'The download is unavailable right now. Please try again.');
+  } finally {
+    exportButton.disabled = false;
+  }
+});
 
 submit('enable', () => rpc('toggle', { p_active: true }));
 submit('pause', () => rpc('toggle', { p_active: false }));

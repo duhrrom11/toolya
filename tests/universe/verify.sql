@@ -1,6 +1,7 @@
 do $$
 begin
   if has_function_privilege('anon', 'public.universe_state()', 'EXECUTE') or
+     has_function_privilege('anon', 'public.universe_export()', 'EXECUTE') or
      has_schema_privilege('authenticated', 'toolya_universe', 'USAGE') then
     raise exception 'Unexpected private schema or API access';
   end if;
@@ -59,6 +60,11 @@ begin
     raise exception 'Unverified account has access';
   exception when insufficient_privilege then null;
   end;
+  begin
+    perform public.universe_export();
+    raise exception 'Unverified account can export';
+  exception when insufficient_privilege then null;
+  end;
 end $$;
 
 select set_config('test.uid', '00000000-0000-4000-8000-000000000001', false);
@@ -103,12 +109,20 @@ end $$;
 
 select set_config('test.uid', '00000000-0000-4000-8000-000000000002', false);
 do $$
+declare export jsonb;
 begin
   perform public.universe_toggle(true);
   if public.universe_collect(false)->>'xp' <> '0' or public.universe_collect(true)->>'xp' <> '0'
      or public.universe_state()->'profile' <> 'null'::jsonb
      or public.universe_wish_bookmarks() <> '[]'::jsonb then
     raise exception 'Other account state leaked or invalid records counted';
+  end if;
+  export := public.universe_export();
+  if export->>'account_id' is distinct from '00000000-0000-4000-8000-000000000002' or
+     export->'player' is distinct from public.universe_state() or
+     export->'milestones' is distinct from '[]'::jsonb or
+     export->'wishlist_bookmarks' is distinct from '[]'::jsonb then
+    raise exception 'Export leaked another account';
   end if;
   begin
     perform public.universe_visibility(true, 'nebel-wanderer');
@@ -119,8 +133,16 @@ end $$;
 
 select set_config('test.uid', '00000000-0000-4000-8000-000000000001', false);
 do $$
+declare export jsonb;
 begin
   perform public.universe_toggle(false);
+  export := public.universe_export();
+  if export->'player' is distinct from public.universe_state() or
+     jsonb_array_length(export->'milestones') is distinct from 12 or
+     not (export->'milestones' @> '[{"source":"pets","points":40},{"source":"estate","points":40}]') or
+     export->'wishlist_bookmarks' is distinct from '["00000000-0000-4000-8000-000000000002"]'::jsonb then
+    raise exception 'Own export is incomplete';
+  end if;
   perform public.universe_toggle(true);
   if public.universe_ranking() <> '[]'::jsonb or public.universe_state()->>'xp' <> '480' then
     raise exception 'Pause visibility or progress regression';

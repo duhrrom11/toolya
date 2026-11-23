@@ -277,6 +277,26 @@ begin
 end;
 $$;
 
+create or replace function public.universe_export()
+returns jsonb language plpgsql stable security definer set search_path = '' as $$
+declare uid uuid := toolya_universe.account();
+begin
+  return jsonb_build_object(
+    'version', 1, 'account_id', uid, 'player', public.universe_state(),
+    'milestones', coalesce((
+      select jsonb_agg(jsonb_build_object('source', source, 'points', points) order by source)
+      from toolya_universe.ledger where user_id = uid
+    ), '[]'::jsonb),
+    'wishlist_bookmarks', coalesce((
+      select jsonb_agg(target order by target)
+      from toolya_universe.wish_bookmarks where user_id = uid
+    ), '[]'::jsonb)
+  );
+end;
+$$;
+
+revoke all on function public.universe_export() from public, anon, authenticated;
+grant execute on function public.universe_export() to authenticated;
 revoke all on all functions in schema toolya_universe from public, anon, authenticated;
 revoke all on function public.universe_state(), public.universe_save_profile(jsonb), public.universe_toggle(boolean),
   public.universe_answer(integer, integer), public.universe_decorate(text), public.universe_visibility(boolean, text),

@@ -60,6 +60,9 @@ async function run() {
             state.handle = values.p_handle;
             break;
           case 'ranking': return route.fulfill({ json: { data: state.visible ? [{ handle: state.handle, xp: 400 }] : [] } });
+          case 'export': return route.fulfill({ json: { data: {
+            version: 1, account_id: 'fixture-account', player: state, milestones: [], wishlist_bookmarks: [],
+          } } });
           case 'state': break;
           default: throw Error('Unexpected RPC ' + action);
         }
@@ -138,6 +141,15 @@ async function run() {
     await page.getByRole('button', { name: 'Join the adventure' }).waitFor();
     assert(await page.locator('#ranking-form').isHidden());
     assert.equal(state.xp, 400);
+    const downloadReady = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Download my Universe data' }).click();
+    const download = await downloadReady;
+    assert.equal(download.suggestedFilename(), 'toolya-universe.json');
+    const exported = JSON.parse(await fs.readFile(await download.path(), 'utf8'));
+    assert.equal(exported.account_id, 'fixture-account');
+    assert.deepEqual(exported.player.profile, { first: 'Éva', last: 'Nguyễn', country: null, avatar: null });
+    assert.equal(exported.player.active, false);
+    assert.equal(exported.player.xp, 400);
 
     await page.goto(origin + '/account/register.html?lang=en&next=' + encodeURIComponent('/tools/moving/?fixture=1#anchor'));
     await page.getByRole('heading', { name: 'Create a Toolya account' }).waitFor();
