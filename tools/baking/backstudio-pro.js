@@ -21,7 +21,10 @@ const proStaticCopy=new Map([["Deine Backform zum Drehen","Your interactive baki
 const proOriginalText=new WeakMap();
 function localizeProControls(){
  const root=$('toolya-backstudio');if(!root)return;
- for(const node of root.querySelectorAll('.bsp-panel h4,.bsp-panel .bsp-muted,.bsp-panel .bsp-actions > button,.bsp-panel > button,.bsp-panel label > span,#toolya-backstudio article > label > span,.bsp-panel option,#bsp-3d-status,#bsp-ocr-status')){
+ // Live status nodes are localized from their last action's exact DE/EN pair.
+ // Never cache their initial text as static copy: that would overwrite an error
+ // or success status before localizeProLiveStatuses can reverse-translate it.
+ for(const node of root.querySelectorAll('.bsp-panel h4,.bsp-panel .bsp-muted,.bsp-panel .bsp-actions > button,.bsp-panel > button,.bsp-panel label > span,#toolya-backstudio article > label > span,.bsp-panel option')){
   if(node.children.length)continue;
   const source=proOriginalText.get(node)??node.textContent;
   if(!proStaticCopy.has(source))continue;
@@ -88,7 +91,7 @@ function init3D(){
  });
  action(controls,'Wieder von vorn',()=>{state.rotX=-.24;state.rotY=.6;render3D()});
  txt('p','Drehe die Form, um sie von allen Seiten anzusehen.',pane).className='bsp-muted';
- txt('p','Hier erscheint deine drehbare Backform.',pane).id='bsp-3d-status';
+ txt('p',proUi('Hier erscheint deine drehbare Backform.','Your interactive baking pan appears here.'),pane).id='bsp-3d-status';
  const dragStart={x:0,y:0};
  canvas.addEventListener('pointerdown',e=>{if(!state.object)return;state.dragging=true;dragStart.x=e.clientX;dragStart.y=e.clientY;canvas.setPointerCapture(e.pointerId)});
  canvas.addEventListener('pointermove',e=>{if(!state.dragging)return;state.rotY+=(e.clientX-dragStart.x)*.01;state.rotX=Math.max(-1.25,Math.min(.8,state.rotX+(e.clientY-dragStart.y)*.01));dragStart.x=e.clientX;dragStart.y=e.clientY;render3D()});
@@ -337,7 +340,7 @@ function initRecipe(){
   finally{btn.disabled=false}
  }).id='bsp-ocr-button';
  txt('p','Bitte die erkannten Zutaten prüfen.',ocr).className='bsp-muted';
- const cameraStatus=txt('p','Wähle Kamera oder Foto.',ocr);
+ const cameraStatus=txt('p',proUi('Wähle Kamera oder Foto.','Choose camera or photo.'),ocr);
  cameraStatus.id='bsp-ocr-status';cameraStatus.setAttribute('role','status');cameraStatus.setAttribute('aria-live','polite');
 
 }
@@ -397,6 +400,8 @@ function initMemory(){
  const controls=txt('div',null,pane);controls.className='bsp-actions';
  action(controls,'Backnotiz speichern',saveExtendedLog);
  action(controls,'Notizen herunterladen',exportMemory);
+ const memoryStatus=txt('p','',pane);
+ memoryStatus.id='bsp-memory-status';memoryStatus.setAttribute('role','status');memoryStatus.setAttribute('aria-live','polite');
  txt('p','Die Notizen bleiben auf deinem Gerät.',pane).className='bsp-muted';
  const gallery=txt('div',null,pane);gallery.id='bsp-memory-list';
  $('bsp-memory-search').addEventListener('input',renderMemory);check.addEventListener('change',renderMemory);
