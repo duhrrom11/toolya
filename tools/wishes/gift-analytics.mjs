@@ -1,5 +1,8 @@
 import {db} from './toolya-client.mjs';
-const $=id=>document.getElementById(id),money=n=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(Number(n)||0);
+import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
+const ui=value=>wishesText(value,globalThis.__toolyaWishesLocale==='en'?'en':'de');
+const locale=()=>globalThis.__toolyaWishesLocale==='en'?'en-GB':'de-DE';
+const $=id=>document.getElementById(id),money=n=>new Intl.NumberFormat(locale(),{style:'currency',currency:'EUR'}).format(Number(n)||0);
 let gifts=[],tasks=[],occasions=[],annualBudgets=[],closings=[],userId=null,selectedYear=new Date().getFullYear();
 function el(tag,text,cls){const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e}
 function yearOf(g){return Number(g.gift_year??g.created_at?.slice(0,4))}
@@ -51,55 +54,55 @@ function renderInsights(){
  const summary=$('insightsSummary'),trends=$('insightsTrends'),budgetsRoot=$('insightsBudgets'),occasionsRoot=$('insightsOccasions'),tips=$('insightsRecommendations');
  for(const e of [summary,trends,budgetsRoot,occasionsRoot,tips])e.replaceChildren();
  const years=[...closings].sort((a,b)=>a.closing_year-b.closing_year);
- if(!years.length){summary.append(el('p','Noch keine historischen Jahresabschlüsse. Erkenntnisse entstehen erst aus gespeicherten Abschlusswerten.','empty'));return}
+ if(!years.length){summary.append(el('p',ui("Noch keine historischen Jahresabschlüsse. Erkenntnisse entstehen erst aus gespeicherten Abschlusswerten."),'empty'));return}
  const budgetYears=years.filter(c=>Array.isArray(c.budgets_snapshot)&&c.budgets_snapshot.length>0);
  const budgetOnTrack=budgetYears.filter(c=>Number(c.actual_total)<=Number(c.budget_total)).length;
  const giftRate=c=>c.gift_count?Math.round(100*c.gifted_count/c.gift_count):null;
  const taskRate=c=>c.task_count===null||c.task_count===0?null:Math.round(100*c.task_done_count/c.task_count);
- const cards=[['Abgeschlossene Jahre',years.length],['Geschenkquote',years.filter(c=>c.gift_count>0).length?Math.round(100*years.reduce((n,c)=>n+c.gifted_count,0)/years.reduce((n,c)=>n+c.gift_count,0))+' %':'Keine Geschenke'],['Jahre innerhalb erfasster Budgets',budgetYears.length?budgetOnTrack+'/'+budgetYears.length+' (Teilbudgets möglich)':'Keine Budgetdaten'],['Historische Ausgaben',money(years.reduce((n,c)=>n+Number(c.actual_total),0))]];
+ const cards=[[ui("Abgeschlossene Jahre"),years.length],[ui("Geschenkquote"),years.filter(c=>c.gift_count>0).length?Math.round(100*years.reduce((n,c)=>n+c.gifted_count,0)/years.reduce((n,c)=>n+c.gift_count,0))+' %':ui("Keine Geschenke")],[ui("Jahre innerhalb erfasster Budgets"),budgetYears.length?budgetOnTrack+'/'+budgetYears.length+ui(" (Teilbudgets möglich)"):ui("Keine Budgetdaten")],[ui("Historische Ausgaben"),money(years.reduce((n,c)=>n+Number(c.actual_total),0))]];
  for(const [label,value] of cards){const card=el('div','','review-kpi');card.append(el('strong',String(value)),el('span',label));summary.append(card)}
- for(const c of years){const row=el('article','','chronicle-card');row.append(el('strong',String(c.closing_year)),el('p','Verschenkt: '+(giftRate(c)===null?'nicht auswertbar':giftRate(c)+' %')+' · Aufgaben: '+(taskRate(c)===null?'nicht auswertbar':taskRate(c)+' %')+' · Ausgaben: '+money(c.actual_total)));trends.append(row)}
- if(years.length>=2){const first=years[0],last=years.at(-1),delta=Number(last.actual_total)-Number(first.actual_total);trends.append(el('p','Ausgabenentwicklung zwischen '+first.closing_year+' und '+last.closing_year+': '+(delta>=0?'+':'')+money(delta)+'. Diese Werte sind Momentaufnahmen, keine Preisprognose.','note'))}
- if(!budgetYears.length)budgetsRoot.append(el('p','Keine Jahresabschlüsse mit ausdrücklich gespeicherten Anlassbudgets.','empty'));
+ for(const c of years){const row=el('article','','chronicle-card');row.append(el('strong',String(c.closing_year)),el('p',ui("Verschenkt: ")+(giftRate(c)===null?ui("nicht auswertbar"):giftRate(c)+' %')+ui(" · Aufgaben: ")+(taskRate(c)===null?ui("nicht auswertbar"):taskRate(c)+' %')+ui(" · Ausgaben: ")+money(c.actual_total)));trends.append(row)}
+ if(years.length>=2){const first=years[0],last=years.at(-1),delta=Number(last.actual_total)-Number(first.actual_total);trends.append(el('p',ui("Ausgabenentwicklung zwischen ")+first.closing_year+ui(" und ")+last.closing_year+': '+(delta>=0?'+':'')+money(delta)+ui(". Diese Werte sind Momentaufnahmen, keine Preisprognose."),'note'))}
+ if(!budgetYears.length)budgetsRoot.append(el('p',ui("Keine Jahresabschlüsse mit ausdrücklich gespeicherten Anlassbudgets."),'empty'));
  for(const c of years){const items=Array.isArray(c.budgets_snapshot)?c.budgets_snapshot:[];if(!items.length)continue;
  const row=el('article','','row'),budget=Number(c.budget_total),actual=Number(c.actual_total),diff=budget-actual;
- row.append(el('strong',c.closing_year+' · '+(diff>=0?'Innerhalb der erfassten Budgets':'Erfasste Budgets überschritten')),el('p','Gespeicherte Anlassbudgets: '+money(budget)+' · Ausgaben: '+money(actual)+' · Differenz: '+money(diff)+' · Nur erfasste Budgets berücksichtigt'));budgetsRoot.append(row)}
+ row.append(el('strong',c.closing_year+' · '+(diff>=0?ui("Innerhalb der erfassten Budgets"):ui("Erfasste Budgets überschritten"))),el('p',ui("Gespeicherte Anlassbudgets: ")+money(budget)+ui(" · Ausgaben: ")+money(actual)+ui(" · Differenz: ")+money(diff)+ui(" · Nur erfasste Budgets berücksichtigt")));budgetsRoot.append(row)}
  const byId=new Map();
  for(const c of years){const gs=Array.isArray(c.gifts_snapshot)?c.gifts_snapshot:[],ts=Array.isArray(c.tasks_snapshot)?c.tasks_snapshot:null,bs=Array.isArray(c.budgets_snapshot)?c.budgets_snapshot:[];
  const ids=new Set([...gs.map(g=>g.occasion_id),...(ts||[]).map(t=>t.occasion_id),...bs.map(b=>b.occasion_id)].filter(Boolean));
  for(const id of ids){const g=gs.filter(x=>x.occasion_id===id),t=ts===null?null:ts.filter(x=>x.occasion_id===id),b=bs.find(x=>x.occasion_id===id);
  const hasEvidence=g.length>0||(t!==null&&t.length>0),complete=hasEvidence&&(!g.length||g.every(x=>x.status==='gifted'))&&(t===null||!t.length||t.every(x=>x.status==='done'));
- const item=byId.get(id)||{name:'Anlass ohne gespeicherten Namen',years:0,completed:0,unknownTasks:0};if(b?.occasion_title)item.name=b.occasion_title;item.years++;if(complete)item.completed++;if(t===null)item.unknownTasks++;byId.set(id,item)}}
+ const item=byId.get(id)||{name:ui("Anlass ohne gespeicherten Namen"),years:0,completed:0,unknownTasks:0};if(b?.occasion_title)item.name=b.occasion_title;item.years++;if(complete)item.completed++;if(t===null)item.unknownTasks++;byId.set(id,item)}}
  const reliable=[...byId.values()].filter(x=>x.years>=2).sort((a,b)=>b.completed/b.years-a.completed/a.years||b.years-a.years);
- if(!reliable.length)occasionsRoot.append(el('p','Für zuverlässige Anlassvergleiche werden mindestens zwei gespeicherte Jahresabschlüsse je Anlass benötigt.','empty'));
- for(const o of reliable){const row=el('article','','row');row.append(el('strong',o.name),el('p',o.completed+'/'+o.years+' Jahresabschlüsse vollständig abgeschlossen'+(o.unknownTasks?' · '+o.unknownTasks+' ohne Aufgabenhistorie':'')));occasionsRoot.append(row)}
+ if(!reliable.length)occasionsRoot.append(el('p',ui("Für zuverlässige Anlassvergleiche werden mindestens zwei gespeicherte Jahresabschlüsse je Anlass benötigt."),'empty'));
+ for(const o of reliable){const row=el('article','','row');row.append(el('strong',o.name),el('p',o.completed+'/'+o.years+ui(" Jahresabschlüsse vollständig abgeschlossen")+(o.unknownTasks?' · '+o.unknownTasks+ui(" ohne Aufgabenhistorie"):'')));occasionsRoot.append(row)}
  const recommendations=[];
- if(years.length<2)recommendations.push(['Mehrjährige Entwicklung','Es liegt erst ein gespeicherter Jahresabschluss vor. Ein Trendvergleich benötigt mindestens zwei Jahre.']);
- if(budgetYears.length===0)recommendations.push(['Budgethistorie ergänzen','Keiner der gespeicherten Abschlüsse enthält Anlassbudgets. Erfasse Jahresbudgets vor zukünftigen Abschlüssen.']);
- else if(budgetYears.some(c=>Number(c.actual_total)>Number(c.budget_total)))recommendations.push(['Budgetplanung überprüfen',budgetYears.filter(c=>Number(c.actual_total)>Number(c.budget_total)).length+' von '+budgetYears.length+' Abschlüssen überschreiten die Summe der erfassten Anlassbudgets (unvollständige Budgeterfassung möglich). Prüfe die Ausgaben und Budgets der betreffenden Jahre.']);
- if(years.some(c=>c.task_count===null))recommendations.push(['Aufgabenhistorie berücksichtigen','Ältere Jahresabschlüsse enthalten teilweise keine Aufgaben-Snapshots. Vergleiche Aufgabenquoten nur dort, wo historische Werte vorliegen.']);
- if(years.some(c=>c.gift_count>0&&c.gifted_count<c.gift_count))recommendations.push(['Offene Geschenkgruppen prüfen','In '+years.filter(c=>c.gift_count>0&&c.gifted_count<c.gift_count).length+' abgeschlossenen Jahren waren nicht alle Geschenke als verschenkt markiert. Nutze frühzeitig Checklisten für zukünftige Jahre.']);
- if(!recommendations.length)recommendations.push(['Gute historische Datenbasis','Die vorhandenen Abschlusswerte zeigen keine Auffälligkeit nach den einfachen Prüfregeln. Behalte deine Jahresabschlüsse und Budgets bei.']);
- for(const [heading,reason] of recommendations){const box=el('article','','story-highlight');box.append(el('strong',heading),el('p','Begründung: '+reason));tips.append(box)}
+ if(years.length<2)recommendations.push([ui("Mehrjährige Entwicklung"),ui("Es liegt erst ein gespeicherter Jahresabschluss vor. Ein Trendvergleich benötigt mindestens zwei Jahre.")]);
+ if(budgetYears.length===0)recommendations.push([ui("Budgethistorie ergänzen"),ui("Keiner der gespeicherten Abschlüsse enthält Anlassbudgets. Erfasse Jahresbudgets vor zukünftigen Abschlüssen.")]);
+ else if(budgetYears.some(c=>Number(c.actual_total)>Number(c.budget_total)))recommendations.push([ui("Budgetplanung überprüfen"),budgetYears.filter(c=>Number(c.actual_total)>Number(c.budget_total)).length+' von '+budgetYears.length+ui(" Abschlüssen überschreiten die Summe der erfassten Anlassbudgets (unvollständige Budgeterfassung möglich). Prüfe die Ausgaben und Budgets der betreffenden Jahre.")]);
+ if(years.some(c=>c.task_count===null))recommendations.push([ui("Aufgabenhistorie berücksichtigen"),ui("Ältere Jahresabschlüsse enthalten teilweise keine Aufgaben-Snapshots. Vergleiche Aufgabenquoten nur dort, wo historische Werte vorliegen.")]);
+ if(years.some(c=>c.gift_count>0&&c.gifted_count<c.gift_count))recommendations.push([ui("Offene Geschenkgruppen prüfen"),'In '+years.filter(c=>c.gift_count>0&&c.gifted_count<c.gift_count).length+ui(" abgeschlossenen Jahren waren nicht alle Geschenke als verschenkt markiert. Nutze frühzeitig Checklisten für zukünftige Jahre.")]);
+ if(!recommendations.length)recommendations.push([ui("Gute historische Datenbasis"),ui("Die vorhandenen Abschlusswerte zeigen keine Auffälligkeit nach den einfachen Prüfregeln. Behalte deine Jahresabschlüsse und Budgets bei.")]);
+ for(const [heading,reason] of recommendations){const box=el('article','','story-highlight');box.append(el('strong',heading),el('p',ui("Begründung: ")+reason));tips.append(box)}
 }
 function renderGiftStory(){
  const overview=$('storyOverview'),chart=$('storyChart'),occasionsRoot=$('storyOccasions');overview.replaceChildren();chart.replaceChildren();occasionsRoot.replaceChildren();
  const years=[...closings].sort((a,b)=>a.closing_year-b.closing_year);
- if(!years.length){overview.append(el('p','Noch keine abgeschlossenen Jahre. Die Erfolgsgeschichte beginnt mit deinem ersten Jahresabschluss.','empty'));return}
+ if(!years.length){overview.append(el('p',ui("Noch keine abgeschlossenen Jahre. Die Erfolgsgeschichte beginnt mit deinem ersten Jahresabschluss."),'empty'));return}
  const totalGifts=years.reduce((n,c)=>n+Number(c.gift_count||0),0),totalGifted=years.reduce((n,c)=>n+Number(c.gifted_count||0),0),totalSpent=years.reduce((n,c)=>n+Number(c.actual_total||0),0);
- const headline=el('div','','story-highlight');headline.append(el('strong',years.length+' abgeschlossene Jahre · '+totalGifted+'/'+totalGifts+' Geschenke verschenkt'),el('p','Historisch erfasste Ausgaben: '+money(totalSpent)+' · Zeitraum '+years[0].closing_year+'–'+years.at(-1).closing_year));overview.append(headline);
- for(const c of years){const row=el('div','','story-year');row.append(el('strong',String(c.closing_year)));const bars=el('div','','story-bars'),giftRate=c.gift_count?Math.round(c.gifted_count/c.gift_count*100):0;const giftBar=el('div','','story-bar'),giftFill=document.createElement('span');giftFill.style.width=giftRate+'%';giftBar.append(giftFill);bars.append(el('span','Geschenke '+giftRate+' %','story-legend'),giftBar);
- if(c.task_count!==null){const taskRate=c.task_count?Math.round(c.task_done_count/c.task_count*100):0,taskBar=el('div','','story-bar tasks'),fill=document.createElement('span');fill.style.width=taskRate+'%';taskBar.append(fill);bars.append(el('span','Aufgaben '+taskRate+' %','story-legend'),taskBar)}else bars.append(el('span','Aufgaben: kein historischer Snapshot','story-legend'));
+ const headline=el('div','','story-highlight');headline.append(el('strong',years.length+ui(" abgeschlossene Jahre · ")+totalGifted+'/'+totalGifts+ui(" Geschenke verschenkt")),el('p',ui("Historisch erfasste Ausgaben: ")+money(totalSpent)+ui(" · Zeitraum ")+years[0].closing_year+'–'+years.at(-1).closing_year));overview.append(headline);
+ for(const c of years){const row=el('div','','story-year');row.append(el('strong',String(c.closing_year)));const bars=el('div','','story-bars'),giftRate=c.gift_count?Math.round(c.gifted_count/c.gift_count*100):0;const giftBar=el('div','','story-bar'),giftFill=document.createElement('span');giftFill.style.width=giftRate+'%';giftBar.append(giftFill);bars.append(el('span',ui("Geschenke ")+giftRate+' %','story-legend'),giftBar);
+ if(c.task_count!==null){const taskRate=c.task_count?Math.round(c.task_done_count/c.task_count*100):0,taskBar=el('div','','story-bar tasks'),fill=document.createElement('span');fill.style.width=taskRate+'%';taskBar.append(fill);bars.append(el('span',ui("Aufgaben ")+taskRate+' %','story-legend'),taskBar)}else bars.append(el('span',ui("Aufgaben: kein historischer Snapshot"),'story-legend'));
  row.append(bars);chart.append(row)}
  const byOccasion=new Map();
  for(const c of years){const gs=Array.isArray(c.gifts_snapshot)?c.gifts_snapshot:[],ts=Array.isArray(c.tasks_snapshot)?c.tasks_snapshot:null,bs=Array.isArray(c.budgets_snapshot)?c.budgets_snapshot:[];
  const ids=new Set([...gs.map(g=>g.occasion_id),...(ts||[]).map(t=>t.occasion_id),...bs.map(b=>b.occasion_id)].filter(Boolean));
- for(const id of ids){const gifts=gs.filter(g=>g.occasion_id===id),tasks=ts===null?null:ts.filter(t=>t.occasion_id===id),budget=bs.find(b=>b.occasion_id===id),existing=byOccasion.get(id)||{title:budget?.occasion_title||'Anlass ohne gespeicherten Namen',entries:[]};if(budget?.occasion_title)existing.title=budget.occasion_title;
+ for(const id of ids){const gifts=gs.filter(g=>g.occasion_id===id),tasks=ts===null?null:ts.filter(t=>t.occasion_id===id),budget=bs.find(b=>b.occasion_id===id),existing=byOccasion.get(id)||{title:budget?.occasion_title||ui("Anlass ohne gespeicherten Namen"),entries:[]};if(budget?.occasion_title)existing.title=budget.occasion_title;
  existing.entries.push({year:c.closing_year,gift_count:gifts.length,gifted_count:gifts.filter(g=>g.status==='gifted').length,task_count:tasks===null?null:tasks.length,task_done_count:tasks===null?null:tasks.filter(t=>t.status==='done').length,spent:gifts.reduce((n,g)=>n+Number(g.actual_amount||0),0),budget:budget?.budget_amount??null});byOccasion.set(id,existing)}}
  const repeated=[...byOccasion.values()].filter(o=>o.entries.length>=2).sort((a,b)=>b.entries.length-a.entries.length||a.title.localeCompare(b.title));
- if(!repeated.length){occasionsRoot.append(el('p','Noch keine Anlässe mit Daten aus mindestens zwei abgeschlossenen Jahren.','empty'));return}
- for(const o of repeated){const section=el('section','','story-highlight'),title=el('strong',o.title+' · '+o.entries.length+' Jahre'),wrap=el('div','','story-table'),table=document.createElement('table'),thead=document.createElement('thead'),header=document.createElement('tr');for(const h of ['Jahr','Geschenke','Aufgaben','Ausgaben','Jahresbudget'])header.append(el('th',h));thead.append(header);table.append(thead);const tbody=document.createElement('tbody');
- for(const entry of o.entries.sort((a,b)=>a.year-b.year)){const tr=document.createElement('tr');for(const v of [entry.year,entry.gifted_count+'/'+entry.gift_count,entry.task_count===null?'Nicht erfasst':entry.task_done_count+'/'+entry.task_count,money(entry.spent),entry.budget===null?'Nicht erfasst':money(entry.budget)])tr.append(el('td',String(v)));tbody.append(tr)}table.append(tbody);wrap.append(table);section.append(title,wrap);occasionsRoot.append(section)}
+ if(!repeated.length){occasionsRoot.append(el('p',ui("Noch keine Anlässe mit Daten aus mindestens zwei abgeschlossenen Jahren."),'empty'));return}
+ for(const o of repeated){const section=el('section','','story-highlight'),title=el('strong',o.title+' · '+o.entries.length+ui(" Jahre")),wrap=el('div','','story-table'),table=document.createElement('table'),thead=document.createElement('thead'),header=document.createElement('tr');for(const h of [ui("Jahr"),ui("Geschenke"),ui("Aufgaben"),ui("Ausgaben"),ui("Jahresbudget")])header.append(el('th',h));thead.append(header);table.append(thead);const tbody=document.createElement('tbody');
+ for(const entry of o.entries.sort((a,b)=>a.year-b.year)){const tr=document.createElement('tr');for(const v of [entry.year,entry.gifted_count+'/'+entry.gift_count,entry.task_count===null?ui("Nicht erfasst"):entry.task_done_count+'/'+entry.task_count,money(entry.spent),entry.budget===null?ui("Nicht erfasst"):money(entry.budget)])tr.append(el('td',String(v)));tbody.append(tr)}table.append(tbody);wrap.append(table);section.append(title,wrap);occasionsRoot.append(section)}
 }
 function renderReview(){
  const root=$('annualReview'),select=$('reviewYear');root.replaceChildren();
@@ -107,21 +110,21 @@ function renderReview(){
  for(const c of [...closings].sort((a,b)=>b.closing_year-a.closing_year)){const o=document.createElement('option');o.value=c.closing_year;o.textContent=String(c.closing_year);select.append(o)}
  if([...select.options].some(o=>o.value===existing))select.value=existing;
  const c=closings.find(c=>c.closing_year===Number(select.value));$('exportYearJson').disabled=!c;$('printYearReview').disabled=!c;
- if(!c){root.append(el('p','Erstelle zuerst einen Jahresabschluss, um einen unveränderlichen Rückblick zu erhalten.','empty'));return}
- const d=reviewData(c),title=el('h3','Mein Geschenk-Jahr '+d.year),stamp=el('p','Abschluss vom '+new Date(d.closed_at).toLocaleDateString('de-DE'),'note');root.append(title,stamp);
+ if(!c){root.append(el('p',ui("Erstelle zuerst einen Jahresabschluss, um einen unveränderlichen Rückblick zu erhalten."),'empty'));return}
+ const d=reviewData(c),title=el('h3',ui("Mein Geschenk-Jahr ")+d.year),stamp=el('p',ui("Abschluss vom ")+new Date(d.closed_at).toLocaleDateString(locale()),'note');root.append(title,stamp);
  const grid=el('div','','review-grid');
- for(const [label,value] of [['Geschenke verschenkt',d.gifted_count+'/'+d.gift_count],['Ausgaben',money(d.actual_total)],['Gespeicherte Budgets',money(d.budget_total)],['Geplante Beträge',money(d.planned_total)],['Aufgaben erledigt',d.task_count===null?'Nicht erfasst':d.task_done_count+'/'+d.task_count],['Abgeschlossene Anlässe',d.occasions.filter(o=>o.completed).length]]){const card=el('div','','review-kpi');card.append(el('strong',String(value)),el('span',label));grid.append(card)}root.append(grid);
- root.append(el('h3','🏅 Meilensteine'));const milestones=el('ul','','review-milestones');
- if(d.gift_count>0&&d.gifted_count===d.gift_count)milestones.append(el('li','Alle '+d.gift_count+' Geschenke als verschenkt abgeschlossen.'));
- if(d.task_count>0&&d.task_done_count===d.task_count)milestones.append(el('li','Alle '+d.task_count+' Jahres-Checklistenaufgaben erledigt.'));
- if(d.occasions.some(o=>o.completed))milestones.append(el('li',d.occasions.filter(o=>o.completed).length+' Anlässe mit vollständig abgeschlossenen Geschenkgruppen oder Checklisten.'));
- if(d.budgets.length)milestones.append(el('li',d.budgets.length+' Anlassbudgets historisch gesichert.'));
- if(!milestones.children.length)milestones.append(el('li','Jahresabschluss gespeichert. Noch keine weiteren messbaren Meilensteine.'));
- root.append(milestones,el('h3','🎂 Erfolgreich abgeschlossene Anlässe'));
+ for(const [label,value] of [[ui("Geschenke verschenkt"),d.gifted_count+'/'+d.gift_count],[ui("Ausgaben"),money(d.actual_total)],[ui("Gespeicherte Budgets"),money(d.budget_total)],[ui("Geplante Beträge"),money(d.planned_total)],[ui("Aufgaben erledigt"),d.task_count===null?ui("Nicht erfasst"):d.task_done_count+'/'+d.task_count],[ui("Abgeschlossene Anlässe"),d.occasions.filter(o=>o.completed).length]]){const card=el('div','','review-kpi');card.append(el('strong',String(value)),el('span',label));grid.append(card)}root.append(grid);
+ root.append(el('h3',ui("🏅 Meilensteine")));const milestones=el('ul','','review-milestones');
+ if(d.gift_count>0&&d.gifted_count===d.gift_count)milestones.append(el('li',ui("Alle ")+d.gift_count+ui(" Geschenke als verschenkt abgeschlossen.")));
+ if(d.task_count>0&&d.task_done_count===d.task_count)milestones.append(el('li',ui("Alle ")+d.task_count+ui(" Jahres-Checklistenaufgaben erledigt.")));
+ if(d.occasions.some(o=>o.completed))milestones.append(el('li',d.occasions.filter(o=>o.completed).length+ui(" Anlässe mit vollständig abgeschlossenen Geschenkgruppen oder Checklisten.")));
+ if(d.budgets.length)milestones.append(el('li',d.budgets.length+ui(" Anlassbudgets historisch gesichert.")));
+ if(!milestones.children.length)milestones.append(el('li',ui("Jahresabschluss gespeichert. Noch keine weiteren messbaren Meilensteine.")));
+ root.append(milestones,el('h3',ui("🎂 Erfolgreich abgeschlossene Anlässe")));
  const completed=d.occasions.filter(o=>o.completed);
- if(!completed.length)root.append(el('p','Keine vollständig abgeschlossenen Anlassgruppen im gespeicherten Stand.','empty'));
- for(const o of completed){const card=el('article','','review-occasion');card.append(el('strong',o.title),el('p','Geschenke: '+o.gifted_count+'/'+o.gift_count+' · Aufgaben: '+(o.task_count===null?'nicht historisch erfasst':o.task_done_count+'/'+o.task_count)+(o.budget_amount===null?'':' · Jahresbudget: '+money(o.budget_amount))));root.append(card)}
- if(d.tasks===null)root.append(el('p','Dieser ältere Jahresabschluss enthält keinen historischen Aufgaben-Snapshot.','note'));
+ if(!completed.length)root.append(el('p',ui("Keine vollständig abgeschlossenen Anlassgruppen im gespeicherten Stand."),'empty'));
+ for(const o of completed){const card=el('article','','review-occasion');card.append(el('strong',o.title),el('p',ui("Geschenke: ")+o.gifted_count+'/'+o.gift_count+ui(" · Aufgaben: ")+(o.task_count===null?ui("nicht historisch erfasst"):o.task_done_count+'/'+o.task_count)+(o.budget_amount===null?'':ui(" · Jahresbudget: ")+money(o.budget_amount))));root.append(card)}
+ if(d.tasks===null)root.append(el('p',ui("Dieser ältere Jahresabschluss enthält keinen historischen Aufgaben-Snapshot."),'note'));
 }
 $('reviewYear').addEventListener('change',renderReview);
 $('exportYearJson').addEventListener('click',()=>{
@@ -132,13 +135,13 @@ $('exportYearJson').addEventListener('click',()=>{
 $('printYearReview').addEventListener('click',()=>{if(closings.some(c=>c.closing_year===Number($('reviewYear').value)))window.print()});
 function renderChronicle(){
  const root=$('yearChronicle');root.replaceChildren();const ordered=[...closings].sort((a,b)=>a.closing_year-b.closing_year);
- if(!ordered.length){root.append(el('p','Noch keine gespeicherten Jahresabschlüsse. Erstelle einen Abschluss, um die Chronik zu beginnen.','empty'));return}
+ if(!ordered.length){root.append(el('p',ui("Noch keine gespeicherten Jahresabschlüsse. Erstelle einen Abschluss, um die Chronik zu beginnen."),'empty'));return}
  let previous=null;
  for(const c of ordered){const box=el('article','','chronicle-card'),giftRate=c.gift_count?Math.round(c.gifted_count/c.gift_count*100):0;
- box.append(el('strong','🔒 '+c.closing_year),el('p','Geschenke: '+c.gifted_count+'/'+c.gift_count+' verschenkt ('+giftRate+' %) · Ausgaben: '+money(c.actual_total)));
- if(c.task_count===null){box.append(el('p','Aufgaben-Snapshot für diesen älteren Abschluss nicht vorhanden.','note'))}
- else{const taskRate=c.task_count?Math.round(c.task_done_count/c.task_count*100):0;box.append(el('p','Aufgaben: '+c.task_done_count+'/'+c.task_count+' erledigt ('+taskRate+' %)'));const progress=document.createElement('progress');progress.max=c.task_count||1;progress.value=c.task_done_count||0;progress.setAttribute('aria-label','Aufgabenfortschritt '+c.closing_year);box.append(progress)}
- if(previous){const delta=Number(c.actual_total)-Number(previous.actual_total);box.append(el('p','Gegenüber dem vorherigen Abschluss '+previous.closing_year+': '+(delta>=0?'+':'')+money(delta)+' Ausgaben'+(previous.task_count!==null&&c.task_count!==null?' · Aufgabenquote '+((c.task_count?Math.round(c.task_done_count/c.task_count*100):0)-(previous.task_count?Math.round(previous.task_done_count/previous.task_count*100):0))+' Prozentpunkte':'')))}
+ box.append(el('strong','🔒 '+c.closing_year),el('p',ui("Geschenke: ")+c.gifted_count+'/'+c.gift_count+ui(" verschenkt (")+giftRate+' %) · Ausgaben: '+money(c.actual_total)));
+ if(c.task_count===null){box.append(el('p',ui("Aufgaben-Snapshot für diesen älteren Abschluss nicht vorhanden."),'note'))}
+ else{const taskRate=c.task_count?Math.round(c.task_done_count/c.task_count*100):0;box.append(el('p',ui("Aufgaben: ")+c.task_done_count+'/'+c.task_count+ui(" erledigt (")+taskRate+' %)'));const progress=document.createElement('progress');progress.max=c.task_count||1;progress.value=c.task_done_count||0;progress.setAttribute('aria-label',ui("Aufgabenfortschritt ")+c.closing_year);box.append(progress)}
+ if(previous){const delta=Number(c.actual_total)-Number(previous.actual_total);box.append(el('p',ui("Gegenüber dem vorherigen Abschluss ")+previous.closing_year+': '+(delta>=0?'+':'')+money(delta)+ui(" Ausgaben")+(previous.task_count!==null&&c.task_count!==null?ui(" · Aufgabenquote ")+((c.task_count?Math.round(c.task_done_count/c.task_count*100):0)-(previous.task_count?Math.round(previous.task_done_count/previous.task_count*100):0))+ui(" Prozentpunkte"):'')))}
  root.append(box);previous=c}
 }
 function renderClosings(){renderChronicle();renderReview();renderGiftStory();renderInsights();
@@ -172,3 +175,6 @@ async function main(){
  $('year').value=String(selectedYear);$('year').addEventListener('change',render);$('content').hidden=false;render();$('status').textContent='Deine private Jahresstatistik ist geladen.';
 }
 main().catch(()=>{$('status').textContent='Statistik konnte nicht geladen werden.'});
+
+// Re-render only read-only historical views on language changes; never rebuild active budget editors.
+document.addEventListener('toolya:wishes-locale-change',()=>{if(!userId)return;renderInsights();renderGiftStory();renderReview();renderChronicle()});
