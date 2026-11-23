@@ -193,3 +193,21 @@ test('recipe OCR review preserves decimal ingredient quantities and private name
  await expect(recipe).toHaveValue('1000,5 g Omas Spezialmehl');
  await expect(page.locator('#bsp-ocr-status')).toContainText('Erkannte Zutaten übernommen');
 });
+
+test('missing camera API exposes localized mobile fallback without altering recipe data',async({page})=>{
+ await mountBackstudio(page);
+ const recipeBefore=await page.locator('#recipe-input').inputValue();
+ await page.evaluate(()=>{
+  Object.defineProperty(navigator,'mediaDevices',{configurable:true,value:undefined});
+  window.__toolyaUILocale='en';
+  document.dispatchEvent(new Event('toolya:locale-change'));
+ });
+ await page.locator('#bsp-camera-open').click();
+ await expect(page.locator('#bsp-ocr-status')).toHaveText('Camera unavailable. Choose “Use phone camera”.');
+ await expect(page.locator('#bsp-camera-native-button')).toBeVisible();
+ await expect(page.locator('#bsp-camera-native')).toHaveAttribute('capture','environment');
+ await expect(page.locator('#recipe-input')).toHaveValue(recipeBefore);
+ await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
+ await expect(page.locator('#bsp-ocr-status')).toHaveText('Kamera nicht verfügbar. Tippe auf „Handykamera verwenden“.');
+ await expect(page.locator('#recipe-input')).toHaveValue(recipeBefore);
+});
