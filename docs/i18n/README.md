@@ -31,7 +31,8 @@ Die Metadaten stammen aus `docs/i18n/quality-config.json`, die Quellkataloge wer
 ## Automatische Qualitäts-Gates
 
 - Harte Fehler: fehlendes DE/EN-Marketingseitenpaar, falsches `lang`, fehlende Sprachwahl, versehentlich entfernte `noindex`-Kennzeichnung bei englischen Guides, fehlender oder leerer Eintrag im bestehenden i18next-Ziel-Namespace, ungültige Routen-Konfiguration und beschädigtes Glossar.
-- Review-Hinweise: unterschiedliche Platzhalter (`{{name}}`, `{amount}`, `${value}`, `%s`), dynamische oder statisch nicht auffindbare CSS-Selektoren, deutsch wirkende Texte auf englischen Seiten, horizontales Überlaufen oder abgeschnittene Sprachumschalter bei 320/390 px.
+- Harte Fehler zusätzlich: verlorene/umbenannte Platzhalter (`{{name}}`, `{amount}`, `${value}`, `%s`) und syntaktisch ungültige CSS-Selektoren. Der erste Referenzlauf zeigt hierfür null Fehler.
+- Review-Hinweise: dynamische oder statisch nicht auffindbare (aber syntaktisch gültige) CSS-Selektoren, deutsch wirkende Texte auf englischen Seiten, horizontales Überlaufen oder abgeschnittene Sprachumschalter bei 320/390 px.
 - Die Tests prüfen mit synthetischen Nachrichten, dass Platzhalterfehler erkennbar sind. Die bestehende Dashboard-Sprachumstellung bleibt reversibel und schreibt **keine** nutzereingegebenen Werte um.
 - Chromium lädt die 17 englischen Marketing-/Infoseiten lokal bei **320 und 390 px**. Externe Requests werden blockiert; Sprachwechsel, Sichtbarkeit des DE-Umschalters und unveränderte lokale Beispiel-Nutzerdaten/Maskottchenwahl werden geprüft. Layoutwarnungen werden als eigene JSON-Evidenz abgelegt und zunächst bewusst **nicht** als produktive Korrektur umgesetzt.
 - Der GitHub-Workflow `.github/workflows/i18n-quality.yml` führt bestehende und neue `tests/i18n/*.test.mjs` und den lokalen Browser-Audit auf Pull Requests aus. Es gibt keine echten Authentifizierungen, Supabase-Zugriffe, Testmails oder Veränderungen an Live-Daten.
