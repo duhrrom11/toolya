@@ -11,6 +11,8 @@ Stand: 23.11.2026. **Quellcode-Audit und Tests, keine produktive Übersetzungsfr
 - Öffentliche DE/EN-Guide-Paare existieren. Die englischen Guides sind wegen teilweise deutsch bleibender App-Oberflächen **bewusst `noindex,follow`**. Kein Test entfernt diesen Status.
 - Das Inventar enthält 12 kanonische Tool-Oberflächen sowie 17 DE/EN-Marketing- und Informationspaare (Startseite, 13 Leitfäden, Galerie, Datenschutz, Impressum). Zusätzlich wird die Dashboard-Oberfläche über die bestehenden `tests/i18n` geprüft.
 
+Für den tatsächlich geprüften Basisstand der zwölf Tools, aller 17 Marketing-/Informationsseiten und die bei 320px entdeckte Galerie-Auffälligkeit siehe [INVENTORY.md](INVENTORY.md). Der Snapshot stammt aus dem ersten grünen CI-Bericht; das Skript berechnet bei jedem Prüflauf eine aktualisierte Fassung.
+
 ## Reproduzierbares Inventar der Übersetzungslücken
 
 ```bash
