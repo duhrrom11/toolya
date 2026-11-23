@@ -11,6 +11,7 @@ on:
       - 'scripts/preview-tool.cjs'
       - 'scripts/create-tool-from-brief.cjs'
       - 'scripts/build-tool-briefs.cjs'
+      - 'scripts/productivity.cjs'
       - 'shared/toolya/tool-builder/**'
       - 'tests/ai/**'
       - '.github/workflows/ai-development.yml'
@@ -26,6 +27,7 @@ on:
       - 'scripts/preview-tool.cjs'
       - 'scripts/create-tool-from-brief.cjs'
       - 'scripts/build-tool-briefs.cjs'
+      - 'scripts/productivity.cjs'
       - 'shared/toolya/tool-builder/**'
       - 'tests/ai/**'
       - '.github/workflows/ai-development.yml'
@@ -50,8 +52,12 @@ jobs:
           node --check scripts/preview-tool.cjs
           node --check scripts/create-tool-from-brief.cjs
           node --check scripts/build-tool-briefs.cjs
+          node --check scripts/productivity.cjs
+          node --check docs/ai/productivity/promptfoo/fixture-provider.cjs
       - name: Run isolated AI development tests
         run: npm run test:ai
+      - name: Validate ChatGPT pattern catalog and synthetic QA fixtures
+        run: npm run productivity:check
       - name: Install browser test dependency without scripts
         run: npm ci --ignore-scripts
       - name: Verify shared mascot header and footer in isolated Chromium

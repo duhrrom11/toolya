@@ -48,3 +48,15 @@ npm run test:i18n
 ```
 
 Berichte und DE/EN-JSON-Exporte werden lokal unter `test-results/i18n-quality/` abgelegt. Keine automatische Änderung von Kundendaten, Laufzeitübersetzungen oder Suchmaschinenindexierung.
+
+### Allgemeine ChatGPT-Produktivität (ohne zusätzlichen Dienst)
+
+Sechs wiederverwendbare Arbeitsmuster und vier schlanke Kontextpakete für Recherche, Entwicklung, Marketing, Entscheidungen, Dokumente und Automatisierung: [ChatGPT Productivity System](docs/ai/productivity/README.md).
+
+```bash
+npm run productivity:list
+npm run productivity:prompt -- --render --pattern research --context toolya-core --task 'Vergleiche aktuelle Optionen mit geprüften Quellen.'
+npm run productivity:check
+```
+
+Die Muster sind direkt in ChatGPT übertragbar. Die lokalen Prüfungen verwenden nur synthetische Beispiele, keine Modellaufrufe oder Supabase-Daten. Externe Werkzeuge (Fabric CLI, Promptfoo, MarkItDown, n8n) werden nicht automatisch installiert oder aktiviert.

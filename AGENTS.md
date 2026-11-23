@@ -60,3 +60,12 @@ Repository: duhrrom11/toolya. Production target: https://toolya.app (niemals too
 - Wortmarke Toolya, Nutzereinträge, Passwörter, gespeicherte Account-/Cloud-Werte, Anhänge und Mascot-Auswahl niemals übersetzen oder verändern.
 - Bestehende englische Guides bleiben noindex, solange fachliche Prüfung und produktive App-Übersetzung nicht abgeschlossen sind; DE/EN-Links und korrektes `lang` erhalten.
 - Die Qualitäts-CLI schreibt ausschließlich Berichte und isolierte JSON-Exporte nach `test-results/`, niemals in die produktiven Kataloge. i18next-cli und i18n-check sind evaluiert, aber hier nicht installiert.
+
+## Allgemeine ChatGPT-Arbeit (Productivity System v1)
+
+- Für Recherche, Umsetzung, Marketing, Entscheidungen, Dokumente und Automatisierung passende **eigene** Arbeitsmuster in `docs/ai/productivity/patterns/` nutzen; Index und kompatible Kontextpakete unter `docs/ai/productivity/catalog.json`.
+- Nur tatsächlich benötigten Kontext laden (allgemein oder Toolya-spezifisch). AGENTS.md und aktuelle Quelldateien haben Vorrang vor statischen Kurzprofilen.
+- `npm run productivity:list` und `npm run productivity:prompt -- --render --pattern research --context general --task '...'` stellen lokal eine kopierbare Anweisung zusammen, **ohne** Modell-API oder ChatGPT-Connector-Einstellungen zu ändern.
+- `npm run productivity:check` prüft strukturelle Ausgabeverträge mit synthetischen Fixtures, **nicht** die faktische Richtigkeit echter ChatGPT-Antworten. Fehlende Quellen oder Aktionen ausdrücklich kennzeichnen.
+- Fabric-Musterprinzip übernommen; Promptfoo, MarkItDown und n8n sind optionale externe Werkzeuge, derzeit keine Runtime-/CI-Abhängigkeit. Details: `docs/ai/productivity/README.md`.
+- Niemals Chat-Inhalte, persönliche Dokumente, API-Keys oder produktive Daten in Prompt-/Fixture-Dateien committen. Keine Automationen, Veröffentlichungen oder Provider-Verbindungen ohne tatsächlich geprüfte Berechtigungen.
