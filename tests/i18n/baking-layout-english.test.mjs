@@ -16,3 +16,13 @@ test('Backstudio shell localization never walks recipe or shopping content',()=>
  assert.ok(!layout.includes('shell.querySelectorAll(\'*\')'));
  assert.match(layout,/window\.__toolyaUILocale==='en'/);
 });
+test('Backstudio scripts remain executable and keep fixed accessibility copy reversible',async()=>{
+ const {execFileSync}=await import('node:child_process');
+ for(const path of ['backstudio.js','backstudio-pro.js','backstudio-layout.js']){
+  assert.doesNotThrow(()=>execFileSync(process.execPath,['--check',new URL('../../tools/baking/'+path,import.meta.url).pathname]),path);
+ }
+ assert.match(layout,/\.bsui-baker\[role="img"\]/);
+ assert.match(layout,/\['↻ Form drehen','↻ Rotate pan'\]/);
+ const backstudio=readFileSync(new URL('../../tools/baking/backstudio.js',import.meta.url),'utf8');
+ assert.match(backstudio,/Schematischer Füllstand','Illustration of the pan fill level/);
+});
