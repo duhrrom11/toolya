@@ -1,7 +1,7 @@
 import {adminText} from './admin-copy.mjs';
 const original=new WeakMap(),attributes=new WeakMap(),implicitOptions=new WeakSet();
 export function applyAdminLocale(document,lang){
- const nodes=document.querySelectorAll('h1,h2,h3,h4,p,button,label,option,summary,header a,input,textarea');
+ const nodes=document.querySelectorAll('h1,h2,h3,h4,p,button,label,option,summary,header a,main a,input,textarea');
  for(const el of nodes){
   if(el.closest('#summary,#finder-results,#results,.admin-metric,[data-private],[contenteditable]'))continue;
   let record=attributes.get(el);if(!record){record=new Map();attributes.set(el,record)}
