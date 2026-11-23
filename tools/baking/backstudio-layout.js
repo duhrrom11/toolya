@@ -7,6 +7,75 @@ const make=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.c
 function button(text,cls,action){const node=make('button',cls,text);node.type='button';node.addEventListener('click',action);return node}
 const cleanNumber=(id,fallback)=>{const value=Number($(id)?.value);return Number.isFinite(value)&&value>0?value:fallback};
 const atlas='../../assets/toolya/outfits.webp?v=20261115-alpha';
+
+// Only the redesigned shell's fixed copy is localized. Never traverse recipe,
+// shopping, pantry, notes or other user-controlled Backstudio content.
+const shellCopy=new Map([
+ ['Die passende Backform. Ganz einfach.','The right baking pan. Made simple.'],
+ ['Backstudio-Navigation','Backstudio navigation'],
+ ['Backstudio-Bereiche','Backstudio sections'],
+ ['Türkiser Toolya-Bäcker im Back-Outfit','Turquoise Toolya baker in baking outfit'],
+ ['Vier Schritte zum Backergebnis','Four steps to your baking result'],
+ ['Einfach backen','Baking made easy'],
+ ['Welche Backform brauchst du?','Which baking pan do you need?'],
+ ['Form auswählen – wir rechnen für dich.','Choose a pan and we will do the maths.'],
+ ['Kuchenhöhe ändern','Change cake height'],
+ ['Trage dein Rezept ein. Hier siehst du die neuen Mengen.','Enter your recipe to see the adjusted quantities here.'],
+ ['✎ Zutaten eingeben','✎ Enter ingredients'],
+ ['♨ Backzeit und Ofen','♨ Baking time and oven'],
+ ['So sieht deine Form aus','This is what your pan looks like'],
+ ['Zum Drehen','Rotate to view'],
+ ['Springform mit Kuchenteig','Springform pan with cake batter'],
+ ['So voll wird deine Form.','This is how full your pan will be.'],
+ ['Deine Rezeptmenge','Your recipe quantity'],
+ ['Das passt','A good fit'],
+ ['Diese Formen passen auch','These pans also fit'],
+ ['Tippe eine Form an.','Select a pan.'],
+ ['Meine eigenen Backformen','My own baking pans'],
+ ['Meine Backformen','My baking pans'],
+ ['Deine Backzeit & Mengen','Your baking time and quantities'],
+ ['Noch mehr Backhelfer','More baking helpers'],
+ ['← Zurück','← Back'],
+ ['Rezept einlesen','Import recipe'],
+ ['Meine Torte planen','Plan my cake'],
+ ['Meine Backnotizen','My baking notes'],
+ ['Meine Einkaufsliste','My shopping list'],
+ ['Backform ändern','Change baking pan'],
+ ['Formen finden','Find pans'],
+ ['Rezeptfoto','Recipe photo'],
+ ['Torte planen','Plan cake'],
+ ['Backnotizen','Baking notes'],
+ ['Einkaufsliste','Shopping list'],
+ ['Form wählen','Choose pan'],
+ ['Zutaten','Ingredients'],
+ ['Ergebnis','Result'],
+ ['Foto auswählen','Choose photo'],
+ ['Böden & Creme','Layers & cream'],
+ ['Meine Erfahrungen','My notes'],
+ ['Was noch fehlt','What is still needed'],
+ ['Backstudio-Schnellzugriff','Backstudio shortcuts']
+]);
+function localizeShell(shell,sub,side,stepper,header,quick,navButtons,views){
+ const nodes=[sub,side,stepper,header,quick,
+  ...navButtons.values(),...Object.values(views).map(item=>item.view),
+  ...shell.querySelectorAll('.bsui-side-title,.bsui-side-nav,.bsui-section-eyebrow,.bsui-title,.bsui-subtitle,.bsui-recipe-details > summary,.bsui-empty,.bsui-stage-top,.bsui-stage-pan img,.bsui-hero-status,.bsui-recommend-detail > summary,.bsui-return,.bsui-additional > summary,.bsui-step,.bsui-quick,.bsui-tool-head')];
+ for(const node of new Set(nodes)){
+  if(!node)continue;
+  for(const attr of ['aria-label','alt']){
+   const original=node.dataset[attr==='aria-label'?'bsuiOriginalAria':'bsuiOriginalAlt']||node.getAttribute(attr);
+   if(!original)continue;
+   node.dataset[attr==='aria-label'?'bsuiOriginalAria':'bsuiOriginalAlt']=original;
+   node.setAttribute(attr,window.__toolyaUILocale==='en'?(shellCopy.get(original)||original):original);
+  }
+  for(const child of node.childNodes){
+   if(child.nodeType!==3)continue;
+   const original=child.__bsuiOriginalCopy??child.nodeValue;
+   child.__bsuiOriginalCopy=original;
+   const trimmed=original.trim(),translated=window.__toolyaUILocale==='en'?(shellCopy.get(trimmed)||trimmed):trimmed;
+   if(shellCopy.has(trimmed))child.nodeValue=original.replace(trimmed,translated);
+  }
+ }
+}
 const navItems=[
  ['core','♧','Backform ändern'],
  ['finder','⚖','Formen finden'],
@@ -228,7 +297,7 @@ function init(){
  // Keep existing message observable for accessibility while showing a concise status at the top.
  const existingMessage=$('bs-message');if(existingMessage){existingMessage.setAttribute('aria-live','polite');existingMessage.classList.add('bsui-site-message');header.after(existingMessage)}
  if($('recipe-input')?.value.trim())recipeDetails.open=false;
- document.addEventListener('toolya:locale-change',requestSync);
+ const repaintShell=()=>localizeShell(shell,sub,side,stepper,header,quick,navButtons,views);\n document.addEventListener('toolya:locale-change',repaintShell);\n document.addEventListener('toolya:locale-change',requestSync);\n repaintShell();
  sync();showView('core');
  document.dispatchEvent(new Event('toolya:backstudio-layout-ready'));
 }
