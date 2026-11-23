@@ -27,7 +27,9 @@ const staticBackstudioCopy = new Map([["Alles für deinen Kuchen auf einen Blick
 const backstudioSourceNodes = new WeakMap();
 function renderBackstudioStaticCopy(){
  const host=el('toolya-backstudio');if(!host)return;
- for(const target of host.querySelectorAll('h2,h3,article > p,article > label,article > button,article option,#bs-message')){
+ // #bs-message is a live status. Reusing its initial text as a static source
+ // would silently replace a later action result on every locale change.
+ for(const target of host.querySelectorAll('h2,h3,article > p,article > label,article > button,article option')){
   // Only source-owned, direct text nodes; never touch user data or nested controls.
   for(const node of target.childNodes){
    if(node.nodeType!==3)continue;
@@ -59,14 +61,16 @@ function renderMissing(){
 }
 function queue(items){
  const clean=items.filter(i=>i&&typeof i.title==='string'&&i.title.trim()).map(i=>({title:i.title.trim().slice(0,180),query:String(i.query||i.title).trim().slice(0,120)})).slice(0,50);
- if(!clean.length)return message(ui('Bitte zuerst Zutaten eingeben.','Enter ingredients first.'));
+ if(!clean.length)return showStatus('Bitte zuerst Zutaten eingeben.','Enter ingredients first.');
  const existing=new Set(data.shopping.map(i=>i.title.toLocaleLowerCase('de-DE')));
  let count=0;
  for(const item of clean){if(data.shopping.length>=150)break;if(existing.has(item.title.toLocaleLowerCase('de-DE')))continue;
   data.shopping.push({id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),title:item.title,query:item.query,done:false});
   existing.add(item.title.toLocaleLowerCase('de-DE'));count++;
  }
- save();renderShopping();message(count?count+ui(' Artikel zur Backstudio-Einkaufsliste hinzugefügt. Jeder Artikel hat einen Amazon-Suchbutton.',' items added to your Backstudio shopping list. Each item has an Amazon search button.'):ui('Diese Artikel stehen bereits auf deiner Einkaufsliste.','These items are already on your shopping list.'));
+ save();renderShopping();
+ if(count)showStatus(count+' Artikel zur Backstudio-Einkaufsliste hinzugefügt. Jeder Artikel hat einen Amazon-Suchbutton.',count+' items added to your Backstudio shopping list. Each item has an Amazon search button.');
+ else showStatus('Diese Artikel stehen bereits auf deiner Einkaufsliste.','These items are already on your shopping list.');
 }
 function renderShopping(){
  const root=el('bs-shopping-items');if(!root)return;root.setAttribute('data-user-content','');root.replaceChildren();
@@ -196,6 +200,7 @@ function init(){
  ['orig-shape','orig-d','orig-l','orig-w','target-shape','target-d','target-l','target-w','combo-d1','combo-d2','base-time','recipe-input'].forEach(id=>el(id)?.addEventListener('input',()=>{renderGarage();renderPantry();update()}));
  renderBackstudioStaticCopy();
  renderGarage();renderPantry();renderShopping();logs();update();renderSchedule();
+ showStatus('Bereit.','Ready.');
  document.addEventListener('toolya:locale-change',()=>{
   const status=el('bs-message');
   const pair=statusTranslations.get(status?.textContent);
