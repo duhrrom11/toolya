@@ -276,3 +276,48 @@ test('assistant task confirmations translate prompts but preserve the task name,
  assert.match(source,/new Intl\.NumberFormat\(locale\(\)/);
  assert.match(source,/\.update\(\{\[field\]:newValue,updated_at:/);
 });
+
+test('Wishes occasion planning and checklist copy remains reversible without translating private data',()=>{
+ const pairs=[
+  ['Noch keine kommenden Anlässe erfasst.','No upcoming occasions recorded.'],
+  ['💶 Unverbindlicher Budgetrichtwert: ','💶 Indicative budget benchmark: '],
+  ['gespeicherten Anlassbudgets','saved occasion budgets'],
+  ['historisch erfassten Geschenkausgaben','historically recorded gift spending'],
+  ['💶 Noch kein belastbarer historischer Budgetrichtwert für diesen Anlass.','💶 No reliable historical budget benchmark for this occasion yet.'],
+  ['✅ Checklistenempfehlung: ','✅ Suggested checklist: '],
+  ['Versand-Checkliste (ca. 28 Tage Vorlauf)','Shipping checklist (about 28 days ahead)'],
+  ['Standard-Checkliste (ca. 21 Tage Vorlauf)','Standard checklist (about 21 days ahead)'],
+  ['Checkliste auswählen','Choose checklist'],
+  ['Standard (21 Tage)','Standard (21 days)'],
+  ['Versand (28 Tage)','Shipping (28 days)'],
+  ['Kurzfristig (5 Tage)','Last minute (5 days)'],
+  ['Ausgewählte Checkliste übernehmen','Apply selected checklist'],
+  ['Bitte zuerst die Übernahme ausdrücklich bestätigen.','Confirm that you want to apply the checklist first.'],
+  ['Übernahme läuft …','Applying checklist…'],
+  ['Übernahme fehlgeschlagen. Bitte Anmeldung und Anlass prüfen.','Could not apply checklist. Check your sign-in and occasion.'],
+  ['Mit dem ersten Jahresabschluss starten','Start with your first year-end summary'],
+  ['Checklisten frühzeitig starten','Start checklists early'],
+  ['Historische Budgets aufbauen','Build historical budget data'],
+  ['Budgethistorie nutzen','Use historical budget data']
+ ];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en,de);assert.equal(wishesText(en,'de'),de,en)}
+ const privateOccasion='Geburtstag von Sophia — private note';
+ assert.equal(wishesText(privateOccasion,'en'),privateOccasion);
+ const translatedConfirmation=wishesText('Checkliste für „','en')+privateOccasion+wishesText('“ im Jahr ','en')+'2027'+wishesText(' jetzt erstellen?','en');
+ assert.equal(translatedConfirmation,'Create checklist for “'+privateOccasion+'” in 2027 now?');
+});
+test('occasion planner locale changes preserve checklist controls and do not change RPC arguments',()=>{
+ const source=readFileSync(new URL('../../tools/wishes/gift-assistant.mjs',import.meta.url),'utf8');
+ assert.match(source,/function renderOccasionPlanning\(\)/);
+ assert.match(source,/root\.replaceChildren\(\);tips\.replaceChildren\(\);calendarEvents=\[\]/);
+ assert.match(source,/savedControls=new Map/);
+ assert.match(source,/card\.dataset\.occasionId=String\(o\.id\)/);
+ assert.match(source,/select\.value=savedControls\.get\(String\(o\.id\)\)\?\.template/);
+ assert.match(source,/check\.checked=Boolean\(savedControls\.get\(String\(o\.id\)\)\?\.confirmed\)/);
+ assert.match(source,/if\(taskBusy\|\|checklistBusy\)\{localePending=true;return\}/);
+ assert.match(source,/if\(localePending&&!checklistBusy&&!taskBusy\)/);
+ assert.match(source,/db\.rpc\('wishlist_create_occasion_checklist_year',\{p_occasion_id:o\.id,p_template:select\.value,p_year:new Date\(o\.next\)\.getUTCFullYear\(\)\}\)/);
+ assert.match(source,/addCard\(root,o\.title,lines\)/);
+ assert.match(source,/t\.title\|\|''/);
+ assert.match(source,/toLocaleDateString\(locale\(\)/);
+});
