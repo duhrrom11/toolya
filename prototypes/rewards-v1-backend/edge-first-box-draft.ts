@@ -4,11 +4,14 @@
  * NOT deployed. NOT imported by production frontend.
  * Prerequisites: reviewed staging migrations for schema-draft.sql and
  * first-box-transaction-draft.sql. JWT verification is mandatory.
+ * Supports the existing 9 moving-box fields, including limited base64 photos.
+ * Caller must reload CloudController.load() after successful server-side save.
  *
  * The ONLY privilege boundary for the RPC is the service-role key stored
  * as an Edge Function secret. Never copy that key to static web assets.
  */
 import { createClient } from "jsr:@supabase/supabase-js@2.57.0";
+import { checkFirstBoxRequest, MAX_BODY_BYTES } from "./moving-box-contract.mjs";
 
 const allowedOrigins = new Set([
   "https://toolya.app",
@@ -26,20 +29,6 @@ function respond(status: number, payload: Record<string, unknown>, origin: strin
 }
 function validPositiveInt(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
-}
-function validBody(body: unknown): body is {
-  expectedRevision: number;
-  locationId: number;
-  boxName: string;
-} {
-  if (!body || typeof body !== "object" || Array.isArray(body)) return false;
-  const input = body as Record<string, unknown>;
-  return Object.keys(input).sort().join("|") === "boxName|expectedRevision|locationId" &&
-    validPositiveInt(input.expectedRevision) &&
-    validPositiveInt(input.locationId) &&
-    typeof input.boxName === "string" &&
-    input.boxName.trim().length >= 1 && input.boxName.trim().length <= 150 &&
-    new TextEncoder().encode(input.boxName).length <= 600;
 }
 
 Deno.serve(async (request: Request) => {
@@ -79,18 +68,18 @@ Deno.serve(async (request: Request) => {
   }
 
   const size = Number(request.headers.get("Content-Length") || 0);
-  if (size > 4096) return respond(413, { error: "request_too_large" }, origin);
+  if (size > MAX_BODY_BYTES) return respond(413, { error: "request_too_large" }, origin);
   let input: unknown;
   try {
     const raw = await request.text();
-    if (new TextEncoder().encode(raw).byteLength > 4096) {
+    if (new TextEncoder().encode(raw).byteLength > MAX_BODY_BYTES) {
       return respond(413, { error: "request_too_large" }, origin);
     }
     input = JSON.parse(raw);
   } catch {
     return respond(400, { error: "invalid_json" }, origin);
   }
-  if (!validBody(input)) return respond(400, { error: "invalid_input" }, origin);
+  if (!checkFirstBoxRequest(input)) return respond(400, { error: "invalid_input" }, origin);
 
   const service = createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false }
@@ -99,7 +88,7 @@ Deno.serve(async (request: Request) => {
     p_user_id: authData.user.id,
     p_expected_revision: input.expectedRevision,
     p_location_id: input.locationId,
-    p_box_name: input.boxName.trim()
+    p_box: { ...input.box, name: input.box.name.trim() }
   });
 
   // No untrusted SQL error text returned to browser; never log user content.
