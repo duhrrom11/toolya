@@ -1,6 +1,6 @@
 import {wishesText} from './wishes-copy.mjs';
 const sources=new WeakMap(),attrs=new WeakMap(),implicit=new WeakSet();
-const selector='h1,h2,h3,h4,button,label,option,summary,nav a,input,textarea,select,[data-wish-copy]';
+const selector='h1,h2,h3,h4,button,label,option,summary,nav a,input,textarea,select,[data-wish-copy],[data-toolya-legacy-wishes] .hero .actions a,[data-toolya-legacy-wishes] #login a';
 const excluded='[contenteditable],.ty-wishes-language,[data-user-content],[data-profile-card],.wishlist-result,.profile-card,.gift-card';
 export function applyWishLocale(document,language){
  for(const el of document.querySelectorAll(selector)){
