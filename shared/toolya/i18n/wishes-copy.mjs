@@ -1,5 +1,9 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+ "Aufgabe „": "Task “",
+ "“ wirklich als erledigt markieren?": "”: mark as completed?",
+ "“ wirklich auf ": "”: move to ",
+ " verschieben?": "?",
  "Aufgabe wurde zwischenzeitlich verändert. Bitte Seite neu laden.": "The task was changed in the meantime. Reload the page.",
  "Änderung gespeichert: ": "Change saved: ",
  "Unbekannter Fehler": "Unknown error",
