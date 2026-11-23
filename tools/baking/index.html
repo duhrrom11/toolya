@@ -276,7 +276,7 @@
                             <span class="text-xs font-medium text-slate-700" data-tool-en="Use my oven factor">Meinen Ofenfaktor nutzen</span>
                         </div>
                         <div class="text-xs font-semibold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-lg">
-                            Rezeptmenge: <span id="factor-display">× 1.00</span>
+                            <span data-tool-en="Recipe quantity">Rezeptmenge</span>: <span id="factor-display">× 1.00</span>
                         </div>
                     </div>
                 </div>
@@ -499,7 +499,7 @@
                 <!-- Kennzahlen Grid -->
                 <div id="conversion-results" role="status" aria-live="polite" aria-atomic="true" class="grid grid-cols-2 gap-3">
                     <div class="p-3 rounded-xl bg-orange-50 border border-orange-100 text-center">
-                        <span class="block text-[10px] font-semibold text-orange-600 uppercase">Faktor</span>
+                        <span class="block text-[10px] font-semibold text-orange-600 uppercase" data-tool-en="Factor">Faktor</span>
                         <span id="res-factor" class="text-base font-bold text-slate-900">1.00</span>
                     </div>
                     <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
@@ -852,7 +852,7 @@
             if(origMat === 'silikon') adjTemp += 10;
 
             document.getElementById('res-factor').innerText = factor.toFixed(2);
-            document.getElementById('factor-display').innerText = '× ' + factor.toFixed(2);
+            document.getElementById('factor-display').innerText = '× ' + formatBakingDisplayNumber(factor, 2);
             document.getElementById('res-time').innerText = adjTime + (window.__toolyaUILocale === 'en' ? ' min' : ' Min.');
             document.getElementById('res-temp').innerText = adjTemp + ' °C';
 
@@ -901,7 +901,7 @@
             const tip = document.getElementById('sugar-tip');
 
             if (type === 'xylit') {
-                res.innerText = g + 'g';
+                res.innerText = formatBakingDisplayNumber(g, 1, 0) + ' g';
                 tip.innerText = window.__toolyaUILocale === 'en' ? 'Xylitol is about as sweet as sugar; baking texture may change.' : 'Xylit ist ungefähr so süß wie Zucker; beim Backen kann sich die Textur ändern.';
             } else if (type === 'erythrit') {
                 res.innerText = Math.round(g * 1.4) + (window.__toolyaUILocale === 'en' ? 'g (rough estimate)' : 'g (grober Richtwert)');
