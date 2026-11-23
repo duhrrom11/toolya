@@ -41,7 +41,7 @@ async function main(){
  for(const width of [320,390]){
   const context=await browser.newContext({viewport:{width,height:812},reducedMotion:'reduce'});
   await context.addInitScript(()=>{
-   localStorage.setItem('toolya-locale-v1','en');
+   if(!localStorage.getItem('toolya-locale-v1')) localStorage.setItem('toolya-locale-v1','en');
    localStorage.setItem('synthetic-private-note','Bitte privat lassen.');
    localStorage.setItem('helferlein-toolya-preferences-v1',
     JSON.stringify({character:'purple',motion:'off'}));
