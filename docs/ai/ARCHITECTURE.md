@@ -33,8 +33,9 @@ Stand der Bestandsaufnahme: 23.11.2026. Diese Datei ist ein Navigations- und Ent
 
 ## Grenzen und ehrliche Statusangaben
 
-- Ein Scaffold ist eine HTML/JS-Vorlage, kein automatisch registriertes, lokalisiertes oder veröffentlichtes Tool.
-- Neue Slugs fehlen zunächst in der TOOLS-Zuordnung von platform.mjs; bis zur bewusst geprüften Eintragung gilt dort der Home-Fallback.
+- Ein Scaffold ist ein unveröffentlichter HTML/JS-Entwurf, kein fertig entwickeltes oder automatisch registriertes, lokalisiertes Tool.
+- Neue Slugs fehlen zunächst in der TOOLS-Zuordnung von platform.mjs. Explizite Draft-Metadaten dürfen eine vorhandene Outfit-Rolle für den bestehenden Header-/Footer-/Maskottchen-Renderer ausleihen; ohne gültige Draft-Metadaten gilt weiterhin der Home-Fallback.
+- Die Entwurfsdarstellung achtet auf die gespeicherte Maskottchen-Auswahl; die Freigabe einer neuen Tool-Rolle bleibt ein separater Pull Request.
 - Projekt-Wissensdateien werden nur durch Commits aktualisiert; sie sind keine Echtzeit-Indexierung und kein automatischer ChatGPT-Memory-Sync.
 - Neue Tool-Module und neue Backend-Abhängigkeiten benötigen eigene Tests und dokumentierte Entscheidungen.
 - Auth, Datenbank, Secrets, E-Mail und Deployments sind nicht Bestandteil des Scaffolds.
