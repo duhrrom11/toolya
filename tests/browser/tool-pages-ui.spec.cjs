@@ -2775,3 +2775,54 @@ test('i18n meter share text localizes known types and keeps original records', a
  expect(await page.evaluate(() => metersCloudController.snapshot().readings)).toEqual(readings);
  expect(await page.evaluate(() => window.__toolyaMock.writes.length)).toBe(0);
 });
+
+test('i18n meter history and both PDFs translate stored labels without modifying readings', async ({ page }) => {
+ const readings = [
+  { id: 1, type: 'Kaltwasser', location: 'Garten', name: 'Mein Gartenzähler', date: '2026-11-18', value: 32, note: 'Eigene Notiz' },
+  { id: 2, type: 'Strom-NT', name: 'Mein Nachtzähler', date: '2026-11-19', value: 17 },
+  { id: 3, type: 'Eigener Typ', location: 'Bereich <B>', name: 'Mein Zähler', date: '2026-11-20', value: 21 }
+ ];
+ await isolated(page, true, false, { readings, tarifs: {} });
+ await page.goto(origin + '/tools/meters/index.html?lang=de');
+ await expect.poll(() => page.evaluate(() => metersCloudReady && !!metersCloudController?.ready)).toBe(true);
+ await page.evaluate(() => {
+  window.meterPdfTexts = [];
+  window.jspdf = { jsPDF: class {
+   setFont() {}
+   setFontSize() {}
+   addPage() {}
+   splitTextToSize(value) { return [value]; }
+   text(value) { window.meterPdfTexts.push(value); }
+   save() {}
+  } };
+ });
+
+ const history = page.locator('#readingsList');
+ for (const [locale, type, location, nightType, mainLocation] of [
+  ['en', 'Cold water', 'Garden', 'Electricity (night tariff)', 'Main'],
+  ['de', 'Kaltwasser', 'Garten', 'Strom-NT', 'Haupt']
+ ]) {
+  await page.locator('[data-tool-locale="' + locale + '"]').click();
+  await expect(history).toContainText(type + ' - ' + location);
+  await expect(history).toContainText(nightType + ' - ' + mainLocation);
+  await expect(history).toContainText('Eigener Typ - Bereich <B>');
+
+  const [report, handover] = await page.evaluate(async () => {
+   await exportPDF();
+   const report = window.meterPdfTexts.splice(0).join('\n');
+   await exportHandoverPDF();
+   return [report, window.meterPdfTexts.splice(0).join('\n')];
+  });
+  expect(report).toContain(type + ' (Mein Gartenzähler - ' + location + ')');
+  expect(report).toContain(nightType + ' (Mein Nachtzähler - ' + mainLocation + ')');
+  expect(handover).toContain('[' + type + '] Mein Gartenzähler (' + location + ')');
+  expect(handover).toContain('[' + nightType + '] Mein Nachtzähler (' + mainLocation + ')');
+  for (const pdf of [report, handover]) {
+   expect(pdf).toContain('Eigener Typ');
+   expect(pdf).toContain('Bereich <B>');
+   expect(pdf).toContain('Eigene Notiz');
+  }
+ }
+ expect(await page.evaluate(() => getData().readings)).toEqual(readings);
+ expect(await page.evaluate(() => window.__toolyaMock.writes.length)).toBe(0);
+});

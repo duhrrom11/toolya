@@ -784,6 +784,31 @@
         function openEnergyTipsModal() { document.getElementById('energyTipsModal').classList.remove('hidden'); }
         function closeEnergyTipsModal() { document.getElementById('energyTipsModal').classList.add('hidden'); }
 
+        const englishMeterTypes = new Map([
+            ['Strom', 'Electricity'],
+            ['Strom-NT', 'Electricity (night tariff)'],
+            ['Kaltwasser', 'Cold water'],
+            ['Warmwasser', 'Hot water'],
+            ['Wasser', 'Water'],
+            ['Heizung', 'Heating']
+        ]);
+        const englishMeterLocations = new Map([
+            ['Haupt', 'Main'],
+            ['Hauptwohnung', 'Main apartment'],
+            ['Garten', 'Garden'],
+            ['Einliegerwohnung', 'Separate apartment'],
+            ['Wärmepumpe', 'Heat pump']
+        ]);
+
+        function meterTypeLabel(type, isEnglish) {
+            return isEnglish ? (englishMeterTypes.get(type) ?? type) : type;
+        }
+
+        function meterLocationLabel(location, isEnglish) {
+            const label = location || 'Haupt';
+            return isEnglish ? (englishMeterLocations.get(label) ?? label) : label;
+        }
+
         function copyShareText() {
             const data = getData();
             const isEnglish = window.__toolyaUILocale === 'en';
@@ -805,15 +830,9 @@
                 const key = JSON.stringify([r.type, r.name]);
                 if (!latest[key] || r.date > latest[key].date) latest[key] = r;
             });
-            const englishMeterTypes = new Map([
-                ['Strom', 'Electricity'],
-                ['Strom-NT', 'Electricity (night tariff)'],
-                ['Kaltwasser', 'Cold water'],
-                ['Warmwasser', 'Hot water']
-            ]);
             for (const r of Object.values(latest)) {
                 const unit = r.type.includes('Strom') ? 'kWh' : 'm³';
-                const typeLabel = isEnglish ? (englishMeterTypes.get(r.type) ?? r.type) : r.type;
+                const typeLabel = meterTypeLabel(r.type, isEnglish);
                 text += `- ${typeLabel} (${r.name}): ${r.value} ${unit} (${isEnglish ? 'on' : 'vom'} ${r.date})\n`;
             }
             const copyPrompt = isEnglish ? 'Clipboard unavailable. Copy the text manually:' : 'Zwischenablage nicht verfügbar. Text manuell kopieren:';
@@ -836,6 +855,7 @@
 
         function renderApp() {
             let data = getData();
+            const isEnglish = window.__toolyaUILocale === 'en';
             const filter = document.getElementById('filterType').value;
             const container = document.getElementById('readingsList');
 
@@ -899,7 +919,7 @@
                             <div>
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="text-xs font-bold text-gray-800">${escapeHtml(r.name)}</span>
-                                    <span class="text-xs text-sky-700 font-semibold">(${escapeHtml(r.type)} - ${escapeHtml(r.location || 'Haupt')})</span>
+                                    <span class="text-xs text-sky-700 font-semibold">(${escapeHtml(meterTypeLabel(r.type, isEnglish))} - ${escapeHtml(meterLocationLabel(r.location, isEnglish))})</span>
                                     ${diffText}
                                 </div>
                                 <p class="text-xs text-gray-600 mt-1">
@@ -1064,7 +1084,7 @@
             data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string').forEach((r, idx) => {
                 const unit = r.type.includes('Strom') ? 'kWh' : 'm³';
                 const lines = [
-                    ...doc.splitTextToSize(`${idx + 1}. [${r.type}] ${r.name} (${r.location || 'Haupt'})`, 180),
+                    ...doc.splitTextToSize(`${idx + 1}. [${meterTypeLabel(r.type, pdfEn)}] ${r.name} (${meterLocationLabel(r.location, pdfEn)})`, 180),
                     ...doc.splitTextToSize(`${pdfLabel("Ablesedatum: ","Reading date: ")}${r.date} | ${pdfLabel("Zählerstand: ","Reading: ")}${r.value} ${unit}`, 180),
                     ...(r.note ? doc.splitTextToSize(`${pdfLabel("Bemerkung: ","Note: ")}${r.note}`, 180) : [])
                 ];
@@ -1160,8 +1180,8 @@
             }
             readings.forEach((r) => {
                 const unit = r.type.includes('Strom') ? 'kWh' : 'm³';
-                const typeLabel = pdfEn ? ({Strom:'Electricity',Wasser:'Water',Gas:'Gas',Heizung:'Heating'})[r.type] || r.type : r.type;
-                const line = `${r.date} | ${typeLabel} (${r.name} - ${r.location || pdfLabel('Haupt','Main')}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`;
+                const typeLabel = meterTypeLabel(r.type, pdfEn);
+                const line = `${r.date} | ${typeLabel} (${r.name} - ${meterLocationLabel(r.location, pdfEn)}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`;
                 const lines = doc.splitTextToSize(line, 180);
                 lines.forEach(textLine => {
                     if (y > 275) { doc.addPage(); y = 20; }
