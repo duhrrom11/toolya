@@ -14,7 +14,7 @@
 node --test prototypes/rewards-v1-backend/rules.test.mjs
 ```
 
-**Verifikationsstatus:** Quelldateien auf GitHub gespeichert und per Read-back kontrolliert. **Der Node-Testlauf konnte in dieser Sitzung nicht auf den geklonten Repository-Dateien ausgeführt werden**, da der lokale Container keinen Zugriff auf das GitHub-Raw-Repository hatte. Die beigefügten Tests sind vorhanden, aber **noch nicht als bestanden zu behaupten**. Das SQL wurde noch **nicht** gegen einen isolierten Postgres-Server ausgeführt und ist **nicht** migrationsfreigegeben.
+**Verifikationsstatus:** Die vier ursprünglichen Quelldateien wurden auf GitHub gespeichert. **Inzwischen wurden die neun Regeln- und elf Bridge-Testfälle aus den gespeicherten Testdateien in einer isolierten V8-Testumgebung ausgeführt: 20/20 bestanden.** Das ist ein echter JavaScript-Laufzeittest mit einem kompatiblen Test-Harness, **kein** Node-`node:test`-Kommando und **kein** Supabase-/SQL-Integrationstest. Das SQL wurde weiterhin **nicht** gegen einen isolierten Postgres-Server ausgeführt und ist **nicht** migrationsfreigegeben.
 
 ## Sicherheitsgrenze
 
@@ -35,3 +35,18 @@ node --test prototypes/rewards-v1-backend/rules.test.mjs
 - Datenlösch-/Exportprozesse und Datenschutzprüfung, Regression aller zwölf Tools.
 
 **Ausschluss:** Kein Ranking, keine Mystery-Videos, kein Ko-fi-XP, keine zusätzlichen Levels.
+
+
+## Bridge-Adapter für Umzugskisten (23.11.2026)
+
+- [`moving-first-box-bridge.mjs`](moving-first-box-bridge.mjs) — fachlicher Validator für den **ersten** verifizierten Save-Übergang von null auf eine Kiste, Revision +1, bestehender Standort, gültiger Name, kein Migrationsflag. Ruft anschließend nur eine injizierte **interne** idempotente Grantfunktion auf. Übergibt **keine** Kisteninformationen.
+- [`moving-first-box-bridge.test.mjs`](moving-first-box-bridge.test.mjs) — elf zusätzliche Unit-Testfälle zu Erfolgen, Fehlversuchen, Edit/Delete, Migration, Revision, Standort, Datenschutz und Deduplizierung.
+- **Laufzeitprüfung:** 20/20 Tests (11 Bridge + 9 Regelkern) aus den auf GitHub gespeicherten Quellen mit einem isolierten JavaScript-V8-Harness bestanden. Zusätzlich 12 gezielte interaktive Szenarien im selben Harness erfolgreich. **Nicht** identisch mit einem echten Node.js-/Supabase-Stagingtest.
+- **Wichtige Grenze:** Der Bridge-Code enthält bewusst keine öffentliche HTTP-Funktion und keine direkte Verbindung zur Live-Website. Ein Attacker könnte frei gewählte Browser-Snapshots und `persistenceConfirmed=true` behaupten. Die Bridge darf deshalb **nur** von einem noch zu implementierenden kontrollierten Serverprozess mit **serverseitig ermitteltem** Vorher-/Nachher-Zustand und verifiziertem Persistenzbeleg aufgerufen werden. Browser-/DOM-Events sind keine Belege. Ohne diesen Prozess: kein Grant.
+
+Zusätzlicher Testbefehl für eine später geklonte lokale Arbeitskopie:
+
+```sh
+node --test prototypes/rewards-v1-backend/*.test.mjs
+```
+
