@@ -250,7 +250,7 @@ test('gift assistant dynamic task UI translates reversibly without mutating priv
  assert.match(source,/toLocaleDateString\(locale\(\)/);
  assert.match(source,/document\.addEventListener\('toolya:wishes-locale-change'/);
  assert.match(source,/if\(taskBusy\|\|checklistBusy\)\{localePending=true;return\}/);
- assert.match(source,/taskBusy=false;button.disabled=false;if\(localePending\)/);
+ assert.match(source,/taskBusy=false;button.disabled=false;if\(localePending&&!checklistBusy\)/);
  assert.match(source,/\.eq\('user_id',taskUserId\)/);
  assert.match(source,/el\('h3',t\.title\)/);
  assert.match(source,/e\.task_title/);
@@ -293,8 +293,8 @@ test('Wishes occasion planning and checklist copy remains reversible without tra
   ['Kurzfristig (5 Tage)','Last minute (5 days)'],
   ['Ausgewählte Checkliste übernehmen','Apply selected checklist'],
   ['Bitte zuerst die Übernahme ausdrücklich bestätigen.','Explicitly confirm the import first.'],
-  ['Übernahme läuft …','Applying checklist…'],
-  ['Übernahme fehlgeschlagen. Bitte Anmeldung und Anlass prüfen.','Could not apply checklist. Check your sign-in and occasion.'],
+  ['Übernahme läuft …','Import in progress…'],
+  ['Übernahme fehlgeschlagen. Bitte Anmeldung und Anlass prüfen.','Import failed. Check the sign-in and occasion.'],
   ['Mit dem ersten Jahresabschluss starten','Start with your first year-end summary'],
   ['Checklisten frühzeitig starten','Start checklists early'],
   ['Historische Budgets aufbauen','Build historical budget data'],
