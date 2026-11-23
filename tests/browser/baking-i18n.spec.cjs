@@ -13,6 +13,9 @@ test('English cake-pan guide calculates an example and includes the complete mod
 });
 
 async function mountBackstudio(page){
+ // An actual same-origin document is required for the real storage contract.
+ // setContent() on about:blank would make localStorage throw SecurityError.
+ await page.goto('/404.html');
  // Supply only the original calculator's public form controls. The real
  // Backstudio and Pro scripts construct their own panels and run unchanged.
  const controls={
