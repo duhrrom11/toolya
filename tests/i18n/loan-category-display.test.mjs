@@ -61,6 +61,7 @@ test('canonical category badges are HTML-escaped and static selects keep canonic
  assert.match(source, /escapeHtml\(loanCategoryDisplay\(i\.category\)\)/);
  assert.match(source, /escapeHtml\(i\.category \? loanCategoryDisplay\(i\.category\)/);
  assert.match(source, /loanCategoryDisplay\(i\.category\).*?option\.dataset\.category = String\(i\.category/s);
+ assert.match(source, /safeGpsUrl\(i\.gpsLink\).*?window\.__toolyaUILocale === 'en' \? '📍 Open GPS tracker' : '📍 GPS-Tracker öffnen'/s);
  for (const category of ['Werkzeug','Elektronik','Bücher & Medien','Sport & Freizeit','Sonstiges']) {
   const escaped = category.replace(/[.*+?^$\{\}()|[\]\\]/g, '\\$&');
   assert.equal([...source.matchAll(new RegExp('<option value="' + escaped + '" data-tool-en=', 'g'))].length, 2, category);
