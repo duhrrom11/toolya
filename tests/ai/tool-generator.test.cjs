@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const {spawnSync} = require('node:child_process');
-const {parseOptions, renderToolFiles, generateTool} = require('../../scripts/create-tool.cjs');
+const {OUTFITS, parseOptions, renderToolFiles, generateTool} = require('../../scripts/create-tool.cjs');
 
 const repoRoot = path.resolve(__dirname, '../..');
 function sandbox(fn) {
@@ -26,6 +26,10 @@ test('strict input prevents traversal, broken names and HTML injection', () => {
   }
   assert.throws(() => renderToolFiles({...sample, title: 'A'}), /title/);
   assert.throws(() => renderToolFiles({...sample, description: 'Line\nBreak and more'}), /description/);
+  for (const outfit of ['__proto__', 'invalid', '../plants', 'constructor']) {
+    assert.throws(() => renderToolFiles({...sample, outfit}), /outfit/);
+  }
+  assert.equal(parseOptions(['--slug', 'draft', '--title', 'Draft', '--description', 'Long enough description', '--outfit', 'plants']).outfit, 'plants');
   assert.throws(() => parseOptions(['--slug', 'demo', '--unknown', 'x']), /Unknown argument/);
   assert.throws(() => parseOptions(['--slug', '--title', 'broken']), /Missing or duplicate/);
   const html = renderToolFiles(sample)['index.html'];
@@ -41,6 +45,12 @@ test('generated prototype is noindex, local-only and uses shared platform', () =
   assert.match(html, /noindex,nofollow/);
   assert.match(html, /shared\/toolya\/platform\.mjs/);
   assert.match(html, /shared\/toolya\/alpha\.css/);
+  assert.match(html, /data-toolya-draft="true"/);
+  assert.match(html, /name="toolya-draft-outfit" content="home"/);
+  assert.match(html, /class="b3-header"/);
+  assert.match(html, /class="b3-tool-title"/);
+  assert.match(html, /class="b3-tool-icon"/);
+  assert.doesNotMatch(html, /<a[^>]*class="ty-tool-wordmark"/); // platform owns the wordmark
   assert.match(html, /role="status"/);
   assert.match(files['README.md'], /kein fertiges Tool/);
   assert.doesNotMatch(files['app.mjs'], /\b(fetch|localStorage|sessionStorage|supabase)\b/);
@@ -89,4 +99,18 @@ test('AI instructions retain production and mascot safety boundaries', () => {
     'Wishlist', 'AGENTS.md', 'docs/ai/', 'production',
     'Pull Request'
   ]) assert.ok(rules.includes(anchor), anchor);
+});
+
+test('draft outfit role is drawn from established Toolya roles only', () => {
+  const inventory = JSON.parse(fs.readFileSync(path.join(repoRoot, 'docs/runtime-port-inventory.json'), 'utf8'));
+  assert.deepEqual(OUTFITS.filter(x => x !== 'home').sort(), Object.values(inventory.routes).sort());
+  const themed = renderToolFiles({...sample, outfit: 'plants'});
+  assert.match(themed['index.html'], /name="toolya-draft-outfit" content="plants"/);
+  assert.match(themed['README.md'], /Outfit: plants/);
+  const platform = fs.readFileSync(path.join(repoRoot, 'shared/toolya/platform.mjs'), 'utf8');
+  assert.match(platform, /data(?:set)?\.toolyaDraft/);
+  assert.match(platform, /Object\.hasOwn\(TOOLS, draftOutfit/);
+  assert.match(platform, /TOOLS\[tool\]\|\|draftContext\|\|TOOLS\.home/);
+  assert.match(platform, /\(!TOOLS\[tool\]&&!draftContext\)/);
+  assert.doesNotMatch(themed['index.html'], /https?:\/\/[^" ]+\.supabase\.co/);
 });
