@@ -26,3 +26,17 @@ Diese Dokumente sind ein Einstiegspunkt für neue Chats und Entwicklungsaufträg
 5. Nach abgeschlossener Arbeit Dokumentation mit konkreten PR-/Commit-/Testnachweisen aktualisieren.
 
 **Grenze:** Die gesamte frühere Chat-Historie wurde nicht vollständig exportiert. Diese Wissensbasis ist eine geprüfte Erstkonsolidierung der verfügbaren Erinnerungen und eingelesenen GitHub-Dokumente, kein verlustfreies Archiv sämtlicher Chats.
+
+## Thematische Konsolidierung (23.11.2026)
+
+Aus dem ChatGPT-Export vom 22.11.2026 wurden 103 Gespräche inventarisiert und nach Hauptthema eingeordnet. Die folgenden Dateien sind **kuratierte Zusammenfassungen**, keine Rohtranskripte oder vollständigen Live-Nachweise:
+
+- [Marke, Design und Maskottchen](categories/01-design-brand.md)
+- [Plattform, Cloud und Sicherheit](categories/02-platform-security.md)
+- [Tools und Funktionen](categories/03-tools-products.md)
+- [Marketing, SEO und Content](categories/04-marketing-seo.md)
+- [Internationalisierung](categories/05-internationalization.md)
+- [Projektsteuerung](categories/06-project-governance.md)
+- [Helferlein-Historie](categories/07-helferlein-legacy.md)
+
+Die vollständige Liste der Chat-Titel und Chat-IDs sowie vorläufige Archivierungsempfehlungen wird **nur außerhalb des Repositories** im privaten Auswertungsdokument aufbewahrt. Keine Rohchats, personenbezogenen Details oder Zugangsdaten nach GitHub kopieren. Die Chat-Auswertung identifiziert Anforderungen und historische Arbeitsstände; aktuelle PRs, Branches, CI, Supabase und Live-Website sind vor jeder Releasebehauptung separat zu prüfen.
