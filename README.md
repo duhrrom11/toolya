@@ -13,3 +13,14 @@ Die bestehende Wishlist unter `/tools/wishes/` und ihr Amazon-Importer bleiben e
 [Agentenregeln](AGENTS.md) · [AI-Architektur](docs/ai/ARCHITECTURE.md) · [Entwicklungsablauf](docs/ai/DEVELOPMENT-WORKFLOW.md) · [Tool Generator](docs/ai/TOOL-GENERATOR.md)
 
 Der Offline-Scaffold (`npm run tools:scaffold -- --help`) erzeugt nur unveröffentlichte Tool-Entwürfe. Isolierte Prüfungen: `npm run test:ai`. Die vorhandenen Tools und das produktive Supabase-Projekt werden dadurch nicht verändert.
+
+### Tool Builder – unveröffentlichte Entwürfe
+
+[Funktionsvorlagen und lokale Vorschau](docs/ai/TOOL-BUILDER.md) – Vorlagen `counter`, `percentage`, `checklist` sowie generierte Node-Tests. Alle lokalen Entwürfe bleiben `noindex` und werden nicht automatisch zur Live-Webseite oder Supabase hinzugefügt.
+
+```bash
+npm run tools:scaffold -- --slug mein-testtool --title 'Mein Testtool' --description 'Ein einfacher lokaler Entwurf.' --template counter --dry-run
+npm run tools:preview -- --slug mein-testtool
+```
+
+Der Vorschau-Befehl funktioniert erst **nach** Anlegen des Entwurfs ohne `--dry-run`; er ist ausschließlich über `127.0.0.1` erreichbar.
