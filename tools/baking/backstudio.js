@@ -39,6 +39,8 @@ function renderBackstudioStaticCopy(){
    node.textContent=langEn()?source.replace(source.trim(),staticBackstudioCopy.get(source.trim())):source;
   }
  }
+ const live=el('bs-message');
+ if(live&&['Bereit.','Ready.'].includes(live.textContent))live.textContent=ui('Bereit.','Ready.');
  const custom=el('bs-shopping-custom');
  if(custom)custom.placeholder=ui('z. B. Vanillezucker','e.g. vanilla sugar');
  const fill=host.querySelector('.bs-tank[role="img"]');
