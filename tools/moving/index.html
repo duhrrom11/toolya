@@ -1203,7 +1203,7 @@
                        !confirm(window.__toolyaUILocale === 'en' ? 'This backup contains no moving projects. Existing move plans would be lost. Continue anyway?' : 'Dieses Backup enthält keine Umzugsprojekte. Die bestehenden Umzugsplanungen würden verloren gehen. Trotzdem fortfahren?')) return;
                     if(!confirm(window.__toolyaUILocale === 'en' ? 'Before importing, download and verify a current backup.' : 'Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.')) return;
                     exportBackup();
-                    if(!confirm("Hast du die aktuelle Sicherung erfolgreich heruntergeladen?")) return;
+                    if(!confirm(window.__toolyaUILocale === 'en' ? 'Have you successfully downloaded the current backup?' : 'Hast du die aktuelle Sicherung erfolgreich heruntergeladen?')) return;
                     if (!confirm(window.__toolyaUILocale === 'en' ? 'Import backup? Existing data will be replaced.' : 'Backup importieren? Vorhandene Daten werden ersetzt.')) return;
                     if (!await saveData(parsed)) return;
                     loadLocationsDropdown();
