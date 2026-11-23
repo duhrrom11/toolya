@@ -2,6 +2,7 @@ import {db} from './toolya-client.mjs';
 import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
 const ui=value=>wishesText(value,globalThis.__toolyaWishesLocale==='en'?'en':'de');
 const locale=()=>globalThis.__toolyaWishesLocale==='en'?'en-GB':'de-DE';
+const taskStatusLabel=value=>value==='open'?ui('Offen'):value==='in_progress'?ui('In Arbeit'):value==='done'?ui('Erledigt'):value||'—';
 const $=id=>document.getElementById(id);
 const day=86400000;let exportRows=null;
 function el(tag,value,cls){const node=document.createElement(tag);node.textContent=String(value);if(cls)node.className=cls;return node}
@@ -48,7 +49,7 @@ function render(rows){
  const weekRoot=$('weeks'),today=new Date(),utcToday=Date.UTC(today.getFullYear(),today.getMonth(),today.getDate()),thisWeek=weekStart(utcToday),counts=[];
  for(let offset=7;offset>=0;offset--){const start=thisWeek-offset*7*day,end=start+7*day,items=rows.filter(e=>{const at=Date.parse(e.occurred_at);return at>=start&&at<end}),done=items.filter(e=>e.event_type==='completed').length,shift=items.filter(e=>e.event_type==='due_date_changed').length;counts.push(done);const box=el('article','','card');box.append(el('strong',done+ui(' Erledigungen')),el('span',formatDate(start)+' – '+formatDate(end-day)),el('p',shift+ui(' Terminverschiebungen · ')+items.length+ui(' Ereignisse'),'muted'));weekRoot.append(box)}
  const max=Math.max(1,...counts);for(const [i,box] of [...weekRoot.children].entries()){const bar=document.createElement('progress');bar.className='bar';bar.max=max;bar.value=counts[i];bar.setAttribute('aria-label',ui('Erledigungsereignisse im Vergleich zum Maximum der acht Wochen'));box.append(bar)}
- const body=$('events');for(const e of [...rows].reverse().slice(0,200)){const tr=document.createElement('tr');const label={completed:ui('Erledigt'),reopened:ui('Wieder geöffnet'),status_changed:ui('Status geändert'),due_date_changed:ui('Termin verschoben')}[e.event_type]||ui('Änderung');const change=e.event_type==='due_date_changed'?(e.old_due_date||ui('ohne Datum'))+' → '+(e.new_due_date||ui('ohne Datum')):(e.old_status||'—')+' → '+(e.new_status||'—');for(const value of [new Date(e.occurred_at).toLocaleString(locale()),e.task_title,label,change])tr.append(el('td',value));body.append(tr)}
+ const body=$('events');for(const e of [...rows].reverse().slice(0,200)){const tr=document.createElement('tr');const label={completed:ui('Erledigt'),reopened:ui('Wieder geöffnet'),status_changed:ui('Status geändert'),due_date_changed:ui('Termin verschoben')}[e.event_type]||ui('Änderung');const change=e.event_type==='due_date_changed'?(e.old_due_date||ui('ohne Datum'))+' → '+(e.new_due_date||ui('ohne Datum')):taskStatusLabel(e.old_status)+' → '+taskStatusLabel(e.new_status);for(const value of [new Date(e.occurred_at).toLocaleString(locale()),e.task_title,label,change])tr.append(el('td',value));body.append(tr)}
  if(rows.length>200)body.append(el('tr',ui('Chronik auf die 200 neuesten Ereignisse begrenzt; Kennzahlen berücksichtigen alle geladenen Ereignisse.')));
  $('report').hidden=false;$('status').textContent=ui('Privater Bericht bereit. Keine Produktivdaten geändert.');
 }

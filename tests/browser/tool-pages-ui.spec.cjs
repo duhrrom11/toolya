@@ -1624,6 +1624,13 @@ for(const routeName of ['assistant','bookmarks','cockpit','collection','dashboar
  `}));
  await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
  await page.goto(origin+'/tools/wishes/'+routeName+'.html');await page.locator('.toolya-signature-footer').waitFor();await page.waitForLoadState('networkidle');
+ if(routeName==='assistant'){
+  await expect(page.locator('#status')).toHaveText('Bitte anmelden.');
+  await page.evaluate(()=>{globalThis.__toolyaWishesLocale='en';document.dispatchEvent(new Event('toolya:wishes-locale-change'))});
+  await expect(page.locator('#status')).toHaveText('Please sign in.');
+  await page.evaluate(()=>{globalThis.__toolyaWishesLocale='de';document.dispatchEvent(new Event('toolya:wishes-locale-change'))});
+  await expect(page.locator('#status')).toHaveText('Bitte anmelden.');
+ }
  if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
  await page.waitForFunction(()=>!!window.__legacyMock);
  if(routeName==='discover'){

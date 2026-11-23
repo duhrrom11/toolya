@@ -15,15 +15,17 @@ test('gift assistant load states are reversible DE/EN UI-only strings',()=>{
   const english=wishesText(label,'en');
   assert.notEqual(english,label);
   assert.equal(wishesText(english,'de'),label);
-  assert.ok(source.includes("ui('"+label+"')"));
+  assert.ok(source.includes("showAssistantStatus('"+label+"')"));
  }
 });
 
 test('gift assistant locale change updates load status without fetching or writing',()=>{
  const listener=source.slice(source.lastIndexOf("document.addEventListener('toolya:wishes-locale-change'"));
- assert.match(listener,/if\(!assistantReady\)/);
- assert.match(listener,/status\.textContent=ui\(status\.textContent\)/);
+ assert.match(source,/function showAssistantStatus\(key\)\{assistantStatusKey=key;\$\('status'\)\.textContent=ui\(key\)\}/);
+ assert.match(listener,/if\(assistantStatusKey\)showAssistantStatus\(assistantStatusKey\)/);
+ assert.match(listener,/if\(!assistantReady\)return/);
  assert.match(listener,/if\(taskBusy\|\|checklistBusy\)/);
  assert.match(listener,/refreshTaskDisplay\(\)/);
  assert.doesNotMatch(listener,/db\.|\.update\(|\.insert\(|\.rpc\(/);
+ assert.doesNotMatch(listener,/Private Planungsvorschläge geladen/);
 });

@@ -4,6 +4,8 @@ const ui=text=>wishesText(text,globalThis.__toolyaWishesLocale==='en'?'en':'de')
 const locale=()=>globalThis.__toolyaWishesLocale==='en'?'en-GB':'de-DE';
 const $=id=>document.getElementById(id);
 const euro=n=>new Intl.NumberFormat(locale(),{style:'currency',currency:'EUR'}).format(Number(n)||0);
+// Historical status codes remain unchanged in the database and event snapshots.
+const taskStatusLabel=value=>value==='open'?ui('Offen'):value==='in_progress'?ui('In Arbeit'):value==='done'?ui('Erledigt'):value||'—';
 const day=86400000;let weekOffset=0,calendarEvents=[],weeklyTasks=[],occasionNames=new Map();
 function el(tag,text,cls){const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e}
 function nextDate(o,now){const [y,m,d]=o.occasion_date.split('-').map(Number);let date=Date.UTC(y,m-1,d);if(!o.repeats_yearly)return date>=now?date:null;let year=new Date(now).getUTCFullYear();for(let i=0;i<3;i++,year++){const last=new Date(Date.UTC(year,m,0)).getUTCDate();date=Date.UTC(year,m-1,Math.min(d,last));if(date>=now)return date}return null}
@@ -11,6 +13,8 @@ function median(values){const a=[...values].sort((x,y)=>x-y);return a.length?(a.
 function addCard(root,title,lines){const box=el('article','','card');box.append(el('h3',title));for(const line of lines)box.append(el('p',line));root.append(box);return box}
 async function allRows(table,columns,userId,order){let rows=[];for(let start=0;start<20000;start+=500){let q=db.from(table).select(columns).eq('user_id',userId).order(order,{ascending:true}).range(start,start+499);const {data,error}=await q;if(error)throw error;rows.push(...(data||[]));if((data||[]).length<500)return rows}throw new Error(ui('Zu viele Datensätze für eine vollständige Auswertung'))}
 let taskBusy=false,taskUserId=null,taskEvents=[],assistantReady=false,localePending=false,checklistBusy=0,planningSnapshot=null;
+let assistantStatusKey=null;
+function showAssistantStatus(key){assistantStatusKey=key;$('status').textContent=ui(key)}
 function refreshTaskDisplay(){renderTaskEvents();renderWeeklyTasks();renderDaily();renderOccasionPlanning()}
 async function changeTask(task,field,newValue,button){
  if(taskBusy)return;
@@ -48,7 +52,7 @@ function renderTaskEvents(){
  for(const e of taskEvents.slice(0,35)){const card=el('article','','card'),label=e.event_type==='completed'?ui("✓ Erledigt"):e.event_type==='reopened'?ui("↩ Wieder geöffnet"):e.event_type==='due_date_changed'?ui("📅 Fälligkeit verschoben"):ui("🔄 Status geändert");
  card.append(el('h3',label+' · '+e.task_title),el('p',new Date(e.occurred_at).toLocaleString(locale())));
  if(e.event_type==='due_date_changed')card.append(el('p',(e.old_due_date||ui("Ohne Datum"))+' → '+(e.new_due_date||ui("Ohne Datum"))));
- else card.append(el('p',(e.old_status||'—')+' → '+(e.new_status||'—')));
+ else card.append(el('p',taskStatusLabel(e.old_status)+' → '+taskStatusLabel(e.new_status)));
  list.append(card)}
 }
 async function loadTaskEvents(){taskEvents=await allRows('wishlist_gift_task_events','id,task_id,task_title,event_type,old_status,new_status,old_due_date,new_due_date,occurred_at',taskUserId,'id');taskEvents.reverse();renderTaskEvents()}
@@ -145,7 +149,7 @@ function renderOccasionPlanning(){
  renderWeek();
 }
 async function main(){
- const {data,error}=await db.auth.getUser(),user=data?.user;if(error||!user){$('login').hidden=false;$('status').textContent=ui('Bitte anmelden.');return}
+ const {data,error}=await db.auth.getUser(),user=data?.user;if(error||!user){$('login').hidden=false;showAssistantStatus('Bitte anmelden.');return}
  const [closings,occasions,tasks]=await Promise.all([
  allRows('wishlist_gift_year_closings','closing_year,gift_count,gifted_count,actual_total,budget_total,gifts_snapshot,budgets_snapshot,tasks_snapshot,task_count,task_done_count',user.id,'closing_year'),
  allRows('wishlist_occasions','id,title,occasion_date,repeats_yearly,reminder_days,budget_amount',user.id,'occasion_date'),
@@ -153,9 +157,9 @@ async function main(){
  ]);
  taskUserId=user.id;await loadTaskEvents();weeklyTasks=tasks;occasionNames=new Map(occasions.map(o=>[o.id,o.title]));renderWeeklyTasks();renderDaily();
  planningSnapshot={closings,occasions};renderOccasionPlanning();
- assistantReady=true;$('content').hidden=false;$('status').textContent=ui('Private Planungsvorschläge geladen. Keine Daten wurden geändert.');
+ assistantReady=true;$('content').hidden=false;showAssistantStatus('Private Planungsvorschläge geladen. Keine Daten wurden geändert.');
 }
-main().catch(()=>{$('status').textContent=ui('Die privaten Planungsvorschläge konnten nicht vollständig geladen werden. Bitte später erneut versuchen.')});
+main().catch(()=>{showAssistantStatus('Die privaten Planungsvorschläge konnten nicht vollständig geladen werden. Bitte später erneut versuchen.')});
 
 // Repaint read-only task summaries after DE/EN changes; defer while an update is pending.
-document.addEventListener('toolya:wishes-locale-change',()=>{if(!assistantReady){const status=$('status');if(status)status.textContent=ui(status.textContent);return}if(taskBusy||checklistBusy){localePending=true;return}refreshTaskDisplay();$('status').textContent=ui('Private Planungsvorschläge geladen. Keine Daten wurden geändert.')});
+document.addEventListener('toolya:wishes-locale-change',()=>{if(assistantStatusKey)showAssistantStatus(assistantStatusKey);if(!assistantReady)return;if(taskBusy||checklistBusy){localePending=true;return}refreshTaskDisplay()});

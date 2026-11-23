@@ -277,6 +277,23 @@ test('assistant task confirmations translate prompts but preserve the task name,
  assert.match(source,/\.update\(\{\[field\]:newValue,updated_at:/);
 });
 
+test('historical task status display is reversible while event codes and unknown values remain intact',()=>{
+ for(const [de,en] of [['Offen','Open'],['In Arbeit','In progress'],['Erledigt','Done']]){
+  assert.equal(wishesText(de,'en'),en);
+  assert.equal(wishesText(en,'de'),de);
+ }
+ for(const file of ['gift-assistant.mjs','gift-task-report.mjs']){
+  const source=readFileSync(new URL('../../tools/wishes/'+file,import.meta.url),'utf8');
+  assert.match(source,/const taskStatusLabel=value=>value==='open'\?ui\('Offen'\)/);
+  assert.match(source,/value==='in_progress'\?ui\('In Arbeit'\)/);
+  assert.match(source,/value==='done'\?ui\('Erledigt'\):value\|\|'—'/);
+  assert.match(source,/taskStatusLabel\(e\.old_status\).*taskStatusLabel\(e\.new_status\)/);
+  assert.match(source,/e\.task_title/);
+ }
+ assert.equal(wishesText('Private event title: Offen','en'),'Private event title: Offen');
+ assert.equal(wishesText('__proto__','en'),'__proto__');
+});
+
 test('Wishes occasion planning and checklist copy remains reversible without translating private data',()=>{
  const pairs=[
   ['Noch keine kommenden Anlässe erfasst.','No upcoming occasions recorded.'],
