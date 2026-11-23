@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://toolya.app/docs/ai/tool-brief.schema.json",
+  "title": "Toolya AI Tool Brief v1 (offline-only development contract)",
+  "description": "Restricted declarative handoff from ChatGPT/Codex to the existing static Toolya Tool Builder. No code, production APIs or secrets.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "slug",
+    "title",
+    "description",
+    "template",
+    "outfit",
+    "scope",
+    "goal",
+    "acceptanceCriteria"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "slug": {
+      "type": "string",
+      "maxLength": 40,
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 80,
+      "pattern": "^[^\\r\\n\\t]+$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 180,
+      "pattern": "^[^\\r\\n\\t]+$"
+    },
+    "template": {
+      "enum": [
+        "starter",
+        "counter",
+        "percentage",
+        "checklist"
+      ]
+    },
+    "outfit": {
+      "enum": [
+        "home",
+        "wishes",
+        "budget",
+        "housemates",
+        "moving",
+        "estate",
+        "car",
+        "pet-health",
+        "parking",
+        "loans",
+        "plants",
+        "meters",
+        "baking"
+      ]
+    },
+    "scope": {
+      "const": "offline-draft"
+    },
+    "goal": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 240,
+      "pattern": "^[^\\r\\n\\t]+$"
+    },
+    "acceptanceCriteria": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "string",
+        "minLength": 8,
+        "maxLength": 200,
+        "pattern": "^[^\\r\\n\\t]+$"
+      }
+    }
+  }
+}

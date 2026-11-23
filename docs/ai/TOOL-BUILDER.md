@@ -66,3 +66,9 @@ Die strenge Preview-CSP setzt `connect-src 'none'` und verhindert Browser-API-Ve
 - Das unabhängige Dashboard-320-px-Problem aus Issue #315 wurde in PR #316 separat behoben und nach vollständig erfolgreicher CI auf `main` übernommen. Die Builder-Änderungen müssen gegen den aktualisierten Hauptbranch erneut geprüft werden.
 
 Siehe `AGENTS.md`, `docs/ai/ARCHITECTURE.md` und `docs/ai/TOOL-GENERATOR.md`.
+
+## Schnittstelle zu ChatGPT (Version 0.4)
+
+Für KI-gestützte neue Tool-Ideen gibt es zusätzlich den [ChatGPT-Handoff](CHATGPT-TOOL-HANDOFF.md): ChatGPT übersetzt die natürliche Aufgabenbeschreibung in ein strikt validiertes JSON-Briefing unter `docs/ai/briefs/`, der Builder erzeugt daraus nur einen Offline-Entwurf und kennzeichnet noch offene Kriterien. GitHub Actions stellt die Ergebnisse als überprüfbares Artefakt zur Verfügung, ohne automatisch zu committen oder zu deployen.
+
+Validierung: `npm run tools:from-brief -- --spec docs/ai/briefs/ai-prozentrechner-entwurf.json --validate-only --json`.

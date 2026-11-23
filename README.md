@@ -24,3 +24,14 @@ npm run tools:preview -- --slug mein-testtool
 ```
 
 Der Vorschau-Befehl funktioniert erst **nach** Anlegen des Entwurfs ohne `--dry-run`; er ist ausschließlich über `127.0.0.1` erreichbar.
+
+### ChatGPT → Tool Builder (strukturierte Tool-Ideen)
+
+Die [ChatGPT-Übergabeanleitung](docs/ai/CHATGPT-TOOL-HANDOFF.md) erklärt, wie ein Coding-Agent eine Idee in ein streng validiertes [Tool-Brief-JSON](docs/ai/tool-brief.schema.json) überführt. Die CI erstellt daraus einen unveröffentlichten Entwurf samt Tests und einem überprüfbaren GitHub-Artefakt; keine externen KI-API-Schlüssel oder produktiven Supabase-Daten nötig.
+
+```bash
+npm run tools:from-brief -- --spec docs/ai/briefs/ai-prozentrechner-entwurf.json --dry-run --json
+npm run tools:build-briefs
+```
+
+Das zweite Kommando ist für isolierte Entwickler-/CI-Checkouts vorgesehen und erzeugt temporäre Vorschauen unter `test-results/ai-brief-artifacts/`; es nimmt **keinen** Git-Commit und keine Veröffentlichung vor.

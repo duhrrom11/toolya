@@ -35,6 +35,14 @@ Repository: duhrrom11/toolya. Production target: https://toolya.app (niemals too
 - docs/ai/TOOL-GENERATOR.md und docs/ai/TOOL-BUILDER.md beschreiben Funktionsvorlagen, lokale Vorschau, Testgenerierung und das Release-Gate.
 - Für neue Funktionen ausschließlich die reinen Offline-Bausteine in shared/toolya/tool-builder/blocks.mjs verwenden, bis fachliche Backend-Integration ausdrücklich geprüft wurde. Keine persistenten Daten oder Produktions-API-Aufrufe in generierte Testvorlagen aufnehmen.
 
+## ChatGPT → Tool Builder (AI-Handoff v0.4)
+
+- Für neue Tool-Ideen aus natürlicher Sprache zuerst die reale Plattformstruktur prüfen und anschließend eine **deklarative**, versionierte JSON-Beschreibung nach `docs/ai/tool-brief.schema.json` erstellen; Details in `docs/ai/CHATGPT-TOOL-HANDOFF.md`.
+- Die JSON-Datei liegt als `docs/ai/briefs/<slug>.json` vor und erlaubt ausschließlich die vorhandenen vier Offline-Vorlagen. `scope` muss `offline-draft` sein. **Niemals** Skriptcode, SQL, Secrets oder Produktiv-Daten in den Brief einfügen.
+- `npm run tools:from-brief -- --spec docs/ai/briefs/<slug>.json --dry-run --json` prüft die maschinenlesbare Übergabe ohne Schreibwirkung.
+- Die isolierte GitHub-CI erstellt aus Briefs reviewbare Entwürfe und Test-Artefakte. Das ist **keine** Veröffentlichung, kein automatischer Cloud-Anschluss und kein Beweis für erfüllte Akzeptanzkriterien.
+- Nur nach separater Implementierung, isolierten Tests und expliziter Freigabe eine neue Route in Navigation, SEO, Backend oder produktivem Hosting aufnehmen.
+
 ## Dokumentationsquellen
 
 - docs/ai/ARCHITECTURE.md – Architektur, Code-Map, Markenregeln und Quellenhierarchie.

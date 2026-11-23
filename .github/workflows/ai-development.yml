@@ -9,6 +9,8 @@ on:
       - 'scripts/create-tool.cjs'
       - 'scripts/tool-builder.cjs'
       - 'scripts/preview-tool.cjs'
+      - 'scripts/create-tool-from-brief.cjs'
+      - 'scripts/build-tool-briefs.cjs'
       - 'shared/toolya/tool-builder/**'
       - 'tests/ai/**'
       - '.github/workflows/ai-development.yml'
@@ -22,6 +24,8 @@ on:
       - 'scripts/create-tool.cjs'
       - 'scripts/tool-builder.cjs'
       - 'scripts/preview-tool.cjs'
+      - 'scripts/create-tool-from-brief.cjs'
+      - 'scripts/build-tool-briefs.cjs'
       - 'shared/toolya/tool-builder/**'
       - 'tests/ai/**'
       - '.github/workflows/ai-development.yml'
@@ -30,7 +34,7 @@ permissions:
 jobs:
   offline-scaffold:
     runs-on: ubuntu-24.04
-    timeout-minutes: 7
+    timeout-minutes: 9
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,6 +48,8 @@ jobs:
         run: |
           node --check scripts/tool-builder.cjs
           node --check scripts/preview-tool.cjs
+          node --check scripts/create-tool-from-brief.cjs
+          node --check scripts/build-tool-briefs.cjs
       - name: Run isolated AI development tests
         run: npm run test:ai
       - name: Install browser test dependency without scripts
@@ -58,3 +64,17 @@ jobs:
         run: |
           npm run tools:scaffold -- --slug ci-draft --title 'CI Draft' --description 'Synthetic local-only CI check.' --dry-run
           test ! -e tools/ci-draft
+      - name: Convert ChatGPT briefs into offline preview artifacts
+        run: |
+          npm run tools:from-brief -- --spec docs/ai/briefs/ai-prozentrechner-entwurf.json --validate-only --json
+          npm run tools:from-brief -- --spec docs/ai/briefs/ai-prozentrechner-entwurf.json --dry-run --json
+          npm run tools:build-briefs
+          test ! -e tools/ai-prozentrechner-entwurf
+          test -f test-results/ai-brief-artifacts/report.json
+      - name: Upload review-only tool brief previews
+        uses: actions/upload-artifact@v4
+        with:
+          name: toolya-ai-brief-previews
+          path: test-results/ai-brief-artifacts/
+          retention-days: 7
+          if-no-files-found: error
