@@ -260,3 +260,20 @@ test('OCR review and baking-note dates repaint DE/EN/DE without touching recipe 
  await expect(page.locator('#bs-logs')).toContainText('03.04.2025');
  expect(await page.evaluate(()=>JSON.stringify(window.toolyaBackstudioState))).toBe(before);
 });
+
+
+test('Backstudio status errors and advice translate back without changing private state',async({page})=>{
+ await mountBackstudio(page);
+ const privateRecipe=await page.locator('#recipe-input').inputValue();
+ const previous=await page.evaluate(()=>localStorage.getItem('toolya_backstudio_v1'));
+ await page.locator('#bs-shopping-export').click();
+ await expect(page.locator('#bs-message')).toHaveText('Die Backstudio-Einkaufsliste ist noch leer.');
+ await page.evaluate(()=>{window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'))});
+ await expect(page.locator('#bs-message')).toHaveText('Your Backstudio shopping list is empty.');
+ await page.locator('#bs-shopping-add').click();
+ await expect(page.locator('#bs-message')).toHaveText('Enter an item.');
+ await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
+ await expect(page.locator('#bs-message')).toHaveText('Bitte einen Artikel eingeben.');
+ await expect(page.locator('#recipe-input')).toHaveValue(privateRecipe);
+ expect(await page.evaluate(()=>localStorage.getItem('toolya_backstudio_v1'))).toBe(previous);
+});
