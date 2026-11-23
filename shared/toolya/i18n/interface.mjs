@@ -2730,9 +2730,11 @@ const toolRuntimeReverse=Object.freeze(Object.fromEntries(Object.entries(toolRun
 const toolRuntimePrefixes=Object.freeze({budget:[['✏️ Buchung bearbeiten: ','✏️ Edit transaction: ']]});
 export function translateToolRuntimeStatus(tool,language,message){
  if(typeof message!=='string'||(language!=='en'&&language!=='de'))return message;
- const table=(language==='en'?toolRuntimeStatus:toolRuntimeReverse)[tool];
+ const catalogue=language==='en'?toolRuntimeStatus:toolRuntimeReverse;
+ const table=Object.hasOwn(catalogue,tool)?catalogue[tool]:undefined;
  if(table&&Object.hasOwn(table,message))return table[message];
- for(const [de,en]of toolRuntimePrefixes[tool]||[]){
+ const prefixes=Object.hasOwn(toolRuntimePrefixes,tool)?toolRuntimePrefixes[tool]:[];
+ for(const [de,en]of prefixes){
   const source=language==='en'?de:en,target=language==='en'?en:de;
   if(message.startsWith(source))return target+message.slice(source.length);
  }
