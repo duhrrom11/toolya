@@ -192,7 +192,13 @@ test('recipe OCR review preserves decimal ingredient quantities and private name
  await apply.click();
  await expect(recipe).toHaveValue('1000,5 g Omas Spezialmehl');
  await expect(page.locator('#bsp-ocr-status')).toContainText('Erkannte Zutaten übernommen');
+ // A real numbered list item still loses its ordinal, but not its quantity.
+ await source.fill('1. 250 g Omas Spezialmehl');
+ await page.locator('.bsp-panel button').filter({hasText:'Zutaten erkennen'}).click();
+ await apply.click();
+ await expect(recipe).toHaveValue('250 g Omas Spezialmehl');
 });
+
 
 test('missing camera API exposes localized mobile fallback without altering recipe data',async({page})=>{
  await mountBackstudio(page);
