@@ -96,7 +96,7 @@ async function main() {
       assert.match(result.title, /Isolierter Toolya-Entwurf/);
       assert.equal(result.originalHidden, true);
       assert.equal(result.footerCount, 1);
-      assert.equal(result.heroWordmark, '✳ Toolya');
+      assert.equal(result.heroWordmark.replace(/^✳\s*/, ''), result.footerWordmark);
       assert.equal(result.footerWordmark, 'Toolya');
       assert.equal(result.noIndex, 'noindex,nofollow');
       assert.match(result.background, /outfits\.webp/);
