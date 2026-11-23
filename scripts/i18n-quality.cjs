@@ -143,7 +143,8 @@ function auditPages(root,config,legacy,resources){
 }
 function validateReport(report){
  const hard=new Set(['missing-translation','empty-translation','missing-tool-page',
-   'missing-marketing-pair','marketing-lang','marketing-switch','marketing-noindex-removed']);
+   'missing-marketing-pair','marketing-lang','marketing-switch','marketing-noindex-removed',
+   'placeholder-review','invalid-selector-review']);
  const critical=report.issues.filter(x=>hard.has(x.kind));
  return {ok:critical.length===0,critical,review:report.issues.filter(x=>!hard.has(x.kind))};
 }
