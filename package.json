@@ -12,7 +12,9 @@
     "test:connect:browser": "node tests/platform/connect-playwright.cjs",
     "tools:scaffold": "node scripts/create-tool.cjs",
     "test:ai": "node --test tests/ai/*.test.cjs",
-    "tools:preview": "node scripts/preview-tool.cjs"
+    "tools:preview": "node scripts/preview-tool.cjs",
+    "tools:from-brief": "node scripts/create-tool-from-brief.cjs",
+    "tools:build-briefs": "node scripts/build-tool-briefs.cjs"
   },
   "repository": {
     "type": "git",
