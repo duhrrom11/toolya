@@ -44,3 +44,16 @@ test('Wishes assistant module parses before signed-out browser can run the auth 
  assert.match(source,/main\(\)\.catch/);
  assert.match(source,/showAssistantStatus\('Bitte anmelden\.'\)/);
 });
+
+
+test('gift assistant signed-out links have reversible source-exact DE/EN labels',()=>{
+ const html=readFileSync(new URL('../../tools/wishes/assistant.html',import.meta.url),'utf8');
+ for(const [german,english] of [
+  ['✅ Checklisten anlegen','✅ Create checklists'],
+  ['Zur Anmeldung','Go to sign-in']
+ ]){
+  assert.ok(html.includes('>'+german+'</a>'));
+  assert.equal(wishesText(german,'en'),english);
+  assert.equal(wishesText(english,'de'),german);
+ }
+});
