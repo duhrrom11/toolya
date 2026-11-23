@@ -255,7 +255,8 @@ function init(){
   else if(shape==='rect')target=text('Rechteck ','Rectangular ')+displayNumber(cleanNumber('target-l',25))+' × '+displayNumber(cleanNumber('target-w',11))+' cm';
   dims.textContent=target;
   const factor=$('res-factor')?.textContent||'';
-  const amount=Number(String(factor).replace(/[×\s]/g,'').replace(',','.'));
+  const normalizedFactor=String(factor).replace(/[×\s]/g,'').replace(',','.');
+  const amount=normalizedFactor&&/^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(normalizedFactor)?Number(normalizedFactor):NaN;
   const recipePercentage=Math.round(amount*100);
   $('bsui-hero-factor').textContent=Number.isFinite(amount)
    ?text(`Du brauchst ${recipePercentage} % des Rezepts.`,`Use ${recipePercentage}% of the recipe.`)
