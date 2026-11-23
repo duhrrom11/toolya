@@ -35,3 +35,15 @@ npm run tools:build-briefs
 ```
 
 Das zweite Kommando ist für isolierte Entwickler-/CI-Checkouts vorgesehen und erzeugt temporäre Vorschauen unter `test-results/ai-brief-artifacts/`; es nimmt **keinen** Git-Commit und keine Veröffentlichung vor.
+
+### Allgemeine ChatGPT-Produktivität (ohne zusätzlichen Dienst)
+
+Sechs wiederverwendbare Arbeitsmuster und vier schlanke Kontextpakete für Recherche, Entwicklung, Marketing, Entscheidungen, Dokumente und Automatisierung: [ChatGPT Productivity System](docs/ai/productivity/README.md).
+
+```bash
+npm run productivity:list
+npm run productivity:prompt -- --render --pattern research --context toolya-core --task 'Vergleiche aktuelle Optionen mit geprüften Quellen.'
+npm run productivity:check
+```
+
+Die Muster sind direkt in ChatGPT übertragbar. Die lokalen Prüfungen verwenden nur synthetische Beispiele, keine Modellaufrufe oder Supabase-Daten. Externe Werkzeuge (Fabric CLI, Promptfoo, MarkItDown, n8n) werden nicht automatisch installiert oder aktiviert.
