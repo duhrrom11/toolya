@@ -403,7 +403,7 @@
         <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold">⚙️ Monats-Budgets festlegen</h3>
-                <button onclick="closeBudgetModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeBudgetModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div id="budgetInputList" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
             <div class="flex justify-end gap-2 pt-3 border-t">
@@ -418,7 +418,7 @@
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold">🐷 Neues Sparziel anlegen</h3>
-                <button onclick="closeSavingsModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeSavingsModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div class="space-y-3 text-xs">
                 <div>
@@ -446,7 +446,7 @@
         <div class="bg-white rounded-2xl max-w-3xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 id="galleryTitle" class="text-lg font-bold">🖼️ Dokumenten-Galerie</h3>
-                <button onclick="closeGalleryModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeGalleryModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div id="galleryContainer" class="flex-grow overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             <div class="flex justify-end pt-2 border-t">
@@ -460,7 +460,7 @@
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold" data-tool-en="🏷️ Print device sticker">🏷️ Geräte-Sticker drucken</h3>
-                <button onclick="closeQRModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeQRModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div id="printStickerArea" class="p-4 border-2 border-dashed border-gray-400 rounded-2xl bg-gray-50 flex flex-col items-center text-center space-y-3">
                 <h4 id="stickerTitle" class="font-bold text-sm text-gray-900"></h4>
@@ -1520,7 +1520,7 @@ async function toolyaCloudBoot(tool) {
                     <div class="p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="font-bold text-sm text-emerald-900">${escapeHaushaltsHtml(g.title)}</span>
-                            <button onclick="deleteSavingsGoal(${safeHaushaltsId(g.id)})" class="text-red-500 text-xs font-bold hover:opacity-80">✕</button>
+                            <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete savings goal' : 'Sparziel löschen'}" onclick="deleteSavingsGoal(${safeHaushaltsId(g.id)})" class="text-red-500 text-xs font-bold hover:opacity-80">✕</button>
                         </div>
                         <div class="flex justify-between text-xs text-gray-600">
                             <span>${window.__toolyaUILocale === 'en' ? 'Saved:' : 'Gespart:'} <strong>${saved.toFixed(2)} €</strong></span>
@@ -1623,7 +1623,7 @@ async function toolyaCloudBoot(tool) {
                             ${hasWarranty ? `<button onclick="openQRModal(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold b3-action b3-outline">🏷️ QR</button>` : ''}
                             ${hasWarranty ? `<button onclick="openGoogleCalendar(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold b3-action b3-outline">📅 Google</button>` : ''}
                             ${hasWarranty ? `<button onclick="downloadICS(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold b3-action b3-outline">📄 .ics</button>` : ''}
-                            <button onclick="deleteReceipt(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                            <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete transaction' : 'Buchung löschen'}" onclick="deleteReceipt(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                         </div>
                     </div>
                 `;

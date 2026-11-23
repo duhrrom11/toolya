@@ -3563,19 +3563,39 @@ test('icon-only tool actions have distinct accessible names in German and Englis
    ['removeInventoryItem', 'Lagerartikel entfernen', 'Remove inventory item'],
    ['deletePlant', 'Pflanze löschen', 'Delete plant']
   ]],
-  ['meters', 1, []]
+  ['meters', 1, []],
+  ['budget', 4, [
+   ['deleteSavingsGoal', 'Sparziel löschen', 'Delete savings goal'],
+   ['deleteReceipt', 'Buchung löschen', 'Delete transaction']
+  ]],
+  ['car', 0, [
+   ['deleteTireSet', 'Reifensatz löschen', 'Delete tyre set'],
+   ['deleteEvent', 'Fahrzeugeintrag löschen', 'Delete vehicle entry']
+  ]],
+  ['pet-health', 0, [
+   ['deleteMedication', 'Medikament löschen', 'Delete medication'],
+   ['deleteEvent', 'Gesundheitseintrag löschen', 'Delete health entry']
+  ]],
+  ['loans', 1, [
+   ['data-inventory-delete=', 'Inventargegenstand löschen', 'Delete inventory item'],
+   ['data-loan-action="delete"', 'Verleiheintrag löschen', 'Delete loan record']
+  ]],
+  ['moving', 0, [
+   ['removeSubItem', 'Inhalt entfernen', 'Remove item'],
+   ['deleteBox', 'Kiste löschen', 'Delete box']
+  ]]
  ];
  for (const [tool, closeCount, actions] of cases) {
   const html = readFileSync(new URL('../../tools/' + tool + '/index.html', import.meta.url), 'utf8');
   const {document} = parseHTML(html);
   const closeButtons = [...document.querySelectorAll('button[data-tool-en-aria-label="Close"]')]
-   .filter(button => button.textContent.trim() === '✕');
+   .filter(button => ['✕', '×'].includes(button.textContent.trim()));
   assert.equal(closeButtons.length, closeCount, tool);
   for (const [locale, expected] of [['en', 'Close'], ['de', 'Schließen']]) {
    applyToolInterfaceLocale(document, tool, locale);
    for (const button of closeButtons) assert.equal(button.getAttribute('aria-label'), expected);
    for (const [action, german, english] of actions) {
-    const marker = 'onclick="' + action + '(';
+    const marker = action.startsWith('data-') ? action : 'onclick="' + action + '(';
     const start = html.lastIndexOf('<button', html.indexOf(marker));
     const expression = html.slice(start, html.indexOf(marker)).match(/aria-label="\$\{([^}]+)\}"/)?.[1];
     assert.ok(expression, action);

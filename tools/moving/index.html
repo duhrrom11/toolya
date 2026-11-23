@@ -794,7 +794,7 @@
             container.innerHTML = activeSubItemsTemp.map((item, idx) => `
                 <div class="flex justify-between items-center bg-gray-50 p-2 border rounded-xl text-xs">
                     <span><b>${escapeInventoryText(item.name)}</b> (${window.__toolyaUILocale === 'en' ? Number(item.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.value || 0).toFixed(2)} €)</span>
-                    <button onclick="removeSubItem(${idx})" class="text-red-500 font-bold px-2 py-0.5 hover:bg-red-50 rounded-lg">✕</button>
+                    <button aria-label="${window.__toolyaUILocale === 'en' ? 'Remove item' : 'Inhalt entfernen'}" onclick="removeSubItem(${idx})" class="text-red-500 font-bold px-2 py-0.5 hover:bg-red-50 rounded-lg">✕</button>
                 </div>
             `).join('');
         }
@@ -972,7 +972,7 @@
                                         <div class="flex items-center gap-1 b3-moving-box-actions">
                                             <button onclick="showQrCode(${Number(b.id)})" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100 b3-action b3-outline" title="${window.__toolyaUILocale === 'en' ? 'QR code and deep link' : 'QR-Code & Deep-Link'}">🖨️</button>
                                             <button onclick="openEditBoxModal(${Number(b.id)})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 b3-action b3-outline" title="${window.__toolyaUILocale === 'en' ? 'Edit' : 'Bearbeiten'}">✏️</button>
-                                            <button onclick="deleteBox(${Number(b.id)})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="${window.__toolyaUILocale === 'en' ? 'Delete' : 'Löschen'}">✕</button>
+                                            <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete box' : 'Kiste löschen'}" onclick="deleteBox(${Number(b.id)})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="${window.__toolyaUILocale === 'en' ? 'Delete' : 'Löschen'}">✕</button>
                                         </div>
                                     </div>
                                 `;

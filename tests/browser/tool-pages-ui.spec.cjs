@@ -2636,8 +2636,10 @@ test('i18n loans history translates returned status on mobile without rewriting 
  await page.goto(origin+'/tools/loans/index.html?lang=en');
  await expect.poll(()=>page.evaluate(()=>loansCloudReady&&!!loansCloudController?.ready)).toBe(true);
  const list=page.locator('#itemsList');
+ await expect(list.getByRole('button', {name:'Delete loan record'})).toHaveCount(1);
  await expect(list).toContainText('✅ Returned');
  await page.locator('[data-tool-locale="de"]').click();
+ await expect(list.getByRole('button', {name:'Verleiheintrag löschen'})).toHaveCount(1);
  await expect(list).toContainText('✅ Zurückgegeben');
  await page.locator('[data-tool-locale="en"]').click();
  await expect(list).toContainText('✅ Returned');

@@ -104,7 +104,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-indigo-900">⚙️ Einstellungen und Konto</h3>
-                <button onclick="toggleSettingsModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleSettingsModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             
             <div class="p-3 bg-gray-50 rounded-xl border text-xs space-y-1">
@@ -844,7 +844,7 @@
                         ${i.serial ? `<p class="text-gray-600 mt-1">SN/ISBN: <span class="font-mono">${escapeHtml(i.serial)}</span></p>` : ''}
                         ${safeGpsUrl(i.gpsLink) ? `<a href="${safeGpsUrl(i.gpsLink)}" rel="noopener noreferrer" target="_blank" class="text-blue-600 font-semibold underline block mt-1">📍 GPS-Tracker öffnen</a>` : ''}
                     </div>
-                    <button data-inventory-delete="${index}" class="text-red-500 font-bold px-1.5 hover:bg-red-100 rounded">✕</button>
+                    <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete inventory item' : 'Inventargegenstand löschen'}" data-inventory-delete="${index}" class="text-red-500 font-bold px-1.5 hover:bg-red-100 rounded">✕</button>
                 </div>
             `).join('');
         }
@@ -1008,7 +1008,7 @@
                                 ${calButtons}
                                 ${statusDropdown}
                                 <button data-loan-action="edit" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="${label('Bearbeiten','Edit')}">✏️</button>
-                                <button data-loan-action="delete" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                                <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete loan record' : 'Verleiheintrag löschen'}" data-loan-action="delete" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
                     `;

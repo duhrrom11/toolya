@@ -993,7 +993,7 @@ async function toolyaCloudBoot(tool) {
                                     <p class="font-bold text-red-800">${t.type} <span class="text-gray-500 font-normal">(${carName})</span></p>
                                     <p class="text-[11px] text-gray-600">${label('Ort:','Location:')} ${t.location || '-'} | DOT: ${t.dot || '-'} | ${t.tread ? t.tread + ' mm' : ''}</p>
                                 </div>
-                                <button onclick="deleteTireSet(${t.id})" class="text-red-500 font-bold px-2 hover:bg-red-50 rounded">✕</button>
+                                <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete tyre set' : 'Reifensatz löschen'}" onclick="deleteTireSet(${t.id})" class="text-red-500 font-bold px-2 hover:bg-red-50 rounded">✕</button>
                             </div>
                         `;
                     }).join('');
@@ -1109,7 +1109,7 @@ async function toolyaCloudBoot(tool) {
                                 ${receiptBtn}
                                 ${calendarButtons}
                                 <button onclick="openEditModal(${e.id})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="Bearbeiten">✏️</button>
-                                <button onclick="deleteEvent(${e.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                                <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete vehicle entry' : 'Fahrzeugeintrag löschen'}" onclick="deleteEvent(${e.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
                     `;
