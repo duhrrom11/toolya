@@ -53,12 +53,13 @@ const shellCopy=new Map([
  ['Böden & Creme','Layers & cream'],
  ['Meine Erfahrungen','My notes'],
  ['Was noch fehlt','What is still needed'],
- ['Backstudio-Schnellzugriff','Backstudio shortcuts']
+ ['Backstudio-Schnellzugriff','Backstudio shortcuts'],
+ ['↻ Form drehen','↻ Rotate pan']
 ]);
 function localizeShell(shell,sub,side,stepper,header,quick,navButtons,views){
  const nodes=[sub,side,stepper,header,quick,
   ...navButtons.values(),...Object.values(views).map(item=>item.view),
-  ...shell.querySelectorAll('.bsui-side-title,.bsui-side-nav,.bsui-section-eyebrow,.bsui-title,.bsui-subtitle,.bsui-recipe-details > summary,.bsui-empty,.bsui-stage-top,.bsui-stage-top strong,.bsui-stage-tag,.bsui-stage-pan img,.bsui-hero-status,.bsui-hero-status span,.bsui-hero-status strong,.bsui-recommend-detail > summary,.bsui-finder > h2,.bsui-return,.bsui-additional > summary,.bsui-step,.bsui-step span,.bsui-quick,.bsui-quick strong,.bsui-quick small,.bsui-nav span:last-child,.bsui-tool-head')];
+  ...shell.querySelectorAll('.bsui-side-title,.bsui-side-nav,.bsui-baker[role="img"],.bsui-section-eyebrow,.bsui-title,.bsui-subtitle,.bsui-recipe-details > summary,.bsui-empty,.bsui-stage-top,.bsui-stage-top strong,.bsui-stage-tag,.bsui-stage-pan img,.bsui-hero-status,.bsui-hero-status span,.bsui-hero-status strong,.bsui-recommend-detail > summary,.bsui-finder > h2,.bsui-return,.bsui-additional > summary,.bsui-step,.bsui-step span,.bsui-quick,.bsui-quick strong,.bsui-quick small,.bsui-nav span:last-child,.bsui-tool-head,.bsp-actions > button')];
  for(const node of new Set(nodes)){
   if(!node)continue;
   for(const attr of ['aria-label','alt']){
@@ -284,6 +285,8 @@ function init(){
  const orig3dOpen=[...webgl.querySelectorAll('button')].find(n=>/Form drehen|3D öffnen|Rotate pan|Open 3D/.test(n.textContent||''));
  if(orig3dOpen){
   orig3dOpen.textContent=text('↻ Form drehen','↻ Rotate pan');
+  // Keep the original German source for reversibility when EN is active at mount.
+  if(orig3dOpen.firstChild)orig3dOpen.firstChild.__bsuiOriginalCopy='↻ Form drehen';
   // Start the interactive view when it first enters the viewport; data-saver users can launch it manually.
   if('IntersectionObserver' in window&&!window.navigator?.connection?.saveData){
    const observer=new IntersectionObserver(entries=>{
@@ -297,7 +300,10 @@ function init(){
  // Keep existing message observable for accessibility while showing a concise status at the top.
  const existingMessage=$('bs-message');if(existingMessage){existingMessage.setAttribute('aria-live','polite');existingMessage.classList.add('bsui-site-message');header.after(existingMessage)}
  if($('recipe-input')?.value.trim())recipeDetails.open=false;
- const repaintShell=()=>localizeShell(shell,sub,side,stepper,header,quick,navButtons,views);\n document.addEventListener('toolya:locale-change',repaintShell);\n document.addEventListener('toolya:locale-change',requestSync);\n repaintShell();
+ const repaintShell=()=>localizeShell(shell,sub,side,stepper,header,quick,navButtons,views);
+ document.addEventListener('toolya:locale-change',repaintShell);
+ document.addEventListener('toolya:locale-change',requestSync);
+ repaintShell();
  sync();showView('core');
  document.dispatchEvent(new Event('toolya:backstudio-layout-ready'));
 }
