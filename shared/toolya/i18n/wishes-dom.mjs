@@ -17,7 +17,7 @@ export function applyWishLocale(document,language){
    record.rendered=translation;
    if(current!==translation)el.setAttribute(attr,translation);
   }
-  for(const node of el.childNodes){
+  // Textarea default text is form data, not application copy. Translate only its\n  // fixed attributes; never rewrite the user's initial or restored value.\n  if(el.tagName==='TEXTAREA')continue;\n  for(const node of el.childNodes){
    if(node.nodeType!==3)continue;
    const current=node.nodeValue,previous=sources.get(node);
    if(!previous||previous.rendered!==current)sources.set(node,{source:current,rendered:current});
