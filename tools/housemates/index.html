@@ -1904,7 +1904,7 @@
             const author = document.getElementById('noteAuthorInput').value;
             const color = document.getElementById('noteColorInput').value;
             const pinned = document.getElementById('notePinnedInput').checked;
-            if (!title) return alert("Bitte mindestens einen Titel angeben!");
+            if (!title) return alert(window.__toolyaUILocale === 'en' ? 'Please enter at least a title!' : 'Bitte mindestens einen Titel angeben!');
             const notes = getNotes();
             const today = new Date().toISOString().split('T')[0];
             if (editingNoteId) {
@@ -1957,7 +1957,7 @@
             const timeStart = document.getElementById('eventTimeStart').value;
             const timeEnd = document.getElementById('eventTimeEnd').value;
             const owner = document.getElementById('eventOwner').value;
-            if (!title || !date) return alert("Bitte Titel und Datum angeben!");
+            if (!title || !date) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a title and date!' : 'Bitte Titel und Datum angeben!');
             const events = getEvents();
             events.push({ id: Date.now(), type, title, date, timeStart, timeEnd, owner });
             saveEvents(events); closeAddEventModal(); renderApp();
@@ -1997,7 +1997,7 @@
             const price = parseFloat(document.getElementById('invPrice').value) || 0;
             const date = document.getElementById('invDate').value;
             const lifespan = parseFloat(document.getElementById('invLifespan').value) || 5;
-            if (!title || price <= 0 || !date) return alert("Bitte Pflichtfelder ausfüllen!");
+            if (!title || price <= 0 || !date) return alert(window.__toolyaUILocale === 'en' ? 'Please fill in the required fields!' : 'Bitte Pflichtfelder ausfüllen!');
             const items = getInventory(); items.push({ id: Date.now(), title, price, date, lifespan }); saveInventory(items); closeAddInventoryModal(); renderApp();
         }
         function deleteInventoryItem(id) { saveInventory(getInventory().filter(i => i.id !== id)); renderApp(); }
@@ -2129,7 +2129,7 @@
         let ocrGeneration = 0;
         async function runOCR() {
             const input = document.getElementById('receiptPhotoInput');
-            if (!input.files || !input.files[0]) return alert("Bitte Belegfoto auswählen!");
+            if (!input.files || !input.files[0]) return alert(window.__toolyaUILocale === 'en' ? 'Please select a receipt photo!' : 'Bitte Belegfoto auswählen!');
             const file = input.files[0];
             const generation = ++ocrGeneration;
             let worker;
@@ -2166,7 +2166,7 @@
             const entryType = document.querySelector('input[name="entryType"]:checked').value;
             const splitWith = Array.from(document.querySelectorAll('input[name="splitMate"]:checked')).map(cb => cb.value);
 
-            if (!title || !date || price <= 0) return alert("Bitte mindestens Titel, Datum und Betrag angeben!");
+            if (!title || !date || price <= 0) return alert(window.__toolyaUILocale === 'en' ? 'Please enter at least a title, date and amount!' : 'Bitte mindestens Titel, Datum und Betrag angeben!');
 
             let data = getData();
             if (editingReceiptId) {
@@ -2230,7 +2230,7 @@
             const title = document.getElementById('goalTitle').value.trim();
             const target = parseFloat(document.getElementById('goalTarget').value) || 0;
             const current = parseFloat(document.getElementById('goalCurrent').value) || 0;
-            if (!title || target <= 0) return alert("Bitte Titel und Zielbetrag angeben!");
+            if (!title || target <= 0) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a title and target amount!' : 'Bitte Titel und Zielbetrag angeben!');
             const goals = getSavingsGoals(); goals.push({ id: Date.now(), title, target, current });
             saveSavingsGoals(goals); closeSavingsModal(); renderApp();
         }
@@ -2258,7 +2258,7 @@
         function toggleCleanTask(id) { const plan = getCleaningPlan(); const item = plan.find(p => p.id === id); if (item) { item.done = !item.done; saveCleaningPlan(plan); renderCleaningPlan(); } }
         function rotateCleaningPlan() {
             const plan = getCleaningPlan(); const mateNames = getFlatmateNames();
-            if (mateNames.length === 0) return alert('Bitte zuerst ein WG-Mitglied anlegen.');
+            if (mateNames.length === 0) return alert(window.__toolyaUILocale === 'en' ? 'Please add a household member first.' : 'Bitte zuerst ein WG-Mitglied anlegen.');
             plan.forEach(p => { const curr = mateNames.indexOf(p.assignee); p.assignee = mateNames[(curr + 1) % mateNames.length]; p.done = false; });
             saveCleaningPlan(plan); renderCleaningPlan();
         }
@@ -2267,7 +2267,7 @@
         function saveCleanTask() {
             const task = document.getElementById('cleanTaskTitle').value.trim();
             const assignee = document.getElementById('cleanTaskAssignee').value;
-            if (!task) return alert("Bitte Aufgabe angeben!");
+            if (!task) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a task!' : 'Bitte Aufgabe angeben!');
             const plan = getCleaningPlan(); plan.push({ id: Date.now(), task, assignee, done: false });
             saveCleaningPlan(plan); closeAddCleanTaskModal(); renderApp();
         }
@@ -2293,7 +2293,7 @@
         }
         function addShoppingItem(customTitle) {
             const title = customTitle || document.getElementById('newShoppingItem').value.trim();
-            if (!title) return alert("Bitte Bezeichnung eingeben!");
+            if (!title) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a description!' : 'Bitte Bezeichnung eingeben!');
             const items = getShoppingList(); items.push({ id: Date.now(), title });
             saveShoppingList(items); if (!customTitle) document.getElementById('newShoppingItem').value = ""; renderShoppingList();
         }
@@ -2391,7 +2391,7 @@
             const price = Number(document.getElementById('contractPrice').value);
             const payer = document.getElementById('contractPayer').value;
             const noticeDate = document.getElementById('contractNoticeDate').value;
-            if (!name || !Number.isFinite(price) || price <= 0) return alert("Bitte Name und gültige Kosten angeben!");
+            if (!name || !Number.isFinite(price) || price <= 0) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a name and valid costs!' : 'Bitte Name und gültige Kosten angeben!');
             const contracts = getContracts(); contracts.push({ id: Date.now(), name, price, payer, noticeDate });
             saveContracts(contracts); closeContractModal(); renderApp();
         }
@@ -2510,7 +2510,7 @@
             const insta = document.getElementById('mateInsta').value.trim();
             const fb = document.getElementById('mateFb').value.trim();
 
-            if (!vorname) return alert("Bitte mindestens einen Vornamen angeben!");
+            if (!vorname) return alert(window.__toolyaUILocale === 'en' ? 'Please enter at least a first name!' : 'Bitte mindestens einen Vornamen angeben!');
 
             const mates = getFlatmates();
             const contactObj = { vorname, nachname, email, phone, insta, fb };
