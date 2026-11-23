@@ -4,15 +4,18 @@
 // Offline-only scaffold for a NEW Toolya webtool. No network, database or deployment.
 const fs = require('node:fs');
 const path = require('node:path');
+const {TEMPLATES, renderTemplate} = require('./tool-builder.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUTFITS = Object.freeze(['home', 'wishes', 'budget', 'housemates', 'moving', 'estate', 'car', 'pet-health', 'parking', 'loans', 'plants', 'meters', 'baking']);
 const HELP = [
   'Toolya tool scaffold (offline, not a deployment)',
   'Usage:',
-  '  node scripts/create-tool.cjs --slug example-tool --title "Beispieltool" --description "Ein neues Tool fuer den Alltag." [--outfit home|plants|wishes|...] [--dry-run]',
+  '  node scripts/create-tool.cjs --slug example-tool --title "Beispieltool" --description "Ein neues Tool fuer den Alltag." [--outfit home|plants|wishes|...] [--template starter|counter|percentage|checklist] [--dry-run]',
   '',
-  'Creates tools/<slug>/{index.html,app.mjs,README.md} only if the folder is new.',
+  'Creates tools/<slug>/{index.html,app.mjs,README.md} and functional starter tests when requested.',
+  'Functional templates: counter, percentage, checklist (in-memory only).',
+  'Preview: npm run tools:preview -- --slug example-tool (localhost only).',
   'Outfit: borrow an existing Toolya role (default: home); mascot color follows saved user choice.',
   'Generated pages are noindex prototypes, not registered or published tools.'
 ].join('\n');
@@ -23,7 +26,7 @@ function parseOptions(argv) {
     const arg = argv[i];
     if (arg === '--help' || arg === '-h') { options.help = true; continue; }
     if (arg === '--dry-run') { options.dryRun = true; continue; }
-    if (!['--slug', '--title', '--description', '--outfit'].includes(arg)) {
+    if (!['--slug', '--title', '--description', '--outfit', '--template'].includes(arg)) {
       throw new Error('Unknown argument: ' + arg);
     }
     const value = argv[++i];
@@ -35,7 +38,8 @@ function parseOptions(argv) {
   return options;
 }
 
-function validateToolArgs({slug, title, description, outfit = 'home'}) {
+function validateToolArgs({slug, title, description, outfit = 'home', template = 'starter'}) {
+  if (!TEMPLATES.includes(template)) throw new Error('Unknown tool template: ' + template);
   if (!OUTFITS.includes(outfit)) throw new Error('Unknown mascot outfit: ' + outfit);
   if (typeof slug !== 'string' || slug.length > 40 ||
       !/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(slug)) {
@@ -58,7 +62,8 @@ function escapeHtml(value) {
 
 function renderToolFiles(args) {
   validateToolArgs(args);
-  const {slug, title, description, outfit = 'home'} = args;
+  const {slug, title, description, outfit = 'home', template = 'starter'} = args;
+  const templateFiles = renderTemplate(template);
   const safeTitle = escapeHtml(title);
   const safeDescription = escapeHtml(description);
   const html = [
@@ -83,6 +88,11 @@ function renderToolFiles(args) {
     '    .b3-tool-title p{margin:.5rem 0}',
     '    .draft-panel{padding:1.5rem;border:1px solid #d5e7e6;background:#fff;border-radius:1rem}',
     '    .draft-action{border:0;border-radius:.7rem;background:#087e82;color:white;padding:.8rem 1.2rem;font:inherit;cursor:pointer}',
+    '    .draft-controls{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem}',
+    '    .draft-panel form{display:grid;gap:.7rem;max-width:25rem}',
+    '    .draft-panel input{min-width:0;padding:.65rem;border:1px solid #a5c9c5;border-radius:.5rem;font:inherit}',
+    '    .draft-panel output{display:block;font-size:1.5rem;font-weight:700;margin:.75rem 0}',
+    '    #checklist-items li{display:flex;gap:.8rem;align-items:center;justify-content:space-between;margin:.5rem 0;overflow-wrap:anywhere}',
     '    :focus-visible{outline:3px solid #087e82;outline-offset:3px}',
     '  </style>',
     '</head>',
@@ -100,16 +110,18 @@ function renderToolFiles(args) {
     '  <main id="main" class="draft-wrap">',
     '    <section class="draft-panel" aria-labelledby="draft-title">',
     '      <h2 id="draft-title">Funktionsprototyp</h2>',
-    '      <p>Hier entsteht die eigentliche Tool-Funktion. Dieser Entwurf speichert keine Daten.</p>',
-    '      <button class="draft-action" id="draft-action" type="button">Funktion pruefen</button>',
-    '      <p role="status" id="draft-status" aria-live="polite"></p>',
+    ...(templateFiles ? templateFiles.markup : [
+      '      <p>Hier entsteht die eigentliche Tool-Funktion. Dieser Entwurf speichert keine Daten.</p>',
+      '      <button class="draft-action" id="draft-action" type="button">Funktion pruefen</button>',
+      '      <p role="status" id="draft-status" aria-live="polite"></p>'
+    ]),
     '    </section>',
     '  </main>',
     '</body>',
     '</html>',
     ''
   ].join('\n');
-  const app = [
+  const app = templateFiles ? templateFiles.app : [
     '// Local-only placeholder. Replace with tested tool logic before release.',
     "const action = document.querySelector('#draft-action');",
     "const status = document.querySelector('#draft-status');",
@@ -122,6 +134,8 @@ function renderToolFiles(args) {
     '# ' + title + ' (unveroeffentlichter Entwurf)',
     '',
     'Route nach Freigabe: /tools/' + slug + '/ (derzeit nicht registriert).',
+    'Vorlage: ' + template + '; Datenhaltung: nur im Arbeitsspeicher.',
+    ...(templateFiles ? ['Lokale generierte Tests: node --test tools/' + slug + '/app.test.mjs'] : []),
     '',
     'Dies ist ein Offline-Geruest, **kein fertiges Tool**. Der Generator veraendert',
     'keine vorhandenen Seiten, Tabellen, Edge Functions oder Live-Einstellungen.',
@@ -139,11 +153,12 @@ function renderToolFiles(args) {
     'Siehe docs/ai/TOOL-GENERATOR.md und AGENTS.md.',
     ''
   ].join('\n');
-  return Object.freeze({'index.html': html, 'app.mjs': app, 'README.md': readme});
+  return Object.freeze({'index.html': html, 'app.mjs': app, 'README.md': readme,
+    ...(templateFiles ? {'app.test.mjs': templateFiles.test} : {})});
 }
 
-function generateTool({repoRoot = ROOT, slug, title, description, outfit = 'home', dryRun = false}) {
-  const files = renderToolFiles({slug, title, description, outfit});
+function generateTool({repoRoot = ROOT, slug, title, description, outfit = 'home', template = 'starter', dryRun = false}) {
+  const files = renderToolFiles({slug, title, description, outfit, template});
   const toolsDir = path.resolve(repoRoot, 'tools');
   if (!fs.existsSync(toolsDir) || !fs.statSync(toolsDir).isDirectory()) {
     throw new Error('Missing tools/ folder in target repository.');
@@ -178,4 +193,4 @@ if (require.main === module) {
     process.exitCode = 1;
   }
 }
-module.exports = {OUTFITS, parseOptions, validateToolArgs, renderToolFiles, generateTool};
+module.exports = {OUTFITS, TEMPLATES, parseOptions, validateToolArgs, renderToolFiles, generateTool};
