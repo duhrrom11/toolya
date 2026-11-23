@@ -126,7 +126,7 @@
                 </div>
                 <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-xl transition">Abmelden</button>
             </div>
-            <button onclick="toggleSettingsModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="toggleSettingsModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -138,7 +138,7 @@
                 <button onclick="toggleHelpModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             <div class="space-y-3 text-xs">
-                <p><a href="/parkplatz-merker/" class="underline">Öffentliche Schritt-für-Schritt-Anleitung zum Parkplatz-Merker</a></p>
+                <p><a href="/parkplatz-merker/" class="underline" data-tool-en="Step-by-step guide to Parking Spot">Öffentliche Schritt-für-Schritt-Anleitung zum Parkplatz-Merker</a></p>
                 <details class="bg-gray-50 border rounded-xl p-3"><summary class="font-bold cursor-pointer text-amber-700" data-tool-en="How do I transfer parking fees with Toolya Connect?">Wie übernehme ich Parkgebühren mit Toolya Connect?</summary><p class="mt-2 text-gray-600 leading-relaxed" data-tool-en="For a paid parking fee above €0, choose to add it to Household Budget before saving the parking spot. Confirm the transfer after saving. The expense appears under “Car”. Photos and GPS data stay in Parking Spot. Check the default “Cash” payment method in Household Budget. If you cancel, the parking spot stays saved and you can retry. Both tools must be set up under the same account.">Bei einer tatsächlich gezahlten positiven Parkgebühr kannst du direkt vor „Parkplatz speichern“ optional die Übernahme ins Haushaltsbuch wählen. Speichere zuerst den Parkplatz und bestätige dann die Übertragung. Die Buchung erscheint unter „Auto“. Fotos und GPS-Daten werden nicht weitergegeben; die vorläufige Zahlungsart „Bargeld“ musst du im Haushaltsbuch prüfen. Bei 0 € ist die Auswahl deaktiviert. Bei Abbruch bleibt der Parkplatz gespeichert und die Übernahme kann erneut versucht werden. Beide Tools müssen für dasselbe angemeldete Konto eingerichtet sein.</p></details>
                 <details class="bg-gray-50 border rounded-xl p-3">
                     <summary class="font-bold cursor-pointer text-amber-700">Wie funktioniert der Parkscheiben-Modus?</summary>
@@ -159,7 +159,7 @@
                     </p>
                 </details>
             </div>
-            <button onclick="toggleHelpModal()" class="b3-action b3-outline w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="toggleHelpModal()" class="b3-action b3-outline w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -267,7 +267,7 @@
     <dialog id="imageModal" class="b3-photo-dialog" aria-label="Bildvorschau" onclick="if (event.target === this) closeImageModal()">
         <div class="b3-photo-panel">
             <img id="zoomedImage" src="" alt="Vergrößertes Foto des Parkplatzes" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain" data-tool-en-alt="Enlarged parking location photo">
-            <button type="button" class="b3-action b3-outline" onclick="closeImageModal()" autofocus>Schließen</button>
+            <button type="button" class="b3-action b3-outline" onclick="closeImageModal()" autofocus data-tool-en="Close">Schließen</button>
         </div>
     </dialog>
 

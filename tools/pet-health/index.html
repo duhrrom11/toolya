@@ -98,7 +98,7 @@
     <a class="b3-brand" href="../../index.html" aria-label="Toolya Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Toolya</a>
     <span class="b3-tool-icon" aria-hidden="true">🐾</span>
     <div class="b3-tool-title">
-      <h1>Tiergesundheit – Gesundheitstagebuch für Haustiere</h1>
+      <h1 data-tool-en="Pet Health – health diary for pets">Tiergesundheit – Gesundheitstagebuch für Haustiere</h1>
       <p>Impfungen, Tierarztbesuche, Medikamente und Gesundheitsdaten für Hund und Katze</p>
     </div>
     <button type="button" id="settingsBtn" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()" data-tool-en-aria-label="Open settings">⚙</button>
@@ -256,7 +256,7 @@
     <dialog id="imageModal" class="b3-photo-dialog" aria-label="Bildvorschau" onclick="if (event.target === this) closeImageModal()">
         <div class="b3-photo-panel">
             <img id="zoomedImage" src="" alt="Vergrößertes Haustierfoto oder Dokument" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain" data-tool-en-alt="Enlarged pet photo or document">
-            <button type="button" class="b3-action b3-outline" onclick="closeImageModal()" autofocus>Schließen</button>
+            <button type="button" class="b3-action b3-outline" onclick="closeImageModal()" autofocus data-tool-en="Close">Schließen</button>
         </div>
     </dialog>
 
@@ -320,7 +320,7 @@
                     <span>📖 Kurzanleitung – So funktioniert's:</span>
                     <button onclick="toggleHelp()" class="b3-action b3-outline text-teal-200 hover:text-white text-xs px-1.5 py-0.5 rounded">✕ Schließen</button>
                 </div>
-                <p><a href="/tiergesundheit/" class="underline">Schritt-für-Schritt-Anleitung zur Tiergesundheit</a></p>
+                <p><a href="/tiergesundheit/" class="underline" data-tool-en="Step-by-step guide to Pet Health">Schritt-für-Schritt-Anleitung zur Tiergesundheit</a></p>
                 <p><strong>Toolya Connect:</strong> <span data-tool-en="For pet costs above €0, choose to add the expense to Household Budget before saving. Confirm the transfer after saving. The expense appears under “Pets”. Health details and receipt photos stay in Pet Health. Check the default “Cash” payment method in Household Budget. You can retry a cancelled transfer. Household Budget must already be set up under the same account.">Bei einem Eintrag mit tatsächlichen Haustierkosten kannst du direkt vor „Eintrag speichern“ optional die Übernahme ins Haushaltsbuch auswählen. Erst wird der Gesundheitseintrag gespeichert, danach bestätigst du den Transfer in die Kategorie „Haustiere“. Gesundheitsdetails und Belegfotos werden nicht mit übertragen. Die Zahlungsart „Bargeld“ ist dort zu prüfen. Bei 0 € bleibt Connect deaktiviert; ein abgebrochener Transfer lässt sich wiederholen. Das Haushaltsbuch muss im selben Konto bereits eingerichtet sein.</span></p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
                     <div class="bg-teal-800/50 p-2.5 rounded-xl border border-teal-600/30">
@@ -344,7 +344,7 @@
         </div></div>
 
             <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
-                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Schließen</button>
+                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer" data-tool-en="Close">Schließen</button>
             </div>
         </div>
     </div>

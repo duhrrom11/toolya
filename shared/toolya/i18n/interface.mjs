@@ -2490,6 +2490,8 @@ const extendedDialogAdditions = Object.freeze({
     "Kamera-Zugriff fehlgeschlagen oder nicht unterstützt.": "Camera access failed or is unsupported."
   },
   "plants": {
+    "Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.": "The QR code could not be loaded. Please try again.",
+    "Gespeichert": "Saved.",
     "Nicht gefunden.": "Not found.",
     "Pflanzenfoto konnte nicht verarbeitet werden. Nichts gespeichert.": "Plant photo could not be processed. Nothing was saved.",
     "Das Foto konnte nicht gelesen werden.": "The photo could not be read.",
@@ -2501,6 +2503,7 @@ const extendedDialogAdditions = Object.freeze({
     "Bitte ein gültiges Gießdatum eingeben.": "Enter a valid watering date."
   },
   "housemates": {
+    "Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.": "The QR code could not be loaded. Please try again.",
     "Mitgliederzugriff entfernt.": "Member access removed.",
     "Mitgliederzugriff erteilt. Der WG-Link kann jetzt geteilt werden.": "Member access granted. The household link can now be shared.",
     "🔗 WG-Link kopiert! Teile ihn nur mit berechtigten Personen.": "🔗 Household link copied! Share only with authorised people.",

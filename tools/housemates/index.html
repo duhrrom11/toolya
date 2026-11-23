@@ -139,7 +139,7 @@
                 </div>
                 <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-xl transition">Abmelden</button>
             </div>
-            <button onclick="toggleSettingsModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="toggleSettingsModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -177,7 +177,7 @@
                 </details>
             </div>
             <p class="text-sm"><a href="/wg-organisator/" class="text-sky-700 underline">Schritt-für-Schritt-Anleitung zum WG-Organisator</a></p>
-            <button onclick="toggleHelpModal()" class="b3-action b3-outline w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="toggleHelpModal()" class="b3-action b3-outline w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -598,7 +598,7 @@
             </div>
             <div class="b3-dialog-actions flex justify-end gap-2 pt-2 border-t">
                 <button onclick="closeNoteModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveNote()" class="b3-action px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-md">Speichern</button>
+                <button onclick="saveNote()" class="b3-action px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-md" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -646,7 +646,7 @@
             </div>
             <div class="b3-dialog-actions flex justify-end gap-2 pt-2 border-t">
                 <button onclick="closeAddEventModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveEvent()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+                <button onclick="saveEvent()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -695,7 +695,7 @@
             <div id="dietInputContainer" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
             <div class="b3-dialog-actions flex justify-end gap-2 pt-3 border-t">
                 <button onclick="closeDietModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveDietMatrix()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+                <button onclick="saveDietMatrix()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -710,7 +710,7 @@
             <div id="budgetInputList" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
             <div class="b3-dialog-actions flex justify-end gap-2 pt-3 border-t">
                 <button onclick="closeBudgetModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveBudgetsFromModal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md">Speichern</button>
+                <button onclick="saveBudgetsFromModal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -783,7 +783,7 @@
             </div>
             <div class="b3-dialog-actions flex justify-end gap-2 pt-2 border-t">
                 <button onclick="closeInfoboardModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveInfoboardFromModal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+                <button onclick="saveInfoboardFromModal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -868,7 +868,7 @@
             <div id="cookingInputList" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
             <div class="b3-dialog-actions flex justify-end gap-2 pt-3 border-t">
                 <button onclick="closeCookingModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveCookingPlanFromModal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+                <button onclick="saveCookingPlanFromModal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -900,7 +900,7 @@
             </div>
             <div class="b3-dialog-actions flex justify-end gap-2 pt-2 border-t">
                 <button onclick="closeContractModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveContract()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+                <button onclick="saveContract()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>

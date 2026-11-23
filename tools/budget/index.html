@@ -119,7 +119,7 @@
     <div class="b3-tool-title">
       <h1>Haushaltsbuch mit Kassenbon-Scanner</h1>
       <p>Ausgaben erfassen, Budget planen, Belege scannen und Garantien verwalten</p>
-      <p><a href="/haushaltsbuch/" class="underline">Schritt-für-Schritt-Anleitung zum Haushaltsbuch</a></p>
+      <p><a href="/haushaltsbuch/" class="underline" data-tool-en="Step-by-step guide to Household Budget">Schritt-für-Schritt-Anleitung zum Haushaltsbuch</a></p>
     </div>
     <button type="button" class="b3-settings-trigger" id="settingsBtn" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()" data-tool-en-aria-label="Open settings">⚙</button>
   </div>
@@ -408,7 +408,7 @@
             <div id="budgetInputList" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
             <div class="flex justify-end gap-2 pt-3 border-t">
                 <button onclick="closeBudgetModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold b3-action b3-outline">Abbrechen</button>
-                <button onclick="saveBudgetsFromModal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md b3-action">Speichern</button>
+                <button onclick="saveBudgetsFromModal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md b3-action" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -450,7 +450,7 @@
             </div>
             <div id="galleryContainer" class="flex-grow overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             <div class="flex justify-end pt-2 border-t">
-                <button onclick="closeGalleryModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
+                <button onclick="closeGalleryModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
             </div>
         </div>
     </div>
@@ -472,7 +472,7 @@
                 </div>
             </div>
             <div class="flex justify-between gap-2 pt-2">
-                <button onclick="closeQRModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
+                <button onclick="closeQRModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
                 <button onclick="window.print()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md b3-action b3-outline">🖨️ Sticker Drucken</button>
             </div>
         </div>
@@ -528,7 +528,7 @@
             </div>
 
             <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
-                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Schließen</button>
+                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer" data-tool-en="Close">Schließen</button>
             </div>
         </div>
     </div>

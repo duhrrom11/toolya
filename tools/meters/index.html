@@ -87,7 +87,7 @@
     <header class="b3-header"><div class="b3-header-inner">
   <a class="b3-brand" href="../../index.html" aria-label="Toolya Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Toolya</a>
   <span class="b3-tool-icon" aria-hidden="true">⚡</span>
-  <div class="b3-tool-title"><h1>Zählerstände erfassen: Strom, Gas & Wasser</h1>
+  <div class="b3-tool-title"><h1 data-tool-en="Record electricity, gas and water meter readings">Zählerstände erfassen: Strom, Gas & Wasser</h1>
     <p>Verbrauch erfassen, Kosten auswerten und Ablesetermine im Blick behalten</p></div>
   <button type="button" id="settingsBtn" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()" data-tool-en-aria-label="Open settings">⚙</button>
 </div></header>
@@ -126,7 +126,7 @@
                     <div class="p-4 bg-blue-50/50 rounded-xl border border-blue-100 space-y-2">
                         <h4 class="font-bold text-blue-900 text-sm">💧 Wasser</h4>
                         <p data-tool-en="The large digits show whole cubic metres. The red dials show litres.">Die großen Ziffern zeigen volle m³, die roten Zeiger Liter.</p>
-                        <a href="https://www.amazon.de/s?k=wasserzähler+aufsatz+digital&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2">🛒 Wasserzubehör auf Amazon</a>
+                        <a href="https://www.amazon.de/s?k=wasserzähler+aufsatz+digital&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2" data-tool-en="🛒 Water meter accessories on Amazon">🛒 Wasserzubehör auf Amazon</a>
                     </div>
                     <div class="p-4 bg-orange-50/50 rounded-xl border border-orange-100 space-y-2">
                         <h4 class="font-bold text-orange-900 text-sm">♨️ Gas</h4>
@@ -188,7 +188,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="create" id="b3-create">
             <div class="flex flex-wrap gap-3 justify-between items-center">
                 <h2 class="text-lg font-bold">✍️ Neuen Zählerstand erfassen</h2>
-                <a href="https://www.amazon.de/dp/B007459MH6?tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded-xl transition-colors">🛒 Strom-Messgeräte auf Amazon</a>
+                <a href="https://www.amazon.de/dp/B007459MH6?tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded-xl transition-colors" data-tool-en="🛒 Electricity meters on Amazon">🛒 Strom-Messgeräte auf Amazon</a>
             </div>
             
             <div class="b3-meter-identity-grid grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -289,7 +289,7 @@
     <dialog id="photoModal" class="b3-photo-dialog" aria-label="Bildvorschau" onclick="if (event.target === this) closePhotoModal()">
         <div class="b3-photo-panel">
             <img id="modalZoomImg" src="" alt="Vergrößertes Zählerfoto" class="w-full max-h-[70vh] object-contain rounded-xl border" data-tool-en-alt="Enlarged meter photo">
-            <button type="button" class="b3-action b3-outline" onclick="closePhotoModal()" autofocus>Schließen</button>
+            <button type="button" class="b3-action b3-outline" onclick="closePhotoModal()" autofocus data-tool-en="Close">Schließen</button>
         </div>
     </dialog>
 
@@ -328,7 +328,7 @@
                 </div>
             </div>
 
-            <button onclick="closeEnergyTipsModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="closeEnergyTipsModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -370,7 +370,7 @@
                 </div>
             </div>
 
-            <p class="text-sm"><a href="/zaehlerstaende/" class="text-sky-700 underline">Schritt-für-Schritt-Anleitung zur Zählerstandserfassung</a></p>
+            <p class="text-sm"><a href="/zaehlerstaende/" class="text-sky-700 underline" data-tool-en="Step-by-step guide to recording meter readings">Schritt-für-Schritt-Anleitung zur Zählerstandserfassung</a></p>
 
             <!-- DATENSICHERUNG -->
             <div class="border-t border-gray-200 pt-4">
@@ -384,7 +384,7 @@
             </div>
 
             <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
-                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Schließen</button>
+                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer" data-tool-en="Close">Schließen</button>
             </div>
         </div>
     </div>
