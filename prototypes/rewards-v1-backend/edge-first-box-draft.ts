@@ -47,7 +47,10 @@ Deno.serve(async (request: Request) => {
   if (origin && !allowedOrigins.has(origin)) {
     return respond(403, { error: "origin_denied" }, null);
   }
-  if (request.method === "OPTIONS") return respond(204, {}, origin);
+  if (request.method === "OPTIONS") {
+    const response = respond(200, { preflight: true }, origin);
+    return new Response(null, { status: 204, headers: response.headers });
+  }
   if (request.method !== "POST") return respond(405, { error: "method_not_allowed" }, origin);
 
   const authorization = request.headers.get("Authorization");
