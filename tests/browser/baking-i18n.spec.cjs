@@ -173,6 +173,8 @@ test('real Backstudio redesigned subview headings switch DE/EN/DE without touchi
 
 test('recipe OCR review preserves decimal ingredient quantities and private names in both languages',async({page})=>{
  await mountBackstudio(page);
+ // Ingredient acceptance requests a recalculation; isolate that callback without cloud writes.
+ await page.evaluate(()=>{window.calculateRecipe=()=>{}});
  const recipe=page.locator('#recipe-input');
  const source=page.locator('#bsp-recipe-text');
  const apply=page.locator('#bsp-apply');
