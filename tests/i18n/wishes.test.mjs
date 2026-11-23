@@ -542,6 +542,7 @@ test('remaining Wishes navigation and status copy is source-exact and reversible
 ];
  for(const [de,en] of pairs){
   assert.ok(source.includes(de),'missing UI source: '+de);
+  assert.ok(source.includes(' data-wish-copy>'+de+'<'),'UI label missing locale opt-in: '+de);
   assert.equal(wishesText(de,'en'),en);
   assert.equal(wishesText(en,'de'),de);
  }
