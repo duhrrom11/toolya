@@ -1,5 +1,7 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+ "Zu viele Datensätze für eine vollständige Auswertung": "Too many records for a complete analysis",
+ " tatsächlich protokollierte Erledigungen": " actually recorded completions",
  "Aufgabe „": "Task “",
  "“ wirklich als erledigt markieren?": "”: mark as completed?",
  "“ wirklich auf ": "”: move to ",
