@@ -1,0 +1,42 @@
+name: Toolya AI development foundation
+on:
+  pull_request:
+    paths:
+      - 'AGENTS.md'
+      - 'README.md'
+      - 'package.json'
+      - 'docs/ai/**'
+      - 'scripts/create-tool.cjs'
+      - 'tests/ai/**'
+      - '.github/workflows/ai-development.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'AGENTS.md'
+      - 'README.md'
+      - 'package.json'
+      - 'docs/ai/**'
+      - 'scripts/create-tool.cjs'
+      - 'tests/ai/**'
+      - '.github/workflows/ai-development.yml'
+permissions:
+  contents: read
+jobs:
+  offline-scaffold:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate scaffold syntax
+        run: node --check scripts/create-tool.cjs
+      - name: Run isolated AI development tests
+        run: npm run test:ai
+      - name: Verify CLI dry run cannot publish or create files
+        run: |
+          npm run tools:scaffold -- --slug ci-draft --title 'CI Draft' --description 'Synthetic local-only CI check.' --dry-run
+          test ! -e tools/ci-draft
