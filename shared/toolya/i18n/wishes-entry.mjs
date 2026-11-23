@@ -68,7 +68,11 @@ function mount(){
    history.replaceState(history.state,'',url.pathname+url.search+url.hash);
   }
   updateVisibleCopy();
-  document.title=lang==='en'?wishesText(initialTitle.replace(' · Toolya Wishes',''),'en')+' · Toolya Wishes':initialTitle;
+  const translatedTitle=wishesText(initialTitle,'en');
+  document.title=lang==='de'?initialTitle:
+   translatedTitle!==initialTitle?translatedTitle:
+   wishesText(initialTitle.replace(' · Toolya Wishes',''),'en')+' · Toolya Wishes';
+  document.documentElement.lang=lang;
   nav.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.wishesLocale===lang)));
   notice.hidden=lang!=='en';
   document.dispatchEvent(new Event('toolya:wishes-locale-change'));

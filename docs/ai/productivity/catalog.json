@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "sourceOfTruth": "docs/ai/productivity/",
+  "notes": "Prompts are original, reusable patterns. Structural checks are not factual validation and do not call any model.",
+  "contextIds": [
+    "general",
+    "toolya-core",
+    "toolya-engineering",
+    "toolya-marketing"
+  ],
+  "contexts": {
+    "general": "docs/ai/productivity/contexts/general.md",
+    "toolya-core": "docs/ai/productivity/contexts/toolya-core.md",
+    "toolya-engineering": "docs/ai/productivity/contexts/toolya-engineering.md",
+    "toolya-marketing": "docs/ai/productivity/contexts/toolya-marketing.md"
+  },
+  "patterns": [
+    {
+      "id": "research",
+      "title": "Quellenbasierte Recherche",
+      "file": "docs/ai/productivity/patterns/research.md",
+      "contexts": [
+        "general",
+        "toolya-core"
+      ],
+      "sections": [
+        "Ergebnis",
+        "Belege",
+        "Offene Punkte"
+      ],
+      "evidence": "link-or-uncertainty"
+    },
+    {
+      "id": "implementation",
+      "title": "Geprüfte Entwicklung",
+      "file": "docs/ai/productivity/patterns/implementation.md",
+      "contexts": [
+        "general",
+        "toolya-engineering"
+      ],
+      "sections": [
+        "Änderungen",
+        "Prüfungen",
+        "Veröffentlichung"
+      ],
+      "status": "release"
+    },
+    {
+      "id": "marketing",
+      "title": "Markenorientiertes Marketing",
+      "file": "docs/ai/productivity/patterns/marketing.md",
+      "contexts": [
+        "general",
+        "toolya-marketing"
+      ],
+      "sections": [
+        "Zielgruppe",
+        "Entwurf",
+        "Faktenprüfung",
+        "Messung"
+      ]
+    },
+    {
+      "id": "decision",
+      "title": "Entscheidungsvorlage",
+      "file": "docs/ai/productivity/patterns/decision.md",
+      "contexts": [
+        "general",
+        "toolya-core"
+      ],
+      "sections": [
+        "Optionen",
+        "Bewertung",
+        "Empfehlung",
+        "Risiken"
+      ]
+    },
+    {
+      "id": "document",
+      "title": "Dokumentenauswertung",
+      "file": "docs/ai/productivity/patterns/document.md",
+      "contexts": [
+        "general",
+        "toolya-core"
+      ],
+      "sections": [
+        "Kernaussagen",
+        "Fundstellen",
+        "Aktionen",
+        "Lücken"
+      ],
+      "evidence": "source-or-uncertainty"
+    },
+    {
+      "id": "automation",
+      "title": "Sichere Automatisierung",
+      "file": "docs/ai/productivity/patterns/automation.md",
+      "contexts": [
+        "general",
+        "toolya-core"
+      ],
+      "sections": [
+        "Auslöser",
+        "Ablauf",
+        "Schutzmaßnahmen",
+        "Aktivierung"
+      ],
+      "status": "activation"
+    }
+  ]
+}

@@ -568,3 +568,55 @@ test('remaining Wishes navigation and status copy is source-exact and reversible
   assert.equal(wishesText(en,'de'),de);
  }
 });
+
+test('public wishlist editorial copy is complete and translated only when explicitly marked',()=>{
+ const html=readFileSync(new URL('../../tools/wishes/public.html',import.meta.url),'utf8');
+ const {document}=parseHTML(html);
+ const fixed=[...document.querySelectorAll('p[data-wishes-copy],span[data-wishes-copy]')];
+ assert.equal(fixed.length,28,'all selected author-owned editorial nodes must be marked');
+ const original=fixed.map(el=>el.textContent.trim());
+ for(const de of original){
+  assert.ok(Object.hasOwn(WISHES_COPY,de),'Missing author-owned translation: '+de);
+  assert.notEqual(wishesText(de,'en'),de,'Untranslated author-owned copy: '+de);
+  assert.equal(wishesText(wishesText(de,'en'),'de'),de,'Not reversible: '+de);
+ }
+ assert.equal(new Set(original).size,original.length,'Every opted-in editorial source must be unique');
+ const privateCard=document.createElement('div');
+ privateCard.className='profile-card';
+ privateCard.innerHTML='<p data-wishes-copy>Bitte keine Anschriften, Telefonnummern oder vertraulichen Angaben eintragen.</p>'+
+  '<span>Privater Wunsch: Speichern</span><input value="Persönliche Notiz">';
+ document.body.append(privateCard);
+ const unmarked=document.createElement('p');
+ unmarked.textContent='Bitte keine Anschriften, Telefonnummern oder vertraulichen Angaben eintragen.';
+ document.body.append(unmarked);
+ applyWishLocale(document,'en');
+ for(let i=0;i<fixed.length;i++){
+  assert.equal(fixed[i].textContent.trim(),wishesText(original[i],'en'),original[i]);
+ }
+ assert.equal(privateCard.querySelector('p').textContent,
+  'Bitte keine Anschriften, Telefonnummern oder vertraulichen Angaben eintragen.');
+ assert.equal(privateCard.querySelector('span').textContent,'Privater Wunsch: Speichern');
+ assert.equal(privateCard.querySelector('input').value,'Persönliche Notiz');
+ assert.equal(unmarked.textContent,'Bitte keine Anschriften, Telefonnummern oder vertraulichen Angaben eintragen.');
+ applyWishLocale(document,'de');
+ for(let i=0;i<fixed.length;i++)assert.equal(fixed[i].textContent.trim(),original[i]);
+ assert.equal(privateCard.querySelector('input').value,'Persönliche Notiz');
+});
+
+test('public wishlist title and privacy/affiliate statements have exact bilingual copy',()=>{
+ const title='Amazon-Wunschliste nach Namen finden – ohne Link | Toolya';
+ assert.equal(wishesText(title,'en'),'Find Amazon wish lists by name – no link needed | Toolya');
+ assert.equal(wishesText(wishesText(title,'en'),'de'),title);
+ const disclosures=[
+  'Werbung · Amazon-Partnerlinks. Als Amazon-Partner verdiene ich an qualifizierten Verkäufen.',
+  'Bitte keine Anschriften, Telefonnummern oder vertraulichen Angaben eintragen.',
+  'Eine bis fünf bereits bei Amazon angelegte, öffentlich freigegebene Listen. Toolya speichert ausschließlich die Verweise; die Amazon-Listen und ihre Artikel bleiben bei Amazon. Beim Öffnen wird eine Partnerkennung angehängt.',
+  'Gib ihren Vor- oder Nachnamen oder den Namen der Organisation ein. Bei gleichnamigen Treffern helfen freiwillige Angaben zu Land und Ort. Nur bereits erfasste öffentliche Listen können gefunden werden; die Identität importierter Treffer ist nicht immer bestätigt. Produkte innerhalb der Amazon-Listen werden nicht durchsucht.'
+ ];
+ for(const source of disclosures){
+  const target=wishesText(source,'en');
+  assert.notEqual(target,source);
+  assert.equal(wishesText(target,'de'),source);
+  assert.match(target,/Amazon|public|address|phone/i);
+ }
+});
