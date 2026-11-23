@@ -863,7 +863,7 @@
                         <span class="font-bold text-indigo-800 block">${escapeHtml(i.title)}</span>
                         <span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full inline-block mt-1">${escapeHtml(loanCategoryDisplay(i.category))}</span>
                         ${i.serial ? `<p class="text-gray-600 mt-1">SN/ISBN: <span class="font-mono">${escapeHtml(i.serial)}</span></p>` : ''}
-                        ${safeGpsUrl(i.gpsLink) ? `<a href="${safeGpsUrl(i.gpsLink)}" rel="noopener noreferrer" target="_blank" class="text-blue-600 font-semibold underline block mt-1">📍 GPS-Tracker öffnen</a>` : ''}
+                        ${safeGpsUrl(i.gpsLink) ? `<a href="${safeGpsUrl(i.gpsLink)}" rel="noopener noreferrer" target="_blank" class="text-blue-600 font-semibold underline block mt-1">${window.__toolyaUILocale === 'en' ? '📍 Open GPS tracker' : '📍 GPS-Tracker öffnen'}</a>` : ''}
                     </div>
                     <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete inventory item' : 'Inventargegenstand löschen'}" data-inventory-delete="${index}" class="text-red-500 font-bold px-1.5 hover:bg-red-100 rounded">✕</button>
                 </div>
