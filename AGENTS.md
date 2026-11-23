@@ -32,7 +32,8 @@ Repository: duhrrom11/toolya. Production target: https://toolya.app (niemals too
 - Der Offline-Generator scripts/create-tool.cjs erzeugt nur neue, unveröffentlichte noindex-Prototypen. Niemals bestehende Tool-Pfade überschreiben.
 - Neue Tool-Routen zunächst nicht als produktiv registrieren. Neue Slugs brauchen eigene TOOLS-/Maskottchen-, Navigation-, SEO- und Sicherheitsprüfung.
 - Minimalprüfungen: node --check scripts/create-tool.cjs; node --test tests/ai/*.test.cjs. Relevante bestehende Prüfungen zusätzlich ausführen.
-- docs/ai/TOOL-GENERATOR.md beschreibt Grenzen, Tests und das Release-Gate.
+- docs/ai/TOOL-GENERATOR.md und docs/ai/TOOL-BUILDER.md beschreiben Funktionsvorlagen, lokale Vorschau, Testgenerierung und das Release-Gate.
+- Für neue Funktionen ausschließlich die reinen Offline-Bausteine in shared/toolya/tool-builder/blocks.mjs verwenden, bis fachliche Backend-Integration ausdrücklich geprüft wurde. Keine persistenten Daten oder Produktions-API-Aufrufe in generierte Testvorlagen aufnehmen.
 
 ## Dokumentationsquellen
 
