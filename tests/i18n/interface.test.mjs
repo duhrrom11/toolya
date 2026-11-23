@@ -3446,3 +3446,47 @@ test('moving planner dynamic dialogs translate DE/EN while backup and deletion g
  assert.match(source,/reviewExistingCloud:async\(\)=>confirm\(/,'cloud conflict selection still opt in');
  assert.match(source,/p\.status==='active'/,'active move restriction uses original stored status');
 });
+
+
+test('housemates validation alerts round-trip DE/EN while guards and saved records remain unchanged',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const {runInNewContext}=await import('node:vm');
+ const source=readFileSync(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
+ const pairs=[
+  ['Bitte mindestens einen Titel angeben!','Please enter at least a title!'],
+  ['Bitte Titel und Datum angeben!','Please enter a title and date!'],
+  ['Bitte Pflichtfelder ausfüllen!','Please fill in the required fields!'],
+  ['Bitte Belegfoto auswählen!','Please select a receipt photo!'],
+  ['Bitte mindestens Titel, Datum und Betrag angeben!','Please enter at least a title, date and amount!'],
+  ['Bitte Titel und Zielbetrag angeben!','Please enter a title and target amount!'],
+  ['Bitte zuerst ein WG-Mitglied anlegen.','Please add a household member first.'],
+  ['Bitte Aufgabe angeben!','Please enter a task!'],
+  ['Bitte Bezeichnung eingeben!','Please enter a description!'],
+  ['Bitte Name und gültige Kosten angeben!','Please enter a name and valid costs!'],
+  ['Bitte mindestens einen Vornamen angeben!','Please enter at least a first name!']
+ ];
+ const actual=[...source.matchAll(/alert\(window\.__toolyaUILocale === 'en' \? '([^']+)' : '([^']+)'\)/g)];
+ for(const [de,en] of pairs){
+  assert.ok(actual.some(m=>m[1]===en&&m[2]===de),'missing source translation for '+de);
+  const expression="window.__toolyaUILocale === 'en' ? "+JSON.stringify(en)+' : '+JSON.stringify(de);
+  assert.equal(runInNewContext(expression,{window:{__toolyaUILocale:'en'}}),en);
+  assert.equal(runInNewContext(expression,{window:{__toolyaUILocale:'de'}}),de);
+ }
+ const guards=[
+  'if (!title) return alert(window.__toolyaUILocale',
+  'if (!title || !date) return alert(window.__toolyaUILocale',
+  'if (!title || price <= 0 || !date) return alert(window.__toolyaUILocale',
+  'if (!input.files || !input.files[0]) return alert(window.__toolyaUILocale',
+  'if (!title || !date || price <= 0) return alert(window.__toolyaUILocale',
+  'if (!title || target <= 0) return alert(window.__toolyaUILocale',
+  "if (mateNames.length === 0) return alert(window.__toolyaUILocale",
+  'if (!task) return alert(window.__toolyaUILocale',
+  'if (!name || !Number.isFinite(price) || price <= 0) return alert(window.__toolyaUILocale',
+  'if (!vorname) return alert(window.__toolyaUILocale'
+ ];
+ for(const guard of guards)assert.ok(source.includes(guard),'validation still precedes mutation: '+guard);
+ assert.match(source,/items\.push\(\{ id: Date\.now\(\), title, price, date, lifespan \}\); saveInventory\(items\)/);
+ assert.match(source,/goals\.push\(\{ id: Date\.now\(\), title, target, current \}\)/);
+ assert.match(source,/plan\.push\(\{ id: Date\.now\(\), task, assignee, done: false \}\)/);
+ assert.match(source,/contracts\.push\(\{ id: Date\.now\(\), name, price, payer, noticeDate \}\)/);
+});
