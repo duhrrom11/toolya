@@ -9,7 +9,7 @@ function el(tag,text,cls){const e=document.createElement(tag);e.textContent=text
 function nextDate(o,now){const [y,m,d]=o.occasion_date.split('-').map(Number);let date=Date.UTC(y,m-1,d);if(!o.repeats_yearly)return date>=now?date:null;let year=new Date(now).getUTCFullYear();for(let i=0;i<3;i++,year++){const last=new Date(Date.UTC(year,m,0)).getUTCDate();date=Date.UTC(year,m-1,Math.min(d,last));if(date>=now)return date}return null}
 function median(values){const a=[...values].sort((x,y)=>x-y);return a.length?(a.length%2?a[(a.length-1)/2]:(a[a.length/2-1]+a[a.length/2])/2):null}
 function addCard(root,title,lines){const box=el('article','','card');box.append(el('h3',title));for(const line of lines)box.append(el('p',line));root.append(box);return box}
-async function allRows(table,columns,userId,order){let rows=[];for(let start=0;start<20000;start+=500){let q=db.from(table).select(columns).eq('user_id',userId).order(order,{ascending:true}).range(start,start+499);const {data,error}=await q;if(error)throw error;rows.push(...(data||[]));if((data||[]).length<500)return rows}throw new Error('Zu viele Datensätze für eine vollständige Auswertung')}
+async function allRows(table,columns,userId,order){let rows=[];for(let start=0;start<20000;start+=500){let q=db.from(table).select(columns).eq('user_id',userId).order(order,{ascending:true}).range(start,start+499);const {data,error}=await q;if(error)throw error;rows.push(...(data||[]));if((data||[]).length<500)return rows}throw new Error(ui('Zu viele Datensätze für eine vollständige Auswertung'))}
 let taskBusy=false,taskUserId=null,taskEvents=[],assistantReady=false,localePending=false;
 function refreshTaskDisplay(){renderTaskEvents();renderWeeklyTasks();renderDaily();renderWeek()}
 async function changeTask(task,field,newValue,button){
@@ -43,7 +43,7 @@ function renderTaskEvents(){
  for(const [label,count] of [[ui("Erledigungen protokolliert"),completed.length],[ui("Terminverschiebungen"),rescheduled.length],[ui("Wieder geöffnet"),reopened.length]]){const card=el('div','','review-kpi');card.append(el('strong',String(count)),el('span',label));summary.append(card)}
  const now=new Date(),today=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()),start=today-((now.getDay()+6)%7)*day;
  for(let w=5;w>=0;w--){const weekStart=start-w*7*day,weekEnd=weekStart+7*day,count=completed.filter(e=>{const at=Date.parse(e.occurred_at);return at>=weekStart&&at<weekEnd}).length;
- const card=el('article','','card');card.append(el('h3',new Date(weekStart).toLocaleDateString(locale(),{timeZone:'UTC'})+' – '+new Date(weekEnd-day).toLocaleDateString(locale(),{timeZone:'UTC'})),el('p',count+' tatsächlich protokollierte Erledigungen'));trend.append(card)}
+ const card=el('article','','card');card.append(el('h3',new Date(weekStart).toLocaleDateString(locale(),{timeZone:'UTC'})+' – '+new Date(weekEnd-day).toLocaleDateString(locale(),{timeZone:'UTC'})),el('p',count+ui(' tatsächlich protokollierte Erledigungen')));trend.append(card)}
  if(!taskEvents.length){list.append(el('p',ui("Noch keine protokollierten Aufgabenänderungen seit Aktivierung.")));return}
  for(const e of taskEvents.slice(0,35)){const card=el('article','','card'),label=e.event_type==='completed'?ui("✓ Erledigt"):e.event_type==='reopened'?ui("↩ Wieder geöffnet"):e.event_type==='due_date_changed'?ui("📅 Fälligkeit verschoben"):ui("🔄 Status geändert");
  card.append(el('h3',label+' · '+e.task_title),el('p',new Date(e.occurred_at).toLocaleString(locale())));
