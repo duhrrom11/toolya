@@ -21,7 +21,7 @@ const proStaticCopy=new Map([["Deine Backform zum Drehen","Your interactive baki
 const proOriginalText=new WeakMap();
 function localizeProControls(){
  const root=$('toolya-backstudio');if(!root)return;
- for(const node of root.querySelectorAll('.bsp-panel h4,.bsp-panel .bsp-muted,.bsp-panel .bsp-actions > button,.bsp-panel label > span,#toolya-backstudio article > label > span,.bsp-panel option,#bsp-3d-status,#bsp-ocr-status')){
+ for(const node of root.querySelectorAll('.bsp-panel h4,.bsp-panel .bsp-muted,.bsp-panel .bsp-actions > button,.bsp-panel > button,.bsp-panel label > span,#toolya-backstudio article > label > span,.bsp-panel option,#bsp-3d-status,#bsp-ocr-status')){
   if(node.children.length)continue;
   const source=proOriginalText.get(node)??node.textContent;
   if(!proStaticCopy.has(source))continue;
