@@ -1,44 +1,86 @@
-# Toolya Tool Generator – Version 0.1 (Fundament)
+# Toolya Tool Generator – Version 0.2 (gemeinsame Plattform im Entwurf)
 
-Ein bewusst kleiner Offline-Generator für **neue** statische Tool-Prototypen. Er verwendet nur Node.js-Bordmittel und erstellt keine Supabase-Objekte, Secrets, Benutzerdaten oder GitHub-Commits.
+Ein lokaler, dependency-freier Generator für **neue, unveröffentlichte** Tool-Prototypen.
+Er erzeugt drei Dateien unter `tools/<slug>/`. Er ruft weder GitHub noch Supabase auf,
+verändert keine Produktivtabellen und überschreibt niemals bestehende Tool-Verzeichnisse.
 
 ## Aufruf
 
-Im Repository:
+```bash
+npm run tools:scaffold -- \
+  --slug mein-tool \
+  --title "Mein Tool" \
+  --description "Ein neues Tool fuer den Alltag." \
+  --outfit plants \
+  --dry-run
+```
 
-    node scripts/create-tool.cjs --slug mein-tool --title "Mein Tool" --description "Ein Tool fuer den Alltag." --dry-run
+Erst wenn die Ausgabe und der Slug stimmen, denselben Befehl **ohne** `--dry-run` verwenden.
+`--outfit` ist optional; Standard ist `home` (neutraler Alltagsbegleiter).
+Die Rolle kann derzeit nur aus den bereits vorhandenen Tool-Rollen stammen:
+`home`, `wishes`, `budget`, `housemates`, `moving`, `estate`, `car`,
+`pet-health`, `parking`, `loans`, `plants`, `meters`, `baking`.
 
-Danach denselben Aufruf **ohne** --dry-run verwenden, um tools/mein-tool/index.html, app.mjs und README.md zu erzeugen. Alternativ: npm run tools:scaffold -- --slug ... --title ... --description ... .
+## Was schon automatisch funktioniert
+
+- Der neue Entwurf lädt `shared/toolya/platform.mjs` und verwendet dessen **bestehenden**
+  Themen-Header, Toolya-Wortmarke, Footer, Einstellungsdialog und Maskottchen-Renderer.
+  Keine Kopie der Komponenten oder improvisierte zweite Wortmarke.
+- Das `--outfit` wird als validierte, rein lokale Metainformation eingebettet.
+  Nur eine neue Tool-Route mit explizitem `data-toolya-draft="true"` darf auf
+  diese bestehende Outfit-Rolle zurückgreifen; registrierte Tools behalten ihre eigene Rolle.
+- Die Charakterfarbe richtet sich weiterhin nach den Einstellungen des Nutzers
+  (türkis/weiß oder lila/creme), nicht nach dem ausgewählten Outfit.
+- Eine bestehende Originalgrafik wird nicht verändert: die Plattform zeigt den
+  vorhandenen Outfit-Atlas an.
+- Ohne JavaScript ist die einfache semantische Seitenüberschrift samt Link zur
+  Hauptseite sichtbar; die erweiterte Toolya-Oberfläche benötigt JavaScript.
+- Das generierte `app.mjs` enthält ausschließlich einen lokalen
+  Beispielbutton mit einer Statusmeldung, noch **keine Fachfunktion**.
 
 ## Sicherheitsgrenzen
 
-- Nur Slugs aus Kleinbuchstaben, Ziffern und einzelnen Bindestrichen; kein Pfad-Traversal.
-- Eine bereits vorhandene Tool-Directory wird niemals überschrieben.
-- Ungültige Titel/Beschreibungen sowie Steuerzeichen und mehrzeilige Angaben werden abgewiesen; HTML-Metadaten sind escaped.
-- --dry-run schreibt **keine** Dateien. Der Generator selbst ruft weder APIs noch GitHub noch Supabase auf.
-- Die Entwurfsseite ist noindex,nofollow und führt nur einen lokalen Platzhalter-Klick aus.
-- Ausschließlich neue lokale Dateien. Bestehende Tool-Seiten, Auth-/RLS-Regeln, CI und Produktionsdaten bleiben unberührt.
+- Slug validiert, kein Traversal, kein Überschreiben, HTML-Texte escaped.
+- Eine `--dry-run`-Ausführung schreibt keine Dateien.
+- Prototype bleiben `noindex,nofollow` und werden nicht in Navigation, Sitemap,
+  Tool-Inventar oder `TOOLS` eingetragen.
+- Keine Authentifizierung, keine Datenpersistenz, keine Secrets, keine Cloud-Requests
+  durch den Generator oder dessen Beispiel-Fachlogik.
+- Das gemeinsame Plattformmodul kann wie bisher externe Ressourcen für
+  Anzeige/Einwilligung nachladen; Browser-Tests blockieren externe Requests.
+- Automatische Gestaltung bedeutet **nicht** Produktionsfreigabe oder fertige
+  Übersetzung: DE/EN-Fachtexte und verantwortliche Datenverarbeitung bleiben
+  pro echtem Tool zu implementieren.
+- Keine Änderungen an den zwölf bestehenden produktiven Routen, der Homepage,
+  Wishlist/Amazon-Importer oder Backend-Migrationen.
 
-## Wichtige Integrationsgrenzen
+## Bevor ein neuer Tool-Slug produktiv wird
 
-- Gemeinsamer Plattform-Loader wird referenziert. Ein neuer Slug ist jedoch noch nicht im TOOLS-Mapping in shared/toolya/platform.mjs; dort greift noch der Home-Fallback.
-- Das erzeugte Header-Markup ist Platzhalter und **kein** fertiger markenkonformer Themen-Header. Vor Veröffentlichung bestehende Header-/Footer-/Wortmarken-Assets sowie Nutzerauswahl der Maskottchen verifizieren.
-- Kein automatischer Eintrag in Navigation, Startseite, Sitemap, Runtime-Inventar oder SEO-Seiten.
-- Kein Backend, keine Authentifizierung, kein Datenspeicher, keine Lokalisierungsabdeckung. Diese Punkte gehören in den konkreten Tool-PR.
+1. Fachfunktion implementieren; Platzhalter ersetzen.
+2. Tool-Slug und passende Rolle in `shared/toolya/platform.mjs` bewusst
+   registrieren und die Vorschau-Markierung entfernen.
+3. Falls eine eigene Outfit-Illustration nötig ist, separat entwickeln und
+   Atlas-/Lizenz-/Originaldateischutz prüfen.
+4. Navigation, SEO, Sitemap und Runtime-Inventar nach freigegebenem Umfang ergänzen.
+5. Responsivität, Tastaturbedienung, Mobilgeräte, reduzierte Bewegung, Dialoge,
+   DE/EN-Übersetzung und beide gewählten Maskottchen kontrollieren.
+6. Falls Datenzugriff nötig: Auth, RLS, Schreibbestätigungen, Offline-/Konfliktfälle
+   sicher implementieren und isoliert testen – nie an Produktivdaten herumtesten.
+7. PR mit Prüfnachweisen erstellen; nur geprüfte Änderungen freigeben.
 
-## Checkliste vor echter Veröffentlichung
+## Verifikation
 
-1. Tatsächliche Fachfunktion und Tests hinzufügen; Platzhalter entfernen.
-2. Gemeinsame Module wiederverwenden, TOOLS-Rolle und Maskottchen-Header korrekt integrieren.
-3. Bestandsschutz für die zwölf vorhandenen Tools und Wishlist/Importer prüfen.
-4. Mobile/Keyboard/Reduced Motion/Locale/Datenschutz prüfen.
-5. Falls Cloud benötigt: eigene Sicherheitsanalyse von Auth, RLS, Schreibbestätigungen und Konflikten; isolierte Tests.
-6. SEO-Entscheidung treffen und erst dann noindex/Navigation/Runtime-Inventar ändern.
-7. PR mit Testnachweisen erstellen; Live erst nach geprüftem Release bestätigen.
+```bash
+node --check scripts/create-tool.cjs
+npm run test:ai
+# benötigt Playwright und Chromium; im neuen GitHub-Actions-Gate enthalten:
+node tests/ai/tool-generator.browser.cjs
+```
 
-## Validierung
+Der Browser-Smoke erstellt genau ein temporäres Tool-Verzeichnis im Checkout,
+prüft die gemeinsame Plattform und beide Maskottchen bei 320 px und löscht
+die temporären Dateien am Ende. Alle externen Browser-Requests werden blockiert.
+Keine Testdaten oder Requests an produktive Supabase-Datenbanken.
 
-    node --check scripts/create-tool.cjs
-    node --test tests/ai/*.test.cjs
-
-Die Tests verwenden ein temporäres Testverzeichnis und löschen es wieder. Es wird kein Tool in Produktion generiert. Die GitHub-Action ai-development.yml führt diese Prüfungen bei passenden Änderungen aus.
+Siehe auch `AGENTS.md`, `docs/ai/ARCHITECTURE.md` und
+`docs/ai/DEVELOPMENT-WORKFLOW.md`.
