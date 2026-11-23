@@ -447,14 +447,14 @@
                 const uid=auth.user.id;
                 const prepared=await prepareCloudTool({
                     client:supabaseClient,tool:'verliehene-gegenstaende-verwalten',storage:localStorage,
-                    confirmMigration:async()=>confirm('Bestehende Verleihdaten in dein Toolya-Konto übernehmen? Vorhandene Cloud-Daten werden nicht überschrieben.'),
-                    reviewExistingCloud:async()=>confirm('Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?'),
+                    confirmMigration:async()=>confirm(window.__toolyaUILocale === 'en' ? 'Import existing loan data into your Toolya account? Existing cloud data will not be overwritten.' : 'Bestehende Verleihdaten in dein Toolya-Konto übernehmen? Vorhandene Cloud-Daten werden nicht überschrieben.'),
+                    reviewExistingCloud:async()=>confirm(window.__toolyaUILocale === 'en' ? 'Cloud and device data both exist. Keep cloud data and back up local data separately?' : 'Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?'),
                     exportBackup:async data=>{
                         const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
                         const url=URL.createObjectURL(blob),a=document.createElement('a');
                         a.href=url;a.download='toolya-verleih-vor-cloud.json';a.click();
                         setTimeout(()=>URL.revokeObjectURL(url),60000);
-                        return confirm('Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
+                        return confirm(window.__toolyaUILocale === 'en' ? 'Please confirm that you downloaded the backup.' : 'Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
                     }
                 });
                 const {data:again,error:againError}=await supabaseClient.auth.getUser();
@@ -487,7 +487,7 @@
         async function saveContact() {
             const name = document.getElementById('contactName').value.trim();
             const phone = document.getElementById('contactPhone').value.trim();
-            if (!name) return alert("Bitte einen Namen eingeben!");
+            if (!name) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a name!' : 'Bitte einen Namen eingeben!');
 
             let data = getData();
             if(!data.contacts) data.contacts = [];
@@ -506,7 +506,7 @@
             const serial = document.getElementById('invSerial').value.trim();
             const gpsLink = document.getElementById('invGpsLink').value.trim();
 
-            if (!title) return alert("Bitte eine Bezeichnung für den Gegenstand angeben!");
+            if (!title) return alert(window.__toolyaUILocale === 'en' ? 'Please enter an item description!' : 'Bitte eine Bezeichnung für den Gegenstand angeben!');
 
             let data = getData();
             if(!data.inventory) data.inventory = [];
@@ -522,7 +522,7 @@
         }
 
         async function deleteInventoryItem(id) {
-            if (!confirm("Diesen Stamm-Gegenstand wirklich löschen?")) return;
+            if (!confirm(window.__toolyaUILocale === 'en' ? 'Really delete this inventory item?' : 'Diesen Stamm-Gegenstand wirklich löschen?')) return;
             let data = getData();
             data.inventory = data.inventory.filter(i => i.id !== id);
             if (!await saveData(data)) return;
@@ -622,7 +622,7 @@
             const note = document.getElementById('itemNote').value.trim();
             const photoInput = document.getElementById('itemPhotoInput');
 
-            if (!person || !date) return alert("Bitte Person und Ausleihdatum angeben!");
+            if (!person || !date) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a person and loan date!' : 'Bitte Person und Ausleihdatum angeben!');
 
             let photo="";
             if(photoInput.files && photoInput.files[0]){
@@ -707,7 +707,7 @@
         }
 
         async function deleteItem(id) {
-            if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
+            if (!confirm(window.__toolyaUILocale === 'en' ? '⚠️ Really delete this record?' : '⚠️ Diesen Eintrag wirklich löschen?')) return;
             let data = getData();
             data.items = data.items.filter(i => i.id !== id);
             if (!await saveData(data)) return;
@@ -743,7 +743,7 @@
             const deposit = parseFloat(document.getElementById('editDeposit').value.replace(',', '.')) || 0;
             const note = document.getElementById('editNote').value.trim();
 
-            if (!title || !person || !date) return alert("Bitte Gegenstand, Person und Ausleihdatum angeben!");
+            if (!title || !person || !date) return alert(window.__toolyaUILocale === 'en' ? 'Please enter an item, person and loan date!' : 'Bitte Gegenstand, Person und Ausleihdatum angeben!');
 
             let data = getData();
             let item = data.items.find(i => i.id === id);
@@ -765,7 +765,7 @@
             const { loadQrGenerator } = await import('../../shared/toolya/qr-generator.mjs');
             const QRCode = await loadQrGenerator();
             if (!QRCode) {
-                alert("Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.");
+                alert(window.__toolyaUILocale === 'en' ? 'The QR code could not be loaded. Please try again.' : 'Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.');
                 return;
             }
             document.getElementById('qrTitle').innerText = title + " (" + person + ")";
