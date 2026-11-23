@@ -31,7 +31,7 @@ test('catalog defines six real, locally reusable patterns and focused contexts',
 test('prompt assembly is reusable without network, context inflation or file writes',()=>{
   const task='Prüfe eine neue Funktion anhand einer lokalen Testbeschreibung.';
   const basic=assemblePrompt({root:ROOT,patternId:'research',task});
-  assert.match(basic,/Quellenbasierte Recherche/);
+  assert.match(basic,/Recherche mit Quellen und belastbaren Aussagen/);
   assert.match(basic,/Allgemeiner Arbeitskontext/);
   assert.doesNotMatch(basic,/Toolya: Entwicklungs- und Sicherheitskontext/);
   const tailored=assemblePrompt({root:ROOT,patternId:'implementation',
