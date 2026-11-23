@@ -63,6 +63,6 @@ Die strenge Preview-CSP setzt `connect-src 'none'` und verhindert Browser-API-Ve
 - Keine E-Mail, Authentifizierung, Account-Synchronisation, Cloud-Speicherung, Hintergrundprozesse oder Datenmigration.
 - Fachfunktion, Barrierefreiheit, mobile Qualität, DE/EN-Texte, Sicherheitsfreigaben und Produktlogik müssen vor Veröffentlichung gesondert geprüft werden.
 - Die acht Original-PNGs bleiben unverändert, ebenso die vorhandenen zwölf Tools, Wishlist/Amazon-Importer und alle produktiven Supabase-Daten.
-- Bestehender unabhängiger Dashboard-320-px-CI-Fehler: GitHub-Issue #315. Der Builder behebt diesen nicht.
+- Das unabhängige Dashboard-320-px-Problem aus Issue #315 wurde in PR #316 separat behoben und nach vollständig erfolgreicher CI auf `main` übernommen. Die Builder-Änderungen müssen gegen den aktualisierten Hauptbranch erneut geprüft werden.
 
 Siehe `AGENTS.md`, `docs/ai/ARCHITECTURE.md` und `docs/ai/TOOL-GENERATOR.md`.
