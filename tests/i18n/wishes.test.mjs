@@ -226,3 +226,33 @@ test('Wishes gift dashboard labels translate without changing saved gifts or pri
  assert.match(source,/\.update\(\{priority:next,updated_at:/);
  assert.equal(wishesText('Private wish: Keine Anlässe in den nächsten 30 Tagen.','en'),'Private wish: Keine Anlässe in den nächsten 30 Tagen.');
 });
+
+test('gift assistant dynamic task UI translates reversibly without mutating private task data',()=>{
+ const pairs=[
+  ['Noch keine protokollierten Aufgabenänderungen seit Aktivierung.','No task changes logged since activation.'],
+  ['✓ Erledigt','✓ Completed'],
+  ['↩ Wieder geöffnet','↩ Reopened'],
+  ['Heute fällige erledigt','Due today, completed'],
+  ['Offen/überfällig','Open/overdue'],
+  ['Keine offenen Aufgaben in dieser Gruppe.','No open tasks in this group.'],
+  ['Auf morgen verschieben','Move to tomorrow'],
+  ['✓ Erledigt markieren','✓ Mark completed'],
+  ['Neues Fälligkeitsdatum','New due date'],
+  ['Datum bestätigt verschieben','Confirm due-date change'],
+  ['Aufgabenverwaltung öffnen','Open task manager'],
+  ['Aufgabe wurde zwischenzeitlich verändert. Bitte Seite neu laden.','The task was changed in the meantime. Reload the page.'],
+  [' Tagen fällig',' days until due'],
+  ['Bis Sonntag fällig','Due by Sunday']
+ ];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en,de);assert.equal(wishesText(en,'de'),de,en)}
+ const source=readFileSync(new URL('../../tools/wishes/gift-assistant.mjs',import.meta.url),'utf8');
+ assert.match(source,/const ui=text=>wishesText/);
+ assert.match(source,/toLocaleDateString\(locale\(\)/);
+ assert.match(source,/document\.addEventListener\('toolya:wishes-locale-change'/);
+ assert.match(source,/if\(taskBusy\)\{localePending=true;return\}/);
+ assert.match(source,/taskBusy=false;button.disabled=false;if\(localePending\)/);
+ assert.match(source,/\.eq\('user_id',taskUserId\)/);
+ assert.match(source,/el\('h3',t\.title\)/);
+ assert.match(source,/e\.task_title/);
+ assert.equal(wishesText('Private task: Heute fällig','en'),'Private task: Heute fällig');
+});
