@@ -1,5 +1,7 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+ "✅ Checklisten anlegen": "✅ Create checklists",
+ "Zur Anmeldung": "Go to sign-in",
  "Keine Anlässe für dieses Jahr vorhanden.": "No occasions for this year.",
  "Jahresbudget: ": "Annual budget: ",
  " · Geplant: ": " · Planned: ",
