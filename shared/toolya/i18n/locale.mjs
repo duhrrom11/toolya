@@ -8,8 +8,11 @@ const SAFE_CAMPAIGN = /^[a-z0-9][a-z0-9_-]{0,79}$/i;
 
 export function normalizeLocale(value) {
   if (typeof value !== 'string') return null;
-  const candidate = value.trim().toLowerCase().replace('_', '-');
-  const language = candidate.split('-')[0];
+  // Accept valid BCP 47-style language tags, not arbitrary strings that merely
+  // begin with "de" or "en". This is a display preference, never a data key.
+  const candidate = value.trim().replace(/_/g, '-');
+  if (!/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(candidate)) return null;
+  const language = candidate.split('-')[0].toLowerCase();
   return SUPPORTED_LOCALES.includes(language) ? language : null;
 }
 
