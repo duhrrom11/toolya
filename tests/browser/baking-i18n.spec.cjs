@@ -38,12 +38,22 @@ test('real Backstudio scripts reversibly translate OCR, notes and pan labels wit
  await page.evaluate(()=>{window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'))});
  await expect(page.locator('#bsp-ocr-button')).toHaveText('Read photo again');
  await expect(page.locator('#bsp-camera-open')).toHaveText('📷 Open camera');
+ // The missing-photo error is an accessible live status, not user data.
+ await page.locator('#bsp-ocr-button').click();
+ await expect(page.locator('#bsp-ocr-status')).toHaveText('Take or select a photo first.');
+ await expect(page.locator('#bsp-ocr-status')).toHaveAttribute('aria-live','polite');
+ // Force the permission-denied branch without requesting a real camera.
+ await page.evaluate(()=>Object.defineProperty(navigator,'mediaDevices',{configurable:true,value:{getUserMedia:()=>Promise.reject(new DOMException('Denied','NotAllowedError'))}}));
+ await page.locator('#bsp-camera-open').click();
+ await expect(page.locator('#bsp-ocr-status')).toHaveText('Could not open the camera. Try “Use phone camera”.');
+ await expect(page.locator('#bsp-camera-native-button')).toBeVisible();
  await expect(page.locator('#bsp-memory-search').locator('..').locator('span')).toHaveText('Search notes');
  await expect(page.locator('#bs-pan-shape option[value=round]')).toHaveText('Round');
  expect(await page.locator('#recipe-input').inputValue()).toBe('250 g Omas Lieblingsmehl');
  expect(await page.locator('#recipe-name').inputValue()).toBe('My private apple cake');
  await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
  await expect(page.locator('#bsp-ocr-button')).toHaveText('Foto erneut lesen');
+ await expect(page.locator('#bsp-ocr-status')).toHaveText('Kamera konnte nicht geöffnet werden. Versuche „Handykamera verwenden“.');
  await expect(page.locator('#bs-pan-shape option[value=round]')).toHaveText('Rund');
  expect(await page.locator('#recipe-input').inputValue()).toBe('250 g Omas Lieblingsmehl');
 });
