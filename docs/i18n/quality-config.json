@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "sourceLocale": "de",
+  "targetLocale": "en",
+  "toolRoutes": [
+    {
+      "slug": "wishes",
+      "html": "tools/wishes/public.html",
+      "englishGuide": "en/publish-amazon-wishlist/index.html"
+    },
+    {
+      "slug": "budget",
+      "html": "tools/budget/index.html",
+      "englishGuide": "en/household-budget/index.html"
+    },
+    {
+      "slug": "housemates",
+      "html": "tools/housemates/index.html",
+      "englishGuide": "en/roommate-organizer/index.html"
+    },
+    {
+      "slug": "moving",
+      "html": "tools/moving/index.html",
+      "englishGuide": "en/moving-boxes/index.html"
+    },
+    {
+      "slug": "estate",
+      "html": "tools/estate/index.html",
+      "englishGuide": "en/digital-estate/index.html"
+    },
+    {
+      "slug": "car",
+      "html": "tools/car/index.html",
+      "englishGuide": "en/vehicle-costs/index.html"
+    },
+    {
+      "slug": "pet-health",
+      "html": "tools/pet-health/index.html",
+      "englishGuide": "en/pet-health/index.html"
+    },
+    {
+      "slug": "parking",
+      "html": "tools/parking/index.html",
+      "englishGuide": "en/parking-spot/index.html"
+    },
+    {
+      "slug": "loans",
+      "html": "tools/loans/index.html",
+      "englishGuide": "en/lent-items/index.html"
+    },
+    {
+      "slug": "plants",
+      "html": "tools/plants/index.html",
+      "englishGuide": "en/plant-care/index.html"
+    },
+    {
+      "slug": "meters",
+      "html": "tools/meters/index.html",
+      "englishGuide": "en/meter-readings/index.html"
+    },
+    {
+      "slug": "baking",
+      "html": "tools/baking/index.html",
+      "englishGuide": "en/cake-pan-calculator/index.html"
+    }
+  ],
+  "marketingPages": [
+    {
+      "de": "index.html",
+      "en": "en/index.html",
+      "key": "home"
+    },
+    {
+      "de": "umzugskisten/index.html",
+      "en": "en/moving-boxes/index.html",
+      "key": "moving-boxes"
+    },
+    {
+      "de": "wg-organisator/index.html",
+      "en": "en/roommate-organizer/index.html",
+      "key": "roommate-organizer"
+    },
+    {
+      "de": "pflanzenpflege/index.html",
+      "en": "en/plant-care/index.html",
+      "key": "plant-care"
+    },
+    {
+      "de": "backform-rechner/index.html",
+      "en": "en/cake-pan-calculator/index.html",
+      "key": "cake-pan-calculator"
+    },
+    {
+      "de": "autokosten/index.html",
+      "en": "en/vehicle-costs/index.html",
+      "key": "vehicle-costs"
+    },
+    {
+      "de": "haushaltsbuch/index.html",
+      "en": "en/household-budget/index.html",
+      "key": "household-budget"
+    },
+    {
+      "de": "digitaler-nachlass/index.html",
+      "en": "en/digital-estate/index.html",
+      "key": "digital-estate"
+    },
+    {
+      "de": "parkplatz-merker/index.html",
+      "en": "en/parking-spot/index.html",
+      "key": "parking-spot"
+    },
+    {
+      "de": "tiergesundheit/index.html",
+      "en": "en/pet-health/index.html",
+      "key": "pet-health"
+    },
+    {
+      "de": "verliehene-dinge/index.html",
+      "en": "en/lent-items/index.html",
+      "key": "lent-items"
+    },
+    {
+      "de": "zaehlerstaende/index.html",
+      "en": "en/meter-readings/index.html",
+      "key": "meter-readings"
+    },
+    {
+      "de": "amazon-wunschliste-veroeffentlichen/index.html",
+      "en": "en/publish-amazon-wishlist/index.html",
+      "key": "publish-amazon-wishlist"
+    },
+    {
+      "de": "toolya-dashboard/index.html",
+      "en": "en/toolya-dashboard/index.html",
+      "key": "toolya-dashboard"
+    },
+    {
+      "de": "mascots.html",
+      "en": "en/mascots.html",
+      "key": "mascots"
+    },
+    {
+      "de": "legal.html",
+      "en": "en/legal.html",
+      "key": "legal"
+    },
+    {
+      "de": "privacy.html",
+      "en": "en/privacy.html",
+      "key": "privacy"
+    }
+  ],
+  "otherSurfaces": [
+    {
+      "key": "dashboard",
+      "html": "dashboard/index.html",
+      "catalogue": "dashboard"
+    },
+    {
+      "key": "admin",
+      "html": "admin/index.html",
+      "catalogue": "admin",
+      "optional": true
+    }
+  ],
+  "notes": "Marketing-page pairs reflect checked-in marketing test coverage. Metrics are source-code/static-audit indicators, NOT proof of complete runtime translation. The twelve tool entries are canonically routed; wishlist public.html is the actual discovery UI."
+}

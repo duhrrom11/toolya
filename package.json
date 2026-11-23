@@ -14,7 +14,10 @@
     "test:ai": "node --test tests/ai/*.test.cjs",
     "tools:preview": "node scripts/preview-tool.cjs",
     "tools:from-brief": "node scripts/create-tool-from-brief.cjs",
-    "tools:build-briefs": "node scripts/build-tool-briefs.cjs"
+    "tools:build-briefs": "node scripts/build-tool-briefs.cjs",
+    "i18n:check": "node scripts/i18n-quality.cjs --check",
+    "i18n:report": "node scripts/i18n-quality.cjs --report",
+    "test:i18n": "node --test tests/i18n/*.test.mjs"
   },
   "repository": {
     "type": "git",
