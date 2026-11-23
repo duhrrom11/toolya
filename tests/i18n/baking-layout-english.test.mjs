@@ -26,3 +26,12 @@ test('Backstudio scripts remain executable and keep fixed accessibility copy rev
  const backstudio=readFileSync(new URL('../../tools/baking/backstudio.js',import.meta.url),'utf8');
  assert.match(backstudio,/Schematischer Füllstand','Illustration of the pan fill level/);
 });
+
+test('Backstudio action status retains DE/EN source pair across locale switches',()=>{
+ const backstudio=readFileSync(new URL('../../tools/baking/backstudio.js',import.meta.url),'utf8');
+ assert.match(backstudio,/const statusTranslations=new Map\(\)/);
+ assert.match(backstudio,/statusTranslations\.get\(status\?\.textContent\)/);
+ assert.match(backstudio,/showStatus\('Rezept neu analysiert\.','Recipe analysed again\.'\)/);
+ assert.match(backstudio,/showStatus\('Backerfahrung lokal gespeichert\.','Baking notes saved on this device\.'\)/);
+ assert.match(backstudio,/showStatus\('Erkanntes Rezept unbedingt prüfen\.','Check the recognised recipe carefully\.'\)/);
+});
