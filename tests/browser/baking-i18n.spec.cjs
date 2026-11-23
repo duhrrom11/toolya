@@ -222,7 +222,7 @@ test('missing camera API exposes localized mobile fallback without altering reci
 test('OCR review and baking-note dates repaint DE/EN/DE without touching recipe or saved values',async({page})=>{
  await mountBackstudio(page);
  const source=page.locator('#bsp-recipe-text');
- await source.fill('1000.5 g Omas Spezialmehl\\n250 g - 400 g Omas Teig\\nOmas private warning');
+ await source.fill('1000.5 g Omas Spezialmehl\n250 g - 400 g Omas Teig\nOmas private warning');
  await page.locator('.bsp-panel button').filter({hasText:'Zutaten erkennen'}).click();
  await expect(page.locator('#bsp-preview')).toContainText('Mengenbereich bitte prüfen: 250 g - 400 g Omas Teig');
  await expect(page.locator('#bsp-preview')).toContainText('Omas private warning');
@@ -244,7 +244,7 @@ test('OCR review and baking-note dates repaint DE/EN/DE without touching recipe 
  await expect(page.locator('#bsp-memory-list strong')).toContainText('Omas geheimer Kuchen · 23/11/2026');
  await expect(page.locator('#bsp-memory-list')).toContainText('Omas geheime Notiz');
  expect(await page.locator('#recipe-input').inputValue()).toBe(originalRecipe);
- expect(await source.inputValue()).toBe('1000.5 g Omas Spezialmehl\\n250 g - 400 g Omas Teig\\nOmas private warning');
+ expect(await source.inputValue()).toBe('1000.5 g Omas Spezialmehl\n250 g - 400 g Omas Teig\nOmas private warning');
  expect(await page.evaluate(()=>JSON.stringify(window.toolyaBackstudioState))).toBe(before);
  await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
  await expect(page.locator('#bsp-preview')).toContainText('Mengenbereich bitte prüfen: 250 g - 400 g Omas Teig');
