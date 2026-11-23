@@ -22,10 +22,16 @@ test('gift assistant load states are reversible DE/EN UI-only strings',()=>{
 test('gift assistant locale change updates load status without fetching or writing',()=>{
  const listener=source.slice(source.lastIndexOf("document.addEventListener('toolya:wishes-locale-change'"));
  assert.match(source,/function showAssistantStatus\(key\)\{assistantStatusKey=key;\$\('status'\)\.textContent=ui\(key\)\}/);
- assert.match(listener,/if\(assistantStatusKey\)showAssistantStatus\(assistantStatusKey\)/);
+ assert.match(listener,/const statusKey=assistantStatusKey\|\|\(!\$\('login'\)\.hidden\?'Bitte anmelden\.':null\)/);
+ assert.match(listener,/queueMicrotask\(\(\)=>showAssistantStatus\(statusKey\)\)/);
  assert.match(listener,/if\(!assistantReady\)return/);
  assert.match(listener,/if\(taskBusy\|\|checklistBusy\)/);
  assert.match(listener,/refreshTaskDisplay\(\)/);
  assert.doesNotMatch(listener,/db\.|\.update\(|\.insert\(|\.rpc\(/);
  assert.doesNotMatch(listener,/Private Planungsvorschläge geladen/);
+});
+
+test('planning calendar weekday headings follow DE/EN without changing dates',()=>{
+ assert.match(source,/__toolyaWishesLocale==='en'\?\['Mon','Tue','Wed','Thu','Fri','Sat','Sun'\]:\['Mo','Di','Mi','Do','Fr','Sa','So'\]/);
+ assert.match(source,/dateLabel\(current\)/);
 });
