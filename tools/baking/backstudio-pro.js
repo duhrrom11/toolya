@@ -457,7 +457,7 @@ function displayMemoryDate(entry){
 function renderMemory(){
  const host=$('bsp-memory-list');if(!host)return;host.replaceChildren();
  const data=read(),logs=Array.isArray(data.logs)?data.logs:[];const search=($('bsp-memory-search')?.value||'').trim().toLocaleLowerCase('de-DE'),favorites=!!$('bsp-favorites')?.checked;
- const selected=logs.map((x,index)=>({x,index})).filter(({x})=>x&&typeof x==='object'&&(!favorites||x.favorite)&&[x.name,x.note,x.date].join(' ').toLocaleLowerCase('de-DE').includes(search)).reverse().slice(0,50);
+ const selected=logs.map((x,index)=>({x,index})).filter(({x})=>x&&typeof x==='object'&&(!favorites||x.favorite)&&[x.name,x.note,x.date,displayMemoryDate(x)].join(' ').toLocaleLowerCase('de-DE').includes(search)).reverse().slice(0,50);
  if(!selected.length){txt('p',proUi('Keine Notizen gefunden.','No notes found.'),host);return}
  for(const {x,index} of selected){
   const row=txt('div',null,host);row.className='bsp-match';
