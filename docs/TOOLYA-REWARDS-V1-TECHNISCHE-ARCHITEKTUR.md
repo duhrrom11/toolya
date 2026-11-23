@@ -163,3 +163,8 @@ Prüfung des aktuellen `main` im Repository `duhrrom11/toolya` und **lesende** S
 5. Welches Privatschema, Grant-RPC-/Edge-Funktions-Rechtemodell, Authentifizierungs- und RLS-Konzept schützt Eventbelege zuverlässig? Kein öffentliches privilegiertes SQL-RPC ohne enges Rollenmodell.
 
 **Sperre:** Bis zu neuem ausdrücklich erteiltem Implementierungsauftrag bleibt dieses Dokument ein rein technisches Konzept. Kein Code auf `main`, keine produktiven Supabase-Änderungen, keine Medien-/Ranking-/Ko-fi-XP-Features.
+
+
+## 9. Fachlich geprüfter Pilot: Umzugskisten (23.11.2026)
+
+[Detailaudit des tatsächlichen `saveBox`→`storeBoxData`→`saveData`→`toolya_save_snapshot`-Pfads und Implementierungsdesign für einen einmaligen Erstkisten-Erfolg](TOOLYA-REWARDS-V1-PILOT-UMZUGSKISTEN.md). **Wichtige Korrektur:** Die Cloud-Revisionsbestätigung belegt Persistenz, **nicht** die Echtheit einer vom Client geschriebenen Kiste. Deshalb nur ein begrenzter einmaliger Reward mit serverseitiger Differenzprüfung und Idempotenz; keine wiederholbare XP-Vergabe für bloße JSON-Neueinträge. Dokumentation-only; keine produktive Änderung.
