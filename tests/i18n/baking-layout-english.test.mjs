@@ -72,3 +72,12 @@ test('Pan dimension presentation uses selected locale without changing numeric i
  assert.match(layout,/document\.addEventListener\('toolya:locale-change',requestSync\)/);
  assert.match(layout,/\$\('target-d'\)\.value=diameter/);
 });
+
+test('Empty or invalid scaling factors never display a misleading 0% recipe',()=>{
+ assert.match(layout,/const normalizedFactor=String\(factor\)/);
+ assert.match(layout,/normalizedFactor&&\/\^\[\+\-\]\?/);
+ assert.match(layout,/\?Number\(normalizedFactor\):NaN/);
+ assert.match(layout,/Number\.isFinite\(amount\)/);
+ assert.match(layout,/Mengen werden angepasst\./);
+ assert.match(layout,/Adjusting the quantities\./);
+});
