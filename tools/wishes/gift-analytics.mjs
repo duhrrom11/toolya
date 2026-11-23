@@ -9,6 +9,32 @@ function yearOf(g){return Number(g.gift_year??g.created_at?.slice(0,4))}
 function giftsIn(y){return gifts.filter(g=>yearOf(g)===y)}
 function tasksIn(y){return tasks.filter(t=>t.checklist_year===y&&t.checklist_key)}
 function summarize(y){const gs=giftsIn(y),ts=tasksIn(y),gifted=gs.filter(g=>g.status==='gifted').length,done=ts.filter(t=>t.status==='done').length;return{gifts:gs.length,gifted,spent:gs.reduce((n,g)=>n+Number(g.actual_amount||0),0),planned:gs.reduce((n,g)=>n+Number(g.planned_amount||0),0),tasks:ts.length,done}}
+function budgetSummary(amount,planned,spent){return ui('Jahresbudget: ')+(amount===null?ui('nicht erfasst'):money(amount))+ui(' · Geplant: ')+money(planned)+ui(' · Erfasst: ')+money(spent)+(amount>0&&Math.max(planned,spent)>amount?ui(' · ⚠️ Budget überschritten'):'')}
+function giftYearSummary(g){return ui('Jahr: ')+yearOf(g)+(g.gift_year_source==='inferred_created'?ui(' · ⚠️ aus Erstellungsdatum geschätzt'):ui(' · bestätigt'))}
+function repaintEditorLabels(){
+ // Preserve current unsaved inputs, focus, open controls, selected year, and write state.
+ const year=Number($('year').value);
+ const relevant=occasions.filter(o=>o.repeats_yearly||Number(o.occasion_date.slice(0,4))===year);
+ const budgetRows=[...$('budgetDetails').querySelectorAll('article.row')];
+ for(let i=0;i<Math.min(relevant.length,budgetRows.length);i++){
+  const o=relevant[i],row=budgetRows[i],gs=giftsIn(year).filter(g=>g.occasion_id===o.id);
+  const planned=gs.reduce((n,g)=>n+Number(g.planned_amount||0),0);
+  const spent=gs.reduce((n,g)=>n+Number(g.actual_amount||0),0);
+  const budget=annualBudgets.find(b=>b.occasion_id===o.id&&b.budget_year===year);
+  const amount=budget?Number(budget.budget_amount):null;
+  row.querySelector('p').textContent=budgetSummary(amount,planned,spent);
+  row.querySelector('button').textContent=ui('Jahresbudget speichern');
+  row.querySelector('input').setAttribute('aria-label',ui('Budget ')+o.title+' '+year);
+ }
+ const giftRows=[...$('giftYearEditor').querySelectorAll('div.row')];
+ const yearGifts=giftsIn(year).slice(0,80);
+ for(let i=0;i<Math.min(yearGifts.length,giftRows.length);i++){
+  const g=yearGifts[i],row=giftRows[i];
+  row.querySelector('p').textContent=giftYearSummary(g);
+  row.querySelector('button').textContent=ui('Jahr speichern');
+  row.querySelector('input').setAttribute('aria-label',ui('Geschenkjahr ')+g.title);
+ }
+}
 function render(){
  renderClosings();const year=Number($('year').value);selectedYear=year;const summary=summarize(year);
  $('gifts').textContent=summary.gifts;$('completion').textContent=(summary.gifts?Math.round(summary.gifted/summary.gifts*100):0)+' %';$('spent').textContent=money(summary.spent);
@@ -18,7 +44,7 @@ function render(){
  const x=summarize(y),closed=closings.find(c=>c.closing_year===y),tr=document.createElement('tr');for(const value of [String(y)+(closed?' 🔒':''),closed?closed.gift_count:x.gifts,(closed?closed.gift_count:x.gifts)?Math.round((closed?closed.gifted_count:x.gifted)/(closed?closed.gift_count:x.gifts)*100)+' %':'–',money(closed?closed.actual_total:x.spent),money(closed?closed.planned_total:x.planned),x.tasks?x.done+'/'+x.tasks:'–'])tr.append(el('td',String(value)));comparison.append(tr)}
  const budgets=$('budgetDetails');budgets.replaceChildren();if(!relevant.length)budgets.append(el('p',ui('Keine Anlässe für dieses Jahr vorhanden.'),'empty'));
  for(const o of relevant){const gs=giftsIn(year).filter(g=>g.occasion_id===o.id),planned=gs.reduce((n,g)=>n+Number(g.planned_amount||0),0),spent=gs.reduce((n,g)=>n+Number(g.actual_amount||0),0),historical=annualBudgets.find(b=>b.occasion_id===o.id&&b.budget_year===year),amount=historical?Number(historical.budget_amount):null,row=el('article','','row');
- row.append(el('strong',o.title),el('p',ui('Jahresbudget: ')+(amount===null?ui('nicht erfasst'):money(amount))+ui(' · Geplant: ')+money(planned)+ui(' · Erfasst: ')+money(spent)+(amount>0&&Math.max(planned,spent)>amount?ui(' · ⚠️ Budget überschritten'):'')));
+ row.append(el('strong',o.title),el('p',budgetSummary(amount,planned,spent)));
  const controls=el('div','','edit-controls'),input=document.createElement('input'),save=el('button',ui('Jahresbudget speichern'));input.type='number';input.min='0';input.max='9999999999.99';input.step='0.01';input.value=amount===null?'':String(amount);input.setAttribute('aria-label',ui('Budget ')+o.title+' '+year);
  save.addEventListener('click',async()=>{const n=Number(input.value);if(!input.value||!Number.isFinite(n)||n<0||n>9999999999.99){$('status').textContent=ui('Bitte ein gültiges Budget eingeben.');return}save.disabled=true;const {data,error}=await db.from('wishlist_occasion_budget_years').upsert({user_id:userId,occasion_id:o.id,budget_year:year,budget_amount:n},{onConflict:'user_id,occasion_id,budget_year'}).select('id,occasion_id,budget_year,budget_amount').single();save.disabled=false;if(error){$('status').textContent=ui('Budget konnte nicht gespeichert werden.');return}annualBudgets=annualBudgets.filter(b=>!(b.occasion_id===o.id&&b.budget_year===year));annualBudgets.push(data);render();$('status').textContent=ui('Historisches Jahresbudget gespeichert.')});controls.append(input,save);row.append(controls);budgets.append(row)}
 
@@ -34,7 +60,7 @@ function renderGiftYearEditor(year){
  const root=$('giftYearEditor');root.replaceChildren();const relevant=giftsIn(year);
  if(!relevant.length){root.append(el('p',ui('Keine Geschenke für dieses Jahr zugeordnet.'),'empty'));return}
  for(const g of relevant.slice(0,80)){
- const row=el('div','','row');row.append(el('strong',g.title),el('p',ui('Jahr: ')+yearOf(g)+(g.gift_year_source==='inferred_created'?ui(' · ⚠️ aus Erstellungsdatum geschätzt'):ui(' · bestätigt'))));
+ const row=el('div','','row');row.append(el('strong',g.title),el('p',giftYearSummary(g)));
  const controls=el('div','','edit-controls'),input=document.createElement('input');input.type='number';input.min='1900';input.max='2200';input.step='1';input.value=String(yearOf(g));input.setAttribute('aria-label',ui('Geschenkjahr ')+g.title);const button=el('button',ui('Jahr speichern'));
  button.addEventListener('click',async()=>{const y=Number(input.value);if(!Number.isInteger(y)||y<1900||y>2200){$('status').textContent=ui('Ungültiges Geschenkjahr.');return}button.disabled=true;const {data,error}=await db.rpc('wishlist_set_gift_year',{p_plan_id:g.id,p_year:y});button.disabled=false;if(error||!data){$('status').textContent=ui('Geschenkjahr konnte nicht gespeichert werden.');return}g.gift_year=y;g.gift_year_source='manual';if(![...$('year').options].some(o=>Number(o.value)===y)){const option=document.createElement('option');option.value=y;option.textContent=y;$('year').append(option)}$('year').value=String(y);render();$('status').textContent=ui('Geschenkjahr gespeichert.')});controls.append(input,button);row.append(controls);root.append(row)}
  if(relevant.length>80)root.append(el('p',ui('Es werden nur die ersten 80 Geschenke angezeigt. Weitere Geschenke sind über die Jahreszuordnung in der Datenbank vorhanden.'),'note'));
@@ -178,3 +204,6 @@ main().catch(()=>{$('status').textContent=ui('Statistik konnte nicht geladen wer
 
 // Re-render only read-only historical views on language changes; never rebuild active budget editors.
 document.addEventListener('toolya:wishes-locale-change',()=>{if(!userId)return;renderInsights();renderGiftStory();renderReview();renderChronicle()});
+
+// Update editor labels in place; never reset unsaved budget or gift-year inputs.
+document.addEventListener('toolya:wishes-locale-change',()=>{if(userId)repaintEditorLabels()});
