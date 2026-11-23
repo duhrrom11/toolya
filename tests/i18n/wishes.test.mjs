@@ -338,3 +338,36 @@ test('occasion planner locale changes preserve checklist controls and do not cha
  assert.match(source,/t\.title\|\|''/);
  assert.match(source,/toLocaleDateString\(locale\(\)/);
 });
+
+test('Wishes gift task manager dynamic labels are reversible without translating saved task names',()=>{
+ const pairs=[
+  ['⬜ Offen','⬜ Open'],['🔄 In Arbeit','🔄 In progress'],['✅ Erledigt','✅ Completed'],
+  ['Ohne Anlass','No occasion'],['Ohne Geschenk','No gift'],['Ohne Fälligkeit','No due date'],
+  ['Wieder öffnen','Reopen'],['Bearbeiten','Edit'],['Löschen','Delete'],
+  ['🛒 Bestellen','🛒 Order'],['📦 Abholen','📦 Collect'],['🎀 Verpacken','🎀 Wrap'],
+  ['✉️ Karte','✉️ Card'],['🚚 Versand','🚚 Shipping'],['🎉 Überreichen','🎉 Give'],
+  ['Fällig: ','Due: '],['Checklistenfortschritt ','Checklist progress '],
+  ['Bisherige Checkliste (ohne Jahr)','Previous checklist (no year)'],
+  [' überfällige Aufgaben – Details unter Erinnerungen.',' overdue tasks – details under Reminders.']
+ ];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en,de);assert.equal(wishesText(en,'de'),de,en)}
+ const privateName='Private gift: 🛒 Bestellen';
+ assert.equal(wishesText(privateName,'en'),privateName);
+});
+test('Wishes task-manager locale updates preserve form inputs, selection and write guards',()=>{
+ const source=readFileSync(new URL('../../tools/wishes/gift-tasks.mjs',import.meta.url),'utf8');
+ assert.match(source,/const ui=text=>wishesText/);
+ assert.match(source,/document\.addEventListener\('toolya:wishes-locale-change',refreshLocale\)/);
+ assert.match(source,/if\(pendingWrites\)\{localePending=true;return\}/);
+ assert.match(source,/selection=new Map\(\[\.\.\.\$\('rolloverSelection'\)/);
+ assert.match(source,/selection\.has\(input\.value\)/);
+ assert.match(source,/const occasion=\$\('occasion'\)\.value,gift=\$\('gift'\)\.value/);
+ assert.match(source,/template\.title=.+/);
+ assert.match(source,/button\.dataset\.taskTemplate=template\.title/);
+ assert.match(source,/\$\('title'\)\.value=template\.title/);
+ assert.match(source,/new Date\(t\.due_date\+'T12:00:00'\)\.toLocaleDateString\(locale\(\)\)/);
+ assert.match(source,/pendingWrites\+\+/);
+ assert.match(source,/function settleWrite\(\)/);
+ assert.match(source,/\.eq\('user_id',user\.id\)/);
+ assert.match(source,/h\.textContent=t\.title/);
+});
