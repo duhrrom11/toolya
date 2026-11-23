@@ -164,14 +164,14 @@
                 <div class="grid grid-cols-2 gap-2">
                     <label class="helferlein-field" for="eventType"><span class="helferlein-field-label" data-tool-en="Entry type">Art des Eintrags</span><select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags" data-tool-en-aria-label="Entry type">
                         <option value="TÜV / HU" data-tool-en="🔍 Vehicle inspection">🔍 TÜV / Hauptuntersuchung</option>
-                        <option value="Inspektion">⚙️ Inspektion & Service</option>
-                        <option value="Versicherung">🛡️ Versicherung (Fixkosten)</option>
-                        <option value="Kfz-Steuer">🏛️ Kfz-Steuer (Fixkosten)</option>
-                        <option value="Reifenwechsel">🛞 Reifenwechsel</option>
-                        <option value="Reifentiefe">📏 Reifentiefe-Check</option>
+                        <option value="Inspektion" data-tool-en="⚙️ Inspection &amp; service">⚙️ Inspektion & Service</option>
+                        <option value="Versicherung" data-tool-en="🛡️ Insurance (fixed cost)">🛡️ Versicherung (Fixkosten)</option>
+                        <option value="Kfz-Steuer" data-tool-en="🏛️ Vehicle tax (fixed cost)">🏛️ Kfz-Steuer (Fixkosten)</option>
+                        <option value="Reifenwechsel" data-tool-en="🛞 Tyre change">🛞 Reifenwechsel</option>
+                        <option value="Reifentiefe" data-tool-en="📏 Tyre tread check">📏 Reifentiefe-Check</option>
                         <option value="Ölwechsel" data-tool-en="🛢️ Oil change">🛢️ Ölwechsel</option>
-                        <option value="Reparatur">🔧 Reparatur</option>
-                        <option value="Tanken">⛽ Tanken / Kraftstoff</option>
+                        <option value="Reparatur" data-tool-en="🔧 Repair">🔧 Reparatur</option>
+                        <option value="Tanken" data-tool-en="⛽ Refuelling / fuel">⛽ Tanken / Kraftstoff</option>
                     </select></label>
                     <label class="helferlein-field" for="eventDate"><span class="helferlein-field-label" data-tool-en="Entry date">Datum des Eintrags</span><input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags" data-tool-en-aria-label="Entry date"></label>
                 </div>
@@ -211,9 +211,9 @@
                     <div class="grid grid-cols-2 gap-2">
                         <label class="helferlein-field" for="tireCarSelect"><span class="helferlein-field-label" data-tool-en="Vehicle for this tyre set">Fahrzeug für den Reifensatz</span><select id="tireCarSelect" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Fahrzeug für den Reifensatz" data-tool-en-aria-label="Vehicle for this tyre set"></select></label>
                         <label class="helferlein-field" for="tireType"><span class="helferlein-field-label" data-tool-en="Tyre type">Reifentyp</span><select id="tireType" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Reifentyp" data-tool-en-aria-label="Tyre type">
-                            <option value="Sommerreifen">☀️ Sommerreifen</option>
-                            <option value="Winterreifen">❄️ Winterreifen</option>
-                            <option value="Ganzjahresreifen">🌤️ Ganzjahresreifen</option>
+                            <option value="Sommerreifen" data-tool-en="☀️ Summer tyres">☀️ Sommerreifen</option>
+                            <option value="Winterreifen" data-tool-en="❄️ Winter tyres">❄️ Winterreifen</option>
+                            <option value="Ganzjahresreifen" data-tool-en="🌤️ All-season tyres">🌤️ Ganzjahresreifen</option>
                         </select></label>
                     </div>
                     <div class="grid grid-cols-3 gap-2">
@@ -256,14 +256,14 @@
                 <label for="editType" class="block text-xs font-semibold text-gray-600 mb-1">Kategorie:</label>
                 <select id="editType" class="w-full p-3 border rounded-xl text-sm bg-white">
                     <option value="TÜV / HU" data-tool-en="🔍 Vehicle inspection">🔍 TÜV / Hauptuntersuchung</option>
-                    <option value="Inspektion">⚙️ Inspektion & Service</option>
-                    <option value="Versicherung">🛡️ Versicherung (Fixkosten)</option>
-                    <option value="Kfz-Steuer">🏛️ Kfz-Steuer (Fixkosten)</option>
-                    <option value="Reifenwechsel">🛞 Reifenwechsel</option>
-                    <option value="Reifentiefe">📏 Reifentiefe-Check</option>
+                    <option value="Inspektion" data-tool-en="⚙️ Inspection &amp; service">⚙️ Inspektion & Service</option>
+                    <option value="Versicherung" data-tool-en="🛡️ Insurance (fixed cost)">🛡️ Versicherung (Fixkosten)</option>
+                    <option value="Kfz-Steuer" data-tool-en="🏛️ Vehicle tax (fixed cost)">🏛️ Kfz-Steuer (Fixkosten)</option>
+                    <option value="Reifenwechsel" data-tool-en="🛞 Tyre change">🛞 Reifenwechsel</option>
+                    <option value="Reifentiefe" data-tool-en="📏 Tyre tread check">📏 Reifentiefe-Check</option>
                     <option value="Ölwechsel" data-tool-en="🛢️ Oil change">🛢️ Ölwechsel</option>
-                    <option value="Reparatur">🔧 Reparatur</option>
-                    <option value="Tanken">⛽ Tanken / Kraftstoff</option>
+                    <option value="Reparatur" data-tool-en="🔧 Repair">🔧 Reparatur</option>
+                    <option value="Tanken" data-tool-en="⛽ Refuelling / fuel">⛽ Tanken / Kraftstoff</option>
                 </select>
             </div>
             <div><label for="editDate" class="block text-xs font-semibold text-gray-600 mb-1">Datum:</label><input type="date" id="editDate" class="w-full p-3 border rounded-xl text-sm"></div>
@@ -914,6 +914,30 @@ async function toolyaCloudBoot(tool) {
             if (all) all.textContent = english ? 'Show all vehicles' : 'Alle Fahrzeuge anzeigen';
         }
 
+        // Localize only fixed vehicle event / tyre type IDs for display, never in storage.
+        const vehicleTypeEn = Object.freeze({
+            'TÜV / HU':'Vehicle inspection',
+            'Inspektion':'Inspection & service',
+            'Versicherung':'Insurance',
+            'Kfz-Steuer':'Vehicle tax',
+            'Reifenwechsel':'Tyre change',
+            'Reifentiefe':'Tyre tread check',
+            'Ölwechsel':'Oil change',
+            'Reparatur':'Repair',
+            'Tanken':'Refuelling',
+            'Sommerreifen':'Summer tyres',
+            'Winterreifen':'Winter tyres',
+            'Ganzjahresreifen':'All-season tyres'
+        });
+        function vehicleTypeDisplay(value) {
+            const type = String(value ?? '');
+            return window.__toolyaUILocale === 'en' && Object.hasOwn(vehicleTypeEn,type)
+                ? vehicleTypeEn[type] : type;
+        }
+        function escapeVehicleType(value) {
+            return String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        }
+
         function renderApp() {
             const english = window.__toolyaUILocale === 'en';
             const displayLocale = english ? 'en-GB' : 'de-DE';
@@ -990,7 +1014,7 @@ async function toolyaCloudBoot(tool) {
                         return `
                             <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
                                 <div>
-                                    <p class="font-bold text-red-800">${t.type} <span class="text-gray-500 font-normal">(${carName})</span></p>
+                                    <p class="font-bold text-red-800">${escapeVehicleType(vehicleTypeDisplay(t.type))} <span class="text-gray-500 font-normal">(${carName})</span></p>
                                     <p class="text-[11px] text-gray-600">${label('Ort:','Location:')} ${t.location || '-'} | DOT: ${t.dot || '-'} | ${t.tread ? t.tread + ' mm' : ''}</p>
                                 </div>
                                 <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete tyre set' : 'Reifensatz löschen'}" onclick="deleteTireSet(${t.id})" class="text-red-500 font-bold px-2 hover:bg-red-50 rounded">✕</button>
@@ -1016,7 +1040,7 @@ async function toolyaCloudBoot(tool) {
 
                     return `
                         <div class="p-3 border rounded-xl ${statusColor}">
-                            <p class="text-[11px] font-bold text-gray-500">${carName} (${e.type})</p>
+                            <p class="text-[11px] font-bold text-gray-500">${carName} (${escapeVehicleType(vehicleTypeDisplay(e.type))})</p>
                             <p class="text-xs font-bold mt-0.5">${e.title}</p>
                             <p class="text-[11px] mt-1">${diff < 0 ? label('🔴 Überfällig seit ','🔴 Overdue by ') + Math.abs(diff) + label(' Tagen',' days') : (diff === 0 ? label('🟡 Heute fällig!','🟡 Due today!') : label('🟢 Fällig in ','🟢 Due in ') + diff + label(' Tagen',' days'))} (${d.toLocaleDateString(displayLocale)})</p>
                         </div>
@@ -1096,7 +1120,7 @@ async function toolyaCloudBoot(tool) {
                         <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <div>
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
-                                    <span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">${e.type}</span>
+                                    <span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">${escapeVehicleType(vehicleTypeDisplay(e.type))}</span>
                                     <span class="text-xs font-bold text-gray-700">${carName}</span>
                                     ${e.cost > 0 ? `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">${e.cost.toFixed(2).replace('.', ',')} €</span>` : ''}
                                     ${treadBadge}
