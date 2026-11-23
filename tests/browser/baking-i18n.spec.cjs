@@ -217,3 +217,37 @@ test('missing camera API exposes localized mobile fallback without altering reci
  await expect(page.locator('#bsp-ocr-status')).toHaveText('Kamera nicht verfügbar. Tippe auf „Handykamera verwenden“.');
  await expect(page.locator('#recipe-input')).toHaveValue(recipeBefore);
 });
+
+
+test('OCR review and baking-note dates repaint DE/EN/DE without touching recipe or saved values',async({page})=>{
+ await mountBackstudio(page);
+ const source=page.locator('#bsp-recipe-text');
+ await source.fill('1000.5 g Omas Spezialmehl\\n250 g - 400 g Omas Teig\\nOmas private warning');
+ await page.locator('.bsp-panel button').filter({hasText:'Zutaten erkennen'}).click();
+ await expect(page.locator('#bsp-preview')).toContainText('Mengenbereich bitte prüfen: 250 g - 400 g Omas Teig');
+ await expect(page.locator('#bsp-preview')).toContainText('Omas private warning');
+ // Only a disposable in-memory fixture; neither a production account nor storage is touched.
+ await page.evaluate(()=>{
+  window.toolyaBackstudioState.logs.push({
+   id:'fixture',iso:'2026-11-23T12:00:00.000Z',date:'23.11.2026',
+   name:'Omas geheimer Kuchen',note:'Omas geheime Notiz',minutes:45,shape:'round',rating:4
+  });
+  document.getElementById('bs-logs').append(document.createElement('span'));
+ });
+ await expect(page.locator('#bsp-memory-list strong')).toContainText('Omas geheimer Kuchen · 23.11.2026');
+ const before=await page.evaluate(()=>JSON.stringify(window.toolyaBackstudioState));
+ const originalRecipe=await page.locator('#recipe-input').inputValue();
+ await page.evaluate(()=>{window.__toolyaUILocale='en';document.dispatchEvent(new Event('toolya:locale-change'))});
+ await expect(page.locator('#bsp-preview')).toContainText('1,000.5 g Omas Spezialmehl');
+ await expect(page.locator('#bsp-preview')).toContainText('Check quantity range: 250 g - 400 g Omas Teig');
+ await expect(page.locator('#bsp-preview')).toContainText('Omas private warning');
+ await expect(page.locator('#bsp-memory-list strong')).toContainText('Omas geheimer Kuchen · 23/11/2026');
+ await expect(page.locator('#bsp-memory-list')).toContainText('Omas geheime Notiz');
+ expect(await page.locator('#recipe-input').inputValue()).toBe(originalRecipe);
+ expect(await source.inputValue()).toBe('1000.5 g Omas Spezialmehl\\n250 g - 400 g Omas Teig\\nOmas private warning');
+ expect(await page.evaluate(()=>JSON.stringify(window.toolyaBackstudioState))).toBe(before);
+ await page.evaluate(()=>{window.__toolyaUILocale='de';document.dispatchEvent(new Event('toolya:locale-change'))});
+ await expect(page.locator('#bsp-preview')).toContainText('Mengenbereich bitte prüfen: 250 g - 400 g Omas Teig');
+ await expect(page.locator('#bsp-memory-list strong')).toContainText('Omas geheimer Kuchen · 23.11.2026');
+ expect(await page.evaluate(()=>JSON.stringify(window.toolyaBackstudioState))).toBe(before);
+});
