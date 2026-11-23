@@ -97,3 +97,8 @@ Die 30-KP-Grenzen sind **vorläufig**, müssen bei der eventbasierten Vergabe oh
 ## H. Konkretisierung von XP, Kompetenzpunkten und Badges (23.11.2026)
 
 [Verbindliches V1-Detailregelwerk mit Werteentwurf, allen zwölf Tool-Events, Badge-Meilensteinen, Datenschutz-/Anti-Farming-Regeln und präzisen Abnahmetests](TOOLYA-REWARDS-V1-REGELWERK-UND-ABNAHME.md). Diese neuere Spezifikation präzisiert die offenen Beispielwerte dieser Übersicht. Kein Live-Code und keine Änderung an `main`.
+
+
+## I. Visuelles Design / Umsetzungsvorgaben (23.11.2026)
+
+[Konkrete UX-/UI-Spezifikation für Dashboard, fünf Kompetenzkarten, Badge-Vitrine, Responsivität, Farb-/Typografietokens und Accessibility](TOOLYA-REWARDS-V1-UX-UI-DESIGN.md). Die bewusst minimalistische Ansicht orientiert sich an `dashboard/dashboard.css` des produktiven `main`. V1 bleibt auf XP, KP und Badges begrenzt. Konzept – kein UI-Release.
