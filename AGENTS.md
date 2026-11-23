@@ -51,6 +51,16 @@ Repository: duhrrom11/toolya. Production target: https://toolya.app (niemals too
 - docs/ai/project-map.json – maschinenlesbare Orientierung.
 - docs/TOOLYA-RELEASE-STATUS.md und docs/TOOLYA-MASCOT-UNIVERSE-WORK-ROADMAP.md – Release-Historie, ältere Abschnitte ausdrücklich historisch lesen.
 
+## Übersetzungen und Qualität (DE/EN)
+
+- Vor Übersetzungsänderungen `docs/i18n/README.md`, `docs/i18n/glossary.json` und die tatsächlichen Quellen unter `shared/toolya/i18n/` lesen.
+- Die vorhandene i18next-/Legacy-Integration bleibt maßgeblich. Keine zweite Runtime-Bibliothek einführen, keine Kataloge blind durch Extraktion überschreiben.
+- `npm run i18n:check`, `npm run i18n:report`, `npm run test:i18n` und den isolierten mobilen Chromium-Test nutzen.
+- Ein statischer deutscher Text ist zunächst ein Review-Kandidat; der Bericht darf keine vollständig bestätigte Übersetzungsquote behaupten.
+- Wortmarke Toolya, Nutzereinträge, Passwörter, gespeicherte Account-/Cloud-Werte, Anhänge und Mascot-Auswahl niemals übersetzen oder verändern.
+- Bestehende englische Guides bleiben noindex, solange fachliche Prüfung und produktive App-Übersetzung nicht abgeschlossen sind; DE/EN-Links und korrektes `lang` erhalten.
+- Die Qualitäts-CLI schreibt ausschließlich Berichte und isolierte JSON-Exporte nach `test-results/`, niemals in die produktiven Kataloge. i18next-cli und i18n-check sind evaluiert, aber hier nicht installiert.
+
 ## Allgemeine ChatGPT-Arbeit (Productivity System v1)
 
 - Für Recherche, Umsetzung, Marketing, Entscheidungen, Dokumente und Automatisierung passende **eigene** Arbeitsmuster in `docs/ai/productivity/patterns/` nutzen; Index und kompatible Kontextpakete unter `docs/ai/productivity/catalog.json`.

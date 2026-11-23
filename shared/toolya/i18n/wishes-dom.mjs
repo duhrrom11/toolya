@@ -1,6 +1,8 @@
 import {wishesText} from './wishes-copy.mjs';
 const sources=new WeakMap(),attrs=new WeakMap(),implicit=new WeakSet();
-const selector='h1,h2,h3,h4,button,label,option,summary,nav a,input,textarea,select';
+// Paragraphs and spans are translated only when explicitly tagged as
+// application-owned editorial copy; never touch arbitrary profiles or cards.
+const selector='h1,h2,h3,h4,button,label,option,summary,nav a,input,textarea,select,p[data-wishes-copy],span[data-wishes-copy]';
 const excluded='[contenteditable],.ty-wishes-language,[data-user-content],[data-profile-card],.wishlist-result,.profile-card,.gift-card';
 export function applyWishLocale(document,language){
  for(const el of document.querySelectorAll(selector)){

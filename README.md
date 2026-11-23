@@ -36,6 +36,19 @@ npm run tools:build-briefs
 
 Das zweite Kommando ist für isolierte Entwickler-/CI-Checkouts vorgesehen und erzeugt temporäre Vorschauen unter `test-results/ai-brief-artifacts/`; es nimmt **keinen** Git-Commit und keine Veröffentlichung vor.
 
+### Übersetzungsqualität DE/EN
+
+[Toolya Translation Quality System](docs/i18n/README.md) und [verifiziertes DE/EN-Inventar](docs/i18n/INVENTORY.md): schreibgeschützter Inventarbericht für die zwölf Tools und 17 Marketing-/Informationsseiten, versioniertes [Glossar](docs/i18n/glossary.json), Katalog-/Platzhaltertests und isolierte Browser-Prüfungen bei 320/390 px.
+
+```bash
+npm ci --ignore-scripts
+npm run i18n:check
+npm run i18n:report
+npm run test:i18n
+```
+
+Berichte und DE/EN-JSON-Exporte werden lokal unter `test-results/i18n-quality/` abgelegt. Keine automatische Änderung von Kundendaten, Laufzeitübersetzungen oder Suchmaschinenindexierung.
+
 ### Allgemeine ChatGPT-Produktivität (ohne zusätzlichen Dienst)
 
 Sechs wiederverwendbare Arbeitsmuster und vier schlanke Kontextpakete für Recherche, Entwicklung, Marketing, Entscheidungen, Dokumente und Automatisierung: [ChatGPT Productivity System](docs/ai/productivity/README.md).
