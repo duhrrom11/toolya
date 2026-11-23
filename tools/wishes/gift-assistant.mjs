@@ -3,7 +3,7 @@ import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
 const ui=text=>wishesText(text,globalThis.__toolyaWishesLocale==='en'?'en':'de');
 const locale=()=>globalThis.__toolyaWishesLocale==='en'?'en-GB':'de-DE';
 const $=id=>document.getElementById(id);
-const euro=n=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(Number(n)||0);
+const euro=n=>new Intl.NumberFormat(locale(),{style:'currency',currency:'EUR'}).format(Number(n)||0);
 const day=86400000;let weekOffset=0,calendarEvents=[],weeklyTasks=[],occasionNames=new Map();
 function el(tag,text,cls){const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e}
 function nextDate(o,now){const [y,m,d]=o.occasion_date.split('-').map(Number);let date=Date.UTC(y,m-1,d);if(!o.repeats_yearly)return date>=now?date:null;let year=new Date(now).getUTCFullYear();for(let i=0;i<3;i++,year++){const last=new Date(Date.UTC(year,m,0)).getUTCDate();date=Date.UTC(year,m-1,Math.min(d,last));if(date>=now)return date}return null}
@@ -15,8 +15,8 @@ function refreshTaskDisplay(){renderTaskEvents();renderWeeklyTasks();renderDaily
 async function changeTask(task,field,newValue,button){
  if(taskBusy)return;
  const oldValue=task[field];if(oldValue===newValue)return;
- const action=field==='status'?'als erledigt markieren':'auf '+newValue+' verschieben';
- if(!window.confirm('Aufgabe „'+task.title+'“ wirklich '+action+'?'))return;
+ const confirmation=ui('Aufgabe „')+task.title+(field==='status'?ui('“ wirklich als erledigt markieren?'):ui('“ wirklich auf ')+newValue+ui(' verschieben?'));
+ if(!window.confirm(confirmation))return;
  taskBusy=true;button.disabled=true;$('taskActionStatus').textContent=ui("Änderung wird gespeichert …");
  try{
   let query=db.from('wishlist_gift_tasks').update({[field]:newValue,updated_at:new Date().toISOString()}).eq('id',task.id).eq('user_id',taskUserId);
