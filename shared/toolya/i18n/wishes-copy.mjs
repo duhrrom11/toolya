@@ -35,7 +35,7 @@ export const WISHES_COPY=Object.freeze({
  "Ich bestätige die Erstellung dieser Checkliste für ": "I confirm creating this checklist for ",
  ". Bereits vorhandene Aufgaben bleiben erhalten.": ". Existing tasks will be preserved.",
  "Ausgewählte Checkliste übernehmen": "Apply selected checklist",
- "Bitte zuerst die Übernahme ausdrücklich bestätigen.": "Confirm that you want to apply the checklist first.",
+ "Bitte zuerst die Übernahme ausdrücklich bestätigen.": "Explicitly confirm the import first.",
  "Checkliste für „": "Create checklist for “",
  "“ im Jahr ": "” in ",
  " jetzt erstellen?": " now?",
