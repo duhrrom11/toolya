@@ -14,7 +14,10 @@
     "test:ai": "node --test tests/ai/*.test.cjs",
     "tools:preview": "node scripts/preview-tool.cjs",
     "tools:from-brief": "node scripts/create-tool-from-brief.cjs",
-    "tools:build-briefs": "node scripts/build-tool-briefs.cjs"
+    "tools:build-briefs": "node scripts/build-tool-briefs.cjs",
+    "productivity:list": "node scripts/productivity.cjs --list",
+    "productivity:prompt": "node scripts/productivity.cjs",
+    "productivity:check": "node scripts/productivity.cjs --check"
   },
   "repository": {
     "type": "git",
