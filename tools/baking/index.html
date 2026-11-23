@@ -1048,6 +1048,24 @@
             })[char]);
         }
 
+        // Saved dates are immutable record values. Reformat only known date
+        // shapes for display, not recipe names, notes, storage or cloud exports.
+        function displaySavedRecipeDate(value) {
+            const text = String(value ?? '').trim();
+            let year, month, day;
+            const iso = /^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/.exec(text);
+            const legacy = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(text);
+            if (iso) [, year, month, day] = iso;
+            else if (legacy) [, day, month, year] = legacy;
+            else return text;
+            const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+            if (date.getUTCFullYear() !== Number(year) ||
+                date.getUTCMonth() + 1 !== Number(month) ||
+                date.getUTCDate() !== Number(day)) return text;
+            return new Intl.DateTimeFormat(window.__toolyaUILocale === 'en' ? 'en-GB' : 'de-DE',
+                {day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'}).format(date);
+        }
+
         function renderSavedRecipes() {
             let recipes = getRecipes();
             const container = document.getElementById('saved-recipes-list');
@@ -1061,7 +1079,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <h4 class="font-bold text-sm text-slate-800">${escapeRecipeHtml(r.name)}</h4>
-                            <p class="text-[11px] text-slate-500" data-recipe-factor>${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'}: ×${escapeRecipeHtml(r.factor)} | ${escapeRecipeHtml(r.date)}</p>
+                            <p class="text-[11px] text-slate-500" data-recipe-factor><span data-recipe-factor-label>${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'}</span>: ×${escapeRecipeHtml(r.factor)} | <span data-recipe-date-source="${escapeRecipeHtml(r.date)}">${escapeRecipeHtml(displaySavedRecipeDate(r.date))}</span></p>
                         </div>
                         <button onclick="deleteRecipe(${idx})" class="text-red-500 hover:text-red-700 text-xs font-medium" data-recipe-delete>${window.__toolyaUILocale === 'en' ? 'Delete' : 'Löschen'}</button>
                     </div>
@@ -1079,12 +1097,11 @@
             if (!container) return;
             const english = window.__toolyaUILocale === 'en';
             if (container.querySelector('[data-recipe-factor]')) {
-                container.querySelectorAll('[data-recipe-factor]').forEach(el => {
-                    // Keep the existing factor and date nodes/values unchanged:
-                    // only the leading fixed label is translated.
-                    const text = el.textContent;
-                    const separator = text.indexOf(':');
-                    if (separator >= 0) el.textContent = (english ? 'Factor' : 'Faktor') + text.slice(separator);
+                container.querySelectorAll('[data-recipe-factor-label]').forEach(label => {
+                    label.textContent = english ? 'Factor' : 'Faktor';
+                });
+                container.querySelectorAll('[data-recipe-date-source]').forEach(date => {
+                    date.textContent = displaySavedRecipeDate(date.getAttribute('data-recipe-date-source'));
                 });
                 container.querySelectorAll('[data-recipe-delete]').forEach(button => {
                     button.textContent = english ? 'Delete' : 'Löschen';
