@@ -786,6 +786,17 @@ async function toolyaCloudBoot(tool) {
             }
         }
 
+        // Accessible photo preview names are UI-only and never touch image bytes or form drafts.
+        function refreshBudgetPhotoPreviewLocale() {
+            const english = window.__toolyaUILocale === 'en';
+            const images = document.querySelectorAll('#uploadGalleryPreview img');
+            images.forEach((image, index) => {
+                const position = Number(image.dataset.photoIndex);
+                const number = Number.isSafeInteger(position) && position >= 0 ? position + 1 : index + 1;
+                image.alt = (english ? 'Receipt photo preview ' : 'Vorschau des Belegfotos ') + number;
+            });
+        }
+
         // Read-only locale refresh: keep open budget inputs (including unsaved edits)
         // and the German category IDs unchanged. Do not emit a data-change event.
         function refreshBudgetDynamicLocale() {
@@ -802,6 +813,7 @@ async function toolyaCloudBoot(tool) {
             refreshBudgetChartSummaries();
             refreshBudgetChartLabels();
             refreshBudgetStickerLabels();
+            refreshBudgetPhotoPreviewLocale();
         }
         document.addEventListener('toolya:locale-change', refreshBudgetDynamicLocale);
 
@@ -941,7 +953,7 @@ async function toolyaCloudBoot(tool) {
                     if (idx !== 0) pendingPhotoReads--;
                     const imgThumb = document.createElement('img');
                     imgThumb.src = e.target.result;
-                    imgThumb.alt = 'Vorschau des Belegfotos ' + (idx + 1);
+                    imgThumb.alt = (window.__toolyaUILocale === 'en' ? 'Receipt photo preview ' : 'Vorschau des Belegfotos ') + (idx + 1);
                     imgThumb.className = "w-14 h-14 object-cover rounded-lg border shadow-sm";
                     imgThumb.dataset.photoIndex = String(idx);
                     const next = [...previewContainer.children].find(child => Number(child.dataset.photoIndex) > idx);
@@ -1281,8 +1293,9 @@ async function toolyaCloudBoot(tool) {
                 photos.forEach((src, index) => {
                     const imgThumb = document.createElement('img');
                     imgThumb.src = src;
-                    imgThumb.alt = 'Vorschau des Belegfotos ' + (index + 1);
+                    imgThumb.alt = (window.__toolyaUILocale === 'en' ? 'Receipt photo preview ' : 'Vorschau des Belegfotos ') + (index + 1);
                     imgThumb.className = "w-14 h-14 object-cover rounded-lg border shadow-sm";
+                    imgThumb.dataset.photoIndex = String(index);
                     previewContainer.appendChild(imgThumb);
                 });
             } else {
