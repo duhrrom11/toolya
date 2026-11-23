@@ -2388,7 +2388,7 @@ test('i18n Sprint A moving: valid backup cancellation and oversized backup never
  await expect(input).toHaveValue('');
  await page.evaluate(()=>importBackup({target:{files:[{size:20*1024*1024+1}],value:'synthetic'}}));
  const notice=page.getByRole('alertdialog',{name:'Toolya'});
- await expect(notice.locator('#hl-alert-message')).toHaveText('Backup too large (maximum 20 MB).');
+ await expect(notice.locator('#hl-alert-message')).toHaveText('Backup is too large (maximum 20 MB).');
  await expect(notice.getByRole('button',{name:'OK'})).toBeFocused();
  await notice.getByRole('button',{name:'OK'}).click();
  await page.locator('[data-tool-locale="de"]').click();
