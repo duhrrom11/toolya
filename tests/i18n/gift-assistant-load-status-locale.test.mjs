@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
 
 const source=readFileSync(new URL('../../tools/wishes/gift-assistant.mjs',import.meta.url),'utf8');
@@ -32,6 +34,13 @@ test('gift assistant locale change updates load status without fetching or writi
 });
 
 test('planning calendar weekday headings follow DE/EN without changing dates',()=>{
- assert.match(source,/__toolyaWishesLocale==='en'\?\['Mon','Tue','Wed','Thu','Fri','Sat','Sun'\]:\['Mo','Di','Mi','Do','Fr','Sa','So'\]/);
+ assert.match(source,/locale\(\)==='en-GB'\?\['Mon','Tue','Wed','Thu','Fri','Sat','Sun'\]:\['Mo','Di','Mi','Do','Fr','Sa','So'\]/);
  assert.match(source,/dateLabel\(current\)/);
+});
+
+test('Wishes assistant module parses before signed-out browser can run the auth gate',()=>{
+ const path=fileURLToPath(new URL('../../tools/wishes/gift-assistant.mjs',import.meta.url));
+ assert.doesNotThrow(()=>execFileSync(process.execPath,['--check',path],{stdio:'pipe'}));
+ assert.match(source,/main\(\)\.catch/);
+ assert.match(source,/showAssistantStatus\('Bitte anmelden\.'\)/);
 });
