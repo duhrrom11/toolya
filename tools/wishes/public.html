@@ -56,7 +56,7 @@
         <button id="settingsForgotPassword" class="wishlist-text-action" type="button">Passwort vergessen?</button>
       </div>
       <div id="settingsRecoveryPanel" hidden class="wishlist-recovery-panel">
-          <p>Neues Passwort festlegen</p>
+          <p data-wish-copy>Neues Passwort festlegen</p>
           <label for="settingsNewPassword">Neues Passwort (mindestens 8 Zeichen)<input id="settingsNewPassword" type="password" minlength="8" autocomplete="new-password"></label>
           <label for="settingsConfirmPassword">Passwort wiederholen<input id="settingsConfirmPassword" type="password" minlength="8" autocomplete="new-password"></label>
           <button id="settingsSaveNewPassword" type="button">Neues Passwort speichern</button>
@@ -67,17 +67,17 @@
         <button id="settingsLogin" type="button">🔑 Anmelden</button>
         <button id="settingsLogout" type="button" class="secondary" hidden>🚪 Abmelden</button>
       </div>
-      <a class="wishlist-profile-jump" href="#profile" id="settingsToProfile">Eigene Wunschliste verwalten ↗</a>
+      <a class="wishlist-profile-jump" href="#profile" id="settingsToProfile" data-wish-copy>Eigene Wunschliste verwalten ↗</a>
     </section>
     <section class="wishlist-settings-section" aria-labelledby="settingsBackupTitle">
       <h3 id="settingsBackupTitle">💾 Datensicherung</h3>
       <p><span data-wish-copy>Deine Wunschlisten liegen direkt bei Amazon. Toolya speichert nur deine Profilangaben und Links. Die Startseite bietet Einstellungen zur Sicherung unterstützter Browserdaten; Wunschlisten-Links bei Amazon werden dadurch nicht gesichert.</span></p>
-      <a class="wishlist-profile-jump" href="/">Zur Toolya-Datensicherung ↗</a>
+      <a class="wishlist-profile-jump" href="/" data-wish-copy>Zur Toolya-Datensicherung ↗</a>
     </section>
     <section class="toolya-appearance" aria-label="Darstellung"><h3>Darstellung</h3></section>
     <!-- The shared Toolya platform mounts its original Darstellung/Maskottchen controls here. -->
     <div class="wishlist-settings-footer">
-      <a id="settingsWishlistGuide" class="wishlist-profile-jump" href="/amazon-wunschliste-veroeffentlichen/">Wunschlisten-Anleitung</a>
+      <a id="settingsWishlistGuide" class="wishlist-profile-jump" href="/amazon-wunschliste-veroeffentlichen/" data-wish-copy>Wunschlisten-Anleitung</a>
       <button id="cancelSettingsBtn" type="button" class="secondary">Schließen</button>
     </div>
   </div>
