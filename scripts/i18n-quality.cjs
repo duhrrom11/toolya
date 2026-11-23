@@ -111,15 +111,18 @@ function readHtml(root,filename){
  if(!stat.isFile()||stat.isSymbolicLink())throw Error('Unsafe HTML file: '+filename);
  return fs.readFileSync(file,'utf8');
 }
-function auditPages(root,config,legacy){
+function auditPages(root,config,legacy,resources){
  const tools=[],marketing=[],issues=[];
  for(const t of config.toolRoutes){
   const html=readHtml(root,t.html);
   if(html===null){issues.push({kind:'missing-tool-page',file:t.html});continue;}
   const doc=parseHTML(html).document;
   const selector=selectorReach(doc,legacy.selectors?.[t.slug]);
+  const namespace=t.slug==='wishes'?'wishes':t.slug==='estate'?'estate':'tool_'+t.slug;
+  const catalog={...counts(legacy,t.slug),namespace,
+    translatedKeys:Object.keys(resources.en?.[namespace]||{}).length};
   tools.push({slug:t.slug,file:t.html,englishGuide:t.englishGuide,
-   catalog:counts(legacy,t.slug),selector,staticGermanReview:staticCandidates(doc)});
+   catalog,selector,staticGermanReview:staticCandidates(doc)});
   if(selector.invalid)issues.push({kind:'invalid-selector-review',file:t.html,count:selector.invalid});
  }
  for(const p of config.marketingPages){
@@ -155,7 +158,7 @@ async function auditRepository(root=ROOT){
    load('shared/toolya/i18n/i18next-legacy-resources.mjs'),
    load('shared/toolya/i18n/locale.mjs')]);
  if(JSON.stringify(SUPPORTED_LOCALES)!==JSON.stringify(['de','en']))throw Error('Locale architecture changed');
- const catalogs=catalogAnalysis(resources),pages=auditPages(root,config,legacy);
+ const catalogs=catalogAnalysis(resources),pages=auditPages(root,config,legacy,resources);
  const report={schemaVersion:1,sourceLocale:'de',targetLocale:'en',
   interpretation:'Static German text candidates and selector match counts require manual review; they are NOT confirmed untranslated runtime content.',
   glossaryTerms:glossary.entries.length,namespaceCount:catalogs.namespaces.length,
@@ -166,9 +169,9 @@ async function auditRepository(root=ROOT){
 function toMarkdown(r){
  const lines=['# Toolya DE/EN – automatischer Prüfbericht','',
   'Diese Zahlen sind **statische Review-Indikatoren**, keine Behauptung vollständiger Übersetzung.','','## Tool-Oberflächen (12)','',
-  '| Tool | Selektorregeln | Statische Treffer | Dialoge | Laufzeittexte | Deutsche HTML-Kandidaten* |',
-  '| --- | ---: | ---: | ---: | ---: | ---: |'];
- for(const t of r.tools)lines.push('| '+t.slug+' | '+t.catalog.selectorRules+' | '+
+  '| Tool | EN-Katalogschlüssel | Selektorregeln | Statische Treffer | Dialoge | Laufzeittexte | Deutsche HTML-Kandidaten* |',
+  '| --- | ---: | ---: | ---: | ---: | ---: | ---: |'];
+ for(const t of r.tools)lines.push('| '+t.slug+' | '+t.catalog.translatedKeys+' | '+t.catalog.selectorRules+' | '+
    t.selector.staticMatches+' | '+t.catalog.dialogMessages+' | '+t.catalog.runtimeMessages+' | '+
    t.staticGermanReview.count+' |');
  lines.push('','## Marketing-/Informationsseiten ('+r.marketing.length+')','',
