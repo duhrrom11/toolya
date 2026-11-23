@@ -53,3 +53,11 @@ test('Backstudio subview headings are included in reversible shell translation w
  assert.match(layout,/for\(const child of node\.childNodes\)/);
  assert.ok(!layout.includes('shell.querySelectorAll(\'*\')'));
 });
+
+test('Relocated 3D launch controls repaint on DE/EN switches',()=>{
+ assert.match(layout,/\.bsui-webgl button/);
+ assert.match(layout,/\['↻ Form drehen','↻ Rotate pan'\]/);
+ assert.match(layout,/document\.addEventListener\('toolya:locale-change',repaintShell\)/);
+ // 3D launch is moved into the redesigned stage, not necessarily .bsp-actions.
+ assert.match(layout,/webgl\.append\(threePanel\)/);
+});
