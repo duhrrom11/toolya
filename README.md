@@ -38,7 +38,7 @@ Das zweite Kommando ist für isolierte Entwickler-/CI-Checkouts vorgesehen und e
 
 ### Übersetzungsqualität DE/EN
 
-[Toolya Translation Quality System](docs/i18n/README.md): schreibgeschützter Inventarbericht für die zwölf Tools und 17 Marketing-/Informationsseiten, versioniertes [Glossar](docs/i18n/glossary.json), Katalog-/Platzhaltertests und isolierte Browser-Prüfungen bei 320/390 px.
+[Toolya Translation Quality System](docs/i18n/README.md) und [verifiziertes DE/EN-Inventar](docs/i18n/INVENTORY.md): schreibgeschützter Inventarbericht für die zwölf Tools und 17 Marketing-/Informationsseiten, versioniertes [Glossar](docs/i18n/glossary.json), Katalog-/Platzhaltertests und isolierte Browser-Prüfungen bei 320/390 px.
 
 ```bash
 npm ci --ignore-scripts
