@@ -396,7 +396,7 @@ test('PDF filenames follow selected language while retaining German names and ex
   assert.ok(html.includes(english),tool+': English filename');
   assert.ok(html.includes(german),tool+': German filename retained');
   const saveLine=html.split('\n').find(line=>line.includes('doc.save(') && line.includes(english));
-  assert.ok(saveLine && (saveLine.includes("window.__toolyaUILocale === 'en'") || (tool==='plants' && saveLine.includes('exportEnglish ?')) || (tool==='moving' && saveLine.includes("exportLanguage === 'en'"))),tool+': filename is locale-specific');
+  assert.ok(saveLine && (saveLine.includes("window.__toolyaUILocale === 'en'") || (tool==='plants' && saveLine.includes('exportEnglish ?')) || ((tool==='moving'||tool==='housemates') && saveLine.includes("exportLanguage === 'en'"))),tool+': filename is locale-specific');
   assert.match(html,/const doc = await createExportPdf\(\)/,tool+': export still uses shared PDF helper');
  }
  const household=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
@@ -1674,14 +1674,14 @@ test('Sprint A household finance displays English separators and restores German
 test('Sprint A household chart categories use English labels only at render time',async()=>{
  const {readFile}=await import('node:fs/promises');
  const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
- const match=html.match(/function formatHouseholdCategoryLabel\(category\) \{([\s\S]*?)\n        \}/);
+ const match=html.match(/function formatHouseholdCategoryLabel\(category, isEnglish = window\.__toolyaUILocale === 'en'\) \{([\s\S]*?)\n        \}/);
  assert.ok(match,'category display formatter available');
- const translate=new Function('window','category',match[1]);
+ const translate=new Function('window','category','isEnglish = window.__toolyaUILocale === \'en\'',match[1]);
  assert.equal(translate({__toolyaUILocale:'en'},'Lebensmittel'),'Groceries');
  assert.equal(translate({__toolyaUILocale:'en'},'Verträge'),'Contracts');
  assert.equal(translate({__toolyaUILocale:'de'},'Lebensmittel'),'Lebensmittel');
  assert.equal(translate({__toolyaUILocale:'en'},'Custom user category'),'Custom user category');
- assert.ok(html.includes('catLabels.map(formatHouseholdCategoryLabel)'),'chart axis labels localized');
+ assert.ok(html.includes('catLabels.map(category => formatHouseholdCategoryLabel(category))'),'chart axis labels localized');
  assert.ok(html.includes("formatHouseholdCategoryLabel(category) + ': ' + formatChartAmount(amount)"),'accessible summary matches chart labels');
  assert.ok(html.includes('categoryExpenses[r.category]'),'saved category keys remain original');
  assert.ok(html.includes('const defaultCategories = ["Lebensmittel", "Wohnen", "Energie", "Auto", "Freizeit", "Elektronik", "Gesundheit", "Verträge", "Sonstiges"]'),'original category keys unchanged');
@@ -1851,10 +1851,10 @@ test('Sprint A baking locale switch refreshes existing helper results without sa
 test('Sprint A household budget labels use English presentation without changing category storage keys',async()=>{
  const {readFile}=await import('node:fs/promises');
  const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
- const category=html.match(/function formatHouseholdCategoryLabel\(category\) \{([\s\S]*?)\n        \}/);
+ const category=html.match(/function formatHouseholdCategoryLabel\(category, isEnglish = window\.__toolyaUILocale === 'en'\) \{([\s\S]*?)\n        \}/);
  const amount=html.match(/function formatHouseholdDisplayAmount\(value\) \{([\s\S]*?)\n        \}/);
  assert.ok(category&&amount,'display-only formatters present');
- const name=new Function('window','category',category[1]);
+ const name=new Function('window','category','isEnglish = window.__toolyaUILocale === \'en\'',category[1]);
  const number=new Function('window','value',amount[1]);
  const english={__toolyaUILocale:'en'},german={__toolyaUILocale:'de'};
  assert.equal(name(english,'Lebensmittel'),'Groceries');
@@ -1950,8 +1950,8 @@ test('Sprint A household budget editor translates labels but keeps persisted cat
  assert.ok(modal.includes('data-cat="${escapeUserHtml(cat)}"'),'original category key remains on input');
  assert.ok(modal.includes('value="${escapeUserHtml(budgets[cat] || 0)}"'),'stored budget value displayed without mutation');
  assert.ok(html.includes("budgets[input.getAttribute('data-cat')] = parseFloat(input.value) || 0"),'save still uses original category IDs');
- const mapping=html.match(/function formatHouseholdCategoryLabel\(category\) \{([\s\S]*?)\n        \}/);
- const format=new Function('window','category',mapping[1]);
+ const mapping=html.match(/function formatHouseholdCategoryLabel\(category, isEnglish = window\.__toolyaUILocale === 'en'\) \{([\s\S]*?)\n        \}/);
+ const format=new Function('window','category','isEnglish = window.__toolyaUILocale === \'en\'',mapping[1]);
  assert.equal(format({__toolyaUILocale:'en'},'Wohnen'),'Housing');
  assert.equal(format({__toolyaUILocale:'de'},'Wohnen'),'Wohnen');
 });
@@ -1961,7 +1961,7 @@ test('Sprint A open household budget labels switch language in place and retain 
  const {readFile}=await import('node:fs/promises');
  const {createContext,runInContext}=await import('node:vm');
  const html=await readFile(new URL('../../tools/housemates/index.html',import.meta.url),'utf8');
- const category=html.match(/function formatHouseholdCategoryLabel\(category\) \{([\s\S]*?)\n        \}/);
+ const category=html.match(/function formatHouseholdCategoryLabel\(category, isEnglish = window\.__toolyaUILocale === 'en'\) \{([\s\S]*?)\n        \}/);
  const a=html.indexOf('function refreshOpenBudgetLabels() {');
  const b=html.indexOf('function openBudgetModal()',a);
  assert.ok(category&&a>0&&b>a,'locale-aware budget label updater available');
@@ -1971,7 +1971,7 @@ test('Sprint A open household budget labels switch language in place and retain 
  inputs[1].value='925';
  const context={window:{__toolyaUILocale:'en'},document};
  createContext(context);
- runInContext('function formatHouseholdCategoryLabel(category) {'+category[1]+'\n}',context);
+ runInContext("function formatHouseholdCategoryLabel(category, isEnglish = window.__toolyaUILocale === 'en') {"+category[1]+'\n}',context);
  runInContext(html.slice(a,b),context);
  runInContext('refreshOpenBudgetLabels()',context);
  assert.deepEqual([...document.querySelectorAll('#budgetInputList label')].map(x=>x.textContent),['Groceries:','Housing:']);
@@ -3497,4 +3497,54 @@ test('housemates validation alerts round-trip DE/EN while guards and saved recor
  assert.match(source,/goals\.push\(\{ id: Date\.now\(\), title, target, current \}\)/);
  assert.match(source,/plan\.push\(\{ id: Date\.now\(\), task, assignee, done: false \}\)/);
  assert.match(source,/contracts\.push\(\{ id: Date\.now\(\), name, price, payer, noticeDate \}\)/);
+});
+
+test('household and parking PDFs localize report values without modifying stored records', async () => {
+ const {readFileSync} = await import('node:fs');
+ const {runInNewContext} = await import('node:vm');
+ const scenarios = [
+  {
+   tool: 'housemates', action: 'exportAbrechnungPDF',
+   data: [
+    { title: 'Mein Einkauf', category: 'Lebensmittel', price: 12.5 },
+    { title: 'Mein Eintrag', category: 'Eigene Kategorie', payer: 'Eigener Name', price: 7 }
+   ],
+   en: ['Mein Einkauf (Groceries): 12.50 EUR [Private]', 'Eigene Kategorie', 'Eigener Name'],
+   de: ['Mein Einkauf (Lebensmittel): 12,50 EUR [Privat]', 'Eigene Kategorie', 'Eigener Name']
+  },
+  {
+   tool: 'parking', action: 'exportPDF',
+   data: { sessions: [{ desc: 'Mein Parkplatz', sector: 'Mein Sektor', date: '2026-11-20', cost: 12.5 }] },
+   en: ['Total costs: 12.50 EUR', 'Mein Parkplatz [Sector: Mein Sektor] | 2026-11-20 | 12.50 EUR'],
+   de: ['Gesamtkosten: 12,50 EUR', 'Mein Parkplatz [Sektor: Mein Sektor] | 2026-11-20 | 12,50 EUR']
+  }
+ ];
+ for (const {tool, action, data, en, de} of scenarios) {
+  const html = readFileSync(new URL('../../tools/' + tool + '/index.html', import.meta.url), 'utf8');
+  const start = html.indexOf('async function ' + action + '()');
+  const end = html.indexOf('    </script>', start);
+  const dependencies = tool === 'housemates'
+   ? html.slice(html.indexOf('function formatHouseholdCategoryLabel('), html.indexOf('/* Charts */', html.indexOf('function formatHouseholdCategoryLabel(')))
+   : '';
+  const source = html.slice(start, end).replace(
+   "const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');",
+   'const createExportPdf = async () => pdfStub;'
+  );
+  const original = JSON.stringify(data);
+  for (const [locale, expected] of [['en', en], ['de', de]]) {
+   const texts = [];
+   const window = { __toolyaUILocale: locale };
+   const pdfStub = {
+    setFont() {}, setFontSize() {}, addPage() {}, save() {},
+    text(value) { texts.push(value); }, splitTextToSize(value) { return [value]; }
+   };
+   const exportPromise = runInNewContext(dependencies + source + '\n' + action + '()', {
+    window, getData: () => data, pdfStub
+   });
+   window.__toolyaUILocale = locale === 'en' ? 'de' : 'en';
+   await exportPromise;
+   for (const value of expected) assert.ok(texts.some(line => line.includes(value)), tool + ': ' + value);
+   assert.equal(JSON.stringify(data), original);
+  }
+ }
 });

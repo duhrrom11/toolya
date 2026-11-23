@@ -1671,8 +1671,8 @@
         }
 
         // Translate only known chart labels, never receipt category storage keys.
-        function formatHouseholdCategoryLabel(category) {
-            if (window.__toolyaUILocale !== 'en') return category;
+        function formatHouseholdCategoryLabel(category, isEnglish = window.__toolyaUILocale === 'en') {
+            if (!isEnglish) return category;
             const labels = {
                 Lebensmittel: 'Groceries', Wohnen: 'Housing', Energie: 'Energy',
                 Auto: 'Car', Freizeit: 'Leisure', Elektronik: 'Electronics',
@@ -1778,7 +1778,7 @@
             if (categoryChartInstance && cashflowChartInstance) {
                 const catLabels = Object.keys(categoryExpenses).filter(k => categoryExpenses[k] > 0);
                 const catValues = catLabels.map(k => categoryExpenses[k]);
-                categoryChartInstance.data.labels = catLabels.length ? catLabels.map(formatHouseholdCategoryLabel) : [window.__toolyaUILocale === 'en' ? 'No expenses' : 'Keine Ausgaben'];
+                categoryChartInstance.data.labels = catLabels.length ? catLabels.map(category => formatHouseholdCategoryLabel(category)) : [window.__toolyaUILocale === 'en' ? 'No expenses' : 'Keine Ausgaben'];
                 categoryChartInstance.data.datasets[0].data = catValues.length ? catValues : [1];
                 categoryChartInstance.update();
 
@@ -2618,25 +2618,26 @@
 
         /* Export PDF */
         async function exportAbrechnungPDF() {
+            const exportLanguage = window.__toolyaUILocale;
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
-            doc.setFontSize(16); doc.text(window.__toolyaUILocale === "en" ? "Household Finance Report" : "WG- & Haushaltsbuch Abrechnung", 14, 20);
-            doc.setFontSize(10); doc.text(`${window.__toolyaUILocale === 'en' ? 'Created on' : 'Erstellt am'}: ${new Date().toLocaleDateString(window.__toolyaUILocale === 'en' ? 'en-GB' : 'de-DE')}`, 14, 28);
+            doc.setFontSize(16); doc.text(exportLanguage === 'en' ? "Household Finance Report" : "WG- & Haushaltsbuch Abrechnung", 14, 20);
+            doc.setFontSize(10); doc.text(`${exportLanguage === 'en' ? 'Created on' : 'Erstellt am'}: ${new Date().toLocaleDateString(exportLanguage === 'en' ? 'en-GB' : 'de-DE')}`, 14, 28);
             const entries = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r));
-            doc.text(`${window.__toolyaUILocale === 'en' ? 'Transactions' : 'Buchungen'}: ${entries.length}`, 14, 35);
+            doc.text(`${exportLanguage === 'en' ? 'Transactions' : 'Buchungen'}: ${entries.length}`, 14, 35);
             let y = 43;
-            if (!entries.length) doc.text(window.__toolyaUILocale === "en" ? "No transactions recorded." : "Keine Buchungen erfasst.", 14, y);
+            if (!entries.length) doc.text(exportLanguage === 'en' ? "No transactions recorded." : "Keine Buchungen erfasst.", 14, y);
             entries.forEach(r => {
                 const price = Number(r.price);
-                const line = `${r.date || '-'} | ${r.title || '-'} (${r.category || '-'}): ${Number.isFinite(price) ? price.toFixed(2) : '-'} EUR [${r.payer || 'Privat'}]`;
+                const line = `${r.date || '-'} | ${r.title || '-'} (${formatHouseholdCategoryLabel(r.category || '-', exportLanguage === 'en')}): ${Number.isFinite(price) ? (exportLanguage === 'en' ? price.toFixed(2) : price.toFixed(2).replace('.', ',')) : '-'} EUR [${r.payer || (exportLanguage === 'en' ? 'Private' : 'Privat')}]`;
                 doc.splitTextToSize(line, 180).forEach(textLine => {
                     if (y > 270) { doc.addPage(); y = 20; }
                     doc.text(textLine, 14, y);
                     y += 6;
                 });
             });
-            doc.save(`${window.__toolyaUILocale === 'en' ? 'household-finance-report' : 'haushaltsbericht'}-${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.save(`${exportLanguage === 'en' ? 'household-finance-report' : 'haushaltsbericht'}-${new Date().toISOString().split('T')[0]}.pdf`);
         }
     </script>
 </body>

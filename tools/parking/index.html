@@ -680,6 +680,7 @@
             const pdfEn = window.__toolyaUILocale === 'en';
             const pdfLabel = (de,en) => pdfEn ? en : de;
             const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+            const formatCost = amount => pdfEn ? amount.toFixed(2) : amount.toFixed(2).replace('.', ',');
 
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
@@ -699,7 +700,7 @@
             let totalCost = sessions.reduce((sum, s) => sum + Number(s.cost || 0), 0);
 
             doc.setFont("helvetica", "bold");
-            doc.text(`${pdfLabel("Parkvorgänge: ","Parking sessions: ")}${sessions.length} | ${pdfLabel("Gesamtkosten: ","Total costs: ")}${totalCost.toFixed(2)} EUR`, 14, y);
+            doc.text(`${pdfLabel("Parkvorgänge: ","Parking sessions: ")}${sessions.length} | ${pdfLabel("Gesamtkosten: ","Total costs: ")}${formatCost(totalCost)} EUR`, 14, y);
             y += 10;
 
             doc.setFont("helvetica", "underline");
@@ -711,7 +712,7 @@
             sessions.forEach((s, idx) => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let sectorText = s.sector ? ` [${pdfLabel("Sektor: ","Sector: ")}${s.sector}]` : "";
-                const lines = doc.splitTextToSize(`${idx + 1}. ${pdfLabel("Standort: ","Location: ")}${s.desc}${sectorText} | ${s.date} | ${Number(s.cost || 0).toFixed(2)} EUR`, 180);
+                const lines = doc.splitTextToSize(`${idx + 1}. ${pdfLabel("Standort: ","Location: ")}${s.desc}${sectorText} | ${s.date} | ${formatCost(Number(s.cost || 0))} EUR`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
