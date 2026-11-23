@@ -1626,9 +1626,11 @@ for(const routeName of ['assistant','bookmarks','cockpit','collection','dashboar
  await page.goto(origin+'/tools/wishes/'+routeName+'.html');await page.locator('.toolya-signature-footer').waitFor();await page.waitForLoadState('networkidle');
  if(routeName==='assistant'){
   await expect(page.locator('#status')).toHaveText('Bitte anmelden.');
-  await page.evaluate(()=>{globalThis.__toolyaWishesLocale='en';document.dispatchEvent(new Event('toolya:wishes-locale-change'))});
+  // Exercise the actual language selector: it synchronizes the locale module's
+  // active language, storage and translation observer (a synthetic event does not).
+  await page.locator('[data-wishes-locale="en"]').click();
   await expect(page.locator('#status')).toHaveText('Please sign in.');
-  await page.evaluate(()=>{globalThis.__toolyaWishesLocale='de';document.dispatchEvent(new Event('toolya:wishes-locale-change'))});
+  await page.locator('[data-wishes-locale="de"]').click();
   await expect(page.locator('#status')).toHaveText('Bitte anmelden.');
  }
  if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
