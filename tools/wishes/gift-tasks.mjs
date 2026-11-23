@@ -78,7 +78,7 @@ function suggestDate(offset=0){
 }
 for(const template of templates){
  const button=document.createElement('button');button.type='button';button.textContent=ui(template.label);button.dataset.taskTemplate=template.title;
- button.addEventListener('click',()=>{$('title').value=template.title;$('reminder').value=String(template.reminder);$('priority').value=String(template.priority);$('taskStatus').value='open';suggestDate(template.offset);$('templateHint').textContent='Vorlage '+template.label+' übernommen. Prüfe die Angaben und speichere die Aufgabe selbst.';$('title').focus()});
+ button.addEventListener('click',()=>{$('title').value=template.title;$('reminder').value=String(template.reminder);$('priority').value=String(template.priority);$('taskStatus').value='open';suggestDate(template.offset);$('templateHint').textContent=ui('Vorlage ')+ui(template.label)+ui(' übernommen. Prüfe die Angaben und speichere die Aufgabe selbst.');$('title').focus()});
  $('templates').append(button);
 }
 $('suggestDue').addEventListener('click',()=>suggestDate(0));
@@ -129,9 +129,9 @@ async function refreshTasks(){
 for(const [id,archive] of [['archiveYear',true],['restoreYear',false]])$(id).addEventListener('click',async()=>{
  const occasionId=$('checklistOccasion').value,year=Number($('checklistYear').value);
  if(!occasionId){$('checklistStatus').textContent='Bitte zuerst einen Anlass wählen.';return}
- if(!confirm((archive?'Alle Checklistenaufgaben dieses Jahres archivieren?':'Archivierung dieses Jahres aufheben?')+' Die Aufgaben bleiben gespeichert.'))return;
+ if(!confirm(ui(archive?'Alle Checklistenaufgaben dieses Jahres archivieren?':'Archivierung dieses Jahres aufheben?')+ui(' Die Aufgaben bleiben gespeichert.')))return;
  $(id).disabled=true;pendingWrites++;
- try{const {data,error}=await db.rpc('wishlist_archive_occasion_checklist_year',{p_occasion_id:occasionId,p_year:year,p_archive:archive});if(error)throw error;await refreshTasks();$('checklistStatus').textContent=data+' Aufgaben '+(archive?'archiviert.':'wiederhergestellt.')}
+ try{const {data,error}=await db.rpc('wishlist_archive_occasion_checklist_year',{p_occasion_id:occasionId,p_year:year,p_archive:archive});if(error)throw error;await refreshTasks();$('checklistStatus').textContent=data+ui(' Aufgaben ')+ui(archive?'archiviert.':'wiederhergestellt.')}
  catch{$('checklistStatus').textContent='Jahresarchiv konnte nicht geändert werden.'}finally{$(id).disabled=false;settleWrite()}
 });
 for(const button of document.querySelectorAll('[data-checklist]'))button.addEventListener('click',async()=>{
@@ -140,7 +140,7 @@ for(const button of document.querySelectorAll('[data-checklist]'))button.addEven
  if(!confirm('Aufgabenpaket für den gewählten Anlass erstellen? Vorhandene Aufgaben desselben Pakets bleiben erhalten.'))return;
  button.disabled=true;pendingWrites++;
  try{const {data,error}=await db.rpc('wishlist_create_occasion_checklist_year',{p_occasion_id:occasionId,p_template:template,p_year:Number($('checklistYear').value)});if(error)throw error;
-  await refreshTasks();$('checklistStatus').textContent=data+' neue Aufgaben angelegt. '+(data===0?'Das Paket ist bereits vorhanden.':'Die Aufgaben können einzeln bearbeitet werden.');
+  await refreshTasks();$('checklistStatus').textContent=data+ui(' neue Aufgaben angelegt. ')+ui(data===0?'Das Paket ist bereits vorhanden.':'Die Aufgaben können einzeln bearbeitet werden.');
  }catch{$('checklistStatus').textContent='Aufgabenpaket konnte nicht erstellt werden.'}finally{button.disabled=false;settleWrite()}
 });
 
@@ -170,9 +170,9 @@ $('rolloverCreate').addEventListener('click',async()=>{
  const occasionId=$('checklistOccasion').value,year=Number($('checklistYear').value),ids=[...$('rolloverSelection').querySelectorAll('input:checked')].map(el=>el.value);
  if(!occasionId||!ids.length){$('rolloverStatus').textContent='Bitte Anlass und mindestens eine Aufgabe auswählen.';return}
  if(ids.length>100){$('rolloverStatus').textContent='Maximal 100 Aufgaben gleichzeitig.';return}
- if(!confirm(ids.length+' ausgewählte Aufgaben aus '+(year-1)+' nach '+year+' übernehmen? Bestehende Aufgaben bleiben unverändert.'))return;
+ if(!confirm(ids.length+ui(' ausgewählte Aufgaben aus ')+(year-1)+ui(' nach ')+year+ui(' übernehmen? Bestehende Aufgaben bleiben unverändert.')))return;
  $('rolloverCreate').disabled=true;pendingWrites++;
- try{const {data,error}=await db.rpc('wishlist_rollover_gift_tasks',{p_occasion_id:occasionId,p_from_year:year-1,p_to_year:year,p_task_ids:ids});if(error)throw error;await refreshTasks();$('rolloverStatus').textContent=data+' Aufgaben übernommen. Bestehende Aufgaben wurden nicht überschrieben.'}
+ try{const {data,error}=await db.rpc('wishlist_rollover_gift_tasks',{p_occasion_id:occasionId,p_from_year:year-1,p_to_year:year,p_task_ids:ids});if(error)throw error;await refreshTasks();$('rolloverStatus').textContent=data+ui(' Aufgaben übernommen. Bestehende Aufgaben wurden nicht überschrieben.')}
  catch{$('rolloverStatus').textContent='Übernahme fehlgeschlagen. Bitte Auswahl und Jahr prüfen.'}finally{$('rolloverCreate').disabled=false;settleWrite()}
 });
 main().catch(()=>{$('status').textContent='Aufgaben konnten nicht geladen werden.'});
