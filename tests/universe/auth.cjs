@@ -1,4 +1,4 @@
-// Real GoTrue password signup and email confirmation, confined to a disposable local database.
+// Real GoTrue signup, email confirmation and recovery in a disposable local database.
 const assert = require('node:assert/strict');
 const { spawn, spawnSync } = require('node:child_process');
 const { readFileSync, readdirSync } = require('node:fs');
@@ -57,12 +57,24 @@ async function waitReady(url, name) {
   throw Error(`Local ${name} did not start`);
 }
 
-async function verifyRest(accessToken, profile) {
-  const rpc = (name, payload, token) => fetch(rest + '/rpc/universe_' + name, {
+function rpc(name, payload, token) {
+  return fetch(rest + '/rpc/universe_' + name, {
     method: 'POST',
     headers: { 'content-type': 'application/json', ...(token && { authorization: 'Bearer ' + token }) },
     body: JSON.stringify(payload),
   });
+}
+
+async function openMailLink(message) {
+  const plain = message.replace(/=\n/g, '').replaceAll('=3D', '=').replaceAll('&amp;', '&');
+  const verifyURL = plain.match(/http:\/\/127\.0\.0\.1:55260\/verify\?[^\s"<>]+/)?.[0];
+  assert(verifyURL, 'The local mailbox must receive a verification link');
+  const verification = await fetch(verifyURL, { redirect: 'manual' });
+  assert.equal(verification.status, 303);
+  return new URL(verification.headers.get('location'));
+}
+
+async function verifyRest(accessToken, profile) {
   const guest = await rpc('state', {});
   assert.equal(guest.status, 401, 'The anonymous API role cannot read an account');
   const state = await rpc('state', {}, accessToken);
@@ -95,8 +107,10 @@ async function verifyRest(accessToken, profile) {
   assert.deepEqual(await readRanking(), [{ handle: 'Nebel-Wanderer', xp: 0 }]);
   const paused = await rpc('toggle', { p_active: false }, accessToken);
   assert.equal(paused.status, 200);
-  assert.equal((await paused.json()).visible, false);
+  const pausedState = await paused.json();
+  assert.equal(pausedState.visible, false);
   assert.deepEqual(await readRanking(), []);
+  return pausedState;
 }
 
 async function run() {
@@ -145,12 +159,7 @@ async function run() {
     assert.equal((await signup.json()).access_token, undefined);
     assert.equal((await post('/token?grant_type=password', credentials)).status, 400);
     assert.equal(messages.length, 1);
-    const plain = messages[0].replace(/=\n/g, '').replaceAll('=3D', '=').replaceAll('&amp;', '&');
-    const verifyURL = plain.match(/http:\/\/127\.0\.0\.1:55260\/verify\?[^\s"<>]+/)?.[0];
-    assert(verifyURL, 'Confirmation link must arrive in the local mailbox');
-    const confirmation = await fetch(verifyURL, { redirect: 'manual' });
-    assert.equal(confirmation.status, 303);
-    const confirmedLocation = new URL(confirmation.headers.get('location'));
+    const confirmedLocation = await openMailLink(messages[0]);
     assert.equal(confirmedLocation.searchParams.get('next'), '/tools/moving/');
     const confirmationToken = new URLSearchParams(confirmedLocation.hash.slice(1)).get('access_token');
     assert(confirmationToken, 'Confirmation must issue a session for the return flow');
@@ -166,6 +175,7 @@ async function run() {
     assert.equal(token.user_metadata.toolya_profile, undefined);
     console.log('GoTrue: required names, local email confirmation, original route and private profile without duplicated Auth metadata verified');
 
+    let savedState;
     if (restBinary) {
       sql(readFileSync('tests/universe/rest-fixture.sql', 'utf8'));
       const connection = new URL(database);
@@ -177,9 +187,43 @@ async function run() {
         PGRST_SERVER_PORT: '55262', PGRST_LOG_LEVEL: 'warn',
       } });
       await waitReady(rest + '/', 'PostgREST');
-      await verifyRest(confirmationToken, profile);
+      savedState = await verifyRest(confirmationToken, profile);
       console.log('PostgREST: confirmed GoTrue session, anonymous denial, private schema, quest persistence and leaderboard opt-in verified');
     }
+
+    const recoveryRedirect = new URL(redirect);
+    const toolPath = '/tools/moving/?lang=en#room';
+    recoveryRedirect.searchParams.set('next', toolPath);
+    recoveryRedirect.searchParams.set('lang', 'en');
+    const recover = await post('/recover?redirect_to=' + encodeURIComponent(recoveryRedirect.href), { email: credentials.email });
+    assert.equal(recover.status, 200);
+    assert.equal(messages.length, 2);
+    const recoveredLocation = await openMailLink(messages[1]);
+    assert.equal(recoveredLocation.origin + recoveredLocation.pathname, recoveryRedirect.origin + recoveryRedirect.pathname);
+    assert.equal(recoveredLocation.searchParams.get('next'), toolPath);
+    assert.equal(recoveredLocation.searchParams.get('lang'), 'en');
+    const recovery = new URLSearchParams(recoveredLocation.hash.slice(1));
+    assert.equal(recovery.get('type'), 'recovery');
+    const recoveryToken = recovery.get('access_token');
+    assert(recoveryToken);
+    const password = 'new-synthetic-local-only-password';
+    const updated = await fetch(api + '/user', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + recoveryToken },
+      body: JSON.stringify({ password }),
+    });
+    assert.equal(updated.status, 200);
+    assert.equal((await post('/token?grant_type=password', credentials)).status, 400);
+    const freshLogin = await post('/token?grant_type=password', { ...credentials, password });
+    assert.equal(freshLogin.status, 200);
+    const fresh = await freshLogin.json();
+    assert.equal(fresh.user.id, user.id);
+    if (savedState) {
+      const state = await rpc('state', {}, fresh.access_token);
+      assert.equal(state.status, 200);
+      assert.deepEqual(await state.json(), savedState);
+    }
+    console.log('GoTrue recovery: local reset email, original tool link, new credentials and the same account verified');
   } finally {
     if (dataApi) dataApi.kill();
     if (server) server.kill();

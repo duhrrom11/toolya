@@ -36,7 +36,7 @@ test('candidate HTML and clients use the isolated backend and loopback redirects
     const page = await response.text();
     assert.ok(page.includes(config.backend), path);
     assert.doesNotMatch(page, /yheogmeaosuigyaxkwth|sb_publishable_PK20oOP|https:\/\/toolya\.app[/'"]/u, path);
-    if (path === '/') assert.ok(page.includes(`redirectTo: "${config.origin}/index.html"`));
+    if (path === '/') assert.ok(page.includes("const redirect = new URL('/index.html', location.origin)"));
   }
   for (const path of ['/.git/config', '/supabase/config.toml', '/assets/%2e%2e%2fREADME.md']) {
     assert.equal((await fetch(config.origin + path)).status, 404, path);

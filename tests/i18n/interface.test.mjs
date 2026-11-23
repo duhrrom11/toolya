@@ -1025,7 +1025,7 @@ test('global password recovery remains a single token-based flow; tool translati
  assert.match(homepage,/auth\.updateUser\(\{ password: newPassword \}\)/,'password update remains in central account flow');
  assert.match(homepage,/if \(!passwordRecoveryActive\)/,'recovery panel requires active recovery state');
  assert.match(homepage,/first\.value\.length < 8 \|\| first\.value !== second\.value/,'password confirmation is required');
- assert.match(homepage,/redirectTo: "https:\/\/toolya\.app\/index\.html"/,'the recovery token targets the central account page');
+ assert.match(homepage,/const redirect = new URL\('\/index\.html', location\.origin\)/,'the recovery token targets the central account page');
  const {runInNewContext}=await import('node:vm');
  for(const [search,saved,language] of [
   ['?lang=en','de','en'], ['?lang=de','en',null], ['','en','en'], ['',null,null],

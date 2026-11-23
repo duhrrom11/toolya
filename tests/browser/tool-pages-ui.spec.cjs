@@ -1478,6 +1478,42 @@ test('dashboard: shared actions, task rows and account dialog at three widths',a
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);expect(errors).toEqual([]);
 });
 
+test('home recovery retains the tool link and waits for the password form',async({page})=>{
+ await isolated(page,false,false,{__recovery:true});
+ const tool='/tools/moving/?lang=en#room';
+ const login=new URL('/index.html?auth=required',origin);
+ login.searchParams.set('next',tool);
+ login.searchParams.set('lang','en');
+ await page.goto(login.href);
+ page.on('dialog',dialog=>dialog.dismiss());
+ const redirect=await page.evaluate(async()=>{
+  let emailRedirect;
+  document.getElementById('loginEmail').value='mock@example.invalid';
+  window.supabaseClient.auth.resetPasswordForEmail=async(email,options)=>{
+   emailRedirect=options.redirectTo;
+   return {error:null};
+  };
+  await window.requestPasswordReset();
+  return emailRedirect;
+ });
+ expect(redirect).toBe(login.href);
+ await page.goto(redirect+'#type=recovery');
+ await page.evaluate(()=>{
+  const fixture=window.__toolyaMock;
+  fixture.signedIn=true;
+  for (const callback of fixture.authListeners) callback('INITIAL_SESSION',{access_token:'synthetic-token'});
+ });
+ // Give the scheduled identity check a turn before the SDK signals recovery.
+ await page.evaluate(()=>new Promise(resolve=>setTimeout(resolve,0)));
+ await expect(page).toHaveURL(redirect+'#type=recovery');
+ await page.evaluate(()=>{
+  const fixture=window.__toolyaMock;
+  for (const callback of fixture.authListeners) callback('PASSWORD_RECOVERY',{access_token:'synthetic-token'});
+ });
+ await expect(page.locator('#passwordRecoveryPanel')).toBeVisible();
+ await expect(page.locator('#recoveryPassword')).toBeFocused();
+});
+
 test('dashboard recovery keeps English and restores manual sign-out after an auth failure',async({page})=>{
  await isolated(page,true,true,{__dashboard:true,__recovery:true});
  await page.setViewportSize({width:320,height:800});

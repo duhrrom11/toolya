@@ -355,6 +355,8 @@
         const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
 
+        // The Auth SDK removes the recovery fragment while initializing its session.
+        const recoveryArrival = new URLSearchParams(location.hash.slice(1)).get('type') === 'recovery';
         window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         // Client initialisiert; die tatsächliche Erreichbarkeit wird bei Auth-Anfragen geprüft.
         const settingsQuery = new URLSearchParams(location.search);
@@ -456,8 +458,16 @@
                 return;
             }
             try {
+                const { safeReturn } = await import('./shared/toolya/universe-account.mjs');
+                const target = safeReturn(returnTo);
+                const redirect = new URL('/index.html', location.origin);
+                if (target) {
+                    redirect.searchParams.set('auth', 'required');
+                    redirect.searchParams.set('next', target.pathname + target.search + target.hash);
+                }
+                if (settingsQuery.get('lang') === 'en') redirect.searchParams.set('lang', 'en');
                 const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
-                    redirectTo: "https://toolya.app/index.html"
+                    redirectTo: redirect.href
                 });
                 if (error) throw error;
                 alert("Falls ein Konto für diese E-Mail-Adresse existiert, erhältst du einen Link zum Zurücksetzen des Passworts.");
@@ -1049,7 +1059,7 @@
         });
 
         supabaseClient.auth.onAuthStateChange((event, session) => {
-            if (arrival && session && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
+            if (arrival && !recoveryArrival && session && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
                 setTimeout(() => {
                     if (passwordRecoveryActive || returningToTool) return;
                     void supabaseClient.auth.getUser(session.access_token).then(({ data, error }) => {
