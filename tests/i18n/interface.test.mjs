@@ -3396,3 +3396,53 @@ test('lending backup and destructive messages localize with unchanged confirmati
  assert.match(source,/if \(!person \|\| !date\) return alert\(/,'loan validation preserved');
  assert.match(source,/i\.status === 'active'/,'persisted status keys stay untouched');
 });
+
+
+test('moving planner dynamic dialogs translate DE/EN while backup and deletion guards remain', async () => {
+ const {readFileSync}=await import('node:fs');
+ const {runInNewContext}=await import('node:vm');
+ const source=readFileSync(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
+ const pairs=[
+  ['Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden nicht überschrieben.','Import existing device data into your Toolya account? Cloud data will not be overwritten.'],
+  ['Cloud- und Gerätedaten vorhanden. Cloud-Daten behalten und Gerätedaten separat sichern?','Cloud and device data both exist. Keep cloud data and back up device data separately?'],
+  ['Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.','Please confirm that the backup was downloaded successfully.'],
+  ['Bitte Standort eingeben!','Please enter a location!'],
+  ['Dieser Standort enthält Kisten aus einem aktiven Umzug. Bitte den Umzug erst abschließen.','This location contains boxes from an active move. Complete the move first.'],
+  ['⚠️ Möchtest du diesen Standort und ALLE Kisten darin wirklich löschen?','⚠️ Really delete this location and ALL boxes inside it?'],
+  ['Bitte Standort und Kisten-Name angeben!','Please enter a location and box name!'],
+  ['Bild konnte nicht gelesen werden. Nichts gespeichert.','Image could not be read. Nothing was saved.'],
+  ['Bitte Artikel-Name eingeben!','Please enter an item name!'],
+  ['Diese Kiste ist einem aktiven Umzug zugeordnet. Bitte den Umzug erst abschließen.','This box is assigned to an active move. Complete the move first.'],
+  ['⚠️ Möchtest du diese Kiste wirklich löschen?','⚠️ Really delete this box?'],
+  ['Keine Kisten vorhanden.','No boxes available.'],
+  ['Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.','The QR code could not be loaded. Please try again.'],
+  ['Backup zu groß (maximal 20 MB).','Backup is too large (maximum 20 MB).'],
+  ['Ungültiges Backup-Format.','Invalid backup format.'],
+  ['Dieses Backup enthält keine Umzugsprojekte. Die bestehenden Umzugsplanungen würden verloren gehen. Trotzdem fortfahren?','This backup contains no moving projects. Existing move plans would be lost. Continue anyway?'],
+  ['Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.','Before importing, download and verify a current backup.'],
+  ['Hast du die aktuelle Sicherung erfolgreich heruntergeladen?','Have you successfully downloaded the current backup?'],
+  ['Backup importieren? Vorhandene Daten werden ersetzt.','Import backup? Existing data will be replaced.'],
+  ['Backup erfolgreich importiert!','Backup imported successfully!'],
+  ['Backup-Datei konnte nicht gelesen werden.','Backup file could not be read.'],
+  ['Der QR-Scanner konnte nicht geladen werden. Bitte versuche es erneut.','The QR scanner could not be loaded. Please try again.'],
+  ['Kamera-Zugriff fehlgeschlagen oder nicht unterstützt.','Camera access failed or is not supported.']
+ ];
+ const found=[...source.matchAll(/(?:alert|confirm)\(window\.__toolyaUILocale === 'en' \? '([^']+)' : '([^']+)'\)/g)]
+  .map(m=>({en:m[1],de:m[2]}));
+ for(const [de,en] of pairs){
+  assert.ok(found.some(x=>x.de===de&&x.en===en),'missing moving DE/EN pair: '+de);
+  const expr="window.__toolyaUILocale === 'en' ? "+JSON.stringify(en)+' : '+JSON.stringify(de);
+  assert.equal(runInNewContext(expr,{window:{__toolyaUILocale:'en'}}),en);
+  assert.equal(runInNewContext(expr,{window:{__toolyaUILocale:'de'}}),de);
+ }
+ assert.match(source,/if \(!confirm\(window\.__toolyaUILocale === 'en' \? '⚠️ Really delete this location and ALL boxes inside it\?'/,'location deletion still guarded');
+ assert.match(source,/if \(!confirm\(window\.__toolyaUILocale === 'en' \? '⚠️ Really delete this box\?'/,'box deletion still guarded');
+ assert.match(source,/!confirm\(window\.__toolyaUILocale === 'en' \? 'This backup contains no moving projects/,'potential destructive moving import still requires approval');
+ assert.match(source,/if\(!confirm\(window\.__toolyaUILocale === 'en' \? 'Before importing, download and verify a current backup\.'/,'backup-before-import guard retained');
+ assert.match(source,/if\(!confirm\(window\.__toolyaUILocale === 'en' \? 'Have you successfully downloaded the current backup\?'/,'download confirmation retained');
+ assert.match(source,/if \(!confirm\(window\.__toolyaUILocale === 'en' \? 'Import backup\? Existing data will be replaced\.'/,'overwrite approval retained');
+ assert.match(source,/if \(!await saveData\(parsed\)\) return;/,'import write remains behind guards');
+ assert.match(source,/confirmMigration:async\(\)=>confirm\(/,'cloud migration still opt in');
+ assert.match(source,/reviewExistingCloud:async\(\)=>confirm\(/,'cloud conflict selection still opt in');
+ assert.match(source,/p\.status==='active'/,'active move restriction uses original stored status');
+});
