@@ -201,3 +201,8 @@ Gesamt-XP zuerst; darunter **eine** Kompetenzkarte je Zeile, fünfmal; Badges in
 ## 9. Stand der Arbeit
 
 Dieses Dokument ist eine **präzise UI-Designspezifikation**. Es sind weder visuelle Assets, interaktive HTML-Prototypen noch Code auf `main` erstellt worden. Erst nach explizitem technischen Umsetzungsauftrag ist eine Bild-/UI-Prototyp-/Frontendproduktion freigegeben. Das nächste planbare Artefakt wäre ein überprüfbares statisches Wireframe oder ein nicht produktiver HTML-Prototyp mit Mockdaten.
+
+
+## 10. Interaktiver V1-HTML-Prototyp (23.11.2026)
+
+**Datei:** [`prototypes/toolya-rewards-v1.html`](../prototypes/toolya-rewards-v1.html) – eigenständige, responsive HTML-Datei mit eingebettetem CSS und JavaScript, ausschließlich Beispieldaten. Enthält XP-Hero, fünf KP-Karten, alle neun Badges mit anklickbaren zugänglichen Detaildialogen sowie einen rein lokalen Demo-Knopf zum Testen der Anzeige und Reset. **Kein** produktives XP-Ledger, keine Supabase-Verbindung, kein Server, keine Freischaltung, kein Login, keine Veröffentlichung. Datei für interaktive Ansicht lokal als HTML öffnen; GitHub zeigt HTML standardmäßig nur als Quelltext. Frühere Bild-Mockups sind Entwurfsreferenz, keine echte UI-Implementierung. Bestehende Toolya-Logoassets wurden nicht verändert.
