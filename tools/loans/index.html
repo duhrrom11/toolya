@@ -208,11 +208,11 @@
                     <h2 class="text-base font-bold">🛠️ Stamm-Gegenstand anlegen</h2>
                     <label class="helferlein-field" for="invTitle"><span class="helferlein-field-label" data-tool-en="Description">Bezeichnung</span><input type="text" id="invTitle" placeholder="Bezeichnung (z.B. Bosch Bohrhammer)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Bezeichnung (z.B. Bosch Bohrhammer)"></label>
                     <label class="helferlein-field" for="invCategory"><span class="helferlein-field-label" data-tool-en="Item category">Kategorie des Gegenstands</span><select id="invCategory" class="w-full p-2.5 border rounded-xl text-xs bg-white" aria-label="Kategorie des Gegenstands" data-tool-en-aria-label="Item category">
-                        <option value="Werkzeug">🔨 Werkzeug</option>
-                        <option value="Elektronik">💻 Elektronik & IT</option>
+                        <option value="Werkzeug" data-tool-en="🔨 Tools">🔨 Werkzeug</option>
+                        <option value="Elektronik" data-tool-en="💻 Electronics &amp; IT">💻 Elektronik & IT</option>
                         <option value="Bücher & Medien" data-tool-en="📚 Books &amp; media">📚 Bücher & Medien</option>
-                        <option value="Sport & Freizeit">⚽ Sport & Freizeit</option>
-                        <option value="Sonstiges">📦 Sonstiges</option>
+                        <option value="Sport & Freizeit" data-tool-en="⚽ Sports &amp; leisure">⚽ Sport & Freizeit</option>
+                        <option value="Sonstiges" data-tool-en="📦 Other">📦 Sonstiges</option>
                     </select></label>
                     <label class="helferlein-field" for="invSerial"><span class="helferlein-field-label" data-tool-en="Serial number / ISBN / barcode">Seriennummer / ISBN / Barcode</span><input type="text" id="invSerial" placeholder="Seriennummer / ISBN / Barcode" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Seriennummer / ISBN / Barcode" data-tool-en-placeholder="Serial number / ISBN / barcode" data-tool-en-aria-label="Serial number / ISBN / barcode"></label>
                     <label class="helferlein-field" for="invGpsLink"><span class="helferlein-field-label">GPS-Tracker URL / AirTag Link (optional)</span><input type="text" id="invGpsLink" placeholder="GPS-Tracker URL / AirTag Link (optional)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="GPS-Tracker URL / AirTag Link (optional)"></label>
@@ -282,11 +282,11 @@
                 <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                     <label class="helferlein-field" for="filterCategory"><span class="helferlein-field-label">Nach Kategorie filtern</span><select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Nach Kategorie filtern">
                         <option value="" data-tool-en="All categories">Alle Kategorien</option>
-                        <option value="Werkzeug">🔨 Werkzeug</option>
-                        <option value="Elektronik">💻 Elektronik & IT</option>
+                        <option value="Werkzeug" data-tool-en="🔨 Tools">🔨 Werkzeug</option>
+                        <option value="Elektronik" data-tool-en="💻 Electronics &amp; IT">💻 Elektronik & IT</option>
                         <option value="Bücher & Medien" data-tool-en="📚 Books &amp; media">📚 Bücher & Medien</option>
-                        <option value="Sport & Freizeit">⚽ Sport & Freizeit</option>
-                        <option value="Sonstiges">📦 Sonstiges</option>
+                        <option value="Sport & Freizeit" data-tool-en="⚽ Sports &amp; leisure">⚽ Sport & Freizeit</option>
+                        <option value="Sonstiges" data-tool-en="📦 Other">📦 Sonstiges</option>
                     </select></label>
                     <label class="helferlein-field" for="filterPerson"><span class="helferlein-field-label" data-tool-en="Filter loans by person">Verleih nach Person filtern</span><select id="filterPerson" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verleih nach Person filtern" data-tool-en-aria-label="Filter loans by person">
                         <option value="" data-tool-en="All people">Alle Personen</option>
@@ -530,6 +530,20 @@
             renderInventory();
         }
 
+        // Only translate canonical category values for display; never alter persisted values.
+        const loanCategoryLabels = Object.freeze({
+            'Werkzeug': 'Tools',
+            'Elektronik': 'Electronics & IT',
+            'Bücher & Medien': 'Books & media',
+            'Sport & Freizeit': 'Sports & leisure',
+            'Sonstiges': 'Other'
+        });
+        function loanCategoryDisplay(value) {
+            const category = String(value ?? '');
+            return window.__toolyaUILocale === 'en' && Object.hasOwn(loanCategoryLabels, category)
+                ? loanCategoryLabels[category] : category;
+        }
+
         // Display-only: never change user-controlled option values or selected entries.
         function localizeLoanSelectPlaceholders() {
             const english=window.__toolyaUILocale==='en';
@@ -543,6 +557,13 @@
                 const select=document.getElementById(id);
                 const option=select && [...select.options].find(item=>item.value===value);
                 if(option)option.textContent=english?en:de;
+            }
+            const inventorySelect = document.getElementById('itemInventorySelect');
+            if (inventorySelect) for (const option of inventorySelect.options) {
+                if (!option.dataset.category) continue;
+                const category = loanCategoryDisplay(option.dataset.category);
+                const serial = option.dataset.serial ? ' | SN: ' + option.dataset.serial : '';
+                option.textContent = option.value + ' (' + category + serial + ')';
             }
         }
 
@@ -564,7 +585,7 @@
             invSelect.replaceChildren();
             addOption(invSelect, '', '-- Inventar-Gegenstand wählen --');
             inventory.forEach(i => {
-                const option = addOption(invSelect, i.title, `${i.title} (${i.category}${i.serial ? ' | SN: ' + i.serial : ''})`);
+                const option = addOption(invSelect, i.title, `${i.title} (${loanCategoryDisplay(i.category)}${i.serial ? ' | SN: ' + i.serial : ''})`);
                 option.dataset.category = String(i.category ?? '');
                 option.dataset.serial = String(i.serial ?? '');
                 option.dataset.gps = String(i.gpsLink ?? '');
@@ -840,7 +861,7 @@
                 <div class="p-3 border rounded-xl bg-gray-50 flex justify-between items-start text-xs">
                     <div>
                         <span class="font-bold text-indigo-800 block">${escapeHtml(i.title)}</span>
-                        <span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full inline-block mt-1">${escapeHtml(i.category)}</span>
+                        <span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full inline-block mt-1">${escapeHtml(loanCategoryDisplay(i.category))}</span>
                         ${i.serial ? `<p class="text-gray-600 mt-1">SN/ISBN: <span class="font-mono">${escapeHtml(i.serial)}</span></p>` : ''}
                         ${safeGpsUrl(i.gpsLink) ? `<a href="${safeGpsUrl(i.gpsLink)}" rel="noopener noreferrer" target="_blank" class="text-blue-600 font-semibold underline block mt-1">📍 GPS-Tracker öffnen</a>` : ''}
                     </div>
@@ -992,7 +1013,7 @@
                                 <div>
                                     <div class="flex items-center space-x-2 flex-wrap gap-1">
                                         <span class="text-xs font-bold text-gray-800">📦 ${escapeHtml(i.title)}</span>
-                                        <span class="text-[10px] bg-gray-200 text-gray-700 font-semibold px-2 py-0.5 rounded-full">${escapeHtml(i.category || label('Sonstiges','Other'))}</span>
+                                        <span class="text-[10px] bg-gray-200 text-gray-700 font-semibold px-2 py-0.5 rounded-full">${escapeHtml(i.category ? loanCategoryDisplay(i.category) : label('Sonstiges','Other'))}</span>
                                         <span class="text-xs text-indigo-600 font-semibold">→ ${escapeHtml(i.person)}</span>
                                         ${badge}
                                         ${i.serial ? `<span class="text-[10px] font-mono bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border">SN: ${escapeHtml(i.serial)}</span>` : ''}
