@@ -3,6 +3,18 @@ import {parseHTML} from 'linkedom';
 import {readFileSync} from 'node:fs';
 import {WISHES_COPY,WISHES_RUNTIME_COPY,wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
 import {applyWishLocale} from '../../shared/toolya/i18n/wishes-dom.mjs';
+test('legacy Wishes locale buttons remain outside the intentionally hidden original header',()=>{
+ const entry=readFileSync(new URL('../../shared/toolya/i18n/wishes-entry.mjs',import.meta.url),'utf8');
+ const css=readFileSync(new URL('../../tools/wishes/legacy-design.css',import.meta.url),'utf8');
+ const controls=readFileSync(new URL('../../shared/toolya/i18n/wishes-choice.css',import.meta.url),'utf8');
+ assert.match(css,/body\[data-toolya-legacy-wishes\]>header\{display:none\}/);
+ assert.match(entry,/header\.matches\('body\[data-toolya-legacy-wishes\] > header'\)\)header\.after\(nav,notice\)/);
+ assert.match(controls,/body\[data-toolya-legacy-wishes\]>\.ty-wishes-language\{display:flex/);
+ for(const name of ['assistant','report','social']){
+  const html=readFileSync(new URL('../../tools/wishes/'+name+'.html',import.meta.url),'utf8');
+  assert.match(html,/data-toolya-legacy-wishes="true"/);
+ }
+});
 test('Wishlist translation changes only author-owned controls and restores implicit option keys',()=>{
  const {document}=parseHTML('<html><body><h1>Meine Merkliste</h1><button onclick="saveGift()">Abbrechen</button><select><option>Geplant</option></select><input placeholder="Name oder Organisation" value="Private value"><div class="profile-card"><h2>Geplant</h2></div></body></html>');
  const button=document.querySelector('button'),option=document.querySelector('option'),input=document.querySelector('input');
@@ -18,6 +30,15 @@ test('Wishlist translation changes only author-owned controls and restores impli
  assert.equal(option.textContent,'Geplant');
  assert.ok(!option.hasAttribute('value'));
  assert.equal(input.getAttribute('placeholder'),'Name oder Organisation');
+});
+test('legacy assistant links translate only fixed navigation while preserving user-authored links',()=>{
+ const {document}=parseHTML('<html><body data-toolya-legacy-wishes="true"><section class="hero"><nav class="actions"><a href="./gift-tasks.html">✅ Checklisten anlegen</a></nav></section><section id="login"><a href="./index.html">Zur Anmeldung</a></section><article class="gift-card"><a href="./index.html">Zur Anmeldung</a></article></body></html>');
+ const links=[...document.querySelectorAll('a')];
+ applyWishLocale(document,'en');
+ assert.deepEqual(links.map(link=>link.textContent),['✅ Create checklists','Go to sign-in','Zur Anmeldung']);
+ assert.deepEqual(links.map(link=>link.getAttribute('href')),['./gift-tasks.html','./index.html','./index.html']);
+ applyWishLocale(document,'de');
+ assert.deepEqual(links.map(link=>link.textContent),['✅ Checklisten anlegen','Zur Anmeldung','Zur Anmeldung']);
 });
 test('wishlist catalogue includes public, planning, social and account UI without free-text translation',()=>{
  assert.ok(Object.keys(WISHES_COPY).length>=160);
