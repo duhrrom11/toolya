@@ -440,9 +440,19 @@ function exportMemory(){
 }
 function displayMemoryDate(entry){
  const fallback=entry.date||'';
- if(!entry.iso)return fallback; // Older notes have only the original date.
- const date=new Date(entry.iso);
- return Number.isFinite(date.getTime())?date.toLocaleDateString(proEn()?'en-GB':'de-DE'):fallback;
+ if(entry.iso){
+  const date=new Date(entry.iso);
+  if(Number.isFinite(date.getTime()))return date.toLocaleDateString(proEn()?'en-GB':'de-DE');
+ }
+ // Legacy notes have a German date string without ISO. Only reformat
+ // verified calendar dates; leave custom/invalid stored text untouched.
+ if(!proEn())return fallback;
+ const found=/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(fallback);
+ if(!found)return fallback;
+ const day=Number(found[1]),month=Number(found[2]),year=Number(found[3]);
+ const date=new Date(Date.UTC(year,month-1,day,12));
+ if(date.getUTCFullYear()!==year||date.getUTCMonth()!==month-1||date.getUTCDate()!==day)return fallback;
+ return date.toLocaleDateString('en-GB',{timeZone:'UTC'});
 }
 function renderMemory(){
  const host=$('bsp-memory-list');if(!host)return;host.replaceChildren();
