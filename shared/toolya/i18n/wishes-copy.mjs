@@ -35,7 +35,7 @@ export const WISHES_COPY=Object.freeze({
  "Heute gut aufgestellt": "On track today",
  "Keine offenen Aufgaben mit Fälligkeit bis heute.": "No open tasks due by today.",
  "Seit ": "Overdue by ",
- " Tagen überfällig": " days",
+ " Tagen überfällig": " days past due",
  " · Priorität ": " · Priority ",
  "hoch": "high",
  "mittel": "medium",
