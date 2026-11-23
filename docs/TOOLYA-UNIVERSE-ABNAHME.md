@@ -4,6 +4,12 @@
 
 Im Checkout `npm ci` ausführen, dann bei Bedarf `npx playwright install chromium`. `node tests/universe/browser.cjs --demo` öffnet die echte Oberfläche mit einem synthetischen Konto. Die Vorschau schreibt in einen flüchtigen Testzustand und blockiert externe Anfragen. Die Tool-Links zeigen die realen Pfade, die vorhandenen Tool-Backends werden in dieser Vorschau nicht eingerichtet. Der Testmodus ohne `--demo` sichert Screenshots unter `test-results`. Die CI stellt diese bei erfolgreichem Browserlauf als Artefakt bereit.
 
+### Vorschau mit separatem Supabase-Testprojekt
+
+Sobald ein getrenntes Testprojekt mit dem Kandidaten-Schema und synthetischen Daten verfügbar ist, `TOOLYA_PREVIEW_SUPABASE_REF` und `TOOLYA_PREVIEW_SUPABASE_KEY` in der lokalen Shell auf dessen Projektreferenz und veröffentlichbaren Schlüssel setzen. `node scripts/universe-preview.cjs` öffnet den lokalen Server standardmäßig unter `http://127.0.0.1:4173`. Bei Bedarf `TOOLYA_PREVIEW_PORT` setzen. Die URL `http://127.0.0.1:4173/**` mit dem gewählten Port in Supabase Auth für Test-Weiterleitungen zulassen. Für E-Mail-Tests ein kontrolliertes Testpostfach verwenden.
+
+Das Skript blockiert die beiden bestehenden Projekte beim Start und ersetzt Datenbankverweise sowie Toolya-Rückkehrlinks in ausgelieferten Dateien. Die Dateien im Checkout werden dabei nicht verändert. Der Server bindet ausschließlich an `127.0.0.1` und beschränkt Browser-API-Verbindungen auf die Vorschau und das Testprojekt. Service Worker sind für diese Abnahme deaktiviert. Die Vorschau ist für Registrierung, E-Mail-Bestätigung, Passwort-Reset, Rückkehr zum Tool und Spielstand gedacht. Die Prüfung `node --test tests/universe/preview.test.cjs` verwendet eine erfundene Projektreferenz und kontaktiert ausschließlich den lokalen Server. Sie ersetzt keinen Test des gehosteten E-Mail-Versands.
+
 ## Konten und Spielstand
 
 - Die Registrierungsoberflächen führen zum gemeinsamen Formular unter `/account/register.html`. Login und Passwortwiederherstellung bleiben in ihren bestehenden Oberflächen. Die Anmeldung vom privaten Tool aus akzeptiert nur bekannte interne Rückkehrpfade und übernimmt deren Query und Fragment. Die Nachlass-Anmeldung für das Öffnen des verschlüsselten Tresors bleibt separat. Bestehende verifizierte Konten können ihr Profil ergänzen.

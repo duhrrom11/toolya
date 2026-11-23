@@ -5,6 +5,7 @@ on:
       - '.github/workflows/toolya-universe.yml'
       - 'account/**'
       - 'assets/toolya/universe/**'
+      - 'scripts/universe-preview.cjs'
       - 'shared/toolya/**'
       - 'supabase/migrations/*_toolya_universe.sql'
       - 'tests/universe/**'
@@ -80,6 +81,8 @@ jobs:
       - name: Verify original mascots
         working-directory: assets/toolya/originals
         run: sha256sum --check SHA256SUMS
+      - name: Verify the isolated preview blocks existing backends
+        run: node --test tests/universe/preview.test.cjs
       - name: Test signed-in and signed-out Universe and registration
         run: node tests/universe/browser.cjs
       - uses: actions/upload-artifact@v4
