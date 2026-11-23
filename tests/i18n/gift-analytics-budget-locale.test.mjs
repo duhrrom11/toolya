@@ -57,3 +57,21 @@ test('language change repaints editor labels without resetting any unsaved value
  assert.match(source,/o\.title/);
  assert.match(source,/g\.title/);
 });
+
+test('historical closing details repaint in place and preserve immutable snapshots',()=>{
+ const body=source.slice(source.indexOf('function repaintClosedYearLabels(){'),source.indexOf('function renderClosings(){'));
+ assert.match(body,/closingHeading\(c\)/);
+ assert.match(body,/closingSummary\(c\)/);
+ assert.match(body,/historicalGiftLine\(g\)/);
+ assert.match(body,/historicalTaskLine\(t\)/);
+ assert.match(body,/ui\('Gespeicherte Abschlussdetails anzeigen'\)/);
+ assert.doesNotMatch(body,/\.replaceChildren\(|\.value\s*=|\.open\s*=/);
+ assert.doesNotMatch(body,/db\.from\(|db\.rpc\(/);
+ assert.match(source,/document\.addEventListener\('toolya:wishes-locale-change',\(\)=>\{if\(userId\)repaintClosedYearLabels\(\)\}\)/);
+ assert.match(source,/historicalGiftLabels\[g\.status\]/);
+ assert.match(source,/historicalTaskLabels\[t\.status\]/);
+ for(const [de,en]of [['💡 Idee','💡 Idea'],['📝 Geplant','📝 Planned'],['🎁 Verschenkt','🎁 Given']]){
+  assert.equal(wishesText(de,'en'),en);
+  assert.equal(wishesText(en,'de'),de);
+ }
+});
