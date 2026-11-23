@@ -40,6 +40,7 @@ jobs:
         run: |
           node --check scripts/i18n-quality.cjs
           node --check tests/i18n/quality-browser.cjs
+          node --check tests/i18n/wishes-editorial-browser.cjs
       - name: Check existing and new DE/EN translations offline
         run: |
           npm run test:i18n
@@ -49,7 +50,9 @@ jobs:
       - name: Inspect language choices and mobile layout in local Chromium
         env:
           CHROME_PATH: /usr/bin/google-chrome
-        run: node tests/i18n/quality-browser.cjs
+        run: |
+          node tests/i18n/quality-browser.cjs
+          node tests/i18n/wishes-editorial-browser.cjs
       - name: Upload translation audit evidence
         if: always()
         uses: actions/upload-artifact@v4
