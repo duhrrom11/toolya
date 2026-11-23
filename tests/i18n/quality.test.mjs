@@ -69,6 +69,10 @@ test('static audit reports every tool, all bilingual marketing pages, and review
    read('docs/i18n/quality-config.json').toolRoutes.map(x=>x.slug).sort());
  assert.ok(report.marketing.every(x=>x.langs.en==='en'&&x.langs.de==='de'));
  assert.ok(report.tools.every(x=>Number.isInteger(x.selector.staticMatches)));
+ assert.equal(report.tools.find(x=>x.slug==='wishes').catalog.namespace,'wishes');
+ assert.equal(report.tools.find(x=>x.slug==='estate').catalog.namespace,'estate');
+ assert.ok(report.tools.find(x=>x.slug==='wishes').catalog.translatedKeys>300);
+ assert.ok(report.tools.find(x=>x.slug==='estate').catalog.translatedKeys>100);
  assert.equal(report.validation.ok,true,
    JSON.stringify(report.validation.critical.slice(0,8)));
  assert.ok(report.interpretation.includes('NOT confirmed'));
