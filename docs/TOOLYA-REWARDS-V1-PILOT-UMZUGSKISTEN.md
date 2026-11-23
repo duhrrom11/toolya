@@ -1,3 +1,5 @@
+> **WICHTIGE AKTUALISIERUNG (23.11.2026):** Die produktive Definition von `public.toolya_save_snapshot` und die RLS-/GRANT-Regeln von `public.user_data` wurden inzwischen lesend überprüft. Angemeldete Nutzer besitzen **direkte INSERT-/UPDATE-Rechte auf ihre eigenen Snapshots**; `toolya_save_snapshot` ist nicht der einzige Schreibweg. Ein bloßer Snapshot-Diff ist deshalb kein verlässlicher exklusiver Reward-Trigger. Der bisherige A/B-Architekturvorschlag unten ist **vorläufig und wird durch die neuere [Supabase-RPC-Prüfung](TOOLYA-REWARDS-V1-SUPABASE-RPC-PRUEFUNG.md) präzisiert**. Keine ungesicherten XP-Triggers auf generische Speichervorgänge bauen.
+
 # Toolya Rewards V1 – Pilotkonzept Umzugskisten
 
 **Stand:** 23.11.2026 · **Status:** codebasierter Pilot-Audit und Implementierungsdesign, keine produktive Umsetzung.  
