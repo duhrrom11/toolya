@@ -1,5 +1,15 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+ "🌈 Weitere Wunschwelten": "🌈 More wish lists",
+ "🏠 Mein Feed": "🏠 My feed",
+ "Neu seit Besuch": "New since last visit",
+ "Termine werden geladen …": "Loading dates…",
+ "Anlässe": "Occasions",
+ "Privat · Mein Überblick": "Private · My overview",
+ "Benachrichtigungen werden geladen …": "Loading notifications…",
+ "Für wen?": "For whom?",
+ "Anlässe filtern": "Filter occasions",
+ "Deine Social-Zahlen": "Your social metrics",
  "Entdecke öffentliche Sammlungen, lerne ihre Ersteller kennen und finde neue Geschenkideen. Private Sammlungen werden nicht angezeigt.": "Explore public collections, meet their creators and discover new gift ideas. Private collections are not displayed.",
  "Meine Merkliste öffnen ↗": "Open my bookmarks ↗",
  "Neue öffentliche Sammlungen gefolgter Profile, deine gemerkten Wunschwelten und passende Inspiration an einem Ort.": "New public collections from profiles you follow, your bookmarked wish lists and relevant inspiration in one place.",
