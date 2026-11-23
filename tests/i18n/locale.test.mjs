@@ -44,3 +44,12 @@ test('new English public guide paths keep their German originals',async()=>{
 });
 
 test('dashboard guide has both locale-specific paths',async()=>{const {localizedPublicUrl}=await import('../../shared/toolya/i18n/locale.mjs');assert.equal(localizedPublicUrl('en','toolya-dashboard'),'/en/toolya-dashboard/');assert.equal(localizedPublicUrl('de','toolya-dashboard'),'/toolya-dashboard/');});
+
+test('malformed locale preferences cannot select a language', () => {
+  for (const value of ['en--US', 'en<script>', 'de/../', 'en-', 'en-US-extra-long-segment', 'en US', 'en-💥']) {
+    assert.equal(normalizeLocale(value), null, value);
+  }
+  assert.equal(normalizeLocale('EN_us'), 'en');
+  assert.equal(normalizeLocale('de-CH'), 'de');
+  assert.equal(resolveLocale({saved:'en<script>',browser:['de-DE']}), 'de');
+});
