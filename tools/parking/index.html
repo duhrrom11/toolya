@@ -178,7 +178,7 @@
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">📍</div>
-                <div><p class="text-xs text-gray-500" data-tool-en="GPS location">GPS-Standort</p><h3 id="statGps" class="text-xs font-bold text-blue-600">Nicht gespeichert</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="GPS location">GPS-Standort</p><h3 id="statGps" class="text-xs font-bold text-blue-600" data-tool-en="Not saved">Nicht gespeichert</h3></div>
             </div>
         </div>
 
@@ -473,6 +473,21 @@
             }
         }
 
+        function refreshParkingGpsLocale() {
+            const status = document.getElementById('statGps');
+            if (!status) return;
+            const known = {
+                'Gespeichert ✓': 'Saved ✓',
+                'Nicht gespeichert': 'Not saved'
+            };
+            const reverse = Object.fromEntries(Object.entries(known).map(([de, en]) => [en, de]));
+            const current = status.textContent.trim();
+            if (Object.hasOwn(known, current) || Object.hasOwn(reverse, current)) {
+                const german = Object.hasOwn(reverse, current) ? reverse[current] : current;
+                status.textContent = window.__toolyaUILocale === 'en' ? known[german] : german;
+            }
+        }
+
         async function stopTimer() {
             clearInterval(timerInterval);
             activeEndTime = null;
@@ -534,7 +549,7 @@
                 navigator.geolocation.getCurrentPosition(
                     position=>{
                         currentGps={lat:position.coords.latitude,lng:position.coords.longitude};
-                        document.getElementById('statGps').innerText='Gespeichert ✓';
+                        document.getElementById('statGps').innerText=window.__toolyaUILocale === 'en' ? 'Saved ✓' : 'Gespeichert ✓';
                         void finish(currentGps);
                     },
                     ()=>{void finish(null);},
@@ -666,6 +681,7 @@
 
         document.addEventListener('toolya:locale-change', () => {
             refreshParkingTimerLocale();
+            refreshParkingGpsLocale();
             if (parkingCloudReady) renderParkingList();
         });
 
