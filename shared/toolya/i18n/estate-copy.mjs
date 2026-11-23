@@ -1,6 +1,20 @@
 /* Source-exact presentation copy only for the encrypted-estate views.
    Key material, documents, ciphertext and form data are never translated. */
 export const ESTATE_COPY=Object.freeze({
+ "Dein Tresorpasswort schützt deine verschlüsselten Daten auch auf einem neuen Gerät. Bei einem neuen Tresor entspricht es zunächst deinem Konto-Passwort. Bewahre es gut auf: Ein Zurücksetzen des Konto-Passworts entschlüsselt den Tresor nicht.": "Your vault password also protects your encrypted data on a new device. For a new vault, it initially matches your account password. Keep it safe: resetting your account password will not decrypt the vault.",
+ "Dein persönlicher Schlüssel": "Your personal key",
+ "Schlüssel der zweiten Person": "Second person's key",
+ "← Zurück zum digitalen Nachlass": "← Back to digital estate",
+ "Du kannst deine Unterlagen verschlüsselt an eine vertraute Person weitergeben.": "You can share an encrypted copy of your documents with someone you trust.",
+ "Sobald du die Dateien übergeben hast, kannst du den Zugriff auf diese Kopie nicht mehr zurücknehmen.": "Once you have handed over the files, you cannot revoke access to that copy.",
+ "Der private Schlüssel wird mit einem eigenen Passwort verschlüsselt. Speichere die Schlüsseldatei und das Passwort getrennt und sicher; teile ausschließlich den öffentlichen Schlüssel. Bereits erstellte unverschlüsselte Schlüsseldateien aus der Vorgängerversion werden nicht mehr akzeptiert.": "The private key is encrypted with a separate password. Store the key file and password securely in different places; share only the public key. Previously created unencrypted key files from the older version are no longer accepted.",
+ "Passwort für den privaten Schlüssel (mindestens 16 Zeichen)": "Password for the private key (at least 16 characters)",
+ "Passwort bestätigen": "Confirm password",
+ "Öffentliche Schlüsseldatei des Erben": "Beneficiary's public key file",
+ "Ich möchte jetzt eine vollständige Kopie meiner Nachlasseinträge freigeben. Mir ist bewusst, dass ich diese Kopie später nicht widerrufen kann.": "I want to share a complete copy of my estate records now. I understand that I cannot revoke access to this copy later.",
+ "Privater Erbenschlüssel": "Beneficiary's private key",
+ "Verschlüsseltes Nachlasspaket": "Encrypted estate package",
+ "Passwort für den privaten Schlüssel": "Private key password",
  "Zum Inhalt": "Skip to content",
  "Anleitung zum digitalen Nachlass": "Digital estate guide",
  "E-Mail-Adresse": "Email address",
