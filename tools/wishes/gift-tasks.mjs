@@ -20,18 +20,18 @@ function reset(){editing=null;$('form').reset();$('formTitle').textContent='➕ 
 function render(){renderWeek();renderChecklistProgress();renderYearBalance();
  const reminders=$('reminders');reminders.replaceChildren();
  const due=tasks.filter(t=>!t.archived_at&&t.status!=='done'&&t.due_date&&days(t.due_date)<=t.reminder_days).sort((a,b)=>days(a.due_date)-days(b.due_date)||a.priority-b.priority);
- if(!due.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine fälligen Erinnerungen.';reminders.append(p)}
- for(const t of due.slice(0,15)){const p=document.createElement('p');p.className='warn';p.textContent=(days(t.due_date)<0?'⚠️ '+(-days(t.due_date))+' Tage überfällig':days(t.due_date)===0?'🔔 Heute fällig':'🔔 In '+days(t.due_date)+' Tagen')+' · '+t.title;reminders.append(p)}
+ if(!due.length){const p=document.createElement('p');p.className='empty';p.textContent=ui('Keine fälligen Erinnerungen.');reminders.append(p)}
+ for(const t of due.slice(0,15)){const p=document.createElement('p');p.className='warn';p.textContent=(days(t.due_date)<0?'⚠️ '+(-days(t.due_date))+ui(' Tage überfällig'):days(t.due_date)===0?ui('🔔 Heute fällig'):ui('🔔 In ')+days(t.due_date)+ui(' Tagen'))+' · '+t.title;reminders.append(p)}
  const root=$('tasks');root.replaceChildren();const filter=$('filter').value;
  const visible=tasks.filter(t=>!t.archived_at&&(filter==='all'||(filter==='done'?t.status==='done':t.status!=='done'))).sort((a,b)=>Number(a.status==='done')-Number(b.status==='done')||((a.due_date?days(a.due_date):99999)-(b.due_date?days(b.due_date):99999))||a.priority-b.priority);
- if(!visible.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine Aufgaben in dieser Ansicht.';root.append(p)}
+ if(!visible.length){const p=document.createElement('p');p.className='empty';p.textContent=ui('Keine Aufgaben in dieser Ansicht.');root.append(p)}
  for(const t of visible){
   const item=document.createElement('article'),h=document.createElement('h3');item.className='item';h.textContent=t.title;
   const occasion=occasions.find(o=>o.id===t.occasion_id),gift=gifts.find(g=>g.id===t.gift_plan_id);
   const meta=document.createElement('p');meta.textContent=[ui(labels[t.status]),ui(priorities[t.priority]),t.due_date?ui('Fällig: ')+new Date(t.due_date+'T12:00:00').toLocaleDateString(locale()):ui('Ohne Fälligkeit'),occasion?.title,gift?.title].filter(Boolean).join(' · ');
   const controls=document.createElement('div');controls.className='controls';
   const edit=document.createElement('button');edit.type='button';edit.textContent=ui('Bearbeiten');edit.addEventListener('click',()=>{editing=t.id;$('title').value=t.title;$('occasion').value=t.occasion_id||'';refreshGifts();$('gift').value=t.gift_plan_id||'';$('due').value=t.due_date||'';$('reminder').value=t.reminder_days;$('priority').value=t.priority;$('taskStatus').value=t.status;$('notes').value=t.notes||'';$('formTitle').textContent='✏️ Aufgabe bearbeiten';$('save').textContent='Änderungen speichern';$('cancel').hidden=false;$('form').scrollIntoView({behavior:'smooth',block:'start'})});
-  const toggle=document.createElement('button');toggle.type='button';toggle.textContent=ui(t.status==='done'?'Wieder öffnen':'✓ Erledigt');toggle.addEventListener('click',async()=>{toggle.disabled=true;pendingWrites++;const next=t.status==='done'?'open':'done';const {error}=await db.from('wishlist_gift_tasks').update({status:next,updated_at:new Date().toISOString()}).eq('id',t.id).eq('user_id',user.id);toggle.disabled=false;settleWrite();if(error){$('status').textContent='Statuswechsel fehlgeschlagen.';return}t.status=next;render();$('status').textContent='Aufgabe aktualisiert.'});
+  const toggle=document.createElement('button');toggle.type='button';toggle.textContent=ui(t.status==='done'?'Wieder öffnen':'✓ Erledigt');toggle.addEventListener('click',async()=>{toggle.disabled=true;pendingWrites++;const next=t.status==='done'?'open':'done';const {error}=await db.from('wishlist_gift_tasks').update({status:next,updated_at:new Date().toISOString()}).eq('id',t.id).eq('user_id',user.id);toggle.disabled=false;if(error){settleWrite();$('status').textContent='Statuswechsel fehlgeschlagen.';return}t.status=next;render();$('status').textContent='Aufgabe aktualisiert.';settleWrite()});
   const remove=document.createElement('button');remove.type='button';remove.textContent=ui('Löschen');remove.addEventListener('click',async()=>{if(!confirm('Aufgabe wirklich löschen?'))return;remove.disabled=true;pendingWrites++;const {error}=await db.from('wishlist_gift_tasks').delete().eq('id',t.id).eq('user_id',user.id);if(error){remove.disabled=false;settleWrite();$('status').textContent='Löschen fehlgeschlagen.';return}tasks=tasks.filter(x=>x.id!==t.id);if(editing===t.id)reset();render();$('status').textContent='Aufgabe gelöscht.';settleWrite()});
   controls.append(edit,toggle,remove);item.append(h,meta,controls);root.append(item);
  }
@@ -110,11 +110,11 @@ function renderChecklistProgress(){
  const root=$('checklistProgress');root.replaceChildren();const grouped=new Map();
  for(const task of tasks){if(!task.checklist_key||!task.occasion_id)continue;const year=task.checklist_year===null||task.checklist_year===undefined?'legacy':String(task.checklist_year),key=task.occasion_id+'|'+year;
  const bucket=grouped.get(key)||{occasionId:task.occasion_id,year,total:0,done:0,archived:0};bucket.total++;if(task.status==='done')bucket.done++;if(task.archived_at)bucket.archived++;grouped.set(key,bucket)}
- if(!grouped.size){const p=document.createElement('p');p.className='empty';p.textContent='Noch keine Aufgabenpakete erstellt.';root.append(p);return}
+ if(!grouped.size){const p=document.createElement('p');p.className='empty';p.textContent=ui('Noch keine Aufgabenpakete erstellt.');root.append(p);return}
  for(const group of [...grouped.values()].sort((a,b)=>b.year.localeCompare(a.year))){const occasion=occasions.find(o=>o.id===group.occasionId);if(!occasion)continue;
- const row=document.createElement('div');row.className='checklist-row';const heading=document.createElement('strong');heading.textContent=occasion.title+' · '+(group.year==='legacy'?ui('Bisherige Checkliste (ohne Jahr)'):group.year)+(group.archived===group.total?' · 📦 Archiviert':group.archived?ui(' · teilweise archiviert'):'');
+ const row=document.createElement('div');row.className='checklist-row';const heading=document.createElement('strong');heading.textContent=occasion.title+' · '+(group.year==='legacy'?ui('Bisherige Checkliste (ohne Jahr)'):group.year)+(group.archived===group.total?ui(' · 📦 Archiviert'):group.archived?ui(' · teilweise archiviert'):'');
  const meter=document.createElement('progress');meter.className='checklist-meter';meter.max=group.total;meter.value=group.done;meter.setAttribute('aria-label',ui('Checklistenfortschritt ')+occasion.title+' '+group.year);
- const summary=document.createElement('p');summary.textContent=group.done+' von '+group.total+' erledigt · '+Math.round(group.done/group.total*100)+' %';row.append(heading,meter,summary);root.append(row)}
+ const summary=document.createElement('p');summary.textContent=group.done+ui(' von ')+group.total+ui(' erledigt · ')+Math.round(group.done/group.total*100)+' %';row.append(heading,meter,summary);root.append(row)}
 }
 function setupYears(){
  const now=new Date().getFullYear(),select=$('checklistYear');
@@ -151,17 +151,17 @@ function renderYearBalance(){
  for(const b of [...grouped.values()].sort((a,b)=>String(b.year??'').localeCompare(String(a.year??'')))){
  const occasion=occasions.find(o=>o.id===b.occasionId);if(!occasion)continue;
  const box=document.createElement('div');box.className='year-summary';
- const heading=document.createElement('strong');heading.textContent=occasion.title+' · '+(b.year??'Altbestand');
+ const heading=document.createElement('strong');heading.textContent=occasion.title+' · '+(b.year??ui('Altbestand'));
  const info=document.createElement('p');info.textContent=ui('Erledigt: ')+b.done+'/'+b.total+ui(' · Offen: ')+(b.total-b.done)+ui(' · Überfällig: ')+b.overdue+ui(' · Archiviert: ')+b.archived;
  box.append(heading,info);balance.append(box)}
- if(!grouped.size){const p=document.createElement('p');p.className='empty';p.textContent='Noch keine Jahresbilanzen vorhanden.';balance.append(p)}
+ if(!grouped.size){const p=document.createElement('p');p.className='empty';p.textContent=ui('Noch keine Jahresbilanzen vorhanden.');balance.append(p)}
 }
 function renderRolloverSelection(){
  const root=$('rolloverSelection');root.replaceChildren();const id=$('checklistOccasion').value,year=Number($('checklistYear').value)-1;
  const occasion=occasions.find(o=>o.id===id);
- if(!occasion?.repeats_yearly){const p=document.createElement('p');p.textContent='Bitte einen jährlich wiederkehrenden Anlass wählen.';root.append(p);return}
+ if(!occasion?.repeats_yearly){const p=document.createElement('p');p.textContent=ui('Bitte einen jährlich wiederkehrenden Anlass wählen.');root.append(p);return}
  const candidates=tasks.filter(t=>t.occasion_id===id&&t.checklist_year===year&&t.checklist_key);
- if(!candidates.length){const p=document.createElement('p');p.textContent='Keine Checklistenaufgaben aus '+year+' vorhanden.';root.append(p);return}
+ if(!candidates.length){const p=document.createElement('p');p.textContent=ui('Keine Checklistenaufgaben aus ')+year+ui(' vorhanden.');root.append(p);return}
  for(const t of candidates){const label=document.createElement('label'),checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.value=t.id;checkbox.checked=true;const text=document.createElement('span');text.textContent=t.title+' · '+(t.due_date||ui('ohne Fälligkeit'))+' · '+ui(t.status==='done'?'erledigt':'offen');label.append(checkbox,text);root.append(label)}
 }
 $('checklistOccasion').addEventListener('change',renderRolloverSelection);
