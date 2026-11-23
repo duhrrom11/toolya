@@ -31,6 +31,11 @@ function localizeProControls(){
   proOriginalText.set(node,source);
   node.textContent=window.__toolyaUILocale==='en'?proStaticCopy.get(source):source;
  }
+ // Translate only the untouched initial hint, never an action-generated status.
+ for(const [id,de,en] of [['bsp-3d-status','Hier erscheint deine drehbare Backform.','Your interactive baking pan appears here.'],['bsp-ocr-status','Wähle Kamera oder Foto.','Choose camera or photo.']]){
+  const node=$(id);
+  if(node&&(node.textContent===de||node.textContent===en))node.textContent=proEn()?en:de;
+ }
  const input=$('bsp-recipe-text');if(input)input.placeholder=window.__toolyaUILocale==='en'?'Paste recipe or ingredient list here…':'Rezept oder Zutatenliste hier einfügen …';
  const canvas=$('bsp-3d');if(canvas)canvas.setAttribute('aria-label',window.__toolyaUILocale==='en'?'Interactive 3D pan. Rotate with mouse, touch or arrow keys.':'Interaktive 3D-Backform, mit Maus oder Touch drehen, mit Pfeiltasten drehen');
  const video=$('bsp-camera-video');if(video)video.setAttribute('aria-label',window.__toolyaUILocale==='en'?'Camera view for capturing your recipe':'Kamerabild zum Aufnehmen deines Rezepts');
