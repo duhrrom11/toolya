@@ -145,7 +145,7 @@ function renderOccasionPlanning(){
  renderWeek();
 }
 async function main(){
- const {data,error}=await db.auth.getUser(),user=data?.user;if(error||!user){$('login').hidden=false;$('status').textContent='Bitte anmelden.';return}
+ const {data,error}=await db.auth.getUser(),user=data?.user;if(error||!user){$('login').hidden=false;$('status').textContent=ui('Bitte anmelden.');return}
  const [closings,occasions,tasks]=await Promise.all([
  allRows('wishlist_gift_year_closings','closing_year,gift_count,gifted_count,actual_total,budget_total,gifts_snapshot,budgets_snapshot,tasks_snapshot,task_count,task_done_count',user.id,'closing_year'),
  allRows('wishlist_occasions','id,title,occasion_date,repeats_yearly,reminder_days,budget_amount',user.id,'occasion_date'),
@@ -153,9 +153,9 @@ async function main(){
  ]);
  taskUserId=user.id;await loadTaskEvents();weeklyTasks=tasks;occasionNames=new Map(occasions.map(o=>[o.id,o.title]));renderWeeklyTasks();renderDaily();
  planningSnapshot={closings,occasions};renderOccasionPlanning();
- assistantReady=true;$('content').hidden=false;$('status').textContent='Private Planungsvorschläge geladen. Keine Daten wurden geändert.';
+ assistantReady=true;$('content').hidden=false;$('status').textContent=ui('Private Planungsvorschläge geladen. Keine Daten wurden geändert.');
 }
-main().catch(()=>{$('status').textContent='Die privaten Planungsvorschläge konnten nicht vollständig geladen werden. Bitte später erneut versuchen.'});
+main().catch(()=>{$('status').textContent=ui('Die privaten Planungsvorschläge konnten nicht vollständig geladen werden. Bitte später erneut versuchen.')});
 
 // Repaint read-only task summaries after DE/EN changes; defer while an update is pending.
-document.addEventListener('toolya:wishes-locale-change',()=>{if(!assistantReady)return;if(taskBusy||checklistBusy){localePending=true;return}refreshTaskDisplay()});
+document.addEventListener('toolya:wishes-locale-change',()=>{if(!assistantReady){const status=$('status');if(status)status.textContent=ui(status.textContent);return}if(taskBusy||checklistBusy){localePending=true;return}refreshTaskDisplay();$('status').textContent=ui('Private Planungsvorschläge geladen. Keine Daten wurden geändert.')});
