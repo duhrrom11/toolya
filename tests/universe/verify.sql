@@ -149,3 +149,22 @@ begin
   end if;
 end $$;
 reset role;
+
+insert into auth.users (id, email, raw_user_meta_data) values
+ ('00000000-0000-4000-8000-000000000005', 'pending@example.invalid',
+  '{"toolya_profile":{"first":"Pending","last":"Fixture"}}');
+do $$
+begin
+  if (select p.profile->>'first'
+      from auth.users u left join toolya_universe.players p on p.user_id = u.id
+      where u.id = '00000000-0000-4000-8000-000000000005'
+        and lower(u.email) = lower('pending@example.invalid')
+        and u.email_confirmed_at is null and not u.is_anonymous) is distinct from 'Pending' then
+    raise exception 'The operator could not find the pending profile';
+  end if;
+  delete from auth.users where id = '00000000-0000-4000-8000-000000000005';
+  if exists (select 1 from toolya_universe.players where user_id = '00000000-0000-4000-8000-000000000005')
+      or not exists (select 1 from toolya_universe.players where user_id = '00000000-0000-4000-8000-000000000001') then
+    raise exception 'Pending account deletion failed to remove exactly its own profile';
+  end if;
+end $$;

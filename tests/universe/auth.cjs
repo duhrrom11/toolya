@@ -1,6 +1,7 @@
 // Real GoTrue signup, email confirmation and recovery in a disposable local database.
 const assert = require('node:assert/strict');
 const { spawn, spawnSync } = require('node:child_process');
+const { once } = require('node:events');
 const { readFileSync, readdirSync } = require('node:fs');
 const net = require('node:net');
 
@@ -11,7 +12,7 @@ assert.equal(database.hostname, '127.0.0.1');
 assert.equal(database.pathname, '/universe_auth_fixture');
 const api = 'http://127.0.0.1:55260';
 const rest = 'http://127.0.0.1:55262';
-const redirect = 'http://127.0.0.1:4173/index.html?auth=required&next=%2Ftools%2Fmoving%2F';
+const httpsPreview = 'https://toolya-universe-preview.example.invalid';
 const jwtSecret = 'synthetic-jwt-key-never-used-outside-local-auth-fixture';
 
 function sql(query) {
@@ -138,7 +139,8 @@ async function run() {
       GOTRUE_DB_DATABASE_URL: backend.href,
       GOTRUE_JWT_SECRET: jwtSecret,
       GOTRUE_JWT_DEFAULT_GROUP_NAME: 'authenticated',
-      GOTRUE_SITE_URL: 'http://127.0.0.1:4173', GOTRUE_URI_ALLOW_LIST: 'http://127.0.0.1:4173/**',
+      GOTRUE_SITE_URL: 'http://127.0.0.1:4173',
+      GOTRUE_URI_ALLOW_LIST: 'http://127.0.0.1:4173/**,' + httpsPreview + '/index.html[?]**',
       API_EXTERNAL_URL: api, GOTRUE_API_HOST: '127.0.0.1', GOTRUE_API_PORT: '55260',
       GOTRUE_EXTERNAL_EMAIL_ENABLED: 'true', GOTRUE_MAILER_AUTOCONFIRM: 'false',
       GOTRUE_SMTP_HOST: '127.0.0.1', GOTRUE_SMTP_PORT: '55261',
@@ -158,7 +160,10 @@ async function run() {
     const credentials = { email: 'new-universe@example.invalid', password: 'synthetic-local-only-password' };
     assert((await post('/signup', credentials)).status >= 400, 'GoTrue must reject missing names');
     const profile = { first: 'Éva', last: 'Nguyễn', country: 'DE', avatar: null };
-    const signup = await post('/signup?redirect_to=' + encodeURIComponent(redirect), {
+    const confirmRedirect = new URL('/index.html?auth=required', httpsPreview);
+    confirmRedirect.searchParams.set('next', '/tools/moving/?fixture=1#anchor');
+    confirmRedirect.searchParams.set('lang', 'en');
+    const signup = await post('/signup?redirect_to=' + encodeURIComponent(confirmRedirect.href), {
       ...credentials, data: { toolya_profile: profile },
     });
     assert(signup.ok, 'GoTrue must accept valid names');
@@ -166,7 +171,9 @@ async function run() {
     assert.equal((await post('/token?grant_type=password', credentials)).status, 400);
     assert.equal(messages.length, 1);
     const confirmedLocation = await openMailLink(messages[0]);
-    assert.equal(confirmedLocation.searchParams.get('next'), '/tools/moving/');
+    assert.equal(confirmedLocation.origin + confirmedLocation.pathname, confirmRedirect.origin + confirmRedirect.pathname);
+    assert.equal(confirmedLocation.searchParams.get('next'), '/tools/moving/?fixture=1#anchor');
+    assert.equal(confirmedLocation.searchParams.get('lang'), 'en');
     const confirmationToken = new URLSearchParams(confirmedLocation.hash.slice(1)).get('access_token');
     assert(confirmationToken, 'Confirmation must issue a session for the return flow');
     const initialClaims = JSON.parse(Buffer.from(confirmationToken.split('.')[1], 'base64url'));
@@ -197,7 +204,19 @@ async function run() {
       console.log('PostgREST: confirmed GoTrue session, anonymous denial, private schema, quest persistence and leaderboard opt-in verified');
     }
 
-    const recoveryRedirect = new URL(redirect);
+    const stopped = once(server, 'exit');
+    server.kill();
+    await stopped;
+    server = spawn(authBinary, ['serve'], { env: { ...env, GOTRUE_DISABLE_SIGNUP: 'true' }, stdio: 'ignore' });
+    await waitReady(api + '/health', 'GoTrue with registration paused');
+    const pausedSignup = await post('/signup', {
+      ...credentials, email: 'paused-universe@example.invalid', data: { toolya_profile: profile },
+    });
+    assert.equal((await pausedSignup.json()).error_code, 'signup_disabled');
+    assert.equal((await post('/token?grant_type=password', credentials)).status, 200);
+    assert.equal(messages.length, 1);
+
+    const recoveryRedirect = new URL('/index.html?auth=required', httpsPreview);
     const toolPath = '/tools/moving/?lang=en#room';
     recoveryRedirect.searchParams.set('next', toolPath);
     recoveryRedirect.searchParams.set('lang', 'en');
@@ -229,7 +248,7 @@ async function run() {
       assert.equal(state.status, 200);
       assert.deepEqual(await state.json(), savedState);
     }
-    console.log('GoTrue recovery: local reset email, original tool link, new credentials and the same account verified');
+    console.log('GoTrue recovery: registration paused, existing login and HTTPS reset email verified');
   } finally {
     if (dataApi) dataApi.kill();
     if (server) server.kill();
