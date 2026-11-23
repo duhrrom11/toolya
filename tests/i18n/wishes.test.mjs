@@ -433,3 +433,116 @@ test('Wishes year-end review locale update only repaints read-only snapshots and
  assert.match(source,/o\.title/);
  assert.match(source,/g\.title/);
 });
+
+
+test('remaining Wishes navigation and status copy is source-exact and reversible',()=>{
+ const pages=["assistant","bookmarks","cockpit","dashboard","discover","feed","notifications","occasions","planner","profile","public","report","reservations","social"];
+ const source=pages.map(page=>readFileSync(new URL('../../tools/wishes/'+page+'.html',import.meta.url),'utf8')).join('\n');
+ const pairs=[
+ [
+  "✨ Geschenkideen entdecken",
+  "✨ Discover gift ideas"
+ ],
+ [
+  "anmelden",
+  "sign in"
+ ],
+ [
+  "Tages- & Wochenplanung",
+  "Daily & weekly planning"
+ ],
+ [
+  "🎀 Reservierungen",
+  "🎀 Reservations"
+ ],
+ [
+  "✅ Geschenk-To-dos",
+  "✅ Gift to-dos"
+ ],
+ [
+  "📈 Jahresstatistik",
+  "📈 Annual statistics"
+ ],
+ [
+  "Aufgabenpakete verwalten ↗",
+  "Manage task bundles ↗"
+ ],
+ [
+  "Eigene Reservierungen verwalten ↗",
+  "Manage my reservations ↗"
+ ],
+ [
+  "👥 Personen suchen",
+  "👥 Find people"
+ ],
+ [
+  "🌍 Alle Wunschwelten",
+  "🌍 All wish worlds"
+ ],
+ [
+  "📊 Neuigkeiten",
+  "📊 Latest updates"
+ ],
+ [
+  "🔔 Neuigkeiten",
+  "🔔 News"
+ ],
+ [
+  "🌈 Social-Entdecken",
+  "🌈 Social discovery"
+ ],
+ [
+  "Neues Passwort festlegen",
+  "Set a new password"
+ ],
+ [
+  "Eigene Wunschliste verwalten ↗",
+  "Manage my wish list ↗"
+ ],
+ [
+  "Zur Toolya-Datensicherung ↗",
+  "Toolya data backup ↗"
+ ],
+ [
+  "Wunschlisten-Anleitung",
+  "Wish-list guide"
+ ],
+ [
+  "← Geschenk-Planungsassistenz",
+  "← Gift planning assistant"
+ ],
+ [
+  "Zur Tagesplanung",
+  "Go to daily planning"
+ ],
+ [
+  "Lade private Ereignisse …",
+  "Loading private events …"
+ ],
+ [
+  "🎁 Geschenkplanung",
+  "🎁 Gift planning"
+ ],
+ [
+  "🌈 Wunschwelten entdecken",
+  "🌈 Explore wish worlds"
+ ],
+ [
+  "🔔 Benachrichtigungen",
+  "🔔 Notifications"
+ ],
+ [
+  "🌈 Entdecken",
+  "🌈 Discover"
+ ],
+ [
+  "🔖 Merkliste",
+  "🔖 Bookmarks"
+ ]
+];
+ for(const [de,en] of pairs){
+  assert.ok(source.includes(de),'missing UI source: '+de);
+  assert.equal(wishesText(de,'en'),en);
+  assert.equal(wishesText(en,'de'),de);
+ }
+});
