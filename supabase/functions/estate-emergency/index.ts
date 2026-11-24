@@ -36,13 +36,25 @@ async function deliverOne() {
  const format=(date:string)=>new Date(date).toLocaleString('de-DE',{timeZone:'Europe/Paris',timeZoneName:'short'});
  const alarm=job.kind==='alarm',started=job.kind==='reporter-started';
  if(reporter&&(!Number.isFinite(Date.parse(job.eventTime))||(started&&!Number.isFinite(Date.parse(job.deadline)))))return;
- const subject=reporter?(started?'Toolya: Dein Notfallalarm wurde gestartet':'Toolya: Entwarnung – dein Notfallalarm wurde beendet'):(alarm?'Toolya: Bitte gib jetzt ein Lebenszeichen':'Toolya: Zeit für dein Lebenszeichen');
- const text=reporter
+ const germanSubject=reporter?(started?'Toolya: Dein Notfallalarm wurde gestartet':'Toolya: Entwarnung – dein Notfallalarm wurde beendet'):(alarm?'Toolya: Bitte gib jetzt ein Lebenszeichen':'Toolya: Zeit für dein Lebenszeichen');
+ const germanText=reporter
   ?(started?'Du hast einen Notfall gemeldet. Der Besitzer wurde per E-Mail benachrichtigt. Die 24-Stunden-Frist hat am '+format(job.eventTime)+' begonnen.\n\nFrühester Zugang mit einem Schlüssel: '+format(job.deadline)+'. Das gilt nur, wenn der Besitzer nicht vorher Entwarnung gibt.\n\nDen aktuellen Countdown und Alarmstatus findest du im Portal. Gib dort deinen persönlichen Schlüssel ein. Eine E-Mail kann keinen zuverlässig laufenden Countdown anzeigen.':
     'Der Besitzer hat deinen Notfallalarm am '+format(job.eventTime)+' beendet. Für neue Zugriffe sind wieder zwei verschiedene persönliche Schlüssel erforderlich. Bereits gelesene oder gespeicherte Kopien bleiben erhalten.')
     +'\n\nAktuellen Status im Portal prüfen:\n'+portal+'\n\nDiese Nachricht bestätigt den genannten Zeitpunkt. Maßgeblich ist der aktuelle Status im Portal. Dein persönlicher Schlüssel steht nicht in dieser Nachricht.'
   :(alarm?'Eine deiner Vertrauenspersonen hat einen Notfall gemeldet. Ohne Entwarnung kann nach 24 Stunden eine Vertrauensperson deine Unterlagen lesen.':'Deine regelmäßige Erinnerung. Sie löst keinen Notfallalarm aus.')
     +'\n\nÖffne Toolya, melde dich an und wähle „❤️ Ich lebe noch“:\n'+ownerPortal+'\n\nDeine Unterlagen und Schlüssel stehen nicht in dieser Nachricht.';
+ // Recipient language is not persisted for all outbox recipients. Deliver both
+ // languages rather than guessing from the sender or changing alarm state.
+ const enFormat=(date:string)=>new Date(date).toLocaleString('en-GB',{timeZone:'Europe/Paris',timeZoneName:'short'});
+ const englishSubject=reporter?(started?'Toolya: Your emergency alert has started':'Toolya: All clear – your emergency alert has ended'):(alarm?'Toolya: Please check in now':'Toolya: Time to check in');
+ const englishText=reporter
+  ?(started?'You reported an emergency. The owner was notified by email. The 24-hour waiting period began on '+enFormat(job.eventTime)+'.\n\nEarliest access with one key: '+enFormat(job.deadline)+'. This applies only if the owner does not check in beforehand.\n\nCheck the current countdown and alert status in the portal. Enter your personal key there. An email cannot reliably display a live countdown.':
+    'The owner ended your emergency alert on '+enFormat(job.eventTime)+'. Two different personal keys are required for new access again. Copies already read or saved remain available to their recipients.')
+    +'\n\nCheck the current status in the portal:\n'+portal+'?lang=en\n\nThis message confirms the stated time. The current status in the portal is authoritative. Your personal key is not included in this message.'
+  :(alarm?'One of your trusted persons reported an emergency. Without a check-in, after 24 hours a trusted person can read your documents.':'Your regular reminder. It does not trigger an emergency alert.')
+    +'\n\nOpen Toolya, sign in and select “❤️ I am alive”:\nhttps://toolya.app/tools/estate/index.html?lang=en#lebenszeichen\n\nYour documents and keys are not included in this message.';
+ const subject=germanSubject+' / '+englishSubject;
+ const text=germanText+'\n\n──────── English ────────\n\n'+englishText;
  const link=reporter?portal:ownerPortal;
  let response:Response;
  if(mailProvider==='brevo') {
@@ -51,7 +63,7 @@ async function deliverOne() {
    method:'POST',signal:AbortSignal.timeout(15000),
    headers:{'api-key':BREVO_KEY!,'Content-Type':'application/json','Accept':'application/json'},
    body:JSON.stringify({sender:{email:MAIL_FROM,name:'Toolya'},to:[{email:recipient}],subject,textContent:text,
-    htmlContent:'<!doctype html><html lang="de"><body><p>'+escaped.replace(/\n/g,'<br>')+'</p><p><a href="'+link+'">'+(reporter?'Aktuellen Countdown und Status öffnen':'Toolya öffnen und Lebenszeichen geben')+'</a></p></body></html>',
+    htmlContent:'<!doctype html><html lang="de"><body><p>'+escaped.replace(/\n/g,'<br>')+'</p><p><a href="'+link+'">'+(reporter?'Aktuellen Countdown und Status öffnen':'Toolya öffnen und Lebenszeichen geben')+'</a></p><p lang="en"><a href="'+(reporter?portal+'?lang=en':'https://toolya.app/tools/estate/index.html?lang=en#lebenszeichen')+'">'+(reporter?'Open current countdown and status':'Open Toolya and check in')+'</a></p></body></html>',
     // Brevo expects a UUID in the JSON headers. The outbox job ID stays stable across retries.
     headers:{idempotencyKey:job.id}})
   });
