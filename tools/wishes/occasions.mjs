@@ -27,11 +27,11 @@ function render(){
  document.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===filter)));
  const rows=active.filter(x=>filter==='all'||(filter==='soon'?x.days<=30:reminder(x)));
  const root=$('events');root.replaceChildren();
- if(!rows.length){const p=document.createElement('p');p.className='empty';p.textContent=filter==='due'?'Aktuell keine anstehenden Erinnerungen.':filter==='soon'?'In den nächsten 30 Tagen stehen keine Anlässe an.':'Noch keine kommenden Anlässe. Lege deinen ersten Termin an.';root.append(p)}
+ if(!rows.length){const p=document.createElement('p');p.className='empty';p.setAttribute('data-wish-owned-copy','');p.textContent=filter==='due'?'Aktuell keine anstehenden Erinnerungen.':filter==='soon'?'In den nächsten 30 Tagen stehen keine Anlässe an.':'Noch keine kommenden Anlässe. Lege deinen ersten Termin an.';root.append(p)}
  for(const item of rows){
   const card=document.createElement('article');card.className='event';
-  const main=document.createElement('div'),badge=document.createElement('span');badge.className='badge';badge.textContent=reminder(item)?'🔔 Erinnerung aktiv':item.repeats_yearly?'🔁 Jährlich':'📅 Einmalig';
-  const title=document.createElement('h3');title.textContent=item.title+(item.person_name?' · '+item.person_name:'');
+  const main=document.createElement('div'),badge=document.createElement('span');badge.className='badge';badge.setAttribute('data-wish-owned-copy','');badge.textContent=reminder(item)?'🔔 Erinnerung aktiv':item.repeats_yearly?'🔁 Jährlich':'📅 Einmalig';
+  const title=document.createElement('h3');title.setAttribute('data-user-content','');title.textContent=item.title+(item.person_name?' · '+item.person_name:'');
   const time=document.createElement('time');time.dateTime=new Date(item.next).toISOString().slice(0,10);const paint=()=>{time.textContent=format(item.next)+' · '+(item.days===0?ui('Heute','Today'):item.days===1?ui('Morgen','Tomorrow'):ui('in '+item.days+' Tagen','in '+item.days+' days'))};dateNodes.set(time,paint);paint();
   main.append(badge,title,time);
   if(item.notes){const p=document.createElement('p');p.textContent=item.notes;main.append(p)}

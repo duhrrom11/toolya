@@ -1,5 +1,24 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+ // Occasion and bookmark app-owned text; user titles are explicitly excluded.
+ "Aktuell keine anstehenden Erinnerungen.": "No reminders are currently due.",
+ "In den nächsten 30 Tagen stehen keine Anlässe an.": "No occasions in the next 30 days.",
+ "Noch keine kommenden Anlässe. Lege deinen ersten Termin an.": "No upcoming occasions yet. Add your first occasion.",
+ "🔔 Erinnerung aktiv": "🔔 Reminder active",
+ "🔁 Jährlich": "🔁 Yearly",
+ "📅 Einmalig": "📅 One-off",
+ "✏️ Bearbeiten": "✏️ Edit",
+ "✏️ Anlass bearbeiten": "✏️ Edit occasion",
+ "Deine privaten Anlässe sind aktuell.": "Your private occasions are up to date.",
+ "Die ersten 1000 Anlässe wurden geladen.": "The first 1000 occasions have been loaded.",
+ "Jährlich wiederholen": "Repeat yearly",
+ "Wie viele Tage vorher erinnern?": "How many days in advance should we remind you?",
+ "Anlass / Titel *": "Occasion / title *",
+ "Datum *": "Date *",
+ "Notizen (privat)": "Notes (private)",
+ "In 30 Tagen": "Within 30 days",
+ "Deine Anlässe und Notizen sind privat. Erinnerungen erscheinen in dieser Ansicht beim Öffnen; es werden keine Push-Nachrichten oder E-Mails versendet. Wiederkehrende Termine am 29. Februar werden in Nicht-Schaltjahren am 28. Februar angezeigt.": "Your occasions and notes are private. Reminders appear when you open this view; no push notifications or emails are sent. Recurring occasions on 29 February appear on 28 February in non-leap years.",
+ "Noch keine passenden gespeicherten Sammlungen. Entdecke öffentliche Wunschwelten und tippe auf „Merken“.": "No matching saved collections yet. Discover public wish worlds and tap Bookmark.",
  // Reviewed public editorial translations from released PR #321 retained as canonical.
  "Amazon-Wunschliste nach Namen finden – ohne Link | Toolya": "Find Amazon wish lists by name – no link needed | Toolya",
  "Aktivitäten": "Activities",
@@ -1169,6 +1188,7 @@ export function wishesText(value,language){
   if(base!==translated)return translated+(language==='en'?budgetSuffixEn:budgetSuffix);
  }
  const dynamic=language==='en'?[
+ [/^(\d+) gemerkte öffentliche Sammlungen\.$/,'$1 bookmarked public collections.'],
  [/^(\d+) Wünsche( · maximal 500 geladen)?$/,(_,n,limit)=>n+' wishes'+(limit?' · at most 500 loaded':'')],
  [/^(\d+) öffentliche Sammlungen( · maximal 48 angezeigt)?$/,(_,n,limit)=>n+' public collections'+(limit?' · at most 48 displayed':'')],
  [/^Gespeichert: (\d+) neue Wünsche, (\d+) bereits vorhanden\.( Bitte Seite neu laden, um die gespeicherten Wünsche anzuzeigen\.)?$/,(_,inserted,existing,reload)=>'Saved: '+inserted+' new wishes, '+existing+' already present.'+(reload?' Reload the page to see the saved wishes.':'')],
@@ -1185,6 +1205,7 @@ export function wishesText(value,language){
  [/^(\d+) passende Einträge auf dieser Seite\.$/,'$1 matching entries on this page.'],
  [/^Sicherung gültig: (\d+) Wünsche\. Nur Vorschau – keine Daten wurden gespeichert\.$/,'Backup valid: $1 wishes. Preview only – no data was saved.']
  ]:[
+ [/^(\d+) bookmarked public collections\.$/,'$1 gemerkte öffentliche Sammlungen.'],
  [/^(\d+) wishes( · at most 500 loaded)?$/,(_,n,limit)=>n+' Wünsche'+(limit?' · maximal 500 geladen':'')],
  [/^(\d+) public collections( · at most 48 displayed)?$/,(_,n,limit)=>n+' öffentliche Sammlungen'+(limit?' · maximal 48 angezeigt':'')],
  [/^Saved: (\d+) new wishes, (\d+) already present\.( Reload the page to see the saved wishes\.)?$/,(_,inserted,existing,reload)=>'Gespeichert: '+inserted+' neue Wünsche, '+existing+' bereits vorhanden.'+(reload?' Bitte Seite neu laden, um die gespeicherten Wünsche anzuzeigen.':'')],

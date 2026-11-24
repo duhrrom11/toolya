@@ -31,3 +31,6 @@ Head a7cf47e1a3fa21622a47b370e107231e6f430d68:
 - [Strict audit](https://github.com/duhrrom11/toolya/actions/runs/45491783848): 70 HTML, 129 JS/MJS, 16 English public pages, zero missing routes, zero public German heuristic candidates, five language entrypoints assign document language. All 16 English public pages remain noindex; 34 app views and 38 message-file candidates still require review. Strict gate remains failed.
 
 No production test records were created. No release approval is granted.
+
+## Hardened shell checks
+Head ada9f09: quality run 45492725039, job 138794998373 passed 373 static tests, 32 layout checks, 72 anonymous and 54 authenticated shell cases at 320/375/768px. Draft CI head a50a7fc: nine workflows succeeded, full isolated browser workflow skipped intentionally, strict gate failed. New occasion/bookmark copy changes require fresh focused regression evidence; no full acceptance claimed.
