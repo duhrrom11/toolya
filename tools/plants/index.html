@@ -479,9 +479,9 @@
         async function supabaseLogout() {
             try {
                 const { error } = await supabaseClient.auth.signOut();
-                if (error) return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error.message || 'Unbekannter Fehler'));
+                if (error) return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             } catch (error) {
-                return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error?.message || 'Unbekannter Fehler'));
+                return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             }
             checkUserSession();
             alert(window.__toolyaUILocale === 'en' ? 'Signed out.' : 'Abgemeldet.');
