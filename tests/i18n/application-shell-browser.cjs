@@ -73,12 +73,14 @@ async function run(){
       row.checks.push({lang,title:await page.title()});
      }
     }else{
-     const selector=lang=>'[data-'+entry.family+'-locale="'+lang+'"]';
+     // Dashboard also stores the active locale on <html>; target actual controls only.
+     const selector=lang=>'button[data-'+entry.family+'-locale="'+lang+'"]';
      for(const lang of ['de','en','de']){
       const button=page.locator(selector(lang)).first();
       await button.click({timeout:4000});
       await page.waitForFunction(({key,lang})=>globalThis[key]===lang,{key:entry.global,lang},{timeout:4000});
       assert.equal(await button.getAttribute('aria-pressed'),'true');
+      assert.equal(await page.locator(selector(lang==='en'?'de':'en')).first().getAttribute('aria-pressed'),'false');
       assert.equal(await page.evaluate(()=>localStorage.getItem('synthetic-private-note')),'Meine private Notiz');
       const layout=await page.evaluate(()=>({lang:document.documentElement.lang,overflow:Math.max(0,document.documentElement.scrollWidth-innerWidth)}));
       row.checks.push({lang,title:await page.title(),...layout});
