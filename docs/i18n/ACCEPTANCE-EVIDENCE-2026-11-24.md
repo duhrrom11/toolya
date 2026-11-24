@@ -46,3 +46,6 @@ Head ada9f09: quality run 45492725039, job 138794998373 passed 373 static tests,
 
 ## Verified fast CI at 6b19939
 [Quality job 138820554342](https://github.com/duhrrom11/toolya/actions/runs/45500035844/job/138820554342): 392 tests passed, 0 failed. [Strict audit job 138820554397](https://github.com/duhrrom11/toolya/actions/runs/45500036108/job/138820554397): 187 catalogue matches, 25 shared-context candidates, 6 composite candidates, zero unmatched family literals. Ten workflows succeeded, one skipped, strict failed. Shared presentation changes require fresh evidence; no runtime release acceptance claimed.
+
+## Verified fast CI at 0f3ac5c
+[Quality job 138829883106](https://github.com/duhrrom11/toolya/actions/runs/45502718383/job/138829883106): 394 passed, 0 failed. [Strict audit job 138829882557](https://github.com/duhrrom11/toolya/actions/runs/45502718438/job/138829882557): 187 catalogue matches, 19 shared candidates, 6 composite, zero unmatched; 33 candidate files, 34 incomplete views and 16 noindex pages. Current main c15ec1c must be reconciled before release. No full runtime acceptance; existing gate unchanged. New gift view rename, duplication and import frames require fresh tests.

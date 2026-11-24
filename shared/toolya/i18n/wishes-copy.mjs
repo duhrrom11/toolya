@@ -1240,7 +1240,15 @@ export function wishesText(value,language){
  // Match complete application frames and preserve the embedded name exactly.
  const framed=[["Aktuelle Einstellungen im Vorlagenplatz „","“ speichern? Eine vorhandene Vorlage wird überschrieben.","Save current settings in template slot “","”? An existing template will be overwritten."],["Cloud-Ansicht „","“ überschreiben?","Overwrite cloud view “","”?"],["Cloud-Ansicht „","“ dauerhaft löschen?","Permanently delete cloud view “","”?"],["Cloud-Ansicht „","“ angewendet.","Cloud view “","” applied."],["Monatsvorschau „","“ · Filter bleiben unverändert.","Monthly preview “","” · filters remain unchanged."]];
  for(const [deStart,deEnd,enStart,enEnd] of framed){const [start,end,targetStart,targetEnd]=language==='en'?[deStart,deEnd,enStart,enEnd]:[enStart,enEnd,deStart,deEnd];if(value.startsWith(start)&&value.endsWith(end)&&value.length>=start.length+end.length)return targetStart+value.slice(start.length,value.length-end.length)+targetEnd;}
+ // Two-name confirmations retain both user-provided names and all safeguards.
+ for(const [ds,dm,de,es,em,ee] of [["Cloud-Ansicht „","“ in „","“ umbenennen?","Rename cloud view “","” to “","”?"],["Cloud-Ansicht „","“ als „","“ duplizieren?","Duplicate cloud view “","” as “","”?"]]){
+  const [start,middle,end,targetStart,targetMiddle,targetEnd]=language==='en'?[ds,dm,de,es,em,ee]:[es,em,ee,ds,dm,de];
+  if(value.startsWith(start)&&value.endsWith(end)){const body=value.slice(start.length,value.length-end.length),split=body.indexOf(middle);if(split>=0)return targetStart+body.slice(0,split)+targetMiddle+body.slice(split+middle.length)+targetEnd;}
+ }
  const dynamic=language==='en'?[
+ [/^(\d+) lokale Ansichten in die Cloud kopieren\? Gleichnamige Cloud-Ansichten bleiben unverändert\. Lokale Originale werden nicht gelöscht\.$/,'Copy $1 local views to the cloud? Cloud views with matching names remain unchanged. Local originals will not be deleted.'],
+ [/^(\d+) lokale Ansichten kopiert\. (\d+) weitere verbleiben lokal\.$/,'$1 local views copied. $2 more remain local.'],
+ [/^(\d+) Cloud-Ansichten verfügbar\. Lokale Ansichten bleiben bis zu einem ausdrücklich bestätigten Import auf diesem Gerät\.$/,'$1 cloud views available. Local views remain on this device until an explicitly confirmed import.'],
  [/^Zugeordnete auswählen \((\d+)\)$/,'Select assigned ($1)'],
  [/^Ohne Liste auswählen \((\d+)\)$/,'Select unassigned ($1)'],
  [/^(\d+) zugeordnete Wünsche ausgewählt\.$/,'$1 assigned wishes selected.'],
@@ -1264,7 +1272,9 @@ export function wishesText(value,language){
  [/^(\d+) passende Einträge auf dieser Seite\.$/,'$1 matching entries on this page.'],
  [/^Sicherung gültig: (\d+) Wünsche\. Nur Vorschau – keine Daten wurden gespeichert\.$/,'Backup valid: $1 wishes. Preview only – no data was saved.']
  ]:[
- [/^Select assigned \((\d+)\)$/,'Zugeordnete auswählen ($1)'],
+ [/^Copy (\d+) local views to the cloud\? Cloud views with matching names remain unchanged\. Local originals will not be deleted\.$/,'$1 lokale Ansichten in die Cloud kopieren? Gleichnamige Cloud-Ansichten bleiben unverändert. Lokale Originale werden nicht gelöscht.'],
+ [/^(\d+) local views copied\. (\d+) more remain local\.$/,'$1 lokale Ansichten kopiert. $2 weitere verbleiben lokal.'],
+ [/^(\d+) cloud views available\. Local views remain on this device until an explicitly confirmed import\.$/,'$1 Cloud-Ansichten verfügbar. Lokale Ansichten bleiben bis zu einem ausdrücklich bestätigten Import auf diesem Gerät.'], [/^Select assigned \((\d+)\)$/,'Zugeordnete auswählen ($1)'],
  [/^Select unassigned \((\d+)\)$/,'Ohne Liste auswählen ($1)'],
  [/^(\d+) assigned wishes selected\.$/,'$1 zugeordnete Wünsche ausgewählt.'], [/^(\d+) of your reservations loaded\.$/,'$1 eigene Reservierungen geladen.'], [/^(\d+) public collections found · from up to 60 recently created collections\.$/,'$1 öffentliche Sammlungen gefunden · aus maximal 60 zuletzt erstellten Sammlungen.'],
  [/^❤️ (\d+) likes · 👥 (\d+) profile followers$/,'❤️ $1 Likes · 👥 $2 Profil-Follower'], [/^(\d+) bookmarked public collections\.$/,'$1 gemerkte öffentliche Sammlungen.'],
