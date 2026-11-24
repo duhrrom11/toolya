@@ -143,7 +143,9 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  for(const width of [320,390,900,960,1280]){
   await page.setViewportSize({width,height:812});
   await page.evaluate(()=>toolyaBuddy.show('warning','Willkommen bei Toolya'));
-  const rect=await page.locator('.tb-message-box').evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,viewportWidth:innerWidth,viewportHeight:innerHeight}});
+  const activeMessage=page.locator('.tb-message-box:visible');
+  assert.equal(await activeMessage.count(),1,'exactly one active mascot message');
+  const rect=await activeMessage.evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,viewportWidth:innerWidth,viewportHeight:innerHeight}});
   assert(rect.left>=0&&rect.right<=rect.viewportWidth+1&&rect.top>=0&&rect.bottom<=rect.viewportHeight+1,'home notice clipped at '+width+': '+JSON.stringify(rect));
   await page.evaluate(()=>toolyaBuddy.dismiss());
  }

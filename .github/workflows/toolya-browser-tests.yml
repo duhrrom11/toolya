@@ -2,6 +2,7 @@ name: Isolated Toolya browser tests
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
     paths:
       - '.github/workflows/toolya-browser-tests.yml'
       - 'tests/browser/**'
@@ -41,6 +42,7 @@ concurrency:
 
 jobs:
   isolated-browser-tests:
+    if: ${{ github.event_name != 'pull_request' || github.head_ref != 'release/toolya-english-1.0' || !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

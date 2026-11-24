@@ -2,6 +2,7 @@ name: Toolya Haushaltsbuch – Live-Veröffentlichung prüfen
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
     paths:
       - "tools/budget/**"
       - "tests/budget-live-health.cjs"

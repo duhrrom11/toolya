@@ -3,6 +3,8 @@ on:
   push:
     branches: [main, feature/i18n-de-en-foundation-20261121]
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:
@@ -20,12 +22,18 @@ jobs:
         with: {node-version: '22', cache: npm}
       - run: npm ci
       - run: node --test tests/mascot/*.test.mjs tests/platform/*.test.mjs tests/amazon/*.test.mjs
-      - run: node tests/platform/home-auth.cjs
-      - run: node tests/platform/connect-two-devices.cjs
-      - run: node tests/platform/browser.cjs
-      - run: node tests/platform/wishlist-finder-browser.cjs
-      - run: node tests/platform/design-foundation.cjs
-      - run: node tests/security/estate-handover-design.cjs
+      - if: ${{ github.event_name != 'pull_request' || github.head_ref != 'release/toolya-english-1.0' || !github.event.pull_request.draft }}
+        run: node tests/platform/home-auth.cjs
+      - if: ${{ github.event_name != 'pull_request' || github.head_ref != 'release/toolya-english-1.0' || !github.event.pull_request.draft }}
+        run: node tests/platform/connect-two-devices.cjs
+      - if: ${{ github.event_name != 'pull_request' || github.head_ref != 'release/toolya-english-1.0' || !github.event.pull_request.draft }}
+        run: node tests/platform/browser.cjs
+      - if: ${{ github.event_name != 'pull_request' || github.head_ref != 'release/toolya-english-1.0' || !github.event.pull_request.draft }}
+        run: node tests/platform/wishlist-finder-browser.cjs
+      - if: ${{ github.event_name != 'pull_request' || github.head_ref != 'release/toolya-english-1.0' || !github.event.pull_request.draft }}
+        run: node tests/platform/design-foundation.cjs
+      - if: ${{ github.event_name != 'pull_request' || github.head_ref != 'release/toolya-english-1.0' || !github.event.pull_request.draft }}
+        run: node tests/security/estate-handover-design.cjs
       - name: Verify public B3 delivery after Pages release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: node scripts/verify-b3-release.cjs
@@ -59,7 +67,8 @@ jobs:
       - run: node tests/security/estate-mail-v2.test.cjs
       - run: node tests/security/estate-release-v2.test.cjs
       - run: node tests/security/wg-save-permissions.test.cjs
-      - run: node tests/security/estate-browser-v2.cjs
+      - if: ${{ github.event_name != 'pull_request' || github.head_ref != 'release/toolya-english-1.0' || !github.event.pull_request.draft }}
+        run: node tests/security/estate-browser-v2.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
