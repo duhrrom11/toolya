@@ -31,9 +31,9 @@ function render(){
  const occ=$('occasions');occ.replaceChildren();
  if(!upcoming.length)empty(occ,ui("Keine Anlässe in den nächsten 30 Tagen."));
  for(const o of upcoming.slice(0,12)){const item=node('article','','item'),h=node('h3',o.title+(o.person_name?' · '+o.person_name:'')),p=node('p',days(o)===0?ui("Heute!"):ui("In ")+days(o)+ui(" Tagen")),link=document.createElement('a');link.href='./planner.html';link.textContent=ui("Geschenke planen ↗");item.append(h,p,link);occ.append(item)}
- const tasks=$('tasks');tasks.replaceChildren();const filter=$('priorityFilter').value;
+ const giftRoot=$('tasks');giftRoot.replaceChildren();const filter=$('priorityFilter').value;
  const visible=open.filter(g=>filter==='all'||String(g.priority)===filter).sort((a,b)=>a.priority-b.priority||((occasions.find(o=>o.id===a.occasion_id)?days(occasions.find(o=>o.id===a.occasion_id)):99999)-(occasions.find(o=>o.id===b.occasion_id)?days(occasions.find(o=>o.id===b.occasion_id)):99999)));
- if(!visible.length)empty(tasks,ui("Keine offenen Geschenke für diese Priorität."));
+ if(!visible.length)empty(giftRoot,ui("Keine offenen Geschenke für diese Priorität."));
  for(const g of visible.slice(0,25)){
   const item=node('article','','item'),h=node('h3',g.title),o=occasions.find(x=>x.id===g.occasion_id),p=node('p',(o?.title||ui("Anlass"))+' · '+ui(labels[g.status])+' · '+euro(g.planned_amount)),tag=node('span',ui(priority[g.priority]||priority[2]),'tag'),select=document.createElement('select');
   select.setAttribute('aria-label',ui("Priorität für ")+g.title);select.title=ui("Priorität ändern");
@@ -75,9 +75,9 @@ function render(){
    }
   });
   const link=document.createElement('a');link.href='./planner.html';link.textContent=ui("Geschenk bearbeiten ↗");
-  item.append(h,p,tag,node('span',' · '),select,node('p',''),link);tasks.append(item);
+  item.append(h,p,tag,node('span',' · '),select,node('p',''),link);giftRoot.append(item);
  }
- if(visible.length>25)tasks.append(node('p',ui("Weitere ")+(visible.length-25)+ui(" Aufgaben findest du in der Geschenkplanung.")));
+ if(visible.length>25)giftRoot.append(node('p',ui("Weitere ")+(visible.length-25)+ui(" Aufgaben findest du in der Geschenkplanung.")));
  const warnings=$('warnings');warnings.replaceChildren();let count=0;
  for(const o of occasions){const budget=Number(o.budget_amount||0);if(budget<=0)continue;
   const related=gifts.filter(g=>g.occasion_id===o.id),planned=related.reduce((n,g)=>n+Number(g.planned_amount||0),0),spent=related.reduce((n,g)=>n+Number(g.actual_amount||0),0);

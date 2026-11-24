@@ -110,6 +110,7 @@ async function run(){
     await page.goto(origin+entry.path+'?lang=de'+query,{waitUntil:'domcontentloaded',timeout:15000});
     if(collection)await page.waitForFunction(()=>!document.getElementById('collection')?.hidden&&document.getElementById('title')?.textContent==='Meine synthetische Sammlung',null,{timeout:6000});
     if(profile)await page.waitForFunction(()=>!document.getElementById('profile')?.hidden&&document.getElementById('name')?.textContent==='Synthetisches Profil',null,{timeout:6000});
+    if(authenticated&&entry.path==='/tools/wishes/dashboard.html')await page.waitForFunction(()=>!document.getElementById('content')?.hidden&&!!document.querySelector('#taskReminders .empty')&&!!document.querySelector('#tasks .empty'),null,{timeout:6000});
     if(new URL(page.url()).pathname!==entry.path)throw Error('Protected route redirected; authenticated fixture required');
     if(entry.print){
      for(const lang of ['de','en']){
@@ -135,6 +136,7 @@ async function run(){
     }
    }catch(e){row.errors.push(String(e.message).slice(0,500))}
    finally{
+    if(row.pageErrors.length)row.errors.push('Uncaught JavaScript errors: '+row.pageErrors.join(' | '));
     if(authenticated){row.fixture=await page.evaluate(()=>window.__toolyaAuthFixture||null).catch(()=>null);if(row.fixture?.writes.length)row.errors.push('Unexpected attempted write in read-only fixture');if(entry.path==='/tools/wishes/profile.html'){if(!row.fixture?.reads.includes('wishlist_profiles'))row.errors.push('Public profile read not observed');}else if(!row.fixture?.auth)row.errors.push('Synthetic authentication not observed');}
     await page.close()
    }
