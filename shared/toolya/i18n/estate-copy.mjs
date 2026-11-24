@@ -1,6 +1,7 @@
 /* Source-exact presentation copy only for the encrypted-estate views.
    Key material, documents, ciphertext and form data are never translated. */
 export const ESTATE_COPY=Object.freeze({
+ "Die E-Mail-Erinnerung braucht noch den eingerichteten E-Mail-Versand.": "Email reminders require email delivery to be configured first.",
  "Unterlage ansehen": "View document",
  "Anhang herunterladen": "Download attachment",
  "Bearbeiten": "Edit",

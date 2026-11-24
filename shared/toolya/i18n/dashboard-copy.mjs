@@ -1,6 +1,14 @@
 /* Account and dashboard display catalogue; strictly presentation-only.
    Use source-exact keys so arbitrary user data and Supabase diagnostics stay intact. */
 export const DASHBOARD_COPY=Object.freeze(Object.fromEntries([
+ ["Die Cloud ist noch nicht bereit.","The cloud is not ready yet."],
+ ["Anmeldung nicht mehr gültig. Bitte erneut anmelden.","Sign-in is no longer valid. Please sign in again."],
+ ["Bitte warte, bis der letzte Speichervorgang abgeschlossen ist.","Wait until the previous save is complete."],
+ ["Ungültiger Erinnerungstermin.","Invalid reminder date."],
+ ["Konto wurde während des Speicherns gewechselt.","The account changed while saving."],
+ ["Eintrag wurde bereits geändert. Bitte neu laden.","The entry has already changed. Please reload."],
+ ["Speicherkonflikt: Der Eintrag wurde auf einem anderen Gerät verändert. Bitte aktualisieren.","Save conflict: The entry was changed on another device. Please refresh."],
+ ["Konto während des Imports gewechselt. Übernahme gestoppt.","The account changed during import. Import stopped."],
  ["Cloud-Stand noch nicht geprüft.","Cloud state not checked yet."],
  ["Cloud-Stand prüfen","Check cloud state"],
  ["Cloud-Stand bewusst laden","Load cloud state deliberately"],

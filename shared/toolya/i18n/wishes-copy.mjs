@@ -1,5 +1,18 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+ "Anmeldung nicht gültig oder Konto gewechselt.": "Sign-in is no longer valid or the account has changed.",
+ "Bericht nicht vollständig: Ereignislimit erreicht": "Report incomplete: event limit reached",
+ "Reservierung wirklich aufheben? Der Wunsch wird wieder frei.": "Cancel this reservation? The wish will become available again.",
+ "Reservierung konnte nicht aufgehoben werden.": "The reservation could not be cancelled.",
+ "Du hast aktuell keine Geschenkreservierungen. Entdecke öffentliche Wunschwelten und reserviere einen Wunsch.": "You have no gift reservations at present. Discover public wish worlds and reserve a wish.",
+ "Reservierungen konnten nicht geladen werden. Bitte erneut versuchen.": "Reservations could not be loaded. Please try again.",
+ "Reservierungen konnten nicht geladen werden.": "Reservations could not be loaded.",
+ "🔒 Nicht mehr öffentlich": "🔒 No longer public",
+ "🎁 In Geschenkplanung": "🎁 Add to gift planning",
+ "🎁 Geschenkplanung öffnen": "🎁 Open gift planning",
+ "Die Reservierung war bereits aufgehoben.": "The reservation was already cancelled.",
+ "Reservierung aufgehoben.": "Reservation cancelled.",
+ "Deine Geschenkplanung: ": "Your gift planning: ",
  "Keine passenden Sammlungen gefunden. Probiere einen anderen Suchbegriff.": "No matching collections found. Try another search term.",
  "Sammlungen konnten nicht geladen werden. Bitte später erneut versuchen.": "Collections could not be loaded. Please try again later.",
  "✨ Alle": "✨ All",
@@ -1195,6 +1208,7 @@ export function wishesText(value,language){
   if(base!==translated)return translated+(language==='en'?budgetSuffixEn:budgetSuffix);
  }
  const dynamic=language==='en'?[
+ [/^(\d+) eigene Reservierungen geladen\.$/,'$1 of your reservations loaded.'],
  [/^(\d+) öffentliche Sammlungen gefunden · aus maximal 60 zuletzt erstellten Sammlungen\.$/,'$1 public collections found · from up to 60 recently created collections.'],
  [/^❤️ (\d+) Likes · 👥 (\d+) Profil-Follower$/,'❤️ $1 likes · 👥 $2 profile followers'],
  [/^(\d+) gemerkte öffentliche Sammlungen\.$/,'$1 bookmarked public collections.'],
@@ -1214,7 +1228,7 @@ export function wishesText(value,language){
  [/^(\d+) passende Einträge auf dieser Seite\.$/,'$1 matching entries on this page.'],
  [/^Sicherung gültig: (\d+) Wünsche\. Nur Vorschau – keine Daten wurden gespeichert\.$/,'Backup valid: $1 wishes. Preview only – no data was saved.']
  ]:[
- [/^(\d+) public collections found · from up to 60 recently created collections\.$/,'$1 öffentliche Sammlungen gefunden · aus maximal 60 zuletzt erstellten Sammlungen.'],
+ [/^(\d+) of your reservations loaded\.$/,'$1 eigene Reservierungen geladen.'], [/^(\d+) public collections found · from up to 60 recently created collections\.$/,'$1 öffentliche Sammlungen gefunden · aus maximal 60 zuletzt erstellten Sammlungen.'],
  [/^❤️ (\d+) likes · 👥 (\d+) profile followers$/,'❤️ $1 Likes · 👥 $2 Profil-Follower'], [/^(\d+) bookmarked public collections\.$/,'$1 gemerkte öffentliche Sammlungen.'],
  [/^(\d+) wishes( · at most 500 loaded)?$/,(_,n,limit)=>n+' Wünsche'+(limit?' · maximal 500 geladen':'')],
  [/^(\d+) public collections( · at most 48 displayed)?$/,(_,n,limit)=>n+' öffentliche Sammlungen'+(limit?' · maximal 48 angezeigt':'')],
