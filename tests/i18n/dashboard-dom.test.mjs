@@ -29,3 +29,14 @@ test('dashboard DOM preserves unknown text instead of translating user data',()=
  applyDashboardPageLocale(document,'en',(value)=>value);
  assert.equal(text.nodeValue,'Private note');
 });
+
+test('dashboard locale does not restore stale application text or attributes',()=>{
+ const {document,text,attrs}=fixture();
+ const translate=(value,lang)=>lang==='en'?({'Mein Dashboard':'My dashboard','Cloud nicht erreichbar':'Cloud unavailable'}[value]||value):value;
+ applyDashboardPageLocale(document,'en',translate);
+ text.nodeValue='Cloud nicht erreichbar';attrs.set('aria-label','Cloud nicht erreichbar');
+ applyDashboardPageLocale(document,'en',translate);
+ assert.equal(text.nodeValue,'Cloud unavailable');assert.equal(attrs.get('aria-label'),'Cloud unavailable');
+ applyDashboardPageLocale(document,'de',translate);
+ assert.equal(text.nodeValue,'Cloud nicht erreichbar');assert.equal(attrs.get('aria-label'),'Cloud nicht erreichbar');
+});

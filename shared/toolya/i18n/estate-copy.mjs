@@ -252,7 +252,8 @@ export const ESTATE_RUNTIME_COPY=Object.freeze({
  "Ungültiges Paket.": "Invalid package.",
  "Ungültiger Schlüssel.": "Invalid key.",
  "Nachlassinhalt zu groß.": "Estate content is too large.",
- "Nachlassinhalt ungültig.": "Estate content is invalid."
+ "Nachlassinhalt ungültig.": "Estate content is invalid.",
+ "Unterlage": "Document"
 });
 const runtimeReverse=Object.freeze(Object.fromEntries(Object.entries(ESTATE_RUNTIME_COPY).map(([de,en])=>[en,de])));
 const runtimePrefixes=Object.freeze({
