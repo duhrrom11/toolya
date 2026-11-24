@@ -1109,7 +1109,7 @@ export const WISHES_RUNTIME_COPY=Object.freeze({
 "👥 Neu": "👥 New",
 "👤 Follower": "👤 Follower",
 "Von ": "From ",
-"Öffentliche Wunschwelt": "Public wish collection",
+"Öffentliche Wunschwelt": "Public wish world",
 "Community-Mitglied": "Community member",
 "Ein Profil folgt dir": "A profile follows you",
 "Deine Wunschwelt": "Your wish collection",

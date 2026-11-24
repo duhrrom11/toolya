@@ -10,7 +10,7 @@ const dayMs=86400000;
 function today(){const d=new Date();return Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())}
 function days(date){const [y,m,d]=date.split('-').map(Number);return Math.round((Date.UTC(y,m-1,d)-today())/dayMs)}
 function option(el,value,label){const o=document.createElement('option');o.value=value;o.textContent=label;if(value)o.setAttribute('data-user-content','');el.append(o)}
-function refreshLocale(){if(!loaded)return;if(pendingWrites){localePending=true;return}const occasion=$('occasion').value,gift=$('gift').value,selection=new Map([...$('rolloverSelection').querySelectorAll('input[type=checkbox]')].map(input=>[input.value,input.checked]));choices();$('occasion').value=occasion;refreshGifts();$('gift').value=gift;for(const template of document.querySelectorAll('[data-task-template]'))template.textContent=ui(templates.find(t=>t.title===template.dataset.taskTemplate)?.label||'');render();renderRolloverSelection();for(const input of $('rolloverSelection').querySelectorAll('input[type=checkbox]'))if(selection.has(input.value))input.checked=selection.get(input.value)}
+function refreshLocale(){if(!loaded)return;if(pendingWrites){localePending=true;return}paintDueHint();const occasion=$('occasion').value,gift=$('gift').value,selection=new Map([...$('rolloverSelection').querySelectorAll('input[type=checkbox]')].map(input=>[input.value,input.checked]));choices();$('occasion').value=occasion;refreshGifts();$('gift').value=gift;for(const template of document.querySelectorAll('[data-task-template]'))template.textContent=ui(templates.find(t=>t.title===template.dataset.taskTemplate)?.label||'');render();renderRolloverSelection();for(const input of $('rolloverSelection').querySelectorAll('input[type=checkbox]'))if(selection.has(input.value))input.checked=selection.get(input.value)}
 function settleWrite(){pendingWrites--;if(!pendingWrites&&localePending){localePending=false;refreshLocale()}}
 function choices(){for(const id of ['occasion','gift'])$(id).replaceChildren();option($('occasion'),'',ui('Ohne Anlass'));option($('gift'),'',ui('Ohne Geschenk'));
  for(const o of occasions)option($('occasion'),o.id,o.title);
@@ -179,4 +179,4 @@ $('rolloverCreate').addEventListener('click',async()=>{
 });
 main().catch(()=>{$('status').textContent='Aufgaben konnten nicht geladen werden.'});
 
-document.addEventListener('toolya:wishes-locale-change',()=>{refreshLocale();paintDueHint();});
+document.addEventListener('toolya:wishes-locale-change',refreshLocale);

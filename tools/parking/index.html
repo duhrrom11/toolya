@@ -600,15 +600,6 @@
 
 
         // Escape only the displayed values; CloudOnly records remain unchanged.
-        function displayLegacyDate(value, english = window.__toolyaUILocale === 'en') {
-            if (!english || typeof value !== 'string') return value;
-            const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})(.*)$/.exec(value);
-            if (!m) return value;
-            const [,day,month,year,suffix] = m;
-            const date = new Date(Number(year), Number(month)-1, Number(day));
-            if (date.getFullYear() !== Number(year) || date.getMonth() !== Number(month)-1 || date.getDate() !== Number(day)) return value;
-            return day.padStart(2,'0')+'/'+month.padStart(2,'0')+'/'+year+suffix;
-        }
         function escapeParkingHtml(value) {
             const map = {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'};
             return String(value ?? '').replace(/[&<>"']/g, ch => map[ch]);
@@ -705,6 +696,15 @@
             const pdfEn = window.__toolyaUILocale === 'en';
             const pdfLabel = (de,en) => pdfEn ? en : de;
             const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+            function displayLegacyDate(value, english = pdfEn) {
+            if (!english || typeof value !== 'string') return value;
+            const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})(.*)$/.exec(value);
+            if (!m) return value;
+            const [,day,month,year,suffix] = m;
+            const date = new Date(Number(year), Number(month)-1, Number(day));
+            if (date.getFullYear() !== Number(year) || date.getMonth() !== Number(month)-1 || date.getDate() !== Number(day)) return value;
+            return day.padStart(2,'0')+'/'+month.padStart(2,'0')+'/'+year+suffix;
+        }
             const formatCost = amount => pdfEn ? amount.toFixed(2) : amount.toFixed(2).replace('.', ',');
 
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
