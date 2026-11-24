@@ -550,7 +550,7 @@
             if(gpsButton)gpsButton.disabled=true;
             const release=()=>{parkingSaveInProgress=false;if(button)button.disabled=false;if(gpsButton)gpsButton.disabled=false;};
             feedback.textContent='';
-            const unavailable=()=>{if(requireGps){message('GPS-Standort nicht verfügbar. Bitte Standortzugriff erlauben und erneut versuchen.','GPS location unavailable. Allow location access and try again.');release();}else unavailable();};
+            const unavailable=()=>{if(requireGps){message('GPS-Standort nicht verfügbar. Bitte Standortzugriff erlauben und erneut versuchen.','GPS location unavailable. Allow location access and try again.');release();}else void finish(null);};
             const finish=async gps=>{
                 try{await processPhotoAndSave(desc,sector,cost,gps,photoInput,connectRequested);}
                 catch(error){console.error('Parkvorgang nicht bestätigt',error);alert('Speichern nicht bestätigt. Cloud-Datenstand prüfen.');}
@@ -567,7 +567,7 @@
                     unavailable,
                     {timeout:12000,maximumAge:requireGps?0:30000,enableHighAccuracy:requireGps}
                 );
-            }else void finish(null);
+            }else unavailable();
         }
 
         async function processPhotoAndSave(desc,sector,cost,gps,photoInput,connectRequested=false) {

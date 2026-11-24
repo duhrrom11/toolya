@@ -52,3 +52,6 @@ Head ada9f09: quality run 45492725039, job 138794998373 passed 373 static tests,
 
 ## Main reconciliation and fast CI at 53e0170
 Merged c15ec1c as second parent of 53e0170; retained home updates, redesigned wishes hero placement and parking GPS/affiliate updates alongside release translations. [Quality job 138852828012](https://github.com/duhrrom11/toolya/actions/runs/45509380053/job/138852828012): 393 passed, 2 failed because the parking PDF helper followed the extraction marker. The fix restores its position and adds six isolated GPS/PDF regression cases; GPS-required saving now refuses missing geolocation APIs, while ordinary saving falls back without coordinates. Strict audit remains blocked (34 views, 33 candidate files, 16 noindex pages; 187 catalogue matches, 19 shared, 6 composite). No full browser acceptance or production writes.
+
+## Fast CI at 8249e27
+[Quality job 138853392091](https://github.com/duhrrom11/toolya/actions/runs/45509542820/job/138853392091): 397 passed, 4 failed. Both prior PDF failures resolved. GPS tests exposed a mistaken replacement of the inner rather than outer fallback and premature microtask assertions. Corrected the two distinct branches and wait for event-loop completion in fixtures. Six direct isolated branch checks passed in the development tool; full Node CI still required. Strict gate remains blocked.
