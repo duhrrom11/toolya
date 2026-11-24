@@ -1,0 +1,25 @@
+name: Strict international release gate
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  strict-international:
+    if: github.head_ref == 'release/toolya-english-1.0' || github.ref_name == 'release/toolya-english-1.0'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts
+      - run: node scripts/i18n-coverage-audit.mjs --strict
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: strict-international-coverage
+          path: |
+            i18n-coverage-report.md
+            i18n-coverage-report.json
