@@ -41,11 +41,11 @@
     {
       "@context": "https://schema.org",
       "@graph": [
-        { "@type": "WebSite", "@id": "https://toolya.app/#website", "name": "Toolya", "url": "https://toolya.app/", "inLanguage": "en", "publisher": { "@id": "https://toolya.app/legal.html#betreiber" } },
+        { "@type": "WebSite", "@id": "https://toolya.app/en/#website", "name": "Toolya", "url": "https://toolya.app/en/", "inLanguage": "en", "publisher": { "@id": "https://toolya.app/legal.html#betreiber" } },
         { "@type": "Person", "@id": "https://toolya.app/legal.html#betreiber", "name": "Romain Duhr" },
         {
           "@type": "WebApplication",
-          "@id": "https://toolya.app/#webapp",
+          "@id": "https://toolya.app/en/#webapp",
           "name": "Toolya",
           "operatingSystem": "Web Browser",
           "applicationCategory": "UtilitiesApplication",
@@ -97,9 +97,9 @@
   <a class="b3-hub-logo" href="/en/" aria-label="Toolya home">Toolya</a>
   <nav class="b3-hub-nav" aria-label="Account and settings">
    <span class="ty-language-switcher" role="group" aria-label="Choose language" style="display:inline-flex!important;align-items:center;justify-content:center;gap:4px;min-width:72px;flex:0 0 auto;white-space:nowrap;position:relative;z-index:5;background:#fff;color:#163c4a;border:1px solid #9bbec6;border-radius:999px;padding:8px 7px;font:700 13px/1.4 system-ui,sans-serif">
-    <a href="/" lang="de" hreflang="de" data-set-locale="de" aria-label="Switch to German" style="display:inline-block!important;visibility:visible!important;opacity:1!important;width:auto!important;min-width:19px!important;color:#163c4a!important;font:700 13px/1.4 system-ui,sans-serif!important;text-decoration:underline!important">DE</a>
+    <a href="/" lang="de" hreflang="de" data-set-locale="de" aria-label="Switch to German" style="display:inline-block!important;visibility:visible!important;opacity:1!important;width:auto!important;min-width:19px!important;color:#163c4a!important;font:700 13px/1.4 system-ui,sans-serif!important;text-decoration:none!important">DE</a>
     <span aria-hidden="true">|</span>
-    <a href="/en/" lang="en" hreflang="en" data-set-locale="en" aria-current="page" aria-label="English selected" style="display:inline-block!important;visibility:visible!important;opacity:1!important;width:auto!important;min-width:19px!important;color:#163c4a!important;font:700 13px/1.4 system-ui,sans-serif!important;text-decoration:none!important">EN</a>
+    <a href="/en/" lang="en" hreflang="en" data-set-locale="en" aria-current="page" aria-label="English selected" style="display:inline-block!important;visibility:visible!important;opacity:1!important;width:auto!important;min-width:19px!important;color:#163c4a!important;font:700 13px/1.4 system-ui,sans-serif!important;text-decoration:underline!important">EN</a>
    </span>
    <button type="button" id="userInfo" class="b3-hub-account b3-auth-status b3-auth-signed-out" aria-controls="settingsModal" aria-haspopup="dialog" aria-label="Checking account … Open account settings">Checking account …</button>
    <button type="button" id="settingsBtn" aria-haspopup="dialog" aria-controls="settingsModal" aria-label="Open settings"><img class="ty-settings-icon" src="/assets/vendor/bootstrap-icons/gear.svg" width="22" height="22" alt=""><span class="ty-settings-label">Settings</span></button>
@@ -359,7 +359,7 @@
         // Client initialisiert; die tatsächliche Erreichbarkeit wird bei Auth-Anfragen geprüft.
         const settingsQuery = new URLSearchParams(location.search);
         const toolAccessRequired = settingsQuery.get('auth') === 'required';
-        const toolAccessEnglish = toolAccessRequired && settingsQuery.get('lang') === 'en';
+        const toolAccessEnglish = true;
         if (toolAccessRequired || settingsQuery.get('settings') === '1') {
             document.addEventListener('DOMContentLoaded',()=>{
                 openSettings({ toolAccess: toolAccessRequired });
@@ -843,7 +843,7 @@
                     }
                 }
                 if (skippedAppKeys.length) {
-                    const proceed = confirm("Hinweis: " + skippedAppKeys.length + " möglicherweise zu Toolya gehörende lokale Datenspeicher werden von dieser Sicherung nicht erfasst. Die Sicherung könnte unvollständig sein. Bitte die jeweiligen Werkzeuge zusätzlich prüfen. Es werden keine unbekannten oder sicherheitskritischen Schlüssel automatisch übernommen. Trotzdem fortfahren?");
+                    const proceed = confirm("Note: " + skippedAppKeys.length + " local storage entries potentially belonging to Toolya are excluded. This backup may be incomplete. Check the individual tools as well. Unknown or security-sensitive keys are never included automatically. Continue?");
                     if (!proceed) return;
                 }
                 if (Object.keys(backup.localStorage).length === 0) { alert("No data to back up."); return; }
@@ -976,17 +976,17 @@
                         key === "digital_estate_vault" && localStorage.getItem(key) !== null &&
                         localStorage.getItem(key) !== value);
                     const vaultWarning = containsVault
-                        ? (encryptedImport ? " Das Backup enthält Nachlass-Tresordaten. Nach der Wiederherstellung liegen diese wieder im lokalen Browser-Speicher." : " WARNUNG: Das unverschlüsselte Backup enthält Nachlass-Tresordaten und möglicherweise Schlüsselmaterial.")
+                        ? (encryptedImport ? " This backup contains estate vault data. After restoring, it will be stored locally in your browser again." : " WARNING: This unencrypted backup contains estate vault data and possibly key material.")
                         : "";
                     const ignoredMessage = rejected.length
-                        ? " " + rejected.length + " unbekannte oder sicherheitskritische Einträge werden aus Sicherheitsgründen NICHT importiert."
+                        ? " " + rejected.length + " unknown or security-sensitive entries will NOT be imported for security reasons."
                         : "";
-                    if (vaultChanged && !confirm("ACHTUNG: Der bestehende digitale Nachlass-Tresor auf diesem Gerät unterscheidet sich von der Sicherung. Wenn du fortfährst, wird der bisherige lokale Tresor überschrieben. Vorher unbedingt den aktuellen Tresor separat verschlüsselt sichern. Trotzdem fortfahren?")) return;
-                    if (!confirm("Backup mit " + supported.length + " unterstützten Einträgen vom " +
-                        new Date(backup.created).toLocaleString("en-GB") + " importieren? " + existing +
-                        " vorhandene Einträge werden überschrieben, davon " + changed +
-                        " mit abweichendem Inhalt. Andere lokale Daten bleiben bestehen." + ignoredMessage + vaultWarning +
-                        " Bitte vorher eine Sicherung exportieren.")) return;
+                    if (vaultChanged && !confirm("WARNING: The existing digital estate vault on this device differs from the backup. Continuing will overwrite the existing local vault. First make a separate encrypted backup of the current vault. Continue?")) return;
+                    if (!confirm("Import backup with " + supported.length + " supported entries dated " +
+                        new Date(backup.created).toLocaleString("en-GB") + "? " + existing +
+                        " existing entries will be overwritten, including " + changed +
+                        " with different contents. Other local data remains unchanged." + ignoredMessage + vaultWarning +
+                        " Export a backup first.")) return;
 
                     // Vollständiger Rollback, falls z.B. die Browser-Speicherquote erreicht wird.
                     const previous = supported.map(([key]) => [key, localStorage.getItem(key)]);
@@ -1007,7 +1007,7 @@
                             }
                         }
                         alert(rollbackFailed
-                            ? "Import fehlgeschlagen. Die Wiederherstellung des vorherigen Datenstands war nicht vollständig möglich. Bitte vorhandene Sicherungen aufbewahren."
+                            ? "Import failed. Previous data could not be fully restored. Keep your existing backups."
                             : "Import failed. Previous data was restored.");
                         return;
                     }
@@ -1016,10 +1016,10 @@
                     try {
                         initFavorites();
                     } catch (refreshError) {
-                        alert(`${count} Einträge wurden wiederhergestellt, aber die Anzeige konnte nicht aktualisiert werden. Bitte die Seite neu laden.`);
+                        alert(`${count} entries restored, but the display could not be refreshed. Reload the page.`);
                         return;
                     }
-                    alert(`${count} Einträge erfolgreich wiederhergestellt.${rejected.length ? " " + rejected.length + " nicht unterstützte Einträge wurden übersprungen." : ""}`);
+                    alert(`${count} entries restored successfully.${rejected.length ? " " + rejected.length + " unsupported entries were skipped." : ""}`);
                 } catch (err) { alert("Error importing backup"); }
             };
             reader.onerror = () => alert("Could not read backup file.");
