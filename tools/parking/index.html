@@ -600,6 +600,15 @@
 
 
         // Escape only the displayed values; CloudOnly records remain unchanged.
+        function displayLegacyDate(value, english = window.__toolyaUILocale === 'en') {
+            if (!english || typeof value !== 'string') return value;
+            const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})(.*)$/.exec(value);
+            if (!m) return value;
+            const [,day,month,year,suffix] = m;
+            const date = new Date(Number(year), Number(month)-1, Number(day));
+            if (date.getFullYear() !== Number(year) || date.getMonth() !== Number(month)-1 || date.getDate() !== Number(day)) return value;
+            return day.padStart(2,'0')+'/'+month.padStart(2,'0')+'/'+year+suffix;
+        }
         function escapeParkingHtml(value) {
             const map = {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'};
             return String(value ?? '').replace(/[&<>"']/g, ch => map[ch]);
@@ -728,7 +737,7 @@
             sessions.forEach((s, idx) => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let sectorText = s.sector ? ` [${pdfLabel("Sektor: ","Sector: ")}${s.sector}]` : "";
-                const lines = doc.splitTextToSize(`${idx + 1}. ${pdfLabel("Standort: ","Location: ")}${s.desc}${sectorText} | ${s.date} | ${formatCost(Number(s.cost || 0))} EUR`, 180);
+                const lines = doc.splitTextToSize(`${idx + 1}. ${pdfLabel("Standort: ","Location: ")}${s.desc}${sectorText} | ${displayLegacyDate(s.date)} | ${formatCost(Number(s.cost || 0))} EUR`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 

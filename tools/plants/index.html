@@ -1175,6 +1175,15 @@
         }
         function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
 
+        function displayLegacyDate(value, english = window.__toolyaUILocale === 'en') {
+            if (!english || typeof value !== 'string') return value;
+            const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})(.*)$/.exec(value);
+            if (!m) return value;
+            const [,day,month,year,suffix] = m;
+            const date = new Date(Number(year), Number(month)-1, Number(day));
+            if (date.getFullYear() !== Number(year) || date.getMonth() !== Number(month)-1 || date.getDate() !== Number(day)) return value;
+            return day.padStart(2,'0')+'/'+month.padStart(2,'0')+'/'+year+suffix;
+        }
         function escapeHtml(value) {
             return String(value ?? '').replace(/[&<>"']/g, char => ({
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -1250,7 +1259,7 @@
                     let harvestBadge = harvestSum > 0 ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full">🍅 ${harvestSum >= 1000 ? (harvestSum/1000).toFixed(1)+'kg' : harvestSum+'g'}</span>` : '';
 
                     let diaryHtml = Array.isArray(p.diary) && p.diary.length > 0 ? `<div class="mt-2 bg-amber-50 border p-2 rounded-xl text-[11px] text-amber-900 space-y-1"><span class="font-bold">📖 ${window.__toolyaUILocale === 'en' ? 'Diary' : 'Tagebuch'}:</span>` + 
-                        p.diary.filter(d => d && typeof d === 'object').map(d => `<div class="text-[10px] text-gray-600"><span class="font-semibold">${escapeHtml(d.date)}:</span> ${escapeHtml(d.text)}</div>`).join('') + `</div>` : '';
+                        p.diary.filter(d => d && typeof d === 'object').map(d => `<div class="text-[10px] text-gray-600"><span class="font-semibold">${escapeHtml(displayLegacyDate(d.date))}:</span> ${escapeHtml(d.text)}</div>`).join('') + `</div>` : '';
 
                     return `
                         <div class="b3-plant-card p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
