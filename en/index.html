@@ -476,8 +476,10 @@
                 return;
             }
             try {
+                // Store presentation preference only; the recovery destination stays fixed.
+                try { localStorage.setItem('toolya-recovery-locale-v1', 'en'); } catch (_) {}
                 const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
-                    redirectTo: "https://toolya.app/en/index.html"
+                    redirectTo: "https://toolya.app/index.html"
                 });
                 if (error) throw error;
                 alert("If an account exists for this address, you will receive a password reset link.");

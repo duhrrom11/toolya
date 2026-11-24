@@ -95,7 +95,11 @@ async function reset(){
  const input=$('loginEmail'),email=input.value.trim().toLowerCase();
  if(!email||!input.checkValidity()){message('Bitte zuerst eine gültige E-Mail-Adresse eingeben.');input.focus();return}
  try{
-  const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:window.__toolyaDashboardLocale==='en'||(window.__toolyaDashboardLocale!=='de'&&new URLSearchParams(location.search).get('lang')==='en')?'https://toolya.app/en/index.html':'https://toolya.app/index.html'});
+  try{
+   const active=window.__toolyaDashboardLocale||new URLSearchParams(location.search).get('lang')||localStorage.getItem('toolya-locale-v1');
+   localStorage.setItem('toolya-recovery-locale-v1',active==='en'?'en':'de');
+  }catch{}
+  const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:'https://toolya.app/index.html'});
   if(error)throw error;
   message('Falls ein Konto für diese E-Mail-Adresse existiert, erhältst du einen Link zum Zurücksetzen des Passworts.');
  }catch(error){message(accountErrorMessage(error,'Die Anfrage konnte gerade nicht verarbeitet werden. Bitte versuche es später erneut.'))}

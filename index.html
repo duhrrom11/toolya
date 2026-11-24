@@ -357,6 +357,14 @@
         const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
 
+        // Route only the ordinary tool sign-in entry. Never forward recovery tokens,
+        // authorization codes or any other callback parameters to another page.
+        const toolEntryQuery = new URLSearchParams(location.search);
+        if (!location.hash && toolEntryQuery.get('auth') === 'required' &&
+            toolEntryQuery.get('lang') === 'en' &&
+            [...toolEntryQuery.keys()].every(key => key === 'auth' || key === 'lang')) {
+            location.replace('/en/?auth=required&lang=en');
+        }
         window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         // Client initialisiert; die tatsächliche Erreichbarkeit wird bei Auth-Anfragen geprüft.
         const settingsQuery = new URLSearchParams(location.search);
@@ -467,6 +475,28 @@
 
         // Recovery link uses Supabase's one-time token; never put passwords into URLs.
         let passwordRecoveryActive = false;
+        let recoveryEnglish = false;
+        const recoveryCopy = (german, english) => recoveryEnglish ? english : german;
+        function recoveryLanguage() {
+            try {
+                const saved = localStorage.getItem('toolya-recovery-locale-v1');
+                return saved === 'en' || (saved !== 'de' && localStorage.getItem('toolya-locale-v1') === 'en');
+            } catch (_) { return false; }
+        }
+        function localizeRecoveryPanel(panel) {
+            if (!recoveryEnglish) return;
+            panel.lang = 'en';
+            const labels = [
+                ['p:first-child', 'Set a new password'],
+                ['label[for="recoveryPassword"]', 'New password (at least 8 characters)'],
+                ['label[for="recoveryPasswordConfirm"]', 'Repeat password'],
+                ['button[type="button"]', 'Save new password']
+            ];
+            for (const [selector, text] of labels) {
+                const node = panel.querySelector(selector);
+                if (node) node.textContent = text;
+            }
+        }
         async function requestPasswordReset() {
             const input = document.getElementById("loginEmail");
             const email = input.value.trim().toLowerCase();
@@ -476,6 +506,8 @@
                 return;
             }
             try {
+                // Store presentation preference only; the recovery destination stays fixed.
+                try { localStorage.setItem('toolya-recovery-locale-v1', 'de'); } catch (_) {}
                 const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
                     redirectTo: "https://toolya.app/index.html"
                 });
@@ -488,8 +520,10 @@
 
         function showPasswordRecovery() {
             passwordRecoveryActive = true;
+            recoveryEnglish = recoveryLanguage();
             const panel = document.getElementById("passwordRecoveryPanel");
             if (!panel) return;
+            localizeRecoveryPanel(panel);
             panel.hidden = false;
             document.getElementById("signedOutControls").hidden = true;
             document.getElementById("logoutSubmit").hidden = true;
@@ -501,13 +535,13 @@
         async function saveRecoveredPassword() {
             const status = document.getElementById("recoveryStatus");
             if (!passwordRecoveryActive) {
-                status.textContent = "Bitte öffne zuerst den Link aus deiner Passwort-E-Mail.";
+                status.textContent = recoveryCopy("Bitte öffne zuerst den Link aus deiner Passwort-E-Mail.", "Open the link from your password reset email first.");
                 return;
             }
             const first = document.getElementById("recoveryPassword");
             const second = document.getElementById("recoveryPasswordConfirm");
             if (first.value.length < 8 || first.value !== second.value) {
-                status.textContent = "Bitte zwei identische Passwörter mit mindestens 8 Zeichen eingeben.";
+                status.textContent = recoveryCopy("Bitte zwei identische Passwörter mit mindestens 8 Zeichen eingeben.", "Enter two matching passwords with at least 8 characters.");
                 return;
             }
             const newPassword = first.value;
@@ -519,9 +553,9 @@
                 passwordRecoveryActive = false;
                 document.getElementById("passwordRecoveryPanel").hidden = true;
                 status.textContent = "";
-                alert("Dein Passwort wurde geändert. Du kannst dich jetzt damit anmelden.");
+                alert(recoveryCopy("Dein Passwort wurde geändert. Du kannst dich jetzt damit anmelden.", "Your password has been changed. You can now sign in."));
             } catch (_) {
-                status.textContent = "Passwort konnte nicht geändert werden. Bitte fordere gegebenenfalls einen neuen Link an.";
+                status.textContent = recoveryCopy("Passwort konnte nicht geändert werden. Bitte fordere gegebenenfalls einen neuen Link an.", "Could not change the password. Request a new link if necessary.");
                 return;
             }
             // The password update already succeeded. A later sign-out error
@@ -531,7 +565,7 @@
                 if (error) throw error;
                 updateUserDisplay();
             } catch (_) {
-                status.textContent = "Passwort geändert, aber Abmelden fehlgeschlagen. Bitte melde dich manuell ab.";
+                status.textContent = recoveryCopy("Passwort geändert, aber Abmelden fehlgeschlagen. Bitte melde dich manuell ab.", "Password changed, but sign-out failed. Please sign out manually.");
             }
         }
 
