@@ -2622,7 +2622,7 @@ test('seven PDF export paths render EN and DE without mutating records (isolated
  const {readFileSync}=await import('node:fs');
  const {runInNewContext}=await import('node:vm');
  const fixtures={
-  budget:[{date:'2026-11-01',entryType:'ausgabe',title:'Private receipt',store:'Shop',category:'Lebensmittel',price:12.5,paymentMethod:'card'}],
+  budget:[{date:'2026-11-01',entryType:'ausgabe',title:'Private receipt',store:'Shop',category:'Lebensmittel',price:12.5,paymentMethod:'Bargeld'}],
   car:{cars:[{id:'car1',name:'Personal car',plate:'AB-123',km:8000}],events:[{carId:'car1',type:'Reparatur',title:'Wheel service',date:'2026-11-01',cost:80}]},
   loans:{items:[{status:'active',title:'Personal drill',person:'Alex',date:'2026-11-01',deposit:20}]},
   meters:{readings:[{type:'Kaltwasser',name:'Meter-1',location:'Garten',value:120,date:'2026-11-01',note:'Private note'}]},
@@ -2639,6 +2639,7 @@ test('seven PDF export paths render EN and DE without mutating records (isolated
   const original=html.slice(start,end);
   const meterLabels=tool==='meters' ? html.slice(html.indexOf('const englishMeterTypes'),html.indexOf('function copyShareText()')) : '';
   const vehicleLabels=tool==='car' ? html.slice(html.indexOf('const vehicleTypeEn = Object.freeze('),html.indexOf('function vehicleTypeDisplay(')) : '';
+  const budgetLabels=tool==='budget' ? html.slice(html.indexOf('const budgetCategoryEn = Object.freeze('),html.indexOf('let budgetChartDisplaySnapshot')) : '';
   const code=original.replace("const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');",
     'const createExportPdf=async()=>pdfStub;');
   assert.notEqual(code,original,tool+' stub replacement');
@@ -2646,11 +2647,14 @@ test('seven PDF export paths render EN and DE without mutating records (isolated
    const rows=JSON.parse(JSON.stringify(fixtures[tool])),before=JSON.stringify(rows),texts=[],filenames=[];
    const pdfStub={setFont(){},setFontSize(){},text(value){texts.push(String(value))},splitTextToSize(value){return [String(value)]},addPage(){},save(name){filenames.push(String(name))}};
    const context={window:{__toolyaUILocale:lang},getData:()=>rows,pdfStub,parseReceiptDate:date=>new Date(date)};
-   await runInNewContext(meterLabels+vehicleLabels+code+';'+func+'()',context);
+   await runInNewContext(meterLabels+vehicleLabels+budgetLabels+code+';'+func+'()',context);
    assert.equal(JSON.stringify(rows),before,'source data mutated: '+tool);
    assert.equal(filenames.length,1,'PDF not created: '+tool);
    assert.ok(texts.length>=3,'missing PDF text: '+tool);
    assert.ok(texts.some(value=>lang==='en'?/Created on:/.test(value):/Erstellt am:/.test(value)),tool+' report date '+lang);
+   if(tool==='budget'){
+    assert.ok(texts.some(value=>value.includes('Private receipt')&&value.includes(lang==='en'?'Groceries':'Lebensmittel')&&value.includes(lang==='en'?'Cash':'Bargeld')),'budget category and payment labels '+lang);
+   }
    if(tool==='meters'){
     const type=lang==='en'?'Cold water':'Kaltwasser';
     const location=lang==='en'?'Garden':'Garten';

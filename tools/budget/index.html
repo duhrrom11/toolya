@@ -728,8 +728,8 @@ async function toolyaCloudBoot(tool) {
             Gesundheit:'Health', Haustiere:'Pets', Verträge:'Contracts',
             Sonstiges:'Other'
         });
-        function budgetCategoryLabel(category) {
-            return window.__toolyaUILocale === 'en' && typeof category === 'string'
+        function budgetCategoryLabel(category, language = window.__toolyaUILocale) {
+            return language === 'en' && typeof category === 'string'
                 && Object.hasOwn(budgetCategoryEn,category)
                 ? budgetCategoryEn[category] : category;
         }
@@ -740,8 +740,8 @@ async function toolyaCloudBoot(tool) {
             'EC-Karte':'Debit card', Bargeld:'Cash', Kreditkarte:'Credit card',
             'Überweisung':'Bank transfer / standing order', PayPal:'PayPal'
         });
-        function budgetPaymentLabel(method) {
-            return window.__toolyaUILocale === 'en' && typeof method === 'string'
+        function budgetPaymentLabel(method, language = window.__toolyaUILocale) {
+            return language === 'en' && typeof method === 'string'
                 && Object.hasOwn(budgetPaymentEn,method)
                 ? budgetPaymentEn[method] : method;
         }
@@ -2122,7 +2122,7 @@ async function toolyaCloudBoot(tool) {
                 const sign = (r.entryType === 'einnahme' || r.category === 'Einnahme') ? '+' : '-';
                 const price = Number(r.price);
                 const amount = Number.isFinite(price) ? sign + price.toFixed(2) : pdfLabel("k.A.","n/a");
-                const line = `${r.date || pdfLabel("k.A.","n/a")} | ${r.title || pdfLabel("Ohne Titel","Untitled")} (${budgetCategoryLabel(r.category) || pdfLabel("Sonstiges","Other")}): ${amount} € [${budgetPaymentLabel(r.paymentMethod) || pdfLabel("k.A.","n/a")}]`;
+                const line = `${r.date || pdfLabel("k.A.","n/a")} | ${r.title || pdfLabel("Ohne Titel","Untitled")} (${budgetCategoryLabel(r.category, pdfEn ? "en" : "de") || pdfLabel("Sonstiges","Other")}): ${amount} € [${budgetPaymentLabel(r.paymentMethod, pdfEn ? "en" : "de") || pdfLabel("k.A.","n/a")}]`;
                 const lines = doc.splitTextToSize(line, 180);
                 for (const textLine of lines) {
                     if (y > 275) { doc.addPage(); y = 20; }
