@@ -1,4 +1,41 @@
 // Toolya GA4 consent: no Google requests until explicit opt-in.
+// Localized presentation only: the same stored yes/no consent and GA policy
+// apply in either language. No additional i18n runtime or external request.
+const CONSENT_COPY=Object.freeze({
+ de:{dialog:'Statistik-Einstellungen',heading:'Statistik bei Toolya',
+  message:'Dürfen wir mit Google Analytics Nutzungsstatistiken erstellen? Ohne Zustimmung wird Google Analytics nicht geladen. ',
+  privacy:'Datenschutz',privacyHref:'/privacy.html',reject:'Ablehnen',
+  accept:'Akzeptieren',settings:'Cookie-Einstellungen'},
+ en:{dialog:'Analytics settings',heading:'Analytics at Toolya',
+  message:'May we use Google Analytics to collect usage statistics? Without your consent, Google Analytics is not loaded. ',
+  privacy:'Privacy notice',privacyHref:'/en/privacy.html',reject:'Decline',
+  accept:'Accept',settings:'Cookie settings'}
+});
+function consentLocale(){
+ const query=new URLSearchParams(location.search).get('lang');
+ if(query==='de'||query==='en')return query;
+ if(window.__toolyaUILocale==='de'||window.__toolyaUILocale==='en')return window.__toolyaUILocale;
+ if(document.documentElement.lang==='en')return 'en';
+ if(location.pathname.startsWith('/tools/')||location.pathname.startsWith('/dashboard/')){
+  try{return localStorage.getItem('toolya-locale-v1')==='en'?'en':'de'}catch{}
+ }
+ return 'de';
+}
+function localizeConsentPanel(panel,settings){
+ const language=consentLocale(),copy=CONSENT_COPY[language];
+ panel.lang=language;
+ panel.setAttribute('aria-label',copy.dialog);
+ panel.querySelector('strong').textContent=copy.heading;
+ const description=panel.querySelector('p'),privacy=description.querySelector('a');
+ // Update text nodes only, retaining the existing safe privacy link and listeners.
+ description.firstChild.nodeValue=copy.message;
+ privacy.href=copy.privacyHref;
+ privacy.textContent=copy.privacy;
+ panel.querySelector('.reject').textContent=copy.reject;
+ panel.querySelector('.accept').textContent=copy.accept;
+ settings.lang=language;
+ settings.textContent=copy.settings;
+}
 const KEY = 'toolya.analytics.consent.v1';
 const GA_ID = 'G-11L9Y8YK7B';
 let choice = null;
@@ -115,6 +152,12 @@ function init() {
   link.href = '#cookie-einstellungen';
   link.textContent = 'Cookie-Einstellungen';
   link.className = 'toolya-consent-settings-link';
+  localizeConsentPanel(panel,link);
+  // The shared tool locale switch announces itself without changing consent.
+  document.addEventListener('toolya:locale-change',()=>localizeConsentPanel(panel,link));
+  document.addEventListener('toolya:wishes-locale-change',()=>localizeConsentPanel(panel,link));
+  document.addEventListener('toolya:dashboard-locale-change',()=>localizeConsentPanel(panel,link));
+
   link.addEventListener('click', e => { e.preventDefault(); panel.hidden = false; panel.querySelector('.reject').focus(); });
   footer.appendChild(link);
   // A legacy footer can be replaced after consent initializes. Preserve
