@@ -134,25 +134,14 @@
 <!-- Main Content -->
     <main id="main-content" tabindex="-1" class="b3-hub-main flex-grow container mx-auto p-4 md:p-8 max-w-7xl space-y-6">
 
-        <!-- B3 Kategorie- und Suchbereich: rein lokale Filterung der vorhandenen Karten -->
+        <!-- Tool overview -->
 <section class="b3-discovery" id="toolDiscovery" aria-label="Werkzeugfinder">
  <div class="b3-discovery-top">
   <div><h2 class="b3-section-heading">Tools entdecken</h2>
     <p class="b3-section-subtitle" id="b3-result-count" role="status" aria-live="polite">12 von 12 Tools</p></div>
  </div>
  <p class="ty-helper-note ty-favorites-guide" id="favoritesGuide"><strong>Lieblings-Tools merken:</strong> Tippe auf den Stern einer Tool-Karte. Deine Auswahl wird in diesem Browser gespeichert und erscheint in „Mein Dashboard“. Mit erneutem Tippen entfernst du sie.</p>
- <label for="toolSearch" class="ty-home-search-label">Tools suchen</label>
- <input id="toolSearch" type="search" class="ty-home-search" placeholder="Nach Name oder Aufgabe suchen…" autocomplete="off" aria-controls="toolsGrid">
- <div class="b3-categories" role="group" aria-label="Tool-Kategorien">
-  <button type="button" class="b3-filter" data-b3-category-filter="alle" aria-pressed="true">Alle 12</button>
-  <button type="button" class="b3-filter" data-b3-category-filter="finanzen" aria-pressed="false">💶 Finanzen</button>
-  <button type="button" class="b3-filter" data-b3-category-filter="zuhause" aria-pressed="false">🏡 Zuhause</button>
-  <button type="button" class="b3-filter" data-b3-category-filter="organisation" aria-pressed="false">📋 Organisation</button>
-  <button type="button" class="b3-filter" data-b3-category-filter="unterwegs" aria-pressed="false">🚗 Unterwegs</button>
-  <button type="button" class="b3-filter" data-b3-category-filter="tiere" aria-pressed="false">🐾 Tiere</button>
- </div>
 </section>
-<p id="searchEmptyState" class="hidden text-sm text-gray-600 bg-white border border-gray-200 rounded-xl p-4" role="status" aria-live="polite">Keine passenden Tools gefunden.</p>
 
 <!-- Tools Grid (Alle 12 Tools) -->
         <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
