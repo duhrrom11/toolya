@@ -41,13 +41,15 @@ test('language selection works in an isolated document without changing mascot p
    const icon=heading.firstElementChild;
    assert.equal(heading.textContent,'🌿Plant care tracker');
    assert.equal(heading.lang,'en');
-   assert.equal(document.documentElement.lang,'de','do not falsely claim fully translated application');
+   assert.equal(document.documentElement.lang,'en','document language follows the primary interface, not release readiness');
    assert.equal(document.querySelector('.ty-tool-language-notice').hidden,false);
    const de=document.querySelector('[data-tool-locale="de"]');
    de.click();
    assert.equal(heading.textContent,'🌿Pflanzenpflege-App mit Gießplan');
    assert.equal(heading.firstElementChild,icon);
    assert.equal(heading.lang,'de');
+   assert.equal(document.documentElement.lang,'de');
+   assert.equal(document.querySelector('.ty-tool-language-notice').hidden,true);
    assert.equal(document.querySelector('[data-mascot]').getAttribute('src'),'purple.webp');
    assert.equal(saved.get('toolya-locale-v1'),'de');
    assert.equal(location.href,'https://toolya.app/tools/plants/?lang=de&utm_source=test#garden');
