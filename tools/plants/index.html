@@ -1176,7 +1176,12 @@
         function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
 
         function displayLegacyDate(value, english = window.__toolyaUILocale === 'en') {
-            if (!english || typeof value !== 'string') return value;
+            if (typeof value !== 'string') return value;
+            if (/^\d{4}-\d{2}-\d{2}$/.test(value) && isValidCalendarDate(value)) {
+                const [year,month,day] = value.split('-');
+                return english ? day+'/'+month+'/'+year : day+'.'+month+'.'+year;
+            }
+            if (!english) return value;
             const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})(.*)$/.exec(value);
             if (!m) return value;
             const [,day,month,year,suffix] = m;
@@ -1249,7 +1254,7 @@
                         const propagationLabels = { 'Steckling im Wurzeln': 'Rooting cutting', 'Bereit zum Tauschen': 'Ready to swap' };
                         const propagationDisplay = window.__toolyaUILocale === 'en' && Object.hasOwn(propagationLabels, p.propagation)
                             ? propagationLabels[p.propagation] : p.propagation;
-                        propBadge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">✂️ ${escapeHtml(propagationDisplay)} ${p.propDate ? '('+escapeHtml(p.propDate)+')' : ''}</span>`;
+                        propBadge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">✂️ ${escapeHtml(propagationDisplay)} ${p.propDate ? '('+escapeHtml(displayLegacyDate(p.propDate))+')' : ''}</span>`;
                     }
 
                     const harvestSum = Array.isArray(p.harvestLog) ? p.harvestLog.reduce((sum, entry) => {
@@ -1275,7 +1280,7 @@
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1">
                                         ${p.location ? '📍 ' + escapeHtml(p.location) + ' | ' : ''}
-                                        ${window.__toolyaUILocale === 'en' ? 'Water every' : 'Gießen: alle'} ${escapeHtml(p.interval)}${window.__toolyaUILocale === 'en' ? 'd' : 'T'} (~${getMlForPot(p.potSize)} ml)${connectWateringDue?.(p) && p.connectDue ? ' · 📅 Toolya Connect: ' + escapeHtml(p.connectDue) : ''}
+                                        ${window.__toolyaUILocale === 'en' ? 'Water every' : 'Gießen: alle'} ${escapeHtml(p.interval)}${window.__toolyaUILocale === 'en' ? 'd' : 'T'} (~${getMlForPot(p.potSize)} ml)${connectWateringDue?.(p) && p.connectDue ? ' · 📅 Toolya Connect: ' + escapeHtml(displayLegacyDate(p.connectDue)) : ''}
                                     </p>
                                     ${p.note ? `<p class="text-[11px] text-gray-400 mt-0.5">${escapeHtml(p.note)}</p>` : ''}
                                     ${diaryHtml}
