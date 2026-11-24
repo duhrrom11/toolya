@@ -139,6 +139,20 @@ export const ESTATE_COPY=Object.freeze({
 });
 const reverse=Object.freeze(Object.fromEntries(Object.entries(ESTATE_COPY).map(([de,en])=>[en,de])));
 export const ESTATE_RUNTIME_COPY=Object.freeze({
+  "Bitte bestätige die E-Mail von Toolya. Melde dich danach hier an.": "Confirm the email from Toolya, then sign in here.",
+  "Auf diesem Gerät verschlüsselt gespeichert. Die Online-Sicherung steht noch aus.": "Saved encrypted on this device. The online backup is still pending.",
+  "Unterlage gelöscht und online gesichert.": "Document deleted and backed up online.",
+  "Anhang wird beim Speichern entfernt.": "The attachment will be removed when you save.",
+  "Eintrag gespeichert.": "Entry saved.",
+  "Schlüsselübergabe bestätigt.": "Key handover confirmed.",
+  "Änderungen speichern": "Save changes",
+  "Vertrauensperson gespeichert. Ihr persönlicher Schlüssel ist bereit.": "Trusted person saved. Their personal key is ready.",
+  "Schlüsselblätter vorbereitet. Du kannst im Druckfenster „Als PDF speichern“ wählen.": "Key sheets prepared. You can choose Save as PDF in the print dialog.",
+  "Erinnerung gespeichert.": "Reminder saved.",
+  "Das neue Tresorpasswort ist gespeichert. Nutze es künftig zum Öffnen und auf neuen Geräten.": "Your new vault password has been saved. Use it to open the vault in future, including on new devices.",
+  "Vorhandene Sicherung übernommen und online gesichert.": "Existing backup imported and backed up online.",
+  "Der aktuelle Alarmstatus konnte nicht geladen werden. Bitte wähle „Alarmstatus prüfen“.": "The current emergency alert status could not be loaded. Select Check alert status.",
+  "Der Tresor ist zum Lesen geöffnet.": "The vault is open for reading.",
  "Dein Tresor ist geschlossen.": "Your vault is locked.",
  "Dein Tresor wird geöffnet …": "Opening your vault…",
  "Deine Online-Sicherung konnte gerade nicht geladen werden. Prüfe deine Verbindung und öffne deinen Tresor erneut.": "Your online backup could not be loaded. Check your connection and open your vault again.",
@@ -215,6 +229,8 @@ export const ESTATE_RUNTIME_COPY=Object.freeze({
 });
 const runtimeReverse=Object.freeze(Object.fromEntries(Object.entries(ESTATE_RUNTIME_COPY).map(([de,en])=>[en,de])));
 const runtimePrefixes=Object.freeze({
+ "Sicherung erfolgreich entschlüsselt: ": "Backup decrypted successfully: ",
+ "Letztes Lebenszeichen: ": "Last check-in: ",
  "Verbleibende Zeit: ": "Time remaining: ",
  "Nächste Überprüfung: ": "Next review: ",
  "Ein Notfall wurde gemeldet. Ohne Entwarnung ist der Zugang mit einem Schlüssel ab ": "An emergency was reported. Without a check-in, one-key access begins at ",
