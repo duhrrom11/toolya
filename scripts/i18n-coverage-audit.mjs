@@ -7,6 +7,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {parseHTML} from 'linkedom';
+import {reviewRuntimeLiteral} from './i18n-runtime-triage.mjs';
 
 const root=process.cwd();
 const ignored=new Set(['.git','node_modules','coverage','dist','_site']);
@@ -117,11 +118,13 @@ for(const f of scriptSources){
   // This is a source-only candidate. It might already be translated by an
   // exact runtime catalogue and is never treated as private user content.
   sightings.push({line,kind:m[0].slice(0,m[0].indexOf('(')>=0?m[0].indexOf('('):m[0].indexOf('=' )).trim(),
-   sample:text});
+   sample:text,...reviewRuntimeLiteral(f,m[2],m[0],content.slice(m.index+m[0].length,m.index+m[0].length+30))});
  }
  if(examples.length)dynamic.push({file:f,total:examples.length,
   samples:[...new Set(examples)].slice(0,4),sightings});
 }
+const runtimeTriage={};
+for(const item of dynamic)for(const occurrence of item.sightings)runtimeTriage[occurrence.catalogueState]=(runtimeTriage[occurrence.catalogueState]||0)+1;
 const absent=reports.filter(x=>x.status==='NO EN COVERAGE');
 const publicEnglish=reports.filter(x=>x.status==='EN page');
 const toolPartial=reports.filter(x=>x.status==='EN opt-in tool');
@@ -162,6 +165,10 @@ const output=[
  '',
  '## German message/dialog candidates in application source',
  ...(dynamic.length?dynamic.flatMap(x=>['### '+x.file+` (${x.total} matched occurrences)`,...x.samples.map(v=>'- '+v)]):['None detected by heuristic (not proof of completeness).']),
+ '',
+ '## Runtime catalogue triage (source evidence only)',
+ ...Object.entries(runtimeTriage).map(([state,count])=>'- '+state+': '+count+' occurrences'),
+ 'Catalogue matches do not prove that the corresponding UI node invokes the translator. Unmatched or composite literals require source review; do not infer private data from a text match.',
  '',
  '## Mandatory manual acceptance before release',
  '- Every page and nested application state has correct English and German text, including alerts, confirmation, validation, loading, errors, account and password recovery.',
@@ -204,6 +211,7 @@ const auditJSON={
   publicGermanCandidates:germanUi.length,missingRoutes:absent.length},
  releaseReady:false,
  languageEvidence,
+ runtimeTriage,
  blockers,
  viewTasks,runtimeTasks,
  seoGate:{noindexRetained:true,englishPagesAwaitingIndexApproval:publicEnglish.filter(x=>x.noindex).map(x=>x.file)}
@@ -215,6 +223,7 @@ output.push('## Machine-readable review queue','',
 fs.writeFileSync('i18n-coverage-report.md',output.join('\n')+'\n');
 if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,output.slice(0,21).join('\n')+'\n');
 console.log('I18N PAGE AUDIT: '+JSON.stringify({html:html.length,js:js.length,english:publicEnglish.length,partialTools:toolPartial.length,missingPages:absent.length,englishNoindex:publicEnglish.filter(x=>x.noindex).length,partialGroups:groups,germanUiCandidates:germanUi.length,germanMessageFiles:dynamic.length,htmlLangNotSet}));
+console.log('RUNTIME CATALOGUE TRIAGE: '+JSON.stringify(runtimeTriage));
 console.log('Release blockers:\n'+blockers.map(b=>' - '+b).join('\n'));
 console.log('Report: i18n-coverage-report.md');
 if(process.argv.includes('--strict') && (absent.length||toolPartial.length||htmlLangNotSet||publicEnglish.some(x=>x.noindex)||germanUi.length||dynamic.length)){
