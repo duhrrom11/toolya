@@ -113,7 +113,10 @@ export const ADMIN_COPY=Object.freeze({
  "Veröffentlichung abgebrochen. Bitte Namen, Quellen und Amazon-Links einzeln prüfen.": "Publication cancelled. Review names, sources and Amazon links individually.",
  "Veröffentlichung wird geprüft …": "Checking publication…",
  "Bitte zuerst mindestens einen neuen Fund auswählen.": "Select at least one new finding first.",
- "Bitte mit dem Administratorkonto anmelden.": "Sign in with an administrator account."
+ "Bitte mit dem Administratorkonto anmelden.": "Sign in with an administrator account.",
+ "Bitte eine Datei auswählen.": "Please select a file.",
+ "Maximal 1,5 MB pro Datei.": "Maximum 1.5 MB per file.",
+ "Keine Einträge gefunden.": "No entries found."
 });
 const reverse=Object.freeze(Object.fromEntries(Object.entries(ADMIN_COPY).map(([de,en])=>[en,de])));
 export function adminText(value,lang){if(typeof value!=='string')return value;const table=lang==='en'?ADMIN_COPY:reverse;if(Object.hasOwn(table,value))return table[value];
@@ -131,5 +134,9 @@ const patterns=[
  [/^(\d+) Suchabfragen · (\d+) neue Funde · (.+)$/,'$1 searches · $2 new findings · $3'],
  [/^(\d+) Wunschlisten veröffentlicht; (\d+) bereits vorhandene übersprungen\.$/,'$1 wish lists published; $2 existing entries skipped.']
 ];
+if(lang==='en'){
+ const publication=/^Hast du für alle (\d+) ausgewählten Funde die öffentliche Amazon-Liste und die korrekte Namens-\/Organisationszuordnung anhand der Quelle geprüft\?\\n\\nEine Quellseiten-Überschrift beweist allein nicht, wem die Amazon-Liste gehört\. Ungeprüfte Einträge bitte nicht veröffentlichen\.$/;
+ if(publication.test(value))return value.replace(publication,'Have you verified the public Amazon list and the correct name or organisation attribution against the source for all $1 selected findings?\\n\\nA source page heading alone does not prove who owns the Amazon list. Do not publish unverified entries.');
+}
 if(lang==='en')for(const [pattern,copy] of patterns)if(pattern.test(value))return value.replace(pattern,copy);
 return value;}
