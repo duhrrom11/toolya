@@ -1,5 +1,27 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+"Wunsch speichern": "Save wish",
+"Ohne Liste speichern": "Save without a list",
+"Bitte zwei unterschiedliche Sicherungspunkte auswählen.": "Select two different checkpoints.",
+"Vorschau verworfen. Vorherige Ansicht wiederhergestellt.": "Preview discarded. Previous view restored.",
+"Noch keine angehefteten Filteransichten. Du kannst sie in den Cloud-Ansichtskarten als Favorit markieren.": "No pinned filter views yet. Mark them as favourites on the cloud view cards.",
+"Cloud-Speicherung fehlgeschlagen; bestehende Ansichten bleiben erhalten.": "Cloud saving failed; existing views are preserved.",
+"Cloud ist voll (5 Ansichten). Lokale Ansichten bleiben erhalten.": "Cloud is full (5 views). Local views are preserved.",
+"Dieser Name ist bereits vergeben.": "This name is already taken.",
+"Cloud-Ansicht umbenannt.": "Cloud view renamed.",
+"Cloud-Ansicht dupliziert.": "Cloud view duplicated.",
+"Das Startdatum muss vor dem Enddatum liegen.": "The start date must precede the end date.",
+"Änderungsdetails anzeigen": "Show change details",
+"Mindestens eine Konfiguration ist nicht vollständig gültig.": "At least one configuration is not fully valid.",
+"Sicherungspunkte werden geladen …": "Loading checkpoints…",
+"Keine Sicherungspunkte vorhanden.": "No checkpoints available.",
+"Sicherungspunkte konnten nicht geladen werden.": "Checkpoints could not be loaded.",
+"Gespeicherte Änderungen werden geladen …": "Loading saved changes…",
+"Keine Einträge.": "No entries.",
+"Der private Verlauf konnte nicht geladen werden.": "The private history could not be loaded.",
+"Privater Überblick – nur für dein angemeldetes Konto. Keine Daten verändert.": "Private overview – only for your signed-in account. No data changed.",
+"Dein privater Geschenk-Überblick wird geladen …": "Loading your private gift overview…",
+"Privater Überblick derzeit nicht verfügbar. Öffne das Geschenk-Planungscockpit für Details.": "Private overview currently unavailable. Open the gift planning cockpit for details.",
 "Sichtbare auswählen": "Select visible wishes",
 "Sichtbare abwählen": "Deselect visible wishes",
 "Für Mehrfachaktion auswählen": "Select for multiple actions",
@@ -1215,6 +1237,9 @@ export function wishesText(value,language){
   const base=value.slice(0,-suffix.length),translated=wishesText(base,language);
   if(base!==translated)return translated+(language==='en'?budgetSuffixEn:budgetSuffix);
  }
+ // Match complete application frames and preserve the embedded name exactly.
+ const framed=[["Aktuelle Einstellungen im Vorlagenplatz „","“ speichern? Eine vorhandene Vorlage wird überschrieben.","Save current settings in template slot “","”? An existing template will be overwritten."],["Cloud-Ansicht „","“ überschreiben?","Overwrite cloud view “","”?"],["Cloud-Ansicht „","“ dauerhaft löschen?","Permanently delete cloud view “","”?"],["Cloud-Ansicht „","“ angewendet.","Cloud view “","” applied."],["Monatsvorschau „","“ · Filter bleiben unverändert.","Monthly preview “","” · filters remain unchanged."]];
+ for(const [deStart,deEnd,enStart,enEnd] of framed){const [start,end,targetStart,targetEnd]=language==='en'?[deStart,deEnd,enStart,enEnd]:[enStart,enEnd,deStart,deEnd];if(value.startsWith(start)&&value.endsWith(end)&&value.length>=start.length+end.length)return targetStart+value.slice(start.length,value.length-end.length)+targetEnd;}
  const dynamic=language==='en'?[
  [/^Zugeordnete auswählen \((\d+)\)$/,'Select assigned ($1)'],
  [/^Ohne Liste auswählen \((\d+)\)$/,'Select unassigned ($1)'],
