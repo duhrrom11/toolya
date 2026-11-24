@@ -259,7 +259,7 @@ async function runOwnExport(format){
  try{
   const rows=await loadOwnWishesForExport(ownerId);
   if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert. Export abgebrochen.');
-  if(format==='csv')downloadOwnBackup(exportWishlistCsv(rows),'text/csv;charset=utf-8','csv');
+  if(format==='csv')downloadOwnBackup(exportWishlistCsv(rows,globalThis.__toolyaWishesLocale==='en'?'en':'de'),'text/csv;charset=utf-8','csv');
   else if(format==='json')downloadOwnBackup(exportWishlistJson(rows,profile),'application/json;charset=utf-8','json');
   else throw Error('Unbekanntes Exportformat');
   $('exportProgress').textContent=rows.length+' Wünsche als '+format.toUpperCase()+' bereitgestellt.';
