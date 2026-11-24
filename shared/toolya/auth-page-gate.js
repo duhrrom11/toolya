@@ -8,7 +8,7 @@
     if (language !== 'de' && language !== 'en') {
       try { language = window.localStorage.getItem('toolya-locale-v1'); } catch { language = null; }
     }
-    window.location.replace(language === 'en' ? home + '&lang=en' : home);
+    window.location.replace(language === 'en' ? '/en/?auth=required&lang=en' : home);
   };
   const unavailable = () => root.classList.add('toolya-auth-unavailable');
 
