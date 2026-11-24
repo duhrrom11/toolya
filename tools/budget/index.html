@@ -1371,6 +1371,12 @@ async function toolyaCloudBoot(tool) {
                 date.getDate() === day ? date : new Date(NaN);
         }
 
+        // Display only: keep ISO dates in receipt records, form fields and QR payloads.
+        function displayReceiptDate(value, english = window.__toolyaUILocale === 'en') {
+            const date = parseReceiptDate(value);
+            return Number.isFinite(date.getTime()) ? date.toLocaleDateString(english ? 'en-GB' : 'de-DE') : value;
+        }
+
         function addWarrantyMonths(buyDate, months) {
             if (!(buyDate instanceof Date) || !Number.isFinite(buyDate.getTime()) ||
                 !Number.isSafeInteger(months) || months <= 0) return null;
@@ -1626,7 +1632,7 @@ async function toolyaCloudBoot(tool) {
                                     ${isReturnActive ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '⏱️ Return: ' + diffDaysReturn + ' d' : '⏱️ Rückgabe: ' + diffDaysReturn + ' T'}</span>` : ''}
                                 </div>
                                 <p class="text-xs text-gray-600">
-                                    ${window.__toolyaUILocale === 'en' ? 'Amount:' : 'Betrag:'} <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${displayPrice} €</strong> | ${window.__toolyaUILocale === 'en' ? 'Date:' : 'Datum:'} ${escapeHaushaltsHtml(r.date)} | ${window.__toolyaUILocale === 'en' ? 'Payment method:' : 'Zahlungsart:'} ${escapeHaushaltsHtml(budgetPaymentLabel(r.paymentMethod || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.')))}
+                                    ${window.__toolyaUILocale === 'en' ? 'Amount:' : 'Betrag:'} <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${displayPrice} €</strong> | ${window.__toolyaUILocale === 'en' ? 'Date:' : 'Datum:'} ${escapeHaushaltsHtml(displayReceiptDate(r.date))} | ${window.__toolyaUILocale === 'en' ? 'Payment method:' : 'Zahlungsart:'} ${escapeHaushaltsHtml(budgetPaymentLabel(r.paymentMethod || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.')))}
                                 </p>
                                 <p class="text-[11px] text-gray-500">
                                     ${r.store ? 'Partner: ' + escapeHaushaltsHtml(r.store) + ' | ' : ''} ${r.sn ? 'S/N: ' + escapeHaushaltsHtml(r.sn) + ' | ' : ''} ${r.location ? (window.__toolyaUILocale === 'en' ? 'Box: ' : 'Karton: ') + escapeHaushaltsHtml(r.location) + ' | ' : ''} ${r.note ? (window.__toolyaUILocale === 'en' ? 'Note: ' : 'Notiz: ') + escapeHaushaltsHtml(r.note) : ''}
@@ -1762,7 +1768,7 @@ async function toolyaCloudBoot(tool) {
             const english = window.__toolyaUILocale === 'en';
             document.getElementById('stickerTitle').textContent = r.title || '';
             document.getElementById('stickerStoreDate').textContent =
-                (english ? 'Purchased: ' : 'Kauf: ') + r.date +
+                (english ? 'Purchased: ' : 'Kauf: ') + displayReceiptDate(r.date, english) +
                 ' (' + (r.store || (english ? 'Warranty receipt' : 'Garantie-Beleg')) + ')';
             document.getElementById('stickerSN').textContent =
                 'S/N: ' + (r.serial || (english ? 'none' : 'keine'));
@@ -1839,7 +1845,7 @@ async function toolyaCloudBoot(tool) {
             const title = encodeURIComponent(english ? `Warranty expiry: ${r.title}` : `Garantie-Ablauf: ${r.title}`);
             const price = Number(r.price);
             const displayPrice = Number.isFinite(price) ? price.toFixed(2) + ' €' : (english ? 'n/a' : 'k.A.');
-            const details = encodeURIComponent(english ? `Warranty for ${r.title} (${r.store}) expires today.\nPurchase date: ${r.date}\nPrice: ${displayPrice}\nS/N: ${r.sn || 'n/a'}` : `Garantie für ${r.title} (${r.store}) läuft heute ab.\nKaufdatum: ${r.date}\nPreis: ${displayPrice}\nS/N: ${r.sn || 'k.A.'}`);
+            const details = encodeURIComponent(english ? `Warranty for ${r.title} (${r.store || 'n/a'}) expires today.\nPurchase date: ${displayReceiptDate(r.date, true)}\nPrice: ${displayPrice}\nS/N: ${r.sn || 'n/a'}` : `Garantie für ${r.title} (${r.store || 'k.A.'}) läuft heute ab.\nKaufdatum: ${displayReceiptDate(r.date, false)}\nPreis: ${displayPrice}\nS/N: ${r.sn || 'k.A.'}`);
             window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}/${endDateStr}&details=${details}`, '_blank');
         }
 
