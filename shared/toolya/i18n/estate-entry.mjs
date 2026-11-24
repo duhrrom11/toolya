@@ -59,6 +59,7 @@ function mount(){
   translateEstateStatuses(lang);
   applyEstateLocale(document,lang);
   globalThis.__toolyaEstateLocale=lang;
+  document.documentElement.lang=lang;
   translateEstateStatuses(lang);
   document.title=lang==='en'?estateText(originalTitle.replace(' | Toolya',''),'en')+' | Toolya':originalTitle;
   nav?.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.estateLocale===lang)));
