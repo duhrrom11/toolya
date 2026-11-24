@@ -107,12 +107,20 @@ const callPattern=/\b(?:alert|confirm|prompt|textContent|innerHTML)\s*(?:\(|=)\s
 for(const f of scriptSources){
  if(f.startsWith('en/')||f.startsWith('shared/toolya/i18n/'))continue;
  const content=read(f);
- const examples=[];
+ const examples=[],sightings=[];
  let m;
  while((m=callPattern.exec(content))!==null){
-  if(german.test(m[2])) examples.push(small(m[2]));
+  if(!german.test(m[2]))continue;
+  const text=small(m[2]);
+  const line=content.slice(0,m.index).split('\n').length;
+  examples.push(text);
+  // This is a source-only candidate. It might already be translated by an
+  // exact runtime catalogue and is never treated as private user content.
+  sightings.push({line,kind:m[0].slice(0,m[0].indexOf('(')>=0?m[0].indexOf('('):m[0].indexOf('=' )).trim(),
+   sample:text});
  }
- if(examples.length)dynamic.push({file:f,total:examples.length,samples:[...new Set(examples)].slice(0,4)});
+ if(examples.length)dynamic.push({file:f,total:examples.length,
+  samples:[...new Set(examples)].slice(0,4),sightings});
 }
 const absent=reports.filter(x=>x.status==='NO EN COVERAGE');
 const publicEnglish=reports.filter(x=>x.status==='EN page');
@@ -163,6 +171,46 @@ const output=[
  '- Latest CI green, current main changes safely reconciled, and both live languages checked after rollout.',
  '',
 ];
+// Machine-readable triage: view and source candidates are tasks to verify,
+ // NOT a measure of actual translated runtime strings or release readiness.
+const classify=file=>file.startsWith('tools/wishes/')?'Wishes'
+ :file.startsWith('tools/estate/')?'Estate'
+ :file.startsWith('tools/moving/')||file.startsWith('tools/housemates/')||file.startsWith('tools/loans/')?'Organisation'
+ :file.startsWith('tools/plants/')||file.startsWith('tools/baking/')||file.startsWith('tools/budget/')?'Household'
+ :file.startsWith('tools/car/')||file.startsWith('tools/parking/')||file.startsWith('tools/meters/')?'Vehicles and meters'
+ :file.startsWith('tools/pet-health/')?'Pet health'
+ :file.includes('dashboard')||file.includes('account')||file.startsWith('index.html')?'Platform and auth'
+ :'Shared or secondary';
+const priority=(file,kind)=>file.includes('estate')||file.includes('auth')||file.includes('account')||
+ file.includes('backup')||file.startsWith('admin-')?'high':
+ kind==='app-view'?'high':'review';
+const viewTasks=toolPartial.map(item=>({file:item.file,category:classify(item.file),
+ priority:priority(item.file,'app-view'),kind:'app-view',
+ state:'partially localized; authenticated/dynamic E2E review required',
+ requiredChecks:['DE to EN','EN to DE','draft input retention','dynamic alerts and dialogs',
+  'auth and cloud isolation','320/375/768 mobile','keyboard/accessible labels',
+  'PDF/QR/CSV/backup when present']}));
+const runtimeTasks=dynamic.map(item=>({file:item.file,category:classify(item.file),
+ priority:priority(item.file,'runtime'),kind:'runtime-review',
+ state:'German literal heuristic only; check runtime catalogue and usage before editing',
+ count:item.total,occurrences:item.sightings}));
+const auditJSON={
+ schemaVersion:1,
+ head:process.env.GITHUB_SHA||null,
+ interpretation:'Review candidates, not proven untranslated UI or translation completeness.',
+ totals:{htmlPages:html.length,jsFiles:js.length,englishPages:publicEnglish.length,
+  incompleteAppViews:toolPartial.length,dynamicCandidateFiles:dynamic.length,
+  incompleteEnglishIndexing:publicEnglish.filter(x=>x.noindex).length,
+  publicGermanCandidates:germanUi.length,missingRoutes:absent.length},
+ releaseReady:false,
+ blockers,
+ viewTasks,runtimeTasks,
+ seoGate:{noindexRetained:true,englishPagesAwaitingIndexApproval:publicEnglish.filter(x=>x.noindex).map(x=>x.file)}
+};
+fs.writeFileSync('i18n-coverage-report.json',JSON.stringify(auditJSON,null,2)+'\n');
+output.push('## Machine-readable review queue','',
+ 'See i18n-coverage-report.json for each unfinished view, source file, priority and line-numbered literal candidate.',
+ 'An automatically found German literal is **not** proof that the user currently sees an untranslated text.');
 fs.writeFileSync('i18n-coverage-report.md',output.join('\n')+'\n');
 if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,output.slice(0,21).join('\n')+'\n');
 console.log('I18N PAGE AUDIT: '+JSON.stringify({html:html.length,js:js.length,english:publicEnglish.length,partialTools:toolPartial.length,missingPages:absent.length,englishNoindex:publicEnglish.filter(x=>x.noindex).length,partialGroups:groups,germanUiCandidates:germanUi.length,germanMessageFiles:dynamic.length,htmlLangNotSet}));

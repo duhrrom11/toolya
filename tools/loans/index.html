@@ -95,8 +95,8 @@
     <header class="b3-header"><div class="b3-header-inner">
  <a class="b3-brand" href="../../index.html" aria-label="Toolya Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Toolya</a>
  <span class="b3-tool-icon" aria-hidden="true">🤝</span>
- <div class="b3-tool-title"><h1>Verliehene Gegenstände verwalten</h1><p>Verliehene Gegenstände erfassen und Rückgabetermine und Kautionen im Blick behalten</p></div>
- <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()">⚙</button>
+ <div class="b3-tool-title"><h1 data-tool-en="Manage lent items">Verliehene Gegenstände verwalten</h1><p>Verliehene Gegenstände erfassen und Rückgabetermine und Kautionen im Blick behalten</p></div>
+ <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()" data-tool-en-aria-label="Open settings">⚙</button>
 </div></header>
 
     <!-- MODAL: Einstellungen & Supabase Auth -->
@@ -104,7 +104,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-indigo-900">⚙️ Einstellungen und Konto</h3>
-                <button onclick="toggleSettingsModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleSettingsModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             
             <div class="p-3 bg-gray-50 rounded-xl border text-xs space-y-1">
@@ -128,7 +128,7 @@
                 </div>
                 <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-xl transition">Abmelden</button>
             </div>
-            <button onclick="toggleSettingsModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="toggleSettingsModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -137,30 +137,30 @@
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-indigo-900">📖 Hilfe & Anleitungen</h3>
-                <button onclick="toggleHelpModal()" aria-label="Anleitung schließen" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleHelpModal()" aria-label="Anleitung schließen" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600" data-tool-en-aria-label="Close guide">✕</button>
             </div>
             <div class="space-y-3 text-xs">
                 <details class="bg-gray-50 border rounded-xl p-3">
                     <summary class="font-bold cursor-pointer text-indigo-700">Wie verwalte ich Leihgaben und Kontakte?</summary>
-                    <p class="mt-2 text-gray-600 leading-relaxed">
+                    <p class="mt-2 text-gray-600 leading-relaxed" data-tool-en="Choose an item and a contact, or enter their names for this loan. You can add a return date and a deposit. If the saved contact has a phone number, you can prepare a WhatsApp message.">
                         Wähle einen Gegenstand und einen Kontakt aus oder gib die Namen für diesen Verleih direkt ein. Du kannst eine Rückgabefrist und eine Kaution hinterlegen. Für gespeicherte Kontakte mit Telefonnummer kannst du eine Nachricht in WhatsApp vorbereiten.
                     </p>
                 </details>
                 <details class="bg-gray-50 border rounded-xl p-3">
                     <summary class="font-bold cursor-pointer text-indigo-700">Wie nutze ich Kalender-Erinnerungen & ICS?</summary>
-                    <p class="mt-2 text-gray-600 leading-relaxed">
+                    <p class="mt-2 text-gray-600 leading-relaxed" data-tool-en="For active loans with a return date, create a Google Calendar entry or download an ICS file to set a reminder.">
                         Für aktive Verleihvorgänge mit Rückgabedatum kannst du direkt einen Google-Kalender-Eintrag generieren oder eine ICS-Datei herunterladen, um rechtzeitig erinnert zu werden.
                     </p>
                 </details>
                 <details class="bg-gray-50 border rounded-xl p-3">
                     <summary class="font-bold cursor-pointer text-indigo-700">Wie erstelle ich einen PDF-Report?</summary>
-                    <p class="mt-2 text-gray-600 leading-relaxed">
+                    <p class="mt-2 text-gray-600 leading-relaxed" data-tool-en="Use “📄 PDF report” to download a record of all items on loan and outstanding deposits.">
                         Mit dem Button „📄 PDF-Report“ erstellst du jederzeit eine übersichtliche Dokumentation aller verliehenen Gegenstände und offenen Kautionen für deine Unterlagen.
                     </p>
                 </details>
             </div>
-            <p class="text-sm"><a href="/verliehene-dinge/" class="text-indigo-700 underline">Schritt-für-Schritt-Anleitung für verliehene Dinge</a></p>
-            <button onclick="toggleHelpModal()" class="b3-action b3-outline w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <p class="text-sm"><a href="/verliehene-dinge/" class="text-indigo-700 underline" data-tool-en="Step-by-step guide to Lent Items">Schritt-für-Schritt-Anleitung für verliehene Dinge</a></p>
+            <button onclick="toggleHelpModal()" class="b3-action b3-outline w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -198,7 +198,7 @@
                 <!-- Kontakt anlegen -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
                     <h2 class="text-base font-bold">👤 Kontakt anlegen</h2>
-                    <label class="helferlein-field" for="contactName"><span class="helferlein-field-label">Name</span><input type="text" id="contactName" placeholder="Name (z.B. Nachbar Müller)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Name (z.B. Nachbar Müller)"></label>
+                    <label class="helferlein-field" for="contactName"><span class="helferlein-field-label">Name</span><input type="text" id="contactName" placeholder="Name (z.B. Nachbar Müller)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Name (z.B. Nachbar Müller)" data-tool-en-placeholder="Name (e.g. neighbour)" data-tool-en-aria-label="Name (e.g. neighbour)"></label>
                     <label class="helferlein-field" for="contactPhone"><span class="helferlein-field-label" data-tool-en="Phone number (for WhatsApp)">Telefon (für WhatsApp)</span><input type="text" id="contactPhone" placeholder="Telefon (für WhatsApp)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Telefon (für WhatsApp)" data-tool-en-placeholder="Phone number (for WhatsApp)" data-tool-en-aria-label="Phone number (for WhatsApp)"></label>
                     <button onclick="saveContact()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 rounded-xl text-xs b3-action">Kontakt speichern</button>
                 </div>
@@ -208,11 +208,11 @@
                     <h2 class="text-base font-bold">🛠️ Stamm-Gegenstand anlegen</h2>
                     <label class="helferlein-field" for="invTitle"><span class="helferlein-field-label" data-tool-en="Description">Bezeichnung</span><input type="text" id="invTitle" placeholder="Bezeichnung (z.B. Bosch Bohrhammer)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Bezeichnung (z.B. Bosch Bohrhammer)"></label>
                     <label class="helferlein-field" for="invCategory"><span class="helferlein-field-label" data-tool-en="Item category">Kategorie des Gegenstands</span><select id="invCategory" class="w-full p-2.5 border rounded-xl text-xs bg-white" aria-label="Kategorie des Gegenstands" data-tool-en-aria-label="Item category">
-                        <option value="Werkzeug">🔨 Werkzeug</option>
-                        <option value="Elektronik">💻 Elektronik & IT</option>
-                        <option value="Bücher & Medien">📚 Bücher & Medien</option>
-                        <option value="Sport & Freizeit">⚽ Sport & Freizeit</option>
-                        <option value="Sonstiges">📦 Sonstiges</option>
+                        <option value="Werkzeug" data-tool-en="🔨 Tools">🔨 Werkzeug</option>
+                        <option value="Elektronik" data-tool-en="💻 Electronics &amp; IT">💻 Elektronik & IT</option>
+                        <option value="Bücher & Medien" data-tool-en="📚 Books &amp; media">📚 Bücher & Medien</option>
+                        <option value="Sport & Freizeit" data-tool-en="⚽ Sports &amp; leisure">⚽ Sport & Freizeit</option>
+                        <option value="Sonstiges" data-tool-en="📦 Other">📦 Sonstiges</option>
                     </select></label>
                     <label class="helferlein-field" for="invSerial"><span class="helferlein-field-label" data-tool-en="Serial number / ISBN / barcode">Seriennummer / ISBN / Barcode</span><input type="text" id="invSerial" placeholder="Seriennummer / ISBN / Barcode" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Seriennummer / ISBN / Barcode" data-tool-en-placeholder="Serial number / ISBN / barcode" data-tool-en-aria-label="Serial number / ISBN / barcode"></label>
                     <label class="helferlein-field" for="invGpsLink"><span class="helferlein-field-label">GPS-Tracker URL / AirTag Link (optional)</span><input type="text" id="invGpsLink" placeholder="GPS-Tracker URL / AirTag Link (optional)" class="w-full p-2.5 border rounded-xl text-xs" aria-label="GPS-Tracker URL / AirTag Link (optional)"></label>
@@ -227,15 +227,15 @@
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                         <div>
-                            <label for="itemInventorySelect" class="block text-[11px] font-semibold text-gray-600 mb-1">Gegenstand aus Inventar wählen:</label>
+                            <label for="itemInventorySelect" class="block text-[11px] font-semibold text-gray-600 mb-1" data-tool-en="Choose item from inventory:">Gegenstand aus Inventar wählen:</label>
                             <select id="itemInventorySelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="fillInventoryData(this)">
-                                <option value="">-- Gegenstand wählen --</option>
+                                <option value="" data-tool-en="-- Select item --">-- Gegenstand wählen --</option>
                             </select>
                         </div>
                         <div>
-                            <label for="itemPersonSelect" class="block text-[11px] font-semibold text-gray-600 mb-1">Ausleiher wählen:</label>
+                            <label for="itemPersonSelect" class="block text-[11px] font-semibold text-gray-600 mb-1" data-tool-en="Choose borrower:">Ausleiher wählen:</label>
                             <select id="itemPersonSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="checkCustomPerson(this)">
-                                <option value="">-- Kontakt wählen --</option>
+                                <option value="" data-tool-en="-- Select contact --">-- Kontakt wählen --</option>
                             </select>
                         </div>
                     </div>
@@ -248,7 +248,7 @@
                             <input type="date" id="itemDate" class="w-full p-3 border rounded-xl text-sm">
                         </div>
                         <div>
-                            <label for="itemReturnDate" class="block text-[11px] font-semibold text-gray-600 mb-1">Geplante Rückgabe:</label>
+                            <label for="itemReturnDate" class="block text-[11px] font-semibold text-gray-600 mb-1" data-tool-en="Planned return:">Geplante Rückgabe:</label>
                             <input type="date" id="itemReturnDate" class="w-full p-3 border rounded-xl text-sm">
                         </div>
                         <div>
@@ -281,15 +281,15 @@
                 <h3 class="font-bold text-lg">📋 Verleih-Zentrale & Historie</h3>
                 <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                     <label class="helferlein-field" for="filterCategory"><span class="helferlein-field-label">Nach Kategorie filtern</span><select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Nach Kategorie filtern">
-                        <option value="">Alle Kategorien</option>
-                        <option value="Werkzeug">🔨 Werkzeug</option>
-                        <option value="Elektronik">💻 Elektronik & IT</option>
-                        <option value="Bücher & Medien">📚 Bücher & Medien</option>
-                        <option value="Sport & Freizeit">⚽ Sport & Freizeit</option>
-                        <option value="Sonstiges">📦 Sonstiges</option>
+                        <option value="" data-tool-en="All categories">Alle Kategorien</option>
+                        <option value="Werkzeug" data-tool-en="🔨 Tools">🔨 Werkzeug</option>
+                        <option value="Elektronik" data-tool-en="💻 Electronics &amp; IT">💻 Elektronik & IT</option>
+                        <option value="Bücher & Medien" data-tool-en="📚 Books &amp; media">📚 Bücher & Medien</option>
+                        <option value="Sport & Freizeit" data-tool-en="⚽ Sports &amp; leisure">⚽ Sport & Freizeit</option>
+                        <option value="Sonstiges" data-tool-en="📦 Other">📦 Sonstiges</option>
                     </select></label>
                     <label class="helferlein-field" for="filterPerson"><span class="helferlein-field-label" data-tool-en="Filter loans by person">Verleih nach Person filtern</span><select id="filterPerson" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verleih nach Person filtern" data-tool-en-aria-label="Filter loans by person">
-                        <option value="">Alle Personen</option>
+                        <option value="" data-tool-en="All people">Alle Personen</option>
                     </select></label>
                 </div>
             </div>
@@ -326,26 +326,26 @@
             <h3 id="qrTitle" class="font-bold text-lg text-indigo-800">QR-Code</h3>
             <div id="qrcode" class="flex justify-center p-4 bg-gray-50 rounded-xl border"></div>
             <p class="text-xs text-gray-500" data-tool-en="Scan to view details.">Scannen, um Details aufzurufen.</p>
-            <button onclick="closeQrModal()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold b3-action b3-outline">Schließen</button>
+            <button onclick="closeQrModal()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold b3-action b3-outline" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
     <!-- MODAL: Bearbeiten -->
     <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl space-y-4">
-            <h3 class="text-lg font-bold">Verleih-Eintrag bearbeiten</h3>
+            <h3 class="text-lg font-bold" data-tool-en="Edit loan record">Verleih-Eintrag bearbeiten</h3>
             <input type="hidden" id="editId">
             <div><label for="editTitle" class="block text-xs font-semibold text-gray-600 mb-1">Gegenstand:</label><input type="text" id="editTitle" class="w-full p-3 border rounded-xl text-sm"></div>
             <div><label for="editPerson" class="block text-xs font-semibold text-gray-600 mb-1">Ausleiher:</label><input type="text" id="editPerson" class="w-full p-3 border rounded-xl text-sm"></div>
             <div class="grid grid-cols-2 gap-2">
                 <div><label for="editDate" class="block text-xs font-semibold text-gray-600 mb-1">Ausleihdatum:</label><input type="date" id="editDate" class="w-full p-3 border rounded-xl text-sm"></div>
-                <div><label for="editReturnDate" class="block text-xs font-semibold text-gray-600 mb-1">Geplante Rückgabe:</label><input type="date" id="editReturnDate" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label for="editReturnDate" class="block text-xs font-semibold text-gray-600 mb-1" data-tool-en="Planned return:">Geplante Rückgabe:</label><input type="date" id="editReturnDate" class="w-full p-3 border rounded-xl text-sm"></div>
             </div>
             <div><label for="editDeposit" class="block text-xs font-semibold text-gray-600 mb-1">Kaution / Wert (€):</label><input type="text" id="editDeposit" class="w-full p-3 border rounded-xl text-sm"></div>
             <div><label for="editNote" class="block text-xs font-semibold text-gray-600 mb-1">Notiz:</label><input type="text" id="editNote" class="w-full p-3 border rounded-xl text-sm"></div>
             <div class="flex flex-wrap justify-end gap-2 pt-2 b3-dialog-actions">
                 <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm b3-action b3-outline">Abbrechen</button>
-                <button onclick="updateItem()" class="px-5 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold b3-action">Speichern</button>
+                <button onclick="updateItem()" class="px-5 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold b3-action" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -447,14 +447,14 @@
                 const uid=auth.user.id;
                 const prepared=await prepareCloudTool({
                     client:supabaseClient,tool:'verliehene-gegenstaende-verwalten',storage:localStorage,
-                    confirmMigration:async()=>confirm('Bestehende Verleihdaten in dein Toolya-Konto übernehmen? Vorhandene Cloud-Daten werden nicht überschrieben.'),
-                    reviewExistingCloud:async()=>confirm('Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?'),
+                    confirmMigration:async()=>confirm(window.__toolyaUILocale === 'en' ? 'Import existing loan data into your Toolya account? Existing cloud data will not be overwritten.' : 'Bestehende Verleihdaten in dein Toolya-Konto übernehmen? Vorhandene Cloud-Daten werden nicht überschrieben.'),
+                    reviewExistingCloud:async()=>confirm(window.__toolyaUILocale === 'en' ? 'Cloud and device data both exist. Keep cloud data and back up local data separately?' : 'Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?'),
                     exportBackup:async data=>{
                         const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
                         const url=URL.createObjectURL(blob),a=document.createElement('a');
                         a.href=url;a.download='toolya-verleih-vor-cloud.json';a.click();
                         setTimeout(()=>URL.revokeObjectURL(url),60000);
-                        return confirm('Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
+                        return confirm(window.__toolyaUILocale === 'en' ? 'Please confirm that you downloaded the backup.' : 'Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
                     }
                 });
                 const {data:again,error:againError}=await supabaseClient.auth.getUser();
@@ -487,7 +487,7 @@
         async function saveContact() {
             const name = document.getElementById('contactName').value.trim();
             const phone = document.getElementById('contactPhone').value.trim();
-            if (!name) return alert("Bitte einen Namen eingeben!");
+            if (!name) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a name!' : 'Bitte einen Namen eingeben!');
 
             let data = getData();
             if(!data.contacts) data.contacts = [];
@@ -506,7 +506,7 @@
             const serial = document.getElementById('invSerial').value.trim();
             const gpsLink = document.getElementById('invGpsLink').value.trim();
 
-            if (!title) return alert("Bitte eine Bezeichnung für den Gegenstand angeben!");
+            if (!title) return alert(window.__toolyaUILocale === 'en' ? 'Please enter an item description!' : 'Bitte eine Bezeichnung für den Gegenstand angeben!');
 
             let data = getData();
             if(!data.inventory) data.inventory = [];
@@ -522,12 +522,26 @@
         }
 
         async function deleteInventoryItem(id) {
-            if (!confirm("Diesen Stamm-Gegenstand wirklich löschen?")) return;
+            if (!confirm(window.__toolyaUILocale === 'en' ? 'Really delete this inventory item?' : 'Diesen Stamm-Gegenstand wirklich löschen?')) return;
             let data = getData();
             data.inventory = data.inventory.filter(i => i.id !== id);
             if (!await saveData(data)) return;
             loadDropdowns();
             renderInventory();
+        }
+
+        // Only translate canonical category values for display; never alter persisted values.
+        const loanCategoryLabels = Object.freeze({
+            'Werkzeug': 'Tools',
+            'Elektronik': 'Electronics & IT',
+            'Bücher & Medien': 'Books & media',
+            'Sport & Freizeit': 'Sports & leisure',
+            'Sonstiges': 'Other'
+        });
+        function loanCategoryDisplay(value) {
+            const category = String(value ?? '');
+            return window.__toolyaUILocale === 'en' && Object.hasOwn(loanCategoryLabels, category)
+                ? loanCategoryLabels[category] : category;
         }
 
         // Display-only: never change user-controlled option values or selected entries.
@@ -543,6 +557,13 @@
                 const select=document.getElementById(id);
                 const option=select && [...select.options].find(item=>item.value===value);
                 if(option)option.textContent=english?en:de;
+            }
+            const inventorySelect = document.getElementById('itemInventorySelect');
+            if (inventorySelect) for (const option of inventorySelect.options) {
+                if (!option.dataset.category) continue;
+                const category = loanCategoryDisplay(option.dataset.category);
+                const serial = option.dataset.serial ? ' | SN: ' + option.dataset.serial : '';
+                option.textContent = option.value + ' (' + category + serial + ')';
             }
         }
 
@@ -564,7 +585,7 @@
             invSelect.replaceChildren();
             addOption(invSelect, '', '-- Inventar-Gegenstand wählen --');
             inventory.forEach(i => {
-                const option = addOption(invSelect, i.title, `${i.title} (${i.category}${i.serial ? ' | SN: ' + i.serial : ''})`);
+                const option = addOption(invSelect, i.title, `${i.title} (${loanCategoryDisplay(i.category)}${i.serial ? ' | SN: ' + i.serial : ''})`);
                 option.dataset.category = String(i.category ?? '');
                 option.dataset.serial = String(i.serial ?? '');
                 option.dataset.gps = String(i.gpsLink ?? '');
@@ -622,7 +643,7 @@
             const note = document.getElementById('itemNote').value.trim();
             const photoInput = document.getElementById('itemPhotoInput');
 
-            if (!person || !date) return alert("Bitte Person und Ausleihdatum angeben!");
+            if (!person || !date) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a person and loan date!' : 'Bitte Person und Ausleihdatum angeben!');
 
             let photo="";
             if(photoInput.files && photoInput.files[0]){
@@ -707,7 +728,7 @@
         }
 
         async function deleteItem(id) {
-            if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
+            if (!confirm(window.__toolyaUILocale === 'en' ? '⚠️ Really delete this record?' : '⚠️ Diesen Eintrag wirklich löschen?')) return;
             let data = getData();
             data.items = data.items.filter(i => i.id !== id);
             if (!await saveData(data)) return;
@@ -743,7 +764,7 @@
             const deposit = parseFloat(document.getElementById('editDeposit').value.replace(',', '.')) || 0;
             const note = document.getElementById('editNote').value.trim();
 
-            if (!title || !person || !date) return alert("Bitte Gegenstand, Person und Ausleihdatum angeben!");
+            if (!title || !person || !date) return alert(window.__toolyaUILocale === 'en' ? 'Please enter an item, person and loan date!' : 'Bitte Gegenstand, Person und Ausleihdatum angeben!');
 
             let data = getData();
             let item = data.items.find(i => i.id === id);
@@ -765,7 +786,7 @@
             const { loadQrGenerator } = await import('../../shared/toolya/qr-generator.mjs');
             const QRCode = await loadQrGenerator();
             if (!QRCode) {
-                alert("Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.");
+                alert(window.__toolyaUILocale === 'en' ? 'The QR code could not be loaded. Please try again.' : 'Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.');
                 return;
             }
             document.getElementById('qrTitle').innerText = title + " (" + person + ")";
@@ -840,11 +861,11 @@
                 <div class="p-3 border rounded-xl bg-gray-50 flex justify-between items-start text-xs">
                     <div>
                         <span class="font-bold text-indigo-800 block">${escapeHtml(i.title)}</span>
-                        <span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full inline-block mt-1">${escapeHtml(i.category)}</span>
+                        <span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full inline-block mt-1">${escapeHtml(loanCategoryDisplay(i.category))}</span>
                         ${i.serial ? `<p class="text-gray-600 mt-1">SN/ISBN: <span class="font-mono">${escapeHtml(i.serial)}</span></p>` : ''}
-                        ${safeGpsUrl(i.gpsLink) ? `<a href="${safeGpsUrl(i.gpsLink)}" rel="noopener noreferrer" target="_blank" class="text-blue-600 font-semibold underline block mt-1">📍 GPS-Tracker öffnen</a>` : ''}
+                        ${safeGpsUrl(i.gpsLink) ? `<a href="${safeGpsUrl(i.gpsLink)}" rel="noopener noreferrer" target="_blank" class="text-blue-600 font-semibold underline block mt-1">${window.__toolyaUILocale === 'en' ? '📍 Open GPS tracker' : '📍 GPS-Tracker öffnen'}</a>` : ''}
                     </div>
-                    <button data-inventory-delete="${index}" class="text-red-500 font-bold px-1.5 hover:bg-red-100 rounded">✕</button>
+                    <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete inventory item' : 'Inventargegenstand löschen'}" data-inventory-delete="${index}" class="text-red-500 font-bold px-1.5 hover:bg-red-100 rounded">✕</button>
                 </div>
             `).join('');
         }
@@ -992,7 +1013,7 @@
                                 <div>
                                     <div class="flex items-center space-x-2 flex-wrap gap-1">
                                         <span class="text-xs font-bold text-gray-800">📦 ${escapeHtml(i.title)}</span>
-                                        <span class="text-[10px] bg-gray-200 text-gray-700 font-semibold px-2 py-0.5 rounded-full">${escapeHtml(i.category || label('Sonstiges','Other'))}</span>
+                                        <span class="text-[10px] bg-gray-200 text-gray-700 font-semibold px-2 py-0.5 rounded-full">${escapeHtml(i.category ? loanCategoryDisplay(i.category) : label('Sonstiges','Other'))}</span>
                                         <span class="text-xs text-indigo-600 font-semibold">→ ${escapeHtml(i.person)}</span>
                                         ${badge}
                                         ${i.serial ? `<span class="text-[10px] font-mono bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border">SN: ${escapeHtml(i.serial)}</span>` : ''}
@@ -1008,7 +1029,7 @@
                                 ${calButtons}
                                 ${statusDropdown}
                                 <button data-loan-action="edit" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline" title="${label('Bearbeiten','Edit')}">✏️</button>
-                                <button data-loan-action="delete" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                                <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete loan record' : 'Verleiheintrag löschen'}" data-loan-action="delete" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
                     `;

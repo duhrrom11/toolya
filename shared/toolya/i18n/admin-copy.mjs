@@ -1,5 +1,23 @@
 /* Administrator interface translations. No role or publishing logic changes. */
 export const ADMIN_COPY=Object.freeze({
+ "Anmeldung konnte nicht geladen werden.":"Could not load sign-in.",
+ "Bitte zuerst im Toolya-Dashboard anmelden.":"Sign in to the Toolya dashboard first.",
+ "Diese öffentliche Wunschliste wirklich zurücknehmen? Änderungen am Eintrag werden aus Sicherheitsgründen nicht überschrieben.":"Withdraw this public wish list? For security reasons, changes to the entry will not be overwritten.",
+ "Tavily-Suche noch nicht eingerichtet. CSV-/JSON-Import und Prüfung bekannter Quellseiten sind bereits verfügbar.":"Tavily search is not configured yet. CSV/JSON import and checking known source pages are already available.",
+ "Tagesdaten konnten nicht abgerufen werden. Die Gesamtkennzahlen bleiben verfügbar.":"Daily data could not be retrieved. Overall metrics remain available.",
+ "Die API lieferte für diesen Zeitraum keine auswertbaren Tageswerte.":"The API returned no usable daily values for this period.",
+ "Keine Tagesdaten verfügbar oder Datenquelle nicht verbunden.":"No daily data available or data source not connected.",
+ "Zählerstände":"Meter readings",
+ "Keine verifizierten URL-Inspektionsdaten":"No verified URL inspection data",
+ "Beantragt":"Requested",
+ "Die Anmeldung konnte nicht geladen werden.":"Could not load sign-in.",
+ "Ungültiges Datenformat":"Invalid data format",
+ "Ranking-Diagnose derzeit nicht verfügbar.":"Ranking diagnostics currently unavailable.",
+ "Noch keine erfassten Daten für diesen Zeitraum.":"No recorded data for this period yet.",
+ "Noch keine auswertbaren Tool-Starts. Prüfe die GA4-Dimension tool_name; neue Daten erscheinen erst nach der Registrierung und Verarbeitung.":"No usable tool launches yet. Check the GA4 dimension tool_name; new data appears only after registration and processing.",
+ "Noch keine Tageswerte verfügbar.":"No daily values available yet.",
+ "Noch keine verifizierten Daten":"No verified data yet",
+ "Statistikdienst nicht erreichbar. Es werden keine Schätzwerte angezeigt.":"Statistics service unavailable. No estimated figures are displayed.",
  // Source-exact author-owned controls, never user profile/record data.
  "Angaben bearbeiten": "Edit details",
  "Angaben speichern": "Save details",
@@ -98,4 +116,20 @@ export const ADMIN_COPY=Object.freeze({
  "Bitte mit dem Administratorkonto anmelden.": "Sign in with an administrator account."
 });
 const reverse=Object.freeze(Object.fromEntries(Object.entries(ADMIN_COPY).map(([de,en])=>[en,de])));
-export function adminText(value,lang){if(typeof value!=='string')return value;const table=lang==='en'?ADMIN_COPY:reverse;return Object.hasOwn(table,value)?table[value]:value;}
+export function adminText(value,lang){if(typeof value!=='string')return value;const table=lang==='en'?ADMIN_COPY:reverse;if(Object.hasOwn(table,value))return table[value];
+const patterns=[
+ [/^Seite (\d+)$/,'Page $1'],
+ [/^(\d+) von (\d+) sichtbaren neuen Wunschlisten ausgewählt$/,'$1 of $2 visible new wish lists selected'],
+ [/^(\d+) von (\d+) sichtbaren neuen Wunschlisten ausgewählt · Suche oder Aktion läuft\. Bitte zuerst Suche stoppen\.$/,'$1 of $2 visible new wish lists selected · Search or action running. Stop the search first.'],
+ [/^(\d+) von (\d+) sichtbaren neuen Wunschlisten ausgewählt · Bereit zum Veröffentlichen\.$/,'$1 of $2 visible new wish lists selected · Ready to publish.'],
+ [/^(\d+) von (\d+) sichtbaren neuen Wunschlisten ausgewählt · Bitte zuerst die Checkboxen markieren oder „Alle neuen dieser Seite auswählen“ wählen\.$/,'$1 of $2 visible new wish lists selected · Tick the boxes or choose “Select all new on this page”.'],
+ [/^Tavily eingerichtet · (\d+) von 900 kostenlosen Basic-Credits im aktuellen UTC-Monat verbleiben\.$/,'Tavily configured · $1 of 900 free Basic Credits remaining this UTC month.'],
+ [/^Linkprüfung: (\d+) erfasst · (\d+) HTTP-erreichbar · (\d+) zur manuellen Prüfung · (\d+) unklar · (\d+) noch nicht geprüft\. Nur technische Statusinformationen; keine automatische Löschung\.$/,'Link verification: $1 recorded · $2 HTTP reachable · $3 for manual review · $4 unclear · $5 not checked yet. Technical status only; no automatic deletion.'],
+ [/^Lese Einträge (\d+) bis (\d+) …$/,'Reading entries $1 to $2…'],
+ [/^(\d+) neue Einträge gespeichert; (\d+) doppelte Einträge übersprungen\.$/,'$1 new entries saved; $2 duplicate entries skipped.'],
+ [/^(\d+) Suchabfragen · (\d+) neue Funde in diesem Lauf\.$/,'$1 searches · $2 new findings in this run.'],
+ [/^(\d+) Suchabfragen · (\d+) neue Funde · (.+)$/,'$1 searches · $2 new findings · $3'],
+ [/^(\d+) Wunschlisten veröffentlicht; (\d+) bereits vorhandene übersprungen\.$/,'$1 wish lists published; $2 existing entries skipped.']
+];
+if(lang==='en')for(const [pattern,copy] of patterns)if(pattern.test(value))return value.replace(pattern,copy);
+return value;}

@@ -476,6 +476,8 @@
                 return;
             }
             try {
+                // Store presentation preference only; the recovery destination stays fixed.
+                try { localStorage.setItem('toolya-recovery-locale-v1', 'en'); } catch (_) {}
                 const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
                     redirectTo: "https://toolya.app/index.html"
                 });

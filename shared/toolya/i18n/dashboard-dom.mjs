@@ -13,20 +13,23 @@ export function applyDashboardPageLocale(document,lang,translate=dashboardText){
   if(suppressed(el)||el.closest?.('.ty-dashboard-locale'))continue;
   for(const node of el.childNodes){
    if(node.nodeType!==3)continue;
-   const initial=sourceText.has(node)?sourceText.get(node):node.nodeValue;
-   if(!sourceText.has(node))sourceText.set(node,initial);
+   const previous=sourceText.get(node);
+   const initial=previous?.rendered===node.nodeValue?previous.source:node.nodeValue;
    const match=/^(\s*)([\s\S]*?)(\s*)$/.exec(initial);
    if(!match)continue;
    const converted=translate(match[2],lang);
    const output=match[1]+converted+match[3];
+   sourceText.set(node,{source:initial,rendered:output});
    if(node.nodeValue!==output)node.nodeValue=output;
   }
   for(const attr of attributeNames){
    if(!el.hasAttribute?.(attr))continue;
    let attrs=sourceAttributes.get(el);
    if(!attrs){attrs=new Map();sourceAttributes.set(el,attrs)}
-   if(!attrs.has(attr))attrs.set(attr,el.getAttribute(attr));
-   const output=translate(attrs.get(attr),lang);
+   const current=el.getAttribute(attr),previous=attrs.get(attr);
+   const source=previous?.rendered===current?previous.source:current;
+   const output=translate(source,lang);
+   attrs.set(attr,{source,rendered:output});
    if(el.getAttribute(attr)!==output)el.setAttribute(attr,output);
   }
  }

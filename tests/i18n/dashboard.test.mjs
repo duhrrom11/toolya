@@ -39,3 +39,9 @@ test('dashboard uses the same account and data keys; language is presentation-on
  assert.match(account,/redirectTo:'https:\/\/toolya\.app\/index\.html'/);
  assert.match(file,/dashboardDateLocale\(\)/);
 });
+
+test('new cloud revision label follows language without altering revision identifiers',()=>{
+ assert.equal(dashboardText('Cloud-Datenstand ist unverändert (Revision neu).','en'),'Cloud state unchanged (revision new).');
+ assert.equal(dashboardText('Cloud state unchanged (revision new).','de'),'Cloud-Datenstand ist unverändert (Revision neu).');
+ assert.equal(dashboardText('Cloud-Datenstand ist unverändert (Revision 42).','en'),'Cloud state unchanged (revision 42).');
+});

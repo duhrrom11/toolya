@@ -89,14 +89,14 @@
   const seen=new Map(),alerts=[];
   for(const entry of validEntries(entries)){
    const key=[entry.date,normal(entry.title),round(amount(entry.price)),expense(entry)?'out':'in'].join('|');
-   if(seen.has(key)){alerts.push({kind:'duplicate',label:'Mögliche Doppelbuchung',text:(entry.title||'Buchung')+' am '+entry.date+' – '+euro(amount(entry.price)),ids:[seen.get(key),entry.id]})}
+   if(seen.has(key)){alerts.push({kind:'duplicate',label:'Mögliche Doppelbuchung',text:(entry.title||'Buchung')+' am '+entry.date+' – '+euro(amount(entry.price)),ids:[seen.get(key),entry.id],display:{kind:'duplicate',title:entry.title,date:entry.date,amount:amount(entry.price)}})}
    else seen.set(key,entry.id);
    if(expense(entry)&&Array.isArray(entry.lineItems)&&entry.lineItems.length){
     const rows=entry.lineItems.filter(x=>Number.isFinite(Number(x.total))&&Number(x.total)>0);
     if(rows.length<2)continue;
     const sum=round(rows.reduce((n,x)=>n+Number(x.total),0));
     if(Math.abs(sum-amount(entry.price))>Math.max(1,amount(entry.price)*.05)){
-     alerts.push({kind:'receipt',label:'Kassenbon prüfen',text:(entry.title||'Einkauf')+': Artikel '+euro(sum)+', Gesamtbetrag '+euro(amount(entry.price)),ids:[entry.id]});
+     alerts.push({kind:'receipt',label:'Kassenbon prüfen',text:(entry.title||'Einkauf')+': Artikel '+euro(sum)+', Gesamtbetrag '+euro(amount(entry.price)),ids:[entry.id],display:{kind:'receipt',title:entry.title,subtotal:sum,amount:amount(entry.price)}});
     }
    }
   }
@@ -110,7 +110,7 @@
     const mid=Math.floor(prior.length/2),median=prior.length%2?prior[mid]:(prior[mid-1]+prior[mid])/2;
     const value=amount(row.price);
     if(median>0&&value>median*2.5&&value>median+25){
-     alerts.push({kind:'high',label:'Ungewöhnlich hoher Betrag',text:(row.title||row.category||'Ausgabe')+': '+euro(value)+' statt sonst etwa '+euro(median),ids:[row.id]});
+     alerts.push({kind:'high',label:'Ungewöhnlich hoher Betrag',text:(row.title||row.category||'Ausgabe')+': '+euro(value)+' statt sonst etwa '+euro(median),ids:[row.id],display:{kind:'high',title:row.title||row.category,amount:value,median}});
     }
    }
    history.push({price:amount(row.price),date:row.date});

@@ -123,3 +123,29 @@ test('moving: registration and session refresh keep the active language and late
  assert.equal(fields.userInfo.textContent,'Nicht angemeldet');
  assert.equal(fields.cloudStatus.textContent,'Nicht angemeldet');
 });
+
+
+test('baking: sign-out fallback errors use the active language without claiming success',async()=>{
+ const html=await readTool('baking');
+ const start=html.indexOf('async function supabaseLogout()');
+ const end=html.indexOf('async function checkUserSession()',start);
+ assert.ok(start>=0&&end>start);
+ const alerts=[],calls=[];
+ const window={__toolyaUILocale:'en'};
+ let outcome='error';
+ const supabaseClient={auth:{async signOut(){
+  calls.push('signOut');
+  if(outcome==='throw')throw {};
+  return {error:{}};
+ }}};
+ const context={window,supabaseClient,alert:message=>alerts.push(message),
+  checkUserSession:()=>calls.push('refresh')};
+ runInNewContext(html.slice(start,end),context);
+ await runInNewContext('supabaseLogout()',context);
+ assert.equal(alerts.at(-1),'Sign-out failed: Unknown error');
+ assert.deepEqual(calls,['signOut']);
+ outcome='throw';window.__toolyaUILocale='de';
+ await runInNewContext('supabaseLogout()',context);
+ assert.equal(alerts.at(-1),'Abmeldung fehlgeschlagen: Unbekannter Fehler');
+ assert.deepEqual(calls,['signOut','signOut']);
+});

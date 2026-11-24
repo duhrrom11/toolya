@@ -128,7 +128,7 @@ export async function copyShareLink(text,clipboard=globalThis.navigator?.clipboa
 }
 
 /** Produce a spreadsheet-safe, UTF-8 CSV backup from the signed-in user's own wishes. */
-export function exportWishlistCsv(rows) {
+export function exportWishlistCsv(rows,language='de') {
  if(!Array.isArray(rows))throw Error('Ungültige Exportdaten');
  const safe=value=>{
   let s=String(value??'').replace(/\r\n?/g,'\n');
@@ -136,7 +136,7 @@ export function exportWishlistCsv(rows) {
   if(/^[\s\u0000-\u001f]*[=+@-]/.test(s))s="'"+s;
   return '"'+s.replace(/"/g,'""')+'"';
  };
- const header=['Amazon-ASIN','Produkttitel','Notiz','Priorität','Erstellt am','Amazon-Link'];
+ const header=language==='en'?['Amazon-ASIN','Product title','Note','Priority','Created at','Amazon link']:['Amazon-ASIN','Produkttitel','Notiz','Priorität','Erstellt am','Amazon-Link'];
  const lines=[header.map(safe).join(';')];
  for(const row of rows){
   const product=row?.wishlist_products;

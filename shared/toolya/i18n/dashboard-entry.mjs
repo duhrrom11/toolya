@@ -21,7 +21,7 @@ function mount(){
  const group=document.createElement('span');
  group.className='ty-dashboard-locale';
  group.setAttribute('role','group');
- group.setAttribute('aria-label','Sprachauswahl / Language');
+ group.setAttribute('aria-label','Sprache wählen');
  const buttons=['de','en'].map(lang=>{
   const b=document.createElement('button');b.type='button';b.lang=lang;b.textContent=lang.toUpperCase();
   b.dataset.dashboardLocale=lang;b.addEventListener('click',()=>apply(lang,true));group.append(b);return b;
@@ -54,6 +54,7 @@ function mount(){
   // English presentation is still only partly verified; avoid pretending all
   // dynamically generated third-party messages have an English document language.
   document.documentElement.dataset.dashboardLocale=lang;
+  group.setAttribute('aria-label',lang==='en'?'Choose language':'Sprache wählen');
   for(const b of [de,en])b.setAttribute('aria-pressed',String(b.dataset.dashboardLocale===lang));
   if(guide){
    guide.href=lang==='en'?'/en/toolya-dashboard/':'/toolya-dashboard/';

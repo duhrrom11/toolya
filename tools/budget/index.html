@@ -119,9 +119,9 @@
     <div class="b3-tool-title">
       <h1>Haushaltsbuch mit Kassenbon-Scanner</h1>
       <p>Ausgaben erfassen, Budget planen, Belege scannen und Garantien verwalten</p>
-      <p><a href="/haushaltsbuch/" class="underline">Schritt-für-Schritt-Anleitung zum Haushaltsbuch</a></p>
+      <p><a href="/haushaltsbuch/" class="underline" data-tool-en="Step-by-step guide to Household Budget">Schritt-für-Schritt-Anleitung zum Haushaltsbuch</a></p>
     </div>
-    <button type="button" class="b3-settings-trigger" id="settingsBtn" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()">⚙</button>
+    <button type="button" class="b3-settings-trigger" id="settingsBtn" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()" data-tool-en-aria-label="Open settings">⚙</button>
   </div>
 </header>
 
@@ -130,7 +130,7 @@
         <div class="max-w-7xl mx-auto space-y-4">
             <div class="flex justify-between items-center border-b border-emerald-700 pb-3">
                 <h2 class="text-lg font-bold flex items-center gap-2">📘 Kombinierte Gebrauchsanleitung</h2>
-                <button onclick="toggleGuide()" aria-label="Anleitung schließen" class="b3-action b3-outline text-emerald-300 hover:text-white text-xl font-bold">&times;</button>
+                <button onclick="toggleGuide()" aria-label="Anleitung schließen" class="b3-action b3-outline text-emerald-300 hover:text-white text-xl font-bold" data-tool-en-aria-label="Close guide">&times;</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs leading-relaxed">
                 <div class="bg-emerald-900/70 p-4 rounded-xl border border-emerald-700 space-y-2">
@@ -146,7 +146,7 @@
                     <p>Scanne Belege mit dem <strong>OCR-Scanner</strong>, lade mehrere Dokumentenfotos hoch oder schärfe verblasste Thermobons über den Helligkeits-/Kontrastfilter nach.</p>
                 </div>
                 <div class="bg-emerald-900/70 p-4 rounded-xl border border-emerald-700 space-y-2">
-                    <h3 class="font-bold text-sm text-emerald-200">4. Kaufbelege, Fristen und Export</h3>
+                    <h3 class="font-bold text-sm text-emerald-200" data-tool-en="4. Receipts, deadlines and exports">4. Kaufbelege, Fristen und Export</h3>
                     <p>Trage bei einem Kaufbeleg die Garantiedauer und die Rückgabefrist ein. Das Garantieende kannst du in Google Kalender übernehmen oder als Kalenderdatei (ICS) herunterladen. Für Geräte kannst du einen QR-Sticker zum Beleg drucken. Steuerrelevante Buchungen exportierst du als CSV. Den allgemeinen Finanzbericht erhältst du als PDF.</p>
                 </div>
             </div>
@@ -214,7 +214,7 @@
                     <h3 class="font-bold text-base text-gray-900">🎯 Monatsbudgets im Blick</h3>
                     <button onclick="openBudgetModal()" class="px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold b3-action b3-outline">⚙️ Budgets anpassen</button>
                 </div>
-                <div id="budgetProgressList" tabindex="0" role="region" aria-label="Monatsbudgets" tabindex="0" role="region" aria-label="Monatsbudgets" class="space-y-3 max-h-56 overflow-y-auto pr-1" data-tool-en-aria-label="Monthly budgets" data-tool-en-aria-label="Monthly budgets">
+                <div id="budgetProgressList" tabindex="0" role="region" aria-label="Monatsbudgets" class="space-y-3 max-h-56 overflow-y-auto pr-1" data-tool-en-aria-label="Monthly budgets">
                     <p class="text-xs text-gray-400 text-center py-4" data-tool-en="Loading budgets…">Lade Budgets...</p>
                 </div>
             </div>
@@ -227,7 +227,7 @@
                 <button onclick="openAddGoalModal()" class="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-sm b3-action">+ Neues Sparziel</button>
             </div>
             <div id="savingsGoalsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <p class="text-xs text-gray-400 text-center col-span-3 py-2">Noch keine Sparziele angelegt.</p>
+                <p class="text-xs text-gray-400 text-center col-span-3 py-2">${window.__toolyaUILocale === 'en' ? 'No savings goals yet.' : 'Noch keine Sparziele angelegt.'}</p>
             </div>
         </div>
 
@@ -274,12 +274,12 @@
                         <option value="Lebensmittel">🛒 Lebensmittel & Haushalt</option>
                         <option value="Wohnen">🏠 Wohnen & Miete</option>
                         <option value="Energie">⚡ Strom, Gas & Wasser</option>
-                        <option value="Auto">🚗 Auto, Tanken & ÖPNV</option>
+                        <option value="Auto" data-tool-en="🚗 Car, fuel &amp; public transport">🚗 Auto, Tanken & ÖPNV</option>
                         <option value="Freizeit">🎉 Freizeit, Gastronomie & Urlaub</option>
                         <option value="Elektronik">📱 Elektronik & Technik</option>
                         <option value="Gesundheit">💊 Gesundheit & Drogerie</option>
                         <option value="Haustiere">🐾 Haustiere</option>
-                        <option value="Verträge">📜 Verträge & Abos</option>
+                        <option value="Verträge" data-tool-en="📜 Contracts &amp; subscriptions">📜 Verträge & Abos</option>
                         <option value="Einnahme">💶 Einnahmen & Gehalt</option>
                         <option value="Sonstiges">📦 Sonstiges</option>
                     </select>
@@ -337,11 +337,11 @@
                     <button type="button" onclick="runOCR()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-sm b3-action">🔍 Text automatisch erkennen (OCR)</button>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
-                    <label class="helferlein-field" for="receiptPhotoInput"><span class="helferlein-field-label">Belegfoto auswählen</span><input type="file" id="receiptPhotoInput" accept="image/*" multiple onchange="loadPhotosToCanvas(event)" class="text-xs p-2 border rounded-xl bg-white w-full" aria-label="Belegfoto auswählen"></label>
+                    <label class="helferlein-field" for="receiptPhotoInput"><span class="helferlein-field-label">Belegfoto auswählen</span><input type="file" id="receiptPhotoInput" accept="image/*" multiple onchange="loadPhotosToCanvas(event)" class="text-xs p-2 border rounded-xl bg-white w-full" aria-label="Belegfoto auswählen" data-tool-en-aria-label="Choose receipt photo"></label>
                     <div id="ocrStatus" role="status" aria-live="polite" aria-atomic="true" class="text-xs text-emerald-800 font-semibold hidden">🔍 Scanne Kassenbon... Bitte warten.</div>
                 </div>
 
-                <button type="button" onclick="clearReceiptPhotos()" class="text-xs px-3 py-2 rounded-lg border border-red-200 text-red-700 bg-white hover:bg-red-50">🗑️ Alle Belegbilder entfernen</button>
+                <button type="button" onclick="clearReceiptPhotos()" class="text-xs px-3 py-2 rounded-lg border border-red-200 text-red-700 bg-white hover:bg-red-50" data-tool-en="🗑️ Remove all receipt images">🗑️ Alle Belegbilder entfernen</button>
                 <div id="uploadGalleryPreview" class="flex gap-2 overflow-x-auto py-2 hidden"></div>
 
                 <!-- Canvas Editor für Thermopapier Filter -->
@@ -371,14 +371,14 @@
                 <h3 class="font-bold text-lg text-gray-900">📋 Buchungshistorie & Kassenbons</h3>
                 <div class="flex gap-2 flex-wrap">
                     <label class="helferlein-field" for="filterType"><span class="helferlein-field-label">Buchungen nach Typ filtern</span><select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Buchungen nach Typ filtern">
-                        <option value="All">Alle Typen</option>
+                        <option value="All" data-tool-en="All types">Alle Typen</option>
                         <option value="ausgabe">🔻 Nur Ausgaben</option>
                         <option value="einnahme">🔺 Nur Einnahmen</option>
                         <option value="fixkosten">🔄 Nur Fixkosten/Abos</option>
                         <option value="garantie">🛡️ Nur mit Aktiver Garantie</option>
                     </select></label>
                     <label class="helferlein-field" for="filterCategory"><span class="helferlein-field-label">Nach Kategorie filtern</span><select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Nach Kategorie filtern">
-                        <option value="All">Alle Kategorien</option>
+                        <option value="All" data-tool-en="All categories">Alle Kategorien</option>
                         <option value="Lebensmittel">🛒 Lebensmittel</option>
                         <option value="Wohnen">🏠 Wohnen</option>
                         <option value="Energie">⚡ Energie</option>
@@ -386,7 +386,7 @@
                         <option value="Freizeit">🎉 Freizeit</option>
                         <option value="Elektronik">📱 Elektronik</option>
                         <option value="Gesundheit">💊 Gesundheit</option>
-                        <option value="Verträge">📜 Verträge</option>
+                        <option value="Verträge" data-tool-en="📜 Contracts">📜 Verträge</option>
                         <option value="Einnahme">💶 Einnahmen</option>
                         <option value="Sonstiges">📦 Sonstiges</option>
                     </select></label>
@@ -403,12 +403,12 @@
         <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold">⚙️ Monats-Budgets festlegen</h3>
-                <button onclick="closeBudgetModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeBudgetModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div id="budgetInputList" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
             <div class="flex justify-end gap-2 pt-3 border-t">
                 <button onclick="closeBudgetModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold b3-action b3-outline">Abbrechen</button>
-                <button onclick="saveBudgetsFromModal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md b3-action">Speichern</button>
+                <button onclick="saveBudgetsFromModal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md b3-action" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -418,7 +418,7 @@
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-lg font-bold">🐷 Neues Sparziel anlegen</h3>
-                <button onclick="closeSavingsModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeSavingsModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div class="space-y-3 text-xs">
                 <div>
@@ -446,11 +446,11 @@
         <div class="bg-white rounded-2xl max-w-3xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 id="galleryTitle" class="text-lg font-bold">🖼️ Dokumenten-Galerie</h3>
-                <button onclick="closeGalleryModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <button onclick="closeGalleryModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div id="galleryContainer" class="flex-grow overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             <div class="flex justify-end pt-2 border-t">
-                <button onclick="closeGalleryModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
+                <button onclick="closeGalleryModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
             </div>
         </div>
     </div>
@@ -459,8 +459,8 @@
     <div id="qrModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="text-lg font-bold">🏷️ Geräte-Sticker drucken</h3>
-                <button onclick="closeQRModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                <h3 class="text-lg font-bold" data-tool-en="🏷️ Print device sticker">🏷️ Geräte-Sticker drucken</h3>
+                <button onclick="closeQRModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div id="printStickerArea" class="p-4 border-2 border-dashed border-gray-400 rounded-2xl bg-gray-50 flex flex-col items-center text-center space-y-3">
                 <h4 id="stickerTitle" class="font-bold text-sm text-gray-900"></h4>
@@ -472,7 +472,7 @@
                 </div>
             </div>
             <div class="flex justify-between gap-2 pt-2">
-                <button onclick="closeQRModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
+                <button onclick="closeQRModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
                 <button onclick="window.print()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md b3-action b3-outline">🖨️ Sticker Drucken</button>
             </div>
         </div>
@@ -528,7 +528,7 @@
             </div>
 
             <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
-                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Schließen</button>
+                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer" data-tool-en="Close">Schließen</button>
             </div>
         </div>
     </div>
@@ -721,6 +721,103 @@ async function toolyaCloudBoot(tool) {
             "Lebensmittel", "Wohnen", "Energie", "Auto", "Freizeit", 
             "Elektronik", "Gesundheit", "Haustiere", "Verträge", "Sonstiges"
         ];
+        // Display-only: preserve German category keys in storage and filters.
+        const budgetCategoryEn = Object.freeze({
+            Lebensmittel:'Groceries', Wohnen:'Housing', Energie:'Energy',
+            Auto:'Car', Freizeit:'Leisure', Elektronik:'Electronics',
+            Gesundheit:'Health', Haustiere:'Pets', Verträge:'Contracts',
+            Sonstiges:'Other'
+        });
+        function budgetCategoryLabel(category) {
+            const language = arguments.length > 1 ? arguments[1] : window.__toolyaUILocale;
+            return language === 'en' && typeof category === 'string'
+                && Object.hasOwn(budgetCategoryEn,category)
+                ? budgetCategoryEn[category] : category;
+        }
+
+        // Payment-method IDs are saved in German. Translate only the displayed
+        // value, never the select value, receipt record or export fields.
+        const budgetPaymentEn = Object.freeze({
+            'EC-Karte':'Debit card', Bargeld:'Cash', Kreditkarte:'Credit card',
+            'Überweisung':'Bank transfer / standing order', PayPal:'PayPal'
+        });
+        function budgetPaymentLabel(method) {
+            const language = arguments.length > 1 ? arguments[1] : window.__toolyaUILocale;
+            return language === 'en' && typeof method === 'string'
+                && Object.hasOwn(budgetPaymentEn,method)
+                ? budgetPaymentEn[method] : method;
+        }
+
+        let budgetChartDisplaySnapshot = null;
+        function refreshBudgetChartSummaries() {
+            const snapshot = budgetChartDisplaySnapshot;
+            if (!snapshot) return;
+            const english = window.__toolyaUILocale === 'en';
+            const formatAmount = value => Number(value).toLocaleString(english ? 'en-GB' : 'de-DE', {
+                style: 'currency', currency: 'EUR'
+            });
+            const categorySummary = snapshot.categories
+                .map(([category, amount]) => budgetCategoryLabel(category) + ': ' + formatAmount(amount))
+                .join('; ');
+            const categoryNode = document.getElementById('categoryChartSummary');
+            const cashflowNode = document.getElementById('cashflowChartSummary');
+            if (categoryNode) categoryNode.textContent = categorySummary ||
+                (english ? 'No expenses this month.' : 'Keine Ausgaben in diesem Monat.');
+            if (cashflowNode) cashflowNode.textContent =
+                (english ? 'Income: ' : 'Einnahmen: ') + formatAmount(snapshot.income) +
+                (english ? '; Expenses: ' : '; Ausgaben: ') + formatAmount(snapshot.expense) +
+                (english ? '; Balance: ' : '; Saldo: ') + formatAmount(snapshot.income - snapshot.expense) + '.';
+        }
+
+        // Chart labels mirror the same trusted in-memory totals as the accessible
+        // summary. The underlying category identifiers and datasets are unchanged.
+        function refreshBudgetChartLabels() {
+            if (!budgetChartDisplaySnapshot) return;
+            if (categoryChartInstance) {
+                const categories = budgetChartDisplaySnapshot.categories;
+                categoryChartInstance.data.labels = categories.length
+                    ? categories.map(([category]) => budgetCategoryLabel(category))
+                    : [window.__toolyaUILocale === 'en' ? 'No expenses' : 'Keine Ausgaben'];
+                categoryChartInstance.update();
+            }
+            if (cashflowChartInstance) {
+                const english = window.__toolyaUILocale === 'en';
+                cashflowChartInstance.data.labels = english ? ['Income', 'Expenses'] : ['Einnahmen', 'Ausgaben'];
+                cashflowChartInstance.data.datasets[0].label = english ? 'Amount €' : 'Betrag €';
+                cashflowChartInstance.update();
+            }
+        }
+
+        // Accessible photo preview names are UI-only and never touch image bytes or form drafts.
+        function refreshBudgetPhotoPreviewLocale() {
+            const english = window.__toolyaUILocale === 'en';
+            const images = document.querySelectorAll('#uploadGalleryPreview img');
+            images.forEach((image, index) => {
+                const position = Number(image.dataset.photoIndex);
+                const number = Number.isSafeInteger(position) && position >= 0 ? position + 1 : index + 1;
+                image.alt = (english ? 'Receipt photo preview ' : 'Vorschau des Belegfotos ') + number;
+            });
+        }
+
+        // Read-only locale refresh: keep open budget inputs (including unsaved edits)
+        // and the German category IDs unchanged. Do not emit a data-change event.
+        function refreshBudgetDynamicLocale() {
+            if (!toolyaCloudReady) return;
+            for (const label of document.querySelectorAll('[data-budget-category]')) {
+                label.textContent = budgetCategoryLabel(label.getAttribute('data-budget-category'));
+            }
+            for (const input of document.querySelectorAll('#budgetInputList input[data-cat]')) {
+                const label = document.querySelector('label[for="' + input.id + '"]');
+                if (label) label.textContent = budgetCategoryLabel(input.getAttribute('data-cat')) + ':';
+            }
+            renderSavingsGoals();
+            renderTransactionList();
+            refreshBudgetChartSummaries();
+            refreshBudgetChartLabels();
+            refreshBudgetStickerLabels();
+            refreshBudgetPhotoPreviewLocale();
+        }
+        document.addEventListener('toolya:locale-change', refreshBudgetDynamicLocale);
 
         document.addEventListener('DOMContentLoaded', () => {
             const receiptDateInput = document.getElementById('receiptDate');
@@ -858,7 +955,7 @@ async function toolyaCloudBoot(tool) {
                     if (idx !== 0) pendingPhotoReads--;
                     const imgThumb = document.createElement('img');
                     imgThumb.src = e.target.result;
-                    imgThumb.alt = 'Vorschau des Belegfotos ' + (idx + 1);
+                    imgThumb.alt = (window.__toolyaUILocale === 'en' ? 'Receipt photo preview ' : 'Vorschau des Belegfotos ') + (idx + 1);
                     imgThumb.className = "w-14 h-14 object-cover rounded-lg border shadow-sm";
                     imgThumb.dataset.photoIndex = String(idx);
                     const next = [...previewContainer.children].find(child => Number(child.dataset.photoIndex) > idx);
@@ -1198,8 +1295,9 @@ async function toolyaCloudBoot(tool) {
                 photos.forEach((src, index) => {
                     const imgThumb = document.createElement('img');
                     imgThumb.src = src;
-                    imgThumb.alt = 'Vorschau des Belegfotos ' + (index + 1);
+                    imgThumb.alt = (window.__toolyaUILocale === 'en' ? 'Receipt photo preview ' : 'Vorschau des Belegfotos ') + (index + 1);
                     imgThumb.className = "w-14 h-14 object-cover rounded-lg border shadow-sm";
+                    imgThumb.dataset.photoIndex = String(index);
                     previewContainer.appendChild(imgThumb);
                 });
             } else {
@@ -1354,25 +1452,26 @@ async function toolyaCloudBoot(tool) {
             if (categoryChartInstance && cashflowChartInstance) {
                 const catLabels = Object.keys(categoryExpenses).filter(k => categoryExpenses[k] > 0);
                 const catValues = catLabels.map(k => categoryExpenses[k]);
-                categoryChartInstance.data.labels = catLabels.length ? catLabels : ['Keine Ausgaben'];
+                categoryChartInstance.data.labels = catLabels.length
+                    ? catLabels.map(budgetCategoryLabel)
+                    : [window.__toolyaUILocale === 'en' ? 'No expenses' : 'Keine Ausgaben'];
                 categoryChartInstance.data.datasets[0].data = catValues.length ? catValues : [1];
                 categoryChartInstance.update();
 
+                cashflowChartInstance.data.labels = window.__toolyaUILocale === 'en' ? ['Income', 'Expenses'] : ['Einnahmen', 'Ausgaben'];
+                cashflowChartInstance.data.datasets[0].label = window.__toolyaUILocale === 'en' ? 'Amount €' : 'Betrag €';
                 cashflowChartInstance.data.datasets[0].data = [totalIncome, totalExpense];
                 cashflowChartInstance.update();
             }
 
             // Text alternatives share the exact calculated values used by the charts.
-            // textContent prevents category names from becoming executable markup.
-            const formatChartAmount = value => Number(value).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
-            const categoryChartSummary = Object.entries(categoryExpenses)
-                .filter(([, amount]) => amount > 0)
-                .map(([category, amount]) => category + ': ' + formatChartAmount(amount))
-                .join('; ');
-            document.getElementById('categoryChartSummary').textContent = categoryChartSummary || 'Keine Ausgaben in diesem Monat.';
-            document.getElementById('cashflowChartSummary').textContent =
-                'Einnahmen: ' + formatChartAmount(totalIncome) + '; Ausgaben: ' + formatChartAmount(totalExpense) +
-                '; Saldo: ' + formatChartAmount(totalIncome - totalExpense) + '.';
+            // Keep calculated numeric chart data in memory; only render their
+            // accessible summaries on locale changes (no cloud reads or writes).
+            budgetChartDisplaySnapshot = {
+                categories: Object.entries(categoryExpenses).filter(([, amount]) => amount > 0),
+                income: totalIncome, expense: totalExpense
+            };
+            refreshBudgetChartSummaries();
 
             const budgetContainer = document.getElementById('budgetProgressList');
             budgetContainer.innerHTML = defaultCategories.map(cat => {
@@ -1387,7 +1486,7 @@ async function toolyaCloudBoot(tool) {
                 return `
                     <div class="space-y-1">
                         <div class="flex justify-between text-xs">
-                            <span class="font-bold text-gray-700">${cat}</span>
+                            <span class="font-bold text-gray-700" data-budget-category="${cat}">${escapeHaushaltsHtml(budgetCategoryLabel(cat))}</span>
                             <span class="text-gray-500">${spent.toFixed(2)} € / <strong>${limit.toFixed(2)} €</strong></span>
                         </div>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
@@ -1423,7 +1522,7 @@ async function toolyaCloudBoot(tool) {
             const goals = getSavingsGoals();
             const container = document.getElementById('savingsGoalsGrid');
             if (goals.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-2">Noch keine Sparziele angelegt.</p>`;
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-2">${window.__toolyaUILocale === 'en' ? 'No savings goals yet.' : 'Noch keine Sparziele angelegt.'}</p>`;
                 return;
             }
             container.innerHTML = goals.filter(g => g && typeof g === 'object').map(g => {
@@ -1436,17 +1535,17 @@ async function toolyaCloudBoot(tool) {
                     <div class="p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="font-bold text-sm text-emerald-900">${escapeHaushaltsHtml(g.title)}</span>
-                            <button onclick="deleteSavingsGoal(${safeHaushaltsId(g.id)})" class="text-red-500 text-xs font-bold hover:opacity-80">✕</button>
+                            <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete savings goal' : 'Sparziel löschen'}" onclick="deleteSavingsGoal(${safeHaushaltsId(g.id)})" class="text-red-500 text-xs font-bold hover:opacity-80">✕</button>
                         </div>
                         <div class="flex justify-between text-xs text-gray-600">
-                            <span>Gespart: <strong>${saved.toFixed(2)} €</strong></span>
-                            <span>Ziel: ${goal.toFixed(2)} €</span>
+                            <span>${window.__toolyaUILocale === 'en' ? 'Saved:' : 'Gespart:'} <strong>${saved.toFixed(2)} €</strong></span>
+                            <span>${window.__toolyaUILocale === 'en' ? 'Target:' : 'Ziel:'} ${goal.toFixed(2)} €</span>
                         </div>
                         <div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden">
                             <div class="bg-emerald-600 h-2.5 transition-all" style="width: ${percent}%"></div>
                         </div>
                         <div class="flex gap-2 pt-1">
-                            <button onclick="depositGoal(${safeHaushaltsId(g.id)})" class="flex-1 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold b3-action">+ Einzahlen</button>
+                            <button onclick="depositGoal(${safeHaushaltsId(g.id)})" class="flex-1 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold b3-action">${window.__toolyaUILocale === 'en' ? '+ Deposit' : '+ Einzahlen'}</button>
                         </div>
                     </div>
                 `;
@@ -1512,7 +1611,7 @@ async function toolyaCloudBoot(tool) {
                         <div class="flex items-start space-x-3">
                             ${photos.length > 0 
                                 ? `<div class="relative cursor-pointer" onclick="openGalleryModal(${safeHaushaltsId(r.id)})">
-                                     <img src="${photos[0]}" alt="Belegfoto zur Buchung" class="w-16 h-16 object-cover rounded-xl border shadow-sm">
+                                     <img src="${photos[0]}" alt="${window.__toolyaUILocale === 'en' ? 'Receipt photo for transaction' : 'Belegfoto zur Buchung'}" class="w-16 h-16 object-cover rounded-xl border shadow-sm">
                                      ${photos.length > 1 ? `<span class="absolute bottom-0 right-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-br-xl">+${photos.length - 1}</span>` : ''}
                                    </div>` 
                                 : `<div class="w-16 h-16 ${isIncome ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'} rounded-xl flex items-center justify-center font-bold text-xl">${isIncome ? '🔺' : '🧾'}</div>`
@@ -1520,26 +1619,26 @@ async function toolyaCloudBoot(tool) {
                             <div class="space-y-1">
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="text-sm font-bold text-gray-900">${escapeHaushaltsHtml(r.title)}</span>
-                                    <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-semibold">${escapeHaushaltsHtml(r.category)}</span>
-                                    ${r.isFixkosten ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">🔄 Fixkosten</span>` : ''}
-                                    ${r.isTax ? `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">💼 Steuer</span>` : ''}
-                                    ${hasWarranty ? (isWarrantyActive ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">Garantie aktiv (${diffDaysWarranty} T)</span>` : `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">Garantie abgelaufen</span>`) : ''}
-                                    ${isReturnActive ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">⏱️ Rückgabe: ${diffDaysReturn} T</span>` : ''}
+                                    <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-semibold">${escapeHaushaltsHtml(budgetCategoryLabel(r.category))}</span>
+                                    ${r.isFixkosten ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '🔄 Recurring cost' : '🔄 Fixkosten'}</span>` : ''}
+                                    ${r.isTax ? `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '💼 Tax' : '💼 Steuer'}</span>` : ''}
+                                    ${hasWarranty ? (isWarrantyActive ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? 'Warranty active (' + diffDaysWarranty + ' d)' : 'Garantie aktiv (' + diffDaysWarranty + ' T)'}</span>` : `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? 'Warranty expired' : 'Garantie abgelaufen'}</span>`) : ''}
+                                    ${isReturnActive ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '⏱️ Return: ' + diffDaysReturn + ' d' : '⏱️ Rückgabe: ' + diffDaysReturn + ' T'}</span>` : ''}
                                 </div>
                                 <p class="text-xs text-gray-600">
-                                    Betrag: <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${displayPrice} €</strong> | Datum: ${escapeHaushaltsHtml(r.date)} | Zahlungsart: ${r.paymentMethod || 'k.A.'}
+                                    ${window.__toolyaUILocale === 'en' ? 'Amount:' : 'Betrag:'} <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${displayPrice} €</strong> | ${window.__toolyaUILocale === 'en' ? 'Date:' : 'Datum:'} ${escapeHaushaltsHtml(r.date)} | ${window.__toolyaUILocale === 'en' ? 'Payment method:' : 'Zahlungsart:'} ${escapeHaushaltsHtml(budgetPaymentLabel(r.paymentMethod || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.')))}
                                 </p>
                                 <p class="text-[11px] text-gray-500">
-                                    ${r.store ? 'Partner: ' + escapeHaushaltsHtml(r.store) + ' | ' : ''} ${r.sn ? 'S/N: ' + escapeHaushaltsHtml(r.sn) + ' | ' : ''} ${r.location ? 'Karton: ' + escapeHaushaltsHtml(r.location) + ' | ' : ''} ${r.note ? 'Notiz: ' + r.note : ''}
+                                    ${r.store ? 'Partner: ' + escapeHaushaltsHtml(r.store) + ' | ' : ''} ${r.sn ? 'S/N: ' + escapeHaushaltsHtml(r.sn) + ' | ' : ''} ${r.location ? (window.__toolyaUILocale === 'en' ? 'Box: ' : 'Karton: ') + escapeHaushaltsHtml(r.location) + ' | ' : ''} ${r.note ? (window.__toolyaUILocale === 'en' ? 'Note: ' : 'Notiz: ') + escapeHaushaltsHtml(r.note) : ''}
                                 </p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
-                            <button onclick="editReceipt(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-bold b3-action b3-outline">✏️ Bearbeiten</button>
+                            <button onclick="editReceipt(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-bold b3-action b3-outline">${window.__toolyaUILocale === 'en' ? '✏️ Edit' : '✏️ Bearbeiten'}</button>
                             ${hasWarranty ? `<button onclick="openQRModal(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold b3-action b3-outline">🏷️ QR</button>` : ''}
                             ${hasWarranty ? `<button onclick="openGoogleCalendar(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold b3-action b3-outline">📅 Google</button>` : ''}
                             ${hasWarranty ? `<button onclick="downloadICS(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold b3-action b3-outline">📄 .ics</button>` : ''}
-                            <button onclick="deleteReceipt(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                            <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete transaction' : 'Buchung löschen'}" onclick="deleteReceipt(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                         </div>
                     </div>
                 `;
@@ -1552,7 +1651,7 @@ async function toolyaCloudBoot(tool) {
             const container = document.getElementById('budgetInputList');
             container.innerHTML = defaultCategories.map((cat, index) => `
                 <div class="flex justify-between items-center gap-2">
-                    <label for="budget-amount-${index}" class="font-semibold text-gray-700">${cat}:</label>
+                    <label for="budget-amount-${index}" class="font-semibold text-gray-700">${escapeHaushaltsHtml(budgetCategoryLabel(cat))}:</label>
                     <input id="budget-amount-${index}" type="number" step="10" data-cat="${cat}" value="${Number.isFinite(Number(budgets[cat])) && Number(budgets[cat]) >= 0 ? Number(budgets[cat]) : 0}" class="p-2 border rounded-xl w-32 text-right font-bold">
                 </div>
             `).join('');
@@ -1640,7 +1739,7 @@ async function toolyaCloudBoot(tool) {
             document.getElementById('galleryTitle').innerText = `🖼️ Galerie: ${r.title || 'Beleg'}`;
             container.innerHTML = photos.map((src, idx) => `
                 <div class="space-y-1 text-center">
-                    <img src="${src}" alt="Belegfoto ${idx + 1} zur Buchung" class="w-full object-contain rounded-xl border max-h-80 bg-gray-100">
+                    <img src="${src}" alt="${window.__toolyaUILocale === 'en' ? 'Receipt photo' : 'Belegfoto'} ${idx + 1} ${window.__toolyaUILocale === 'en' ? 'for transaction' : 'zur Buchung'}" class="w-full object-contain rounded-xl border max-h-80 bg-gray-100">
                     <span class="text-xs text-gray-500">Seite ${idx + 1} von ${photos.length}</span>
                 </div>
             `).join('');
@@ -1651,6 +1750,31 @@ async function toolyaCloudBoot(tool) {
         function closeGalleryModal() {
             document.getElementById('galleryModal').classList.remove('flex');
             document.getElementById('galleryModal').classList.add('hidden');
+        }
+
+        // Private receipt data remain in-memory and on the device. Only the
+        // printed sticker labels are localized; the QR payload stays untouched.
+        let budgetStickerDisplaySnapshot = null;
+        function refreshBudgetStickerLabels() {
+            const r = budgetStickerDisplaySnapshot;
+            const modal = document.getElementById('qrModal');
+            if (!r || !modal || modal.classList.contains('hidden')) return;
+            const english = window.__toolyaUILocale === 'en';
+            document.getElementById('stickerTitle').textContent = r.title || '';
+            document.getElementById('stickerStoreDate').textContent =
+                (english ? 'Purchased: ' : 'Kauf: ') + r.date +
+                ' (' + (r.store || (english ? 'Warranty receipt' : 'Garantie-Beleg')) + ')';
+            document.getElementById('stickerSN').textContent =
+                'S/N: ' + (r.serial || (english ? 'none' : 'keine'));
+            const buyDate = parseReceiptDate(r.date);
+            const months = Number(r.warrantyMonths);
+            let warrantyLabel = english ? 'No valid warranty details' : 'Keine gültige Garantieangabe';
+            if (Number.isFinite(buyDate.getTime()) && Number.isFinite(months) && months > 0) {
+                const expiry = addWarrantyMonths(buyDate,months);
+                if (expiry) warrantyLabel = (english ? 'Warranty until: ' : 'Garantie bis: ') +
+                    expiry.toLocaleDateString(english ? 'en-GB' : 'de-DE');
+            }
+            document.getElementById('stickerWarranty').textContent = warrantyLabel;
         }
 
         async function openQRModal(id) {
@@ -1667,17 +1791,11 @@ async function toolyaCloudBoot(tool) {
             modal.classList.remove('hidden');
             modal.classList.add('flex');
 
-            document.getElementById('stickerTitle').innerText = r.title;
-            document.getElementById('stickerStoreDate').innerText = `Kauf: ${r.date} (${r.store || 'Garantie-Beleg'})`;
-            document.getElementById('stickerSN').innerText = `S/N: ${r.sn || 'keine'}`;
-            const buyDate = parseReceiptDate(r.date);
-            const warrantyMonths = Number(r.warrantyMonths);
-            let warrantyLabel = 'Keine gültige Garantieangabe';
-            if (Number.isFinite(buyDate.getTime()) && Number.isFinite(warrantyMonths) && warrantyMonths > 0) {
-                const expDate = addWarrantyMonths(buyDate, warrantyMonths);
-                if (expDate) warrantyLabel = 'Garantie bis: ' + expDate.toLocaleDateString('de-DE');
-            }
-            document.getElementById('stickerWarranty').innerText = warrantyLabel;
+            budgetStickerDisplaySnapshot = {
+                title: r.title, date: r.date, store: r.store, serial: r.sn,
+                warrantyMonths: r.warrantyMonths
+            };
+            refreshBudgetStickerLabels();
 
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = "";
@@ -1695,6 +1813,7 @@ async function toolyaCloudBoot(tool) {
         function closeQRModal() {
             document.getElementById('qrModal').classList.remove('flex');
             document.getElementById('qrModal').classList.add('hidden');
+            budgetStickerDisplaySnapshot = null;
         }
 
         function openGoogleCalendar(id) {
@@ -1716,10 +1835,11 @@ async function toolyaCloudBoot(tool) {
             endDate.setDate(endDate.getDate() + 1);
             const endDateStr = fmtDate(endDate);
 
-            const title = encodeURIComponent(`Garantie-Ablauf: ${r.title}`);
+            const english = window.__toolyaUILocale === 'en';
+            const title = encodeURIComponent(english ? `Warranty expiry: ${r.title}` : `Garantie-Ablauf: ${r.title}`);
             const price = Number(r.price);
-            const displayPrice = Number.isFinite(price) ? price.toFixed(2) + ' €' : 'k.A.';
-            const details = encodeURIComponent(`Garantie für ${r.title} (${r.store}) läuft heute ab.\nKaufdatum: ${r.date}\nPreis: ${displayPrice}\nS/N: ${r.sn || 'k.A.'}`);
+            const displayPrice = Number.isFinite(price) ? price.toFixed(2) + ' €' : (english ? 'n/a' : 'k.A.');
+            const details = encodeURIComponent(english ? `Warranty for ${r.title} (${r.store}) expires today.\nPurchase date: ${r.date}\nPrice: ${displayPrice}\nS/N: ${r.sn || 'n/a'}` : `Garantie für ${r.title} (${r.store}) läuft heute ab.\nKaufdatum: ${r.date}\nPreis: ${displayPrice}\nS/N: ${r.sn || 'k.A.'}`);
             window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}/${endDateStr}&details=${details}`, '_blank');
         }
 
@@ -1747,8 +1867,11 @@ async function toolyaCloudBoot(tool) {
             endDate.setDate(endDate.getDate() + 1);
             const fmt = date => date.getFullYear() + String(date.getMonth() + 1).padStart(2, '0') +
                 String(date.getDate()).padStart(2, '0');
-            const title = escapeCalendarText(r.title || 'Beleg');
-            const description = escapeCalendarText('Die Garantie für ' + (r.title || 'Beleg') +
+            const english = window.__toolyaUILocale === 'en';
+            const title = escapeCalendarText(r.title || (english ? 'Receipt' : 'Beleg'));
+            const description = escapeCalendarText(english ? 'The warranty for ' + (r.title || 'Receipt') +
+                ' (' + (r.store || 'n/a') + ') expires on ' + expDate.toLocaleDateString('en-GB') +
+                '.\nS/N: ' + (r.sn || 'n/a') + '\nBox storage location: ' + (r.location || 'n/a') : 'Die Garantie für ' + (r.title || 'Beleg') +
                 ' (' + (r.store || 'k.A.') + ') läuft am ' + expDate.toLocaleDateString('de-DE') +
                 ' ab.\nS/N: ' + (r.sn || 'k.A.') + '\nKarton-Lagerort: ' + (r.location || 'k.A.'));
             const ics = [
@@ -1758,7 +1881,7 @@ async function toolyaCloudBoot(tool) {
                 'BEGIN:VEVENT',
                 'UID:' + encodeURIComponent(String(r.id ?? 'beleg')) + '-' + fmt(reminderDate) + '@helferlein.local',
                 'DTSTAMP:' + new Date().toISOString().replace(/[-:]|\.\d{3}/g, ''),
-                'SUMMARY:Garantie-Ablauf: ' + title,
+                (english ? 'SUMMARY:Warranty expiry: ' : 'SUMMARY:Garantie-Ablauf: ') + title,
                 'DESCRIPTION:' + description,
                 'DTSTART;VALUE=DATE:' + fmt(reminderDate),
                 'DTEND;VALUE=DATE:' + fmt(endDate),
@@ -1766,7 +1889,7 @@ async function toolyaCloudBoot(tool) {
                 'BEGIN:VALARM',
                 'TRIGGER;RELATED=START:PT9H',
                 'ACTION:DISPLAY',
-                'DESCRIPTION:Garantie läuft in 30 Tagen ab!',
+                english ? 'DESCRIPTION:Warranty expires in 30 days!' : 'DESCRIPTION:Garantie läuft in 30 Tagen ab!',
                 'END:VALARM',
                 'END:VEVENT',
                 'END:VCALENDAR'
@@ -1775,7 +1898,7 @@ async function toolyaCloudBoot(tool) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'garantie-' + String(r.title || 'beleg').toLowerCase()
+            a.download = (english ? 'warranty-' : 'garantie-') + String(r.title || (english ? 'receipt' : 'beleg')).toLowerCase()
                 .replace(/[^a-z0-9äöüß_-]+/gi, '-').slice(0, 80) + '.ics';
             a.click();
             setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -1789,11 +1912,14 @@ async function toolyaCloudBoot(tool) {
         }
 
         function exportAllBookingsCSV() {
+            const english = window.__toolyaUILocale === 'en';
             const data = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r));
             if (data.length === 0) return alert('Keine Buchungen für den CSV-Export vorhanden.');
-            const rows = [['Datum', 'Typ', 'Titel', 'Haendler', 'Kategorie', 'Preis_EUR',
+            const rows = [(english ? ['Date', 'Type', 'Title', 'Merchant', 'Category', 'Price_EUR',
+                'Payment_method', 'Recurring_cost', 'Tax_relevant', 'Warranty_months',
+                'Return_days', 'Lifespan_years', 'Serial_number', 'Storage_location', 'Note'] : ['Datum', 'Typ', 'Titel', 'Haendler', 'Kategorie', 'Preis_EUR',
                 'Zahlungsart', 'Fixkosten', 'Steuerrelevant', 'Garantie_Monate',
-                'Rueckgabe_Tage', 'Lebensdauer_Jahre', 'Seriennummer', 'Lagerort', 'Notiz'].join(';')];
+                'Rueckgabe_Tage', 'Lebensdauer_Jahre', 'Seriennummer', 'Lagerort', 'Notiz']).join(';')];
             // Nur die Exportansicht sortieren; die gespeicherte Reihenfolge bleibt erhalten.
             const bookingDate = r => {
                 if (typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return null;
@@ -1811,8 +1937,8 @@ async function toolyaCloudBoot(tool) {
                 const price = Number(r.price);
                 const fields = [r.date, r.entryType, r.title, r.store, r.category,
                     Number.isFinite(price) ? price.toFixed(2) : '',
-                    r.paymentMethod, r.isFixkosten === true ? 'Ja' : 'Nein',
-                    r.isTax === true ? 'Ja' : 'Nein', r.warrantyMonths, r.returnDays,
+                    r.paymentMethod, r.isFixkosten === true ? (english ? 'Yes' : 'Ja') : (english ? 'No' : 'Nein'),
+                    r.isTax === true ? (english ? 'Yes' : 'Ja') : (english ? 'No' : 'Nein'), r.warrantyMonths, r.returnDays,
                     r.lifespan, r.sn, r.location, r.note];
                 rows.push(fields.map(steuerCsvFeld).join(';'));
             }
@@ -1821,15 +1947,16 @@ async function toolyaCloudBoot(tool) {
             const a = document.createElement('a');
             const url = URL.createObjectURL(blob);
             a.href = url;
-            a.download = 'alle-buchungen-' + new Date().toISOString().split('T')[0] + '.csv';
+            a.download = (english ? 'all-transactions-' : 'alle-buchungen-') + new Date().toISOString().split('T')[0] + '.csv';
             a.click();
             setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function exportSteuerCSV() {
+            const english = window.__toolyaUILocale === 'en';
             const data = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r) && r.isTax === true);
             if (data.length === 0) return alert("Keine steuerrelevanten Buchungen gefunden!");
-            const rows = [["Datum", "Typ", "Titel", "Haendler", "Kategorie", "Preis_EUR", "Zahlungsart", "Seriennummer", "Notiz"].join(';')];
+            const rows = [(english ? ["Date", "Type", "Title", "Merchant", "Category", "Price_EUR", "Payment_method", "Serial_number", "Note"] : ["Datum", "Typ", "Titel", "Haendler", "Kategorie", "Preis_EUR", "Zahlungsart", "Seriennummer", "Notiz"]).join(';')];
             for (const r of data) {
                 const price = Number(r.price);
                 const fields = [
@@ -1848,7 +1975,7 @@ async function toolyaCloudBoot(tool) {
             const a = document.createElement('a');
             const url = URL.createObjectURL(blob);
             a.href = url;
-            a.download = 'steuer-buchungen-' + new Date().toISOString().split('T')[0] + '.csv';
+            a.download = (english ? 'tax-transactions-' : 'steuer-buchungen-') + new Date().toISOString().split('T')[0] + '.csv';
             a.click();
             setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
@@ -1997,7 +2124,7 @@ async function toolyaCloudBoot(tool) {
                 const sign = (r.entryType === 'einnahme' || r.category === 'Einnahme') ? '+' : '-';
                 const price = Number(r.price);
                 const amount = Number.isFinite(price) ? sign + price.toFixed(2) : pdfLabel("k.A.","n/a");
-                const line = `${r.date || pdfLabel("k.A.","n/a")} | ${r.title || pdfLabel("Ohne Titel","Untitled")} (${r.category || pdfLabel("Sonstiges","Other")}): ${amount} € [${r.paymentMethod || pdfLabel("k.A.","n/a")}]`;
+                const line = `${r.date || pdfLabel("k.A.","n/a")} | ${r.title || pdfLabel("Ohne Titel","Untitled")} (${budgetCategoryLabel(r.category, pdfEn ? "en" : "de") || pdfLabel("Sonstiges","Other")}): ${amount} € [${budgetPaymentLabel(r.paymentMethod, pdfEn ? "en" : "de") || pdfLabel("k.A.","n/a")}]`;
                 const lines = doc.splitTextToSize(line, 180);
                 for (const textLine of lines) {
                     if (y > 275) { doc.addPage(); y = 20; }

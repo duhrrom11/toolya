@@ -1625,6 +1625,15 @@ for(const routeName of ['assistant','bookmarks','cockpit','collection','dashboar
  await page.emulateMedia({colorScheme:'dark',reducedMotion:'reduce'});
  await page.goto(origin+'/tools/wishes/'+routeName+'.html');await page.locator('.toolya-signature-footer').waitFor();await page.waitForLoadState('networkidle');
  if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+ if(routeName==='assistant'){
+  await expect(page.locator('#status')).toHaveText('Bitte anmelden.');
+  // Exercise the actual language selector: it synchronizes the locale module's
+  // active language, storage and translation observer (a synthetic event does not).
+  await page.locator('[data-wishes-locale="en"]').click();
+  await expect(page.locator('#status')).toHaveText('Please sign in.');
+  await page.locator('[data-wishes-locale="de"]').click();
+  await expect(page.locator('#status')).toHaveText('Bitte anmelden.');
+ }
  await page.waitForFunction(()=>!!window.__legacyMock);
  if(routeName==='discover'){
   await expect(page.locator('#status')).toContainText('1 öffentliche Sammlungen gefunden');
@@ -1797,6 +1806,10 @@ for (const [tool, action] of [
     });
     await page.goto(origin + '/tools/' + tool + '/index.html');
     expect(downloads).toBe(0);
+    // Cloud-only vehicle reports require a verified snapshot; await the isolated fixture.
+    if (tool === 'car') {
+      await expect.poll(() => page.evaluate(() => typeof toolyaCloudReady !== 'undefined' && toolyaCloudReady && !!toolyaCloudController?.ready)).toBe(true);
+    }
     await page.evaluate(() => { window.alert = message => { window.pdfExportError = message; }; });
     await page.evaluate(handler => window[handler](), action);
     await expect.poll(() => page.evaluate(() => window.pdfExportError)).toContain('Bitte versuche es erneut');
@@ -2384,7 +2397,7 @@ test('i18n Sprint A moving: valid backup cancellation and oversized backup never
  await expect(input).toHaveValue('');
  await page.evaluate(()=>importBackup({target:{files:[{size:20*1024*1024+1}],value:'synthetic'}}));
  const notice=page.getByRole('alertdialog',{name:'Toolya'});
- await expect(notice.locator('#hl-alert-message')).toHaveText('Backup too large (maximum 20 MB).');
+ await expect(notice.locator('#hl-alert-message')).toHaveText('Backup is too large (maximum 20 MB).');
  await expect(notice.getByRole('button',{name:'OK'})).toBeFocused();
  await notice.getByRole('button',{name:'OK'}).click();
  await page.locator('[data-tool-locale="de"]').click();
@@ -2590,6 +2603,7 @@ test('i18n parking history renders historic ISO timestamps and escapes user cont
  await expect.poll(()=>page.evaluate(()=>parkingCloudReady&&!!parkingCloudController?.ready)).toBe(true);
  const list=page.locator('#parkingList');
  await expect(list).toContainText('Date: 17/11/2026');
+ await expect(list.getByRole('button', {name:'Delete parking session'})).toHaveCount(1);
  await expect(list).toContainText('Fee: 4.50 €');
  await expect(list).toContainText('Zone <B> & C');
  await expect(list).toContainText(unsafe);
@@ -2609,6 +2623,7 @@ test('i18n parking history renders historic ISO timestamps and escapes user cont
  await expect(page.locator('[data-tool-locale="de"]')).toHaveAttribute('aria-pressed','true');
  expect(await page.evaluate(()=>window.__toolyaUILocale)).toBe('de');
  await expect(list).toContainText('Datum: 17.11.2026 13:00');
+ await expect(list.getByRole('button', {name:'Parkvorgang löschen'})).toHaveCount(1);
  await expect(list).toContainText('Gebühr: 4,50 €');
  await page.locator('[data-tool-locale="en"]').click();
  await expect(list).toContainText('Date: 17/11/2026');
@@ -2630,8 +2645,10 @@ test('i18n loans history translates returned status on mobile without rewriting 
  await page.goto(origin+'/tools/loans/index.html?lang=en');
  await expect.poll(()=>page.evaluate(()=>loansCloudReady&&!!loansCloudController?.ready)).toBe(true);
  const list=page.locator('#itemsList');
+ await expect(list.getByRole('button', {name:'Delete loan record'})).toHaveCount(1);
  await expect(list).toContainText('✅ Returned');
  await page.locator('[data-tool-locale="de"]').click();
+ await expect(list.getByRole('button', {name:'Verleiheintrag löschen'})).toHaveCount(1);
  await expect(list).toContainText('✅ Zurückgegeben');
  await page.locator('[data-tool-locale="en"]').click();
  await expect(list).toContainText('✅ Returned');
@@ -2715,7 +2732,8 @@ test('i18n loans dynamic contact and inventory options preserve selected values 
  await expect(inv.locator('option[value=""]')).toHaveText('-- Choose inventory item --');
  await expect(filter.locator('option[value=""]')).toHaveText('All people');
  await person.selectOption({label:'Ada & Bob'});
- await inv.selectOption({label:'Kabel <1> (Werkzeug)'});
+ await expect(inv.locator('option[value="Kabel <1>"]')).toHaveText('Kabel <1> (Tools)');
+ await inv.selectOption({label:'Kabel <1> (Tools)'});
  await filter.selectOption({label:'Ada & Bob'});
  const selected=await page.evaluate(()=>({
   person:document.getElementById('itemPersonSelect').value,
@@ -2724,9 +2742,11 @@ test('i18n loans dynamic contact and inventory options preserve selected values 
  }));
  await page.locator('[data-tool-locale="de"]').click();
  await expect(person.locator('option[value="custom"]')).toHaveText('+ Neuen Namen eingeben');
+ await expect(inv.locator('option[value="Kabel <1>"]')).toHaveText('Kabel <1> (Werkzeug)');
  await expect(filter.locator('option[value=""]')).toHaveText('Alle Personen');
  await page.locator('[data-tool-locale="en"]').click();
  await expect(inv.locator('option[value=""]')).toHaveText('-- Choose inventory item --');
+ await expect(inv.locator('option[value="Kabel <1>"]')).toHaveText('Kabel <1> (Tools)');
  expect(await page.evaluate(()=>({
   person:document.getElementById('itemPersonSelect').value,
   inventory:document.getElementById('itemInventorySelect').value,
@@ -2734,3 +2754,136 @@ test('i18n loans dynamic contact and inventory options preserve selected values 
  }))).toEqual(selected);
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
 });
+
+test('i18n meter share text localizes known types and keeps original records', async ({ page }) => {
+ const readings = [
+  { id: 1, type: 'Strom-NT', name: 'Strom Küche', date: '2026-11-19', value: 24 },
+  { id: 2, type: 'Strom-NT', name: 'Strom Küche', date: '2026-11-18', value: 20 },
+  { id: 3, type: 'Eigener Typ', name: 'Privater Zähler', date: '2026-11-19', value: 17 }
+ ];
+ await isolated(page, true, false, { readings, tarifs: {} });
+ await page.addInitScript(() => {
+  Object.defineProperty(navigator, 'clipboard', {
+   value: { writeText: () => Promise.reject(new Error('Synthetic clipboard denial')) }
+  });
+ });
+ await page.goto(origin + '/tools/meters/index.html?lang=en');
+ await expect.poll(() => page.evaluate(() => metersCloudReady && !!metersCloudController?.ready)).toBe(true);
+ for (const [locale, message, heading, reading] of [
+  ['en', 'Clipboard unavailable. Copy the text manually:', '⚡ Meter readings overview:', '- Electricity (night tariff) (Strom Küche): 24 kWh (on 2026-11-19)'],
+  ['de', 'Zwischenablage nicht verfügbar. Text manuell kopieren:', '⚡ Zählerstände-Übersicht:', '- Strom-NT (Strom Küche): 24 kWh (vom 2026-11-19)']
+ ]) {
+  await page.locator('[data-tool-locale="' + locale + '"]').click();
+  const prompt = page.waitForEvent('dialog').then(async dialog => {
+   const result = { type: dialog.type(), message: dialog.message(), text: dialog.defaultValue() };
+   await dialog.dismiss();
+   return result;
+  });
+  await page.evaluate(() => copyShareText());
+  const result = await prompt;
+  expect(result).toMatchObject({ type: 'prompt', message });
+  expect(result.text.trimEnd().split('\n')).toEqual([
+   heading,
+   reading,
+   '- Eigener Typ (Privater Zähler): 17 m³ (' + (locale === 'en' ? 'on' : 'vom') + ' 2026-11-19)'
+  ]);
+ }
+ expect(await page.evaluate(() => metersCloudController.snapshot().readings)).toEqual(readings);
+ expect(await page.evaluate(() => window.__toolyaMock.writes.length)).toBe(0);
+});
+
+test('i18n meter history and both PDFs translate stored labels without modifying readings', async ({ page }) => {
+ const readings = [
+  { id: 1, type: 'Kaltwasser', location: 'Garten', name: 'Mein Gartenzähler', date: '2026-11-18', value: 32, note: 'Eigene Notiz' },
+  { id: 2, type: 'Strom-NT', name: 'Mein Nachtzähler', date: '2026-11-19', value: 17 },
+  { id: 3, type: 'Eigener Typ', location: 'Bereich <B>', name: 'Mein Zähler', date: '2026-11-20', value: 21 }
+ ];
+ await isolated(page, true, false, { readings, tarifs: {} });
+ await page.goto(origin + '/tools/meters/index.html?lang=de');
+ await expect.poll(() => page.evaluate(() => metersCloudReady && !!metersCloudController?.ready)).toBe(true);
+ await page.evaluate(() => {
+  window.meterPdfTexts = [];
+  window.jspdf = { jsPDF: class {
+   setFont() {}
+   setFontSize() {}
+   addPage() {}
+   splitTextToSize(value) { return [value]; }
+   text(value) { window.meterPdfTexts.push(value); }
+   save() {}
+  } };
+ });
+
+ const history = page.locator('#readingsList');
+ for (const [locale, type, location, nightType, mainLocation] of [
+  ['en', 'Cold water', 'Garden', 'Electricity (night tariff)', 'Main'],
+  ['de', 'Kaltwasser', 'Garten', 'Strom-NT', 'Haupt']
+ ]) {
+  await page.locator('[data-tool-locale="' + locale + '"]').click();
+  await expect(history).toContainText(type + ' - ' + location);
+  await expect(history).toContainText(nightType + ' - ' + mainLocation);
+  await expect(history).toContainText('Eigener Typ - Bereich <B>');
+
+  const [report, handover] = await page.evaluate(async () => {
+   await exportPDF();
+   const report = window.meterPdfTexts.splice(0).join('\n');
+   await exportHandoverPDF();
+   return [report, window.meterPdfTexts.splice(0).join('\n')];
+  });
+  expect(report).toContain(type + ' (Mein Gartenzähler - ' + location + ')');
+  expect(report).toContain(nightType + ' (Mein Nachtzähler - ' + mainLocation + ')');
+  expect(handover).toContain('[' + type + '] Mein Gartenzähler (' + location + ')');
+  expect(handover).toContain('[' + nightType + '] Mein Nachtzähler (' + mainLocation + ')');
+  for (const pdf of [report, handover]) {
+   expect(pdf).toContain('Eigener Typ');
+   expect(pdf).toContain('Bereich <B>');
+   expect(pdf).toContain('Eigene Notiz');
+  }
+ }
+ expect(await page.evaluate(() => getData().readings)).toEqual(readings);
+ expect(await page.evaluate(() => window.__toolyaMock.writes.length)).toBe(0);
+});
+
+
+/*
+ * Bilingual shell smoke for all ten main tools. This exercises the actual
+ * pages behind a synthetic, local-only Supabase stub. Never edits or asserts
+ * ownership of user-created records; only a disposable test input is added.
+ * Full dynamic/auth/export acceptance is tracked separately in the release audit.
+ */
+for(const slug of ['moving','housemates','loans','plants','baking','budget','car','parking','meters','pet-health']){
+ test('i18n ten-tool shell: '+slug+' changes DE/EN at 320, 375 and 768 without rewriting drafts',async({page})=>{
+  const requests=await isolated(page,true);
+  await page.setViewportSize({width:375,height:840});
+  await page.goto(origin+'/tools/'+slug+'/index.html?lang=en',{waitUntil:'domcontentloaded'});
+  const en=page.locator('.ty-tool-language [data-tool-locale="en"]:visible').first();
+  const de=page.locator('.ty-tool-language [data-tool-locale="de"]:visible').first();
+  await expect(en).toBeVisible({timeout:20000});
+  await expect(de).toBeVisible();
+  await expect(en).toHaveAttribute('aria-pressed','true');
+  await page.evaluate(()=>{
+    const fixture=document.createElement('input');
+    fixture.type='text';fixture.id='i18n-synthetic-unchanged';
+    fixture.value='Privat gespeicherte Notiz <Test> & 2040';
+    document.body.append(fixture);
+  });
+  const saved='Privat gespeicherte Notiz <Test> & 2040';
+  for(const width of [320,375,768]){
+    await page.setViewportSize({width,height:840});
+    await expect(en).toBeVisible();
+    await en.focus();
+    expect(await en.evaluate(el=>el===document.activeElement)).toBe(true);
+    await de.click();
+    await expect(de).toHaveAttribute('aria-pressed','true');
+    await expect(page.locator('#i18n-synthetic-unchanged')).toHaveValue(saved);
+    await en.click();
+    await expect(en).toHaveAttribute('aria-pressed','true');
+    await expect(page.locator('#i18n-synthetic-unchanged')).toHaveValue(saved);
+    const layout=await page.evaluate(()=>({width:innerWidth,
+      excess:Math.max(0,document.documentElement.scrollWidth-innerWidth)}));
+    if(layout.excess>2)console.log('[i18n-mobile-review] '+slug+' '+width+
+      'px: '+layout.excess+'px horizontal overflow; visual review needed');
+  }
+  expect(await page.evaluate(()=>window.__toolyaMock?.writes?.length||0)).toBe(0);
+  expect(requests.every(url=>!url.startsWith(origin))).toBe(true);
+ });
+}

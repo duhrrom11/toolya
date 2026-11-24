@@ -139,6 +139,47 @@ export const ESTATE_COPY=Object.freeze({
 });
 const reverse=Object.freeze(Object.fromEntries(Object.entries(ESTATE_COPY).map(([de,en])=>[en,de])));
 export const ESTATE_RUNTIME_COPY=Object.freeze({
+ "Vorhandene Gerätedaten sind unvollständig. Sie wurden nicht verändert.": "Existing device data is incomplete. It has not been changed.",
+ "Dieser Gerätetresor nennt eine andere E-Mail-Adresse. Bitte melde dich mit dem dazugehörigen Konto an.": "This device vault specifies a different email address. Sign in with the corresponding account.",
+ "Dieser Gerätetresor und deine Online-Sicherung sind unterschiedlich. Bitte öffne die Online-Sicherung in einem anderen Browserprofil. Beide Stände bleiben erhalten.": "This device vault differs from your online backup. Open the online backup in another browser profile. Both copies remain intact.",
+ "Deine Unterlagen und Kontakte bleiben erhalten. Der bisher ungeschützt auf diesem Gerät gespeicherte Hauptschlüssel wird jetzt mit deinem Tresorpasswort geschützt. Bewahre dieses Passwort gut auf.": "Your documents and contacts remain intact. The master key previously stored unprotected on this device will now be protected by your vault password. Keep this password safe.",
+ "Deine bisherigen Kontakte bleiben erhalten. Bitte reduziere die Kontaktliste zuerst im bisherigen Stand auf zehn Personen.": "Your existing contacts remain intact. First reduce the contact list in the previous version to ten people.",
+ "Bitte prüfe deine E-Mail-Adresse und dein Konto-Passwort.": "Check your email address and account password.",
+ "Bitte verwende für ein neues Konto mindestens acht Zeichen.": "Use at least eight characters for a new account.",
+ "Deine Unterlagen sind zu groß für diesen Tresor. Bitte kürze den letzten Eintrag.": "Your documents are too large for this vault. Shorten the last entry.",
+ "Löschen": "Delete",
+ "Unterlage löschen?": "Delete document?",
+ "Noch keine Vertrauenspersonen.": "No trusted contacts yet.",
+ "✉ Schlüssel per E-Mail": "✉ Send key by email",
+ "Schlüssel per WhatsApp": "Send key via WhatsApp",
+ "Übergabe bestätigen": "Confirm handover",
+ "Schlüssel erneuern": "Renew key",
+ "Bitte wähle mindestens eine Vertrauensperson aus.": "Select at least one trusted contact.",
+ "Bitte sichere die Schlüssel zuerst online.": "Back up the keys online first.",
+ "Bitte erlaube das Druckfenster und versuche es erneut.": "Allow the print window and try again.",
+ "Bitte erlaube die Druckseite und versuche es erneut.": "Allow the print page and try again.",
+ "Bitte wähle eine passende verschlüsselte Sicherung aus.": "Select a compatible encrypted backup.",
+ "Die Sicherungsdatei enthält keine unterstützten Tresordaten.": "The backup file contains no supported vault data.",
+ "Sicherung zusammenführen?": "Merge backup?",
+ "Vorbereitet – selbst versenden": "Prepared – send manually",
+ "Übergeben": "Handed over",
+ "Schlüssel noch nicht übergeben": "Key not yet handed over",
+ "Online gesichert. Der Lesezugang ist auf dem aktuellen Stand.": "Backed up online. Read access is up to date.",
+ "Die E-Mail-Benachrichtigung ist eingerichtet.": "Email notifications are configured.",
+  "Bitte bestätige die E-Mail von Toolya. Melde dich danach hier an.": "Confirm the email from Toolya, then sign in here.",
+  "Auf diesem Gerät verschlüsselt gespeichert. Die Online-Sicherung steht noch aus.": "Saved encrypted on this device. The online backup is still pending.",
+  "Unterlage gelöscht und online gesichert.": "Document deleted and backed up online.",
+  "Anhang wird beim Speichern entfernt.": "The attachment will be removed when you save.",
+  "Eintrag gespeichert.": "Entry saved.",
+  "Schlüsselübergabe bestätigt.": "Key handover confirmed.",
+  "Änderungen speichern": "Save changes",
+  "Vertrauensperson gespeichert. Ihr persönlicher Schlüssel ist bereit.": "Trusted person saved. Their personal key is ready.",
+  "Schlüsselblätter vorbereitet. Du kannst im Druckfenster „Als PDF speichern“ wählen.": "Key sheets prepared. You can choose Save as PDF in the print dialog.",
+  "Erinnerung gespeichert.": "Reminder saved.",
+  "Das neue Tresorpasswort ist gespeichert. Nutze es künftig zum Öffnen und auf neuen Geräten.": "Your new vault password has been saved. Use it to open the vault in future, including on new devices.",
+  "Vorhandene Sicherung übernommen und online gesichert.": "Existing backup imported and backed up online.",
+  "Der aktuelle Alarmstatus konnte nicht geladen werden. Bitte wähle „Alarmstatus prüfen“.": "The current emergency alert status could not be loaded. Select Check alert status.",
+  "Der Tresor ist zum Lesen geöffnet.": "The vault is open for reading.",
  "Dein Tresor ist geschlossen.": "Your vault is locked.",
  "Dein Tresor wird geöffnet …": "Opening your vault…",
  "Deine Online-Sicherung konnte gerade nicht geladen werden. Prüfe deine Verbindung und öffne deinen Tresor erneut.": "Your online backup could not be loaded. Check your connection and open your vault again.",
@@ -211,10 +252,14 @@ export const ESTATE_RUNTIME_COPY=Object.freeze({
  "Ungültiges Paket.": "Invalid package.",
  "Ungültiger Schlüssel.": "Invalid key.",
  "Nachlassinhalt zu groß.": "Estate content is too large.",
- "Nachlassinhalt ungültig.": "Estate content is invalid."
+ "Nachlassinhalt ungültig.": "Estate content is invalid.",
+ "Unterlage": "Document"
 });
 const runtimeReverse=Object.freeze(Object.fromEntries(Object.entries(ESTATE_RUNTIME_COPY).map(([de,en])=>[en,de])));
 const runtimePrefixes=Object.freeze({
+ "Anhang: ": "Attachment: ",
+ "Sicherung erfolgreich entschlüsselt: ": "Backup decrypted successfully: ",
+ "Letztes Lebenszeichen: ": "Last check-in: ",
  "Verbleibende Zeit: ": "Time remaining: ",
  "Nächste Überprüfung: ": "Next review: ",
  "Ein Notfall wurde gemeldet. Ohne Entwarnung ist der Zugang mit einem Schlüssel ab ": "An emergency was reported. Without a check-in, one-key access begins at ",
@@ -228,6 +273,16 @@ if(Object.hasOwn(dict,value))return dict[value];
 const runtime=lang==='en'?ESTATE_RUNTIME_COPY:runtimeReverse;
 if(Object.hasOwn(runtime,value))return runtime[value];
 const dynamicPrefixes=lang==='en'?runtimePrefixes:reversePrefixes;
+const patterns=lang==='en'?[
+ [/^Ein Notfall wurde gemeldet\. Ohne Entwarnung ist der Zugang mit einem Schlüssel ab (.+) möglich\.$/,'An emergency was reported. Without a check-in, one-key access is available from $1.'],
+ [/^Die 24-Stunden-Frist läuft\. Der Zugang mit einem Schlüssel ist frühestens am (.+) möglich, wenn der Besitzer nicht vorher Entwarnung gibt\.$/,'The 24-hour period is running. One-key access is available no earlier than $1, unless the owner checks in first.'],
+ [/^Nächste Überprüfung: (.+) \(fällig\)$/,'Next review: $1 (due)']
+ ]:[
+ [/^An emergency was reported\. Without a check-in, one-key access is available from (.+)\.$/,'Ein Notfall wurde gemeldet. Ohne Entwarnung ist der Zugang mit einem Schlüssel ab $1 möglich.'],
+ [/^The 24-hour period is running\. One-key access is available no earlier than (.+), unless the owner checks in first\.$/,'Die 24-Stunden-Frist läuft. Der Zugang mit einem Schlüssel ist frühestens am $1 möglich, wenn der Besitzer nicht vorher Entwarnung gibt.'],
+ [/^Next review: (.+) \(due\)$/,'Nächste Überprüfung: $1 (fällig)']
+ ];
+for(const [pattern,copy] of patterns)if(pattern.test(value))return value.replace(pattern,copy);
 for(const [before,after] of Object.entries(dynamicPrefixes))
  if(value.startsWith(before))return after+value.slice(before.length);
 return value}

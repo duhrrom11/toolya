@@ -1,6 +1,16 @@
 /* Account and dashboard display catalogue; strictly presentation-only.
    Use source-exact keys so arbitrary user data and Supabase diagnostics stay intact. */
 export const DASHBOARD_COPY=Object.freeze(Object.fromEntries([
+ ["Cloud-Stand noch nicht geprüft.","Cloud state not checked yet."],
+ ["Cloud-Stand prüfen","Check cloud state"],
+ ["Cloud-Stand bewusst laden","Load cloud state deliberately"],
+ ["Anderer Cloud-Datenstand erkannt. Deine Ansicht bleibt unverändert. Zum Laden ist eine ausdrückliche Bestätigung erforderlich.","A different cloud state was detected. Your view remains unchanged. Explicit confirmation is required before loading."],
+ ["Cloud-Prüfung fehlgeschlagen. Bitte neu anmelden oder Seite neu laden.","Cloud check failed. Sign in again or reload the page."],
+ ["Cloud-Datenstand hat sich geändert. Bitte erneut prüfen.","The cloud state has changed. Check it again."],
+ ["Cloud-Datenstand während des Ladens verändert. Bitte Seite neu laden und erneut prüfen.","The cloud state changed during loading. Reload the page and check again."],
+ ["Cloud-Datenstand nach Bestätigung geladen.","Cloud state loaded after confirmation."],
+ ["Cloud-Laden fehlgeschlagen. Bitte Seite neu laden.","Cloud loading failed. Reload the page."],
+ ["Cloud-Datenstand laden? Die bisherige Ansicht wird ersetzt. Nicht gespeicherte Eingaben gehen verloren. Es werden keine Cloud-Daten überschrieben.","Load the cloud state? Your current view will be replaced. Unsaved input will be lost. No cloud data will be overwritten."],
  ["E-Mail-Adresse oder Passwort stimmt nicht.","The email address or password is incorrect."],
  ["Zuletzt verwendet","Recently used"],
  ["Bitte bestätige zuerst deine E-Mail-Adresse.","Confirm your email address first."],
@@ -626,6 +636,8 @@ export const DASHBOARD_COPY=Object.freeze(Object.fromEntries([
 ]));
 const reverse=Object.freeze(Object.fromEntries(Object.entries(DASHBOARD_COPY).map(([de,en])=>[en,de])));
 const prefixes=[
+ ["Cloud-Datenstand ist unverändert (Revision neu).","Cloud state unchanged (revision new)."],
+ ["Cloud-Datenstand ist unverändert (Revision ","Cloud state unchanged (revision "],
  [
   "Abmeldung fehlgeschlagen: ",
   "Sign-out failed: "

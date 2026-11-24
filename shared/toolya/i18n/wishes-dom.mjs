@@ -2,11 +2,11 @@ import {wishesText} from './wishes-copy.mjs';
 const sources=new WeakMap(),attrs=new WeakMap(),implicit=new WeakSet();
 // Marked public editorial spans from #321 alongside older legacy copy;
 // never translate arbitrary profile paragraphs or user-entered content.
-const selector='h1,h2,h3,h4,button,label,option,summary,nav a,input,textarea,select,[data-wish-copy],p[data-wishes-copy],span[data-wishes-copy],[data-toolya-legacy-wishes] .hero .actions a,[data-toolya-legacy-wishes] #login a';
+const selector='h1,h2,h3,h4,button,label,option,summary,nav a,input,textarea,select,[data-wish-copy],[data-wish-owned-copy],p[data-wishes-copy],span[data-wishes-copy],[data-toolya-legacy-wishes] .hero .actions a,[data-toolya-legacy-wishes] #login a';
 const excluded='[contenteditable],.ty-wishes-language,[data-user-content],[data-profile-card],.wishlist-result,.profile-card,.gift-card';
 export function applyWishLocale(document,language){
  for(const el of document.querySelectorAll(selector)){
-  if(el.closest(excluded))continue;
+  if(el.closest(excluded)&&!el.hasAttribute('data-wish-owned-copy'))continue;
   let originalAttrs=attrs.get(el);
   if(!originalAttrs){originalAttrs=new Map();attrs.set(el,originalAttrs)}
   for(const attr of ['aria-label','title','placeholder']){

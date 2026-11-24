@@ -17,23 +17,27 @@ function mount(){
   button.addEventListener('click',()=>apply(lang,true));bar.append(button);
  }
  header.append(bar);header.after(notice);
- const nodes=[document.querySelector('#state'),document.querySelector('#healthStatus')].filter(Boolean);
- function updateStatus(){for(const el of nodes){if(el.children.length)continue;const old=el.textContent,translated=adminText(old,selected);if(old!==translated)el.textContent=translated}}
+ const nodes=['state','healthStatus','result','progress','fileStatus','configuration','selection','pageLabel','ranking-diagnostic','tool-ranking']
+  .map(id=>document.getElementById(id)).filter(Boolean);
+ // Only exact catalogue matches change live status text; dynamic data is untouched.
+ const statusSources=new WeakMap();
+ function updateStatus(){for(const el of nodes){if(el.children.length)continue;const old=el.textContent,previous=statusSources.get(el);const source=previous?.rendered===old?previous.source:old;const translated=adminText(source,selected);statusSources.set(el,{source,rendered:translated});if(old!==translated)el.textContent=translated}}
  function apply(lang,persist){
-  selected=lang;
+  selected=lang;globalThis.__toolyaAdminLocale=lang;
   if(persist){
    try{localStorage.setItem(key,lang)}catch{}
    const url=new URL(location.href);url.searchParams.set('lang',lang);history.replaceState(history.state,'',url.pathname+url.search+url.hash);
   }
-  applyAdminLocale(document,lang);updateStatus();
+  updateStatus();applyAdminLocale(document,lang);
   document.title=lang==='en'?adminText(oldTitle.replace(' · Toolya Admin','').replace(' · Toolya',''),'en')+' · Toolya':oldTitle;
   for(const b of bar.querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.adminLocale===lang));
-  notice.hidden=lang!=='en';
+  notice.hidden=lang!=='en';document.documentElement.lang=lang;document.dispatchEvent(new Event('toolya:admin-locale-change'));
  }
  if(typeof MutationObserver==='function'){
   const observer=new MutationObserver(updateStatus);
   for(const el of nodes)observer.observe(el,{childList:true,characterData:true,subtree:true});
  }
+ for(const method of ['alert','confirm']){const native=globalThis[method]?.bind(globalThis);if(native)globalThis[method]=(message,...args)=>native(adminText(message,selected),...args);}
  apply(selected,false);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();

@@ -28,7 +28,7 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
@@ -53,6 +53,8 @@ jobs:
         run: |
           node tests/i18n/quality-browser.cjs
           node tests/i18n/wishes-editorial-browser.cjs
+          node tests/i18n/application-shell-browser.cjs
+          TOOLYA_AUTH_SHELL=1 node tests/i18n/application-shell-browser.cjs
       - name: Upload translation audit evidence
         if: always()
         uses: actions/upload-artifact@v4

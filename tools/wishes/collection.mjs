@@ -2,6 +2,8 @@ import {appendProductMetadata} from './product-card.mjs';
 import {currentUser,likeCounts,myReactions,reactionButtons} from './collection-social.mjs';
 import {affiliateUrl} from './amazon-links.mjs';
 import {db} from './toolya-client.mjs';
+import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
+const ui=s=>wishesText(s,globalThis.__toolyaWishesLocale==='en'?'en':'de');
 const $=id=>document.getElementById(id);
 const id=new URLSearchParams(location.search).get('id');
 const validId=typeof id==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
@@ -25,7 +27,8 @@ async function main(){
   for(const wish of data||[])if(wish.visibility==='public')lookup.set(String(wish.id),wish);
  }
  const wishes=ids.map(wishId=>lookup.get(String(wishId))).filter(Boolean);
- $('title').textContent=list.title;$('description').textContent=list.description||'Eine Sammlung voller Geschenkideen.';
+ $('title').setAttribute('data-user-content','');$('title').textContent=list.title;
+ if(list.description){$('description').setAttribute('data-user-content','');$('description').textContent=list.description}else{$('description').setAttribute('data-wish-owned-copy','');$('description').textContent='Eine Sammlung voller Geschenkideen.';}
  $('icon').textContent=list.icon||'🎁';
  if(list.cover_url){try{const cover=new URL(list.cover_url);if(cover.protocol==='https:'){const image=document.createElement('img');image.src=cover.href;image.alt='Titelbild der Sammlung: '+(list.title||'Sammlung');image.loading='lazy';image.style.cssText='width:min(38vw,240px);height:180px;object-fit:cover;border-radius:16px';document.querySelector('.hero').prepend(image)}}catch{}}if(/^#[0-9a-f]{6}$/i.test(list.color||''))document.querySelector('.hero').style.borderTop='7px solid '+list.color;
  $('count').textContent=wishes.length+' Wünsche'+(items.length===500?' · maximal 500 geladen':'');
@@ -38,33 +41,33 @@ async function main(){
   const cover=document.createElement('div');cover.className='cover';cover.textContent=list.icon||'🎁';cover.setAttribute('aria-hidden','true');
   if(wish.wishlist_products?.image_url){const image=document.createElement('img');image.src=wish.wishlist_products.image_url;image.alt=wish.wishlist_products.title||'Produktbild zum Wunsch';image.loading='lazy';image.referrerPolicy='no-referrer';cover.replaceChildren(image);}
   const body=document.createElement('div');body.className='card-body';
-  const title=document.createElement('h2');title.textContent=wish.wishlist_products?.title||'Wunsch';
+  const title=document.createElement('h2');if(wish.wishlist_products?.title){title.setAttribute('data-user-content','');title.textContent=wish.wishlist_products.title}else{title.setAttribute('data-wish-owned-copy','');title.textContent='Wunsch';}
   body.append(title);appendProductMetadata(body,wish.wishlist_products,{image:false});
   if(wish.note){const note=document.createElement('p');note.textContent=wish.note;body.append(note)}
   const asin=wish.wishlist_products?.asin;
   if(typeof asin==='string'&&/^[A-Z0-9]{10}$/.test(asin)){
-   const link=document.createElement('a');link.href=affiliateUrl({asin,marketplace:'amazon.de'},{'amazon.de':'duhrrom-21'});link.target='_blank';link.rel='noopener noreferrer sponsored';link.textContent='Bei Amazon ansehen ↗';body.append(link);
+   const link=document.createElement('a');link.href=affiliateUrl({asin,marketplace:'amazon.de'},{'amazon.de':'duhrrom-21'});link.target='_blank';link.rel='noopener noreferrer sponsored';link.setAttribute('data-wish-owned-copy','');link.textContent='Bei Amazon ansehen ↗';body.append(link);
   }
   if(viewer&&viewer.id!==list.user_id){
-   const state=document.createElement('p');state.style.fontWeight='750';
+   const state=document.createElement('p');state.style.fontWeight='750';state.setAttribute('data-wish-owned-copy','');
    const button=document.createElement('button');button.type='button';button.style.cssText='min-height:44px;border:0;border-radius:11px;background:#6049ad;color:white;padding:11px 15px;font:inherit;font-weight:800;cursor:pointer';
    let current=reservations.get(String(wish.id))||'unknown';
    function show(){state.textContent=current==='reserved_by_you'?'🎁 Von dir reserviert':current==='already_reserved'?'🔒 Bereits reserviert':current==='available'?'✨ Noch frei':'Status nicht verfügbar';button.textContent=current==='reserved_by_you'?'Reservierung aufheben':'Geschenk reservieren';button.hidden=current==='already_reserved'||current==='unknown'}
    show();
    button.addEventListener('click',async()=>{button.disabled=true;const cancel=current==='reserved_by_you';const {data,error}=await db.rpc(cancel?'wishlist_cancel_wish_reservation':'wishlist_reserve_wish',{p_wish_id:wish.id});if(error){state.textContent='Aktion fehlgeschlagen. Bitte erneut versuchen.'}else{current=cancel?'available':data;show()}button.disabled=false});
    body.append(state,button);
-  }else if(viewer?.id===list.user_id){const privacy=document.createElement('p');privacy.textContent='🎀 Reservierungen werden dir als Wunscheigentümer nicht angezeigt.';body.append(privacy)}
-  else{const hint=document.createElement('p');hint.textContent='Zum Reservieren bitte anmelden.';body.append(hint)}
+  }else if(viewer?.id===list.user_id){const privacy=document.createElement('p');privacy.setAttribute('data-wish-owned-copy','');privacy.textContent='🎀 Reservierungen werden dir als Wunscheigentümer nicht angezeigt.';body.append(privacy)}
+  else{const hint=document.createElement('p');hint.setAttribute('data-wish-owned-copy','');hint.textContent='Zum Reservieren bitte anmelden.';body.append(hint)}
   card.append(cover,body);grid.append(card);
  }
- if(!wishes.length){const empty=document.createElement('p');empty.className='empty';empty.textContent='Diese Sammlung enthält noch keine sichtbaren Wünsche.';grid.append(empty)}
+ if(!wishes.length){const empty=document.createElement('p');empty.className='empty';empty.setAttribute('data-wish-owned-copy','');empty.textContent='Diese Sammlung enthält noch keine sichtbaren Wünsche.';grid.append(empty)}
  try{
  const [counts,reactions]=await Promise.all([likeCounts(db,[id]),myReactions(db,viewer,[id])]);
  $('reactions').append(reactionButtons({db,listId:id,user:viewer,likes:reactions.likes,bookmarks:reactions.bookmarks,counts,notify:message=>{$('reactionStatus').textContent=message}}));
  }catch{$('reactionStatus').textContent='Likes und Merkliste sind gerade nicht verfügbar.';}
  $('collection').hidden=false;notice.hidden=true;document.title=list.title+' · Toolya Wishes';
  $('share').addEventListener('click',async()=>{
-  const data={title:list.title,text:'Entdecke diese öffentliche Wunschsammlung:',url:location.href};
+  const data={title:list.title,text:ui('Entdecke diese öffentliche Wunschsammlung:'),url:location.href};
   try{if(navigator.share)await navigator.share(data);else if(navigator.clipboard&&isSecureContext){await navigator.clipboard.writeText(location.href);notice.hidden=false;notice.textContent='Link kopiert.'}else{notice.hidden=false;notice.textContent='Sammlungslink: '+location.href}}catch(e){if(e?.name!=='AbortError'){notice.hidden=false;notice.textContent='Teilen nicht möglich.'}}
  });
 }

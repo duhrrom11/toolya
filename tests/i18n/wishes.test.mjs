@@ -3,6 +3,18 @@ import {parseHTML} from 'linkedom';
 import {readFileSync} from 'node:fs';
 import {WISHES_COPY,WISHES_RUNTIME_COPY,wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
 import {applyWishLocale} from '../../shared/toolya/i18n/wishes-dom.mjs';
+test('legacy Wishes locale buttons remain outside the intentionally hidden original header',()=>{
+ const entry=readFileSync(new URL('../../shared/toolya/i18n/wishes-entry.mjs',import.meta.url),'utf8');
+ const css=readFileSync(new URL('../../tools/wishes/legacy-design.css',import.meta.url),'utf8');
+ const controls=readFileSync(new URL('../../shared/toolya/i18n/wishes-choice.css',import.meta.url),'utf8');
+ assert.match(css,/body\[data-toolya-legacy-wishes\]>header\{display:none\}/);
+ assert.match(entry,/header\.matches\('body\[data-toolya-legacy-wishes\] > header'\)\)header\.after\(nav,notice\)/);
+ assert.match(controls,/body\[data-toolya-legacy-wishes\]>\.ty-wishes-language\{display:flex/);
+ for(const name of ['assistant','report','social']){
+  const html=readFileSync(new URL('../../tools/wishes/'+name+'.html',import.meta.url),'utf8');
+  assert.match(html,/data-toolya-legacy-wishes="true"/);
+ }
+});
 test('Wishlist translation changes only author-owned controls and restores implicit option keys',()=>{
  const {document}=parseHTML('<html><body><h1>Meine Merkliste</h1><button onclick="saveGift()">Abbrechen</button><select><option>Geplant</option></select><input placeholder="Name oder Organisation" value="Private value"><div class="profile-card"><h2>Geplant</h2></div></body></html>');
  const button=document.querySelector('button'),option=document.querySelector('option'),input=document.querySelector('input');
@@ -18,6 +30,15 @@ test('Wishlist translation changes only author-owned controls and restores impli
  assert.equal(option.textContent,'Geplant');
  assert.ok(!option.hasAttribute('value'));
  assert.equal(input.getAttribute('placeholder'),'Name oder Organisation');
+});
+test('legacy assistant links translate only fixed navigation while preserving user-authored links',()=>{
+ const {document}=parseHTML('<html><body data-toolya-legacy-wishes="true"><section class="hero"><nav class="actions"><a href="./gift-tasks.html">✅ Checklisten anlegen</a></nav></section><section id="login"><a href="./index.html">Zur Anmeldung</a></section><article class="gift-card"><a href="./index.html">Zur Anmeldung</a></article></body></html>');
+ const links=[...document.querySelectorAll('a')];
+ applyWishLocale(document,'en');
+ assert.deepEqual(links.map(link=>link.textContent),['✅ Create checklists','Go to sign-in','Zur Anmeldung']);
+ assert.deepEqual(links.map(link=>link.getAttribute('href')),['./gift-tasks.html','./index.html','./index.html']);
+ applyWishLocale(document,'de');
+ assert.deepEqual(links.map(link=>link.textContent),['✅ Checklisten anlegen','Zur Anmeldung','Zur Anmeldung']);
 });
 test('wishlist catalogue includes public, planning, social and account UI without free-text translation',()=>{
  assert.ok(Object.keys(WISHES_COPY).length>=160);
@@ -97,6 +118,456 @@ test('safety-critical Wishes messages remain present in their source modules and
  }
 });
 
+test('Wishes planning and privacy notices render in English and restore German safely',()=>{
+ const pairs=[
+  ['Die Vorschläge sind ausschließlich für dein angemeldetes Konto sichtbar.','Suggestions are visible only to your signed-in account.'],
+  ['Dieser Bericht ist ausschließlich für das angemeldete Konto sichtbar.','This report is visible only to the signed-in account.'],
+  ['Kalenderwochen nach tatsächlichem Ereigniszeitpunkt, nicht nach Fälligkeitsdatum.','Calendar weeks are based on when events occurred, not on due dates.'],
+  ['Reservierungen werden geladen …','Loading reservations…'],
+  ['Anlässe in 30 Tagen','Occasions in 30 days'],
+  ['← Wünsche','← Wishes'],
+  ['Öffentliche Sammlungen werden geladen …','Loading public collections…'],
+  ['Wähle, welche Arten von Hinweisen in deiner Benachrichtigungszentrale erscheinen.','Choose which types of notifications appear in your notification centre.']
+ ];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en);assert.equal(wishesText(en,'de'),de)}
+ const {document}=parseHTML('<html><body><main><p data-wish-copy>Dieser Bericht ist ausschließlich für das angemeldete Konto sichtbar.</p><a href="/tools/wishes/" data-wish-copy>← Wünsche</a><div data-user-content><p data-wish-copy>Dieser Bericht ist ausschließlich für das angemeldete Konto sichtbar.</p></div><input value="private note"></main></body></html>');
+ applyWishLocale(document,'en');
+ assert.equal(document.querySelector('main > p').textContent,pairs[1][1]);
+ assert.equal(document.querySelector('main > a').textContent,'← Wishes');
+ assert.equal(document.querySelector('[data-user-content] p').textContent,pairs[1][0]);
+ assert.equal(document.querySelector('input').value,'private note');
+ assert.equal(document.querySelector('main > a').getAttribute('href'),'/tools/wishes/');
+ applyWishLocale(document,'de');
+ assert.equal(document.querySelector('main > p').textContent,pairs[1][0]);
+ assert.equal(document.querySelector('main > a').textContent,'← Wünsche');
+});
+test('Wishes translated long-form notices are explicitly marked in source HTML',()=>{
+ for(const name of ['assistant','planner','report','occasions','reservations','dashboard','cockpit','notifications','gift-analytics','bookmarks','feed']){
+  const html=readFileSync(new URL('../../tools/wishes/'+name+'.html',import.meta.url),'utf8');
+  assert.match(html,/data-wish-copy/,name);
+ }
+});
+
+test('Wishes community and navigation text remains reversible and excludes user content',()=>{
+ const pairs=[["Entdecke öffentliche Sammlungen, lerne ihre Ersteller kennen und finde neue Geschenkideen. Private Sammlungen werden nicht angezeigt.","Explore public collections, meet their creators and discover new gift ideas. Private collections are not displayed."],["Meine Merkliste öffnen ↗","Open my bookmarks ↗"],["Neue öffentliche Sammlungen gefolgter Profile, deine gemerkten Wunschwelten und passende Inspiration an einem Ort.","New public collections from profiles you follow, your bookmarked wish lists and relevant inspiration in one place."],["Öffentliche Wunschsammlung","Public wish collection"],["🔖 Meine Merkliste","🔖 My bookmarks"],["🎀 Meine Geschenkreservierungen verwalten","🎀 Manage my gift reservations"],["Profil wird geladen …","Loading profile…"],["ÖFFENTLICHES WISHES-PROFIL","PUBLIC WISHES PROFILE"],["💝 Öffentliche Wünsche ansehen","💝 View public wishes"],["Neue öffentliche Wunschwelten gefolgter Profile, neue Follower und Likes auf deine Sammlungen – alles aus den vorhandenen Community-Daten.","New public wish lists from followed profiles, new followers and likes on your collections, all based on existing community data."],["🎀 Meine Reservierungen","🎀 My reservations"],["Alle Aufgaben verwalten ↗","Manage all tasks ↗"],["🌈 Weitere Sammlungen entdecken","🌈 Discover more collections"]];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en);assert.equal(wishesText(en,'de'),de)}
+ const {document}=parseHTML('<html><body><main><a data-wish-copy href="discover.html">Meine Merkliste öffnen ↗</a><p data-wish-copy>Entdecke öffentliche Sammlungen, lerne ihre Ersteller kennen und finde neue Geschenkideen. Private Sammlungen werden nicht angezeigt.</p><div data-user-content><a data-wish-copy>Meine Merkliste öffnen ↗</a></div></main></body></html>');
+ applyWishLocale(document,'en');assert.equal(document.querySelector('main > a').textContent,'Open my bookmarks ↗');assert.equal(document.querySelector('main > a').getAttribute('href'),'discover.html');
+ assert.equal(document.querySelector('[data-user-content] a').textContent,'Meine Merkliste öffnen ↗');
+ applyWishLocale(document,'de');assert.equal(document.querySelector('main > a').textContent,'Meine Merkliste öffnen ↗');
+});
+
+test('Wishes notifications, occasions and community metadata translate reversibly',()=>{
+ const pairs=[["🌈 Weitere Wunschwelten","🌈 More wish lists"],["🏠 Mein Feed","🏠 My feed"],["Neu seit Besuch","New since last visit"],["Termine werden geladen …","Loading dates…"],["Anlässe","Occasions"],["Privat · Mein Überblick","Private · My overview"],["Benachrichtigungen werden geladen …","Loading notifications…"],["Für wen?","For whom?"],["Anlässe filtern","Filter occasions"],["Deine Social-Zahlen","Your social metrics"]];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en);assert.equal(wishesText(en,'de'),de)}
+ const {document}=parseHTML('<html><body><section><span data-wish-copy>Neu seit Besuch</span><p data-wish-copy>Benachrichtigungen werden geladen …</p><input placeholder="Für wen?" value="private name"><div data-user-content><span data-wish-copy>Neu seit Besuch</span></div></section></body></html>');
+ applyWishLocale(document,'en');assert.equal(document.querySelector('section > span').textContent,'New since last visit');
+ assert.equal(document.querySelector('section > p').textContent,'Loading notifications…');
+ assert.equal(document.querySelector('input').getAttribute('placeholder'),'For whom?');assert.equal(document.querySelector('input').value,'private name');
+ assert.equal(document.querySelector('[data-user-content] span').textContent,'Neu seit Besuch');
+ applyWishLocale(document,'de');assert.equal(document.querySelector('section > span').textContent,'Neu seit Besuch');
+});
+
+test('notification and social feed presentation text is reversible, titles are not translated',()=>{
+ const pairs=[
+  ['🌈 Neue Wunschwelt: ','🌈 New wish list: '],
+  ['👥 Jemand folgt dir','👥 Someone follows you'],
+  ['❤️ Like auf: ','❤️ Like on: '],
+  ['Dein Profil hat einen neuen Follower.','Your profile has a new follower.'],
+  ['Als gelesen markieren','Mark as read'],
+  [' ungelesen (geladen)',' unread (loaded)'],
+  ['Neue öffentliche Sammlungen der Profile, denen du folgst.','New public collections from profiles you follow.'],
+  ['Noch keine gemerkten Sammlungen. Öffne Entdecken und tippe auf „Merken“.','No bookmarked collections yet. Open Discover and select “Save”.'],
+  ['Titelbild der Sammlung: ','Collection cover image: ']
+ ];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en);assert.equal(wishesText(en,'de'),de)}
+ assert.equal(wishesText('Private custom list title','en'),'Private custom list title');
+ const notification=readFileSync(new URL('../../tools/wishes/notifications.mjs',import.meta.url),'utf8');
+ const feed=readFileSync(new URL('../../tools/wishes/social-feed.mjs',import.meta.url),'utf8');
+ assert.match(notification,/ui\('🌈 Neue Wunschwelt: '\)\+item\.title/);
+ assert.match(notification,/ui\('❤️ Like auf: '\)\+item\.title/);
+ assert.match(notification,/document\.addEventListener\('toolya:wishes-locale-change'/);
+ assert.match(feed,/img\.alt=ui\('Titelbild der Sammlung: '\)\+\(item\.title/);
+ assert.match(feed,/document\.addEventListener\('toolya:wishes-locale-change'/);
+ assert.match(feed,/title\.textContent=item\.title/);
+});
+
+test('Wishes task report copy translates in both directions while keeping private event titles untouched',()=>{
+ const pairs=[["Historisch nicht zugeordnet","Historically unassigned"],["Noch keine protokollierten Monate.","No recorded months yet."],[" Erledigungen · "," completions · "],[" Terminverschiebungen · "," rescheduled dates · "],[" Wiedereröffnungen"," reopenings"],["Noch keine protokollierten Anlassdaten.","No recorded occasion data yet."],["Ohne im Ereignis gespeicherte Anlasszuordnung.","No occasion assignment recorded in this event."],["Sobald echte Ereignisse vorliegen, erscheinen hier datengestützte Hinweise.","Data-based insights will appear here once actual events have been recorded."],["Planungsfenster prüfen","Review planning window"],["Es wurden ","There were "],[" Terminverschiebungen und "," date changes and "],[" Erledigungen protokolliert. Frühere Starttermine können helfen."," completions recorded. Earlier start dates may help."],["Erledigungen sichtbar machen","Review completed tasks"],[" Erledigungsereignisse dokumentiert. Nutze die Monatsübersicht, um deine tatsächliche Aktivität zu vergleichen."," completion events recorded. Use the monthly view to compare actual activity."],["Mehr Verlauf sammeln","Collect more history"],["Für belastbare Monatstrends sind bislang weniger als zwei Monate mit protokollierten Ereignissen vorhanden.","Fewer than two months of recorded events are currently available for reliable monthly trends."],["Monate vergleichen","Compare months"],[" Erledigungen; "," completions; "],[". Der Vergleich beschreibt Aktivität, keine Erfolgsquote aller Aufgaben.",". This comparison shows activity, not the completion rate of all tasks."],["Eigene protokollierte Aufgabenereignisse als JSON-Datei auf diesem Gerät speichern? Die Datei enthält private Aufgabentitel und Zeitpunkte.","Save your recorded task events as a JSON file on this device? The file contains private task titles and timestamps."],["Ereignisse vom ","Events from "],[" bis "," to "],[". Bericht erstellt am ",". Report generated on "],["Noch keine Ereignisse seit Aktivierung des Protokolls. Es werden keine früheren Änderungen geschätzt.","No events since logging was enabled. Earlier changes are not estimated."],["Erledigungsereignisse","Completion events"],["Tatsächlich serverseitig protokolliert.","Actually recorded on the server."],["Wiedereröffnungen","Reopenings"],["Protokollierte Ereignisse","Recorded events"],["Durchschnittliche Verschiebung","Average rescheduling"],["Nicht berechenbar","Not available"],[" Tage"," days"],[" von "," of "],[" Ereignissen mit beiden Datumswerten."," events with both date values."],["Später geplant","Moved later"],["Früher geplant","Moved earlier"],["Unverändert / ohne Datumsvergleich","Unchanged / no date comparison"],[" Erledigungen"," completions"],[" Ereignisse"," events"],["Erledigungsereignisse im Vergleich zum Maximum der acht Wochen","Completion events compared with the eight-week maximum"],["Wieder geöffnet","Reopened"],["Status geändert","Status changed"],["Termin verschoben","Due date changed"],["Änderung","Change"],["ohne Datum","no date"],["Chronik auf die 200 neuesten Ereignisse begrenzt; Kennzahlen berücksichtigen alle geladenen Ereignisse.","Timeline limited to the latest 200 events; metrics include all loaded events."],["Privater Bericht bereit. Keine Produktivdaten geändert.","Private report ready. No production data changed."],["Bericht konnte nicht vollständig geladen werden. Bitte später erneut versuchen.","Could not load the full report. Try again later."]];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en,de);assert.equal(wishesText(en,'de'),de,en)}
+ const report=readFileSync(new URL('../../tools/wishes/gift-task-report.mjs',import.meta.url),'utf8');
+ assert.match(report,/const ui=value=>wishesText/);
+ assert.match(report,/document\.addEventListener\('toolya:wishes-locale-change'/);
+ assert.match(report,/e\.task_title/);
+ assert.match(report,/event_count:exportRows\.length,events:exportRows/);
+ assert.match(report,/for\(const id of \['kpis','moves','weeks','events'\]\)/);
+ assert.equal(wishesText('Private task named Erledigt','en'),'Private task named Erledigt');
+});
+
+test('Wishes private cockpit display copy is reversible and private task data remains untouched',()=>{
+ const pairs=[["Offene Aufgaben","Open tasks"],["Überfällig","Overdue"],["Heute fällig","Due today"],["Heute gut aufgestellt","On track today"],["Keine offenen Aufgaben mit Fälligkeit bis heute.","No open tasks due by today."],["Seit ","Overdue by "],[" Tagen überfällig"," days past due"],[" · Priorität "," · Priority "],["hoch","high"],["mittel","medium"],["niedrig","low"],[". Empfehlung: ",". Recommendation: "],["Zuerst nachholen.","Catch up on this first."],["Heute einplanen.","Schedule for today."],["Keine kommenden Anlässe","No upcoming occasions"],["Du kannst in der Anlassverwaltung einen neuen Anlass anlegen.","Add an occasion in the occasion planner."],["Heute","Today"],[" Tage verbleibend"," days remaining"],[" · jährlich"," · yearly"],["Empfehlung: Planung jetzt beginnen.","Recommendation: Start planning now."],["Empfohlener Planungsstart: ","Suggested planning start: "],["Anlass öffnen","Open occasion"],[" aktuell nicht archivierten Aufgaben erledigt ("," currently unarchived tasks completed ("],[" %). Dieser Wert beschreibt den aktuellen Stand, keine historische Erledigungsquote."," %). This shows the current status, not a historical completion rate."],["Protokollierte Erledigungsereignisse","Recorded completion events"],["Protokollierte Terminverschiebungen","Recorded due-date changes"],["Historische Jahresabschlüsse","Historical year-end summaries"],["Abschluss ","Year-end summary "],[" von "," of "],[" Geschenken als verschenkt gespeichert"," gifts recorded as given"],[". Historischer Snapshot, nicht nachträglich verändert.",". Historical snapshot, not modified afterwards."],["Noch keine Abschlüsse","No year-end summaries yet"],["Historische Erkenntnisse werden erst nach ausdrücklich gespeicherten Jahresabschlüssen angezeigt.","Historical insights appear only after year-end summaries have been explicitly saved."],["Überfälliges priorisieren","Prioritise overdue tasks"],[" offene Aufgaben sind überfällig. Bearbeite zunächst die am höchsten priorisierten."," open tasks are overdue. Tackle the highest-priority tasks first."],["Geschenkplanung beginnen","Start gift planning"],["Mindestens ein Anlass liegt innerhalb der nächsten 21 Tage. Plane offene Aufgaben frühzeitig.","At least one occasion is within the next 21 days. Plan outstanding tasks early."],["Puffer prüfen","Review time buffers"],[" Terminverschiebungen gegenüber "," due-date changes compared with "],[" protokollierten Erledigungen. Ein früherer Start kann helfen."," recorded completions. An earlier start may help."],["Aus vergangenen Jahren lernen","Learn from previous years"],["Für ","For "],[" abgeschlossene Jahre liegen unveränderliche historische Snapshots vor. Details findest du in der Planungsassistenz."," completed years have immutable historical snapshots. Details are available in the planning assistant."],["Alles im Blick","All on track"],["Aktuell ergeben sich aus den gespeicherten Daten keine dringenden Empfehlungen.","No urgent recommendations arise from the stored data at present."],["Privates Planungscockpit geladen. Keine Daten geändert.","Private planning dashboard loaded. No data changed."],["Das Cockpit konnte nicht vollständig geladen werden. Bitte später erneut versuchen.","Could not fully load the dashboard. Try again later."]];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en,de);assert.equal(wishesText(en,'de'),de,en)}
+ const source=readFileSync(new URL('../../tools/wishes/gift-cockpit.mjs',import.meta.url),'utf8');
+ assert.match(source,/const ui=value=>wishesText/);
+ assert.match(source,/const locale=\(\)=>/);
+ assert.match(source,/renderedSnapshot=\{tasks,occasions,closings,events\}/);
+ assert.match(source,/document\.addEventListener\('toolya:wishes-locale-change'/);
+ assert.match(source,/for\(const id of \['kpis','priorities','occasions','activity','history','tips'\]\)/);
+ assert.match(source,/x\.t\.title/);
+ assert.match(source,/x\.o\.title/);
+ assert.equal(wishesText('A private task: Überfällig','en'),'A private task: Überfällig');
+});
+
+test('Wishes gift dashboard labels translate without changing saved gifts or priority persistence',()=>{
+ const pairs=[
+  ['Noch keine Geschenk-Checklisten angelegt.','No gift checklists created yet.'],
+  ['Keine fälligen Aufgaben-Erinnerungen.','No task reminders due.'],
+  ['Keine Anlässe in den nächsten 30 Tagen.','No occasions in the next 30 days.'],
+  ['Keine offenen Geschenke für diese Priorität.','No pending gifts for this priority.'],
+  ['Priorität für ','Priority for '],
+  ['Priorität ändern','Change priority'],
+  ['Geschenk bearbeiten ↗','Edit gift ↗'],
+  ['Weitere ','Another '],
+  [' Aufgaben findest du in der Geschenkplanung.',' tasks can be found in the gift planner.'],
+  ['Aktuell keine Budgetüberschreitungen bei Anlässen mit festgelegtem Budget.','No budget overruns for occasions with a set budget at present.'],
+  [' eigene Reservierungen, davon ',' own reservations, including '],
+  [' mit deiner Geschenkplanung verknüpft.',' linked to your gift planner.']
+ ];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en,de);assert.equal(wishesText(en,'de'),de,en)}
+ const source=readFileSync(new URL('../../tools/wishes/gift-dashboard.mjs',import.meta.url),'utf8');
+ assert.match(source,/const ui=source=>wishesText/);
+ assert.match(source,/new Intl.NumberFormat\(locale\(\)/);
+ assert.match(source,/document\.addEventListener\('toolya:wishes-locale-change'/);
+ assert.match(source,/if\(priorityWrites\)\{localeUpdatePending=true;return\}/);
+ assert.match(source,/if\(!priorityWrites&&localeUpdatePending\)\{localeUpdatePending=false;render\(\)\}/);
+ assert.match(source,/ui\(labels\[g\.status\]\)/);
+ assert.match(source,/ui\(priority\[next\]\)/);
+ assert.match(source,/g\.title/);
+ assert.match(source,/o\.title/);
+ assert.match(source,/\.update\(\{priority:next,updated_at:/);
+ assert.equal(wishesText('Private wish: Keine Anlässe in den nächsten 30 Tagen.','en'),'Private wish: Keine Anlässe in den nächsten 30 Tagen.');
+});
+
+test('gift assistant dynamic task UI translates reversibly without mutating private task data',()=>{
+ const pairs=[
+  ['Noch keine protokollierten Aufgabenänderungen seit Aktivierung.','No task changes logged since activation.'],
+  ['✓ Erledigt','✓ Completed'],
+  ['↩ Wieder geöffnet','↩ Reopened'],
+  ['Heute fällige erledigt','Due today, completed'],
+  ['Offen/überfällig','Open/overdue'],
+  ['Keine offenen Aufgaben in dieser Gruppe.','No open tasks in this group.'],
+  ['Auf morgen verschieben','Move to tomorrow'],
+  ['✓ Erledigt markieren','✓ Mark completed'],
+  ['Neues Fälligkeitsdatum','New due date'],
+  ['Datum bestätigt verschieben','Confirm due-date change'],
+  ['Aufgabenverwaltung öffnen','Open task manager'],
+  ['Aufgabe wurde zwischenzeitlich verändert. Bitte Seite neu laden.','The task was changed in the meantime. Reload the page.'],
+  [' Tagen fällig',' days until due'],
+  ['Bis Sonntag fällig','Due by Sunday']
+ ];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en,de);assert.equal(wishesText(en,'de'),de,en)}
+ const source=readFileSync(new URL('../../tools/wishes/gift-assistant.mjs',import.meta.url),'utf8');
+ assert.match(source,/const ui=text=>wishesText/);
+ assert.match(source,/toLocaleDateString\(locale\(\)/);
+ assert.match(source,/document\.addEventListener\('toolya:wishes-locale-change'/);
+ assert.match(source,/if\(taskBusy\|\|checklistBusy\)\{localePending=true;return\}/);
+ assert.match(source,/taskBusy=false;button.disabled=false;if\(localePending&&!checklistBusy\)/);
+ assert.match(source,/\.eq\('user_id',taskUserId\)/);
+ assert.match(source,/el\('h3',t\.title\)/);
+ assert.match(source,/e\.task_title/);
+ assert.equal(wishesText('Private task: Heute fällig','en'),'Private task: Heute fällig');
+});
+
+test('assistant task confirmations translate prompts but preserve the task name, dates and write contract',()=>{
+ const pairs=[
+  ['Aufgabe „','Task “'],
+  ['“ wirklich als erledigt markieren?','”: mark as completed?'],
+  ['“ wirklich auf ','”: move to '],
+  [' verschieben?','?']
+ ];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en);assert.equal(wishesText(en,'de'),de)}
+ const title='Private title / Benutzername',date='2026-12-04';
+ const german='Aufgabe „'+title+'“ wirklich auf '+date+' verschieben?';
+ const english=wishesText('Aufgabe „','en')+title+wishesText('“ wirklich auf ','en')+date+wishesText(' verschieben?','en');
+ assert.equal(english,'Task “'+title+'”: move to '+date+'?');
+ assert.equal(german,'Aufgabe „'+title+'“ wirklich auf '+date+' verschieben?');
+ const source=readFileSync(new URL('../../tools/wishes/gift-assistant.mjs',import.meta.url),'utf8');
+ assert.match(source,/if\(!window\.confirm\(confirmation\)\)return/);
+ assert.match(source,/task\.title\+\(field==='status'/);
+ assert.match(source,/new Intl\.NumberFormat\(locale\(\)/);
+ assert.match(source,/\.update\(\{\[field\]:newValue,updated_at:/);
+});
+
+test('historical task status display is reversible while event codes and unknown values remain intact',()=>{
+ for(const [de,en] of [['Offen','Open'],['In Arbeit','In progress'],['Erledigt','Done']]){
+  assert.equal(wishesText(de,'en'),en);
+  assert.equal(wishesText(en,'de'),de);
+ }
+ for(const file of ['gift-assistant.mjs','gift-task-report.mjs']){
+  const source=readFileSync(new URL('../../tools/wishes/'+file,import.meta.url),'utf8');
+  assert.match(source,/const taskStatusLabel=value=>value==='open'\?ui\('Offen'\)/);
+  assert.match(source,/value==='in_progress'\?ui\('In Arbeit'\)/);
+  assert.match(source,/value==='done'\?ui\('Erledigt'\):value\|\|'—'/);
+  assert.match(source,/taskStatusLabel\(e\.old_status\).*taskStatusLabel\(e\.new_status\)/);
+  assert.match(source,/e\.task_title/);
+ }
+ assert.equal(wishesText('Private event title: Offen','en'),'Private event title: Offen');
+ assert.equal(wishesText('__proto__','en'),'__proto__');
+});
+
+test('Wishes occasion planning and checklist copy remains reversible without translating private data',()=>{
+ const pairs=[
+  ['Noch keine kommenden Anlässe erfasst.','No upcoming occasions recorded.'],
+  ['💶 Unverbindlicher Budgetrichtwert: ','💶 Indicative budget benchmark: '],
+  ['gespeicherten Anlassbudgets','saved occasion budgets'],
+  ['historisch erfassten Geschenkausgaben','historically recorded gift spending'],
+  ['💶 Noch kein belastbarer historischer Budgetrichtwert für diesen Anlass.','💶 No reliable historical budget benchmark for this occasion yet.'],
+  ['✅ Checklistenempfehlung: ','✅ Suggested checklist: '],
+  ['Versand-Checkliste (ca. 28 Tage Vorlauf)','Shipping checklist (about 28 days ahead)'],
+  ['Standard-Checkliste (ca. 21 Tage Vorlauf)','Standard checklist (about 21 days ahead)'],
+  ['Checkliste auswählen','Choose checklist'],
+  ['Standard (21 Tage)','Standard (21 days)'],
+  ['Versand (28 Tage)','Shipping (28 days)'],
+  ['Kurzfristig (5 Tage)','Last minute (5 days)'],
+  ['Ausgewählte Checkliste übernehmen','Apply selected checklist'],
+  ['Bitte zuerst die Übernahme ausdrücklich bestätigen.','Explicitly confirm the import first.'],
+  ['Übernahme läuft …','Import in progress…'],
+  ['Übernahme fehlgeschlagen. Bitte Anmeldung und Anlass prüfen.','Import failed. Check the sign-in and occasion.'],
+  ['Mit dem ersten Jahresabschluss starten','Start with your first year-end summary'],
+  ['Checklisten frühzeitig starten','Start checklists early'],
+  ['Historische Budgets aufbauen','Build historical budget data'],
+  ['Budgethistorie nutzen','Use historical budget data']
+ ];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en,de);assert.equal(wishesText(en,'de'),de,en)}
+ const privateOccasion='Geburtstag von Sophia — private note';
+ assert.equal(wishesText(privateOccasion,'en'),privateOccasion);
+ const translatedConfirmation=wishesText('Checkliste für „','en')+privateOccasion+wishesText('“ im Jahr ','en')+'2027'+wishesText(' jetzt erstellen?','en');
+ assert.equal(translatedConfirmation,'Create checklist for “'+privateOccasion+'” in 2027 now?');
+});
+test('occasion planner locale changes preserve checklist controls and do not change RPC arguments',()=>{
+ const source=readFileSync(new URL('../../tools/wishes/gift-assistant.mjs',import.meta.url),'utf8');
+ assert.match(source,/function renderOccasionPlanning\(\)/);
+ assert.match(source,/root\.replaceChildren\(\);tips\.replaceChildren\(\);calendarEvents=\[\]/);
+ assert.match(source,/savedControls=new Map/);
+ assert.match(source,/card\.dataset\.occasionId=String\(o\.id\)/);
+ assert.match(source,/select\.value=savedControls\.get\(String\(o\.id\)\)\?\.template/);
+ assert.match(source,/check\.checked=Boolean\(savedControls\.get\(String\(o\.id\)\)\?\.confirmed\)/);
+ assert.match(source,/if\(taskBusy\|\|checklistBusy\)\{localePending=true;return\}/);
+ assert.match(source,/if\(localePending&&!checklistBusy&&!taskBusy\)/);
+ assert.match(source,/db\.rpc\('wishlist_create_occasion_checklist_year',\{p_occasion_id:o\.id,p_template:select\.value,p_year:new Date\(o\.next\)\.getUTCFullYear\(\)\}\)/);
+ assert.match(source,/addCard\(root,o\.title,lines\)/);
+ assert.match(source,/t\.title\|\|''/);
+ assert.match(source,/toLocaleDateString\(locale\(\)/);
+});
+
+test('Wishes gift task manager dynamic labels are reversible without translating saved task names',()=>{
+ const pairs=[
+  ['⬜ Offen','⬜ Open'],['🔄 In Arbeit','🔄 In progress'],['✅ Erledigt','✅ Completed'],
+  ['Ohne Anlass','No occasion'],['Ohne Geschenk','No gift'],['Ohne Fälligkeit','No due date'],
+  ['Wieder öffnen','Reopen'],['Bearbeiten','Edit'],['Löschen','Delete'],
+  ['🛒 Bestellen','🛒 Order'],['📦 Abholen','📦 Collect'],['🎀 Verpacken','🎀 Wrap'],
+  ['✉️ Karte','✉️ Card'],['🚚 Versand','🚚 Shipping'],['🎉 Überreichen','🎉 Give'],
+  ['Fällig: ','Due: '],['Checklistenfortschritt ','Checklist progress '],
+  ['Bisherige Checkliste (ohne Jahr)','Previous checklist (no year)'],
+  [' überfällige Aufgaben – Details unter Erinnerungen.',' overdue tasks – details under Reminders.']
+ ];
+ for(const [de,en] of pairs){assert.equal(wishesText(de,'en'),en,de);assert.equal(wishesText(en,'de'),de,en)}
+ const privateName='Private gift: 🛒 Bestellen';
+ assert.equal(wishesText(privateName,'en'),privateName);
+});
+test('Wishes task-manager locale updates preserve form inputs, selection and write guards',()=>{
+ const source=readFileSync(new URL('../../tools/wishes/gift-tasks.mjs',import.meta.url),'utf8');
+ assert.match(source,/const ui=text=>wishesText/);
+ assert.match(source,/document\.addEventListener\('toolya:wishes-locale-change',refreshLocale\)/);
+ assert.match(source,/if\(pendingWrites\)\{localePending=true;return\}/);
+ assert.match(source,/selection=new Map\(\[\.\.\.\$\('rolloverSelection'\)/);
+ assert.match(source,/selection\.has\(input\.value\)/);
+ assert.match(source,/const occasion=\$\('occasion'\)\.value,gift=\$\('gift'\)\.value/);
+ assert.match(source,/template\.label/);
+ assert.match(source,/button\.dataset\.taskTemplate=template\.title/);
+ assert.match(source,/\$\('title'\)\.value=template\.title/);
+ assert.match(source,/new Date\(t\.due_date\+'T12:00:00'\)\.toLocaleDateString\(locale\(\)\)/);
+ assert.match(source,/pendingWrites\+\+/);
+ assert.match(source,/function settleWrite\(\)/);
+ assert.match(source,/\.eq\('user_id',user\.id\)/);
+ assert.match(source,/h\.textContent=t\.title/);
+});
+
+test('Wishes yearly checklist archive and rollover confirmations remain reversible',()=>{
+ const pairs=[
+  ['Alle Checklistenaufgaben dieses Jahres archivieren?','Archive all checklist tasks for this year?'],
+  ['Archivierung dieses Jahres aufheben?', "Restore this year's archive?"],
+  [' Die Aufgaben bleiben gespeichert.',' The tasks will remain saved.'],
+  [' Aufgaben ',' tasks '],
+  [' neue Aufgaben angelegt. ',' new tasks created. '],
+  ['Das Paket ist bereits vorhanden.','This bundle already exists.'],
+  ['Die Aufgaben können einzeln bearbeitet werden.','Tasks can be edited individually.'],
+  [' ausgewählte Aufgaben aus ',' selected tasks from '],
+  [' nach ',' into '],
+  [' übernehmen? Bestehende Aufgaben bleiben unverändert.','? Existing tasks will not be changed.'],
+  [' Aufgaben übernommen. Bestehende Aufgaben wurden nicht überschrieben.',' tasks copied. Existing tasks were not overwritten.']
+ ];
+ for(const [de,en]of pairs){assert.equal(wishesText(de,'en'),en,de);assert.equal(wishesText(en,'de'),de,en)}
+ const privateTitle='Birthday present for Samuel';
+ assert.equal(wishesText(privateTitle,'en'),privateTitle);
+ const source=readFileSync(new URL('../../tools/wishes/gift-tasks.mjs',import.meta.url),'utf8');
+ assert.match(source,/ui\(' ausgewählte Aufgaben aus '\)/);
+ assert.match(source,/ui\(' übernehmen\? Bestehende Aufgaben bleiben unverändert\.'\)/);
+ assert.match(source,/db\.rpc\('wishlist_rollover_gift_tasks',\{p_occasion_id:occasionId,p_from_year:year-1,p_to_year:year,p_task_ids:ids\}\)/);
+ assert.match(source,/db\.rpc\('wishlist_archive_occasion_checklist_year',\{p_occasion_id:occasionId,p_year:year,p_archive:archive\}\)/);
+ assert.match(source,/\$\('title'\)\.value=template\.title/);
+});
+
+test('Wishes historical gift analytics source-exact labels translate reversibly in both languages',()=>{
+ const source=readFileSync(new URL('../../tools/wishes/gift-analytics.mjs',import.meta.url),'utf8');
+ const labels=[...source.matchAll(/ui\(("(?:\\.|[^"\\])*")\)/g)].map(match=>JSON.parse(match[1]));
+ assert.ok(new Set(labels).size>=80,'expected substantial historical analytics coverage');
+ for(const original of new Set(labels)){
+  const english=wishesText(original,'en');
+  assert.notEqual(english,original,'missing translation: '+original);
+  assert.equal(wishesText(english,'de'),original,'non-reversible translation: '+original);
+ }
+ const examples=[
+  ['Abgeschlossene Jahre','Closed years'],
+  ['Historische Ausgaben','Historical spending'],
+  ['Mehrjährige Entwicklung','Multi-year trends'],
+  ['Budgetplanung überprüfen','Review budget planning'],
+  ['Aufgabenhistorie berücksichtigen','Consider task history'],
+  ['Mein Geschenk-Jahr ','My gift year '],
+  ['🎂 Erfolgreich abgeschlossene Anlässe','🎂 Successfully completed occasions'],
+  ['Dieser ältere Jahresabschluss enthält keinen historischen Aufgaben-Snapshot.','This older year-end summary has no historical task snapshot.']
+ ];
+ for(const [de,en] of examples)assert.equal(wishesText(de,'en'),en,de);
+ assert.equal(wishesText('Private occasion: Mein Geschenk-Jahr 2026','en'),'Private occasion: Mein Geschenk-Jahr 2026');
+});
+test('Wishes year-end review locale update only repaints read-only snapshots and retains stored financial data',()=>{
+ const source=readFileSync(new URL('../../tools/wishes/gift-analytics.mjs',import.meta.url),'utf8');
+ assert.match(source,/const ui=value=>wishesText/);
+ assert.match(source,/new Intl.NumberFormat\(locale\(\),\{style:'currency',currency:'EUR'\}/);
+ assert.match(source,/new Date\(d.closed_at\)\.toLocaleDateString\(locale\(\)\)/);
+ assert.match(source,/document\.addEventListener\('toolya:wishes-locale-change',\(\)=>\{if\(!userId\)return;renderInsights\(\);renderGiftStory\(\);renderReview\(\);renderChronicle\(\)\}\)/);
+ assert.ok(!source.includes('document.addEventListener(\'toolya:wishes-locale-change\',render)'));
+ assert.match(source,/if\(\[\.\.\.select.options\]\.some\(o=>o.value===existing\)\)select.value=existing/);
+ assert.match(source,/report:reviewData\(c\)/);
+ assert.match(source,/db\.rpc\('wishlist_close_gift_year',\{p_year:year,p_confirm:true\}\)/);
+ assert.match(source,/db\.rpc\('wishlist_set_gift_year',\{p_plan_id:g.id,p_year:y\}\)/);
+ assert.match(source,/o\.title/);
+ assert.match(source,/g\.title/);
+});
+
+
+test('remaining Wishes navigation and status copy is source-exact and reversible',()=>{
+ const pages=["assistant","bookmarks","cockpit","dashboard","discover","feed","notifications","occasions","planner","profile","public","report","reservations","social"];
+ const source=pages.map(page=>readFileSync(new URL('../../tools/wishes/'+page+'.html',import.meta.url),'utf8')).join('\n');
+ const pairs=[
+ [
+  "✨ Geschenkideen entdecken",
+  "✨ Discover gift ideas"
+ ],
+ [
+  "anmelden",
+  "sign in"
+ ],
+ [
+  "Tages- & Wochenplanung",
+  "Daily & weekly planning"
+ ],
+ [
+  "🎀 Reservierungen",
+  "🎀 Reservations"
+ ],
+ [
+  "✅ Geschenk-To-dos",
+  "✅ Gift to-dos"
+ ],
+ [
+  "📈 Jahresstatistik",
+  "📈 Annual statistics"
+ ],
+ [
+  "Aufgabenpakete verwalten ↗",
+  "Manage task bundles ↗"
+ ],
+ [
+  "Eigene Reservierungen verwalten ↗",
+  "Manage my reservations ↗"
+ ],
+ [
+  "👥 Personen suchen",
+  "👥 Find people"
+ ],
+ [
+  "🌍 Alle Wunschwelten",
+  "🌍 All wish worlds"
+ ],
+ [
+  "📊 Neuigkeiten",
+  "📊 Latest updates"
+ ],
+ [
+  "🔔 Neuigkeiten",
+  "🔔 News"
+ ],
+ [
+  "🌈 Social-Entdecken",
+  "🌈 Social discovery"
+ ],
+ [
+  "Neues Passwort festlegen",
+  "Set a new password"
+ ],
+ [
+  "Eigene Wunschliste verwalten ↗",
+  "Manage my wish list ↗"
+ ],
+ [
+  "Zur Toolya-Datensicherung ↗",
+  "Toolya data backup ↗"
+ ],
+ [
+  "Wunschlisten-Anleitung",
+  "Wish-list guide"
+ ],
+ [
+  "← Geschenk-Planungsassistenz",
+  "← Gift planning assistant"
+ ],
+ [
+  "Zur Tagesplanung",
+  "Go to daily planning"
+ ],
+ [
+  "Lade private Ereignisse …",
+  "Loading private events …"
+ ],
+ [
+  "🎁 Geschenkplanung",
+  "🎁 Gift planning"
+ ],
+ [
+  "🌈 Wunschwelten entdecken",
+  "🌈 Explore wish worlds"
+ ],
+ [
+  "🔔 Benachrichtigungen",
+  "🔔 Notifications"
+ ],
+ [
+  "🌈 Entdecken",
+  "🌈 Discover"
+ ],
+ [
+  "🔖 Merkliste",
+  "🔖 Bookmarks"
+ ]
+];
+ for(const [de,en] of pairs){
+  assert.ok(source.includes(de),'missing UI source: '+de);
+  assert.ok(source.includes(' data-wish-copy>'+de+'<'),'UI label missing locale opt-in: '+de);
+  assert.equal(wishesText(de,'en'),en);
+  assert.equal(wishesText(en,'de'),de);
+ }
+});
 
 test('public wishlist editorial copy is complete and translated only when explicitly marked',()=>{
  const html=readFileSync(new URL('../../tools/wishes/public.html',import.meta.url),'utf8');

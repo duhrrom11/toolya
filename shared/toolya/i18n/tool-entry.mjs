@@ -57,6 +57,8 @@ function mountToolLanguage(){
  const originalAuthGuideHref=authGuide?.getAttribute('href');
  const modalHelpGuide=document.querySelector('#helpModal > div > p > a');
  const originalModalHelpGuideHref=modalHelpGuide?.getAttribute('href');
+ const bakingInlineGuide=name==='baking'?document.querySelector('#help-box a[href="/backform-rechner/"]'):null;
+ const originalBakingInlineGuideHref=bakingInlineGuide?.getAttribute('href');
  const switcher=document.createElement('nav');
  switcher.className='ty-tool-language';
  switcher.setAttribute('aria-label','Tool language selection / Sprachauswahl');
@@ -87,6 +89,7 @@ function mountToolLanguage(){
      return nativeDialogs[method](localizeDialog(message),...args);
    };
  }
+ uiGlobal.toolyaRuntimeText=(value)=>localizeStatus(value);
  uiGlobal.toolyaUiText=(value)=>{
    if(i18nextAdapter&&selected==='en'){
      const exact=i18nextAdapter.translateAccount(selected,value);
@@ -132,7 +135,7 @@ function mountToolLanguage(){
  // records, shopping items, receipt descriptions or arbitrary new elements.
  const runtimeStatusSelectors={
   housemates:['#setup-status','#ocrStatus'],
-  budget:['#ocrStatus','#saveBtn','#formTitle','#categoryChartSummary'],
+  budget:['#ocrStatus','#saveBtn','#formTitle','#categoryChartSummary','#qrcode'],
   parking:['#timerStatus','#timerDisplay','#statGps']
  };
  const runtimeNodes=[];
@@ -243,6 +246,13 @@ function mountToolLanguage(){
      if(lang==='en')modalHelpGuide.setAttribute('href',settings.guide);
      else if(originalModalHelpGuideHref!==null)modalHelpGuide.setAttribute('href',originalModalHelpGuideHref);
      modalHelpGuide.lang=lang;
+   }
+   if(bakingInlineGuide){
+     // The inline calculator guide is distinct from the shared help modal.
+     // Keep the original German destination intact when toggling back.
+     if(lang==='en')bakingInlineGuide.setAttribute('href',settings.guide);
+     else if(originalBakingInlineGuideHref!==null)bakingInlineGuide.setAttribute('href',originalBakingInlineGuideHref);
+     bakingInlineGuide.lang=lang;
    }
    localizeVisibleAccountStatus(lang);
    localizeRuntimeStatus();

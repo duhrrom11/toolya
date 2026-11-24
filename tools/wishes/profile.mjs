@@ -6,7 +6,7 @@ async function load(){
  const {data:profile,error}=await db.from('wishlist_profiles').select('user_id,handle,display_name,bio,avatar_url').eq('handle',handle).maybeSingle();
  if(error)throw error;
  if(!profile){$('status').textContent='Dieses Profil wurde nicht gefunden.';return}
- $('name').textContent=profile.display_name;$('handle').textContent='@'+profile.handle;$('bio').textContent=profile.bio||'';
+ $('name').setAttribute('data-user-content','');$('name').textContent=profile.display_name;$('handle').textContent='@'+profile.handle;$('bio').textContent=profile.bio||'';
  if(profile.avatar_url){try{const u=new URL(profile.avatar_url);if(u.protocol==='https:'){const image=document.createElement('img');image.src=u.href;image.alt='Profilbild von '+(profile.display_name||profile.handle||'Toolya-Nutzer');image.referrerPolicy='no-referrer';$('avatar').replaceChildren(image)}}catch{}}
  const url=new URL('./index.html',location.href);url.searchParams.set('profile',profile.handle);$('wishes').href=url.href;
  const {data:lists,error:listsError}=await db.from('wishlist_lists').select('id,title,description,icon,color,cover_url').eq('user_id',profile.user_id).eq('visibility','public').eq('archived',false).order('created_at',{ascending:false}).limit(48);
@@ -25,13 +25,13 @@ async function load(){
   if(list.cover_url){try{const u=new URL(list.cover_url);if(u.protocol==='https:'){const img=document.createElement('img');img.src=u.href;img.alt='Titelbild der Sammlung: '+(list.title||'Sammlung');img.loading='lazy';img.referrerPolicy='no-referrer';cover.replaceChildren(img)}}catch{}}
   if(/^#[0-9a-f]{6}$/i.test(list.color||''))cover.style.borderTop='5px solid '+list.color;
   const body=document.createElement('div');body.className='body';
-  const title=document.createElement('h3');title.textContent=list.title;body.append(title);
+  const title=document.createElement('h3');title.setAttribute('data-user-content','');title.textContent=list.title;body.append(title);
   if(list.description){const desc=document.createElement('p');desc.textContent=list.description;body.append(desc)}
-  const link=document.createElement('a');link.href=new URL('./collection.html?id='+encodeURIComponent(list.id),location.href).href;link.textContent='Sammlung entdecken ↗';body.append(link);
+  const link=document.createElement('a');link.href=new URL('./collection.html?id='+encodeURIComponent(list.id),location.href).href;link.setAttribute('data-wish-owned-copy','');link.textContent='Sammlung entdecken ↗';body.append(link);
   card.append(cover,body);grid.append(card);
  }
  $('count').textContent=(lists||[]).length+' öffentliche Sammlungen'+((lists||[]).length===48?' · maximal 48 angezeigt':'');
- if(!lists?.length){const empty=document.createElement('p');empty.className='empty';empty.textContent='Dieses Profil hat noch keine öffentlichen Sammlungen.';grid.append(empty)}
+ if(!lists?.length){const empty=document.createElement('p');empty.className='empty';empty.setAttribute('data-wish-owned-copy','');empty.textContent='Dieses Profil hat noch keine öffentlichen Sammlungen.';grid.append(empty)}
  $('share').addEventListener('click',async()=>{try{if(navigator.share)await navigator.share({title:profile.display_name,url:location.href});else if(navigator.clipboard&&isSecureContext){await navigator.clipboard.writeText(location.href);$('status').hidden=false;$('status').textContent='Profil-Link kopiert.'}else{$('status').hidden=false;$('status').textContent='Profil-Link: '+location.href}}catch(e){if(e?.name!=='AbortError'){$('status').hidden=false;$('status').textContent='Teilen nicht möglich.'}}});
  document.title=profile.display_name+' · Toolya Wishes';$('profile').hidden=false;$('status').hidden=true;
 }

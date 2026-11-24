@@ -55,10 +55,10 @@
         <a class="b3-brand" href="../../index.html" aria-label="Toolya Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Toolya</a>
         <span class="b3-tool-icon" aria-hidden="true">🌿</span>
         <div class="b3-tool-title">
-          <h1>Pflanzenpflege-App mit Gießplan</h1>
+          <h1 data-tool-en="Plant care with watering schedule">Pflanzenpflege-App mit Gießplan</h1>
           <p>Gießplan, Pflegenotizen und Fotos für Zimmerpflanzen und Garten</p>
         </div>
-        <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()">⚙</button>
+        <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()" data-tool-en-aria-label="Open settings">⚙</button>
       </div>
     </header>
 
@@ -67,7 +67,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-lime-900">⚙️ Einstellungen und Konto</h3>
-                <button onclick="toggleSettingsModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleSettingsModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             
             <div id="header-user-badge" class="hidden text-xs font-semibold mb-2" aria-live="polite">
@@ -93,7 +93,7 @@
                 </div>
                 <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-xl transition">Abmelden</button>
             </div>
-            <button onclick="toggleSettingsModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="toggleSettingsModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -102,7 +102,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-lime-900">📖 Hilfe & Anleitungen</h3>
-                <button onclick="toggleHelpModal()" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleHelpModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             <div class="space-y-3 text-xs">
                 <details class="bg-gray-50 border rounded-xl p-3">
@@ -125,7 +125,7 @@
                 </details>
             </div>
             <p class="text-sm"><a href="/pflanzenpflege/" class="text-sky-700 underline">Schritt-für-Schritt-Anleitung zur Pflanzenpflege</a></p>
-            <button onclick="toggleHelpModal()" class="b3-action b3-outline w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="toggleHelpModal()" class="b3-action b3-outline w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -138,7 +138,7 @@
                 <span class="text-2xl">❄️</span>
                 <div>
                     <h4 class="font-bold text-sm">Achtung: Frostgefahr!</h4>
-                    <p class="text-xs opacity-90">Bitte empfindliche Kübelpflanzen schützen oder ins Winterquartier holen!</p>
+                    <p class="text-xs opacity-90" data-tool-en="Protect sensitive potted plants or move them indoors for winter!">Bitte empfindliche Kübelpflanzen schützen oder ins Winterquartier holen!</p>
                 </div>
             </div>
             <button onclick="dismissFrostAlert()" class="bg-red-700 hover:bg-red-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold">Ausblenden</button>
@@ -184,14 +184,14 @@
         <!-- Erfassung: Neue Pflanze -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="create" data-b3-size="l" id="b3-create">
             <div class="flex justify-between items-center">
-                <h2 class="text-lg font-bold">🌿 Neue Pflanze / Aussaat erfassen</h2>
+                <h2 class="text-lg font-bold" data-tool-en="🌿 Add plant / sowing">🌿 Neue Pflanze / Aussaat erfassen</h2>
                 <a href="https://www.amazon.de/s?k=blumenerde+dünger+gartenzubehör&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded-xl transition-colors">🛒 Gartenbedarf auf Amazon</a>
             </div>
             
             <div class="b3-plant-identity-grid grid grid-cols-1 md:grid-cols-3 gap-3">
-                <label class="helferlein-field" for="plantName"><span class="helferlein-field-label">Name</span><input type="text" id="plantName" placeholder="Name (z.B. Tomate Harzfeuer)" class="p-3 border rounded-xl text-sm" aria-label="Name (z.B. Tomate Harzfeuer)"></label>
+                <label class="helferlein-field" for="plantName"><span class="helferlein-field-label">Name</span><input type="text" id="plantName" placeholder="Name (z.B. Tomate Harzfeuer)" class="p-3 border rounded-xl text-sm" aria-label="Name (z.B. Tomate Harzfeuer)" data-tool-en-placeholder="Name (e.g. tomato)"></label>
                 <label class="helferlein-field" for="plantSpecies"><span class="helferlein-field-label">Art / Sorte</span><input type="text" id="plantSpecies" placeholder="Art / Sorte (z.B. Tomate)" class="p-3 border rounded-xl text-sm" onblur="checkCompanionPlanting(this.value)" aria-label="Art / Sorte (z.B. Tomate)"></label>
-                <label class="helferlein-field" for="plantLocation"><span class="helferlein-field-label">Standort / Beet</span><input type="text" id="plantLocation" placeholder="Standort / Beet (z.B. Gewächshaus)" class="p-3 border rounded-xl text-sm" aria-label="Standort / Beet (z.B. Gewächshaus)"></label>
+                <label class="helferlein-field" for="plantLocation"><span class="helferlein-field-label">Standort / Beet</span><input type="text" id="plantLocation" placeholder="Standort / Beet (z.B. Gewächshaus)" class="p-3 border rounded-xl text-sm" aria-label="Standort / Beet (z.B. Gewächshaus)" data-tool-en-placeholder="Location / bed (e.g. greenhouse)" data-tool-en-aria-label="Location / bed (e.g. greenhouse)"></label>
             </div>
 
             <div id="companionAlertBox" class="hidden text-xs bg-amber-50 p-3 rounded-xl border border-amber-200 text-amber-900"></div>
@@ -206,16 +206,16 @@
                     </select>
                 </div>
                 <div>
-                    <label for="plantPotSize" class="block text-xs font-semibold text-gray-600 mb-1">Topf-Größe (Ø):</label>
+                    <label for="plantPotSize" class="block text-xs font-semibold text-gray-600 mb-1" data-tool-en="Pot size (diameter):">Topf-Größe (Ø):</label>
                     <select id="plantPotSize" onchange="calculateWaterAmount()" class="w-full p-3 border rounded-xl text-sm bg-white">
                         <option value="10">Klein (10 cm ~ 120ml)</option>
                         <option value="15" selected>Mittel (15 cm ~ 300ml)</option>
-                        <option value="20">Groß (20 cm ~ 600ml)</option>
-                        <option value="30">Sehr groß (30+ cm ~ 1.5L)</option>
+                        <option value="20" data-tool-en="Large (20 cm ~ 600 ml)">Groß (20 cm ~ 600ml)</option>
+                        <option value="30" data-tool-en="Very large (30+ cm ~ 1.5 L)">Sehr groß (30+ cm ~ 1.5L)</option>
                     </select>
                 </div>
                 <div>
-                    <label for="plantInterval" class="block text-xs font-semibold text-gray-600 mb-1">Gieß-Tage (Intervall):</label>
+                    <label for="plantInterval" class="block text-xs font-semibold text-gray-600 mb-1" data-tool-en="Watering interval (days):">Gieß-Tage (Intervall):</label>
                     <input type="number" id="plantInterval" placeholder="z.B. 5" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
@@ -259,7 +259,7 @@
             <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
                 <h3 class="font-bold text-lg">📋 Meine Pflanzen &amp; Vermehrung</h3>
                 <label class="helferlein-field" for="filterLocation"><span class="helferlein-field-label">Pflanzen nach Standort filtern</span><select id="filterLocation" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Pflanzen nach Standort filtern">
-                    <option value="">Alle Standorte / Räume</option>
+                    <option value="" data-tool-en="All locations / rooms">Alle Standorte / Räume</option>
                 </select></label>
             </div>
             <div id="plantsList" class="space-y-3">
@@ -295,16 +295,16 @@
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-lime-900">📦 Garten-Lager & Amazon Nachbestellung</h3>
-                <button onclick="closeInventoryModal()" class="b3-action b3-outline text-gray-400 font-bold">✕</button>
+                <button onclick="closeInventoryModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="b3-action b3-outline text-gray-400 font-bold">✕</button>
             </div>
-            <p class="text-xs text-gray-500">Verwalte dein Schuppen-Inventar. Nutze den Nachbestell-Button, um Artikel direkt über deine Partner-ID bei Amazon zu ordern:</p>
+            <p class="text-xs text-gray-500" data-tool-en="Keep track of what is in your garden shed. Use the reorder button to buy supplies on Amazon through the affiliate link:">Verwalte dein Schuppen-Inventar. Nutze den Nachbestell-Button, um Artikel direkt über deine Partner-ID bei Amazon zu ordern:</p>
             <div class="grid grid-cols-3 gap-2">
                 <label class="helferlein-field col-span-2" for="invItemName"><span class="helferlein-field-label">Artikel</span><input type="text" id="invItemName" placeholder="Artikel (z.B. Tomatendünger)" class="p-2.5 border rounded-xl text-xs " data-tool-en-placeholder="Item (e.g. tomato fertiliser)"></label>
                 <label class="helferlein-field" for="invItemQty"><span class="helferlein-field-label">Menge</span><input type="text" id="invItemQty" placeholder="Menge (z.B. 2 L)" class="p-2.5 border rounded-xl text-xs" data-tool-en-placeholder="Quantity (e.g. 2 L)"></label>
             </div>
             <button onclick="addInventoryItem()" class="b3-action w-full py-2 bg-lime-600 text-white rounded-xl text-xs font-bold">Artikel ins Lager aufnehmen</button>
             <div id="inventoryList" class="space-y-2 pt-2"></div>
-            <button onclick="closeInventoryModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="closeInventoryModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -312,7 +312,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-amber-900">🌰 Saatgut-Lager</h3>
-                <button onclick="closeSeedsModal()" class="b3-action b3-outline text-gray-400 font-bold">✕</button>
+                <button onclick="closeSeedsModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="b3-action b3-outline text-gray-400 font-bold">✕</button>
             </div>
             <div class="flex justify-between items-center bg-amber-50 p-3 rounded-xl border border-amber-200">
                 <span class="text-xs text-amber-900 font-medium">Neues Saatgut gesucht?</span>
@@ -324,7 +324,7 @@
             </div>
             <button onclick="addSeedItem()" class="b3-action w-full py-2 bg-amber-600 text-white rounded-xl text-xs font-bold">Hinzufügen</button>
             <div id="seedList" class="space-y-2 pt-2"></div>
-            <button onclick="closeSeedsModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="closeSeedsModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -334,7 +334,7 @@
             <div><label for="roiExpenses" class="block text-xs font-semibold text-gray-600 mb-1">Gesamtausgaben (€):</label><input type="number" id="roiExpenses" value="45" class="w-full p-3 border rounded-xl text-sm" onchange="calculateRoiValues()"></div>
             <div><label for="roiPricePerKg" class="block text-xs font-semibold text-gray-600 mb-1">Marktwert pro kg (€):</label><input type="number" id="roiPricePerKg" value="4.50" class="w-full p-3 border rounded-xl text-sm" onchange="calculateRoiValues()"></div>
             <div id="roiResult" role="status" aria-live="polite" aria-atomic="true" class="bg-purple-50 p-4 rounded-xl border border-purple-100 text-center space-y-1"><p class="text-xs text-purple-700 font-bold uppercase" data-tool-en="Profit summary">Gewinnbilanz</p><h2 id="roiProfitDisplay" class="text-xl font-extrabold text-purple-900">+ 0,00 €</h2><p id="roiDetailsText" class="text-xs text-gray-600">Gesamtertrag: 0 kg</p></div>
-            <button onclick="closeRoiModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="closeRoiModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -344,15 +344,15 @@
             <div><label for="cisternMaxLiters" class="block text-xs font-semibold text-gray-600 mb-1">Fassungsvermögen (Liter):</label><input type="number" id="cisternMaxLiters" value="500" class="w-full p-3 border rounded-xl text-sm" onchange="updateCisternCapacity()"></div>
             <div class="bg-sky-50 p-4 rounded-xl border border-sky-100 text-center space-y-1"><p class="text-xs text-sky-700 font-bold uppercase" data-tool-en="Remaining stock">Restbestand</p><h2 id="cisternDisplayLiters" class="text-2xl font-extrabold text-sky-900">500 L</h2><p id="cisternPercentText" class="text-xs text-gray-500">100%</p></div>
             <button onclick="refillCistern()" class="b3-action w-full py-2.5 bg-sky-600 text-white rounded-xl text-xs font-bold">💧 Tonne auffüllen</button>
-            <button onclick="closeCisternModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="closeCisternModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
     <div id="beetModal" class="b3-tool-dialog fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeBeetModal()">
         <div class="bg-white p-6 rounded-2xl max-w-xl w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center"><h3 class="font-bold text-lg text-emerald-900">🌿 Beet-Planer</h3><button onclick="closeBeetModal()" class="b3-action b3-outline text-gray-400 font-bold">✕</button></div>
+            <div class="flex justify-between items-center"><h3 class="font-bold text-lg text-emerald-900">🌿 Beet-Planer</h3><button onclick="closeBeetModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="b3-action b3-outline text-gray-400 font-bold">✕</button></div>
             <div id="beetGrid" class="grid grid-cols-4 gap-3"></div>
-            <button onclick="closeBeetModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="closeBeetModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -361,13 +361,13 @@
             <h3 class="font-bold text-lg text-purple-900">🍅 Ernte erfassen</h3>
             <input type="hidden" id="harvestPlantId">
             <input type="number" id="harvestWeightGrams" placeholder="Gramm (g)" class="w-full p-3 border rounded-xl text-sm" data-tool-en-placeholder="Grams (g)">
-            <div class="b3-dialog-actions flex justify-end space-x-2 pt-2"><button onclick="closeHarvestModal()" class="b3-action b3-outline px-4 py-2 bg-gray-100 rounded-xl text-xs">Abbrechen</button><button onclick="saveHarvest()" class="b3-action px-5 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold">Speichern</button></div>
+            <div class="b3-dialog-actions flex justify-end space-x-2 pt-2"><button onclick="closeHarvestModal()" class="b3-action b3-outline px-4 py-2 bg-gray-100 rounded-xl text-xs">Abbrechen</button><button onclick="saveHarvest()" class="b3-action px-5 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold" data-tool-en="Save">Speichern</button></div>
         </div>
     </div>
 
     <div id="galleryModal" class="b3-tool-dialog fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50" onclick="closeGalleryModal()">
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center"><h3 class="font-bold text-lg text-lime-800">📸 Wachstums-Verlauf</h3><button onclick="closeGalleryModal()" class="b3-action b3-outline text-gray-400 font-bold">✕</button></div>
+            <div class="flex justify-between items-center"><h3 class="font-bold text-lg text-lime-800">📸 Wachstums-Verlauf</h3><button onclick="closeGalleryModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="b3-action b3-outline text-gray-400 font-bold">✕</button></div>
             <input type="hidden" id="galleryPlantId">
             <input type="file" id="newGalleryPhoto" accept="image/*" class="text-xs p-2 border rounded-xl w-full">
             <button onclick="addGalleryPhoto()" class="b3-action w-full py-2 bg-lime-600 text-white rounded-xl text-xs font-bold">Foto hinzufügen</button>
@@ -379,7 +379,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl" onclick="event.stopPropagation()">
             <h3 id="qrTitle" class="font-bold text-lg text-lime-800">Pflanzen-Steckbrief</h3>
             <div id="qrcode" class="flex justify-center p-4 bg-gray-50 rounded-xl border"></div>
-            <button onclick="closeQrModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="closeQrModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -388,7 +388,7 @@
             <h3 class="text-lg font-bold">📖 Tagebucheintrag</h3>
             <input type="hidden" id="diaryPlantId">
             <textarea id="diaryText" placeholder="Notiz eingeben..." class="w-full p-3 border rounded-xl text-sm h-24 resize-none" data-tool-en-placeholder="Enter a note…"></textarea>
-            <div class="b3-dialog-actions flex justify-end space-x-2 pt-2"><button onclick="closeDiaryModal()" class="b3-action b3-outline px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button><button onclick="saveDiaryEntry()" class="b3-action px-5 py-2 bg-lime-600 text-white rounded-xl text-sm font-bold">Speichern</button></div>
+            <div class="b3-dialog-actions flex justify-end space-x-2 pt-2"><button onclick="closeDiaryModal()" class="b3-action b3-outline px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button><button onclick="saveDiaryEntry()" class="b3-action px-5 py-2 bg-lime-600 text-white rounded-xl text-sm font-bold" data-tool-en="Save">Speichern</button></div>
         </div>
     </div>
 
@@ -399,7 +399,7 @@
             <div class="grid grid-cols-2 gap-2"><div><label for="editName" class="block text-xs font-semibold text-gray-600 mb-1">Name:</label><input type="text" id="editName" class="w-full p-3 border rounded-xl text-sm"></div><div><label for="editSpecies" class="block text-xs font-semibold text-gray-600 mb-1">Art:</label><input type="text" id="editSpecies" class="w-full p-3 border rounded-xl text-sm"></div></div>
             <div class="grid grid-cols-3 gap-2"><div><label for="editLocation" class="block text-xs font-semibold text-gray-600 mb-1">Standort:</label><input type="text" id="editLocation" class="w-full p-3 border rounded-xl text-sm"></div><div><label for="editInterval" class="block text-xs font-semibold text-gray-600 mb-1">Gieß-Tage:</label><input type="number" id="editInterval" class="w-full p-3 border rounded-xl text-sm"></div><div><label for="editLastWatered" class="block text-xs font-semibold text-gray-600 mb-1">Letztes Gießen:</label><input type="date" id="editLastWatered" class="w-full p-3 border rounded-xl text-sm"></div></div>
             <div><label for="editNote" class="block text-xs font-semibold text-gray-600 mb-1">Anmerkungen:</label><textarea id="editNote" class="w-full p-3 border rounded-xl text-sm h-20 resize-none"></textarea></div>
-            <div class="b3-dialog-actions flex justify-end space-x-2 pt-2"><button onclick="closeEditModal()" class="b3-action b3-outline px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button><button onclick="updatePlant()" class="b3-action px-5 py-2 bg-lime-600 text-white rounded-xl text-sm font-bold">Speichern</button></div>
+            <div class="b3-dialog-actions flex justify-end space-x-2 pt-2"><button onclick="closeEditModal()" class="b3-action b3-outline px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button><button onclick="updatePlant()" class="b3-action px-5 py-2 bg-lime-600 text-white rounded-xl text-sm font-bold" data-tool-en="Save">Speichern</button></div>
         </div>
     </div>
 
@@ -728,7 +728,7 @@
                     : age < 0 ? `<span class="text-[10px] bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">${window.__toolyaUILocale === 'en' ? '📅 Future harvest year' : '📅 Zukünftiges Erntejahr'}</span>`
                     : age > 3 ? `<span class="text-[10px] bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full font-bold">${window.__toolyaUILocale === 'en' ? '⚠️ Germination rate may be low' : '⚠️ Keimfähigkeit evtl. gering'} (${age}${window.__toolyaUILocale === 'en' ? 'y' : 'J'})</span>` : `<span class="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold">${window.__toolyaUILocale === 'en' ? '✅ Good' : '✅ Gut'} (${age}${window.__toolyaUILocale === 'en' ? 'y' : 'J'})</span>`;
                 let amazonSearchUrl = `https://www.amazon.de/s?k=${encodeURIComponent(String(s.name ?? '') + ' saemereien')}&tag=duhrrom-21`;
-                return `<div class="b3-plant-store-row p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs"><div><b>${escapeHtml(s.name)}</b> (${window.__toolyaUILocale === 'en' ? 'Harvested' : 'Ernte'}: ${escapeHtml(s.year)})<br>${warning}</div><div class="flex items-center gap-1.5"><a href="${amazonSearchUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">${window.__toolyaUILocale === 'en' ? '🛒 Buy again' : '🛒 Neu kaufen'}</a><button onclick="removeSeedItem(${idx})" class="text-red-500 font-bold px-1.5">✕</button></div></div>`;
+                return `<div class="b3-plant-store-row p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs"><div><b>${escapeHtml(s.name)}</b> (${window.__toolyaUILocale === 'en' ? 'Harvested' : 'Ernte'}: ${escapeHtml(s.year)})<br>${warning}</div><div class="flex items-center gap-1.5"><a href="${amazonSearchUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">${window.__toolyaUILocale === 'en' ? '🛒 Buy again' : '🛒 Neu kaufen'}</a><button aria-label="${window.__toolyaUILocale === 'en' ? 'Remove seeds' : 'Saatgut entfernen'}" onclick="removeSeedItem(${idx})" class="text-red-500 font-bold px-1.5">✕</button></div></div>`;
             }).filter(Boolean).join('');
             document.getElementById('seedList').innerHTML = seedItems || `<p class="text-xs text-gray-400 text-center py-2">${window.__toolyaUILocale === 'en' ? 'No seeds in stock.' : 'Kein Saatgut im Lager.'}</p>`;
         }
@@ -805,7 +805,7 @@
                         <div><b>${escapeHtml(item.name)}</b> <span class="text-gray-500">(${escapeHtml(window.__toolyaUILocale === 'en' && item.qty === '1 Stk' ? '1 pc' : item.qty)})</span></div>
                         <div class="flex items-center gap-1.5">
                             <a href="${amazonUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg shadow-sm">${window.__toolyaUILocale === 'en' ? '🛒 Reorder' : '🛒 Nachbestellen'}</a>
-                            <button onclick="removeInventoryItem(${idx})" class="text-red-500 font-bold px-1.5 hover:text-red-700">✕</button>
+                            <button aria-label="${window.__toolyaUILocale === 'en' ? 'Remove inventory item' : 'Lagerartikel entfernen'}" onclick="removeInventoryItem(${idx})" class="text-red-500 font-bold px-1.5 hover:text-red-700">✕</button>
                         </div>
                     </div>
                 `;
@@ -1279,7 +1279,7 @@
                                 <button onclick="openDiaryModal(${p.id})" class="b3-action b3-outline px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-semibold" title="${window.__toolyaUILocale === 'en' ? 'Diary' : 'Tagebuch'}">📖</button>
                                 <button onclick="showQrCodeForPlant(${p.id})" class="b3-action b3-outline px-2.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold" title="QR-Code">📱</button>
                                 <button onclick="openEditModal(${p.id})" class="b3-action b3-outline px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="${window.__toolyaUILocale === 'en' ? 'Edit' : 'Bearbeiten'}">✏️</button>
-                                <button onclick="deletePlant(${p.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                                <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete plant' : 'Pflanze löschen'}" onclick="deletePlant(${p.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
                     `;

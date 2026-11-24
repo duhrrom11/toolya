@@ -30,3 +30,28 @@ test('estate runtime safety warnings are reversible and unknown private data is 
  assert.equal(estateText('Alice private@example.org','en'),'Alice private@example.org');
  assert.ok(Object.keys(ESTATE_RUNTIME_COPY).length>=55);
 });
+
+test('estate handover and trustee copy is reversible and preserves form values',()=>{
+ const pairs=[["Dein Tresorpasswort schützt deine verschlüsselten Daten auch auf einem neuen Gerät. Bei einem neuen Tresor entspricht es zunächst deinem Konto-Passwort. Bewahre es gut auf: Ein Zurücksetzen des Konto-Passworts entschlüsselt den Tresor nicht.","Your vault password also protects your encrypted data on a new device. For a new vault, it initially matches your account password. Keep it safe: resetting your account password will not decrypt the vault."],["Dein persönlicher Schlüssel","Your personal key"],["Schlüssel der zweiten Person","Second person's key"],["← Zurück zum digitalen Nachlass","← Back to digital estate"],["Du kannst deine Unterlagen verschlüsselt an eine vertraute Person weitergeben.","You can share an encrypted copy of your documents with someone you trust."],["Sobald du die Dateien übergeben hast, kannst du den Zugriff auf diese Kopie nicht mehr zurücknehmen.","Once you have handed over the files, you cannot revoke access to that copy."],["Der private Schlüssel wird mit einem eigenen Passwort verschlüsselt. Speichere die Schlüsseldatei und das Passwort getrennt und sicher; teile ausschließlich den öffentlichen Schlüssel. Bereits erstellte unverschlüsselte Schlüsseldateien aus der Vorgängerversion werden nicht mehr akzeptiert.","The private key is encrypted with a separate password. Store the key file and password securely in different places; share only the public key. Previously created unencrypted key files from the older version are no longer accepted."],["Passwort für den privaten Schlüssel (mindestens 16 Zeichen)","Password for the private key (at least 16 characters)"],["Passwort bestätigen","Confirm password"],["Öffentliche Schlüsseldatei des Erben","Beneficiary's public key file"],["Ich möchte jetzt eine vollständige Kopie meiner Nachlasseinträge freigeben. Mir ist bewusst, dass ich diese Kopie später nicht widerrufen kann.","I want to share a complete copy of my estate records now. I understand that I cannot revoke access to this copy later."],["Privater Erbenschlüssel","Beneficiary's private key"],["Verschlüsseltes Nachlasspaket","Encrypted estate package"],["Passwort für den privaten Schlüssel","Private key password"]];
+ for(const [de,en] of pairs){assert.equal(estateText(de,'en'),en);assert.equal(estateText(en,'de'),de)}
+ const {document}=parseHTML('<html><body><main><a href="index.html">← Zurück zum digitalen Nachlass</a><p>Du kannst deine Unterlagen verschlüsselt an eine vertraute Person weitergeben.</p><label>Privater Erbenschlüssel<input value="secret"></label></main></body></html>');
+ applyEstateLocale(document,'en');
+ assert.equal(document.querySelector('main a').textContent,'← Back to digital estate');
+ assert.equal(document.querySelector('main p').textContent,'You can share an encrypted copy of your documents with someone you trust.');
+ assert.equal(document.querySelector('input').value,'secret');
+ assert.equal(document.querySelector('main a').getAttribute('href'),'index.html');
+ applyEstateLocale(document,'de');assert.equal(document.querySelector('main a').textContent,'← Zurück zum digitalen Nachlass');
+});
+
+test('trusted reader translates only explicit app-owned empty state and fallback title',()=>{
+ const {document}=parseHTML('<html><body><div id="read-entries"><article class="entry"><h3>Unterlage</h3><p>Meine Unterlagen</p><pre>Im Tresor liegen noch keine Unterlagen.</pre></article><article class="entry"><h3 data-estate-copy>Unterlage</h3></article><p data-estate-copy>Im Tresor liegen noch keine Unterlagen.</p></div></body></html>');
+ applyEstateLocale(document,'en');
+ assert.equal(document.querySelector('.entry h3').textContent,'Unterlage');
+ assert.equal(document.querySelector('.entry p').textContent,'Meine Unterlagen');
+ assert.equal(document.querySelector('pre').textContent,'Im Tresor liegen noch keine Unterlagen.');
+ assert.equal(document.querySelector('h3[data-estate-copy]').textContent,'Document');
+ assert.equal(document.querySelector('p[data-estate-copy]').textContent,'There are no documents in this vault yet.');
+ applyEstateLocale(document,'de');
+ assert.equal(document.querySelector('h3[data-estate-copy]').textContent,'Unterlage');
+ assert.equal(document.querySelector('p[data-estate-copy]').textContent,'Im Tresor liegen noch keine Unterlagen.');
+});

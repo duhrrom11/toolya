@@ -90,7 +90,7 @@
   <a class="b3-brand" href="../../index.html" aria-label="Toolya Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Toolya</a>
   <span class="b3-tool-icon" aria-hidden="true">🍰</span>
   <div class="b3-tool-title"><h1>Backform-Umrechner & Rezeptrechner</h1><p>Backformen umrechnen, Zutatenmengen anpassen und Backzeiten abschätzen</p></div>
-  <button type="button" class="b3-settings-trigger" onclick="openSettings()" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button>
+  <button type="button" class="b3-settings-trigger" onclick="openSettings()" aria-label="Einstellungen öffnen" title="Einstellungen" data-tool-en-aria-label="Open settings">⚙</button>
 </div></header>
 
     <!-- B3 Navigation: original tab buttons still call openTab() -->
@@ -123,7 +123,7 @@
 <!-- Schritt 1: Original- und Zielform -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="maximize" class="w-5 h-5 text-orange-500"></i> 1. Backformen wählen
+                        <i data-lucide="maximize" class="w-5 h-5 text-orange-500"></i> <span data-tool-en="1. Choose baking pans">1. Backformen wählen</span>
                     </h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <!-- Original -->
@@ -221,8 +221,8 @@
                         </div>
                     </div>
                     <div>
-                        <label class="helferlein-field" for="recipe-name"><span class="helferlein-field-label">Mein Rezept</span><input type="text" id="recipe-name" placeholder="Name des Rezepts (z.B. Omas Apfelkuchen)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm mb-3" aria-label="Name des Rezepts (z.B. Omas Apfelkuchen)"></label>
-                        <label class="helferlein-field" for="recipe-input"><span class="helferlein-field-label">Meine Zutaten</span><textarea id="recipe-input" rows="4" placeholder="Füge hier deine Zutaten ein (z.B. &#10;250g Mehl&#10;200g Zucker&#10;3 Eier&#10;100ml Milch)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-mono" aria-label="Zutaten des Rezepts"></textarea></label>
+                        <label class="helferlein-field" for="recipe-name"><span class="helferlein-field-label">Mein Rezept</span><input type="text" id="recipe-name" placeholder="Name des Rezepts (z.B. Omas Apfelkuchen)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm mb-3" aria-label="Name des Rezepts (z.B. Omas Apfelkuchen)" data-tool-en-placeholder="Recipe name (e.g. grandma's apple cake)"></label>
+                        <label class="helferlein-field" for="recipe-input"><span class="helferlein-field-label" data-tool-en="My ingredients">Meine Zutaten</span><textarea id="recipe-input" rows="4" placeholder="Füge hier deine Zutaten ein (z.B. &#10;250g Mehl&#10;200g Zucker&#10;3 Eier&#10;100ml Milch)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-mono" aria-label="Zutaten des Rezepts" data-tool-en-placeholder="Enter your ingredients here (e.g. 250 g flour, 200 g sugar, 3 eggs, 100 ml milk)"></textarea></label>
                     </div>
                     <button onclick="calculateRecipe()" class="b3-action w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl transition shadow-md shadow-orange-500/20 text-sm flex items-center justify-center gap-2">
                         <i data-lucide="calculator" class="w-4 h-4"></i> Mengen ausrechnen
@@ -248,7 +248,7 @@
                             <label for="oven-mode" class="block text-xs font-medium text-slate-600 mb-1">Ofen-Modus</label>
                             <select id="oven-mode" onchange="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
                                 <option value="unterhitze" selected>Ober-/Unterhitze</option>
-                                <option value="heissluft">Heißluft / Umluft (-20°C)</option>
+                                <option value="heissluft" data-tool-en="Fan oven / convection (-20°C)">Heißluft / Umluft (-20°C)</option>
                             </select>
                         </div>
                     </div>
@@ -276,7 +276,7 @@
                             <span class="text-xs font-medium text-slate-700" data-tool-en="Use my oven factor">Meinen Ofenfaktor nutzen</span>
                         </div>
                         <div class="text-xs font-semibold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-lg">
-                            Rezeptmenge: <span id="factor-display">× 1.00</span>
+                            <span data-tool-en="Recipe quantity">Rezeptmenge</span>: <span id="factor-display">× 1.00</span>
                         </div>
                     </div>
                 </div>
@@ -288,7 +288,7 @@
                             <i data-lucide="pie-chart" class="w-4 h-4 text-orange-500"></i> Torte teilen
                         </h3>
                         <div>
-                            <label for="slice-count" class="block text-xs font-medium text-slate-600 mb-1">Gewünschte Stücke</label>
+                            <label for="slice-count" class="block text-xs font-medium text-slate-600 mb-1" data-tool-en="Desired servings">Gewünschte Stücke</label>
                             <input type="number" id="slice-count" value="12" oninput="updateSlices()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
                         </div>
                         <p id="slice-info" class="text-xs text-slate-500">Stückbreite am Rand.</p>
@@ -296,7 +296,7 @@
 
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                         <h3 class="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                            <i data-lucide="sparkles" class="w-4 h-4 text-orange-500"></i> Glasur und Fondant
+                            <i data-lucide="sparkles" class="w-4 h-4 text-orange-500"></i> <span data-tool-en="Icing and fondant">Glasur und Fondant</span>
                         </h3>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
@@ -378,7 +378,7 @@
 
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="candy" class="w-5 h-5 text-orange-500"></i> Zucker & Süßungsmittel umrechnen
+                        <i data-lucide="candy" class="w-5 h-5 text-orange-500"></i> <span data-tool-en="Convert sugar and sweeteners">Zucker & Süßungsmittel umrechnen</span>
                     </h2>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
@@ -388,13 +388,13 @@
                         <div>
                             <label for="sugar-type" class="block text-xs font-medium text-slate-600 mb-1">Alternative</label>
                             <select id="sugar-type" onchange="calculateSugar()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
-                                <option value="xylit">Xylit (ungefähr 1:1)</option><option value="erythrit">Erythrit (weniger süß)</option>
+                                <option value="xylit" data-tool-en="Xylitol (approximately 1:1)">Xylit (ungefähr 1:1)</option><option value="erythrit" data-tool-en="Erythritol (less sweet)">Erythrit (weniger süß)</option>
                                 <option value="honey">Honig / Ahornsirup</option>
                                 <option value="stevia">Stevia (Konzentrat)</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Benötigte Menge</label>
+                            <label class="block text-xs font-medium text-slate-600 mb-1" data-tool-en="Required amount">Benötigte Menge</label>
                             <div id="sugar-result" class="px-3 py-2 rounded-xl bg-orange-50 border border-orange-100 text-sm font-bold text-orange-600">200g</div>
                         </div>
                     </div>
@@ -456,7 +456,7 @@
                 <!-- 🛒 NEU: Amazon Zubehör- & Equipment-Empfehlungen in den Werkzeugen -->
                 <div class="bg-amber-50/60 p-6 rounded-2xl border border-amber-200 shadow-sm space-y-3">
                     <h3 class="text-sm font-semibold text-amber-900 flex items-center gap-2">
-                        <i data-lucide="shopping-bag" class="w-4 h-4 text-amber-600"></i> Passendes Backzubehör auf Amazon
+                        <i data-lucide="shopping-bag" class="w-4 h-4 text-amber-600"></i> <span data-tool-en="Baking accessories on Amazon">Passendes Backzubehör auf Amazon</span>
                     </h3>
                     <p class="text-xs text-amber-800">Fehlt dir noch die richtige Form oder das passende Equipment? Hier direkt stöbern:</p>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
@@ -499,7 +499,7 @@
                 <!-- Kennzahlen Grid -->
                 <div id="conversion-results" role="status" aria-live="polite" aria-atomic="true" class="grid grid-cols-2 gap-3">
                     <div class="p-3 rounded-xl bg-orange-50 border border-orange-100 text-center">
-                        <span class="block text-[10px] font-semibold text-orange-600 uppercase">Faktor</span>
+                        <span class="block text-[10px] font-semibold text-orange-600 uppercase" data-tool-en="Factor">Faktor</span>
                         <span id="res-factor" class="text-base font-bold text-slate-900">1.00</span>
                     </div>
                     <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
@@ -545,7 +545,7 @@
                 <div class="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-xs text-amber-900 space-y-2">
                     <div class="flex items-center justify-between font-semibold">
                         <span>💡 Fehlendes Zubehör?</span>
-                        <a href="https://www.amazon.de/s?k=backzubehör" target="_blank" rel="noopener" class="text-orange-600 hover:underline flex items-center gap-1 text-[11px]">Amazon Suche <i data-lucide="external-link" class="w-3 h-3"></i></a>
+                        <a href="https://www.amazon.de/s?k=backzubehör" target="_blank" rel="noopener" class="text-orange-600 hover:underline flex items-center gap-1 text-[11px]"><span data-tool-en="Search Amazon">Amazon Suche</span> <i data-lucide="external-link" class="w-3 h-3"></i></a>
                     </div>
                     <p class="text-[11px] text-amber-800">Finde passende Silikonformen, Teigschaber oder Spritzbeutel direkt online.</p>
                 </div>
@@ -606,34 +606,34 @@
                 <button onclick="saveSettings()" class="b3-action px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-xs transition">Speichern</button>
                 <button onclick="closeSettings()" class="b3-action b3-outline px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition">Schließen</button>
             </div>
-<section id="b3-backform-preferences" aria-label="Darstellung und Dashboard">
+<section id="b3-backform-preferences" aria-label="Darstellung und Dashboard" data-tool-en-aria-label="Layout and dashboard">
   <h3>⚙ Dashboard anpassen</h3>
 <button type="button" id="b3-backform-edit" class="b3-action">✎ Dashboard bearbeiten</button>
   <div id="b3-backform-editor" hidden aria-label="Dashboard-Einstellungen" data-tool-en-aria-label="Dashboard settings"></div>
-  <p class="text-xs">Alle Rechenwerkzeuge bleiben erreichbar. Hier kannst du Reihenfolge und Kartendichte anpassen.</p>
+  <p class="text-xs" data-tool-en="All calculators stay available. Adjust their order and how compact the cards are here.">Alle Rechenwerkzeuge bleiben erreichbar. Hier kannst du Reihenfolge und Kartendichte anpassen.</p>
   <div class="b3-backform-help"><div id="help-box" class="hidden border-t border-slate-100 bg-orange-50/40 px-4 sm:px-8 py-4">
             <div class="max-w-4xl mx-auto space-y-2">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-orange-900">Kurzanleitung – So funktioniert's:</h3>
                     <button onclick="toggleHelp()" class="b3-action b3-outline text-slate-400 hover:text-slate-600 text-xs">Schließen ✕</button>
                 </div>
-                <p><a href="/backform-rechner/" class="text-orange-900 underline">Schritt-für-Schritt-Anleitung mit Rechenbeispiel</a></p>
+                <p><a href="/backform-rechner/" class="text-orange-900 underline" data-tool-en="Step-by-step guide with an example calculation">Schritt-für-Schritt-Anleitung mit Rechenbeispiel</a></p>
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs text-slate-600">
                     <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
                         <strong class="text-slate-800 block mb-0.5">1. Rezept & Basis</strong>
-                        Gib Zeit, Temperatur und deine Zutaten im Rechner ein.
+                        <span data-tool-en="Enter the baking time, temperature and ingredients in the calculator.">Gib Zeit, Temperatur und deine Zutaten im Rechner ein.</span>
                     </div>
                     <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
                         <strong class="text-slate-800 block mb-0.5">2. Form vergleichen</strong>
-                        Wähle Original- und Zielform (oder 2er-Mix) aus.
+                        <span data-tool-en="Choose the original and target pans, or use a combination of two pans.">Wähle Original- und Zielform (oder 2er-Mix) aus.</span>
                     </div>
                     <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
                         <strong class="text-slate-800 block mb-0.5">3. Cloud-Konto</strong>
-                        Melde dich mit deinem Toolya-Konto an, um deine Rezepte zu speichern.
+                        <span data-tool-en="Sign in to your Toolya account to save recipes.">Melde dich mit deinem Toolya-Konto an, um deine Rezepte zu speichern.</span>
                     </div>
                     <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
                         <strong class="text-slate-800 block mb-0.5">4. Kochmodus</strong>
-                        Starte den Multi-Timer direkt in der Küche!
+                        <span data-tool-en="Start multiple timers right from the kitchen.">Starte den Multi-Timer direkt in der Küche!</span>
                     </div>
                 </div>
             </div>
@@ -662,7 +662,7 @@
             <div class="b3-dialog-actions flex justify-center gap-3">
                 <button onclick="startTimer()" class="b3-action px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-sm transition">Start</button>
                 <button onclick="pauseTimer()" class="b3-action b3-outline px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-medium rounded-xl text-sm transition">Pause</button>
-                <button onclick="nextTimerPhase()" class="b3-action b3-outline px-5 py-2.5 bg-slate-900 text-white font-medium rounded-xl text-sm transition">Nächste Phase</button>
+                <button onclick="nextTimerPhase()" class="b3-action b3-outline px-5 py-2.5 bg-slate-900 text-white font-medium rounded-xl text-sm transition" data-tool-en="Next step">Nächste Phase</button>
             </div>
             <button onclick="closeCookMode()" class="b3-action b3-outline text-xs text-slate-400 hover:text-slate-600 underline pt-2">Schließen</button>
         </div>
@@ -713,9 +713,9 @@
         async function supabaseLogout() {
             try {
                 const { error } = await supabaseClient.auth.signOut();
-                if (error) return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error.message || 'Unbekannter Fehler'));
+                if (error) return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             } catch (error) {
-                return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error?.message || 'Unbekannter Fehler'));
+                return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             }
             checkUserSession();
             alert(window.__toolyaUILocale === 'en' ? 'Signed out.' : 'Abgemeldet.');
@@ -852,7 +852,7 @@
             if(origMat === 'silikon') adjTemp += 10;
 
             document.getElementById('res-factor').innerText = factor.toFixed(2);
-            document.getElementById('factor-display').innerText = '× ' + factor.toFixed(2);
+            document.getElementById('factor-display').innerText = '× ' + formatBakingDisplayNumber(factor, 2);
             document.getElementById('res-time').innerText = adjTime + (window.__toolyaUILocale === 'en' ? ' min' : ' Min.');
             document.getElementById('res-temp').innerText = adjTemp + ' °C';
 
@@ -880,11 +880,11 @@
 
         // Presentation-only number formatting. Keep res-factor machine-readable,
         // because the recipe calculator parses it back as an input.
-        function formatBakingDisplayNumber(value, decimals = 2) {
+        function formatBakingDisplayNumber(value, decimals = 2, minimumDecimals = decimals) {
             const amount = Number(value);
-            return window.__toolyaUILocale === 'en'
-                ? amount.toLocaleString('en-GB', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
-                : amount.toFixed(decimals);
+            return amount.toLocaleString(window.__toolyaUILocale === 'en' ? 'en-GB' : 'de-DE', {
+                minimumFractionDigits: minimumDecimals, maximumFractionDigits: decimals
+            });
         }
 
         function updateSlices() {
@@ -901,7 +901,7 @@
             const tip = document.getElementById('sugar-tip');
 
             if (type === 'xylit') {
-                res.innerText = g + 'g';
+                res.innerText = formatBakingDisplayNumber(g, 1, 0) + ' g';
                 tip.innerText = window.__toolyaUILocale === 'en' ? 'Xylitol is about as sweet as sugar; baking texture may change.' : 'Xylit ist ungefähr so süß wie Zucker; beim Backen kann sich die Textur ändern.';
             } else if (type === 'erythrit') {
                 res.innerText = Math.round(g * 1.4) + (window.__toolyaUILocale === 'en' ? 'g (rough estimate)' : 'g (grober Richtwert)');
@@ -910,7 +910,7 @@
                 res.innerText = Math.round(g * 0.8) + (window.__toolyaUILocale === 'en' ? 'g (reduce batter liquid by 20 ml)' : 'g (Flüssigkeit im Teig um 20ml reduzieren)');
                 tip.innerText = window.__toolyaUILocale === 'en' ? 'Honey is sweeter and adds moisture.' : 'Honig süßt stärker und bringt Feuchtigkeit mit.';
             } else {
-                res.innerText = (g / 200).toFixed(1) + (window.__toolyaUILocale === 'en' ? ' tsp concentrate' : ' TL Konzentrat');
+                res.innerText = formatBakingDisplayNumber(g / 200, 1) + (window.__toolyaUILocale === 'en' ? ' tsp concentrate' : ' TL Konzentrat');
                 tip.innerText = window.__toolyaUILocale === 'en' ? 'Use stevia concentrate very sparingly.' : 'Stevia-Konzentrat extrem sparsam dosieren.';
             }
         }
@@ -950,7 +950,7 @@
             const unitSys = document.getElementById('unit-system').value;
 
             const lines = rawText.split('\n');
-            let outputHtml = `<p class="font-bold text-slate-800 mb-1">${escapeRecipeHtml(displayName)} (${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'} ×${factor})</p>`;
+            let outputHtml = `<p class="font-bold text-slate-800 mb-1">${escapeRecipeHtml(displayName)} (${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'} ×${formatBakingDisplayNumber(factor,2)})</p>`;
 
             lines.forEach(line => {
                 if(!line.trim()) return;
@@ -962,9 +962,9 @@
 
                     if (/^(?:ei|eier)$/i.test(unit)) {
                         const eggs = Math.round(val);
-                        outputHtml += `<div><span class="text-orange-600 font-bold">${eggs} ${window.__toolyaUILocale === 'en' ? (eggs === 1 ? 'egg' : 'eggs') : 'Eier'}</span> ${ingredient}</div>`;
+                        outputHtml += `<div><span class="text-orange-600 font-bold">${eggs} ${window.__toolyaUILocale === 'en' ? (eggs === 1 ? 'egg' : 'eggs') : (eggs === 1 ? 'Ei' : 'Eier')}</span> ${ingredient}</div>`;
                     } else if (unitSys === 'imperial' && unit === 'g') {
-                        let cups = (val / 125).toFixed(1);
+                        let cups = formatBakingDisplayNumber(val / 125, 1);
                         outputHtml += `<div><span class="text-orange-600 font-bold">${window.__toolyaUILocale === 'en' ? 'approx.' : 'ca.'} ${cups} ${window.__toolyaUILocale === 'en' ? 'cups' : 'Cups'}</span> ${ingredient}</div>`;
                     } else {
                         // Units belong to presentation only; source recipe lines
@@ -972,7 +972,7 @@
                         const displayUnit = window.__toolyaUILocale === 'en'
                             ? ({ TL: ' tsp', EL: ' tbsp', Stück: ' pcs', Pck: ' packets' }[unit] || unit)
                             : unit;
-                        outputHtml += `<div><span class="text-orange-600 font-bold">${val.toFixed(1).replace('.0','')}${displayUnit}</span> ${ingredient}</div>`;
+                        outputHtml += `<div><span class="text-orange-600 font-bold">${formatBakingDisplayNumber(val, 1, 0)}${displayUnit}</span> ${ingredient}</div>`;
                     }
                 } else {
                     outputHtml += `<div>${escapeRecipeHtml(line)}</div>`;
@@ -987,7 +987,7 @@
             renderRecipePreview();
             const rawText = document.getElementById('recipe-input').value;
             const factor = parseFloat(document.getElementById('res-factor').innerText);
-            const name = document.getElementById('recipe-name').value || 'Unbenanntes Rezept';
+            const name = document.getElementById('recipe-name').value || (window.__toolyaUILocale === 'en' ? 'Untitled recipe' : 'Unbenanntes Rezept');
             saveRecipeToStorage(name, rawText, factor);
         }
 
@@ -1048,6 +1048,24 @@
             })[char]);
         }
 
+        // Saved dates are immutable record values. Reformat only known date
+        // shapes for display, not recipe names, notes, storage or cloud exports.
+        function displaySavedRecipeDate(value) {
+            const text = String(value ?? '').trim();
+            let year, month, day;
+            const iso = /^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/.exec(text);
+            const legacy = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(text);
+            if (iso) [, year, month, day] = iso;
+            else if (legacy) [, day, month, year] = legacy;
+            else return text;
+            const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+            if (date.getUTCFullYear() !== Number(year) ||
+                date.getUTCMonth() + 1 !== Number(month) ||
+                date.getUTCDate() !== Number(day)) return text;
+            return new Intl.DateTimeFormat(window.__toolyaUILocale === 'en' ? 'en-GB' : 'de-DE',
+                {day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'}).format(date);
+        }
+
         function renderSavedRecipes() {
             let recipes = getRecipes();
             const container = document.getElementById('saved-recipes-list');
@@ -1061,7 +1079,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <h4 class="font-bold text-sm text-slate-800">${escapeRecipeHtml(r.name)}</h4>
-                            <p class="text-[11px] text-slate-500" data-recipe-factor>${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'}: ×${escapeRecipeHtml(r.factor)} | ${escapeRecipeHtml(r.date)}</p>
+                            <p class="text-[11px] text-slate-500" data-recipe-factor><span data-recipe-factor-label>${window.__toolyaUILocale === 'en' ? 'Factor' : 'Faktor'}</span>: ×${escapeRecipeHtml(r.factor)} | <span data-recipe-date-source="${escapeRecipeHtml(r.date)}">${escapeRecipeHtml(displaySavedRecipeDate(r.date))}</span></p>
                         </div>
                         <button onclick="deleteRecipe(${idx})" class="text-red-500 hover:text-red-700 text-xs font-medium" data-recipe-delete>${window.__toolyaUILocale === 'en' ? 'Delete' : 'Löschen'}</button>
                     </div>
@@ -1079,12 +1097,11 @@
             if (!container) return;
             const english = window.__toolyaUILocale === 'en';
             if (container.querySelector('[data-recipe-factor]')) {
-                container.querySelectorAll('[data-recipe-factor]').forEach(el => {
-                    // Keep the existing factor and date nodes/values unchanged:
-                    // only the leading fixed label is translated.
-                    const text = el.textContent;
-                    const separator = text.indexOf(':');
-                    if (separator >= 0) el.textContent = (english ? 'Factor' : 'Faktor') + text.slice(separator);
+                container.querySelectorAll('[data-recipe-factor-label]').forEach(label => {
+                    label.textContent = english ? 'Factor' : 'Faktor';
+                });
+                container.querySelectorAll('[data-recipe-date-source]').forEach(date => {
+                    date.textContent = displaySavedRecipeDate(date.getAttribute('data-recipe-date-source'));
                 });
                 container.querySelectorAll('[data-recipe-delete]').forEach(button => {
                     button.textContent = english ? 'Delete' : 'Löschen';

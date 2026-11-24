@@ -1,4 +1,6 @@
 /** Manual Toolya Connect reconciliation. Never automatically overwrites a local view. */
+import {dashboardText} from './i18n/dashboard-copy.mjs';
+function connectLocale(){const active=globalThis.__toolyaUILocale||globalThis.__toolyaDashboardLocale||globalThis.__toolyaWishesLocale||globalThis.__toolyaEstateLocale;if(active==='en'||active==='de')return active;try{return (new URLSearchParams(location.search).get('lang')||localStorage.getItem('toolya-locale-v1'))==='en'?'en':'de'}catch{return 'de'}}
 export function mountConnectPanel({controller,host,onReload,confirmReload=message=>window.confirm(message)}){
  if(!controller?.checkRemote||!controller?.load||!host?.append)throw TypeError('Connect requires a controller and host.');
  const root=document.createElement('section');
@@ -11,6 +13,12 @@ export function mountConnectPanel({controller,host,onReload,confirmReload=messag
  for(const button of [check,reload])button.style.cssText='margin:4px;padding:8px;border:1px solid #64748b;border-radius:8px;background:white;color:#0f172a;cursor:pointer';
  root.append(title,status,check,reload);host.prepend(root);
  let busy=false,disposed=false,review=null;
+ let statusSource='Cloud-Stand noch nicht geprüft.';
+ const tx=value=>dashboardText(value,connectLocale());
+ const setStatus=value=>{statusSource=value;status.textContent=tx(value)};
+ const refresh=()=>{check.textContent=tx('Cloud-Stand prüfen');reload.textContent=tx('Cloud-Stand bewusst laden');status.textContent=tx(statusSource)};
+ const events=['toolya:locale-change','toolya:dashboard-locale-change','toolya:wishes-locale-change','toolya:estate-locale-change'];
+ for(const event of events)document.addEventListener(event,refresh);refresh();
  const lock=value=>{busy=value;check.disabled=value;reload.disabled=value;};
  check.addEventListener('click',async()=>{
   if(busy||disposed)return;lock(true);review=null;reload.hidden=true;
@@ -19,21 +27,21 @@ export function mountConnectPanel({controller,host,onReload,confirmReload=messag
    if(disposed)return;
    review=result;
    if(result.changed){
-    status.textContent='Anderer Cloud-Datenstand erkannt. Deine Ansicht bleibt unverändert. Zum Laden ist eine ausdrückliche Bestätigung erforderlich.';
+    setStatus('Anderer Cloud-Datenstand erkannt. Deine Ansicht bleibt unverändert. Zum Laden ist eine ausdrückliche Bestätigung erforderlich.');
     reload.hidden=false;
-   }else status.textContent='Cloud-Datenstand ist unverändert (Revision '+(result.remoteRevision??'neu')+').';
-  }catch(error){if(!disposed)status.textContent='Cloud-Prüfung fehlgeschlagen. Bitte neu anmelden oder Seite neu laden.';}
+   }else setStatus('Cloud-Datenstand ist unverändert (Revision '+(result.remoteRevision??'neu')+').');
+  }catch(error){if(!disposed)setStatus('Cloud-Prüfung fehlgeschlagen. Bitte neu anmelden oder Seite neu laden.');}
   finally{if(!disposed)lock(false);}
  });
  reload.addEventListener('click',async()=>{
   if(busy||disposed||!review?.changed)return;
   lock(true);
   try{
-   const accepted=await confirmReload('Cloud-Datenstand laden? Die bisherige Ansicht wird ersetzt. Nicht gespeicherte Eingaben gehen verloren. Es werden keine Cloud-Daten überschrieben.');
+   const accepted=await confirmReload(tx('Cloud-Datenstand laden? Die bisherige Ansicht wird ersetzt. Nicht gespeicherte Eingaben gehen verloren. Es werden keine Cloud-Daten überschrieben.'));
    if(accepted!==true||disposed)return;
    const fresh=await controller.checkRemote();
    if(!fresh.changed||fresh.remoteRevision!==review.remoteRevision||fresh.localRevision!==review.localRevision){
-    review=null;reload.hidden=true;status.textContent='Cloud-Datenstand hat sich geändert. Bitte erneut prüfen.';return;
+    review=null;reload.hidden=true;setStatus('Cloud-Datenstand hat sich geändert. Bitte erneut prüfen.');return;
    }
    await controller.load();
    // A third device can write between the final check and the read.
@@ -41,13 +49,13 @@ export function mountConnectPanel({controller,host,onReload,confirmReload=messag
    if(controller.revision!==undefined && controller.revision!==fresh.remoteRevision){
     controller.invalidate?.();
     review=null;reload.hidden=true;
-    status.textContent='Cloud-Datenstand während des Ladens verändert. Bitte Seite neu laden und erneut prüfen.';
+    setStatus('Cloud-Datenstand während des Ladens verändert. Bitte Seite neu laden und erneut prüfen.');
     return;
    }
-   review=null;reload.hidden=true;status.textContent='Cloud-Datenstand nach Bestätigung geladen.';
+   review=null;reload.hidden=true;setStatus('Cloud-Datenstand nach Bestätigung geladen.');
    await onReload?.();
-  }catch(error){if(!disposed)status.textContent='Cloud-Laden fehlgeschlagen. Bitte Seite neu laden.';}
+  }catch(error){if(!disposed)setStatus('Cloud-Laden fehlgeschlagen. Bitte Seite neu laden.');}
   finally{if(!disposed)lock(false);}
  });
- return {dispose(){disposed=true;root.remove();}};
+ return {dispose(){disposed=true;for(const event of events)document.removeEventListener(event,refresh);root.remove();}};
 }
