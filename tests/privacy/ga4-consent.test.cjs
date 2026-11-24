@@ -137,7 +137,7 @@ test('English consent copy follows UI language and preserves opt-in, privacy lin
       history.replaceState(null,'','/?lang=en');
       document.dispatchEvent(new Event('toolya:locale-change'));
     });
-    assert.equal(await panel.locator('.reject').textContent(),'Decline');
+    assert.equal(await panel.locator('.reject').textContent(),'Reject');
     await panel.getByRole('button',{name:'Reject'}).click();
     assert.equal(await page.evaluate(()=>localStorage.getItem('toolya.analytics.consent.v1')),'no');
     assert.equal(google.length,0,'Reject must still block Google requests');
