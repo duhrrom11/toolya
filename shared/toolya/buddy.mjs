@@ -12,6 +12,13 @@ export class ToolyaBuddy {
   const avatar=this.host.querySelector('.tb-avatar');avatar.removeAttribute('aria-hidden');avatar.setAttribute('role','button');avatar.setAttribute('tabindex','0');avatar.setAttribute('aria-label',(this.english?'Toolya mascot':'Toolya-Maskottchen'));avatar.onclick=()=>this.tickle();avatar.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();if(!e.repeat)this.tickle()}};
   root.append(this.host);this.host.onpointerenter=e=>{if(e.pointerType==='mouse'||e.pointerType==='pen')this.pointerOver=true};this.host.onpointerleave=()=>{this.pointerOver=false};this.host.onpointercancel=()=>{this.pointerOver=false};this.host.onblur=()=>{this.pointerOver=false};this.host.querySelector('.tb-close').onclick=()=>this.dismiss();this.host.querySelector('.tb-close').setAttribute('aria-label',(this.english?'Close Toolya notice':'Toolya-Meldung schließen'));this.setMotion(motion);this.setHidden(hidden);
  }
+ setLocale(locale){
+  const english=locale==='en';if(this.english===english)return;this.english=english;
+  this.host.querySelector('.tb-close').textContent=english?'Close':'Schließen';
+  this.host.querySelector('.tb-close').setAttribute('aria-label',english?'Close Toolya notice':'Toolya-Meldung schließen');
+  this.host.querySelector('.tb-avatar').setAttribute('aria-label',english?'Toolya mascot':'Toolya-Maskottchen');
+  if(this.current)this.render(true);
+ }
  tickle(now=Date.now()){
   if(this.destroyed||this.dialogs.length||this.quiet||this.hidden||REQUIRED.has(this.current?.type)||now<this.tickleCooldown)return false;
   this.tickleTaps=this.tickleTaps.filter(t=>now-t<5000);this.tickleTaps.push(now);
