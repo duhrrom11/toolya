@@ -8,7 +8,7 @@ const CONSENT_COPY=Object.freeze({
   accept:'Akzeptieren',settings:'Cookie-Einstellungen'},
  en:{dialog:'Analytics settings',heading:'Analytics at Toolya',
   message:'May we use Google Analytics to collect usage statistics? Without your consent, Google Analytics is not loaded. ',
-  privacy:'Privacy notice',privacyHref:'/en/privacy.html',reject:'Decline',
+  privacy:'Privacy notice',privacyHref:'/en/privacy.html',reject:'Reject',
   accept:'Accept',settings:'Cookie settings'}
 });
 function consentLocale(){
