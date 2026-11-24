@@ -16,9 +16,9 @@ export const tool=parts.includes('tools')?parts[parts.indexOf('tools')+1]:'home'
 const draftOutfit = document.documentElement.dataset.toolyaDraft === 'true' && !TOOLS[tool] && tool !== 'home'
   ? document.querySelector('meta[name="toolya-draft-outfit"]')?.getAttribute('content') : null;
 const draftContext = Object.hasOwn(TOOLS, draftOutfit || '') ? TOOLS[draftOutfit] : null;
-const context=TOOLS[tool]||draftContext||TOOLS.home, key='helferlein-toolya-preferences-v1';
+const context=englishHome?{...TOOLS.home,name:'Everyday companion',greeting:'What would you like to do today?'}:(TOOLS[tool]||draftContext||TOOLS.home), key='helferlein-toolya-preferences-v1';
 const read=()=>{try{const p=JSON.parse(localStorage.getItem(key)||'{}');return p&&typeof p==='object'?p:{}}catch{return {}}};
-export const buddy=new ToolyaBuddy({root:document.querySelector('main')||document.body,assetBase:ASSETS+'originals/'});
+export const buddy=new ToolyaBuddy({root:document.querySelector('main')||document.body,assetBase:ASSETS+'originals/',locale:englishHome?'en':'de'});
 window.toolyaBuddy=buddy;
 // Home notices must live outside the main/header stacking contexts so the full card stays visible.
 if(document.body.classList.contains('b3-home'))document.body.append(buddy.host);
