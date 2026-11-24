@@ -56,15 +56,15 @@ const pairs=[
 test('English public pages have unique correct canonical URLs and language',()=>{
   for(const [url,path] of Object.entries(pages)){
     const html=read(path);
-    assert.match(html,/<html lang="en">/);
+    assert.match(html,/<html lang="en"(?:\s[^>]*)?>/);
     assert.ok(html.includes('href="https://toolya.app'+url+'"'),'missing canonical '+path);
     assert.ok(html.includes('content="noindex,follow"'),'English pages stay noindex until UI translation');
     assert.ok(html.includes('data-set-locale="de"'),'missing DE return');
-    assert.ok(html.includes('class="brand"') || html.includes('class="b3-hub-logo ty-info-brand"'),'missing brand');
+    assert.ok(html.includes('class="brand"') || html.includes('class="b3-hub-logo ty-info-brand"') || (path==='en/index.html' && html.includes('class="b3-hub-logo"')),'missing brand');
     assert.ok(!html.includes('brand-symbol'),'no invented brand mark');
     assert.ok(html.includes('name="description"'),'missing description');
     assert.ok(html.includes('name="twitter:card"'),'missing Twitter card');
-    assert.ok(html.includes('"inLanguage":"en"'),'missing language in schema');
+    assert.ok(/"inLanguage"\s*:\s*"en"/.test(html),'missing language in schema');
   }
 });
 
@@ -90,7 +90,15 @@ test('English guides link to existing applications and disclose partial translat
 test('no Supabase or mascot preference changes introduced',()=>{
   for(const path of Object.values(pages)){
     const html=read(path);
-    assert.doesNotMatch(html,/service_role|supabaseClient|signInWithPassword|helferlein-toolya-preferences-v1/i);
+    assert.doesNotMatch(html,/service_role|helferlein-toolya-preferences-v1/i);
+    if(path==='en/index.html'){
+      assert.match(html,/supabaseClient\.auth\.signInWithPassword/);
+      const de=read('index.html');
+      for(const method of ['signInWithPassword','signUp','signOut','resetPasswordForEmail','updateUser','getUser']){
+        const calls=s=>[...s.matchAll(new RegExp('\\.auth\\.'+method+'\\(', 'g'))].length;
+        assert.equal(calls(html),calls(de),method);
+      }
+    }else assert.doesNotMatch(html,/supabaseClient|signInWithPassword/i);
   }
 });
 

@@ -7,6 +7,8 @@ for(const file of ['tokens.css','buddy.css','platform.css','footer.css','header.
 export const EMOTIONS=['happy','proud','curious','thoughtful','surprised','concerned','sad','shy','cheeky','sleepy','laughing','grateful','motivated','puzzled','celebrating','affectionate'];
 export const TOOLS={wishes:{role:0,name:'Geschenkexperte',greeting:'Hier ist Platz für große und kleine Wünsche.'},budget:{role:1,name:'Buchhalter',greeting:'Deine Ausgaben gut im Blick.'},housemates:{role:2,name:'WG-Organisator',greeting:'Ein guter Plan macht den Alltag leichter.'},moving:{role:3,name:'Umzugshelfer',greeting:'Damit beim Umzug nichts verloren geht.'},estate:{role:4,name:'Vorsorgebegleiter',greeting:'In Ruhe das Wichtige ordnen.',serious:true},car:{role:5,name:'Mechaniker',greeting:'Dein Fahrzeug gut organisiert.'},'pet-health':{role:6,name:'Tierbegleiter',greeting:'Alles Wichtige für deine tierischen Freunde.',serious:true},parking:{role:7,name:'Parkhelfer',greeting:'Parkplatz und Parkzeit im Blick.'},loans:{role:8,name:'Verleih-Organisator',greeting:'Behalte verliehene Gegenstände im Blick.'},plants:{role:9,name:'Gärtner',greeting:'Ein guter Tag für deine grünen Freunde.'},meters:{role:10,name:'Energiehelfer',greeting:'Zählerstände einfach im Blick.'},baking:{role:11,name:'Backhelfer',greeting:'Die passende Form für deine Backidee.'},home:{role:12,name:'Alltagsbegleiter',greeting:'Was möchtest du heute erledigen?'}};
 const TOOL_SYMBOLS=['🎁','🧮','🏠','📦','🛡️','🔧','🐾','🅿️','📋','🪴','⚡','🧁','✨'];
+const englishHome=document.documentElement.lang==='en' && document.body.classList.contains('b3-home');
+const homeCopy=(de,en)=>englishHome?en:de;
 const parts=decodeURI(location.pathname).split('/').filter(Boolean);
 export const tool=parts.includes('tools')?parts[parts.indexOf('tools')+1]:'home';
 // Only explicit, unknown tool drafts may borrow an existing outfit. Canonical tools
@@ -14,9 +16,9 @@ export const tool=parts.includes('tools')?parts[parts.indexOf('tools')+1]:'home'
 const draftOutfit = document.documentElement.dataset.toolyaDraft === 'true' && !TOOLS[tool] && tool !== 'home'
   ? document.querySelector('meta[name="toolya-draft-outfit"]')?.getAttribute('content') : null;
 const draftContext = Object.hasOwn(TOOLS, draftOutfit || '') ? TOOLS[draftOutfit] : null;
-const context=TOOLS[tool]||draftContext||TOOLS.home, key='helferlein-toolya-preferences-v1';
+const context=englishHome?{...TOOLS.home,name:'Everyday companion',greeting:'What would you like to do today?'}:(TOOLS[tool]||draftContext||TOOLS.home), key='helferlein-toolya-preferences-v1';
 const read=()=>{try{const p=JSON.parse(localStorage.getItem(key)||'{}');return p&&typeof p==='object'?p:{}}catch{return {}}};
-export const buddy=new ToolyaBuddy({root:document.querySelector('main')||document.body,assetBase:ASSETS+'originals/'});
+export const buddy=new ToolyaBuddy({root:document.querySelector('main')||document.body,assetBase:ASSETS+'originals/',locale:englishHome?'en':'de'});
 window.toolyaBuddy=buddy;
 // Home notices must live outside the main/header stacking contexts so the full card stays visible.
 if(document.body.classList.contains('b3-home'))document.body.append(buddy.host);
@@ -68,11 +70,11 @@ const idle=document.createElement('button');idle.type='button';idle.className='t
 function apply(){const p=read();buddy.setCharacter(['turquoise','purple'].includes(p.character)?p.character:'turquoise');buddy.setMotion(['off','calm','normal','lively'].includes(p.motion)?p.motion:'normal');buddy.setQuiet(p.quiet===true);buddy.setTips(p.tips!==false);buddy.setHidden(p.hidden===true);refreshFrames()}
 function persist(){try{localStorage.setItem(key,JSON.stringify({character:buddy.character,motion:buddy.motion,quiet:buddy.quiet,tips:buddy.tips,hidden:buddy.hidden}))}catch{}refreshFrames();mountDonation()}
 apply();
-const panel=document.createElement('fieldset');panel.className='tb-preferences toolya-preferences';const legend=document.createElement('legend');legend.textContent='Maskottchen';panel.append(legend);
+const panel=document.createElement('fieldset');panel.className='tb-preferences toolya-preferences';const legend=document.createElement('legend');legend.textContent=homeCopy('Maskottchen',"Mascots");panel.append(legend);
 function select(label,values,current,change){const l=document.createElement('label');l.textContent=label;const control=document.createElement('select');control.setAttribute('aria-label',label);for(const [value,text] of values){const o=document.createElement('option');o.value=value;o.textContent=text;control.append(o)}control.value=current;control.onchange=()=>{change(control.value);persist()};l.append(control);panel.append(l)}
-select('Begleiter',[['turquoise','Türkis'],['purple','Lila']],buddy.character,v=>buddy.setCharacter(v));select('Animation',[['off','Aus'],['calm','Ruhig'],['normal','Normal'],['lively','Lebhaft']],buddy.motion,v=>buddy.setMotion(v));
-for(const [label,property,method] of [['Ruhemodus','quiet','setQuiet'],['Tipps anzeigen','tips','setTips'],['Begleiter ausblenden','hidden','setHidden']]){const l=document.createElement('label'),c=document.createElement('input');c.type='checkbox';c.checked=buddy[property];c.onchange=()=>{buddy[method](c.checked);persist()};l.append(c,document.createTextNode(label));panel.append(l)}
-const gallery=document.createElement('a');gallery.href=new URL('../../mascots.html',import.meta.url).href;gallery.textContent='Unsere Maskottchen kennenlernen';gallery.className='toolya-gallery-link';panel.append(gallery);if(tool==='home'){const note=document.createElement('p');note.textContent='Deine bisherigen Helferlein-Daten bleiben auf der alten Seite erhalten. Toolya überträgt sie nicht automatisch. ';const legacyLink=document.createElement('a');legacyLink.href='https://duhrrom11.github.io/Helferlein/';legacyLink.textContent='Bisheriges Helferlein öffnen';legacyLink.target='_blank';legacyLink.rel='noopener noreferrer';note.append(legacyLink);panel.append(note)}
+select(homeCopy('Begleiter',"Companion"),[['turquoise',homeCopy('Türkis',"Turquoise")],['purple',homeCopy('Lila',"Purple")]],buddy.character,v=>buddy.setCharacter(v));select('Animation',[['off',homeCopy('Aus',"Off")],['calm',homeCopy('Ruhig',"Calm")],['normal','Normal'],['lively',homeCopy('Lebhaft',"Lively")]],buddy.motion,v=>buddy.setMotion(v));
+for(const [label,property,method] of [[homeCopy('Ruhemodus',"Quiet mode"),'quiet','setQuiet'],[homeCopy('Tipps anzeigen',"Show tips"),'tips','setTips'],[homeCopy('Begleiter ausblenden',"Hide companion"),'hidden','setHidden']]){const l=document.createElement('label'),c=document.createElement('input');c.type='checkbox';c.checked=buddy[property];c.onchange=()=>{buddy[method](c.checked);persist()};l.append(c,document.createTextNode(label));panel.append(l)}
+const gallery=document.createElement('a');gallery.href=new URL(englishHome?'../../en/mascots.html':'../../mascots.html',import.meta.url).href;gallery.textContent=homeCopy('Unsere Maskottchen kennenlernen',"Meet our mascots");gallery.className='toolya-gallery-link';panel.append(gallery);if(tool==='home'){const note=document.createElement('p');note.textContent=homeCopy('Deine bisherigen Helferlein-Daten bleiben auf der alten Seite erhalten. Toolya überträgt sie nicht automatisch. ',"Your existing Helferlein data remains on the old site. Toolya does not transfer it automatically. ");const legacyLink=document.createElement('a');legacyLink.href='https://duhrrom11.github.io/Helferlein/';legacyLink.textContent=homeCopy('Bisheriges Helferlein öffnen',"Open original Helferlein");legacyLink.target='_blank';legacyLink.rel='noopener noreferrer';note.append(legacyLink);panel.append(note)}
 // Reuse each tool's settings surface. Pages without one get the same accessible
 // settings entry, with preferences exclusively inside Darstellung.
 let fallbackDialog=null,fallbackTrigger=null;
@@ -82,9 +84,9 @@ function mountPreferences(){
  if(!surface){
   if(!fallbackDialog){
    fallbackDialog=document.createElement('dialog');fallbackDialog.id='toolya-display-settings';fallbackDialog.className='toolya-settings-dialog';fallbackDialog.setAttribute('aria-labelledby','toolya-settings-title');
-   const title=document.createElement('h2');title.id='toolya-settings-title';title.textContent='Einstellungen';
-   const close=document.createElement('button');close.type='button';close.textContent='Schließen';close.setAttribute('aria-label','Einstellungen schließen');close.onclick=()=>fallbackDialog.close();fallbackDialog.append(title,close);document.body.append(fallbackDialog);
-   fallbackTrigger=document.createElement('button');fallbackTrigger.type='button';fallbackTrigger.className='toolya-settings-trigger helferlein-gear';const gear=document.createElement('span');gear.className='helferlein-gear-symbol';gear.setAttribute('aria-hidden','true');gear.textContent='⚙';fallbackTrigger.append(gear);fallbackTrigger.setAttribute('aria-label','Einstellungen öffnen');fallbackTrigger.setAttribute('aria-haspopup','dialog');fallbackTrigger.setAttribute('aria-controls',fallbackDialog.id);fallbackTrigger.onclick=()=>fallbackDialog.showModal();
+   const title=document.createElement('h2');title.id='toolya-settings-title';title.textContent=homeCopy('Einstellungen',"Settings");
+   const close=document.createElement('button');close.type='button';close.textContent=homeCopy('Schließen',"Close");close.setAttribute('aria-label',homeCopy('Einstellungen schließen',"Close settings"));close.onclick=()=>fallbackDialog.close();fallbackDialog.append(title,close);document.body.append(fallbackDialog);
+   fallbackTrigger=document.createElement('button');fallbackTrigger.type='button';fallbackTrigger.className='toolya-settings-trigger helferlein-gear';const gear=document.createElement('span');gear.className='helferlein-gear-symbol';gear.setAttribute('aria-hidden','true');gear.textContent='⚙';fallbackTrigger.append(gear);fallbackTrigger.setAttribute('aria-label',homeCopy('Einstellungen öffnen',"Open settings"));fallbackTrigger.setAttribute('aria-haspopup','dialog');fallbackTrigger.setAttribute('aria-controls',fallbackDialog.id);fallbackTrigger.onclick=()=>fallbackDialog.showModal();
    const header=document.querySelector('body[data-toolya-info] .ty-info-controls')||document.querySelector('.wishlist-header-controls,header .row,header,nav');
    if(header)header.append(fallbackTrigger);else (document.querySelector('main')||document.body).prepend(fallbackTrigger);
   }
@@ -94,13 +96,13 @@ function mountPreferences(){
  let appearance=surface.querySelector('.toolya-appearance');
  if(appearance&&appearance.tagName!=='DETAILS'){
   const replacement=document.createElement('details');replacement.className='ty-settings-group toolya-appearance';
-  const summary=document.createElement('summary');summary.textContent='Maskottchen';replacement.append(summary);
+  const summary=document.createElement('summary');summary.textContent=homeCopy('Maskottchen',"Mascots");replacement.append(summary);
   for(const child of [...appearance.children])if(!child.matches('h2,h3,h4'))replacement.append(child);
   appearance.replaceWith(replacement);appearance=replacement;
  }
  if(!appearance){
   appearance=document.createElement('details');appearance.className='ty-settings-group toolya-appearance';
-  const summary=document.createElement('summary');summary.textContent='Maskottchen';appearance.append(summary);
+  const summary=document.createElement('summary');summary.textContent=homeCopy('Maskottchen',"Mascots");appearance.append(summary);
   const close=surface.querySelector('.b3-hub-settings-footer,.dashboard-settings-close,.wishlist-settings-footer,#cancelSettingsBtn');
   const closeContainer=close?.closest('.b3-hub-settings-footer,.dashboard-settings-close,.wishlist-settings-footer')||(close?.id==='cancelSettingsBtn'?close.parentElement:close);
   if(closeContainer)closeContainer.before(appearance);else surface.append(appearance);
@@ -113,8 +115,8 @@ function mountPreferences(){
  if(!support){
   support=document.createElement('a');support.className='ty-settings-kofi-button';
   support.href='https://ko-fi.com/duhrrom';support.target='_blank';support.rel='noopener noreferrer';
-  support.textContent='☕ Ko-fi ♥ Toolya unterstützen';
-  support.setAttribute('aria-label','Toolya freiwillig auf Ko-fi unterstützen (öffnet in neuem Tab)');
+  support.textContent=homeCopy('☕ Ko-fi ♥ Toolya unterstützen',"☕ Ko-fi ♥ Support Toolya");
+  support.setAttribute('aria-label',homeCopy('Toolya freiwillig auf Ko-fi unterstützen (öffnet in neuem Tab)',"Support Toolya on Ko-fi (opens in a new tab)"));
  }
  if(surface.lastElementChild!==support)surface.append(support);
  // Convert legacy controls before adding the independent installation section.
@@ -122,21 +124,21 @@ function mountPreferences(){
  if(!surface.querySelector('.ty-pwa-settings')){
   const install=document.createElement('details');
   install.className='ty-settings-group ty-pwa-settings';
-  install.innerHTML=`<summary>App installieren</summary>
+  install.innerHTML=`<summary>${homeCopy("App installieren","Install app")}</summary>
    <div class="ty-settings-content ty-pwa-content">
     <div class="ty-pwa-lead">
      <img class="ty-pwa-icon" src="/android-chrome-192x192.png" width="56" height="56" alt="" loading="lazy">
      <div class="ty-pwa-copy">
-      <span class="ty-pwa-kicker">TOOLYA FÜR DEIN GERÄT</span>
-      <h3>Immer griffbereit</h3>
-      <p>Starte Toolya direkt vom Startbildschirm – ganz ohne App-Store.</p>
+      <span class="ty-pwa-kicker">${homeCopy("TOOLYA FÜR DEIN GERÄT","TOOLYA FOR YOUR DEVICE")}</span>
+      <h3>${homeCopy("Immer griffbereit","Always within reach")}</h3>
+      <p>${homeCopy("Starte Toolya direkt vom Startbildschirm – ganz ohne App-Store.","Launch Toolya directly from your home screen, without an app store.")}</p>
      </div>
     </div>
     <button type="button" class="ty-pwa-action" data-toolya-install>
-     <span aria-hidden="true">↧</span> App installieren
+     <span aria-hidden="true">↧</span> ${homeCopy("App installieren","Install app")}
     </button>
     <p class="ty-pwa-status" data-toolya-install-status role="status" aria-live="polite" hidden></p>
-    <p class="ty-pwa-footnote">Kostenlos · Direkt über deinen Browser</p>
+    <p class="ty-pwa-footnote">${homeCopy("Kostenlos · Direkt über deinen Browser","Free · Right in your browser")}</p>
    </div>`;
   // Keep the new accordion inside settings, before the existing close controls.
   const closeControl=surface.querySelector('.b3-hub-settings-footer,.dashboard-settings-close,.wishlist-settings-footer,#cancelSettingsBtn');
@@ -149,10 +151,10 @@ function mountPreferences(){
 }
 mountPreferences();window.addEventListener('storage',e=>{if(e.key===key||e.key===null)apply()});
 // Donation copy rotates on navigation, never claims a donation happened.
-const donationLines=['Ein Käffchen für meinen Werkzeugkasten? ☕','Meine flauschigen Ohren arbeiten heute Überstunden!','Ich werde nicht mit Keksen bezahlt. Skandal!','Ein kleiner Kaffee und ich hüpfe vor Freude!','Meine Schraubenschlüssel brauchen dringend Koffein!','Unterstützt du uns? Ich wedle auch extra mit dem Schwanz!','Pssst … mein Sparschwein ist noch ziemlich hungrig!','Ich arbeite für Applaus. Aber Kaffee wäre auch toll!','Ein Kaffee für die Menschen hinter Toolya? Ich sage Danke!','Mit einem Käffchen machst du dieses Flauschwesen glücklich!', 'Mein Werkzeugkasten hat Durst. Ich natürlich auch!','Ein Espresso und mein Schraubenschlüssel tanzt Salsa!','Achtung: Zu viel Flausch kann gute Laune auslösen!','Ich habe heute schon drei Bugs erschreckt!','Kaffee rein, kreative Ideen raus!','Mein Schwanz wedelt im Takt der Kaffeemaschine!','Für Kekse würde ich sogar den Mond tapezieren!','Ein Schluck Kaffee, hundert neue Einfälle!','Mein Schutzhelm ist voll mit guten Ideen!','Ich bin klein, flauschig und ziemlich koffeinbedürftig!','Hilfe, mein Schraubenzieher verlangt Urlaub!','Ein Kaffee macht aus Montag fast schon Freitag!','Meine Ohren hören sogar das Kaffeewasser kochen!','Ich habe den Fehler gefunden. Er war schüchtern!','Mit Kaffee läuft sogar mein Ringelschwanz rund!','Ein Käffchen für die fleißigen Pixel-Schubser?','Mein Werkzeug singt schon die Kaffeehymne!','Ohne Kaffee sind meine Ideen noch im Schlafanzug!','Ein Herz für Flausch und funktionierende Tools!','Ich verspreche: Kein Kaffee landet in der Datenbank!'];
+const donationLines=englishHome?['A coffee for my toolbox? ☕','My fluffy ears are working overtime!','A little coffee keeps these tools running.','Support the humans behind Toolya!','A heart for fluff and working tools!']:['Ein Käffchen für meinen Werkzeugkasten? ☕','Meine flauschigen Ohren arbeiten heute Überstunden!','Ich werde nicht mit Keksen bezahlt. Skandal!','Ein kleiner Kaffee und ich hüpfe vor Freude!','Meine Schraubenschlüssel brauchen dringend Koffein!','Unterstützt du uns? Ich wedle auch extra mit dem Schwanz!','Pssst … mein Sparschwein ist noch ziemlich hungrig!','Ich arbeite für Applaus. Aber Kaffee wäre auch toll!','Ein Kaffee für die Menschen hinter Toolya? Ich sage Danke!','Mit einem Käffchen machst du dieses Flauschwesen glücklich!', 'Mein Werkzeugkasten hat Durst. Ich natürlich auch!','Ein Espresso und mein Schraubenschlüssel tanzt Salsa!','Achtung: Zu viel Flausch kann gute Laune auslösen!','Ich habe heute schon drei Bugs erschreckt!','Kaffee rein, kreative Ideen raus!','Mein Schwanz wedelt im Takt der Kaffeemaschine!','Für Kekse würde ich sogar den Mond tapezieren!','Ein Schluck Kaffee, hundert neue Einfälle!','Mein Schutzhelm ist voll mit guten Ideen!','Ich bin klein, flauschig und ziemlich koffeinbedürftig!','Hilfe, mein Schraubenzieher verlangt Urlaub!','Ein Kaffee macht aus Montag fast schon Freitag!','Meine Ohren hören sogar das Kaffeewasser kochen!','Ich habe den Fehler gefunden. Er war schüchtern!','Mit Kaffee läuft sogar mein Ringelschwanz rund!','Ein Käffchen für die fleißigen Pixel-Schubser?','Mein Werkzeug singt schon die Kaffeehymne!','Ohne Kaffee sind meine Ideen noch im Schlafanzug!','Ein Herz für Flausch und funktionierende Tools!','Ich verspreche: Kein Kaffee landet in der Datenbank!'];
 let donationIndex=0;try{const n=Number(sessionStorage.getItem('toolya-donation-variant')||0);donationIndex=Number.isSafeInteger(n)&&n>=0?n%donationLines.length:0;sessionStorage.setItem('toolya-donation-variant',String((donationIndex+1)%donationLines.length))}catch{}
 function donations(){for(const mark of document.querySelectorAll('.b3-hub-logo-mark,.b3-brand-mark')){if(mark.dataset.toolyaNav)continue;mark.dataset.toolyaNav='true';mark.classList.add('ty-nav-mascot');const img=document.createElement('img');img.alt='';img.src=pixel;img.width=40;img.height=40;mark.replaceChildren(img);attach(img);}for(const panel of document.querySelectorAll('.hl-alert-panel')){if(panel.dataset.toolyaDecorated)continue;panel.dataset.toolyaDecorated='true';const img=document.createElement('img');img.alt='';img.src=pixel;img.width=84;img.height=84;panel.prepend(img);const rec=attach(img,'dialog');rec.emotion=panel.querySelector('#hl-alert-message')?.textContent==='Gespeichert'?'proud':'concerned';}for(const img of document.querySelectorAll('.tb-dialog-avatar'))attach(img,'dialog');refreshFrames()}
-function mountDonation(){const footer=document.querySelector('.toolya-signature-footer');if(!footer)return;let banner=document.querySelector('.ty-kofi-banner');if(!banner){banner=document.createElement('section');banner.className='ty-kofi-banner';banner.setAttribute('aria-label','Toolya auf Ko-fi unterstützen');const copy=document.createElement('div');copy.className='ty-kofi-copy';const title=document.createElement('h2');title.textContent='Toolya unterstützen';const line=document.createElement('p');line.className='ty-kofi-joke';line.textContent=donationLines[donationIndex];copy.append(title,line);const link=document.createElement('a');link.className='ty-kofi-action';link.href='https://ko-fi.com/duhrrom';link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label','Toolya auf Ko-fi unterstützen');
+function mountDonation(){const footer=document.querySelector('.toolya-signature-footer');if(!footer)return;let banner=document.querySelector('.ty-kofi-banner');if(!banner){banner=document.createElement('section');banner.className='ty-kofi-banner';banner.setAttribute('aria-label',homeCopy('Toolya auf Ko-fi unterstützen',"Support Toolya on Ko-fi"));const copy=document.createElement('div');copy.className='ty-kofi-copy';const title=document.createElement('h2');title.textContent=homeCopy('Toolya unterstützen',"Support Toolya");const line=document.createElement('p');line.className='ty-kofi-joke';line.textContent=donationLines[donationIndex];copy.append(title,line);const link=document.createElement('a');link.className='ty-kofi-action';link.href='https://ko-fi.com/duhrrom';link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',homeCopy('Toolya auf Ko-fi unterstützen',"Support Toolya on Ko-fi"));
 const mini=document.createElement('img');mini.className='ty-kofi-button-mascot';mini.alt='';mini.width=48;mini.height=48;mini.loading='lazy';mini.src=pixel;
 const buttonCopy=document.createElement('span');buttonCopy.className='ty-kofi-button-label';buttonCopy.textContent='☕ Ko-fi';
 const hearts=document.createElement('span');hearts.className='ty-kofi-button-hearts';hearts.setAttribute('aria-hidden','true');
@@ -173,17 +175,17 @@ document.addEventListener('visibilitychange',()=>{buddy.host.toggleAttribute('da
 function mountFooter(){
  if(document.querySelector('.toolya-signature-footer'))return;
  const old=document.querySelector('footer.b3-footer') || (/\/(?:privacy|legal)\.html$/.test(location.pathname)?document.querySelector('body > footer:not(.toolya-support)'):null),support=document.querySelector('footer.toolya-support');
- const footer=document.createElement('footer');footer.className='toolya-signature-footer';footer.setAttribute('aria-label','Toolya Seitenabschluss');
+ const footer=document.createElement('footer');footer.className='toolya-signature-footer';footer.setAttribute('aria-label',homeCopy('Toolya Seitenabschluss',"Toolya footer"));
  const inner=document.createElement('div');inner.className='ty-footer-inner';
  const brand=document.createElement('div');brand.className='ty-footer-brand';
- const logo=document.createElement('a');logo.className='ty-footer-wordmark';logo.href=new URL('../../',import.meta.url).href;logo.setAttribute('aria-label','Toolya Startseite');logo.textContent='Toolya';
+ const logo=document.createElement('a');logo.className='ty-footer-wordmark';logo.href=new URL(englishHome?'../../en/':'../../',import.meta.url).href;logo.setAttribute('aria-label',homeCopy('Toolya Startseite',"Toolya home"));logo.textContent='Toolya';
  
- brand.append(logo);const caption=document.createElement('small');caption.textContent='© '+new Date().getFullYear()+' Toolya · Dein smarter Tool-Begleiter';brand.append(caption);
- const links=document.createElement('nav');links.className='ty-footer-links';links.setAttribute('aria-label','Footer-Navigation');
- for(const [label,path] of [['Startseite','index.html'],['Tools','index.html#toolDiscovery'],['Datenschutz','privacy.html'],['Impressum','legal.html']]){
+ brand.append(logo);const caption=document.createElement('small');caption.textContent='© '+new Date().getFullYear()+homeCopy(' Toolya · Dein smarter Tool-Begleiter',' Toolya · Your smart tool companion');brand.append(caption);
+ const links=document.createElement('nav');links.className='ty-footer-links';links.setAttribute('aria-label',homeCopy('Footer-Navigation',"Footer navigation"));
+ for(const [label,path] of (englishHome?[['Home','en/'],['Tools','en/#toolDiscovery'],['Privacy','en/privacy.html'],['Legal notice','en/legal.html']]:[['Startseite','index.html'],['Tools','index.html#toolDiscovery'],['Datenschutz','privacy.html'],['Impressum','legal.html']])){
   const a=document.createElement('a');a.href=new URL('../../'+path,import.meta.url).href;a.textContent=label;links.append(a);
  }
- const top=document.createElement('button');top.className='ty-footer-top';top.type='button';top.textContent='↑ Nach oben';top.addEventListener('click',()=>window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}));
+ const top=document.createElement('button');top.className='ty-footer-top';top.type='button';top.textContent=homeCopy('↑ Nach oben',"↑ Back to top");top.addEventListener('click',()=>window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}));
  const consentLink=document.getElementById('toolya-consent-settings');if(consentLink)links.append(consentLink);
  inner.append(brand,links,top);footer.append(inner);
  if(old)old.replaceWith(footer);else if(support)support.before(footer);else document.body.append(footer);
@@ -212,7 +214,7 @@ function mountToolHero(){
  const inner=document.createElement('div');inner.className='ty-tool-hero-inner';
  const copy=document.createElement('div');copy.className='ty-tool-hero-copy';
  const top=document.createElement('div');top.className='ty-tool-hero-top';
- const logo=document.createElement('a');logo.className='ty-tool-wordmark';logo.href=new URL('../../',import.meta.url).href;logo.setAttribute('aria-label','Toolya Startseite');
+ const logo=document.createElement('a');logo.className='ty-tool-wordmark';logo.href=new URL('../../',import.meta.url).href;logo.setAttribute('aria-label',homeCopy('Toolya Startseite',"Toolya home"));
  const mark=document.createElement('span');mark.className='b3-hub-logo-mark';mark.textContent='✳';mark.setAttribute('aria-hidden','true');logo.append(mark,document.createTextNode(' Toolya'));
  const actions=document.createElement('div');actions.className='ty-tool-hero-actions';
  const originalSettings=old.querySelector('.b3-settings-trigger,[aria-label="Einstellungen öffnen"]');
@@ -232,7 +234,7 @@ function mountToolHero(){
   actions.append(originalSettings);
  }
  else {
-  const trigger=document.createElement('button');trigger.type='button';trigger.className='ty-tool-hero-settings';trigger.setAttribute('aria-label','Einstellungen öffnen');
+  const trigger=document.createElement('button');trigger.type='button';trigger.className='ty-tool-hero-settings';trigger.setAttribute('aria-label',homeCopy('Einstellungen öffnen',"Open settings"));
   const icon=document.createElement('span');icon.className='ty-tool-hero-settings-symbol';icon.setAttribute('aria-hidden','true');icon.textContent='⚙';trigger.append(icon);
   trigger.addEventListener('click',()=>{const existing=document.querySelector('.toolya-preferences');const modal=existing?.closest('dialog,[role=dialog],#settingsModal,#settings-modal');const opener=document.querySelector('[aria-label="Einstellungen öffnen"]:not(.ty-tool-hero-settings)');if(opener)opener.click();else if(modal?.showModal)modal.showModal();else if(modal)modal.classList.remove('hidden');});
   actions.append(trigger);

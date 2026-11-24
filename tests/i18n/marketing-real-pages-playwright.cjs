@@ -14,7 +14,7 @@ const server=http.createServer((req,res)=>{
  const file=path.resolve(root,'.'+relative);
  if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}
  try{
-  const type=file.endsWith('.html')?'text/html':file.endsWith('.mjs')?'text/javascript':file.endsWith('.css')?'text/css':'application/octet-stream';
+  const type=file.endsWith('.html')?'text/html':/\.(mjs|js)$/.test(file)?'text/javascript':file.endsWith('.css')?'text/css':'application/octet-stream';
   res.writeHead(200,{'content-type':type}).end(fs.readFileSync(file));
  }catch{res.writeHead(404).end();}
 });
@@ -39,8 +39,31 @@ const server=http.createServer((req,res)=>{
    await english.click();
    await page.waitForURL(base+'/en/');
    assert.equal(await page.locator('html').getAttribute('lang'),'en');
-   assert.equal(await page.locator('h3[data-i18n-marketing]').count(),13);
-   assert.equal(await page.locator('h3[data-i18n-marketing]').first().textContent(),'Organize moving boxes with QR labels');
+   assert.equal(await page.locator('#toolsGrid .tool-card').count(),12);
+   assert.equal(await page.locator('.ty-guide-card').count(),14);
+   assert.equal(await page.locator('#toolsGrid .tool-card h3').first().textContent(),'Find Amazon wish lists');
+   await page.locator('[data-b3-category-filter="tiere"]').click();
+   assert.equal(await page.locator('#toolsGrid .tool-card:visible').count(),1);
+   await page.locator('[data-b3-category-filter="alle"]').click();
+   assert.equal(await page.locator('#toolsGrid .tool-card:visible').count(),12);
+   assert.equal(await page.evaluate(()=>localStorage.getItem('toolya-locale-v1')),'en');
+   await page.locator('#toolSearch').fill('vaccinations');
+   assert.equal(await page.locator('#toolsGrid .tool-card:visible').count(),1);
+   assert.equal(await page.locator('#toolsGrid .tool-card:visible').getAttribute('data-id'),'haustier');
+   await page.locator('[data-b3-category-filter="finanzen"]').click();
+   assert.equal(await page.locator('#toolsGrid .tool-card:visible').count(),0);
+   await page.locator('#b3-reset-filters').click();
+   assert.equal(await page.locator('#toolSearch').inputValue(),'');
+   assert.equal(await page.locator('#toolsGrid .tool-card:visible').count(),12);
+   await page.locator('[data-id="haustier"] .fav-btn').click();
+   assert.equal(await page.locator('[data-id="haustier"] .fav-btn').getAttribute('aria-pressed'),'true');
+   await page.locator('[data-id="haustier"] .fav-btn').click();
+   await page.locator('#settingsBtn').click();
+   assert.equal(await page.locator('#settingsTitle').textContent().then(t=>t.trim()),'⚙️ Settings');
+   await page.locator('#cancelSettingsBtn').click();
+   await page.locator('[data-id="wishlist"] .ty-tool-link').click();
+   await page.waitForURL(base+'/tools/wishes/public.html?lang=en');
+   await page.goto(base+'/en/',{waitUntil:'load'});
    const german=page.locator('a[data-set-locale="de"][href="/"]').first();
    assert.equal(await german.count(),1,'English homepage must link to German homepage');
    await german.click();

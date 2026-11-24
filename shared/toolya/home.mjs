@@ -1,12 +1,13 @@
 /* Homepage choreography. No tool, account or cloud-data writes. */
 import {buddy} from './platform.mjs';
+const english=document.documentElement.lang==='en';
 const stage=document.querySelector('.ty-hero-stage');
 const characters=[...stage.querySelectorAll('.ty-hero-character')];
 const message=stage.querySelector('.ty-duo-message');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const finePointer=matchMedia('(hover: hover) and (pointer: fine)');
 const roles={alle:null,finanzen:1,zuhause:9,organisation:2,unterwegs:5,tiere:6};
-const copy={finanzen:'Wir behalten mit dir den Überblick.',zuhause:'Zusammen machen wir es uns leichter.',organisation:'Ein guter Plan? Da sind wir dabei!',unterwegs:'Bereit für deinen nächsten Weg.',tiere:'Für deine tierischen Freunde sind wir da.'};
+const copy={finanzen:(english?'We help you stay on top of things.':'Wir behalten mit dir den Überblick.'),zuhause:(english?'Together we make life easier.':'Zusammen machen wir es uns leichter.'),organisation:(english?'A good plan? Count us in!':'Ein guter Plan? Da sind wir dabei!'),unterwegs:(english?'Ready for your next journey.':'Bereit für deinen nächsten Weg.'),tiere:(english?'We are here for your furry friends.':'Für deine tierischen Freunde sind wir da.')};
 const toolRoles={wishlist:0,kassenbon:1,kisten:3,'wg-kasse':2,notizen:4,kfz:5,haustier:6,parken:7,verleih:8,pflanzen:9,energie:10,backform:11};
 let role=null,epoch=0,taps=[],cooldown=0,visible=true,disposed=false,posesReady=false;
 const timers=new Set(),animations=new Set();
@@ -37,7 +38,7 @@ document.querySelectorAll('[data-b3-category-filter]').forEach(button=>button.ad
 window.addEventListener('toolya:favorite',event=>{
  const {id,active}=event.detail||{};const card=[...document.querySelectorAll('.ty-tool-card')].find(el=>el.dataset.id===id);
  if(!card||!active)return;
- react('celebrate',4,'Ein Lieblingshelfer mehr!',1800);
+ react('celebrate',4,(english?'Another favourite helper!':'Ein Lieblingshelfer mehr!'),1800);
  if(mayMove()){
   const star=card.querySelector('.fav-btn img');star.classList.remove('ty-star-pop');void star.offsetWidth;star.classList.add('ty-star-pop');
  }
@@ -46,7 +47,7 @@ function tickle(){
  if(blocked())return;
  const now=Date.now();if(now<cooldown)return;
  taps=taps.filter(t=>now-t<5000);taps.push(now);if(taps.length<5)return;
- taps=[];cooldown=now+15000;react('tickle',5,'Hihihi, wir sind doch soooo kitzlig!',2800);
+ taps=[];cooldown=now+15000;react('tickle',5,(english?'Hee hee, we are so ticklish!':'Hihihi, wir sind doch soooo kitzlig!'),2800);
 }
 stage.querySelectorAll('.ty-mascot-hit').forEach(button=>button.addEventListener('click',tickle));
 document.querySelectorAll('.ty-tool-card').forEach(card=>{

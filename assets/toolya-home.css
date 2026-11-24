@@ -336,3 +336,8 @@ body.b3-home .ty-favorite-feedback:not(:empty){
 body.b3-home .ty-tool-card .fav-btn:focus-visible,body.b3-home .b3-dashboard-card:focus-visible{outline:3px solid var(--ty-focus-color);outline-offset:3px}
 @media(max-width:790px){body.b3-home{--ty-radius-card:18px;--ty-space-card:12px}}
 @media(max-width:680px){body.b3-home .ty-favorites-guide{margin-top:6px}body.b3-home .b3-dashboard-card-copy .ty-helper-note{font-size:11px;line-height:1.35}}
+
+/* Local hub search: same responsive control for both languages. */
+.b3-home .ty-home-search-label{display:block;font-weight:700;font-size:.9rem;margin:.75rem 0 .35rem;color:inherit}
+.b3-home .ty-home-search{display:block;width:100%;max-width:36rem;min-height:44px;box-sizing:border-box;padding:.65rem .85rem;border:1px solid #94a3b8;border-radius:.75rem;background:#fff;color:#17223d;font:inherit;margin-bottom:.75rem}
+.b3-home .ty-home-search:focus-visible{outline:2px solid #0284c7;outline-offset:2px}
