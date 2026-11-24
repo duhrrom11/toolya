@@ -54,8 +54,8 @@ function mount(){
    history.replaceState(history.state,'',url.pathname+url.search+url.hash);
   }
   applyDashboardPageLocale(document,lang,translate);
-  // English presentation is still only partly verified; avoid pretending all
-  // dynamically generated third-party messages have an English document language.
+  // Primary interface language; mixed-language content remains subject to audit.
+  document.documentElement.lang=lang;
   document.documentElement.dataset.dashboardLocale=lang;
   group.setAttribute('aria-label',lang==='en'?'Choose language':'Sprache wählen');
   for(const b of [de,en])b.setAttribute('aria-pressed',String(b.dataset.dashboardLocale===lang));
