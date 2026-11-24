@@ -99,8 +99,9 @@ for(const f of html){
  const status=isEnglish?'EN page':appSwitch?'EN opt-in tool':bilingualApp?'DE/EN application':bilingualPages.has(f)?'Bilingual fallback':redirectPages.has(f)?'Language-preserving redirect':hasEnglishRoute?'DE page with EN pair':'NO EN COVERAGE';
  reports.push({file:f,lang,status,noindex,langLinks:hasENLink&&hasDELink,englishCopy:counterpart||null,suspects:suspects.length});
 }
-const runtime=read('shared/toolya/i18n/tool-entry.mjs');
-const htmlLangNotSet=/Keep html\[lang\]=de while/.test(runtime)&&!/document\.documentElement\.lang\s*=\s*lang/.test(runtime);
+const localeEntrypoints=['tool-entry.mjs','wishes-entry.mjs','estate-entry.mjs','dashboard-entry.mjs','admin-entry.mjs'];
+const languageEvidence=localeEntrypoints.map(file=>({file,setsDocumentLanguage:/document\.documentElement\.lang\s*=\s*lang\b/.test(read('shared/toolya/i18n/'+file))}));
+const htmlLangNotSet=languageEvidence.some(item=>!item.setsDocumentLanguage);
 const scriptSources=[...html,...js];
 const dynamic=[];
 const callPattern=/\b(?:alert|confirm|prompt|textContent|innerHTML)\s*(?:\(|=)\s*(['"`])([^\n'"\`]{4,180})\1/g;
@@ -135,7 +136,7 @@ const groups=Object.freeze({
 const blockers=[
  `${absent.length} HTML pages without an English counterpart or a supported EN switch`,
  `${toolPartial.length} tool pages only provide opt-in, incomplete English UI`,
- htmlLangNotSet?'English tool mode intentionally retains html[lang]=de':'Tool document language must be checked in a browser',
+ htmlLangNotSet?'At least one application entrypoint lacks a document language assignment':'All five entrypoints assign document language; browser verification remains required',
  `${publicEnglish.filter(x=>x.noindex).length} of ${publicEnglish.length} English public pages have noindex`,
  `${germanUi.reduce((n,x)=>n+x.samples.length,0)} sampled suspicious German texts in English HTML (some may be intended)`,
  `${dynamic.length} source files with German dialog or DOM message literals (review runtime coverage)`
@@ -203,6 +204,7 @@ const auditJSON={
   incompleteEnglishIndexing:publicEnglish.filter(x=>x.noindex).length,
   publicGermanCandidates:germanUi.length,missingRoutes:absent.length},
  releaseReady:false,
+ languageEvidence,
  blockers,
  viewTasks,runtimeTasks,
  seoGate:{noindexRetained:true,englishPagesAwaitingIndexApproval:publicEnglish.filter(x=>x.noindex).map(x=>x.file)}
