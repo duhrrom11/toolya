@@ -326,7 +326,16 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'dashboard mobile horizontal overflow');
  await page.setViewportSize({width:320,height:812});
 
- for(const route of ['/privacy.html','/legal.html','/mascots.html','/tools/wishes/dashboard.html','/tools/estate/heirs.html','/tools/estate/handover.html']){await page.goto(origin+route);await page.waitForFunction(()=>window.toolyaBuddy);await verifyClipboard(route);assert.equal(await page.locator('.toolya-settings').count(),0,route);await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.locator('details.toolya-appearance').evaluate(e=>{e.open=true});await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route);await page.keyboard.press('Escape');}
+ for(const route of ['/privacy.html','/legal.html','/tools/wishes/dashboard.html','/tools/estate/heirs.html','/tools/estate/handover.html']){await page.goto(origin+route);await page.waitForFunction(()=>window.toolyaBuddy);await verifyClipboard(route);assert.equal(await page.locator('.toolya-settings').count(),0,route);await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.locator('details.toolya-appearance').evaluate(e=>{e.open=true});await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route);await page.keyboard.press('Escape');}
+ // Retired galleries are deliberately absent; test the replacement settings on the English home.
+ await page.goto(origin+'/en/');await page.waitForFunction(()=>window.toolyaBuddy);
+ await page.locator('#settingsBtn').click();
+ const enMascots=page.locator('#settingsModal details.toolya-appearance');
+ assert.equal(await enMascots.count(),1,'English home has one mascot settings section');
+ assert.equal((await enMascots.locator('summary').textContent()).trim(),'Mascots');
+ await enMascots.evaluate(e=>{e.open=true});
+ assert.equal(await enMascots.locator('.toolya-preferences').count(),1);
+ await page.locator('#cancelSettingsBtn').click();
  await page.goto(origin+'/tools/wishes/');assert(['/', '/index.html', '/tools/wishes/', '/tools/wishes/index.html', '/tools/wishes/public.html'].includes(new URL(page.url()).pathname),'wishlist entry stays within approved routes');await page.goto(origin+'/tools/wishes/public.html');await page.locator('#search').waitFor();await verifyRealFormClipboard('public wishlist','#search','#email','example@example.invalid');
  assert.equal(await page.locator('#homeNewWish,#homeNewList,.wishes-navigation').count(),0,'legacy private wishlist controls not shown');
  assert.equal(await page.locator('#search,#email,#password').count(),3,'public wishlist controls present');
