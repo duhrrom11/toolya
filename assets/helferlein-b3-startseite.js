@@ -23,8 +23,11 @@ function init(){
  }));
  const categoryList=document.querySelector('.b3-categories');
  if(categoryList)categoryList.setAttribute('aria-label',(english?'Tool categories':'Tool-Kategorien'));
+ const search=document.getElementById('toolSearch');
+ search?.addEventListener('input',()=>{window.filterTools?.();refreshCount();});
  const allFilter=filters.find(btn=>btn.getAttribute('data-b3-category-filter')==='alle');
  const reset=()=>{
+  if(search)search.value='';
   if(allFilter)filters.forEach(btn=>btn.setAttribute('aria-pressed',String(btn===allFilter)));
   window.filterTools?.();refreshCount();
  };
@@ -32,7 +35,7 @@ function init(){
  if(empty&&!document.getElementById('b3-reset-filters')){
   const resetButton=document.createElement('button');
   resetButton.type='button';resetButton.id='b3-reset-filters';
-  resetButton.textContent=(english?'Show all categories':'Alle Kategorien anzeigen');
+  resetButton.textContent=(english?'Clear filters':'Filter zurücksetzen');
   resetButton.className='b3-reset-filters';
   resetButton.addEventListener('click',reset);
   empty.appendChild(document.createTextNode(' '));empty.appendChild(resetButton);
