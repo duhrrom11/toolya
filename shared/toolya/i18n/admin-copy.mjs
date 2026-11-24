@@ -121,6 +121,7 @@ export const ADMIN_COPY=Object.freeze({
 const reverse=Object.freeze(Object.fromEntries(Object.entries(ADMIN_COPY).map(([de,en])=>[en,de])));
 export function adminText(value,lang){if(typeof value!=='string')return value;const table=lang==='en'?ADMIN_COPY:reverse;if(Object.hasOwn(table,value))return table[value];
 const patterns=[
+ [/^(\d+) bereits gespeichert\. Rest nicht eingelesen: ([\s\S]*)$/,'$1 already saved. Remaining entries not imported: $2'],
  [/^Seite (\d+)$/,'Page $1'],
  [/^(\d+) von (\d+) sichtbaren neuen Wunschlisten ausgewählt$/,'$1 of $2 visible new wish lists selected'],
  [/^(\d+) von (\d+) sichtbaren neuen Wunschlisten ausgewählt · Suche oder Aktion läuft\. Bitte zuerst Suche stoppen\.$/,'$1 of $2 visible new wish lists selected · Search or action running. Stop the search first.'],

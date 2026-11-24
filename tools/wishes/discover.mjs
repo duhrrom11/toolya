@@ -24,16 +24,16 @@ function render(){
   const cover=document.createElement('div');cover.className='cover';cover.textContent=item.icon||'🎁';
   if(item.cover_url){try{const url=new URL(item.cover_url);if(url.protocol==='https:'){const img=document.createElement('img');img.src=url.href;img.alt='Titelbild der Sammlung: '+(item.title||'Sammlung');img.loading='lazy';img.referrerPolicy='no-referrer';cover.replaceChildren(img)}}catch{}}
   const body=document.createElement('div');body.className='card-body';
-  const badge=document.createElement('span');badge.className='badge';badge.textContent='❤️ '+(counts.get(item.id)||0)+' Likes · 👥 '+item.followers+' Profil-Follower';
-  const title=document.createElement('h2');title.textContent=item.title;
+  const badge=document.createElement('span');badge.className='badge';badge.setAttribute('data-wish-owned-copy','');badge.textContent='❤️ '+(counts.get(item.id)||0)+' Likes · 👥 '+item.followers+' Profil-Follower';
+  const title=document.createElement('h2');title.setAttribute('data-user-content','');title.textContent=item.title;
   body.append(badge,title);
   if(item.description){const p=document.createElement('p');p.textContent=item.description;body.append(p)}
   if(item.owner){const owner=document.createElement('a');owner.href=new URL('./profile.html?handle='+encodeURIComponent(item.owner.handle),location.href).href;owner.textContent='👤 '+item.owner.display_name;body.append(owner)}
-  const link=document.createElement('a');link.className='primary';link.href=new URL('./collection.html?id='+encodeURIComponent(item.id),location.href).href;link.textContent='Sammlung ansehen ↗';body.append(link);
+  const link=document.createElement('a');link.className='primary';link.href=new URL('./collection.html?id='+encodeURIComponent(item.id),location.href).href;link.setAttribute('data-wish-owned-copy','');link.textContent='Sammlung ansehen ↗';body.append(link);
   body.append(reactionButtons({db,listId:item.id,user:viewer,likes:reactions.likes,bookmarks:reactions.bookmarks,counts,notify:message=>{ $('actionStatus').textContent=message; if(message==='Gespeichert.'||message==='Auswahl entfernt.')render() }}));card.append(cover,body);grid.append(card);
  }
  $('status').textContent=rows.length+' öffentliche Sammlungen gefunden · aus maximal 60 zuletzt erstellten Sammlungen.';
- if(!rows.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine passenden Sammlungen gefunden. Probiere einen anderen Suchbegriff.';grid.append(p)}
+ if(!rows.length){const p=document.createElement('p');p.className='empty';p.setAttribute('data-wish-owned-copy','');p.textContent='Keine passenden Sammlungen gefunden. Probiere einen anderen Suchbegriff.';grid.append(p)}
 }
 async function load(){
  const {data:lists,error}=await db.from('wishlist_lists').select('id,user_id,title,description,icon,cover_url,created_at').eq('visibility','public').eq('archived',false).order('created_at',{ascending:false}).limit(60);

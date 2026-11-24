@@ -1,7 +1,7 @@
 import {estateText} from './estate-copy.mjs';
 const originalTexts=new WeakMap(),attrs=new WeakMap(),implicitOptions=new WeakSet();
 const selectors='h1,h2,h3,h4,button,label,summary,option,nav a,header a,main a,a.skip,p';
-const exclude='#print-pages,[data-secret],[data-key],.estate-entry,.vault-record,.entry,.person,#read-entries,#estate-history,[contenteditable]';
+const exclude='#print-pages,[data-secret],[data-key],.estate-entry,.vault-record,.entry,.person,#read-entries,#estate-history,[contenteditable],[data-user-content]';
 export function applyEstateLocale(document,lang){
  for(const el of document.querySelectorAll(selectors)){
   if(el.closest(exclude)&&!el.hasAttribute('data-estate-copy'))continue;

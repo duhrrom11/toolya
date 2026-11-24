@@ -1,5 +1,12 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+ "Keine passenden Sammlungen gefunden. Probiere einen anderen Suchbegriff.": "No matching collections found. Try another search term.",
+ "Sammlungen konnten nicht geladen werden. Bitte später erneut versuchen.": "Collections could not be loaded. Please try again later.",
+ "✨ Alle": "✨ All",
+ "🏡 Wohnen": "🏡 Home",
+ "🎨 Kreativ": "🎨 Creative",
+ "🧸 Familie": "🧸 Family",
+ "🌸 Wellness": "🌸 Wellness",
  // Occasion and bookmark app-owned text; user titles are explicitly excluded.
  "Aktuell keine anstehenden Erinnerungen.": "No reminders are currently due.",
  "In den nächsten 30 Tagen stehen keine Anlässe an.": "No occasions in the next 30 days.",
@@ -1188,6 +1195,8 @@ export function wishesText(value,language){
   if(base!==translated)return translated+(language==='en'?budgetSuffixEn:budgetSuffix);
  }
  const dynamic=language==='en'?[
+ [/^(\d+) öffentliche Sammlungen gefunden · aus maximal 60 zuletzt erstellten Sammlungen\.$/,'$1 public collections found · from up to 60 recently created collections.'],
+ [/^❤️ (\d+) Likes · 👥 (\d+) Profil-Follower$/,'❤️ $1 likes · 👥 $2 profile followers'],
  [/^(\d+) gemerkte öffentliche Sammlungen\.$/,'$1 bookmarked public collections.'],
  [/^(\d+) Wünsche( · maximal 500 geladen)?$/,(_,n,limit)=>n+' wishes'+(limit?' · at most 500 loaded':'')],
  [/^(\d+) öffentliche Sammlungen( · maximal 48 angezeigt)?$/,(_,n,limit)=>n+' public collections'+(limit?' · at most 48 displayed':'')],
@@ -1205,7 +1214,8 @@ export function wishesText(value,language){
  [/^(\d+) passende Einträge auf dieser Seite\.$/,'$1 matching entries on this page.'],
  [/^Sicherung gültig: (\d+) Wünsche\. Nur Vorschau – keine Daten wurden gespeichert\.$/,'Backup valid: $1 wishes. Preview only – no data was saved.']
  ]:[
- [/^(\d+) bookmarked public collections\.$/,'$1 gemerkte öffentliche Sammlungen.'],
+ [/^(\d+) public collections found · from up to 60 recently created collections\.$/,'$1 öffentliche Sammlungen gefunden · aus maximal 60 zuletzt erstellten Sammlungen.'],
+ [/^❤️ (\d+) likes · 👥 (\d+) profile followers$/,'❤️ $1 Likes · 👥 $2 Profil-Follower'], [/^(\d+) bookmarked public collections\.$/,'$1 gemerkte öffentliche Sammlungen.'],
  [/^(\d+) wishes( · at most 500 loaded)?$/,(_,n,limit)=>n+' Wünsche'+(limit?' · maximal 500 geladen':'')],
  [/^(\d+) public collections( · at most 48 displayed)?$/,(_,n,limit)=>n+' öffentliche Sammlungen'+(limit?' · maximal 48 angezeigt':'')],
  [/^Saved: (\d+) new wishes, (\d+) already present\.( Reload the page to see the saved wishes\.)?$/,(_,inserted,existing,reload)=>'Gespeichert: '+inserted+' neue Wünsche, '+existing+' bereits vorhanden.'+(reload?' Bitte Seite neu laden, um die gespeicherten Wünsche anzuzeigen.':'')],

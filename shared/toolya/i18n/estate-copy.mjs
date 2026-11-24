@@ -1,6 +1,9 @@
 /* Source-exact presentation copy only for the encrypted-estate views.
    Key material, documents, ciphertext and form data are never translated. */
 export const ESTATE_COPY=Object.freeze({
+ "Unterlage ansehen": "View document",
+ "Anhang herunterladen": "Download attachment",
+ "Bearbeiten": "Edit",
  "Dein Tresorpasswort schützt deine verschlüsselten Daten auch auf einem neuen Gerät. Bei einem neuen Tresor entspricht es zunächst deinem Konto-Passwort. Bewahre es gut auf: Ein Zurücksetzen des Konto-Passworts entschlüsselt den Tresor nicht.": "Your vault password also protects your encrypted data on a new device. For a new vault, it initially matches your account password. Keep it safe: resetting your account password will not decrypt the vault.",
  "Dein persönlicher Schlüssel": "Your personal key",
  "Schlüssel der zweiten Person": "Second person's key",
