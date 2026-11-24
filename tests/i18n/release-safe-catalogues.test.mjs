@@ -21,7 +21,7 @@ test('released exact English catalogues include reviewed additional UI copy',()=
  assert.equal(translateToolDialog('car','en','Backup erfolgreich importiert!'),
   'Backup imported successfully!');
  assert.equal(translateToolDialog('budget','en','Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.'),
-  'The QR code could not be loaded. Please try again.');
+  'The QR code could not be loaded. Try again.');
  assert.ok(Object.keys(WISHES_COPY).length>=790,'source-exact wish catalogue may not shrink');
  assert.ok(Object.keys(ESTATE_COPY).length>=130,'estate display catalogue may not shrink');
  assert.ok(Object.keys(ADMIN_COPY).length>=80,'admin display catalogue may not shrink');
