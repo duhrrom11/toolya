@@ -79,3 +79,80 @@ test('GA4 opt-in lifecycle: reject, accept, withdraw, reload, cross-tab', { time
     await page.close();
   } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
 });
+
+
+test('English consent copy follows UI language and preserves opt-in, privacy links and private state', {timeout:60000}, async()=>{
+  const server=http.createServer((req,res)=>{
+    if(new URL(req.url,'http://localhost').pathname==='/assets/toolya-consent.js'){
+      res.setHeader('content-type','text/javascript');res.end(consent);return;
+    }
+    res.setHeader('content-type','text/html');
+    res.end('<!doctype html><html lang="de"><head><title>Toolya test</title><script src="/assets/toolya-consent.js" defer></script></head><body><main>Private synthetic fixture</main><footer></footer></body></html>');
+  });
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const base='http://127.0.0.1:'+server.address().port+'/';
+  const browser=await chromium.launch({headless:true});
+  const context=await browser.newContext();
+  const google=[];
+  await context.route('**/*',route=>{
+    const url=route.request().url();
+    if(url.startsWith(base))return route.continue();
+    google.push(url);
+    return route.abort();
+  });
+  try{
+    const page=await context.newPage();
+    await page.goto(base+'?lang=en');
+    await page.evaluate(()=>localStorage.setItem('synthetic-private-note','Nicht übersetzen: <Meins>'));
+    const panel=page.locator('#toolya-consent-panel');
+    await assert.equal(await panel.isVisible(),true);
+    assert.equal(await panel.getAttribute('lang'),'en');
+    assert.equal(await panel.getAttribute('aria-label'),'Analytics settings');
+    assert.equal(await panel.locator('strong').textContent(),'Analytics at Toolya');
+    assert.match(await panel.locator('p').textContent(),/Without your consent, Google Analytics is not loaded/);
+    assert.equal(await panel.locator('a').getAttribute('href'),'/en/privacy.html');
+    assert.equal(await page.locator('#toolya-consent-settings').textContent(),'Cookie settings');
+    assert.equal(await page.locator('#toolya-consent-settings').getAttribute('lang'),'en');
+    assert.equal(google.length,0,'No Google request before an explicit choice');
+    assert.equal(await page.evaluate(()=>localStorage.getItem('toolya.analytics.consent.v1')),null);
+
+    // A page-level language switch must update copy only, not change consent,
+    // the current user input, the panel's button handlers or the privacy URL.
+    await page.evaluate(()=>{
+      window.__toolyaUILocale='de';
+      history.replaceState(null,'','/?lang=de');
+      document.dispatchEvent(new Event('toolya:locale-change'));
+    });
+    assert.equal(await panel.getAttribute('lang'),'de');
+    assert.equal(await panel.getAttribute('aria-label'),'Statistik-Einstellungen');
+    assert.equal(await panel.locator('a').getAttribute('href'),'/privacy.html');
+    assert.equal(await page.locator('#toolya-consent-settings').textContent(),'Cookie-Einstellungen');
+    assert.equal(await page.evaluate(()=>localStorage.getItem('synthetic-private-note')),
+      'Nicht übersetzen: <Meins>');
+    assert.equal(await page.evaluate(()=>localStorage.getItem('toolya.analytics.consent.v1')),null);
+    assert.equal(google.length,0);
+
+    await page.evaluate(()=>{
+      window.__toolyaUILocale='en';
+      history.replaceState(null,'','/?lang=en');
+      document.dispatchEvent(new Event('toolya:locale-change'));
+    });
+    assert.equal(await panel.locator('.reject').textContent(),'Decline');
+    await panel.getByRole('button',{name:'Decline'}).click();
+    assert.equal(await page.evaluate(()=>localStorage.getItem('toolya.analytics.consent.v1')),'no');
+    assert.equal(google.length,0,'Reject must still block Google requests');
+    await page.locator('#toolya-consent-settings').click();
+    await panel.getByRole('button',{name:'Accept'}).click();
+    assert.equal(await page.evaluate(()=>localStorage.getItem('toolya.analytics.consent.v1')),'yes');
+    await page.waitForFunction(()=>Array.from(document.scripts).some(s=>s.src.includes('googletagmanager.com/gtag/js')));
+    assert.equal(google.filter(url=>url.includes('googletagmanager.com/gtag/js')).length,1,
+      'Analytics should only load after English acceptance');
+    assert.equal(await page.evaluate(()=>localStorage.getItem('synthetic-private-note')),
+      'Nicht übersetzen: <Meins>');
+    await page.close();
+  }finally{
+    await context.close();
+    await browser.close();
+    await new Promise(resolve=>server.close(resolve));
+  }
+});

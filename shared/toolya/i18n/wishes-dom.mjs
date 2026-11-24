@@ -1,8 +1,8 @@
 import {wishesText} from './wishes-copy.mjs';
 const sources=new WeakMap(),attrs=new WeakMap(),implicit=new WeakSet();
-// Paragraphs and spans are translated only when explicitly tagged as
-// application-owned editorial copy; never touch arbitrary profiles or cards.
-const selector='h1,h2,h3,h4,button,label,option,summary,nav a,input,textarea,select,p[data-wishes-copy],span[data-wishes-copy]';
+// Marked public editorial spans from #321 alongside older legacy copy;
+// never translate arbitrary profile paragraphs or user-entered content.
+const selector='h1,h2,h3,h4,button,label,option,summary,nav a,input,textarea,select,[data-wish-copy],p[data-wishes-copy],span[data-wishes-copy],[data-toolya-legacy-wishes] .hero .actions a,[data-toolya-legacy-wishes] #login a';
 const excluded='[contenteditable],.ty-wishes-language,[data-user-content],[data-profile-card],.wishlist-result,.profile-card,.gift-card';
 export function applyWishLocale(document,language){
  for(const el of document.querySelectorAll(selector)){
@@ -19,6 +19,9 @@ export function applyWishLocale(document,language){
    record.rendered=translation;
    if(current!==translation)el.setAttribute(attr,translation);
   }
+  // Textarea default text is form data, not application copy. Translate only its
+  // fixed attributes; never rewrite the user's initial or restored value.
+  if(el.tagName==='TEXTAREA')continue;
   for(const node of el.childNodes){
    if(node.nodeType!==3)continue;
    const current=node.nodeValue,previous=sources.get(node);
