@@ -21,11 +21,26 @@
   panel.append(title,body,button);overlay.append(panel);document.body.append(overlay);
   document.addEventListener('keydown',onKey,true);button.focus();
  }
+ function noticeLanguage(){
+  const path=window.location?.pathname||'';
+  if(/^\/en(?:\/|$)/.test(path))return 'en';
+  const active=[window.__toolyaUILocale,window.__toolyaWishesLocale,window.__toolyaEstateLocale,window.__toolyaDashboardLocale,window.__toolyaAdminLocale].find(value=>value==='en'||value==='de');
+  if(active)return active;
+  if(/^\/(?:tools|dashboard|admin-stats-dashboard)(?:\/|$)/.test(path)){
+   try{
+    const query=new URLSearchParams(window.location.search).get('lang');
+    if(query==='en'||query==='de')return query;
+    const saved=window.localStorage.getItem('toolya-locale-v1');
+    if(saved==='en'||saved==='de')return saved;
+   }catch{}
+  }
+  return document.documentElement?.lang==='en'?'en':'de';
+ }
  function friendlyNotice(message){
   const original=String(message??'').trim();
   const cleaned=original.replace(/^[\s✅✔☑🎉]+/u,'').trim();
   // Only shorten clear success notices. Never mask errors, partial saves or warnings.
-  if(/^(?:erfolgreich (?:gespeichert|synchronisiert)|(?:einstellungen|daten|eintrag|kontakt|pflanze|tarife|gegenstand|parkplatz|rezepte|buchung|notizen|vertrauenspersonen).{0,65}(?:erfolgreich )?gespeichert[!.]?|(?:lokal und (?:in der )?(?:cloud|online|supabase) gespeichert)|(?:mit der cloud synchronisiert)|(?:synchronisierung abgeschlossen))[!.]?$/i.test(cleaned))return 'Gespeichert';
+  if(/^(?:erfolgreich (?:gespeichert|synchronisiert)|(?:einstellungen|daten|eintrag|kontakt|pflanze|tarife|gegenstand|parkplatz|rezepte|buchung|notizen|vertrauenspersonen).{0,65}(?:erfolgreich )?gespeichert[!.]?|(?:lokal und (?:in der )?(?:cloud|online|supabase) gespeichert)|(?:mit der cloud synchronisiert)|(?:synchronisierung abgeschlossen))[!.]?$/i.test(cleaned))return noticeLanguage()==='en'?'Saved':'Gespeichert';
   return original;
  }
  window.alert=(message)=>{const normalized=friendlyNotice(message);if(!normalized)return;queue.push(normalized);next();};
