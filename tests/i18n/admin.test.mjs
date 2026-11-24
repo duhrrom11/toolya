@@ -19,3 +19,53 @@ test('admin index status and wish-list discovery notices remain reversible',()=>
  assert.equal(document.querySelector('input').value,'private-key');
  applyAdminLocale(document,'de');assert.equal(document.querySelector('main a').textContent,'Öffentliche Wunschlisten ansehen ↗');
 });
+
+
+test('dynamic finder controls translate without translating imported names, account data or stored keys',()=>{
+ const {document}=parseHTML('<html lang="de"><body><main><section id="rows">'+
+  '<article><h3>Veröffentlicht</h3><p>Neue Funde</p>'+
+  '<button id="hide" data-admin-copy onclick="doNotCall()">Ausblenden</button>'+
+  '<button id="withdraw" data-admin-copy>Veröffentlichung zurücknehmen</button>'+
+  '<label data-admin-copy>Land (freiwillig)<input id="country" value="Meine private Stadt"></label>'+
+  '<input id="choose" data-admin-aria-prefix="Auswählen:" aria-label="Auswählen: Veröffentlicht" value="private-record-001">'+
+  '<button id="restore" data-admin-copy data-admin-aria-prefix="Fund wieder anzeigen:" aria-label="Fund wieder anzeigen: Veröffentlicht">Wieder anzeigen</button>'+
+  '</article></section><section id="healthReview">'+
+  '<h3 data-admin-copy>Manuell zu prüfende Links (HTTP 404/410)</h3>'+
+  '<a href="/profile/example">Veröffentlicht</a></section></main></body></html>');
+ const imported=document.querySelector('#rows h3'),raw=document.querySelector('#rows p');
+ const choose=document.querySelector('#choose'),country=document.querySelector('#country');
+ const hide=document.querySelector('#hide'),restore=document.querySelector('#restore');
+ applyAdminLocale(document,'en');
+ assert.equal(imported.textContent,'Veröffentlicht','private matching name must remain German');
+ assert.equal(raw.textContent,'Neue Funde','unmarked imported text must stay untouched');
+ assert.equal(document.querySelector('#healthReview a').textContent,'Veröffentlicht');
+ assert.equal(hide.textContent,'Hide');
+ assert.equal(hide.getAttribute('onclick'),'doNotCall()');
+ assert.equal(document.querySelector('#withdraw').textContent,'Withdraw publication');
+ assert.equal(document.querySelector('label').firstChild.textContent,'Country (optional)');
+ assert.equal(country.value,'Meine private Stadt');
+ assert.equal(choose.getAttribute('aria-label'),'Select: Veröffentlicht');
+ assert.equal(restore.getAttribute('aria-label'),'Show finding again: Veröffentlicht');
+ assert.equal(restore.textContent,'Show again');
+ assert.equal(choose.value,'private-record-001');
+ assert.equal(document.querySelector('#healthReview h3').textContent,
+  'Links requiring manual review (HTTP 404/410)');
+ applyAdminLocale(document,'de');
+ assert.equal(hide.textContent,'Ausblenden');
+ assert.equal(choose.getAttribute('aria-label'),'Auswählen: Veröffentlicht');
+ assert.equal(restore.getAttribute('aria-label'),'Fund wieder anzeigen: Veröffentlicht');
+ assert.equal(country.value,'Meine private Stadt');
+ assert.equal(choose.value,'private-record-001');
+ assert.equal(imported.textContent,'Veröffentlicht');
+});
+
+test('admin finder marks only author-owned content; publishing and account controls are unchanged',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const source=readFileSync(new URL('../../admin-stats-dashboard/wishlist-finder.mjs',import.meta.url),'utf8');
+ assert.match(source,/function elUI\(tag,label\)/);
+ assert.match(source,/applyAdminLocale\(document,currentAdminLocale\(\)\)/);
+ assert.match(source,/info\.append\(el\('h3',r\.name\),Object\.hasOwn\(labels,r\.status\)/);
+ assert.match(source,/sourceFavicon\(r\.source_url\)/);
+ assert.match(source,/await api\('publish'/);
+ assert.match(source,/await api\('withdraw'/);
+});

@@ -4,11 +4,16 @@ export function applyAdminLocale(document,lang){
  const nodes=document.querySelectorAll('h1,h2,h3,h4,p,button,label,option,summary,header a,main a,input,textarea');
  for(const el of nodes){
   if(el.closest('#summary,#finder-results,#results,.admin-metric,[data-private],[contenteditable]'))continue;
+  // Imported records are private, except explicitly tagged application UI.
+  if(el.closest('#rows,#healthReview')&&!el.hasAttribute('data-admin-copy')&&!el.hasAttribute('data-admin-aria-prefix'))continue;
   let record=attributes.get(el);if(!record){record=new Map();attributes.set(el,record)}
   for(const attr of ['aria-label','placeholder','title']){
    if(!record.has(attr))record.set(attr,el.getAttribute(attr));
    const source=record.get(attr);if(source===null)continue;
-   const text=adminText(source,lang);
+   const prefix=attr==='aria-label'?el.getAttribute('data-admin-aria-prefix'):null;
+   const text=prefix&&source.startsWith(prefix)
+    ?adminText(prefix,lang)+source.slice(prefix.length)
+    :adminText(source,lang);
    if(el.getAttribute(attr)!==text)el.setAttribute(attr,text);
   }
   if(el.id==='state'||el.id==='healthStatus')continue;

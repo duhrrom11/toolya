@@ -1,5 +1,20 @@
 /* Administrator interface translations. No role or publishing logic changes. */
 export const ADMIN_COPY=Object.freeze({
+ // Source-exact author-owned controls, never user profile/record data.
+ "Angaben bearbeiten": "Edit details",
+ "Angaben speichern": "Save details",
+ "Ausblenden": "Hide",
+ "Wieder anzeigen": "Show again",
+ "Veröffentlichung zurücknehmen": "Withdraw publication",
+ "Keine Funde mit diesem Status auf dieser Seite.": "No findings with this status on this page.",
+ "Quelle ↗": "Source ↗",
+ "Amazon-Wunschliste ↗": "Amazon wish list ↗",
+ "Land (freiwillig)": "Country (optional)",
+ "Neu · bitte prüfen": "New · review required",
+ "Manuell zu prüfende Links (HTTP 404/410)": "Links requiring manual review (HTTP 404/410)",
+ "Auswählen:": "Select:",
+ "Fund ausblenden:": "Hide finding:",
+ "Fund wieder anzeigen:": "Show finding again:",
  "Alle Indexierungsanträge wurden am 17.11.2026 vom Betreiber für Google und Bing als gestellt gemeldet. Ein Antrag ist keine bestätigte Indexierung. Die vorhandenen Suchanalyse-APIs liefern Klicks und Impressionen, aber keinen verlässlichen Indexierungsstatus je URL.": "The operator reported submitting all indexing requests to Google and Bing on 17 November 2026. A request does not confirm indexing. The available search analytics APIs report clicks and impressions, but do not provide reliable indexing status for each URL.",
  "Indexierung bestätigt": "Indexing confirmed",
  "„Nicht verifiziert“ bedeutet, dass keine bestätigenden URL-Inspektionsdaten vorliegen, nicht dass die Seite ausgeschlossen wurde.": "“Not verified” means no confirming URL inspection data is available, not that the page has been excluded.",
