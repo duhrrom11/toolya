@@ -40,7 +40,7 @@ const server=http.createServer((req,res)=>{
    await page.waitForURL(base+'/en/');
    assert.equal(await page.locator('html').getAttribute('lang'),'en');
    assert.equal(await page.locator('#toolsGrid .tool-card').count(),12);
-   assert.equal(await page.locator('.ty-guide-card').count(),14);
+   assert.equal(await page.locator('.ty-guide-card').count(),13);
    assert.equal(await page.locator('#toolsGrid .tool-card h3').first().textContent(),'Find Amazon wish lists');
    await page.locator('[data-b3-category-filter="tiere"]').click();
    assert.equal(await page.locator('#toolsGrid .tool-card:visible').count(),1);

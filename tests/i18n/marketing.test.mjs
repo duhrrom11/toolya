@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync,existsSync} from 'node:fs';
 import {resolve} from 'node:path';
 
 const root=resolve(import.meta.dirname,'../..');
@@ -32,8 +32,7 @@ const pages={
  '/en/lent-items/':'en/lent-items/index.html',
  '/en/meter-readings/':'en/meter-readings/index.html',
  '/en/publish-amazon-wishlist/':'en/publish-amazon-wishlist/index.html',
- '/en/toolya-dashboard/':'en/toolya-dashboard/index.html',
- '/en/mascots.html':'en/mascots.html'
+ '/en/toolya-dashboard/':'en/toolya-dashboard/index.html'
 };
 const pairs=[
  ['index.html','/en/'],
@@ -49,8 +48,7 @@ const pairs=[
  ['verliehene-dinge/index.html','/en/lent-items/'],
  ['zaehlerstaende/index.html','/en/meter-readings/'],
  ['amazon-wunschliste-veroeffentlichen/index.html','/en/publish-amazon-wishlist/'],
- ['toolya-dashboard/index.html','/en/toolya-dashboard/'],
- ['mascots.html','/en/mascots.html']
+ ['toolya-dashboard/index.html','/en/toolya-dashboard/']
 ];
 
 test('English public pages have unique correct canonical URLs and language',()=>{
@@ -114,16 +112,13 @@ test('new English guides preserve reciprocal DE/EN links and use real applicatio
  }
 });
 
-test('English mascot gallery keeps all outfit values and loads matching translated emotion labels',()=>{
- const de=read('mascots.html'),en=read('en/mascots.html');
- const src=read('shared/toolya/gallery.mjs');
- for(let index=0;index<16;index++){
-  assert.ok(de.includes('<option value="'+index+'">'),index);
-  assert.ok(en.includes('<option value="'+index+'">'),index);
- }
- assert.ok(src.includes("emotionLabelsForLocale(document.documentElement.lang)"),'gallery uses document language');
- assert.match(en,/src="\/shared\/toolya\/gallery\.mjs"/);
- assert.match(en,/href="\/shared\/toolya\/info-pages\.css"/);
+test('retired galleries remain absent and bilingual mascot preferences live in settings',()=>{
+ for(const path of ['mascots.html','en/mascots.html'])assert.equal(existsSync(resolve(root,path)),false,path);
+ const platform=read('shared/toolya/platform.mjs');
+ assert.ok(platform.includes("homeCopy('Maskottchen',\"Mascots\")"));
+ assert.ok(platform.includes('toolya-appearance'));
+ assert.ok(platform.includes('toolya-preferences'));
+ assert.doesNotMatch(read('sitemap.xml'),/mascots\.html/);
 });
 
 test('English legal and privacy notices preserve disclosure details and reciprocal language links',()=>{
@@ -147,7 +142,6 @@ test('English dashboard CTA preserves opt-in language and public legal footers l
  assert.ok(helper.includes("url.pathname === '/dashboard/'"));
  for(const p of Object.values(pages)){
   const html=read(p);
-  if(p==='en/mascots.html')continue;
   assert.doesNotMatch(html,/Privacy information \(German\)|Legal notice \(German\)/);
  }
 });

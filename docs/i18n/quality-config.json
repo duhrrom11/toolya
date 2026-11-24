@@ -136,11 +136,6 @@
       "key": "toolya-dashboard"
     },
     {
-      "de": "mascots.html",
-      "en": "en/mascots.html",
-      "key": "mascots"
-    },
-    {
       "de": "legal.html",
       "en": "en/legal.html",
       "key": "legal"
@@ -164,5 +159,5 @@
       "optional": true
     }
   ],
-  "notes": "Marketing-page pairs reflect checked-in marketing test coverage. Metrics are source-code/static-audit indicators, NOT proof of complete runtime translation. The twelve tool entries are canonically routed; wishlist public.html is the actual discovery UI."
+  "notes": "Marketing-page pairs reflect checked-in marketing test coverage. Metrics are source-code/static-audit indicators, NOT proof of complete runtime translation. The twelve tool entries are canonically routed; wishlist public.html is the actual discovery UI. Standalone mascot galleries were retired on main; mascot preferences remain in shared settings."
 }

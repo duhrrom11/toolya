@@ -13,7 +13,7 @@ function readJSON(root,p){return JSON.parse(fs.readFileSync(path.join(root,p),'u
 function assertConfig(c){
  if(!c||c.schemaVersion!==1||c.sourceLocale!=='de'||c.targetLocale!=='en'||
    !Array.isArray(c.toolRoutes)||c.toolRoutes.length!==12||
-   !Array.isArray(c.marketingPages)||c.marketingPages.length!==17)throw Error('Invalid DE/EN route inventory');
+   !Array.isArray(c.marketingPages)||c.marketingPages.length!==16)throw Error('Invalid DE/EN route inventory');
  const tools=new Set(),pages=new Set();
  for(const item of c.toolRoutes){
   if(!item||typeof item.slug!=='string'||!/^[a-z][a-z-]*$/.test(item.slug)||
@@ -23,8 +23,8 @@ function assertConfig(c){
  }
  for(const item of c.marketingPages){
   if(!item||typeof item.key!=='string'||pages.has(item.en)||
-     !/^en\/(?:[a-z-]+\/)?(?:index|mascots|privacy|legal)\.html$/.test(item.en)||
-     !/^(?:[a-z-]+\/)?(?:index|mascots|privacy|legal)\.html$/.test(item.de))throw Error('Bad marketing page pair');
+     !/^en\/(?:[a-z-]+\/)?(?:index|privacy|legal)\.html$/.test(item.en)||
+     !/^(?:[a-z-]+\/)?(?:index|privacy|legal)\.html$/.test(item.de))throw Error('Bad marketing page pair');
   pages.add(item.en);
  }
  for(const t of c.toolRoutes)if(!pages.has(t.englishGuide))throw Error('Tool missing English guide: '+t.slug);

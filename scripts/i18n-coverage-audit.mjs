@@ -39,7 +39,6 @@ const pairs=new Map([
  ['zaehlerstaende/index.html','en/meter-readings/index.html'],
  ['amazon-wunschliste-veroeffentlichen/index.html','en/publish-amazon-wishlist/index.html'],
  ['toolya-dashboard/index.html','en/toolya-dashboard/index.html'],
- ['mascots.html','en/mascots.html'],
  ['legal.html','en/legal.html'],
  ['privacy.html','en/privacy.html']
 ]);

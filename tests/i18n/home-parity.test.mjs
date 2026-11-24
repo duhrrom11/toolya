@@ -10,7 +10,9 @@ test('English home preserves German tool IDs and existing English guide routes',
  assert.deepEqual(ids(en),ids(de));
  for(const id of ['settingsModal','loginEmail','loginPassword','passwordRecoveryPanel','datensicherung','favoriteFeedback','toolDiscovery'])assert.ok(en.getElementById(id),id);
  const guides=[...en.querySelectorAll('.ty-guide-card')];
- assert.equal(guides.length,14);
+ assert.equal(guides.length,13);
+ assert.ok(!existsSync(new URL('../../mascots.html',import.meta.url)));
+ assert.ok(!existsSync(new URL('../../en/mascots.html',import.meta.url)));
  for(const a of guides){const url=a.getAttribute('href');assert.ok(url.startsWith('/en/'));assert.ok(existsSync(new URL('../..'+url+(url.endsWith('/')?'index.html':''),import.meta.url)),url);}
  assert.equal(en.querySelector('meta[name="robots"]').content,'noindex,follow');
  for(const a of en.querySelectorAll('.ty-tool-link'))assert.match(a.getAttribute('href'),/^\/tools\/.*\?lang=en$/);
