@@ -40,7 +40,7 @@ export function unifyToolSettings(modal) {
  for(const item of items){if(item.kind)current=item.kind;else item.kind=current}
  const labels={account:'Toolya-Konto',backup:'Datensicherung',extra:'Weitere Einstellungen',help:'Hilfe und Anleitung'};
  const enLabels={account:'Toolya account',backup:'Backup',extra:'More settings',help:'Help and guide'};
- const isEnglish=()=>{const active=window.__toolyaUILocale||window.__toolyaWishesLocale||window.__toolyaEstateLocale||window.__toolyaDashboardLocale;if(active)return active==='en';try{return (new URLSearchParams(location.search).get('lang')||localStorage.getItem('toolya-locale-v1'))==='en'}catch{return document.documentElement.lang==='en'}};
+ const isEnglish=()=>{const active=globalThis.__toolyaUILocale||globalThis.__toolyaWishesLocale||globalThis.__toolyaEstateLocale||globalThis.__toolyaDashboardLocale;if(active)return active==='en';try{return (new URLSearchParams(location.search).get('lang')||localStorage.getItem('toolya-locale-v1'))==='en'}catch{return document.documentElement?.lang==='en'}};
  const groups=new Map(),order=[];
  for(const {node,kind} of items){
   if(!groups.has(kind)){
@@ -56,7 +56,7 @@ export function unifyToolSettings(modal) {
  const anchor=children.find(node=>isAppearance(node)||isFooter(node)||isSupport(node));
  for(const kind of order)surface.insertBefore(groups.get(kind).details,anchor||null);
  const refresh=()=>{for(const [kind,{details}] of groups){const summary=details.querySelector('summary');if(summary)summary.textContent=(isEnglish()?enLabels:labels)[kind]}};
- for(const event of ['toolya:locale-change','toolya:wishes-locale-change','toolya:estate-locale-change','toolya:dashboard-locale-change'])document.addEventListener(event,refresh);
+ for(const event of ['toolya:locale-change','toolya:wishes-locale-change','toolya:estate-locale-change','toolya:dashboard-locale-change'])document.addEventListener?.(event,refresh);
  surface.classList.add('ty-unified-settings-panel');
  surface.dataset.toolyaAccordion='1';
  return true;
