@@ -50,14 +50,46 @@ async function run(){
  {path:'/dashboard/index.html',family:'dashboard',global:'__toolyaDashboardLocale'},
  ...['index','wishlist-finder'].map(name=>({path:'/admin-stats-dashboard/'+name+'.html',family:'admin',global:'__toolyaAdminLocale'}))
  ];
+ const authenticated=process.env.TOOLYA_AUTH_SHELL==='1';
  const results=[];
+ // A read-only synthetic account, served only inside Chromium. No real API requests.
+ const mock=`
+ (() => {
+  const uid='11111111-1111-4111-8111-111111111111';
+  const user={id:uid,email:'fixture@example.invalid',is_anonymous:false,email_confirmed_at:'2026-01-01T00:00:00Z',app_metadata:{provider:'email'},user_metadata:{}};
+  const session={user,access_token:'isolated-fixture',refresh_token:'isolated-fixture'};
+  const calls={auth:0,reads:[],writes:[]};window.__toolyaAuthFixture=calls;
+  const ok=data=>({data,error:null});
+  const denied=(table,operation)=>{calls.writes.push({table,operation});return {data:null,error:{message:'Read-only browser fixture'}}};
+  const client={
+   auth:{async getUser(){calls.auth++;return ok({user})},async getSession(){calls.auth++;return ok({session})},onAuthStateChange(fn){queueMicrotask(()=>fn('INITIAL_SESSION',session));return {data:{subscription:{unsubscribe(){}}}}}},
+   from(table){
+    calls.reads.push(table);
+    let operation='select',single=false;
+    const q={};
+    for(const method of ['select','eq','neq','is','in','order','limit','range','gt','gte','lt','lte','or','not','filter','match','ilike','like'])q[method]=()=>q;
+    for(const method of ['insert','update','delete','upsert'])q[method]=()=>{operation=method;return q};
+    q.single=q.maybeSingle=()=>{single=true;return q};
+    q.then=(resolve,reject)=>Promise.resolve(operation==='select'?{data:single?null:[],error:null,count:0}:denied(table,operation)).then(resolve,reject);
+    return q;
+   },
+   async rpc(name){calls.reads.push('rpc:'+name);return ok([])},
+   functions:{async invoke(name){return {data:null,error:{message:'Offline fixture: '+name}}}},
+   channel(){const q={on:()=>q,subscribe:()=>q,unsubscribe:()=>q};return q},
+   removeChannel(){}
+  };
+  window.supabase={createClient:()=>client};
+ })();
+ `;
+
  for(const width of [320,768]){
   const context=await browser.newContext({viewport:{width,height:850},reducedMotion:'reduce',serviceWorkers:'block'});
   await context.route('**/*',route=>{
    const request=route.request(),target=new URL(request.url());
+   if(authenticated&&target.origin===origin&&target.pathname==='/assets/vendor/supabase-2.57.0.js')return route.fulfill({status:200,contentType:'text/javascript',body:mock});
    return target.origin===origin&&['GET','HEAD'].includes(request.method())?route.continue():route.abort();
   });
-  for(const entry of cases){
+  for(const entry of cases.filter(entry=>!authenticated||entry.family==='wishes'||entry.family==='dashboard')){
    const page=await context.newPage();
    const row={path:entry.path,width,checks:[],errors:[],pageErrors:[]};
    results.push(row);
@@ -87,15 +119,18 @@ async function run(){
      }
     }
    }catch(e){row.errors.push(String(e.message).slice(0,500))}
-   finally{await page.close()}
+   finally{
+    if(authenticated){row.fixture=await page.evaluate(()=>window.__toolyaAuthFixture||null).catch(()=>null);if(row.fixture?.writes.length)row.errors.push('Unexpected attempted write in read-only fixture');if(!row.fixture?.auth)row.errors.push('Synthetic authentication not observed');}
+    await page.close()
+   }
   }
   await context.close();
  }
  const dir=path.join(ROOT,'test-results/i18n-quality');
  fs.mkdirSync(dir,{recursive:true});
- const report={schemaVersion:1,scope:'Unauthenticated read-only shell smoke; not full runtime acceptance',results};
- fs.writeFileSync(path.join(dir,'application-shell-report.json'),JSON.stringify(report,null,2)+'\n');
- console.log('APPLICATION SHELL REVIEW '+JSON.stringify({views:results.length,passed:results.filter(r=>!r.errors.length).length,review:results.filter(r=>r.errors.length).map(r=>({path:r.path,width:r.width,errors:r.errors}))}));
+ const report={schemaVersion:1,scope:authenticated?'Authenticated read-only synthetic shell smoke; not full functional acceptance':'Unauthenticated read-only shell smoke; not full runtime acceptance',results};
+ fs.writeFileSync(path.join(dir,authenticated?'authenticated-shell-report.json':'application-shell-report.json'),JSON.stringify(report,null,2)+'\n');
+ console.log((authenticated?'AUTHENTICATED SHELL REVIEW ':'APPLICATION SHELL REVIEW ')+JSON.stringify({views:results.length,passed:results.filter(r=>!r.errors.length).length,review:results.filter(r=>r.errors.length).map(r=>({path:r.path,width:r.width,errors:r.errors}))}));
 }
 run().catch(err=>{console.error(err);process.exitCode=1;}).finally(async()=>{
  if(browser)await browser.close().catch(()=>{});
