@@ -90,7 +90,7 @@ async function run(){
  })();
  `;
 
- for(const width of [320,768]){
+ for(const width of [320,375,768]){
   const context=await browser.newContext({viewport:{width,height:850},reducedMotion:'reduce',serviceWorkers:'block'});
   await context.route('**/*',route=>{
    const request=route.request(),target=new URL(request.url());
@@ -116,7 +116,8 @@ async function run(){
      for(const lang of ['de','en']){
       await page.goto(origin+entry.path+'?lang='+lang,{waitUntil:'domcontentloaded',timeout:15000});
       await page.waitForFunction(({key,lang})=>globalThis[key]===lang,{key:entry.global,lang},{timeout:4000});
-      row.checks.push({lang,title:await page.title()});
+      assert.equal(await page.locator('html').getAttribute('lang'),lang,'print document language');
+      row.checks.push({lang,title:await page.title(),documentLang:lang});
      }
     }else{
      // Dashboard also stores the active locale on <html>; target actual controls only.
@@ -131,7 +132,9 @@ async function run(){
       if(collection){assert.equal(await page.locator('#title').textContent(),'Meine synthetische Sammlung');assert.equal(await page.locator('#description').textContent(),'Private Testbeschreibung bleibt unverändert');}
       if(profile){assert.equal(await page.locator('#name').textContent(),'Synthetisches Profil');assert.equal(await page.locator('#bio').textContent(),'Meine Testbiografie bleibt unverändert');}
       const layout=await page.evaluate(()=>({lang:document.documentElement.lang,overflow:Math.max(0,document.documentElement.scrollWidth-innerWidth)}));
-      row.checks.push({lang,title:await page.title(),...layout});
+      assert.equal(layout.lang,lang,'document language must follow selected language');
+      assert.ok(layout.overflow<=1,'horizontal overflow: '+layout.overflow+'px');
+      row.checks.push({lang,title:await page.title(),documentLang:layout.lang,overflow:layout.overflow});
      }
     }
    }catch(e){row.errors.push(String(e.message).slice(0,500))}
@@ -147,7 +150,9 @@ async function run(){
  fs.mkdirSync(dir,{recursive:true});
  const report={schemaVersion:1,scope:authenticated?'Authenticated read-only synthetic shell smoke; not full functional acceptance':'Unauthenticated read-only shell smoke; not full runtime acceptance',results};
  fs.writeFileSync(path.join(dir,authenticated?'authenticated-shell-report.json':'application-shell-report.json'),JSON.stringify(report,null,2)+'\n');
- console.log((authenticated?'AUTHENTICATED SHELL REVIEW ':'APPLICATION SHELL REVIEW ')+JSON.stringify({views:results.length,passed:results.filter(r=>!r.errors.length).length,review:results.filter(r=>r.errors.length).map(r=>({path:r.path,width:r.width,errors:r.errors}))}));
+ const failures=results.filter(r=>r.errors.length);
+ console.log((authenticated?'AUTHENTICATED SHELL REVIEW ':'APPLICATION SHELL REVIEW ')+JSON.stringify({views:results.length,passed:results.length-failures.length,review:failures.map(r=>({path:r.path,width:r.width,errors:r.errors}))}));
+ assert.equal(failures.length,0,'application shell failures; see JSON report for individual routes');
 }
 run().catch(err=>{console.error(err);process.exitCode=1;}).finally(async()=>{
  if(browser)await browser.close().catch(()=>{});
