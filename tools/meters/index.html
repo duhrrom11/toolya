@@ -539,11 +539,12 @@
         }
 
         function downloadIcsCalendar() {
-            let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Zaehler Tracker Pro//DE\nBEGIN:VEVENT\nSUMMARY:⚡ Zählerstände ablesen\nDESCRIPTION:Monatlicher Stichtag zur Erfassung von Strom, Wasser und Gas.\nRRULE:FREQ=MONTHLY;BYDAY=-1SU\nEND:VEVENT\nEND:VCALENDAR";
-            let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a'); a.href = url;
-            a.download = 'zaehler-ablesen-erinnerung.ics';
+            const english=window.__toolyaUILocale==='en';
+            const icsContent=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Toolya//Meter readings//EN', 'BEGIN:VEVENT',english?'SUMMARY:⚡ Read meters':'SUMMARY:⚡ Zählerstände ablesen',english?'DESCRIPTION:Monthly reminder to record electricity, water and gas.':'DESCRIPTION:Monatlicher Stichtag zur Erfassung von Strom, Wasser und Gas.','RRULE:FREQ=MONTHLY;BYDAY=-1SU','END:VEVENT','END:VCALENDAR',''].join('\r\n');
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url;
+            a.download = english?'meter-reading-reminder.ics':'zaehler-ablesen-erinnerung.ics';
             a.click();
         }
 
