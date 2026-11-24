@@ -1,3 +1,4 @@
+import {connectConfirmation} from './connect-copy.mjs';
 /* Explicit, reversible UI translations. No access to auth/data stores or mascot settings. */
 const common = [
  ['.toolya-auth-loading','Checking your sign-in…'],
@@ -2679,6 +2680,15 @@ const auditedDialogAdditions = Object.freeze({
 });
 // Exact app-owned validation errors, shared by native dialog wrappers.
 const validationCopy=Object.freeze({
+"Import ersetzt vorhandene Cloud-Daten. Zuerst eine Sicherung herunterladen?": "Import replaces existing cloud data. Download a backup first?",
+"Sicherung kontrolliert? Vorhandene Cloud-Daten jetzt wirklich ersetzen?": "Have you checked the backup? Replace existing cloud data now?",
+"Sicherung enthält keine gültigen Daten.": "Backup contains no valid data.",
+"Sicherung kann nicht als JSON erstellt werden.": "Backup could not be created as JSON.",
+"Cloud-Daten nicht bereit.": "Cloud data is not ready.",
+"Sicherheitsprüfungen fehlen.": "Safety checks are missing.",
+"Importdaten sind kein gültiges JSON.": "Import data is not valid JSON.",
+"Cloud-Sicherung nicht bestätigt. Import abgebrochen.": "Cloud backup not confirmed. Import cancelled.",
+"Cloud-Sitzung oder Datenstand hat sich geändert.": "The cloud session or data revision has changed.",
   "Konto während des Ladens gewechselt.": "The account changed while loading.",
   "Anmeldung nicht mehr gültig.": "Sign-in is no longer valid.",
   "Anmeldung nicht gültig.": "Sign-in is invalid.",
@@ -2738,6 +2748,8 @@ export function translateToolDialog(tool, language, message) {
  const extended=Object.hasOwn(extendedDialogAdditions,tool) && Object.hasOwn(extendedDialogAdditions[tool],message)
   ? extendedDialogAdditions[tool][message] : undefined;
  if(extended!==undefined) return extended;
+ const confirmation=connectConfirmation(message,language);
+ if(confirmation!==message)return confirmation;
  const validation=validationText(tool,message);
  if(validation!==message)return validation;
  if(tool==='budget')for(const [de,en] of [['Ungültiger Backup-Bereich: ','Invalid backup section: '],['Ungültige Einträge im Backup-Bereich: ','Invalid entries in backup section: ']])if(message.startsWith(de))return en+message.slice(de.length);

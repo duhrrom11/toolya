@@ -1,5 +1,12 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+"Sichtbare auswählen": "Select visible wishes",
+"Sichtbare abwählen": "Deselect visible wishes",
+"Für Mehrfachaktion auswählen": "Select for multiple actions",
+"Für Sammelaktion auswählen": "Select for bulk action",
+"Aus Sammelauswahl entfernen": "Remove from bulk selection",
+"Nur sichtbare Wünsche der aktuellen aktiven Liste auswählbar": "Only visible wishes in the current active list can be selected",
+"Merkliste konnte nicht geladen werden. Bitte später erneut versuchen.": "Bookmarks could not be loaded. Please try again later.",
  "Anmeldung nicht gültig oder Konto gewechselt.": "Sign-in is no longer valid or the account has changed.",
  "Bericht nicht vollständig: Ereignislimit erreicht": "Report incomplete: event limit reached",
  "Reservierung wirklich aufheben? Der Wunsch wird wieder frei.": "Cancel this reservation? The wish will become available again.",
@@ -1165,6 +1172,7 @@ export const WISHES_RUNTIME_COPY=Object.freeze({
 });
 const runtimeReverse=Object.freeze(Object.fromEntries(Object.entries(WISHES_RUNTIME_COPY).map(([de,en])=>[en,de])));
 const statusPrefixes=Object.freeze({
+ "Für Sammelaktion auswählen: ": "Select for bulk action: ",
  "Sammlungslink: ": "Collection link: ",
  "Profil-Link: ": "Profile link: ",
  "Importvorschau wegen Verbindungs- oder Lesefehler fehlgeschlagen. Kein Import. ": "Import preview failed because of a connection or read error. Nothing was imported. ",
@@ -1208,6 +1216,9 @@ export function wishesText(value,language){
   if(base!==translated)return translated+(language==='en'?budgetSuffixEn:budgetSuffix);
  }
  const dynamic=language==='en'?[
+ [/^Zugeordnete auswählen \((\d+)\)$/,'Select assigned ($1)'],
+ [/^Ohne Liste auswählen \((\d+)\)$/,'Select unassigned ($1)'],
+ [/^(\d+) zugeordnete Wünsche ausgewählt\.$/,'$1 assigned wishes selected.'],
  [/^(\d+) eigene Reservierungen geladen\.$/,'$1 of your reservations loaded.'],
  [/^(\d+) öffentliche Sammlungen gefunden · aus maximal 60 zuletzt erstellten Sammlungen\.$/,'$1 public collections found · from up to 60 recently created collections.'],
  [/^❤️ (\d+) Likes · 👥 (\d+) Profil-Follower$/,'❤️ $1 likes · 👥 $2 profile followers'],
@@ -1228,7 +1239,9 @@ export function wishesText(value,language){
  [/^(\d+) passende Einträge auf dieser Seite\.$/,'$1 matching entries on this page.'],
  [/^Sicherung gültig: (\d+) Wünsche\. Nur Vorschau – keine Daten wurden gespeichert\.$/,'Backup valid: $1 wishes. Preview only – no data was saved.']
  ]:[
- [/^(\d+) of your reservations loaded\.$/,'$1 eigene Reservierungen geladen.'], [/^(\d+) public collections found · from up to 60 recently created collections\.$/,'$1 öffentliche Sammlungen gefunden · aus maximal 60 zuletzt erstellten Sammlungen.'],
+ [/^Select assigned \((\d+)\)$/,'Zugeordnete auswählen ($1)'],
+ [/^Select unassigned \((\d+)\)$/,'Ohne Liste auswählen ($1)'],
+ [/^(\d+) assigned wishes selected\.$/,'$1 zugeordnete Wünsche ausgewählt.'], [/^(\d+) of your reservations loaded\.$/,'$1 eigene Reservierungen geladen.'], [/^(\d+) public collections found · from up to 60 recently created collections\.$/,'$1 öffentliche Sammlungen gefunden · aus maximal 60 zuletzt erstellten Sammlungen.'],
  [/^❤️ (\d+) likes · 👥 (\d+) profile followers$/,'❤️ $1 Likes · 👥 $2 Profil-Follower'], [/^(\d+) bookmarked public collections\.$/,'$1 gemerkte öffentliche Sammlungen.'],
  [/^(\d+) wishes( · at most 500 loaded)?$/,(_,n,limit)=>n+' Wünsche'+(limit?' · maximal 500 geladen':'')],
  [/^(\d+) public collections( · at most 48 displayed)?$/,(_,n,limit)=>n+' öffentliche Sammlungen'+(limit?' · maximal 48 angezeigt':'')],

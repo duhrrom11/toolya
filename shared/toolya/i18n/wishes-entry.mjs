@@ -18,7 +18,7 @@ function mount(){
  let active=storedLocale();
  // Only fixed, app-owned message containers. Content cards, private notes and
  // account identifiers must not be modified by the status translator.
- const statusSelectors=['#status','#count','#taskStatus','#checklistStatus','#rolloverStatus',
+ const statusSelectors=['#listsStatus','#editListFeedback','#status','#count','#taskStatus','#checklistStatus','#rolloverStatus',
   '#giftStatus','#filterStatus','#productSearchStatus','#searchStatus','#detailStatus',
   '#profileStatus','#settingsAuthMessage','#settingsAccountStatus','#settingsStatus',
   '#notice','#reactionStatus','#actionStatus','#budgetSaveFeedback','#giftFormFeedback',

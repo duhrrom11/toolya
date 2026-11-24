@@ -34,3 +34,6 @@ No production test records were created. No release approval is granted.
 
 ## Hardened shell checks
 Head ada9f09: quality run 45492725039, job 138794998373 passed 373 static tests, 32 layout checks, 72 anonymous and 54 authenticated shell cases at 320/375/768px. Draft CI head a50a7fc: nine workflows succeeded, full isolated browser workflow skipped intentionally, strict gate failed. New occasion/bookmark copy changes require fresh focused regression evidence; no full acceptance claimed.
+
+## Verified fast CI at b49803a
+[Quality run 45496003133 / job 138806549452](https://github.com/duhrrom11/toolya/actions/runs/45496003133/job/138806549452): 384 tests passed, zero failed; both ten-tool validation and meter-calendar regression tests passed (349–350). 12 canonical tools, 16 marketing pages and 16 namespaces: zero critical or review findings in catalogue check. Nine workflows succeeded; full browser suite skipped on draft; strict audit failed (34 incomplete views, 38 candidate files, 16 noindex pages). This is not exhaustive runtime acceptance. New Connect, backup and bulk-action fixes require fresh CI evidence.
