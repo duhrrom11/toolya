@@ -728,7 +728,8 @@ async function toolyaCloudBoot(tool) {
             Gesundheit:'Health', Haustiere:'Pets', Verträge:'Contracts',
             Sonstiges:'Other'
         });
-        function budgetCategoryLabel(category, language = window.__toolyaUILocale) {
+        function budgetCategoryLabel(category) {
+            const language = arguments.length > 1 ? arguments[1] : window.__toolyaUILocale;
             return language === 'en' && typeof category === 'string'
                 && Object.hasOwn(budgetCategoryEn,category)
                 ? budgetCategoryEn[category] : category;
@@ -740,7 +741,8 @@ async function toolyaCloudBoot(tool) {
             'EC-Karte':'Debit card', Bargeld:'Cash', Kreditkarte:'Credit card',
             'Überweisung':'Bank transfer / standing order', PayPal:'PayPal'
         });
-        function budgetPaymentLabel(method, language = window.__toolyaUILocale) {
+        function budgetPaymentLabel(method) {
+            const language = arguments.length > 1 ? arguments[1] : window.__toolyaUILocale;
             return language === 'en' && typeof method === 'string'
                 && Object.hasOwn(budgetPaymentEn,method)
                 ? budgetPaymentEn[method] : method;
