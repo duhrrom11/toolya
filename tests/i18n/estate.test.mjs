@@ -42,3 +42,16 @@ test('estate handover and trustee copy is reversible and preserves form values',
  assert.equal(document.querySelector('main a').getAttribute('href'),'index.html');
  applyEstateLocale(document,'de');assert.equal(document.querySelector('main a').textContent,'← Zurück zum digitalen Nachlass');
 });
+
+test('trusted reader translates only explicit app-owned empty state and fallback title',()=>{
+ const {document}=parseHTML('<html><body><div id="read-entries"><article class="entry"><h3>Unterlage</h3><p>Meine Unterlagen</p><pre>Im Tresor liegen noch keine Unterlagen.</pre></article><article class="entry"><h3 data-estate-copy>Unterlage</h3></article><p data-estate-copy>Im Tresor liegen noch keine Unterlagen.</p></div></body></html>');
+ applyEstateLocale(document,'en');
+ assert.equal(document.querySelector('.entry h3').textContent,'Unterlage');
+ assert.equal(document.querySelector('.entry p').textContent,'Meine Unterlagen');
+ assert.equal(document.querySelector('pre').textContent,'Im Tresor liegen noch keine Unterlagen.');
+ assert.equal(document.querySelector('h3[data-estate-copy]').textContent,'Document');
+ assert.equal(document.querySelector('p[data-estate-copy]').textContent,'There are no documents in this vault yet.');
+ applyEstateLocale(document,'de');
+ assert.equal(document.querySelector('h3[data-estate-copy]').textContent,'Unterlage');
+ assert.equal(document.querySelector('p[data-estate-copy]').textContent,'Im Tresor liegen noch keine Unterlagen.');
+});

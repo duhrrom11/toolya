@@ -636,6 +636,7 @@ export const DASHBOARD_COPY=Object.freeze(Object.fromEntries([
 ]));
 const reverse=Object.freeze(Object.fromEntries(Object.entries(DASHBOARD_COPY).map(([de,en])=>[en,de])));
 const prefixes=[
+ ["Cloud-Datenstand ist unverändert (Revision neu).","Cloud state unchanged (revision new)."],
  ["Cloud-Datenstand ist unverändert (Revision ","Cloud state unchanged (revision "],
  [
   "Abmeldung fehlgeschlagen: ",
