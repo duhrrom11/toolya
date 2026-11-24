@@ -58,6 +58,8 @@ async function run(){
   const uid='11111111-1111-4111-8111-111111111111';
   const user={id:uid,email:'fixture@example.invalid',is_anonymous:false,email_confirmed_at:'2026-01-01T00:00:00Z',app_metadata:{provider:'email'},user_metadata:{}};
   const session={user,access_token:'isolated-fixture',refresh_token:'isolated-fixture'};
+  const collection={id:'22222222-2222-4222-8222-222222222222',user_id:uid,title:'Meine synthetische Sammlung',description:'Private Testbeschreibung bleibt unverändert',visibility:'public',archived:false,icon:'🎁'};
+  const profile={user_id:uid,handle:'fixture_profile',display_name:'Synthetisches Profil',bio:'Meine Testbiografie bleibt unverändert'};
   const calls={auth:0,reads:[],writes:[]};window.__toolyaAuthFixture=calls;
   const ok=data=>({data,error:null});
   const denied=(table,operation)=>{calls.writes.push({table,operation});return {data:null,error:{message:'Read-only browser fixture'}}};
@@ -70,7 +72,13 @@ async function run(){
     for(const method of ['select','eq','neq','is','in','order','limit','range','gt','gte','lt','lte','or','not','filter','match','ilike','like'])q[method]=()=>q;
     for(const method of ['insert','update','delete','upsert'])q[method]=()=>{operation=method;return q};
     q.single=q.maybeSingle=()=>{single=true;return q};
-    q.then=(resolve,reject)=>Promise.resolve(operation==='select'?{data:single?null:[],error:null,count:0}:denied(table,operation)).then(resolve,reject);
+    q.then=(resolve,reject)=>{
+     const route=location.pathname;
+     const rows=route.endsWith('/collection.html')&&table==='wishlist_lists'?[collection]:
+      route.endsWith('/profile.html')&&table==='wishlist_profiles'?[profile]:
+      route.endsWith('/profile.html')&&table==='wishlist_lists'?[collection]:[];
+     return Promise.resolve(operation==='select'?{data:single?rows[0]||null:rows,error:null,count:rows.length}:denied(table,operation)).then(resolve,reject);
+    };
     return q;
    },
    async rpc(name){calls.reads.push('rpc:'+name);return ok([])},
@@ -96,7 +104,12 @@ async function run(){
    page.on('pageerror',e=>row.pageErrors.push(e.message.slice(0,300)));
    try{
     await page.addInitScript(()=>{localStorage.setItem('synthetic-private-note','Meine private Notiz');});
-    await page.goto(origin+entry.path+'?lang=de',{waitUntil:'domcontentloaded',timeout:15000});
+    const collection=authenticated&&entry.path==='/tools/wishes/collection.html';
+    const profile=authenticated&&entry.path==='/tools/wishes/profile.html';
+    const query=collection?'&id=22222222-2222-4222-8222-222222222222':profile?'&handle=fixture_profile':'';
+    await page.goto(origin+entry.path+'?lang=de'+query,{waitUntil:'domcontentloaded',timeout:15000});
+    if(collection)await page.waitForFunction(()=>!document.getElementById('collection')?.hidden&&document.getElementById('title')?.textContent==='Meine synthetische Sammlung',null,{timeout:6000});
+    if(profile)await page.waitForFunction(()=>!document.getElementById('profile')?.hidden&&document.getElementById('name')?.textContent==='Synthetisches Profil',null,{timeout:6000});
     if(new URL(page.url()).pathname!==entry.path)throw Error('Protected route redirected; authenticated fixture required');
     if(entry.print){
      for(const lang of ['de','en']){
@@ -114,13 +127,15 @@ async function run(){
       assert.equal(await button.getAttribute('aria-pressed'),'true');
       assert.equal(await page.locator(selector(lang==='en'?'de':'en')).first().getAttribute('aria-pressed'),'false');
       assert.equal(await page.evaluate(()=>localStorage.getItem('synthetic-private-note')),'Meine private Notiz');
+      if(collection){assert.equal(await page.locator('#title').textContent(),'Meine synthetische Sammlung');assert.equal(await page.locator('#description').textContent(),'Private Testbeschreibung bleibt unverändert');}
+      if(profile){assert.equal(await page.locator('#name').textContent(),'Synthetisches Profil');assert.equal(await page.locator('#bio').textContent(),'Meine Testbiografie bleibt unverändert');}
       const layout=await page.evaluate(()=>({lang:document.documentElement.lang,overflow:Math.max(0,document.documentElement.scrollWidth-innerWidth)}));
       row.checks.push({lang,title:await page.title(),...layout});
      }
     }
    }catch(e){row.errors.push(String(e.message).slice(0,500))}
    finally{
-    if(authenticated){row.fixture=await page.evaluate(()=>window.__toolyaAuthFixture||null).catch(()=>null);if(row.fixture?.writes.length)row.errors.push('Unexpected attempted write in read-only fixture');if(!row.fixture?.auth)row.errors.push('Synthetic authentication not observed');}
+    if(authenticated){row.fixture=await page.evaluate(()=>window.__toolyaAuthFixture||null).catch(()=>null);if(row.fixture?.writes.length)row.errors.push('Unexpected attempted write in read-only fixture');if(entry.path==='/tools/wishes/profile.html'){if(!row.fixture?.reads.includes('wishlist_profiles'))row.errors.push('Public profile read not observed');}else if(!row.fixture?.auth)row.errors.push('Synthetic authentication not observed');}
     await page.close()
    }
   }
