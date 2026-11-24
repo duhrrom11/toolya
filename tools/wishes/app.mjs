@@ -292,7 +292,7 @@ $('previewBackup').onclick=run(async()=>{
    fragment.append(heading,summary);
   }
   const heading=document.createElement('h4');
-  heading.textContent='Wünsche in der Sicherung ('+data.count+')';
+  heading.setAttribute('data-wish-owned-copy','');heading.textContent='Wünsche in der Sicherung ('+data.count+')';
   fragment.append(heading);
   for(const wish of data.wishes.slice(0,30)){
    const p=document.createElement('p');

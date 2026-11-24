@@ -799,6 +799,40 @@ const reverse=Object.freeze(Object.fromEntries(Object.entries(WISHES_COPY).map((
 /* Fixed runtime messages emitted by existing Wishes modules; only app-authored
    statuses and native dialogs qualify, never profile or gift content. */
 export const WISHES_RUNTIME_COPY=Object.freeze({
+ "1 Wunsch für diese Sitzung ausgeblendet.":"1 wish hidden for this session.",
+ "1 Profil für diese Sitzung ausgeblendet.":"1 profile hidden for this session.",
+ "Ungültiger Wunschpreis.":"Invalid wish price.",
+ "Ungültiger Wunschstatus.":"Invalid wish status.",
+ "✓ Erfüllt":"✓ Fulfilled",
+ "Für Import geeignet":"Eligible for import",
+ "Bereits in Cloud (Konflikt, wird übersprungen)":"Already in cloud (conflict, will be skipped)",
+ "Ungültig (wird übersprungen)":"Invalid (will be skipped)",
+ "Nicht zu eigenen Wünschen zuordenbar (ausgeschlossen)":"Cannot be matched to your own wishes (excluded)",
+ "Cloud-Import bestätigen":"Confirm cloud import",
+ "Bitte zuerst einen vorhandenen eigenen Wunsch zur Bearbeitung öffnen.":"First open an existing wish of your own for editing.",
+ "Bitte einen eigenen Wunsch zur Bearbeitung öffnen.":"Open a wish of your own for editing.",
+ "Cloud-Daten überschreiben?":"Overwrite cloud data?",
+ "Ausgeblendete Wünsche werden wieder angezeigt.":"Hidden wishes are visible again.",
+ "Letztes Ausblenden rückgängig gemacht.":"Last hide action undone.",
+ "◯ Nicht angemeldet":"◯ Signed out",
+ "Bitte zuerst dein öffentliches Profil speichern.":"Save your public profile first.",
+ "Sitzung hat sich geändert.":"Session has changed.",
+ "Link zu deinem öffentlichen Profil kopiert.":"Link to your public profile copied.",
+ "Sitzung hat sich geändert. Export abgebrochen.":"Session has changed. Export cancelled.",
+ "Zu viele Wünsche für einen Export. Bitte den Support kontaktieren.":"Too many wishes for one export. Contact support.",
+ "Bitte zuerst eine JSON-Sicherungsdatei auswählen.":"Select a JSON backup file first.",
+ "Die Sicherungsdatei darf höchstens 2 MB groß sein.":"The backup file must not exceed 2 MB.",
+ "Nur gültige Amazon.de-Produktlinks":"Valid Amazon.de product links only",
+ "Link zum Hinzufügen kopiert":"Link for adding copied",
+ "Notiz, Priorität und Sichtbarkeit bearbeiten":"Edit note, priority and visibility",
+ "Dieser Wunsch gehört nicht zu deinem Konto":"This wish does not belong to your account",
+ "Keine sichtbaren Wünsche auf dieser Seite.":"No visible wishes on this page.",
+ "Suchergebnis ist veraltet. Bitte erneut suchen.":"Search results are out of date. Search again.",
+ "🔒 Keine eigene aktive Reservierung":"🔒 No active reservation of your own",
+ "Bitte einen Anlass und gültiges Budget wählen.":"Select an occasion and a valid budget.",
+ "In deiner Merkliste oder deinen öffentlichen Sammlungen.":"In your bookmarks or public collections.",
+ "Für diese Interessen gibt es unter den aktuell geladenen Wünschen noch keine Treffer. Wähle „Überrasche mich“ oder lade weitere Wünsche.":"No matching wishes among the currently loaded items. Choose “Surprise me” or load more wishes.",
+ "Dein Budget ist vorgemerkt, aber mangels verlässlicher Produktpreise nicht als Preisfilter anwendbar.":"Your budget is noted, but cannot be used as a price filter because reliable product prices are unavailable.",
   "Lokaler Speicher nicht lesbar. Kein Import.": "Local storage could not be read. Nothing was imported.",
   "Importvorschau wegen Verbindungs- oder Lesefehler fehlgeschlagen. Kein Import. ": "Import preview failed because of a connection or read error. Nothing was imported. ",
   "Cloud-Speicherung wegen Netzwerkfehler fehlgeschlagen. Ob die Anfrage den Server erreicht hat, ist unklar; bitte Cloud-Stand prüfen, bevor du erneut speicherst. ": "Cloud saving failed because of a network error. It is unclear whether the request reached the server; check the cloud state before saving again. ",
@@ -1060,10 +1094,36 @@ export function wishesText(value,language){
  if(Object.hasOwn(table,value))return table[value];
  const live=language==='en'?WISHES_RUNTIME_COPY:runtimeReverse;
  if(Object.hasOwn(live,value))return live[value];
- const dynamic=language==='en'?[
+ // All patterns match complete app-owned status messages, never arbitrary notes.
+ const budgetSuffix=' Dein Budget ist vorgemerkt, aber mangels verlässlicher Produktpreise nicht als Preisfilter anwendbar.';
+ const budgetSuffixEn=' Your budget is noted, but cannot be used as a price filter because reliable product prices are unavailable.';
+ const suffix=language==='en'?budgetSuffix:budgetSuffixEn;
+ if(value.endsWith(suffix)){
+  const base=value.slice(0,-suffix.length),translated=wishesText(base,language);
+  if(base!==translated)return translated+(language==='en'?budgetSuffixEn:budgetSuffix);
+ }
+ const dynamic=language==='en'?[ 
+ [/^(\d+) Wünsche für diese Sitzung ausgeblendet\.$/,'$1 wishes hidden for this session.'],
+ [/^(\d+) Profile für diese Sitzung ausgeblendet\.$/,'$1 profiles hidden for this session.'],
+ [/^(\d+) Wünsche als (CSV|JSON) bereitgestellt\.$/,'$1 wishes exported as $2.'],
+ [/^(\d+) eigene Wünsche als (CSV|JSON) bereitgestellt\.$/,'$1 of your wishes exported as $2.'],
+ [/^Wünsche in der Sicherung \((\d+)\)$/,'Wishes in backup ($1)'],
+ [/^(\d+) Wünsche werden in der Vorschau nicht angezeigt\.$/,'$1 wishes are not shown in the preview.'],
+ [/^(\d+) neue gültige Zusatzdatensätze privat in die Cloud übertragen\? Vorhandene Cloud-Daten werden niemals überschrieben\.$/,'Upload $1 new valid extra records privately to the cloud? Existing cloud data will never be overwritten.'],
+ [/^(\d+) Produkte gefunden · (\d+) mit öffentlichen Wünschen\. Die Suche zeigt höchstens 40 Produkte\.$/,'$1 products found · $2 with public wishes. Search displays at most 40 products.'],
+ [/^(\d+) von (\d+) passenden Ideen aus (\d+) geladenen öffentlichen Wünschen\.$/,'$1 of $2 matching ideas from $3 loaded public wishes.'],
  [/^(\d+) passende Einträge auf dieser Seite\.$/,'$1 matching entries on this page.'],
  [/^Sicherung gültig: (\d+) Wünsche\. Nur Vorschau – keine Daten wurden gespeichert\.$/,'Backup valid: $1 wishes. Preview only – no data was saved.']
  ]:[
+ [/^(\d+) wishes hidden for this session\.$/,'$1 Wünsche für diese Sitzung ausgeblendet.'],
+ [/^(\d+) profiles hidden for this session\.$/,'$1 Profile für diese Sitzung ausgeblendet.'],
+ [/^(\d+) wishes exported as (CSV|JSON)\.$/,'$1 Wünsche als $2 bereitgestellt.'],
+ [/^(\d+) of your wishes exported as (CSV|JSON)\.$/,'$1 eigene Wünsche als $2 bereitgestellt.'],
+ [/^Wishes in backup \((\d+)\)$/,'Wünsche in der Sicherung ($1)'],
+ [/^(\d+) wishes are not shown in the preview\.$/,'$1 Wünsche werden in der Vorschau nicht angezeigt.'],
+ [/^Upload (\d+) new valid extra records privately to the cloud\? Existing cloud data will never be overwritten\.$/,'$1 neue gültige Zusatzdatensätze privat in die Cloud übertragen? Vorhandene Cloud-Daten werden niemals überschrieben.'],
+ [/^(\d+) products found · (\d+) with public wishes\. Search displays at most 40 products\.$/,'$1 Produkte gefunden · $2 mit öffentlichen Wünschen. Die Suche zeigt höchstens 40 Produkte.'],
+ [/^(\d+) of (\d+) matching ideas from (\d+) loaded public wishes\.$/,'$1 von $2 passenden Ideen aus $3 geladenen öffentlichen Wünschen.'],
  [/^(\d+) matching entries on this page\.$/,'$1 passende Einträge auf dieser Seite.'],
  [/^Backup valid: (\d+) wishes\. Preview only – no data was saved\.$/,'Sicherung gültig: $1 Wünsche. Nur Vorschau – keine Daten wurden gespeichert.']
  ];

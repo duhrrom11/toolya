@@ -22,14 +22,16 @@ function mount(){
   '#giftStatus','#filterStatus','#productSearchStatus','#searchStatus','#detailStatus',
   '#profileStatus','#settingsAuthMessage','#settingsAccountStatus','#settingsStatus',
   '#notice','#reactionStatus','#actionStatus','#budgetSaveFeedback','#giftFormFeedback',
-  '#taskActionStatus','#closingStatus','#reviewStatus','#wishExtrasImportFeedback','#wishExtrasCloudFeedback','#backupPreviewStatus','#peopleSearchCount','#profileFeedInfo','#giftFinderStatus','#wishSaveFeedback','#wishlistAuthStatus','#feedCount','[data-wish-runtime-status]'];
+  '#taskActionStatus','#closingStatus','#reviewStatus','#wishExtrasImportFeedback','#wishExtrasCloudFeedback','#backupPreviewStatus','#peopleSearchCount','#profileFeedInfo','#giftFinderStatus','#wishSaveFeedback','#wishlistAuthStatus','#feedCount','#hiddenWishInfo','#hiddenProfileInfo','#exportProgress','[data-wish-runtime-status]'];
  // Do not select progress bars, counters, wish cards, user descriptions or
  // account identity fields. Status translations must be exact/prefix matched.
+ const statusSources=new WeakMap();
  function translateLiveStatuses(){
   for(const selector of statusSelectors){
    for(const node of document.querySelectorAll(selector)){
     if(node.children.length||node.isContentEditable)continue;
-    const before=node.textContent,after=wishesText(before,active);
+    const before=node.textContent,previous=statusSources.get(node),source=previous?.rendered===before?previous.source:before,after=wishesText(source,active);
+    statusSources.set(node,{source,rendered:after});
     if(before!==after)node.textContent=after;
    }
   }

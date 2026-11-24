@@ -46,7 +46,7 @@ function render(items,random=false){
   const card=document.createElement('article');card.className='gift-finder-card';
   const tag=document.createElement('span');tag.className='gift-finder-tag';tag.textContent=random?'🎲 Zufällige Inspiration':'✨ Aus der Community';
   const title=document.createElement('strong');title.textContent=item.title;
-  const detail=document.createElement('p');detail.setAttribute('data-wishes-copy','');detail.textContent='Öffentlich geteilter Wunsch · Preis und Verfügbarkeit nicht geprüft';
+  const detail=document.createElement('p');detail.setAttribute('data-wish-owned-copy','');detail.textContent='Öffentlich geteilter Wunsch · Preis und Verfügbarkeit nicht geprüft';
   const link=document.createElement('a');link.href=item.url;link.target='_blank';link.rel='noopener noreferrer sponsored';link.textContent='Bei Amazon ansehen ↗';
   card.append(tag,title,detail,link);container.append(card);
  }
