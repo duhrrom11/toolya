@@ -1,15 +1,22 @@
 /* Accessible settings windows for the estate manager and gift dashboard. */
 (() => {
  'use strict';
+ const labels=Object.freeze({"Einstellungen":"Settings","Einstellungen und Sicherungen":"Settings and backups","✕ Schließen":"✕ Close","Einstellungen schließen":"Close settings","⚙️ Einstellungen":"⚙️ Settings","Einstellungen öffnen":"Open settings","☁️ Mein Konto":"☁️ My account","💾 Daten sichern und wiederherstellen":"💾 Back up and restore data","Für eine lokale Sicherung dieses Tools nutze seine Exportfunktion, falls vorhanden. Die Startseite bietet eine Sicherung ausgewählter Browserdaten.":"To back up this tool locally, use its export function if available. The home page offers a backup of selected browser data.","Zur Toolya-Startseite":"Go to Toolya home"});
+ function locale(){const w=typeof window==='undefined'?global:window;const active=w.__toolyaUILocale||w.__toolyaWishesLocale||w.__toolyaEstateLocale||w.__toolyaDashboardLocale;if(active==='de'||active==='en')return active;try{const q=new URLSearchParams(w.location.search).get('lang');return q==='de'||q==='en'?q:w.location.pathname.startsWith('/en/')?'en':w.localStorage.getItem('toolya-locale-v1')==='en'?'en':'de'}catch{return 'de'}}
+ const bindings=[];
+ function paint(node,source,attr){const text=locale()==='en'&&Object.hasOwn(labels,source)?labels[source]:source;if(attr)node.setAttribute(attr,text);else node.textContent=text;}
+ function bindCopy(node,source,attr=null){bindings.push([node,source,attr]);paint(node,source,attr)}
+ for(const event of ['toolya:locale-change','toolya:wishes-locale-change','toolya:estate-locale-change','toolya:dashboard-locale-change'])document.addEventListener(event,()=>{for(const args of bindings)paint(...args)});
+
  function modalFor(section, opener, label, isEstate) {
   if (!section || !opener || !document.body || !('showModal' in document.createElement('dialog'))) return;
   const dialog=document.createElement('dialog');
   dialog.className='hl-settings-dialog';
-  dialog.setAttribute('aria-label',label);
+  bindCopy(dialog,label,'aria-label');
   const header=document.createElement('div');
   header.className='hl-settings-dialog-header';
-  const title=document.createElement('h2');title.textContent=label;
-  const close=document.createElement('button');close.type='button';close.textContent='✕ Schließen';close.setAttribute('aria-label','Einstellungen schließen');
+  const title=document.createElement('h2');bindCopy(title,label);
+  const close=document.createElement('button');close.type='button';bindCopy(close,'✕ Schließen');bindCopy(close,'Einstellungen schließen','aria-label');
   header.append(title,close);
   dialog.append(header,section);
   document.body.append(dialog);
@@ -35,7 +42,7 @@
   if(tools&&document.getElementById('homeGiftStart')){
    const button=document.createElement('button');
    button.type='button';button.className='hl-settings-launch';
-   button.textContent='⚙️ Einstellungen';
+   bindCopy(button,'⚙️ Einstellungen');
    tools.parentNode.insertBefore(button,tools);
    modalFor(tools,button,'Einstellungen und Sicherungen',false);
   }

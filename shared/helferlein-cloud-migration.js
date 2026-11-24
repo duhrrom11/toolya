@@ -1,6 +1,10 @@
 /* Opt-in migration controls. Never replace existing local records automatically. */
 (function (global) {
   'use strict';
+ const migrationCopy=Object.freeze({"Online-Sicherung nicht möglich. Bitte versuche es später erneut.":"Online backup unavailable. Please try again later.","Bitte melde dich an, wenn du deine Daten online sichern möchtest.":"Sign in to back up your data online.","Das hat nicht geklappt. Bitte versuche es erneut.":"That did not work. Please try again.","Auf diesem Gerät gespeichert. Die Online-Sicherung ist noch nicht eingerichtet.":"Saved on this device. Online backup is not set up yet.","Gespeichert":"Saved","Auf diesem Gerät gespeichert. Die Online-Sicherung steht noch aus.":"Saved on this device. Online backup is still pending.","Daten übernommen":"Data imported","Dieses Gerät enthält Daten eines anderen Kontos. Die Dateneingabe bleibt gesperrt. Du kannst das ursprüngliche Konto anmelden oder die Kontodaten getrennt wechseln, ohne sie automatisch hochzuladen.":"This device contains data from another account. Data entry remains locked. Sign in to the original account or switch accounts while keeping their data separate, without automatically uploading data.","Zum ursprünglichen Konto anmelden":"Sign in to the original account","E-Mail-Eingabe auswählen":"Select email entry","Bitte zum ursprünglichen Konto zurückwechseln.":"Switch back to the original account.","Zum derzeit angemeldeten Konto wechseln":"Switch to the currently signed-in account","Angemeldet":"Signed in","Online-Sicherung ist nicht eingerichtet":"Online backup is not set up","Cloud-Sicherung (optional)":"Cloud backup (optional)","Ohne Anmeldung kannst du das Tool lokal verwenden. Deine Daten werden erst nach deiner ausdrücklichen Bestätigung in die Cloud übernommen.":"Use this tool locally without signing in. Your data will only be transferred to the cloud after your explicit confirmation.","Cloud-Status anzeigen":"Show cloud status","Lokale Daten in Supabase übernehmen":"Transfer local data to Supabase","Cloud-Daten lokal übernehmen":"Import cloud data locally","Offline-Änderungen abgleichen":"Reconcile offline changes","Ausstehende Änderungen synchronisieren":"Synchronise pending changes","Daten übertragen · weitere Änderungen werden synchronisiert.":"Data transferred · subsequent changes will be synchronised.","Übertragung ausstehend.":"Transfer pending.","Cloud-Daten lokal geladen. Seite wird aktualisiert.":"Cloud data loaded locally. Refreshing the page.","Konflikt: Cloud und lokale Änderungen unterscheiden sich. Keine Daten überschrieben.":"Conflict: Cloud and local changes differ. No data overwritten.","Übertragung nicht bestätigt; lokale Änderungen bleiben erhalten.":"Transfer not confirmed; local changes are preserved.","Offline-Änderungen übertragen":"Offline changes transferred","Änderungen bleiben ausstehend":"Changes remain pending","Änderungen bereits in Supabase vorhanden; bestätigt":"Changes already in Supabase; confirmed","Kein ungeklärter Offline-Ausgangsstand":"No unresolved offline baseline","Keine Änderungen nötig":"No changes needed","☁️ Cloud-Daten verwalten":"☁️ Manage cloud data","Supabase-Datenübernahme":"Supabase data transfer","E-Mail des ursprünglichen Kontos":"Email of the original account","Passwort":"Password","Zum angemeldeten Konto wechseln? Die bisherigen lokalen Daten werden separat gesichert; ausstehende Offline-Änderungen bleiben erhalten. Es wird nichts automatisch hochgeladen.":"Switch to the signed-in account? Existing local data will be backed up separately; pending offline changes are preserved. Nothing is uploaded automatically.","Die Cloud ist leer. Ausstehende lokale Änderungen jetzt nach Supabase übertragen?":"The cloud is empty. Transfer pending local changes to Supabase now?"});
+ function locale(){const w=typeof window==='undefined'?global:window;const active=w.__toolyaUILocale||w.__toolyaWishesLocale||w.__toolyaEstateLocale||w.__toolyaDashboardLocale;if(active==='de'||active==='en')return active;try{const q=new URLSearchParams(w.location.search).get('lang');return q==='de'||q==='en'?q:w.location.pathname.startsWith('/en/')?'en':w.localStorage.getItem('toolya-locale-v1')==='en'?'en':'de'}catch{return 'de'}}
+ function migrationText(value,lang=locale()){if(lang!=='en'||typeof value!=='string')return value;if(Object.hasOwn(migrationCopy,value))return migrationCopy[value];for(const [de,en] of [['Fehler: ','Error: '],['Kontoprüfung fehlgeschlagen: ','Account verification failed: '],['Cloud-Wiederaufnahme fehlgeschlagen: ','Cloud resume failed: '],['Daten übernommen, Anzeige konnte nicht aktualisiert werden: ','Data imported, but display could not be refreshed: ']])if(value.startsWith(de))return en+value.slice(de.length);const upload=/^Lokale (\d+) Einträge einmalig in die leere Supabase-Cloud übertragen\? Lokale Daten bleiben erhalten\.$/.exec(value);if(upload)return 'Transfer '+upload[1]+' local entries to the empty Supabase cloud once? Local data is preserved.';const restore=/^(\d+) Cloud-Einträge (laden und die unveränderten lokalen Standardwerte ersetzen|in den bisher leeren lokalen Speicher laden)\?$/.exec(value);if(restore)return 'Load '+restore[1]+' cloud entries '+(restore[2].startsWith('laden')?'and replace the unchanged local defaults?':'into the previously empty local storage?');return value;}
+
   function mount({ client, tool, localKey, collection, refresh, target, localFormat = 'object', bundleSources = null }) {
     if (!client || !/^[a-z0-9_-]{1,80}$/i.test(tool) || !localKey || !collection) throw new Error('Invalid migration configuration');
     if (typeof localKey !== 'string' || localKey.length > 160 || !/^[a-z0-9_-]+$/i.test(localKey) || typeof collection !== 'string' || !/^[a-z]{1,40}$/i.test(collection)) throw new Error('Invalid local collection');
@@ -20,6 +24,12 @@
     let refreshInProgress = false;
     let lastSyncError = null;
     let disposed = false;
+    const bindings=new Map();
+    function copy(node,value,attr=null){let fields=bindings.get(node);if(!fields){fields=new Map();bindings.set(node,fields)}fields.set(attr,value);const text=migrationText(value);if(attr)node.setAttribute(attr,text);else node.textContent=text;}
+    function repaint(){for(const [node,fields] of bindings){if(!node.isConnected){bindings.delete(node);continue}for(const [attr,value] of fields)copy(node,value,attr)}}
+    const localeEvents=['toolya:locale-change','toolya:wishes-locale-change','toolya:estate-locale-change','toolya:dashboard-locale-change'];
+    function confirmMigration(message){return confirm(migrationText(message));}
+
     let importInProgress = false;
     let migrationInProgress = false;
     let activeOperation = null;
@@ -231,7 +241,7 @@
         destinationBytes = stored.bytes;
         if (destinationBytes !== null) assertValidPayload(decodeLocal(JSON.parse(destinationBytes)));
       }
-      if (!confirm('Zum angemeldeten Konto wechseln? Die bisherigen lokalen Daten werden separat gesichert; ausstehende Offline-Änderungen bleiben erhalten. Es wird nichts automatisch hochgeladen.')) return false;
+      if (!confirmMigration('Zum angemeldeten Konto wechseln? Die bisherigen lokalen Daten werden separat gesichert; ausstehende Offline-Änderungen bleiben erhalten. Es wird nichts automatisch hochgeladen.')) return false;
       if ((await currentUser())?.id !== nextUid || currentOwner() !== previousUid) throw new Error('Kontostand während der Bestätigung geändert');
       ensureLocalUnchanged(previousBytes);
       if (localStorage.getItem(switchJournalKey) !== null) throw new Error('Ein Kontowechsel muss zuerst wiederhergestellt werden');
@@ -290,7 +300,7 @@
       lastEnableAt = now();
     }
     function reportError(error) { if (disposed) return; lastStatusErrorAt = now(); lastSyncError = error && error.message ? error.message : String(error); lastConflictMessage = lastSyncError; setStatus('Online-Sicherung nicht möglich. Bitte versuche es später erneut.'); }
-    function setStatus(message) { if (!disposed) { statusGeneration++; status.textContent = message; } }
+    function setStatus(message) { if (!disposed) { statusGeneration++; copy(status,message); } }
     function statusError(prefix, error) { lastStatusErrorAt = now(); lastConflictMessage = error && error.message ? error.message : String(error); const anonymous = !currentOwner() && /^Auth session missing!?$/i.test(lastConflictMessage); setStatus(anonymous ? 'Bitte melde dich an, wenn du deine Daten online sichern möchtest.' : 'Das hat nicht geklappt. Bitte versuche es erneut.'); }
     function currentOwner() { return localStorage.getItem(ownerKey); }
     function ownerMatches(uid) { return !!uid && currentOwner() === uid; }
@@ -474,7 +484,7 @@
         blocked.setAttribute('aria-live', 'polite');
         blocked.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#0f172a;color:white;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;padding:24px;font:18px system-ui;text-align:center';
         const message = document.createElement('p');
-        message.textContent = 'Dieses Gerät enthält Daten eines anderen Kontos. Die Dateneingabe bleibt gesperrt. Du kannst das ursprüngliche Konto anmelden oder die Kontodaten getrennt wechseln, ohne sie automatisch hochzuladen.';
+        copy(message,'Dieses Gerät enthält Daten eines anderen Kontos. Die Dateneingabe bleibt gesperrt. Du kannst das ursprüngliche Konto anmelden oder die Kontodaten getrennt wechseln, ohne sie automatisch hochzuladen.');
         const form = document.createElement('form');
         form.style.cssText = 'display:grid;gap:10px;width:min(100%,360px);margin:12px auto';
         const email = document.createElement('input');
@@ -484,28 +494,28 @@
         email.maxLength = 254;
         email.required = true;
         email.spellcheck = false;
-        email.placeholder = 'E-Mail des ursprünglichen Kontos';
+        copy(email,'E-Mail des ursprünglichen Kontos','placeholder');
         email.name = 'helferlein-account-email';
-        email.setAttribute('aria-label', 'E-Mail des ursprünglichen Kontos');
+        copy(email,'E-Mail des ursprünglichen Kontos','aria-label');
         const password = document.createElement('input');
         password.type = 'password';
         password.autocomplete = 'current-password';
         password.minLength = 1;
         password.required = true;
         password.spellcheck = false;
-        password.placeholder = 'Passwort';
+        copy(password,'Passwort','placeholder');
         password.name = 'helferlein-account-password';
-        password.setAttribute('aria-label', 'Passwort');
+        copy(password,'Passwort','aria-label');
         const loginButton = document.createElement('button');
         loginButton.type = 'submit';
         loginButton.setAttribute('aria-label', 'Mit dem ursprünglich zugeordneten Konto anmelden');
-        loginButton.textContent = 'Zum ursprünglichen Konto anmelden';
+        copy(loginButton,'Zum ursprünglichen Konto anmelden');
         loginButton.style.cssText = 'padding:10px;border-radius:8px;background:#fff;color:#0f172a;cursor:pointer';
         form.append(email, password, loginButton);
         form.noValidate = false;
         const back = document.createElement('button');
         back.type = 'button';
-        back.textContent = 'E-Mail-Eingabe auswählen';
+        copy(back,'E-Mail-Eingabe auswählen');
         back.style.cssText = 'padding:10px 16px;background:white;color:#0f172a;border-radius:8px;cursor:pointer';
         back.addEventListener('click', () => {
           if (disposed) return;
@@ -514,7 +524,7 @@
         });
         const switchButton = document.createElement('button');
         switchButton.type = 'button';
-        switchButton.textContent = 'Zum derzeit angemeldeten Konto wechseln';
+        copy(switchButton,'Zum derzeit angemeldeten Konto wechseln');
         switchButton.style.cssText = 'padding:10px 16px;background:#c7f9e6;color:#0f172a;border-radius:8px;cursor:pointer';
         switchButton.addEventListener('click', async () => {
           if (disposed || accountSwitchInProgress) return;
@@ -602,25 +612,26 @@
         }).catch(error => { if (generation === authGeneration) { enabledUser = null; statusError('Anmeldung konnte nicht geprüft werden', error); } });
       }, 0);
     });
+    for(const event of localeEvents)document.addEventListener(event,repaint);
     const host = document.createElement('section');
-    host.setAttribute('aria-label', 'Supabase-Datenübernahme');
+    copy(host,'Supabase-Datenübernahme','aria-label');
     host.style.cssText = 'margin:12px 0;padding:12px;border:1px solid #94a3b8;border-radius:12px;background:#f8fafc;color:#0f172a;font:14px system-ui';
     const title = document.createElement('strong');
-    title.textContent = 'Cloud-Sicherung (optional)';
+    copy(title,'Cloud-Sicherung (optional)');
     const status = document.createElement('p');
     status.setAttribute('role', 'status');
-    status.textContent = 'Ohne Anmeldung kannst du das Tool lokal verwenden. Deine Daten werden erst nach deiner ausdrücklichen Bestätigung in die Cloud übernommen.';
+    copy(status,'Ohne Anmeldung kannst du das Tool lokal verwenden. Deine Daten werden erst nach deiner ausdrücklichen Bestätigung in die Cloud übernommen.');
     const actions = document.createElement('div');
     actions.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap';
     function button(label, handler) {
       const b = document.createElement('button');
-      b.type = 'button'; b.textContent = label;
+      b.type = 'button'; copy(b,label);
       b.style.cssText = 'padding:7px 10px;border:1px solid #64748b;border-radius:8px;background:white;color:#0f172a';
       b.addEventListener('click', async () => {
         if (disposed || b.disabled) return;
         for (const item of actions.querySelectorAll('button')) item.disabled = true;
         try { assertActive(); await handler(); } catch (error) {
-          status.textContent = 'Fehler: ' + (error.message || String(error));
+          copy(status,'Fehler: ' + (error.message || String(error)));
         } finally {
           for (const item of actions.querySelectorAll('button')) item.disabled = false;
         }
@@ -678,7 +689,7 @@
       const cloud = await store.load();
       if (cloud.source !== 'cloud-empty') { lastConflictMessage = 'Cloud enthält bereits Daten'; throw new Error('Cloud enthält Daten oder ist nicht eindeutig erreichbar; Übernahme blockiert'); }
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während Cloud-Prüfung gewechselt');
-      if (!confirm('Lokale ' + entryCount(local) + ' Einträge einmalig in die leere Supabase-Cloud übertragen? Lokale Daten bleiben erhalten.')) return;
+      if (!confirmMigration('Lokale ' + entryCount(local) + ' Einträge einmalig in die leere Supabase-Cloud übertragen? Lokale Daten bleiben erhalten.')) return;
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Bestätigung gewechselt');
       ensureLocalUnchanged(originalBytes);
       ensureOwnerUnchanged(owner);
@@ -687,7 +698,7 @@
       if (result) ensureLocalUnchanged(originalBytes);
       if (result && !navigator.onLine) throw new Error('Verbindung nach Übertragung verloren; bitte Cloud-Status prüfen');
       if (result) await enable();
-      status.textContent = result ? 'Daten übertragen · weitere Änderungen werden synchronisiert.' : 'Übertragung ausstehend.';
+      copy(status,result ? 'Daten übertragen · weitere Änderungen werden synchronisiert.' : 'Übertragung ausstehend.');
       } finally { migrationInProgress = false; endOperation('upload'); }
     });
     // Only the untouched, known plant-care defaults may be replaced without a manual backup.
@@ -726,7 +737,7 @@
       if (!navigator.onLine) throw new Error('Verbindung beim Cloud-Laden verloren');
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während Cloud-Abfrage gewechselt');
       ensureCollection(result.data);
-      if (!confirm(entryCount(result.data) + (replaceUntouchedDefaults
+      if (!confirmMigration(entryCount(result.data) + (replaceUntouchedDefaults
         ? ' Cloud-Einträge laden und die unveränderten lokalen Standardwerte ersetzen?'
         : ' Cloud-Einträge in den bisher leeren lokalen Speicher laden?'))) return;
       // Recheck before writing: never replace local data added while awaiting confirmation.
@@ -739,8 +750,8 @@
       writeLocal(result.data);
       await enable();
       if ((await currentUser())?.id !== user.id) throw new Error('Konto nach Übernahme gewechselt');
-      status.textContent = 'Cloud-Daten lokal geladen. Seite wird aktualisiert.';
-      if (typeof refresh === 'function') { try { refresh(); } catch (error) { status.textContent = 'Daten übernommen, Anzeige konnte nicht aktualisiert werden: ' + error.message; } }
+      copy(status,'Cloud-Daten lokal geladen. Seite wird aktualisiert.');
+      if (typeof refresh === 'function') { try { refresh(); } catch (error) { copy(status,'Daten übernommen, Anzeige konnte nicht aktualisiert werden: ' + error.message); } }
       } finally { importInProgress = false; endOperation('import'); }
     });
     button('Offline-Änderungen abgleichen', async () => {
@@ -757,24 +768,24 @@
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während des Abgleichs gewechselt');
       if (result.status === 'conflict') {
         lastConflictMessage = 'Offline-Änderungen stehen im Konflikt mit Cloud-Daten';
-        status.textContent = 'Konflikt: Cloud und lokale Änderungen unterscheiden sich. Keine Daten überschrieben.';
+        copy(status,'Konflikt: Cloud und lokale Änderungen unterscheiden sich. Keine Daten überschrieben.');
         return;
       }
       if (result.status === 'ready') {
         if (!await isEnabled()) throw new Error('Synchronisierung wurde deaktiviert');
-        if (!confirm('Die Cloud ist leer. Ausstehende lokale Änderungen jetzt nach Supabase übertragen?')) {
-          status.textContent = 'Übertragung nicht bestätigt; lokale Änderungen bleiben erhalten.';
+        if (!confirmMigration('Die Cloud ist leer. Ausstehende lokale Änderungen jetzt nach Supabase übertragen?')) {
+          copy(status,'Übertragung nicht bestätigt; lokale Änderungen bleiben erhalten.');
           return;
         }
         if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Bestätigung gewechselt');
         assertOwner(user.id);
         if (!await store.hasPending()) throw new Error('Ausstehende Änderungen haben sich verändert');
         const done = await store.flush();
-        status.textContent = done ? 'Offline-Änderungen übertragen' : 'Änderungen bleiben ausstehend';
+        copy(status,done ? 'Offline-Änderungen übertragen' : 'Änderungen bleiben ausstehend');
       } else {
-        status.textContent = result.status === 'already-synced'
+        copy(status,result.status === 'already-synced'
           ? 'Änderungen bereits in Supabase vorhanden; bestätigt'
-          : 'Kein ungeklärter Offline-Ausgangsstand';
+          : 'Kein ungeklärter Offline-Ausgangsstand');
       }
       } finally { endOperation('reconcile'); }
     });
@@ -795,13 +806,13 @@
       setStatus(done ? 'Gespeichert' : 'Keine Änderungen nötig');
       } finally { endOperation('flush'); }
     });
-    void guardAccount().catch(error => { status.textContent = 'Kontoprüfung fehlgeschlagen: ' + error.message; });
+    void guardAccount().catch(error => { copy(status,'Kontoprüfung fehlgeschlagen: ' + error.message); });
     void currentUser().then(user => {
       if (disposed) return;
       if (user && isOwner(user.id) &&
           localStorage.getItem(enabledKey(user.id)) === 'true') {
         enabledUser = user.id;
-        void resume().catch(error => { status.textContent = 'Cloud-Wiederaufnahme fehlgeschlagen: ' + error.message; });
+        void resume().catch(error => { copy(status,'Cloud-Wiederaufnahme fehlgeschlagen: ' + error.message); });
       }
     }).catch(error => statusError('Cloud-Start fehlgeschlagen', error));
     host.append(title, status, actions);
@@ -820,7 +831,7 @@
       settingsDisclosure.setAttribute('aria-label', 'Cloud-Daten verwalten');
       settingsDisclosure.style.cssText = 'margin-top:12px;border-top:1px solid #cbd5e1;padding-top:12px;max-height:50vh;overflow:auto;color:#0f172a';
       const toggle = document.createElement('summary');
-      toggle.textContent = '☁️ Cloud-Daten verwalten';
+      copy(toggle,'☁️ Cloud-Daten verwalten');
       toggle.style.cssText = 'cursor:pointer;font:600 14px system-ui;min-height:36px;display:list-item;padding:8px 0';
       settingsDisclosure.append(toggle, host);
       settingsContent.append(settingsDisclosure);
@@ -835,6 +846,8 @@
     function dispose() {
       if (disposed) return;
       disposed = true;
+      for(const event of localeEvents)document.removeEventListener(event,repaint);
+      bindings.clear();
       lastCloudSource = null;
       enabledUser = null;
       verifiedOwner = null;
