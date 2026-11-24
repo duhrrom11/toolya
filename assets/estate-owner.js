@@ -6,6 +6,8 @@
  const $=id=>document.getElementById(id);
  const language=()=>{const active=window.__toolyaEstateLocale;if(active==='en'||active==='de')return active;try{return (new URLSearchParams(location.search).get('lang')||localStorage.getItem('toolya-locale-v1'))==='en'?'en':'de'}catch{return 'de'}};
  const ui=(de,en)=>language()==='en'?en:de;
+ const dateLocale=()=>ui('de-DE','en-GB');
+ let lastStatus=null;
  let user=null,key=null,payload=null,config=null,record=null,stamp=null,version=0,mailReady=false,busy=false,ownRaw=null,editId=null,idle=null;
  function message(text,error=false){$('message').hidden=false;$('message').textContent=text;$('message').classList.toggle('error',error);}
  const errors={vault_mismatch:'Der Gerätetresor und die Online-Sicherung gehören zu unterschiedlichen Tresoren. Beide Stände bleiben unverändert. Bitte nutze ein anderes Browserprofil.',conflict:'Der Tresor wurde auf einem anderen Gerät geändert. Nutze zunächst das Gerät mit dem aktuellen Stand. Deine Änderungen hier bleiben verschlüsselt erhalten.',login_required:'Bitte melde dich erneut an.',backup_required:'Bitte sichere zuerst deinen Tresor online.',rate_limited:'Zu viele Versuche. Bitte warte eine Minute.',notification_unavailable:'Die Alarm-E-Mail ist noch nicht eingerichtet. Es wurde kein Alarm gestartet.',reauthenticate:'Bitte bestätige dein Konto-Passwort erneut.'};
@@ -117,17 +119,24 @@
    localWrite({...record,releaseVersion:version,releasePending:false});$('backup-state').textContent='Online gesichert. Der Lesezugang ist auf dem aktuellen Stand.';
   }catch(e){localWrite({...record,releasePending:true});throw Error(e.message==='conflict'?'conflict':'Deine Unterlagen sind online gesichert. Der Lesezugang und Schlüsseländerungen wurden noch nicht bestätigt. Wähle „Jetzt online sichern“ erneut.');}
  }
- async function refreshStatus(){const s=await access('status');version=s.version;mailReady=s.notifications;const text={normal:'Kein Notfallalarm. Es sind zwei persönliche Schlüssel erforderlich.',notifying:'Ein Notfall wurde gemeldet. Die Alarm-E-Mail wird noch zugestellt. Es gibt noch keine Ein-Personen-Freigabe.',countdown:'Ein Notfall wurde gemeldet. Ohne Entwarnung ist der Zugang mit einem Schlüssel ab '+new Date(s.deadline).toLocaleString('de-DE')+' möglich.',released:'Die 24 Stunden sind abgelaufen. Eine Vertrauensperson kann deine Unterlagen mit ihrem Schlüssel lesen.'};$('alarm-state').textContent=text[s.status]||text.normal;$('checkin-state').textContent=s.lastCheckIn?'Letztes Lebenszeichen: '+new Date(s.lastCheckIn).toLocaleDateString('de-DE'):'';$('mail-status').textContent=mailReady?'Die E-Mail-Benachrichtigung ist eingerichtet.':'Der E-Mail-Versand ist noch nicht eingerichtet. Der 24-Stunden-Notfallalarm und Erinnerungsmails bleiben deshalb gesperrt. Der Zugang mit zwei Schlüsseln funktioniert.';}
+ async function refreshStatus(){const s=await access('status');version=s.version;mailReady=s.notifications;lastStatus=s;paintStatus(s);}
+ function paintStatus(s){const text={normal:'Kein Notfallalarm. Es sind zwei persönliche Schlüssel erforderlich.',notifying:'Ein Notfall wurde gemeldet. Die Alarm-E-Mail wird noch zugestellt. Es gibt noch keine Ein-Personen-Freigabe.',countdown:'Ein Notfall wurde gemeldet. Ohne Entwarnung ist der Zugang mit einem Schlüssel ab '+new Date(s.deadline).toLocaleString(dateLocale())+' möglich.',released:'Die 24 Stunden sind abgelaufen. Eine Vertrauensperson kann deine Unterlagen mit ihrem Schlüssel lesen.'};$('alarm-state').textContent=text[s.status]||text.normal;$('checkin-state').textContent=s.lastCheckIn?'Letztes Lebenszeichen: '+new Date(s.lastCheckIn).toLocaleDateString(dateLocale()):'';$('mail-status').textContent=mailReady?'Die E-Mail-Benachrichtigung ist eingerichtet.':'Der E-Mail-Versand ist noch nicht eingerichtet. Der 24-Stunden-Notfallalarm und Erinnerungsmails bleiben deshalb gesperrt. Der Zugang mit zwei Schlüsseln funktioniert.';}
  function eventLog(label){payload.events||=[];payload.events.unshift({at:new Date().toISOString(),label});payload.events=payload.events.slice(0,100);}
  function renderExtras(){
   $('funeral-wishes').value=payload.funeralWishes||'';
-  const history=$('estate-history');history.replaceChildren();
-  for(const e of (payload.events||[]).slice(0,30))history.append(node('p',new Date(e.at).toLocaleString('de-DE')+' – '+e.label));
-  if(!payload.events?.length)history.append(node('p','Noch keine Einträge.'));
+  paintHistory();
   const days=[90,180,365].includes(config.reviewDays)?config.reviewDays:180;$('review-days').value=String(days);
-  const due=config.lastReviewed?new Date(new Date(config.lastReviewed).getTime()+days*86400000):null;
-  $('review-state').textContent=due?'Nächste Überprüfung: '+due.toLocaleDateString('de-DE')+(due<Date.now()?' (fällig)':''):'Noch keine Überprüfung bestätigt.';
+  paintReview();
  }
+ function paintHistory(){const history=$('estate-history');history.replaceChildren();
+  for(const e of (payload.events||[]).slice(0,30))history.append(node('p',new Date(e.at).toLocaleString(dateLocale())+' – '+e.label));
+  if(!payload.events?.length)history.append(node('p',ui('Noch keine Einträge.','No entries yet.')));
+ }
+ function paintReview(){const days=[90,180,365].includes(config.reviewDays)?config.reviewDays:180;
+  const due=config.lastReviewed?new Date(new Date(config.lastReviewed).getTime()+days*86400000):null;
+  $('review-state').textContent=due?'Nächste Überprüfung: '+due.toLocaleDateString(dateLocale())+(due<Date.now()?' (fällig)':''):'Noch keine Überprüfung bestätigt.';
+ }
+ document.addEventListener('toolya:estate-locale-change',()=>{if(!key||!payload||!config)return;paintHistory();paintReview();if(lastStatus)paintStatus(lastStatus);});
  function render(){renderExtras();
   const list=$('entries');list.replaceChildren();if(!payload.entries.length)list.append(node('p','Hier ist Platz für deine erste Unterlage.'));
   for(const entry of payload.entries){const article=node('article',undefined,'entry');article.append(node('h3',entry.title||'Unterlage'),node('span',entry.category||'Sonstiges','badge'));if(entry.partner)article.append(node('p',entry.partner));if(entry.attachment)article.append(button('Anhang herunterladen',async()=>{const data=Uint8Array.from(atob(entry.attachment.data),c=>c.charCodeAt(0));const url=URL.createObjectURL(new Blob([data],{type:'application/octet-stream'}));const a=document.createElement('a');a.href=url;a.download=entry.attachment.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);}));const details=node('details');details.append(node('summary','Unterlage ansehen'),node('pre',entry.content||''));article.append(details);const actions=node('div',undefined,'row actions');actions.append(button('Bearbeiten',()=>editEntry(entry)),button('Löschen',async()=>{if(!await confirmAction('Unterlage löschen?',entry.title||'Diese Unterlage'))return;payload.entries=payload.entries.filter(x=>x!==entry);eventLog('Unterlage gelöscht: '+entry.title);await persist();message('Unterlage gelöscht und online gesichert.');},'danger'));article.append(actions);list.append(article);}

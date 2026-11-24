@@ -30,12 +30,15 @@ function mount(){
  const guide=document.querySelector('a[href="/toolya-dashboard/"]');
  const nodes=dynamicSelectors.map(s=>document.querySelector(s)).filter(Boolean);
  const [de,en]=buttons;
+ const statusSources=new WeakMap();
  function translateDynamic(){
   const lang=dashboardLocale();
   for(const el of nodes){
    if(el.children.length)continue;
    const txt=el.textContent;
-   const translated=translate(txt,lang);
+   const previous=statusSources.get(el),source=previous?.rendered===txt?previous.source:txt;
+   const translated=translate(source,lang);
+   statusSources.set(el,{source,rendered:translated});
    if(txt!==translated)el.textContent=translated;
    for(const attr of ['aria-label','title'])if(el.hasAttribute(attr)){
     const old=el.getAttribute(attr),next=translate(old,lang);

@@ -9,7 +9,7 @@ let user=null,tasks=[],occasions=[],gifts=[],editing=null,weekOffset=0,loaded=fa
 const dayMs=86400000;
 function today(){const d=new Date();return Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())}
 function days(date){const [y,m,d]=date.split('-').map(Number);return Math.round((Date.UTC(y,m-1,d)-today())/dayMs)}
-function option(el,value,label){const o=document.createElement('option');o.value=value;o.textContent=label;el.append(o)}
+function option(el,value,label){const o=document.createElement('option');o.value=value;o.textContent=label;if(value)o.setAttribute('data-user-content','');el.append(o)}
 function refreshLocale(){if(!loaded)return;if(pendingWrites){localePending=true;return}const occasion=$('occasion').value,gift=$('gift').value,selection=new Map([...$('rolloverSelection').querySelectorAll('input[type=checkbox]')].map(input=>[input.value,input.checked]));choices();$('occasion').value=occasion;refreshGifts();$('gift').value=gift;for(const template of document.querySelectorAll('[data-task-template]'))template.textContent=ui(templates.find(t=>t.title===template.dataset.taskTemplate)?.label||'');render();renderRolloverSelection();for(const input of $('rolloverSelection').querySelectorAll('input[type=checkbox]'))if(selection.has(input.value))input.checked=selection.get(input.value)}
 function settleWrite(){pendingWrites--;if(!pendingWrites&&localePending){localePending=false;refreshLocale()}}
 function choices(){for(const id of ['occasion','gift'])$(id).replaceChildren();option($('occasion'),'',ui('Ohne Anlass'));option($('gift'),'',ui('Ohne Geschenk'));
@@ -26,7 +26,7 @@ function render(){renderWeek();renderChecklistProgress();renderYearBalance();
  const visible=tasks.filter(t=>!t.archived_at&&(filter==='all'||(filter==='done'?t.status==='done':t.status!=='done'))).sort((a,b)=>Number(a.status==='done')-Number(b.status==='done')||((a.due_date?days(a.due_date):99999)-(b.due_date?days(b.due_date):99999))||a.priority-b.priority);
  if(!visible.length){const p=document.createElement('p');p.className='empty';p.textContent=ui('Keine Aufgaben in dieser Ansicht.');root.append(p)}
  for(const t of visible){
-  const item=document.createElement('article'),h=document.createElement('h3');item.className='item';h.textContent=t.title;
+  const item=document.createElement('article'),h=document.createElement('h3');item.className='item';h.setAttribute('data-user-content','');h.textContent=t.title;
   const occasion=occasions.find(o=>o.id===t.occasion_id),gift=gifts.find(g=>g.id===t.gift_plan_id);
   const meta=document.createElement('p');meta.textContent=[ui(labels[t.status]),ui(priorities[t.priority]),t.due_date?ui('Fällig: ')+new Date(t.due_date+'T12:00:00').toLocaleDateString(locale()):ui('Ohne Fälligkeit'),occasion?.title,gift?.title].filter(Boolean).join(' · ');
   const controls=document.createElement('div');controls.className='controls';
@@ -67,13 +67,15 @@ function occasionUTC(o){
  if(!o.repeats_yearly)return occurrence(y);
  const year=new Date(now).getUTCFullYear();let date=occurrence(year);if(date<now)date=occurrence(year+1);return date;
 }
+let dueSuggestion=null;
+function paintDueHint(){if(!dueSuggestion)return;const {suggestion,offset,title}=dueSuggestion;const en=globalThis.__toolyaWishesLocale==='en';$('dueHint').textContent=(en?'Suggestion: ':'Vorschlag: ')+new Date(suggestion+'T12:00:00').toLocaleDateString(locale())+(en?' (':' (')+offset+(en?' days before ':' Tage vor ')+title+(en?'). You can change the date.':'). Du kannst das Datum ändern.');}
 function suggestDate(offset=0){
  const gift=gifts.find(g=>g.id===$('gift').value),occasion=occasions.find(o=>o.id===($('occasion').value||gift?.occasion_id));
  const date=occasionUTC(occasion);
- if(date===null){$('dueHint').textContent='Bitte zuerst einen Anlass mit Datum auswählen.';return false}
+ if(date===null){dueSuggestion=null;$('dueHint').textContent=ui('Bitte zuerst einen Anlass mit Datum auswählen.');return false}
  const suggestion=localDate(date-offset*dayMs);
  $('due').value=suggestion;
- $('dueHint').textContent='Vorschlag: '+new Date(suggestion+'T12:00:00').toLocaleDateString(locale())+' ('+offset+' Tage vor '+occasion.title+'). Du kannst das Datum ändern.';
+ dueSuggestion={suggestion,offset,title:occasion.title};paintDueHint();
  return true;
 }
 for(const template of templates){
@@ -177,4 +179,4 @@ $('rolloverCreate').addEventListener('click',async()=>{
 });
 main().catch(()=>{$('status').textContent='Aufgaben konnten nicht geladen werden.'});
 
-document.addEventListener('toolya:wishes-locale-change',refreshLocale);
+document.addEventListener('toolya:wishes-locale-change',()=>{refreshLocale();paintDueHint();});

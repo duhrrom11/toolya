@@ -7,9 +7,10 @@ export function applyEstateLocale(document,lang){
   if(el.closest(exclude)&&!el.hasAttribute('data-estate-copy'))continue;
   let rec=attrs.get(el);if(!rec){rec=new Map();attrs.set(el,rec)}
   for(const attr of ['aria-label','placeholder','title']){
-   if(!rec.has(attr))rec.set(attr,el.getAttribute(attr));
-   const before=rec.get(attr);if(before===null)continue;
+   const current=el.getAttribute(attr),previous=rec.get(attr);
+   const before=previous?.rendered===current?previous.source:current;if(before===null)continue;
    const after=estateText(before,lang);
+   rec.set(attr,{source:before,rendered:after});
    if(el.getAttribute(attr)!==after)el.setAttribute(attr,after);
   }
   for(const child of el.childNodes){
