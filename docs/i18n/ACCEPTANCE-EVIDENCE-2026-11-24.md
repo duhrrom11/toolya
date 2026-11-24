@@ -20,3 +20,14 @@ Main 5cccf344a680dfe081aca1868b835a69acaf00b8 intentionally retires mascots.html
 ## Not accepted yet
 
 34 opt-in application views and 38 heuristic message-file candidates require further runtime review. These counts are not confirmed translation defects. Complete authenticated and dynamic journeys, accessibility, export checks and SEO release readiness remain open. English public noindex must stay in place until acceptance. Do not merge into main or deploy on this evidence alone.
+
+## Verified evidence after main reconciliation
+
+Head a7cf47e1a3fa21622a47b370e107231e6f430d68:
+
+- [Translation quality](https://github.com/duhrrom11/toolya/actions/runs/45491783881/job/138791735669): 373 tests passed, zero failed; 32 local bilingual layout checks, zero visual review warnings; public wishlist editorial DE/EN at 320 and 390 px; 48 application shell and 36 authenticated shell checks passed. These are shell checks, not exhaustive state-by-state acceptance.
+- [Platform tests](https://github.com/duhrrom11/toolya/actions/runs/45491783922/job/138791778761): 124 unit/static tests passed, including PWA, sitemap, social previews and original mascot assets; isolated real SDK sign-in, 12 tool routes and 10 reloads, refresh and sign-out passed; two-device isolated synchronization passed. The overall job failed on navigation to retired /mascots.html. Commit df57980 replaces that obsolete navigation with an English mascot-settings assertion; new CI required.
+- [Estate/security](https://github.com/duhrrom11/toolya/actions/runs/45491783922/job/138791777300): isolated mail, PostgreSQL security and recovery, household access and encrypted backup cases passed; Chromium owner/trustee security, print, local QR, mobile widths 320/375/768/1280/1440 passed. This is security/functional evidence, not comprehensive translation evidence.
+- [Strict audit](https://github.com/duhrrom11/toolya/actions/runs/45491783848): 70 HTML, 129 JS/MJS, 16 English public pages, zero missing routes, zero public German heuristic candidates, five language entrypoints assign document language. All 16 English public pages remain noindex; 34 app views and 38 message-file candidates still require review. Strict gate remains failed.
+
+No production test records were created. No release approval is granted.
