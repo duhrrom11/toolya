@@ -1356,6 +1356,213 @@ function applyToolParagraphCopy(document,tool,language){
 }
 /* Small labels in the tool-owned layout that are not covered by form labels
    or paragraph descriptions. Source exact, leaf-only and reversible. */
+/* Source-verified static leaf labels across five tools. */
+const extendedSmallCopy=Object.freeze({
+  "parking": {
+    "Standort / Parkhaus": "Location / parking garage",
+    "Parkebene / Sektor": "Parking level / section",
+    "Gebühr in €": "Fee in €",
+    "Parkplatzfoto auswählen": "Choose parking photo",
+    "Parkhistorie nach Zeitraum filtern": "Filter parking history by date",
+    "KFZ Smartphone-Halterungen": "Car phone mounts"
+  },
+  "meters": {
+    "Verbrauch erfassen, Kosten auswerten und Ablesetermine im Blick behalten": "Record consumption, review costs and track meter-reading dates",
+    "📖 Ausklappbare Anleitung: Richtig ablesen & Energie sparen": "📖 Expandable guide: Read meters correctly and save energy",
+    "Erfasste Ablesungen": "Recorded readings",
+    "Verlauf nach Zählertyp filtern": "Filter history by meter type",
+    "Der Wechsel auf hochwertige LEDs spart bis zu 85 % Beleuchtungsstrom.": "Switching to quality LEDs can save up to 85% of lighting electricity.",
+    "Smarte Thermostate senken die Heizkosten im Schnitt um 10 bis 15 %.": "Smart thermostats can reduce heating costs by around 10–15%.",
+    "🔄 Zählerwechsel Start": "🔄 Meter replacement start",
+    "Zählerstände": "Meter readings",
+    "Reduziere deine Jahres-Nachzahlung effektiv mit diesen praxiserprobten Spar-Tipps und passenden Amazon-Empfehlungen:": "Reduce your annual utility bill adjustment with these practical saving tips and related Amazon recommendations:"
+  },
+  "loans": {
+    "Verliehene Dinge": "Lent items",
+    "Aktiv": "Active",
+    "Verloren/Defekt": "Lost / damaged",
+    "Zurück": "Returned",
+    "Offene Kaution": "Outstanding deposit",
+    "Telefon (für WhatsApp)": "Phone (for WhatsApp)",
+    "Kategorie des Gegenstands": "Item category",
+    "Seriennummer / ISBN / Barcode": "Serial number / ISBN / barcode",
+    "GPS-Tracker URL / AirTag Link (optional)": "GPS tracker URL / AirTag link (optional)",
+    "Oder neuen Namen direkt eingeben...": "Or enter a new name directly…",
+    "Notiz (optional)": "Note (optional)",
+    "Foto des verliehenen Gegenstands auswählen": "Choose a photo of the lent item",
+    "Verleih nach Person filtern": "Filter lending records by person",
+    "Bluetooth & GPS Tracker (AirTags)": "Bluetooth and GPS trackers (AirTags)",
+    "Werkzeugkoffer & Boxen": "Tool cases and boxes",
+    "Scannen, um Details aufzurufen.": "Scan to view details."
+  },
+  "car": {
+    "Registrierte Fahrzeuge": "Registered vehicles",
+    "Gesamtkosten (gefiltert)": "Total costs (filtered)",
+    "Fahrzeugname": "Vehicle name",
+    "Kennzeichen": "Registration plate",
+    "KM-Stand": "Mileage",
+    "Notfall- / Pannen-Tel.": "Emergency / breakdown phone",
+    "Fahrzeug für den Eintrag": "Vehicle for this record",
+    "Art des Eintrags": "Record type",
+    "Datum des Eintrags": "Record date",
+    "Fahrzeug für den Reifensatz": "Vehicle for tyre set",
+    "Reifentyp": "Tyre type",
+    "Lagerort": "Storage location",
+    "Historie nach Fahrzeug filtern": "Filter history by vehicle",
+    "⛽ Kraftstoff- & Tank-Statistik (Aktueller Monat)": "⛽ Fuel statistics (current month)",
+    "Autokosten": "Vehicle costs",
+    "Bezeichnung": "Description",
+    "Kosten in €": "Cost in €",
+    "Profil (mm)": "Tread (mm)",
+    "Liter": "Litres",
+    "DOT / Jahr": "DOT / year",
+    "Profil mm": "Tread mm",
+    "Hilfe & Anleitung anzeigen": "Show help and guide",
+    "📖 Kurzanleitung – So funktioniert's:": "📖 Quick guide – How it works:",
+    "1. Fahrzeug & Papiere": "1. Vehicle and documents",
+    "2. Wartung & Tanken": "2. Maintenance and refuelling",
+    "3. Wartung und Tankkosten": "3. Maintenance and fuel costs",
+    "4. Reifen & Backup": "4. Tyres and backup",
+    "Hilfe & Anleitung ausblenden": "Hide help and guide",
+    "Versicherung & Pol.-Nr.": "Insurance & policy no."
+  },
+  "pet-health": {
+    "Impfungen, Tierarztbesuche, Medikamente und Gesundheitsdaten für Hund und Katze": "Vaccinations, vet visits, medication and health records for cats and dogs",
+    "Registrierte Haustiere": "Registered pets",
+    "Gesundheits-Einträge": "Health records",
+    "Name des Haustiers": "Pet name",
+    "Tierart / Rasse": "Species / breed",
+    "Chip-Nummer": "Microchip number",
+    "Allergien / Unverträglichkeiten": "Allergies / intolerances",
+    "Straße, PLZ &amp; Ort der Praxis": "Practice street, postal code and city",
+    "Haustier für den Eintrag": "Pet for this record",
+    "Gewicht in kg (optional)": "Weight in kg (optional)",
+    "Medikament / Vorrat": "Medication / stock",
+    "Stück / Packung": "Pieces / packs",
+    "Keine Medikamente in der Apotheke hinterlegt.": "No medications recorded.",
+    "Noch keine Haustiere erfasst.": "No pets recorded yet.",
+    "Verlauf nach Haustier filtern": "Filter history by pet",
+    "Keine Termine erfasst.": "No appointments recorded.",
+    "Tiergesundheit": "Pet health",
+    "Gesamtkosten": "Total costs",
+    "🏥 Tierarzt & Praxis-Verzeichnis:": "🏥 Vet and practice directory:",
+    "Telefon / Notfall-Nr.": "Phone / emergency number",
+    "Bezeichnung": "Description",
+    "Kosten in € (optional)": "Cost in € (optional)",
+    "Hilfe & Anleitung anzeigen": "Show help and guide",
+    "📖 Kurzanleitung – So funktioniert's:": "📖 Quick guide – How it works:",
+    "1. Haustier & Praxis": "1. Pet and vet practice",
+    "2. Gewicht & Trends": "2. Weight and trends",
+    "3. Apotheke & Vorräte": "3. Medicine and stock",
+    "4. Kalender & Export": "4. Calendar and export",
+    "Hilfe & Anleitung ausblenden": "Hide help and guide",
+    "🛡️ TASSO / Register": "🛡️ TASSO / registry",
+    "Futtermarke & Sorte": "Food brand & variety",
+    "Praxisname & Tierarzt": "Practice name & veterinarian"
+  },
+  "moving": {
+    "Erfasste Kisten": "Recorded boxes",
+    "Standorte": "Locations",
+    "Gesamtwert Inventar": "Total inventory value",
+    "Standort Name": "Location name",
+    "Kisten-Name": "Box name",
+    "Wert in € (optional)": "Value in € (optional)",
+    "Inhalt / Beschreibung": "Contents / description",
+    "Garantie- oder Ablaufdatum": "Warranty or expiry date",
+    "Foto der Kiste auswählen": "Choose box photo",
+    "3. QR-Code drucken": "3. Print QR code",
+    "4. Scanne & Finde": "4. Scan and find"
+  },
+  "plants": {
+    "Bestand": "Inventory",
+    "Heutiger Bedarf": "Today's needs",
+    "Zisternen-Stand": "Water tank level",
+    "Ernte-Ertrag": "Harvest yield",
+    "Leitfaden": "Guide",
+    "Art / Sorte": "Species / variety",
+    "Standort / Beet": "Location / garden bed",
+    "Artikel": "Item",
+    "Menge": "Quantity",
+    "Neues Saatgut gesucht?": "Looking for new seeds?",
+    "Sorte": "Variety",
+    "Erntejahr": "Harvest year",
+    "Gewinnbilanz": "Profit overview",
+    "Restbestand": "Remaining stock",
+    "Wichtige Anmerkungen & Pflegehinweise...": "Important notes and care instructions…"
+  },
+  "baking": {
+    "In 3 Schritten zum passenden Backrezept": "Find your baking recipe in three steps",
+    "Mein Rezept": "My recipe",
+    "Meine Zutaten": "My ingredients",
+    "Teigmenge nicht ändern": "Keep batter quantity",
+    "Meinen Ofenfaktor nutzen": "Use my oven adjustment",
+    "Mit Rand": "With rim",
+    "Springformen": "Springform pans",
+    "Ofenthermometer": "Oven thermometer",
+    "Backpapier": "Baking paper",
+    "Faktor": "Factor",
+    "Backzeit (ca.)": "Baking time (approx.)",
+    "Temperatur": "Temperature",
+    "Kosten": "Costs",
+    "So voll wird die Form:": "Expected pan fill level:",
+    "Lagerungstipp:": "Storage tip:",
+    "1. Rezept & Basis": "1. Recipe and basics",
+    "2. Form vergleichen": "2. Compare pans",
+    "4. Kochmodus": "4. Cooking mode",
+    "Multi-Timer aktiv": "Multi-timer active",
+    "1 EL Chiasamen + 3 EL Wasser ODER 2 EL Apfelmark.": "1 tbsp chia seeds + 3 tbsp water OR 2 tbsp applesauce.",
+    "1 TL Natron + 1 TL Zitronensaft oder Essig.": "1 tsp baking soda + 1 tsp lemon juice or vinegar.",
+    "250ml Milch + 1 EL Zitronensaft (5 Min. ruhen lassen).": "250 ml milk + 1 tbsp lemon juice (rest for 5 minutes).",
+    "Finde passende Silikonformen, Teigschaber oder Spritzbeutel direkt online.": "Find suitable silicone pans, spatulas or piping bags online.",
+    "Ca. 180g Glasur": "Approx. 180 g icing",
+    "Konto wird geprüft …": "Checking account…"
+  },
+  "budget": {
+    "Ausgaben erfassen, Budget planen, Belege scannen und Garantien verwalten": "Track expenses, plan budgets, scan receipts and manage warranties",
+    "Ausgabe": "Expense",
+    "Einnahme": "Income",
+    "Fixkosten/Abos": "Fixed costs / subscriptions",
+    "OCR-Scanner": "Receipt text scanner",
+    "Monats-Einnahmen": "Monthly income",
+    "Monats-Saldo": "Monthly balance",
+    "Fixkosten-Quote": "Fixed-cost ratio",
+    "Garantiewert aktiv": "Active warranty value",
+    "Hausrat-Zeitwert": "Current household item value",
+    "Steuer-Gesamtwert": "Total tax-relevant value",
+    "Monatsverlauf (Cashflow)": "Monthly cash flow",
+    "🔄 Wiederkehrende Fixkosten / Abo": "🔄 Recurring fixed costs / subscription",
+    "💼 Steuerrelevant": "💼 Tax relevant",
+    "⚡ Thermopapier-Filter (Helligkeit/Kontrast anpassen):": "⚡ Thermal paper filter (adjust brightness/contrast):",
+    "🔄 Fixkosten": "🔄 Fixed costs",
+    "💼 Steuer": "💼 Tax",
+    "Garantie abgelaufen": "Warranty expired",
+    "Lade Budgets...": "Loading budgets…",
+    "Belegfoto auswählen": "Choose receipt photo"
+  },
+  "housemates": {
+    "Monats-Einnahmen": "Monthly income",
+    "Monats-Saldo": "Monthly balance",
+    "Offene WG-Schulden": "Outstanding household debts",
+    "Fixkosten-Quote": "Fixed-cost ratio",
+    "Inventar Restwert": "Remaining inventory value",
+    "Aktive Sticky Notes": "Active sticky notes",
+    "WLAN-Passwort:": "Wi-Fi password:",
+    "Vermieter:": "Landlord:",
+    "Hausmeister / Notdienst:": "Caretaker / emergency service:",
+    "🔄 Wiederkehrende Fixkosten": "🔄 Recurring fixed costs",
+    "💼 Steuerrelevant": "💼 Tax relevant",
+    "Berechne Ausgleich...": "Calculating settlement…",
+    "Berechnet den fairen Zeitwert & Auszahlungsanspruch bei Auszug.": "Calculates fair current value and compensation when moving out.",
+    "Inkl. Amazon-Link & Kassen-Sync": "Includes Amazon link and receipt sync",
+    "Putz- & Reinigungsmittel": "Cleaning supplies",
+    "📌 Oben anpinnen (Wichtige Notiz)": "📌 Pin to top (important note)",
+    "📇 Smartphone-Kontakte importieren:": "📇 Import phone contacts:",
+    "Lade...": "Loading…",
+    "Lade Budgets...": "Loading budgets…",
+    "Belegfoto auswählen": "Choose receipt photo",
+    "Spendier dem Entwickler einen Kaffee": "Buy the developer a coffee"
+  }
+});
 const toolSmallCopy=Object.freeze({
   "moving": {
     "Standort der Kiste": "Box location",
@@ -1389,7 +1596,7 @@ const toolSmallCopy=Object.freeze({
   }
 });
 function applyToolSmallCopy(document,tool,language){
- const dictionary=toolSmallCopy[tool];if(!dictionary)return;
+ const dictionary={...(toolSmallCopy[tool]||{}),...(extendedSmallCopy[tool]||{})};if(!Object.keys(dictionary).length)return;
  for(const el of document.querySelectorAll('#main-content span,#main-content strong,#main-content li,#main-content p,#settingsModal strong,#settingsModal span,.b3-tool-title p')){
   if(el.children.length||el.isContentEditable||el.closest('[contenteditable="true"]'))continue;
   const original=originals.get(el)?.get('text')??el.textContent;
@@ -1535,6 +1742,8 @@ function applyBakingMixedTextCopy(document,language){
    links, aria-controls, handlers or calculation inputs. */
 const extraFormCopy=Object.freeze({
  "budget": {
+  "🎉 Freizeit, Gastronomie & Urlaub": "🎉 Leisure, dining and holidays",
+  "🐾 Haustiere": "🐾 Pets",
   "Haushaltsbuch mit Kassenbon-Scanner": "Household budget and receipt scanner",
   "📘 Kombinierte Gebrauchsanleitung": "📘 Combined user guide",
   "1. Buchungen & Finanzen": "1. Transactions and finances",
@@ -1806,7 +2015,7 @@ function applyAdditionalToolCopy(document,tool,language){
   }
  }
 }
-const templateCopyAttributes=[['data-tool-en',null],['data-tool-en-aria-label','aria-label'],['data-tool-en-title','title'],['data-tool-en-placeholder','placeholder']];
+const templateCopyAttributes=[['data-tool-en',null],['data-tool-en-aria-label','aria-label'],['data-tool-en-title','title'],['data-tool-en-placeholder','placeholder'],['data-tool-en-alt','alt']];
 
 function applyTemplateCopy(document,language){
  for(const [marker,attribute] of templateCopyAttributes){
@@ -1853,7 +2062,28 @@ function applyBudgetGuideFragments(document,language){
  }
 }
 
+export /* Browser tab titles are application-owned UI, not persisted records.
+   Only replace exact known titles to avoid overwriting runtime/custom titles. */
+const toolPageTitles=Object.freeze({
+ moving:['Umzugskisten und Inventarliste | Toolya','Moving boxes and inventory | Toolya'],
+ housemates:['WG-Organisator mit Haushaltsbuch | Toolya','Roommate organiser and household budget | Toolya'],
+ plants:['Pflanzenpflege-App mit Gießplan | Toolya','Plant care and watering planner | Toolya'],
+ baking:['Backform-Umrechner & Rezeptrechner | Toolya','Cake pan and recipe calculator | Toolya'],
+ budget:['Haushaltsbuch mit Kassenbon-Scanner | Toolya','Household budget and receipt scanner | Toolya'],
+ car:['Autokosten-Rechner | Toolya','Car expense calculator | Toolya'],
+ loans:['Verliehene Gegenstände verwalten | Toolya','Track lent items | Toolya'],
+ 'pet-health':['Tiergesundheit – Gesundheitstagebuch für Haustiere | Toolya','Pet health journal | Toolya'],
+ parking:['Parkplatz-Merker | Toolya','Parking spot tracker | Toolya'],
+ meters:['Zählerstände erfassen: Strom, Gas & Wasser | Toolya','Meter readings: electricity, gas and water | Toolya']
+});
+function applyToolPageTitle(document,tool,language){
+ const titles=toolPageTitles[tool];
+ if(!titles || (language!=='en' && language!=='de'))return;
+ if(document.title===titles[0] || document.title===titles[1]) document.title=titles[language==='en'?1:0];
+}
+
 export function applyToolInterfaceLocale(document,tool,language){
+ applyToolPageTitle(document,tool,language);
  for(const [selector,translation,attribute,attributeTranslation] of [...common,...(toolTranslations[tool]||[]),...(extendedFormTranslations[tool]||[])]){
   const translated=attribute?attributeTranslation:translation;
   for(const element of document.querySelectorAll(selector)){
@@ -2238,6 +2468,215 @@ const dialogPrefixes = Object.freeze({
   'Mitgliederverwaltung: ': 'Member management: '
  }
 });
+/* Source-exact native dialog additions; no stored data changes. */
+const extendedDialogAdditions = Object.freeze({
+  "car": {
+    "Aktuellen Kilometerstand aktualisieren:": "Update current mileage:",
+    "Bitte bestätigen, dass die Cloud-Sicherung tatsächlich heruntergeladen und sicher gespeichert wurde.": "Confirm the cloud backup was downloaded and saved securely.",
+    "Backup erfolgreich importiert!": "Backup imported successfully!"
+  },
+  "budget": {
+    "Bitte bestätigen, dass die Cloud-Sicherung tatsächlich heruntergeladen und sicher gespeichert wurde.": "Confirm the cloud backup was downloaded and saved securely.",
+    "Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.": "The QR code could not be loaded. Please try again."
+  },
+  "moving": {
+    "Standort umbenennen:": "Rename location:",
+    "Dieser Standort enthält Kisten aus einem aktiven Umzug. Bitte den Umzug erst abschließen.": "This location contains boxes from an active move. Finish the move first.",
+    "Diese Kiste ist einem aktiven Umzug zugeordnet. Bitte den Umzug erst abschließen.": "This box belongs to an active move. Finish the move first.",
+    "Dieses Backup enthält keine Umzugsprojekte. Die bestehenden Umzugsplanungen würden verloren gehen. Trotzdem fortfahren?": "This backup contains no moving projects. Existing move plans would be lost. Continue anyway?",
+    "Vor dem Import bitte eine aktuelle Sicherung herunterladen und überprüfen.": "Before importing, download and verify a current backup.",
+    "Hast du die aktuelle Sicherung erfolgreich heruntergeladen?": "Did you download the current backup successfully?",
+    "Der QR-Scanner konnte nicht geladen werden. Bitte versuche es erneut.": "The QR scanner could not be loaded. Please try again.",
+    "Kamera-Zugriff fehlgeschlagen oder nicht unterstützt.": "Camera access failed or is unsupported."
+  },
+  "plants": {
+    "Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.": "The QR code could not be loaded. Please try again.",
+    "Gespeichert": "Saved.",
+    "Nicht gefunden.": "Not found.",
+    "Pflanzenfoto konnte nicht verarbeitet werden. Nichts gespeichert.": "Plant photo could not be processed. Nothing was saved.",
+    "Das Foto konnte nicht gelesen werden.": "The photo could not be read.",
+    "Es konnte keine eindeutige Pflanzen-ID erzeugt werden.": "A unique plant ID could not be generated.",
+    "⚠️ Pflanze wirklich löschen?": "⚠️ Delete this plant?",
+    "Ungültige Pflanzen-ID. Die Änderungen wurden nicht gespeichert.": "Invalid plant ID. Changes were not saved.",
+    "Pflanze nicht gefunden. Die Änderungen wurden nicht gespeichert.": "Plant not found. Changes were not saved.",
+    "Bitte einen Pflanzennamen eingeben.": "Enter a plant name.",
+    "Bitte ein gültiges Gießdatum eingeben.": "Enter a valid watering date."
+  },
+  "housemates": {
+    "Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.": "The QR code could not be loaded. Please try again.",
+    "Mitgliederzugriff entfernt.": "Member access removed.",
+    "Mitgliederzugriff erteilt. Der WG-Link kann jetzt geteilt werden.": "Member access granted. The household link can now be shared.",
+    "🔗 WG-Link kopiert! Teile ihn nur mit berechtigten Personen.": "🔗 Household link copied! Share only with authorised people.",
+    "WG-Link manuell kopieren:": "Copy household link manually:",
+    "Der automatische Schuldenausgleich ist vorübergehend deaktiviert, damit keine Buchungen gelöscht werden. Bitte die vorgeschlagenen Überweisungen manuell durchführen und die Buchungen zur Dokumentation aufbewahren.": "Automatic debt settlement is temporarily disabled to prevent deleting transactions. Make suggested transfers manually and keep transaction records."
+  },
+  "baking": {
+    "Timer abgelaufen!": "Timer finished!"
+  },
+  "loans": {
+    "Gespeichert": "Saved"
+  },
+  "meters": {
+    "Gespeichert": "Saved",
+    "Backup erfolgreich importiert!": "Backup imported successfully!"
+  },
+  "pet-health": {
+    "Lokale Haustierdaten nach Sicherung in die Cloud übernehmen?": "Import local pet records into the cloud after backing them up?"
+  }
+});
+/* Source-exact dialog coverage for the shared tool locale wrapper. */
+const auditedDialogAdditions = Object.freeze({
+  "parking": {
+    "Lokale Parkplatzdaten nach Sicherung in die Cloud übernehmen?": "Import local parking data into the cloud after backing them up?",
+    "Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?": "Cloud and device data exist. Keep cloud data and back up local data separately?",
+    "Bitte bestätigen, dass die Sicherung heruntergeladen wurde.": "Please confirm that the backup was downloaded.",
+    "Browser-Benachrichtigungen erlaubt. Lass diese Seite für den Timer geöffnet.": "Browser notifications enabled. Keep this page open for the timer.",
+    "Dein Browser unterstützt keine Benachrichtigungen.": "Your browser does not support notifications.",
+    "Parkscheibe gestellt auf nächste halbe Stunde + 2 Stunden Parkzeit!": "Parking disc set to the next half-hour plus two hours of parking.",
+    "Speichern nicht bestätigt. Cloud-Datenstand prüfen.": "Save not confirmed. Check the cloud data.",
+    "Möchtest du diesen Eintrag wirklich löschen?": "Are you sure you want to delete this entry?"
+  },
+  "loans": {
+    "Bestehende Verleihdaten in dein Toolya-Konto übernehmen? Vorhandene Cloud-Daten werden nicht überschrieben.": "Import existing lending records into your Toolya account? Existing cloud data will not be overwritten.",
+    "Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?": "Cloud and device data exist. Keep cloud data and back up local data separately?",
+    "Bitte bestätigen, dass die Sicherung heruntergeladen wurde.": "Please confirm that the backup was downloaded.",
+    "Bitte einen Namen eingeben!": "Please enter a name!",
+    "Bitte eine Bezeichnung für den Gegenstand angeben!": "Please enter an item description!",
+    "Diesen Stamm-Gegenstand wirklich löschen?": "Delete this saved item?",
+    "Bitte Namen des Gegenstands eingeben:": "Enter the item name:",
+    "Bitte Person und Ausleihdatum angeben!": "Please enter the person and lending date!",
+    "⚠️ Diesen Eintrag wirklich löschen?": "⚠️ Delete this entry?",
+    "Bitte Gegenstand, Person und Ausleihdatum angeben!": "Please enter the item, person and lending date!",
+    "Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.": "The QR code could not be loaded. Please try again.",
+    "Bild konnte nicht verarbeitet werden. Nichts gespeichert.": "Image could not be processed. Nothing was saved."
+  },
+  "meters": {
+    "Bestehende Zählerstände nach Sicherung in Toolya Cloud übernehmen?": "Import existing meter readings into Toolya Cloud after backing them up?",
+    "Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?": "Cloud and device data exist. Keep cloud data and back up local data separately?",
+    "Bitte bestätigen, dass die Sicherung heruntergeladen wurde.": "Please confirm that the backup was downloaded.",
+    "Bitte gültige, nichtnegative Tarife und einen positiven Gasfaktor eingeben.": "Enter valid non-negative tariffs and a positive gas conversion factor.",
+    "Bitte gültiges Ablesedatum und Zählerstand eingeben!": "Enter a valid reading date and meter reading!",
+    "⚠️ Achtung: Der Verbrauch seit der letzten Ablesung ist ungewöhnlich hoch (+50% über Schnitt)! Trotzdem speichern?": "⚠️ Consumption since the last reading is unusually high (over 50% above average). Save anyway?",
+    "Zählerfoto konnte nicht verarbeitet werden. Nichts gespeichert.": "The meter photo could not be processed. Nothing was saved.",
+    "Das Zählerfoto konnte nicht verarbeitet werden. Bitte ein anderes Bild auswählen.": "The meter photo could not be processed. Choose another image.",
+    "Das Zählerfoto konnte nicht geöffnet werden.": "The meter photo could not be opened.",
+    "Das Zählerfoto konnte nicht gelesen werden.": "The meter photo could not be read.",
+    "⚠️ Diesen Zählerstand wirklich löschen?": "⚠️ Delete this meter reading?",
+    "Keine Zählerstände zum Teilen vorhanden.": "No meter readings available to share.",
+    "Zwischenablage nicht verfügbar. Text manuell kopieren:": "Clipboard unavailable. Copy the text manually:",
+    "📋 Zählerstände in die Zwischenablage kopiert! Du kannst sie jetzt direkt in WhatsApp oder E-Mail einfügen.": "📋 Meter readings copied to the clipboard! You can now paste them into WhatsApp or email.",
+    "Backup importieren? Vorhandene Zählerstände und Tarife werden ersetzt.": "Import backup? Existing meter readings and tariffs will be replaced.",
+    "Fehler beim Importieren der Datei.": "Error importing the file.",
+    "Backup-Datei konnte nicht gelesen werden.": "The backup file could not be read."
+  },
+  "car": {
+    "Bitte einen Fahrzeugnamen eingeben!": "Please enter a vehicle name!",
+    "⚠️ Möchtest du dieses Fahrzeug und alle zugehörigen Einträge wirklich unwiderruflich löschen?": "⚠️ Permanently delete this vehicle and all its records?",
+    "Bitte ein Fahrzeug wählen!": "Please select a vehicle!",
+    "Bitte Fahrzeug, Datum und Bezeichnung angeben!": "Please enter a vehicle, date and description!",
+    "Eintrag nicht bestätigt. Bitte den Cloud-Datenstand prüfen, bevor du es erneut versuchst.": "Entry not confirmed. Check cloud data before trying again.",
+    "Beleg konnte nicht verarbeitet werden. Bitte eine andere Bilddatei wählen oder ohne Beleg speichern.": "Receipt could not be processed. Choose another image or save without a receipt.",
+    "Beleg konnte nicht verarbeitet werden. Bitte erneut versuchen.": "Receipt could not be processed. Please try again.",
+    "Bitte Bezeichnung und Datum eingeben!": "Please enter a description and date!",
+    "⚠️ Diesen Eintrag wirklich löschen?": "⚠️ Delete this entry?",
+    "Backup zu groß (maximal 20 MB).": "Backup too large (maximum 20 MB).",
+    "Ungültiges Backup-Format.": "Invalid backup format.",
+    "Ungültige Reifendaten im Backup.": "Invalid tyre data in backup.",
+    "Bild konnte nicht verarbeitet werden.": "Image could not be processed.",
+    "Backup-Datei konnte nicht gelesen werden.": "The backup file could not be read."
+  },
+  "moving": {
+    "Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden nicht überschrieben.": "Import existing device data into your Toolya account? Cloud data will not be overwritten.",
+    "Cloud- und Gerätedaten vorhanden. Cloud-Daten behalten und Gerätedaten separat sichern?": "Cloud and device data exist. Keep cloud data and back up device data separately?",
+    "Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.": "Please confirm that the backup was downloaded.",
+    "Bitte Standort eingeben!": "Please enter a location!",
+    "⚠️ Möchtest du diesen Standort und ALLE Kisten darin wirklich löschen?": "⚠️ Delete this location and ALL boxes inside it?",
+    "Bitte Standort und Kisten-Name angeben!": "Please enter a location and box name!",
+    "Bitte Artikel-Name eingeben!": "Please enter an item name!",
+    "⚠️ Möchtest du diese Kiste wirklich löschen?": "⚠️ Delete this box?",
+    "Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.": "The QR code could not be loaded. Please try again.",
+    "Keine Kisten vorhanden.": "No boxes available.",
+    "Bild konnte nicht gelesen werden. Nichts gespeichert.": "Image could not be read. Nothing was saved."
+  },
+  "plants": {
+    "Bitte ein gültiges Fassungsvermögen größer als 0 eingeben.": "Enter a valid capacity greater than zero.",
+    "Regentonne / Zisterne vollständig aufgefüllt!": "Rain barrel / cistern filled completely!",
+    "Bitte ein gültiges Saatgutjahr eingeben.": "Enter a valid seed year.",
+    "Mehrere Pflanzen gefunden. Bitte die eindeutige Pflanzen-ID eingeben.": "Multiple plants found. Enter the unique plant ID.",
+    "Ungültige Pflanzen-ID.": "Invalid plant ID.",
+    "Bitte eine gültige Erntemenge in ganzen Gramm eingeben.": "Enter a valid harvest amount in whole grams.",
+    "Die gesamte Erntemenge überschreitet den unterstützten Zahlenbereich.": "The total harvest exceeds the supported numeric range.",
+    "Lokale Pflanzendaten nach Sicherung in die Cloud übernehmen?": "Import local plant data into the cloud after backing them up?",
+    "Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?": "Cloud and device data exist. Keep cloud data and back up local data separately?",
+    "Bitte bestätigen, dass die Sicherung heruntergeladen wurde.": "Please confirm that the backup was downloaded.",
+    "Bitte Name und gültiges Gießdatum angeben!": "Enter a name and a valid watering date!",
+    "Bitte ein Gießintervall zwischen 1 und 3650 Tagen eingeben.": "Enter a watering interval between 1 and 3650 days.",
+    "Bitte ein gültiges Vermehrungsdatum eingeben.": "Enter a valid propagation date.",
+    "Das Foto konnte nicht verarbeitet werden. Bitte ein anderes Bild auswählen.": "The photo could not be processed. Choose another image.",
+    "Das Foto konnte nicht geöffnet werden. Bitte ein gültiges Bild auswählen.": "The photo could not be opened. Choose a valid image.",
+    "Es konnte keine gültige Pflanzen-ID erzeugt werden.": "A valid plant ID could not be generated.",
+    "Pflanze nicht gefunden. Es wurde nichts gelöscht.": "Plant not found. Nothing was deleted."
+  },
+  "budget": {
+    "Bitte nur JPG-, PNG-, GIF- oder WebP-Bilder auswählen. Bereits vorhandene Belegbilder bleiben erhalten.": "Choose only JPG, PNG, GIF or WebP images. Existing receipt images will be kept.",
+    "Die ausgewählten Belegbilder sind zusammen zu groß (maximal 4 MB). Bitte kleinere Fotos auswählen. Bereits vorhandene Belegbilder bleiben erhalten.": "The selected receipt images exceed 4 MB in total. Choose smaller photos. Existing receipt images will be kept.",
+    "Der Browser konnte den Bildleser nicht starten. Bitte die Bildauswahl erneut versuchen.": "The browser could not start the image reader. Select the images again.",
+    "Ein Belegbild hat ein ungültiges Format. Bitte die Bildauswahl erneut versuchen.": "A receipt image has an invalid format. Select the images again.",
+    "Das erste Belegbild konnte nicht verarbeitet werden. Bitte erneut auswählen.": "The first receipt image could not be processed. Select it again.",
+    "Das erste Belegbild konnte nicht geöffnet werden. Bitte erneut auswählen.": "The first receipt image could not be opened. Select it again.",
+    "Ein Belegbild konnte nicht gelesen werden. Bitte die Bildauswahl erneut versuchen.": "A receipt image could not be read. Select the images again.",
+    "Ein Belegbild konnte nicht geöffnet werden. Bitte die Bildauswahl erneut versuchen.": "A receipt image could not be opened. Select the images again.",
+    "Die Bildanpassung ist fehlgeschlagen. Bitte das Belegfoto erneut auswählen.": "Image adjustment failed. Select the receipt photo again.",
+    "Bitte wähle zuerst ein Belegfoto aus!": "Select a receipt photo first.",
+    "Mindestens ein Belegbild konnte nicht geladen werden. Bitte Bilder erneut auswählen oder entfernen.": "At least one receipt image could not be loaded. Select the images again or remove them.",
+    "Die Belegbilder werden noch geladen. Bitte kurz warten und erneut speichern.": "Receipt images are still loading. Wait briefly and save again.",
+    "Bitte Titel, gültiges Kaufdatum und einen positiven Betrag angeben!": "Enter a title, valid purchase date and positive amount!",
+    "Bitte gültige Garantie-, Rückgabe- und Lebensdauerwerte angeben.": "Enter valid warranty, return-period and useful-life values.",
+    "Diese Buchung ist nicht mehr vorhanden. Die Änderungen wurden nicht gespeichert.": "This transaction no longer exists. Changes were not saved.",
+    "⚠️ Diese Buchung wirklich löschen?": "⚠️ Delete this transaction?",
+    "Bitte gültigen Titel, positiven Zielbetrag und Startbetrag ab 0 € eingeben!": "Enter a valid title, positive target amount and starting amount of at least €0!",
+    "Sparziel löschen?": "Delete savings goal?",
+    "Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.": "This receipt is missing a valid purchase date or warranty duration.",
+    "Keine Buchungen für den CSV-Export vorhanden.": "No transactions available for CSV export.",
+    "Keine steuerrelevanten Buchungen gefunden!": "No tax-relevant transactions found!",
+    "Backup in Toolya Cloud gespeichert.": "Backup saved to Toolya Cloud.",
+    "Backup-Datei konnte nicht gelesen werden.": "The backup file could not be read."
+  },
+  "housemates": {
+    "Ungültige WG-ID im Link.": "Invalid household ID in the link.",
+    "Bitte E-Mail und Passwort eingeben.": "Enter your email and password.",
+    "Abmeldung angehalten: Deine Änderungen sind noch nicht online gesichert. Bitte speichere sie, bevor du dich abmeldest.": "Sign-out paused: your changes have not been backed up online. Save them before signing out.",
+    "Migration ist nur für eine ältere WG verfügbar.": "Migration is available only for a legacy household.",
+    "Die Cloud-Daten der alten WG wurden gelesen. Jetzt eine private Kopie für dein Konto erstellen?": "The legacy household's cloud data were loaded. Create a private copy for your account now?",
+    "Private WG-Kopie erstellt.\nDer alte WG-Link bleibt bestehen.\nBitte teile ab jetzt nur den neuen Link mit freigegebenen Mitgliedern.": "Private household copy created.\nThe old household link remains active.\nFrom now on, share only the new link with approved members.",
+    "Mitgliederverwaltung ist nur für geschützte WGs verfügbar.": "Member management is available only for protected households.",
+    "Deine Benutzer-ID zum Freigeben durch den WG-Eigentümer:": "Your user ID for approval by the household owner:",
+    "Speicherkonflikt: Die WG wurde andernorts geändert. Lokale Änderungen bleiben erhalten; bitte vor dem Neuladen sichern.": "Save conflict: the household was changed elsewhere. Local changes are retained; back them up before reloading.",
+    "Deine Änderungen sind auf diesem Gerät gespeichert. Die Online-Sicherung steht noch aus.": "Your changes are saved on this device. Online backup is still pending.",
+    "Cloud-Daten neu laden? Nicht synchronisierte lokale Änderungen können verloren gehen.": "Reload cloud data? Unsynced local changes may be lost.",
+    "Deine WG-Daten wurden neu geladen.": "Your household data were reloaded.",
+    "Die WG-Daten konnten gerade nicht neu geladen werden. Prüfe deine Verbindung und versuche es erneut.": "Household data could not be reloaded. Check your connection and try again.",
+    "Keine gültige WG-ID vorhanden.": "No valid household ID available.",
+    "WG-Cloud nicht erreichbar. Lokale Daten dieser WG werden angezeigt; Änderungen können derzeit nicht zuverlässig synchronisiert werden.": "Household cloud unavailable. Local data are shown; changes cannot currently be synced reliably.",
+    "Bitte mindestens einen Titel angeben!": "Please enter at least a title!",
+    "Bitte Titel und Datum angeben!": "Please enter a title and date!",
+    "Bitte Pflichtfelder ausfüllen!": "Please complete the required fields!",
+    "Bitte Belegfoto auswählen!": "Please select a receipt photo!",
+    "Bitte mindestens Titel, Datum und Betrag angeben!": "Please enter at least a title, date and amount!",
+    "Bitte Titel und Zielbetrag angeben!": "Please enter a title and target amount!",
+    "Keine WG-ID aktiv.": "No household ID is active.",
+    "Bitte zuerst ein WG-Mitglied anlegen.": "Please add a household member first.",
+    "Bitte Aufgabe angeben!": "Please enter a task!",
+    "Bitte Bezeichnung eingeben!": "Please enter a description!",
+    "Zutaten übernommen!": "Ingredients added!",
+    "Bitte Name und gültige Kosten angeben!": "Please enter a name and valid costs!"
+  },
+  "baking": {
+    "Lokale Rezepte nach Sicherung in die Cloud übernehmen?": "Import local recipes into the cloud after backing them up?",
+    "Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?": "Cloud and device data exist. Keep cloud data and back up local data separately?",
+    "Bitte bestätigen, dass die Sicherung heruntergeladen wurde.": "Please confirm that the backup was downloaded."
+  }
+});
 export function translateToolDialog(tool, language, message) {
  if(language!=='en' || typeof message!=='string') return message;
  const exact=Object.hasOwn(dialogCopy,tool) && Object.hasOwn(dialogCopy[tool],message) ? dialogCopy[tool][message] : undefined;
@@ -2245,6 +2684,12 @@ export function translateToolDialog(tool, language, message) {
  const additional=Object.hasOwn(additionalDialogCopy,tool)&&Object.hasOwn(additionalDialogCopy[tool],message)
   ? additionalDialogCopy[tool][message] : undefined;
  if(additional!==undefined)return additional;
+ const audited=Object.hasOwn(auditedDialogAdditions,tool) && Object.hasOwn(auditedDialogAdditions[tool],message) ? auditedDialogAdditions[tool][message] : undefined;
+ if(audited!==undefined)return audited;
+ const extended=Object.hasOwn(extendedDialogAdditions,tool) && Object.hasOwn(extendedDialogAdditions[tool],message)
+  ? extendedDialogAdditions[tool][message] : undefined;
+ if(extended!==undefined) return extended;
+ 
  for(const [prefix,translated] of Object.entries({...sharedDialogPrefixes,...(dialogPrefixes[tool]||{})}))
   if(message.startsWith(prefix)) {
    const detail=message.slice(prefix.length);
@@ -2285,9 +2730,11 @@ const toolRuntimeReverse=Object.freeze(Object.fromEntries(Object.entries(toolRun
 const toolRuntimePrefixes=Object.freeze({budget:[['✏️ Buchung bearbeiten: ','✏️ Edit transaction: ']]});
 export function translateToolRuntimeStatus(tool,language,message){
  if(typeof message!=='string'||(language!=='en'&&language!=='de'))return message;
- const table=(language==='en'?toolRuntimeStatus:toolRuntimeReverse)[tool];
+ const catalogue=language==='en'?toolRuntimeStatus:toolRuntimeReverse;
+ const table=Object.hasOwn(catalogue,tool)?catalogue[tool]:undefined;
  if(table&&Object.hasOwn(table,message))return table[message];
- for(const [de,en]of toolRuntimePrefixes[tool]||[]){
+ const prefixes=Object.hasOwn(toolRuntimePrefixes,tool)?toolRuntimePrefixes[tool]:[];
+ for(const [de,en]of prefixes){
   const source=language==='en'?de:en,target=language==='en'?en:de;
   if(message.startsWith(source))return target+message.slice(source.length);
  }
