@@ -55,3 +55,9 @@ Die 41 Dateien sind eine **Quelltext-Prüfliste**, keine Zahl bewiesener falsch 
 Nach dem ersten konsolidierten Merge-Commit wurden **16 von 16** Workflows auf HEAD `d3c9b204` erfolgreich abgeschlossen, einschließlich i18n, i18next, Plattform, Maskottchen, Estate-Security, Connect, Amazon, Budget, Moving und Cloud-Chromium. Die neue maschinenlesbare Aufgabenliste und die zusätzlichen Zehn-Tool-Browsersmokes benötigen nach ihren Commits eine eigene aktuelle CI-Prüfung; ältere grüne Läufe werden nicht als Nachweis für den neuen HEAD ausgegeben.
 
 **Freigabeentscheidung:** `main` bleibt unverändert. Der große Draft bleibt **nicht releasefähig**, solange die fehlenden dynamischen E2E-Abnahmen, die 34 Ansichten, SEO/A11y- und Exportprüfungen sowie der abschließende CI-Status nicht vollständig nachgewiesen sind.
+
+## Nachtrag: reziproke Sprachverweise und Analytics-Einwilligung
+
+- Die fünf deutschen Ausgangsseiten `index.html`, `umzugskisten/index.html`, `wg-organisator/index.html`, `pflanzenpflege/index.html` und `backform-rechner/index.html` hatten kein vollständiges hreflang-Paar im HTML-Head. Der Entwicklungsbranch ergänzt jeweils `de` und `en`, ohne `canonical` oder Indexierung anzutasten. `tests/i18n/seo-reciprocity.test.mjs` prüft beide Richtungen für **alle 17 Seitenpaare**, Open-Graph-Metadaten und EN-`noindex`.
+- Der gemeinsame Analytics-Einwilligungsdialog unter `assets/toolya-consent.js` hat jetzt EN/DE-Bedientexte und den passenden Datenschutz-Link. Bestehende Zustimmung, Widerruf und GA4-Policy bleiben unverändert; isolierter Test: `tests/privacy/ga4-consent.test.cjs`.
+- **Keine SEO-Release-Freigabe:** Alle 17 englischen Seiten behalten `noindex`, und vollständige Auth-/Export-/A11y-/Modal-Abnahmen bleiben offen.
