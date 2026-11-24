@@ -21,12 +21,20 @@ const proStaticCopy=new Map([["Deine Backform zum Drehen","Your interactive baki
 const proOriginalText=new WeakMap();
 function localizeProControls(){
  const root=$('toolya-backstudio');if(!root)return;
- for(const node of root.querySelectorAll('.bsp-panel h4,.bsp-panel .bsp-muted,.bsp-panel .bsp-actions > button,.bsp-panel label > span,#toolya-backstudio article > label > span,.bsp-panel option,#bsp-3d-status,#bsp-ocr-status')){
+ // Live status nodes are localized from their last action's exact DE/EN pair.
+ // Never cache their initial text as static copy: that would overwrite an error
+ // or success status before localizeProLiveStatuses can reverse-translate it.
+ for(const node of root.querySelectorAll('.bsp-panel h4,.bsp-panel .bsp-muted,.bsp-panel .bsp-actions > button,.bsp-panel > button,.bsp-panel label > span,#toolya-backstudio article > label > span,.bsp-panel option')){
   if(node.children.length)continue;
   const source=proOriginalText.get(node)??node.textContent;
   if(!proStaticCopy.has(source))continue;
   proOriginalText.set(node,source);
   node.textContent=window.__toolyaUILocale==='en'?proStaticCopy.get(source):source;
+ }
+ // Translate only the untouched initial hint, never an action-generated status.
+ for(const [id,de,en] of [['bsp-3d-status','Hier erscheint deine drehbare Backform.','Your interactive baking pan appears here.'],['bsp-ocr-status','Wähle Kamera oder Foto.','Choose camera or photo.']]){
+  const node=$(id);
+  if(node&&(node.textContent===de||node.textContent===en))node.textContent=proEn()?en:de;
  }
  const input=$('bsp-recipe-text');if(input)input.placeholder=window.__toolyaUILocale==='en'?'Paste recipe or ingredient list here…':'Rezept oder Zutatenliste hier einfügen …';
  const canvas=$('bsp-3d');if(canvas)canvas.setAttribute('aria-label',window.__toolyaUILocale==='en'?'Interactive 3D pan. Rotate with mouse, touch or arrow keys.':'Interaktive 3D-Backform, mit Maus oder Touch drehen, mit Pfeiltasten drehen');
@@ -88,7 +96,7 @@ function init3D(){
  });
  action(controls,'Wieder von vorn',()=>{state.rotX=-.24;state.rotY=.6;render3D()});
  txt('p','Drehe die Form, um sie von allen Seiten anzusehen.',pane).className='bsp-muted';
- txt('p','Hier erscheint deine drehbare Backform.',pane).id='bsp-3d-status';
+ txt('p',proUi('Hier erscheint deine drehbare Backform.','Your interactive baking pan appears here.'),pane).id='bsp-3d-status';
  const dragStart={x:0,y:0};
  canvas.addEventListener('pointerdown',e=>{if(!state.object)return;state.dragging=true;dragStart.x=e.clientX;dragStart.y=e.clientY;canvas.setPointerCapture(e.pointerId)});
  canvas.addEventListener('pointermove',e=>{if(!state.dragging)return;state.rotY+=(e.clientX-dragStart.x)*.01;state.rotX=Math.max(-1.25,Math.min(.8,state.rotX+(e.clientY-dragStart.y)*.01));dragStart.x=e.clientX;dragStart.y=e.clientY;render3D()});
@@ -187,14 +195,14 @@ function normalizeRecipe(text){
  const first=new RegExp('^('+q+')\\s*('+units+')?\\s+(.+)$','i');
  const last=new RegExp('^(.+?)\\s+('+q+')\\s*('+units+')\\s*$','i');
  for(const line of lines){
-  const raw=line.trim().replace(/^[•*–\-]\s*/,'').replace(/^\d+[.)]\s*/,'');
+  const raw=line.trim().replace(/^[•*–\-]\s*/,'').replace(/^\d+[.)]\s+/,'');
   if(!raw||/^(zutaten|zubereitung|anleitung|für den teig|für die füllung)\s*:?$/i.test(raw))continue;
   let m=raw.match(first),name,unit,qty;
   if(m){qty=parseNumber(m[1]);unit=m[2]||'';name=m[3]}
   else{m=raw.match(last);if(m){name=m[1];qty=parseNumber(m[2]);unit=m[3]}}
   if(!m||!Number.isFinite(qty)||qty<0||!name){warnings.push(raw);continue}
   if(!unit && /^(?:ei|eier|stück|stk\.?|pck\.?)$/i.test(name.trim())){unit=name.trim();name='';}
-  if(/^\s*[-–]\s*\d/.test(name))warnings.push(proUi('Mengenbereich bitte prüfen: ','Check quantity range: ')+raw);
+  if(/^\s*[-–]\s*\d/.test(name))warnings.push({type:'range',raw});
   const standardizedUnit=/^(eier|ei)$/i.test(unit)?'Eier':/^(stk\.?|stück)$/i.test(unit)?'Stück':/^(paket|pck\.?)$/i.test(unit)?'Pck':unit;
   items.push({name:name.trim(),qty,unit:standardizedUnit,source:raw});
  }
@@ -337,18 +345,27 @@ function initRecipe(){
   finally{btn.disabled=false}
  }).id='bsp-ocr-button';
  txt('p','Bitte die erkannten Zutaten prüfen.',ocr).className='bsp-muted';
- const cameraStatus=txt('p','Wähle Kamera oder Foto.',ocr);
+ const cameraStatus=txt('p',proUi('Wähle Kamera oder Foto.','Choose camera or photo.'),ocr);
  cameraStatus.id='bsp-ocr-status';cameraStatus.setAttribute('role','status');cameraStatus.setAttribute('aria-live','polite');
 
 }
-let reviewed=[];
-function reviewRecipe(source){
- const result=normalizeRecipe(source);reviewed=result.items;const host=$('bsp-preview');host.replaceChildren();
+let reviewed=[],reviewWarnings=[],hasReviewedRecipe=false;
+// Repaint the last OCR review without reparsing, saving or modifying recipe inputs.
+function renderReviewedPreview(){
+ if(!hasReviewedRecipe)return;
+ const host=$('bsp-preview');if(!host)return;host.replaceChildren();
  if(!reviewed.length){txt('p',proUi('Keine eindeutig erkennbaren Mengen gefunden. Bitte Text bearbeiten.','No clearly recognized quantities found. Edit the recipe text.'),host);return}
  const table=txt('div',null,host);
  for(const item of reviewed){const row=txt('div',null,table);row.className='bsp-match';txt('span',(fmt(item.qty,2)+' '+item.unit+' '+item.name).trim(),row)}
- if(result.warnings.length){txt('p',proUi('Bitte manuell prüfen (','Check manually (')+result.warnings.length+proUi(' Zeilen):',' lines):'),host);for(const w of result.warnings.slice(0,30))txt('p',w,host)}
-
+ if(reviewWarnings.length){
+  txt('p',proUi('Bitte manuell prüfen (','Check manually (')+reviewWarnings.length+proUi(' Zeilen):',' lines):'),host);
+  for(const warning of reviewWarnings.slice(0,30))txt('p',typeof warning==='string'?warning:proUi('Mengenbereich bitte prüfen: ','Check quantity range: ')+warning.raw,host);
+ }
+}
+function reviewRecipe(source){
+ const result=normalizeRecipe(source);
+ reviewed=result.items;reviewWarnings=result.warnings;hasReviewedRecipe=true;
+ renderReviewedPreview();
 }
 function applyReviewed(){
  if(!reviewed.length)return;
@@ -397,6 +414,8 @@ function initMemory(){
  const controls=txt('div',null,pane);controls.className='bsp-actions';
  action(controls,'Backnotiz speichern',saveExtendedLog);
  action(controls,'Notizen herunterladen',exportMemory);
+ const memoryStatus=txt('p','',pane);
+ memoryStatus.id='bsp-memory-status';memoryStatus.setAttribute('role','status');memoryStatus.setAttribute('aria-live','polite');
  txt('p','Die Notizen bleiben auf deinem Gerät.',pane).className='bsp-muted';
  const gallery=txt('div',null,pane);gallery.id='bsp-memory-list';
  $('bsp-memory-search').addEventListener('input',renderMemory);check.addEventListener('change',renderMemory);
@@ -419,14 +438,30 @@ function exportMemory(){
  const url=URL.createObjectURL(blob);const a=txt('a','',document.body);a.href=url;a.download=proUi('toolya-backgedaechtnis.json','toolya-baking-notes.json');a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
  status('bsp-memory-status',proUi('Notizen gespeichert.','Notes exported.'));
 }
+function displayMemoryDate(entry){
+ const fallback=entry.date||'';
+ if(entry.iso){
+  const date=new Date(entry.iso);
+  if(Number.isFinite(date.getTime()))return date.toLocaleDateString(proEn()?'en-GB':'de-DE');
+ }
+ // Legacy notes have a German date string without ISO. Only reformat
+ // verified calendar dates; leave custom/invalid stored text untouched.
+ if(!proEn())return fallback;
+ const found=/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(fallback);
+ if(!found)return fallback;
+ const day=Number(found[1]),month=Number(found[2]),year=Number(found[3]);
+ const date=new Date(Date.UTC(year,month-1,day,12));
+ if(date.getUTCFullYear()!==year||date.getUTCMonth()!==month-1||date.getUTCDate()!==day)return fallback;
+ return date.toLocaleDateString('en-GB',{timeZone:'UTC'});
+}
 function renderMemory(){
  const host=$('bsp-memory-list');if(!host)return;host.replaceChildren();
  const data=read(),logs=Array.isArray(data.logs)?data.logs:[];const search=($('bsp-memory-search')?.value||'').trim().toLocaleLowerCase('de-DE'),favorites=!!$('bsp-favorites')?.checked;
- const selected=logs.map((x,index)=>({x,index})).filter(({x})=>x&&typeof x==='object'&&(!favorites||x.favorite)&&[x.name,x.note,x.date].join(' ').toLocaleLowerCase('de-DE').includes(search)).reverse().slice(0,50);
+ const selected=logs.map((x,index)=>({x,index})).filter(({x})=>x&&typeof x==='object'&&(!favorites||x.favorite)&&[x.name,x.note,x.date,displayMemoryDate(x)].join(' ').toLocaleLowerCase('de-DE').includes(search)).reverse().slice(0,50);
  if(!selected.length){txt('p',proUi('Keine Notizen gefunden.','No notes found.'),host);return}
  for(const {x,index} of selected){
   const row=txt('div',null,host);row.className='bsp-match';
-  txt('strong',(x.favorite?'★ ':'')+(x.name||proUi('Backerfahrung','Baking note'))+' · '+(x.date||''),row);
+  txt('strong',(x.favorite?'★ ':'')+(x.name||proUi('Backerfahrung','Baking note'))+' · '+displayMemoryDate(x),row);
   txt('span',[x.minutes&&x.minutes+' min',x.temperature&&x.temperature+' °C',x.rating&&x.rating+proUi('/5 Sterne','/5 stars'),x.shape&&proUi('Form: ','Pan: ')+({'round':proUi('Rund','Round'),'rect':proUi('Rechteck','Rectangular'),'volume':proUi('Spezialform','Special pan'),'muffin':proUi('Muffinmulden','Muffin cups')}[x.shape]||x.shape),x.note].filter(Boolean).join(' · '),row);
   action(row,x.favorite?proUi('★ Favorit','★ Favorite'):proUi('☆ Favorit','☆ Favorite'),()=>{const state=read();if(!Array.isArray(state.logs)||!state.logs[index])return;state.logs[index].favorite=!state.logs[index].favorite;if(write(state))renderMemory()});
   action(row,proUi('Löschen','Delete'),()=>{if(!confirm(proUi('Diese Notiz löschen?','Delete this note?')))return;const state=read();if(!Array.isArray(state.logs))return;state.logs.splice(index,1);if(write(state))renderMemory()})
@@ -439,7 +474,7 @@ function init(){
   document.addEventListener('toolya:locale-change',()=>{
    localizeProControls();
    localizeProLiveStatuses();
-   renderComparisons();updateCake();renderMemory();redraw3D();
+   renderReviewedPreview();renderComparisons();updateCake();renderMemory();redraw3D();
   });
  // Default rating for extended notes (in the original memory card).
  const memory=cardOf('bs-logs');if(memory){const rating=txt('label',null,memory);txt('span','Wie gut hat es geklappt? (1–5 Sterne)',rating);const input=txt('input',null,rating);input.id='bsp-rating';input.type='number';input.min='1';input.max='5';input.value='3'}

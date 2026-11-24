@@ -1,5 +1,7 @@
 import {currentUser,likeCounts,myReactions,reactionButtons} from './collection-social.mjs';
 import {db} from './toolya-client.mjs';
+import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
+const ui=source=>wishesText(source,globalThis.__toolyaWishesLocale==='en'?'en':'de');
 const $=id=>document.getElementById(id);
 const tabs=[...document.querySelectorAll('[data-tab]')];
 let tab='following',viewer=null,all=[],following=new Set(),reactions={likes:new Set(),bookmarks:new Set()},counts=new Map(),profiles=new Map();
@@ -21,20 +23,20 @@ function render(){
  for(const item of rows){
   const card=document.createElement('article');card.className='card';
   const cover=document.createElement('div');cover.className='cover';cover.textContent=item.icon||'🎁';
-  if(item.cover_url){try{const u=new URL(item.cover_url);if(u.protocol==='https:'){const img=document.createElement('img');img.src=u.href;img.alt='Titelbild der Sammlung: '+(item.title||'Sammlung');img.loading='lazy';img.referrerPolicy='no-referrer';cover.replaceChildren(img)}}catch{}}
+  if(item.cover_url){try{const u=new URL(item.cover_url);if(u.protocol==='https:'){const img=document.createElement('img');img.src=u.href;img.alt=ui('Titelbild der Sammlung: ')+(item.title||ui('Sammlung'));img.loading='lazy';img.referrerPolicy='no-referrer';cover.replaceChildren(img)}}catch{}}
   const body=document.createElement('div');body.className='card-body';
   const badge=document.createElement('span');badge.className='badge';badge.textContent='❤️ '+(counts.get(item.id)||0)+' Likes';
   const title=document.createElement('h2');title.textContent=item.title;body.append(badge,title);
   if(item.description){const p=document.createElement('p');p.textContent=item.description;body.append(p)}
   const owner=profiles.get(item.user_id);
   if(owner){const link=document.createElement('a');link.href=new URL('./profile.html?handle='+encodeURIComponent(owner.handle),location.href).href;link.textContent='👤 '+owner.display_name;body.append(link)}
-  const link=document.createElement('a');link.className='primary';link.href=new URL('./collection.html?id='+encodeURIComponent(item.id),location.href).href;link.textContent='Wunschwelt öffnen ↗';body.append(link);
+  const link=document.createElement('a');link.className='primary';link.href=new URL('./collection.html?id='+encodeURIComponent(item.id),location.href).href;link.textContent=ui('Wunschwelt öffnen ↗');body.append(link);
   body.append(reactionButtons({db,listId:item.id,user:viewer,likes:reactions.likes,bookmarks:reactions.bookmarks,counts,notify:msg=>{$('actionStatus').textContent=msg;if(msg==='Gespeichert.'||msg==='Auswahl entfernt.')render()}}));
   card.append(cover,body);grid.append(card);
  }
- $('status').textContent=rows.length+' Wunschwelten · Auswahl aus maximal 100 zuletzt veröffentlichten Sammlungen.';
- $('feedHint').textContent=tab==='following'?'Neue öffentliche Sammlungen der Profile, denen du folgst.':tab==='saved'?'Deine privat gespeicherten Sammlungen, sofern weiterhin öffentlich.':'Empfehlungen nach Themen deiner Likes und Merkliste; ohne bisherige Interessen nach Likes und Aktualität.';
- if(!rows.length){const p=document.createElement('p');p.className='empty';p.textContent=!viewer?'Melde dich an, um deinen persönlichen Feed zu sehen. Empfehlungen kannst du bereits ohne Anmeldung entdecken.':tab==='following'?'Noch keine neuen öffentlichen Sammlungen gefolgter Profile. Folge Personen in der Community.':tab==='saved'?'Noch keine gemerkten Sammlungen. Öffne Entdecken und tippe auf „Merken“.':'Aktuell keine öffentlichen Sammlungen verfügbar.';grid.append(p)}
+ $('status').textContent=rows.length+ui(' Wunschwelten · Auswahl aus maximal 100 zuletzt veröffentlichten Sammlungen.');
+ $('feedHint').textContent=ui(tab==='following'?'Neue öffentliche Sammlungen der Profile, denen du folgst.':tab==='saved'?'Deine privat gespeicherten Sammlungen, sofern weiterhin öffentlich.':'Empfehlungen nach Themen deiner Likes und Merkliste; ohne bisherige Interessen nach Likes und Aktualität.');
+ if(!rows.length){const p=document.createElement('p');p.className='empty';p.textContent=ui(!viewer?'Melde dich an, um deinen persönlichen Feed zu sehen. Empfehlungen kannst du bereits ohne Anmeldung entdecken.':tab==='following'?'Noch keine neuen öffentlichen Sammlungen gefolgter Profile. Folge Personen in der Community.':tab==='saved'?'Noch keine gemerkten Sammlungen. Öffne Entdecken und tippe auf „Merken“.':'Aktuell keine öffentlichen Sammlungen verfügbar.');grid.append(p)}
 }
 async function load(){
  viewer=await currentUser(db);if(!viewer)tab='recommended';
@@ -50,4 +52,7 @@ async function load(){
  render();
 }
 tabs.forEach(button=>button.addEventListener('click',()=>{tab=button.dataset.tab;render()}));
-load().catch(()=>{$('status').textContent='Feed konnte nicht geladen werden. Bitte später erneut versuchen.'});
+load().catch(()=>{$('status').textContent=ui('Feed konnte nicht geladen werden. Bitte später erneut versuchen.')});
+
+// Re-render fixed feed labels when switching language, without modifying public collection titles.
+document.addEventListener('toolya:wishes-locale-change',()=>render());

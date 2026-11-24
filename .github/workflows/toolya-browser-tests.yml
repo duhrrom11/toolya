@@ -57,7 +57,7 @@ jobs:
         env:
           TOOLYA_STARTUP_COMPARISON: '1'
           TOOLYA_VISUAL_LOGS: ${{ github.event.pull_request.draft && '1' || '0' }}
-        run: npx playwright test tests/browser/tool-pages-ui.spec.cjs tests/browser/cloud-isolated.spec.cjs --reporter=line
+        run: npx playwright test tests/browser/tool-pages-ui.spec.cjs tests/browser/cloud-isolated.spec.cjs tests/browser/baking-i18n.spec.cjs --reporter=line
       - name: Upload isolated browser evidence
         if: always()
         uses: actions/upload-artifact@v4
