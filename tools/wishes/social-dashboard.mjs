@@ -1,15 +1,18 @@
 import {db} from './toolya-client.mjs';
+import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
+const ui=value=>wishesText(value,globalThis.__toolyaWishesLocale==='en'?'en':'de');
 const $=id=>document.getElementById(id);
-const date=value=>{const d=new Date(value);return Number.isNaN(d.valueOf())?'':new Intl.DateTimeFormat('de-DE',{dateStyle:'medium'}).format(d)};
-const empty=(root,message)=>{const p=document.createElement('p');p.className='empty';p.textContent=message;root.append(p)};
-const link=(label,url)=>{const a=document.createElement('a');a.href=url;a.textContent=label;return a};
+let repaint=null;
+const date=value=>{const d=new Date(value);return Number.isNaN(d.valueOf())?'':new Intl.DateTimeFormat(globalThis.__toolyaWishesLocale==='en'?'en-GB':'de-DE',{dateStyle:'medium'}).format(d)};
+const empty=(root,message)=>{const p=document.createElement('p');p.className='empty';p.textContent=ui(message);root.append(p)};
+const link=(label,url)=>{const a=document.createElement('a');a.href=url;a.textContent=ui(label);return a};
 const profileLink=handle=>new URL('./profile.html?handle='+encodeURIComponent(handle),location.href).href;
 const collectionLink=id=>new URL('./collection.html?id='+encodeURIComponent(id),location.href).href;
 const safeStore={get(key){try{return localStorage.getItem(key)}catch{return null}},set(key,value){try{localStorage.setItem(key,value);return true}catch{return false}}};
 function card(root,tag,title,description,when,href,label){
  const box=document.createElement('article');box.className='card';
- const badge=document.createElement('span');badge.className='tag';badge.textContent=tag;
- const h=document.createElement('h3');h.textContent=title;box.append(badge,h);
+ const badge=document.createElement('span');badge.className='tag';badge.textContent=ui(tag);
+ const h=document.createElement('h3');h.setAttribute('data-user-content','');h.textContent=title;box.append(badge,h);
  if(description){const p=document.createElement('p');p.textContent=description;box.append(p)}
  if(when){const time=document.createElement('time');time.dateTime=when;time.textContent=date(when);box.append(time)}
  if(href)box.append(link(label||'Ansehen ↗',href));root.append(box);
@@ -42,16 +45,22 @@ async function load(){
  $('followersCount').textContent=(incoming.data||[]).length===200?'200+':String((incoming.data||[]).length);
  $('likesCount').textContent=(likes.data||[]).length===200?'200+':String((likes.data||[]).length);
  $('newCount').textContent=String(followedEvents.length+followerEvents.length+likeEvents.length);
+ repaint=()=>{
  const followingRoot=$('followingCards'),followerRoot=$('followerCards'),likesRoot=$('likeCards');
- for(const item of (publicLists.data||[]).slice(0,12)){const p=profiles.get(item.user_id);card(followingRoot,Date.parse(item.created_at)>since?'✨ Neu':'🌈 Sammlung',item.title,p?'Von '+p.display_name:'Öffentliche Wunschwelt',item.created_at,collectionLink(item.id),'Sammlung ansehen ↗')}
+ for(const root of [followingRoot,followerRoot,likesRoot])root.replaceChildren();
+ for(const item of (publicLists.data||[]).slice(0,12)){const p=profiles.get(item.user_id);card(followingRoot,Date.parse(item.created_at)>since?'✨ Neu':'🌈 Sammlung',item.title,p?ui('Von ')+p.display_name:ui('Öffentliche Wunschwelt'),item.created_at,collectionLink(item.id),'Sammlung ansehen ↗')}
  if(!followingRoot.children.length)empty(followingRoot,'Noch keine öffentlichen Wunschwelten gefolgter Profile. Entdecke neue Personen in der Community.');
- for(const f of (incoming.data||[]).slice(0,12)){const p=profiles.get(f.follower_id);card(followerRoot,Date.parse(f.created_at)>since?'👥 Neu':'👤 Follower',p?.display_name||'Community-Mitglied',p?'@'+p.handle:'Ein Profil folgt dir',f.created_at,p?profileLink(p.handle):null,'Profil ansehen ↗')}
+ for(const f of (incoming.data||[]).slice(0,12)){const p=profiles.get(f.follower_id);card(followerRoot,Date.parse(f.created_at)>since?'👥 Neu':'👤 Follower',p?.display_name||ui('Community-Mitglied'),p?'@'+p.handle:ui('Ein Profil folgt dir'),f.created_at,p?profileLink(p.handle):null,'Profil ansehen ↗')}
  if(!followerRoot.children.length)empty(followerRoot,'Noch keine Follower.');
  const grouped=new Map();
  for(const like of likes.data||[]){if(like.user_id===user.id)continue;const g=grouped.get(like.list_id)||{count:0,latest:like.created_at};g.count++;grouped.set(like.list_id,g)}
- for(const [id,g] of [...grouped].sort((a,b)=>b[1].latest.localeCompare(a[1].latest)).slice(0,12))card(likesRoot,'❤️ Likes',ownNames.get(id)||'Deine Wunschwelt',g.count+' Likes in der geladenen Aktivitätsauswahl',g.latest,collectionLink(id),'Sammlung öffnen ↗');
+ for(const [id,g] of [...grouped].sort((a,b)=>b[1].latest.localeCompare(a[1].latest)).slice(0,12))card(likesRoot,'❤️ Likes',ownNames.get(id)||ui('Deine Wunschwelt'),g.count+ui(' Likes in der geladenen Aktivitätsauswahl'),g.latest,collectionLink(id),'Sammlung öffnen ↗');
  if(!likesRoot.children.length)empty(likesRoot,'Noch keine Likes auf deinen öffentlichen Wunschwelten.');
+ };
+ repaint();
  $('markRead').addEventListener('click',()=>{if(safeStore.set(key,new Date().toISOString())){$('newCount').textContent='0';$('status').textContent='Auf diesem Gerät als gesehen markiert.'}else $('status').textContent='Lokales Speichern ist in diesem Browser nicht verfügbar.'});
  $('dashboard').hidden=false;$('status').textContent='Dein Social-Überblick ist aktuell.';
 }
 load().catch(()=>{$('status').textContent='Dashboard konnte nicht geladen werden. Bitte später erneut versuchen.'});
+
+document.addEventListener('toolya:wishes-locale-change',()=>repaint?.());

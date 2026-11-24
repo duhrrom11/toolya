@@ -1103,7 +1103,26 @@ export const WISHES_RUNTIME_COPY=Object.freeze({
  "Link kopiert.": "Link copied.",
  "Teilen nicht möglich.": "Unable to share.",
  "Entdecke diese öffentliche Wunschsammlung:": "Discover this public wish collection:",
- "Wunsch": "Wish"
+ "Wunsch": "Wish",
+"✨ Neu": "✨ New",
+"🌈 Sammlung": "🌈 Collection",
+"👥 Neu": "👥 New",
+"👤 Follower": "👤 Follower",
+"Von ": "From ",
+"Öffentliche Wunschwelt": "Public wish collection",
+"Community-Mitglied": "Community member",
+"Ein Profil folgt dir": "A profile follows you",
+"Deine Wunschwelt": "Your wish collection",
+" Likes in der geladenen Aktivitätsauswahl": " likes in the loaded activity selection",
+"Noch keine öffentlichen Wunschwelten gefolgter Profile. Entdecke neue Personen in der Community.": "No public wish collections from followed profiles yet. Discover new people in the community.",
+"Noch keine Follower.": "No followers yet.",
+"Noch keine Likes auf deinen öffentlichen Wunschwelten.": "No likes on your public wish collections yet.",
+"Sammlung ansehen ↗": "View collection ↗",
+"Profil ansehen ↗": "View profile ↗",
+"Ansehen ↗": "View ↗",
+"Auf diesem Gerät als gesehen markiert.": "Marked as seen on this device.",
+"Lokales Speichern ist in diesem Browser nicht verfügbar.": "Local storage is unavailable in this browser.",
+"Dein Social-Überblick ist aktuell.": "Your social overview is up to date."
 });
 const runtimeReverse=Object.freeze(Object.fromEntries(Object.entries(WISHES_RUNTIME_COPY).map(([de,en])=>[en,de])));
 const statusPrefixes=Object.freeze({
