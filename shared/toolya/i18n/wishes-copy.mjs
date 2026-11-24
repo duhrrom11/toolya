@@ -799,6 +799,25 @@ const reverse=Object.freeze(Object.fromEntries(Object.entries(WISHES_COPY).map((
 /* Fixed runtime messages emitted by existing Wishes modules; only app-authored
    statuses and native dialogs qualify, never profile or gift content. */
 export const WISHES_RUNTIME_COPY=Object.freeze({
+ "Amazon-Wunschliste übernehmen": "Import Amazon wish list",
+ "Amazon-Produkt übernehmen": "Import Amazon product",
+ "Öffentlichen Amazon.de-Wunschlistenlink eingeben": "Enter a public Amazon.de wish list link",
+ "Amazon.de-Produktlink eingeben": "Enter an Amazon.de product link",
+ "Amazon-Link auslesen": "Read Amazon link",
+ "Name der neuen Liste": "Name of new list",
+ "Nur für mich": "Only me",
+ "Öffentlich": "Public",
+ "Neue Liste mit diesen Produkten anlegen": "Create a new list with these products",
+ "Produkt als Wunsch speichern": "Save product as a wish",
+ "Amazon wird ausgelesen …": "Reading Amazon…",
+ "Amazon-Abruf fehlgeschlagen. Bitte später erneut versuchen.": "Could not retrieve Amazon data. Try again later.",
+ "Bitte hier einen Wunschlistenlink eingeben.": "Enter a wish list link here.",
+ "Bitte hier einen einzelnen Produktlink eingeben.": "Enter a single product link here.",
+ "Produktbild": "Product image",
+ "Preis nicht verfügbar": "Price unavailable",
+ "Bild nicht verfügbar": "Image unavailable",
+ "Bei Amazon ansehen (Partnerlink)": "View on Amazon (affiliate link)",
+ "Bitte Seite neu laden, um die gespeicherten Wünsche anzuzeigen.": "Reload the page to see the saved wishes.",
  "1 Wunsch für diese Sitzung ausgeblendet.":"1 wish hidden for this session.",
  "1 Profil für diese Sitzung ausgeblendet.":"1 profile hidden for this session.",
  "Ungültiger Wunschpreis.":"Invalid wish price.",
@@ -1102,7 +1121,9 @@ export function wishesText(value,language){
   const base=value.slice(0,-suffix.length),translated=wishesText(base,language);
   if(base!==translated)return translated+(language==='en'?budgetSuffixEn:budgetSuffix);
  }
- const dynamic=language==='en'?[ 
+ const dynamic=language==='en'?[
+ [/^Gespeichert: (\d+) neue Wünsche, (\d+) bereits vorhanden\.( Bitte Seite neu laden, um die gespeicherten Wünsche anzuzeigen\.)?$/,(_,inserted,existing,reload)=>'Saved: '+inserted+' new wishes, '+existing+' already present.'+(reload?' Reload the page to see the saved wishes.':'')],
+ [/^(\d+) Produkte erkannt\. Bitte prüfen und speichern\. Preisangaben sind eine Momentaufnahme\. Bereits vorhandene Wünsche bleiben erhalten\.$/,'$1 products found. Review and save. Prices are a snapshot. Existing wishes remain intact.'], 
  [/^(\d+) Wünsche für diese Sitzung ausgeblendet\.$/,'$1 wishes hidden for this session.'],
  [/^(\d+) Profile für diese Sitzung ausgeblendet\.$/,'$1 profiles hidden for this session.'],
  [/^(\d+) Wünsche als (CSV|JSON) bereitgestellt\.$/,'$1 wishes exported as $2.'],
@@ -1115,6 +1136,8 @@ export function wishesText(value,language){
  [/^(\d+) passende Einträge auf dieser Seite\.$/,'$1 matching entries on this page.'],
  [/^Sicherung gültig: (\d+) Wünsche\. Nur Vorschau – keine Daten wurden gespeichert\.$/,'Backup valid: $1 wishes. Preview only – no data was saved.']
  ]:[
+ [/^Saved: (\d+) new wishes, (\d+) already present\.( Reload the page to see the saved wishes\.)?$/,(_,inserted,existing,reload)=>'Gespeichert: '+inserted+' neue Wünsche, '+existing+' bereits vorhanden.'+(reload?' Bitte Seite neu laden, um die gespeicherten Wünsche anzuzeigen.':'')],
+ [/^(\d+) products found\. Review and save\. Prices are a snapshot\. Existing wishes remain intact\.$/,'$1 Produkte erkannt. Bitte prüfen und speichern. Preisangaben sind eine Momentaufnahme. Bereits vorhandene Wünsche bleiben erhalten.'],
  [/^(\d+) wishes hidden for this session\.$/,'$1 Wünsche für diese Sitzung ausgeblendet.'],
  [/^(\d+) profiles hidden for this session\.$/,'$1 Profile für diese Sitzung ausgeblendet.'],
  [/^(\d+) wishes exported as (CSV|JSON)\.$/,'$1 Wünsche als $2 bereitgestellt.'],
