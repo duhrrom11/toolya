@@ -1107,6 +1107,8 @@ export const WISHES_RUNTIME_COPY=Object.freeze({
 });
 const runtimeReverse=Object.freeze(Object.fromEntries(Object.entries(WISHES_RUNTIME_COPY).map(([de,en])=>[en,de])));
 const statusPrefixes=Object.freeze({
+ "Sammlungslink: ": "Collection link: ",
+ "Profil-Link: ": "Profile link: ",
  "Importvorschau wegen Verbindungs- oder Lesefehler fehlgeschlagen. Kein Import. ": "Import preview failed because of a connection or read error. Nothing was imported. ",
  "Cloud-Speicherung wegen Netzwerkfehler fehlgeschlagen. Ob die Anfrage den Server erreicht hat, ist unklar; bitte Cloud-Stand prüfen, bevor du erneut speicherst. ": "Cloud saving failed because of a network error. It is unclear whether the request reached the server; check the cloud state before saving again. ",
  "Cloud-Speicherung fehlgeschlagen. Lokale Zusatzdaten bleiben unverändert. ": "Cloud saving failed. Additional local data remains unchanged. ",

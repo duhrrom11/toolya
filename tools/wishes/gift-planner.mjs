@@ -1,6 +1,7 @@
 import {db} from './toolya-client.mjs';
 const $=id=>document.getElementById(id);
-const euro=n=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(Number(n)||0);
+const ui=(de,en)=>globalThis.__toolyaWishesLocale==='en'?en:de;
+const euro=n=>new Intl.NumberFormat(ui('de-DE','en-GB'),{style:'currency',currency:'EUR'}).format(Number(n)||0);
 const statuses={idea:'💡 Idee',planned:'📝 Geplant',purchased:'🛍️ Gekauft',wrapped:'🎀 Verpackt',gifted:'🎁 Verschenkt'};
 let user=null,occasions=[],gifts=[],editing=null,collections=[],suggestions=[],selectedProduct=null,coordination=new Map(),giftEditOrigin=null;
 const feedback=(id,message)=>{$(id).textContent=message;$('status').textContent=message};
@@ -8,10 +9,10 @@ const invalid=(id,message,feedbackId)=>{const field=$(id);field.setAttribute('ar
 for(const id of ['budgetAmount','budgetOccasion','occasion','title','planned','actual'])for(const type of ['input','change'])$(id).addEventListener(type,()=>{$(id).removeAttribute('aria-invalid');$(id).removeAttribute('aria-describedby')});
 const byId=id=>occasions.find(x=>x.id===id);
 const number=id=>{const v=Number($(id).value);return Number.isFinite(v)&&v>=0?v:null};
-function option(select,value,label){const el=document.createElement('option');el.value=value;el.textContent=label;select.append(el)}
+function option(select,value,label,owned=false){const el=document.createElement('option');el.value=value;el.textContent=label;if(!owned)el.setAttribute('data-user-content','');select.append(el)}
 function choices(){
  for(const id of ['occasion','budgetOccasion','filterOccasion'])$(id).replaceChildren();
- option($('filterOccasion'),'all','Alle Anlässe');
+ option($('filterOccasion'),'all','Alle Anlässe',true);
  for(const o of occasions){for(const id of ['occasion','budgetOccasion','filterOccasion'])option($(id),o.id,o.title+(o.person_name?' · '+o.person_name:''))}
  $('budgetAmount').value=String(byId($('budgetOccasion').value)?.budget_amount||0);
 }
@@ -24,24 +25,24 @@ function render(){
  $('metricBudget').textContent=euro(totalBudget);$('metricPlanned').textContent=euro(planned);$('metricSpent').textContent=euro(spent);$('metricDone').textContent=gifts.filter(g=>g.status==='gifted').length+'/'+gifts.length;
  const current=byId($('budgetOccasion').value);
  const budget=Number(current?.budget_amount||0),used=gifts.filter(g=>g.occasion_id===current?.id).reduce((s,g)=>s+Number(g.actual_amount||0),0);
- $('budgetInfo').textContent=current?'Ausgegeben: '+euro(used)+' von '+euro(budget)+(budget>0?' · '+(used>budget?'Budget überschritten um '+euro(used-budget):'Verbleibend: '+euro(budget-used)):' · Noch kein Budget gesetzt.'):'Lege zuerst einen Anlass an.';
+ $('budgetInfo').textContent=current?ui('Ausgegeben: ','Spent: ')+euro(used)+ui(' von ',' of ')+euro(budget)+(budget>0?' · '+(used>budget?ui('Budget überschritten um ','Over budget by ')+euro(used-budget):ui('Verbleibend: ','Remaining: ')+euro(budget-used)):ui(' · Noch kein Budget gesetzt.',' · No budget set yet.')):ui('Lege zuerst einen Anlass an.','Create an occasion first.');
  $('budgetProgress').value=budget>0?Math.min(100,used/budget*100):0;
- const warnings=$('budgetWarnings');warnings.replaceChildren();for(const o of occasions){const budget=Number(o.budget_amount||0);const spentOn=gifts.filter(g=>g.occasion_id===o.id).reduce((n,g)=>n+Number(g.actual_amount||0),0);const plannedOn=gifts.filter(g=>g.occasion_id===o.id).reduce((n,g)=>n+Number(g.planned_amount||0),0);if(budget>0&&(spentOn>budget||plannedOn>budget)){const w=document.createElement('p');w.className='warning';w.textContent='⚠️ '+o.title+': '+(spentOn>budget?'Ausgaben '+euro(spentOn):'Planung '+euro(plannedOn))+' über Budget '+euro(budget);warnings.append(w)}}
+ const warnings=$('budgetWarnings');warnings.replaceChildren();for(const o of occasions){const budget=Number(o.budget_amount||0);const spentOn=gifts.filter(g=>g.occasion_id===o.id).reduce((n,g)=>n+Number(g.actual_amount||0),0);const plannedOn=gifts.filter(g=>g.occasion_id===o.id).reduce((n,g)=>n+Number(g.planned_amount||0),0);if(budget>0&&(spentOn>budget||plannedOn>budget)){const w=document.createElement('p');w.className='warning';w.textContent='⚠️ '+o.title+': '+(spentOn>budget?ui('Ausgaben ','Spending ')+euro(spentOn):ui('Planung ','Planned ')+euro(plannedOn))+ui(' über Budget ',' exceeds budget ')+euro(budget);warnings.append(w)}}
  const root=$('gifts');root.replaceChildren();
  const rows=gifts.filter(g=>($('filterOccasion').value==='all'||g.occasion_id===$('filterOccasion').value)&&($('filterStatus').value==='all'||g.status===$('filterStatus').value)).sort((a,b)=>b.created_at.localeCompare(a.created_at));
- if(!rows.length){const p=document.createElement('p');p.className='empty';p.textContent='Noch keine passenden Geschenke. Lege links deine erste Geschenkidee an.';root.append(p)}
+ if(!rows.length){const p=document.createElement('p');p.className='empty';p.setAttribute('data-wish-owned-copy','');p.textContent='Noch keine passenden Geschenke. Lege links deine erste Geschenkidee an.';root.append(p)}
  for(const g of rows){
-  const card=document.createElement('article');card.className='gift',main=document.createElement('div'),badge=document.createElement('span');badge.className='tag';badge.textContent=statuses[g.status]||g.status;
-  const h=document.createElement('h3');h.textContent=g.title;
-  const p=document.createElement('p');p.textContent=(byId(g.occasion_id)?.title||'Anlass')+(g.recipient_name?' · Für '+g.recipient_name:'');
-  const money=document.createElement('p');money.textContent='Geplant: '+euro(g.planned_amount)+' · Ausgegeben: '+(g.actual_amount===null?'–':euro(g.actual_amount));
+  const card=document.createElement('article');card.className='gift',main=document.createElement('div'),badge=document.createElement('span');badge.className='tag';badge.setAttribute('data-wish-owned-copy','');badge.textContent=statuses[g.status]||g.status;
+  const h=document.createElement('h3');h.setAttribute('data-user-content','');h.textContent=g.title;
+  const p=document.createElement('p');p.textContent=(byId(g.occasion_id)?.title||ui('Anlass','Occasion'))+(g.recipient_name?ui(' · Für ',' · For ')+g.recipient_name:'');
+  const money=document.createElement('p');money.textContent=ui('Geplant: ','Planned: ')+euro(g.planned_amount)+ui(' · Ausgegeben: ',' · Spent: ')+(g.actual_amount===null?'–':euro(g.actual_amount));
   main.append(badge,h,p,money);if(g.source_wish_id){const reservation=document.createElement('p');reservation.className='tag';reservation.setAttribute('data-wish-owned-copy','');reservation.textContent=coordination.get(g.id)==='reserved_by_you'?'🎀 Von dir reserviert':'🔒 Keine eigene aktive Reservierung';main.append(reservation)}if(g.source_product_id){const link=document.createElement('a');link.href='https://www.amazon.de/dp/'+encodeURIComponent((g.product_asin||'').trim());link.setAttribute('data-wish-owned-copy','');link.textContent='📦 Produktquelle';if(g.product_asin)main.append(link);else{const tag=document.createElement('p');tag.setAttribute('data-wish-owned-copy','');tag.textContent='📦 Produkt verknüpft';main.append(tag)}}if(g.source_list_id&&collections.some(c=>c.id===g.source_list_id)){const a=document.createElement('a');a.href='./collection.html?id='+encodeURIComponent(g.source_list_id);a.setAttribute('data-wish-owned-copy','');a.textContent='🌈 Verknüpfte Wunschwelt ↗';main.append(a)}
   if(g.notes){const notes=document.createElement('p');notes.textContent=g.notes;main.append(notes)}
   const controls=document.createElement('div');controls.className='controls';
   const edit=document.createElement('button');edit.type='button';edit.textContent='✏️ Bearbeiten';edit.addEventListener('click',()=>{giftEditOrigin=edit;$('giftFormFeedback').textContent='';editing=g.id;$('occasion').value=g.occasion_id;$('title').value=g.title;$('recipient').value=g.recipient_name||'';$('planned').value=String(g.planned_amount);$('actual').value=g.actual_amount===null?'':String(g.actual_amount);$('giftStatus').value=g.status;$('notes').value=g.notes||'';$('sourceList').value=g.source_list_id||'';selectedProduct=g.source_product_id?{product_id:g.source_product_id,wish_id:g.source_wish_id||null,title:g.title}:null;showProductSource();$('formTitle').textContent='✏️ Geschenk bearbeiten';$('save').textContent='Änderungen speichern';$('cancel').hidden=false;$('form').scrollIntoView({behavior:'smooth',block:'start'});$('title').focus()});
   const remove=document.createElement('button');remove.type='button';remove.textContent='🗑️ Löschen';remove.addEventListener('click',async()=>{if(!confirm('Dieses Geschenk dauerhaft löschen?'))return;remove.disabled=true;const {error}=await db.from('wishlist_gift_plans').delete().eq('id',g.id).eq('user_id',user.id);if(error){$('status').textContent='Löschen fehlgeschlagen.';remove.disabled=false}else{gifts=gifts.filter(x=>x.id!==g.id);if(editing===g.id)reset();render();$('status').textContent='Geschenk gelöscht.'}});
-  const progress=document.createElement('select');progress.setAttribute('aria-label','Geschenkstatus ändern: '+g.title);progress.style.cssText='min-height:44px;border-radius:10px;padding:9px;border:1px solid #a99ac3;background:transparent;color:inherit;font:inherit';
- for(const [value,label] of Object.entries(statuses))option(progress,value,label);progress.value=g.status;
+  const progress=document.createElement('select');progress.setAttribute('aria-label',ui('Geschenkstatus ändern: ','Change gift status: ')+g.title);progress.style.cssText='min-height:44px;border-radius:10px;padding:9px;border:1px solid #a99ac3;background:transparent;color:inherit;font:inherit';
+ for(const [value,label] of Object.entries(statuses))option(progress,value,label,true);progress.value=g.status;
  progress.addEventListener('change',async()=>{const next=progress.value;progress.disabled=true;const owned=coordination.get(g.id)==='reserved_by_you';let release=false;
  if(next==='gifted'&&owned)release=confirm('Geschenk als verschenkt markieren und DEINE Reservierung gleichzeitig freigeben?\nOK = verschenkt und Reservierung freigeben.\nAbbrechen = nur Status ändern.');
  const {error}=await db.rpc('wishlist_update_gift_progress',{p_plan_id:g.id,p_status:next,p_release_reservation:release});
@@ -81,8 +82,8 @@ function renderRecommendations(){
  const root=$('recommendations');root.replaceChildren();
  const selected=byId($('occasion').value)||occasions[0];const target=new Set(keywords([selected?.title,selected?.person_name,...gifts.filter(g=>g.occasion_id===selected?.id).map(g=>g.title)].join(' ')));
  const ranked=suggestions.map(c=>({c,score:keywords(c.title+' '+(c.description||'')).filter(w=>target.has(w)).length})).sort((a,b)=>b.score-a.score||a.c.title.localeCompare(b.c.title,'de')).slice(0,6);
- if(!ranked.length){const p=document.createElement('p');p.className='empty';p.textContent='Merke dir öffentliche Wunschwelten, um hier kostenlose Geschenkideen zu erhalten.';root.append(p);return}
- for(const {c,score} of ranked){const card=document.createElement('article');card.className='recommendation',h=document.createElement('h3');h.textContent=c.title;const p=document.createElement('p');p.setAttribute('data-wish-owned-copy','');p.textContent=score?'Passt zu Stichwörtern deiner Planung.':'In deiner Merkliste oder deinen öffentlichen Sammlungen.';const a=document.createElement('a');a.href='./collection.html?id='+encodeURIComponent(c.id);a.textContent='Wunschwelt ansehen ↗';const button=document.createElement('button');button.type='button';button.textContent='Als Geschenkidee übernehmen';button.addEventListener('click',()=>{if(!occasions.length){$('status').textContent='Bitte zuerst einen Anlass anlegen.';return}$('occasion').value=selected?.id||occasions[0].id;$('title').value=c.title;$('sourceList').value=c.id;$('giftStatus').value='idea';$('form').scrollIntoView({behavior:'smooth',block:'start'});$('title').focus();$('status').textContent='Vorschlag übernommen – zum Speichern bitte Geschenk prüfen.'});card.append(h,p,a,button);root.append(card)}
+ if(!ranked.length){const p=document.createElement('p');p.className='empty';p.setAttribute('data-wish-owned-copy','');p.textContent='Merke dir öffentliche Wunschwelten, um hier kostenlose Geschenkideen zu erhalten.';root.append(p);return}
+ for(const {c,score} of ranked){const card=document.createElement('article');card.className='recommendation',h=document.createElement('h3');h.setAttribute('data-user-content','');h.textContent=c.title;const p=document.createElement('p');p.setAttribute('data-wish-owned-copy','');p.textContent=score?'Passt zu Stichwörtern deiner Planung.':'In deiner Merkliste oder deinen öffentlichen Sammlungen.';const a=document.createElement('a');a.href='./collection.html?id='+encodeURIComponent(c.id);a.setAttribute('data-wish-owned-copy','');a.textContent='Wunschwelt ansehen ↗';const button=document.createElement('button');button.type='button';button.textContent='Als Geschenkidee übernehmen';button.addEventListener('click',()=>{if(!occasions.length){$('status').textContent='Bitte zuerst einen Anlass anlegen.';return}$('occasion').value=selected?.id||occasions[0].id;$('title').value=c.title;$('sourceList').value=c.id;$('giftStatus').value='idea';$('form').scrollIntoView({behavior:'smooth',block:'start'});$('title').focus();$('status').textContent='Vorschlag übernommen – zum Speichern bitte Geschenk prüfen.'});card.append(h,p,a,button);root.append(card)}
 }
 $('occasion').addEventListener('change',renderRecommendations);
 
@@ -107,7 +108,7 @@ async function importReservedWish(){
  $('status').textContent='Reservierten Wunsch als Geschenkentwurf übernommen. Bitte Anlass auswählen und speichern.';
 }
 function showProductSource(){
- $('productSourceLabel').textContent=selectedProduct?'📦 Verknüpftes Produkt: '+selectedProduct.title:'Keine Produktverknüpfung ausgewählt.';
+ $('productSourceLabel').textContent=selectedProduct?ui('📦 Verknüpftes Produkt: ','📦 Linked product: ')+selectedProduct.title:ui('Keine Produktverknüpfung ausgewählt.','No linked product selected.');
  $('clearProduct').hidden=!selectedProduct;
 }
 $('clearProduct').addEventListener('click',()=>{selectedProduct=null;showProductSource()});
@@ -146,4 +147,5 @@ async function searchProducts(){
 }
 $('searchProducts').addEventListener('click',searchProducts);
 $('productQuery').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();searchProducts()}});
+document.addEventListener('toolya:wishes-locale-change',()=>{if(user&&!$('content').hidden){render();showProductSource();}});
 load().catch(()=>{$('status').textContent='Geschenkplanung konnte nicht geladen werden. Bitte später erneut versuchen.'});
