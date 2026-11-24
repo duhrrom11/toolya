@@ -9,6 +9,7 @@
     }, { once: true });
   }
 
+  const english=()=>{const active=window.__toolyaUILocale||window.__toolyaWishesLocale||window.__toolyaEstateLocale||window.__toolyaDashboardLocale;if(active)return active==='en';if(document.documentElement?.lang==='en')return true;try{return /^\/(tools|dashboard)\//.test(location.pathname)&&(new URLSearchParams(location.search).get('lang')||localStorage.getItem('toolya-locale-v1'))==='en'}catch{return false}};
   let installPrompt = null;
   const installed = () =>
     window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -26,7 +27,7 @@
     const button = buttonFor();
     if (!button) return;
     button.hidden = installed();
-    if (installed()) message((document.documentElement?.lang==='en'?'Toolya is already open as an app.':'Toolya ist bereits als App geöffnet.'));
+    if (installed()) message((english()?'Toolya is already open as an app.':'Toolya ist bereits als App geöffnet.'));
   }
 
   window.addEventListener('beforeinstallprompt', event => {
@@ -39,7 +40,7 @@
     installPrompt = null;
     const button = buttonFor();
     if (button) button.hidden = true;
-    message(document.documentElement?.lang==='en'?'Toolya has been installed as an app.':'Toolya wurde als App installiert.');
+    message(english()?'Toolya has been installed as an app.':'Toolya wurde als App installiert.');
   });
 
   document.addEventListener('toolya:pwa-settings-mounted', refresh);
@@ -59,12 +60,12 @@
         const choice = await prompt.userChoice;
         if (choice?.outcome === 'accepted') {
           button.hidden = true;
-          message((document.documentElement?.lang==='en'?'Installation confirmed. Find Toolya on your home screen.':'Installation bestätigt. Du findest Toolya auf deinem Startbildschirm.'));
+          message((english()?'Installation confirmed. Find Toolya on your home screen.':'Installation bestätigt. Du findest Toolya auf deinem Startbildschirm.'));
         } else {
-          message((document.documentElement?.lang==='en'?'You can install Toolya later from the browser menu.':'Du kannst Toolya später über das Browsermenü installieren.'));
+          message((english()?'You can install Toolya later from the browser menu.':'Du kannst Toolya später über das Browsermenü installieren.'));
         }
       } catch {
-        message((document.documentElement?.lang==='en'?'Open the browser menu and choose Install app.':'Öffne das Browsermenü und wähle „App installieren“.'));
+        message((english()?'Open the browser menu and choose Install app.':'Öffne das Browsermenü und wähle „App installieren“.'));
       }
       return;
     }
@@ -72,9 +73,9 @@
     const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     if (ios) {
-      message((document.documentElement?.lang==='en'?'On iPhone or iPad: open Toolya in Safari, tap Share and choose Add to Home Screen.':'Auf iPhone oder iPad: Toolya in Safari öffnen, auf „Teilen“ tippen und „Zum Home-Bildschirm“ wählen.'));
+      message((english()?'On iPhone or iPad: open Toolya in Safari, tap Share and choose Add to Home Screen.':'Auf iPhone oder iPad: Toolya in Safari öffnen, auf „Teilen“ tippen und „Zum Home-Bildschirm“ wählen.'));
     } else {
-      message((document.documentElement?.lang==='en'?'Open the browser menu and choose Install app or Add to Home Screen. Chrome and Edge offer this directly in the menu.':'Öffne das Browsermenü und wähle „App installieren“ oder „Zum Startbildschirm hinzufügen“. In Chrome und Edge ist diese Funktion direkt im Menü verfügbar.'));
+      message((english()?'Open the browser menu and choose Install app or Add to Home Screen. Chrome and Edge offer this directly in the menu.':'Öffne das Browsermenü und wähle „App installieren“ oder „Zum Startbildschirm hinzufügen“. In Chrome und Edge ist diese Funktion direkt im Menü verfügbar.'));
     }
   });
 })();
