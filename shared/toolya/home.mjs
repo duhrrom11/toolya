@@ -1,5 +1,5 @@
 /* Homepage choreography. No tool, account or cloud-data writes. */
-import {buddy} from './platform.mjs';
+import {buddy} from './platform.mjs?v=20261124-settings-cleanup';
 const english=document.documentElement.lang==='en';
 const stage=document.querySelector('.ty-hero-stage');
 const characters=[...stage.querySelectorAll('.ty-hero-character')];
