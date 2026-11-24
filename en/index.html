@@ -141,6 +141,8 @@
     <p class="b3-section-subtitle" id="b3-result-count" role="status" aria-live="polite">12 of 12 tools</p></div>
  </div>
  <p class="ty-helper-note ty-favorites-guide" id="favoritesGuide"><strong>Save favourite tools:</strong> Tap the star on a tool card. Your selection is saved in this browser and appears in My Dashboard. Tap again to remove it.</p>
+ <label for="toolSearch" class="ty-home-search-label">Search tools</label>
+ <input id="toolSearch" type="search" class="ty-home-search" placeholder="Search by name or task…" autocomplete="off" aria-controls="toolsGrid">
  <div class="b3-categories" role="group" aria-label="Tool categories">
   <button type="button" class="b3-filter" data-b3-category-filter="alle" aria-pressed="true">All 12</button>
   <button type="button" class="b3-filter" data-b3-category-filter="finanzen" aria-pressed="false">💶 Finances</button>
@@ -150,7 +152,7 @@
   <button type="button" class="b3-filter" data-b3-category-filter="tiere" aria-pressed="false">🐾 Pets</button>
  </div>
 </section>
-<p id="searchEmptyState" class="hidden text-sm text-gray-600 bg-white border border-gray-200 rounded-xl p-4" role="status" aria-live="polite">No tools found in this category.</p>
+<p id="searchEmptyState" class="hidden text-sm text-gray-600 bg-white border border-gray-200 rounded-xl p-4" role="status" aria-live="polite">No matching tools found.</p>
 
 <!-- Tools Grid (All 12 Tools) -->
         <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -376,6 +378,8 @@
         document.addEventListener('click', async event => {
             const link=event.target.closest?.('.ty-tool-link');
             if(!link || event.defaultPrevented || event.button!==0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)return;
+            // The public wish-list directory is intentionally accessible without an account.
+            if (link.closest('.tool-card')?.dataset.id === 'wishlist' && new URL(link.href, location.href).pathname === '/tools/wishes/public.html') return;
             event.preventDefault();
             try {
                 const {data,error}=await window.supabaseClient.auth.getUser();
@@ -674,10 +678,11 @@
 
         function filterTools() {
             const category = document.querySelector('[data-b3-category-filter][aria-pressed="true"]')?.getAttribute('data-b3-category-filter') || 'alle';
+            const query = (document.getElementById('toolSearch')?.value || '').trim().toLocaleLowerCase();
             let matches = 0;
             document.querySelectorAll('#toolsGrid .tool-card').forEach(card => {
                 const categoryMatches = category === 'alle' || card.getAttribute('data-category') === category;
-                const visible = categoryMatches;
+                const visible = categoryMatches && (!query || card.querySelector('.ty-tool-copy').textContent.toLocaleLowerCase().includes(query));
                 card.style.display = visible ? 'flex' : 'none';
                 if (visible) matches++;
             });
