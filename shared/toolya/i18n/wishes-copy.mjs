@@ -1060,6 +1060,14 @@ export function wishesText(value,language){
  if(Object.hasOwn(table,value))return table[value];
  const live=language==='en'?WISHES_RUNTIME_COPY:runtimeReverse;
  if(Object.hasOwn(live,value))return live[value];
+ const dynamic=language==='en'?[
+ [/^(\d+) passende Einträge auf dieser Seite\.$/,'$1 matching entries on this page.'],
+ [/^Sicherung gültig: (\d+) Wünsche\. Nur Vorschau – keine Daten wurden gespeichert\.$/,'Backup valid: $1 wishes. Preview only – no data was saved.']
+ ]:[
+ [/^(\d+) matching entries on this page\.$/,'$1 passende Einträge auf dieser Seite.'],
+ [/^Backup valid: (\d+) wishes\. Preview only – no data was saved\.$/,'Sicherung gültig: $1 Wünsche. Nur Vorschau – keine Daten wurden gespeichert.']
+ ];
+ for(const [pattern,copy] of dynamic)if(pattern.test(value))return value.replace(pattern,copy);
  const from=language==='en'?statusPrefixes:prefixReverse;
  for(const [prefix,translated] of Object.entries(from))if(value.startsWith(prefix))return translated+value.slice(prefix.length);
  return value;

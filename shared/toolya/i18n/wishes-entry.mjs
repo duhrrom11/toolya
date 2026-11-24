@@ -22,15 +22,16 @@ function mount(){
   '#giftStatus','#filterStatus','#productSearchStatus','#searchStatus','#detailStatus',
   '#profileStatus','#settingsAuthMessage','#settingsAccountStatus','#settingsStatus',
   '#notice','#reactionStatus','#actionStatus','#budgetSaveFeedback','#giftFormFeedback',
-  '#taskActionStatus','#closingStatus','#reviewStatus'];
+  '#taskActionStatus','#closingStatus','#reviewStatus','#wishExtrasImportFeedback','#wishExtrasCloudFeedback','#backupPreviewStatus','#peopleSearchCount','#profileFeedInfo','#giftFinderStatus','#wishSaveFeedback','#wishlistAuthStatus','#feedCount','[data-wish-runtime-status]'];
  // Do not select progress bars, counters, wish cards, user descriptions or
  // account identity fields. Status translations must be exact/prefix matched.
  function translateLiveStatuses(){
   for(const selector of statusSelectors){
-   const node=document.querySelector(selector);
-   if(!node||node.children.length||node.isContentEditable)continue;
-   const before=node.textContent,after=wishesText(before,active);
-   if(before!==after)node.textContent=after;
+   for(const node of document.querySelectorAll(selector)){
+    if(node.children.length||node.isContentEditable)continue;
+    const before=node.textContent,after=wishesText(before,active);
+    if(before!==after)node.textContent=after;
+   }
   }
  }
  let scheduled=false;

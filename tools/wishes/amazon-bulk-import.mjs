@@ -7,7 +7,7 @@ export function mountAmazonBulkImport({db,getUser,dashboard,refreshFeed}){
  const intro=document.createElement('p');intro.textContent='22 öffentlich geteilte Amazon.de-Links. Jede erfolgreich ausgelesene Wunschliste wird als eigene private Sammlung mit Quellenlink gespeichert. Bereits importierte Quellen werden übersprungen.';
  const start=document.createElement('button');start.type='button';start.textContent='22 Wunschlisten importieren';
  const stop=document.createElement('button');stop.type='button';stop.textContent='Nach aktueller Liste stoppen';stop.disabled=true;
- const status=document.createElement('p');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+ const status=document.createElement('p');status.setAttribute('role','status');status.setAttribute('data-wish-runtime-status','');status.setAttribute('aria-live','polite');
  const details=document.createElement('ol');panel.append(heading,intro,start,stop,status,details);
  (anchor.closest('.list-create')||anchor).after(panel);
  let running=false,cancel=false,session=0;

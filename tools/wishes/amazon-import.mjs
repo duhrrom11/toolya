@@ -8,7 +8,7 @@ export function mountAmazonImport({db,getUser,dashboard,refreshFeed}){
  const label=document.createElement('label');label.textContent=kind==='list'?'Öffentlichen Amazon.de-Wunschlistenlink eingeben':'Amazon.de-Produktlink eingeben';
  const input=document.createElement('input');input.type='url';input.maxLength=2048;input.placeholder=kind==='list'?'https://www.amazon.de/hz/wishlist/ls/…':'https://www.amazon.de/dp/…';label.append(input);
  const preview=document.createElement('button');preview.type='button';preview.textContent='Amazon-Link auslesen';
- const status=document.createElement('p');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+ const status=document.createElement('p');status.setAttribute('role','status');status.setAttribute('data-wish-runtime-status','');status.setAttribute('aria-live','polite');
  const results=document.createElement('div');
  const nameLabel=document.createElement('label');nameLabel.textContent='Name der neuen Liste';const name=document.createElement('input');name.maxLength=80;nameLabel.append(name);nameLabel.hidden=kind!=='list';
  const visibilityLabel=document.createElement('label');visibilityLabel.textContent='Sichtbarkeit neuer Wünsche';const visibility=document.createElement('select');for(const [v,t] of [['private','Nur für mich'],['public','Öffentlich']]){const o=document.createElement('option');o.value=v;o.textContent=t;visibility.append(o)}visibilityLabel.append(visibility);
