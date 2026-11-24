@@ -550,7 +550,7 @@
             if(gpsButton)gpsButton.disabled=true;
             const release=()=>{parkingSaveInProgress=false;if(button)button.disabled=false;if(gpsButton)gpsButton.disabled=false;};
             feedback.textContent='';
-            const unavailable=()=>{if(requireGps){message('GPS-Standort nicht verfügbar. Bitte Standortzugriff erlauben und erneut versuchen.','GPS location unavailable. Allow location access and try again.');release();}else void finish(null);};
+            const unavailable=()=>{if(requireGps){message('GPS-Standort nicht verfügbar. Bitte Standortzugriff erlauben und erneut versuchen.','GPS location unavailable. Allow location access and try again.');release();}else unavailable();};
             const finish=async gps=>{
                 try{await processPhotoAndSave(desc,sector,cost,gps,photoInput,connectRequested);}
                 catch(error){console.error('Parkvorgang nicht bestätigt',error);alert('Speichern nicht bestätigt. Cloud-Datenstand prüfen.');}
@@ -704,7 +704,6 @@
         }
         function closeImageModal() { document.getElementById('imageModal').close(); }
 
-        // PDF Report Export via jsPDF
         function displayLegacyDate(value, english = window.__toolyaUILocale === 'en') {
             if (!english || typeof value !== 'string') return value;
             const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})(.*)$/.exec(value);
@@ -715,6 +714,7 @@
             return day.padStart(2,'0')+'/'+month.padStart(2,'0')+'/'+year+suffix;
         }
 
+        // PDF Report Export via jsPDF
         async function exportPDF() {
             const pdfEn = window.__toolyaUILocale === 'en';
             const pdfLabel = (de,en) => pdfEn ? en : de;
