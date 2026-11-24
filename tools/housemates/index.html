@@ -103,7 +103,7 @@
       <h1>WG-Organisator mit Haushaltsbuch</h1>
       <p>WG-Ausgaben aufteilen, Putzplan, Kalender und gemeinsame Aufgaben organisieren</p>
     </div>
-    <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()">⚙</button>
+    <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()" data-tool-en-aria-label="Open settings">⚙</button>
   </div>
 </header>
 
@@ -112,7 +112,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-emerald-900">⚙️ Einstellungen und Konto</h3>
-                <button onclick="toggleSettingsModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleSettingsModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             
             <div class="p-3 bg-gray-50 rounded-xl border text-xs space-y-1">
@@ -139,7 +139,7 @@
                 </div>
                 <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-xl transition">Abmelden</button>
             </div>
-            <button onclick="toggleSettingsModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="toggleSettingsModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -148,7 +148,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-emerald-900">📖 Hilfe & WG-Handbuch</h3>
-                <button onclick="toggleHelpModal()" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleHelpModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             <div class="space-y-3 text-xs">
                 <details class="bg-gray-50 border rounded-xl p-3">
@@ -170,14 +170,14 @@
                     </p>
                 </details>
                 <details class="bg-gray-50 border rounded-xl p-3">
-                    <summary class="font-bold cursor-pointer text-emerald-800">4. Küche & Inventar</summary>
+                    <summary class="font-bold cursor-pointer text-emerald-800" data-tool-en="4. Kitchen &amp; inventory">4. Küche & Inventar</summary>
                     <p class="mt-2 text-gray-600 leading-relaxed">
                         Putzaufgaben verteilen, Mahlzeiten planen, Einkaufsartikel sammeln und den geschätzten Restwert gemeinsamer Anschaffungen ansehen.
                     </p>
                 </details>
             </div>
             <p class="text-sm"><a href="/wg-organisator/" class="text-sky-700 underline">Schritt-für-Schritt-Anleitung zum WG-Organisator</a></p>
-            <button onclick="toggleHelpModal()" class="b3-action b3-outline w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="toggleHelpModal()" class="b3-action b3-outline w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -310,11 +310,11 @@
             <div class="b3-wg-identity-grid grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                 <div>
                     <label for="receiptTitle" class="block font-semibold text-gray-600 mb-1">Titel / Artikel *:</label>
-                    <input type="text" id="receiptTitle" placeholder="z. B. Spülmittel, Miete, Gehalt" required class="w-full p-2.5 border rounded-xl">
+                    <input type="text" id="receiptTitle" placeholder="z. B. Spülmittel, Miete, Gehalt" required class="w-full p-2.5 border rounded-xl" data-tool-en-placeholder="e.g. dish soap, rent, salary">
                 </div>
                 <div>
                     <label for="receiptStore" class="block font-semibold text-gray-600 mb-1">Händler / Partner / Quelle (optional):</label>
-                    <input type="text" id="receiptStore" placeholder="z. B. Rewe, MediaMarkt, Arbeitgeber" class="w-full p-2.5 border rounded-xl">
+                    <input type="text" id="receiptStore" placeholder="z. B. Rewe, MediaMarkt, Arbeitgeber" class="w-full p-2.5 border rounded-xl" data-tool-en-placeholder="e.g. supermarket, electronics store, employer">
                 </div>
                 <div>
                     <label for="receiptDate" class="block font-semibold text-gray-600 mb-1">Kaufdatum *:</label>
@@ -333,11 +333,11 @@
                         <option value="Lebensmittel">🛒 Lebensmittel & Haushalt</option>
                         <option value="Wohnen">🏠 Wohnen & Miete</option>
                         <option value="Energie">⚡ Strom, Gas & Wasser</option>
-                        <option value="Auto">🚗 Auto, Tanken & ÖPNV</option>
+                        <option value="Auto" data-tool-en="🚗 Car, fuel &amp; public transport">🚗 Auto, Tanken & ÖPNV</option>
                         <option value="Freizeit">🎉 Freizeit & Party</option>
                         <option value="Elektronik">📱 Elektronik & Technik</option>
                         <option value="Gesundheit">💊 Gesundheit & Drogerie</option>
-                        <option value="Verträge">📜 Verträge & Abos</option>
+                        <option value="Verträge" data-tool-en="📜 Contracts &amp; subscriptions">📜 Verträge & Abos</option>
                         <option value="Einnahme">💶 Einnahmen & Gehalt</option>
                         <option value="Sonstiges">📦 Sonstiges</option>
                     </select>
@@ -363,11 +363,11 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 p-3.5 bg-gray-50 rounded-xl border border-gray-200 text-xs">
                 <div>
                     <label for="receiptSN" class="block font-semibold text-gray-600 mb-1">Seriennummer / S/N (optional):</label>
-                    <input type="text" id="receiptSN" placeholder="z. B. SN-987456123" class="w-full p-2 border rounded-lg bg-white">
+                    <input type="text" id="receiptSN" placeholder="z. B. SN-987456123" class="w-full p-2 border rounded-lg bg-white" data-tool-en-placeholder="e.g. SN-987456123">
                 </div>
                 <div>
                     <label for="receiptLocation" class="block font-semibold text-gray-600 mb-1">Lagerort Karton (optional):</label>
-                    <input type="text" id="receiptLocation" placeholder="z. B. Keller Regal 2" class="w-full p-2 border rounded-lg bg-white">
+                    <input type="text" id="receiptLocation" placeholder="z. B. Keller Regal 2" class="w-full p-2 border rounded-lg bg-white" data-tool-en-placeholder="e.g. basement shelf 2">
                 </div>
                 <div class="flex flex-col justify-center space-y-1.5 pt-1">
                     <label class="inline-flex items-center cursor-pointer space-x-2">
@@ -392,7 +392,7 @@
                         <label class="block font-bold text-emerald-900">📷 Belegfoto & OCR Scanner</label>
                         <button type="button" onclick="runOCR()" class="b3-action b3-outline px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">🔍 Texterkennung</button>
                     </div>
-                    <label class="helferlein-field" for="receiptPhotoInput"><span class="helferlein-field-label">Belegfoto auswählen</span><input type="file" id="receiptPhotoInput" accept="image/*" class="text-xs p-1.5 border rounded-xl bg-white w-full" aria-label="Belegfoto auswählen"></label>
+                    <label class="helferlein-field" for="receiptPhotoInput"><span class="helferlein-field-label">Belegfoto auswählen</span><input type="file" id="receiptPhotoInput" accept="image/*" class="text-xs p-1.5 border rounded-xl bg-white w-full" aria-label="Belegfoto auswählen" data-tool-en-aria-label="Choose receipt photo"></label>
                     <p id="ocrStatus" class="text-emerald-800 font-semibold hidden"></p>
                 </div>
             </div>
@@ -417,14 +417,14 @@
                     <h3 class="font-bold text-base text-gray-900">📋 Transaktionen & Kassenbons</h3>
                     <div class="flex gap-2 flex-wrap">
                         <label class="helferlein-field" for="filterType"><span class="helferlein-field-label">Buchungen nach Typ filtern</span><select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Buchungen nach Typ filtern">
-                            <option value="All">Alle Typen</option>
+                            <option value="All" data-tool-en="All types">Alle Typen</option>
                             <option value="ausgabe">🔻 Nur Ausgaben</option>
                             <option value="einnahme">🔺 Nur Einnahmen</option>
                             <option value="fixkosten">🔄 Nur Fixkosten</option>
                             <option value="garantie">🛡️ Nur Garantie aktiv</option>
                         </select></label>
                         <label class="helferlein-field" for="filterCategory"><span class="helferlein-field-label">Nach Kategorie filtern</span><select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Nach Kategorie filtern">
-                            <option value="All">Alle Kategorien</option>
+                            <option value="All" data-tool-en="All categories">Alle Kategorien</option>
                             <option value="Lebensmittel">🛒 Lebensmittel</option>
                             <option value="Wohnen">🏠 Wohnen</option>
                             <option value="Energie">⚡ Energie</option>
@@ -432,7 +432,7 @@
                             <option value="Freizeit">🎉 Freizeit</option>
                             <option value="Elektronik">📱 Elektronik</option>
                             <option value="Gesundheit">💊 Gesundheit</option>
-                            <option value="Verträge">📜 Verträge</option>
+                            <option value="Verträge" data-tool-en="📜 Contracts">📜 Verträge</option>
                             <option value="Einnahme">💶 Einnahmen</option>
                             <option value="Sonstiges">📦 Sonstiges</option>
                         </select></label>
@@ -489,7 +489,7 @@
                     <span class="text-xs text-gray-500">Inkl. Amazon-Link & Kassen-Sync</span>
                 </div>
                 <div class="b3-wg-shopping-fields flex gap-2">
-                    <label class="helferlein-field" for="newShoppingItem"><span class="helferlein-field-label">z. B. Hafermilch, Spülmittel, Tabs</span><input type="text" id="newShoppingItem" placeholder="z. B. Hafermilch, Spülmittel, Tabs" class="flex-grow p-2.5 border rounded-xl text-xs" aria-label="z. B. Hafermilch, Spülmittel, Tabs"></label>
+                    <label class="helferlein-field" for="newShoppingItem"><span class="helferlein-field-label">z. B. Hafermilch, Spülmittel, Tabs</span><input type="text" id="newShoppingItem" placeholder="z. B. Hafermilch, Spülmittel, Tabs" class="flex-grow p-2.5 border rounded-xl text-xs" aria-label="z. B. Hafermilch, Spülmittel, Tabs" data-tool-en-placeholder="e.g. oat milk, dish soap, tablets" data-tool-en-aria-label="e.g. oat milk, dish soap, tablets"></label>
                     <button onclick="addShoppingItem()" class="b3-action px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-sm">Hinzufügen</button>
                 </div>
                 <div id="shoppingList" class="space-y-2 max-h-52 overflow-y-auto pr-1"></div>
@@ -508,7 +508,7 @@
 
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
-                    <h3 class="font-bold text-base text-gray-900">🥦 Ernährungs- & Allergie-Matrix</h3>
+                    <h3 class="font-bold text-base text-gray-900" data-tool-en="🥦 Dietary &amp; allergy matrix">🥦 Ernährungs- & Allergie-Matrix</h3>
                     <button onclick="openDietModal()" class="b3-action b3-outline px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold">✏️ Bearbeiten</button>
                 </div>
                 <div id="dietMatrixList" class="space-y-2 text-xs"></div>
@@ -518,7 +518,7 @@
         <!-- VERTRÄGE -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="contracts" id="b3-contracts">
             <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="font-bold text-base text-gray-900">📜 WG-Verträge & Abo-Manager</h3>
+                <h3 class="font-bold text-base text-gray-900" data-tool-en="📜 Household contracts &amp; subscriptions">📜 WG-Verträge & Abo-Manager</h3>
                 <button onclick="openContractModal()" class="b3-action px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold">+ Vertrag</button>
             </div>
             <div id="contractList" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
@@ -561,7 +561,7 @@
     <div id="noteModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 id="noteModalTitle" class="text-lg font-bold">✏️ Neue Sticky Note</h3>
+                <h3 id="noteModalTitle" class="text-lg font-bold" data-tool-en="✏️ New sticky note">✏️ Neue Sticky Note</h3>
                 <button onclick="closeNoteModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div class="space-y-3 text-xs">
@@ -583,7 +583,7 @@
                         <select id="noteColorInput" class="w-full p-2.5 border rounded-xl bg-white font-semibold">
                             <option value="yellow">🨨 Gelb</option>
                             <option value="pink">🌸 Rosa</option>
-                            <option value="green">🌿 Grün</option>
+                            <option value="green" data-tool-en="🌿 Green">🌿 Grün</option>
                             <option value="blue">🌊 Blau</option>
                             <option value="purple">🔮 Violett</option>
                         </select>
@@ -598,7 +598,7 @@
             </div>
             <div class="b3-dialog-actions flex justify-end gap-2 pt-2 border-t">
                 <button onclick="closeNoteModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveNote()" class="b3-action px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-md">Speichern</button>
+                <button onclick="saveNote()" class="b3-action px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-md" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -616,14 +616,14 @@
                     <select id="eventType" class="w-full p-2.5 border rounded-xl bg-white font-bold">
                         <option value="Waschmaschine">🧺 Waschmaschine buchen</option>
                         <option value="Trockner">💨 Trockner buchen</option>
-                        <option value="Gäste">👤 Gäste-Besuch / Übernachtung</option>
-                        <option value="Party">🎉 Party / Lärm-Ankündigung</option>
+                        <option value="Gäste" data-tool-en="👤 Guest visit / overnight stay">👤 Gäste-Besuch / Übernachtung</option>
+                        <option value="Party" data-tool-en="🎉 Party / noise notice">🎉 Party / Lärm-Ankündigung</option>
                         <option value="Allgemein">📅 Allgemeiner WG-Termin</option>
                     </select>
                 </div>
                 <div>
                     <label for="eventTitle" class="block font-semibold mb-1">Titel / Bezeichnung *:</label>
-                    <input type="text" id="eventTitle" placeholder="z. B. Kochwäsche 60°, Besuch von Anna" required class="w-full p-2.5 border rounded-xl">
+                    <input type="text" id="eventTitle" placeholder="z. B. Kochwäsche 60°, Besuch von Anna" required class="w-full p-2.5 border rounded-xl" data-tool-en-placeholder="e.g. laundry at 60°C, visit from Anna">
                 </div>
                 <div class="grid grid-cols-3 gap-2">
                     <div>
@@ -646,7 +646,7 @@
             </div>
             <div class="b3-dialog-actions flex justify-end gap-2 pt-2 border-t">
                 <button onclick="closeAddEventModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveEvent()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+                <button onclick="saveEvent()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -689,13 +689,13 @@
     <div id="dietModal" class="b3-tool-dialog fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="text-lg font-bold">🥦 Ernährungs- & Allergie-Matrix</h3>
+                <h3 class="text-lg font-bold" data-tool-en="🥦 Dietary &amp; allergy matrix">🥦 Ernährungs- & Allergie-Matrix</h3>
                 <button onclick="closeDietModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
             <div id="dietInputContainer" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
             <div class="b3-dialog-actions flex justify-end gap-2 pt-3 border-t">
                 <button onclick="closeDietModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveDietMatrix()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+                <button onclick="saveDietMatrix()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -710,7 +710,7 @@
             <div id="budgetInputList" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
             <div class="b3-dialog-actions flex justify-end gap-2 pt-3 border-t">
                 <button onclick="closeBudgetModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveBudgetsFromModal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md">Speichern</button>
+                <button onclick="saveBudgetsFromModal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -750,7 +750,7 @@
                 <h3 class="text-lg font-bold">📶 Gäste-WLAN QR-Code</h3>
                 <button onclick="closeWLANQRModal()" class="b3-action b3-outline text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
             </div>
-            <p class="text-xs text-gray-600">Mit Smartphone-Kamera scannen für Sofort-Verbindung:</p>
+            <p class="text-xs text-gray-600" data-tool-en="Scan with your phone camera to connect:">Mit Smartphone-Kamera scannen für Sofort-Verbindung:</p>
             <div id="wlanQrcode" class="flex justify-center p-3 bg-white border rounded-2xl shadow-inner min-h-[160px] items-center"></div>
             <button onclick="window.print()" class="w-full py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">🖨️ Für Küche Drucken</button>
         </div>
@@ -783,7 +783,7 @@
             </div>
             <div class="b3-dialog-actions flex justify-end gap-2 pt-2 border-t">
                 <button onclick="closeInfoboardModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveInfoboardFromModal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+                <button onclick="saveInfoboardFromModal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -800,7 +800,7 @@
             <div class="b3-wg-contact-import flex justify-between items-center bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-xs">
                 <div>
                     <span class="font-bold text-emerald-900">📇 Smartphone-Kontakte importieren:</span>
-                    <p class="text-[11px] text-emerald-700">Übernimmt Name & Telefonnummer direkt aus deinem Handy-Adressbuch.</p>
+                    <p class="text-[11px] text-emerald-700" data-tool-en="Copies the name and phone number from your phone&#x27;s contacts.">Übernimmt Name & Telefonnummer direkt aus deinem Handy-Adressbuch.</p>
                 </div>
                 <button onclick="importPhoneContacts()" class="b3-action b3-outline px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-sm">
                     📇 Aus Handy importieren
@@ -868,7 +868,7 @@
             <div id="cookingInputList" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
             <div class="b3-dialog-actions flex justify-end gap-2 pt-3 border-t">
                 <button onclick="closeCookingModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveCookingPlanFromModal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+                <button onclick="saveCookingPlanFromModal()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -900,7 +900,7 @@
             </div>
             <div class="b3-dialog-actions flex justify-end gap-2 pt-2 border-t">
                 <button onclick="closeContractModal()" class="b3-action b3-outline px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="saveContract()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+                <button onclick="saveContract()" class="b3-action px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold" data-tool-en="Save">Speichern</button>
             </div>
         </div>
     </div>
@@ -1206,12 +1206,29 @@
             "Werkzeuge wie dieses kostenlos halten & Kaffee spendieren ☕"
         ];
 
+        const kofiSpruecheEn = [
+            "Buy the developer a coffee ☕",
+            "Fuel the roommate planner with a coffee 🍕",
+            "Keep the peace at home and buy a coffee 🚀",
+            "Code runs on caffeine – support us on Ko-fi ☕",
+            "Like this tool? Buy us a coffee! 🎉",
+            "Help keep tools like this free with a coffee ☕"
+        ];
+
         function rotateKofiText() {
             const kofiEl = document.getElementById('kofiText');
             if (kofiEl) {
                 const idx = Math.floor(Math.random() * kofiSprueche.length);
-                kofiEl.innerText = kofiSprueche[idx];
+                kofiEl.dataset.kofiCopyIndex = String(idx);
+                kofiEl.innerText = (window.__toolyaUILocale === 'en' ? kofiSpruecheEn : kofiSprueche)[idx];
             }
+        }
+        function refreshVisibleKofiText() {
+            const kofiEl = document.getElementById('kofiText');
+            if (!kofiEl) return;
+            const idx = Number(kofiEl.dataset.kofiCopyIndex);
+            if (!Number.isInteger(idx) || idx < 0 || idx >= kofiSprueche.length) return;
+            kofiEl.innerText = (window.__toolyaUILocale === 'en' ? kofiSpruecheEn : kofiSprueche)[idx];
         }
 
         async function manuelleSynchronisation() {
@@ -1569,6 +1586,7 @@
         document.addEventListener('toolya:locale-change', () => {
             if (!householdReadyForLocaleRefresh) return;
             renderApp();
+            refreshVisibleKofiText();
             refreshOpenBudgetLabels();
             refreshOpenCookingDayLabels();
             refreshOpenDietPlaceholders();
@@ -1653,8 +1671,8 @@
         }
 
         // Translate only known chart labels, never receipt category storage keys.
-        function formatHouseholdCategoryLabel(category) {
-            if (window.__toolyaUILocale !== 'en') return category;
+        function formatHouseholdCategoryLabel(category, isEnglish = window.__toolyaUILocale === 'en') {
+            if (!isEnglish) return category;
             const labels = {
                 Lebensmittel: 'Groceries', Wohnen: 'Housing', Energie: 'Energy',
                 Auto: 'Car', Freizeit: 'Leisure', Elektronik: 'Electronics',
@@ -1760,7 +1778,7 @@
             if (categoryChartInstance && cashflowChartInstance) {
                 const catLabels = Object.keys(categoryExpenses).filter(k => categoryExpenses[k] > 0);
                 const catValues = catLabels.map(k => categoryExpenses[k]);
-                categoryChartInstance.data.labels = catLabels.length ? catLabels.map(formatHouseholdCategoryLabel) : [window.__toolyaUILocale === 'en' ? 'No expenses' : 'Keine Ausgaben'];
+                categoryChartInstance.data.labels = catLabels.length ? catLabels.map(category => formatHouseholdCategoryLabel(category)) : [window.__toolyaUILocale === 'en' ? 'No expenses' : 'Keine Ausgaben'];
                 categoryChartInstance.data.datasets[0].data = catValues.length ? catValues : [1];
                 categoryChartInstance.update();
 
@@ -1886,7 +1904,7 @@
             const author = document.getElementById('noteAuthorInput').value;
             const color = document.getElementById('noteColorInput').value;
             const pinned = document.getElementById('notePinnedInput').checked;
-            if (!title) return alert("Bitte mindestens einen Titel angeben!");
+            if (!title) return alert(window.__toolyaUILocale === 'en' ? 'Please enter at least a title!' : 'Bitte mindestens einen Titel angeben!');
             const notes = getNotes();
             const today = new Date().toISOString().split('T')[0];
             if (editingNoteId) {
@@ -1939,7 +1957,7 @@
             const timeStart = document.getElementById('eventTimeStart').value;
             const timeEnd = document.getElementById('eventTimeEnd').value;
             const owner = document.getElementById('eventOwner').value;
-            if (!title || !date) return alert("Bitte Titel und Datum angeben!");
+            if (!title || !date) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a title and date!' : 'Bitte Titel und Datum angeben!');
             const events = getEvents();
             events.push({ id: Date.now(), type, title, date, timeStart, timeEnd, owner });
             saveEvents(events); closeAddEventModal(); renderApp();
@@ -1979,7 +1997,7 @@
             const price = parseFloat(document.getElementById('invPrice').value) || 0;
             const date = document.getElementById('invDate').value;
             const lifespan = parseFloat(document.getElementById('invLifespan').value) || 5;
-            if (!title || price <= 0 || !date) return alert("Bitte Pflichtfelder ausfüllen!");
+            if (!title || price <= 0 || !date) return alert(window.__toolyaUILocale === 'en' ? 'Please fill in the required fields!' : 'Bitte Pflichtfelder ausfüllen!');
             const items = getInventory(); items.push({ id: Date.now(), title, price, date, lifespan }); saveInventory(items); closeAddInventoryModal(); renderApp();
         }
         function deleteInventoryItem(id) { saveInventory(getInventory().filter(i => i.id !== id)); renderApp(); }
@@ -2101,7 +2119,7 @@
                         </div>
                         <div class="flex gap-1">
                             <button onclick="editReceipt(${safeInlineId(r.id)})" class="b3-action b3-outline px-2 py-1 bg-amber-50 text-amber-700 rounded text-xs font-bold">✏️</button>
-                            <button onclick="deleteReceipt(${safeInlineId(r.id)})" class="px-2 py-1 bg-red-50 text-red-600 rounded text-xs font-bold">✕</button>
+                            <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete transaction' : 'Buchung löschen'}" onclick="deleteReceipt(${safeInlineId(r.id)})" class="px-2 py-1 bg-red-50 text-red-600 rounded text-xs font-bold">✕</button>
                         </div>
                     </div>
                 `;
@@ -2111,7 +2129,7 @@
         let ocrGeneration = 0;
         async function runOCR() {
             const input = document.getElementById('receiptPhotoInput');
-            if (!input.files || !input.files[0]) return alert("Bitte Belegfoto auswählen!");
+            if (!input.files || !input.files[0]) return alert(window.__toolyaUILocale === 'en' ? 'Please select a receipt photo!' : 'Bitte Belegfoto auswählen!');
             const file = input.files[0];
             const generation = ++ocrGeneration;
             let worker;
@@ -2148,7 +2166,7 @@
             const entryType = document.querySelector('input[name="entryType"]:checked').value;
             const splitWith = Array.from(document.querySelectorAll('input[name="splitMate"]:checked')).map(cb => cb.value);
 
-            if (!title || !date || price <= 0) return alert("Bitte mindestens Titel, Datum und Betrag angeben!");
+            if (!title || !date || price <= 0) return alert(window.__toolyaUILocale === 'en' ? 'Please enter at least a title, date and amount!' : 'Bitte mindestens Titel, Datum und Betrag angeben!');
 
             let data = getData();
             if (editingReceiptId) {
@@ -2198,7 +2216,7 @@
                 const percent = Math.min(100, (g.current / g.target) * 100);
                 return `
                     <div class="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2 text-xs">
-                        <div class="flex justify-between font-bold text-emerald-900"><span>${escapeUserHtml(g.title)}</span><button onclick="deleteSavingsGoal(${safeInlineId(g.id)})" class="text-red-500">✕</button></div>
+                        <div class="flex justify-between font-bold text-emerald-900"><span>${escapeUserHtml(g.title)}</span><button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete savings goal' : 'Sparziel löschen'}" onclick="deleteSavingsGoal(${safeInlineId(g.id)})" class="text-red-500">✕</button></div>
                         <div class="flex justify-between text-[11px]"><span>${window.__toolyaUILocale === 'en' ? 'Saved' : 'Gespart'}: <strong>${formatHouseholdDisplayAmount(g.current)} €</strong></span><span>${window.__toolyaUILocale === 'en' ? 'Goal' : 'Ziel'}: ${formatHouseholdDisplayAmount(g.target)} €</span></div>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden"><div class="bg-emerald-600 h-2 transition-all" style="width: ${percent}%"></div></div>
                         <button onclick="depositGoal(${safeInlineId(g.id)})" class="b3-action w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">${window.__toolyaUILocale === 'en' ? '+ Deposit' : '+ Einzahlen'}</button>
@@ -2212,7 +2230,7 @@
             const title = document.getElementById('goalTitle').value.trim();
             const target = parseFloat(document.getElementById('goalTarget').value) || 0;
             const current = parseFloat(document.getElementById('goalCurrent').value) || 0;
-            if (!title || target <= 0) return alert("Bitte Titel und Zielbetrag angeben!");
+            if (!title || target <= 0) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a title and target amount!' : 'Bitte Titel und Zielbetrag angeben!');
             const goals = getSavingsGoals(); goals.push({ id: Date.now(), title, target, current });
             saveSavingsGoals(goals); closeSavingsModal(); renderApp();
         }
@@ -2240,7 +2258,7 @@
         function toggleCleanTask(id) { const plan = getCleaningPlan(); const item = plan.find(p => p.id === id); if (item) { item.done = !item.done; saveCleaningPlan(plan); renderCleaningPlan(); } }
         function rotateCleaningPlan() {
             const plan = getCleaningPlan(); const mateNames = getFlatmateNames();
-            if (mateNames.length === 0) return alert('Bitte zuerst ein WG-Mitglied anlegen.');
+            if (mateNames.length === 0) return alert(window.__toolyaUILocale === 'en' ? 'Please add a household member first.' : 'Bitte zuerst ein WG-Mitglied anlegen.');
             plan.forEach(p => { const curr = mateNames.indexOf(p.assignee); p.assignee = mateNames[(curr + 1) % mateNames.length]; p.done = false; });
             saveCleaningPlan(plan); renderCleaningPlan();
         }
@@ -2249,7 +2267,7 @@
         function saveCleanTask() {
             const task = document.getElementById('cleanTaskTitle').value.trim();
             const assignee = document.getElementById('cleanTaskAssignee').value;
-            if (!task) return alert("Bitte Aufgabe angeben!");
+            if (!task) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a task!' : 'Bitte Aufgabe angeben!');
             const plan = getCleaningPlan(); plan.push({ id: Date.now(), task, assignee, done: false });
             saveCleaningPlan(plan); closeAddCleanTaskModal(); renderApp();
         }
@@ -2275,7 +2293,7 @@
         }
         function addShoppingItem(customTitle) {
             const title = customTitle || document.getElementById('newShoppingItem').value.trim();
-            if (!title) return alert("Bitte Bezeichnung eingeben!");
+            if (!title) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a description!' : 'Bitte Bezeichnung eingeben!');
             const items = getShoppingList(); items.push({ id: Date.now(), title });
             saveShoppingList(items); if (!customTitle) document.getElementById('newShoppingItem').value = ""; renderShoppingList();
         }
@@ -2373,7 +2391,7 @@
             const price = Number(document.getElementById('contractPrice').value);
             const payer = document.getElementById('contractPayer').value;
             const noticeDate = document.getElementById('contractNoticeDate').value;
-            if (!name || !Number.isFinite(price) || price <= 0) return alert("Bitte Name und gültige Kosten angeben!");
+            if (!name || !Number.isFinite(price) || price <= 0) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a name and valid costs!' : 'Bitte Name und gültige Kosten angeben!');
             const contracts = getContracts(); contracts.push({ id: Date.now(), name, price, payer, noticeDate });
             saveContracts(contracts); closeContractModal(); renderApp();
         }
@@ -2492,7 +2510,7 @@
             const insta = document.getElementById('mateInsta').value.trim();
             const fb = document.getElementById('mateFb').value.trim();
 
-            if (!vorname) return alert("Bitte mindestens einen Vornamen angeben!");
+            if (!vorname) return alert(window.__toolyaUILocale === 'en' ? 'Please enter at least a first name!' : 'Bitte mindestens einen Vornamen angeben!');
 
             const mates = getFlatmates();
             const contactObj = { vorname, nachname, email, phone, insta, fb };
@@ -2600,25 +2618,26 @@
 
         /* Export PDF */
         async function exportAbrechnungPDF() {
+            const exportLanguage = window.__toolyaUILocale;
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
-            doc.setFontSize(16); doc.text(window.__toolyaUILocale === "en" ? "Household Finance Report" : "WG- & Haushaltsbuch Abrechnung", 14, 20);
-            doc.setFontSize(10); doc.text(`${window.__toolyaUILocale === 'en' ? 'Created on' : 'Erstellt am'}: ${new Date().toLocaleDateString(window.__toolyaUILocale === 'en' ? 'en-GB' : 'de-DE')}`, 14, 28);
+            doc.setFontSize(16); doc.text(exportLanguage === 'en' ? "Household Finance Report" : "WG- & Haushaltsbuch Abrechnung", 14, 20);
+            doc.setFontSize(10); doc.text(`${exportLanguage === 'en' ? 'Created on' : 'Erstellt am'}: ${new Date().toLocaleDateString(exportLanguage === 'en' ? 'en-GB' : 'de-DE')}`, 14, 28);
             const entries = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r));
-            doc.text(`${window.__toolyaUILocale === 'en' ? 'Transactions' : 'Buchungen'}: ${entries.length}`, 14, 35);
+            doc.text(`${exportLanguage === 'en' ? 'Transactions' : 'Buchungen'}: ${entries.length}`, 14, 35);
             let y = 43;
-            if (!entries.length) doc.text(window.__toolyaUILocale === "en" ? "No transactions recorded." : "Keine Buchungen erfasst.", 14, y);
+            if (!entries.length) doc.text(exportLanguage === 'en' ? "No transactions recorded." : "Keine Buchungen erfasst.", 14, y);
             entries.forEach(r => {
                 const price = Number(r.price);
-                const line = `${r.date || '-'} | ${r.title || '-'} (${r.category || '-'}): ${Number.isFinite(price) ? price.toFixed(2) : '-'} EUR [${r.payer || 'Privat'}]`;
+                const line = `${r.date || '-'} | ${r.title || '-'} (${formatHouseholdCategoryLabel(r.category || '-', exportLanguage === 'en')}): ${Number.isFinite(price) ? (exportLanguage === 'en' ? price.toFixed(2) : price.toFixed(2).replace('.', ',')) : '-'} EUR [${r.payer || (exportLanguage === 'en' ? 'Private' : 'Privat')}]`;
                 doc.splitTextToSize(line, 180).forEach(textLine => {
                     if (y > 270) { doc.addPage(); y = 20; }
                     doc.text(textLine, 14, y);
                     y += 6;
                 });
             });
-            doc.save(`${window.__toolyaUILocale === 'en' ? 'household-finance-report' : 'haushaltsbericht'}-${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.save(`${exportLanguage === 'en' ? 'household-finance-report' : 'haushaltsbericht'}-${new Date().toISOString().split('T')[0]}.pdf`);
         }
     </script>
 </body>

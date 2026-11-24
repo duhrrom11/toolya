@@ -6,7 +6,78 @@ const text=(de,en)=>window.__toolyaUILocale==='en'?en:de;
 const make=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node};
 function button(text,cls,action){const node=make('button',cls,text);node.type='button';node.addEventListener('click',action);return node}
 const cleanNumber=(id,fallback)=>{const value=Number($(id)?.value);return Number.isFinite(value)&&value>0?value:fallback};
+const displayNumber=value=>new Intl.NumberFormat(window.__toolyaUILocale==='en'?'en-GB':'de-DE',{maximumFractionDigits:2}).format(value);
 const atlas='../../assets/toolya/outfits.webp?v=20261115-alpha';
+
+// Only the redesigned shell's fixed copy is localized. Never traverse recipe,
+// shopping, pantry, notes or other user-controlled Backstudio content.
+const shellCopy=new Map([
+ ['Die passende Backform. Ganz einfach.','The right baking pan. Made simple.'],
+ ['Backstudio-Navigation','Backstudio navigation'],
+ ['Backstudio-Bereiche','Backstudio sections'],
+ ['Türkiser Toolya-Bäcker im Back-Outfit','Turquoise Toolya baker in baking outfit'],
+ ['Vier Schritte zum Backergebnis','Four steps to your baking result'],
+ ['Einfach backen','Baking made easy'],
+ ['Welche Backform brauchst du?','Which baking pan do you need?'],
+ ['Form auswählen – wir rechnen für dich.','Choose a pan and we will do the maths.'],
+ ['Kuchenhöhe ändern','Change cake height'],
+ ['Trage dein Rezept ein. Hier siehst du die neuen Mengen.','Enter your recipe to see the adjusted quantities here.'],
+ ['✎ Zutaten eingeben','✎ Enter ingredients'],
+ ['♨ Backzeit und Ofen','♨ Baking time and oven'],
+ ['So sieht deine Form aus','This is what your pan looks like'],
+ ['Zum Drehen','Rotate to view'],
+ ['Springform mit Kuchenteig','Springform pan with cake batter'],
+ ['So voll wird deine Form.','This is how full your pan will be.'],
+ ['Deine Rezeptmenge','Your recipe quantity'],
+ ['Das passt','A good fit'],
+ ['Diese Formen passen auch','These pans also fit'],
+ ['Tippe eine Form an.','Select a pan.'],
+ ['Meine eigenen Backformen','My own baking pans'],
+ ['Meine Backformen','My baking pans'],
+ ['Deine Backzeit & Mengen','Your baking time and quantities'],
+ ['Noch mehr Backhelfer','More baking helpers'],
+ ['← Zurück','← Back'],
+ ['Rezept einlesen','Import recipe'],
+ ['Meine Torte planen','Plan my cake'],
+ ['Meine Backnotizen','My baking notes'],
+ ['Meine Einkaufsliste','My shopping list'],
+ ['Backform ändern','Change baking pan'],
+ ['Formen finden','Find pans'],
+ ['Rezeptfoto','Recipe photo'],
+ ['Torte planen','Plan cake'],
+ ['Backnotizen','Baking notes'],
+ ['Einkaufsliste','Shopping list'],
+ ['Form wählen','Choose pan'],
+ ['Zutaten','Ingredients'],
+ ['Ergebnis','Result'],
+ ['Foto auswählen','Choose photo'],
+ ['Böden & Creme','Layers & cream'],
+ ['Meine Erfahrungen','My notes'],
+ ['Was noch fehlt','What is still needed'],
+ ['Backstudio-Schnellzugriff','Backstudio shortcuts'],
+ ['↻ Form drehen','↻ Rotate pan']
+]);
+function localizeShell(shell,sub,side,stepper,header,quick,navButtons,views){
+ const nodes=[sub,side,stepper,header,quick,
+  ...navButtons.values(),...Object.values(views).map(item=>item.view),
+  ...shell.querySelectorAll('.bsui-side-title,.bsui-side-nav,.bsui-baker[role="img"],.bsui-section-eyebrow,.bsui-title,.bsui-subtitle,.bsui-recipe-details > summary,.bsui-empty,.bsui-stage-top,.bsui-stage-top strong,.bsui-stage-tag,.bsui-stage-pan img,.bsui-hero-status,.bsui-hero-status span,.bsui-hero-status strong,.bsui-recommend-detail > summary,.bsui-finder > h2,.bsui-return,.bsui-additional > summary,.bsui-step,.bsui-step span,.bsui-quick,.bsui-quick strong,.bsui-quick small,.bsui-nav span:last-child,.bsui-tool-head,.bsui-tool-head h2,.bsui-webgl button,.bsp-actions > button')];
+ for(const node of new Set(nodes)){
+  if(!node)continue;
+  for(const attr of ['aria-label','alt']){
+   const original=node.dataset[attr==='aria-label'?'bsuiOriginalAria':'bsuiOriginalAlt']||node.getAttribute(attr);
+   if(!original)continue;
+   node.dataset[attr==='aria-label'?'bsuiOriginalAria':'bsuiOriginalAlt']=original;
+   node.setAttribute(attr,window.__toolyaUILocale==='en'?(shellCopy.get(original)||original):original);
+  }
+  for(const child of node.childNodes){
+   if(child.nodeType!==3)continue;
+   const original=child.__bsuiOriginalCopy??child.nodeValue;
+   child.__bsuiOriginalCopy=original;
+   const trimmed=original.trim(),translated=window.__toolyaUILocale==='en'?(shellCopy.get(trimmed)||trimmed):trimmed;
+   if(shellCopy.has(trimmed))child.nodeValue=original.replace(trimmed,translated);
+  }
+ }
+}
 const navItems=[
  ['core','♧','Backform ändern'],
  ['finder','⚖','Formen finden'],
@@ -165,7 +236,7 @@ function init(){
     $('target-d').dispatchEvent(new Event('input',{bubbles:true}));
    });
    const ratio=area/(Math.PI*Math.pow(diameter/2,2));
-   const optionLabel=make('strong','',text('◉ Runde Form: ', '◉ Round pan: ')+diameter+' cm');
+   const optionLabel=make('strong','',text('◉ Runde Form: ', '◉ Round pan: ')+displayNumber(diameter)+' cm');
    let advice=text('Fast gleich hoch.','Almost the same height.');
    if(i===0)advice=text('Ähnliche Größe','Similar size');
    else if(ratio>1.05)advice=text('Gleiche Teigmenge: Kuchen wird höher.','The same batter will make a taller cake.');
@@ -179,12 +250,13 @@ function init(){
   renderStandardRecommendations();
   const shape=$('target-shape')?.value||'round',double=$('combinator-mode')?.value==='double';
   const roundLabel=shape==='bundt'?text('Gugelhupf Ø ','Bundt Ø '):text('Rund Ø ','Round Ø ');
-  let target=roundLabel+cleanNumber('target-d',20)+' cm';
-  if(double)target=text('2 Formen Ø ','2 pans Ø ')+cleanNumber('combo-d1',20)+' / '+cleanNumber('combo-d2',16)+' cm';
-  else if(shape==='rect')target=text('Rechteck ','Rectangular ')+cleanNumber('target-l',25)+' × '+cleanNumber('target-w',11)+' cm';
+  let target=roundLabel+displayNumber(cleanNumber('target-d',20))+' cm';
+  if(double)target=text('2 Formen Ø ','2 pans Ø ')+displayNumber(cleanNumber('combo-d1',20))+' / '+displayNumber(cleanNumber('combo-d2',16))+' cm';
+  else if(shape==='rect')target=text('Rechteck ','Rectangular ')+displayNumber(cleanNumber('target-l',25))+' × '+displayNumber(cleanNumber('target-w',11))+' cm';
   dims.textContent=target;
   const factor=$('res-factor')?.textContent||'';
-  const amount=Number(String(factor).replace(/[×\s]/g,'').replace(',','.'));
+  const normalizedFactor=String(factor).replace(/[×\s]/g,'').replace(',','.');
+  const amount=normalizedFactor&&/^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(normalizedFactor)?Number(normalizedFactor):NaN;
   const recipePercentage=Math.round(amount*100);
   $('bsui-hero-factor').textContent=Number.isFinite(amount)
    ?text(`Du brauchst ${recipePercentage} % des Rezepts.`,`Use ${recipePercentage}% of the recipe.`)
@@ -215,6 +287,8 @@ function init(){
  const orig3dOpen=[...webgl.querySelectorAll('button')].find(n=>/Form drehen|3D öffnen|Rotate pan|Open 3D/.test(n.textContent||''));
  if(orig3dOpen){
   orig3dOpen.textContent=text('↻ Form drehen','↻ Rotate pan');
+  // Keep the original German source for reversibility when EN is active at mount.
+  if(orig3dOpen.firstChild)orig3dOpen.firstChild.__bsuiOriginalCopy='↻ Form drehen';
   // Start the interactive view when it first enters the viewport; data-saver users can launch it manually.
   if('IntersectionObserver' in window&&!window.navigator?.connection?.saveData){
    const observer=new IntersectionObserver(entries=>{
@@ -228,7 +302,10 @@ function init(){
  // Keep existing message observable for accessibility while showing a concise status at the top.
  const existingMessage=$('bs-message');if(existingMessage){existingMessage.setAttribute('aria-live','polite');existingMessage.classList.add('bsui-site-message');header.after(existingMessage)}
  if($('recipe-input')?.value.trim())recipeDetails.open=false;
+ const repaintShell=()=>localizeShell(shell,sub,side,stepper,header,quick,navButtons,views);
+ document.addEventListener('toolya:locale-change',repaintShell);
  document.addEventListener('toolya:locale-change',requestSync);
+ repaintShell();
  sync();showView('core');
  document.dispatchEvent(new Event('toolya:backstudio-layout-ready'));
 }

@@ -92,7 +92,7 @@
   <span class="b3-tool-icon" aria-hidden="true">🅿️</span>
   <div class="b3-tool-title"><h1>Parkplatz-Merker</h1>
     <p>Speichere deinen Parkplatz mit Standort, Notiz oder Foto. Behalte Parkzeit und Gebühren im Blick.</p></div>
-  <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()">⚙</button>
+  <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()" data-tool-en-aria-label="Open settings">⚙</button>
 </div></header>
 
     <!-- MODAL: Einstellungen & Supabase Auth -->
@@ -100,7 +100,7 @@
         <div class="bg-white p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-amber-900">⚙️ Einstellungen und Konto</h3>
-                <button onclick="toggleSettingsModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleSettingsModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             
             <div class="p-3 bg-gray-50 rounded-xl border text-xs space-y-1">
@@ -126,7 +126,7 @@
                 </div>
                 <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-xl transition">Abmelden</button>
             </div>
-            <button onclick="toggleSettingsModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="toggleSettingsModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -135,31 +135,31 @@
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-amber-900">📖 Hilfe & Anleitungen</h3>
-                <button onclick="toggleHelpModal()" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
+                <button onclick="toggleHelpModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="b3-action b3-outline text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             <div class="space-y-3 text-xs">
-                <p><a href="/parkplatz-merker/" class="underline">Öffentliche Schritt-für-Schritt-Anleitung zum Parkplatz-Merker</a></p>
-                <details class="bg-gray-50 border rounded-xl p-3"><summary class="font-bold cursor-pointer text-amber-700">Wie übernehme ich Parkgebühren mit Toolya Connect?</summary><p class="mt-2 text-gray-600 leading-relaxed">Bei einer tatsächlich gezahlten positiven Parkgebühr kannst du direkt vor „Parkplatz speichern“ optional die Übernahme ins Haushaltsbuch wählen. Speichere zuerst den Parkplatz und bestätige dann die Übertragung. Die Buchung erscheint unter „Auto“. Fotos und GPS-Daten werden nicht weitergegeben; die vorläufige Zahlungsart „Bargeld“ musst du im Haushaltsbuch prüfen. Bei 0 € ist die Auswahl deaktiviert. Bei Abbruch bleibt der Parkplatz gespeichert und die Übernahme kann erneut versucht werden. Beide Tools müssen für dasselbe angemeldete Konto eingerichtet sein.</p></details>
+                <p><a href="/parkplatz-merker/" class="underline" data-tool-en="Step-by-step guide to Parking Spot">Öffentliche Schritt-für-Schritt-Anleitung zum Parkplatz-Merker</a></p>
+                <details class="bg-gray-50 border rounded-xl p-3"><summary class="font-bold cursor-pointer text-amber-700" data-tool-en="How do I transfer parking fees with Toolya Connect?">Wie übernehme ich Parkgebühren mit Toolya Connect?</summary><p class="mt-2 text-gray-600 leading-relaxed" data-tool-en="For a paid parking fee above €0, choose to add it to Household Budget before saving the parking spot. Confirm the transfer after saving. The expense appears under “Car”. Photos and GPS data stay in Parking Spot. Check the default “Cash” payment method in Household Budget. If you cancel, the parking spot stays saved and you can retry. Both tools must be set up under the same account.">Bei einer tatsächlich gezahlten positiven Parkgebühr kannst du direkt vor „Parkplatz speichern“ optional die Übernahme ins Haushaltsbuch wählen. Speichere zuerst den Parkplatz und bestätige dann die Übertragung. Die Buchung erscheint unter „Auto“. Fotos und GPS-Daten werden nicht weitergegeben; die vorläufige Zahlungsart „Bargeld“ musst du im Haushaltsbuch prüfen. Bei 0 € ist die Auswahl deaktiviert. Bei Abbruch bleibt der Parkplatz gespeichert und die Übernahme kann erneut versucht werden. Beide Tools müssen für dasselbe angemeldete Konto eingerichtet sein.</p></details>
                 <details class="bg-gray-50 border rounded-xl p-3">
                     <summary class="font-bold cursor-pointer text-amber-700">Wie funktioniert der Parkscheiben-Modus?</summary>
-                    <p class="mt-2 text-gray-600 leading-relaxed">
+                    <p class="mt-2 text-gray-600 leading-relaxed" data-tool-en="Parking disc mode sets a two-hour timer starting at the next half-hour mark. For example, at 14:12 the timer ends at 16:30. Check the sign for the permitted parking time first.">
                         Der Parkscheiben-Modus setzt einen Timer von zwei Stunden ab der berechneten halben Stunde. Um 14:12 Uhr endet er zum Beispiel um 16:30 Uhr. Prüfe zuerst die erlaubte Parkdauer auf dem Schild.
                     </p>
                 </details>
                 <details class="bg-gray-50 border rounded-xl p-3">
                     <summary class="font-bold cursor-pointer text-amber-700">Wie nutze ich den GPS-Standort & die Navigation?</summary>
-                    <p class="mt-2 text-gray-600 leading-relaxed">
+                    <p class="mt-2 text-gray-600 leading-relaxed" data-tool-en="Tap “Save parking spot” and allow location access if you want to use GPS. If coordinates are saved, “Directions” opens the location in Google Maps. In a car park, the floor, sector and photo can help you find your car.">
                         Tippe auf „Parkplatz speichern“ und erlaube den Standortzugriff, wenn du GPS nutzen möchtest. Mit gespeicherten Koordinaten öffnet „Route“ die Position in Google Maps. Im Parkhaus helfen dir Etage, Sektor und Foto.
                     </p>
                 </details>
                 <details class="bg-gray-50 border rounded-xl p-3">
                     <summary class="font-bold cursor-pointer text-amber-700">Wie nutze ich den PDF-Report?</summary>
-                    <p class="mt-2 text-gray-600 leading-relaxed">
+                    <p class="mt-2 text-gray-600 leading-relaxed" data-tool-en="Select “PDF report” to get an overview of parking sessions and fees.">
                         Über „PDF-Report“ erstellst du eine Übersicht deiner Parkvorgänge und Gebühren.
                     </p>
                 </details>
             </div>
-            <button onclick="toggleHelpModal()" class="b3-action b3-outline w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="toggleHelpModal()" class="b3-action b3-outline w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -178,7 +178,7 @@
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">📍</div>
-                <div><p class="text-xs text-gray-500" data-tool-en="GPS location">GPS-Standort</p><h3 id="statGps" class="text-xs font-bold text-blue-600">Nicht gespeichert</h3></div>
+                <div><p class="text-xs text-gray-500" data-tool-en="GPS location">GPS-Standort</p><h3 id="statGps" class="text-xs font-bold text-blue-600" data-tool-en="Not saved">Nicht gespeichert</h3></div>
             </div>
         </div>
 
@@ -192,12 +192,12 @@
                         <button onclick="startTimer(30)" class="b3-action px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">30 Min</button>
                         <button onclick="startTimer(60)" class="b3-action px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">1 Std</button>
                         <button onclick="startTimer(120)" class="b3-action px-2.5 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">2 Std</button>
-                        <button onclick="startParkscheibe()" class="b3-action b3-outline px-2.5 py-1.5 bg-blue-100 text-blue-800 font-bold rounded-xl text-xs" title="Rundet auf die nächste halbe Stunde auf (Parkscheiben-Regel)">🔵 Parkscheibe</button>
+                        <button onclick="startParkscheibe()" class="b3-action b3-outline px-2.5 py-1.5 bg-blue-100 text-blue-800 font-bold rounded-xl text-xs" title="Rundet auf die nächste halbe Stunde auf (Parkscheiben-Regel)" data-tool-en-title="Rounds up to the next half hour (parking disc rule)">🔵 Parkscheibe</button>
                     </div>
                     <div id="timerDisplay" class="text-3xl font-bold text-amber-600 my-2">00:00:00</div>
                     <p id="timerStatus" class="text-xs text-gray-500">Kein aktiver Parkschein-Timer</p>
                 </div>
-                <button onclick="stopTimer()" class="b3-action b3-outline w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 rounded-xl text-xs">Timer stoppen / zurücksetzen</button>
+                <button onclick="stopTimer()" class="b3-action b3-outline w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 rounded-xl text-xs" data-tool-en="Stop / reset timer">Timer stoppen / zurücksetzen</button>
             </div>
 
             <!-- Parkplatz-Details & Favoriten -->
@@ -214,7 +214,7 @@
                     </div>
                 </div>
 
-                <label class="helferlein-field" for="parkDesc"><span class="helferlein-field-label" data-tool-en="Location / car park">Standort / Parkhaus</span><input type="text" id="parkDesc" placeholder="Standort / Parkhaus (z.B. P2 Innenstadt)" class="w-full p-2.5 border rounded-xl text-sm" aria-label="Standort / Parkhaus (z.B. P2 Innenstadt)"></label>
+                <label class="helferlein-field" for="parkDesc"><span class="helferlein-field-label" data-tool-en="Location / car park">Standort / Parkhaus</span><input type="text" id="parkDesc" placeholder="Standort / Parkhaus (z.B. P2 Innenstadt)" class="w-full p-2.5 border rounded-xl text-sm" aria-label="Standort / Parkhaus (z.B. P2 Innenstadt)" data-tool-en-placeholder="Location / car park (e.g. city centre P2)"></label>
                 <!-- Tiefgaragen-Ebene & Sektor -->
                 <label class="helferlein-field" for="parkSector"><span class="helferlein-field-label" data-tool-en="Level / zone">Parkebene / Sektor</span><input type="text" id="parkSector" placeholder="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)" class="w-full p-2.5 border rounded-xl text-sm" aria-label="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)" data-tool-en-placeholder="Level / zone (e.g. level 2, row B, bay 42)" data-tool-en-aria-label="Level / zone (e.g. level 2, row B, bay 42)"></label>
 
@@ -232,8 +232,8 @@
                 <h3 class="font-bold text-lg">📋 Gespeicherte Parkplätze und Gebühren</h3>
                 <label class="helferlein-field" for="timeFilter"><span class="helferlein-field-label" data-tool-en="Filter parking history by period">Parkhistorie nach Zeitraum filtern</span><select id="timeFilter" onchange="renderParkingList()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Parkhistorie nach Zeitraum filtern" data-tool-en-aria-label="Filter parking history by period">
                     <option value="all">Gesamte Historie anzeigen</option>
-                    <option value="month">Aktueller Monat</option>
-                    <option value="year">Aktuelles Jahr</option>
+                    <option value="month" data-tool-en="Current month">Aktueller Monat</option>
+                    <option value="year" data-tool-en="Current year">Aktuelles Jahr</option>
                 </select></label>
             </div>
             <div id="parkingList" class="space-y-3">
@@ -266,8 +266,8 @@
     <!-- MODAL: Foto Zoom -->
     <dialog id="imageModal" class="b3-photo-dialog" aria-label="Bildvorschau" onclick="if (event.target === this) closeImageModal()">
         <div class="b3-photo-panel">
-            <img id="zoomedImage" src="" alt="Vergrößertes Foto des Parkplatzes" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain">
-            <button type="button" class="b3-action b3-outline" onclick="closeImageModal()" autofocus>Schließen</button>
+            <img id="zoomedImage" src="" alt="Vergrößertes Foto des Parkplatzes" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain" data-tool-en-alt="Enlarged parking location photo">
+            <button type="button" class="b3-action b3-outline" onclick="closeImageModal()" autofocus data-tool-en="Close">Schließen</button>
         </div>
     </dialog>
 
@@ -449,12 +449,51 @@
             alert("Parkscheibe gestellt auf nächste halbe Stunde + 2 Stunden Parkzeit!");
         }
 
+        // Timer copy changes are display-only: never restart the countdown
+        // or persist a different deadline on language changes.
+        const parkingTimerCopy = Object.freeze({
+            'Kein aktiver Parkschein-Timer': 'No active parking ticket timer',
+            'Parkzeit läuft...': 'Parking time is running...',
+            'Bitte Parkzeit verlängern oder zum Auto gehen!': 'Extend your parking time or return to your car!'
+        });
+        function refreshParkingTimerLocale() {
+            const status = document.getElementById('timerStatus');
+            const display = document.getElementById('timerDisplay');
+            if (!status || !display) return;
+            const english = window.__toolyaUILocale === 'en';
+            const current = status.textContent;
+            for (const [de,en] of Object.entries(parkingTimerCopy)) {
+                if (current === de || current === en) {
+                    status.textContent = english ? en : de;
+                    break;
+                }
+            }
+            if (display.textContent === '⏰ ABGELAUFEN!' || display.textContent === '⏰ EXPIRED!') {
+                display.textContent = english ? '⏰ EXPIRED!' : '⏰ ABGELAUFEN!';
+            }
+        }
+
+        function refreshParkingGpsLocale() {
+            const status = document.getElementById('statGps');
+            if (!status) return;
+            const known = {
+                'Gespeichert ✓': 'Saved ✓',
+                'Nicht gespeichert': 'Not saved'
+            };
+            const reverse = Object.fromEntries(Object.entries(known).map(([de, en]) => [en, de]));
+            const current = status.textContent.trim();
+            if (Object.hasOwn(known, current) || Object.hasOwn(reverse, current)) {
+                const german = Object.hasOwn(reverse, current) ? reverse[current] : current;
+                status.textContent = window.__toolyaUILocale === 'en' ? known[german] : german;
+            }
+        }
+
         async function stopTimer() {
             clearInterval(timerInterval);
             activeEndTime = null;
             if(!await saveData({...getData(),activeEndTime:null}))return;
             document.getElementById("timerDisplay").innerText = "00:00:00";
-            document.getElementById("timerStatus").innerText = "Kein aktiver Parkschein-Timer";
+            document.getElementById("timerStatus").innerText = window.__toolyaUILocale === 'en' ? 'No active parking ticket timer' : 'Kein aktiver Parkschein-Timer';
         }
 
         function runTimerLoop() {
@@ -465,8 +504,8 @@
                 if (distance <= 0) {
                     clearInterval(timerInterval);
                     timerInterval = null;
-                    document.getElementById("timerDisplay").innerText = "⏰ ABGELAUFEN!";
-                    document.getElementById("timerStatus").innerText = "Bitte Parkzeit verlängern oder zum Auto gehen!";
+                    document.getElementById("timerDisplay").innerText = window.__toolyaUILocale === 'en' ? '⏰ EXPIRED!' : '⏰ ABGELAUFEN!';
+                    document.getElementById("timerStatus").innerText = window.__toolyaUILocale === 'en' ? 'Extend your parking time or return to your car!' : 'Bitte Parkzeit verlängern oder zum Auto gehen!';
                     if ("Notification" in window && Notification.permission === "granted") {
                         new Notification(window.__toolyaUILocale === 'en' ? 'Parking alert' : 'Park-Alarm',
                           { body: window.__toolyaUILocale === 'en'
@@ -480,7 +519,7 @@
                 const sec = remaining % 60;
                 document.getElementById("timerDisplay").innerText =
                     (h > 0 ? h + "h " : "") + String(m).padStart(2, '0') + "m " + String(sec).padStart(2, '0') + "s";
-                document.getElementById("timerStatus").innerText = "Parkzeit läuft...";
+                document.getElementById("timerStatus").innerText = window.__toolyaUILocale === 'en' ? 'Parking time is running...' : 'Parkzeit läuft...';
             };
             tick();
             if (Number(activeEndTime) > Date.now()) timerInterval = setInterval(tick, 1000);
@@ -510,7 +549,7 @@
                 navigator.geolocation.getCurrentPosition(
                     position=>{
                         currentGps={lat:position.coords.latitude,lng:position.coords.longitude};
-                        document.getElementById('statGps').innerText='Gespeichert ✓';
+                        document.getElementById('statGps').innerText=window.__toolyaUILocale === 'en' ? 'Saved ✓' : 'Gespeichert ✓';
                         void finish(currentGps);
                     },
                     ()=>{void finish(null);},
@@ -633,7 +672,7 @@
                     </div>
                     <div class="b3-park-card-actions flex items-center gap-2">
                         ${gps ? `<a href="https://www.google.com/maps/search/?api=1&query=${gps.lat},${gps.lng}" target="_blank" rel="noopener noreferrer" class="b3-action b3-outline px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold">🧭 Route</a>` : ''}
-                        <button onclick="deleteSession(${safeId === null ? 0 : safeId})" ${safeId === null ? 'disabled' : ''} class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                        <button aria-label="${english ? 'Delete parking session' : 'Parkvorgang löschen'}" onclick="deleteSession(${safeId === null ? 0 : safeId})" ${safeId === null ? 'disabled' : ''} class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                     </div>
                 </div>
             `;
@@ -641,6 +680,8 @@
         }
 
         document.addEventListener('toolya:locale-change', () => {
+            refreshParkingTimerLocale();
+            refreshParkingGpsLocale();
             if (parkingCloudReady) renderParkingList();
         });
 
@@ -655,6 +696,7 @@
             const pdfEn = window.__toolyaUILocale === 'en';
             const pdfLabel = (de,en) => pdfEn ? en : de;
             const pdfDateLocale = pdfEn ? 'en-GB' : 'de-DE';
+            const formatCost = amount => pdfEn ? amount.toFixed(2) : amount.toFixed(2).replace('.', ',');
 
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
@@ -674,7 +716,7 @@
             let totalCost = sessions.reduce((sum, s) => sum + Number(s.cost || 0), 0);
 
             doc.setFont("helvetica", "bold");
-            doc.text(`${pdfLabel("Parkvorgänge: ","Parking sessions: ")}${sessions.length} | ${pdfLabel("Gesamtkosten: ","Total costs: ")}${totalCost.toFixed(2)} EUR`, 14, y);
+            doc.text(`${pdfLabel("Parkvorgänge: ","Parking sessions: ")}${sessions.length} | ${pdfLabel("Gesamtkosten: ","Total costs: ")}${formatCost(totalCost)} EUR`, 14, y);
             y += 10;
 
             doc.setFont("helvetica", "underline");
@@ -686,7 +728,7 @@
             sessions.forEach((s, idx) => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let sectorText = s.sector ? ` [${pdfLabel("Sektor: ","Sector: ")}${s.sector}]` : "";
-                const lines = doc.splitTextToSize(`${idx + 1}. ${pdfLabel("Standort: ","Location: ")}${s.desc}${sectorText} | ${s.date} | ${Number(s.cost || 0).toFixed(2)} EUR`, 180);
+                const lines = doc.splitTextToSize(`${idx + 1}. ${pdfLabel("Standort: ","Location: ")}${s.desc}${sectorText} | ${s.date} | ${formatCost(Number(s.cost || 0))} EUR`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 

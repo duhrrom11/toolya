@@ -8,8 +8,12 @@ const safe=x=>String(x||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'
 let data;try{data=JSON.parse(localStorage.getItem(KEY)||'{}')}catch{data={}}data=Object.assign({pans:[],logs:[],shopping:[],pantry:{}},data);for(const key of ['pans','logs','shopping'])if(!Array.isArray(data[key]))data[key]=[];if(!data.pantry||typeof data.pantry!=='object'||Array.isArray(data.pantry))data.pantry={};
 // Share the same in-memory state with the additive pro controls to avoid overwriting newer entries.
 window.toolyaBackstudioState=data;
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(data))}catch{message(ui('Lokales Speichern fehlgeschlagen.','Could not save on this device.'))}};
-const message=m=>el('bs-message').textContent=m;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(data))}catch{showStatus('Lokales Speichern fehlgeschlagen.','Could not save on this device.')}};
+const statusTranslations=new Map();
+const message=m=>{const node=el('bs-message');if(node)node.textContent=m};
+// Preserve the original pair for live statuses when DE/EN is toggled without rerunning actions.
+const rememberStatus=(de,en)=>{statusTranslations.set(de,[de,en]);statusTranslations.set(en,[de,en]);return ui(de,en)};
+const showStatus=(de,en)=>message(rememberStatus(de,en));
 const area=(s,a,b)=>s==='rect'?a*b:Math.PI*a*a/4;
 const orig=()=>area(el('orig-shape').value,el('orig-shape').value==='rect'?number('orig-l',30):number('orig-d',26),number('orig-w',10));
 const target=()=>el('combinator-mode').value==='double'?area('round',number('combo-d1',20))+area('round',number('combo-d2',16)):area(el('target-shape').value,el('target-shape').value==='rect'?number('target-l',25):number('target-d',20),number('target-w',11));
@@ -23,7 +27,9 @@ const staticBackstudioCopy = new Map([["Alles für deinen Kuchen auf einen Blick
 const backstudioSourceNodes = new WeakMap();
 function renderBackstudioStaticCopy(){
  const host=el('toolya-backstudio');if(!host)return;
- for(const target of host.querySelectorAll('h2,h3,article > p,article > label,article > button,article option,#bs-message')){
+ // #bs-message is a live status. Reusing its initial text as a static source
+ // would silently replace a later action result on every locale change.
+ for(const target of host.querySelectorAll('h2,h3,article > p,article > label,article > button,article option')){
   // Only source-owned, direct text nodes; never touch user data or nested controls.
   for(const node of target.childNodes){
    if(node.nodeType!==3)continue;
@@ -33,8 +39,12 @@ function renderBackstudioStaticCopy(){
    node.textContent=langEn()?source.replace(source.trim(),staticBackstudioCopy.get(source.trim())):source;
   }
  }
+ const live=el('bs-message');
+ if(live&&['Bereit.','Ready.'].includes(live.textContent))live.textContent=ui('Bereit.','Ready.');
  const custom=el('bs-shopping-custom');
  if(custom)custom.placeholder=ui('z. B. Vanillezucker','e.g. vanilla sugar');
+ const fill=host.querySelector('.bs-tank[role="img"]');
+ if(fill)fill.setAttribute('aria-label',ui('Schematischer Füllstand','Illustration of the pan fill level'));
 }
 function missingIngredients(){
  return parsed().filter(i=>Number.isFinite(i.qty)&&i.qty>0).flatMap(i=>{
@@ -53,14 +63,16 @@ function renderMissing(){
 }
 function queue(items){
  const clean=items.filter(i=>i&&typeof i.title==='string'&&i.title.trim()).map(i=>({title:i.title.trim().slice(0,180),query:String(i.query||i.title).trim().slice(0,120)})).slice(0,50);
- if(!clean.length)return message(ui('Bitte zuerst Zutaten eingeben.','Enter ingredients first.'));
+ if(!clean.length)return showStatus('Bitte zuerst Zutaten eingeben.','Enter ingredients first.');
  const existing=new Set(data.shopping.map(i=>i.title.toLocaleLowerCase('de-DE')));
  let count=0;
  for(const item of clean){if(data.shopping.length>=150)break;if(existing.has(item.title.toLocaleLowerCase('de-DE')))continue;
   data.shopping.push({id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),title:item.title,query:item.query,done:false});
   existing.add(item.title.toLocaleLowerCase('de-DE'));count++;
  }
- save();renderShopping();message(count?count+ui(' Artikel zur Backstudio-Einkaufsliste hinzugefügt. Jeder Artikel hat einen Amazon-Suchbutton.',' items added to your Backstudio shopping list. Each item has an Amazon search button.'):ui('Diese Artikel stehen bereits auf deiner Einkaufsliste.','These items are already on your shopping list.'));
+ save();renderShopping();
+ if(count)showStatus(count+' Artikel zur Backstudio-Einkaufsliste hinzugefügt. Jeder Artikel hat einen Amazon-Suchbutton.',count+' items added to your Backstudio shopping list. Each item has an Amazon search button.');
+ else showStatus('Diese Artikel stehen bereits auf deiner Einkaufsliste.','These items are already on your shopping list.');
 }
 function renderShopping(){
  const root=el('bs-shopping-items');if(!root)return;root.setAttribute('data-user-content','');root.replaceChildren();
@@ -76,14 +88,14 @@ function renderShopping(){
  }
 }
 function exportShopping(){
- if(!data.shopping.length)return message(ui('Die Backstudio-Einkaufsliste ist noch leer.','Your Backstudio shopping list is empty.'));
+ if(!data.shopping.length)return showStatus('Die Backstudio-Einkaufsliste ist noch leer.','Your Backstudio shopping list is empty.');
  const lines=[ui('Toolya Backstudio – Einkaufsliste','Toolya Backstudio – Shopping list'),ui('Erstellt: ','Created: ')+new Date().toLocaleString(langEn()?'en-GB':'de-DE'),'',
   ...data.shopping.map(x=>(x.done?'[x] ':'[ ] ')+x.title),'',ui('Amazon-Suchlinks auf toolya.app verwenden die Partner-ID ','Amazon search links on toolya.app use affiliate ID ')+TAG+'.'];
  const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
  const href=URL.createObjectURL(blob),link=document.createElement('a');
  link.href=href;link.download=ui('toolya-backstudio-einkaufsliste.txt','toolya-backstudio-shopping-list.txt');document.body.append(link);link.click();link.remove();
  setTimeout(()=>URL.revokeObjectURL(href),1000);
- message(ui('Backstudio-Einkaufsliste als Textdatei exportiert.','Backstudio shopping list exported as a text file.'));
+ showStatus('Backstudio-Einkaufsliste als Textdatei exportiert.','Backstudio shopping list exported as a text file.');
 }
 function renderSchedule(){
  const host=el('bs-schedule');if(!host)return;
@@ -111,7 +123,7 @@ function renderGarage(){
  if(!pans.length)make('p',root,ui('Noch keine eigenen Formen gespeichert.','No pans saved yet.'));
  for(const row of pans){const div=make('div',root);div.className='bs-row';const p=row.p;
  make('span',div,(row===pans[0]?'★ ':'')+(p.shape==='round'?ui('Rund Ø ','Round Ø ')+p.a:p.shape==='rect'?ui('Eckig ','Rectangular ')+p.a+' × '+p.b:p.shape==='volume'?ui('Spezial ','Special ')+p.a+' ml':ui('Muffins ','Muffins ')+p.a)+ui(' · Abweichung ',' · Difference ')+fmt(row.score*100)+' %');
- const use=make('button',div,ui('Wählen','Select'));use.type='button';use.onclick=()=>{if(p.shape==='volume'||p.shape==='muffin'){el('bs-special').value=p.shape==='volume'?p.a:p.a*100;update();return message(ui('Volumen in den Spezialformen-Rechner übernommen.','Volume transferred to the special pan calculator.'))}el('combinator-mode').value='single';window.toggleCombinator();el('target-shape').value=p.shape;window.updateShapeInputs('target');if(p.shape==='round')el('target-d').value=p.a;else{el('target-l').value=p.a;el('target-w').value=p.b}window.calculateAll();update()};
+ const use=make('button',div,ui('Wählen','Select'));use.type='button';use.onclick=()=>{if(p.shape==='volume'||p.shape==='muffin'){el('bs-special').value=p.shape==='volume'?p.a:p.a*100;update();return showStatus('Volumen in den Spezialformen-Rechner übernommen.','Volume transferred to the special pan calculator.')}el('combinator-mode').value='single';window.toggleCombinator();el('target-shape').value=p.shape;window.updateShapeInputs('target');if(p.shape==='round')el('target-d').value=p.a;else{el('target-l').value=p.a;el('target-w').value=p.b}window.calculateAll();update()};
  const del=make('button',div,'×');del.type='button';del.setAttribute('aria-label',ui('Form entfernen','Remove pan'));del.onclick=()=>{data.pans.splice(row.index,1);save();renderGarage()};
  }
 }
@@ -153,7 +165,21 @@ function update(){
  renderMissing();
  const heightWarning=el('bs-height-warning');if(heightWarning)heightWarning.textContent=h>ph*number('bs-maxfill',.7)?ui('Achtung: Die gewünschte Teighöhe ist größer als die eingestellte Füllgrenze der Backform.','Warning: the desired cake height exceeds the pan fill limit.'):ui('Wunschhöhe innerhalb der eingestellten Füllgrenze (bei geraden Wänden).','Desired height is within the fill limit (straight-walled pan).');
 }
-function logs(){const root=el('bs-logs');root.replaceChildren();data.logs.slice(-12).reverse().forEach(x=>make('p',root,x.date+' · '+x.name+' · '+x.minutes+ui(' Min. · ',' min · ')+x.note))}
+function displayLogDate(entry){
+ const fallback=entry.date||'';
+ if(entry.iso){
+  const date=new Date(entry.iso);
+  if(Number.isFinite(date.getTime()))return date.toLocaleDateString(langEn()?'en-GB':'de-DE');
+ }
+ if(!langEn())return fallback;
+ const match=/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(fallback);
+ if(!match)return fallback;
+ const day=Number(match[1]),month=Number(match[2]),year=Number(match[3]);
+ const date=new Date(Date.UTC(year,month-1,day,12));
+ return date.getUTCFullYear()===year&&date.getUTCMonth()===month-1&&date.getUTCDate()===day
+  ?date.toLocaleDateString('en-GB',{timeZone:'UTC'}):fallback;
+}
+function logs(){const root=el('bs-logs');root.replaceChildren();data.logs.slice(-12).reverse().forEach(x=>make('p',root,displayLogDate(x)+' · '+x.name+' · '+x.minutes+ui(' Min. · ',' min · ')+x.note))}
 window.toolyaBackstudioRenderLogs=logs;
 function init(){
  const root=el('tab-rechner');if(!root)return;
@@ -176,21 +202,25 @@ function init(){
  '</div><p id="bs-message" role="status" aria-live="polite">Bereit.</p>';
  root.append(host);
  const css=document.createElement('style');css.textContent='#toolya-backstudio{margin-top:25px;background:white;padding:22px;border:1px solid #fed7aa;border-radius:18px}#toolya-backstudio h2{font-weight:800;font-size:1.4rem}#toolya-backstudio h3{font-weight:700;margin-bottom:8px}#toolya-backstudio .bs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:12px}#toolya-backstudio article{padding:15px;background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;min-width:0}#toolya-backstudio label{display:grid;gap:3px;font-size:13px;margin:8px 0}#toolya-backstudio input:not([type=checkbox]),#toolya-backstudio select,#toolya-backstudio textarea{width:100%;padding:7px;border:1px solid #94a3b8;border-radius:8px;background:white}#toolya-backstudio button{background:#c2410c;color:white;border-radius:8px;padding:7px 10px;font-size:12px;margin:3px;cursor:pointer}#toolya-backstudio a{color:#9a3412;text-decoration:underline;font-size:12px}#toolya-backstudio p{font-size:13px;margin:7px 0}#toolya-backstudio .bs-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid #fed7aa}#toolya-backstudio .bs-row span{flex:1;min-width:100px;font-size:12px}#toolya-backstudio .bs-tank{width:100px;height:140px;border:6px solid #94a3b8;border-radius:12px;position:relative;overflow:hidden;margin:auto}#bs-fillbar{position:absolute;bottom:0;left:0;width:100%;background:#0d9488}#toolya-backstudio .bs-hint{font-size:11px;color:#64748b}#bs-message{background:#ffedd5;padding:10px;border-radius:8px}';document.head.append(css);
- el('bs-pan-save').onclick=()=>{const shape=el('bs-pan-shape').value,a=number('bs-pan-a'),b=number('bs-pan-b');if(!(a>0)||shape==='rect'&&!(b>0)||data.pans.length>=40)return message(ui('Gültige Maße eingeben (max. 40 Formen).','Enter valid dimensions (maximum 40 pans).'));data.pans.push({shape,a,b});save();renderGarage()};
+ el('bs-pan-save').onclick=()=>{const shape=el('bs-pan-shape').value,a=number('bs-pan-a'),b=number('bs-pan-b');if(!(a>0)||shape==='rect'&&!(b>0)||data.pans.length>=40)return showStatus('Gültige Maße eingeben (max. 40 Formen).','Enter valid dimensions (maximum 40 pans).');data.pans.push({shape,a,b});save();renderGarage()};
  el('bs-shopping-all').onclick=()=>queue(parsed().filter(x=>x.qty!==undefined).map(i=>({title:adjusted(i),query:i.name})));
  el('bs-add-missing').onclick=()=>queue(missingIngredients());
- el('bs-shopping-add').onclick=()=>{const input=el('bs-shopping-custom'),title=input.value.trim();if(!title)return message(ui('Bitte einen Artikel eingeben.','Enter an item.'));queue([{title,query:title}]);input.value=''};
+ el('bs-shopping-add').onclick=()=>{const input=el('bs-shopping-custom'),title=input.value.trim();if(!title)return showStatus('Bitte einen Artikel eingeben.','Enter an item.');queue([{title,query:title}]);input.value=''};
  el('bs-shopping-export').onclick=exportShopping;
  ['bs-serving','bs-prep','bs-cool','base-time'].forEach(id=>el(id)?.addEventListener('input',renderSchedule));
 
- el('bs-refresh').onclick=()=>{renderPantry();update();message(ui('Rezept neu analysiert.','Recipe analysed again.'))};
- el('bs-log').onclick=()=>{const n=number('bs-time');if(n<1||n>3000)return message(ui('Ungültige Backzeit.','Invalid baking time.'));data.logs.push({date:new Date().toLocaleDateString('de-DE'),name:(el('recipe-name').value||'Mein Kuchen').slice(0,80),minutes:n,note:el('bs-note').value.slice(0,250)});data.logs=data.logs.slice(-30);save();logs();message(ui('Backerfahrung lokal gespeichert.','Baking notes saved on this device.'))};
- el('bs-ocr').onclick=async()=>{const file=el('bs-photo').files?.[0];if(!file)return message(ui('Bitte Foto auswählen.','Select a photo.'));if(file.size>8*1024*1024)return message(ui('Foto darf maximal 8 MB groß sein.','Photo must be 8 MB or smaller.'));const btn=el('bs-ocr');btn.disabled=true;message(ui('Foto wird lokal analysiert …','Analysing the photo on your device…'));try{if(!window.Tesseract){const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';await new Promise((resolve,reject)=>{script.onload=resolve;script.onerror=reject;document.head.append(script)})}const r=await window.Tesseract.recognize(file,'deu');el('recipe-input').value=r.data.text;renderPantry();update();message(ui('Erkanntes Rezept unbedingt prüfen.','Check the recognised recipe carefully.'))}catch{message(ui('Foto-Erkennung nicht verfügbar; Text bitte einfügen.','Photo recognition unavailable; paste the recipe text instead.'))}finally{btn.disabled=false}};
+ el('bs-refresh').onclick=()=>{renderPantry();update();showStatus('Rezept neu analysiert.','Recipe analysed again.')};
+ el('bs-log').onclick=()=>{const n=number('bs-time');if(n<1||n>3000)return showStatus('Ungültige Backzeit.','Invalid baking time.');data.logs.push({date:new Date().toLocaleDateString('de-DE'),name:(el('recipe-name').value||'Mein Kuchen').slice(0,80),minutes:n,note:el('bs-note').value.slice(0,250)});data.logs=data.logs.slice(-30);save();logs();showStatus('Backerfahrung lokal gespeichert.','Baking notes saved on this device.')};
+ el('bs-ocr').onclick=async()=>{const file=el('bs-photo').files?.[0];if(!file)return showStatus('Bitte Foto auswählen.','Select a photo.');if(file.size>8*1024*1024)return showStatus('Foto darf maximal 8 MB groß sein.','Photo must be 8 MB or smaller.');const btn=el('bs-ocr');btn.disabled=true;showStatus('Foto wird lokal analysiert …','Analysing the photo on your device…');try{if(!window.Tesseract){const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';await new Promise((resolve,reject)=>{script.onload=resolve;script.onerror=reject;document.head.append(script)})}const r=await window.Tesseract.recognize(file,'deu');el('recipe-input').value=r.data.text;renderPantry();update();showStatus('Erkanntes Rezept unbedingt prüfen.','Check the recognised recipe carefully.')}catch{showStatus('Foto-Erkennung nicht verfügbar; Text bitte einfügen.','Photo recognition unavailable; paste the recipe text instead.')}finally{btn.disabled=false}};
  ['bs-height','bs-original-height','bs-volume','bs-form-height','bs-maxfill','bs-dough','bs-material','bs-layers','bs-filling','bs-special','bs-practical'].forEach(id=>el(id).addEventListener('input',()=>{renderPantry();renderGarage();update()}));
  ['orig-shape','orig-d','orig-l','orig-w','target-shape','target-d','target-l','target-w','combo-d1','combo-d2','base-time','recipe-input'].forEach(id=>el(id)?.addEventListener('input',()=>{renderGarage();renderPantry();update()}));
  renderBackstudioStaticCopy();
  renderGarage();renderPantry();renderShopping();logs();update();renderSchedule();
+ showStatus('Bereit.','Ready.');
  document.addEventListener('toolya:locale-change',()=>{
+  const status=el('bs-message');
+  const pair=statusTranslations.get(status?.textContent);
+  if(pair&&status)status.textContent=langEn()?pair[1]:pair[0];
   renderBackstudioStaticCopy();
   renderGarage();renderShopping();logs();update();renderSchedule();renderMissing();
  });

@@ -87,7 +87,9 @@ test('vehicle PDF export tolerates stored numeric-string fuel consumption withou
  const pdf={setFont(){},setFontSize(){},text:text=>records.push(String(text)),splitTextToSize:text=>[text],addPage(){},save:name=>files.push(name)};
  const window={__toolyaUILocale:'en',__fakePdf:async()=>pdf};
  const context={window,getData:()=>data,Date,Number};
- runInNewContext(src,context);
+ const vehicleLabels=html.slice(html.indexOf('const vehicleTypeEn = Object.freeze('),html.indexOf('function vehicleTypeDisplay('));
+ assert.ok(vehicleLabels.includes('Object.freeze('),'PDF fixture uses the production vehicle enum catalogue');
+ runInNewContext(vehicleLabels+src,context);
  const promise=runInNewContext('exportPDF()',context);
  window.__toolyaUILocale='de';await promise;
  assert.ok(records.some(row=>row.includes('6.4 l/100km')&&row.includes('Private receipt')));

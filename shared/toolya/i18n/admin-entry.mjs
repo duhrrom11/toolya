@@ -17,7 +17,9 @@ function mount(){
   button.addEventListener('click',()=>apply(lang,true));bar.append(button);
  }
  header.append(bar);header.after(notice);
- const nodes=[document.querySelector('#state'),document.querySelector('#healthStatus')].filter(Boolean);
+ const nodes=['state','healthStatus','result','progress','fileStatus','configuration','selection']
+  .map(id=>document.getElementById(id)).filter(Boolean);
+ // Only exact catalogue matches change live status text; dynamic data is untouched.
  function updateStatus(){for(const el of nodes){if(el.children.length)continue;const old=el.textContent,translated=adminText(old,selected);if(old!==translated)el.textContent=translated}}
  function apply(lang,persist){
   selected=lang;

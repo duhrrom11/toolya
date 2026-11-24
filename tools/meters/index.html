@@ -87,9 +87,9 @@
     <header class="b3-header"><div class="b3-header-inner">
   <a class="b3-brand" href="../../index.html" aria-label="Toolya Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Toolya</a>
   <span class="b3-tool-icon" aria-hidden="true">⚡</span>
-  <div class="b3-tool-title"><h1>Zählerstände erfassen: Strom, Gas & Wasser</h1>
+  <div class="b3-tool-title"><h1 data-tool-en="Record electricity, gas and water meter readings">Zählerstände erfassen: Strom, Gas & Wasser</h1>
     <p>Verbrauch erfassen, Kosten auswerten und Ablesetermine im Blick behalten</p></div>
-  <button type="button" id="settingsBtn" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()">⚙</button>
+  <button type="button" id="settingsBtn" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()" data-tool-en-aria-label="Open settings">⚙</button>
 </div></header>
 
     <!-- Main Content -->
@@ -100,13 +100,13 @@
             <div class="flex items-center space-x-3">
                 <span class="text-2xl">🔔</span>
                 <div>
-                    <h4 class="font-bold text-sm">Ablese-Erinnerung (Über 30 Tage vergangen!)</h4>
+                    <h4 class="font-bold text-sm" data-tool-en="Reading reminder (over 30 days since last reading!)">Ablese-Erinnerung (Über 30 Tage vergangen!)</h4>
                     <p class="text-xs opacity-95" data-tool-en="Record your latest meter readings to see estimated daily costs and forecasts.">Erfasse jetzt deine aktuellen Zählerstände für genaue Tageskosten und Prognosen.</p>
                 </div>
             </div>
             <div class="flex gap-2">
                 <button onclick="downloadIcsCalendar()" class="b3-action b3-outline bg-amber-800 hover:bg-amber-900 text-white px-3 py-1.5 rounded-xl text-xs font-bold">📅 Kalender</button>
-                <button onclick="dismissReadingAlarm()" class="b3-action b3-outline bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold">Später</button>
+                <button onclick="dismissReadingAlarm()" class="b3-action b3-outline bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold" data-tool-en="Later">Später</button>
             </div>
         </div>
 
@@ -126,7 +126,7 @@
                     <div class="p-4 bg-blue-50/50 rounded-xl border border-blue-100 space-y-2">
                         <h4 class="font-bold text-blue-900 text-sm">💧 Wasser</h4>
                         <p data-tool-en="The large digits show whole cubic metres. The red dials show litres.">Die großen Ziffern zeigen volle m³, die roten Zeiger Liter.</p>
-                        <a href="https://www.amazon.de/s?k=wasserzähler+aufsatz+digital&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2">🛒 Wasserzubehör auf Amazon</a>
+                        <a href="https://www.amazon.de/s?k=wasserzähler+aufsatz+digital&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2" data-tool-en="🛒 Water meter accessories on Amazon">🛒 Wasserzubehör auf Amazon</a>
                     </div>
                     <div class="p-4 bg-orange-50/50 rounded-xl border border-orange-100 space-y-2">
                         <h4 class="font-bold text-orange-900 text-sm">♨️ Gas</h4>
@@ -188,12 +188,12 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="create" id="b3-create">
             <div class="flex flex-wrap gap-3 justify-between items-center">
                 <h2 class="text-lg font-bold">✍️ Neuen Zählerstand erfassen</h2>
-                <a href="https://www.amazon.de/dp/B007459MH6?tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded-xl transition-colors">🛒 Strom-Messgeräte auf Amazon</a>
+                <a href="https://www.amazon.de/dp/B007459MH6?tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded-xl transition-colors" data-tool-en="🛒 Electricity meters on Amazon">🛒 Strom-Messgeräte auf Amazon</a>
             </div>
             
             <div class="b3-meter-identity-grid grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div>
-                    <label for="meterType" class="block text-xs font-semibold text-gray-600 mb-1">Zähler-Typ:</label>
+                    <label for="meterType" class="block text-xs font-semibold text-gray-600 mb-1" data-tool-en="Meter type:">Zähler-Typ:</label>
                     <select id="meterType" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="toggleTarifSelect()">
                         <option value="Strom">⚡ Strom (HT / Einzeltarif)</option>
                         <option value="Strom-NT">🌙 Strom (NT / Nachttarif)</option>
@@ -203,7 +203,7 @@
                     </select>
                 </div>
                 <div>
-                    <label for="meterName" class="block text-xs font-semibold text-gray-600 mb-1">Zählername / Nummer:</label>
+                    <label for="meterName" class="block text-xs font-semibold text-gray-600 mb-1" data-tool-en="Meter name / number:">Zählername / Nummer:</label>
                     <input type="text" id="meterName" placeholder="z.B. Hauptzähler #12345" class="w-full p-3 border rounded-xl text-sm" data-tool-en-placeholder="e.g. main meter #12345">
                 </div>
                 <div>
@@ -211,9 +211,9 @@
                     <select id="meterLocation" class="w-full p-3 border rounded-xl text-sm bg-white">
                         <option value="Hauptwohnung">🏠 Hauptwohnung / Keller</option>
                         <option value="Garage">🚗 Garage / Carport</option>
-                        <option value="Garten">🌱 Garten / Außenbereich</option>
+                        <option value="Garten" data-tool-en="🌱 Garden / outdoor area">🌱 Garten / Außenbereich</option>
                         <option value="Einliegerwohnung">🔑 Einliegerwohnung / Vermietung</option>
-                        <option value="Wärmepumpe">🌡️ Wärmepumpe / Heizung</option>
+                        <option value="Wärmepumpe" data-tool-en="🌡️ Heat pump / heating">🌡️ Wärmepumpe / Heizung</option>
                     </select>
                 </div>
                 <div>
@@ -228,7 +228,7 @@
                     <input type="number" step="0.001" id="meterValue" placeholder="z.B. 45230.5" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
-                    <label for="meterPhotoInput" class="block text-xs font-semibold text-gray-600 mb-1">Zählerfoto-Nachweis:</label>
+                    <label for="meterPhotoInput" class="block text-xs font-semibold text-gray-600 mb-1" data-tool-en="Meter photo evidence:">Zählerfoto-Nachweis:</label>
                     <input type="file" id="meterPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700">
                 </div>
                 <div>
@@ -270,7 +270,7 @@
                 <h3 class="font-bold text-lg">📋 Zählerstände & Verlauf</h3>
                 <div class="flex gap-2">
                     <label class="helferlein-field" for="filterType"><span class="helferlein-field-label" data-tool-en="Filter history by meter type">Verlauf nach Zählertyp filtern</span><select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verlauf nach Zählertyp filtern" data-tool-en-aria-label="Filter history by meter type">
-                        <option value="All">Alle Zähler anzeigen</option>
+                        <option value="All" data-tool-en="Show all meters">Alle Zähler anzeigen</option>
                         <option value="Strom">⚡ Strom (HT)</option>
                         <option value="Strom-NT">🌙 Strom (NT)</option>
                         <option value="Kaltwasser">💧 Kaltwasser</option>
@@ -288,8 +288,8 @@
     <!-- MODAL: Foto-Lupe -->
     <dialog id="photoModal" class="b3-photo-dialog" aria-label="Bildvorschau" onclick="if (event.target === this) closePhotoModal()">
         <div class="b3-photo-panel">
-            <img id="modalZoomImg" src="" alt="Vergrößertes Zählerfoto" class="w-full max-h-[70vh] object-contain rounded-xl border">
-            <button type="button" class="b3-action b3-outline" onclick="closePhotoModal()" autofocus>Schließen</button>
+            <img id="modalZoomImg" src="" alt="Vergrößertes Zählerfoto" class="w-full max-h-[70vh] object-contain rounded-xl border" data-tool-en-alt="Enlarged meter photo">
+            <button type="button" class="b3-action b3-outline" onclick="closePhotoModal()" autofocus data-tool-en="Close">Schließen</button>
         </div>
     </dialog>
 
@@ -298,14 +298,14 @@
         <div class="bg-white p-6 rounded-2xl max-w-2xl w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-lg text-amber-900">💡 Clevere Energiespar-Tipps & Top-Gadgets</h3>
-                <button onclick="closeEnergyTipsModal()" class="b3-action b3-outline text-gray-400 font-bold">✕</button>
+                <button onclick="closeEnergyTipsModal()" aria-label="Schließen" data-tool-en-aria-label="Close" class="b3-action b3-outline text-gray-400 font-bold">✕</button>
             </div>
-            <p class="text-xs text-gray-600">Reduziere deine Jahres-Nachzahlung effektiv mit diesen praxiserprobten Spar-Tipps und passenden Amazon-Empfehlungen:</p>
+            <p class="text-xs text-gray-600" data-tool-en="Reduce your annual energy bill with these practical tips and related Amazon recommendations:">Reduziere deine Jahres-Nachzahlung effektiv mit diesen praxiserprobten Spar-Tipps und passenden Amazon-Empfehlungen:</p>
             
             <div class="space-y-3 text-xs">
                 <div class="p-3 bg-sky-50 border border-sky-200 rounded-xl space-y-1.5">
                     <h4 class="font-bold text-sky-900">1. Standby-Verbrauch eliminieren</h4>
-                    <p class="text-gray-700">Fernseher und Konsolen im Standby verbrauchen unnötig Strom. Master-Slave-Leisten schalten automatisch ab.</p>
+                    <p class="text-gray-700" data-tool-en="TVs and consoles use electricity in standby mode. Automatic power strips switch connected devices off.">Fernseher und Konsolen im Standby verbrauchen unnötig Strom. Master-Slave-Leisten schalten automatisch ab.</p>
                     <a href="https://www.amazon.de/s?k=steckdosenleiste+mit+schalter+standby&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="inline-block mt-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">🛒 Steckdosenleisten auf Amazon</a>
                 </div>
 
@@ -316,19 +316,19 @@
                 </div>
 
                 <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-1.5">
-                    <h4 class="font-bold text-blue-900">3. Heizkörperthermostate smart steuern</h4>
+                    <h4 class="font-bold text-blue-900" data-tool-en="3. Use smart radiator thermostats">3. Heizkörperthermostate smart steuern</h4>
                     <p class="text-gray-700">Smarte Thermostate senken die Heizkosten im Schnitt um 10 bis 15 %.</p>
                     <a href="https://www.amazon.de/s?k=smarte+heizkörperthermostate&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="inline-block mt-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">🛒 Smarte Thermostate auf Amazon</a>
                 </div>
 
                 <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1.5">
-                    <h4 class="font-bold text-emerald-900">4. Infrarot-Thermometer für Kältebrücken</h4>
-                    <p class="text-gray-700">Spüre Wärmeverluste an Fenstern und Wänden auf, um gezielt abzudichten.</p>
+                    <h4 class="font-bold text-emerald-900" data-tool-en="4. Find cold spots with an infrared thermometer">4. Infrarot-Thermometer für Kältebrücken</h4>
+                    <p class="text-gray-700" data-tool-en="Find where heat escapes around windows and walls so you can seal those areas.">Spüre Wärmeverluste an Fenstern und Wänden auf, um gezielt abzudichten.</p>
                     <a href="https://www.amazon.de/s?k=infrarot+thermometer+waermebild&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="inline-block mt-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">🛒 Infrarot-Thermometer auf Amazon</a>
                 </div>
             </div>
 
-            <button onclick="closeEnergyTipsModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+            <button onclick="closeEnergyTipsModal()" class="b3-action b3-outline w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold" data-tool-en="Close">Schließen</button>
         </div>
     </div>
 
@@ -370,7 +370,7 @@
                 </div>
             </div>
 
-            <p class="text-sm"><a href="/zaehlerstaende/" class="text-sky-700 underline">Schritt-für-Schritt-Anleitung zur Zählerstandserfassung</a></p>
+            <p class="text-sm"><a href="/zaehlerstaende/" class="text-sky-700 underline" data-tool-en="Step-by-step guide to recording meter readings">Schritt-für-Schritt-Anleitung zur Zählerstandserfassung</a></p>
 
             <!-- DATENSICHERUNG -->
             <div class="border-t border-gray-200 pt-4">
@@ -384,7 +384,7 @@
             </div>
 
             <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
-                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Schließen</button>
+                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer" data-tool-en="Close">Schließen</button>
             </div>
         </div>
     </div>
@@ -784,8 +784,34 @@
         function openEnergyTipsModal() { document.getElementById('energyTipsModal').classList.remove('hidden'); }
         function closeEnergyTipsModal() { document.getElementById('energyTipsModal').classList.add('hidden'); }
 
+        const englishMeterTypes = new Map([
+            ['Strom', 'Electricity'],
+            ['Strom-NT', 'Electricity (night tariff)'],
+            ['Kaltwasser', 'Cold water'],
+            ['Warmwasser', 'Hot water'],
+            ['Wasser', 'Water'],
+            ['Heizung', 'Heating']
+        ]);
+        const englishMeterLocations = new Map([
+            ['Haupt', 'Main'],
+            ['Hauptwohnung', 'Main apartment'],
+            ['Garten', 'Garden'],
+            ['Einliegerwohnung', 'Separate apartment'],
+            ['Wärmepumpe', 'Heat pump']
+        ]);
+
+        function meterTypeLabel(type, isEnglish) {
+            return isEnglish ? (englishMeterTypes.get(type) ?? type) : type;
+        }
+
+        function meterLocationLabel(location, isEnglish) {
+            const label = location || 'Haupt';
+            return isEnglish ? (englishMeterLocations.get(label) ?? label) : label;
+        }
+
         function copyShareText() {
-            let data = getData();
+            const data = getData();
+            const isEnglish = window.__toolyaUILocale === 'en';
             const validReadings = data.readings.filter(r => {
                 if (!r || typeof r !== 'object' || Array.isArray(r) ||
                     typeof r.type !== 'string' || !r.type.trim() ||
@@ -796,26 +822,28 @@
                     r.value !== '' && r.value !== null && r.value !== undefined &&
                     Number.isFinite(Number(r.value)) && Number(r.value) >= 0;
             });
-            if (validReadings.length === 0) return alert("Keine Zählerstände zum Teilen vorhanden.");
-            let text = window.__toolyaUILocale === 'en' ? "⚡ Meter readings overview:\n" : "⚡ Zählerstände-Übersicht:\n";
-            let latest = {};
+            if (validReadings.length === 0) return alert(isEnglish ? "No meter readings available to share." : "Keine Zählerstände zum Teilen vorhanden.");
+            let text = isEnglish ? "⚡ Meter readings overview:\n" : "⚡ Zählerstände-Übersicht:\n";
+            const latest = {};
             // Pick the newest reading per distinct meter, regardless of insertion order.
             validReadings.forEach(r => {
                 const key = JSON.stringify([r.type, r.name]);
                 if (!latest[key] || r.date > latest[key].date) latest[key] = r;
             });
             for (const r of Object.values(latest)) {
-                let unit = r.type.includes('Strom') ? 'kWh' : 'm³';
-                text += `- ${r.type} (${r.name}): ${r.value} ${unit} (${window.__toolyaUILocale === 'en' ? 'on' : 'vom'} ${r.date})\n`;
+                const unit = r.type.includes('Strom') ? 'kWh' : 'm³';
+                const typeLabel = meterTypeLabel(r.type, isEnglish);
+                text += `- ${typeLabel} (${r.name}): ${r.value} ${unit} (${isEnglish ? 'on' : 'vom'} ${r.date})\n`;
             }
+            const copyPrompt = isEnglish ? 'Clipboard unavailable. Copy the text manually:' : 'Zwischenablage nicht verfügbar. Text manuell kopieren:';
             if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
-                prompt('Zwischenablage nicht verfügbar. Text manuell kopieren:', text);
+                prompt(copyPrompt, text);
                 return;
             }
             navigator.clipboard.writeText(text).then(() => {
-                alert("📋 Zählerstände in die Zwischenablage kopiert! Du kannst sie jetzt direkt in WhatsApp oder E-Mail einfügen.");
+                alert(isEnglish ? "📋 Meter readings copied to the clipboard! You can now paste them into WhatsApp or email." : "📋 Zählerstände in die Zwischenablage kopiert! Du kannst sie jetzt direkt in WhatsApp oder E-Mail einfügen.");
             }).catch(() => {
-                prompt('Zwischenablage nicht verfügbar. Text manuell kopieren:', text);
+                prompt(copyPrompt, text);
             });
         }
 
@@ -827,6 +855,7 @@
 
         function renderApp() {
             let data = getData();
+            const isEnglish = window.__toolyaUILocale === 'en';
             const filter = document.getElementById('filterType').value;
             const container = document.getElementById('readingsList');
 
@@ -861,7 +890,7 @@
                     let diff = 0;
                     if (r.isExchange) {
                         diff = r.value;
-                        diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel (Start: ${escapeHtml(r.value)})</span>`;
+                        diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '🔄 Meter replaced (start:' : '🔄 Zählerwechsel (Start:'} ${escapeHtml(r.value)})</span>`;
                     } else {
                         const currentValue = Number(r.value);
                         const previousValue = Number(prev.value);
@@ -870,11 +899,11 @@
                         let unit = r.type.includes('Strom') ? 'kWh' : 'm³';
                         if (diff !== null) {
                             let badgeColor = diff >= 0 ? 'bg-sky-100 text-sky-800' : 'bg-red-100 text-red-800';
-                            diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${escapeHtml(prev.date)})</span>`;
+                            diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? 'Difference:' : 'Differenz:'} ${diff > 0 ? '+' + diff : diff} ${unit} (${window.__toolyaUILocale === 'en' ? 'since' : 'seit'} ${escapeHtml(prev.date)})</span>`;
                         }
                     }
                 } else if (r.isExchange) {
-                    diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel Start</span>`;
+                    diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '🔄 Meter replacement start' : '🔄 Zählerwechsel Start'}</span>`;
                 }
 
                 let icon = '📊';
@@ -886,21 +915,21 @@
                 return `
                     <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                         <div class="b3-meter-card-identity flex items-center space-x-3">
-                            ${typeof r.photo === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(r.photo) ? `<button type="button" class="b3-photo-trigger" aria-label="Zählerfoto vergrößern" onclick="openPhotoModal(this.firstElementChild.src)"><img alt="Zählerfoto" src="${escapeHtml(r.photo)}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer hover:opacity-80 transition-opacity"></button>` : `<div class="w-12 h-12 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center font-bold text-lg">${icon}</div>`}
+                            ${typeof r.photo === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(r.photo) ? `<button type="button" class="b3-photo-trigger" aria-label="Zählerfoto vergrößern" onclick="openPhotoModal(this.firstElementChild.src)" data-tool-en-aria-label="Enlarge meter photo"><img alt="${window.__toolyaUILocale === 'en' ? 'Meter photo' : 'Zählerfoto'}" src="${escapeHtml(r.photo)}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer hover:opacity-80 transition-opacity"></button>` : `<div class="w-12 h-12 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center font-bold text-lg">${icon}</div>`}
                             <div>
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="text-xs font-bold text-gray-800">${escapeHtml(r.name)}</span>
-                                    <span class="text-xs text-sky-700 font-semibold">(${escapeHtml(r.type)} - ${escapeHtml(r.location || 'Haupt')})</span>
+                                    <span class="text-xs text-sky-700 font-semibold">(${escapeHtml(meterTypeLabel(r.type, isEnglish))} - ${escapeHtml(meterLocationLabel(r.location, isEnglish))})</span>
                                     ${diffText}
                                 </div>
                                 <p class="text-xs text-gray-600 mt-1">
-                                    Stand: <strong class="text-gray-900">${escapeHtml(r.value)} ${unitLabel}</strong> | Datum: ${escapeHtml(r.date)}
-                                    ${r.note ? ' | Notiz: ' + escapeHtml(r.note) : ''}
+                                    ${window.__toolyaUILocale === 'en' ? 'Reading:' : 'Stand:'} <strong class="text-gray-900">${escapeHtml(r.value)} ${unitLabel}</strong> | ${window.__toolyaUILocale === 'en' ? 'Date:' : 'Datum:'} ${escapeHtml(r.date)}
+                                    ${r.note ? (window.__toolyaUILocale === 'en' ? ' | Note: ' : ' | Notiz: ') + escapeHtml(r.note) : ''}
                                 </p>
                             </div>
                         </div>
                         <div class="b3-meter-card-actions flex items-center gap-2 self-end md:self-center">
-                            ${typeof r.id === 'number' && Number.isSafeInteger(r.id) ? `<button onclick="deleteReading(${r.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕ Löschen</button>` : ''}
+                            ${typeof r.id === 'number' && Number.isSafeInteger(r.id) ? `<button onclick="deleteReading(${r.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">${window.__toolyaUILocale === 'en' ? '✕ Delete' : '✕ Löschen'}</button>` : ''}
                         </div>
                     </div>
                 `;
@@ -943,8 +972,8 @@
                 return `
                     <div class="space-y-1">
                         <div class="flex justify-between text-[11px] font-semibold text-gray-600">
-                            <span>Monat: ${k}</span>
-                            <span>Ablesungen: ${val}</span>
+                            <span>${window.__toolyaUILocale === 'en' ? 'Month:' : 'Monat:'} ${k}</span>
+                            <span>${window.__toolyaUILocale === 'en' ? 'Readings:' : 'Ablesungen:'} ${val}</span>
                         </div>
                         <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                             <div class="bg-sky-600 h-3 rounded-full transition-all duration-500" style="width: ${percent}%"></div>
@@ -1009,17 +1038,17 @@
 
                         html += `
                             <div class="p-4 bg-gray-50 border rounded-xl space-y-1.5">
-                                <h4 class="font-bold text-sm">${t} Prognose & Live-Kosten</h4>
-                                <p class="text-xs">Hochrechnung / Jahr: <strong>${yearlyEst} ${unit}</strong></p>
+                                <h4 class="font-bold text-sm">${escapeHtml(window.__toolyaUILocale === 'en' ? ({Strom:'Electricity',Kaltwasser:'Cold water',Gas:'Gas'}[t] || t) : t)} ${window.__toolyaUILocale === 'en' ? 'forecast & current costs' : 'Prognose & Live-Kosten'}</h4>
+                                <p class="text-xs">${window.__toolyaUILocale === 'en' ? 'Estimate / year:' : 'Hochrechnung / Jahr:'} <strong>${yearlyEst} ${unit}</strong></p>
                                 ${yearlyCost === null
-                                    ? '<p class="text-xs text-amber-700">Für die Kostenprognose bitte Tarifpreis und bei Gas auch den Umrechnungsfaktor hinterlegen.</p>'
-                                    : `<p class="text-xs">Tages-Schnitt: <strong class="text-sky-700">${(yearlyCost / 365).toFixed(2)} € / Tag</strong></p>
-                                       <p class="text-xs">Kosten: <strong>${yearlyCost.toFixed(2)} €</strong>${yearlyAbschlag === null ? ' (Abschlag nicht hinterlegt)' : ` (Bezahlt: ${yearlyAbschlag.toFixed(2)} €)`}</p>
+                                    ? (window.__toolyaUILocale === 'en' ? '<p class="text-xs text-amber-700">To estimate costs, enter a tariff price and, for gas, a conversion factor.</p>' : '<p class="text-xs text-amber-700">Für die Kostenprognose bitte Tarifpreis und bei Gas auch den Umrechnungsfaktor hinterlegen.</p>')
+                                    : `<p class="text-xs">${window.__toolyaUILocale === 'en' ? 'Daily average:' : 'Tages-Schnitt:'} <strong class="text-sky-700">${(yearlyCost / 365).toFixed(2)} € / ${window.__toolyaUILocale === 'en' ? 'day' : 'Tag'}</strong></p>
+                                       <p class="text-xs">${window.__toolyaUILocale === 'en' ? 'Costs:' : 'Kosten:'} <strong>${yearlyCost.toFixed(2)} €</strong>${yearlyAbschlag === null ? (window.__toolyaUILocale === 'en' ? ' (Advance payment not entered)' : ' (Abschlag nicht hinterlegt)') : ` (${window.__toolyaUILocale === 'en' ? 'Paid:' : 'Bezahlt:'} ${yearlyAbschlag.toFixed(2)} €)`}</p>
                                        ${yearlyAbschlag === null ? '' : `<p class="text-xs font-bold ${yearlyCost > yearlyAbschlag ? 'text-red-600' : 'text-emerald-600'}">
-                                           ${yearlyCost > yearlyAbschlag ? '⚠️ Nachzahlung: ca. ' + (yearlyCost - yearlyAbschlag).toFixed(2) + ' €' : '🎉 Guthaben: ca. ' + (yearlyAbschlag - yearlyCost).toFixed(2) + ' €'}
+                                           ${yearlyCost > yearlyAbschlag ? (window.__toolyaUILocale === 'en' ? '⚠️ Additional payment: approx. ' : '⚠️ Nachzahlung: ca. ') + (yearlyCost - yearlyAbschlag).toFixed(2) + ' €' : (window.__toolyaUILocale === 'en' ? '🎉 Credit: approx. ' : '🎉 Guthaben: ca. ') + (yearlyAbschlag - yearlyCost).toFixed(2) + ' €'}
                                        </p>`}
                                        <p class="text-xs bg-white p-2 rounded-lg border font-semibold text-sky-900">
-                                           💡 Neuer Abschlag: <span class="text-sky-700 text-sm">${(Math.ceil((yearlyCost / 12) / 10) * 10).toFixed(0)} € / Monat</span>
+                                           ${window.__toolyaUILocale === 'en' ? '💡 New advance payment:' : '💡 Neuer Abschlag:'} <span class="text-sky-700 text-sm">${(Math.ceil((yearlyCost / 12) / 10) * 10).toFixed(0)} € / ${window.__toolyaUILocale === 'en' ? 'month' : 'Monat'}</span>
                                        </p>`}
                             </div>
                         `;
@@ -1055,7 +1084,7 @@
             data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string').forEach((r, idx) => {
                 const unit = r.type.includes('Strom') ? 'kWh' : 'm³';
                 const lines = [
-                    ...doc.splitTextToSize(`${idx + 1}. [${r.type}] ${r.name} (${r.location || 'Haupt'})`, 180),
+                    ...doc.splitTextToSize(`${idx + 1}. [${meterTypeLabel(r.type, pdfEn)}] ${r.name} (${meterLocationLabel(r.location, pdfEn)})`, 180),
                     ...doc.splitTextToSize(`${pdfLabel("Ablesedatum: ","Reading date: ")}${r.date} | ${pdfLabel("Zählerstand: ","Reading: ")}${r.value} ${unit}`, 180),
                     ...(r.note ? doc.splitTextToSize(`${pdfLabel("Bemerkung: ","Note: ")}${r.note}`, 180) : [])
                 ];
@@ -1151,8 +1180,8 @@
             }
             readings.forEach((r) => {
                 const unit = r.type.includes('Strom') ? 'kWh' : 'm³';
-                const typeLabel = pdfEn ? ({Strom:'Electricity',Wasser:'Water',Gas:'Gas',Heizung:'Heating'})[r.type] || r.type : r.type;
-                const line = `${r.date} | ${typeLabel} (${r.name} - ${r.location || pdfLabel('Haupt','Main')}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`;
+                const typeLabel = meterTypeLabel(r.type, pdfEn);
+                const line = `${r.date} | ${typeLabel} (${r.name} - ${meterLocationLabel(r.location, pdfEn)}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`;
                 const lines = doc.splitTextToSize(line, 180);
                 lines.forEach(textLine => {
                     if (y > 275) { doc.addPage(); y = 20; }

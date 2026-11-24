@@ -1,1 +1,8 @@
 .ty-dashboard-locale{display:inline-flex;gap:.1rem;padding:.18rem;border:1px solid #99c4c6;border-radius:999px;background:#fff}.ty-dashboard-locale button{font:inherit;font-size:.8rem;font-weight:750;border:0;border-radius:999px;background:transparent;color:#135865;min-height:32px;min-width:36px;cursor:pointer}.ty-dashboard-locale button[aria-pressed="true"]{background:#116874;color:#fff}.ty-dashboard-locale button:focus-visible{outline:3px solid #744ac4;outline-offset:2px}
+
+/* Keep the sole runtime DE/EN switch visible below the primary mobile
+   navigation without shifting the logo, account and settings controls. */
+@media (max-width:740px){
+ .b3-hub-topbar{position:relative;padding-bottom:64px}
+ .b3-hub-nav .ty-dashboard-locale{position:absolute;right:12px;bottom:8px}
+}

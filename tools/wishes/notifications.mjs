@@ -1,26 +1,28 @@
 import {db} from './toolya-client.mjs';
+import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
+const ui=source=>wishesText(source,globalThis.__toolyaWishesLocale==='en'?'en':'de');
 const $=id=>document.getElementById(id);
 const PAGE=20;let user=null,cursor=null,loading=false,events=[],hasMore=false;
 const url=(path,query)=>new URL(path+query,location.href).href;
-const date=value=>new Intl.DateTimeFormat('de-DE',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
-function message(text){$('status').textContent=text}
+const date=value=>new Intl.DateTimeFormat(globalThis.__toolyaWishesLocale==='en'?'en-GB':'de-DE',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
+function message(text){$('status').textContent=ui(text)}
 function render(){
  const root=$('events');root.replaceChildren();
  const unread=events.filter(e=>!e.read_at).length;
- $('unreadCount').textContent=unread?'· '+unread+' ungelesen (geladen)':'';
+ $('unreadCount').textContent=unread?'· '+unread+ui(' ungelesen (geladen)'):'';
  $('markPage').disabled=!unread;
- if(!events.length){const p=document.createElement('p');p.className='empty';p.textContent='Noch keine Aktivitäten für deine Einstellungen vorhanden.';root.append(p)}
+ if(!events.length){const p=document.createElement('p');p.className='empty';p.textContent=ui('Noch keine Aktivitäten für deine Einstellungen vorhanden.');root.append(p)}
  for(const item of events){
   const card=document.createElement('article');card.className='notification'+(item.read_at?'':' unread');
   const main=document.createElement('div');
-  const badge=document.createElement('span');badge.className='badge';badge.textContent=item.read_at?'✓ Gelesen':'● Neu';
+  const badge=document.createElement('span');badge.className='badge';badge.textContent=ui(item.read_at?'✓ Gelesen':'● Neu');
   const h=document.createElement('h3');
-  h.textContent=item.event_type==='collection'?'🌈 Neue Wunschwelt: '+item.title:item.event_type==='follow'?'👥 Jemand folgt dir':'❤️ Like auf: '+item.title;
-  const p=document.createElement('p');p.textContent=item.event_type==='collection'?'Ein gefolgtes Profil hat eine öffentliche Sammlung veröffentlicht.':item.event_type==='follow'?'Dein Profil hat einen neuen Follower.':'Deine öffentliche Sammlung wurde gelikt.';
+  h.textContent=item.event_type==='collection'?ui('🌈 Neue Wunschwelt: ')+item.title:item.event_type==='follow'?ui('👥 Jemand folgt dir'):ui('❤️ Like auf: ')+item.title;
+  const p=document.createElement('p');p.textContent=ui(item.event_type==='collection'?'Ein gefolgtes Profil hat eine öffentliche Sammlung veröffentlicht.':item.event_type==='follow'?'Dein Profil hat einen neuen Follower.':'Deine öffentliche Sammlung wurde gelikt.');
   const time=document.createElement('time');time.dateTime=item.created_at;time.textContent=date(item.created_at);
   main.append(badge,h,p,time);
-  if(item.event_type!=='follow'&&item.list_id){const a=document.createElement('a');a.href=url('./collection.html','?id='+encodeURIComponent(item.list_id));a.textContent='Sammlung öffnen ↗';main.append(a)}
-  const button=document.createElement('button');button.type='button';button.textContent=item.read_at?'Gelesen':'Als gelesen markieren';button.disabled=Boolean(item.read_at);
+  if(item.event_type!=='follow'&&item.list_id){const a=document.createElement('a');a.href=url('./collection.html','?id='+encodeURIComponent(item.list_id));a.textContent=ui('Sammlung öffnen ↗');main.append(a)}
+  const button=document.createElement('button');button.type='button';button.textContent=ui(item.read_at?'Gelesen':'Als gelesen markieren');button.disabled=Boolean(item.read_at);
   button.addEventListener('click',async()=>{button.disabled=true;const {error}=await db.from('wishlist_notification_reads').upsert({user_id:user.id,event_key:item.event_key,read_at:new Date().toISOString()},{onConflict:'user_id,event_key',ignoreDuplicates:true});if(error){button.disabled=false;message('Gelesen-Status konnte nicht gespeichert werden.')}else{item.read_at=new Date().toISOString();render();message('Gelesen-Status gespeichert.')}});
   card.append(main,button);root.append(card);
  }
@@ -45,7 +47,7 @@ async function load(){
  if(error||!user){$('login').hidden=false;message('Bitte anmelden.');return}
  $('content').hidden=false;
  const {data:prefs,error:prefError}=await db.from('wishlist_notification_preferences').select('new_collections,new_followers,collection_likes').eq('user_id',user.id).maybeSingle();
- if(prefError){$('settingsStatus').textContent='Einstellungen konnten nicht geladen werden.'}
+ if(prefError){$('settingsStatus').textContent=ui('Einstellungen konnten nicht geladen werden.')}
  else if(prefs){$('prefCollections').checked=prefs.new_collections;$('prefFollowers').checked=prefs.new_followers;$('prefLikes').checked=prefs.collection_likes}
  await loadPage(true);
 }
@@ -61,8 +63,11 @@ $('markPage').addEventListener('click',async()=>{
 $('savePrefs').addEventListener('click',async()=>{
  const button=$('savePrefs');button.disabled=true;
  const {error}=await db.from('wishlist_notification_preferences').upsert({user_id:user.id,new_collections:$('prefCollections').checked,new_followers:$('prefFollowers').checked,collection_likes:$('prefLikes').checked,updated_at:new Date().toISOString()},{onConflict:'user_id'});
- $('settingsStatus').textContent=error?'Einstellungen konnten nicht gespeichert werden.':'Einstellungen dauerhaft gespeichert.';
+ $('settingsStatus').textContent=ui(error?'Einstellungen konnten nicht gespeichert werden.':'Einstellungen dauerhaft gespeichert.');
  button.disabled=false;
  if(!error){cursor=null;await loadPage(true)}
 });
 load().catch(()=>message('Benachrichtigungszentrale konnte nicht gestartet werden.'));
+
+// Re-render owned notification labels on an explicit language change; event titles remain untouched.
+document.addEventListener('toolya:wishes-locale-change',()=>{if(user)render()});

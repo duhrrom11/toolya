@@ -98,10 +98,10 @@
     <a class="b3-brand" href="../../index.html" aria-label="Toolya Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Toolya</a>
     <span class="b3-tool-icon" aria-hidden="true">🐾</span>
     <div class="b3-tool-title">
-      <h1>Tiergesundheit – Gesundheitstagebuch für Haustiere</h1>
+      <h1 data-tool-en="Pet Health – health diary for pets">Tiergesundheit – Gesundheitstagebuch für Haustiere</h1>
       <p>Impfungen, Tierarztbesuche, Medikamente und Gesundheitsdaten für Hund und Katze</p>
     </div>
-    <button type="button" id="settingsBtn" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()">⚙</button>
+    <button type="button" id="settingsBtn" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="openSettings()" data-tool-en-aria-label="Open settings">⚙</button>
   </div>
 </header>
 
@@ -126,7 +126,7 @@
 
         <!-- Dringlichkeits-Banner & Nächste Fristen -->
         <div id="deadlinesCard" class="bg-white p-5 rounded-2xl shadow-sm border space-y-2 hidden" data-b3-panel="deadlines">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">🚨 Anstehende Impf-Abläufe & Fristen</h4>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400" data-tool-en="🚨 Upcoming vaccination deadlines">🚨 Anstehende Impf-Abläufe & Fristen</h4>
             <div id="deadlinesList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
         </div>
 
@@ -135,7 +135,7 @@
             <!-- 1. Haustier anlegen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">🐕 1. Haustier-Profil & Tierarzt-Praxis</h2>
-                <label class="helferlein-field" for="petName"><span class="helferlein-field-label" data-tool-en="Pet name">Name des Haustiers</span><input type="text" id="petName" placeholder="Name des Haustiers (z.B. Luna)" class="w-full p-3 border rounded-xl text-sm" aria-label="Name des Haustiers (z.B. Luna)"></label>
+                <label class="helferlein-field" for="petName"><span class="helferlein-field-label" data-tool-en="Pet name">Name des Haustiers</span><input type="text" id="petName" placeholder="Name des Haustiers (z.B. Luna)" class="w-full p-3 border rounded-xl text-sm" aria-label="Name des Haustiers (z.B. Luna)" data-tool-en-placeholder="Pet name (e.g. Luna)"></label>
                 <div class="grid grid-cols-2 gap-2">
                     <label class="helferlein-field" for="petSpecies"><span class="helferlein-field-label" data-tool-en="Species / breed">Tierart / Rasse</span><input type="text" id="petSpecies" placeholder="Tierart / Rasse (z.B. Hund / Labrador)" class="p-3 border rounded-xl text-sm" aria-label="Tierart / Rasse (z.B. Hund / Labrador)"></label>
                     <label class="helferlein-field" for="petChip"><span class="helferlein-field-label" data-tool-en="Microchip number">Chip-Nummer</span><input type="text" id="petChip" placeholder="Chip-Nummer" class="p-3 border rounded-xl text-sm" aria-label="Chip-Nummer" data-tool-en-placeholder="Microchip number" data-tool-en-aria-label="Microchip number"></label>
@@ -177,7 +177,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">💉 2. Gesundheits-Eintrag & Tagebuch</h2>
                 <label class="helferlein-field" for="eventPetSelect"><span class="helferlein-field-label" data-tool-en="Pet for this entry">Haustier für den Eintrag</span><select id="eventPetSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Haustier für den Eintrag" data-tool-en-aria-label="Pet for this entry">
-                    <option value="">-- Haustier wählen --</option>
+                    <option value="" data-tool-en="-- Select pet --">-- Haustier wählen --</option>
                 </select></label>
                 <div class="grid grid-cols-2 gap-2">
                     <label class="helferlein-field" for="eventType"><span class="helferlein-field-label" data-tool-en="Entry type">Art des Eintrags</span><select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags" data-tool-en-aria-label="Entry type">
@@ -191,7 +191,7 @@
                     </select></label>
                     <label class="helferlein-field" for="eventDate"><span class="helferlein-field-label" data-tool-en="Entry date">Datum des Eintrags</span><input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags" data-tool-en-aria-label="Entry date"></label>
                 </div>
-                <label class="helferlein-field" for="eventTitle"><span class="helferlein-field-label" data-tool-en="Description">Bezeichnung</span><input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)"></label>
+                <label class="helferlein-field" for="eventTitle"><span class="helferlein-field-label" data-tool-en="Description">Bezeichnung</span><input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)" data-tool-en-placeholder="Description (e.g. rabies vaccination or symptom)" data-tool-en-aria-label="Description (e.g. rabies vaccination or symptom)"></label>
                 
                 <div class="grid grid-cols-2 gap-2">
                     <label class="helferlein-field" for="eventCost"><span class="helferlein-field-label" data-tool-en="Cost in € (optional)">Kosten in € (optional)</span><input type="text" id="eventCost" placeholder="Kosten in € (optional)" class="p-3 border rounded-xl text-sm" aria-label="Kosten in € (optional)" data-tool-en-placeholder="Cost in € (optional)" data-tool-en-aria-label="Cost in € (optional)"></label>
@@ -199,7 +199,7 @@
                 </div>
 
                 <div id="vaccineExpiryBox" class="hidden">
-                    <label for="eventExpiryDate" class="block text-xs font-semibold text-gray-600 mb-1">Impfung gültig bis / Nächste Auffrischung:</label>
+                    <label for="eventExpiryDate" class="block text-xs font-semibold text-gray-600 mb-1" data-tool-en="Vaccination valid until / next booster:">Impfung gültig bis / Nächste Auffrischung:</label>
                     <input type="date" id="eventExpiryDate" class="w-full p-3 border rounded-xl text-sm">
                 </div>
 
@@ -218,7 +218,7 @@
                 <h3 class="font-bold text-lg">💊 Haustier-Apotheke & Medikamenten-Vorrat</h3>
                 <div class="b3-pet-med-fields flex gap-2 w-full sm:w-auto">
                     <label class="helferlein-field" for="medName"><span class="helferlein-field-label" data-tool-en="Medicine / supplies">Medikament / Vorrat</span><input type="text" id="medName" placeholder="Medikament / Vorrat (z.B. Zeckenschutz)" class="p-2 border rounded-xl text-xs" aria-label="Medikament / Vorrat (z.B. Zeckenschutz)"></label>
-                    <label class="helferlein-field" for="medStock"><span class="helferlein-field-label" data-tool-en="Units / packs">Stück / Packung</span><input type="text" id="medStock" placeholder="Stück / Packung (z.B. 2)" class="p-2 border rounded-xl text-xs w-28" aria-label="Stück / Packung (z.B. 2)"></label>
+                    <label class="helferlein-field" for="medStock"><span class="helferlein-field-label" data-tool-en="Units / packs">Stück / Packung</span><input type="text" id="medStock" placeholder="Stück / Packung (z.B. 2)" class="p-2 border rounded-xl text-xs w-28" aria-label="Stück / Packung (z.B. 2)" data-tool-en-placeholder="Units / pack (e.g. 2)" data-tool-en-aria-label="Units / pack (e.g. 2)"></label>
                     <button onclick="saveMedication()" class="b3-action px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl text-xs">Hinzufügen</button>
                 </div>
             </div>
@@ -242,7 +242,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                     <h3 class="font-bold text-lg">📋 Kalender & Kosten</h3>
                     <label class="helferlein-field" for="filterPetSelect"><span class="helferlein-field-label" data-tool-en="Filter history by pet">Verlauf nach Haustier filtern</span><select id="filterPetSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Verlauf nach Haustier filtern" data-tool-en-aria-label="Filter history by pet">
-                        <option value="">Alle Haustiere anzeigen</option>
+                        <option value="" data-tool-en="Show all pets">Alle Haustiere anzeigen</option>
                     </select></label>
                 </div>
                 <div id="eventsList" class="space-y-3">
@@ -255,8 +255,8 @@
     <!-- MODAL: Foto & Beleg Zoom -->
     <dialog id="imageModal" class="b3-photo-dialog" aria-label="Bildvorschau" onclick="if (event.target === this) closeImageModal()">
         <div class="b3-photo-panel">
-            <img id="zoomedImage" src="" alt="Vergrößertes Haustierfoto oder Dokument" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain">
-            <button type="button" class="b3-action b3-outline" onclick="closeImageModal()" autofocus>Schließen</button>
+            <img id="zoomedImage" src="" alt="Vergrößertes Haustierfoto oder Dokument" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain" data-tool-en-alt="Enlarged pet photo or document">
+            <button type="button" class="b3-action b3-outline" onclick="closeImageModal()" autofocus data-tool-en="Close">Schließen</button>
         </div>
     </dialog>
 
@@ -320,31 +320,31 @@
                     <span>📖 Kurzanleitung – So funktioniert's:</span>
                     <button onclick="toggleHelp()" class="b3-action b3-outline text-teal-200 hover:text-white text-xs px-1.5 py-0.5 rounded">✕ Schließen</button>
                 </div>
-                <p><a href="/tiergesundheit/" class="underline">Schritt-für-Schritt-Anleitung zur Tiergesundheit</a></p>
-                <p><strong>Toolya Connect:</strong> Bei einem Eintrag mit tatsächlichen Haustierkosten kannst du direkt vor „Eintrag speichern“ optional die Übernahme ins Haushaltsbuch auswählen. Erst wird der Gesundheitseintrag gespeichert, danach bestätigst du den Transfer in die Kategorie „Haustiere“. Gesundheitsdetails und Belegfotos werden nicht mit übertragen. Die Zahlungsart „Bargeld“ ist dort zu prüfen. Bei 0 € bleibt Connect deaktiviert; ein abgebrochener Transfer lässt sich wiederholen. Das Haushaltsbuch muss im selben Konto bereits eingerichtet sein.</p>
+                <p><a href="/tiergesundheit/" class="underline" data-tool-en="Step-by-step guide to Pet Health">Schritt-für-Schritt-Anleitung zur Tiergesundheit</a></p>
+                <p><strong>Toolya Connect:</strong> <span data-tool-en="For pet costs above €0, choose to add the expense to Household Budget before saving. Confirm the transfer after saving. The expense appears under “Pets”. Health details and receipt photos stay in Pet Health. Check the default “Cash” payment method in Household Budget. You can retry a cancelled transfer. Household Budget must already be set up under the same account.">Bei einem Eintrag mit tatsächlichen Haustierkosten kannst du direkt vor „Eintrag speichern“ optional die Übernahme ins Haushaltsbuch auswählen. Erst wird der Gesundheitseintrag gespeichert, danach bestätigst du den Transfer in die Kategorie „Haustiere“. Gesundheitsdetails und Belegfotos werden nicht mit übertragen. Die Zahlungsart „Bargeld“ ist dort zu prüfen. Bei 0 € bleibt Connect deaktiviert; ein abgebrochener Transfer lässt sich wiederholen. Das Haushaltsbuch muss im selben Konto bereits eingerichtet sein.</span></p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
                     <div class="bg-teal-800/50 p-2.5 rounded-xl border border-teal-600/30">
                         <span class="font-bold text-teal-200 block mb-0.5">1. Haustier & Praxis</span>
-                        Trage Tiere, Chip, Tasso-Status, Praxis-Adresse und E-Mail ein.
+                        <span data-tool-en="Add your pets, microchip details, TASSO registration status and your vet&#x27;s address and email.">Trage Tiere, Chip, Tasso-Status, Praxis-Adresse und E-Mail ein.</span>
                     </div>
                     <div class="bg-teal-800/50 p-2.5 rounded-xl border border-teal-600/30">
                         <span class="font-bold text-teal-200 block mb-0.5">2. Gewicht & Trends</span>
-                        Erfasse Gewichte und verfolge automatisch den Gewichtstrend.
+                        <span data-tool-en="Record weigh-ins and see how your pet&#x27;s weight changes over time.">Erfasse Gewichte und verfolge automatisch den Gewichtstrend.</span>
                     </div>
                     <div class="bg-teal-800/50 p-2.5 rounded-xl border border-teal-600/30">
                         <span class="font-bold text-teal-200 block mb-0.5">3. Apotheke & Vorräte</span>
-                        Verwalte den Medikamentenvorrat mit automatischer Vorratswarnung.
+                        <span data-tool-en="Track medication stocks and get an alert when supplies run low.">Verwalte den Medikamentenvorrat mit automatischer Vorratswarnung.</span>
                     </div>
                     <div class="bg-teal-800/50 p-2.5 rounded-xl border border-teal-600/30">
                         <span class="font-bold text-teal-200 block mb-0.5">4. Kalender & Export</span>
-                        Öffne einzelne Einträge in Google Kalender oder exportiere die Übersicht als PDF.
+                        <span data-tool-en="Open individual entries in Google Calendar or export the overview as a PDF.">Öffne einzelne Einträge in Google Kalender oder exportiere die Übersicht als PDF.</span>
                     </div>
                 </div>
             </div>
         </div></div>
 
             <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
-                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Schließen</button>
+                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer" data-tool-en="Close">Schließen</button>
             </div>
         </div>
     </div>
@@ -472,14 +472,14 @@
                 const uid=auth.user.id;
                 const prepared=await prepareCloudTool({
                     client:supabaseClient,tool:'haustier-gesundheitspass',storage:localStorage,
-                    confirmMigration:async()=>confirm('Lokale Haustierdaten nach Sicherung in die Cloud übernehmen?'),
-                    reviewExistingCloud:async()=>confirm('Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?'),
+                    confirmMigration:async()=>confirm(window.__toolyaUILocale === 'en' ? 'Import local pet data into the cloud after backing it up?' : 'Lokale Haustierdaten nach Sicherung in die Cloud übernehmen?'),
+                    reviewExistingCloud:async()=>confirm(window.__toolyaUILocale === 'en' ? 'Cloud and device data both exist. Keep cloud data and back up local data separately?' : 'Cloud- und Gerätedaten vorhanden. Cloud-Bestand behalten und lokale Daten separat sichern?'),
                     exportBackup:async data=>{
                         const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
                         const url=URL.createObjectURL(blob),a=document.createElement('a');
                         a.href=url;a.download='toolya-haustiere-vor-cloud.json';a.click();
                         setTimeout(()=>URL.revokeObjectURL(url),60000);
-                        return confirm('Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
+                        return confirm(window.__toolyaUILocale === 'en' ? 'Please confirm that you downloaded the backup.' : 'Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
                     }
                 });
                 const {data:again,error:againError}=await supabaseClient.auth.getUser();
@@ -551,7 +551,7 @@
             const photoInput = document.getElementById('petPhotoInput');
             const passportInput = document.getElementById('petPassportInput');
 
-            if (!name) return alert("Bitte einen Namen für das Haustier eingeben!");
+            if (!name) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a pet name!' : 'Bitte einen Namen für das Haustier eingeben!');
 
             let photoData = "";
             let passportData = "";
@@ -619,7 +619,7 @@
         }
 
         async function deletePet(id) {
-            if (!confirm("⚠️ Möchtest du dieses Haustier und alle zugehörigen Einträge wirklich löschen?")) return;
+            if (!confirm(window.__toolyaUILocale === 'en' ? '⚠️ Delete this pet and all associated records?' : '⚠️ Möchtest du dieses Haustier und alle zugehörigen Einträge wirklich löschen?')) return;
             let data = getData();
             data.pets = data.pets.filter(p => p.id !== id);
             data.events = data.events.filter(e => e.petId !== id);
@@ -631,7 +631,7 @@
         async function saveMedication() {
             const name = document.getElementById('medName').value.trim();
             const stock = document.getElementById('medStock').value.trim();
-            if (!name) return alert("Bitte Medikamenten-Namen angeben!");
+            if (!name) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a medication name!' : 'Bitte Medikamenten-Namen angeben!');
 
             let data = getData();
             if (!data.meds) data.meds = [];
@@ -661,7 +661,7 @@
             const weight=parseFloat(document.getElementById('eventWeight').value.replace(',','.'))||null;
             const expiryDate=document.getElementById('eventExpiryDate').value||null;
             const receiptInput=document.getElementById('eventReceiptInput');
-            if(!petId||!date||!title)return alert('Bitte Haustier, Datum und Bezeichnung angeben!');
+            if(!petId||!date||!title)return alert(window.__toolyaUILocale === 'en' ? 'Please enter a pet, date and description!' : 'Bitte Haustier, Datum und Bezeichnung angeben!');
             const connectRequested=Boolean(window.toolyaPetConnect?.selected);
             const button=document.querySelector('[onclick="saveEvent()"]');
             petEventSaveInProgress=true;
@@ -671,7 +671,7 @@
                 await storeEventData(parseInt(petId),type,date,title,cost,weight,expiryDate,receipt,connectRequested);
             }catch(error){
                 console.error('Haustier-Eintrag nicht bestätigt',error);
-                alert('Eintrag oder Beleg konnte nicht gespeichert werden. Cloud-Datenstand prüfen.');
+                alert(window.__toolyaUILocale === 'en' ? 'Record or receipt could not be saved. Check the cloud data status.' : 'Eintrag oder Beleg konnte nicht gespeichert werden. Cloud-Datenstand prüfen.');
             }finally{
                 petEventSaveInProgress=false;
                 if(button)button.disabled=false;
@@ -696,7 +696,7 @@
         }
 
         async function deleteEvent(id) {
-            if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
+            if (!confirm(window.__toolyaUILocale === 'en' ? '⚠️ Really delete this record?' : '⚠️ Diesen Eintrag wirklich löschen?')) return;
             let data = getData();
             data.events = data.events.filter(e => e.id !== id);
             if (!await saveData(data)) return;
@@ -708,10 +708,10 @@
             const eventSelect = document.getElementById('eventPetSelect');
             const filterSelect = document.getElementById('filterPetSelect');
 
-            const options = '<option value="">-- Haustier wählen --</option>' + 
+            const options = '<option value="" data-tool-en="-- Select pet --">-- Haustier wählen --</option>' + 
                 data.pets.map(p => `<option value="${p.id}">${p.name} (${p.species || 'Haustier'})</option>`).join('');
             
-            const filterOptions = '<option value="">Alle Haustiere anzeigen</option>' + 
+            const filterOptions = '<option value="" data-tool-en="Show all pets">Alle Haustiere anzeigen</option>' + 
                 data.pets.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
 
             eventSelect.innerHTML = options;
@@ -732,7 +732,7 @@
             document.getElementById('statEvents').innerText = data.events.length;
                         
             let totalCosts = data.events.reduce((sum, e) => sum + Number(e.cost || 0), 0);
-            document.getElementById('statCosts').innerText = totalCosts.toFixed(2).replace('.', ',') + ' €';
+            document.getElementById('statCosts').innerText = totalCosts.toLocaleString(displayLocale, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
 
             if (data.pets.length === 0) {
                 petsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${label('Noch keine Haustiere erfasst.','No pets recorded yet.')}</p>`;
@@ -749,11 +749,11 @@
                     let vetHtml = "";
                     if (p.vet && (p.vet.name || p.vet.tel)) {
                         vetHtml = `<div class="text-[11px] text-teal-700 mt-1 bg-white p-2 border rounded-xl space-y-0.5">
-                            <p class="font-bold">🏥 ${p.vet.name || 'Tierarzt'}</p>
+                            <p class="font-bold">🏥 ${p.vet.name || label('Tierarzt', 'Veterinarian')}</p>
                             ${p.vet.address ? `<p class="text-gray-500">${p.vet.address}</p>` : ''}
                             <div class="b3-pet-vet-contacts flex gap-3 pt-0.5">
                                 ${p.vet.tel ? `<a href="tel:${p.vet.tel}" class="font-bold hover:underline">📞 ${p.vet.tel}</a>` : ''}
-                                ${p.vet.email ? `<a href="mailto:${p.vet.email}" class="text-blue-600 hover:underline">✉️ E-Mail</a>` : ''}
+                                ${p.vet.email ? `<a href="mailto:${p.vet.email}" class="text-blue-600 hover:underline">✉️ ${label('E-Mail', 'Email')}</a>` : ''}
                             </div>
                         </div>`;
                     }
@@ -762,19 +762,19 @@
                         <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
                             <div class="b3-pet-profile-heading flex items-center justify-between gap-3">
                                 <div class="b3-pet-profile-identity flex items-center space-x-3">
-                                    ${p.photo ? `<button type="button" class="b3-photo-trigger" aria-label="Haustierfoto vergrößern" onclick="zoomImage(this.firstElementChild.src)"><img alt="Haustierfoto" src="${p.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0"></button>` : defaultPetIcon}
+                                    ${p.photo ? `<button type="button" class="b3-photo-trigger" aria-label="Haustierfoto vergrößern" onclick="zoomImage(this.firstElementChild.src)" data-tool-en-aria-label="Enlarge pet photo"><img alt="${window.__toolyaUILocale === 'en' ? 'Pet photo' : 'Haustierfoto'}" src="${p.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0"></button>` : defaultPetIcon}
                                     <div>
                                         <h4 class="font-bold text-sm text-teal-800">${p.name}</h4>
-                                        <p class="text-xs text-gray-600">${p.species || 'k.A.'} ${p.chip ? '| Chip: ' + p.chip : ''}</p>
+                                        <p class="text-xs text-gray-600">${english ? ({Hund:'Dog',Katze:'Cat',Vogel:'Bird',Kaninchen:'Rabbit',Pferd:'Horse'})[p.species] || p.species || label('k.A.', 'N/A') : p.species || label('k.A.', 'N/A')} ${p.chip ? '| ' + label('Chip', 'Microchip') + ': ' + p.chip : ''}</p>
                                     </div>
                                 </div>
-                                <button onclick="deletePet(${p.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
+                                <button onclick="deletePet(${p.id})" class="text-xs text-red-500 hover:underline">${label('Löschen', 'Delete')}</button>
                             </div>
                             <div class="text-[11px] flex flex-wrap gap-2 text-gray-600 pt-1">
-                                ${p.tasso ? `<span class="bg-teal-100 text-teal-800 font-semibold px-2 py-0.5 rounded-full">🛡️ TASSO / Register</span>` : `<span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">Nicht registriert</span>`}
+                                ${p.tasso ? `<span class="bg-teal-100 text-teal-800 font-semibold px-2 py-0.5 rounded-full">🛡️ TASSO / Register</span>` : `<span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">${label('Nicht registriert', 'Not registered')}</span>`}
                                 ${p.food ? `<span>🥣 ${p.food}</span>` : ''}
-                                ${p.allergies ? `<span class="text-red-700 font-semibold">⚠️ Allergie: ${p.allergies}</span>` : ''}
-                                ${p.passport ? `<button onclick="zoomImage('${p.passport}')" class="b3-action b3-outline text-blue-600 font-semibold underline">📄 EU-Ausweis anzeigen</button>` : ''}
+                                ${p.allergies ? `<span class="text-red-700 font-semibold">⚠️ ${label('Allergie', 'Allergy')}: ${p.allergies}</span>` : ''}
+                                ${p.passport ? `<button onclick="zoomImage('${p.passport}')" class="b3-action b3-outline text-blue-600 font-semibold underline">📄 ${label('EU-Ausweis anzeigen', 'View EU pet passport')}</button>` : ''}
                             </div>
                             ${vetHtml}
                         </div>
@@ -793,10 +793,10 @@
                         <div class="b3-pet-med-card p-3 border rounded-xl flex justify-between items-center text-xs ${stockBg}">
                             <div>
                                 <p class="font-bold">${m.name}</p>
-                                <p class="text-[11px] ${isLowStock ? 'text-red-600 font-bold' : 'text-gray-600'}">Vorrat: ${m.stock} ${isLowStock ? '⚠️ Fast leer!' : ''}</p>
-                                <a href="https://www.amazon.de/s?k=${encodeURIComponent(String(m.name || '').trim())}&amp;tag=duhrrom-21" target="_blank" rel="noopener noreferrer sponsored" aria-label="Auf Amazon nach ${String(m.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')} suchen (Partnerlink)" class="inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-lg bg-amber-400 hover:bg-amber-500 text-gray-900 font-semibold text-[11px]">🛒 Amazon</a>
+                                <p class="text-[11px] ${isLowStock ? 'text-red-600 font-bold' : 'text-gray-600'}">${label('Vorrat', 'Stock')}: ${m.stock} ${isLowStock ? label('⚠️ Fast leer!', '⚠️ Almost empty!') : ''}</p>
+                                <a href="https://www.amazon.de/s?k=${encodeURIComponent(String(m.name || '').trim())}&amp;tag=duhrrom-21" target="_blank" rel="noopener noreferrer sponsored" aria-label="${label('Auf Amazon suchen nach', 'Search Amazon for')} ${String(m.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')} ${label('(Partnerlink)', '(affiliate link)')}" class="inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-lg bg-amber-400 hover:bg-amber-500 text-gray-900 font-semibold text-[11px]">🛒 Amazon</a>
                             </div>
-                            <button onclick="deleteMedication(${m.id})" class="text-red-500 font-bold px-2 hover:bg-red-100 rounded">✕</button>
+                            <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete medication' : 'Medikament löschen'}" onclick="deleteMedication(${m.id})" class="text-red-500 font-bold px-2 hover:bg-red-100 rounded">✕</button>
                         </div>
                     `;
                 }).join('');
@@ -811,7 +811,7 @@
                 deadlinesCard.classList.remove('hidden');
                 deadlinesList.innerHTML = timelyEvents.map(e => {
                     let pet = data.pets.find(p => p.id === e.petId);
-                    let petName = pet ? pet.name : "Unbekannt";
+                    let petName = pet ? pet.name : label('Unbekannt', 'Unknown');
                     let d = new Date(e.date);
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
                     
@@ -820,7 +820,7 @@
                         let expD = new Date(e.expiryDate);
                         let expDiff = Math.ceil((expD - today) / (1000 * 60 * 60 * 24));
                         let expColor = expDiff < 0 ? "text-red-700 font-bold" : (expDiff <= 30 ? "text-amber-700 font-bold" : "text-teal-700");
-                        expiryHint = `<p class="text-[10px] ${expColor} mt-0.5">📅 Impf-Gültigkeit bis: ${expD.toLocaleDateString(displayLocale)} (${expDiff < 0 ? 'Abgelaufen!' : 'in ' + expDiff + ' Tagen'})</p>`;
+                        expiryHint = `<p class="text-[10px] ${expColor} mt-0.5">📅 ${label('Impf-Gültigkeit bis', 'Vaccination valid until')}: ${expD.toLocaleDateString(displayLocale)} (${expDiff < 0 ? label('Abgelaufen!', 'Expired!') : label('in', 'in') + ' ' + expDiff + ' ' + label('Tagen', 'days')})</p>`;
                     }
 
                     let intervalHint = "";
@@ -828,16 +828,16 @@
                         let nextWormDate = new Date(d);
                         nextWormDate.setDate(nextWormDate.getDate() + 90);
                         let wormDiff = Math.ceil((nextWormDate - today) / (1000 * 60 * 60 * 24));
-                        intervalHint = `<p class="text-[10px] text-teal-700 mt-0.5">🪱 Nächste Entwurmung: in ${wormDiff} Tagen (${nextWormDate.toLocaleDateString(displayLocale)})</p>`;
+                        intervalHint = `<p class="text-[10px] text-teal-700 mt-0.5">🪱 ${label('Nächste Entwurmung', 'Next deworming')}: ${label('in', 'in')} ${wormDiff} ${label('Tagen', 'days')} (${nextWormDate.toLocaleDateString(displayLocale)})</p>`;
                     }
 
                     let statusColor = diff < 0 ? "border-red-400 bg-red-50 text-red-800" : (diff <= 14 ? "border-amber-400 bg-amber-50 text-amber-800" : "border-gray-200 bg-gray-50 text-gray-800");
 
                     return `
                         <div class="p-3 border rounded-xl ${statusColor}">
-                            <p class="text-[11px] font-bold text-gray-500">${petName} (${e.type})</p>
+                            <p class="text-[11px] font-bold text-gray-500">${petName} (${english ? ({Impfung:'Vaccination',Behandlung:'Treatment',Medikament:'Medication',Kontrolle:'Check-up',Operation:'Surgery',Entwurmung:'Deworming',Gewicht:'Weight',Tagebuch:'Journal'})[e.type] || e.type : e.type})</p>
                             <p class="text-xs font-bold mt-0.5">${e.title}</p>
-                            <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString(displayLocale)})</p>
+                            <p class="text-[11px] mt-1">${diff < 0 ? label('🔴 Überfällig seit', '🔴 Overdue by') + ' ' + Math.abs(diff) + ' ' + label('Tagen', 'days') : (diff === 0 ? label('🟡 Heute fällig!', '🟡 Due today!') : label('🟢 Fällig in', '🟢 Due in') + ' ' + diff + ' ' + label('Tagen', 'days'))} (${d.toLocaleDateString(displayLocale)})</p>
                             ${expiryHint}
                             ${intervalHint}
                         </div>
@@ -857,7 +857,7 @@
             } else {
                 eventsContainer.innerHTML = filteredEvents.map(e => {
                     let pet = data.pets.find(p => p.id === e.petId);
-                    let petName = pet ? pet.name : "Unbekannt";
+                    let petName = pet ? pet.name : label('Unbekannt', 'Unknown');
                     let d = new Date(e.date);
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
                     const days = label(diff === 1 ? 'Tag' : 'Tagen', diff === 1 ? 'day' : 'days');
@@ -881,17 +881,17 @@
                         weightBadge = `<span class="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">${trendIcon} ${e.weight} kg</span>`;
                     }
 
-                    let receiptBtn = e.receipt ? `<button onclick="zoomImage('${e.receipt}')" class="b3-action b3-outline px-2 py-1 bg-teal-50 text-teal-700 rounded-lg text-xs font-semibold hover:bg-teal-100" title="Beleg anzeigen">🧾 Beleg</button>` : '';
+                    let receiptBtn = e.receipt ? `<button onclick="zoomImage('${e.receipt}')" class="b3-action b3-outline px-2 py-1 bg-teal-50 text-teal-700 rounded-lg text-xs font-semibold hover:bg-teal-100" title="${label('Beleg anzeigen', 'View receipt')}">🧾 ${label('Beleg', 'Receipt')}</button>` : '';
 
-                    let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title + ' (' + petName + ')')}&dates=${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('Haustier-Termin für ' + petName)}`;
+                    let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title + ' (' + petName + ')')}&dates=${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent(label('Haustier-Termin für ', 'Pet appointment for ') + petName)}`;
                     
                     return `
                         <div class="b3-pet-event-card p-4 bg-gray-50 border rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <div>
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
-                                    <span class="text-[10px] bg-teal-100 text-teal-800 font-semibold px-2 py-0.5 rounded-full">${e.type}</span>
+                                    <span class="text-[10px] bg-teal-100 text-teal-800 font-semibold px-2 py-0.5 rounded-full">${english ? ({Impfung:'Vaccination',Behandlung:'Treatment',Medikament:'Medication',Kontrolle:'Check-up',Operation:'Surgery',Entwurmung:'Deworming',Gewicht:'Weight',Tagebuch:'Journal'})[e.type] || e.type : e.type}</span>
                                     <span class="text-xs font-bold text-gray-700">${petName}</span>
-                                    ${e.cost > 0 ? `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">${e.cost.toFixed(2).replace('.', ',')} €</span>` : ''}
+                                    ${e.cost > 0 ? `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">${Number(e.cost).toLocaleString(displayLocale, {minimumFractionDigits: 2, maximumFractionDigits: 2})} €</span>` : ''}
                                     ${weightBadge}
                                 </div>
                                 <h4 class="font-bold text-sm mt-1">${e.title} <span class="text-xs font-normal text-gray-500">${e.type === 'Tagebuch' ? '' : '(' + badge + ')'}</span></h4>
@@ -901,7 +901,7 @@
                             <div class="b3-pet-event-actions flex items-center gap-2 self-end sm:self-center flex-wrap">
                                 ${receiptBtn}
                                 ${e.type !== 'Tagebuch' ? `<a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="b3-action b3-outline px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="${label('Google Kalender','Google Calendar')}">📅 Google</a><button onclick="downloadEventICS(${Number(e.id)})" class="b3-action b3-outline px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="${label('ICS Kalender','Download calendar file')}">📥 ICS</button>` : ''}
-                                <button onclick="deleteEvent(${e.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                                <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete health entry' : 'Gesundheitseintrag löschen'}" onclick="deleteEvent(${e.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
                     `;
@@ -965,7 +965,7 @@
                 let tassoText = p.tasso ? " [TASSO]" : "";
                 let vetText = p.vet && p.vet.name ? ` | ${pdfLabel("TA: ","Vet: ")}${p.vet.name} (${p.vet.tel || '-'})` : "";
                 const species = pdfEn ? ({Hund:'Dog',Katze:'Cat',Vogel:'Bird',Kaninchen:'Rabbit',Pferd:'Horse'})[p.species] || p.species : p.species;
-                const lines = doc.splitTextToSize(`- ${p.name} (${species || pdfLabel("Haustier","Pet")}), Chip: ${p.chip || pdfLabel("k.A.","n/a")}${tassoText}${vetText}`, 180);
+                const lines = doc.splitTextToSize(`- ${p.name} (${species || pdfLabel("Haustier","Pet")}), ${pdfLabel('Chip','Microchip')}: ${p.chip || pdfLabel("k.A.","n/a")}${tassoText}${vetText}`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
@@ -984,7 +984,7 @@
                 if (y > 270) { doc.addPage(); y = 20; }
                 let weightText = e.weight ? ` | ${e.weight} kg` : "";
                 let expText = e.expiryDate ? ` (${pdfLabel("Gültig bis: ","Valid until: ")}${new Date(e.expiryDate).toLocaleDateString(pdfDateLocale)})` : "";
-                const eventType = pdfEn ? ({Impfung:'Vaccination',Behandlung:'Treatment',Medikament:'Medication',Kontrolle:'Check-up',Operation:'Surgery'})[e.type] || e.type : e.type;
+                const eventType = pdfEn ? ({Impfung:'Vaccination',Behandlung:'Treatment',Medikament:'Medication',Kontrolle:'Check-up',Operation:'Surgery',Entwurmung:'Deworming',Gewicht:'Weight',Tagebuch:'Journal'})[e.type] || e.type : e.type;
                 const lines = doc.splitTextToSize(`- [${eventType}] ${pName}: ${e.title}${pdfLabel(" am "," on ")}${new Date(e.date).toLocaleDateString(pdfDateLocale)} (${Number(e.cost || 0).toFixed(2)} EUR${weightText})${expText}`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
@@ -1014,7 +1014,7 @@
             if (!file) return;
             if (file.size > 20 * 1024 * 1024) {
                 input.value = '';
-                return alert("Backup zu groß (maximal 20 MB).");
+                return alert(window.__toolyaUILocale === 'en' ? 'Backup is too large (maximum 20 MB).' : 'Backup zu groß (maximal 20 MB).');
             }
             const reader = new FileReader();
             reader.onload = async function(e) {
@@ -1025,20 +1025,20 @@
                         !Array.isArray(parsed.pets) || !Array.isArray(parsed.events) ||
                         !parsed.pets.every(item => item && typeof item === 'object' && !Array.isArray(item)) ||
                         !parsed.events.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
-                        return alert("Ungültiges Backup-Format.");
+                        return alert(window.__toolyaUILocale === 'en' ? 'Invalid backup format.' : 'Ungültiges Backup-Format.');
                     }
-                    if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
+                    if (!confirm(window.__toolyaUILocale === 'en' ? 'Import backup? Existing data will be replaced.' : 'Backup importieren? Vorhandene Daten werden ersetzt.')) return;
                     if(!await saveData({...parsed,meds:parsed.meds??[]}))return;
                     loadPetDropdowns();
                         renderApp();
-                    alert("Backup erfolgreich importiert!");
+                    alert(window.__toolyaUILocale === 'en' ? 'Backup imported successfully!' : 'Backup erfolgreich importiert!');
                 } catch (err) {
-                    alert("Fehler beim Lesen der Datei.");
+                    alert(window.__toolyaUILocale === 'en' ? 'Error reading the file.' : 'Fehler beim Lesen der Datei.');
                 }
             };
             reader.onerror = () => {
                 input.value = '';
-                alert("Backup-Datei konnte nicht gelesen werden.");
+                alert(window.__toolyaUILocale === 'en' ? 'Could not read the backup file.' : 'Backup-Datei konnte nicht gelesen werden.');
             };
             reader.readAsText(file);
         }
