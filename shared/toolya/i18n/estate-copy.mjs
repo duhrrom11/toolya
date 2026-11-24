@@ -139,6 +139,8 @@ export const ESTATE_COPY=Object.freeze({
 });
 const reverse=Object.freeze(Object.fromEntries(Object.entries(ESTATE_COPY).map(([de,en])=>[en,de])));
 export const ESTATE_RUNTIME_COPY=Object.freeze({
+ "Online gesichert. Der Lesezugang ist auf dem aktuellen Stand.": "Backed up online. Read access is up to date.",
+ "Die E-Mail-Benachrichtigung ist eingerichtet.": "Email notifications are configured.",
   "Bitte bestätige die E-Mail von Toolya. Melde dich danach hier an.": "Confirm the email from Toolya, then sign in here.",
   "Auf diesem Gerät verschlüsselt gespeichert. Die Online-Sicherung steht noch aus.": "Saved encrypted on this device. The online backup is still pending.",
   "Unterlage gelöscht und online gesichert.": "Document deleted and backed up online.",
@@ -244,6 +246,16 @@ if(Object.hasOwn(dict,value))return dict[value];
 const runtime=lang==='en'?ESTATE_RUNTIME_COPY:runtimeReverse;
 if(Object.hasOwn(runtime,value))return runtime[value];
 const dynamicPrefixes=lang==='en'?runtimePrefixes:reversePrefixes;
+const patterns=lang==='en'?[
+ [/^Ein Notfall wurde gemeldet\. Ohne Entwarnung ist der Zugang mit einem Schlüssel ab (.+) möglich\.$/,'An emergency was reported. Without a check-in, one-key access is available from $1.'],
+ [/^Die 24-Stunden-Frist läuft\. Der Zugang mit einem Schlüssel ist frühestens am (.+) möglich, wenn der Besitzer nicht vorher Entwarnung gibt\.$/,'The 24-hour period is running. One-key access is available no earlier than $1, unless the owner checks in first.'],
+ [/^Nächste Überprüfung: (.+) \(fällig\)$/,'Next review: $1 (due)']
+ ]:[
+ [/^An emergency was reported\. Without a check-in, one-key access is available from (.+)\.$/,'Ein Notfall wurde gemeldet. Ohne Entwarnung ist der Zugang mit einem Schlüssel ab $1 möglich.'],
+ [/^The 24-hour period is running\. One-key access is available no earlier than (.+), unless the owner checks in first\.$/,'Die 24-Stunden-Frist läuft. Der Zugang mit einem Schlüssel ist frühestens am $1 möglich, wenn der Besitzer nicht vorher Entwarnung gibt.'],
+ [/^Next review: (.+) \(due\)$/,'Nächste Überprüfung: $1 (fällig)']
+ ];
+for(const [pattern,copy] of patterns)if(pattern.test(value))return value.replace(pattern,copy);
 for(const [before,after] of Object.entries(dynamicPrefixes))
  if(value.startsWith(before))return after+value.slice(before.length);
 return value}

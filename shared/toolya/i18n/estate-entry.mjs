@@ -3,7 +3,7 @@ import {estateText} from './estate-copy.mjs';
 import {applyEstateLocale} from './estate-dom.mjs';
 const key='toolya-locale-v1';
 const trustedStatusIds=['message','entry-file-status','mail-status','keyStatus','exportStatus',
- 'openStatus','countdown','confirm-title','confirm-text'];
+ 'openStatus','countdown','confirm-title','confirm-text','backup-state','alarm-state','checkin-state','review-state','entry-heading','person-heading','save-person'];
 function translateEstateStatuses(lang){
  for(const id of trustedStatusIds){
   const el=document.getElementById(id);
