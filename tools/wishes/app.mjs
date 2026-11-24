@@ -1,4 +1,8 @@
 import {buddy,notify} from '../../shared/toolya/platform.mjs';
+import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
+const wishLanguage=()=>globalThis.__toolyaWishesLocale==='en'?'en':'de';
+const wishCopy=(de,en)=>wishLanguage()==='en'?en:de;
+const wishNotice=(type,message)=>notify(type,wishesText(message,wishLanguage()));
 import {wishSaveOutcome} from './wish-save-outcome.mjs';
 import {appendProductMetadata} from './product-card.mjs?v=20261114-mascot1';
 import {mountAmazonImport} from './amazon-import.mjs?v=20261114-mascot1';
@@ -151,7 +155,7 @@ $('confirmWishExtrasImport').onclick=run(async()=>{
  if(!preview||user?.id!==preview.ownerId){clearWishExtrasImport();feedback.textContent='Importvorschau abgelaufen. Bitte neu prüfen.';return}
  let latestRaw;try{latestRaw=localStorage.getItem(localWishExtrasKey(preview.ownerId))}catch{clearWishExtrasImport();feedback.textContent='Lokaler Speicher nicht lesbar. Kein Import.';return}
  if(latestRaw!==preview.raw){clearWishExtrasImport();feedback.textContent='Lokale Daten wurden seit der Vorschau geändert. Bitte erneut prüfen.';return}
- if(!await buddy.confirm({title:'Cloud-Import bestätigen',message:preview.entries.length+' neue gültige Zusatzdatensätze privat in die Cloud übertragen? Vorhandene Cloud-Daten werden niemals überschrieben.',confirmLabel:'Importieren',danger:true}))return;
+ if(!await buddy.confirm({title:wishCopy('Cloud-Import bestätigen','Confirm cloud import'),message:wishesText(preview.entries.length+' neue gültige Zusatzdatensätze privat in die Cloud übertragen? Vorhandene Cloud-Daten werden niemals überschrieben.',wishLanguage()),confirmLabel:wishCopy('Importieren','Import'),cancelLabel:wishCopy('Abbrechen','Cancel'),danger:true}))return;
  clearWishExtrasImport();
  wishExtrasImportBusy=true;
  $('previewWishExtrasImport').disabled=true;
@@ -198,8 +202,8 @@ $('updateWishExtrasCloud').onclick=run(async()=>{
  if(current.error){feedback.textContent='Cloud-Daten konnten nicht geprüft werden. Es wurde nichts geändert. '+wishlistErrorMessage(current.error);return}
  if(!current.data){feedback.textContent='Noch keine Cloud-Daten vorhanden. Bitte zuerst die separate Aktion zum erstmaligen Cloud-Speichern verwenden.';return}
  const old=current.data;
- const details='Cloud-Stand: Bild '+(old.image_url||'–')+', Preis '+(old.target_price??'–')+' €, Menge '+old.quantity+', Status '+old.wish_status+'.';
- if(!await buddy.confirm({title:'Cloud-Daten überschreiben?',message:details+'\nDiese Cloud-Daten jetzt durch die Eingaben im Editor ersetzen?',confirmLabel:'Ersetzen',danger:true})){feedback.textContent='Cloud-Aktualisierung abgebrochen. Keine Daten geändert.';return}
+ const details=wishCopy('Cloud-Stand: Bild ','Cloud data: Image ')+(old.image_url||'–')+wishCopy(', Preis ',', price ')+(old.target_price??'–')+wishCopy(' €, Menge ',' €, quantity ')+old.quantity+wishCopy(', Status ',', status ')+old.wish_status+'.';
+ if(!await buddy.confirm({title:wishCopy('Cloud-Daten überschreiben?','Overwrite cloud data?'),message:details+wishCopy('\nDiese Cloud-Daten jetzt durch die Eingaben im Editor ersetzen?','\nReplace this cloud data with the values currently in the editor?'),confirmLabel:wishCopy('Ersetzen','Replace'),cancelLabel:wishCopy('Abbrechen','Cancel'),danger:true})){feedback.textContent='Cloud-Aktualisierung abgebrochen. Keine Daten geändert.';return}
  if(user?.id!==ownerId||editingWishId!==wishId||wishEditorRevision!==revision||operation!==wishExtrasCloudOperation)return;
  feedback.textContent='Cloud-Daten werden mit Versionsprüfung aktualisiert …';
  const payload={image_url:extras.imageUrl||null,target_price:extras.price,quantity:extras.quantity,wish_status:extras.status};
@@ -217,7 +221,7 @@ async function auth(){const generation=++authGeneration;let data,error;try{({dat
 $('signin').onclick=run(async()=>{let r;try{r=await db.auth.signInWithPassword(validateCredentials($('email').value,$('password').value))}finally{$('password').value=''}if(r.error)throw r.error;await auth();await refreshFeed();report('Angemeldet');notify('welcome','Willkommen zurück!')});
 $('signup').onclick=run(async()=>{let r;try{r=await db.auth.signUp({...validateCredentials($('email').value,$('password').value),options:{emailRedirectTo:new URL('./index.html',location.href).href}})}finally{$('password').value=''}if(r.error)throw r.error;report('Registrierung gestartet; bitte E-Mail prüfen.');await auth()});
 $('logout').onclick=run(async()=>{let r;try{r=await db.auth.signOut()}finally{$('password').value=''}if(r.error)throw r.error;await auth();await refreshFeed()});
-$('saveProfile').onclick=run(async()=>{const ownerId=requireUser(),handle=validateHandle($('handle').value),{display_name,bio}=validateProfileFields($('displayName').value,$('bio').value);const avatarUrl=$('profileAvatarUrl').value.trim();if(avatarUrl&&(!/^https:\/\//i.test(avatarUrl)||avatarUrl.length>2048))throw Error('Profilbild benötigt eine gültige HTTPS-Adresse.');const r=await db.from('wishlist_profiles') .upsert({user_id:ownerId,handle,display_name,bio,avatar_url:avatarUrl||null},{onConflict:'user_id'});if(r.error){if(isUniqueViolation(r.error))throw Error('Dieser Benutzername ist bereits vergeben. Bitte einen anderen wählen.');throw r.error;}if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');await auth();if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');await refreshFeed();if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');report('Profil gespeichert');notify('success','Profil gespeichert')});
+$('saveProfile').onclick=run(async()=>{const ownerId=requireUser(),handle=validateHandle($('handle').value),{display_name,bio}=validateProfileFields($('displayName').value,$('bio').value);const avatarUrl=$('profileAvatarUrl').value.trim();if(avatarUrl&&(!/^https:\/\//i.test(avatarUrl)||avatarUrl.length>2048))throw Error('Profilbild benötigt eine gültige HTTPS-Adresse.');const r=await db.from('wishlist_profiles') .upsert({user_id:ownerId,handle,display_name,bio,avatar_url:avatarUrl||null},{onConflict:'user_id'});if(r.error){if(isUniqueViolation(r.error))throw Error('Dieser Benutzername ist bereits vergeben. Bitte einen anderen wählen.');throw r.error;}if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');await auth();if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');await refreshFeed();if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');report('Profil gespeichert');wishNotice('success','Profil gespeichert')});
 $('copyMyProfile').onclick=run(async()=>{
  const ownerId=requireUser();
  if(!profile?.handle)throw Error('Bitte zuerst dein öffentliches Profil speichern.');
