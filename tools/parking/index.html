@@ -222,6 +222,8 @@
                     <label class="helferlein-field" for="parkCost"><span class="helferlein-field-label" data-tool-en="Fee in €">Gebühr in €</span><input type="text" id="parkCost" placeholder="Gebühr in € (z.B. 2.50)" class="p-2.5 border rounded-xl text-sm" aria-label="Gebühr in € (z.B. 2.50)" data-tool-en-placeholder="Fee in € (e.g. 2.50)" data-tool-en-aria-label="Fee in € (e.g. 2.50)"></label>
                     <label class="helferlein-field" for="parkPhotoInput"><span class="helferlein-field-label" data-tool-en="Choose a parking photo">Parkplatzfoto auswählen</span><input type="file" id="parkPhotoInput" accept="image/*" capture="environment" class="text-xs p-1.5 border rounded-xl file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Parkplatzfoto auswählen" data-tool-en-aria-label="Choose a parking photo"></label>
                 </div>
+                <button type="button" id="saveParkingGpsBtn" onclick="saveParkingSession(true)" class="b3-action b3-outline w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2.5 rounded-xl text-sm" data-tool-en="📍 Save GPS location">📍 GPS-Standort speichern</button>
+                <p id="parkingGpsFeedback" class="text-xs text-gray-600" role="status" aria-live="polite"></p>
                 <button onclick="saveParkingSession()" class="b3-action w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Parkplatz speichern</button>
             </div>
         </div>
@@ -243,22 +245,24 @@
 
         <!-- Amazon Affiliate Empfehlungen mit ID duhrrom-21 -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3" data-b3-panel="recommendations" id="b3-recommendations">
-            <h4 class="font-bold text-sm text-gray-700">🛒 Nützliches PKW- & Park-Zubehör auf Amazon</h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <a href="https://www.amazon.de/s?k=parkscheibe+mit+parkguthaben+uhr&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
-                    <span class="text-2xl">🔵</span>
+            <h4 class="font-bold text-sm text-gray-700" data-tool-en="🛒 Useful car and parking accessories on Amazon">🛒 Nützliches PKW- & Park-Zubehör auf Amazon</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs [&>div]:min-w-0">
+                <div class="min-w-0"><a href="https://www.amazon.de/dp/B0CFM2SP95/ref=cm_sw_r_as_gl_apa_gl_i_RS3KR5MF6H3ABN2HP9MV?linkCode=ml1&amp;tag=duhrrom-21&amp;linkId=e63eed2dd08f1bf373090328c45a7645&amp;gaOptInStatus=true" target="_blank" rel="noopener noreferrer sponsored" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
+                    <img src="https://m.media-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/I/615TuN4smjL._AC_SL1428_.jpg" alt="" class="toolya-affiliate-picture" width="112" height="112" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true;this.style.display='none'">
                     <div>
-                        <p class="font-bold text-gray-800">Digitale Parkscheiben</p>
-                        <p class="text-[10px] text-amber-700">Mit Zulassung für die Windschutzscheibe →</p>
+                        <p class="font-bold text-gray-800" data-tool-en="Needit Park Lite SOLAR">Needit Park Lite SOLAR</p>
+                        <p class="text-xs text-gray-600 my-1" data-tool-en="Solar-powered electronic parking disc with German KBA approval, two displays and long service life.">Solarbetriebene elektronische Parkscheibe mit KBA-Zulassung, zwei Displays und langer Lebensdauer.</p>
+                        <p class="text-[10px] text-amber-700"><span data-tool-en="View product on Amazon →">Produkt bei Amazon ansehen →</span></p>
                     </div>
-                </a>
-                <a href="https://www.amazon.de/s?k=kfz+smartphone+halterung+magsafe&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
-                    <span class="text-2xl">📱</span>
+                </a></div>
+                <div class="min-w-0"><a href="https://www.amazon.de/dp/B0F48CYG21/ref=cm_sw_r_as_gl_apa_gl_i_dl_W7K0XXN5CBZ9F9JMA2VT?linkCode=ml1&amp;tag=duhrrom-21&amp;linkId=7be2a47b0948e198b0371830d81bccf5&amp;gaOptInStatus=true" target="_blank" rel="noopener noreferrer sponsored" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
+                    <img src="https://m.media-amazon.com/images/I/61sKVnNLyGL._AC_AIweblab1392912,T4_FMavif_SF1358,1698_PQ60_.jpg?aicid=detailPage-mediaBlock" alt="" class="toolya-affiliate-picture" width="112" height="112" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true;this.style.display='none'">
                     <div>
-                        <p class="font-bold text-gray-800">KFZ Smartphone-Halterungen</p>
-                        <p class="text-[10px] text-amber-700">Für sichere Navigation zum Parkplatz →</p>
+                        <p class="font-bold text-gray-800" data-tool-en="Anker Prime MagSafe car mount">Anker Prime MagSafe Autohalterung</p>
+                        <p class="text-xs text-gray-600 my-1" data-tool-en="Qi2-certified 25 W charging, strong magnets, active TEC cooling and 60 W adapter. Check air vent compatibility.">Qi2-zertifiziertes Laden mit 25 W, starke Magnete, TEC-Aktivkühlung und 60-W-Adapter. Lüftungskompatibilität prüfen.</p>
+                        <p class="text-[10px] text-amber-700"><span data-tool-en="View product on Amazon →">Produkt bei Amazon ansehen →</span></p>
                     </div>
-                </a>
+                </a></div>
             </div>
         </div>
     </main>
@@ -530,7 +534,7 @@
         }
 
         let parkingSaveInProgress=false;
-        function saveParkingSession() {
+        function saveParkingSession(requireGps=false) {
             if(parkingSaveInProgress)return;
             const desc=document.getElementById('parkDesc').value.trim()||'Unbenannter Parkplatz';
             const sector=document.getElementById('parkSector').value.trim();
@@ -538,22 +542,30 @@
             const photoInput=document.getElementById('parkPhotoInput');
             const connectRequested=Boolean(window.toolyaParkingConnect?.selected);
             const button=document.querySelector('[onclick="saveParkingSession()"]');
+            const gpsButton=document.getElementById('saveParkingGpsBtn');
+            const feedback=document.getElementById('parkingGpsFeedback');
+            const message=(de,en)=>{feedback.textContent=window.__toolyaUILocale==='en'?en:de;};
             parkingSaveInProgress=true;
             if(button)button.disabled=true;
+            if(gpsButton)gpsButton.disabled=true;
+            const release=()=>{parkingSaveInProgress=false;if(button)button.disabled=false;if(gpsButton)gpsButton.disabled=false;};
+            feedback.textContent='';
+            const unavailable=()=>{if(requireGps){message('GPS-Standort nicht verfügbar. Bitte Standortzugriff erlauben und erneut versuchen.','GPS location unavailable. Allow location access and try again.');release();}else void finish(null);};
             const finish=async gps=>{
                 try{await processPhotoAndSave(desc,sector,cost,gps,photoInput,connectRequested);}
                 catch(error){console.error('Parkvorgang nicht bestätigt',error);alert('Speichern nicht bestätigt. Cloud-Datenstand prüfen.');}
-                finally{parkingSaveInProgress=false;if(button)button.disabled=false;}
+                finally{release();}
             };
             if(navigator.geolocation){
+                if(requireGps)message('GPS-Standort wird ermittelt …','Getting GPS location …');
                 navigator.geolocation.getCurrentPosition(
                     position=>{
                         currentGps={lat:position.coords.latitude,lng:position.coords.longitude};
-                        document.getElementById('statGps').innerText=window.__toolyaUILocale === 'en' ? 'Saved ✓' : 'Gespeichert ✓';
+                        feedback.textContent='';
                         void finish(currentGps);
                     },
-                    ()=>{void finish(null);},
-                    {timeout:12000,maximumAge:30000}
+                    unavailable,
+                    {timeout:12000,maximumAge:requireGps?0:30000,enableHighAccuracy:requireGps}
                 );
             }else void finish(null);
         }
@@ -581,6 +593,7 @@
                 date:now.toLocaleDateString('de-DE')+' '+now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})
             });
             if(!await saveData(data))return;
+            if(gps)document.getElementById('statGps').innerText=window.__toolyaUILocale === 'en' ? 'Saved ✓' : 'Gespeichert ✓';
             document.getElementById('parkDesc').value='';
             document.getElementById('parkSector').value='';
             document.getElementById('parkCost').value='';
@@ -691,6 +704,7 @@
         }
         function closeImageModal() { document.getElementById('imageModal').close(); }
 
+        // PDF Report Export via jsPDF
         function displayLegacyDate(value, english = window.__toolyaUILocale === 'en') {
             if (!english || typeof value !== 'string') return value;
             const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})(.*)$/.exec(value);
@@ -701,7 +715,6 @@
             return day.padStart(2,'0')+'/'+month.padStart(2,'0')+'/'+year+suffix;
         }
 
-        // PDF Report Export via jsPDF
         async function exportPDF() {
             const pdfEn = window.__toolyaUILocale === 'en';
             const pdfLabel = (de,en) => pdfEn ? en : de;
