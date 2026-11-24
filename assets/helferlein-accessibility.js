@@ -21,6 +21,11 @@
       return !closed || closed.querySelector('summary')?.contains(node);
     };
     const records = [];
+    const labels = [];
+    const english = () => { const active=window.__toolyaUILocale||window.__toolyaWishesLocale||window.__toolyaEstateLocale||window.__toolyaDashboardLocale; if(active)return active==='en'; if(document.documentElement.lang==='en')return true; if(!/^\/(tools|dashboard|admin-stats-dashboard)\//.test(location.pathname))return false; try{return (new URLSearchParams(location.search).get('lang')||localStorage.getItem('toolya-locale-v1'))==='en'}catch{return false} };
+    function label(node,de,en){labels.push({node,de,en});node.setAttribute('aria-label',english()?en:de);}
+    function refreshLabels(){for(const {node,de,en} of labels){const old=node.getAttribute('aria-label');if(old===de||old===en)node.setAttribute('aria-label',english()?en:de);}}
+    for(const event of ['toolya:locale-change','toolya:wishes-locale-change','toolya:estate-locale-change','toolya:dashboard-locale-change'])document.addEventListener(event,refreshLabels);
     for (const id of ids) {
       const dialog = document.getElementById(id);
       if (!dialog) continue; // Nachlass settings remain an ordinary page section.
@@ -33,18 +38,18 @@
       if (title) {
         if (!title.id) title.id = 'helferlein-' + id + '-title';
         dialog.setAttribute('aria-labelledby', title.id);
-      } else dialog.setAttribute('aria-label', settings ? 'Einstellungen' : 'Dialog');
+      } else label(dialog,settings?'Einstellungen':'Dialog',settings?'Settings':'Dialog');
       dialog.tabIndex = -1;
       if (!settings) dialog.classList.add('helferlein-tool-dialog');
       // Keep existing labels and ARIA names authoritative.
       for (const input of dialog.querySelectorAll('input[type="email"], input[type="password"]')) {
         if (!input.labels.length && !input.hasAttribute('aria-label') && !input.hasAttribute('aria-labelledby')) {
-          input.setAttribute('aria-label', input.type === 'email' ? 'E-Mail-Adresse' : 'Passwort');
+          label(input,input.type==='email'?'E-Mail-Adresse':'Passwort',input.type==='email'?'Email address':'Password');
         }
       }
       for (const button of dialog.querySelectorAll('button')) {
         if (/^[×✕✖]$/.test(button.textContent.trim()) && !button.hasAttribute('aria-label')) {
-          button.setAttribute('aria-label', settings ? 'Einstellungen schließen' : 'Dialog schließen');
+          label(button,settings?'Einstellungen schließen':'Dialog schließen',settings?'Close settings':'Close dialog');
           button.classList.add('helferlein-dialog-close');
         }
       }
