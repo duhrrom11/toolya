@@ -1,5 +1,11 @@
 /* Admin statistics: never request provider APIs or secrets from the browser. */
-(()=>{'use strict';
+(async()=>{'use strict';
+const {adminNumber,adminDate,createAdminPresentation}=await import('../shared/toolya/i18n/admin-format.mjs');
+const {adminText}=await import('../shared/toolya/i18n/admin-copy.mjs');
+const presentation=createAdminPresentation(document);
+const locale=()=>globalThis.__toolyaAdminLocale||(new URLSearchParams(location.search).get('lang')==='en'?'en':document.documentElement.lang);
+const display=(node,render)=>presentation.bind(node,render,locale());
+document.addEventListener('toolya:admin-locale-change',()=>presentation.refresh(locale()));
 const URL='https://yheogmeaosuigyaxkwth.supabase.co', KEY='sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
 const endpoint=URL+'/functions/v1/admin-stats';
 const $=id=>document.getElementById(id);
@@ -16,8 +22,8 @@ const renderSeo=(host,series)=>{host.replaceChildren();const points=Array.isArra
   const max=Math.max(1,...points.map(p=>p[key]));const minTime=Date.parse(points[0].date+'T00:00:00Z'),maxTime=Date.parse(points[points.length-1].date+'T00:00:00Z');
   const coords=points.map((p,i)=>{const x=maxTime===minTime?320:12+(Date.parse(p.date+'T00:00:00Z')-minTime)/(maxTime-minTime)*616;return [x,145-p[key]/max*130]});
   const poly=document.createElementNS('http://www.w3.org/2000/svg','polyline');poly.setAttribute('points',coords.map(v=>v.join(',')).join(' '));poly.setAttribute('fill','none');poly.setAttribute('stroke',color);poly.setAttribute('stroke-width','3');poly.setAttribute('stroke-linecap','round');poly.setAttribute('stroke-linejoin','round');svg.append(poly);
-  for(let i=0;i<points.length;i++){const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.setAttribute('cx',coords[i][0]);dot.setAttribute('cy',coords[i][1]);dot.setAttribute('r','3');dot.setAttribute('fill',color);const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=points[i].date+': '+points[i][key].toLocaleString('de-DE')+' '+label;dot.append(title);svg.append(dot)}
-  host.append(svg);const dates=document.createElement('p');dates.className='seo-dates';dates.textContent=points[0].date+' – '+points[points.length-1].date+' · Maximum '+max.toLocaleString('de-DE');host.append(dates);
+  for(let i=0;i<points.length;i++){const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.setAttribute('cx',coords[i][0]);dot.setAttribute('cy',coords[i][1]);dot.setAttribute('r','3');dot.setAttribute('fill',color);const title=document.createElementNS('http://www.w3.org/2000/svg','title');display(title,lang=>{title.textContent=points[i].date+': '+adminNumber(points[i][key],lang)+' '+adminText(label,lang)});dot.append(title);svg.append(dot)}
+  host.append(svg);const dates=document.createElement('p');dates.className='seo-dates';display(dates,lang=>{dates.textContent=points[0].date+' – '+points[points.length-1].date+' · Maximum '+adminNumber(max,lang)});host.append(dates);
  }
 };
 const indexingPages=[["Autokosten-Rechner","car/index.html"],["Backform-Rechner","baking/index.html"],["Haushaltsbuch","budget/index.html"],["Haustier-Gesundheit","pet-health/index.html"],["Parkplatz-Merker","parking/index.html"],["Pflanzenpflege","plants/index.html"],["Umzugskisten-Planer","moving/index.html"],["Verleihverwaltung","loans/index.html"],["WG-Organisator","housemates/index.html"],["Zählerstände","meters/index.html"],["Öffentliche Wunschlisten","wishes/public.html"]];
@@ -50,21 +56,21 @@ async function load(){
   const diagnostic=metrics.find(m=>m.label==='Tool-Ranking-Diagnose');
   const eventCount=metrics.find(m=>m.label==='GA4-Tool-Open-Gesamt');
   const diagnosis=diagnostic?.detail||'Ranking-Diagnose derzeit nicht verfügbar.';
-  $('ranking-diagnostic').textContent=diagnosis+(eventCount?' · GA4 meldet '+Number(eventCount.value).toLocaleString('de-DE')+' tool_open-Ereignisse im gewählten Zeitraum.':diagnosis.includes('noch keine tool_open-Daten')?' · Exakte Ereignisabfrage derzeit nicht verfügbar.':'');
+  const ranking=$('ranking-diagnostic');display(ranking,lang=>{ranking.textContent=diagnosis+(eventCount?(lang==='en'?' · GA4 reports ':' · GA4 meldet ')+adminNumber(eventCount.value,lang)+(lang==='en'?' tool_open events in the selected period.':' tool_open-Ereignisse im gewählten Zeitraum.'):diagnosis.includes('noch keine tool_open-Daten')?(lang==='en'?' · Exact event query currently unavailable.':' · Exakte Ereignisabfrage derzeit nicht verfügbar.'):'')});
   const toolStarts=metrics.filter(m=>m.label.startsWith('Tool-Start: '));
   const pages=metrics.filter(m=>m.label.startsWith('Seite: '));
   const events=metrics.filter(m=>m.label.startsWith('Ereignis: '));
   const daily=metrics.filter(m=>/^Tag: \d{8}$/.test(m.label)).sort((a,b)=>a.label.localeCompare(b.label));
-  $('summary').replaceChildren(...metrics.filter(m=>m.label!=='Tool-Ranking-Diagnose'&&!m.label.startsWith('Seite: ')&&!m.label.startsWith('Tool-Start: ')&&!m.label.startsWith('Ereignis: ')&&!m.label.startsWith('Tag: ')).map(m=>tile(m.label,Number(m.value).toLocaleString('de-DE'),m.detail||'')));
+  $('summary').replaceChildren(...metrics.filter(m=>m.label!=='Tool-Ranking-Diagnose'&&!m.label.startsWith('Seite: ')&&!m.label.startsWith('Tool-Start: ')&&!m.label.startsWith('Ereignis: ')&&!m.label.startsWith('Tag: ')).map(m=>{const card=tile(m.label,'',m.detail||'');const value=card.querySelector('strong');display(value,lang=>{value.textContent=adminNumber(m.value,lang)});return card}));
   const bars=(id,items,prefix)=>{const host=$(id);host.replaceChildren();if(!items.length){host.textContent='Noch keine erfassten Daten für diesen Zeitraum.';return}
    const max=Math.max(1,...items.map(m=>Number(m.value)));
-   for(const m of items){const row=document.createElement('div');row.className='bar-row';const label=document.createElement('span');label.textContent=m.label.slice(prefix.length);const value=document.createElement('strong');value.textContent=Number(m.value).toLocaleString('de-DE');const track=document.createElement('div');track.className='bar-track';const fill=document.createElement('div');fill.className='bar-fill';fill.style.width=Math.max(0,Math.min(100,Number(m.value)/max*100))+'%';track.append(fill);row.append(label,value,track);host.append(row)}
+   for(const m of items){const row=document.createElement('div');row.className='bar-row';const label=document.createElement('span');label.textContent=m.label.slice(prefix.length);const value=document.createElement('strong');display(value,lang=>{value.textContent=adminNumber(m.value,lang)});const track=document.createElement('div');track.className='bar-track';const fill=document.createElement('div');fill.className='bar-fill';fill.style.width=Math.max(0,Math.min(100,Number(m.value)/max*100))+'%';track.append(fill);row.append(label,value,track);host.append(row)}
   };
   bars('tool-ranking',toolStarts,'Tool-Start: ');
   if(!toolStarts.length)$('tool-ranking').textContent='Noch keine auswertbaren Tool-Starts. Prüfe die GA4-Dimension tool_name; neue Daten erscheinen erst nach der Registrierung und Verarbeitung.';
   bars('pages',pages,'Seite: ');bars('events',events,'Ereignis: ');
   const trend=$('trend');trend.replaceChildren();
-  if(daily.length){const max=Math.max(1,...daily.map(m=>Number(m.value)));for(const m of daily){const col=document.createElement('div');col.className='chart-col';const bar=document.createElement('div');bar.className='chart-bar';bar.style.height=Math.max(2,Number(m.value)/max*100)+'%';const date=m.label.slice(5);col.title=date.slice(6,8)+'.'+date.slice(4,6)+'.'+date.slice(0,4)+': '+m.value+' Seitenaufrufe';col.setAttribute('aria-label',col.title);col.append(bar);trend.append(col)}}
+  if(daily.length){const max=Math.max(1,...daily.map(m=>Number(m.value)));for(const m of daily){const col=document.createElement('div');col.className='chart-col';const bar=document.createElement('div');bar.className='chart-bar';bar.style.height=Math.max(2,Number(m.value)/max*100)+'%';const date=m.label.slice(5);display(col,lang=>{const iso=date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6,8);col.title=adminDate(iso+'T12:00:00',lang)+': '+adminNumber(m.value,lang)+(lang==='en'?' page views':' Seitenaufrufe');col.setAttribute('aria-label',col.title)});col.append(bar);trend.append(col)}}
   else trend.textContent='Noch keine Tageswerte verfügbar.';
   $('analytics').hidden=false;
   $('sources').replaceChildren(...payload.sources.map(s=>{const e=tile(s.label,s.status==='connected'?'Verbunden':s.status==='error'?'Fehler':'Nicht verbunden',s.detail||'Noch keine verifizierten Daten');return e}));
