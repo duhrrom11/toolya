@@ -139,6 +139,31 @@ export const ESTATE_COPY=Object.freeze({
 });
 const reverse=Object.freeze(Object.fromEntries(Object.entries(ESTATE_COPY).map(([de,en])=>[en,de])));
 export const ESTATE_RUNTIME_COPY=Object.freeze({
+ "Vorhandene Gerätedaten sind unvollständig. Sie wurden nicht verändert.": "Existing device data is incomplete. It has not been changed.",
+ "Dieser Gerätetresor nennt eine andere E-Mail-Adresse. Bitte melde dich mit dem dazugehörigen Konto an.": "This device vault specifies a different email address. Sign in with the corresponding account.",
+ "Dieser Gerätetresor und deine Online-Sicherung sind unterschiedlich. Bitte öffne die Online-Sicherung in einem anderen Browserprofil. Beide Stände bleiben erhalten.": "This device vault differs from your online backup. Open the online backup in another browser profile. Both copies remain intact.",
+ "Deine Unterlagen und Kontakte bleiben erhalten. Der bisher ungeschützt auf diesem Gerät gespeicherte Hauptschlüssel wird jetzt mit deinem Tresorpasswort geschützt. Bewahre dieses Passwort gut auf.": "Your documents and contacts remain intact. The master key previously stored unprotected on this device will now be protected by your vault password. Keep this password safe.",
+ "Deine bisherigen Kontakte bleiben erhalten. Bitte reduziere die Kontaktliste zuerst im bisherigen Stand auf zehn Personen.": "Your existing contacts remain intact. First reduce the contact list in the previous version to ten people.",
+ "Bitte prüfe deine E-Mail-Adresse und dein Konto-Passwort.": "Check your email address and account password.",
+ "Bitte verwende für ein neues Konto mindestens acht Zeichen.": "Use at least eight characters for a new account.",
+ "Deine Unterlagen sind zu groß für diesen Tresor. Bitte kürze den letzten Eintrag.": "Your documents are too large for this vault. Shorten the last entry.",
+ "Löschen": "Delete",
+ "Unterlage löschen?": "Delete document?",
+ "Noch keine Vertrauenspersonen.": "No trusted contacts yet.",
+ "✉ Schlüssel per E-Mail": "✉ Send key by email",
+ "Schlüssel per WhatsApp": "Send key via WhatsApp",
+ "Übergabe bestätigen": "Confirm handover",
+ "Schlüssel erneuern": "Renew key",
+ "Bitte wähle mindestens eine Vertrauensperson aus.": "Select at least one trusted contact.",
+ "Bitte sichere die Schlüssel zuerst online.": "Back up the keys online first.",
+ "Bitte erlaube das Druckfenster und versuche es erneut.": "Allow the print window and try again.",
+ "Bitte erlaube die Druckseite und versuche es erneut.": "Allow the print page and try again.",
+ "Bitte wähle eine passende verschlüsselte Sicherung aus.": "Select a compatible encrypted backup.",
+ "Die Sicherungsdatei enthält keine unterstützten Tresordaten.": "The backup file contains no supported vault data.",
+ "Sicherung zusammenführen?": "Merge backup?",
+ "Vorbereitet – selbst versenden": "Prepared – send manually",
+ "Übergeben": "Handed over",
+ "Schlüssel noch nicht übergeben": "Key not yet handed over",
  "Online gesichert. Der Lesezugang ist auf dem aktuellen Stand.": "Backed up online. Read access is up to date.",
  "Die E-Mail-Benachrichtigung ist eingerichtet.": "Email notifications are configured.",
   "Bitte bestätige die E-Mail von Toolya. Melde dich danach hier an.": "Confirm the email from Toolya, then sign in here.",
@@ -231,6 +256,7 @@ export const ESTATE_RUNTIME_COPY=Object.freeze({
 });
 const runtimeReverse=Object.freeze(Object.fromEntries(Object.entries(ESTATE_RUNTIME_COPY).map(([de,en])=>[en,de])));
 const runtimePrefixes=Object.freeze({
+ "Anhang: ": "Attachment: ",
  "Sicherung erfolgreich entschlüsselt: ": "Backup decrypted successfully: ",
  "Letztes Lebenszeichen: ": "Last check-in: ",
  "Verbleibende Zeit: ": "Time remaining: ",

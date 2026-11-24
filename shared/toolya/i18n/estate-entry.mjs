@@ -4,21 +4,20 @@ import {applyEstateLocale} from './estate-dom.mjs';
 const key='toolya-locale-v1';
 const trustedStatusIds=['message','entry-file-status','mail-status','keyStatus','exportStatus',
  'openStatus','countdown','confirm-title','confirm-text','backup-state','alarm-state','checkin-state','review-state','entry-heading','person-heading','save-person'];
+const sources=new WeakMap();
 function translateEstateStatuses(lang){
  for(const id of trustedStatusIds){
   const el=document.getElementById(id);
   if(!el||el.children.length||el.isContentEditable)continue;
-  const old=el.textContent,next=estateText(old,lang);
+  const old=el.textContent,prev=sources.get(el),source=prev?.rendered===old?prev.source:old,next=estateText(source,lang);
+  sources.set(el,{source,rendered:next});
   if(old!==next)el.textContent=next;
  }
 }
 function observeEstateStatuses(currentLanguage){
  if(typeof MutationObserver!=='function')return;
- const observer=new MutationObserver(()=>translateEstateStatuses(currentLanguage()));
- for(const id of trustedStatusIds){
-  const el=document.getElementById(id);
-  if(el)observer.observe(el,{childList:true,characterData:true,subtree:true});
- }
+ const observer=new MutationObserver(()=>{translateEstateStatuses(currentLanguage());applyEstateLocale(document,currentLanguage())});
+ observer.observe(document.body,{childList:true,characterData:true,subtree:true});
 }
 
 function saved(){const q=new URLSearchParams(location.search).get('lang');
@@ -57,6 +56,7 @@ function mount(){
    const url=new URL(location.href);url.searchParams.set('lang',lang);
    history.replaceState(history.state,'',url.pathname+url.search+url.hash);
   }
+  translateEstateStatuses(lang);
   applyEstateLocale(document,lang);
   globalThis.__toolyaEstateLocale=lang;
   translateEstateStatuses(lang);
