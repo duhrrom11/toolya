@@ -13,7 +13,10 @@ function occurrence(item){
  return next;
 }
 const daysUntil=item=>Math.round((occurrence(item)-today())/86400000);
-const format=timestamp=>new Intl.DateTimeFormat('de-DE',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(timestamp));
+const language=()=>globalThis.__toolyaWishesLocale==='en'?'en':'de';
+const ui=(de,en)=>language()==='en'?en:de;
+const dateNodes=new WeakMap();
+const format=timestamp=>new Intl.DateTimeFormat(ui('de-DE','en-GB'),{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(timestamp));
 const reminder=item=>{const days=daysUntil(item);return days>=0&&days<=item.reminder_days};
 function reset(){editing=null;$('form').reset();$('repeat').checked=true;$('remind').value='14';$('formTitle').textContent='➕ Anlass hinzufügen';$('save').textContent='Anlass speichern';$('cancel').hidden=true}
 function render(){
@@ -29,7 +32,7 @@ function render(){
   const card=document.createElement('article');card.className='event';
   const main=document.createElement('div'),badge=document.createElement('span');badge.className='badge';badge.textContent=reminder(item)?'🔔 Erinnerung aktiv':item.repeats_yearly?'🔁 Jährlich':'📅 Einmalig';
   const title=document.createElement('h3');title.textContent=item.title+(item.person_name?' · '+item.person_name:'');
-  const time=document.createElement('time');time.dateTime=new Date(item.next).toISOString().slice(0,10);time.textContent=format(item.next)+' · '+(item.days===0?'Heute':item.days===1?'Morgen':'in '+item.days+' Tagen');
+  const time=document.createElement('time');time.dateTime=new Date(item.next).toISOString().slice(0,10);const paint=()=>{time.textContent=format(item.next)+' · '+(item.days===0?ui('Heute','Today'):item.days===1?ui('Morgen','Tomorrow'):ui('in '+item.days+' Tagen','in '+item.days+' days'))};dateNodes.set(time,paint);paint();
   main.append(badge,title,time);
   if(item.notes){const p=document.createElement('p');p.textContent=item.notes;main.append(p)}
   const controls=document.createElement('div'),edit=document.createElement('button'),remove=document.createElement('button');
@@ -60,4 +63,5 @@ $('form').addEventListener('submit',async event=>{
 });
 $('cancel').addEventListener('click',reset);
 document.querySelectorAll('[data-filter]').forEach(button=>button.addEventListener('click',()=>{filter=button.dataset.filter;render()}));
+document.addEventListener('toolya:wishes-locale-change',()=>{for(const node of $('events').querySelectorAll('time'))dateNodes.get(node)?.()});
 load().catch(()=>{$('status').textContent='Anlässe konnten nicht geladen werden. Bitte später erneut versuchen.'});
