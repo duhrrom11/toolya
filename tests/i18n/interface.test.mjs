@@ -2647,7 +2647,8 @@ test('seven PDF export paths render EN and DE without mutating records (isolated
    const rows=JSON.parse(JSON.stringify(fixtures[tool])),before=JSON.stringify(rows),texts=[],filenames=[];
    const pdfStub={setFont(){},setFontSize(){},text(value){texts.push(String(value))},splitTextToSize(value){return [String(value)]},addPage(){},save(name){filenames.push(String(name))}};
    const context={window:{__toolyaUILocale:lang},getData:()=>rows,pdfStub,parseReceiptDate:date=>new Date(date)};
-   await runInNewContext(meterLabels+vehicleLabels+budgetLabels+code+';'+func+'()',context);
+   const parkingDates=tool==='parking'?html.slice(html.indexOf('function displayLegacyDate('),html.indexOf('// PDF Report Export via jsPDF')):'';
+   await runInNewContext(meterLabels+vehicleLabels+budgetLabels+parkingDates+code+';'+func+'()',context);
    assert.equal(JSON.stringify(rows),before,'source data mutated: '+tool);
    assert.equal(filenames.length,1,'PDF not created: '+tool);
    assert.ok(texts.length>=3,'missing PDF text: '+tool);
@@ -2945,7 +2946,8 @@ test('dynamic budget cards and receipt badges provide paired, display-only DE/EN
  }
  assert.match(source,/escapeHaushaltsHtml\(budgetPaymentLabel\(r\.paymentMethod \|\|/,'payment values localized only for display and HTML-escaped');
  assert.match(source,/escapeHaushaltsHtml\(r\.title\)/,'user-supplied savings title untouched');
- assert.match(source,/escapeHaushaltsHtml\(r\.date\)/,'recorded dates untouched');
+ assert.match(source,/escapeHaushaltsHtml\(displayReceiptDate\(r\.date\)\)/,'recorded dates formatted only in display');
+ assert.match(source,/getElementById\('receiptDate'\)\.value = r\.date/,'raw date retained in edit field');
 });
 
 
@@ -3143,16 +3145,16 @@ test('budget QR sticker labels round-trip without changing private QR payload', 
   addWarrantyMonths:()=>new Date('2027-01-15T00:00:00Z')
  };
  createContext(context);
- runInContext(source.slice(start,end),context);
+ runInContext(source.slice(source.indexOf('function displayReceiptDate('),source.indexOf('function addWarrantyMonths('))+source.slice(start,end),context);
  runInContext("budgetStickerDisplaySnapshot={title:'Private <project>',date:'2026-11-22',store:'',serial:'',warrantyMonths:12}; refreshBudgetStickerLabels();",context);
  assert.equal(document.getElementById('stickerTitle').textContent,'Private <project>');
- assert.equal(document.getElementById('stickerStoreDate').textContent,'Purchased: 2026-11-22 (Warranty receipt)');
+ assert.equal(document.getElementById('stickerStoreDate').textContent,'Purchased: 22/11/2026 (Warranty receipt)');
  assert.equal(document.getElementById('stickerSN').textContent,'S/N: none');
  assert.match(document.getElementById('stickerWarranty').textContent,/Warranty until: 15\/01\/2027/);
  assert.equal(document.querySelector('project'),null,'title is assigned as text, not HTML');
  context.window.__toolyaUILocale='de';
  runInContext('refreshBudgetStickerLabels()',context);
- assert.equal(document.getElementById('stickerStoreDate').textContent,'Kauf: 2026-11-22 (Garantie-Beleg)');
+ assert.equal(document.getElementById('stickerStoreDate').textContent,'Kauf: 22.11.2026 (Garantie-Beleg)');
  assert.equal(document.getElementById('stickerSN').textContent,'S/N: keine');
  assert.match(document.getElementById('stickerWarranty').textContent,/Garantie bis: 15\.1\.2027/);
  document.getElementById('qrModal').classList.add('hidden');
@@ -3549,7 +3551,7 @@ test('household and parking PDFs localize report values without modifying stored
   const end = html.indexOf('    </script>', start);
   const dependencies = tool === 'housemates'
    ? html.slice(html.indexOf('function formatHouseholdCategoryLabel('), html.indexOf('/* Charts */', html.indexOf('function formatHouseholdCategoryLabel(')))
-   : '';
+   : tool==='parking' ? html.slice(html.indexOf('function displayLegacyDate('),html.indexOf('// PDF Report Export via jsPDF')) : '';
   const source = html.slice(start, end).replace(
    "const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');",
    'const createExportPdf = async () => pdfStub;'
