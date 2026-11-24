@@ -18,7 +18,7 @@ function mount(){
  let active=storedLocale();
  // Only fixed, app-owned message containers. Content cards, private notes and
  // account identifiers must not be modified by the status translator.
- const statusSelectors=['#status','#taskStatus','#checklistStatus','#rolloverStatus',
+ const statusSelectors=['#status','#count','#taskStatus','#checklistStatus','#rolloverStatus',
   '#giftStatus','#filterStatus','#productSearchStatus','#searchStatus','#detailStatus',
   '#profileStatus','#settingsAuthMessage','#settingsAccountStatus','#settingsStatus',
   '#notice','#reactionStatus','#actionStatus','#budgetSaveFeedback','#giftFormFeedback',
@@ -72,7 +72,9 @@ function mount(){
   }
   updateVisibleCopy();
   const translatedTitle=wishesText(initialTitle,'en');
-  document.title=lang==='de'?initialTitle:
+  const userTitle=document.querySelector('#title[data-user-content],#name[data-user-content]');
+  if(userTitle)document.title=userTitle.textContent+' · Toolya Wishes';
+  else document.title=lang==='de'?initialTitle:
    translatedTitle!==initialTitle?translatedTitle:
    wishesText(initialTitle.replace(' · Toolya Wishes',''),'en')+' · Toolya Wishes';
   document.documentElement.lang=lang;

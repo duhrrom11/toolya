@@ -1077,7 +1077,33 @@ export const WISHES_RUNTIME_COPY=Object.freeze({
  "Bitte Titel und Datum angeben.": "Enter a title and date.",
  "Anlass dauerhaft gespeichert.": "Occasion saved permanently.",
  "Speichern fehlgeschlagen. Bitte Angaben prüfen.": "Save failed. Check the details.",
- "Anlässe konnten nicht geladen werden. Bitte später erneut versuchen.": "Occasions could not be loaded. Try again later."
+ "Anlässe konnten nicht geladen werden. Bitte später erneut versuchen.": "Occasions could not be loaded. Try again later.",
+ "Eine Sammlung voller Geschenkideen.": "A collection full of gift ideas.",
+ "Diese Sammlung enthält noch keine sichtbaren Wünsche.": "This collection has no visible wishes yet.",
+ "Dieses Profil hat noch keine öffentlichen Sammlungen.": "This profile has no public collections yet.",
+ "🎁 Von dir reserviert": "🎁 Reserved by you",
+ "🔒 Bereits reserviert": "🔒 Already reserved",
+ "✨ Noch frei": "✨ Still available",
+ "Status nicht verfügbar": "Status unavailable",
+ "Reservierung aufheben": "Cancel reservation",
+ "Geschenk reservieren": "Reserve gift",
+ "Aktion fehlgeschlagen. Bitte erneut versuchen.": "Action failed. Please try again.",
+ "🎀 Reservierungen werden dir als Wunscheigentümer nicht angezeigt.": "🎀 As the wish owner, you cannot see reservations.",
+ "Zum Reservieren bitte anmelden.": "Sign in to reserve.",
+ "Bei Amazon ansehen ↗": "View on Amazon ↗",
+ "Sammlung entdecken ↗": "Explore collection ↗",
+ "Ungültiger Sammlungslink.": "Invalid collection link.",
+ "Ungültiger Profil-Link.": "Invalid profile link.",
+ "Dieses Profil wurde nicht gefunden.": "This profile was not found.",
+ "Diese Sammlung ist nicht öffentlich verfügbar oder wurde archiviert.": "This collection is not publicly available or has been archived.",
+ "Sammlung konnte nicht geladen werden. Bitte später erneut versuchen.": "Collection could not be loaded. Try again later.",
+ "Profil konnte nicht geladen werden. Bitte später erneut versuchen.": "Profile could not be loaded. Try again later.",
+ "Likes und Merkliste sind gerade nicht verfügbar.": "Likes and bookmarks are currently unavailable.",
+ "Profil-Link kopiert.": "Profile link copied.",
+ "Link kopiert.": "Link copied.",
+ "Teilen nicht möglich.": "Unable to share.",
+ "Entdecke diese öffentliche Wunschsammlung:": "Discover this public wish collection:",
+ "Wunsch": "Wish"
 });
 const runtimeReverse=Object.freeze(Object.fromEntries(Object.entries(WISHES_RUNTIME_COPY).map(([de,en])=>[en,de])));
 const statusPrefixes=Object.freeze({
@@ -1122,6 +1148,8 @@ export function wishesText(value,language){
   if(base!==translated)return translated+(language==='en'?budgetSuffixEn:budgetSuffix);
  }
  const dynamic=language==='en'?[
+ [/^(\d+) Wünsche( · maximal 500 geladen)?$/,(_,n,limit)=>n+' wishes'+(limit?' · at most 500 loaded':'')],
+ [/^(\d+) öffentliche Sammlungen( · maximal 48 angezeigt)?$/,(_,n,limit)=>n+' public collections'+(limit?' · at most 48 displayed':'')],
  [/^Gespeichert: (\d+) neue Wünsche, (\d+) bereits vorhanden\.( Bitte Seite neu laden, um die gespeicherten Wünsche anzuzeigen\.)?$/,(_,inserted,existing,reload)=>'Saved: '+inserted+' new wishes, '+existing+' already present.'+(reload?' Reload the page to see the saved wishes.':'')],
  [/^(\d+) Produkte erkannt\. Bitte prüfen und speichern\. Preisangaben sind eine Momentaufnahme\. Bereits vorhandene Wünsche bleiben erhalten\.$/,'$1 products found. Review and save. Prices are a snapshot. Existing wishes remain intact.'], 
  [/^(\d+) Wünsche für diese Sitzung ausgeblendet\.$/,'$1 wishes hidden for this session.'],
@@ -1136,6 +1164,8 @@ export function wishesText(value,language){
  [/^(\d+) passende Einträge auf dieser Seite\.$/,'$1 matching entries on this page.'],
  [/^Sicherung gültig: (\d+) Wünsche\. Nur Vorschau – keine Daten wurden gespeichert\.$/,'Backup valid: $1 wishes. Preview only – no data was saved.']
  ]:[
+ [/^(\d+) wishes( · at most 500 loaded)?$/,(_,n,limit)=>n+' Wünsche'+(limit?' · maximal 500 geladen':'')],
+ [/^(\d+) public collections( · at most 48 displayed)?$/,(_,n,limit)=>n+' öffentliche Sammlungen'+(limit?' · maximal 48 angezeigt':'')],
  [/^Saved: (\d+) new wishes, (\d+) already present\.( Reload the page to see the saved wishes\.)?$/,(_,inserted,existing,reload)=>'Gespeichert: '+inserted+' neue Wünsche, '+existing+' bereits vorhanden.'+(reload?' Bitte Seite neu laden, um die gespeicherten Wünsche anzuzeigen.':'')],
  [/^(\d+) products found\. Review and save\. Prices are a snapshot\. Existing wishes remain intact\.$/,'$1 Produkte erkannt. Bitte prüfen und speichern. Preisangaben sind eine Momentaufnahme. Bereits vorhandene Wünsche bleiben erhalten.'],
  [/^(\d+) wishes hidden for this session\.$/,'$1 Wünsche für diese Sitzung ausgeblendet.'],
