@@ -162,10 +162,36 @@ async function run(){
       assert.equal(await button.getAttribute('aria-pressed'),'true');
       assert.equal(await page.locator(selector(lang==='en'?'de':'en')).first().getAttribute('aria-pressed'),'false');
       assert.equal(await page.evaluate(()=>localStorage.getItem('synthetic-private-note')),'Meine private Notiz');
+      // Exercise the real shared alert implementation, never a production action.
+      const hasSharedAlert=await page.locator('script[src*="helferlein-dialogs.js"]').count()>0;
+      let sharedAlertChecked=false;
+      if(hasSharedAlert){
+       await page.evaluate(()=>window.alert('Toolya fixture 123'));
+       const panel=page.locator('.hl-alert-panel');
+       await panel.waitFor({state:'visible',timeout:4000});
+       assert.equal(await panel.getAttribute('role'),'alertdialog');
+       assert.equal(await panel.getAttribute('aria-modal'),'true');
+       assert.equal(await panel.getAttribute('aria-labelledby'),'hl-alert-title');
+       assert.equal(await panel.getAttribute('aria-describedby'),'hl-alert-message');
+       assert.equal(await panel.locator('#hl-alert-message').textContent(),'Toolya fixture 123');
+       const close=panel.locator('button');
+       assert.equal(await close.evaluate(el=>el===document.activeElement),true);
+       await page.keyboard.press('Tab');
+       assert.equal(await close.evaluate(el=>el===document.activeElement),true);
+       await page.keyboard.press('Shift+Tab');
+       assert.equal(await close.evaluate(el=>el===document.activeElement),true);
+       await page.keyboard.press(lang==='en'?'Enter':'Escape');
+       await panel.waitFor({state:'detached',timeout:4000});
+       assert.equal(await deButton.evaluate(el=>el===document.activeElement),true,'alert restores opener focus');
+       sharedAlertChecked=true;
+      }
       if(collection){assert.equal(await page.locator('#title').textContent(),'Meine synthetische Sammlung');assert.equal(await page.locator('#description').textContent(),'Private Testbeschreibung bleibt unverändert');}
       if(profile){assert.equal(await page.locator('#name').textContent(),'Synthetisches Profil');assert.equal(await page.locator('#bio').textContent(),'Meine Testbiografie bleibt unverändert');}
       if(occasion){
        const en=lang==='en';
+       const status=page.locator('#status');
+       assert.equal(await status.getAttribute('role'),'status');
+       assert.equal(await status.getAttribute('aria-live'),'polite');
        await page.waitForFunction(({en})=>document.getElementById('formTitle')?.textContent===(en?'✏️ Edit occasion':'✏️ Anlass bearbeiten'),{en});
        assert.equal(await page.locator('#events h3').textContent(),'Anlass speichern · Meine private Person');
        assert.equal(await page.locator('#events article p').textContent(),'Änderungen speichern');
@@ -191,7 +217,7 @@ async function run(){
       const layout=await page.evaluate(()=>({lang:document.documentElement.lang,overflow:Math.max(0,document.documentElement.scrollWidth-innerWidth)}));
       assert.equal(layout.lang,lang,'document language must follow selected language');
       assert.ok(layout.overflow<=1,'horizontal overflow: '+layout.overflow+'px');
-      row.checks.push({lang,title:await page.title(),documentLang:layout.lang,overflow:layout.overflow});
+      row.checks.push({lang,title:await page.title(),documentLang:layout.lang,overflow:layout.overflow,sharedAlertChecked});
      }
     }
    }catch(e){row.errors.push(String(e.message).slice(0,500))}
