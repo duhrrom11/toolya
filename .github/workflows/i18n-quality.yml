@@ -64,6 +64,12 @@ jobs:
           node tests/i18n/wishes-editorial-browser.cjs
           node tests/i18n/application-shell-browser.cjs
           TOOLYA_AUTH_SHELL=1 node tests/i18n/application-shell-browser.cjs
+      - name: Collect existing ten-tool browser shell evidence
+        if: ${{ github.event_name != 'pull_request' || github.head_ref != 'release/toolya-english-1.0' || !github.event.pull_request.draft }}
+        env:
+          TOOLYA_CHROMIUM_PATH: /usr/bin/google-chrome
+          PLAYWRIGHT_JSON_OUTPUT_FILE: test-results/i18n-quality/ten-tool-shell-report.json
+        run: npx playwright test --config=playwright.config.cjs --grep 'i18n ten-tool shell:' --reporter=json
       - name: Consolidate per-page acceptance evidence
         if: always()
         run: node scripts/i18n-page-acceptance.mjs
