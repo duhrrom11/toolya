@@ -3577,3 +3577,53 @@ test('Wishes annual JSON: DE/EN downloads preserve private snapshot and reject a
  expect(await page.evaluate(()=>window.__annualMock.closing)).toEqual(closing);
  expect(await page.evaluate(()=>window.__annualMock.writes)).toEqual([]);
 });
+
+
+test('Wishes gift task report: bilingual JSON download, cancellation, print and account guard',async({page})=>{
+ const {readFile}=require('node:fs/promises');
+ const event={id:1,task_title:'Private Aufgabe, Öl 🎁',event_type:'completed',old_status:'open',new_status:'done',old_due_date:'2026-11-20',new_due_date:'2026-11-21',occurred_at:'2026-11-21T12:00:00Z',occasion_id:'fixture-occasion',occasion_title:'Privater Anlass'};
+ await isolated(page,false);
+ await page.route('**/tools/wishes/toolya-client.mjs',route=>route.fulfill({contentType:'text/javascript',body:
+  'window.__taskReportMock={owner:"fixture-owner",writes:[],events:'+JSON.stringify([event])+'};'+
+  'const m=window.__taskReportMock;export const db={auth:{async getUser(){return {data:{user:m.owner?{id:m.owner}:null},error:null}},async getSession(){return {data:{session:null},error:null}},onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}},from(table){const q={select(){return q},eq(){return q},order(){return q},range(){return q},then(resolve){resolve({data:table==="wishlist_gift_task_events"?m.events:[],error:null})}};for(const method of ["insert","update","upsert","delete"])q[method]=()=>{m.writes.push(method);throw Error("Unexpected write")};return q},async rpc(name){m.writes.push(name);throw Error("Unexpected RPC")}};'
+ }));
+ await page.goto(origin+'/tools/wishes/report.html?lang=en');
+ await expect(page.locator('#report')).toBeVisible();
+ const button=page.locator('#exportEvents');
+ let first;
+ for(const lang of ['en','de']){
+  const choice=page.locator('[data-wishes-locale="'+lang+'"]');
+  await choice.click();
+  await expect(choice).toHaveAttribute('aria-pressed','true');
+  await page.evaluate(()=>{window.__printed=0;window.print=()=>{window.__printed++}});
+  await page.locator('#printReport').click();
+  expect(await page.evaluate(()=>window.__printed)).toBe(1);
+  const cancelled=[];const listener=d=>cancelled.push(d);page.on('download',listener);
+  page.once('dialog',d=>d.dismiss());
+  await button.click();
+  expect(cancelled).toEqual([]);page.off('download',listener);
+  page.once('dialog',d=>d.accept());
+  const [download]=await Promise.all([page.waitForEvent('download'),button.click()]);
+  expect(download.suggestedFilename()).toMatch(/^helferlein-private-aufgabenereignisse-\d{4}-\d{2}-\d{2}\.json$/);
+  const payload=JSON.parse(await readFile(await download.path(),'utf8'));
+  expect(payload.format).toBe('helferlein-wishes-task-events-v1');
+  expect(payload.event_count).toBe(1);
+  expect(payload.events).toEqual([event]);
+  expect(JSON.stringify(payload)).not.toContain('fixture-owner');
+  expect(Number.isFinite(Date.parse(payload.exported_at))).toBe(true);
+  delete payload.exported_at;
+  if(first)expect(payload).toEqual(first);else first=payload;
+ }
+ const blocked=[];page.on('download',d=>blocked.push(d));
+ for(const lang of ['en','de']){
+  await page.locator('[data-wishes-locale="'+lang+'"]').click();
+  await page.evaluate(()=>{window.__taskReportMock.owner='different-owner'});
+  page.once('dialog',d=>d.accept());
+  await button.click();
+  await expect(page.locator('#status')).toContainText(lang==='de'?'Export abgebrochen':/session|account/i);
+  await expect(button).toBeEnabled();
+ }
+ expect(blocked).toEqual([]);
+ expect(await page.evaluate(()=>window.__taskReportMock.events)).toEqual([event]);
+ expect(await page.evaluate(()=>window.__taskReportMock.writes)).toEqual([]);
+});
