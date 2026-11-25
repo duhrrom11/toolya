@@ -3532,3 +3532,48 @@ test('budget warranty ICS: actual DE/EN downloads retain dates, alarm and privat
  }
  expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
 });
+
+
+test('Wishes annual JSON: DE/EN downloads preserve private snapshot and reject account switch',async({page})=>{
+ const {readFile}=require('node:fs/promises');
+ const gift={id:'gift-fixture',occasion_id:'occasion-fixture',title:'Privates Geschenk, Öl 🎁',status:'gifted',actual_amount:42.5};
+ const closing={id:'closing-fixture',closing_year:2025,closed_at:'2026-01-01T00:00:00Z',gift_count:1,gifted_count:1,planned_total:50,actual_total:42.5,budget_total:60,task_count:0,task_done_count:0,gifts_snapshot:[gift],budgets_snapshot:[{occasion_id:'occasion-fixture',occasion_title:'Privater Anlass',budget_amount:60}],tasks_snapshot:[]};
+ await isolated(page,false);
+ await page.route('**/tools/wishes/toolya-client.mjs',route=>route.fulfill({contentType:'text/javascript',body:
+  'window.__annualMock={owner:"fixture-owner",writes:[],closing:'+JSON.stringify(closing)+'};'+
+  'const m=window.__annualMock;export const db={auth:{async getUser(){return {data:{user:m.owner?{id:m.owner}:null},error:null}},async getSession(){return {data:{session:null},error:null}},onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}},from(table){const q={select(){return q},eq(){return q},order(){return q},limit(){return q},then(resolve){resolve({data:table==="wishlist_gift_year_closings"?[m.closing]:[],error:null})}};for(const method of ["insert","update","upsert","delete"])q[method]=()=>{m.writes.push(method);throw Error("Unexpected write")};return q},async rpc(name){m.writes.push(name);throw Error("Unexpected RPC")}};'
+ }));
+ await page.goto(origin+'/tools/wishes/gift-analytics.html?lang=en');
+ await expect(page.locator('#content')).toBeVisible();
+ await page.locator('#reviewYear').selectOption('2025');
+ const button=page.locator('#exportYearJson');
+ let first;
+ for(const lang of ['en','de']){
+  const choice=page.locator('[data-wishes-locale="'+lang+'"]');
+  await choice.click();
+  await expect(choice).toHaveAttribute('aria-pressed','true');
+  const [download]=await Promise.all([page.waitForEvent('download'),button.click()]);
+  expect(download.suggestedFilename()).toBe('helferlein-geschenk-jahresrueckblick-2025.json');
+  const payload=JSON.parse(await readFile(await download.path(),'utf8'));
+  expect(payload.schema_version).toBe(1);
+  expect(payload.report.gifts).toEqual([gift]);
+  expect(payload.report.actual_total).toBe(42.5);
+  expect(payload.report.year).toBe(2025);
+  expect(JSON.stringify(payload)).not.toContain('fixture-owner');
+  expect(JSON.stringify(payload)).not.toContain('closing-fixture');
+  expect(Number.isFinite(Date.parse(payload.exported_at))).toBe(true);
+  delete payload.exported_at;
+  if(first)expect(payload).toEqual(first);else first=payload;
+ }
+ const downloads=[];page.on('download',d=>downloads.push(d));
+ for(const lang of ['en','de']){
+  await page.locator('[data-wishes-locale="'+lang+'"]').click();
+  await page.evaluate(()=>{window.__annualMock.owner='different-owner'});
+  await button.click();
+  await expect(page.locator('#reviewStatus')).toContainText(lang==='de'?'Export abgebrochen':/session|account/i);
+  await expect(button).toBeEnabled();
+ }
+ expect(downloads).toEqual([]);
+ expect(await page.evaluate(()=>window.__annualMock.closing)).toEqual(closing);
+ expect(await page.evaluate(()=>window.__annualMock.writes)).toEqual([]);
+});
