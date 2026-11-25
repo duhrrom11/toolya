@@ -38,7 +38,9 @@ function renderUser(user,error){
  window.toolyaAccountState={user:currentAccount,error:Boolean(error),recovery:recoveryActive};
  if(typeof CustomEvent==='function'){
   const state=window.toolyaAccountState;
-  setTimeout(()=>{if(window.toolyaAccountState===state)document.dispatchEvent?.(new CustomEvent('toolya:account-state',{detail:state}))},0);
+  const notify=()=>{if(window.toolyaAccountState===state)document.dispatchEvent?.(new CustomEvent('toolya:account-state',{detail:state}))};
+  // Hide private UI immediately when authorization is lost. Signed-in subscribers may use the SDK; run those after the auth callback has returned.
+  if(!currentAccount||error||recoveryActive)notify();else setTimeout(notify,0);
  }
  const button=$('userInfo');
  if(button)button.classList.toggle('b3-auth-signed-in',!!user);
