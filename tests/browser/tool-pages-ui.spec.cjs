@@ -1824,8 +1824,8 @@ for (const [tool, action] of [
     });
     await page.goto(origin + '/tools/' + tool + '/index.html');
     expect(downloads).toBe(0);
-    // Cloud-only vehicle reports require a verified snapshot; await the isolated fixture.
-    if (tool === 'car') {
+    // Cloud-only vehicle and budget reports require a verified snapshot; await the isolated fixture.
+    if (tool === 'car' || tool === 'budget') {
       await expect.poll(() => page.evaluate(() => typeof toolyaCloudReady !== 'undefined' && toolyaCloudReady && !!toolyaCloudController?.ready)).toBe(true);
     }
     await page.evaluate(() => { window.alert = message => { window.pdfExportError = message; }; });
