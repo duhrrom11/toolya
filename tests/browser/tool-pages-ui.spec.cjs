@@ -3463,9 +3463,15 @@ for(const fixture of [
  {"tool":"plants","handler":"saveHarvest","fields":{"harvestPlantId":"1","harvestWeightGrams":"0"},"de":"Bitte eine gültige Erntemenge in ganzen Gramm eingeben.","en":"Enter a valid harvest amount in whole grams.","line":844},
  {"tool":"budget","handler":"saveReceipt","fields":{"receiptTitle":"Private Löschen","receiptDate":"2026-11-25","receiptPrice":"0","receiptNote":"Private Notiz"},"de":"Bitte Titel, gültiges Kaufdatum und einen positiven Betrag angeben!","en":"Enter a title, valid purchase date and positive amount.","line":1199},
  {"tool":"budget","handler":"saveSavingsGoal","fields":{"goalTitle":"Private Löschen","goalTarget":"0","goalCurrent":"2"},"de":"Bitte gültigen Titel, positiven Zielbetrag und Startbetrag ab 0 € eingeben!","en":"Enter a valid title, a positive target amount and a starting amount of at least €0.","line":1707},
- {"tool":"pet-health","handler":"saveEvent","fields":{"eventTitle":"Private Löschen","eventDate":"","eventCost":"12.5"},"de":"Bitte Haustier, Datum und Bezeichnung angeben!","en":"Please enter a pet, date and description!","line":664}
+ {"tool":"pet-health","handler":"saveEvent","fields":{"eventTitle":"Private Löschen","eventDate":"","eventCost":"12.5"},"de":"Bitte Haustier, Datum und Bezeichnung angeben!","en":"Please enter a pet, date and description!","line":664},
+ {"tool":"plants","handler":"savePlant","fields":{"plantName":"","plantLastWatered":"2026-11-25","plantNote":"Private Löschen"},"de":"Bitte Name und gültiges Gießdatum angeben!","en":"Enter a name and valid watering date.","line":985},
+ {"tool":"plants","handler":"savePlant","fields":{"plantName":"Private Löschen","plantLastWatered":"2026-11-25","plantInterval":"0","plantNote":"Private Notiz"},"de":"Bitte ein Gießintervall zwischen 1 und 3650 Tagen eingeben.","en":"Enter a watering interval between 1 and 3650 days.","line":986},
+ {"tool":"plants","handler":"updatePlant","fields":{"editId":"invalid","editName":"Private Löschen"},"de":"Ungültige Pflanzen-ID. Die Änderungen wurden nicht gespeichert.","en":"Invalid plant ID. Changes were not saved.","line":1131},
+ {"tool":"plants","handler":"saveDiaryEntry","fields":{"diaryPlantId":"invalid","diaryText":"Private Löschen"},"de":"Ungültige Pflanzen-ID.","en":"Invalid plant ID.","line":1088},
+ {"tool":"budget","handler":"runOCR","fields":{"receiptTitle":"Private Löschen","receiptNote":"Private Notiz"},"de":"Bitte wähle zuerst ein Belegfoto aus!","en":"Select a receipt photo first.","line":1116},
+ {"tool":"budget","handler":"saveReceipt","fields":{"receiptTitle":"Private Löschen","receiptDate":"2026-11-25","receiptPrice":"12.5","receiptWarranty":"-1","receiptReturnDays":"0","receiptLifespan":"5","receiptNote":"Private Notiz"},"de":"Bitte gültige Garantie-, Rückgabe- und Lebensdauerwerte angeben.","en":"Enter valid warranty, return period and useful-life values.","line":1204}
 ]){
- test('i18n runtime catalogue: '+fixture.tool+' '+fixture.handler+' preserves draft on validation in DE and EN',async({page})=>{
+ test('i18n runtime catalogue: '+fixture.tool+' '+fixture.handler+' line '+fixture.line+' preserves draft on validation in DE and EN',async({page})=>{
   await isolated(page,true);
   await page.goto(origin+'/tools/'+fixture.tool+'/index.html');
   const state=()=>page.evaluate(tool=>{

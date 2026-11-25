@@ -136,3 +136,13 @@ Each invokes the real handler, asserts exact DE/EN/DE alert, HTML lang, retained
 - `tools/budget/index.html:1707` saveSavingsGoal: Bitte gültigen Titel, positiven Zielbetrag und Startbetrag ab 0 € eingeben! / Enter a valid title, a positive target amount and a starting amount of at least €0.
 - `tools/pet-health/index.html:664` saveEvent: Bitte Haustier, Datum und Bezeichnung angeben! / Please enter a pet, date and description!
 Source fields and syntax checked; independent browser execution pending. No strict waiver or production test data.
+
+## Additional validation branches at 658b367
+At inspection, 11 regular workflows passed, four remained in progress (including full isolated browser and translation quality); strict failed with 34 partial views, 16 noindex, 212 source candidates. 228 browser passes cannot yet be claimed. Added six more isolated DE/EN/DE validation checks with exact message, draft/snapshot preservation and zero writes:
+- `tools/plants/index.html:985` savePlant: Bitte Name und gültiges Gießdatum angeben! / Enter a name and valid watering date.
+- `tools/plants/index.html:986` savePlant: Bitte ein Gießintervall zwischen 1 und 3650 Tagen eingeben. / Enter a watering interval between 1 and 3650 days.
+- `tools/plants/index.html:1131` updatePlant: Ungültige Pflanzen-ID. Die Änderungen wurden nicht gespeichert. / Invalid plant ID. Changes were not saved.
+- `tools/plants/index.html:1088` saveDiaryEntry: Ungültige Pflanzen-ID. / Invalid plant ID.
+- `tools/budget/index.html:1116` runOCR: Bitte wähle zuerst ein Belegfoto aus! / Select a receipt photo first.
+- `tools/budget/index.html:1204` saveReceipt: Bitte gültige Garantie-, Rückgabe- und Lebensdauerwerte angeben. / Enter valid warranty, return period and useful-life values.
+Unique test names include source line to distinguish separate branches of the same handler. Source input IDs and syntax verified. Expected suite total 234, not confirmed. No production test data or strict waiver.
