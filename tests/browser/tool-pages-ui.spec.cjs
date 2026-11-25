@@ -3002,3 +3002,49 @@ test('i18n runtime: shared cloud replacement warning cancels before backup or wr
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
  }
 });
+
+test('i18n runtime: isolated lists dashboard selection counters and private notes in DE and EN',async({page})=>{
+ await isolated(page,false);
+ // Serve a synthetic page at the real module origin without booting a public route.
+ await page.route('**/tools/wishes/__lists-fixture.html*',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="de"><head><title>Lists fixture</title></head><body><header></header></body></html>'}));
+ await page.goto(origin+'/tools/wishes/__lists-fixture.html?lang=de');
+ await page.evaluate(async ids=>{
+  const root=document.createElement('section');root.id='listsDashboard';document.body.append(root);
+  const selects={listWishPriority:['all'],listWishCategory:['all'],listWishMarker:['all'],listWishAssignment:['assigned','global-unassigned','all'],listWishSort:['newest'],listsView:['active','all'],listsSort:['favorites'],listVisibility:['private'],editListVisibility:['private'],listTemplate:['custom'],wishListSelect:[''],bulkMoveTarget:[''],listQuickSwitch:[''],wishDetailCategory:[''],wishDetailSelect:[''],listIcon:['🎁'],editListIcon:['🎁'],listColor:['#123456'],editListColor:['#123456']};
+  const fields=new Set(['listWishSearch','listsSearch','listTitle','listDescription','editListTitle','editListDescription','editListCoverUrl','editListId','url']);
+  const containers=new Set(['listWishCards','listsContent','homeRecentContent','homeFavoritesContent','bulkHistoryList','bulkResultContext','bulkConfirmSample','wishDetailLists','bulkProgressDetails','listItemsFeedback','bulkProgressPanel','bulkResultPanel','homeProgress','editor']);
+  for(const id of ids){
+   if(id==='listsDashboard')continue;
+   const tag=Object.hasOwn(selects,id)?'select':fields.has(id)?'input':id.endsWith('Dialog')?'dialog':id==='editListForm'?'form':id==='newListPanel'?'details':containers.has(id)?'div':'button';
+   const el=document.createElement(tag);el.id=id;
+   if(tag==='button')el.type='button';
+   if(tag==='select')for(const value of selects[id]){const opt=document.createElement('option');opt.value=value;opt.textContent=value;el.append(opt)}
+   if(id==='editListForm'||id==='bulkResultPanel')el.hidden=true;
+   root.append(el);
+  }
+  // Fixed application-owned controls, not private wish content.
+  for(const id of ['wishSelectAssigned','wishSelectUnassigned','listsStatus'])document.getElementById(id).setAttribute('data-wish-copy','');
+  const user={id:'isolated-owner'},list={id:'fixture-list',title:'Private Löschen',description:'Private Notiz',icon:'🎁',color:'#123456',visibility:'private',archived:false,created_at:'2026-01-01T00:00:00Z'};
+  const wishes=Array.from({length:10},(_,i)=>({id:'wish-'+i,note:'Private Löschen '+i,priority:'normal',created_at:'2026-01-01T00:00:00Z',wishlist_products:{title:'Private Wunsch '+i,asin:'B00000000'+i,marketplace:'de',image_url:null,price:null,description:null}}));
+  const memberships=wishes.slice(0,7).map(w=>({list_id:list.id,wish_id:w.id}));
+  const tables={wishlist_lists:[list],wishlist_wishes:wishes,wishlist_list_items:memberships};
+  const writes=[];window.__listFixture={writes,tables};
+  const db={from(table){let rows=tables[table]||[];const q={};for(const method of ['select','eq','order','in','limit','is'])q[method]=()=>q;q.range=(start,end)=>{rows=rows.slice(start,end+1);return q};for(const method of ['insert','update','delete','upsert'])q[method]=()=>{writes.push({table,method});throw Error('Unexpected fixture write')};q.then=(resolve,reject)=>Promise.resolve({data:structuredClone(rows),error:null}).then(resolve,reject);return q}};
+  const {mountListsDashboard}=await import('/tools/wishes/lists-dashboard.mjs');
+  const dashboard=mountListsDashboard(db,()=>user);
+  await dashboard.refresh();
+  await import('/shared/toolya/i18n/wishes-entry.mjs');
+ },["listsDashboard","listWishCards","listWishSearch","activeListHeading","wishDetailCategory","wishDetailDialog","listWishAssignment","listWishPriority","listWishCategory","listWishMarker","listWishSort","wishDetailLists","wishDetailSelect","wishDetailJump","wishDetailHeading","wishDetailPriority","wishDetailNote","wishDetailDate","homeRecentContent","assignedTotal","favoritesTotal","homeProgress","homeProgressFill","homeProgressNote","bulkResultPanel","homeFavoritesContent","wishListSelect","editListForm","editListId","listTitle","listDescription","listTemplate","listsSearch","listsView","listsSort","editListTitle","editListDescription","editListCoverUrl","listsStatus","editListFeedback","listsTotal","wishesTotal","bulkProgressPanel","bulkStop","bulkStatus","bulkProgressText","bulkProgressDetails","bulkProgressBar","bulkConfirmDialog","listsContent","listWishCount","wishLoadMore","listsViewCount","listsResetFilters","unassignedCount","showUnassigned","bulkMoveTarget","bulkSelectedCount","bulkSelectVisible","bulkAdd","bulkRemove","bulkClear","bulkSelectCategory","bulkMove","bulkHistoryList","bulkHistoryEmpty","bulkHistoryClear","bulkResultHeading","bulkResultSummary","bulkResultContext","bulkRetryFailed","bulkSelectRemaining","bulkResumeRemaining","bulkConfirmTitle","bulkConfirmDescription","bulkConfirmSample","wishViewCards","wishViewCompact","wishClearSelection","wishShowAssigned","wishSelectAssigned","wishSelectUnassigned","wishSelectedOnly","wishSelectShown","listItemsFeedback","listItemsFeedbackText","listItemsRetry","listQuickSwitch","activeListSummary","listItemsNewWish","editor","url","listItemsBack","quickAllWishes","quickAssignedWishes","quickUnassignedWishes","quickFavoriteWishes","wishClearFilters","bulkDismissResult","bulkConfirmCancel","bulkConfirmApply","homeFavorites","homeNewWish","homeNewList","newListPanel","wishDetailStar","wishDetailLater","listWishClearFilters","wishDetailSaveCategory","wishDetailClose","wishDetailDone","listIcon","listColor","editListIcon","editListColor","editListVisibility","cancelListEdit","saveListChanges","mobileNewWish","mobileMyLists","quickNewList","quickAddWish","quickOpenSelected","createList","listVisibility","refreshLists"]);
+ await expect(page.locator('#wishSelectAssigned')).toHaveText('Zugeordnete auswählen (7)');
+ await expect(page.locator('#wishSelectUnassigned')).toHaveText('Ohne Liste auswählen (3)');
+ const before=await page.evaluate(()=>JSON.stringify(window.__listFixture.tables));
+ for(const lang of ['en','de']){
+  await page.locator('[data-wishes-locale="'+lang+'"]').click();
+  await expect(page.locator('#wishSelectAssigned')).toHaveText(lang==='en'?'Select assigned (7)':'Zugeordnete auswählen (7)');
+  await expect(page.locator('#wishSelectUnassigned')).toHaveText(lang==='en'?'Select unassigned (3)':'Ohne Liste auswählen (3)');
+  await page.locator('#wishSelectUnassigned').click();
+  await expect(page.locator('#listsStatus')).toHaveText(lang==='en'?'3 unassigned wishes selected. Use “Add” to assign them to the current list.':'3 Wünsche ohne Liste ausgewählt. Mit „Hinzufügen“ kannst du sie der aktuellen Liste zuordnen.');
+  expect(await page.evaluate(()=>JSON.stringify(window.__listFixture.tables))).toBe(before);
+  expect(await page.evaluate(()=>window.__listFixture.writes.length)).toBe(0);
+ }
+});
