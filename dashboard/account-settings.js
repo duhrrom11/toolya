@@ -6,7 +6,10 @@ const URL='https://yheogmeaosuigyaxkwth.supabase.co';
 const KEY='sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
 const $=id=>document.getElementById(id);
 let client;
-try{client=window.supabase?.createClient(URL,KEY)}catch(error){console.warn('Toolya Auth initialization failed',error)}
+try{const config=window.HELPERLEIN_SUPABASE_CONFIG;
+ const url=config?.url||URL,key=config?.publishableKey||KEY;
+ if(config&&!(config.mode==='production'&&url===URL&&key===KEY)&&!(config.mode==='preview'&&url!==URL&&key!==KEY&&/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(url)&&key.startsWith('sb_publishable_')))throw new Error('Invalid account configuration');
+ client=window.supabase?.createClient(url,key)}catch(error){console.warn('Toolya Auth initialization failed',error)}
 // Share the same GoTrue client with Dashboard cloud storage to avoid competing auth instances.
 window.toolyaDashboardAuthClient=client;
 window.toolyaAccountClient=client;
@@ -174,7 +177,7 @@ if(params.has('auth')||params.has('settings')){
 initialAccountTimer=setTimeout(()=>{++authRequest;renderUser(null,true)},10000);
  if(client){
  client.auth.onAuthStateChange((event,session)=>{
-  if(event==='PASSWORD_RECOVERY'){showRecovery();renderUser(null);return}
+  if(event==='PASSWORD_RECOVERY'){++authRequest;showRecovery();renderUser(null);return}
   if(!session){++authRequest;renderUser(null);return}
   if(recoveryActive)return;
   clearTimeout(initialAccountTimer);
