@@ -60,6 +60,7 @@ async function run(){
   const session={user,access_token:'isolated-fixture',refresh_token:'isolated-fixture'};
   const collection={id:'22222222-2222-4222-8222-222222222222',user_id:uid,title:'Meine synthetische Sammlung',description:'Private Testbeschreibung bleibt unverändert',visibility:'public',archived:false,icon:'🎁'};
   const profile={user_id:uid,handle:'fixture_profile',display_name:'Synthetisches Profil',bio:'Meine Testbiografie bleibt unverändert'};
+  const occasion={id:'33333333-3333-4333-8333-333333333333',user_id:uid,title:'Anlass speichern',person_name:'Meine private Person',occasion_date:'2099-11-24',repeats_yearly:false,reminder_days:14,notes:'Änderungen speichern'};
   const calls={auth:0,reads:[],writes:[]};window.__toolyaAuthFixture=calls;
   const ok=data=>({data,error:null});
   const denied=(table,operation)=>{calls.writes.push({table,operation});return {data:null,error:{message:'Read-only browser fixture'}}};
@@ -74,7 +75,8 @@ async function run(){
     q.single=q.maybeSingle=()=>{single=true;return q};
     q.then=(resolve,reject)=>{
      const route=location.pathname;
-     const rows=route.endsWith('/collection.html')&&table==='wishlist_lists'?[collection]:
+     const rows=route.endsWith('/occasions.html')&&table==='wishlist_occasions'?[occasion]:
+      route.endsWith('/collection.html')&&table==='wishlist_lists'?[collection]:
       route.endsWith('/profile.html')&&table==='wishlist_profiles'?[profile]:
       route.endsWith('/profile.html')&&table==='wishlist_lists'?[collection]:[];
      return Promise.resolve(operation==='select'?{data:single?rows[0]||null:rows,error:null,count:rows.length}:denied(table,operation)).then(resolve,reject);
@@ -110,6 +112,7 @@ async function run(){
    page.on('pageerror',e=>row.pageErrors.push(e.message.slice(0,300)));
    try{
     await page.addInitScript(()=>{localStorage.setItem('synthetic-private-note','Meine private Notiz');});
+    const occasion=authenticated&&entry.path==='/tools/wishes/occasions.html';
     const admin=authenticated&&entry.path==='/admin-stats-dashboard/index.html';
     const collection=authenticated&&entry.path==='/tools/wishes/collection.html';
     const profile=authenticated&&entry.path==='/tools/wishes/profile.html';
@@ -117,6 +120,7 @@ async function run(){
     await page.goto(origin+entry.path+'?lang=de'+query,{waitUntil:'domcontentloaded',timeout:15000});
     if(admin)await page.waitForFunction(()=>!document.getElementById('panel')?.hidden&&!!document.querySelector('#seo-google svg'),null,{timeout:6000});
     const adminReadsBefore=adminReads;
+    if(occasion){await page.locator('#events article button').first().click({timeout:6000});await page.locator('#notes').fill('Unveränderter privater Entwurf');}
     if(collection)await page.waitForFunction(()=>!document.getElementById('collection')?.hidden&&document.getElementById('title')?.textContent==='Meine synthetische Sammlung',null,{timeout:6000});
     if(profile)await page.waitForFunction(()=>!document.getElementById('profile')?.hidden&&document.getElementById('name')?.textContent==='Synthetisches Profil',null,{timeout:6000});
     if(authenticated&&entry.path==='/tools/wishes/dashboard.html')await page.waitForFunction(()=>!document.getElementById('content')?.hidden&&!!document.querySelector('#taskReminders .empty')&&!!document.querySelector('#tasks .empty'),null,{timeout:6000});
@@ -140,6 +144,20 @@ async function run(){
       assert.equal(await page.evaluate(()=>localStorage.getItem('synthetic-private-note')),'Meine private Notiz');
       if(collection){assert.equal(await page.locator('#title').textContent(),'Meine synthetische Sammlung');assert.equal(await page.locator('#description').textContent(),'Private Testbeschreibung bleibt unverändert');}
       if(profile){assert.equal(await page.locator('#name').textContent(),'Synthetisches Profil');assert.equal(await page.locator('#bio').textContent(),'Meine Testbiografie bleibt unverändert');}
+      if(occasion){
+       const en=lang==='en';
+       await page.waitForFunction(({en})=>document.getElementById('formTitle')?.textContent===(en?'✏️ Edit occasion':'✏️ Anlass bearbeiten'),{en});
+       assert.equal(await page.locator('#events h3').textContent(),'Anlass speichern · Meine private Person');
+       assert.equal(await page.locator('#events article p').textContent(),'Änderungen speichern');
+       assert.equal(await page.locator('#title').inputValue(),'Anlass speichern');
+       assert.equal(await page.locator('#notes').inputValue(),'Unveränderter privater Entwurf');
+       assert.equal(await page.locator('#date').inputValue(),'2099-11-24');
+       assert.equal(await page.locator('#events time').getAttribute('datetime'),'2099-11-24');
+       assert.match(await page.locator('#events time').textContent(),en?/24 November 2099/:/24\. November 2099/);
+       assert.equal(await page.locator('#save').textContent(),en?'Save changes':'Änderungen speichern');
+       assert.equal(await page.locator('#events .badge').textContent(),en?'📅 One-off':'📅 Einmalig');
+       assert.equal(await page.locator('#events article button').last().textContent(),en?'🗑️ Delete':'🗑️ Löschen');
+      }
       if(admin){
        const en=lang==='en';
        await page.waitForFunction(({en})=>document.querySelector('#seo-google h4')?.textContent===(en?'Clicks':'Klicks'),{en});
