@@ -1721,7 +1721,7 @@ async function toolyaCloudBoot(tool) {
             const goals = getSavingsGoals();
             const goal = goals.find(g => g.id === id);
             if (!goal) return;
-            const amount = parseFloat(prompt(`Betrag auf Sparziel "${goal.title}" einzahlen (€):`, "50"));
+            const amount = parseFloat(prompt(window.__toolyaUILocale === 'en' ? `Deposit into savings goal "${goal.title}" (€):` : `Betrag auf Sparziel "${goal.title}" einzahlen (€):`, "50"));
             if (amount > 0) {
                 const previous = Number(goal.current);
                 goal.current = (Number.isFinite(previous) ? previous : 0) + amount;
@@ -1812,7 +1812,7 @@ async function toolyaCloudBoot(tool) {
                 new QRCode(qrContainer, { text: qrText, width: 120, height: 120 });
             } catch (error) {
                 console.error('QR-Code konnte nicht erstellt werden:', error);
-                qrContainer.textContent = 'QR-Code konnte nicht erstellt werden.';
+                qrContainer.textContent = window.__toolyaUILocale === 'en' ? 'Could not create the QR code.' : 'QR-Code konnte nicht erstellt werden.';
             }
         }
 

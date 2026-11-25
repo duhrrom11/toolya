@@ -1165,7 +1165,7 @@
             const { loadQrGenerator } = await import('../../shared/toolya/qr-generator.mjs');
             const QRCode = await loadQrGenerator();
             if (!QRCode) {
-                alert("Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.");
+                alert(window.__toolyaUILocale === 'en' ? 'The QR code could not be loaded. Please try again.' : 'Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.');
                 return;
             }
             document.getElementById('qrTitle').innerText = name;
