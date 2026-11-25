@@ -3730,3 +3730,57 @@ test('Global encrypted backup DE/EN: actual downloads decrypt, exclude secrets a
  expect(envelopes[0].salt).not.toBe(envelopes[1].salt);
  expect(envelopes[0].iv).not.toBe(envelopes[1].iv);
 });
+
+
+test('Global encrypted restore DE/EN: password and overwrite cancellation preserve local data',async({page})=>{
+ const {pbkdf2Sync,createCipheriv,randomBytes}=require('node:crypto');
+ const password='isolated-restore-password-2026';
+ const key='helferlein_ui_layout_pflanzen_v1';
+ const original='[{"id":"original","visible":true}]',replacement='[{"id":"replacement","visible":false}]';
+ const salt=randomBytes(16),iv=randomBytes(12);
+ const cipher=createCipheriv('aes-256-gcm',pbkdf2Sync(password,salt,600000,32,'sha256'),iv);
+ const plaintext=JSON.stringify({app:'Toolya',version:'2.0',created:'2026-11-25T12:00:00Z',localStorage:{[key]:replacement,'sb-fixture-auth-token':'must-not-import','unrelated-fixture':'must-not-import'}});
+ const encrypted=Buffer.concat([cipher.update(plaintext,'utf8'),cipher.final(),cipher.getAuthTag()]);
+ const envelope={app:'Toolya',format:'encrypted-backup-v1',kdf:'PBKDF2-SHA256',iterations:600000,cipher:'AES-256-GCM',salt:salt.toString('base64'),iv:iv.toString('base64'),ciphertext:encrypted.toString('base64')};
+ await isolated(page,false);
+ for(const lang of ['de','en']){
+  await page.goto(origin+(lang==='en'?'/en/index.html':'/index.html'));
+  await page.waitForFunction(()=>window.toolyaHomeReady===true);
+  await page.evaluate(({key,original})=>{localStorage.setItem(key,original);localStorage.setItem('unrelated-fixture','keep-original')},{key,original});
+  const snapshot=()=>page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
+  const before=await snapshot();
+  const load=()=>page.evaluate(payload=>window.importGlobalBackup({target:{files:[new File([JSON.stringify(payload)],'fixture.json',{type:'application/json'})],value:'fixture.json'}}),envelope);
+  const dialog=page.getByRole('dialog',{name:lang==='en'?'Backup password':'Backup-Passwort',exact:true});
+  const submit=dialog.locator('button[type="submit"]');
+  await load();
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button',{name:lang==='en'?'Cancel':'Abbrechen',exact:true}).click();
+  await expect(dialog).toHaveCount(0);
+  expect(await snapshot()).toEqual(before);
+  await load();
+  await dialog.locator('input[type="password"]').fill(password+'-wrong');
+  await submit.click();
+  const notice=page.getByRole('alertdialog',{name:'Toolya'});
+  await expect(notice.locator('#hl-alert-message')).toHaveText(lang==='en'?'Decryption failed. The password or backup file is invalid.':'Entschlüsselung fehlgeschlagen. Passwort oder Sicherungsdatei ist ungültig.');
+  await notice.getByRole('button',{name:'OK'}).press('Enter');
+  expect(await snapshot()).toEqual(before);
+  await load();
+  await dialog.locator('input[type="password"]').fill(password);
+  const confirmation=page.waitForEvent('dialog');
+  await submit.click();
+  const cancel=await confirmation;
+  expect(cancel.type()).toBe('confirm');await cancel.dismiss();
+  expect(await snapshot()).toEqual(before);
+  await load();
+  await dialog.locator('input[type="password"]').fill(password);
+  const approval=page.waitForEvent('dialog');
+  await submit.click();
+  const confirm=await approval;expect(confirm.type()).toBe('confirm');await confirm.accept();
+  await expect(notice).toBeVisible();
+  await notice.getByRole('button',{name:'OK'}).press('Enter');
+  expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe(replacement);
+  expect(await page.evaluate(()=>localStorage.getItem('unrelated-fixture'))).toBe('keep-original');
+  expect(await page.evaluate(()=>localStorage.getItem('sb-fixture-auth-token'))).toBe(before['sb-fixture-auth-token']??null);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+ }
+});
