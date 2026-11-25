@@ -8,7 +8,7 @@ export const WISHES_COPY=Object.freeze({
 "Bitte die laufende Wunsch- oder Listenänderung zuerst abschließen.": "Finish the current wish or list change first.",
 "Bitte zuerst die Listen vollständig laden.": "Wait until all lists have loaded.",
 "Die Sammelaktion läuft noch. Bitte zuerst stoppen oder abschließen.": "The bulk action is still running. Stop or finish it first.",
-"Bitte eine aktive Liste auswählen.": "Select an active list.",
+"Bitte eine aktive Liste auswählen.": "Please select an active list.",
 "Eine Listenänderung läuft. Bitte den Abschluss abwarten.": "A list change is in progress. Wait until it finishes.",
 "Eine Listen-Kopie wird gerade erstellt. Bitte den Abschluss abwarten.": "A list copy is being created. Wait until it finishes.",
 "Sammelaktion läuft. Bitte stoppen oder abschließen, bevor du Listen aktualisierst.": "A bulk action is running. Stop or finish it before refreshing lists.",
