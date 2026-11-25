@@ -1029,6 +1029,7 @@ const additionalB3NavCopy=Object.freeze({
   "📊 Statistiken": "📊 Statistics",
   "⏱️ Parkschein-Timer": "⏱️ Parking timer",
   "📍 Parkplatz merken": "📍 Save parking spot",
+  "🧭 In der Nähe": "🧭 Nearby",
   "📋 Parkhistorie": "📋 Parking history",
   "🔔 Browser-Benachrichtigung erlauben": "🔔 Enable browser notifications",
   "📄 Parkbericht (PDF)": "📄 Parking report (PDF)"
@@ -1147,6 +1148,7 @@ const additionalB3EditorPanels=Object.freeze({
   "Anleitung & Energiespartipps": "Guide and energy-saving tips"
  },
  "parking": {
+  "In der Nähe": "Nearby",
   "Parkstatistiken": "Parking statistics",
   "Parkschein-Timer & Parkplatz erfassen": "Parking timer and spot entry",
   "Gespeicherte Parkplätze und Gebühren": "Saved spots and fees",
