@@ -23,6 +23,7 @@ async function isolated(page,authenticated,displayCss=false,initialSnapshot=null
                 async getSession(){return {data:{session:null},error:null}},
                 onAuthStateChange(listener){
                   if(m.fixture?.__recovery)(m.authListeners??=[]).push(listener);
+                   queueMicrotask(()=>listener('INITIAL_SESSION',m.signedIn?{access_token:'ui-fixture-token',user:{id:'ui-fixture-user'}}:null));
                   return {data:{subscription:{unsubscribe(){}}}};
                 },
                 async signOut(){m.signedIn=false;return {error:null}},
@@ -512,7 +513,7 @@ async function isolatedWishlist(page,authenticated,profiles=[],detailError=false
    window.supabase={createClient(){const m=window.__wishlistMock;return {
     auth:{
      async getUser(){m.reads++;return {data:{user:m.user},error:null}},
-     onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}},
+     onAuthStateChange(listener){queueMicrotask(()=>listener('INITIAL_SESSION',m.user?{access_token:'wishlist-fixture-token',user:m.user}:null));return {data:{subscription:{unsubscribe(){}}}}},
      async signOut(){m.user=null;return {error:null}}
     },
     rpc(name){if(name==='search_wishlist_directory'&&m.searchError)return Promise.resolve({data:null,error:{message:'Isolated unavailable'}});if(name==='search_wishlist_directory'&&m.empty)return Promise.resolve({data:[],error:null});return Promise.resolve({data:['search_wishlist_profiles','search_wishlist_directory'].includes(name)?${JSON.stringify(profiles)}:(name==='wishlist_directory_filters'?{countries:[],occasions:[],interests:[]}:[]),error:null})},
@@ -2061,7 +2062,7 @@ for (const tool of Object.keys(startupLibraries)) {
 }
 
 const publicGuideRoutes = [...require('node:fs').readFileSync('sitemap.xml', 'utf8')
-  .matchAll(/<loc>https:\/\/toolya\.app(\/[^/]+\/)<\/loc>/g)].map(match => match[1]);
+  .matchAll(/<loc>https:\/\/toolya\.app(\/[^/]+\/)<\/loc>/g)].map(match => match[1]).filter(path => path !== '/en/'); // English homepage is covered by the separate home accessibility tests.
 
 for (const path of publicGuideRoutes) {
   test(`public guide has usable keyboard navigation at two widths: ${path}`, async ({ page }) => {
