@@ -157,10 +157,15 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  assert.equal(await page.locator('.ty-duo-message').isVisible(),false,'four taps do not trigger Easter egg');
  await tickleButton.tap();assert.match(await page.locator('.ty-duo-message').textContent(),/kitzlig/);
  assert.equal(await hero.getAttribute('data-reaction'),null,'reduced motion does not animate');
- await page.getByRole('button',{name:/Finanzen/,exact:false}).click();
- assert.equal(await page.locator('#toolsGrid .tool-card:visible').count(),3,'finance filters actual cards');
- await page.getByRole('button',{name:/Alle 12/,exact:true}).click();
+ // The current home intentionally has no category/search controls.
+ assert.equal(await page.locator('[data-b3-category-filter],#toolSearch,#b3-reset-filters').count(),0);
  assert.equal(await page.locator('#toolsGrid .tool-card:visible').count(),12,'all original tools retained');
+ assert.equal(await page.locator('#toolsGrid .tool-card[data-category="finanzen"]:visible').count(),3,'finance tools remain visible');
+ assert.equal(await page.locator('#toolsGrid .tool-card[data-category="tiere"]:visible').count(),1,'pet tool remains visible');
+ assert.equal(await page.locator('#b3-result-count').textContent(),'12 von 12 Tools');
+ const homeCards=await page.locator('#toolsGrid .tool-card').evaluateAll(nodes=>nodes.map(n=>({id:n.dataset.id,href:n.querySelector('a.ty-tool-link')?.getAttribute('href'),label:n.querySelector('.fav-btn')?.getAttribute('aria-label')})));
+ assert.equal(new Set(homeCards.map(c=>c.id)).size,12);
+ assert.ok(homeCards.every(c=>c.href&&c.label),'every tool has navigation and an accessible favourite action');
  for(const id of ['wishlist','kassenbon','pflanzen','kisten'])await page.locator('.fav-btn[data-id="'+id+'"]').click();
  assert.equal(await page.locator('.b3-dashboard-card').count(),1,'dashboard card replaces the old favorites preview');
  await page.reload();await page.waitForFunction(()=>window.toolyaHomeReady===true);

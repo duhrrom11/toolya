@@ -42,19 +42,17 @@ const server=http.createServer((req,res)=>{
    assert.equal(await page.locator('#toolsGrid .tool-card').count(),12);
    assert.equal(await page.locator('.ty-guide-card').count(),13);
    assert.equal(await page.locator('#toolsGrid .tool-card h3').first().textContent(),'Find Amazon wish lists');
-   await page.locator('[data-b3-category-filter="tiere"]').click();
-   assert.equal(await page.locator('#toolsGrid .tool-card:visible').count(),1);
-   await page.locator('[data-b3-category-filter="alle"]').click();
+   // Current homepage deliberately exposes all tools without search/category controls.
+   assert.equal(await page.locator('[data-b3-category-filter],#toolSearch,#b3-reset-filters').count(),0);
    assert.equal(await page.locator('#toolsGrid .tool-card:visible').count(),12);
+   assert.equal(await page.locator('#b3-result-count').textContent(),'12 of 12 tools');
+   const cards=await page.locator('#toolsGrid .tool-card').evaluateAll(nodes=>nodes.map(n=>({id:n.dataset.id,category:n.dataset.category,href:n.querySelector('a.ty-tool-link').getAttribute('href'),title:n.querySelector('h3').textContent.trim()})));
+   assert.equal(new Set(cards.map(c=>c.id)).size,12);
+   assert.equal(cards.filter(c=>c.category==='finanzen').length,3);
+   assert.equal(cards.filter(c=>c.category==='tiere').length,1);
+   assert.ok(cards.every(c=>c.title&&c.href.startsWith('/')&&c.href.includes('lang=en')));
+   assert.equal(cards.find(c=>c.id==='haustier').title.length>0,true);
    assert.equal(await page.evaluate(()=>localStorage.getItem('toolya-locale-v1')),'en');
-   await page.locator('#toolSearch').fill('vaccinations');
-   assert.equal(await page.locator('#toolsGrid .tool-card:visible').count(),1);
-   assert.equal(await page.locator('#toolsGrid .tool-card:visible').getAttribute('data-id'),'haustier');
-   await page.locator('[data-b3-category-filter="finanzen"]').click();
-   assert.equal(await page.locator('#toolsGrid .tool-card:visible').count(),0);
-   await page.locator('#b3-reset-filters').click();
-   assert.equal(await page.locator('#toolSearch').inputValue(),'');
-   assert.equal(await page.locator('#toolsGrid .tool-card:visible').count(),12);
    await page.locator('[data-id="haustier"] .fav-btn').click();
    assert.equal(await page.locator('[data-id="haustier"] .fav-btn').getAttribute('aria-pressed'),'true');
    await page.locator('[data-id="haustier"] .fav-btn').click();
