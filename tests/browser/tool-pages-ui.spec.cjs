@@ -2869,6 +2869,13 @@ for(const slug of ['moving','housemates','loans','plants','baking','budget','car
     document.body.append(fixture);
   });
   const saved='Privat gespeicherte Notiz <Test> & 2040';
+  const checkLayout=async(locale,width)=>{
+    await expect(page.locator('html')).toHaveAttribute('lang',locale);
+    const layout=await page.evaluate(()=>({width:innerWidth,
+      excess:Math.max(0,document.documentElement.scrollWidth-innerWidth),
+      offenders:[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.right>innerWidth+2}).slice(0,12).map(el=>({tag:el.tagName,id:el.id,className:String(el.className)}))}));
+    expect.soft(layout.excess,slug+' '+locale+' '+width+'px: '+JSON.stringify(layout.offenders)).toBeLessThanOrEqual(2);
+  };
   for(const width of [320,375,768]){
     await page.setViewportSize({width,height:840});
     await expect(en).toBeVisible();
@@ -2876,19 +2883,11 @@ for(const slug of ['moving','housemates','loans','plants','baking','budget','car
     expect(await en.evaluate(el=>el===document.activeElement)).toBe(true);
     await de.click();
     await expect(de).toHaveAttribute('aria-pressed','true');
-    await expect(page.locator('html')).toHaveAttribute('lang','de');
-    const layout=await page.evaluate(()=>({width:innerWidth,
-      excess:Math.max(0,document.documentElement.scrollWidth-innerWidth),
-      offenders:[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.right>innerWidth+2}).slice(0,12).map(el=>({tag:el.tagName,id:el.id,className:String(el.className)}))}));
-    expect.soft(layout.excess,slug+' '+'de'+' '+width+'px: '+JSON.stringify(layout.offenders)).toBeLessThanOrEqual(2);
+    await checkLayout('de',width);
     await expect(page.locator('#i18n-synthetic-unchanged')).toHaveValue(saved);
     await en.click();
     await expect(en).toHaveAttribute('aria-pressed','true');
-    await expect(page.locator('html')).toHaveAttribute('lang','en');
-    const layout=await page.evaluate(()=>({width:innerWidth,
-      excess:Math.max(0,document.documentElement.scrollWidth-innerWidth),
-      offenders:[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.right>innerWidth+2}).slice(0,12).map(el=>({tag:el.tagName,id:el.id,className:String(el.className)}))}));
-    expect.soft(layout.excess,slug+' '+'en'+' '+width+'px: '+JSON.stringify(layout.offenders)).toBeLessThanOrEqual(2);
+    await checkLayout('en',width);
     await expect(page.locator('#i18n-synthetic-unchanged')).toHaveValue(saved);
 
   }
