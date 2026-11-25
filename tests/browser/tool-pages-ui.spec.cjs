@@ -3275,3 +3275,34 @@ for(const fixture of [
   }
  });
 }
+
+for(const mode of ['denied','missing']){
+ test('parking GPS regression: '+mode+' required GPS refuses write; ordinary save falls back in DE and EN',async({page})=>{
+  await isolated(page,true);
+  await page.addInitScript(mode=>{
+   Object.defineProperty(navigator,'geolocation',{configurable:true,value:mode==='missing'?undefined:{
+    getCurrentPosition(success,failure){queueMicrotask(()=>failure({code:1,message:'Synthetic permission denial'}))}
+   }});
+  },mode);
+  await page.goto(origin+'/tools/parking/index.html');
+  await expect.poll(()=>page.evaluate(()=>parkingCloudReady&&!!parkingCloudController?.ready)).toBe(true);
+  for(const lang of ['de','en']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   const fields={parkDesc:'Private Löschen '+lang,parkSector:'Private Zone',parkCost:'0'};
+   await page.evaluate(fields=>{for(const [id,value] of Object.entries(fields))document.getElementById(id).value=value},fields);
+   const before=await page.evaluate(()=>({snapshot:JSON.stringify(parkingCloudController.snapshot()),writes:window.__toolyaMock.writes.length}));
+   await page.evaluate(()=>saveParkingSession(true));
+   await expect(page.locator('#parkingGpsFeedback')).toHaveText(lang==='en'?'GPS location unavailable. Allow location access and try again.':'GPS-Standort nicht verfügbar. Bitte Standortzugriff erlauben und erneut versuchen.');
+   await expect(page.locator('#saveParkingGpsBtn')).toBeEnabled();
+   expect(await page.evaluate(()=>({snapshot:JSON.stringify(parkingCloudController.snapshot()),writes:window.__toolyaMock.writes.length}))).toEqual(before);
+   expect(await page.evaluate(ids=>Object.fromEntries(ids.map(id=>[id,document.getElementById(id).value])),Object.keys(fields))).toEqual(fields);
+   await page.evaluate(()=>saveParkingSession(false));
+   await expect.poll(()=>page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(before.writes+1);
+   await expect(page.locator('#saveParkingGpsBtn')).toBeEnabled();
+   const saved=await page.evaluate(()=>parkingCloudController.snapshot().sessions.at(-1));
+   expect(saved.desc).toBe(fields.parkDesc);
+   expect(saved.sector).toBe(fields.parkSector);
+   expect(saved.gps).toBeNull();
+  }
+ });
+}
