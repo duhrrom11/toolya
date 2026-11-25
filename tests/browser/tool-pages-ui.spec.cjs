@@ -3249,3 +3249,29 @@ test('i18n runtime: cookie settings follow tool language without changing grante
  expect(await page.evaluate(()=>window.dataLayer.filter(e=>e[0]==='consent'&&e[1]==='update'&&e[2].analytics_storage==='granted').length)).toBe(1);
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
 });
+
+for(const fixture of [
+ {tool:'car',handler:'saveCar',fields:{carName:'',carPlate:'PRIVATE Löschen 42',carInsurance:'Private Versicherung'},de:'Bitte einen Fahrzeugnamen eingeben!',en:'Enter a vehicle name.'},
+ {tool:'meters',handler:'saveReading',fields:{meterName:'Private Löschen',meterNote:'Private Zählernotiz',meterDate:'',meterValue:'12'},de:'Bitte gültiges Ablesedatum und Zählerstand eingeben!',en:'Enter a valid reading date and meter value.'},
+ {tool:'meters',handler:'saveTarifs',fields:{meterName:'Private Löschen',meterNote:'Private Tarifnotiz',tariffStromPriceHT:'0.29',tariffGasCalib:'0'},de:'Bitte gültige, nichtnegative Tarife und einen positiven Gasfaktor eingeben.',en:'Enter valid non-negative tariffs and a positive gas factor.'}
+]){
+ test('i18n runtime catalogue: '+fixture.handler+' validates in DE and EN without changing private data',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/'+fixture.tool+'/index.html');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  await page.evaluate(fields=>{for(const [id,value] of Object.entries(fields)){const el=document.getElementById(id);if(!el)throw Error('Missing fixture input '+id);el.value=value;}},fixture.fields);
+  const snapshot=await page.evaluate(()=>JSON.stringify(toolyaCloudController.snapshot()));
+  const writes=await page.evaluate(()=>window.__toolyaMock.writes.length);
+  expect(writes).toBe(0);
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await page.evaluate(handler=>window[handler](),fixture.handler);
+   const notice=page.getByRole('alertdialog',{name:'Toolya'});
+   await expect(notice.locator('#hl-alert-message')).toHaveText(fixture[lang]);
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   expect(await page.evaluate(ids=>Object.fromEntries(ids.map(id=>[id,document.getElementById(id).value])),Object.keys(fixture.fields))).toEqual(fixture.fields);
+   expect(await page.evaluate(()=>JSON.stringify(toolyaCloudController.snapshot()))).toBe(snapshot);
+   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+  }
+ });
+}
