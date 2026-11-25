@@ -3309,3 +3309,56 @@ for(const mode of ['denied','missing']){
   }
  });
 }
+
+for(const mode of ['saved','denied','missing','current']){
+ test('parking nearby: '+mode+' location, blocked popup, bilingual search and private data isolation',async({page})=>{
+  const gps=mode==='saved'?{lat:12.345,lng:23.456}:null;
+  const fixture={sessions:gps?[{id:1,desc:'Private Löschen',sector:'Private A2',date:'25.11.2026',timestamp:1795608000000,cost:2,gps,photo:''}]:[],activeEndTime:null};
+  const outbound=await isolated(page,true,false,fixture);
+  await page.addInitScript(mode=>{
+   window.__nearbyProbe={geo:0,opens:[],destinations:[],blocked:true};
+   window.open=(url,target)=>{const p=window.__nearbyProbe;p.opens.push([url,target]);return p.blocked?null:{opener:window,closed:false,location:{replace:url=>p.destinations.push(url)}}};
+   Object.defineProperty(navigator,'geolocation',{configurable:true,value:mode==='missing'?undefined:{getCurrentPosition(ok,fail){window.__nearbyProbe.geo++;queueMicrotask(()=>mode==='current'?ok({coords:{latitude:34.567,longitude:45.678}}):fail({code:1,message:'Synthetic denial'}))}}});
+  },mode);
+  await page.goto(origin+'/tools/parking/index.html');
+  await expect.poll(()=>page.evaluate(()=>parkingCloudReady&&!!parkingCloudController?.ready)).toBe(true);
+  const before=await page.evaluate(()=>JSON.stringify(parkingCloudController.snapshot()));
+  const probe=()=>page.evaluate(()=>window.__nearbyProbe);
+  expect((await probe()).geo).toBe(0);
+  expect((await probe()).opens).toEqual([]);
+  const status=page.locator('#nearby-status'),fallback=page.locator('#nearby-fallback'),query=page.locator('#nearby-query');
+  const expectedState=lang=>mode==='saved'?(lang==='en'?'Near your parked car':'Rund um deinen Parkplatz'):mode==='current'?(lang==='en'?'Near your current location':'Rund um deinen Standort'):(lang==='en'?'Search without location':'Suche ohne Standort');
+  const checkUrl=(href,term)=>{
+   const u=new URL(href);expect(u.origin).toBe('https://www.google.com');
+   if(mode==='saved'||mode==='current'){expect(decodeURIComponent(u.pathname)).toBe('/maps/search/'+term+'/@'+(mode==='saved'?'12.345,23.456':'34.567,45.678')+',16z');}
+   else{expect(u.pathname).toBe('/maps/search/');expect(u.searchParams.get('query')).toBe(term);expect(u.searchParams.get('api')).toBe('1');}
+   expect(href).not.toContain('Private');
+  };
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('#nearby-title')).toHaveText(lang==='en'?'Nearby':'In der Nähe');
+   await page.locator('[data-poi="toilet"]').click();
+   await expect(status).toHaveText(expectedState(lang));
+   await expect(fallback).toBeVisible();
+   await expect(fallback).toHaveAttribute('rel','noopener noreferrer');
+   checkUrl(await fallback.getAttribute('href'),lang==='en'?'Public restroom':'Öffentliche Toilette');
+   await query.fill('Bäcker & Café');
+   await page.locator('#nearby-form button[type="submit"]').click();
+   await expect(fallback).toBeVisible();
+   checkUrl(await fallback.getAttribute('href'),'Bäcker & Café');
+   await expect(query).toHaveValue('Bäcker & Café');
+   expect(await page.evaluate(()=>JSON.stringify(parkingCloudController.snapshot()))).toBe(before);
+   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+  }
+  expect((await probe()).geo).toBe(mode==='saved'||mode==='missing'?0:6);
+  expect((await probe()).opens).toHaveLength(6);
+  await page.evaluate(()=>window.__nearbyProbe.blocked=false);
+  await page.locator('[data-poi="atm"]').click();
+  await expect.poll(async()=>(await probe()).destinations.length).toBe(1);
+  checkUrl((await probe()).destinations[0],'Geldautomat');
+  await expect(fallback).toBeHidden();
+  expect(await page.evaluate(()=>JSON.stringify(parkingCloudController.snapshot()))).toBe(before);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+  expect(outbound.filter(url=>/google\.com\/maps/.test(url))).toEqual([]);
+ });
+}
