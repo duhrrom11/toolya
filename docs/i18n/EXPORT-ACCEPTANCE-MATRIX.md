@@ -1,6 +1,8 @@
-# Export acceptance matrix — 54738b52
+# Export acceptance matrix — 7c71468e
 
-Source CI: [quality job](https://github.com/duhrrom11/toolya/actions/runs/45650961648/job/139335002727), [static job](https://github.com/duhrrom11/toolya/actions/runs/45650961554/job/139335002663), [browser](https://github.com/duhrrom11/toolya/actions/runs/45650961613), [strict gate](https://github.com/duhrrom11/toolya/actions/runs/45650961748/job/139335002507). Both quality and static jobs logged 409/409 passing tests (including tests 105 and 106). Across 16 PR workflows, 20 of 21 jobs passed; strict gate failed. Inventory: 171 files, 249 candidate lines; CSV 8, ICS 17, JSON 92, PDF 26, QR 54, print 8, download 54. Categories overlap; API JSON and QR display are not necessarily exports.
+Latest verified CI: [browser job](https://github.com/duhrrom11/toolya/actions/runs/45652075427/job/139339016396) (236/236, including tests 235 and 236), [quality job](https://github.com/duhrrom11/toolya/actions/runs/45652075249/job/139338996229) (409/409, 72/72 public and 57/57 authenticated shell views), [static job](https://github.com/duhrrom11/toolya/actions/runs/45652075305/job/139338993859) (409/409), [strict gate](https://github.com/duhrrom11/toolya/actions/runs/45652075205/job/139338947704) (failed). All 16 workflows and 21 jobs for 7c71468e inspected: 15 workflows and 20 jobs passed. Strict gate remains blocked by 34 partial tool pages, 33 German-message source files for review and 16 English noindex pages.
+
+Baseline CI: [quality job](https://github.com/duhrrom11/toolya/actions/runs/45650961648/job/139335002727), [static job](https://github.com/duhrrom11/toolya/actions/runs/45650961554/job/139335002663), [browser](https://github.com/duhrrom11/toolya/actions/runs/45650961613), [strict gate](https://github.com/duhrrom11/toolya/actions/runs/45650961748/job/139335002507). Both quality and static jobs logged 409/409 passing tests (including tests 105 and 106). Across 16 PR workflows, 20 of 21 jobs passed; strict gate failed. Inventory: 171 files, 249 candidate lines; CSV 8, ICS 17, JSON 92, PDF 26, QR 54, print 8, download 54. Categories overlap; API JSON and QR display are not necessarily exports.
 
 | Function | Evidence / remaining work |
 | --- | --- |
@@ -12,9 +14,9 @@ Source CI: [quality job](https://github.com/duhrrom11/toolya/actions/runs/456509
 | Car, budget, parking, housemates, pet, loans, plants PDF | Existing dependency retry tests; full per-report content and data invariance still require review. |
 | Estate key print and encrypted backup | Existing isolated security and browser tests; no production writes. |
 | Wishes gift-task report and dashboard backup JSON/print | Source identified; full actual bilingual download/print and no-write evidence still required. |
-| Wishes annual review JSON | Reachable gift-analytics.html export; current-account guard and bilingual isolated actual-download regression implemented (4a7d9187, 7c71468e); CI evidence pending. Separate from legacy own-wishes export in app.mjs, whose active HTML entrypoint is not verified. |
+| Wishes annual review JSON | Reachable gift-analytics.html export; current-account guard and bilingual isolated actual-download regression implemented (4a7d9187, 7c71468e); Passed in browser test 236/236 at 7c71468e (see latest browser job). Separate from legacy own-wishes export in app.mjs, whose active HTML entrypoint is not verified. |
 | Car, pet and loans ICS | Existing browser coverage; shared calendar byte folding, escaping and stable fields regression passed (test 106 in both jobs). |
-| Budget warranty ICS | Bilingual actual-download regression added in 790c723b; date/alarm, private fields and no-write assertions await CI. No workflow runs for that SHA were returned at the verification snapshot. |
+| Budget warranty ICS | Bilingual actual-download regression added in 790c723b; date/alarm, private fields and no-write assertions passed in browser test 235/236 at 7c71468e (see latest browser job). |
 | Shared backups and QR | Review remaining candidates by actual handler; do not count API JSON or display-only QR as exports. |
 
 The inventory now includes ICS explicitly. No strict release waiver, noindex change or production test data.
