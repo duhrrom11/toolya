@@ -2429,9 +2429,9 @@
             const qrContainer = document.getElementById('wlanQrcode'); qrContainer.innerHTML = "";
             // Ask for the actual credentials; never mistake the infoboard's free-text
             // Wi-Fi description for a password or transmit credentials to a QR service.
-            const ssid = prompt(window.__toolyaUILocale === 'en' ? 'Wi-Fi network name (SSID):' : 'WLAN-Name (SSID):', '')?.trim();
+            const ssid = prompt('WLAN-Name (SSID):', '')?.trim();
             if (!ssid) { qrContainer.textContent = window.__toolyaUILocale === 'en' ? 'No Wi-Fi network name provided.' : 'Kein WLAN-Name angegeben.'; return; }
-            const password = prompt(window.__toolyaUILocale === 'en' ? 'Wi-Fi password (not saved):' : 'WLAN-Passwort (wird nicht gespeichert):');
+            const password = prompt('WLAN-Passwort (wird nicht gespeichert):');
             if (password === null) { qrContainer.textContent = window.__toolyaUILocale === 'en' ? 'QR code creation cancelled.' : 'QR-Erstellung abgebrochen.'; return; }
             const escapeWifi = value => String(value).replace(/([\\;,:"])/g, '\\$1');
             const wifiString = 'WIFI:T:WPA;S:' + escapeWifi(ssid) + ';P:' + escapeWifi(password) + ';;';
