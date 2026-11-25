@@ -1913,7 +1913,7 @@ async function toolyaCloudBoot(tool) {
         /* --- Export & Import --- */
         function steuerCsvFeld(value) {
             const text = String(value ?? '');
-            const safe = /^\s*[=+\-@]/.test(text) ? "'" + text : text;
+            const safe = /^(?:[\t\r\n]|[\s\uFEFF]*[=+\-@＝＋－＠])/.test(text) ? "'" + text : text;
             return '"' + safe.replace(/"/g, '""') + '"';
         }
 
@@ -1940,13 +1940,13 @@ async function toolyaCloudBoot(tool) {
                 return aDate < bDate ? -1 : aDate > bDate ? 1 : 0;
             });
             for (const r of data) {
-                const price = Number(r.price);
+                const price = r.price == null || String(r.price).trim() === '' ? NaN : Number(r.price);
                 const fields = [r.date, r.entryType, r.title, r.store, r.category,
                     Number.isFinite(price) ? price.toFixed(2) : '',
                     r.paymentMethod, r.isFixkosten === true ? (english ? 'Yes' : 'Ja') : (english ? 'No' : 'Nein'),
                     r.isTax === true ? (english ? 'Yes' : 'Ja') : (english ? 'No' : 'Nein'), r.warrantyMonths, r.returnDays,
                     r.lifespan, r.sn, r.location, r.note];
-                rows.push(fields.map(steuerCsvFeld).join(';'));
+                rows.push(fields.map((value,index) => index === 5 && value !== '' ? '"' + value + '"' : steuerCsvFeld(value)).join(';'));
             }
             const csv = '\uFEFF' + rows.join('\r\n') + '\r\n';
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1964,13 +1964,13 @@ async function toolyaCloudBoot(tool) {
             if (data.length === 0) return alert("Keine steuerrelevanten Buchungen gefunden!");
             const rows = [(english ? ["Date", "Type", "Title", "Merchant", "Category", "Price_EUR", "Payment_method", "Serial_number", "Note"] : ["Datum", "Typ", "Titel", "Haendler", "Kategorie", "Preis_EUR", "Zahlungsart", "Seriennummer", "Notiz"]).join(';')];
             for (const r of data) {
-                const price = Number(r.price);
+                const price = r.price == null || String(r.price).trim() === '' ? NaN : Number(r.price);
                 const fields = [
                     r.date, r.entryType, r.title, r.store, r.category,
                     Number.isFinite(price) ? price.toFixed(2) : '',
                     r.paymentMethod, r.sn, r.note
                 ];
-                rows.push(fields.map(steuerCsvFeld).join(';'));
+                rows.push(fields.map((value,index) => index === 5 && value !== '' ? '"' + value + '"' : steuerCsvFeld(value)).join(';'));
             }
             // Stable chronological order in the export; saved bookings remain untouched.
             const header = rows.shift();

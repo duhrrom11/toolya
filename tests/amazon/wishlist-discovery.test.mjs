@@ -16,3 +16,5 @@ test('Amazon share-link marker is included in discovery without expanding provid
  assert.equal(shared?.url,'https://www.amazon.de/hz/wishlist/ls/ABC123?tag=duhrrom-21');
  assert.equal(canonicalList('https://example.org/hz/wishlist/ls/ABC123?ref_=wl_share'),null);
 });
+
+test('CSV shields whitespace-prefixed and full-width formulas, preserves ordinary text',()=>{const names=['  =1+1','\tplain','\nplain','\rplain','＋1','＠SUM(1)',' ordinary text','A;B "C"'];const back=parseCsv(csv(names.map(name=>({name}))));assert.deepEqual(back.map(r=>r.name),names.map((name,i)=>i<6?"'"+name:name));});
