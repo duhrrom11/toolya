@@ -3627,3 +3627,42 @@ test('Wishes gift task report: bilingual JSON download, cancellation, print and 
  expect(await page.evaluate(()=>window.__taskReportMock.events)).toEqual([event]);
  expect(await page.evaluate(()=>window.__taskReportMock.writes)).toEqual([]);
 });
+
+
+test('Dashboard linked global backup: DE/EN actual JSON downloads exclude session and unknown keys',async({page})=>{
+ const {readFile}=require('node:fs/promises');
+ await isolated(page,false);
+ const fixture='["Private Öl & Pflege"]';
+ let first;
+ for(const lang of ['de','en']){
+  await page.goto(origin+(lang==='en'?'/en/index.html':'/index.html'));
+  await page.waitForFunction(()=>window.toolyaHomeReady===true);
+  await page.evaluate(value=>{
+   localStorage.setItem('hub_favorites',value);
+   localStorage.setItem('sb-fixture-auth-token','private-session-marker');
+   localStorage.setItem('unrelated-fixture','private-unknown-marker');
+  },fixture);
+  const before=await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
+  const cancelled=[];const listener=d=>cancelled.push(d);page.on('download',listener);
+  page.once('dialog',d=>d.dismiss());
+  await page.evaluate(()=>window.exportGlobalBackup(false));
+  expect(cancelled).toEqual([]);page.off('download',listener);
+  page.once('dialog',d=>d.accept());
+  const pending=page.waitForEvent('download');
+  await page.evaluate(()=>window.exportGlobalBackup(false));
+  const download=await pending;
+  expect(download.suggestedFilename()).toMatch(/^helferlein-backup-\d{4}-\d{2}-\d{2}\.json$/);
+  const payload=JSON.parse(await readFile(await download.path(),'utf8'));
+  expect(payload.app).toBe('Toolya');
+  expect(payload.version).toBe('2.0');
+  expect(payload.localStorage.hub_favorites).toBe(fixture);
+  expect(payload.tools.hub).toContain('hub_favorites');
+  expect(JSON.stringify(payload)).not.toContain('private-session-marker');
+  expect(JSON.stringify(payload)).not.toContain('private-unknown-marker');
+  expect(Number.isFinite(Date.parse(payload.created))).toBe(true);
+  delete payload.created;
+  if(first)expect(payload.localStorage.hub_favorites).toBe(first.localStorage.hub_favorites);else first=payload;
+  expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)))).toEqual(before);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+ }
+});
