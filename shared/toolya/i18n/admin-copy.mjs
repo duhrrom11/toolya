@@ -1,5 +1,11 @@
 /* Administrator interface translations. No role or publishing logic changes. */
 export const ADMIN_COPY=Object.freeze({
+"Gezählt werden ausschließlich erfasste":"Only recorded",
+"-Ereignisse nach Analytics-Einwilligung. Voraussetzung: GA4-Ereignisdimension":"events after analytics consent are counted. The GA4 event dimension",
+"ist registriert.":"must be registered.",
+"Benötigt:":"Required:",
+". E-Mail-Adressen bleiben ausschließlich im Adminbereich.":". Email addresses remain exclusively in the admin area.",
+". Gefundene Einträge allein sind noch nicht öffentlich. Unpassende oder doppelte Funde kannst du direkt am Eintrag ausblenden; sie erscheinen danach nur noch im Filter „Ausgeblendet“ und lassen sich dort wieder anzeigen.":". Discovered entries are not public yet. Hide unsuitable or duplicate results directly on the entry; they then appear only under the Hidden filter, where they can be restored.",
  "Anmeldung konnte nicht geladen werden.":"Could not load sign-in.",
  "Bitte zuerst im Toolya-Dashboard anmelden.":"Sign in to the Toolya dashboard first.",
  "Diese öffentliche Wunschliste wirklich zurücknehmen? Änderungen am Eintrag werden aus Sicherheitsgründen nicht überschrieben.":"Withdraw this public wish list? For security reasons, changes to the entry will not be overwritten.",
