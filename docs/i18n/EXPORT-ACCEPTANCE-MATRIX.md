@@ -11,9 +11,10 @@ Source CI: [quality job](https://github.com/duhrrom11/toolya/actions/runs/456509
 | Meter handover/history PDF | Existing isolated browser tests verify labels and unchanged readings. |
 | Car, budget, parking, housemates, pet, loans, plants PDF | Existing dependency retry tests; full per-report content and data invariance still require review. |
 | Estate key print and encrypted backup | Existing isolated security and browser tests; no production writes. |
-| Wishes gift-task report, year review and dashboard backup JSON/print | Source identified; full actual bilingual download/print and no-write evidence still required. |
+| Wishes gift-task report and dashboard backup JSON/print | Source identified; full actual bilingual download/print and no-write evidence still required. |
+| Wishes annual review JSON | Reachable gift-analytics.html export; current-account guard and bilingual isolated actual-download regression implemented (4a7d9187, 7c71468e); CI evidence pending. Separate from legacy own-wishes export in app.mjs, whose active HTML entrypoint is not verified. |
 | Car, pet and loans ICS | Existing browser coverage; shared calendar byte folding, escaping and stable fields regression passed (test 106 in both jobs). |
-| Budget warranty ICS | Source identified; date/alarm semantics and bilingual actual download still require review. |
+| Budget warranty ICS | Bilingual actual-download regression added in 790c723b; date/alarm, private fields and no-write assertions await CI. No workflow runs for that SHA were returned at the verification snapshot. |
 | Shared backups and QR | Review remaining candidates by actual handler; do not count API JSON or display-only QR as exports. |
 
 The inventory now includes ICS explicitly. No strict release waiver, noindex change or production test data.
