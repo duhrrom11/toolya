@@ -3928,3 +3928,63 @@ for(const spec of pdfReportCases)test(spec.tool+' PDF DE/EN: report content and 
   expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
  }
 });
+
+
+const qrCases=[
+ {tool:'budget',fixture:{entries:[{id:82,title:'Privates Gerät Öl',store:'Privater Laden',sn:'SN-82',entryType:'ausgabe',date:'2028-01-31',price:42,category:'Lebensmittel',warrantyMonths:1,photos:[]}],budgets:{},goals:[]},payload:'GERÄT: Privates Gerät Öl\nKAUFDATUM: 2028-01-31\nHÄNDLER: Privater Laden\nSERIENNR: SN-82',size:120},
+ {tool:'loans',fixture:{contacts:[],inventory:[],items:[{id:1,title:'Privates Werkzeug Öl',person:'Private Person',date:'2026-11-17',returnDate:'2026-12-17',status:'active',deposit:42}]},payload:'Gegenstand: Privates Werkzeug Öl | Verliehen an: Private Person',size:180},
+ {tool:'plants',fixture:{plants:[{id:2,name:'Private Pflanze Öl',species:'Tomate',location:'Privates Zimmer',light:'half',potSize:15,interval:7,lastWatered:'2026-11-17',diary:[],harvestLog:[],galleryPhotos:[]}],monthWaterLiters:0,totalHarvestGrams:0,inventory:[],seeds:[],beetSlots:Array(16).fill(null),cisternMax:500,cisternCurrent:400},payload:'Pflanze: Private Pflanze Öl | Gießen: alle 7T',size:160},
+ {tool:'housemates',fixture:{__wg:{id:'00000000-0000-4000-8000-000000000109',updated_at:'2026-11-17T00:00:00Z',payload:{flatmates:[],data:[],notes:[],events:[],inventory:[],diets:{},cleaning:[],shopping:[],contracts:[],budgets:{},goals:[],cooking:[],infoboard:{wifi:'Nicht als Passwort verwenden'}}}},payload:'WIFI:T:WPA;S:Privat\\;Netz;P:Test\\:Pass\\,wort\\\\42;;',size:140}
+];
+for(const spec of qrCases)test(spec.tool+' QR DE/EN: stable private payload, cancellation and no writes',async({page})=>{
+ const outbound=await isolated(page,true,true,spec.fixture);
+ const wg=spec.tool==='housemates';
+ await page.goto(origin+'/tools/'+spec.tool+'/index.html?lang=en'+(wg?'&id=secure_00000000-0000-4000-8000-000000000109':''));
+ await expect.poll(()=>page.evaluate(tool=>{
+  if(tool==='budget')return typeof toolyaCloudReady!=='undefined'&&!!toolyaCloudReady;
+  if(tool==='loans')return typeof loansCloudReady!=='undefined'&&!!loansCloudReady;
+  if(tool==='plants')return typeof plantsCloudReady!=='undefined'&&!!plantsCloudReady;
+  return typeof secureWgRevision!=='undefined'&&!!secureWgRevision;
+ },spec.tool)).toBe(true);
+ const before=await page.evaluate(()=>JSON.stringify(getData()));
+ const storage=()=>page.evaluate(()=>Object.fromEntries(Object.entries(localStorage).filter(([k])=>k!=='toolya-locale-v1')));
+ await page.evaluate(()=>{
+  window.__qrCaptured=[];window.__prints=0;
+  window.QRCode=class{constructor(el,options){window.__qrCaptured.push({...options});el.textContent='QR fixture'}};
+  window.print=()=>window.__prints++;
+ });
+ for(const lang of ['de','en']){
+  const choice=page.locator('[data-tool-locale="'+lang+'"]');
+  await choice.click();await expect(choice).toHaveAttribute('aria-pressed','true');
+  const stored=await storage();
+  await page.evaluate(async tool=>{
+   if(tool==='budget')return openQRModal(82);
+   if(tool==='loans'){const item=getData().items[0];return showQrCode(item.title,item.person)}
+   if(tool==='plants'){const p=getData().plants[0];return showQrCode(p.name,p.species,p.location,p.interval)}
+   window.prompt=q=>q.includes('SSID')?'Privat;Netz':'Test:Pass,wort\\42';
+   return openWLANQRModal();
+  },spec.tool);
+  const modal=page.locator(wg?'#wlanQrModal':'#qrModal');
+  await expect(modal).toBeVisible();
+  expect(await page.evaluate(()=>window.__qrCaptured.at(-1))).toMatchObject({text:spec.payload,width:spec.size,height:spec.size});
+  if(spec.tool==='budget'){
+   await expect(page.locator('#stickerTitle')).toHaveText('Privates Gerät Öl');
+   await expect(page.locator('#stickerWarranty')).toHaveText(lang==='en'?'Warranty until: 29/02/2028':'Garantie bis: 29.2.2028');
+   await modal.locator('button[onclick="window.print()"]').click();
+   expect(await page.evaluate(()=>window.__prints)).toBe(lang==='de'?1:2);
+  }
+  await page.evaluate(tool=>tool==='budget'?closeQRModal():tool==='housemates'?closeWLANQRModal():closeQrModal(),spec.tool);
+  await expect(modal).toBeHidden();
+  if(wg){
+   const count=await page.evaluate(()=>window.__qrCaptured.length);
+   await page.evaluate(()=>{window.prompt=q=>q.includes('SSID')?'Privat;Netz':null;return openWLANQRModal()});
+   await expect(page.locator('#wlanQrcode')).toHaveText(lang==='en'?'QR code creation cancelled.':'QR-Erstellung abgebrochen.');
+   expect(await page.evaluate(()=>window.__qrCaptured.length)).toBe(count);
+   await page.evaluate(()=>closeWLANQRModal());
+  }
+  expect(await page.evaluate(()=>JSON.stringify(getData()))).toBe(before);
+  expect(await storage()).toEqual(stored);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+ }
+ expect(outbound.every(url=>!url.includes('Privat')&&!url.includes('Pass%'))).toBe(true);
+});
