@@ -20,7 +20,7 @@ export function unifyToolSettings(modal) {
    (node.matches?.('button') && /^(schließen|schliessen|close|✕|×)$/i.test(node.textContent.trim()));
  const candidates=children.filter(node=>
    !isAppearance(node)&&!isSupport(node)&&!isHeader(node)&&!isFooter(node) &&
-   !node.matches?.('script,style') && !node.classList?.contains('toolya-settings-accordion'));
+   !node.matches?.('script,style,details.ty-settings-group') && !node.classList?.contains('toolya-settings-accordion'));
  if(!candidates.length){surface.dataset.toolyaAccordion='1';return false}
  const contentText=node=>(node.querySelector?.('h2,h3,h4,legend,summary')?.textContent||node.textContent||'').slice(0,180).toLowerCase();
  function identify(node){

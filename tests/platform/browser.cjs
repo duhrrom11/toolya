@@ -343,9 +343,9 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  await enMascots.evaluate(e=>{e.open=true});
  assert.equal(await enMascots.locator('.toolya-preferences').count(),1);
  await page.locator('#cancelSettingsBtn').click();
- await page.goto(origin+'/tools/wishes/');assert(['/', '/index.html', '/tools/wishes/', '/tools/wishes/index.html', '/tools/wishes/public.html'].includes(new URL(page.url()).pathname),'wishlist entry stays within approved routes');await page.goto(origin+'/tools/wishes/public.html');await page.locator('#search').waitFor();await verifyRealFormClipboard('public wishlist','#search','#email','example@example.invalid');
+ await page.goto(origin+'/tools/wishes/');assert(['/', '/index.html', '/tools/wishes/', '/tools/wishes/index.html', '/tools/wishes/public.html'].includes(new URL(page.url()).pathname),'wishlist entry stays within approved routes');await page.goto(origin+'/tools/wishes/public.html');await page.locator('#search').waitFor();await page.locator('#settingsBtn').click();await page.locator('#loginEmail').waitFor({state:'visible'});await verifyRealFormClipboard('public wishlist account','#loginEmail','#loginPassword','example@example.invalid');await page.locator('#cancelSettingsBtn').click();
  assert.equal(await page.locator('#homeNewWish,#homeNewList,.wishes-navigation').count(),0,'legacy private wishlist controls not shown');
- assert.equal(await page.locator('#search,#email,#password').count(),3,'public wishlist controls present');
+ assert.equal(await page.locator('#search,#loginEmail,#loginPassword').count(),3,'public wishlist controls present');
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'public wishlist mobile overflow');
  await page.screenshot({path:'test-results/wishes-amazon-public-mobile.png',fullPage:true});
  await page.goto(origin+'/tools/wishes/');await page.waitForFunction(()=>window.toolyaBuddy);

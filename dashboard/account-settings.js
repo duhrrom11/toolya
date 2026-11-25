@@ -6,9 +6,14 @@ const URL='https://yheogmeaosuigyaxkwth.supabase.co';
 const KEY='sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
 const $=id=>document.getElementById(id);
 let client;
-try{client=window.supabase?.createClient(URL,KEY)}catch(error){console.warn('Toolya Auth initialization failed',error)}
+try{const config=window.HELPERLEIN_SUPABASE_CONFIG;
+ const url=config?.url||URL,key=config?.publishableKey||KEY;
+ if(config&&!(config.mode==='production'&&url===URL&&key===KEY)&&!(config.mode==='preview'&&url!==URL&&key!==KEY&&/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(url)&&key.startsWith('sb_publishable_')))throw new Error('Invalid account configuration');
+ client=window.supabase?.createClient(url,key)}catch(error){console.warn('Toolya Auth initialization failed',error)}
 // Share the same GoTrue client with Dashboard cloud storage to avoid competing auth instances.
 window.toolyaDashboardAuthClient=client;
+window.toolyaAccountClient=client;
+let currentAccount=null;
 let authRequest=0,recoveryActive=false,recoverySaving=false,lastFocus=null,initialAccountTimer;
 async function withAccountDeadline(operation){
  let timer;
@@ -28,13 +33,17 @@ function accountErrorMessage(error,fallback){
 }
 function renderUser(user,error){
  clearTimeout(initialAccountTimer);
+ if(user?.is_anonymous)user=null;
+ currentAccount=user||null;
+ window.toolyaAccountState={user:currentAccount,error:Boolean(error),recovery:recoveryActive};
+ if(typeof CustomEvent==='function')document.dispatchEvent?.(new CustomEvent('toolya:account-state',{detail:window.toolyaAccountState}));
  const button=$('userInfo');
- button.classList.toggle('b3-auth-signed-in',!!user);
- button.classList.toggle('b3-auth-signed-out',!user);
- button.textContent=user?'Angemeldet':error?'Status unklar':'Nicht angemeldet';
+ if(button)button.classList.toggle('b3-auth-signed-in',!!user);
+ if(button)button.classList.toggle('b3-auth-signed-out',!user);
+ if(button)button.textContent=user?'Angemeldet':error?'Status unklar':'Nicht angemeldet';
  $('signedOutControls').hidden=!!user||recoveryActive;
  $('logoutUser').hidden=!user||recoveryActive;
- button.setAttribute('aria-label',user?'Angemeldet – Kontoeinstellungen öffnen':'Anmelden oder registrieren');
+ if(button)button.setAttribute('aria-label',user?'Angemeldet – Kontoeinstellungen öffnen':'Anmelden oder registrieren');
  $('cloudStatus').textContent=user?'✅ Angemeldet':error?'Anmeldestatus gerade nicht verfügbar':'Nicht angemeldet';
 }
 async function refresh(token,request=++authRequest){
@@ -111,7 +120,7 @@ async function reset(){
  if(!email||!input.checkValidity()){message('Bitte zuerst eine gültige E-Mail-Adresse eingeben.');input.focus();return}
  try{
   try{
-   const active=window.__toolyaDashboardLocale||new URLSearchParams(location.search).get('lang')||localStorage.getItem('toolya-locale-v1');
+   const active=window.__toolyaWishesLocale||window.__toolyaDashboardLocale||new URLSearchParams(location.search).get('lang')||localStorage.getItem('toolya-locale-v1');
    localStorage.setItem('toolya-recovery-locale-v1',active==='en'?'en':'de');
   }catch{}
   const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:'https://toolya.app/index.html'});
@@ -148,7 +157,7 @@ async function saveRecovery(){
  }
 }
 $('settingsBtn').addEventListener('click',openSettings);
-$('userInfo').addEventListener('click',openSettings);
+$('userInfo')?.addEventListener('click',openSettings);
 $('closeSettingsBtn').addEventListener('click',closeSettings);
 $('cancelSettingsBtn').addEventListener('click',closeSettings);
 $('settingsModal').addEventListener('click',e=>{if(e.target===$('settingsModal'))closeSettings()});
@@ -168,8 +177,9 @@ if(params.has('auth')||params.has('settings')){
 initialAccountTimer=setTimeout(()=>{++authRequest;renderUser(null,true)},10000);
  if(client){
  client.auth.onAuthStateChange((event,session)=>{
-  if(event==='PASSWORD_RECOVERY')showRecovery();
+  if(event==='PASSWORD_RECOVERY'){++authRequest;showRecovery();renderUser(null);return}
   if(!session){++authRequest;renderUser(null);return}
+  if(recoveryActive)return;
   clearTimeout(initialAccountTimer);
   const request=++authRequest;
   setTimeout(()=>refresh(session.access_token,request),0);

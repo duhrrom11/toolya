@@ -16,9 +16,18 @@ const preview = valid && configured.mode === 'preview' &&
 if (!production && !preview) {
   throw new Error('Supabase-Konfiguration gesperrt: expliziter Modus und passende Projektkonfiguration erforderlich.');
 }
-const db = window.supabase.createClient(configured.url, configured.publishableKey);
+const db = window.toolyaAccountClient;
+if(!db)throw new Error('Toolya-Konto konnte nicht initialisiert werden.');
 import {amazonListUrl} from './public-profile-model.mjs';
-import {sourceFavicon} from '../../supabase/functions/wishlist-discovery/model.mjs';
+// Browser-only fallback: the public directory must not depend on a deployed Edge Function source file.
+function sourceFavicon(value){
+ try{const u=new URL(value),h=u.hostname.toLowerCase();if(u.protocol!=='https:'||u.username||u.password||u.port||h.includes(':')||/^\d+(\.\d+){3}$/.test(h)||!h.includes('.')||/\.(local|internal|localhost|test|invalid)$/.test(h))return '';return u.origin+'/favicon.ico'}catch{return ''}
+}
+async function deadline(operation,ms=10000){
+ let timer;
+ try{return await Promise.race([Promise.resolve().then(operation),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Die Verbindung dauert zu lange. Bitte erneut versuchen.')),ms)})])}
+ finally{clearTimeout(timer)}
+}
 const $=id=>document.getElementById(id), text=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value??'';if(cls)e.className=cls;return e};
 const status=(id,value)=>$(id).textContent=value;
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -122,14 +131,16 @@ carouselToggle.onclick=()=>{
  updateCarouselMotion();
  carouselViewport.scrollLeft=carouselPaused?Math.max(0,offset):0;
 };
-new ResizeObserver(updateCarouselMotion).observe(carouselViewport);
-reducedMotion.addEventListener('change',updateCarouselMotion);
+if(typeof ResizeObserver==='function')new ResizeObserver(updateCarouselMotion).observe(carouselViewport);
+else window.addEventListener('resize',updateCarouselMotion);
+if(typeof reducedMotion.addEventListener==='function')reducedMotion.addEventListener('change',updateCarouselMotion);
+else reducedMotion.addListener?.(updateCarouselMotion);
 async function refreshCloud(currentGeneration){
  const track=carouselTrack;
  track.replaceChildren(text('p','Öffentliche Profile werden geladen …','wish-showcase-loading'));
  updateCarouselMotion();
  let response;
- try{response=await db.from('wishlist_directory').select('user_id,display_name,city,country,bio,logo_url,lists').order('updated_at',{ascending:false}).limit(80)}catch{response={error:true}}
+ try{response=await deadline(()=>db.from('wishlist_directory').select('user_id,display_name,city,country,bio,logo_url,lists').order('updated_at',{ascending:false}).limit(80))}catch{response={error:true}}
  if(currentGeneration!==generation)return;
  if(response.error){track.replaceChildren(text('p','Die veröffentlichten Profile konnten gerade nicht geladen werden. Verwende die Suche oben.','wish-showcase-loading'));return}
  const profiles=(response.data||[]).filter(p=>p&&p.user_id&&p.display_name&&Array.isArray(p.lists)&&p.lists.some(l=>l.url));
@@ -229,7 +240,8 @@ function payload(){
  if(lists.some(l=>!l.url||!l.name))throw new Error('Bitte gültige Amazon-Wunschlisten-Links und Listennamen eingeben.');
  return {...identity,city:$('city').value.trim(),bio:own?.bio||'',interests:own?.interests||[],lists};
 }
-async function loadProfile(){const g=++authGeneration;const r=await db.auth.getUser();if(g!==authGeneration)return;user=!r.error&&!r.data?.user?.is_anonymous?r.data?.user:null;syncSettingsAccount();$('auth').hidden=!!user;$('profileForm').hidden=!user;$('logoutPublic').hidden=!user;own=null;$('listFields').replaceChildren();if(!user){listField();status('profileStatus','');return}const result=await db.from('wishlist_public_profiles').select('*').eq('user_id',user.id).maybeSingle();if(g!==authGeneration)return;if(result.error){status('profileStatus','Dein Profil konnte nicht geladen werden. Bitte lade die Seite erneut.');$('profileForm').hidden=true;return}own=result.data;
+async function loadProfile(token,verifiedUser){const g=++authGeneration;let r;try{r=verifiedUser!==undefined?{data:{user:verifiedUser}}:await deadline(()=>db.auth.getUser(token))}catch(error){r={error}}if(g!==authGeneration)return;user=!r.error&&!r.data?.user?.is_anonymous?r.data?.user:null;$('auth').hidden=!!user;$('profileForm').hidden=true;own=null;$('listFields').replaceChildren();if(!user){listField();status('profileStatus',r.error&&r.error.name!=='AuthSessionMissingError'?'Anmeldestatus gerade nicht verfügbar. Bitte erneut anmelden.':'');return}let result;try{result=await deadline(()=>db.from('wishlist_public_profiles').select('*').eq('user_id',user.id).maybeSingle())}catch(error){result={error}}if(g!==authGeneration)return;if(result.error){status('profileStatus','Dein Profil konnte nicht geladen werden. Bitte lade die Seite erneut.');$('profileForm').hidden=true;return}own=result.data;
+ $('profileForm').hidden=false;
  $('firstName').value=own?.first_name||'';
  $('lastName').value=own?.last_name||'';
  $('organizationName').value=own?.organization_name||'';
@@ -267,81 +279,9 @@ $('profileForm').onsubmit=async e=>{
  await Promise.allSettled([filters(),search(),detail()]);
 };
 $('deleteProfile').onclick=async()=>{if(!user||!confirm('Dein öffentliches Wunschprofil mit allen verlinkten Listen löschen? Die Original-Listen bei Amazon bleiben erhalten.'))return;const b=$('deleteProfile');b.disabled=true;try{const writer=user.id;const r=await guardedWishlistWrite(db,writer,()=>db.from('wishlist_public_profiles').delete().eq('user_id',writer).select('user_id'));if(r.error||r.data?.length!==1)throw new Error('Das Profil konnte nicht gelöscht werden.');await loadProfile();status('profileStatus','Dein öffentliches Profil wurde gelöscht.');$('profileDetail').replaceChildren();await filters();await search();await detail()}catch(e){status('profileStatus',e.message)}finally{b.disabled=false}};
-function syncSettingsAccount(){
- const signedIn=Boolean(user);
- $('settingsAccountStatus').textContent=signedIn?'Angemeldet als '+(user.email||'Toolya-Nutzer'):'Nicht angemeldet. Melde dich mit deinem Toolya-Konto an.';
- $('settingsAuthFields').hidden=signedIn;
- $('settingsLogin').hidden=signedIn;
- $('settingsSignup').hidden=signedIn;
- $('settingsLogout').hidden=!signedIn;
-}
-async function authenticate(signup,source='profile'){
- const modal=source==='settings';
- const emailField=$(modal?'settingsEmail':'email'),passwordField=$(modal?'settingsPassword':'password');
- const feedback=$(modal?'settingsAuthMessage':'profileStatus');
- const controls=modal?[$('settingsLogin'),$('settingsSignup')]:[$('login'),$('signup')];
- for(const button of controls)button.disabled=true;
- try{
-  const email=emailField.value.trim(),password=passwordField.value;
-  if(!email||!password)throw new Error('Bitte E-Mail und Passwort eingeben.');
-  const r=signup
-   ?await db.auth.signUp({email,password,options:{emailRedirectTo:new URL('./public.html#profile',location.href).href}})
-   :await db.auth.signInWithPassword({email,password});
-  if(r.error)throw r.error;
-  await loadProfile();
-  feedback.textContent=signup&&!r.data?.session?'Bitte bestätige deine E-Mail-Adresse, bevor du dich anmeldest.':'Du bist angemeldet.';
- }catch(e){feedback.textContent=e.message||'Anmeldung fehlgeschlagen.'}
- finally{passwordField.value='';for(const button of controls)button.disabled=false}
-}
-async function signOut(){
- const r=await db.auth.signOut();
- if(r.error){
-  $('profileStatus').textContent='Abmelden fehlgeschlagen.';
-  $('settingsAuthMessage').textContent=r.error.message||'Abmelden fehlgeschlagen.';
- }else{
-  await loadProfile();
-  $('settingsAuthMessage').textContent='Du bist abgemeldet.';
- }
-}
-$('login').onclick=()=>authenticate(false);
-$('signup').onclick=()=>authenticate(true);
-$('logoutPublic').onclick=signOut;
-$('settingsLogin').onclick=()=>authenticate(false,'settings');
-$('settingsSignup').onclick=()=>authenticate(true,'settings');
-$('settingsLogout').onclick=signOut;
-$('settingsForgotPassword').onclick=async()=>{
- const email=$('settingsEmail').value.trim(),message=$('settingsAuthMessage');
- if(!email){message.textContent='Bitte gib zuerst deine E-Mail-Adresse ein.';$('settingsEmail').focus();return}
- const button=$('settingsForgotPassword');button.disabled=true;
- try{
-  const r=await db.auth.resetPasswordForEmail(email,{redirectTo:new URL('./public.html#profile',location.href).href});
-  if(r.error)throw r.error;
-  message.textContent='Falls für diese E-Mail-Adresse ein Konto existiert, erhältst du eine E-Mail zum Zurücksetzen des Passworts.';
- }catch(e){message.textContent=e.message||'Die Anfrage konnte nicht gesendet werden.'}
- finally{button.disabled=false}
-};
-$('settingsSaveNewPassword').onclick=async()=>{
- const password=$('settingsNewPassword').value,confirmation=$('settingsConfirmPassword').value;
- const message=$('settingsAuthMessage');
- if(password.length<8){message.textContent='Bitte ein Passwort mit mindestens acht Zeichen verwenden.';return}
- if(password!==confirmation){message.textContent='Die Passwörter stimmen nicht überein.';return}
- const button=$('settingsSaveNewPassword');button.disabled=true;
- try{
-  const r=await db.auth.updateUser({password});
-  if(r.error)throw r.error;
-  message.textContent='Dein neues Passwort wurde gespeichert.';
-  $('settingsRecoveryPanel').hidden=true;
-  $('settingsNewPassword').value='';$('settingsConfirmPassword').value='';
-  await loadProfile();
- }catch(e){message.textContent=e.message||'Das neue Passwort konnte nicht gespeichert werden.'}
- finally{button.disabled=false}
-};
-const settingsModal=$('settingsModal');
-const openSettings=()=>{syncSettingsAccount();settingsModal.showModal()};
-$('wishlistSettingsBtn').onclick=openSettings;
-$('closeSettingsBtn').onclick=() => settingsModal.close();
-$('cancelSettingsBtn').onclick=() => settingsModal.close();
-$('settingsToProfile').onclick=() => settingsModal.close();
+// The shared account controller owns all credentials and recovery actions.
+$('profileAccountOpen').onclick=()=>window.openSettings();
+$('settingsToProfile').onclick=()=>window.closeSettings();
 $('addList').onclick=()=>listField()?.querySelector('[name=name]').focus();$('previewProfile').onclick=()=>{try{const p=payload();if(!p)return;$('previewContent').replaceChildren(card(p,true,true));$('previewDialog').showModal()}catch(e){status('profileStatus',e.message)}};$('closePreview').onclick=()=>$('previewDialog').close();
 $('retrySearch').onclick=search;
 let debounce;
@@ -357,11 +297,16 @@ $('search').oninput=()=>{
 };
 $('submitSearch').onclick=()=>{page=0;search()};
 for(const id of['countryFilter','occasionFilter'])$(id).onchange=()=>{page=0;search()};$('resetFilters').onclick=()=>{$('search').value='';for(const id of['countryFilter','occasionFilter'])$(id).value='';page=0;search()};$('prevPage').onclick=()=>{page=Math.max(0,page-1);search()};$('nextPage').onclick=()=>{page++;search()};
-renderFavorites();db.auth.onAuthStateChange(event=>{
- if(event==='PASSWORD_RECOVERY'){
-  $('settingsRecoveryPanel').hidden=false;
-  if(!settingsModal.open)settingsModal.showModal();
-  $('settingsNewPassword').focus();
- }
- if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event))setTimeout(loadProfile,0);
-});window.addEventListener('storage',e=>{if(e.key===key){favorites=readFavorites();renderFavorites()}});await Promise.all([loadProfile(),filters(),search(),detail()]);
+renderFavorites();
+let observedAccountId;
+function applyAccountState(state){
+ const verified=state&&!state.error&&!state.recovery?state.user:null;
+ const id=verified?.id||null;
+ if(id===observedAccountId)return;
+ observedAccountId=id;
+ void loadProfile(undefined,verified||null);
+}
+document.addEventListener('toolya:account-state',event=>applyAccountState(event.detail));
+if(window.toolyaAccountState)applyAccountState(window.toolyaAccountState);
+else {$('profileForm').hidden=true;$('auth').hidden=false;}
+window.addEventListener('storage',e=>{if(e.key===key){favorites=readFavorites();renderFavorites()}});await Promise.allSettled([filters(),search(),detail()]);
