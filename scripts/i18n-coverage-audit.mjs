@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {parseHTML} from 'linkedom';
 import {reviewRuntimeLiteral} from './i18n-runtime-triage.mjs';
+import {attachRuntimeEvidence} from './i18n-runtime-evidence.mjs';
 
 const root=process.cwd();
 const ignored=new Set(['.git','node_modules','coverage','dist','_site']);
@@ -118,10 +119,16 @@ for(const f of scriptSources){
   // This is a source-only candidate. It might already be translated by an
   // exact runtime catalogue and is never treated as private user content.
   sightings.push({line,kind:m[0].slice(0,m[0].indexOf('(')>=0?m[0].indexOf('('):m[0].indexOf('=' )).trim(),
-   sample:text,...reviewRuntimeLiteral(f,m[2],m[0],content.slice(m.index+m[0].length,m.index+m[0].length+30))});
+   sample:text,literal:m[2],...reviewRuntimeLiteral(f,m[2],m[0],content.slice(m.index+m[0].length,m.index+m[0].length+30))});
  }
  if(examples.length)dynamic.push({file:f,total:examples.length,
   samples:[...new Set(examples)].slice(0,4),sightings});
+}
+// Only consume the report generated in this CI job; local invocations remain conservative.
+let verifiedRuntime=0;
+if(process.env.CI==='true'&&process.env.GITHUB_SHA&&process.argv.includes('--with-runtime-evidence')){
+ const report=JSON.parse(read('test-results/i18n-quality/ten-tool-shell-report.json'));
+ verifiedRuntime=attachRuntimeEvidence(dynamic,report,read);
 }
 const runtimeTriage={};
 for(const item of dynamic)for(const occurrence of item.sightings)runtimeTriage[occurrence.catalogueState]=(runtimeTriage[occurrence.catalogueState]||0)+1;
@@ -212,6 +219,7 @@ const auditJSON={
  releaseReady:false,
  languageEvidence,
  runtimeTriage,
+ verifiedRuntime,
  blockers,
  viewTasks,runtimeTasks,
  seoGate:{noindexRetained:true,englishPagesAwaitingIndexApproval:publicEnglish.filter(x=>x.noindex).map(x=>x.file)}

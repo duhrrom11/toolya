@@ -3263,7 +3263,8 @@ for(const fixture of [
  {tool:'meters',handler:'saveReading',fields:{meterName:'Private Löschen',meterNote:'Private Zählernotiz',meterDate:'',meterValue:'12'},de:'Bitte gültiges Ablesedatum und Zählerstand eingeben!',en:'Enter a valid reading date and meter value.'},
  {tool:'meters',handler:'saveTarifs',fields:{meterName:'Private Löschen',meterNote:'Private Tarifnotiz',tariffStromPriceHT:'0.29',tariffGasCalib:'0'},de:'Bitte gültige, nichtnegative Tarife und einen positiven Gasfaktor eingeben.',en:'Enter valid non-negative tariffs and a positive gas factor.'}
 ]){
- test('i18n runtime catalogue: '+fixture.handler+' validates in DE and EN without changing private data',async({page})=>{
+ test('i18n runtime catalogue: '+fixture.handler+' validates in DE and EN without changing private data',async({page},testInfo)=>{
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/'+fixture.tool+'/index.html',handler:fixture.handler,de:fixture.de,en:fixture.en,line:fixture.line||null})});
   await isolated(page,true);
   await page.goto(origin+'/tools/'+fixture.tool+'/index.html');
   await expect.poll(()=>page.evaluate(tool=>tool==='meters'?metersCloudReady&&!!metersCloudController?.ready:toolyaCloudReady&&!!toolyaCloudController?.ready,fixture.tool)).toBe(true);
@@ -3476,7 +3477,8 @@ for(const fixture of [
  {"tool":"budget","handler":"runOCR","fields":{"receiptTitle":"Private Löschen","receiptNote":"Private Notiz"},"de":"Bitte wähle zuerst ein Belegfoto aus!","en":"Select a receipt photo first.","line":1116},
  {"tool":"budget","handler":"saveReceipt","fields":{"receiptTitle":"Private Löschen","receiptDate":"2026-11-25","receiptPrice":"12.5","receiptWarranty":"-1","receiptReturnDays":"0","receiptLifespan":"5","receiptNote":"Private Notiz"},"de":"Bitte gültige Garantie-, Rückgabe- und Lebensdauerwerte angeben.","en":"Enter valid warranty, return period and useful-life values.","line":1204}
 ]){
- test('i18n runtime catalogue: '+fixture.tool+' '+fixture.handler+' line '+fixture.line+' preserves draft on validation in DE and EN',async({page})=>{
+ test('i18n runtime catalogue: '+fixture.tool+' '+fixture.handler+' line '+fixture.line+' preserves draft on validation in DE and EN',async({page},testInfo)=>{
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/'+fixture.tool+'/index.html',handler:fixture.handler,de:fixture.de,en:fixture.en,line:fixture.line||null})});
   await isolated(page,true);
   await page.goto(origin+'/tools/'+fixture.tool+'/index.html');
   const state=()=>page.evaluate(tool=>{

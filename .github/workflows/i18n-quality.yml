@@ -69,10 +69,15 @@ jobs:
         env:
           TOOLYA_CHROMIUM_PATH: /usr/bin/google-chrome
           PLAYWRIGHT_JSON_OUTPUT_FILE: test-results/i18n-quality/ten-tool-shell-report.json
-        run: npx playwright test --config=playwright.config.cjs --output=test-results/ten-tool-playwright --grep 'i18n ten-tool shell:' --reporter=json
+        run: npx playwright test --config=playwright.config.cjs --output=test-results/ten-tool-playwright --grep 'i18n ten-tool shell:|i18n runtime catalogue:' --reporter=json
       - name: Consolidate per-page acceptance evidence
         if: always()
-        run: node scripts/i18n-page-acceptance.mjs
+        run: |
+          node scripts/i18n-page-acceptance.mjs
+          if test -f test-results/i18n-quality/ten-tool-shell-report.json; then
+            node scripts/i18n-coverage-audit.mjs --with-runtime-evidence
+            cp i18n-coverage-report.json test-results/i18n-quality/runtime-coverage-report.json
+          fi
       - name: Upload translation audit evidence
         if: always()
         uses: actions/upload-artifact@v4
