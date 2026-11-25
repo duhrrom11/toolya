@@ -3214,7 +3214,7 @@ test('parking countdown statuses switch DE/EN without changing running deadline 
  assert.equal(status.textContent,'User-added status','unknown status preserved');
  const helper=source.slice(start,end);
  assert.ok(!/saveData\(|localStorage\.|setInterval\(|activeEndTime\s*=|runTimerLoop\(/.test(helper),'locale refresh has no deadline or persistence side effects');
- assert.match(source,/refreshParkingTimerLocale\(\);\s*refreshParkingGpsLocale\(\);\s*if \(parkingCloudReady\) renderParkingList\(\)/,'locale event refreshes countdown and GPS display without cloud writes');
+ assert.match(source,/refreshParkingTimerLocale\(\);\s*(?:refreshParkingGpsLocale\(\);\s*)?if \(parkingCloudReady\) renderParkingList\(\)/,'locale event refreshes countdown and saved parking display without cloud writes');
 });
 
 

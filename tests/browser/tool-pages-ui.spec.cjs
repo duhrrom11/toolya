@@ -3258,9 +3258,9 @@ for(const fixture of [
  test('i18n runtime catalogue: '+fixture.handler+' validates in DE and EN without changing private data',async({page})=>{
   await isolated(page,true);
   await page.goto(origin+'/tools/'+fixture.tool+'/index.html');
-  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  await expect.poll(()=>page.evaluate(tool=>tool==='meters'?metersCloudReady&&!!metersCloudController?.ready:toolyaCloudReady&&!!toolyaCloudController?.ready,fixture.tool)).toBe(true);
   await page.evaluate(fields=>{for(const [id,value] of Object.entries(fields)){const el=document.getElementById(id);if(!el)throw Error('Missing fixture input '+id);el.value=value;}},fixture.fields);
-  const snapshot=await page.evaluate(()=>JSON.stringify(toolyaCloudController.snapshot()));
+  const snapshot=await page.evaluate(tool=>JSON.stringify((tool==='meters'?metersCloudController:toolyaCloudController).snapshot()),fixture.tool);
   const writes=await page.evaluate(()=>window.__toolyaMock.writes.length);
   expect(writes).toBe(0);
   for(const lang of ['de','en','de']){
@@ -3270,7 +3270,7 @@ for(const fixture of [
    await expect(notice.locator('#hl-alert-message')).toHaveText(fixture[lang]);
    await notice.getByRole('button',{name:'OK'}).press('Enter');
    expect(await page.evaluate(ids=>Object.fromEntries(ids.map(id=>[id,document.getElementById(id).value])),Object.keys(fixture.fields))).toEqual(fixture.fields);
-   expect(await page.evaluate(()=>JSON.stringify(toolyaCloudController.snapshot()))).toBe(snapshot);
+   expect(await page.evaluate(tool=>JSON.stringify((tool==='meters'?metersCloudController:toolyaCloudController).snapshot()),fixture.tool)).toBe(snapshot);
    expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
   }
  });
