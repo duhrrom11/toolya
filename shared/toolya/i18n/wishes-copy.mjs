@@ -1,5 +1,7 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+"Layout bestätigt und dauerhaft gespeichert.": "Layout confirmed and saved permanently.",
+"Persönliche Layout-Vorlage gespeichert. Zum Anwenden oben auswählen.": "Personal layout template saved. Select it above to apply it.",
 "Kategorie wurde in einem anderen Tab geändert. Bitte Wunschdetails erneut öffnen und Änderung prüfen.": "The category was changed in another tab. Reopen the wish details and check the change.",
 "Zuletzt geöffnete Listen können nicht dauerhaft gespeichert werden.": "Recently opened lists cannot be saved permanently.",
 "Favoriten konnten nicht gespeichert werden. Vorhandene Browserdaten wurden nicht überschrieben.": "Favorites could not be saved. Existing browser data was not overwritten.",
