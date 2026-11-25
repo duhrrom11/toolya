@@ -192,6 +192,19 @@ async function run(){
        const status=page.locator('#status');
        assert.equal(await status.getAttribute('role'),'status');
        assert.equal(await status.getAttribute('aria-live'),'polite');
+       await page.waitForFunction(({en})=>document.getElementById('status')?.textContent===(en?'Your private occasions are up to date.':'Deine privaten Anlässe sind aktuell.'),{en});
+       // Verify the actual destructive-action prompt, always cancel before any write.
+       const pending=page.waitForEvent('dialog',{timeout:4000});
+       const click=page.locator('#events article button').last().click({timeout:4000});
+       const dialog=await pending;
+       const actual={type:dialog.type(),message:dialog.message()};
+       await dialog.dismiss();
+       await click;
+       assert.equal(actual.type,'confirm');
+       assert.equal(actual.message,en?'Permanently delete this occasion?':'Diesen Anlass dauerhaft löschen?');
+       assert.equal(await page.locator('#events article').count(),1);
+       assert.equal(await page.evaluate(()=>window.__toolyaAuthFixture.writes.length),0);
+
        await page.waitForFunction(({en})=>document.getElementById('formTitle')?.textContent===(en?'✏️ Edit occasion':'✏️ Anlass bearbeiten'),{en});
        assert.equal(await page.locator('#events h3').textContent(),'Anlass speichern · Meine private Person');
        assert.equal(await page.locator('#events article p').textContent(),'Änderungen speichern');
