@@ -18,7 +18,15 @@ if (!production && !preview) {
 }
 const db = window.supabase.createClient(configured.url, configured.publishableKey);
 import {amazonListUrl} from './public-profile-model.mjs';
-import {sourceFavicon} from '../../supabase/functions/wishlist-discovery/model.mjs';
+// Browser-only fallback: the public directory must not depend on a deployed Edge Function source file.
+function sourceFavicon(value){
+ try{const u=new URL(value),h=u.hostname.toLowerCase();if(u.protocol!=='https:'||u.username||u.password||u.port||h.includes(':')||/^\d+(\.\d+){3}$/.test(h)||!h.includes('.')||/\.(local|internal|localhost|test|invalid)$/.test(h))return '';return u.origin+'/favicon.ico'}catch{return ''}
+}
+async function deadline(operation,ms=10000){
+ let timer;
+ try{return await Promise.race([Promise.resolve().then(operation),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Die Verbindung dauert zu lange. Bitte erneut versuchen.')),ms)})])}
+ finally{clearTimeout(timer)}
+}
 const $=id=>document.getElementById(id), text=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value??'';if(cls)e.className=cls;return e};
 const status=(id,value)=>$(id).textContent=value;
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -122,14 +130,16 @@ carouselToggle.onclick=()=>{
  updateCarouselMotion();
  carouselViewport.scrollLeft=carouselPaused?Math.max(0,offset):0;
 };
-new ResizeObserver(updateCarouselMotion).observe(carouselViewport);
-reducedMotion.addEventListener('change',updateCarouselMotion);
+if(typeof ResizeObserver==='function')new ResizeObserver(updateCarouselMotion).observe(carouselViewport);
+else window.addEventListener('resize',updateCarouselMotion);
+if(typeof reducedMotion.addEventListener==='function')reducedMotion.addEventListener('change',updateCarouselMotion);
+else reducedMotion.addListener?.(updateCarouselMotion);
 async function refreshCloud(currentGeneration){
  const track=carouselTrack;
  track.replaceChildren(text('p','Öffentliche Profile werden geladen …','wish-showcase-loading'));
  updateCarouselMotion();
  let response;
- try{response=await db.from('wishlist_directory').select('user_id,display_name,city,country,bio,logo_url,lists').order('updated_at',{ascending:false}).limit(80)}catch{response={error:true}}
+ try{response=await deadline(()=>db.from('wishlist_directory').select('user_id,display_name,city,country,bio,logo_url,lists').order('updated_at',{ascending:false}).limit(80))}catch{response={error:true}}
  if(currentGeneration!==generation)return;
  if(response.error){track.replaceChildren(text('p','Die veröffentlichten Profile konnten gerade nicht geladen werden. Verwende die Suche oben.','wish-showcase-loading'));return}
  const profiles=(response.data||[]).filter(p=>p&&p.user_id&&p.display_name&&Array.isArray(p.lists)&&p.lists.some(l=>l.url));
@@ -229,7 +239,7 @@ function payload(){
  if(lists.some(l=>!l.url||!l.name))throw new Error('Bitte gültige Amazon-Wunschlisten-Links und Listennamen eingeben.');
  return {...identity,city:$('city').value.trim(),bio:own?.bio||'',interests:own?.interests||[],lists};
 }
-async function loadProfile(){const g=++authGeneration;const r=await db.auth.getUser();if(g!==authGeneration)return;user=!r.error&&!r.data?.user?.is_anonymous?r.data?.user:null;syncSettingsAccount();$('auth').hidden=!!user;$('profileForm').hidden=!user;$('logoutPublic').hidden=!user;own=null;$('listFields').replaceChildren();if(!user){listField();status('profileStatus','');return}const result=await db.from('wishlist_public_profiles').select('*').eq('user_id',user.id).maybeSingle();if(g!==authGeneration)return;if(result.error){status('profileStatus','Dein Profil konnte nicht geladen werden. Bitte lade die Seite erneut.');$('profileForm').hidden=true;return}own=result.data;
+async function loadProfile(token,verifiedUser){const g=++authGeneration;let r;try{r=verifiedUser!==undefined?{data:{user:verifiedUser}}:await deadline(()=>db.auth.getUser(token))}catch(error){r={error}}if(g!==authGeneration)return;user=!r.error&&!r.data?.user?.is_anonymous?r.data?.user:null;syncSettingsAccount();$('auth').hidden=!!user;$('profileForm').hidden=!user;$('logoutPublic').hidden=!user;own=null;$('listFields').replaceChildren();if(!user){listField();status('profileStatus',r.error&&r.error.name!=='AuthSessionMissingError'?'Anmeldestatus gerade nicht verfügbar. Bitte erneut anmelden.':'');return}let result;try{result=await deadline(()=>db.from('wishlist_public_profiles').select('*').eq('user_id',user.id).maybeSingle())}catch(error){result={error}}if(g!==authGeneration)return;if(result.error){status('profileStatus','Dein Profil konnte nicht geladen werden. Bitte lade die Seite erneut.');$('profileForm').hidden=true;return}own=result.data;
  $('firstName').value=own?.first_name||'';
  $('lastName').value=own?.last_name||'';
  $('organizationName').value=own?.organization_name||'';
@@ -280,7 +290,9 @@ async function authenticate(signup,source='profile'){
  const emailField=$(modal?'settingsEmail':'email'),passwordField=$(modal?'settingsPassword':'password');
  const feedback=$(modal?'settingsAuthMessage':'profileStatus');
  const controls=modal?[$('settingsLogin'),$('settingsSignup')]:[$('login'),$('signup')];
+ if(controls.some(button=>button.disabled))return;
  for(const button of controls)button.disabled=true;
+ feedback.textContent='Anmeldung wird geprüft …';
  try{
   const email=emailField.value.trim(),password=passwordField.value;
   if(!email||!password)throw new Error('Bitte E-Mail und Passwort eingeben.');
@@ -288,8 +300,10 @@ async function authenticate(signup,source='profile'){
    ?await db.auth.signUp({email,password,options:{emailRedirectTo:new URL('./public.html#profile',location.href).href}})
    :await db.auth.signInWithPassword({email,password});
   if(r.error)throw r.error;
-  await loadProfile();
-  feedback.textContent=signup&&!r.data?.session?'Bitte bestätige deine E-Mail-Adresse, bevor du dich anmeldest.':'Du bist angemeldet.';
+  if(!r.data?.session){if(!signup)throw new Error('Keine bestätigte Anmeldung erhalten.');feedback.textContent='Bitte bestätige deine E-Mail-Adresse, bevor du dich anmeldest.';return}
+  if(!r.data?.user||r.data.user.is_anonymous)throw new Error('Keine bestätigte Anmeldung erhalten.');
+  await loadProfile(undefined,r.data.user);
+  feedback.textContent=user?'Du bist angemeldet.':'Anmeldestatus gerade nicht verfügbar. Bitte erneut anmelden.';
  }catch(e){feedback.textContent=e.message||'Anmeldung fehlgeschlagen.'}
  finally{passwordField.value='';for(const button of controls)button.disabled=false}
 }
@@ -357,11 +371,17 @@ $('search').oninput=()=>{
 };
 $('submitSearch').onclick=()=>{page=0;search()};
 for(const id of['countryFilter','occasionFilter'])$(id).onchange=()=>{page=0;search()};$('resetFilters').onclick=()=>{$('search').value='';for(const id of['countryFilter','occasionFilter'])$(id).value='';page=0;search()};$('prevPage').onclick=()=>{page=Math.max(0,page-1);search()};$('nextPage').onclick=()=>{page++;search()};
-renderFavorites();db.auth.onAuthStateChange(event=>{
+renderFavorites();
+let initialAuthTimer=setTimeout(()=>{if(authGeneration===0){void loadProfile(undefined,null);status('profileStatus','Anmeldestatus gerade nicht verfügbar. Bitte erneut anmelden.')}},10000);
+db.auth.onAuthStateChange((event,session)=>{
  if(event==='PASSWORD_RECOVERY'){
   $('settingsRecoveryPanel').hidden=false;
   if(!settingsModal.open)settingsModal.showModal();
   $('settingsNewPassword').focus();
  }
- if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event))setTimeout(loadProfile,0);
-});window.addEventListener('storage',e=>{if(e.key===key){favorites=readFavorites();renderFavorites()}});await Promise.all([loadProfile(),filters(),search(),detail()]);
+ if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event)){
+  clearTimeout(initialAuthTimer);
+  const g=++authGeneration;
+  setTimeout(()=>{if(g!==authGeneration)return;void loadProfile(session?.access_token,session?undefined:null)},0);
+ }
+});window.addEventListener('storage',e=>{if(e.key===key){favorites=readFavorites();renderFavorites()}});await Promise.allSettled([filters(),search(),detail()]);
