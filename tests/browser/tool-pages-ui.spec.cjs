@@ -3048,3 +3048,55 @@ test('i18n runtime: isolated lists dashboard selection counters and private note
   expect(await page.evaluate(()=>window.__listFixture.writes.length)).toBe(0);
  }
 });
+
+test('i18n runtime: gift dashboard template overwrite cancellation preserves private slot label and preferences',async({page})=>{
+ await isolated(page,false);
+ await page.route('**/tools/wishes/__gift-layout-fixture.html*',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="de"><head><title>Gift layout fixture</title></head><body><header></header></body></html>'}));
+ await page.goto(origin+'/tools/wishes/__gift-layout-fixture.html?lang=de');
+ await page.evaluate(async ids=>{
+  const root=document.createElement('main');document.body.append(root);
+  const selectOptions={homeTaskSort:['urgency','priority','due_date'],homeOccasionSort:['soonest','title'],homeLayoutSlot:['compact','daily','overview']};
+  const checks=new Set(['homeShowMetrics','homeShowTasks','homeShowOccasions','homeShowProgress']);
+  for(const id of ids){
+   const tag=Object.hasOwn(selectOptions,id)?'select':checks.has(id)||id==='homeBackupFile'||id==='homeCheckpointViewName'?'input':id==='homeGiftSettingsForm'?'form':id==='homeGiftProgress'?'progress':/Save$|^homeSaveLayout$|Undo$|ConfirmPreview$|RestoreDefaults$/.test(id)?'button':'div';
+   const el=document.createElement(tag);el.id=id;
+   if(tag==='button'){el.type='button';el.textContent=id}
+   if(checks.has(id))el.type='checkbox';
+   if(id==='homeBackupFile')el.type='file';
+   if(tag==='select')for(const value of selectOptions[id]){
+    const option=document.createElement('option');option.value=value;
+    option.textContent=id==='homeLayoutSlot'&&value==='compact'?'Löschen':value;
+    if(id==='homeLayoutSlot')option.setAttribute('data-user-content','');
+    el.append(option);
+   }
+   root.append(el);
+  }
+  const preferences={show_metrics:true,show_tasks:true,show_occasions:true,show_progress:true,task_sort:'urgency',occasion_sort:'soonest',section_order:['metrics','tasks','occasions','progress'],metric_keys:['open'],quick_links:[],favorite_links:[],active_layout:'custom',saved_layouts:{compact:{show_metrics:true,show_tasks:false,show_occasions:true,show_progress:true,task_sort:'urgency',occasion_sort:'soonest',section_order:['metrics','tasks','occasions','progress'],metric_keys:['open'],quick_links:[],favorite_links:[]}}};
+  const writes=[];window.__giftLayoutFixture={preferences,writes};
+  const db={auth:{async getUser(){return {data:{user:{id:'isolated-owner'}},error:null}},onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}},from(table){
+   const q={};for(const method of ['select','eq','order','range','limit','in','is'])q[method]=()=>q;
+   q.maybeSingle=async()=>({data:table==='wishlist_gift_home_preferences'?structuredClone(preferences):null,error:null});
+   for(const method of ['insert','update','upsert','delete'])q[method]=()=>{writes.push({table,method});throw Error('Unexpected fixture write')};
+   q.then=(resolve,reject)=>Promise.resolve({data:[],error:null}).then(resolve,reject);return q;
+  }};
+  window.supabase={createClient:()=>db};
+  await import('/shared/toolya/i18n/wishes-entry.mjs');
+  await import('/tools/wishes/gift-start.mjs');
+ },["homeMetricChoices","homeQuickChoices","homeFavoriteChoices","homeTaskSort","homeOccasionSort","homeSectionOrder","homeSettingsStatus","homeGiftSections","homeShowMetrics","homeShowTasks","homeShowOccasions","homeShowProgress","homeGiftSettingsForm","homeSettingsSave","homeGiftMetrics","homeGiftTasks","homeGiftOccasions","homeLayoutStatus","homeSaveLayout","homeConfirmPreview","homePreviewUndo","homeRestoreDefaults","homePreviewDraft","homeGiftSettings","homeLayoutSlot","homeCompareA","homeCompareB","homeCompareResult","homeCompareStatus","homeCompareShow","homeBackupDiff","homeBackupApply","homeBackupCancel","homeBackupStatus","homeBackupFile","homeBackupExport","homeBackupPreview","homeCheckpointCompare","homeCheckpointFrom","homeCheckpointTo","homeCheckpointField","homeCheckpointLayout","homeCheckpointViewSelect","homeCheckpointViewStatus","homeCheckpointViewPreview","homeCheckpointFavoriteStatus","homeCheckpointFavoritePreview","homeCheckpointFavoriteComparePanel","homeCheckpointFavoriteCompareA","homeCheckpointFavoriteCompareB","homeCheckpointFavoriteCompareResult","homeCheckpointFavoriteCompareRun","homeCheckpointFavoriteBar","homeCheckpointFavoriteNext","homeCheckpointFavoritePrevious","homeCheckpointFavoriteClear","homeCheckpointViewCards","homeCheckpointViewDetails","homeCheckpointViewSync","homeCheckpointViewSave","homeCheckpointViewName","homeCheckpointViewApply","homeCheckpointViewDelete","homeCheckpointViewImport","homeCheckpointViewRename","homeCheckpointViewDuplicate","homeCheckpointStats","homeCheckpointCategories","homeCheckpointMonthly","homeCheckpointEntries","homeCheckpointMonths","homeCheckpointSummary","homeCheckpointStatus","homeCheckpointActiveCategories","homeCheckpointCompareA","homeCheckpointCompareB","homeCheckpointCompareShow","homeCheckpointCompareStatus","homeCheckpointClear","homeCheckpointReload","homeGiftCheckpoints","homeHistoryStatus","homeHistoryEntries","homeHistoryReload","homeGiftHistory","homeGiftQuickLinks","homeGiftFavorites","homeGiftProgress","homeGiftProgressText","homeGiftStatus","homeGiftStart"]);
+ await expect(page.locator('#homeGiftStatus')).toHaveText('Privater Überblick – nur für dein angemeldetes Konto. Keine Daten verändert.');
+ const before=await page.evaluate(()=>JSON.stringify(window.__giftLayoutFixture.preferences));
+ for(const lang of ['de','en','de']){
+  await page.locator('[data-wishes-locale="'+lang+'"]').click();
+  await page.locator('#homeLayoutSlot').selectOption('compact');
+  expect(await page.locator('#homeLayoutSlot option:checked').textContent()).toBe('Löschen');
+  const pending=page.waitForEvent('dialog',{timeout:5000});
+  const action=page.locator('#homeSaveLayout').click();
+  const dialog=await pending;
+  const actual={type:dialog.type(),message:dialog.message()};
+  await dialog.dismiss();await action;
+  expect(actual).toEqual({type:'confirm',message:lang==='en'?'Save current settings in template slot “Löschen”? An existing template will be overwritten.':'Aktuelle Einstellungen im Vorlagenplatz „Löschen“ speichern? Eine vorhandene Vorlage wird überschrieben.'});
+  expect(await page.evaluate(()=>JSON.stringify(window.__giftLayoutFixture.preferences))).toBe(before);
+  expect(await page.evaluate(()=>window.__giftLayoutFixture.writes.length)).toBe(0);
+  expect(await page.locator('#homeLayoutSlot').inputValue()).toBe('compact');
+ }
+});
