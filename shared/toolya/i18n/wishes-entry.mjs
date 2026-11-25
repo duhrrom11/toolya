@@ -1,5 +1,5 @@
-import {wishesText} from './wishes-copy.mjs';
-import {applyWishLocale} from './wishes-dom.mjs';
+import {wishesText} from './wishes-copy.mjs?v=20261126-account-locale';
+import {applyWishLocale} from './wishes-dom.mjs?v=20261126-account-locale';
 const key='toolya-locale-v1';
 function storedLocale(){
  const query=new URLSearchParams(location.search).get('lang');
@@ -20,7 +20,7 @@ function mount(){
  // account identifiers must not be modified by the status translator.
  const statusSelectors=["#homeSettingsStatus","#homeLayoutStatus","#homeCompareStatus","#homeBackupStatus","#homeCheckpointViewStatus","#homeCheckpointFavoriteStatus","#homeCheckpointStatus","#homeCheckpointCompareStatus","#homeHistoryStatus","#homeGiftStatus","#bulkStatus","#bulkProgressText",'#listsStatus','#listWishCount','#editListFeedback','#status','#count','#taskStatus','#checklistStatus','#rolloverStatus',
   '#giftStatus','#filterStatus','#productSearchStatus','#searchStatus','#detailStatus',
-  '#profileStatus','#settingsAuthMessage','#settingsAccountStatus','#settingsStatus',
+  '#profileStatus','#settingsAuthMessage','#settingsAccountStatus','#settingsStatus','#cloudStatus','#loginMessage',
   '#notice','#reactionStatus','#actionStatus','#budgetSaveFeedback','#giftFormFeedback',
   '#taskActionStatus','#closingStatus','#reviewStatus','#wishExtrasImportFeedback','#wishExtrasCloudFeedback','#backupPreviewStatus','#peopleSearchCount','#profileFeedInfo','#giftFinderStatus','#wishSaveFeedback','#wishlistAuthStatus','#feedCount','#hiddenWishInfo','#hiddenProfileInfo','#exportProgress','[data-wish-runtime-status]'];
  // Do not select progress bars, counters, wish cards, user descriptions or

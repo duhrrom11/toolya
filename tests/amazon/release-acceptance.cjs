@@ -62,6 +62,19 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   assert.equal(await page.locator('#settingsModal .ty-settings-kofi-button').count(),1,'Ko-fi at end of settings');
   assert.equal(await page.locator('#settingsModal .ty-settings-kofi-button').getAttribute('href'),'https://ko-fi.com/duhrrom');
   assert.equal(await page.locator('#signedOutControls').isVisible(),true);
+  // Language changes must translate the same open account dialog without replacing its auth state.
+  const beforeAccount=await page.evaluate(()=>window.toolyaAccountState);
+  await page.evaluate(()=>document.querySelector('[data-wishes-locale="en"]').click());
+  await page.waitForFunction(()=>document.querySelector('#cloudStatus')?.textContent==='Not signed in');
+  assert.equal(await page.locator('#settingsTitle').textContent(),'⚙️ Settings');
+  assert.equal(await page.locator('#accountSettings > summary').textContent(),'Toolya account');
+  assert.equal(await page.locator('#loginEmail').getAttribute('placeholder'),'Email address');
+  assert.equal(await page.locator('#signedOutControls').isVisible(),true);
+  assert.deepEqual(await page.evaluate(()=>window.toolyaAccountState),beforeAccount);
+  await page.evaluate(()=>document.querySelector('[data-wishes-locale="de"]').click());
+  await page.waitForFunction(()=>document.querySelector('#cloudStatus')?.textContent==='Nicht angemeldet');
+  assert.equal(await page.locator('#settingsTitle').textContent(),'⚙️ Einstellungen');
+
   await page.locator('#forgotPassword').click();
   assert.match(await page.locator('#loginMessage').textContent(),/E-Mail-Adresse/);
   await page.locator('#loginEmail').fill('offline@example.invalid');

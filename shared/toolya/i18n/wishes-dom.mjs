@@ -1,4 +1,4 @@
-import {wishesText} from './wishes-copy.mjs';
+import {wishesText} from './wishes-copy.mjs?v=20261126-account-locale';
 const sources=new WeakMap(),attrs=new WeakMap(),implicit=new WeakSet();
 // Marked public editorial spans from #321 alongside older legacy copy;
 // never translate arbitrary profile paragraphs or user-entered content.
