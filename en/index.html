@@ -294,6 +294,7 @@
                         Checking account …
                     </div>
 
+                    <button type="button" id="retryAccountCheck" hidden class="text-xs text-teal-700 underline">Check account again</button>
                     <div id="signedOutControls" class="space-y-3" hidden>
                         <label class="helferlein-field" for="loginEmail"><span class="helferlein-field-label">Email address</span><input type="email" id="loginEmail" required aria-label="Email address" autocomplete="email" placeholder="Email" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
                         <label class="helferlein-field" for="loginPassword"><span class="helferlein-field-label">Password</span><input type="password" id="loginPassword" required minlength="6" aria-label="Password" autocomplete="current-password" placeholder="Password" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
@@ -348,7 +349,9 @@
         const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
 
-        window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window.supabaseClient = null;
+        try { window.supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) ?? null; }
+        catch (error) { console.warn("Toolya Auth initialization failed", error); }
         // Client initialisiert; die tatsächliche Erreichbarkeit wird bei Auth-Anfragen geprüft.
         const settingsQuery = new URLSearchParams(location.search);
         const toolAccessRequired = settingsQuery.get('auth') === 'required';
@@ -373,7 +376,7 @@
             if (link.closest('.tool-card')?.dataset.id === 'wishlist' && new URL(link.href, location.href).pathname === '/tools/wishes/public.html') return;
             event.preventDefault();
             try {
-                const {data,error}=await window.supabaseClient.auth.getUser();
+                const {data,error}=await withAccountDeadline(() => window.supabaseClient.auth.getUser());
                 if(!error && data?.user?.id && !data.user.is_anonymous){
                     window.location.assign(link.href);
                     return;
@@ -542,11 +545,21 @@
         }
 
         let authStatusRequestId = 0;
-        async function updateUserDisplay(accessToken) {
-            const requestId = ++authStatusRequestId;
+        let initialAccountTimer;
+        async function withAccountDeadline(operation) {
+            let timer;
+            try {
+                return await Promise.race([
+                    Promise.resolve().then(operation),
+                    new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("Account check timed out")), 10000); })
+                ]);
+            } finally { clearTimeout(timer); }
+        }
+        async function updateUserDisplay(accessToken, requestId = ++authStatusRequestId) {
+            if (requestId !== authStatusRequestId) return;
             let data, error;
             try {
-                ({ data, error } = await window.supabaseClient.auth.getUser(accessToken));
+                ({ data, error } = await withAccountDeadline(() => window.supabaseClient.auth.getUser(accessToken)));
                 // No stored session is the normal guest state, not a network failure.
                 if (error?.name === "AuthSessionMissingError") error = null;
             } catch (_) {
@@ -560,6 +573,8 @@
         }
 
         function renderUserDisplay(user, error = null) {
+            clearTimeout(initialAccountTimer);
+            document.getElementById("retryAccountCheck").hidden = !error || passwordRecoveryActive;
             const headerInfo = document.getElementById("userInfo");
             const cloudStatus = document.getElementById("cloudStatus");
             if (headerInfo) {
@@ -1056,13 +1071,17 @@
                 if(cancelSettingsBtn) cancelSettingsBtn.addEventListener('click', closeSettings);
             } catch(e){}
             try { initFavorites(); } catch(e){}
-            updateUserDisplay().catch(() => {
-                const status = document.getElementById("cloudStatus");
-                if (status) status.textContent = "Sign-in status unavailable";
-            });
+            // INITIAL_SESSION is the single startup trigger; do not compete with it for the auth lock.
         });
 
-        supabaseClient.auth.onAuthStateChange((event, session) => {
+        document.getElementById("retryAccountCheck").addEventListener("click", () => { void updateUserDisplay(); });
+        initialAccountTimer = setTimeout(() => {
+            ++authStatusRequestId;
+            renderUserDisplay(null, new Error("Auth initialization timed out"));
+        }, 10000);
+        if (!window.supabaseClient) {
+            renderUserDisplay(null, new Error("Auth client unavailable"));
+        } else window.supabaseClient.auth.onAuthStateChange((event, session) => {
             if (event === "PASSWORD_RECOVERY") {
                 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", showPasswordRecovery, { once: true });
                 else showPasswordRecovery();
@@ -1075,7 +1094,9 @@
                 return;
             }
             // Verify this event's token directly, without waiting on the session lock.
-            setTimeout(() => { updateUserDisplay(session.access_token).catch(() => {}); }, 0);
+            clearTimeout(initialAccountTimer);
+            const requestId = ++authStatusRequestId;
+            setTimeout(() => { updateUserDisplay(session.access_token, requestId).catch(() => {}); }, 0);
         });
     </script>
 <script>
