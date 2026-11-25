@@ -2925,3 +2925,55 @@ for(const slug of ['moving','housemates','loans','plants','baking','budget','car
   expect(requests.every(url=>!url.startsWith(origin))).toBe(true);
  });
 }
+
+test('i18n runtime: home login and registration validation in both public locales',async({page})=>{
+ await isolated(page,false);
+ for(const lang of ['de','en']){
+  await page.goto(origin+(lang==='en'?'/en/index.html':'/index.html'));
+  await page.waitForFunction(()=>window.toolyaHomeReady===true);
+  await page.evaluate(()=>{document.getElementById('loginEmail').value='';document.getElementById('loginPassword').value='';});
+  const notice=page.locator('.hl-alert-panel');
+  for(const action of ['loginUser','registerUser']){
+   await page.evaluate(action=>window[action](),action);
+   await expect(notice.locator('#hl-alert-message')).toHaveText(lang==='en'?'Enter your email and password.':'Bitte E-Mail und Passwort eingeben.');
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   await expect(notice).toHaveCount(0);
+  }
+  await page.evaluate(()=>{document.getElementById('loginEmail').value='invalid';document.getElementById('loginPassword').value='fixture-password';});
+  await page.evaluate(()=>window.loginUser());
+  await expect(notice.locator('#hl-alert-message')).toHaveText(lang==='en'?'Enter a valid email address.':'Bitte eine gültige E-Mail-Adresse eingeben.');
+  await notice.getByRole('button',{name:'OK'}).press('Enter');
+  await page.evaluate(()=>{document.getElementById('loginEmail').value='fixture@example.invalid';document.getElementById('loginPassword').value='123';});
+  await page.evaluate(()=>window.registerUser());
+  await expect(notice.locator('#hl-alert-message')).toHaveText(lang==='en'?'Your password must be at least 6 characters long.':'Das Passwort muss mindestens 6 Zeichen lang sein.');
+  await notice.getByRole('button',{name:'OK'}).press('Enter');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+  expect(await page.evaluate(()=>window.__toolyaMock.signedIn)).toBe(false);
+ }
+});
+
+test('i18n runtime: duplicate budget transaction cancellation preserves synthetic snapshot in both locales',async({page})=>{
+ await isolated(page,true);
+ await page.goto(origin+'/tools/budget/index.html?lang=de');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ const fill=()=>page.evaluate(()=>{
+  document.querySelector('#receiptTitle').value='Isolierte Buchung';
+  document.querySelector('#receiptDate').value='2026-11-15';
+  document.querySelector('#receiptPrice').value='12.50';
+ });
+ await fill();await page.evaluate(()=>saveReceipt());
+ await expect.poll(()=>page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
+ const before=await page.evaluate(()=>JSON.stringify(getData()));
+ for(const lang of ['en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await fill();
+  const pending=page.waitForEvent('dialog',{timeout:5000});
+  const action=page.evaluate(()=>saveReceipt());
+  const dialog=await pending;
+  const actual={type:dialog.type(),message:dialog.message()};
+  await dialog.dismiss();await action;
+  expect(actual).toEqual({type:'confirm',message:lang==='en'?'A transaction with the same date, title, amount and type already exists.\\n\\nSave another copy anyway?':'Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\\n\\nTrotzdem erneut speichern?'});
+  expect(await page.evaluate(()=>JSON.stringify(getData()))).toBe(before);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
+ }
+});
