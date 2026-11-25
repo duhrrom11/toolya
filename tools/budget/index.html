@@ -2077,6 +2077,7 @@ async function toolyaCloudBoot(tool) {
             const doc = await createExportPdf();
             if (!doc) return;
             const data = getData();
+            const reportPrice = r => r.price == null || String(r.price).trim() === '' ? NaN : Number(r.price);
 
             doc.setFontSize(16);
             doc.text(pdfLabel("Haushalts-, Finanz- & Kassenbon-Übersicht","Household finances and receipts overview"), 14, 20);
@@ -2090,8 +2091,8 @@ async function toolyaCloudBoot(tool) {
             let latestDate = null;
             data.forEach(r => {
                 if (!r || typeof r !== 'object') return;
-                const price = Number(r.price);
-                if (!Number.isFinite(price) || price < 0) return;
+                const price = reportPrice(r);
+                if (!Number.isFinite(price)) return;
                 validEntries++;
                 if (typeof r.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(r.date) &&
                     Number.isFinite(parseReceiptDate(r.date).getTime())) {
@@ -2129,9 +2130,10 @@ async function toolyaCloudBoot(tool) {
                 });
             let y = 82;
             sortedData.forEach((r) => {
-                const sign = (r.entryType === 'einnahme' || r.category === 'Einnahme') ? '+' : '-';
-                const price = Number(r.price);
-                const amount = Number.isFinite(price) ? sign + price.toFixed(2) : pdfLabel("k.A.","n/a");
+                const income = r.entryType === 'einnahme' || r.category === 'Einnahme';
+                const price = reportPrice(r);
+                const signed = income ? price : -price;
+                const amount = Number.isFinite(price) ? (signed < 0 ? '-' : '+') + Math.abs(signed).toFixed(2).replace('.', pdfEn ? '.' : ',') : pdfLabel("k.A.","n/a");
                 const line = `${r.date || pdfLabel("k.A.","n/a")} | ${r.title || pdfLabel("Ohne Titel","Untitled")} (${budgetCategoryLabel(r.category, pdfEn ? "en" : "de") || pdfLabel("Sonstiges","Other")}): ${amount} € [${budgetPaymentLabel(r.paymentMethod, pdfEn ? "en" : "de") || pdfLabel("k.A.","n/a")}]`;
                 const lines = doc.splitTextToSize(line, 180);
                 for (const textLine of lines) {
