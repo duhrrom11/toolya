@@ -3879,3 +3879,52 @@ test('Budget PDF DE/EN: signed totals, missing values, chronological private ent
   expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
  }
 });
+
+
+const pdfReportCases=[
+ {tool:'car',ready:'toolyaCloudReady',fixture:{cars:[{id:1,name:'Privates Fahrzeug Öl',plate:'TEST-42',km:1000,insurance:'Privater Versicherer'}],events:[{id:2,carId:1,title:'Private Wartung',type:'Inspektion',date:'2026-11-17',cost:42},{id:3,carId:1,title:'Private Erstattung',type:'Inspektion',date:'2026-11-18',cost:-2}],tires:[]},de:['KFZ- & Wartungs-Report','Gesamtkosten: 40.00 EUR','KM: 1000','Vers.: Privater Versicherer'],en:['Vehicle and maintenance report','Total costs: 40.00 EUR','Mileage: 1000','Insurance: Privater Versicherer'],private:['Privates Fahrzeug Öl','TEST-42','Private Wartung','Private Erstattung'],files:['kfz-wartungs-report.pdf','vehicle-maintenance-report.pdf']},
+ {tool:'parking',ready:'parkingCloudReady',fixture:{sessions:[{id:1,desc:'Privater Parkplatz Öl',sector:'Privates Deck',date:'17.11.2026',timestamp:'2026-11-17T12:00:00Z',cost:4.5,gps:null},{id:2,desc:'Privater Stellplatz',date:'18.11.2026',timestamp:'2026-11-18T12:00:00Z',cost:2,gps:null}],activeEndTime:null},de:['Parkschein- & Parkplatz-Report','Parkvorgänge: 2 | Gesamtkosten: 6,50 EUR','Sektor: Privates Deck'],en:['Parking session and location report','Parking sessions: 2 | Total costs: 6.50 EUR','Sector: Privates Deck'],private:['Privater Parkplatz Öl','Privater Stellplatz'],files:['park-report.pdf','parking-report.pdf']},
+ {tool:'pet-health',ready:'petCloudReady',fixture:{pets:[{id:1,name:'Privates Tier Öl',species:'Hund',chip:'TEST-123',tasso:true,vet:{name:'Private Praxis',tel:'000'}}],events:[{id:2,petId:1,type:'Impfung',title:'Private Impfung',date:'2026-11-17',expiryDate:'2027-11-17',cost:42},{id:3,petId:1,type:'Kontrolle',title:'Private Kontrolle',date:'2026-11-18',cost:8}],meds:[]},de:['Haustier-Gesundheits-Pass Report','Gesamtkosten: 50.00 EUR','(Hund)','[Impfung]','TA: Private Praxis'],en:['Pet health report','Total costs: 50.00 EUR','(Dog)','[Vaccination]','Vet: Private Praxis'],private:['Privates Tier Öl','TEST-123','Private Impfung','Private Kontrolle'],files:['haustier-gesundheits-report.pdf','pet-health-report.pdf']},
+ {tool:'loans',ready:'loansCloudReady',fixture:{contacts:[],inventory:[],items:[{id:1,title:'Privates Werkzeug Öl',person:'Private Person',serial:'TEST-42',date:'2026-11-17',returnDate:'2026-12-17',status:'active',deposit:42},{id:2,title:'Privates Buch',person:'Andere Person',date:'2026-11-18',status:'returned',deposit:10}]},de:['Leih- & Verleih-Report Pro','Offene Kaution / Wert: 42.00 EUR','[AKTIV]','[ZURÜCK]'],en:['Lending and borrowing report','Outstanding deposit / value: 42.00 EUR','[ACTIVE]','[RETURNED]'],private:['Privates Werkzeug Öl','Private Person','TEST-42','Privates Buch'],files:['verleih-report-pro.pdf','lending-report.pdf']},
+ {tool:'plants',ready:'plantsCloudReady',fixture:{plants:[{id:2,name:'Private Pflanze Öl',species:'Tomate',location:'Privates Zimmer',light:'half',potSize:15,interval:7,lastWatered:'2026-11-17',diary:[],harvestLog:[],galleryPhotos:[]}],monthWaterLiters:0,totalHarvestGrams:0,inventory:[],seeds:[],beetSlots:Array(16).fill(null),cisternMax:500,cisternCurrent:400},de:['Pflanzen- & Garten-Pass Report','Pflanzen: 1','Ort: Privates Zimmer','Gießen: 7T'],en:['Plant and Garden Report','Plants: 1','Location: Privates Zimmer','Watering: 7d'],private:['Private Pflanze Öl','Tomate'],files:['pflanzen-report.pdf','plant-garden-report.pdf']},
+ {tool:'housemates',ready:'secureWgRevision',fixture:{__wg:{id:'00000000-0000-4000-8000-000000000109',updated_at:'2026-11-17T00:00:00Z',payload:{flatmates:[{vorname:'Mia',nachname:'Test'}],data:[{id:2,title:'Private Buchung Öl',price:42,payer:'Mia Test',date:'2026-11-17',category:'Lebensmittel',entryType:'ausgabe',photos:[]}],budgets:{},goals:[],notes:[],events:[],inventory:[],diets:{},cleaning:[],shopping:[],contracts:[],cooking:['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'].map(day=>({day,chef:'Frei',dish:'',ingredients:''})),infoboard:{}}}},de:['WG- & Haushaltsbuch Abrechnung','Buchungen: 1','42,00 EUR'],en:['Household Finance Report','Transactions: 1','42.00 EUR'],private:['Private Buchung Öl','Mia Test'],files:['haushaltsbericht','household-finance-report']}
+];
+for(const spec of pdfReportCases)test(spec.tool+' PDF DE/EN: report content and unchanged private records',async({page})=>{
+ await isolated(page,true,true,spec.fixture);
+ const wg=spec.tool==='housemates';
+ await page.goto(origin+'/tools/'+spec.tool+'/index.html?lang=en'+(wg?'&id=secure_00000000-0000-4000-8000-000000000109':''));
+ await expect.poll(()=>page.evaluate(tool=>{
+  switch(tool){
+   case 'car':return typeof toolyaCloudReady!=='undefined'&&!!toolyaCloudReady;
+   case 'parking':return typeof parkingCloudReady!=='undefined'&&!!parkingCloudReady;
+   case 'pet-health':return typeof petCloudReady!=='undefined'&&!!petCloudReady;
+   case 'loans':return typeof loansCloudReady!=='undefined'&&!!loansCloudReady;
+   case 'plants':return typeof plantsCloudReady!=='undefined'&&!!plantsCloudReady;
+   case 'housemates':return typeof secureWgRevision!=='undefined'&&!!secureWgRevision;
+  }
+ },spec.tool)).toBe(true);
+ const before=await page.evaluate(()=>JSON.stringify(getData()));
+ await page.evaluate(()=>{
+  window.__reportPdf={texts:[],files:[]};
+  window.jspdf={jsPDF:class{
+   setFont(){return this}setFontSize(){return this}addPage(){return this}
+   splitTextToSize(v){return [String(v)]}
+   text(v){window.__reportPdf.texts.push(String(v));return this}
+   save(v){window.__reportPdf.files.push(v)}
+  }};
+ });
+ for(const lang of ['de','en']){
+  const choice=page.locator('[data-tool-locale="'+lang+'"]');
+  await choice.click();await expect(choice).toHaveAttribute('aria-pressed','true');
+  await page.evaluate(wg=>{window.__reportPdf={texts:[],files:[]};return wg?exportAbrechnungPDF():exportPDF()},wg);
+  const result=await page.evaluate(()=>window.__reportPdf);
+  expect(result.files).toHaveLength(1);
+  const filename=spec.files[lang==='en'?1:0];
+  if(wg)expect(result.files[0]).toMatch(new RegExp('^'+filename+'-\\d{4}-\\d{2}-\\d{2}\\.pdf$'));
+  else expect(result.files[0]).toBe(filename);
+  const text=result.texts.join('\n');
+  for(const value of [...spec[lang],...spec.private])expect(text).toContain(value);
+  expect(await page.evaluate(()=>JSON.stringify(getData()))).toBe(before);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+ }
+});
