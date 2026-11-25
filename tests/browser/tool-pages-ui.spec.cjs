@@ -2864,6 +2864,8 @@ for(const slug of ['moving','housemates','loans','plants','baking','budget','car
     const fixture=document.createElement('input');
     fixture.type='text';fixture.id='i18n-synthetic-unchanged';
     fixture.value='Privat gespeicherte Notiz <Test> & 2040';
+    // Keep the synthetic draft out of layout measurements.
+    fixture.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none';
     document.body.append(fixture);
   });
   const saved='Privat gespeicherte Notiz <Test> & 2040';
@@ -2874,14 +2876,21 @@ for(const slug of ['moving','housemates','loans','plants','baking','budget','car
     expect(await en.evaluate(el=>el===document.activeElement)).toBe(true);
     await de.click();
     await expect(de).toHaveAttribute('aria-pressed','true');
+    await expect(page.locator('html')).toHaveAttribute('lang','de');
+    const layout=await page.evaluate(()=>({width:innerWidth,
+      excess:Math.max(0,document.documentElement.scrollWidth-innerWidth),
+      offenders:[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.right>innerWidth+2}).slice(0,12).map(el=>({tag:el.tagName,id:el.id,className:String(el.className)}))}));
+    expect.soft(layout.excess,slug+' '+'de'+' '+width+'px: '+JSON.stringify(layout.offenders)).toBeLessThanOrEqual(2);
     await expect(page.locator('#i18n-synthetic-unchanged')).toHaveValue(saved);
     await en.click();
     await expect(en).toHaveAttribute('aria-pressed','true');
-    await expect(page.locator('#i18n-synthetic-unchanged')).toHaveValue(saved);
+    await expect(page.locator('html')).toHaveAttribute('lang','en');
     const layout=await page.evaluate(()=>({width:innerWidth,
-      excess:Math.max(0,document.documentElement.scrollWidth-innerWidth)}));
-    if(layout.excess>2)console.log('[i18n-mobile-review] '+slug+' '+width+
-      'px: '+layout.excess+'px horizontal overflow; visual review needed');
+      excess:Math.max(0,document.documentElement.scrollWidth-innerWidth),
+      offenders:[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.right>innerWidth+2}).slice(0,12).map(el=>({tag:el.tagName,id:el.id,className:String(el.className)}))}));
+    expect.soft(layout.excess,slug+' '+'en'+' '+width+'px: '+JSON.stringify(layout.offenders)).toBeLessThanOrEqual(2);
+    await expect(page.locator('#i18n-synthetic-unchanged')).toHaveValue(saved);
+
   }
   expect(await page.evaluate(()=>window.__toolyaMock?.writes?.length||0)).toBe(0);
   expect(requests.every(url=>!url.startsWith(origin))).toBe(true);
