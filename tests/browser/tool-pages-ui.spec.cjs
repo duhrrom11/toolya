@@ -3499,3 +3499,36 @@ for(const fixture of [
   }
  });
 }
+
+
+test('budget warranty ICS: actual DE/EN downloads retain dates, alarm and private data without writes',async({page})=>{
+ const {readFile}=require('node:fs/promises');
+ const receipt={id:82,title:'Öl, Pflege; Gerät',store:'Privater Laden',sn:'SN-82',location:'Privater Ort',entryType:'ausgabe',date:'2028-01-31',price:42,category:'Lebensmittel',warrantyMonths:1,photos:[]};
+ await isolated(page,true,true,{entries:[receipt],budgets:{},goals:[]});
+ await page.goto(origin+'/tools/budget/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Reject',exact:true}).or(page.getByRole('button',{name:'Ablehnen',exact:true})).click();
+ const button=page.locator('button[onclick="downloadICS(82)"]');
+ await expect(button).toBeVisible();
+ const before=await page.evaluate(()=>JSON.stringify(getData()));
+ for(const lang of ['en','de']){
+  const choice=page.locator('[data-tool-locale="'+lang+'"]');
+  await choice.click();
+  await expect(choice).toHaveAttribute('aria-pressed','true');
+  const [download]=await Promise.all([page.waitForEvent('download'),button.click()]);
+  const content=(await readFile(await download.path(),'utf8')).replaceAll('\r\n ','');
+  expect(download.suggestedFilename()).toMatch(lang==='en'?/^warranty-.*\.ics$/:/^garantie-.*\.ics$/);
+  expect(content).toContain('SUMMARY:'+(lang==='en'?'Warranty expiry: ':'Garantie-Ablauf: ')+'Öl\\, Pflege\\; Gerät\r\n');
+  expect(content).toContain('UID:82-20280130@helferlein.local\r\n');
+  expect(content).toContain('DTSTART;VALUE=DATE:20280130\r\n');
+  expect(content).toContain('DTEND;VALUE=DATE:20280131\r\n');
+  expect(content).toContain(lang==='en'?'expires on 29/02/2028':'läuft am 29.2.2028');
+  expect(content).toContain('TRIGGER;RELATED=START:PT9H\r\n');
+  expect(content).toContain(lang==='en'?'DESCRIPTION:Warranty expires in 30 days!':'DESCRIPTION:Garantie läuft in 30 Tagen ab!');
+  expect(content).toContain('Privater Laden');
+  expect(content).toContain('SN-82');
+  expect(content).toContain('Privater Ort');
+  expect(await page.evaluate(()=>JSON.stringify(getData()))).toBe(before);
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+});
