@@ -130,14 +130,34 @@ async function run(){
       await page.goto(origin+entry.path+'?lang='+lang,{waitUntil:'domcontentloaded',timeout:15000});
       await page.waitForFunction(({key,lang})=>globalThis[key]===lang,{key:entry.global,lang},{timeout:4000});
       assert.equal(await page.locator('html').getAttribute('lang'),lang,'print document language');
-      row.checks.push({lang,title:await page.title(),documentLang:lang});
+      const printButton=page.locator('#print-again');
+      assert.equal(await printButton.textContent(),lang==='en'?'Print / Save as PDF':'Drucken / Als PDF speichern');
+      await printButton.focus();
+      assert.equal(await printButton.evaluate(el=>el===document.activeElement),true);
+      await page.evaluate(()=>{window.print=()=>{document.body.dataset.keyboardPrint='true'}});
+      await page.keyboard.press('Enter');
+      assert.equal(await page.locator('body').getAttribute('data-keyboard-print'),'true');
+      row.checks.push({lang,title:await page.title(),documentLang:lang,keyboardPrint:true});
      }
     }else{
      // Dashboard also stores the active locale on <html>; target actual controls only.
      const selector=lang=>'button[data-'+entry.family+'-locale="'+lang+'"]';
      for(const lang of ['de','en','de']){
       const button=page.locator(selector(lang)).first();
-      await button.click({timeout:4000});
+      await button.waitFor({state:'visible',timeout:4000});
+      await button.focus();
+      assert.equal(await button.evaluate(el=>el===document.activeElement),true,'locale control receives focus');
+      await page.keyboard.press(lang==='en'?'Enter':'Space');
+      assert.equal(await button.evaluate(el=>el===document.activeElement),true,'locale activation retains focus');
+      const deButton=page.locator(selector('de')).first(),enButton=page.locator(selector('en')).first();
+      assert.equal(await deButton.getAttribute('aria-label'),lang==='en'?'Switch to German':'Deutsch auswählen');
+      assert.equal(await enButton.getAttribute('aria-label'),lang==='en'?'English selected':'Englisch auswählen');
+      await deButton.focus();
+      await page.keyboard.press('Tab');
+      assert.equal(await enButton.evaluate(el=>el===document.activeElement),true,'Tab reaches adjacent EN control');
+      await page.keyboard.press('Shift+Tab');
+      assert.equal(await deButton.evaluate(el=>el===document.activeElement),true,'Shift+Tab returns to DE control');
+      assert.equal(await deButton.evaluate(el=>el.matches(':focus-visible')&&getComputedStyle(el).outlineStyle!=='none'),true,'keyboard focus indicator');
       await page.waitForFunction(({key,lang})=>globalThis[key]===lang,{key:entry.global,lang},{timeout:4000});
       assert.equal(await button.getAttribute('aria-pressed'),'true');
       assert.equal(await page.locator(selector(lang==='en'?'de':'en')).first().getAttribute('aria-pressed'),'false');

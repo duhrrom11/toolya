@@ -10,7 +10,7 @@ function mount(){
  const header=document.querySelector('body > header');if(!header)return;
  const bar=document.createElement('nav');bar.className='ty-admin-language';bar.setAttribute('aria-label','Language / Sprache');
  const oldTitle=document.title;let selected=locale();
- const notice=document.createElement('p');notice.className='ty-admin-language-notice';notice.setAttribute('role','status');
+ const notice=document.createElement('p');notice.className='ty-admin-language-notice';notice.setAttribute('role','status');notice.lang='en';
  notice.textContent='Some dynamically generated administrator messages have not yet been translated.';
  for(const lang of ['de','en']){
   const button=document.createElement('button');button.type='button';button.textContent=lang.toUpperCase();button.lang=lang;button.dataset.adminLocale=lang;
@@ -30,7 +30,13 @@ function mount(){
   }
   updateStatus();applyAdminLocale(document,lang);
   document.title=lang==='en'?adminText(oldTitle.replace(' · Toolya Admin','').replace(' · Toolya',''),'en')+' · Toolya':oldTitle;
-  for(const b of bar.querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.adminLocale===lang));
+  bar.setAttribute('aria-label',lang==='en'?'Choose interface language':'Sprache der Oberfläche wählen');
+  for(const b of bar.querySelectorAll('button')){
+   const target=b.dataset.adminLocale;
+   b.setAttribute('aria-pressed',String(target===lang));
+   const label=target==='de'?(lang==='en'?'Switch to German':'Deutsch auswählen'):(lang==='en'?'English selected':'Englisch auswählen');
+   b.setAttribute('aria-label',label);b.setAttribute('title',label);
+  }
   notice.hidden=lang!=='en';document.documentElement.lang=lang;document.dispatchEvent(new Event('toolya:admin-locale-change'));
  }
  if(typeof MutationObserver==='function'){

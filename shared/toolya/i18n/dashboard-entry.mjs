@@ -58,7 +58,13 @@ function mount(){
   document.documentElement.lang=lang;
   document.documentElement.dataset.dashboardLocale=lang;
   group.setAttribute('aria-label',lang==='en'?'Choose language':'Sprache wählen');
-  for(const b of [de,en])b.setAttribute('aria-pressed',String(b.dataset.dashboardLocale===lang));
+  group.setAttribute('aria-label',lang==='en'?'Choose interface language':'Sprache der Oberfläche wählen');
+  for(const b of group.querySelectorAll('button')){
+   const target=b.dataset.dashboardLocale;
+   b.setAttribute('aria-pressed',String(target===lang));
+   const label=target==='de'?(lang==='en'?'Switch to German':'Deutsch auswählen'):(lang==='en'?'English selected':'Englisch auswählen');
+   b.setAttribute('aria-label',label);b.setAttribute('title',label);
+  }
   if(guide){
    guide.href=lang==='en'?'/en/toolya-dashboard/':'/toolya-dashboard/';
    guide.lang=lang;
