@@ -35,6 +35,13 @@ test('dashboard completion records a real watering event and updates plant ciste
 });
 test('connect reads and mutates the plant snapshot by revision, without writing duplicate dashboard tasks',async()=>{
   const data=sample();
+  // Use the real calendar for the integration adapter, while the pure unit
+  // cases above retain explicit fixed dates. Noon avoids DST day boundaries.
+  const now=new Date();
+  const day=(offset)=>{const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+offset,12);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
+  const previous=day(-7),scheduled=day(4);
+  data.plants[0].lastWatered=previous;data.plants[0].waterHistory=[previous];
+  data.plants[1].lastWatered=day(-6);
   let revision=1, userId='A', saved=0, fail=false;
   const client={
     auth:{async getUser(){return {data:{user:{id:userId,is_anonymous:false}},error:null};}},
@@ -55,17 +62,17 @@ test('connect reads and mutates the plant snapshot by revision, without writing 
   };
   const connect=createWateringConnect(client);
   assert.equal((await connect.read()).tasks.length,2);
-  await connect.schedule(42,'2026-11-24');
+  await connect.schedule(42,scheduled);
   assert.equal(saved,1);
-  assert.equal(data.plants[0].connectDue,'2026-11-24');
+  assert.equal(data.plants[0].connectDue,scheduled);
   fail=true;
   await assert.rejects(connect.complete(42),/Konflikt/);
-  assert.equal(data.plants[0].lastWatered,'2026-11-18','conflict must not modify persisted plant');
+  assert.equal(data.plants[0].lastWatered,previous,'conflict must not modify persisted plant');
   fail=false;
   await connect.complete(42);
   assert.equal(saved,2);
   assert.match(data.plants[0].lastWatered,/^\d{4}-\d{2}-\d{2}$/);
-  assert.notEqual(data.plants[0].lastWatered,'2026-11-18');
+  assert.notEqual(data.plants[0].lastWatered,previous);
   assert.equal(data.plants[0].connectDue,undefined);
   userId='B';
   assert.equal((await connect.read()).userId,'B');
