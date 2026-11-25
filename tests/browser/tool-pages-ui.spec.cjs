@@ -3159,3 +3159,61 @@ test('i18n runtime: home backup password and wrong file type validation in DE an
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
  }
 });
+
+test('i18n runtime: cookie settings follow tool language without changing denied consent',async({page})=>{
+ const outbound=await isolated(page,true);
+ const key='toolya.analytics.consent.v1';
+ await page.addInitScript(key=>localStorage.setItem(key,'no'),key);
+ await page.goto(origin+'/tools/car/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ const link=page.locator('#toolya-consent-settings'),panel=page.locator('#toolya-consent-panel');
+ await expect(panel).toBeHidden();
+ for(const lang of ['de','en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await expect(link).toHaveText(lang==='en'?'Cookie settings':'Cookie-Einstellungen');
+  await expect(link).toHaveAttribute('lang',lang);
+  await link.click();
+  await expect(panel).toBeVisible();
+  await expect(panel).toHaveAttribute('aria-label',lang==='en'?'Analytics settings':'Statistik-Einstellungen');
+  await expect(panel.locator('strong')).toHaveText(lang==='en'?'Analytics at Toolya':'Statistik bei Toolya');
+  await expect(panel.locator('.reject')).toHaveText(lang==='en'?'Reject':'Ablehnen');
+  await expect(panel.locator('.accept')).toHaveText(lang==='en'?'Accept':'Akzeptieren');
+  await expect(panel.locator('p a')).toHaveAttribute('href',lang==='en'?'/en/privacy.html':'/privacy.html');
+  await expect(panel.locator('.reject')).toBeFocused();
+  expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('no');
+  // Reaffirm the existing denial only to close the panel before changing language.
+  await panel.locator('.reject').click();
+  await expect(panel).toBeHidden();
+  expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('no');
+ }
+ expect(outbound.filter(url=>/googletagmanager|google-analytics|analytics\.google/.test(url))).toEqual([]);
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+
+test('i18n runtime: homepage backup rejects invalid format and decryption without changing stored data',async({page})=>{
+ await isolated(page,false);
+ for(const lang of ['de','en']){
+  await page.goto(origin+(lang==='en'?'/en/index.html':'/index.html'));
+  await page.waitForFunction(()=>window.toolyaHomeReady===true);
+  const key='helferlein_ui_layout_pflanzen_v1',fixture='[{"id":"fixture","visible":true}]';
+  await page.evaluate(({key,fixture})=>localStorage.setItem(key,fixture),{key,fixture});
+  const load=payload=>page.evaluate(payload=>window.importGlobalBackup({target:{files:[new File([JSON.stringify(payload)],'fixture.json',{type:'application/json'})],value:'fixture.json'}}),payload);
+  const notice=page.getByRole('alertdialog',{name:'Toolya'});
+  const check=async(de,en)=>{
+   await expect(notice.locator('#hl-alert-message')).toHaveText(lang==='en'?en:de);
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe(fixture);
+   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+  };
+  await load({app:'Toolya',version:'1.0',localStorage:{[key]:'changed'}});
+  await check('Diese Backup-Version wird nicht unterstützt.','This backup version is unsupported.');
+  await load({app:'Toolya',format:'encrypted-backup-v1',kdf:'unsupported'});
+  await check('Dieses verschlüsselte Backup-Format wird nicht unterstützt.','This encrypted backup format is unsupported.');
+  await load({app:'Toolya',format:'encrypted-backup-v1',kdf:'PBKDF2-SHA256',cipher:'AES-256-GCM',iterations:600000,salt:'AA==',iv:'AA==',ciphertext:'AA=='});
+  const password=page.getByRole('dialog',{name:lang==='en'?'Backup password':'Backup-Passwort',exact:true});
+  await password.locator('input[type="password"]').fill('isolated-password');
+  await password.locator('button[type="submit"]').click();
+  await check('Entschlüsselung fehlgeschlagen. Passwort oder Sicherungsdatei ist ungültig.','Decryption failed. The password or backup file is invalid.');
+  await page.evaluate(key=>localStorage.removeItem(key),key);
+ }
+});
