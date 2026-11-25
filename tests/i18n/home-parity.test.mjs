@@ -14,6 +14,6 @@ test('English home preserves German tool IDs and existing English guide routes',
  assert.ok(!existsSync(new URL('../../mascots.html',import.meta.url)));
  assert.ok(!existsSync(new URL('../../en/mascots.html',import.meta.url)));
  for(const a of guides){const url=a.getAttribute('href');assert.ok(url.startsWith('/en/'));assert.ok(existsSync(new URL('../..'+url+(url.endsWith('/')?'index.html':''),import.meta.url)),url);}
- assert.equal(en.querySelector('meta[name="robots"]').content,'noindex,follow');
+ assert.equal(en.querySelector('meta[name="robots"]').content,'index,follow');
  for(const a of en.querySelectorAll('.ty-tool-link'))assert.match(a.getAttribute('href'),/^\/tools\/.*\?lang=en$/);
 });

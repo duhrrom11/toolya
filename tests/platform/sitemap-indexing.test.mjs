@@ -11,7 +11,7 @@ const readPage = path => parseHTML(read(path)).document;
 const sitemapUrls = Array.from(read('sitemap.xml').matchAll(/<loc>([^<]+)<\/loc>/g), match => match[1]);
 
 const guideUrls = sitemapUrls.map(entry => new URL(entry))
-  .filter(url => /^\/[^/]+\/$/.test(url.pathname));
+  .filter(url => url.pathname!=='/en/' && /^\/(?:en\/)?[^/]+\/$/.test(url.pathname));
 
 function hasNoindex(document) {
   return Array.from(document.querySelectorAll('meta[name]')).some(meta => {
@@ -79,10 +79,17 @@ test('public guides link to the website publisher and identify it in JSON-LD', (
   for (const url of guideUrls) {
     const page = readPage(url.pathname.slice(1) + 'index.html');
     const meta = JSON.parse(page.querySelector('script[type="application/ld+json"]').textContent);
-    assert.equal(meta.publisher?.['@id'], publisher.href, url.pathname + ' publisher mismatch');
+    if(url.pathname.startsWith('/en/')){
+      assert.equal(meta.inLanguage,'en',url.pathname+' schema language');
+      assert.equal(meta.url,url.href,url.pathname+' schema URL');
+      assert.equal(meta.isPartOf?.['@type'],'WebSite',url.pathname+' website schema');
+      assert.equal(meta.isPartOf?.url,origin+'/',url.pathname+' website identity');
+      const englishHome=JSON.parse(readPage('en/index.html').querySelector('script[type="application/ld+json"]').textContent)['@graph'].find(entity=>entity['@type']==='WebSite');
+      assert.equal(englishHome.publisher?.['@id'],publisher.href,'English website publisher mismatch');
+    }else assert.equal(meta.publisher?.['@id'], publisher.href, url.pathname + ' publisher mismatch');
     const links = Array.from(page.querySelectorAll('footer a[href]'),
       link => new URL(link.getAttribute('href'), url).href);
-    assert.ok(links.includes(publisher.href), url.pathname + ' publisher link missing');
+    assert.ok(links.includes(url.pathname.startsWith('/en/')?origin+'/en/legal.html':publisher.href), url.pathname + ' publisher link missing');
   }
 });
 

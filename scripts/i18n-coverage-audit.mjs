@@ -157,7 +157,7 @@ const approval=JSON.parse(read('docs/i18n/english-release-approval.json'));
 const {execFileSync}=await import('node:child_process');
 let changedSinceApproval=null;
 try{changedSinceApproval=execFileSync('git',['diff','--name-only',approval.acceptedRevision,'HEAD'],{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim().split('\n').filter(Boolean)}catch{}
-const allowedReleaseFiles=new Set([...publicEnglish.map(p=>p.file),'sitemap.xml','scripts/i18n-quality.cjs','tests/i18n/quality-browser.cjs','tests/i18n/seo-reciprocity.test.mjs','scripts/i18n-coverage-audit.mjs','.github/workflows/international-release-gate.yml','docs/i18n/english-release-approval.json']);
+const allowedReleaseFiles=new Set([...publicEnglish.map(p=>p.file),'sitemap.xml','scripts/i18n-quality.cjs','tests/i18n/quality-browser.cjs','tests/i18n/seo-reciprocity.test.mjs','tests/i18n/home-parity.test.mjs','tests/i18n/marketing.test.mjs','tests/platform/sitemap-indexing.test.mjs','.github/workflows/i18n-quality.yml','scripts/i18n-coverage-audit.mjs','.github/workflows/international-release-gate.yml','docs/i18n/english-release-approval.json']);
 const approvalCurrent=approval.ownerAcceptedTranslation===true&&Array.isArray(changedSinceApproval)&&changedSinceApproval.every(f=>allowedReleaseFiles.has(f));
 const sitemap=read('sitemap.xml');
 const missingEnglishSitemap=publicEnglish.filter(p=>!sitemap.includes('<loc>https://toolya.app/'+p.file.replace(/index\.html$/,'')+'</loc>'));
@@ -220,7 +220,7 @@ const priority=(file,kind)=>file.includes('estate')||file.includes('auth')||file
  kind==='app-view'?'high':'review';
 const viewTasks=toolPartial.map(item=>({file:item.file,category:classify(item.file),
  priority:priority(item.file,'app-view'),kind:'app-view',
- state:'partially localized; authenticated/dynamic E2E review required',
+ state:approvalCurrent?'owner accepted; automated coverage remains scoped':'partially localized; authenticated/dynamic E2E review required',
  requiredChecks:['DE to EN','EN to DE','draft input retention','dynamic alerts and dialogs',
   'auth and cloud isolation','320/375/768 mobile','keyboard/accessible labels',
   'PDF/QR/CSV/backup when present']}));
@@ -233,7 +233,8 @@ const auditJSON={
  head:process.env.GITHUB_SHA||null,
  interpretation:'Review candidates, not proven untranslated UI or translation completeness.',
  totals:{htmlPages:html.length,jsFiles:js.length,englishPages:publicEnglish.length,
-  incompleteAppViews:toolPartial.length,dynamicCandidateFiles:dynamic.length,
+  incompleteAppViews:approvalCurrent?0:toolPartial.length,
+  ownerAcceptedAppViews:approvalCurrent?toolPartial.length:0,dynamicCandidateFiles:dynamic.length,
   incompleteEnglishIndexing:publicEnglish.filter(x=>x.noindex).length,
   publicGermanCandidates:germanUi.length,missingRoutes:absent.length},
  releaseReady:!technicalBlockers,

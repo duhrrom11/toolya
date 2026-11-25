@@ -56,7 +56,7 @@ test('English public pages have unique correct canonical URLs and language',()=>
     const html=read(path);
     assert.match(html,/<html lang="en"(?:\s[^>]*)?>/);
     assert.ok(html.includes('href="https://toolya.app'+url+'"'),'missing canonical '+path);
-    assert.ok(html.includes('content="noindex,follow"'),'English pages stay noindex until UI translation');
+    assert.ok(html.includes('content="index,follow"'),'released English pages are indexable');
     assert.ok(html.includes('data-set-locale="de"'),'missing DE return');
     assert.ok(html.includes('class="brand"') || html.includes('class="b3-hub-logo ty-info-brand"') || (path==='en/index.html' && html.includes('class="b3-hub-logo"')),'missing brand');
     assert.ok(!html.includes('brand-symbol'),'no invented brand mark');
@@ -108,7 +108,7 @@ test('new English guides preserve reciprocal DE/EN links and use real applicatio
   assert.ok(html.includes('href="/'+guide.de+'/" lang="de"')||html.includes('href="/'+guide.de+'/" data-set-locale="de"'),guide.slug);
   assert.ok(de.includes('href="/en/'+guide.slug+'/" lang="en"'),guide.de);
   assertEnglishToolLinks(html,'/tools/'+guide.app+'/'+guide.appFile,2,guide.slug);
-  assert.ok(html.includes('noindex,follow'),'keep unreleased English guide out of index');
+  assert.ok(html.includes('content="index,follow"'),'released English guide is indexable');
  }
 });
 
@@ -128,7 +128,7 @@ test('English legal and privacy notices preserve disclosure details and reciproc
   assert.ok(en.includes('href="https://toolya.app/en/'+path+'"'));
   assert.ok(en.includes('href="/'+path+'"'));
   assert.ok(de.includes('href="/en/'+path+'" lang="en"'));
-  assert.match(en,/noindex,follow/);
+  assert.match(en,/content="index,follow"/);
  }
  assert.match(read('en/legal.html'),/Section 5 DDG/);
  assert.match(read('en/privacy.html'),/Google Analytics 4/);
