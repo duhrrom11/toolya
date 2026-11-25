@@ -1246,6 +1246,7 @@ export function wishesText(value,language){
   if(value.startsWith(start)&&value.endsWith(end)){const body=value.slice(start.length,value.length-end.length),split=body.indexOf(middle);if(split>=0)return targetStart+body.slice(0,split)+targetMiddle+body.slice(split+middle.length)+targetEnd;}
  }
  const dynamic=language==='en'?[
+ [/^(\d+) Wünsche ohne Liste ausgewählt\. Mit „Hinzufügen“ kannst du sie der aktuellen Liste zuordnen\.$/,'$1 unassigned wishes selected. Use “Add” to assign them to the current list.'],
  [/^(\d+) lokale Ansichten in die Cloud kopieren\? Gleichnamige Cloud-Ansichten bleiben unverändert\. Lokale Originale werden nicht gelöscht\.$/,'Copy $1 local views to the cloud? Cloud views with matching names remain unchanged. Local originals will not be deleted.'],
  [/^(\d+) lokale Ansichten kopiert\. (\d+) weitere verbleiben lokal\.$/,'$1 local views copied. $2 more remain local.'],
  [/^(\d+) Cloud-Ansichten verfügbar\. Lokale Ansichten bleiben bis zu einem ausdrücklich bestätigten Import auf diesem Gerät\.$/,'$1 cloud views available. Local views remain on this device until an explicitly confirmed import.'],
@@ -1272,7 +1273,7 @@ export function wishesText(value,language){
  [/^(\d+) passende Einträge auf dieser Seite\.$/,'$1 matching entries on this page.'],
  [/^Sicherung gültig: (\d+) Wünsche\. Nur Vorschau – keine Daten wurden gespeichert\.$/,'Backup valid: $1 wishes. Preview only – no data was saved.']
  ]:[
- [/^Copy (\d+) local views to the cloud\? Cloud views with matching names remain unchanged\. Local originals will not be deleted\.$/,'$1 lokale Ansichten in die Cloud kopieren? Gleichnamige Cloud-Ansichten bleiben unverändert. Lokale Originale werden nicht gelöscht.'],
+ [/^(\d+) unassigned wishes selected\. Use “Add” to assign them to the current list\.$/,'$1 Wünsche ohne Liste ausgewählt. Mit „Hinzufügen“ kannst du sie der aktuellen Liste zuordnen.'], [/^Copy (\d+) local views to the cloud\? Cloud views with matching names remain unchanged\. Local originals will not be deleted\.$/,'$1 lokale Ansichten in die Cloud kopieren? Gleichnamige Cloud-Ansichten bleiben unverändert. Lokale Originale werden nicht gelöscht.'],
  [/^(\d+) local views copied\. (\d+) more remain local\.$/,'$1 lokale Ansichten kopiert. $2 weitere verbleiben lokal.'],
  [/^(\d+) cloud views available\. Local views remain on this device until an explicitly confirmed import\.$/,'$1 Cloud-Ansichten verfügbar. Lokale Ansichten bleiben bis zu einem ausdrücklich bestätigten Import auf diesem Gerät.'], [/^Select assigned \((\d+)\)$/,'Zugeordnete auswählen ($1)'],
  [/^Select unassigned \((\d+)\)$/,'Ohne Liste auswählen ($1)'],
