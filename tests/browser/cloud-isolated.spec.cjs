@@ -123,3 +123,54 @@ test('isolated Chromium: DE/EN dynamic failures preserve literal backend details
  }
  expect(result.writes).toBe(0);
 });
+
+test('Wishes cloud extras: real insert and update handlers retain uncertainty and diagnostic suffix after network rejection',async({page})=>{
+ await page.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+ await page.route('**/tools/wishes/__network-fixture.html*',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="de"><body><header></header><button id="saveWishExtrasCloud">Save</button><button id="updateWishExtrasCloud">Update</button><output id="wishExtrasCloudFeedback" role="status" aria-live="polite"></output></body></html>'}));
+ await page.goto(origin+'/tools/wishes/__network-fixture.html?lang=de');
+ const result=await page.evaluate(async()=>{
+  const response=await fetch('/tools/wishes/app.mjs');
+  if(!response.ok)throw Error('Could not load real handlers');
+  const source=await response.text();
+  const start=source.indexOf('let wishExtrasCloudOperation=0;'),end=source.indexOf("$('restoreHiddenWishes').onclick",start);
+  if(start<0||end<=start)throw Error('Cloud handler extraction markers changed');
+  const {wishlistErrorMessage}=await import('/tools/wishes/wishlist-utils.mjs');
+  const {wishesText}=await import('/shared/toolya/i18n/wishes-copy.mjs');
+  const diagnostic='PRIVATE Löschen: fixture@example.invalid / NET-42';
+  const original={image_url:null,target_price:12,quantity:1,wish_status:'open',version:7};
+  const attempts=[],filters=[],reports=[];
+  const user={id:'fixture-owner'},editingWishId='fixture-wish',editingWishBaseline={id:editingWishId},wishEditorRevision=1;
+  const db={from(table){
+   if(table!=='wishlist_wish_extras')throw Error('Unexpected table');
+   let operation='read';const q={select:()=>q,eq:(key,value)=>{if(operation==='update')filters.push([key,value]);return q},maybeSingle:async()=>({data:structuredClone(original),error:null})};
+   for(const method of ['insert','update'])q[method]=()=>{operation=method;attempts.push(method);return q};
+   const reject=()=>Promise.reject(new Error(diagnostic));
+   q.single=reject;q.then=(resolve,rejectFn)=>reject().then(resolve,rejectFn);return q;
+  }};
+  const $=id=>document.getElementById(id);
+  const run=fn=>fn,requireUser=()=>user.id,readValidatedWishExtras=()=>({imageUrl:'',price:15,quantity:2,status:'open'});
+  const buddy={confirm:async()=>true},wishCopy=(de,en)=>document.documentElement.lang==='en'?en:de,report=value=>reports.push(value);
+  // Execute the unchanged source handlers with a narrow injected fixture, not the full account bootstrap.
+  new Function('$','run','requireUser','user','editingWishId','editingWishBaseline','wishEditorRevision','readValidatedWishExtras','db','wishlistErrorMessage','buddy','wishCopy','report',source.slice(start,end))($,run,requireUser,user,editingWishId,editingWishBaseline,wishEditorRevision,readValidatedWishExtras,db,wishlistErrorMessage,buddy,wishCopy,report);
+  await import('/shared/toolya/i18n/wishes-entry.mjs');
+  const messages=[];
+  for(const lang of ['de','en','de']){
+   document.querySelector('[data-wishes-locale="'+lang+'"]').click();
+   for(const id of ['saveWishExtrasCloud','updateWishExtrasCloud']){
+    await $(id).onclick();
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    messages.push({lang,id,text:$('wishExtrasCloudFeedback').textContent});
+   }
+  }
+  return {messages,attempts,filters,reports,original,diagnostic};
+ });
+ const prefixes={
+  de:['Cloud-Speicherung wegen Netzwerkfehler fehlgeschlagen. Ob die Anfrage den Server erreicht hat, ist unklar; bitte Cloud-Stand prüfen, bevor du erneut speicherst. ','Cloud-Aktualisierung durch Netzwerkfehler unterbrochen. Ob sie gespeichert wurde, ist unklar; bitte den Cloud-Stand erneut prüfen. '],
+  en:['Cloud saving failed because of a network error. It is unclear whether the request reached the server; check the cloud state before saving again. ','The cloud update was interrupted by a network error. It is unclear whether it was saved; check the cloud state again. ']
+ };
+ for(const item of result.messages)expect(item.text).toBe(prefixes[item.lang][item.id==='saveWishExtrasCloud'?0:1]+result.diagnostic);
+ expect(result.attempts).toEqual(['insert','update','insert','update','insert','update']);
+ expect(result.filters).toEqual(Array.from({length:3},()=>[['user_id','fixture-owner'],['wish_id','fixture-wish'],['version',7]]).flat());
+ expect(result.reports).toEqual([]);
+ expect(result.original).toEqual({image_url:null,target_price:12,quantity:1,wish_status:'open',version:7});
+});
