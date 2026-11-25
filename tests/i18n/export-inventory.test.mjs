@@ -4,7 +4,7 @@ import {execFileSync} from 'node:child_process';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 const root=resolve(import.meta.dirname,'../..');
-const patterns={csv:/text\/csv|application\/csv|\.csv\b|exportCsv|\b(?:export\s+)?function\s+csv\s*\(/i,json:/application\/json|exportBackup/i,pdf:/application\/pdf|jsPDF|\.pdf\b/i,qr:/QRCode|qrcode/i,print:/window\.print|\.print\(/i,download:/createObjectURL|\.download\s*=/i};
+const patterns={csv:/text\/csv|application\/csv|\.csv\b|exportCsv|\b(?:export\s+)?function\s+csv\s*\(/i,ics:/text\/calendar|\.ics\b|downloadAllDayCalendar|buildAllDayCalendar/i,json:/application\/json|exportBackup/i,pdf:/application\/pdf|jsPDF|\.pdf\b/i,qr:/QRCode|qrcode/i,print:/window\.print|\.print\(/i,download:/createObjectURL|\.download\s*=/i};
 test('tracked application export candidate inventory (review only)',()=>{
  const tracked=execFileSync('git',['ls-files','-z'],{cwd:root,encoding:'utf8'}).split('\0').filter(p=>/^(tools|assets|shared|dashboard|admin-stats-dashboard|supabase\/functions)\//.test(p)&&/\.(html|js|mjs|cjs|ts)$/.test(p)&&!/(^|\/)(vendor|node_modules|tests?|fixtures)(\/|$)|\.min\.js$|\.test\./.test(p));
  const candidates=[];
@@ -21,6 +21,7 @@ test('tracked application export candidate inventory (review only)',()=>{
  console.log('EXPORT INVENTORY '+JSON.stringify({filesScanned:tracked.length,candidates:candidates.length,byKind}));
  assert.ok(candidates.some(x=>x.path==='tools/budget/index.html'&&x.kinds.includes('csv')));
  assert.ok(candidates.some(x=>x.path==='supabase/functions/wishlist-discovery/model.mjs'&&x.kinds.includes('csv')));
+ assert.ok(candidates.some(x=>x.path==='shared/toolya/calendar-export.mjs'&&x.kinds.includes('ics')));
  assert.ok(candidates.some(x=>x.path==='assets/estate-owner.js'&&x.kinds.includes('print')));
 
 });
