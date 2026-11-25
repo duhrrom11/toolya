@@ -69,7 +69,7 @@ jobs:
         env:
           TOOLYA_CHROMIUM_PATH: /usr/bin/google-chrome
           PLAYWRIGHT_JSON_OUTPUT_FILE: test-results/i18n-quality/ten-tool-shell-report.json
-        run: npx playwright test --config=playwright.config.cjs --grep 'i18n ten-tool shell:' --reporter=json
+        run: npx playwright test --config=playwright.config.cjs --output=test-results/ten-tool-playwright --grep 'i18n ten-tool shell:' --reporter=json
       - name: Consolidate per-page acceptance evidence
         if: always()
         run: node scripts/i18n-page-acceptance.mjs
