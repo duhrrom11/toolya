@@ -130,6 +130,27 @@ const assert = require('node:assert/strict');
     assert.match(await page.locator('#result').innerText(), /Noch keine Wunschlisten ausgewählt/);
     await page.locator('#selectAll').click();
     assert.match(await page.locator('#selection').innerText(), /1 von 1 sichtbaren neuen Wunschlisten ausgewählt/);
+
+    // Actual selected-row downloads, no discovery API writes or private fixture mutation.
+    const {parseCsv}=await import('../../supabase/functions/wishlist-discovery/model.mjs');
+    const exportCalls=calls.length;
+    const expected={name:row.name,type:'',logo_url:row.logo_url,wishlist_url:row.wishlist_url,email:row.email,source_url:row.source_url,country:row.country,found_at:row.found_at,status:'new'};
+    const baseline={};
+    for(const lang of ['en','de']){
+      await page.locator('[data-admin-locale="'+lang+'"]').click();
+      assert.equal(await page.locator('[data-admin-locale="'+lang+'"]').getAttribute('aria-pressed'),'true');
+      for(const kind of ['csv','json']){
+        const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#'+kind).click()]);
+        assert.equal(download.suggestedFilename(),'toolya-wunschlisten.'+kind);
+        const content=fs.readFileSync(await download.path(),'utf8');
+        assert.deepEqual(kind==='csv'?parseCsv(content):JSON.parse(content),[expected]);
+        if(lang==='en')baseline[kind]=content;else assert.equal(content,baseline[kind]);
+      }
+      assert.equal(await page.locator('.finder-row input[type=checkbox]').isChecked(),true);
+    }
+    assert.equal(calls.length,exportCalls);
+    console.log('Admin CSV/JSON actual downloads passed in DE/EN with stable schema and no API calls.');
+
     page.once('dialog', async dialog => {
       assert.match(dialog.message(), /Namens-\/Organisationszuordnung/);
       await dialog.accept();
