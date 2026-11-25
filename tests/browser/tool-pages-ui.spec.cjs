@@ -3784,3 +3784,50 @@ test('Global encrypted restore DE/EN: password and overwrite cancellation preser
   expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
  }
 });
+
+
+test('Budget CSV DE/EN: real all and tax downloads preserve private records and prevent formula injection',async({page})=>{
+ const {readFile}=require('node:fs/promises');
+ const entries=[
+  {id:91,date:'2026-11-20',entryType:'ausgabe',title:'Private Öl; "Pflege"',store:'=1+1',category:'Lebensmittel',price:-12.5,paymentMethod:'Bar',isTax:true,isFixkosten:true,sn:'SN-91',location:'Privater Ort',note:'@private\nNotiz',photos:[]},
+  {id:92,date:'2026-11-10',entryType:'einnahme',title:'Nicht steuerrelevant',store:'Privater Händler',category:'Sonstiges',price:20,isTax:false,photos:[]},
+  {id:93,date:'2026-11-15',entryType:'ausgabe',title:'  ＋private',store:'Privater Laden',category:'Sonstiges',price:null,isTax:true,photos:[]}
+ ];
+ await isolated(page,true,true,{entries,budgets:{},goals:[]});
+ await page.goto(origin+'/tools/budget/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ const before=await page.evaluate(()=>JSON.stringify(getData()));
+ const {parseCsv}=await import('../../supabase/functions/wishlist-discovery/model.mjs');
+ for(const lang of ['en','de']){
+  const choice=page.locator('[data-tool-locale="'+lang+'"]');
+  await choice.click();await expect(choice).toHaveAttribute('aria-pressed','true');
+  for(const tax of [false,true]){
+   const pending=page.waitForEvent('download');
+   await page.evaluate(tax=>tax?exportSteuerCSV():exportAllBookingsCSV(),tax);
+   const download=await pending;
+   const prefix=lang==='en'?(tax?'tax-transactions-':'all-transactions-'):(tax?'steuer-buchungen-':'alle-buchungen-');
+   expect(download.suggestedFilename()).toMatch(new RegExp('^'+prefix+'\\d{4}-\\d{2}-\\d{2}\\.csv$'));
+   const raw=await readFile(await download.path(),'utf8');
+   expect(raw.charCodeAt(0)).toBe(0xfeff);
+   expect(raw).toContain('\r\n');
+   const rows=parseCsv(raw);
+   const date=lang==='en'?'Date':'Datum',title=lang==='en'?'Title':'Titel',merchant=lang==='en'?'Merchant':'Haendler',note=lang==='en'?'Note':'Notiz';
+   expect(rows.map(r=>r[date])).toEqual(tax?['2026-11-15','2026-11-20']:['2026-11-10','2026-11-15','2026-11-20']);
+   const last=rows.at(-1);
+   expect(last[title]).toBe(entries[0].title);
+   expect(last[merchant]).toBe("'=1+1");
+   expect(last[note]).toBe("'@private\nNotiz");
+   expect(last.Price_EUR??last.Preis_EUR).toBe('-12.50');
+   expect(rows.at(-2)[title]).toBe("'  ＋private");
+   expect(rows.at(-2).Price_EUR??rows.at(-2).Preis_EUR).toBe('');
+   expect(last[lang==='en'?'Serial_number':'Seriennummer']).toBe('SN-91');
+   if(!tax){
+    expect(last[lang==='en'?'Storage_location':'Lagerort']).toBe('Privater Ort');
+    expect(last[lang==='en'?'Tax_relevant':'Steuerrelevant']).toBe(lang==='en'?'Yes':'Ja');
+    expect(rows[0][lang==='en'?'Tax_relevant':'Steuerrelevant']).toBe(lang==='en'?'No':'Nein');
+   }else expect(raw).not.toContain('Nicht steuerrelevant');
+   expect(await page.evaluate(()=>JSON.stringify(getData()))).toBe(before);
+   expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+  }
+ }
+});
