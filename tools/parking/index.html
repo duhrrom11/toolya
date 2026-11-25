@@ -169,7 +169,7 @@
     <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-5xl space-y-6 mt-2">
                 
         <!-- Dashboard Statistiken -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-b3-panel="stats" id="b3-stats">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-amber-50 text-amber-700 rounded-xl font-bold">🅿️</div>
                 <div><p class="text-xs text-gray-500" data-tool-en="Saved parking sessions">Gespeicherte Parkvorgänge</p><h3 id="statCount" class="text-lg font-bold">0</h3></div>
@@ -177,10 +177,6 @@
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
                 <div><p class="text-xs text-gray-500" data-tool-en="Fees (filtered)">Gebühren (Gefiltert)</p><h3 id="statCost" class="text-lg font-bold">0,00 €</h3></div>
-            </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">📍</div>
-                <div><p class="text-xs text-gray-500" data-tool-en="GPS location">GPS-Standort</p><h3 id="statGps" class="text-xs font-bold text-blue-600" data-tool-en="Not saved">Nicht gespeichert</h3></div>
             </div>
         </div>
 
@@ -498,21 +494,6 @@
             }
         }
 
-        function refreshParkingGpsLocale() {
-            const status = document.getElementById('statGps');
-            if (!status) return;
-            const known = {
-                'Gespeichert ✓': 'Saved ✓',
-                'Nicht gespeichert': 'Not saved'
-            };
-            const reverse = Object.fromEntries(Object.entries(known).map(([de, en]) => [en, de]));
-            const current = status.textContent.trim();
-            if (Object.hasOwn(known, current) || Object.hasOwn(reverse, current)) {
-                const german = Object.hasOwn(reverse, current) ? reverse[current] : current;
-                status.textContent = window.__toolyaUILocale === 'en' ? known[german] : german;
-            }
-        }
-
         async function stopTimer() {
             clearInterval(timerInterval);
             activeEndTime = null;
@@ -614,7 +595,6 @@
                 date:now.toLocaleDateString('de-DE')+' '+now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})
             });
             if(!await saveData(data))return;
-            if(gps)document.getElementById('statGps').innerText=window.__toolyaUILocale === 'en' ? 'Saved ✓' : 'Gespeichert ✓';
             document.getElementById('parkDesc').value='';
             document.getElementById('parkSector').value='';
             document.getElementById('parkCost').value='';
@@ -716,7 +696,6 @@
 
         document.addEventListener('toolya:locale-change', () => {
             refreshParkingTimerLocale();
-            refreshParkingGpsLocale();
             if (parkingCloudReady) renderParkingList();
         });
 
