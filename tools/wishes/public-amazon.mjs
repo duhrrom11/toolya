@@ -16,7 +16,8 @@ const preview = valid && configured.mode === 'preview' &&
 if (!production && !preview) {
   throw new Error('Supabase-Konfiguration gesperrt: expliziter Modus und passende Projektkonfiguration erforderlich.');
 }
-const db = window.supabase.createClient(configured.url, configured.publishableKey);
+const db = window.toolyaAccountClient;
+if(!db)throw new Error('Toolya-Konto konnte nicht initialisiert werden.');
 import {amazonListUrl} from './public-profile-model.mjs';
 // Browser-only fallback: the public directory must not depend on a deployed Edge Function source file.
 function sourceFavicon(value){
@@ -239,7 +240,7 @@ function payload(){
  if(lists.some(l=>!l.url||!l.name))throw new Error('Bitte gültige Amazon-Wunschlisten-Links und Listennamen eingeben.');
  return {...identity,city:$('city').value.trim(),bio:own?.bio||'',interests:own?.interests||[],lists};
 }
-async function loadProfile(token,verifiedUser){const g=++authGeneration;let r;try{r=verifiedUser!==undefined?{data:{user:verifiedUser}}:await deadline(()=>db.auth.getUser(token))}catch(error){r={error}}if(g!==authGeneration)return;user=!r.error&&!r.data?.user?.is_anonymous?r.data?.user:null;syncSettingsAccount();$('auth').hidden=!!user;$('profileForm').hidden=!user;$('logoutPublic').hidden=!user;own=null;$('listFields').replaceChildren();if(!user){listField();status('profileStatus',r.error&&r.error.name!=='AuthSessionMissingError'?'Anmeldestatus gerade nicht verfügbar. Bitte erneut anmelden.':'');return}let result;try{result=await deadline(()=>db.from('wishlist_public_profiles').select('*').eq('user_id',user.id).maybeSingle())}catch(error){result={error}}if(g!==authGeneration)return;if(result.error){status('profileStatus','Dein Profil konnte nicht geladen werden. Bitte lade die Seite erneut.');$('profileForm').hidden=true;return}own=result.data;
+async function loadProfile(token,verifiedUser){const g=++authGeneration;let r;try{r=verifiedUser!==undefined?{data:{user:verifiedUser}}:await deadline(()=>db.auth.getUser(token))}catch(error){r={error}}if(g!==authGeneration)return;user=!r.error&&!r.data?.user?.is_anonymous?r.data?.user:null;$('auth').hidden=!!user;$('profileForm').hidden=!user;$('logoutPublic').hidden=!user;own=null;$('listFields').replaceChildren();if(!user){listField();status('profileStatus',r.error&&r.error.name!=='AuthSessionMissingError'?'Anmeldestatus gerade nicht verfügbar. Bitte erneut anmelden.':'');return}let result;try{result=await deadline(()=>db.from('wishlist_public_profiles').select('*').eq('user_id',user.id).maybeSingle())}catch(error){result={error}}if(g!==authGeneration)return;if(result.error){status('profileStatus','Dein Profil konnte nicht geladen werden. Bitte lade die Seite erneut.');$('profileForm').hidden=true;return}own=result.data;
  $('firstName').value=own?.first_name||'';
  $('lastName').value=own?.last_name||'';
  $('organizationName').value=own?.organization_name||'';
@@ -277,85 +278,8 @@ $('profileForm').onsubmit=async e=>{
  await Promise.allSettled([filters(),search(),detail()]);
 };
 $('deleteProfile').onclick=async()=>{if(!user||!confirm('Dein öffentliches Wunschprofil mit allen verlinkten Listen löschen? Die Original-Listen bei Amazon bleiben erhalten.'))return;const b=$('deleteProfile');b.disabled=true;try{const writer=user.id;const r=await guardedWishlistWrite(db,writer,()=>db.from('wishlist_public_profiles').delete().eq('user_id',writer).select('user_id'));if(r.error||r.data?.length!==1)throw new Error('Das Profil konnte nicht gelöscht werden.');await loadProfile();status('profileStatus','Dein öffentliches Profil wurde gelöscht.');$('profileDetail').replaceChildren();await filters();await search();await detail()}catch(e){status('profileStatus',e.message)}finally{b.disabled=false}};
-function syncSettingsAccount(){
- const signedIn=Boolean(user);
- $('settingsAccountStatus').textContent=signedIn?'Angemeldet als '+(user.email||'Toolya-Nutzer'):'Nicht angemeldet. Melde dich mit deinem Toolya-Konto an.';
- $('settingsAuthFields').hidden=signedIn;
- $('settingsLogin').hidden=signedIn;
- $('settingsSignup').hidden=signedIn;
- $('settingsLogout').hidden=!signedIn;
-}
-async function authenticate(signup,source='profile'){
- const modal=source==='settings';
- const emailField=$(modal?'settingsEmail':'email'),passwordField=$(modal?'settingsPassword':'password');
- const feedback=$(modal?'settingsAuthMessage':'profileStatus');
- const controls=modal?[$('settingsLogin'),$('settingsSignup')]:[$('login'),$('signup')];
- if(controls.some(button=>button.disabled))return;
- for(const button of controls)button.disabled=true;
- feedback.textContent='Anmeldung wird geprüft …';
- try{
-  const email=emailField.value.trim(),password=passwordField.value;
-  if(!email||!password)throw new Error('Bitte E-Mail und Passwort eingeben.');
-  const r=signup
-   ?await db.auth.signUp({email,password,options:{emailRedirectTo:new URL('./public.html#profile',location.href).href}})
-   :await db.auth.signInWithPassword({email,password});
-  if(r.error)throw r.error;
-  if(!r.data?.session){if(!signup)throw new Error('Keine bestätigte Anmeldung erhalten.');feedback.textContent='Bitte bestätige deine E-Mail-Adresse, bevor du dich anmeldest.';return}
-  if(!r.data?.user||r.data.user.is_anonymous)throw new Error('Keine bestätigte Anmeldung erhalten.');
-  await loadProfile(undefined,r.data.user);
-  feedback.textContent=user?'Du bist angemeldet.':'Anmeldestatus gerade nicht verfügbar. Bitte erneut anmelden.';
- }catch(e){feedback.textContent=e.message||'Anmeldung fehlgeschlagen.'}
- finally{passwordField.value='';for(const button of controls)button.disabled=false}
-}
-async function signOut(){
- const r=await db.auth.signOut();
- if(r.error){
-  $('profileStatus').textContent='Abmelden fehlgeschlagen.';
-  $('settingsAuthMessage').textContent=r.error.message||'Abmelden fehlgeschlagen.';
- }else{
-  await loadProfile();
-  $('settingsAuthMessage').textContent='Du bist abgemeldet.';
- }
-}
-$('login').onclick=()=>authenticate(false);
-$('signup').onclick=()=>authenticate(true);
-$('logoutPublic').onclick=signOut;
-$('settingsLogin').onclick=()=>authenticate(false,'settings');
-$('settingsSignup').onclick=()=>authenticate(true,'settings');
-$('settingsLogout').onclick=signOut;
-$('settingsForgotPassword').onclick=async()=>{
- const email=$('settingsEmail').value.trim(),message=$('settingsAuthMessage');
- if(!email){message.textContent='Bitte gib zuerst deine E-Mail-Adresse ein.';$('settingsEmail').focus();return}
- const button=$('settingsForgotPassword');button.disabled=true;
- try{
-  const r=await db.auth.resetPasswordForEmail(email,{redirectTo:new URL('./public.html#profile',location.href).href});
-  if(r.error)throw r.error;
-  message.textContent='Falls für diese E-Mail-Adresse ein Konto existiert, erhältst du eine E-Mail zum Zurücksetzen des Passworts.';
- }catch(e){message.textContent=e.message||'Die Anfrage konnte nicht gesendet werden.'}
- finally{button.disabled=false}
-};
-$('settingsSaveNewPassword').onclick=async()=>{
- const password=$('settingsNewPassword').value,confirmation=$('settingsConfirmPassword').value;
- const message=$('settingsAuthMessage');
- if(password.length<8){message.textContent='Bitte ein Passwort mit mindestens acht Zeichen verwenden.';return}
- if(password!==confirmation){message.textContent='Die Passwörter stimmen nicht überein.';return}
- const button=$('settingsSaveNewPassword');button.disabled=true;
- try{
-  const r=await db.auth.updateUser({password});
-  if(r.error)throw r.error;
-  message.textContent='Dein neues Passwort wurde gespeichert.';
-  $('settingsRecoveryPanel').hidden=true;
-  $('settingsNewPassword').value='';$('settingsConfirmPassword').value='';
-  await loadProfile();
- }catch(e){message.textContent=e.message||'Das neue Passwort konnte nicht gespeichert werden.'}
- finally{button.disabled=false}
-};
-const settingsModal=$('settingsModal');
-const openSettings=()=>{syncSettingsAccount();settingsModal.showModal()};
-$('wishlistSettingsBtn').onclick=openSettings;
-$('closeSettingsBtn').onclick=() => settingsModal.close();
-$('cancelSettingsBtn').onclick=() => settingsModal.close();
-$('settingsToProfile').onclick=() => settingsModal.close();
+// The shared account controller owns all credentials and recovery actions.
+$('profileAccountOpen').onclick=()=>window.openSettings();
 $('addList').onclick=()=>listField()?.querySelector('[name=name]').focus();$('previewProfile').onclick=()=>{try{const p=payload();if(!p)return;$('previewContent').replaceChildren(card(p,true,true));$('previewDialog').showModal()}catch(e){status('profileStatus',e.message)}};$('closePreview').onclick=()=>$('previewDialog').close();
 $('retrySearch').onclick=search;
 let debounce;
@@ -372,16 +296,15 @@ $('search').oninput=()=>{
 $('submitSearch').onclick=()=>{page=0;search()};
 for(const id of['countryFilter','occasionFilter'])$(id).onchange=()=>{page=0;search()};$('resetFilters').onclick=()=>{$('search').value='';for(const id of['countryFilter','occasionFilter'])$(id).value='';page=0;search()};$('prevPage').onclick=()=>{page=Math.max(0,page-1);search()};$('nextPage').onclick=()=>{page++;search()};
 renderFavorites();
-let initialAuthTimer=setTimeout(()=>{if(authGeneration===0){void loadProfile(undefined,null);status('profileStatus','Anmeldestatus gerade nicht verfügbar. Bitte erneut anmelden.')}},10000);
-db.auth.onAuthStateChange((event,session)=>{
- if(event==='PASSWORD_RECOVERY'){
-  $('settingsRecoveryPanel').hidden=false;
-  if(!settingsModal.open)settingsModal.showModal();
-  $('settingsNewPassword').focus();
- }
- if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event)){
-  clearTimeout(initialAuthTimer);
-  const g=++authGeneration;
-  setTimeout(()=>{if(g!==authGeneration)return;void loadProfile(session?.access_token,session?undefined:null)},0);
- }
-});window.addEventListener('storage',e=>{if(e.key===key){favorites=readFavorites();renderFavorites()}});await Promise.allSettled([filters(),search(),detail()]);
+let observedAccountId;
+function applyAccountState(state){
+ const verified=state&&!state.error&&!state.recovery?state.user:null;
+ const id=verified?.id||null;
+ if(id===observedAccountId)return;
+ observedAccountId=id;
+ void loadProfile(undefined,verified||null);
+}
+document.addEventListener('toolya:account-state',event=>applyAccountState(event.detail));
+if(window.toolyaAccountState)applyAccountState(window.toolyaAccountState);
+else {$('profileForm').hidden=true;$('auth').hidden=false;}
+window.addEventListener('storage',e=>{if(e.key===key){favorites=readFavorites();renderFavorites()}});await Promise.allSettled([filters(),search(),detail()]);
