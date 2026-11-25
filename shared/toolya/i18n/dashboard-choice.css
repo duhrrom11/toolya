@@ -4,5 +4,6 @@
    navigation without shifting the logo, account and settings controls. */
 @media (max-width:740px){
  .b3-hub-topbar{position:relative;padding-bottom:64px}
- .b3-hub-nav .ty-dashboard-locale{position:absolute;right:12px;bottom:8px}
+ .b3-hub-nav{position:relative}
+ .b3-hub-nav .ty-dashboard-locale{position:absolute;right:0;top:calc(100% + 8px);bottom:auto}
 }

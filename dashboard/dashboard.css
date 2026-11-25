@@ -149,9 +149,10 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(-
 @media(max-width:360px){
   .b3-hub-topbar{padding-bottom:64px}
   .b3-hub-nav{position:relative}
-  .b3-hub-nav > [role="group"][aria-label="Sprache wählen"]{
+  .b3-hub-nav > .ty-dashboard-locale{
     position:absolute!important;
     top:calc(100% + 8px);
+    bottom:auto;
     right:0;
     margin:0;
   }

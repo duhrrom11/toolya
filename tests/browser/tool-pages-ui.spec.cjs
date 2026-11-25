@@ -1468,6 +1468,24 @@ test('dashboard: shared actions, task rows and account dialog at three widths',a
   await expect(page.locator('#logoutUser')).toBeVisible();
   expect(await page.locator('.dashboard-settings-panel').evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);await capture('dashboard-account-'+width);
   await page.locator('#closeSettingsBtn').click();await expect(modal).toBeHidden();
+  await expect(page.locator('#settingsBtn')).toBeFocused();
+  for(const lang of ['en','de']){
+   const localeButton=page.locator('button[data-dashboard-locale="'+lang+'"]');
+   await localeButton.focus();await page.keyboard.press('Enter');
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   const settings=page.locator('#settingsBtn');
+   const overlap=await page.evaluate(()=>{
+    const a=document.querySelector('#settingsBtn').getBoundingClientRect(),b=document.querySelector('.ty-dashboard-locale').getBoundingClientRect();
+    return Math.min(a.right,b.right)>Math.max(a.left,b.left)&&Math.min(a.bottom,b.bottom)>Math.max(a.top,b.top);
+   });
+   expect(overlap).toBe(false);
+   await settings.click();await expect(modal).toBeVisible();
+   await expect(modal).toHaveAttribute('aria-labelledby','settingsTitle');
+   expect(await modal.evaluate(el=>el.contains(document.activeElement))).toBe(true);
+   await expect(page.locator('#cloudStatus')).toHaveAttribute('role','status');
+   await expect(page.locator('#cloudStatus')).toHaveAttribute('aria-live','polite');
+   await page.keyboard.press('Escape');await expect(modal).toBeHidden();await expect(settings).toBeFocused();
+  }
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  }
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);expect(errors).toEqual([]);
