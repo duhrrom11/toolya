@@ -2972,8 +2972,33 @@ test('i18n runtime: duplicate budget transaction cancellation preserves syntheti
   const dialog=await pending;
   const actual={type:dialog.type(),message:dialog.message()};
   await dialog.dismiss();await action;
-  expect(actual).toEqual({type:'confirm',message:lang==='en'?'A transaction with the same date, title, amount and type already exists.\\n\\nSave another copy anyway?':'Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\\n\\nTrotzdem erneut speichern?'});
+  expect(actual).toEqual({type:'confirm',message:lang==='en'?'A transaction with the same date, title, amount and type already exists.\n\nSave another copy anyway?':'Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\n\nTrotzdem erneut speichern?'});
   expect(await page.evaluate(()=>JSON.stringify(getData()))).toBe(before);
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
+ }
+});
+
+test('i18n runtime: shared cloud replacement warning cancels before backup or write',async({page})=>{
+ await isolated(page,true);
+ await page.goto(origin+'/tools/parking/index.html?lang=de');
+ for(const lang of ['en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  const pending=page.waitForEvent('dialog',{timeout:5000});
+  const action=page.evaluate(async()=>{
+   const {confirmCloudReplacement}=await import('/shared/toolya/cloud-backup.mjs');
+   const original={fixture:'Private Löschen'},calls={backup:0,replace:0};
+   const result=await confirmCloudReplacement({
+    controller:{ready:true,revision:1,sessionGeneration:1,snapshot:()=>original,replace:async()=>{calls.replace++;throw Error('Unexpected replacement')}},
+    incoming:{fixture:'Other'},validate:v=>v,confirm:message=>window.confirm(message),
+    exportBackup:async()=>{calls.backup++;return true}
+   });
+   return {result,calls,original};
+  });
+  const dialog=await pending;
+  const actual={type:dialog.type(),message:dialog.message()};
+  await dialog.dismiss();
+  expect(await action).toEqual({result:{status:'cancelled'},calls:{backup:0,replace:0},original:{fixture:'Private Löschen'}});
+  expect(actual).toEqual({type:'confirm',message:lang==='en'?'Import replaces existing cloud data. Download a backup first?':'Import ersetzt vorhandene Cloud-Daten. Zuerst eine Sicherung herunterladen?'});
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
  }
 });
