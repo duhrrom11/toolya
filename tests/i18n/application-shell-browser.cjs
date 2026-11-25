@@ -112,6 +112,7 @@ async function run(){
    page.on('pageerror',e=>row.pageErrors.push(e.message.slice(0,300)));
    try{
     await page.addInitScript(()=>{localStorage.setItem('synthetic-private-note','Meine private Notiz');});
+    const social=authenticated&&entry.path==='/tools/wishes/social.html';
     const occasion=authenticated&&entry.path==='/tools/wishes/occasions.html';
     const admin=authenticated&&entry.path==='/admin-stats-dashboard/index.html';
     const collection=authenticated&&entry.path==='/tools/wishes/collection.html';
@@ -124,6 +125,7 @@ async function run(){
     if(collection)await page.waitForFunction(()=>!document.getElementById('collection')?.hidden&&document.getElementById('title')?.textContent==='Meine synthetische Sammlung',null,{timeout:6000});
     if(profile)await page.waitForFunction(()=>!document.getElementById('profile')?.hidden&&document.getElementById('name')?.textContent==='Synthetisches Profil',null,{timeout:6000});
     if(authenticated&&entry.path==='/tools/wishes/dashboard.html')await page.waitForFunction(()=>!document.getElementById('content')?.hidden&&!!document.querySelector('#taskReminders .empty')&&!!document.querySelector('#tasks .empty'),null,{timeout:6000});
+    if(social)await page.locator('#markRead').waitFor({state:'visible',timeout:6000});
     if(new URL(page.url()).pathname!==entry.path)throw Error('Protected route redirected; authenticated fixture required');
     if(entry.print){
      for(const lang of ['de','en']){
@@ -198,6 +200,17 @@ async function run(){
        await page.waitForFunction(expected=>document.getElementById('exportStatus').textContent===expected,expected);
        assert.equal(await page.locator('#confirmRelease').isChecked(),false);
        row.checks.push({lang,handoverRejection:true});
+      }
+      if(social){
+       const status=page.locator('#status'),mark=page.locator('#markRead');
+       assert.equal(await status.getAttribute('role'),'status');
+       assert.equal(await status.getAttribute('aria-live'),'polite');
+       await mark.press(lang==='en'?'Enter':'Space');
+       await page.waitForFunction(expected=>document.getElementById('status').textContent===expected,lang==='en'?'Marked as seen on this device.':'Auf diesem Gerät als gesehen markiert.');
+       assert.equal(await page.locator('#newCount').textContent(),'0');
+       assert.equal(await mark.evaluate(el=>el===document.activeElement),true);
+       assert.equal(await page.evaluate(()=>window.__toolyaAuthFixture.writes.length),0);
+       row.checks.push({lang,socialLocalStatus:true});
       }
       if(occasion){
        const en=lang==='en';

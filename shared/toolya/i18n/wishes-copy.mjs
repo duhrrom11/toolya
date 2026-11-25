@@ -1,6 +1,7 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
 "Bitte": "Please",
+ ", um deine persönliche Übersicht zu sehen.": " to see your personal overview.",
 ", um deine privaten Anlässe zu verwalten.": " to manage your private occasions.",
 "Wunsch speichern": "Save wish",
 "Ohne Liste speichern": "Save without a list",
