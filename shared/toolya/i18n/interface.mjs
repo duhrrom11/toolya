@@ -2738,6 +2738,8 @@ function validationText(tool,message){
 }
 export function translateToolDialog(tool, language, message) {
  if(language!=='en' || typeof message!=='string') return message;
+ // The shared B3 editor emits this exact application-owned warning on every tool.
+ if(message==='Layout konnte nicht gespeichert werden.')return 'Could not save the dashboard layout.';
  const exact=Object.hasOwn(dialogCopy,tool) && Object.hasOwn(dialogCopy[tool],message) ? dialogCopy[tool][message] : undefined;
  if(exact!==undefined) return exact;
  const additional=Object.hasOwn(additionalDialogCopy,tool)&&Object.hasOwn(additionalDialogCopy[tool],message)

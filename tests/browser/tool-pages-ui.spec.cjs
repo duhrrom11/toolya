@@ -3137,3 +3137,25 @@ test('i18n runtime: B3 layout storage failure keeps draft open and cancel restor
   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
  }
 });
+
+test('i18n runtime: home backup password and wrong file type validation in DE and EN',async({page})=>{
+ await isolated(page,false);
+ for(const lang of ['de','en']){
+  await page.goto(origin+(lang==='en'?'/en/index.html':'/index.html'));
+  await page.waitForFunction(()=>window.toolyaHomeReady===true);
+  const pending=page.evaluate(()=>window.requestBackupPassword('Fixture backup',true));
+  const dialog=page.getByRole('dialog',{name:lang==='en'?'Backup password':'Backup-Passwort',exact:true});
+  await expect(dialog).toBeVisible();
+  const passwords=dialog.locator('input[type="password"]');
+  await passwords.nth(0).fill('short');await passwords.nth(1).fill('short');
+  await dialog.locator('button[type="submit"]').click();
+  await expect(dialog).toContainText(lang==='en'?'Use at least 12 characters.':'Bitte mindestens 12 Zeichen verwenden.');
+  await page.keyboard.press('Escape');
+  expect(await pending).toBeNull();
+  await page.evaluate(()=>window.importGlobalBackup({target:{files:[new File(['fixture'],'fixture.txt',{type:'text/plain'})],value:'fixture.txt'}}));
+  const notice=page.getByRole('alertdialog',{name:'Toolya'});
+  await expect(notice.locator('#hl-alert-message')).toHaveText(lang==='en'?'Select a JSON backup file.':'Bitte eine JSON-Backupdatei auswählen.');
+  await notice.getByRole('button',{name:'OK'}).press('Enter');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ }
+});
