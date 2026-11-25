@@ -137,13 +137,13 @@ function auditPages(root,config,legacy,resources){
     germanTextReview:staticCandidates(enDoc)});
   if(langs.de!=='de'||langs.en!=='en')issues.push({kind:'marketing-lang',page:p.key,langs});
   if(!enToDe||!deToEn)issues.push({kind:'marketing-switch',page:p.key,enToDe,deToEn});
-  if(!noindex)issues.push({kind:'marketing-noindex-removed',page:p.key});
+  if(noindex)issues.push({kind:'marketing-noindex-retained',page:p.key});
  }
  return {tools,marketing,issues};
 }
 function validateReport(report){
  const hard=new Set(['missing-translation','empty-translation','missing-tool-page',
-   'missing-marketing-pair','marketing-lang','marketing-switch','marketing-noindex-removed',
+   'missing-marketing-pair','marketing-lang','marketing-switch','marketing-noindex-retained',
    'placeholder-review','invalid-selector-review']);
  const critical=report.issues.filter(x=>hard.has(x.kind));
  return {ok:critical.length===0,critical,review:report.issues.filter(x=>!hard.has(x.kind))};
@@ -189,7 +189,7 @@ function toMarkdown(r){
    '- Weitere Katalog-/Selektorprüfungen: '+r.validation.review.length,
    '- Statische Kandidaten werden nicht automatisch in die UI geschrieben.',
    '- Dynamische Selektoren können in der statischen HTML-Datei fehlen, ohne dass die Übersetzung fehlt.',
-   '- Englische Informationsseiten bleiben bis zur fachlichen Freigabe noindex.',
+   '- Englische Informationsseiten sind nach fachlicher Freigabe indexierbar.',
    '- Nutzereinträge, persönliche Daten, Secrets und Produktiv-Cloudwerte niemals übersetzen.','',
    '## Beispielhafte Review-Kandidaten');
  for(const t of r.tools)lines.push('- '+t.slug+': '+t.staticGermanReview.samples.slice(0,3).map(JSON.stringify).join('; '));

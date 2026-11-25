@@ -29,7 +29,8 @@ test('all 16 public DE/EN marketing pages have reciprocal hreflang and self-cano
    assert.ok(document.head.querySelector('meta[property="og:description"]'),path+' OG description');
    if(locale==='en'){
     const robots=document.head.querySelector('meta[name="robots"]')?.getAttribute('content')||'';
-    assert.match(robots,/\bnoindex\b/i,path+' must retain noindex before release');
+    assert.doesNotMatch(robots,/\bnoindex\b/i,path+' must be indexable after release approval');
+    assert.match(robots,/\bindex\b/i,path+' explicit indexing directive');
    }
   }
  }

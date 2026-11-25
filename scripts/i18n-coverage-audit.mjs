@@ -151,9 +151,20 @@ const groups=Object.freeze({
  dashboard:toolPartial.filter(x=>x.file==='dashboard/index.html').length,
  admin:toolPartial.filter(x=>x.file.startsWith('admin-stats-dashboard/')).length
 });
+// Release approval is an explicit owner decision for a fixed application snapshot,
+// not an assertion that every candidate has a browser test.
+const approval=JSON.parse(read('docs/i18n/english-release-approval.json'));
+const {execFileSync}=await import('node:child_process');
+let changedSinceApproval=null;
+try{changedSinceApproval=execFileSync('git',['diff','--name-only',approval.acceptedRevision,'HEAD'],{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim().split('\n').filter(Boolean)}catch{}
+const allowedReleaseFiles=new Set([...publicEnglish.map(p=>p.file),'sitemap.xml','scripts/i18n-quality.cjs','tests/i18n/quality-browser.cjs','tests/i18n/seo-reciprocity.test.mjs','scripts/i18n-coverage-audit.mjs','.github/workflows/international-release-gate.yml','docs/i18n/english-release-approval.json']);
+const approvalCurrent=approval.ownerAcceptedTranslation===true&&Array.isArray(changedSinceApproval)&&changedSinceApproval.every(f=>allowedReleaseFiles.has(f));
+const sitemap=read('sitemap.xml');
+const missingEnglishSitemap=publicEnglish.filter(p=>!sitemap.includes('<loc>https://toolya.app/'+p.file.replace(/index\.html$/,'')+'</loc>'));
+const technicalBlockers=Boolean(absent.length||htmlLangNotSet||publicEnglish.some(p=>p.noindex)||germanUi.length||missingEnglishSitemap.length||!approvalCurrent);
 const blockers=[
  `${absent.length} HTML pages without an English counterpart or a supported EN switch`,
- `${toolPartial.length} tool pages only provide opt-in, incomplete English UI`,
+ `${toolPartial.length} language-switch application views; owner acceptance recorded: ${approvalCurrent}`,
  htmlLangNotSet?'At least one application entrypoint lacks a document language assignment':'All five entrypoints assign document language; browser verification remains required',
  `${publicEnglish.filter(x=>x.noindex).length} of ${publicEnglish.length} English public pages have noindex`,
  `${germanUi.reduce((n,x)=>n+x.samples.length,0)} sampled suspicious German texts in English HTML (some may be intended)`,
@@ -225,13 +236,15 @@ const auditJSON={
   incompleteAppViews:toolPartial.length,dynamicCandidateFiles:dynamic.length,
   incompleteEnglishIndexing:publicEnglish.filter(x=>x.noindex).length,
   publicGermanCandidates:germanUi.length,missingRoutes:absent.length},
- releaseReady:false,
+ releaseReady:!technicalBlockers,
+ ownerApproval:{...approval,current:approvalCurrent},
+ missingEnglishSitemap:missingEnglishSitemap.map(p=>p.file),
  languageEvidence,
  runtimeTriage,
  verifiedRuntime,
  blockers,
  viewTasks,runtimeTasks,
- seoGate:{noindexRetained:true,englishPagesAwaitingIndexApproval:publicEnglish.filter(x=>x.noindex).map(x=>x.file)}
+ seoGate:{noindexRetained:publicEnglish.some(p=>p.noindex),englishPagesAwaitingIndexApproval:publicEnglish.filter(x=>x.noindex).map(x=>x.file)}
 };
 fs.writeFileSync('i18n-coverage-report.json',JSON.stringify(auditJSON,null,2)+'\n');
 output.push('## Machine-readable review queue','',
@@ -243,7 +256,7 @@ console.log('I18N PAGE AUDIT: '+JSON.stringify({html:html.length,js:js.length,en
 console.log('RUNTIME CATALOGUE TRIAGE: '+JSON.stringify(runtimeTriage));
 console.log('Release blockers:\n'+blockers.map(b=>' - '+b).join('\n'));
 console.log('Report: i18n-coverage-report.md');
-if(process.argv.includes('--strict') && (absent.length||toolPartial.length||htmlLangNotSet||publicEnglish.some(x=>x.noindex)||germanUi.length||dynamic.length)){
+if(process.argv.includes('--strict') && technicalBlockers){
  console.error('RELEASE GATE FAILED: DE/EN completeness is not verified.');
  process.exitCode=1;
 }

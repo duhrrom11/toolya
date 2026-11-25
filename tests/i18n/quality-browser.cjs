@@ -73,7 +73,7 @@ async function main(){
         noindex:document.querySelector('meta[name="robots"]')?.content};
     });
     assert.equal(state.lang,'en',entry.en);
-    assert.equal(state.noindex,'noindex,follow',entry.en);
+    assert.equal(state.noindex,'index,follow',entry.en);
     assert.equal(state.switcherVisible,true,'Language switch hidden: '+entry.en+' at '+width);
     if(!state.switcherInViewport)warnings.push({kind:'clipped-language-choice',page:entry.en,width});
     if(state.scrollWidth>state.innerWidth+2){
