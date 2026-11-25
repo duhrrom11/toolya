@@ -5,10 +5,16 @@
 const URL='https://yheogmeaosuigyaxkwth.supabase.co';
 const KEY='sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
 const $=id=>document.getElementById(id);
-const client=window.supabase?.createClient(URL,KEY);
+let client;
+try{client=window.supabase?.createClient(URL,KEY)}catch(error){console.warn('Toolya Auth initialization failed',error)}
 // Share the same GoTrue client with Dashboard cloud storage to avoid competing auth instances.
 window.toolyaDashboardAuthClient=client;
-let authRequest=0,recoveryActive=false,recoverySaving=false,lastFocus=null;
+let authRequest=0,recoveryActive=false,recoverySaving=false,lastFocus=null,initialAccountTimer;
+async function withAccountDeadline(operation){
+ let timer;
+ try{return await Promise.race([Promise.resolve().then(operation),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Account check timed out')),10000)})])}
+ finally{clearTimeout(timer)}
+}
 const message=text=>{$('loginMessage').textContent=text};
 function accountErrorMessage(error,fallback){
  switch(error?.code){
@@ -21,6 +27,7 @@ function accountErrorMessage(error,fallback){
  }
 }
 function renderUser(user,error){
+ clearTimeout(initialAccountTimer);
  const button=$('userInfo');
  button.classList.toggle('b3-auth-signed-in',!!user);
  button.classList.toggle('b3-auth-signed-out',!user);
@@ -30,11 +37,11 @@ function renderUser(user,error){
  button.setAttribute('aria-label',user?'Angemeldet – Kontoeinstellungen öffnen':'Anmelden oder registrieren');
  $('cloudStatus').textContent=user?'✅ Angemeldet':error?'Anmeldestatus gerade nicht verfügbar':'Nicht angemeldet';
 }
-async function refresh(token){
- const request=++authRequest;
+async function refresh(token,request=++authRequest){
+ if(request!==authRequest)return;
  if(!client){renderUser(null,true);return}
  try{
-  const {data,error}=await client.auth.getUser(token);
+  const {data,error}=await withAccountDeadline(()=>client.auth.getUser(token));
   if(request!==authRequest)return;
   renderUser(error?null:data?.user,error&&error.name!=='AuthSessionMissingError');
  }catch{if(request===authRequest)renderUser(null,true)}
@@ -158,12 +165,14 @@ if(params.has('auth')||params.has('settings')){
  const query=params.toString();
  history.replaceState(history.state,'',location.pathname+(query?'?'+query:'')+location.hash);
 }
-if(client){
+initialAccountTimer=setTimeout(()=>{++authRequest;renderUser(null,true)},10000);
+ if(client){
  client.auth.onAuthStateChange((event,session)=>{
   if(event==='PASSWORD_RECOVERY')showRecovery();
   if(!session){++authRequest;renderUser(null);return}
-  setTimeout(()=>refresh(session.access_token),0);
+  clearTimeout(initialAccountTimer);
+  const request=++authRequest;
+  setTimeout(()=>refresh(session.access_token,request),0);
  });
- refresh();
 }else{renderUser(null,true);message('Anmeldung momentan nicht verfügbar.')}
 })();

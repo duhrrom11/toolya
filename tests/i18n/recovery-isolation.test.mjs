@@ -18,8 +18,10 @@ function isolatedAccount({updateError=null,signOutError=null,updateGate=null}={}
   return elements.get(id);
  };
  const calls=[];
+ const timers=new Map();
+ let nextTimer=0,authListener;
  const auth={
-  onAuthStateChange(){},
+  onAuthStateChange(listener){authListener=listener},
   getUser(){return new Promise(()=>{})}, // no live account or network
   async updateUser(payload){calls.push(['update',payload]);if(updateGate)await updateGate;return {error:updateError}},
   async signOut(){calls.push(['signOut']);return {error:signOutError}}
@@ -28,7 +30,9 @@ function isolatedAccount({updateError=null,signOutError=null,updateGate=null}={}
   document:{getElementById:node,body:{classList:{add(){},remove(){}}}},
   window:{supabase:{createClient:()=>({auth})}},
   location:{search:'',pathname:'/dashboard/',hash:''},
-  history:{replaceState(){}},URLSearchParams
+  history:{replaceState(){}},URLSearchParams,
+  setTimeout(fn,ms){const id=++nextTimer;timers.set(id,{fn,ms});return id},
+  clearTimeout(id){timers.delete(id)}
  };
  const instrumented=source.replace(/\}\)\(\);\s*$/, 'globalThis.__testSaveRecovery=()=>{recoveryActive=true;return saveRecovery()};})();');
  assert.notEqual(instrumented,source,'test entrypoint injected into isolated account closure');
@@ -37,6 +41,8 @@ function isolatedAccount({updateError=null,signOutError=null,updateGate=null}={}
  node('recoveryPasswordConfirm').value='new-valid-password';
  return {
   node,calls,
+  emitAuth(event,session){authListener(event,session)},
+  runTimers(ms){for(const [id,timer] of [...timers])if(timer.ms===ms&&timers.delete(id))timer.fn()},
   async save(){await context.__testSaveRecovery()}
  };
 }
@@ -87,4 +93,35 @@ test('concurrent recovery submissions update password only once',async()=>{
  await Promise.all([first,second]);
  assert.deepEqual(fixture.calls.map(([name])=>name),['update','signOut']);
  assert.equal(fixture.node('loginMessage').textContent,'Passwort geändert. Bitte erneut anmelden.');
+});
+
+
+test('account initialization timeout reveals sign-in without claiming a verified session',()=>{
+ const fixture=isolatedAccount();
+ fixture.runTimers(10000);
+ assert.equal(fixture.node('userInfo').textContent,'Status unklar');
+ assert.equal(fixture.node('signedOutControls').hidden,false);
+ assert.equal(fixture.node('logoutUser').hidden,true);
+ fixture.emitAuth('INITIAL_SESSION',null);
+ assert.equal(fixture.node('userInfo').textContent,'Nicht angemeldet');
+});
+
+test('a missing initial session cancels the startup timeout',()=>{
+ const fixture=isolatedAccount();
+ fixture.emitAuth('INITIAL_SESSION',null);
+ fixture.runTimers(10000);
+ assert.equal(fixture.node('userInfo').textContent,'Nicht angemeldet');
+});
+
+test('an unresponsive token verification times out without authorizing the user',async()=>{
+ const fixture=isolatedAccount();
+ fixture.emitAuth('INITIAL_SESSION',{access_token:'synthetic-token'});
+ fixture.runTimers(0);
+ await Promise.resolve();
+ fixture.runTimers(10000);
+ // Flush the promise chain, not the real network.
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(fixture.node('userInfo').textContent,'Status unklar');
+ assert.equal(fixture.node('signedOutControls').hidden,false);
+ assert.equal(fixture.node('logoutUser').hidden,true);
 });
