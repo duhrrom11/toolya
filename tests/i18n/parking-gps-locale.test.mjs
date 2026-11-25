@@ -13,7 +13,7 @@ test('new GPS handler preserves private fields and deadline when required locati
    const deadline=Date.now()+60000,original={lat:12.34,lng:56.78},writes=[];
    const ctx={window:{__toolyaUILocale:lang},document:{getElementById:id=>fields[id],querySelector:()=>null},navigator:{geolocation:mode==='missing'?undefined:{getCurrentPosition(ok,fail){mode==='success'?ok({coords:{latitude:original.lat,longitude:original.lng}}):fail({code:1})}}},activeEndTime:deadline,currentGps:null,processPhotoAndSave:async(...args)=>writes.push(args),console,alert:()=>assert.fail('Unexpected alert')};
    const save=runInNewContext(source.slice(start,end)+'\nsaveParkingSession',ctx);
-   save(true);await Promise.resolve();await Promise.resolve();
+   save(true);await new Promise(resolve=>setImmediate(resolve));
    assert.equal(ctx.activeEndTime,deadline);
    assert.equal(fields.parkDesc.value,'Private Löschen');assert.equal(fields.parkSector.value,'Private Zone');assert.equal(fields.saveParkingGpsBtn.disabled,false);
    if(mode==='success'){assert.equal(writes.length,1);assert.equal(JSON.stringify(writes[0][3]),JSON.stringify(original));}

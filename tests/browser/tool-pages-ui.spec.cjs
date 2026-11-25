@@ -3251,6 +3251,9 @@ test('i18n runtime: cookie settings follow tool language without changing grante
 });
 
 for(const fixture of [
+ {tool:'car',handler:'saveTireSet',fields:{tireCarSelect:'',tireLocation:'Private Löschen',tireDot:'0426'},de:'Bitte ein Fahrzeug wählen!',en:'Select a vehicle.'},
+ {tool:'car',handler:'saveEvent',fields:{eventCarSelect:'',eventTitle:'Private Löschen',eventDate:'2026-11-25',eventCost:'12.5'},de:'Bitte Fahrzeug, Datum und Bezeichnung angeben!',en:'Enter a vehicle, date and description.'},
+ {tool:'car',handler:'updateEvent',fields:{editTitle:'Private Löschen',editDate:'',editCost:'12.5'},de:'Bitte Bezeichnung und Datum eingeben!',en:'Enter a description and date.'},
  {tool:'car',handler:'saveCar',fields:{carName:'',carPlate:'PRIVATE Löschen 42',carInsurance:'Private Versicherung'},de:'Bitte einen Fahrzeugnamen eingeben!',en:'Enter a vehicle name.'},
  {tool:'meters',handler:'saveReading',fields:{meterName:'Private Löschen',meterNote:'Private Zählernotiz',meterDate:'',meterValue:'12'},de:'Bitte gültiges Ablesedatum und Zählerstand eingeben!',en:'Enter a valid reading date and meter value.'},
  {tool:'meters',handler:'saveTarifs',fields:{meterName:'Private Löschen',meterNote:'Private Tarifnotiz',tariffStromPriceHT:'0.29',tariffGasCalib:'0'},de:'Bitte gültige, nichtnegative Tarife und einen positiven Gasfaktor eingeben.',en:'Enter valid non-negative tariffs and a positive gas factor.'}
