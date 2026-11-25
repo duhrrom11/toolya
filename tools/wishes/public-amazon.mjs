@@ -17,7 +17,8 @@ if (!production && !preview) {
   throw new Error('Supabase-Konfiguration gesperrt: expliziter Modus und passende Projektkonfiguration erforderlich.');
 }
 const db = window.toolyaAccountClient;
-if(!db)throw new Error('Toolya-Konto konnte nicht initialisiert werden.');
+// Public reads do not depend on the account SDK's session lock. No auth client or private access is created for this read-only directory.
+const publicDb=window.supabase.createClient(configured.url,configured.publishableKey,{accessToken:async()=>null});
 import {amazonListUrl} from './public-profile-model.mjs';
 // Browser-only fallback: the public directory must not depend on a deployed Edge Function source file.
 function sourceFavicon(value){
@@ -140,7 +141,7 @@ async function refreshCloud(currentGeneration){
  track.replaceChildren(text('p','Öffentliche Profile werden geladen …','wish-showcase-loading'));
  updateCarouselMotion();
  let response;
- try{response=await deadline(()=>db.from('wishlist_directory').select('user_id,display_name,city,country,bio,logo_url,lists').order('updated_at',{ascending:false}).limit(80))}catch{response={error:true}}
+ try{response=await deadline(()=>publicDb.from('wishlist_directory').select('user_id,display_name,city,country,bio,logo_url,lists').order('updated_at',{ascending:false}).limit(80))}catch{response={error:true}}
  if(currentGeneration!==generation)return;
  if(response.error){track.replaceChildren(text('p','Die veröffentlichten Profile konnten gerade nicht geladen werden. Verwende die Suche oben.','wish-showcase-loading'));return}
  const profiles=(response.data||[]).filter(p=>p&&p.user_id&&p.display_name&&Array.isArray(p.lists)&&p.lists.some(l=>l.url));
@@ -172,7 +173,7 @@ async function search(){
  $('prevPage').disabled=$('nextPage').disabled=true;
  status('searchStatus','Öffentliche Amazon-Wunschlisten werden gesucht …');
  let r;
- try{r=await db.rpc('search_wishlist_directory',{search_term:$('search').value.trim(),country_filter:$('countryFilter').value,occasion_filter:$('occasionFilter').value,interest_filter:'',page_offset:page*24})}catch{r={error:true}}
+ try{r=await deadline(()=>publicDb.rpc('search_wishlist_directory',{search_term:$('search').value.trim(),country_filter:$('countryFilter').value,occasion_filter:$('occasionFilter').value,interest_filter:'',page_offset:page*24}))}catch{r={error:true}}
  if(g!==generation)return;
  if(r.error){
   $('results').replaceChildren();
@@ -182,7 +183,7 @@ async function search(){
  }
  const rows=r.data||[];$('results').replaceChildren(...rows.slice(0,24).map(p=>card(p)));status('searchStatus',rows.length?Math.min(rows.length,24)+' passende Einträge auf dieser Seite.':'Keine passende öffentliche Amazon-Wunschliste im Verzeichnis gefunden. Prüfe die Schreibweise oder entferne Filter. Nicht alle öffentlichen Amazon-Listen sind bereits erfasst.');$('prevPage').disabled=page===0;$('nextPage').disabled=rows.length<=24
 }
-async function filters(){const r=await db.rpc('wishlist_directory_filters');if(r.error)return;for(const [id,prop]of[['countryFilter','countries'],['occasionFilter','occasions']]){const s=$(id),value=s.value;s.replaceChildren(s.options[0]);const values=[...new Set((r.data?.[prop]||[]).map(v=>typeof v==='string'?v.trim():v).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'de'));for(const v of values){const o=text('option',v);o.value=v;s.append(o)}s.value=value.trim()}}
+async function filters(){const r=await deadline(()=>publicDb.rpc('wishlist_directory_filters'));if(r.error)return;for(const [id,prop]of[['countryFilter','countries'],['occasionFilter','occasions']]){const s=$(id),value=s.value;s.replaceChildren(s.options[0]);const values=[...new Set((r.data?.[prop]||[]).map(v=>typeof v==='string'?v.trim():v).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'de'));for(const v of values){const o=text('option',v);o.value=v;s.append(o)}s.value=value.trim()}}
 let detailGeneration=0;
 async function detail(){
  const params=new URL(location.href).searchParams;
@@ -198,11 +199,11 @@ async function detail(){
  status('detailStatus','Wunschprofil wird geladen …');
  try{
   if(!id&&uuid.test(list||'')){
-   const legacy=await db.from('wishlist_amazon_publications').select('user_id').eq('id',list).maybeSingle();
+   const legacy=await publicDb.from('wishlist_amazon_publications').select('user_id').eq('id',list).maybeSingle();
    if(legacy.error)throw legacy.error;
    id=legacy.data?.user_id;
   }
-  const r=uuid.test(id||'')?await db.from('wishlist_directory').select('*').eq('user_id',id).maybeSingle():{data:null};
+  const r=uuid.test(id||'')?await publicDb.from('wishlist_directory').select('*').eq('user_id',id).maybeSingle():{data:null};
   if(g!==detailGeneration)return;
   if(r.error)throw r.error;
   if(!r.data){
@@ -300,7 +301,7 @@ for(const id of['countryFilter','occasionFilter'])$(id).onchange=()=>{page=0;sea
 renderFavorites();
 let observedAccountId;
 function applyAccountState(state){
- const verified=state&&!state.error&&!state.recovery?state.user:null;
+ const verified=db&&state&&!state.error&&!state.recovery?state.user:null;
  const id=verified?.id||null;
  if(id===observedAccountId)return;
  observedAccountId=id;

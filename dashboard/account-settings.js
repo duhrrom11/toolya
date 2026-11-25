@@ -15,9 +15,9 @@ window.toolyaDashboardAuthClient=client;
 window.toolyaAccountClient=client;
 let currentAccount=null;
 let authRequest=0,recoveryActive=false,recoverySaving=false,lastFocus=null,initialAccountTimer;
-async function withAccountDeadline(operation){
+async function withAccountDeadline(operation,ms=10000){
  let timer;
- try{return await Promise.race([Promise.resolve().then(operation),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Account check timed out')),10000)})])}
+ try{return await Promise.race([Promise.resolve().then(operation),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Account check timed out')),ms)})])}
  finally{clearTimeout(timer)}
 }
 const message=text=>{$('loginMessage').textContent=text};
@@ -36,7 +36,12 @@ function renderUser(user,error){
  if(user?.is_anonymous)user=null;
  currentAccount=user||null;
  window.toolyaAccountState={user:currentAccount,error:Boolean(error),recovery:recoveryActive};
- if(typeof CustomEvent==='function')document.dispatchEvent?.(new CustomEvent('toolya:account-state',{detail:window.toolyaAccountState}));
+ if(typeof CustomEvent==='function'){
+  const state=window.toolyaAccountState;
+  const notify=()=>{if(window.toolyaAccountState===state)document.dispatchEvent?.(new CustomEvent('toolya:account-state',{detail:state}))};
+  // Hide private UI immediately when authorization is lost. Signed-in subscribers may use the SDK; run those after the auth callback has returned.
+  if(!currentAccount||error||recoveryActive)notify();else setTimeout(notify,0);
+ }
  const button=$('userInfo');
  if(button)button.classList.toggle('b3-auth-signed-in',!!user);
  if(button)button.classList.toggle('b3-auth-signed-out',!user);
@@ -93,11 +98,11 @@ async function login(){
  const button=$('loginSubmit');if(button.disabled)return;
  button.disabled=true;button.textContent='Wird angemeldet …';message('Anmeldung wird geprüft …');
  try{
-  const {data,error}=await client.auth.signInWithPassword(values);
+  const {data,error}=await withAccountDeadline(()=>client.auth.signInWithPassword(values),15000);
   if(error)throw error;
   if(!data?.user||!data?.session?.access_token){message('Keine bestätigte Anmeldung erhalten.');return}
   ++authRequest;renderUser(data.user);message('Erfolgreich angemeldet.');closeSettings();
- }catch(error){message(accountErrorMessage(error,'Anmeldung momentan nicht erreichbar.'))}
+ }catch(error){if(currentAccount){message('Erfolgreich angemeldet.');closeSettings()}else message(accountErrorMessage(error,error?.message==='Account check timed out'?'Anmeldung konnte nicht abgeschlossen werden. Bitte öffne Toolya in einem neuen Browserfenster.':'Anmeldung momentan nicht erreichbar.'))}
  finally{$('loginPassword').value='';button.disabled=false;button.textContent='🔑 Anmelden'}
 }
 async function register(){
