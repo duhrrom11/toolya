@@ -126,3 +126,13 @@ At 9d71359, 14 regular workflows succeeded, the full isolated browser run was ca
 - `tools/pet-health/index.html:554` savePet: Bitte einen Namen für das Haustier eingeben! / Please enter a pet name!
 - `tools/pet-health/index.html:634` saveMedication: Bitte Medikamenten-Namen angeben! / Please enter a medication name!
 Each invokes the real handler, asserts exact DE/EN/DE alert, HTML lang, retained private draft and unchanged isolated snapshot with zero mock writes. Syntax and input/source checks passed; new browser execution pending CI. No waiver, no production test data.
+
+## Confirmed b946e3b and next isolated batch
+15/15 regular workflows passed. [Browser job](https://github.com/duhrrom11/toolya/actions/runs/45640037943/job/139295840322): 222/222, all eight loan/moving/pet validation tests passed, including exact DE/EN/DE alerts, draft preservation and unchanged snapshots/zero writes. [Quality](https://github.com/duhrrom11/toolya/actions/runs/45640041527/job/139295854486): 407/407, 72/72 anonymous and 57/57 authenticated shell. [Strict](https://github.com/duhrrom11/toolya/actions/runs/45640038095/job/139295840725): unchanged 34 partial views, 16 noindex, 212 source candidates. Added six pending runtime checks:
+- `tools/plants/index.html:685` updateCisternCapacity: Bitte ein gültiges Fassungsvermögen größer als 0 eingeben. / Enter a valid capacity greater than 0.
+- `tools/plants/index.html:741` addSeedItem: Bitte ein gültiges Saatgutjahr eingeben. / Enter a valid seed year.
+- `tools/plants/index.html:844` saveHarvest: Bitte eine gültige Erntemenge in ganzen Gramm eingeben. / Enter a valid harvest amount in whole grams.
+- `tools/budget/index.html:1199` saveReceipt: Bitte Titel, gültiges Kaufdatum und einen positiven Betrag angeben! / Enter a title, valid purchase date and positive amount.
+- `tools/budget/index.html:1707` saveSavingsGoal: Bitte gültigen Titel, positiven Zielbetrag und Startbetrag ab 0 € eingeben! / Enter a valid title, a positive target amount and a starting amount of at least €0.
+- `tools/pet-health/index.html:664` saveEvent: Bitte Haustier, Datum und Bezeichnung angeben! / Please enter a pet, date and description!
+Source fields and syntax checked; independent browser execution pending. No strict waiver or production test data.

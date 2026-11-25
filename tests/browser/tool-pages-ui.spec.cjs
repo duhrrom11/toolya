@@ -3457,14 +3457,20 @@ for(const fixture of [
   "de": "Bitte Medikamenten-Namen angeben!",
   "en": "Please enter a medication name!",
   "line": 634
- }
+ },
+ {"tool":"plants","handler":"updateCisternCapacity","fields":{"cisternMaxLiters":"0"},"de":"Bitte ein gültiges Fassungsvermögen größer als 0 eingeben.","en":"Enter a valid capacity greater than 0.","line":685},
+ {"tool":"plants","handler":"addSeedItem","fields":{"seedName":"Private Löschen","seedYear":"1800"},"de":"Bitte ein gültiges Saatgutjahr eingeben.","en":"Enter a valid seed year.","line":741},
+ {"tool":"plants","handler":"saveHarvest","fields":{"harvestPlantId":"1","harvestWeightGrams":"0"},"de":"Bitte eine gültige Erntemenge in ganzen Gramm eingeben.","en":"Enter a valid harvest amount in whole grams.","line":844},
+ {"tool":"budget","handler":"saveReceipt","fields":{"receiptTitle":"Private Löschen","receiptDate":"2026-11-25","receiptPrice":"0","receiptNote":"Private Notiz"},"de":"Bitte Titel, gültiges Kaufdatum und einen positiven Betrag angeben!","en":"Enter a title, valid purchase date and positive amount.","line":1199},
+ {"tool":"budget","handler":"saveSavingsGoal","fields":{"goalTitle":"Private Löschen","goalTarget":"0","goalCurrent":"2"},"de":"Bitte gültigen Titel, positiven Zielbetrag und Startbetrag ab 0 € eingeben!","en":"Enter a valid title, a positive target amount and a starting amount of at least €0.","line":1707},
+ {"tool":"pet-health","handler":"saveEvent","fields":{"eventTitle":"Private Löschen","eventDate":"","eventCost":"12.5"},"de":"Bitte Haustier, Datum und Bezeichnung angeben!","en":"Please enter a pet, date and description!","line":664}
 ]){
  test('i18n runtime catalogue: '+fixture.tool+' '+fixture.handler+' preserves draft on validation in DE and EN',async({page})=>{
   await isolated(page,true);
   await page.goto(origin+'/tools/'+fixture.tool+'/index.html');
   const state=()=>page.evaluate(tool=>{
-   const controller=tool==='loans'?loansCloudController:tool==='moving'?movingCloudController:petCloudController;
-   const ready=tool==='loans'?loansCloudReady:tool==='moving'?movingCloudReady:petCloudReady;
+   const controller=tool==='loans'?loansCloudController:tool==='moving'?movingCloudController:tool==='plants'?plantsCloudController:tool==='budget'?toolyaCloudController:petCloudController;
+   const ready=tool==='loans'?loansCloudReady:tool==='moving'?movingCloudReady:tool==='plants'?plantsCloudReady:tool==='budget'?toolyaCloudReady:petCloudReady;
    return {ready:!!(ready&&controller?.ready),snapshot:controller?.ready?JSON.stringify(controller.snapshot()):null,writes:window.__toolyaMock?.writes.length};
   },fixture.tool);
   await expect.poll(async()=>(await state()).ready).toBe(true);
