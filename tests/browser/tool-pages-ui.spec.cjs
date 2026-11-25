@@ -3217,3 +3217,35 @@ test('i18n runtime: homepage backup rejects invalid format and decryption withou
   await page.evaluate(key=>localStorage.removeItem(key),key);
  }
 });
+
+test('i18n runtime: cookie settings follow tool language without changing granted consent',async({page})=>{
+ const outbound=await isolated(page,true);
+ const key='toolya.analytics.consent.v1';
+ await page.addInitScript(key=>localStorage.setItem(key,'yes'),key);
+ await page.goto(origin+'/tools/car/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ const link=page.locator('#toolya-consent-settings'),panel=page.locator('#toolya-consent-panel');
+ await expect(panel).toBeHidden();
+ for(const lang of ['de','en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await expect(link).toHaveText(lang==='en'?'Cookie settings':'Cookie-Einstellungen');
+  await expect(link).toHaveAttribute('lang',lang);
+  await link.click();
+  await expect(panel).toBeVisible();
+  await expect(panel).toHaveAttribute('aria-label',lang==='en'?'Analytics settings':'Statistik-Einstellungen');
+  await expect(panel.locator('strong')).toHaveText(lang==='en'?'Analytics at Toolya':'Statistik bei Toolya');
+  await expect(panel.locator('.reject')).toHaveText(lang==='en'?'Reject':'Ablehnen');
+  await expect(panel.locator('.accept')).toHaveText(lang==='en'?'Accept':'Akzeptieren');
+  await expect(panel.locator('p a')).toHaveAttribute('href',lang==='en'?'/en/privacy.html':'/privacy.html');
+  await expect(panel.locator('.reject')).toBeFocused();
+  expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('yes');
+  // Reaffirm the existing consent only to close the panel before changing language.
+  await panel.locator('.accept').click();
+  await expect(panel).toBeHidden();
+  expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('yes');
+ }
+ expect(outbound.some(url=>url.includes('www.googletagmanager.com/gtag/js'))).toBe(true);
+ // isolated() aborts every external analytics request, even after consent.
+ expect(await page.evaluate(()=>window.dataLayer.filter(e=>e[0]==='consent'&&e[1]==='update'&&e[2].analytics_storage==='granted').length)).toBe(1);
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
