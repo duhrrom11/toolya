@@ -3666,3 +3666,67 @@ test('Dashboard linked global backup: DE/EN actual JSON downloads exclude sessio
   expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
  }
 });
+
+
+test('Global encrypted backup DE/EN: actual downloads decrypt, exclude secrets and reject wrong password',async({page})=>{
+ const {readFile}=require('node:fs/promises');
+ const {pbkdf2Sync,createDecipheriv}=require('node:crypto');
+ const password='isolated-fixture-password-2026';
+ const fixture='["Privates Öl & Pflege"]';
+ await isolated(page,false);
+ const envelopes=[];
+ for(const lang of ['de','en']){
+  await page.goto(origin+(lang==='en'?'/en/index.html':'/index.html'));
+  await page.waitForFunction(()=>window.toolyaHomeReady===true);
+  await page.evaluate(value=>{
+   localStorage.setItem('hub_favorites',value);
+   localStorage.setItem('sb-fixture-auth-token','private-session-marker');
+   localStorage.setItem('unrelated-fixture','private-unknown-marker');
+  },fixture);
+  const before=await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
+  const start=()=>{page.once('dialog',d=>d.accept());return page.evaluate(()=>window.exportGlobalBackup(true))};
+  const dialog=page.locator('form[role="dialog"]').filter({has:page.locator('input[type="password"]')});
+  const cancelled=[];const listener=d=>cancelled.push(d);page.on('download',listener);
+  const cancelAction=start();
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button',{name:lang==='de'?'Abbrechen':'Cancel',exact:true}).click();
+  await cancelAction;
+  expect(cancelled).toEqual([]);page.off('download',listener);
+  const action=start();
+  await expect(dialog).toBeVisible();
+  const fields=dialog.locator('input[type="password"]');
+  await fields.nth(0).fill(password);
+  await fields.nth(1).fill(password+'-wrong');
+  const submit=dialog.locator('button[type="submit"]');
+  await submit.click();
+  await expect(dialog.getByRole('alert')).toHaveText(lang==='de'?'Die Passwörter stimmen nicht überein.':'Passwords do not match.');
+  await fields.nth(1).fill(password);
+  const pending=page.waitForEvent('download');
+  await submit.click();
+  const download=await pending;await action;
+  expect(download.suggestedFilename()).toMatch(/^helferlein-backup-(?:verschluesselt|encrypted)-\d{4}-\d{2}-\d{2}\.json$/);
+  const raw=await readFile(await download.path(),'utf8');
+  expect(raw).not.toContain(fixture);
+  expect(raw).not.toContain(password);
+  const e=JSON.parse(raw);
+  expect(e).toMatchObject({app:'Toolya',format:'encrypted-backup-v1',kdf:'PBKDF2-SHA256',iterations:600000,cipher:'AES-256-GCM'});
+  const salt=Buffer.from(e.salt,'base64'),iv=Buffer.from(e.iv,'base64'),ciphertext=Buffer.from(e.ciphertext,'base64');
+  expect(salt.length).toBe(16);expect(iv.length).toBe(12);
+  const decrypt=secret=>{
+   const key=pbkdf2Sync(secret,salt,e.iterations,32,'sha256');
+   const decipher=createDecipheriv('aes-256-gcm',key,iv);
+   decipher.setAuthTag(ciphertext.subarray(-16));
+   return JSON.parse(Buffer.concat([decipher.update(ciphertext.subarray(0,-16)),decipher.final()]).toString('utf8'));
+  };
+  expect(()=>decrypt(password+'-wrong')).toThrow();
+  const payload=decrypt(password);
+  expect(payload).toMatchObject({app:'Toolya',version:'2.0',localStorage:{hub_favorites:fixture}});
+  expect(JSON.stringify(payload)).not.toContain('private-session-marker');
+  expect(JSON.stringify(payload)).not.toContain('private-unknown-marker');
+  expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)))).toEqual(before);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+  envelopes.push(e);
+ }
+ expect(envelopes[0].salt).not.toBe(envelopes[1].salt);
+ expect(envelopes[0].iv).not.toBe(envelopes[1].iv);
+});
