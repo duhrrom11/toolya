@@ -1,6 +1,14 @@
 /* Account and dashboard display catalogue; strictly presentation-only.
    Use source-exact keys so arbitrary user data and Supabase diagnostics stay intact. */
 export const DASHBOARD_COPY=Object.freeze(Object.fromEntries([
+ ["Die Cloud ist noch nicht bereit.","The cloud is not ready yet."],
+ ["Anmeldung nicht mehr gültig. Bitte erneut anmelden.","Sign-in is no longer valid. Please sign in again."],
+ ["Bitte warte, bis der letzte Speichervorgang abgeschlossen ist.","Wait until the previous save is complete."],
+ ["Ungültiger Erinnerungstermin.","Invalid reminder date."],
+ ["Konto wurde während des Speicherns gewechselt.","The account changed while saving."],
+ ["Eintrag wurde bereits geändert. Bitte neu laden.","The entry has already changed. Please reload."],
+ ["Speicherkonflikt: Der Eintrag wurde auf einem anderen Gerät verändert. Bitte aktualisieren.","Save conflict: The entry was changed on another device. Please refresh."],
+ ["Konto während des Imports gewechselt. Übernahme gestoppt.","The account changed during import. Import stopped."],
  ["Cloud-Stand noch nicht geprüft.","Cloud state not checked yet."],
  ["Cloud-Stand prüfen","Check cloud state"],
  ["Cloud-Stand bewusst laden","Load cloud state deliberately"],
@@ -634,6 +642,7 @@ export const DASHBOARD_COPY=Object.freeze(Object.fromEntries([
   "Cake pan calculator"
  ]
 ]));
+const fixedStatusMessages=Object.freeze([["Einkaufslisten nicht vollständig verfügbar: Bitte später erneut laden.","Shopping lists not fully available: Try loading again later."],["Änderung nicht bestätigt: Speicherkonflikt.","Change not confirmed: Save conflict."],["Entfernen nicht bestätigt: Bitte neu laden.","Removal not confirmed: Please refresh."],["Gießvorgang nicht bestätigt: Bitte Gießplan neu laden.","Watering not confirmed: Reload the watering plan."],["Gießplan nicht verfügbar: Bitte später erneut öffnen.","Watering plan unavailable: Try opening it again later."]]);
 const reverse=Object.freeze(Object.fromEntries(Object.entries(DASHBOARD_COPY).map(([de,en])=>[en,de])));
 const prefixes=[
  ["Cloud-Datenstand ist unverändert (Revision neu).","Cloud state unchanged (revision new)."],
@@ -722,6 +731,8 @@ export function dashboardLocale(){
 }
 export function dashboardText(value,lang=dashboardLocale()){
  if(typeof value!=='string')return value;
+ const fixed=fixedStatusMessages.find(pair=>pair[lang==='en'?0:1]===value);
+ if(fixed)return fixed[lang==='en'?1:0];
  const table=lang==='en'?DASHBOARD_COPY:reverse;
  if(Object.hasOwn(table,value))return table[value];
  const pairs=lang==='en'?prefixes:prefixes.map(([de,en])=>[en,de]);

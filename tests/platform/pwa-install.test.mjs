@@ -43,7 +43,7 @@ test('Toolya exposes an offline-only service worker and install flow', () => {
   assert.match(read('shared/toolya/settings-accordion.css'), /\.ty-pwa-action/);
 });
 test('PWA manifest and installer linked from main destinations', () => {
-  for (const path of ['index.html','mascots.html','dashboard/index.html','tools/baking/index.html','tools/wishes/public.html']) {
+  for (const path of ['index.html','en/index.html','dashboard/index.html','tools/baking/index.html','tools/wishes/public.html']) {
     const html=read(path);
     assert.match(html, /rel="manifest" href="\/manifest\.json"/);
     assert.match(html, /src="\/assets\/toolya-pwa\.js"/);

@@ -1371,6 +1371,12 @@ async function toolyaCloudBoot(tool) {
                 date.getDate() === day ? date : new Date(NaN);
         }
 
+        // Display only: keep ISO dates in receipt records, form fields and QR payloads.
+        function displayReceiptDate(value, english = window.__toolyaUILocale === 'en') {
+            const date = parseReceiptDate(value);
+            return Number.isFinite(date.getTime()) ? date.toLocaleDateString(english ? 'en-GB' : 'de-DE') : value;
+        }
+
         function addWarrantyMonths(buyDate, months) {
             if (!(buyDate instanceof Date) || !Number.isFinite(buyDate.getTime()) ||
                 !Number.isSafeInteger(months) || months <= 0) return null;
@@ -1626,7 +1632,7 @@ async function toolyaCloudBoot(tool) {
                                     ${isReturnActive ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '⏱️ Return: ' + diffDaysReturn + ' d' : '⏱️ Rückgabe: ' + diffDaysReturn + ' T'}</span>` : ''}
                                 </div>
                                 <p class="text-xs text-gray-600">
-                                    ${window.__toolyaUILocale === 'en' ? 'Amount:' : 'Betrag:'} <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${displayPrice} €</strong> | ${window.__toolyaUILocale === 'en' ? 'Date:' : 'Datum:'} ${escapeHaushaltsHtml(r.date)} | ${window.__toolyaUILocale === 'en' ? 'Payment method:' : 'Zahlungsart:'} ${escapeHaushaltsHtml(budgetPaymentLabel(r.paymentMethod || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.')))}
+                                    ${window.__toolyaUILocale === 'en' ? 'Amount:' : 'Betrag:'} <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${displayPrice} €</strong> | ${window.__toolyaUILocale === 'en' ? 'Date:' : 'Datum:'} ${escapeHaushaltsHtml(displayReceiptDate(r.date))} | ${window.__toolyaUILocale === 'en' ? 'Payment method:' : 'Zahlungsart:'} ${escapeHaushaltsHtml(budgetPaymentLabel(r.paymentMethod || (window.__toolyaUILocale === 'en' ? 'n/a' : 'k.A.')))}
                                 </p>
                                 <p class="text-[11px] text-gray-500">
                                     ${r.store ? 'Partner: ' + escapeHaushaltsHtml(r.store) + ' | ' : ''} ${r.sn ? 'S/N: ' + escapeHaushaltsHtml(r.sn) + ' | ' : ''} ${r.location ? (window.__toolyaUILocale === 'en' ? 'Box: ' : 'Karton: ') + escapeHaushaltsHtml(r.location) + ' | ' : ''} ${r.note ? (window.__toolyaUILocale === 'en' ? 'Note: ' : 'Notiz: ') + escapeHaushaltsHtml(r.note) : ''}
@@ -1715,7 +1721,7 @@ async function toolyaCloudBoot(tool) {
             const goals = getSavingsGoals();
             const goal = goals.find(g => g.id === id);
             if (!goal) return;
-            const amount = parseFloat(prompt(`Betrag auf Sparziel "${goal.title}" einzahlen (€):`, "50"));
+            const amount = parseFloat(prompt(window.__toolyaUILocale === 'en' ? `Deposit into savings goal "${goal.title}" (€):` : `Betrag auf Sparziel "${goal.title}" einzahlen (€):`, "50"));
             if (amount > 0) {
                 const previous = Number(goal.current);
                 goal.current = (Number.isFinite(previous) ? previous : 0) + amount;
@@ -1762,7 +1768,7 @@ async function toolyaCloudBoot(tool) {
             const english = window.__toolyaUILocale === 'en';
             document.getElementById('stickerTitle').textContent = r.title || '';
             document.getElementById('stickerStoreDate').textContent =
-                (english ? 'Purchased: ' : 'Kauf: ') + r.date +
+                (english ? 'Purchased: ' : 'Kauf: ') + displayReceiptDate(r.date, english) +
                 ' (' + (r.store || (english ? 'Warranty receipt' : 'Garantie-Beleg')) + ')';
             document.getElementById('stickerSN').textContent =
                 'S/N: ' + (r.serial || (english ? 'none' : 'keine'));
@@ -1806,7 +1812,7 @@ async function toolyaCloudBoot(tool) {
                 new QRCode(qrContainer, { text: qrText, width: 120, height: 120 });
             } catch (error) {
                 console.error('QR-Code konnte nicht erstellt werden:', error);
-                qrContainer.textContent = 'QR-Code konnte nicht erstellt werden.';
+                qrContainer.textContent = window.__toolyaUILocale === 'en' ? 'Could not create the QR code.' : 'QR-Code konnte nicht erstellt werden.';
             }
         }
 
@@ -1839,7 +1845,7 @@ async function toolyaCloudBoot(tool) {
             const title = encodeURIComponent(english ? `Warranty expiry: ${r.title}` : `Garantie-Ablauf: ${r.title}`);
             const price = Number(r.price);
             const displayPrice = Number.isFinite(price) ? price.toFixed(2) + ' €' : (english ? 'n/a' : 'k.A.');
-            const details = encodeURIComponent(english ? `Warranty for ${r.title} (${r.store}) expires today.\nPurchase date: ${r.date}\nPrice: ${displayPrice}\nS/N: ${r.sn || 'n/a'}` : `Garantie für ${r.title} (${r.store}) läuft heute ab.\nKaufdatum: ${r.date}\nPreis: ${displayPrice}\nS/N: ${r.sn || 'k.A.'}`);
+            const details = encodeURIComponent(english ? `Warranty for ${r.title} (${r.store || 'n/a'}) expires today.\nPurchase date: ${displayReceiptDate(r.date, true)}\nPrice: ${displayPrice}\nS/N: ${r.sn || 'n/a'}` : `Garantie für ${r.title} (${r.store || 'k.A.'}) läuft heute ab.\nKaufdatum: ${displayReceiptDate(r.date, false)}\nPreis: ${displayPrice}\nS/N: ${r.sn || 'k.A.'}`);
             window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}/${endDateStr}&details=${details}`, '_blank');
         }
 
@@ -1907,19 +1913,11 @@ async function toolyaCloudBoot(tool) {
         /* --- Export & Import --- */
         function steuerCsvFeld(value) {
             const text = String(value ?? '');
-            const safe = /^\s*[=+\-@]/.test(text) ? "'" + text : text;
+            const safe = /^(?:[\t\r\n]|[\s\uFEFF]*[=+\-@＝＋－＠])/.test(text) ? "'" + text : text;
             return '"' + safe.replace(/"/g, '""') + '"';
         }
 
-        function exportAllBookingsCSV() {
-            const english = window.__toolyaUILocale === 'en';
-            const data = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r));
-            if (data.length === 0) return alert('Keine Buchungen für den CSV-Export vorhanden.');
-            const rows = [(english ? ['Date', 'Type', 'Title', 'Merchant', 'Category', 'Price_EUR',
-                'Payment_method', 'Recurring_cost', 'Tax_relevant', 'Warranty_months',
-                'Return_days', 'Lifespan_years', 'Serial_number', 'Storage_location', 'Note'] : ['Datum', 'Typ', 'Titel', 'Haendler', 'Kategorie', 'Preis_EUR',
-                'Zahlungsart', 'Fixkosten', 'Steuerrelevant', 'Garantie_Monate',
-                'Rueckgabe_Tage', 'Lebensdauer_Jahre', 'Seriennummer', 'Lagerort', 'Notiz']).join(';')];
+        function sortCsvBookings(data) {
             // Nur die Exportansicht sortieren; die gespeicherte Reihenfolge bleibt erhalten.
             const bookingDate = r => {
                 if (typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return null;
@@ -1933,14 +1931,27 @@ async function toolyaCloudBoot(tool) {
                 if (bDate === null) return -1;
                 return aDate < bDate ? -1 : aDate > bDate ? 1 : 0;
             });
+            return data;
+        }
+
+        function exportAllBookingsCSV() {
+            const english = window.__toolyaUILocale === 'en';
+            const data = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r));
+            if (data.length === 0) return alert('Keine Buchungen für den CSV-Export vorhanden.');
+            const rows = [(english ? ['Date', 'Type', 'Title', 'Merchant', 'Category', 'Price_EUR',
+                'Payment_method', 'Recurring_cost', 'Tax_relevant', 'Warranty_months',
+                'Return_days', 'Lifespan_years', 'Serial_number', 'Storage_location', 'Note'] : ['Datum', 'Typ', 'Titel', 'Haendler', 'Kategorie', 'Preis_EUR',
+                'Zahlungsart', 'Fixkosten', 'Steuerrelevant', 'Garantie_Monate',
+                'Rueckgabe_Tage', 'Lebensdauer_Jahre', 'Seriennummer', 'Lagerort', 'Notiz']).join(';')];
+            sortCsvBookings(data);
             for (const r of data) {
-                const price = Number(r.price);
+                const price = r.price == null || String(r.price).trim() === '' ? NaN : Number(r.price);
                 const fields = [r.date, r.entryType, r.title, r.store, r.category,
                     Number.isFinite(price) ? price.toFixed(2) : '',
                     r.paymentMethod, r.isFixkosten === true ? (english ? 'Yes' : 'Ja') : (english ? 'No' : 'Nein'),
                     r.isTax === true ? (english ? 'Yes' : 'Ja') : (english ? 'No' : 'Nein'), r.warrantyMonths, r.returnDays,
                     r.lifespan, r.sn, r.location, r.note];
-                rows.push(fields.map(steuerCsvFeld).join(';'));
+                rows.push(fields.map((value,index) => index === 5 && value !== '' ? '"' + value + '"' : steuerCsvFeld(value)).join(';'));
             }
             const csv = '\uFEFF' + rows.join('\r\n') + '\r\n';
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1957,19 +1968,16 @@ async function toolyaCloudBoot(tool) {
             const data = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r) && r.isTax === true);
             if (data.length === 0) return alert("Keine steuerrelevanten Buchungen gefunden!");
             const rows = [(english ? ["Date", "Type", "Title", "Merchant", "Category", "Price_EUR", "Payment_method", "Serial_number", "Note"] : ["Datum", "Typ", "Titel", "Haendler", "Kategorie", "Preis_EUR", "Zahlungsart", "Seriennummer", "Notiz"]).join(';')];
+            sortCsvBookings(data);
             for (const r of data) {
-                const price = Number(r.price);
+                const price = r.price == null || String(r.price).trim() === '' ? NaN : Number(r.price);
                 const fields = [
                     r.date, r.entryType, r.title, r.store, r.category,
                     Number.isFinite(price) ? price.toFixed(2) : '',
                     r.paymentMethod, r.sn, r.note
                 ];
-                rows.push(fields.map(steuerCsvFeld).join(';'));
+                rows.push(fields.map((value,index) => index === 5 && value !== '' ? '"' + value + '"' : steuerCsvFeld(value)).join(';'));
             }
-            // Stable chronological order in the export; saved bookings remain untouched.
-            const header = rows.shift();
-            rows.sort((a, b) => a.slice(0, 10).localeCompare(b.slice(0, 10)));
-            rows.unshift(header);
             const csv = '\uFEFF' + rows.join('\r\n') + '\r\n';
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const a = document.createElement('a');
@@ -2069,6 +2077,7 @@ async function toolyaCloudBoot(tool) {
             const doc = await createExportPdf();
             if (!doc) return;
             const data = getData();
+            const reportPrice = r => r.price == null || String(r.price).trim() === '' ? NaN : Number(r.price);
 
             doc.setFontSize(16);
             doc.text(pdfLabel("Haushalts-, Finanz- & Kassenbon-Übersicht","Household finances and receipts overview"), 14, 20);
@@ -2082,8 +2091,8 @@ async function toolyaCloudBoot(tool) {
             let latestDate = null;
             data.forEach(r => {
                 if (!r || typeof r !== 'object') return;
-                const price = Number(r.price);
-                if (!Number.isFinite(price) || price < 0) return;
+                const price = reportPrice(r);
+                if (!Number.isFinite(price)) return;
                 validEntries++;
                 if (typeof r.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(r.date) &&
                     Number.isFinite(parseReceiptDate(r.date).getTime())) {
@@ -2121,9 +2130,10 @@ async function toolyaCloudBoot(tool) {
                 });
             let y = 82;
             sortedData.forEach((r) => {
-                const sign = (r.entryType === 'einnahme' || r.category === 'Einnahme') ? '+' : '-';
-                const price = Number(r.price);
-                const amount = Number.isFinite(price) ? sign + price.toFixed(2) : pdfLabel("k.A.","n/a");
+                const income = r.entryType === 'einnahme' || r.category === 'Einnahme';
+                const price = reportPrice(r);
+                const signed = income ? price : -price;
+                const amount = Number.isFinite(price) ? (signed < 0 ? '-' : '+') + Math.abs(signed).toFixed(2).replace('.', pdfEn ? '.' : ',') : pdfLabel("k.A.","n/a");
                 const line = `${r.date || pdfLabel("k.A.","n/a")} | ${r.title || pdfLabel("Ohne Titel","Untitled")} (${budgetCategoryLabel(r.category, pdfEn ? "en" : "de") || pdfLabel("Sonstiges","Other")}): ${amount} € [${budgetPaymentLabel(r.paymentMethod, pdfEn ? "en" : "de") || pdfLabel("k.A.","n/a")}]`;
                 const lines = doc.splitTextToSize(line, 180);
                 for (const textLine of lines) {

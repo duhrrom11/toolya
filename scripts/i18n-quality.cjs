@@ -13,7 +13,7 @@ function readJSON(root,p){return JSON.parse(fs.readFileSync(path.join(root,p),'u
 function assertConfig(c){
  if(!c||c.schemaVersion!==1||c.sourceLocale!=='de'||c.targetLocale!=='en'||
    !Array.isArray(c.toolRoutes)||c.toolRoutes.length!==12||
-   !Array.isArray(c.marketingPages)||c.marketingPages.length!==17)throw Error('Invalid DE/EN route inventory');
+   !Array.isArray(c.marketingPages)||c.marketingPages.length!==16)throw Error('Invalid DE/EN route inventory');
  const tools=new Set(),pages=new Set();
  for(const item of c.toolRoutes){
   if(!item||typeof item.slug!=='string'||!/^[a-z][a-z-]*$/.test(item.slug)||
@@ -23,8 +23,8 @@ function assertConfig(c){
  }
  for(const item of c.marketingPages){
   if(!item||typeof item.key!=='string'||pages.has(item.en)||
-     !/^en\/(?:[a-z-]+\/)?(?:index|mascots|privacy|legal)\.html$/.test(item.en)||
-     !/^(?:[a-z-]+\/)?(?:index|mascots|privacy|legal)\.html$/.test(item.de))throw Error('Bad marketing page pair');
+     !/^en\/(?:[a-z-]+\/)?(?:index|privacy|legal)\.html$/.test(item.en)||
+     !/^(?:[a-z-]+\/)?(?:index|privacy|legal)\.html$/.test(item.de))throw Error('Bad marketing page pair');
   pages.add(item.en);
  }
  for(const t of c.toolRoutes)if(!pages.has(t.englishGuide))throw Error('Tool missing English guide: '+t.slug);
@@ -137,13 +137,13 @@ function auditPages(root,config,legacy,resources){
     germanTextReview:staticCandidates(enDoc)});
   if(langs.de!=='de'||langs.en!=='en')issues.push({kind:'marketing-lang',page:p.key,langs});
   if(!enToDe||!deToEn)issues.push({kind:'marketing-switch',page:p.key,enToDe,deToEn});
-  if(!noindex)issues.push({kind:'marketing-noindex-removed',page:p.key});
+  if(noindex)issues.push({kind:'marketing-noindex-retained',page:p.key});
  }
  return {tools,marketing,issues};
 }
 function validateReport(report){
  const hard=new Set(['missing-translation','empty-translation','missing-tool-page',
-   'missing-marketing-pair','marketing-lang','marketing-switch','marketing-noindex-removed',
+   'missing-marketing-pair','marketing-lang','marketing-switch','marketing-noindex-retained',
    'placeholder-review','invalid-selector-review']);
  const critical=report.issues.filter(x=>hard.has(x.kind));
  return {ok:critical.length===0,critical,review:report.issues.filter(x=>!hard.has(x.kind))};
@@ -189,7 +189,7 @@ function toMarkdown(r){
    '- Weitere Katalog-/Selektorprüfungen: '+r.validation.review.length,
    '- Statische Kandidaten werden nicht automatisch in die UI geschrieben.',
    '- Dynamische Selektoren können in der statischen HTML-Datei fehlen, ohne dass die Übersetzung fehlt.',
-   '- Englische Informationsseiten bleiben bis zur fachlichen Freigabe noindex.',
+   '- Englische Informationsseiten sind nach fachlicher Freigabe indexierbar.',
    '- Nutzereinträge, persönliche Daten, Secrets und Produktiv-Cloudwerte niemals übersetzen.','',
    '## Beispielhafte Review-Kandidaten');
  for(const t of r.tools)lines.push('- '+t.slug+': '+t.staticGermanReview.samples.slice(0,3).map(JSON.stringify).join('; '));

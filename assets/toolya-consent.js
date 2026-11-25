@@ -16,6 +16,9 @@ function consentLocale(){
  if(query==='de'||query==='en')return query;
  if(window.__toolyaUILocale==='de'||window.__toolyaUILocale==='en')return window.__toolyaUILocale;
  if(document.documentElement.lang==='en')return 'en';
+ // Application locale switches set the document language before dispatching.
+ // A stale saved preference must not override an explicitly selected German UI.
+ if((window.__toolyaWishesLocale||window.__toolyaEstateLocale||window.__toolyaDashboardLocale||window.__toolyaAdminLocale)==='de')return 'de';
  if(location.pathname.startsWith('/tools/')||location.pathname.startsWith('/dashboard/')){
   try{return localStorage.getItem('toolya-locale-v1')==='en'?'en':'de'}catch{}
  }
@@ -157,6 +160,8 @@ function init() {
   document.addEventListener('toolya:locale-change',()=>localizeConsentPanel(panel,link));
   document.addEventListener('toolya:wishes-locale-change',()=>localizeConsentPanel(panel,link));
   document.addEventListener('toolya:dashboard-locale-change',()=>localizeConsentPanel(panel,link));
+  document.addEventListener('toolya:estate-locale-change',()=>localizeConsentPanel(panel,link));
+  document.addEventListener('toolya:admin-locale-change',()=>localizeConsentPanel(panel,link));
 
   link.addEventListener('click', e => { e.preventDefault(); panel.hidden = false; panel.querySelector('.reject').focus(); });
   footer.appendChild(link);

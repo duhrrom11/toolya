@@ -1,6 +1,7 @@
 name: Budget Clever sparen – Checks
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
     paths:
       - "tools/budget/**"
       - "tests/budget-clever.test.mjs"
@@ -16,8 +17,13 @@ on:
       - "tests/fixtures/budget-clever.html"
       - ".github/workflows/budget-clever.yml"
 
+  workflow_dispatch:
 permissions:
   contents: read
+
+concurrency:
+  group: budget-clever-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   budget-clever:
@@ -34,6 +40,7 @@ jobs:
           node --check tools/budget/clever-ui.js
 
   budget-browser:
+    if: ${{ github.event_name != 'pull_request' || github.head_ref != 'release/toolya-english-1.0' || !github.event.pull_request.draft }}
     name: Clever sparen – Handy und Desktop
     runs-on: ubuntu-latest
     timeout-minutes: 12

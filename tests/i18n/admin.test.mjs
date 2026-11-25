@@ -69,3 +69,22 @@ test('admin finder marks only author-owned content; publishing and account contr
  assert.match(source,/await api\('publish'/);
  assert.match(source,/await api\('withdraw'/);
 });
+
+
+test('admin import validation and publication guard retain exact safety semantics',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const source=readFileSync(new URL('../../admin-stats-dashboard/wishlist-finder.mjs',import.meta.url),'utf8');
+ for(const [de,en] of [['Bitte eine Datei auswählen.','Please select a file.'],['Maximal 1,5 MB pro Datei.','Maximum 1.5 MB per file.'],['Keine Einträge gefunden.','No entries found.']]){
+  assert.ok(source.includes(de));
+  assert.equal(adminText(de,'en'),en);
+  assert.equal(adminText(en,'de'),de);
+ }
+ const match=source.match(/window\.confirm\('Hast du für alle '\+candidates\.length\+'([^']+)'\)/);
+ assert.ok(match,'original publication confirmation must remain present');
+ const german='Hast du für alle 17'+match[1].replace(/\\\\/g,'\\');
+ const english=adminText(german,'en');
+ assert.match(english,/all 17 selected findings/);
+ assert.match(english,/Do not publish unverified entries\./);
+ assert.equal(adminText(german,'de'),german);
+ assert.equal(adminText('Imported private title: '+german,'en'),'Imported private title: '+german);
+});

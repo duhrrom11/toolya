@@ -60,6 +60,7 @@ async function run(){
   const session={user,access_token:'isolated-fixture',refresh_token:'isolated-fixture'};
   const collection={id:'22222222-2222-4222-8222-222222222222',user_id:uid,title:'Meine synthetische Sammlung',description:'Private Testbeschreibung bleibt unverändert',visibility:'public',archived:false,icon:'🎁'};
   const profile={user_id:uid,handle:'fixture_profile',display_name:'Synthetisches Profil',bio:'Meine Testbiografie bleibt unverändert'};
+  const occasion={id:'33333333-3333-4333-8333-333333333333',user_id:uid,title:'Anlass speichern',person_name:'Meine private Person',occasion_date:'2099-11-24',repeats_yearly:false,reminder_days:14,notes:'Änderungen speichern'};
   const calls={auth:0,reads:[],writes:[]};window.__toolyaAuthFixture=calls;
   const ok=data=>({data,error:null});
   const denied=(table,operation)=>{calls.writes.push({table,operation});return {data:null,error:{message:'Read-only browser fixture'}}};
@@ -74,7 +75,8 @@ async function run(){
     q.single=q.maybeSingle=()=>{single=true;return q};
     q.then=(resolve,reject)=>{
      const route=location.pathname;
-     const rows=route.endsWith('/collection.html')&&table==='wishlist_lists'?[collection]:
+     const rows=route.endsWith('/occasions.html')&&table==='wishlist_occasions'?[occasion]:
+      route.endsWith('/collection.html')&&table==='wishlist_lists'?[collection]:
       route.endsWith('/profile.html')&&table==='wishlist_profiles'?[profile]:
       route.endsWith('/profile.html')&&table==='wishlist_lists'?[collection]:[];
      return Promise.resolve(operation==='select'?{data:single?rows[0]||null:rows,error:null,count:rows.length}:denied(table,operation)).then(resolve,reject);
@@ -90,48 +92,172 @@ async function run(){
  })();
  `;
 
- for(const width of [320,768]){
+ for(const width of [320,375,768]){
   const context=await browser.newContext({viewport:{width,height:850},reducedMotion:'reduce',serviceWorkers:'block'});
+  let adminReads=0;
   await context.route('**/*',route=>{
    const request=route.request(),target=new URL(request.url());
    if(authenticated&&target.origin===origin&&target.pathname==='/assets/vendor/supabase-2.57.0.js')return route.fulfill({status:200,contentType:'text/javascript',body:mock});
+   if(authenticated&&target.pathname==='/functions/v1/admin-stats'&&target.hostname==='yheogmeaosuigyaxkwth.supabase.co'&&request.method()==='GET'){
+    adminReads++;
+    return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({sources:[],metrics:[],seoTrends:[{source:'google',points:[{date:'2026-11-24',clicks:1234,impressions:2345}]}]})});
+   }
+   if(authenticated&&target.pathname==='/functions/v1/admin-stats'&&target.hostname==='yheogmeaosuigyaxkwth.supabase.co'&&request.method()==='OPTIONS')return route.fulfill({status:204,headers:{'access-control-allow-origin':'*','access-control-allow-methods':'GET','access-control-allow-headers':'authorization,apikey'}});
    return target.origin===origin&&['GET','HEAD'].includes(request.method())?route.continue():route.abort();
   });
-  for(const entry of cases.filter(entry=>!authenticated||entry.family==='wishes'||entry.family==='dashboard')){
+  for(const entry of cases.filter(entry=>!authenticated||entry.family==='wishes'||entry.family==='dashboard'||entry.path==='/admin-stats-dashboard/index.html')){
    const page=await context.newPage();
    const row={path:entry.path,width,checks:[],errors:[],pageErrors:[]};
    results.push(row);
    page.on('pageerror',e=>row.pageErrors.push(e.message.slice(0,300)));
    try{
     await page.addInitScript(()=>{localStorage.setItem('synthetic-private-note','Meine private Notiz');});
+    const social=authenticated&&entry.path==='/tools/wishes/social.html';
+    const occasion=authenticated&&entry.path==='/tools/wishes/occasions.html';
+    const admin=authenticated&&entry.path==='/admin-stats-dashboard/index.html';
     const collection=authenticated&&entry.path==='/tools/wishes/collection.html';
     const profile=authenticated&&entry.path==='/tools/wishes/profile.html';
     const query=collection?'&id=22222222-2222-4222-8222-222222222222':profile?'&handle=fixture_profile':'';
     await page.goto(origin+entry.path+'?lang=de'+query,{waitUntil:'domcontentloaded',timeout:15000});
+    if(admin)await page.waitForFunction(()=>!document.getElementById('panel')?.hidden&&!!document.querySelector('#seo-google svg'),null,{timeout:6000});
+    const adminReadsBefore=adminReads;
+    if(occasion){await page.locator('#events article button').first().click({timeout:6000});await page.locator('#notes').fill('Unveränderter privater Entwurf');}
     if(collection)await page.waitForFunction(()=>!document.getElementById('collection')?.hidden&&document.getElementById('title')?.textContent==='Meine synthetische Sammlung',null,{timeout:6000});
     if(profile)await page.waitForFunction(()=>!document.getElementById('profile')?.hidden&&document.getElementById('name')?.textContent==='Synthetisches Profil',null,{timeout:6000});
     if(authenticated&&entry.path==='/tools/wishes/dashboard.html')await page.waitForFunction(()=>!document.getElementById('content')?.hidden&&!!document.querySelector('#taskReminders .empty')&&!!document.querySelector('#tasks .empty'),null,{timeout:6000});
+    if(social)await page.locator('#markRead').waitFor({state:'visible',timeout:6000});
     if(new URL(page.url()).pathname!==entry.path)throw Error('Protected route redirected; authenticated fixture required');
     if(entry.print){
      for(const lang of ['de','en']){
       await page.goto(origin+entry.path+'?lang='+lang,{waitUntil:'domcontentloaded',timeout:15000});
       await page.waitForFunction(({key,lang})=>globalThis[key]===lang,{key:entry.global,lang},{timeout:4000});
-      row.checks.push({lang,title:await page.title()});
+      assert.equal(await page.locator('html').getAttribute('lang'),lang,'print document language');
+      const printButton=page.locator('#print-again');
+      assert.equal(await printButton.textContent(),lang==='en'?'Print / Save as PDF':'Drucken / Als PDF speichern');
+      await printButton.focus();
+      assert.equal(await printButton.evaluate(el=>el===document.activeElement),true);
+      await page.evaluate(()=>{window.print=()=>{document.body.dataset.keyboardPrint='true'}});
+      await page.keyboard.press('Enter');
+      assert.equal(await page.locator('body').getAttribute('data-keyboard-print'),'true');
+      row.checks.push({lang,title:await page.title(),documentLang:lang,keyboardPrint:true});
      }
     }else{
      // Dashboard also stores the active locale on <html>; target actual controls only.
      const selector=lang=>'button[data-'+entry.family+'-locale="'+lang+'"]';
      for(const lang of ['de','en','de']){
       const button=page.locator(selector(lang)).first();
-      await button.click({timeout:4000});
+      await button.waitFor({state:'visible',timeout:4000});
+      await button.focus();
+      assert.equal(await button.evaluate(el=>el===document.activeElement),true,'locale control receives focus');
+      await page.keyboard.press(lang==='en'?'Enter':'Space');
+      assert.equal(await button.evaluate(el=>el===document.activeElement),true,'locale activation retains focus');
+      const deButton=page.locator(selector('de')).first(),enButton=page.locator(selector('en')).first();
+      assert.equal(await deButton.getAttribute('aria-label'),lang==='en'?'Switch to German':'Deutsch auswählen');
+      assert.equal(await enButton.getAttribute('aria-label'),lang==='en'?'English selected':'Englisch auswählen');
+      assert.equal(await deButton.getAttribute('lang'),lang);
+      assert.equal(await enButton.getAttribute('lang'),lang);
+      await deButton.focus();
+      await page.keyboard.press('Tab');
+      assert.equal(await enButton.evaluate(el=>el===document.activeElement),true,'Tab reaches adjacent EN control');
+      await page.keyboard.press('Shift+Tab');
+      assert.equal(await deButton.evaluate(el=>el===document.activeElement),true,'Shift+Tab returns to DE control');
+      assert.equal(await deButton.evaluate(el=>el.matches(':focus-visible')&&getComputedStyle(el).outlineStyle!=='none'),true,'keyboard focus indicator');
       await page.waitForFunction(({key,lang})=>globalThis[key]===lang,{key:entry.global,lang},{timeout:4000});
       assert.equal(await button.getAttribute('aria-pressed'),'true');
       assert.equal(await page.locator(selector(lang==='en'?'de':'en')).first().getAttribute('aria-pressed'),'false');
       assert.equal(await page.evaluate(()=>localStorage.getItem('synthetic-private-note')),'Meine private Notiz');
+      // Exercise the real shared alert implementation, never a production action.
+      const hasSharedAlert=await page.locator('script[src*="helferlein-dialogs.js"]').count()>0;
+      let sharedAlertChecked=false;
+      if(hasSharedAlert){
+       await page.evaluate(()=>window.alert('Toolya fixture 123'));
+       const panel=page.locator('.hl-alert-panel');
+       await panel.waitFor({state:'visible',timeout:4000});
+       assert.equal(await panel.getAttribute('role'),'alertdialog');
+       assert.equal(await panel.getAttribute('aria-modal'),'true');
+       assert.equal(await panel.getAttribute('aria-labelledby'),'hl-alert-title');
+       assert.equal(await panel.getAttribute('aria-describedby'),'hl-alert-message');
+       assert.equal(await panel.locator('#hl-alert-message').textContent(),'Toolya fixture 123');
+       const close=panel.locator('button');
+       assert.equal(await close.evaluate(el=>el===document.activeElement),true);
+       await page.keyboard.press('Tab');
+       assert.equal(await close.evaluate(el=>el===document.activeElement),true);
+       await page.keyboard.press('Shift+Tab');
+       assert.equal(await close.evaluate(el=>el===document.activeElement),true);
+       await page.keyboard.press(lang==='en'?'Enter':'Escape');
+       await panel.waitFor({state:'detached',timeout:4000});
+       assert.equal(await deButton.evaluate(el=>el===document.activeElement),true,'alert restores opener focus');
+       sharedAlertChecked=true;
+      }
       if(collection){assert.equal(await page.locator('#title').textContent(),'Meine synthetische Sammlung');assert.equal(await page.locator('#description').textContent(),'Private Testbeschreibung bleibt unverändert');}
       if(profile){assert.equal(await page.locator('#name').textContent(),'Synthetisches Profil');assert.equal(await page.locator('#bio').textContent(),'Meine Testbiografie bleibt unverändert');}
+      if(entry.path==='/tools/estate/handover.html'){
+       const status=page.locator('#exportStatus');
+       assert.equal(await status.getAttribute('role'),'status');
+       assert.equal(await status.getAttribute('aria-live'),'polite');
+       await page.locator('#exportEstate').press('Enter');
+       const expected=lang==='en'?'Explicitly confirm the irreversible handover.':'Bitte die unwiderrufliche Übergabe ausdrücklich bestätigen.';
+       await page.waitForFunction(expected=>document.getElementById('exportStatus').textContent===expected,expected);
+       assert.equal(await page.locator('#confirmRelease').isChecked(),false);
+       row.checks.push({lang,handoverRejection:true});
+      }
+      if(social){
+       const status=page.locator('#status'),mark=page.locator('#markRead');
+       assert.equal(await status.getAttribute('role'),'status');
+       assert.equal(await status.getAttribute('aria-live'),'polite');
+       await mark.press(lang==='en'?'Enter':'Space');
+       await page.waitForFunction(expected=>document.getElementById('status').textContent===expected,lang==='en'?'Marked as seen on this device.':'Auf diesem Gerät als gesehen markiert.');
+       assert.equal(await page.locator('#newCount').textContent(),'0');
+       assert.equal(await mark.evaluate(el=>el===document.activeElement),true);
+       assert.equal(await page.evaluate(()=>window.__toolyaAuthFixture.writes.length),0);
+       row.checks.push({lang,socialLocalStatus:true});
+      }
+      if(occasion){
+       const en=lang==='en';
+       const status=page.locator('#status');
+       assert.equal(await status.getAttribute('role'),'status');
+       assert.equal(await status.getAttribute('aria-live'),'polite');
+       await page.waitForFunction(({en})=>document.getElementById('status')?.textContent===(en?'Your private occasions are up to date.':'Deine privaten Anlässe sind aktuell.'),{en});
+       // Verify the actual destructive-action prompt, always cancel before any write.
+       const pending=page.waitForEvent('dialog',{timeout:4000});
+       const remove=page.locator('#events article button').last();
+       const click=remove.press('Enter',{timeout:4000});
+       const dialog=await pending;
+       const actual={type:dialog.type(),message:dialog.message()};
+       await dialog.dismiss();
+       await click;
+       assert.equal(await remove.evaluate(el=>el===document.activeElement),true);
+       assert.equal(actual.type,'confirm');
+       assert.equal(actual.message,en?'Permanently delete this occasion?':'Diesen Anlass dauerhaft löschen?');
+       assert.equal(await page.locator('#events article').count(),1);
+       assert.equal(await page.evaluate(()=>window.__toolyaAuthFixture.writes.length),0);
+
+       await page.waitForFunction(({en})=>document.getElementById('formTitle')?.textContent===(en?'✏️ Edit occasion':'✏️ Anlass bearbeiten'),{en});
+       assert.equal(await page.locator('#events h3').textContent(),'Anlass speichern · Meine private Person');
+       assert.equal(await page.locator('#events article p').textContent(),'Änderungen speichern');
+       assert.equal(await page.locator('#title').inputValue(),'Anlass speichern');
+       assert.equal(await page.locator('#notes').inputValue(),'Unveränderter privater Entwurf');
+       assert.equal(await page.locator('#date').inputValue(),'2099-11-24');
+       assert.equal(await page.locator('#events time').getAttribute('datetime'),'2099-11-24');
+       assert.match(await page.locator('#events time').textContent(),en?/24 November 2099/:/24\. November 2099/);
+       assert.equal(await page.locator('#save').textContent(),en?'Save changes':'Änderungen speichern');
+       assert.equal(await page.locator('#events .badge').textContent(),en?'📅 One-off':'📅 Einmalig');
+       assert.equal(await page.locator('#events article button').last().textContent(),en?'🗑️ Delete':'🗑️ Löschen');
+      }
+      if(admin){
+       const en=lang==='en';
+       await page.waitForFunction(({en})=>document.querySelector('#seo-google h4')?.textContent===(en?'Clicks':'Klicks'),{en});
+       assert.equal(await page.locator('#seo-google .seo-legend').textContent(),en?'Clicks and impressions · separate scales':'Klicks und Impressionen · getrennte Skalen');
+       assert.equal(await page.locator('#seo-google svg').first().getAttribute('aria-label'),en?'Clicks from 24/11/2026 to 24/11/2026':'Klicks vom 24.11.2026 bis 24.11.2026');
+       assert.match(await page.locator('#seo-google svg title').first().textContent(),en?/1,234 Clicks/:/1\.234 Klicks/);
+       assert.equal(await page.locator('#pages').textContent(),en?'No recorded data for this period yet.':'Noch keine erfassten Daten für diesen Zeitraum.');
+       assert.equal(await page.locator('#trend').textContent(),en?'No daily values available yet.':'Noch keine Tageswerte verfügbar.');
+       assert.equal(adminReads,adminReadsBefore,'locale switch must not refetch statistics');
+      }
       const layout=await page.evaluate(()=>({lang:document.documentElement.lang,overflow:Math.max(0,document.documentElement.scrollWidth-innerWidth)}));
-      row.checks.push({lang,title:await page.title(),...layout});
+      assert.equal(layout.lang,lang,'document language must follow selected language');
+      assert.ok(layout.overflow<=1,'horizontal overflow: '+layout.overflow+'px');
+      row.checks.push({lang,title:await page.title(),documentLang:layout.lang,overflow:layout.overflow,sharedAlertChecked});
      }
     }
    }catch(e){row.errors.push(String(e.message).slice(0,500))}
@@ -147,7 +273,9 @@ async function run(){
  fs.mkdirSync(dir,{recursive:true});
  const report={schemaVersion:1,scope:authenticated?'Authenticated read-only synthetic shell smoke; not full functional acceptance':'Unauthenticated read-only shell smoke; not full runtime acceptance',results};
  fs.writeFileSync(path.join(dir,authenticated?'authenticated-shell-report.json':'application-shell-report.json'),JSON.stringify(report,null,2)+'\n');
- console.log((authenticated?'AUTHENTICATED SHELL REVIEW ':'APPLICATION SHELL REVIEW ')+JSON.stringify({views:results.length,passed:results.filter(r=>!r.errors.length).length,review:results.filter(r=>r.errors.length).map(r=>({path:r.path,width:r.width,errors:r.errors}))}));
+ const failures=results.filter(r=>r.errors.length);
+ console.log((authenticated?'AUTHENTICATED SHELL REVIEW ':'APPLICATION SHELL REVIEW ')+JSON.stringify({views:results.length,passed:results.length-failures.length,review:failures.map(r=>({path:r.path,width:r.width,errors:r.errors}))}));
+ assert.equal(failures.length,0,'application shell failures; see JSON report for individual routes');
 }
 run().catch(err=>{console.error(err);process.exitCode=1;}).finally(async()=>{
  if(browser)await browser.close().catch(()=>{});

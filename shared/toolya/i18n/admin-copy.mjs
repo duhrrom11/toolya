@@ -1,5 +1,11 @@
 /* Administrator interface translations. No role or publishing logic changes. */
 export const ADMIN_COPY=Object.freeze({
+"Gezählt werden ausschließlich erfasste":"Only recorded",
+"-Ereignisse nach Analytics-Einwilligung. Voraussetzung: GA4-Ereignisdimension":" events after analytics consent are counted. The GA4 event dimension",
+"ist registriert.":"must be registered.",
+"Benötigt:":"Required:",
+". E-Mail-Adressen bleiben ausschließlich im Adminbereich.":". Email addresses remain exclusively in the admin area.",
+". Gefundene Einträge allein sind noch nicht öffentlich. Unpassende oder doppelte Funde kannst du direkt am Eintrag ausblenden; sie erscheinen danach nur noch im Filter „Ausgeblendet“ und lassen sich dort wieder anzeigen.":". Discovered entries are not public yet. Hide unsuitable or duplicate results directly on the entry; they then appear only under the Hidden filter, where they can be restored.",
  "Anmeldung konnte nicht geladen werden.":"Could not load sign-in.",
  "Bitte zuerst im Toolya-Dashboard anmelden.":"Sign in to the Toolya dashboard first.",
  "Diese öffentliche Wunschliste wirklich zurücknehmen? Änderungen am Eintrag werden aus Sicherheitsgründen nicht überschrieben.":"Withdraw this public wish list? For security reasons, changes to the entry will not be overwritten.",
@@ -113,11 +119,15 @@ export const ADMIN_COPY=Object.freeze({
  "Veröffentlichung abgebrochen. Bitte Namen, Quellen und Amazon-Links einzeln prüfen.": "Publication cancelled. Review names, sources and Amazon links individually.",
  "Veröffentlichung wird geprüft …": "Checking publication…",
  "Bitte zuerst mindestens einen neuen Fund auswählen.": "Select at least one new finding first.",
- "Bitte mit dem Administratorkonto anmelden.": "Sign in with an administrator account."
+ "Bitte mit dem Administratorkonto anmelden.": "Sign in with an administrator account.",
+ "Bitte eine Datei auswählen.": "Please select a file.",
+ "Maximal 1,5 MB pro Datei.": "Maximum 1.5 MB per file.",
+ "Keine Einträge gefunden.": "No entries found."
 });
 const reverse=Object.freeze(Object.fromEntries(Object.entries(ADMIN_COPY).map(([de,en])=>[en,de])));
 export function adminText(value,lang){if(typeof value!=='string')return value;const table=lang==='en'?ADMIN_COPY:reverse;if(Object.hasOwn(table,value))return table[value];
 const patterns=[
+ [/^(\d+) bereits gespeichert\. Rest nicht eingelesen: ([\s\S]*)$/,'$1 already saved. Remaining entries not imported: $2'],
  [/^Seite (\d+)$/,'Page $1'],
  [/^(\d+) von (\d+) sichtbaren neuen Wunschlisten ausgewählt$/,'$1 of $2 visible new wish lists selected'],
  [/^(\d+) von (\d+) sichtbaren neuen Wunschlisten ausgewählt · Suche oder Aktion läuft\. Bitte zuerst Suche stoppen\.$/,'$1 of $2 visible new wish lists selected · Search or action running. Stop the search first.'],
@@ -131,5 +141,9 @@ const patterns=[
  [/^(\d+) Suchabfragen · (\d+) neue Funde · (.+)$/,'$1 searches · $2 new findings · $3'],
  [/^(\d+) Wunschlisten veröffentlicht; (\d+) bereits vorhandene übersprungen\.$/,'$1 wish lists published; $2 existing entries skipped.']
 ];
+if(lang==='en'){
+ const publication=/^Hast du für alle (\d+) ausgewählten Funde die öffentliche Amazon-Liste und die korrekte Namens-\/Organisationszuordnung anhand der Quelle geprüft\?\\n\\nEine Quellseiten-Überschrift beweist allein nicht, wem die Amazon-Liste gehört\. Ungeprüfte Einträge bitte nicht veröffentlichen\.$/;
+ if(publication.test(value))return value.replace(publication,'Have you verified the public Amazon list and the correct name or organisation attribution against the source for all $1 selected findings?\\n\\nA source page heading alone does not prove who owns the Amazon list. Do not publish unverified entries.');
+}
 if(lang==='en')for(const [pattern,copy] of patterns)if(pattern.test(value))return value.replace(pattern,copy);
 return value;}

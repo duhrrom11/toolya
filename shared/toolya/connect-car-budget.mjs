@@ -1,3 +1,4 @@
+import {createConnectCopy} from './i18n/connect-copy.mjs';
 /** Inline, opt-in Toolya Connect: Autokosten → Haushaltsbuch. No separate Connect section. */
 export function mountCarBudgetConnect({host,controller,client,userId}) {
   if (!host?.querySelector || !controller?.snapshot || !client?.rpc || !client?.auth?.getUser || !userId)
@@ -6,6 +7,7 @@ export function mountCarBudgetConnect({host,controller,client,userId}) {
   const costInput=host.querySelector('#eventCost');
   if (!saveButton || !costInput) throw new TypeError('Connect requires the Autokosten expense form.');
   const root = document.createElement('div');
+  const presentation=createConnectCopy(root);
   root.id = 'toolya-connect-car-budget';
   root.style.cssText = 'padding:12px;margin:10px 0;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc;color:#0f172a;font:14px system-ui';
   const label = document.createElement('label');
@@ -15,17 +17,17 @@ export function mountCarBudgetConnect({host,controller,client,userId}) {
   checkbox.id = 'toolya-connect-budget-choice';
   checkbox.style.cssText = 'width:18px;height:18px;accent-color:#007e9f';
   const labelText = document.createElement('span');
-  labelText.textContent = 'Diese Ausgabe auch ins Haushaltsbuch übernehmen';
+  presentation.set(labelText,'Diese Ausgabe auch ins Haushaltsbuch übernehmen');
   label.append(checkbox,labelText);
   const help = document.createElement('p');
-  help.textContent = 'Optional · nach dem Speichern mit Bestätigung. Belege werden nicht übertragen; Zahlungsart im Haushaltsbuch prüfen.';
+  presentation.set(help,'Optional · nach dem Speichern mit Bestätigung. Belege werden nicht übertragen; Zahlungsart im Haushaltsbuch prüfen.');
   help.style.cssText = 'margin:7px 0 0;font-size:12px;color:#475569';
   const status = document.createElement('p');
   status.setAttribute('role','status');
   status.style.cssText = 'margin:7px 0 0';
   const retry = document.createElement('button');
   retry.type = 'button';
-  retry.textContent = 'Übernahme erneut versuchen';
+  presentation.set(retry,'Übernahme erneut versuchen');
   retry.hidden = true;
   retry.style.cssText = 'margin-top:8px;padding:8px 12px;border:1px solid #007e9f;border-radius:8px;background:white;color:#005b75;cursor:pointer';
   root.append(label,help,status,retry);
@@ -52,13 +54,13 @@ export function mountCarBudgetConnect({host,controller,client,userId}) {
     try {
       event=controller.snapshot().events?.find(item=>String(item?.id)===selected);
     } catch(error) {
-      status.textContent='Cloud-Datenstand nicht verfügbar. Bitte neu laden.';
+      presentation.set(status,'Cloud-Datenstand nicht verfügbar. Bitte neu laden.');
       return false;
     }
     const price=Number(event?.cost);
     if (!Number.isSafeInteger(event?.id) || event.id<0 || !Number.isFinite(price) ||
         price<=0 || Math.abs(Math.round(price*100)-price*100)>1e-7) {
-      status.textContent='Nur positive Ausgaben mit gültigem Centbetrag können übernommen werden.';
+      presentation.set(status,'Nur positive Ausgaben mit gültigem Centbetrag können übernommen werden.');
       lastFailedId=null;
       return false;
     }
@@ -66,12 +68,12 @@ export function mountCarBudgetConnect({host,controller,client,userId}) {
       String(event.title)+'\n'+price.toFixed(2).replace('.',',')+' € · '+String(event.date)+
       '\n\nBelege werden nicht übertragen. Zahlungsart anschließend prüfen.');
     if (!accepted) {
-      status.textContent='Ausgabe gespeichert; Übernahme ins Haushaltsbuch abgebrochen.';
+      presentation.set(status,'Ausgabe gespeichert; Übernahme ins Haushaltsbuch abgebrochen.');
       lastFailedId=selected;
       retry.hidden=false;
       return false;
     }
-    busy=true;checkbox.disabled=true;status.textContent='Übertragung wird von Toolya Cloud geprüft …';
+    busy=true;checkbox.disabled=true;presentation.set(status,'Übertragung wird von Toolya Cloud geprüft …');
     try {
       const {data:auth,error:authError}=await client.auth.getUser();
       if (authError || auth?.user?.id!==userId || auth.user.is_anonymous)
@@ -91,15 +93,15 @@ export function mountCarBudgetConnect({host,controller,client,userId}) {
       const {data:recheck,error:recheckError}=await client.auth.getUser();
       if (recheckError || recheck?.user?.id!==userId || recheck.user.is_anonymous)
         throw new Error('Konto nach Transfer gewechselt.');
-      status.textContent=record.status==='already_imported'
+      presentation.set(status,record.status==='already_imported'
         ? 'Bereits übertragen – keine Doppelbuchung erstellt.'
-        : 'Übertragung in Toolya Cloud bestätigt. Zahlungsart im Haushaltsbuch prüfen.';
+        : 'Übertragung in Toolya Cloud bestätigt. Zahlungsart im Haushaltsbuch prüfen.');
       checkbox.checked=false;
       lastFailedId=null;
       retry.hidden=true;
       return true;
     } catch(error) {
-      status.textContent='Ausgabe gespeichert, aber keine bestätigte Übertragung. Cloud-Datenstand beider Tools prüfen, bevor du erneut überträgst.';
+      presentation.set(status,'Ausgabe gespeichert, aber keine bestätigte Übertragung. Cloud-Datenstand beider Tools prüfen, bevor du erneut überträgst.');
       lastFailedId=selected;
       retry.hidden=false;
       console.error('Toolya Connect',error);
@@ -113,6 +115,6 @@ export function mountCarBudgetConnect({host,controller,client,userId}) {
     get selected(){return !disposed && !checkbox.disabled && checkbox.checked;},
     refresh,
     transferEvent,
-    dispose(){disposed=true;costInput.removeEventListener('input',refresh);root.remove();}
+    dispose(){presentation.dispose();disposed=true;costInput.removeEventListener('input',refresh);root.remove();}
   });
 }

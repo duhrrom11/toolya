@@ -133,7 +133,7 @@ export function exportWishlistCsv(rows,language='de') {
  const safe=value=>{
   let s=String(value??'').replace(/\r\n?/g,'\n');
   // Avoid spreadsheet formula execution when opening a downloaded CSV.
-  if(/^[\s\u0000-\u001f]*[=+@-]/.test(s))s="'"+s;
+  if(/^(?:[\t\r\n]|[\s\u0000-\u001f\uFEFF]*[=+@\-＝＋－＠])/.test(s))s="'"+s;
   return '"'+s.replace(/"/g,'""')+'"';
  };
  const header=language==='en'?['Amazon-ASIN','Product title','Note','Priority','Created at','Amazon link']:['Amazon-ASIN','Produkttitel','Notiz','Priorität','Erstellt am','Amazon-Link'];

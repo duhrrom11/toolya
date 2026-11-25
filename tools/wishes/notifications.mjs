@@ -17,7 +17,7 @@ function render(){
   const main=document.createElement('div');
   const badge=document.createElement('span');badge.className='badge';badge.textContent=ui(item.read_at?'✓ Gelesen':'● Neu');
   const h=document.createElement('h3');
-  h.textContent=item.event_type==='collection'?ui('🌈 Neue Wunschwelt: ')+item.title:item.event_type==='follow'?ui('👥 Jemand folgt dir'):ui('❤️ Like auf: ')+item.title;
+  h.setAttribute('data-user-content','');h.textContent=item.event_type==='collection'?ui('🌈 Neue Wunschwelt: ')+item.title:item.event_type==='follow'?ui('👥 Jemand folgt dir'):ui('❤️ Like auf: ')+item.title;
   const p=document.createElement('p');p.textContent=ui(item.event_type==='collection'?'Ein gefolgtes Profil hat eine öffentliche Sammlung veröffentlicht.':item.event_type==='follow'?'Dein Profil hat einen neuen Follower.':'Deine öffentliche Sammlung wurde gelikt.');
   const time=document.createElement('time');time.dateTime=item.created_at;time.textContent=date(item.created_at);
   main.append(badge,h,p,time);

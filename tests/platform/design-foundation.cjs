@@ -10,22 +10,24 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  try{browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
   const context=await browser.newContext({reducedMotion:'reduce'});
   await context.route('**/*',route=>{const u=new URL(route.request().url());return u.origin===origin||(u.hostname==='cdn.tailwindcss.com'&&route.request().method()==='GET')?route.continue():route.abort()});
-  const page=await context.newPage();const galleryErrors=[];page.on('pageerror',e=>{if(new URL(page.url()).pathname==='/mascots.html')galleryErrors.push(e.message)});fs.mkdirSync('test-results',{recursive:true});
-  for(const route of ['/index.html','/privacy.html','/legal.html','/mascots.html','/tools/wishes/public.html','/tools/estate/index.html','/tools/estate/heirs.html']){
+  const page=await context.newPage();const homeErrors=[];page.on('pageerror',e=>{if(['/index.html','/en/'].includes(new URL(page.url()).pathname))homeErrors.push(e.message)});fs.mkdirSync('test-results',{recursive:true});
+  for(const route of ['/index.html','/en/','/privacy.html','/legal.html','/tools/wishes/public.html','/tools/estate/index.html','/tools/estate/heirs.html']){
    for(const width of [320,768,1440]){
     await page.setViewportSize({width,height:900});await page.emulateMedia({colorScheme:route.includes('/estate/')?'dark':'light'});await page.goto(origin+route);
+    const english=route==='/en/';
+    const reject=english?'Reject':'Ablehnen';
     await page.locator('.toolya-signature-footer .ty-footer-links #toolya-consent-settings').waitFor();
     assert.equal(await page.locator('footer').count(),1,route+' single footer');
     assert.equal(await page.locator('#toolya-consent-settings').count(),1,'single consent link');
-    if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+    if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:reject,exact:true}).click();
     await page.locator('#toolya-consent-settings').click();assert(await page.locator('#toolya-consent-panel').isVisible(),'settings can be reopened after footer replacement');
-    await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+    await page.getByRole('button',{name:reject,exact:true}).click();
     const brand=await page.locator('.ty-footer-wordmark').evaluate(el=>({font:getComputedStyle(el).fontFamily,weight:getComputedStyle(el).fontWeight,text:el.textContent}));
     assert(brand.font.startsWith('Inter'),'shared existing brand font');assert.equal(brand.weight,'900');assert.equal(brand.text,'Toolya');
-    if(route==='/index.html'){
+    if(route==='/index.html'||english){
      assert.equal(await page.locator('.b3-hub-logo').evaluate(el=>getComputedStyle(el).fontFamily),brand.font,'home and footer font match');
      const dashboardCard=page.locator('.b3-dashboard-card');
-     assert.equal(await dashboardCard.getAttribute('href'),'dashboard/','dashboard card opens personal dashboard');
+     assert.equal(await dashboardCard.getAttribute('href'),english?'/dashboard/?lang=en':'dashboard/','dashboard card opens personal dashboard');
      assert.equal(await page.locator('.b3-hero-preview .b3-preview-list').count(),0,'favorite preview removed');
      assert.equal(await page.locator('.b3-hub-topbar .b3-hub-logo img').count(),0,'brand has no mascot');
      if(width<=790){
@@ -53,7 +55,36 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
      await page.keyboard.press('Tab');
      assert.equal(await guides.nth(1).evaluate(link=>document.activeElement===link&&getComputedStyle(link).outlineStyle!=='none'),true,'guide links show keyboard focus');
     }
-    if(['/privacy.html','/legal.html','/mascots.html'].includes(route)){
+    if(route==='/index.html'||english){
+     await page.waitForFunction(()=>window.toolyaHomeReady===true&&!!window.toolyaBuddy);
+     const opener=page.getByRole('button',{name:english?'Open settings':'Einstellungen öffnen',exact:true});
+     await opener.focus();await opener.press('Enter');
+     const modal=page.locator('#settingsModal'),appearance=modal.locator('details.toolya-appearance');
+     assert(await modal.isVisible(),'integrated settings open by keyboard');
+     assert.equal(await appearance.count(),1,'one integrated mascot section');
+     const summary=appearance.locator('summary');
+     assert.equal((await summary.textContent()).trim(),english?'Mascots':'Maskottchen');
+     if(!await appearance.evaluate(e=>e.open)){await summary.focus();await summary.press('Enter');}
+     const prefs=appearance.locator('.toolya-preferences');
+     assert.equal(await prefs.count(),1);
+     const companion=prefs.getByLabel(english?'Companion':'Begleiter',{exact:true});
+     const previous=await companion.inputValue();
+     const next=previous==='purple'?'turquoise':'purple';
+     await companion.selectOption(next);
+     assert.equal(await page.evaluate(()=>toolyaBuddy.character),next);
+     assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('helferlein-toolya-preferences-v1')).character),next);
+     const hide=prefs.getByLabel(english?'Hide companion':'Begleiter ausblenden',{exact:true});
+     const hidden=await hide.isChecked();
+     await hide.setChecked(!hidden);
+     assert.equal(await page.evaluate(()=>toolyaBuddy.hidden),!hidden);
+     await hide.setChecked(hidden);
+     await companion.selectOption(previous);
+     await page.keyboard.press('Escape');
+     assert(await modal.isHidden(),'Escape closes integrated settings');
+     assert.equal(await opener.evaluate(e=>document.activeElement===e),true,'settings return keyboard focus');
+     assert.equal(await page.locator('.toolya-signature-footer img').count(),0,'selected mascot does not change footer branding');
+    }
+    if(['/privacy.html','/legal.html'].includes(route)){
      assert.equal(await page.locator('.ty-info-header').count(),1,'shared information header');
      assert.equal(await page.locator('h1').count(),1,'single main title');
      assert.equal(await page.locator('.ty-info-header [aria-current=page]').count(),1,'current page marked');
@@ -66,18 +97,11 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
        return Math.min(...stops.map(stop=>{const bg=lum(stop.map((x,i)=>x*(1-alpha)+overlay[i]*alpha));return (Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05)}));});
      });assert(infoContrasts.every(r=>r>=4.5),'information navigation contrast '+JSON.stringify(infoContrasts));
 
-     if(route!=='/mascots.html')assert.equal(await page.locator('.toolya-idle').isVisible(),false,'no separate companion card on legal text pages');
+     assert.equal(await page.locator('.toolya-idle').isVisible(),false,'no separate companion card on legal text pages');
      assert((await page.locator('.toolya-settings-trigger').boundingBox()).height>=44);
      assert.equal(await page.locator('.ty-info-controls>.toolya-settings-trigger').count(),1,'settings button uses the information navigation slot');
      await page.locator('.toolya-settings-trigger').click();assert(await page.locator('#toolya-display-settings').isVisible());
      await page.getByRole('button',{name:'Einstellungen schließen',exact:true}).click();
-     if(route==='/mascots.html'){
-      assert.equal(await page.locator('#feelings button').count(),16);
-      await page.locator('#feelings button').first().click();assert(await page.locator('.tb-message-box').isVisible(),'gallery emotion preview still works');
-      await page.locator('#outfit').selectOption('5');assert.equal(await page.locator('#outfit').inputValue(),'5');
-      await page.waitForFunction(()=>document.querySelector('.toolya-buddy')?.dataset.pose==='idle');
-      assert(await page.locator('.toolya-idle').isVisible(),'outfit preview returns to visible companion');assert.deepEqual(galleryErrors,[],'gallery previews have no JavaScript errors');
-     }
      await page.locator('#info-main h1').click();await page.screenshot({path:'test-results/info-'+route.slice(1,-5)+'-'+width+'.png'});
     }
     if(route.includes('/estate/')){
@@ -134,7 +158,9 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
    assert(header.every(box => box.left >= 0 && box.right <= width && Math.abs(box.center - header[0].center) < 2),
     'dashboard navigation fits on one row at '+width+': '+JSON.stringify(header));
    if (width === 320) {
-    const language = await dashboard.locator('.b3-hub-nav [aria-label="Sprache wählen"]').evaluate(node => {
+    const languageControl = dashboard.locator('.b3-hub-nav .ty-dashboard-locale');
+    assert.equal(await languageControl.getAttribute('aria-label'),(await dashboard.locator('html').getAttribute('lang'))==='en'?'Choose interface language':'Sprache der Oberfläche wählen');
+    const language = await languageControl.evaluate(node => {
      const r=node.getBoundingClientRect();
      const style=getComputedStyle(node);
      return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,visible:style.display!=='none'};
@@ -204,6 +230,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
    assert.equal(await page.locator('.toolya-signature-footer img').count(),0,'footer has no mascot regardless of '+character);
    assert.equal(await page.evaluate(()=>toolyaBuddy.character),character,'selected companion still follows '+character);
   }
-  console.log('Design foundation: 7 routes × 3 widths; both consent initialization orders; both characters passed. Production application/analytics requests blocked.');
+  assert.deepEqual(homeErrors,[],'both homepage settings have no runtime errors');
+  console.log('Design foundation: 7 routes × 3 widths; bilingual integrated mascot settings, both consent initialization orders; both characters passed. Production application/analytics requests blocked.');
  }finally{await browser?.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -31,7 +31,7 @@ function mount(){
  const header=document.querySelector('body > header');
  if(!print&&header){
   nav=document.createElement('nav');nav.className='ty-estate-locale';nav.setAttribute('aria-label','Language / Sprache');
-  notice=document.createElement('p');notice.className='ty-estate-locale-notice';notice.setAttribute('role','status');
+  notice=document.createElement('p');notice.className='ty-estate-locale-notice';notice.setAttribute('role','status');notice.lang='en';
   notice.textContent='English translation is being completed; some security and account messages remain in German.';
   for(const target of ['de','en']){
    const b=document.createElement('button');b.type='button';b.textContent=target.toUpperCase();b.lang=target;b.dataset.estateLocale=target;
@@ -59,9 +59,16 @@ function mount(){
   translateEstateStatuses(lang);
   applyEstateLocale(document,lang);
   globalThis.__toolyaEstateLocale=lang;
+  document.documentElement.lang=lang;
   translateEstateStatuses(lang);
   document.title=lang==='en'?estateText(originalTitle.replace(' | Toolya',''),'en')+' | Toolya':originalTitle;
-  nav?.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.estateLocale===lang)));
+  nav?.setAttribute('aria-label',lang==='en'?'Choose interface language':'Sprache der Oberfläche wählen');
+  for(const b of nav?.querySelectorAll('button')||[]){
+   const target=b.dataset.estateLocale;
+   b.setAttribute('aria-pressed',String(target===lang));
+   const label=target==='de'?(lang==='en'?'Switch to German':'Deutsch auswählen'):(lang==='en'?'English selected':'Englisch auswählen');
+   b.lang=lang;b.setAttribute('aria-label',label);b.setAttribute('title',label);
+  }
   if(notice)notice.hidden=lang!=='en';
   document.dispatchEvent(new Event('toolya:estate-locale-change'));
  }

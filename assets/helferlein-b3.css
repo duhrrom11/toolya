@@ -374,3 +374,25 @@ body.b3 .b3-photo-panel img {
 body.b3 .b3-photo-dialog button {
  min-height: 44px;
 }
+
+/* B3 responsive sizing must not depend on Tailwind preflight being available.
+   Widths include padding and borders, including in offline/isolated browsers. */
+body.b3 .b3-shell,
+body.b3 .b3-nav,
+body.b3 .b3-backform-nav,
+body.b3 .b3-more-content,
+body.b3 .b3-more-item,
+body.b3 main.b3-dashboard,
+body.b3 main.b3-backform-main {
+ box-sizing:border-box;
+ min-width:0;
+ max-inline-size:100%;
+}
+body.b3 .b3-shell {max-inline-size:min(100%,1320px)}
+body.b3 main.b3-backform-main {max-inline-size:min(100%,1280px)}
+body.b3 .b3-more-content > * {min-width:0;max-inline-size:100%;overflow-wrap:anywhere}
+body.b3 :is(main.b3-dashboard,main.b3-backform-main) :is(input,select,textarea) {
+ box-sizing:border-box;
+ min-width:0;
+ max-inline-size:100%;
+}

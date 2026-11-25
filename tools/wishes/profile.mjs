@@ -1,3 +1,8 @@
+const ui=(de,en)=>globalThis.__toolyaWishesLocale==='en'?en:de;
+function localizedAlt(image,de,en,value=''){
+ const update=()=>{image.alt=ui(de,en)+value};
+ update();document.addEventListener('toolya:wishes-locale-change',update);
+}
 import {db} from './toolya-client.mjs';
 const $=id=>document.getElementById(id);
 const handle=new URLSearchParams(location.search).get('handle');
@@ -7,7 +12,7 @@ async function load(){
  if(error)throw error;
  if(!profile){$('status').textContent='Dieses Profil wurde nicht gefunden.';return}
  $('name').setAttribute('data-user-content','');$('name').textContent=profile.display_name;$('handle').textContent='@'+profile.handle;$('bio').textContent=profile.bio||'';
- if(profile.avatar_url){try{const u=new URL(profile.avatar_url);if(u.protocol==='https:'){const image=document.createElement('img');image.src=u.href;image.alt='Profilbild von '+(profile.display_name||profile.handle||'Toolya-Nutzer');image.referrerPolicy='no-referrer';$('avatar').replaceChildren(image)}}catch{}}
+ if(profile.avatar_url){try{const u=new URL(profile.avatar_url);if(u.protocol==='https:'){const image=document.createElement('img');image.src=u.href;localizedAlt(image,'Profilbild von ','Profile picture of ',profile.display_name||profile.handle||'Toolya');image.referrerPolicy='no-referrer';$('avatar').replaceChildren(image)}}catch{}}
  const url=new URL('./index.html',location.href);url.searchParams.set('profile',profile.handle);$('wishes').href=url.href;
  const {data:lists,error:listsError}=await db.from('wishlist_lists').select('id,title,description,icon,color,cover_url').eq('user_id',profile.user_id).eq('visibility','public').eq('archived',false).order('created_at',{ascending:false}).limit(48);
  if(listsError)throw listsError;
@@ -22,7 +27,7 @@ async function load(){
  for(const list of lists||[]){
   const card=document.createElement('article');card.className='card';
   const cover=document.createElement('div');cover.className='cover';cover.textContent=list.icon||'🎁';
-  if(list.cover_url){try{const u=new URL(list.cover_url);if(u.protocol==='https:'){const img=document.createElement('img');img.src=u.href;img.alt='Titelbild der Sammlung: '+(list.title||'Sammlung');img.loading='lazy';img.referrerPolicy='no-referrer';cover.replaceChildren(img)}}catch{}}
+  if(list.cover_url){try{const u=new URL(list.cover_url);if(u.protocol==='https:'){const img=document.createElement('img');img.src=u.href;localizedAlt(img,'Titelbild der Sammlung: ','Collection cover: ',list.title||'');img.loading='lazy';img.referrerPolicy='no-referrer';cover.replaceChildren(img)}}catch{}}
   if(/^#[0-9a-f]{6}$/i.test(list.color||''))cover.style.borderTop='5px solid '+list.color;
   const body=document.createElement('div');body.className='body';
   const title=document.createElement('h3');title.setAttribute('data-user-content','');title.textContent=list.title;body.append(title);

@@ -143,7 +143,9 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  for(const width of [320,390,900,960,1280]){
   await page.setViewportSize({width,height:812});
   await page.evaluate(()=>toolyaBuddy.show('warning','Willkommen bei Toolya'));
-  const rect=await page.locator('.tb-message-box').evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,viewportWidth:innerWidth,viewportHeight:innerHeight}});
+  const activeMessage=page.locator('.tb-message-box:visible');
+  assert.equal(await activeMessage.count(),1,'exactly one active mascot message');
+  const rect=await activeMessage.evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,viewportWidth:innerWidth,viewportHeight:innerHeight}});
   assert(rect.left>=0&&rect.right<=rect.viewportWidth+1&&rect.top>=0&&rect.bottom<=rect.viewportHeight+1,'home notice clipped at '+width+': '+JSON.stringify(rect));
   await page.evaluate(()=>toolyaBuddy.dismiss());
  }
@@ -155,10 +157,15 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  assert.equal(await page.locator('.ty-duo-message').isVisible(),false,'four taps do not trigger Easter egg');
  await tickleButton.tap();assert.match(await page.locator('.ty-duo-message').textContent(),/kitzlig/);
  assert.equal(await hero.getAttribute('data-reaction'),null,'reduced motion does not animate');
- await page.getByRole('button',{name:/Finanzen/,exact:false}).click();
- assert.equal(await page.locator('#toolsGrid .tool-card:visible').count(),3,'finance filters actual cards');
- await page.getByRole('button',{name:/Alle 12/,exact:true}).click();
+ // The current home intentionally has no category/search controls.
+ assert.equal(await page.locator('[data-b3-category-filter],#toolSearch,#b3-reset-filters').count(),0);
  assert.equal(await page.locator('#toolsGrid .tool-card:visible').count(),12,'all original tools retained');
+ assert.equal(await page.locator('#toolsGrid .tool-card[data-category="finanzen"]:visible').count(),3,'finance tools remain visible');
+ assert.equal(await page.locator('#toolsGrid .tool-card[data-category="tiere"]:visible').count(),1,'pet tool remains visible');
+ assert.equal(await page.locator('#b3-result-count').textContent(),'12 von 12 Tools');
+ const homeCards=await page.locator('#toolsGrid .tool-card').evaluateAll(nodes=>nodes.map(n=>({id:n.dataset.id,href:n.querySelector('a.ty-tool-link')?.getAttribute('href'),label:n.querySelector('.fav-btn')?.getAttribute('aria-label')})));
+ assert.equal(new Set(homeCards.map(c=>c.id)).size,12);
+ assert.ok(homeCards.every(c=>c.href&&c.label),'every tool has navigation and an accessible favourite action');
  for(const id of ['wishlist','kassenbon','pflanzen','kisten'])await page.locator('.fav-btn[data-id="'+id+'"]').click();
  assert.equal(await page.locator('.b3-dashboard-card').count(),1,'dashboard card replaces the old favorites preview');
  await page.reload();await page.waitForFunction(()=>window.toolyaHomeReady===true);
@@ -326,7 +333,16 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'dashboard mobile horizontal overflow');
  await page.setViewportSize({width:320,height:812});
 
- for(const route of ['/privacy.html','/legal.html','/mascots.html','/tools/wishes/dashboard.html','/tools/estate/heirs.html','/tools/estate/handover.html']){await page.goto(origin+route);await page.waitForFunction(()=>window.toolyaBuddy);await verifyClipboard(route);assert.equal(await page.locator('.toolya-settings').count(),0,route);await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.locator('details.toolya-appearance').evaluate(e=>{e.open=true});await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route);await page.keyboard.press('Escape');}
+ for(const route of ['/privacy.html','/legal.html','/tools/wishes/dashboard.html','/tools/estate/heirs.html','/tools/estate/handover.html']){await page.goto(origin+route);await page.waitForFunction(()=>window.toolyaBuddy);await verifyClipboard(route);assert.equal(await page.locator('.toolya-settings').count(),0,route);await page.getByRole('button',{name:'Einstellungen öffnen',exact:true}).click();await page.locator('details.toolya-appearance').evaluate(e=>{e.open=true});await page.getByLabel('Begleiter',{exact:true}).waitFor({state:'visible'});assert.equal(await page.locator('.toolya-preferences').count(),1,route);await page.keyboard.press('Escape');}
+ // Retired galleries are deliberately absent; test the replacement settings on the English home.
+ await page.goto(origin+'/en/');await page.waitForFunction(()=>window.toolyaBuddy);
+ await page.locator('#settingsBtn').click();
+ const enMascots=page.locator('#settingsModal details.toolya-appearance');
+ assert.equal(await enMascots.count(),1,'English home has one mascot settings section');
+ assert.equal((await enMascots.locator('summary').textContent()).trim(),'Mascots');
+ await enMascots.evaluate(e=>{e.open=true});
+ assert.equal(await enMascots.locator('.toolya-preferences').count(),1);
+ await page.locator('#cancelSettingsBtn').click();
  await page.goto(origin+'/tools/wishes/');assert(['/', '/index.html', '/tools/wishes/', '/tools/wishes/index.html', '/tools/wishes/public.html'].includes(new URL(page.url()).pathname),'wishlist entry stays within approved routes');await page.goto(origin+'/tools/wishes/public.html');await page.locator('#search').waitFor();await verifyRealFormClipboard('public wishlist','#search','#email','example@example.invalid');
  assert.equal(await page.locator('#homeNewWish,#homeNewList,.wishes-navigation').count(),0,'legacy private wishlist controls not shown');
  assert.equal(await page.locator('#search,#email,#password').count(),3,'public wishlist controls present');

@@ -12,13 +12,13 @@ function mount(){
  const nav=document.createElement('nav');nav.className='ty-wishes-language';
  nav.setAttribute('aria-label','Language / Sprachauswahl');
  const notice=document.createElement('p');notice.className='ty-wishes-language-notice';
- notice.setAttribute('role','status');
+ notice.setAttribute('role','status');notice.lang='en';
  notice.textContent='The English version is still being completed. Some dynamic and account messages may remain in German.';
  const initialTitle=document.title;
  let active=storedLocale();
  // Only fixed, app-owned message containers. Content cards, private notes and
  // account identifiers must not be modified by the status translator.
- const statusSelectors=['#status','#count','#taskStatus','#checklistStatus','#rolloverStatus',
+ const statusSelectors=["#homeSettingsStatus","#homeLayoutStatus","#homeCompareStatus","#homeBackupStatus","#homeCheckpointViewStatus","#homeCheckpointFavoriteStatus","#homeCheckpointStatus","#homeCheckpointCompareStatus","#homeHistoryStatus","#homeGiftStatus","#bulkStatus","#bulkProgressText",'#listsStatus','#listWishCount','#editListFeedback','#status','#count','#taskStatus','#checklistStatus','#rolloverStatus',
   '#giftStatus','#filterStatus','#productSearchStatus','#searchStatus','#detailStatus',
   '#profileStatus','#settingsAuthMessage','#settingsAccountStatus','#settingsStatus',
   '#notice','#reactionStatus','#actionStatus','#budgetSaveFeedback','#giftFormFeedback',
@@ -82,7 +82,13 @@ function mount(){
    translatedTitle!==initialTitle?translatedTitle:
    wishesText(initialTitle.replace(' · Toolya Wishes',''),'en')+' · Toolya Wishes';
   document.documentElement.lang=lang;
-  nav.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.wishesLocale===lang)));
+  nav.setAttribute('aria-label',lang==='en'?'Choose interface language':'Sprache der Oberfläche wählen');
+  for(const b of nav.querySelectorAll('button')){
+   const target=b.dataset.wishesLocale;
+   b.setAttribute('aria-pressed',String(target===lang));
+   const label=target==='de'?(lang==='en'?'Switch to German':'Deutsch auswählen'):(lang==='en'?'English selected':'Englisch auswählen');
+   b.lang=lang;b.setAttribute('aria-label',label);b.setAttribute('title',label);
+  }
   notice.hidden=lang!=='en';
   document.dispatchEvent(new Event('toolya:wishes-locale-change'));
  }

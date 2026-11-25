@@ -26,7 +26,7 @@ function render(){
   if(item.cover_url){try{const u=new URL(item.cover_url);if(u.protocol==='https:'){const img=document.createElement('img');img.src=u.href;img.alt=ui('Titelbild der Sammlung: ')+(item.title||ui('Sammlung'));img.loading='lazy';img.referrerPolicy='no-referrer';cover.replaceChildren(img)}}catch{}}
   const body=document.createElement('div');body.className='card-body';
   const badge=document.createElement('span');badge.className='badge';badge.textContent='❤️ '+(counts.get(item.id)||0)+' Likes';
-  const title=document.createElement('h2');title.textContent=item.title;body.append(badge,title);
+  const title=document.createElement('h2');title.setAttribute('data-user-content','');title.textContent=item.title;body.append(badge,title);
   if(item.description){const p=document.createElement('p');p.textContent=item.description;body.append(p)}
   const owner=profiles.get(item.user_id);
   if(owner){const link=document.createElement('a');link.href=new URL('./profile.html?handle='+encodeURIComponent(owner.handle),location.href).href;link.textContent='👤 '+owner.display_name;body.append(link)}

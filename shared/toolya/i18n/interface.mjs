@@ -1,3 +1,4 @@
+import {connectConfirmation} from './connect-copy.mjs';
 /* Explicit, reversible UI translations. No access to auth/data stores or mascot settings. */
 const common = [
  ['.toolya-auth-loading','Checking your sign-in…'],
@@ -2679,8 +2680,68 @@ const auditedDialogAdditions = Object.freeze({
     "Bitte bestätigen, dass die Sicherung heruntergeladen wurde.": "Please confirm that the backup was downloaded."
   }
 });
+// Exact app-owned validation errors, shared by native dialog wrappers.
+const validationCopy=Object.freeze({
+"Import ersetzt vorhandene Cloud-Daten. Zuerst eine Sicherung herunterladen?": "Import replaces existing cloud data. Download a backup first?",
+"Sicherung kontrolliert? Vorhandene Cloud-Daten jetzt wirklich ersetzen?": "Have you checked the backup? Replace existing cloud data now?",
+"Sicherung enthält keine gültigen Daten.": "Backup contains no valid data.",
+"Sicherung kann nicht als JSON erstellt werden.": "Backup could not be created as JSON.",
+"Cloud-Daten nicht bereit.": "Cloud data is not ready.",
+"Sicherheitsprüfungen fehlen.": "Safety checks are missing.",
+"Importdaten sind kein gültiges JSON.": "Import data is not valid JSON.",
+"Cloud-Sicherung nicht bestätigt. Import abgebrochen.": "Cloud backup not confirmed. Import cancelled.",
+"Cloud-Sitzung oder Datenstand hat sich geändert.": "The cloud session or data revision has changed.",
+  "Konto während des Ladens gewechselt.": "The account changed while loading.",
+  "Anmeldung nicht mehr gültig.": "Sign-in is no longer valid.",
+  "Anmeldung nicht gültig.": "Sign-in is invalid.",
+  "Cloud nicht bereit. Bitte anmelden oder neu laden.": "Cloud not ready. Sign in or reload.",
+  "Cloud nicht bereit.": "Cloud not ready.",
+  "Konto während des Cloud-Ladens gewechselt.": "The account changed while loading cloud data.",
+  "Canvas nicht verfügbar": "Canvas unavailable"
+});
+const toolValidationCopy=Object.freeze({
+  "housemates": {
+    "Ungültige alte WG-Daten.": "Invalid legacy household data.",
+    "Alte WG hat ein ungültiges Datenformat.": "The legacy household has an invalid data format.",
+    "WG-Zugriff konnte nicht geprüft werden.": "Household access could not be verified.",
+    "WG wurde während des Speicherns gewechselt. Speichern abgebrochen.": "The household changed while saving. Save cancelled.",
+    "Speichern nach einem Konflikt angehalten. Bitte Daten sichern und die WG kontrolliert neu laden.": "Saving paused after a conflict. Back up your data and carefully reload the household.",
+    "WG muss vor dem Speichern neu geladen werden.": "Reload the household before saving.",
+    "Ungültiger WG-Versionsstand. Bitte WG neu laden.": "Invalid household revision. Reload the household.",
+    "Speicherkonflikt: Die WG wurde zwischenzeitlich geändert. Bitte Änderungen sichern und neu laden.": "Save conflict: The household has changed in the meantime. Back up your changes and reload.",
+    "Cloud-Daten konnten nicht geladen werden": "Cloud data could not be loaded",
+    "Ungültiges WG-Datenformat": "Invalid household data format",
+    "Ungespeicherte WG-Änderungen: Cloud-Laden abgebrochen.": "Unsaved household changes: Cloud loading cancelled.",
+    "Ungültige WG-Daten": "Invalid household data",
+    "WG wurde während des Ladens lokal geändert. Cloud-Daten nicht übernommen.": "The household changed locally while loading. Cloud data was not applied.",
+    "Ungültige WG-Cloud-Daten": "Invalid household cloud data",
+    "WG wurde vor dem Speichern gewechselt.": "The household changed before saving."
+  },
+  "budget": {
+    "Ungültige Bildabmessungen": "Invalid image dimensions",
+    "Belegfoto konnte nicht gültig gespeichert werden": "The receipt photo could not be saved correctly",
+    "Diese Backup-Version wird nicht unterstützt. Bitte eine kompatible Version verwenden.": "This backup version is unsupported. Use a compatible version."
+  },
+  "car": {
+    "Bild ist nicht lesbar": "Image cannot be read"
+  },
+  "parking": {
+    "Foto nicht lesbar": "Photo cannot be read"
+  },
+  "meters": {
+    "Ungültiger Tarifwert": "Invalid tariff value",
+    "Ungültiger Gasfaktor": "Invalid gas conversion factor",
+    "Ungültiges Zählerstände-Backup": "Invalid meter readings backup"
+  }
+});
+function validationText(tool,message){
+ const table=Object.hasOwn(toolValidationCopy,tool)?toolValidationCopy[tool]:{};
+ return Object.hasOwn(table,message)?table[message]:Object.hasOwn(validationCopy,message)?validationCopy[message]:message;
+}
 export function translateToolDialog(tool, language, message) {
  if(language!=='en' || typeof message!=='string') return message;
+ // The shared B3 editor emits this exact application-owned warning on every tool.
+ if(message==='Layout konnte nicht gespeichert werden.')return 'Could not save the dashboard layout.';
  const exact=Object.hasOwn(dialogCopy,tool) && Object.hasOwn(dialogCopy[tool],message) ? dialogCopy[tool][message] : undefined;
  if(exact!==undefined) return exact;
  const additional=Object.hasOwn(additionalDialogCopy,tool)&&Object.hasOwn(additionalDialogCopy[tool],message)
@@ -2691,11 +2752,16 @@ export function translateToolDialog(tool, language, message) {
  const extended=Object.hasOwn(extendedDialogAdditions,tool) && Object.hasOwn(extendedDialogAdditions[tool],message)
   ? extendedDialogAdditions[tool][message] : undefined;
  if(extended!==undefined) return extended;
+ const confirmation=connectConfirmation(message,language);
+ if(confirmation!==message)return confirmation;
+ const validation=validationText(tool,message);
+ if(validation!==message)return validation;
+ if(tool==='budget')for(const [de,en] of [['Ungültiger Backup-Bereich: ','Invalid backup section: '],['Ungültige Einträge im Backup-Bereich: ','Invalid entries in backup section: ']])if(message.startsWith(de))return en+message.slice(de.length);
  
  for(const [prefix,translated] of Object.entries({...sharedDialogPrefixes,...(dialogPrefixes[tool]||{})}))
   if(message.startsWith(prefix)) {
    const detail=message.slice(prefix.length);
-   return translated+(Object.hasOwn(dialogCopy,tool) && Object.hasOwn(dialogCopy[tool],detail) ? dialogCopy[tool][detail] : detail);
+   return translated+(Object.hasOwn(dialogCopy,tool) && Object.hasOwn(dialogCopy[tool],detail) ? dialogCopy[tool][detail] : validationText(tool,detail));
   }
  return message;
 }

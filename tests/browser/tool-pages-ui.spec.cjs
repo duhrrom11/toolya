@@ -1468,6 +1468,24 @@ test('dashboard: shared actions, task rows and account dialog at three widths',a
   await expect(page.locator('#logoutUser')).toBeVisible();
   expect(await page.locator('.dashboard-settings-panel').evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);await capture('dashboard-account-'+width);
   await page.locator('#closeSettingsBtn').click();await expect(modal).toBeHidden();
+  await expect(page.locator('#settingsBtn')).toBeFocused();
+  for(const lang of ['en','de']){
+   const localeButton=page.locator('button[data-dashboard-locale="'+lang+'"]');
+   await localeButton.focus();await page.keyboard.press('Enter');
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   const settings=page.locator('#settingsBtn');
+   const overlap=await page.evaluate(()=>{
+    const a=document.querySelector('#settingsBtn').getBoundingClientRect(),b=document.querySelector('.ty-dashboard-locale').getBoundingClientRect();
+    return Math.min(a.right,b.right)>Math.max(a.left,b.left)&&Math.min(a.bottom,b.bottom)>Math.max(a.top,b.top);
+   });
+   expect(overlap).toBe(false);
+   await settings.click();await expect(modal).toBeVisible();
+   await expect(modal).toHaveAttribute('aria-labelledby','settingsTitle');
+   expect(await modal.evaluate(el=>el.contains(document.activeElement))).toBe(true);
+   await expect(page.locator('#cloudStatus')).toHaveAttribute('role','status');
+   await expect(page.locator('#cloudStatus')).toHaveAttribute('aria-live','polite');
+   await page.keyboard.press('Escape');await expect(modal).toBeHidden();await expect(settings).toBeFocused();
+  }
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  }
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);expect(errors).toEqual([]);
@@ -1710,7 +1728,7 @@ test('meter handover prints only the blank form on one A4 page', async ({ page }
   await testInfo.attach('zaehlerprotokoll-a4', { body: pdf, contentType: 'application/pdf' });
 });
 
-test('moving boxes guide prints the sample QR label without the instructions', async ({ page }) => {
+test('moving boxes guide prints the sample QR label without the instructions', async ({ page }, testInfo) => {
   await isolated(page, false);
   await page.goto('/umzugskisten/');
   await expect(page.locator('#etiketten').getByRole('link', { name: 'öffentliche Musteretikett' }))
@@ -1724,6 +1742,11 @@ test('moving boxes guide prints the sample QR label without the instructions', a
   const qr = label.getByRole('img', { name: 'QR-Code zum öffentlichen Musteretikett' });
   await expect(qr).toBeVisible();
   await expect(qr).toHaveJSProperty('naturalWidth', 328);
+  const pdf = await page.pdf({format:'A4',displayHeaderFooter:false,printBackground:true});
+  expect(pdf.subarray(0,5).toString('ascii')).toBe('%PDF-');
+  expect(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
+  expect(pdf.toString('latin1')).toMatch(/%%EOF\s*$/);
+  await testInfo.attach('moving-sample-qr-print-a4',{body:pdf,contentType:'application/pdf'});
 });
 
 for (const path of ['/backform-rechner/', '/toolya-dashboard/', '/amazon-wunschliste-veroeffentlichen/']) {
@@ -1806,8 +1829,8 @@ for (const [tool, action] of [
     });
     await page.goto(origin + '/tools/' + tool + '/index.html');
     expect(downloads).toBe(0);
-    // Cloud-only vehicle reports require a verified snapshot; await the isolated fixture.
-    if (tool === 'car') {
+    // Cloud-only vehicle and budget reports require a verified snapshot; await the isolated fixture.
+    if (tool === 'car' || tool === 'budget') {
       await expect.poll(() => page.evaluate(() => typeof toolyaCloudReady !== 'undefined' && toolyaCloudReady && !!toolyaCloudController?.ready)).toBe(true);
     }
     await page.evaluate(() => { window.alert = message => { window.pdfExportError = message; }; });
@@ -2864,26 +2887,1111 @@ for(const slug of ['moving','housemates','loans','plants','baking','budget','car
     const fixture=document.createElement('input');
     fixture.type='text';fixture.id='i18n-synthetic-unchanged';
     fixture.value='Privat gespeicherte Notiz <Test> & 2040';
+    // Keep the synthetic draft out of layout measurements.
+    fixture.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none';
     document.body.append(fixture);
   });
   const saved='Privat gespeicherte Notiz <Test> & 2040';
+  const checkLayout=async(locale,width)=>{
+    await expect(page.locator('html')).toHaveAttribute('lang',locale);
+    const layout=await page.evaluate(()=>({width:innerWidth,
+      excess:Math.max(0,document.documentElement.scrollWidth-innerWidth),
+      offenders:[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.right>innerWidth+2}).slice(0,12).map(el=>({tag:el.tagName,id:el.id,className:String(el.className)}))}));
+    expect.soft(layout.excess,slug+' '+locale+' '+width+'px: '+JSON.stringify(layout.offenders)).toBeLessThanOrEqual(2);
+  };
   for(const width of [320,375,768]){
     await page.setViewportSize({width,height:840});
     await expect(en).toBeVisible();
     await en.focus();
     expect(await en.evaluate(el=>el===document.activeElement)).toBe(true);
-    await de.click();
+    await de.focus();
+    await page.keyboard.press('Enter');
+    await expect(de).toBeFocused();
+    await expect(de).toHaveAttribute('aria-label','Deutsch auswählen');
+    await expect(en).toHaveAttribute('aria-label','Englisch auswählen');
+    await page.keyboard.press('Tab');
+    await expect(en).toBeFocused();
+    expect(await en.evaluate(el=>el.matches(':focus-visible')&&getComputedStyle(el).outlineStyle!=='none')).toBe(true);
     await expect(de).toHaveAttribute('aria-pressed','true');
+    await checkLayout('de',width);
     await expect(page.locator('#i18n-synthetic-unchanged')).toHaveValue(saved);
-    await en.click();
+    await page.keyboard.press('Space');
+    await expect(en).toBeFocused();
+    await expect(en).toHaveAttribute('aria-label','English selected');
+    await expect(de).toHaveAttribute('aria-label','Switch to German');
+    await page.keyboard.press('Shift+Tab');
+    await expect(de).toBeFocused();
     await expect(en).toHaveAttribute('aria-pressed','true');
+    await checkLayout('en',width);
     await expect(page.locator('#i18n-synthetic-unchanged')).toHaveValue(saved);
-    const layout=await page.evaluate(()=>({width:innerWidth,
-      excess:Math.max(0,document.documentElement.scrollWidth-innerWidth)}));
-    if(layout.excess>2)console.log('[i18n-mobile-review] '+slug+' '+width+
-      'px: '+layout.excess+'px horizontal overflow; visual review needed');
+
   }
   expect(await page.evaluate(()=>window.__toolyaMock?.writes?.length||0)).toBe(0);
   expect(requests.every(url=>!url.startsWith(origin))).toBe(true);
  });
 }
+
+test('i18n runtime: home login and registration validation in both public locales',async({page})=>{
+ await isolated(page,false);
+ for(const lang of ['de','en']){
+  await page.goto(origin+(lang==='en'?'/en/index.html':'/index.html'));
+  await page.waitForFunction(()=>window.toolyaHomeReady===true);
+  await page.evaluate(()=>{document.getElementById('loginEmail').value='';document.getElementById('loginPassword').value='';});
+  const notice=page.locator('.hl-alert-panel');
+  for(const action of ['loginUser','registerUser']){
+   await page.evaluate(action=>window[action](),action);
+   await expect(notice.locator('#hl-alert-message')).toHaveText(lang==='en'?'Enter your email and password.':'Bitte E-Mail und Passwort eingeben.');
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   await expect(notice).toHaveCount(0);
+  }
+  await page.evaluate(()=>{document.getElementById('loginEmail').value='invalid';document.getElementById('loginPassword').value='fixture-password';});
+  await page.evaluate(()=>window.loginUser());
+  await expect(notice.locator('#hl-alert-message')).toHaveText(lang==='en'?'Enter a valid email address.':'Bitte eine gültige E-Mail-Adresse eingeben.');
+  await notice.getByRole('button',{name:'OK'}).press('Enter');
+  await page.evaluate(()=>{document.getElementById('loginEmail').value='fixture@example.invalid';document.getElementById('loginPassword').value='123';});
+  await page.evaluate(()=>window.registerUser());
+  await expect(notice.locator('#hl-alert-message')).toHaveText(lang==='en'?'Your password must be at least 6 characters long.':'Das Passwort muss mindestens 6 Zeichen lang sein.');
+  await notice.getByRole('button',{name:'OK'}).press('Enter');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+  expect(await page.evaluate(()=>window.__toolyaMock.signedIn)).toBe(false);
+ }
+});
+
+test('i18n runtime: duplicate budget transaction cancellation preserves synthetic snapshot in both locales',async({page})=>{
+ await isolated(page,true);
+ await page.goto(origin+'/tools/budget/index.html?lang=de');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ const fill=()=>page.evaluate(()=>{
+  document.querySelector('#receiptTitle').value='Isolierte Buchung';
+  document.querySelector('#receiptDate').value='2026-11-15';
+  document.querySelector('#receiptPrice').value='12.50';
+ });
+ await fill();await page.evaluate(()=>saveReceipt());
+ await expect.poll(()=>page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
+ const before=await page.evaluate(()=>JSON.stringify(getData()));
+ for(const lang of ['en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await fill();
+  const pending=page.waitForEvent('dialog',{timeout:5000});
+  const action=page.evaluate(()=>saveReceipt());
+  const dialog=await pending;
+  const actual={type:dialog.type(),message:dialog.message()};
+  await dialog.dismiss();await action;
+  expect(actual).toEqual({type:'confirm',message:lang==='en'?'A transaction with the same date, title, amount and type already exists.\n\nSave another copy anyway?':'Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\n\nTrotzdem erneut speichern?'});
+  expect(await page.evaluate(()=>JSON.stringify(getData()))).toBe(before);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(1);
+ }
+});
+
+test('i18n runtime: shared cloud replacement warning cancels before backup or write',async({page})=>{
+ await isolated(page,true);
+ await page.goto(origin+'/tools/parking/index.html?lang=de');
+ for(const lang of ['en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  const pending=page.waitForEvent('dialog',{timeout:5000});
+  const action=page.evaluate(async()=>{
+   const {confirmCloudReplacement}=await import('/shared/toolya/cloud-backup.mjs');
+   const original={fixture:'Private Löschen'},calls={backup:0,replace:0};
+   const result=await confirmCloudReplacement({
+    controller:{ready:true,revision:1,sessionGeneration:1,snapshot:()=>original,replace:async()=>{calls.replace++;throw Error('Unexpected replacement')}},
+    incoming:{fixture:'Other'},validate:v=>v,confirm:message=>window.confirm(message),
+    exportBackup:async()=>{calls.backup++;return true}
+   });
+   return {result,calls,original};
+  });
+  const dialog=await pending;
+  const actual={type:dialog.type(),message:dialog.message()};
+  await dialog.dismiss();
+  expect(await action).toEqual({result:{status:'cancelled'},calls:{backup:0,replace:0},original:{fixture:'Private Löschen'}});
+  expect(actual).toEqual({type:'confirm',message:lang==='en'?'Import replaces existing cloud data. Download a backup first?':'Import ersetzt vorhandene Cloud-Daten. Zuerst eine Sicherung herunterladen?'});
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ }
+});
+
+test('i18n runtime: isolated lists dashboard selection counters and private notes in DE and EN',async({page})=>{
+ await isolated(page,false);
+ // Serve a synthetic page at the real module origin without booting a public route.
+ await page.route('**/tools/wishes/__lists-fixture.html*',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="de"><head><title>Lists fixture</title></head><body><header></header></body></html>'}));
+ await page.goto(origin+'/tools/wishes/__lists-fixture.html?lang=de');
+ await page.evaluate(async ids=>{
+  const root=document.createElement('section');root.id='listsDashboard';document.body.append(root);
+  const selects={listWishPriority:['all'],listWishCategory:['all'],listWishMarker:['all'],listWishAssignment:['assigned','global-unassigned','all'],listWishSort:['newest'],listsView:['active','all'],listsSort:['favorites'],listVisibility:['private'],editListVisibility:['private'],listTemplate:['custom'],wishListSelect:[''],bulkMoveTarget:[''],listQuickSwitch:[''],wishDetailCategory:[''],wishDetailSelect:[''],listIcon:['🎁'],editListIcon:['🎁'],listColor:['#123456'],editListColor:['#123456']};
+  const fields=new Set(['listWishSearch','listsSearch','listTitle','listDescription','editListTitle','editListDescription','editListCoverUrl','editListId','url']);
+  const containers=new Set(['listWishCards','listsContent','homeRecentContent','homeFavoritesContent','bulkHistoryList','bulkResultContext','bulkConfirmSample','wishDetailLists','bulkProgressDetails','listItemsFeedback','bulkProgressPanel','bulkResultPanel','homeProgress','editor']);
+  for(const id of ids){
+   if(id==='listsDashboard')continue;
+   const tag=Object.hasOwn(selects,id)?'select':fields.has(id)?'input':id.endsWith('Dialog')?'dialog':id==='editListForm'?'form':id==='newListPanel'?'details':containers.has(id)?'div':'button';
+   const el=document.createElement(tag);el.id=id;
+   if(tag==='button')el.type='button';
+   if(tag==='select')for(const value of selects[id]){const opt=document.createElement('option');opt.value=value;opt.textContent=value;el.append(opt)}
+   if(id==='editListForm'||id==='bulkResultPanel')el.hidden=true;
+   root.append(el);
+  }
+  // Fixed application-owned controls, not private wish content.
+  for(const id of ['wishSelectAssigned','wishSelectUnassigned','listsStatus'])document.getElementById(id).setAttribute('data-wish-copy','');
+  const user={id:'isolated-owner'},list={id:'fixture-list',title:'Private Löschen',description:'Private Notiz',icon:'🎁',color:'#123456',visibility:'private',archived:false,created_at:'2026-01-01T00:00:00Z'};
+  const wishes=Array.from({length:10},(_,i)=>({id:'wish-'+i,note:'Private Löschen '+i,priority:'normal',created_at:'2026-01-01T00:00:00Z',wishlist_products:{title:'Private Wunsch '+i,asin:'B00000000'+i,marketplace:'de',image_url:null,price:null,description:null}}));
+  const memberships=wishes.slice(0,7).map(w=>({list_id:list.id,wish_id:w.id}));
+  const tables={wishlist_lists:[list],wishlist_wishes:wishes,wishlist_list_items:memberships};
+  const writes=[];window.__listFixture={writes,tables};
+  const db={from(table){let rows=tables[table]||[];const q={};for(const method of ['select','eq','order','in','limit','is'])q[method]=()=>q;q.range=(start,end)=>{rows=rows.slice(start,end+1);return q};for(const method of ['insert','update','delete','upsert'])q[method]=()=>{writes.push({table,method});throw Error('Unexpected fixture write')};q.then=(resolve,reject)=>Promise.resolve({data:structuredClone(rows),error:null}).then(resolve,reject);return q}};
+  const {mountListsDashboard}=await import('/tools/wishes/lists-dashboard.mjs');
+  const dashboard=mountListsDashboard(db,()=>user);
+  await dashboard.refresh();
+  await import('/shared/toolya/i18n/wishes-entry.mjs');
+ },["listsDashboard","listWishCards","listWishSearch","activeListHeading","wishDetailCategory","wishDetailDialog","listWishAssignment","listWishPriority","listWishCategory","listWishMarker","listWishSort","wishDetailLists","wishDetailSelect","wishDetailJump","wishDetailHeading","wishDetailPriority","wishDetailNote","wishDetailDate","homeRecentContent","assignedTotal","favoritesTotal","homeProgress","homeProgressFill","homeProgressNote","bulkResultPanel","homeFavoritesContent","wishListSelect","editListForm","editListId","listTitle","listDescription","listTemplate","listsSearch","listsView","listsSort","editListTitle","editListDescription","editListCoverUrl","listsStatus","editListFeedback","listsTotal","wishesTotal","bulkProgressPanel","bulkStop","bulkStatus","bulkProgressText","bulkProgressDetails","bulkProgressBar","bulkConfirmDialog","listsContent","listWishCount","wishLoadMore","listsViewCount","listsResetFilters","unassignedCount","showUnassigned","bulkMoveTarget","bulkSelectedCount","bulkSelectVisible","bulkAdd","bulkRemove","bulkClear","bulkSelectCategory","bulkMove","bulkHistoryList","bulkHistoryEmpty","bulkHistoryClear","bulkResultHeading","bulkResultSummary","bulkResultContext","bulkRetryFailed","bulkSelectRemaining","bulkResumeRemaining","bulkConfirmTitle","bulkConfirmDescription","bulkConfirmSample","wishViewCards","wishViewCompact","wishClearSelection","wishShowAssigned","wishSelectAssigned","wishSelectUnassigned","wishSelectedOnly","wishSelectShown","listItemsFeedback","listItemsFeedbackText","listItemsRetry","listQuickSwitch","activeListSummary","listItemsNewWish","editor","url","listItemsBack","quickAllWishes","quickAssignedWishes","quickUnassignedWishes","quickFavoriteWishes","wishClearFilters","bulkDismissResult","bulkConfirmCancel","bulkConfirmApply","homeFavorites","homeNewWish","homeNewList","newListPanel","wishDetailStar","wishDetailLater","listWishClearFilters","wishDetailSaveCategory","wishDetailClose","wishDetailDone","listIcon","listColor","editListIcon","editListColor","editListVisibility","cancelListEdit","saveListChanges","mobileNewWish","mobileMyLists","quickNewList","quickAddWish","quickOpenSelected","createList","listVisibility","refreshLists"]);
+ await expect(page.locator('#wishSelectAssigned')).toHaveText('Zugeordnete auswählen (7)');
+ await expect(page.locator('#wishSelectUnassigned')).toHaveText('Ohne Liste auswählen (3)');
+ const before=await page.evaluate(()=>JSON.stringify(window.__listFixture.tables));
+ for(const lang of ['en','de']){
+  await page.locator('[data-wishes-locale="'+lang+'"]').click();
+  await expect(page.locator('#wishSelectAssigned')).toHaveText(lang==='en'?'Select assigned (7)':'Zugeordnete auswählen (7)');
+  await expect(page.locator('#wishSelectUnassigned')).toHaveText(lang==='en'?'Select unassigned (3)':'Ohne Liste auswählen (3)');
+  await page.locator('#wishSelectUnassigned').click();
+  await expect(page.locator('#listsStatus')).toHaveText(lang==='en'?'3 unassigned wishes selected. Use “Add” to assign them to the current list.':'3 Wünsche ohne Liste ausgewählt. Mit „Hinzufügen“ kannst du sie der aktuellen Liste zuordnen.');
+  expect(await page.evaluate(()=>JSON.stringify(window.__listFixture.tables))).toBe(before);
+  expect(await page.evaluate(()=>window.__listFixture.writes.length)).toBe(0);
+ }
+});
+
+test('i18n runtime: gift dashboard template overwrite cancellation preserves private slot label and preferences',async({page})=>{
+ await isolated(page,false);
+ await page.route('**/tools/wishes/__gift-layout-fixture.html*',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="de"><head><title>Gift layout fixture</title></head><body><header></header></body></html>'}));
+ await page.goto(origin+'/tools/wishes/__gift-layout-fixture.html?lang=de');
+ await page.evaluate(async ids=>{
+  const root=document.createElement('main');document.body.append(root);
+  const selectOptions={homeTaskSort:['urgency','priority','due_date'],homeOccasionSort:['soonest','title'],homeLayoutSlot:['compact','daily','overview']};
+  const checks=new Set(['homeShowMetrics','homeShowTasks','homeShowOccasions','homeShowProgress']);
+  for(const id of ids){
+   const tag=Object.hasOwn(selectOptions,id)?'select':checks.has(id)||id==='homeBackupFile'||id==='homeCheckpointViewName'?'input':id==='homeGiftSettingsForm'?'form':id==='homeGiftProgress'?'progress':/Save$|^homeSaveLayout$|Undo$|ConfirmPreview$|RestoreDefaults$/.test(id)?'button':'div';
+   const el=document.createElement(tag);el.id=id;
+   if(tag==='button'){el.type='button';el.textContent=id}
+   if(checks.has(id))el.type='checkbox';
+   if(id==='homeBackupFile')el.type='file';
+   if(tag==='select')for(const value of selectOptions[id]){
+    const option=document.createElement('option');option.value=value;
+    option.textContent=id==='homeLayoutSlot'&&value==='compact'?'Löschen':value;
+    if(id==='homeLayoutSlot')option.setAttribute('data-user-content','');
+    el.append(option);
+   }
+   root.append(el);
+  }
+  const preferences={show_metrics:true,show_tasks:true,show_occasions:true,show_progress:true,task_sort:'urgency',occasion_sort:'soonest',section_order:['metrics','tasks','occasions','progress'],metric_keys:['open'],quick_links:[],favorite_links:[],active_layout:'custom',saved_layouts:{compact:{show_metrics:true,show_tasks:false,show_occasions:true,show_progress:true,task_sort:'urgency',occasion_sort:'soonest',section_order:['metrics','tasks','occasions','progress'],metric_keys:['open'],quick_links:[],favorite_links:[]}}};
+  const writes=[];window.__giftLayoutFixture={preferences,writes};
+  const db={auth:{async getUser(){return {data:{user:{id:'isolated-owner'}},error:null}},onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}},from(table){
+   const q={};for(const method of ['select','eq','order','range','limit','in','is'])q[method]=()=>q;
+   q.maybeSingle=async()=>({data:table==='wishlist_gift_home_preferences'?structuredClone(preferences):null,error:null});
+   for(const method of ['insert','update','upsert','delete'])q[method]=()=>{writes.push({table,method});throw Error('Unexpected fixture write')};
+   q.then=(resolve,reject)=>Promise.resolve({data:[],error:null}).then(resolve,reject);return q;
+  }};
+  window.supabase={createClient:()=>db};
+  await import('/shared/toolya/i18n/wishes-entry.mjs');
+  await import('/tools/wishes/gift-start.mjs');
+ },["homeMetricChoices","homeQuickChoices","homeFavoriteChoices","homeTaskSort","homeOccasionSort","homeSectionOrder","homeSettingsStatus","homeGiftSections","homeShowMetrics","homeShowTasks","homeShowOccasions","homeShowProgress","homeGiftSettingsForm","homeSettingsSave","homeGiftMetrics","homeGiftTasks","homeGiftOccasions","homeLayoutStatus","homeSaveLayout","homeConfirmPreview","homePreviewUndo","homeRestoreDefaults","homePreviewDraft","homeGiftSettings","homeLayoutSlot","homeCompareA","homeCompareB","homeCompareResult","homeCompareStatus","homeCompareShow","homeBackupDiff","homeBackupApply","homeBackupCancel","homeBackupStatus","homeBackupFile","homeBackupExport","homeBackupPreview","homeCheckpointCompare","homeCheckpointFrom","homeCheckpointTo","homeCheckpointField","homeCheckpointLayout","homeCheckpointViewSelect","homeCheckpointViewStatus","homeCheckpointViewPreview","homeCheckpointFavoriteStatus","homeCheckpointFavoritePreview","homeCheckpointFavoriteComparePanel","homeCheckpointFavoriteCompareA","homeCheckpointFavoriteCompareB","homeCheckpointFavoriteCompareResult","homeCheckpointFavoriteCompareRun","homeCheckpointFavoriteBar","homeCheckpointFavoriteNext","homeCheckpointFavoritePrevious","homeCheckpointFavoriteClear","homeCheckpointViewCards","homeCheckpointViewDetails","homeCheckpointViewSync","homeCheckpointViewSave","homeCheckpointViewName","homeCheckpointViewApply","homeCheckpointViewDelete","homeCheckpointViewImport","homeCheckpointViewRename","homeCheckpointViewDuplicate","homeCheckpointStats","homeCheckpointCategories","homeCheckpointMonthly","homeCheckpointEntries","homeCheckpointMonths","homeCheckpointSummary","homeCheckpointStatus","homeCheckpointActiveCategories","homeCheckpointCompareA","homeCheckpointCompareB","homeCheckpointCompareShow","homeCheckpointCompareStatus","homeCheckpointClear","homeCheckpointReload","homeGiftCheckpoints","homeHistoryStatus","homeHistoryEntries","homeHistoryReload","homeGiftHistory","homeGiftQuickLinks","homeGiftFavorites","homeGiftProgress","homeGiftProgressText","homeGiftStatus","homeGiftStart"]);
+ await expect(page.locator('#homeGiftStatus')).toHaveText('Privater Überblick – nur für dein angemeldetes Konto. Keine Daten verändert.');
+ const before=await page.evaluate(()=>JSON.stringify(window.__giftLayoutFixture.preferences));
+ for(const lang of ['de','en','de']){
+  await page.locator('[data-wishes-locale="'+lang+'"]').click();
+  await page.locator('#homeLayoutSlot').selectOption('compact');
+  expect(await page.locator('#homeLayoutSlot option:checked').textContent()).toBe('Löschen');
+  const pending=page.waitForEvent('dialog',{timeout:5000});
+  const action=page.locator('#homeSaveLayout').click();
+  const dialog=await pending;
+  const actual={type:dialog.type(),message:dialog.message()};
+  await dialog.dismiss();await action;
+  expect(actual).toEqual({type:'confirm',message:lang==='en'?'Save current settings in template slot “Löschen”? An existing template will be overwritten.':'Aktuelle Einstellungen im Vorlagenplatz „Löschen“ speichern? Eine vorhandene Vorlage wird überschrieben.'});
+  expect(await page.evaluate(()=>JSON.stringify(window.__giftLayoutFixture.preferences))).toBe(before);
+  expect(await page.evaluate(()=>window.__giftLayoutFixture.writes.length)).toBe(0);
+  expect(await page.locator('#homeLayoutSlot').inputValue()).toBe('compact');
+ }
+});
+
+test('i18n runtime: B3 layout storage failure keeps draft open and cancel restores original layout in DE and EN',async({page})=>{
+ await isolated(page,true,true);
+ await page.goto(origin+'/tools/car/index.html?lang=de');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+ const key=await page.evaluate(()=> 'helferlein_ui_layout_'+window.HELFERLEIN_B3.key+'_v1');
+ const original=await page.evaluate(key=>({stored:localStorage.getItem(key),panels:[...document.querySelectorAll('[data-b3-panel]')].map(p=>[p.dataset.b3Panel,p.dataset.b3Size,p.dataset.b3Hidden,p.style.getPropertyValue('--b3-order')])}),key);
+ for(const lang of ['en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await page.locator('#settingsBtn').click();
+  await revealToolSetting(page.locator('#b3-edit-open'));
+  await page.locator('#b3-edit-open').click();
+  const editor=page.locator('#b3-editor');
+  await expect(editor).toBeVisible();
+  const size=editor.locator('select').first();
+  const previous=await size.inputValue();
+  await size.selectOption(previous==='s'?'l':'s');
+  await page.evaluate(key=>{
+   const set=Storage.prototype.setItem;
+   window.__restoreLayoutStorage=()=>{Storage.prototype.setItem=set};
+   Storage.prototype.setItem=function(k,v){if(this===localStorage&&k===key)throw new DOMException('Isolated layout storage failure','QuotaExceededError');return set.call(this,k,v)};
+  },key);
+  try{
+   await editor.locator('.b3-action:not(.b3-outline)').first().click();
+   const notice=page.getByRole('alertdialog',{name:'Toolya'});
+   await expect(notice.locator('#hl-alert-message')).toHaveText(lang==='en'?'Could not save the dashboard layout.':'Layout konnte nicht gespeichert werden.');
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   await expect(editor).toBeVisible();
+   expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe(original.stored);
+   await editor.getByRole('button',{name:lang==='en'?'Cancel':'Abbrechen',exact:true}).click();
+   await expect(editor).toBeHidden();
+   expect(await page.evaluate(key=>({stored:localStorage.getItem(key),panels:[...document.querySelectorAll('[data-b3-panel]')].map(p=>[p.dataset.b3Panel,p.dataset.b3Size,p.dataset.b3Hidden,p.style.getPropertyValue('--b3-order')])}),key)).toEqual(original);
+  }finally{await page.evaluate(()=>window.__restoreLayoutStorage())}
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ }
+});
+
+test('i18n runtime: home backup password and wrong file type validation in DE and EN',async({page})=>{
+ await isolated(page,false);
+ for(const lang of ['de','en']){
+  await page.goto(origin+(lang==='en'?'/en/index.html':'/index.html'));
+  await page.waitForFunction(()=>window.toolyaHomeReady===true);
+  const pending=page.evaluate(()=>window.requestBackupPassword('Fixture backup',true));
+  const dialog=page.getByRole('dialog',{name:lang==='en'?'Backup password':'Backup-Passwort',exact:true});
+  await expect(dialog).toBeVisible();
+  const passwords=dialog.locator('input[type="password"]');
+  await passwords.nth(0).fill('short');await passwords.nth(1).fill('short');
+  await dialog.locator('button[type="submit"]').click();
+  await expect(dialog).toContainText(lang==='en'?'Use at least 12 characters.':'Bitte mindestens 12 Zeichen verwenden.');
+  await page.keyboard.press('Escape');
+  expect(await pending).toBeNull();
+  await page.evaluate(()=>window.importGlobalBackup({target:{files:[new File(['fixture'],'fixture.txt',{type:'text/plain'})],value:'fixture.txt'}}));
+  const notice=page.getByRole('alertdialog',{name:'Toolya'});
+  await expect(notice.locator('#hl-alert-message')).toHaveText(lang==='en'?'Select a JSON backup file.':'Bitte eine JSON-Backupdatei auswählen.');
+  await notice.getByRole('button',{name:'OK'}).press('Enter');
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ }
+});
+
+test('i18n runtime: cookie settings follow tool language without changing denied consent',async({page})=>{
+ const outbound=await isolated(page,true);
+ const key='toolya.analytics.consent.v1';
+ await page.addInitScript(key=>localStorage.setItem(key,'no'),key);
+ await page.goto(origin+'/tools/car/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ const link=page.locator('#toolya-consent-settings'),panel=page.locator('#toolya-consent-panel');
+ await expect(panel).toBeHidden();
+ for(const lang of ['de','en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await expect(link).toHaveText(lang==='en'?'Cookie settings':'Cookie-Einstellungen');
+  await expect(link).toHaveAttribute('lang',lang);
+  await link.click();
+  await expect(panel).toBeVisible();
+  await expect(panel).toHaveAttribute('aria-label',lang==='en'?'Analytics settings':'Statistik-Einstellungen');
+  await expect(panel.locator('strong')).toHaveText(lang==='en'?'Analytics at Toolya':'Statistik bei Toolya');
+  await expect(panel.locator('.reject')).toHaveText(lang==='en'?'Reject':'Ablehnen');
+  await expect(panel.locator('.accept')).toHaveText(lang==='en'?'Accept':'Akzeptieren');
+  await expect(panel.locator('p a')).toHaveAttribute('href',lang==='en'?'/en/privacy.html':'/privacy.html');
+  await expect(panel.locator('.reject')).toBeFocused();
+  expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('no');
+  // Reaffirm the existing denial only to close the panel before changing language.
+  await panel.locator('.reject').click();
+  await expect(panel).toBeHidden();
+  expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('no');
+ }
+ expect(outbound.filter(url=>/googletagmanager|google-analytics|analytics\.google/.test(url))).toEqual([]);
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+
+test('i18n runtime: homepage backup rejects invalid format and decryption without changing stored data',async({page})=>{
+ await isolated(page,false);
+ for(const lang of ['de','en']){
+  await page.goto(origin+(lang==='en'?'/en/index.html':'/index.html'));
+  await page.waitForFunction(()=>window.toolyaHomeReady===true);
+  const key='helferlein_ui_layout_pflanzen_v1',fixture='[{"id":"fixture","visible":true}]';
+  await page.evaluate(({key,fixture})=>localStorage.setItem(key,fixture),{key,fixture});
+  const load=payload=>page.evaluate(payload=>window.importGlobalBackup({target:{files:[new File([JSON.stringify(payload)],'fixture.json',{type:'application/json'})],value:'fixture.json'}}),payload);
+  const notice=page.getByRole('alertdialog',{name:'Toolya'});
+  const check=async(de,en)=>{
+   await expect(notice.locator('#hl-alert-message')).toHaveText(lang==='en'?en:de);
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe(fixture);
+   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+  };
+  await load({app:'Toolya',version:'1.0',localStorage:{[key]:'changed'}});
+  await check('Diese Backup-Version wird nicht unterstützt.','This backup version is unsupported.');
+  await load({app:'Toolya',format:'encrypted-backup-v1',kdf:'unsupported'});
+  await check('Dieses verschlüsselte Backup-Format wird nicht unterstützt.','This encrypted backup format is unsupported.');
+  await load({app:'Toolya',format:'encrypted-backup-v1',kdf:'PBKDF2-SHA256',cipher:'AES-256-GCM',iterations:600000,salt:'AA==',iv:'AA==',ciphertext:'AA=='});
+  const password=page.getByRole('dialog',{name:lang==='en'?'Backup password':'Backup-Passwort',exact:true});
+  await password.locator('input[type="password"]').fill('isolated-password');
+  await password.locator('button[type="submit"]').click();
+  await check('Entschlüsselung fehlgeschlagen. Passwort oder Sicherungsdatei ist ungültig.','Decryption failed. The password or backup file is invalid.');
+  await page.evaluate(key=>localStorage.removeItem(key),key);
+ }
+});
+
+test('i18n runtime: cookie settings follow tool language without changing granted consent',async({page})=>{
+ const outbound=await isolated(page,true);
+ const key='toolya.analytics.consent.v1';
+ await page.addInitScript(key=>localStorage.setItem(key,'yes'),key);
+ await page.goto(origin+'/tools/car/index.html');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ const link=page.locator('#toolya-consent-settings'),panel=page.locator('#toolya-consent-panel');
+ await expect(panel).toBeHidden();
+ for(const lang of ['de','en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await expect(link).toHaveText(lang==='en'?'Cookie settings':'Cookie-Einstellungen');
+  await expect(link).toHaveAttribute('lang',lang);
+  await link.click();
+  await expect(panel).toBeVisible();
+  await expect(panel).toHaveAttribute('aria-label',lang==='en'?'Analytics settings':'Statistik-Einstellungen');
+  await expect(panel.locator('strong')).toHaveText(lang==='en'?'Analytics at Toolya':'Statistik bei Toolya');
+  await expect(panel.locator('.reject')).toHaveText(lang==='en'?'Reject':'Ablehnen');
+  await expect(panel.locator('.accept')).toHaveText(lang==='en'?'Accept':'Akzeptieren');
+  await expect(panel.locator('p a')).toHaveAttribute('href',lang==='en'?'/en/privacy.html':'/privacy.html');
+  await expect(panel.locator('.reject')).toBeFocused();
+  expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('yes');
+  // Reaffirm the existing consent only to close the panel before changing language.
+  await panel.locator('.accept').click();
+  await expect(panel).toBeHidden();
+  expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('yes');
+ }
+ expect(outbound.some(url=>url.includes('www.googletagmanager.com/gtag/js'))).toBe(true);
+ // isolated() aborts every external analytics request, even after consent.
+ expect(await page.evaluate(()=>window.dataLayer.filter(e=>e[0]==='consent'&&e[1]==='update'&&e[2].analytics_storage==='granted').length)).toBe(1);
+ expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+});
+
+for(const fixture of [
+ {tool:'car',handler:'saveTireSet',fields:{tireCarSelect:'',tireLocation:'Private Löschen',tireDot:'0426'},de:'Bitte ein Fahrzeug wählen!',en:'Select a vehicle.'},
+ {tool:'car',handler:'saveEvent',fields:{eventCarSelect:'',eventTitle:'Private Löschen',eventDate:'2026-11-25',eventCost:'12.5'},de:'Bitte Fahrzeug, Datum und Bezeichnung angeben!',en:'Enter a vehicle, date and description.'},
+ {tool:'car',handler:'updateEvent',fields:{editTitle:'Private Löschen',editDate:'',editCost:'12.5'},de:'Bitte Bezeichnung und Datum eingeben!',en:'Enter a description and date.'},
+ {tool:'car',handler:'saveCar',fields:{carName:'',carPlate:'PRIVATE Löschen 42',carInsurance:'Private Versicherung'},de:'Bitte einen Fahrzeugnamen eingeben!',en:'Enter a vehicle name.'},
+ {tool:'meters',handler:'saveReading',fields:{meterName:'Private Löschen',meterNote:'Private Zählernotiz',meterDate:'',meterValue:'12'},de:'Bitte gültiges Ablesedatum und Zählerstand eingeben!',en:'Enter a valid reading date and meter value.'},
+ {tool:'meters',handler:'saveTarifs',fields:{meterName:'Private Löschen',meterNote:'Private Tarifnotiz',tariffStromPriceHT:'0.29',tariffGasCalib:'0'},de:'Bitte gültige, nichtnegative Tarife und einen positiven Gasfaktor eingeben.',en:'Enter valid non-negative tariffs and a positive gas factor.'}
+]){
+ test('i18n runtime catalogue: '+fixture.handler+' validates in DE and EN without changing private data',async({page},testInfo)=>{
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/'+fixture.tool+'/index.html',handler:fixture.handler,de:fixture.de,en:fixture.en,line:fixture.line||null})});
+  await isolated(page,true);
+  await page.goto(origin+'/tools/'+fixture.tool+'/index.html');
+  await expect.poll(()=>page.evaluate(tool=>tool==='meters'?metersCloudReady&&!!metersCloudController?.ready:toolyaCloudReady&&!!toolyaCloudController?.ready,fixture.tool)).toBe(true);
+  await page.evaluate(fields=>{for(const [id,value] of Object.entries(fields)){const el=document.getElementById(id);if(!el)throw Error('Missing fixture input '+id);el.value=value;}},fixture.fields);
+  const snapshot=await page.evaluate(tool=>JSON.stringify((tool==='meters'?metersCloudController:toolyaCloudController).snapshot()),fixture.tool);
+  const writes=await page.evaluate(()=>window.__toolyaMock.writes.length);
+  expect(writes).toBe(0);
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await page.evaluate(handler=>window[handler](),fixture.handler);
+   const notice=page.getByRole('alertdialog',{name:'Toolya'});
+   await expect(notice.locator('#hl-alert-message')).toHaveText(fixture[lang]);
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   expect(await page.evaluate(ids=>Object.fromEntries(ids.map(id=>[id,document.getElementById(id).value])),Object.keys(fixture.fields))).toEqual(fixture.fields);
+   expect(await page.evaluate(tool=>JSON.stringify((tool==='meters'?metersCloudController:toolyaCloudController).snapshot()),fixture.tool)).toBe(snapshot);
+   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+  }
+ });
+}
+
+for(const mode of ['denied','missing']){
+ test('parking GPS regression: '+mode+' required GPS refuses write; ordinary save falls back in DE and EN',async({page})=>{
+  await isolated(page,true);
+  await page.addInitScript(mode=>{
+   Object.defineProperty(navigator,'geolocation',{configurable:true,value:mode==='missing'?undefined:{
+    getCurrentPosition(success,failure){queueMicrotask(()=>failure({code:1,message:'Synthetic permission denial'}))}
+   }});
+  },mode);
+  await page.goto(origin+'/tools/parking/index.html');
+  await expect.poll(()=>page.evaluate(()=>parkingCloudReady&&!!parkingCloudController?.ready)).toBe(true);
+  for(const lang of ['de','en']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   const fields={parkDesc:'Private Löschen '+lang,parkSector:'Private Zone',parkCost:'0'};
+   await page.evaluate(fields=>{for(const [id,value] of Object.entries(fields))document.getElementById(id).value=value},fields);
+   const before=await page.evaluate(()=>({snapshot:JSON.stringify(parkingCloudController.snapshot()),writes:window.__toolyaMock.writes.length}));
+   await page.evaluate(()=>saveParkingSession(true));
+   await expect(page.locator('#parkingGpsFeedback')).toHaveText(lang==='en'?'GPS location unavailable. Allow location access and try again.':'GPS-Standort nicht verfügbar. Bitte Standortzugriff erlauben und erneut versuchen.');
+   await expect(page.locator('#saveParkingGpsBtn')).toBeEnabled();
+   expect(await page.evaluate(()=>({snapshot:JSON.stringify(parkingCloudController.snapshot()),writes:window.__toolyaMock.writes.length}))).toEqual(before);
+   expect(await page.evaluate(ids=>Object.fromEntries(ids.map(id=>[id,document.getElementById(id).value])),Object.keys(fields))).toEqual(fields);
+   await page.evaluate(()=>saveParkingSession(false));
+   await expect.poll(()=>page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(before.writes+1);
+   await expect(page.locator('#saveParkingGpsBtn')).toBeEnabled();
+   const saved=await page.evaluate(()=>parkingCloudController.snapshot().sessions.at(-1));
+   expect(saved.desc).toBe(fields.parkDesc);
+   expect(saved.sector).toBe(fields.parkSector);
+   expect(saved.gps).toBeNull();
+  }
+ });
+}
+
+for(const mode of ['saved','denied','missing','current']){
+ test('parking nearby: '+mode+' location, blocked popup, bilingual search and private data isolation',async({page})=>{
+  const gps=mode==='saved'?{lat:12.345,lng:23.456}:null;
+  const fixture={sessions:gps?[{id:1,desc:'Private Löschen',sector:'Private A2',date:'25.11.2026',timestamp:1795608000000,cost:2,gps,photo:''}]:[],activeEndTime:null};
+  const outbound=await isolated(page,true,false,fixture);
+  await page.addInitScript(mode=>{
+   window.__nearbyProbe={geo:0,opens:[],destinations:[],blocked:true};
+   window.open=(url,target)=>{const p=window.__nearbyProbe;p.opens.push([url,target]);return p.blocked?null:{opener:window,closed:false,location:{replace:url=>p.destinations.push(url)}}};
+   Object.defineProperty(navigator,'geolocation',{configurable:true,value:mode==='missing'?undefined:{getCurrentPosition(ok,fail){window.__nearbyProbe.geo++;queueMicrotask(()=>mode==='current'?ok({coords:{latitude:34.567,longitude:45.678}}):fail({code:1,message:'Synthetic denial'}))}}});
+  },mode);
+  await page.goto(origin+'/tools/parking/index.html');
+  await expect.poll(()=>page.evaluate(()=>parkingCloudReady&&!!parkingCloudController?.ready)).toBe(true);
+  const before=await page.evaluate(()=>JSON.stringify(parkingCloudController.snapshot()));
+  const probe=()=>page.evaluate(()=>window.__nearbyProbe);
+  expect((await probe()).geo).toBe(0);
+  expect((await probe()).opens).toEqual([]);
+  const status=page.locator('#nearby-status'),fallback=page.locator('#nearby-fallback'),query=page.locator('#nearby-query');
+  const expectedState=lang=>mode==='saved'?(lang==='en'?'Near your parked car':'Rund um deinen Parkplatz'):mode==='current'?(lang==='en'?'Near your current location':'Rund um deinen Standort'):(lang==='en'?'Search without location':'Suche ohne Standort');
+  const checkUrl=(href,term)=>{
+   const u=new URL(href);expect(u.origin).toBe('https://www.google.com');
+   if(mode==='saved'||mode==='current'){expect(decodeURIComponent(u.pathname)).toBe('/maps/search/'+term+'/@'+(mode==='saved'?'12.345,23.456':'34.567,45.678')+',16z');}
+   else{expect(u.pathname).toBe('/maps/search/');expect(u.searchParams.get('query')).toBe(term);expect(u.searchParams.get('api')).toBe('1');}
+   expect(href).not.toContain('Private');
+  };
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('#nearby-title')).toHaveText(lang==='en'?'Nearby':'In der Nähe');
+   await page.locator('[data-poi="toilet"]').click();
+   await expect(status).toHaveText(expectedState(lang));
+   await expect(fallback).toBeVisible();
+   await expect(fallback).toHaveAttribute('rel','noopener noreferrer');
+   checkUrl(await fallback.getAttribute('href'),lang==='en'?'Public restroom':'Öffentliche Toilette');
+   await query.fill('Bäcker & Café');
+   await page.locator('#nearby-form button[type="submit"]').click();
+   await expect(fallback).toBeVisible();
+   checkUrl(await fallback.getAttribute('href'),'Bäcker & Café');
+   await expect(query).toHaveValue('Bäcker & Café');
+   expect(await page.evaluate(()=>JSON.stringify(parkingCloudController.snapshot()))).toBe(before);
+   expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+  }
+  expect((await probe()).geo).toBe(mode==='saved'||mode==='missing'?0:6);
+  expect((await probe()).opens).toHaveLength(6);
+  await page.evaluate(()=>window.__nearbyProbe.blocked=false);
+  await page.locator('[data-poi="atm"]').click();
+  await expect.poll(async()=>(await probe()).destinations.length).toBe(1);
+  checkUrl((await probe()).destinations[0],'Geldautomat');
+  await expect(fallback).toBeHidden();
+  expect(await page.evaluate(()=>JSON.stringify(parkingCloudController.snapshot()))).toBe(before);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+  expect(outbound.filter(url=>/google\.com\/maps/.test(url))).toEqual([]);
+ });
+}
+
+/* Real validation branches, isolated account and snapshot; no save RPC expected. */
+for(const fixture of [
+ {
+  "tool": "loans",
+  "handler": "saveContact",
+  "fields": {
+   "contactName": "",
+   "contactPhone": "123456"
+  },
+  "de": "Bitte einen Namen eingeben!",
+  "en": "Please enter a name!",
+  "line": 490
+ },
+ {
+  "tool": "loans",
+  "handler": "saveInventoryItem",
+  "fields": {
+   "invTitle": "",
+   "invSerial": "Private Löschen 42"
+  },
+  "de": "Bitte eine Bezeichnung für den Gegenstand angeben!",
+  "en": "Please enter an item description!",
+  "line": 509
+ },
+ {
+  "tool": "loans",
+  "handler": "updateItem",
+  "fields": {
+   "editTitle": "Private Löschen",
+   "editPerson": "Private Person",
+   "editDate": "",
+   "editNote": "Private Notiz"
+  },
+  "de": "Bitte Gegenstand, Person und Ausleihdatum angeben!",
+  "en": "Please enter an item, person and loan date!",
+  "line": 767
+ },
+ {
+  "tool": "moving",
+  "handler": "saveBox",
+  "fields": {
+   "boxName": "",
+   "boxDesc": "Private Löschen",
+   "boxBarcode": "PRIVATE-42"
+  },
+  "de": "Bitte Standort und Kisten-Name angeben!",
+  "en": "Please enter a location and box name!",
+  "line": 719
+ },
+ {
+  "tool": "moving",
+  "handler": "addSubItem",
+  "fields": {
+   "newSubItemName": "",
+   "newSubItemVal": "12.5"
+  },
+  "de": "Bitte Artikel-Name eingeben!",
+  "en": "Please enter an item name!",
+  "line": 808
+ },
+ {
+  "tool": "moving",
+  "handler": "updateBox",
+  "fields": {
+   "editBoxName": "",
+   "editBoxDesc": "Private Löschen",
+   "editBoxBarcode": "PRIVATE-42"
+  },
+  "de": "Bitte Standort und Kisten-Name angeben!",
+  "en": "Please enter a location and box name!",
+  "line": 831
+ },
+ {
+  "tool": "pet-health",
+  "handler": "savePet",
+  "fields": {
+   "petName": "",
+   "petChip": "PRIVATE-42",
+   "petAllergies": "Private Löschen"
+  },
+  "de": "Bitte einen Namen für das Haustier eingeben!",
+  "en": "Please enter a pet name!",
+  "line": 554
+ },
+ {
+  "tool": "pet-health",
+  "handler": "saveMedication",
+  "fields": {
+   "medName": "",
+   "medStock": "12"
+  },
+  "de": "Bitte Medikamenten-Namen angeben!",
+  "en": "Please enter a medication name!",
+  "line": 634
+ },
+ {"tool":"plants","handler":"updateCisternCapacity","fields":{"cisternMaxLiters":"0"},"de":"Bitte ein gültiges Fassungsvermögen größer als 0 eingeben.","en":"Enter a valid capacity greater than 0.","line":685},
+ {"tool":"plants","handler":"addSeedItem","fields":{"seedName":"Private Löschen","seedYear":"1800"},"de":"Bitte ein gültiges Saatgutjahr eingeben.","en":"Enter a valid seed year.","line":741},
+ {"tool":"plants","handler":"saveHarvest","fields":{"harvestPlantId":"1","harvestWeightGrams":"0"},"de":"Bitte eine gültige Erntemenge in ganzen Gramm eingeben.","en":"Enter a valid harvest amount in whole grams.","line":844},
+ {"tool":"budget","handler":"saveReceipt","fields":{"receiptTitle":"Private Löschen","receiptDate":"2026-11-25","receiptPrice":"0","receiptNote":"Private Notiz"},"de":"Bitte Titel, gültiges Kaufdatum und einen positiven Betrag angeben!","en":"Enter a title, valid purchase date and positive amount.","line":1199},
+ {"tool":"budget","handler":"saveSavingsGoal","fields":{"goalTitle":"Private Löschen","goalTarget":"0","goalCurrent":"2"},"de":"Bitte gültigen Titel, positiven Zielbetrag und Startbetrag ab 0 € eingeben!","en":"Enter a valid title, a positive target amount and a starting amount of at least €0.","line":1707},
+ {"tool":"pet-health","handler":"saveEvent","fields":{"eventTitle":"Private Löschen","eventDate":"","eventCost":"12.5"},"de":"Bitte Haustier, Datum und Bezeichnung angeben!","en":"Please enter a pet, date and description!","line":664},
+ {"tool":"plants","handler":"savePlant","fields":{"plantName":"","plantLastWatered":"2026-11-25","plantNote":"Private Löschen"},"de":"Bitte Name und gültiges Gießdatum angeben!","en":"Enter a name and valid watering date.","line":985},
+ {"tool":"plants","handler":"savePlant","fields":{"plantName":"Private Löschen","plantLastWatered":"2026-11-25","plantInterval":"0","plantNote":"Private Notiz"},"de":"Bitte ein Gießintervall zwischen 1 und 3650 Tagen eingeben.","en":"Enter a watering interval between 1 and 3650 days.","line":986},
+ {"tool":"plants","handler":"updatePlant","fields":{"editId":"invalid","editName":"Private Löschen"},"de":"Ungültige Pflanzen-ID. Die Änderungen wurden nicht gespeichert.","en":"Invalid plant ID. Changes were not saved.","line":1131},
+ {"tool":"plants","handler":"saveDiaryEntry","fields":{"diaryPlantId":"invalid","diaryText":"Private Löschen"},"de":"Ungültige Pflanzen-ID.","en":"Invalid plant ID.","line":1088},
+ {"tool":"budget","handler":"runOCR","fields":{"receiptTitle":"Private Löschen","receiptNote":"Private Notiz"},"de":"Bitte wähle zuerst ein Belegfoto aus!","en":"Select a receipt photo first.","line":1116},
+ {"tool":"budget","handler":"saveReceipt","fields":{"receiptTitle":"Private Löschen","receiptDate":"2026-11-25","receiptPrice":"12.5","receiptWarranty":"-1","receiptReturnDays":"0","receiptLifespan":"5","receiptNote":"Private Notiz"},"de":"Bitte gültige Garantie-, Rückgabe- und Lebensdauerwerte angeben.","en":"Enter valid warranty, return period and useful-life values.","line":1204}
+]){
+ test('i18n runtime catalogue: '+fixture.tool+' '+fixture.handler+' line '+fixture.line+' preserves draft on validation in DE and EN',async({page},testInfo)=>{
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/'+fixture.tool+'/index.html',handler:fixture.handler,de:fixture.de,en:fixture.en,line:fixture.line||null})});
+  await isolated(page,true);
+  await page.goto(origin+'/tools/'+fixture.tool+'/index.html');
+  const state=()=>page.evaluate(tool=>{
+   const controller=tool==='loans'?loansCloudController:tool==='moving'?movingCloudController:tool==='plants'?plantsCloudController:tool==='budget'?toolyaCloudController:petCloudController;
+   const ready=tool==='loans'?loansCloudReady:tool==='moving'?movingCloudReady:tool==='plants'?plantsCloudReady:tool==='budget'?toolyaCloudReady:petCloudReady;
+   return {ready:!!(ready&&controller?.ready),snapshot:controller?.ready?JSON.stringify(controller.snapshot()):null,writes:window.__toolyaMock?.writes.length};
+  },fixture.tool);
+  await expect.poll(async()=>(await state()).ready).toBe(true);
+  await page.evaluate(fields=>{for(const [id,value] of Object.entries(fields)){const node=document.getElementById(id);if(!node)throw Error('Missing fixture input '+id);node.value=value;}},fixture.fields);
+  const draft=()=>page.evaluate(ids=>Object.fromEntries(ids.map(id=>[id,document.getElementById(id).value])),Object.keys(fixture.fields));
+  expect(await draft()).toEqual(fixture.fields);
+  const before=await state();
+  expect(before.writes).toBe(0);
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   expect(await draft()).toEqual(fixture.fields);
+   await page.evaluate(handler=>window[handler](),fixture.handler);
+   const notice=page.getByRole('alertdialog',{name:'Toolya'});
+   await expect(notice.locator('#hl-alert-message')).toHaveText(fixture[lang]);
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   await expect(notice).toBeHidden();
+   expect(await draft()).toEqual(fixture.fields);
+   expect(await state()).toEqual(before);
+  }
+ });
+}
+
+
+test('budget warranty ICS: actual DE/EN downloads retain dates, alarm and private data without writes',async({page})=>{
+ const {readFile}=require('node:fs/promises');
+ const receipt={id:82,title:'Öl, Pflege; Gerät',store:'Privater Laden',sn:'SN-82',location:'Privater Ort',entryType:'ausgabe',date:'2028-01-31',price:42,category:'Lebensmittel',warrantyMonths:1,photos:[]};
+ await isolated(page,true,true,{entries:[receipt],budgets:{},goals:[]});
+ await page.goto(origin+'/tools/budget/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Reject',exact:true}).or(page.getByRole('button',{name:'Ablehnen',exact:true})).click();
+ const button=page.locator('button[onclick="downloadICS(82)"]');
+ await expect(button).toBeVisible();
+ const before=await page.evaluate(()=>JSON.stringify(getData()));
+ for(const lang of ['en','de']){
+  const choice=page.locator('[data-tool-locale="'+lang+'"]');
+  await choice.click();
+  await expect(choice).toHaveAttribute('aria-pressed','true');
+  const [download]=await Promise.all([page.waitForEvent('download'),button.click()]);
+  const content=(await readFile(await download.path(),'utf8')).replaceAll('\r\n ','');
+  expect(download.suggestedFilename()).toMatch(lang==='en'?/^warranty-.*\.ics$/:/^garantie-.*\.ics$/);
+  expect(content).toContain('SUMMARY:'+(lang==='en'?'Warranty expiry: ':'Garantie-Ablauf: ')+'Öl\\, Pflege\\; Gerät\r\n');
+  expect(content).toContain('UID:82-20280130@helferlein.local\r\n');
+  expect(content).toContain('DTSTART;VALUE=DATE:20280130\r\n');
+  expect(content).toContain('DTEND;VALUE=DATE:20280131\r\n');
+  expect(content).toContain(lang==='en'?'expires on 29/02/2028':'läuft am 29.2.2028');
+  expect(content).toContain('TRIGGER;RELATED=START:PT9H\r\n');
+  expect(content).toContain(lang==='en'?'DESCRIPTION:Warranty expires in 30 days!':'DESCRIPTION:Garantie läuft in 30 Tagen ab!');
+  expect(content).toContain('Privater Laden');
+  expect(content).toContain('SN-82');
+  expect(content).toContain('Privater Ort');
+  expect(await page.evaluate(()=>JSON.stringify(getData()))).toBe(before);
+ }
+ expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+});
+
+
+test('Wishes annual JSON: DE/EN downloads preserve private snapshot and reject account switch',async({page})=>{
+ const {readFile}=require('node:fs/promises');
+ const gift={id:'gift-fixture',occasion_id:'occasion-fixture',title:'Privates Geschenk, Öl 🎁',status:'gifted',actual_amount:42.5};
+ const closing={id:'closing-fixture',closing_year:2025,closed_at:'2026-01-01T00:00:00Z',gift_count:1,gifted_count:1,planned_total:50,actual_total:42.5,budget_total:60,task_count:0,task_done_count:0,gifts_snapshot:[gift],budgets_snapshot:[{occasion_id:'occasion-fixture',occasion_title:'Privater Anlass',budget_amount:60}],tasks_snapshot:[]};
+ await isolated(page,false);
+ await page.route('**/tools/wishes/toolya-client.mjs',route=>route.fulfill({contentType:'text/javascript',body:
+  'window.__annualMock={owner:"fixture-owner",writes:[],closing:'+JSON.stringify(closing)+'};'+
+  'const m=window.__annualMock;export const db={auth:{async getUser(){return {data:{user:m.owner?{id:m.owner}:null},error:null}},async getSession(){return {data:{session:null},error:null}},onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}},from(table){const q={select(){return q},eq(){return q},order(){return q},limit(){return q},then(resolve){resolve({data:table==="wishlist_gift_year_closings"?[m.closing]:[],error:null})}};for(const method of ["insert","update","upsert","delete"])q[method]=()=>{m.writes.push(method);throw Error("Unexpected write")};return q},async rpc(name){m.writes.push(name);throw Error("Unexpected RPC")}};'
+ }));
+ await page.goto(origin+'/tools/wishes/gift-analytics.html?lang=en');
+ await expect(page.locator('#content')).toBeVisible();
+ await page.locator('#reviewYear').selectOption('2025');
+ const button=page.locator('#exportYearJson');
+ let first;
+ for(const lang of ['en','de']){
+  const choice=page.locator('[data-wishes-locale="'+lang+'"]');
+  await choice.click();
+  await expect(choice).toHaveAttribute('aria-pressed','true');
+  const [download]=await Promise.all([page.waitForEvent('download'),button.click()]);
+  expect(download.suggestedFilename()).toBe('helferlein-geschenk-jahresrueckblick-2025.json');
+  const payload=JSON.parse(await readFile(await download.path(),'utf8'));
+  expect(payload.schema_version).toBe(1);
+  expect(payload.report.gifts).toEqual([gift]);
+  expect(payload.report.actual_total).toBe(42.5);
+  expect(payload.report.year).toBe(2025);
+  expect(JSON.stringify(payload)).not.toContain('fixture-owner');
+  expect(JSON.stringify(payload)).not.toContain('closing-fixture');
+  expect(Number.isFinite(Date.parse(payload.exported_at))).toBe(true);
+  delete payload.exported_at;
+  if(first)expect(payload).toEqual(first);else first=payload;
+ }
+ const downloads=[];page.on('download',d=>downloads.push(d));
+ for(const lang of ['en','de']){
+  await page.locator('[data-wishes-locale="'+lang+'"]').click();
+  await page.evaluate(()=>{window.__annualMock.owner='different-owner'});
+  await button.click();
+  await expect(page.locator('#reviewStatus')).toContainText(lang==='de'?'Export abgebrochen':/session|account/i);
+  await expect(button).toBeEnabled();
+ }
+ expect(downloads).toEqual([]);
+ expect(await page.evaluate(()=>window.__annualMock.closing)).toEqual(closing);
+ expect(await page.evaluate(()=>window.__annualMock.writes)).toEqual([]);
+});
+
+
+test('Wishes gift task report: bilingual JSON download, cancellation, print and account guard',async({page})=>{
+ const {readFile}=require('node:fs/promises');
+ const event={id:1,task_title:'Private Aufgabe, Öl 🎁',event_type:'completed',old_status:'open',new_status:'done',old_due_date:'2026-11-20',new_due_date:'2026-11-21',occurred_at:'2026-11-21T12:00:00Z',occasion_id:'fixture-occasion',occasion_title:'Privater Anlass'};
+ await isolated(page,false);
+ await page.route('**/tools/wishes/toolya-client.mjs',route=>route.fulfill({contentType:'text/javascript',body:
+  'window.__taskReportMock={owner:"fixture-owner",writes:[],events:'+JSON.stringify([event])+'};'+
+  'const m=window.__taskReportMock;export const db={auth:{async getUser(){return {data:{user:m.owner?{id:m.owner}:null},error:null}},async getSession(){return {data:{session:null},error:null}},onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}},from(table){const q={select(){return q},eq(){return q},order(){return q},range(){return q},then(resolve){resolve({data:table==="wishlist_gift_task_events"?m.events:[],error:null})}};for(const method of ["insert","update","upsert","delete"])q[method]=()=>{m.writes.push(method);throw Error("Unexpected write")};return q},async rpc(name){m.writes.push(name);throw Error("Unexpected RPC")}};'
+ }));
+ await page.goto(origin+'/tools/wishes/report.html?lang=en');
+ await expect(page.locator('#report')).toBeVisible();
+ const button=page.locator('#exportEvents');
+ let first;
+ for(const lang of ['en','de']){
+  const choice=page.locator('[data-wishes-locale="'+lang+'"]');
+  await choice.click();
+  await expect(choice).toHaveAttribute('aria-pressed','true');
+  await page.evaluate(()=>{window.__printed=0;window.print=()=>{window.__printed++}});
+  await page.locator('#printReport').click();
+  expect(await page.evaluate(()=>window.__printed)).toBe(1);
+  const cancelled=[];const listener=d=>cancelled.push(d);page.on('download',listener);
+  page.once('dialog',d=>d.dismiss());
+  await button.click();
+  expect(cancelled).toEqual([]);page.off('download',listener);
+  page.once('dialog',d=>d.accept());
+  const [download]=await Promise.all([page.waitForEvent('download'),button.click()]);
+  expect(download.suggestedFilename()).toMatch(/^helferlein-private-aufgabenereignisse-\d{4}-\d{2}-\d{2}\.json$/);
+  const payload=JSON.parse(await readFile(await download.path(),'utf8'));
+  expect(payload.format).toBe('helferlein-wishes-task-events-v1');
+  expect(payload.event_count).toBe(1);
+  expect(payload.events).toEqual([event]);
+  expect(JSON.stringify(payload)).not.toContain('fixture-owner');
+  expect(Number.isFinite(Date.parse(payload.exported_at))).toBe(true);
+  delete payload.exported_at;
+  if(first)expect(payload).toEqual(first);else first=payload;
+ }
+ const blocked=[];page.on('download',d=>blocked.push(d));
+ for(const lang of ['en','de']){
+  await page.locator('[data-wishes-locale="'+lang+'"]').click();
+  await page.evaluate(()=>{window.__taskReportMock.owner='different-owner'});
+  page.once('dialog',d=>d.accept());
+  await button.click();
+  await expect(page.locator('#status')).toContainText(lang==='de'?'Export abgebrochen':/session|account/i);
+  await expect(button).toBeEnabled();
+ }
+ expect(blocked).toEqual([]);
+ expect(await page.evaluate(()=>window.__taskReportMock.events)).toEqual([event]);
+ expect(await page.evaluate(()=>window.__taskReportMock.writes)).toEqual([]);
+});
+
+
+test('Dashboard linked global backup: DE/EN actual JSON downloads exclude session and unknown keys',async({page})=>{
+ const {readFile}=require('node:fs/promises');
+ await isolated(page,false);
+ const fixture='["Private Öl & Pflege"]';
+ let first;
+ for(const lang of ['de','en']){
+  await page.goto(origin+(lang==='en'?'/en/index.html':'/index.html'));
+  await page.waitForFunction(()=>window.toolyaHomeReady===true);
+  await page.evaluate(value=>{
+   localStorage.setItem('hub_favorites',value);
+   localStorage.setItem('sb-fixture-auth-token','private-session-marker');
+   localStorage.setItem('unrelated-fixture','private-unknown-marker');
+  },fixture);
+  const before=await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
+  const cancelled=[];const listener=d=>cancelled.push(d);page.on('download',listener);
+  page.once('dialog',d=>d.dismiss());
+  await page.evaluate(()=>window.exportGlobalBackup(false));
+  expect(cancelled).toEqual([]);page.off('download',listener);
+  page.once('dialog',d=>d.accept());
+  const pending=page.waitForEvent('download');
+  await page.evaluate(()=>window.exportGlobalBackup(false));
+  const download=await pending;
+  expect(download.suggestedFilename()).toMatch(/^helferlein-backup-\d{4}-\d{2}-\d{2}\.json$/);
+  const payload=JSON.parse(await readFile(await download.path(),'utf8'));
+  expect(payload.app).toBe('Toolya');
+  expect(payload.version).toBe('2.0');
+  expect(payload.localStorage.hub_favorites).toBe(fixture);
+  expect(payload.tools.hub).toContain('hub_favorites');
+  expect(JSON.stringify(payload)).not.toContain('private-session-marker');
+  expect(JSON.stringify(payload)).not.toContain('private-unknown-marker');
+  expect(Number.isFinite(Date.parse(payload.created))).toBe(true);
+  delete payload.created;
+  if(first)expect(payload.localStorage.hub_favorites).toBe(first.localStorage.hub_favorites);else first=payload;
+  expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)))).toEqual(before);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+ }
+});
+
+
+test('Global encrypted backup DE/EN: actual downloads decrypt, exclude secrets and reject wrong password',async({page})=>{
+ const {readFile}=require('node:fs/promises');
+ const {pbkdf2Sync,createDecipheriv}=require('node:crypto');
+ const password='isolated-fixture-password-2026';
+ const fixture='["Privates Öl & Pflege"]';
+ await isolated(page,false);
+ const envelopes=[];
+ for(const lang of ['de','en']){
+  await page.goto(origin+(lang==='en'?'/en/index.html':'/index.html'));
+  await page.waitForFunction(()=>window.toolyaHomeReady===true);
+  await page.evaluate(value=>{
+   localStorage.setItem('hub_favorites',value);
+   localStorage.setItem('sb-fixture-auth-token','private-session-marker');
+   localStorage.setItem('unrelated-fixture','private-unknown-marker');
+  },fixture);
+  const before=await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
+  const start=()=>{page.once('dialog',d=>d.accept());return page.evaluate(()=>window.exportGlobalBackup(true))};
+  const dialog=page.locator('form[role="dialog"]').filter({has:page.locator('input[type="password"]')});
+  const cancelled=[];const listener=d=>cancelled.push(d);page.on('download',listener);
+  const cancelAction=start();
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button',{name:lang==='de'?'Abbrechen':'Cancel',exact:true}).click();
+  await cancelAction;
+  expect(cancelled).toEqual([]);page.off('download',listener);
+  const action=start();
+  await expect(dialog).toBeVisible();
+  const fields=dialog.locator('input[type="password"]');
+  await fields.nth(0).fill(password);
+  await fields.nth(1).fill(password+'-wrong');
+  const submit=dialog.locator('button[type="submit"]');
+  await submit.click();
+  await expect(dialog.getByRole('alert')).toHaveText(lang==='de'?'Die Passwörter stimmen nicht überein.':'Passwords do not match.');
+  await fields.nth(1).fill(password);
+  const pending=page.waitForEvent('download');
+  await submit.click();
+  const download=await pending;await action;
+  expect(download.suggestedFilename()).toMatch(/^helferlein-backup-(?:verschluesselt|encrypted)-\d{4}-\d{2}-\d{2}\.json$/);
+  const raw=await readFile(await download.path(),'utf8');
+  expect(raw).not.toContain(fixture);
+  expect(raw).not.toContain(password);
+  const e=JSON.parse(raw);
+  expect(e).toMatchObject({app:'Toolya',format:'encrypted-backup-v1',kdf:'PBKDF2-SHA256',iterations:600000,cipher:'AES-256-GCM'});
+  const salt=Buffer.from(e.salt,'base64'),iv=Buffer.from(e.iv,'base64'),ciphertext=Buffer.from(e.ciphertext,'base64');
+  expect(salt.length).toBe(16);expect(iv.length).toBe(12);
+  const decrypt=secret=>{
+   const key=pbkdf2Sync(secret,salt,e.iterations,32,'sha256');
+   const decipher=createDecipheriv('aes-256-gcm',key,iv);
+   decipher.setAuthTag(ciphertext.subarray(-16));
+   return JSON.parse(Buffer.concat([decipher.update(ciphertext.subarray(0,-16)),decipher.final()]).toString('utf8'));
+  };
+  expect(()=>decrypt(password+'-wrong')).toThrow();
+  const payload=decrypt(password);
+  expect(payload).toMatchObject({app:'Toolya',version:'2.0',localStorage:{hub_favorites:fixture}});
+  expect(JSON.stringify(payload)).not.toContain('private-session-marker');
+  expect(JSON.stringify(payload)).not.toContain('private-unknown-marker');
+  expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)))).toEqual(before);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+  envelopes.push(e);
+ }
+ expect(envelopes[0].salt).not.toBe(envelopes[1].salt);
+ expect(envelopes[0].iv).not.toBe(envelopes[1].iv);
+});
+
+
+test('Global encrypted restore DE/EN: password and overwrite cancellation preserve local data',async({page})=>{
+ const {pbkdf2Sync,createCipheriv,randomBytes}=require('node:crypto');
+ const password='isolated-restore-password-2026';
+ const key='helferlein_ui_layout_pflanzen_v1';
+ const original='[{"id":"original","visible":true}]',replacement='[{"id":"replacement","visible":false}]';
+ const salt=randomBytes(16),iv=randomBytes(12);
+ const cipher=createCipheriv('aes-256-gcm',pbkdf2Sync(password,salt,600000,32,'sha256'),iv);
+ const plaintext=JSON.stringify({app:'Toolya',version:'2.0',created:'2026-11-25T12:00:00Z',localStorage:{[key]:replacement,'sb-fixture-auth-token':'must-not-import','unrelated-fixture':'must-not-import'}});
+ const encrypted=Buffer.concat([cipher.update(plaintext,'utf8'),cipher.final(),cipher.getAuthTag()]);
+ const envelope={app:'Toolya',format:'encrypted-backup-v1',kdf:'PBKDF2-SHA256',iterations:600000,cipher:'AES-256-GCM',salt:salt.toString('base64'),iv:iv.toString('base64'),ciphertext:encrypted.toString('base64')};
+ await isolated(page,false);
+ for(const lang of ['de','en']){
+  await page.goto(origin+(lang==='en'?'/en/index.html':'/index.html'));
+  await page.waitForFunction(()=>window.toolyaHomeReady===true);
+  await page.evaluate(({key,original})=>{localStorage.setItem(key,original);localStorage.setItem('unrelated-fixture','keep-original')},{key,original});
+  const snapshot=()=>page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
+  const before=await snapshot();
+  const load=()=>page.evaluate(payload=>window.importGlobalBackup({target:{files:[new File([JSON.stringify(payload)],'fixture.json',{type:'application/json'})],value:'fixture.json'}}),envelope);
+  const dialog=page.getByRole('dialog',{name:lang==='en'?'Backup password':'Backup-Passwort',exact:true});
+  const submit=dialog.locator('button[type="submit"]');
+  await load();
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button',{name:lang==='en'?'Cancel':'Abbrechen',exact:true}).click();
+  await expect(dialog).toHaveCount(0);
+  expect(await snapshot()).toEqual(before);
+  await load();
+  await dialog.locator('input[type="password"]').fill(password+'-wrong');
+  await submit.click();
+  const notice=page.getByRole('alertdialog',{name:'Toolya'});
+  await expect(notice.locator('#hl-alert-message')).toHaveText(lang==='en'?'Decryption failed. The password or backup file is invalid.':'Entschlüsselung fehlgeschlagen. Passwort oder Sicherungsdatei ist ungültig.');
+  await notice.getByRole('button',{name:'OK'}).press('Enter');
+  expect(await snapshot()).toEqual(before);
+  await load();
+  await dialog.locator('input[type="password"]').fill(password);
+  const confirmation=page.waitForEvent('dialog');
+  await submit.click();
+  const cancel=await confirmation;
+  expect(cancel.type()).toBe('confirm');await cancel.dismiss();
+  expect(await snapshot()).toEqual(before);
+  await load();
+  await dialog.locator('input[type="password"]').fill(password);
+  const approval=page.waitForEvent('dialog');
+  await submit.click();
+  const confirm=await approval;expect(confirm.type()).toBe('confirm');await confirm.accept();
+  await expect(notice).toBeVisible();
+  await notice.getByRole('button',{name:'OK'}).press('Enter');
+  expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe(replacement);
+  expect(await page.evaluate(()=>localStorage.getItem('unrelated-fixture'))).toBe('keep-original');
+  expect(await page.evaluate(()=>localStorage.getItem('sb-fixture-auth-token'))).toBe(before['sb-fixture-auth-token']??null);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+ }
+});
+
+
+test('Budget CSV DE/EN: real all and tax downloads preserve private records and prevent formula injection',async({page})=>{
+ const {readFile}=require('node:fs/promises');
+ const entries=[
+  {id:91,date:'2026-11-20',entryType:'ausgabe',title:'Private Öl; "Pflege"',store:'=1+1',category:'Lebensmittel',price:-12.5,paymentMethod:'Bar',isTax:true,isFixkosten:true,sn:'SN-91',location:'Privater Ort',note:'@private\nNotiz',photos:[]},
+  {id:92,date:'2026-11-10',entryType:'einnahme',title:'Nicht steuerrelevant',store:'Privater Händler',category:'Sonstiges',price:20,isTax:false,photos:[]},
+  {id:93,date:'2026-11-15',entryType:'ausgabe',title:'  ＋private',store:'Privater Laden',category:'Sonstiges',price:null,isTax:true,photos:[]}
+ ];
+ await isolated(page,true,true,{entries,budgets:{},goals:[]});
+ await page.goto(origin+'/tools/budget/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ const before=await page.evaluate(()=>JSON.stringify(getData()));
+ const {parseCsv}=await import('../../supabase/functions/wishlist-discovery/model.mjs');
+ for(const lang of ['en','de']){
+  const choice=page.locator('[data-tool-locale="'+lang+'"]');
+  await choice.click();await expect(choice).toHaveAttribute('aria-pressed','true');
+  for(const tax of [false,true]){
+   const pending=page.waitForEvent('download');
+   await page.evaluate(tax=>tax?exportSteuerCSV():exportAllBookingsCSV(),tax);
+   const download=await pending;
+   const prefix=lang==='en'?(tax?'tax-transactions-':'all-transactions-'):(tax?'steuer-buchungen-':'alle-buchungen-');
+   expect(download.suggestedFilename()).toMatch(new RegExp('^'+prefix+'\\d{4}-\\d{2}-\\d{2}\\.csv$'));
+   const raw=await readFile(await download.path(),'utf8');
+   expect(raw.charCodeAt(0)).toBe(0xfeff);
+   expect(raw).toContain('\r\n');
+   const rows=parseCsv(raw);
+   const date=lang==='en'?'Date':'Datum',title=lang==='en'?'Title':'Titel',merchant=lang==='en'?'Merchant':'Haendler',note=lang==='en'?'Note':'Notiz';
+   expect(rows.map(r=>r[date])).toEqual(tax?['2026-11-15','2026-11-20']:['2026-11-10','2026-11-15','2026-11-20']);
+   const last=rows.at(-1);
+   expect(last[title]).toBe(entries[0].title);
+   expect(last[merchant]).toBe("'=1+1");
+   expect(last[note]).toBe("'@private\nNotiz");
+   expect(last.Price_EUR??last.Preis_EUR).toBe('-12.50');
+   expect(rows.at(-2)[title]).toBe("'  ＋private");
+   expect(rows.at(-2).Price_EUR??rows.at(-2).Preis_EUR).toBe('');
+   expect(last[lang==='en'?'Serial_number':'Seriennummer']).toBe('SN-91');
+   if(!tax){
+    expect(last[lang==='en'?'Storage_location':'Lagerort']).toBe('Privater Ort');
+    expect(last[lang==='en'?'Tax_relevant':'Steuerrelevant']).toBe(lang==='en'?'Yes':'Ja');
+    expect(rows[0][lang==='en'?'Tax_relevant':'Steuerrelevant']).toBe(lang==='en'?'No':'Nein');
+   }else expect(raw).not.toContain('Nicht steuerrelevant');
+   expect(await page.evaluate(()=>JSON.stringify(getData()))).toBe(before);
+   expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+  }
+ }
+});
+
+
+test('Budget PDF DE/EN: signed totals, missing values, chronological private entries and immutable data',async({page})=>{
+ const entries=[
+  {id:91,date:'2026-11-20',entryType:'ausgabe',title:'Private Rückerstattung Öl',store:'Privater Laden',category:'Lebensmittel',price:-12.5,paymentMethod:'Bar',photos:[]},
+  {id:92,date:'2026-11-10',entryType:'einnahme',title:'Privates Einkommen',category:'Einnahme',price:100,photos:[]},
+  {id:93,date:'2026-11-15',entryType:'ausgabe',title:'Betrag fehlt',category:'Sonstiges',price:null,photos:[]},
+  {id:94,date:'2026-11-12',entryType:'ausgabe',title:'Private Ausgabe',category:'Sonstiges',price:40,photos:[]},
+  {id:95,date:'2026-11-13',entryType:'einnahme',title:'Einnahmekorrektur',category:'Einnahme',price:-5,photos:[]}
+ ];
+ await isolated(page,true,true,{entries,budgets:{},goals:[]});
+ await page.goto(origin+'/tools/budget/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ const before=await page.evaluate(()=>JSON.stringify(getData()));
+ await page.evaluate(()=>{
+  window.__budgetPdf={texts:[],files:[]};
+  window.jspdf={jsPDF:class{
+   setFontSize(){return this}
+   text(v){window.__budgetPdf.texts.push(String(v));return this}
+   splitTextToSize(v){return [String(v)]}
+   addPage(){return this}
+   save(v){window.__budgetPdf.files.push(v)}
+  }};
+ });
+ for(const lang of ['en','de']){
+  const choice=page.locator('[data-tool-locale="'+lang+'"]');
+  await choice.click();await expect(choice).toHaveAttribute('aria-pressed','true');
+  await page.evaluate(()=>{window.__budgetPdf.texts=[];window.__budgetPdf.files=[];return exportPDF()});
+  const result=await page.evaluate(()=>window.__budgetPdf);
+  const en=lang==='en';
+  expect(result.files).toHaveLength(1);
+  expect(result.files[0]).toMatch(en?/^financial-report-\d{4}-\d{2}-\d{2}\.pdf$/:/^finanz-bericht-\d{4}-\d{2}-\d{2}\.pdf$/);
+  const text=result.texts;
+  expect(text).toContain(en?'Household finances and receipts overview':'Haushalts-, Finanz- & Kassenbon-Übersicht');
+  expect(text).toContain(en?'Transactions: 4':'Buchungen: 4');
+  expect(text).toContain(en?'Income: 95.00 EUR':'Einnahmen: 95,00 EUR');
+  expect(text).toContain(en?'Expenses: 27.50 EUR':'Ausgaben: 27,50 EUR');
+  expect(text).toContain(en?'Balance: 67.50 EUR':'Saldo: 67,50 EUR');
+  expect(text).toContain(en?'Period: 10/11/2026 to 20/11/2026':'Zeitraum: 10.11.2026 bis 20.11.2026');
+  const rows=text.filter(v=>/^\d{4}-\d{2}-\d{2} \|/.test(v));
+  expect(rows.map(v=>v.slice(0,10))).toEqual(['2026-11-10','2026-11-12','2026-11-13','2026-11-15','2026-11-20']);
+  for(const [index,title,amount] of [[0,'Privates Einkommen',en?'+100.00':'+100,00'],[1,'Private Ausgabe',en?'-40.00':'-40,00'],[2,'Einnahmekorrektur',en?'-5.00':'-5,00'],[3,'Betrag fehlt',en?'n/a':'k.A.'],[4,'Private Rückerstattung Öl',en?'+12.50':'+12,50']]){
+   expect(rows[index]).toContain(title);expect(rows[index]).toContain(': '+amount+' €');
+  }
+  expect(await page.evaluate(()=>JSON.stringify(getData()))).toBe(before);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+ }
+});
+
+
+const pdfReportCases=[
+ {tool:'car',ready:'toolyaCloudReady',fixture:{cars:[{id:1,name:'Privates Fahrzeug Öl',plate:'TEST-42',km:1000,insurance:'Privater Versicherer'}],events:[{id:2,carId:1,title:'Private Wartung',type:'Inspektion',date:'2026-11-17',cost:42},{id:3,carId:1,title:'Private Erstattung',type:'Inspektion',date:'2026-11-18',cost:-2}],tires:[]},de:['KFZ- & Wartungs-Report','Gesamtkosten: 40.00 EUR','KM: 1000','Vers.: Privater Versicherer'],en:['Vehicle and maintenance report','Total costs: 40.00 EUR','Mileage: 1000','Insurance: Privater Versicherer'],private:['Privates Fahrzeug Öl','TEST-42','Private Wartung','Private Erstattung'],files:['kfz-wartungs-report.pdf','vehicle-maintenance-report.pdf']},
+ {tool:'parking',ready:'parkingCloudReady',fixture:{sessions:[{id:1,desc:'Privater Parkplatz Öl',sector:'Privates Deck',date:'17.11.2026',timestamp:'2026-11-17T12:00:00Z',cost:4.5,gps:null},{id:2,desc:'Privater Stellplatz',date:'18.11.2026',timestamp:'2026-11-18T12:00:00Z',cost:2,gps:null}],activeEndTime:null},de:['Parkschein- & Parkplatz-Report','Parkvorgänge: 2 | Gesamtkosten: 6,50 EUR','Sektor: Privates Deck'],en:['Parking session and location report','Parking sessions: 2 | Total costs: 6.50 EUR','Sector: Privates Deck'],private:['Privater Parkplatz Öl','Privater Stellplatz'],files:['park-report.pdf','parking-report.pdf']},
+ {tool:'pet-health',ready:'petCloudReady',fixture:{pets:[{id:1,name:'Privates Tier Öl',species:'Hund',chip:'TEST-123',tasso:true,vet:{name:'Private Praxis',tel:'000'}}],events:[{id:2,petId:1,type:'Impfung',title:'Private Impfung',date:'2026-11-17',expiryDate:'2027-11-17',cost:42},{id:3,petId:1,type:'Kontrolle',title:'Private Kontrolle',date:'2026-11-18',cost:8}],meds:[]},de:['Haustier-Gesundheits-Pass Report','Gesamtkosten: 50.00 EUR','(Hund)','[Impfung]','TA: Private Praxis'],en:['Pet health report','Total costs: 50.00 EUR','(Dog)','[Vaccination]','Vet: Private Praxis'],private:['Privates Tier Öl','TEST-123','Private Impfung','Private Kontrolle'],files:['haustier-gesundheits-report.pdf','pet-health-report.pdf']},
+ {tool:'loans',ready:'loansCloudReady',fixture:{contacts:[],inventory:[],items:[{id:1,title:'Privates Werkzeug Öl',person:'Private Person',serial:'TEST-42',date:'2026-11-17',returnDate:'2026-12-17',status:'active',deposit:42},{id:2,title:'Privates Buch',person:'Andere Person',date:'2026-11-18',status:'returned',deposit:10}]},de:['Leih- & Verleih-Report Pro','Offene Kaution / Wert: 42.00 EUR','[AKTIV]','[ZURÜCK]'],en:['Lending and borrowing report','Outstanding deposit / value: 42.00 EUR','[ACTIVE]','[RETURNED]'],private:['Privates Werkzeug Öl','Private Person','TEST-42','Privates Buch'],files:['verleih-report-pro.pdf','lending-report.pdf']},
+ {tool:'plants',ready:'plantsCloudReady',fixture:{plants:[{id:2,name:'Private Pflanze Öl',species:'Tomate',location:'Privates Zimmer',light:'half',potSize:15,interval:7,lastWatered:'2026-11-17',diary:[],harvestLog:[],galleryPhotos:[]}],monthWaterLiters:0,totalHarvestGrams:0,inventory:[],seeds:[],beetSlots:Array(16).fill(null),cisternMax:500,cisternCurrent:400},de:['Pflanzen- & Garten-Pass Report','Pflanzen: 1','Ort: Privates Zimmer','Gießen: 7T'],en:['Plant and Garden Report','Plants: 1','Location: Privates Zimmer','Watering: 7d'],private:['Private Pflanze Öl','Tomate'],files:['pflanzen-report.pdf','plant-garden-report.pdf']},
+ {tool:'housemates',ready:'secureWgRevision',fixture:{__wg:{id:'00000000-0000-4000-8000-000000000109',updated_at:'2026-11-17T00:00:00Z',payload:{flatmates:[{vorname:'Mia',nachname:'Test'}],data:[{id:2,title:'Private Buchung Öl',price:42,payer:'Mia Test',date:'2026-11-17',category:'Lebensmittel',entryType:'ausgabe',photos:[]}],budgets:{},goals:[],notes:[],events:[],inventory:[],diets:{},cleaning:[],shopping:[],contracts:[],cooking:['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'].map(day=>({day,chef:'Frei',dish:'',ingredients:''})),infoboard:{}}}},de:['WG- & Haushaltsbuch Abrechnung','Buchungen: 1','42,00 EUR'],en:['Household Finance Report','Transactions: 1','42.00 EUR'],private:['Private Buchung Öl','Mia Test'],files:['haushaltsbericht','household-finance-report']}
+];
+for(const spec of pdfReportCases)test(spec.tool+' PDF DE/EN: report content and unchanged private records',async({page})=>{
+ await isolated(page,true,true,spec.fixture);
+ const wg=spec.tool==='housemates';
+ await page.goto(origin+'/tools/'+spec.tool+'/index.html?lang=en'+(wg?'&id=secure_00000000-0000-4000-8000-000000000109':''));
+ await expect.poll(()=>page.evaluate(tool=>{
+  switch(tool){
+   case 'car':return typeof toolyaCloudReady!=='undefined'&&!!toolyaCloudReady;
+   case 'parking':return typeof parkingCloudReady!=='undefined'&&!!parkingCloudReady;
+   case 'pet-health':return typeof petCloudReady!=='undefined'&&!!petCloudReady;
+   case 'loans':return typeof loansCloudReady!=='undefined'&&!!loansCloudReady;
+   case 'plants':return typeof plantsCloudReady!=='undefined'&&!!plantsCloudReady;
+   case 'housemates':return typeof secureWgRevision!=='undefined'&&!!secureWgRevision;
+  }
+ },spec.tool)).toBe(true);
+ const before=await page.evaluate(()=>JSON.stringify(getData()));
+ await page.evaluate(()=>{
+  window.__reportPdf={texts:[],files:[]};
+  window.jspdf={jsPDF:class{
+   setFont(){return this}setFontSize(){return this}addPage(){return this}
+   splitTextToSize(v){return [String(v)]}
+   text(v){window.__reportPdf.texts.push(String(v));return this}
+   save(v){window.__reportPdf.files.push(v)}
+  }};
+ });
+ for(const lang of ['de','en']){
+  const choice=page.locator('[data-tool-locale="'+lang+'"]');
+  await choice.click();await expect(choice).toHaveAttribute('aria-pressed','true');
+  await page.evaluate(wg=>{window.__reportPdf={texts:[],files:[]};return wg?exportAbrechnungPDF():exportPDF()},wg);
+  const result=await page.evaluate(()=>window.__reportPdf);
+  expect(result.files).toHaveLength(1);
+  const filename=spec.files[lang==='en'?1:0];
+  if(wg)expect(result.files[0]).toMatch(new RegExp('^'+filename+'-\\d{4}-\\d{2}-\\d{2}\\.pdf$'));
+  else expect(result.files[0]).toBe(filename);
+  const text=result.texts.join('\n');
+  for(const value of [...spec[lang],...spec.private])expect(text).toContain(value);
+  expect(await page.evaluate(()=>JSON.stringify(getData()))).toBe(before);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+ }
+});
+
+
+const qrCases=[
+ {tool:'budget',fixture:{entries:[{id:82,title:'Privates Gerät Öl',store:'Privater Laden',sn:'SN-82',entryType:'ausgabe',date:'2028-01-31',price:42,category:'Lebensmittel',warrantyMonths:1,photos:[]}],budgets:{},goals:[]},payload:'GERÄT: Privates Gerät Öl\nKAUFDATUM: 2028-01-31\nHÄNDLER: Privater Laden\nSERIENNR: SN-82',size:120},
+ {tool:'loans',fixture:{contacts:[],inventory:[],items:[{id:1,title:'Privates Werkzeug Öl',person:'Private Person',date:'2026-11-17',returnDate:'2026-12-17',status:'active',deposit:42}]},payload:'Gegenstand: Privates Werkzeug Öl | Verliehen an: Private Person',size:180},
+ {tool:'plants',fixture:{plants:[{id:2,name:'Private Pflanze Öl',species:'Tomate',location:'Privates Zimmer',light:'half',potSize:15,interval:7,lastWatered:'2026-11-17',diary:[],harvestLog:[],galleryPhotos:[]}],monthWaterLiters:0,totalHarvestGrams:0,inventory:[],seeds:[],beetSlots:Array(16).fill(null),cisternMax:500,cisternCurrent:400},payload:'Pflanze: Private Pflanze Öl | Gießen: alle 7T',size:160},
+ {tool:'housemates',fixture:{__wg:{id:'00000000-0000-4000-8000-000000000109',updated_at:'2026-11-17T00:00:00Z',payload:{flatmates:[],data:[],notes:[],events:[],inventory:[],diets:{},cleaning:[],shopping:[],contracts:[],budgets:{},goals:[],cooking:[],infoboard:{wifi:'Nicht als Passwort verwenden'}}}},payload:'WIFI:T:WPA;S:Privat\\;Netz;P:Test\\:Pass\\,wort\\\\42;;',size:140}
+];
+for(const spec of qrCases)test(spec.tool+' QR DE/EN: stable private payload, cancellation and no writes',async({page})=>{
+ const outbound=await isolated(page,true,true,spec.fixture);
+ const wg=spec.tool==='housemates';
+ await page.goto(origin+'/tools/'+spec.tool+'/index.html?lang=en'+(wg?'&id=secure_00000000-0000-4000-8000-000000000109':''));
+ await expect.poll(()=>page.evaluate(tool=>{
+  if(tool==='budget')return typeof toolyaCloudReady!=='undefined'&&!!toolyaCloudReady;
+  if(tool==='loans')return typeof loansCloudReady!=='undefined'&&!!loansCloudReady;
+  if(tool==='plants')return typeof plantsCloudReady!=='undefined'&&!!plantsCloudReady;
+  return typeof secureWgRevision!=='undefined'&&!!secureWgRevision;
+ },spec.tool)).toBe(true);
+ const before=await page.evaluate(()=>JSON.stringify(getData()));
+ const storage=()=>page.evaluate(()=>Object.fromEntries(Object.entries(localStorage).filter(([k])=>k!=='toolya-locale-v1')));
+ await page.evaluate(()=>{
+  window.__qrCaptured=[];window.__prints=0;
+  window.QRCode=class{constructor(el,options){window.__qrCaptured.push({...options});el.textContent='QR fixture'}};
+  window.print=()=>window.__prints++;
+ });
+ for(const lang of ['de','en']){
+  const choice=page.locator('[data-tool-locale="'+lang+'"]');
+  await choice.click();await expect(choice).toHaveAttribute('aria-pressed','true');
+  const stored=await storage();
+  await page.evaluate(async tool=>{
+   if(tool==='budget')return openQRModal(82);
+   if(tool==='loans'){const item=getData().items[0];return showQrCode(item.title,item.person)}
+   if(tool==='plants'){const p=getData().plants[0];return showQrCode(p.name,p.species,p.location,p.interval)}
+   window.prompt=q=>q.includes('SSID')?'Privat;Netz':'Test:Pass,wort\\42';
+   return openWLANQRModal();
+  },spec.tool);
+  const modal=page.locator(wg?'#wlanQrModal':'#qrModal');
+  await expect(modal).toBeVisible();
+  expect(await page.evaluate(()=>window.__qrCaptured.at(-1))).toMatchObject({text:spec.payload,width:spec.size,height:spec.size});
+  if(spec.tool==='budget'){
+   await expect(page.locator('#stickerTitle')).toHaveText('Privates Gerät Öl');
+   await expect(page.locator('#stickerWarranty')).toHaveText(lang==='en'?'Warranty until: 29/02/2028':'Garantie bis: 29.2.2028');
+   await modal.locator('button[onclick="window.print()"]').click();
+   expect(await page.evaluate(()=>window.__prints)).toBe(lang==='de'?1:2);
+  }
+  await page.evaluate(tool=>tool==='budget'?closeQRModal():tool==='housemates'?closeWLANQRModal():closeQrModal(),spec.tool);
+  await expect(modal).toBeHidden();
+  if(wg){
+   const count=await page.evaluate(()=>window.__qrCaptured.length);
+   await page.evaluate(()=>{window.prompt=q=>q.includes('SSID')?'Privat;Netz':null;return openWLANQRModal()});
+   await expect(page.locator('#wlanQrcode')).toHaveText(lang==='en'?'QR code creation cancelled.':'QR-Erstellung abgebrochen.');
+   expect(await page.evaluate(()=>window.__qrCaptured.length)).toBe(count);
+   await page.evaluate(()=>closeWLANQRModal());
+  }
+  expect(await page.evaluate(()=>JSON.stringify(getData()))).toBe(before);
+  expect(await storage()).toEqual(stored);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+ }
+ expect(outbound.every(url=>!url.includes('Privat')&&!url.includes('Pass%'))).toBe(true);
+});

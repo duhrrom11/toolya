@@ -4,7 +4,7 @@ const sourceText=new WeakMap(),sourceAttributes=new WeakMap();
 const attributeNames=['aria-label','title','placeholder','alt'];
 function suppressed(element){
  for(let p=element;p;p=p.parentElement)
-  if(excluded.has(p.id?.toUpperCase())||['SCRIPT','STYLE','NOSCRIPT','TEXTAREA'].includes(p.tagName))return true;
+  if(p.hasAttribute?.('data-user-content')||excluded.has(p.id?.toUpperCase())||['SCRIPT','STYLE','NOSCRIPT','TEXTAREA'].includes(p.tagName))return true;
  return false;
 }
 export function applyDashboardPageLocale(document,lang,translate=dashboardText){

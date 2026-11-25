@@ -153,10 +153,17 @@ function renderReview(){
  if(d.tasks===null)root.append(el('p',ui("Dieser ältere Jahresabschluss enthält keinen historischen Aufgaben-Snapshot."),'note'));
 }
 $('reviewYear').addEventListener('change',renderReview);
-$('exportYearJson').addEventListener('click',()=>{
- const c=closings.find(c=>c.closing_year===Number($('reviewYear').value));if(!c)return;
+$('exportYearJson').addEventListener('click',async()=>{
+ const owner=userId,year=Number($('reviewYear').value);
+ if(!owner)return;
+ const c=closings.find(c=>c.closing_year===year);if(!c)return;
+ const button=$('exportYearJson');button.disabled=true;
+ try{
+  const {data,error}=await db.auth.getUser();
+  if(error||data?.user?.id!==owner||userId!==owner||Number($('reviewYear').value)!==year){$('reviewStatus').textContent=ui('Sitzung hat sich geändert. Export abgebrochen.');return;}
  const payload={schema_version:1,exported_at:new Date().toISOString(),report:reviewData(c)};
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='helferlein-geschenk-jahresrueckblick-'+c.closing_year+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);$('reviewStatus').textContent=ui('Privater JSON-Bericht lokal erstellt. Bewahre die Datei sicher auf.');
+ }catch{$('reviewStatus').textContent=ui('Export fehlgeschlagen. Bitte erneut versuchen.');}finally{button.disabled=!closings.some(item=>item.closing_year===Number($('reviewYear').value));}
 });
 $('printYearReview').addEventListener('click',()=>{if(closings.some(c=>c.closing_year===Number($('reviewYear').value)))window.print()});
 function renderChronicle(){
@@ -230,6 +237,7 @@ document.addEventListener('toolya:wishes-locale-change',()=>{if(!userId)return;r
 
 // Update editor labels in place; never reset unsaved budget or gift-year inputs.
 document.addEventListener('toolya:wishes-locale-change',()=>{if(userId)repaintEditorLabels()});
+document.addEventListener('toolya:wishes-locale-change',()=>{if(!userId)return;const year=Number($('year').value),summary=summarize(year),closed=closings.find(c=>c.closing_year===year);$('spent').textContent=money(summary.spent);$('budget').textContent=money(closed?closed.budget_total:occasions.filter(x=>x.repeats_yearly||Number(x.occasion_date.slice(0,4))===year).reduce((sum,x)=>sum+Number(annualBudgets.find(b=>b.occasion_id===x.id&&b.budget_year===year)?.budget_amount||0),0));const rows=$('comparison').querySelectorAll('tr');for(const row of rows){const y=Number(row.children[0]?.textContent.replace(' 🔒','')),snapshot=closings.find(c=>c.closing_year===y),data=summarize(y);if(row.children.length>=5){row.children[3].textContent=money(snapshot?snapshot.actual_total:data.spent);row.children[4].textContent=money(snapshot?snapshot.planned_total:data.planned);}}});
 
 // Update expanded closing details without replacing nodes or touching immutable snapshots.
 document.addEventListener('toolya:wishes-locale-change',()=>{if(userId)repaintClosedYearLabels()});

@@ -9,8 +9,8 @@ const config=JSON.parse(readFileSync(resolve(root,'docs/i18n/quality-config.json
 const expectedUrl=path=>'https://toolya.app/'+(path.endsWith('index.html')?path.slice(0,-10):path);
 const sourcePage=path=>parseHTML(readFileSync(resolve(root,path),'utf8')).document;
 
-test('all 17 public DE/EN marketing pages have reciprocal hreflang and self-canonical links',()=>{
- assert.equal(config.marketingPages.length,17);
+test('all 16 public DE/EN marketing pages have reciprocal hreflang and self-canonical links',()=>{
+ assert.equal(config.marketingPages.length,16);
  for(const pair of config.marketingPages){
   const expected={de:expectedUrl(pair.de),en:expectedUrl(pair.en)};
   for(const locale of ['de','en']){
@@ -29,7 +29,8 @@ test('all 17 public DE/EN marketing pages have reciprocal hreflang and self-cano
    assert.ok(document.head.querySelector('meta[property="og:description"]'),path+' OG description');
    if(locale==='en'){
     const robots=document.head.querySelector('meta[name="robots"]')?.getAttribute('content')||'';
-    assert.match(robots,/\bnoindex\b/i,path+' must retain noindex before release');
+    assert.doesNotMatch(robots,/\bnoindex\b/i,path+' must be indexable after release approval');
+    assert.match(robots,/\bindex\b/i,path+' explicit indexing directive');
    }
   }
  }

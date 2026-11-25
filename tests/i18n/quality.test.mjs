@@ -13,14 +13,14 @@ const {assertConfig,assertGlossary,comparePair,placeholders,catalogAnalysis,
   auditRepository,validateReport,staticCandidates}=auditModule;
 const read=p=>JSON.parse(readFileSync(resolve(root,p),'utf8'));
 
-test('full route inventory covers twelve canonical apps and all 17 English marketing pages',()=>{
+test('full route inventory covers twelve canonical apps and all 16 English marketing pages',()=>{
  const c=read('docs/i18n/quality-config.json');
  assert.equal(assertConfig(c),true);
  const tools=c.toolRoutes.map(x=>x.slug);
  assert.equal(new Set(tools).size,12);
  const runtime=read('docs/runtime-port-inventory.json');
  assert.deepEqual(tools.slice().sort(),Object.values(runtime.routes).sort());
- assert.equal(c.marketingPages.length,17);
+ assert.equal(c.marketingPages.length,16);
  for(const t of c.toolRoutes)assert.ok(c.marketingPages.some(p=>p.en===t.englishGuide));
 });
 
@@ -62,7 +62,7 @@ test('catalogue checker reports missing and empty translations with an explicit 
 test('static audit reports every tool, all bilingual marketing pages, and review-only candidates',async()=>{
  const report=await auditRepository(root);
  assert.equal(report.tools.length,12);
- assert.equal(report.marketing.length,17);
+ assert.equal(report.marketing.length,16);
  assert.ok(report.namespaces.length>=7);
  assert.ok(report.glossaryTerms>=20);
  assert.deepEqual(report.tools.map(x=>x.slug).sort(),

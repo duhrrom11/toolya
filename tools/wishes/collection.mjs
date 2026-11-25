@@ -4,6 +4,7 @@ import {affiliateUrl} from './amazon-links.mjs';
 import {db} from './toolya-client.mjs';
 import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
 const ui=s=>wishesText(s,globalThis.__toolyaWishesLocale==='en'?'en':'de');
+function localizedAlt(image,de,en,value=''){const update=()=>{image.alt=(globalThis.__toolyaWishesLocale==='en'?en:de)+value};update();document.addEventListener('toolya:wishes-locale-change',update);}
 const $=id=>document.getElementById(id);
 const id=new URLSearchParams(location.search).get('id');
 const validId=typeof id==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
@@ -30,7 +31,7 @@ async function main(){
  $('title').setAttribute('data-user-content','');$('title').textContent=list.title;
  if(list.description){$('description').setAttribute('data-user-content','');$('description').textContent=list.description}else{$('description').setAttribute('data-wish-owned-copy','');$('description').textContent='Eine Sammlung voller Geschenkideen.';}
  $('icon').textContent=list.icon||'🎁';
- if(list.cover_url){try{const cover=new URL(list.cover_url);if(cover.protocol==='https:'){const image=document.createElement('img');image.src=cover.href;image.alt='Titelbild der Sammlung: '+(list.title||'Sammlung');image.loading='lazy';image.style.cssText='width:min(38vw,240px);height:180px;object-fit:cover;border-radius:16px';document.querySelector('.hero').prepend(image)}}catch{}}if(/^#[0-9a-f]{6}$/i.test(list.color||''))document.querySelector('.hero').style.borderTop='7px solid '+list.color;
+ if(list.cover_url){try{const cover=new URL(list.cover_url);if(cover.protocol==='https:'){const image=document.createElement('img');image.src=cover.href;localizedAlt(image,'Titelbild der Sammlung: ','Collection cover: ',list.title||'');image.loading='lazy';image.style.cssText='width:min(38vw,240px);height:180px;object-fit:cover;border-radius:16px';document.querySelector('.hero').prepend(image)}}catch{}}if(/^#[0-9a-f]{6}$/i.test(list.color||''))document.querySelector('.hero').style.borderTop='7px solid '+list.color;
  $('count').textContent=wishes.length+' Wünsche'+(items.length===500?' · maximal 500 geladen':'');
  const viewer=await currentUser(db);
  let reservations=new Map();
@@ -39,7 +40,7 @@ async function main(){
  for(const wish of wishes){
   const card=document.createElement('article');card.className='card';
   const cover=document.createElement('div');cover.className='cover';cover.textContent=list.icon||'🎁';cover.setAttribute('aria-hidden','true');
-  if(wish.wishlist_products?.image_url){const image=document.createElement('img');image.src=wish.wishlist_products.image_url;image.alt=wish.wishlist_products.title||'Produktbild zum Wunsch';image.loading='lazy';image.referrerPolicy='no-referrer';cover.replaceChildren(image);}
+  if(wish.wishlist_products?.image_url){const image=document.createElement('img');image.src=wish.wishlist_products.image_url;if(wish.wishlist_products.title)image.alt=wish.wishlist_products.title;else localizedAlt(image,'Produktbild zum Wunsch','Wish product image');image.loading='lazy';image.referrerPolicy='no-referrer';cover.replaceChildren(image);}
   const body=document.createElement('div');body.className='card-body';
   const title=document.createElement('h2');if(wish.wishlist_products?.title){title.setAttribute('data-user-content','');title.textContent=wish.wishlist_products.title}else{title.setAttribute('data-wish-owned-copy','');title.textContent='Wunsch';}
   body.append(title);appendProductMetadata(body,wish.wishlist_products,{image:false});

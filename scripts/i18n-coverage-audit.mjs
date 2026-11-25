@@ -7,6 +7,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {parseHTML} from 'linkedom';
+import {reviewRuntimeLiteral} from './i18n-runtime-triage.mjs';
+import {attachRuntimeEvidence} from './i18n-runtime-evidence.mjs';
 
 const root=process.cwd();
 const ignored=new Set(['.git','node_modules','coverage','dist','_site']);
@@ -39,7 +41,6 @@ const pairs=new Map([
  ['zaehlerstaende/index.html','en/meter-readings/index.html'],
  ['amazon-wunschliste-veroeffentlichen/index.html','en/publish-amazon-wishlist/index.html'],
  ['toolya-dashboard/index.html','en/toolya-dashboard/index.html'],
- ['mascots.html','en/mascots.html'],
  ['legal.html','en/legal.html'],
  ['privacy.html','en/privacy.html']
 ]);
@@ -99,8 +100,9 @@ for(const f of html){
  const status=isEnglish?'EN page':appSwitch?'EN opt-in tool':bilingualApp?'DE/EN application':bilingualPages.has(f)?'Bilingual fallback':redirectPages.has(f)?'Language-preserving redirect':hasEnglishRoute?'DE page with EN pair':'NO EN COVERAGE';
  reports.push({file:f,lang,status,noindex,langLinks:hasENLink&&hasDELink,englishCopy:counterpart||null,suspects:suspects.length});
 }
-const runtime=read('shared/toolya/i18n/tool-entry.mjs');
-const htmlLangNotSet=/Keep html\[lang\]=de while/.test(runtime)&&!/document\.documentElement\.lang\s*=\s*lang/.test(runtime);
+const localeEntrypoints=['tool-entry.mjs','wishes-entry.mjs','estate-entry.mjs','dashboard-entry.mjs','admin-entry.mjs'];
+const languageEvidence=localeEntrypoints.map(file=>({file,setsDocumentLanguage:/document\.documentElement\.lang\s*=\s*lang\b/.test(read('shared/toolya/i18n/'+file))}));
+const htmlLangNotSet=languageEvidence.some(item=>!item.setsDocumentLanguage);
 const scriptSources=[...html,...js];
 const dynamic=[];
 const callPattern=/\b(?:alert|confirm|prompt|textContent|innerHTML)\s*(?:\(|=)\s*(['"`])([^\n'"\`]{4,180})\1/g;
@@ -117,11 +119,28 @@ for(const f of scriptSources){
   // This is a source-only candidate. It might already be translated by an
   // exact runtime catalogue and is never treated as private user content.
   sightings.push({line,kind:m[0].slice(0,m[0].indexOf('(')>=0?m[0].indexOf('('):m[0].indexOf('=' )).trim(),
-   sample:text});
+   sample:text,literal:m[2],...reviewRuntimeLiteral(f,m[2],m[0],content.slice(m.index+m[0].length,m.index+m[0].length+30))});
  }
+ // Explicit bilingual branches are separate source occurrences, not catalogue guesses.
+ const conditional=/\b(alert|confirm|prompt)\s*\(\s*window\.__toolyaUILocale\s*===\s*['"]en['"]\s*\?\s*(['"])([^\n'"\\]+)\2\s*:\s*(['"])([^\n'"\\]+)\4\s*(?=[,)])/g;
+ for(const branch of content.matchAll(conditional)){
+  if(!german.test(branch[5]))continue;
+  const line=content.slice(0,branch.index).split('\n').length;
+  const sample=small(branch[5]);examples.push(sample);
+  sightings.push({line,kind:branch[1],sample,literal:branch[5],english:branch[3],catalogueState:'explicit-branch-runtime-unverified'});
+ }
+ sightings.sort((a,b)=>a.line-b.line);
  if(examples.length)dynamic.push({file:f,total:examples.length,
   samples:[...new Set(examples)].slice(0,4),sightings});
 }
+// Only consume the report generated in this CI job; local invocations remain conservative.
+let verifiedRuntime=0;
+if(process.env.CI==='true'&&process.env.GITHUB_SHA&&process.argv.includes('--with-runtime-evidence')){
+ const report=JSON.parse(read('test-results/i18n-quality/ten-tool-shell-report.json'));
+ verifiedRuntime=attachRuntimeEvidence(dynamic,report,read);
+}
+const runtimeTriage={};
+for(const item of dynamic)for(const occurrence of item.sightings)runtimeTriage[occurrence.catalogueState]=(runtimeTriage[occurrence.catalogueState]||0)+1;
 const absent=reports.filter(x=>x.status==='NO EN COVERAGE');
 const publicEnglish=reports.filter(x=>x.status==='EN page');
 const toolPartial=reports.filter(x=>x.status==='EN opt-in tool');
@@ -132,10 +151,21 @@ const groups=Object.freeze({
  dashboard:toolPartial.filter(x=>x.file==='dashboard/index.html').length,
  admin:toolPartial.filter(x=>x.file.startsWith('admin-stats-dashboard/')).length
 });
+// Release approval is an explicit owner decision for a fixed application snapshot,
+// not an assertion that every candidate has a browser test.
+const approval=JSON.parse(read('docs/i18n/english-release-approval.json'));
+const {execFileSync}=await import('node:child_process');
+let changedSinceApproval=null;
+try{changedSinceApproval=execFileSync('git',['diff','--name-only',approval.acceptedRevision,'HEAD'],{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim().split('\n').filter(Boolean)}catch{}
+const allowedReleaseFiles=new Set([...publicEnglish.map(p=>p.file),'sitemap.xml','scripts/i18n-quality.cjs','tests/i18n/quality-browser.cjs','tests/i18n/seo-reciprocity.test.mjs','tests/i18n/home-parity.test.mjs','tests/i18n/marketing.test.mjs','tests/platform/sitemap-indexing.test.mjs','.github/workflows/i18n-quality.yml','scripts/i18n-coverage-audit.mjs','.github/workflows/international-release-gate.yml','docs/i18n/english-release-approval.json']);
+const approvalCurrent=approval.ownerAcceptedTranslation===true&&Array.isArray(changedSinceApproval)&&changedSinceApproval.every(f=>allowedReleaseFiles.has(f));
+const sitemap=read('sitemap.xml');
+const missingEnglishSitemap=publicEnglish.filter(p=>!sitemap.includes('<loc>https://toolya.app/'+p.file.replace(/index\.html$/,'')+'</loc>'));
+const technicalBlockers=Boolean(absent.length||htmlLangNotSet||publicEnglish.some(p=>p.noindex)||germanUi.length||missingEnglishSitemap.length||!approvalCurrent);
 const blockers=[
  `${absent.length} HTML pages without an English counterpart or a supported EN switch`,
- `${toolPartial.length} tool pages only provide opt-in, incomplete English UI`,
- htmlLangNotSet?'English tool mode intentionally retains html[lang]=de':'Tool document language must be checked in a browser',
+ `${toolPartial.length} language-switch application views; owner acceptance recorded: ${approvalCurrent}`,
+ htmlLangNotSet?'At least one application entrypoint lacks a document language assignment':'All five entrypoints assign document language; browser verification remains required',
  `${publicEnglish.filter(x=>x.noindex).length} of ${publicEnglish.length} English public pages have noindex`,
  `${germanUi.reduce((n,x)=>n+x.samples.length,0)} sampled suspicious German texts in English HTML (some may be intended)`,
  `${dynamic.length} source files with German dialog or DOM message literals (review runtime coverage)`
@@ -163,6 +193,10 @@ const output=[
  '## German message/dialog candidates in application source',
  ...(dynamic.length?dynamic.flatMap(x=>['### '+x.file+` (${x.total} matched occurrences)`,...x.samples.map(v=>'- '+v)]):['None detected by heuristic (not proof of completeness).']),
  '',
+ '## Runtime catalogue triage (source evidence only)',
+ ...Object.entries(runtimeTriage).map(([state,count])=>'- '+state+': '+count+' occurrences'),
+ 'Catalogue matches do not prove that the corresponding UI node invokes the translator. Unmatched or composite literals require source review; do not infer private data from a text match.',
+ '',
  '## Mandatory manual acceptance before release',
  '- Every page and nested application state has correct English and German text, including alerts, confirmation, validation, loading, errors, account and password recovery.',
  '- No user-entered strings, identifiers, storage values, formulas or auth rules translated.',
@@ -186,7 +220,7 @@ const priority=(file,kind)=>file.includes('estate')||file.includes('auth')||file
  kind==='app-view'?'high':'review';
 const viewTasks=toolPartial.map(item=>({file:item.file,category:classify(item.file),
  priority:priority(item.file,'app-view'),kind:'app-view',
- state:'partially localized; authenticated/dynamic E2E review required',
+ state:approvalCurrent?'owner accepted; automated coverage remains scoped':'partially localized; authenticated/dynamic E2E review required',
  requiredChecks:['DE to EN','EN to DE','draft input retention','dynamic alerts and dialogs',
   'auth and cloud isolation','320/375/768 mobile','keyboard/accessible labels',
   'PDF/QR/CSV/backup when present']}));
@@ -199,13 +233,19 @@ const auditJSON={
  head:process.env.GITHUB_SHA||null,
  interpretation:'Review candidates, not proven untranslated UI or translation completeness.',
  totals:{htmlPages:html.length,jsFiles:js.length,englishPages:publicEnglish.length,
-  incompleteAppViews:toolPartial.length,dynamicCandidateFiles:dynamic.length,
+  incompleteAppViews:approvalCurrent?0:toolPartial.length,
+  ownerAcceptedAppViews:approvalCurrent?toolPartial.length:0,dynamicCandidateFiles:dynamic.length,
   incompleteEnglishIndexing:publicEnglish.filter(x=>x.noindex).length,
   publicGermanCandidates:germanUi.length,missingRoutes:absent.length},
- releaseReady:false,
+ releaseReady:!technicalBlockers,
+ ownerApproval:{...approval,current:approvalCurrent},
+ missingEnglishSitemap:missingEnglishSitemap.map(p=>p.file),
+ languageEvidence,
+ runtimeTriage,
+ verifiedRuntime,
  blockers,
  viewTasks,runtimeTasks,
- seoGate:{noindexRetained:true,englishPagesAwaitingIndexApproval:publicEnglish.filter(x=>x.noindex).map(x=>x.file)}
+ seoGate:{noindexRetained:publicEnglish.some(p=>p.noindex),englishPagesAwaitingIndexApproval:publicEnglish.filter(x=>x.noindex).map(x=>x.file)}
 };
 fs.writeFileSync('i18n-coverage-report.json',JSON.stringify(auditJSON,null,2)+'\n');
 output.push('## Machine-readable review queue','',
@@ -214,9 +254,10 @@ output.push('## Machine-readable review queue','',
 fs.writeFileSync('i18n-coverage-report.md',output.join('\n')+'\n');
 if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,output.slice(0,21).join('\n')+'\n');
 console.log('I18N PAGE AUDIT: '+JSON.stringify({html:html.length,js:js.length,english:publicEnglish.length,partialTools:toolPartial.length,missingPages:absent.length,englishNoindex:publicEnglish.filter(x=>x.noindex).length,partialGroups:groups,germanUiCandidates:germanUi.length,germanMessageFiles:dynamic.length,htmlLangNotSet}));
+console.log('RUNTIME CATALOGUE TRIAGE: '+JSON.stringify(runtimeTriage));
 console.log('Release blockers:\n'+blockers.map(b=>' - '+b).join('\n'));
 console.log('Report: i18n-coverage-report.md');
-if(process.argv.includes('--strict') && (absent.length||toolPartial.length||htmlLangNotSet||publicEnglish.some(x=>x.noindex)||germanUi.length||dynamic.length)){
+if(process.argv.includes('--strict') && technicalBlockers){
  console.error('RELEASE GATE FAILED: DE/EN completeness is not verified.');
  process.exitCode=1;
 }

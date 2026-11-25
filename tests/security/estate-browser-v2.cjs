@@ -93,7 +93,35 @@ const root=path.resolve(__dirname,'../..');
   await page.evaluate(()=>{window.__links=[];HTMLAnchorElement.prototype.click=function(){window.__links.push(this.href);};});
   await page.locator('.person').first().getByRole('button',{name:'✉ Schlüssel per E-Mail'}).click();await page.waitForFunction(()=>window.__links.length===1);let link=await page.evaluate(()=>window.__links[0]);assert(link.startsWith('mailto:existing%40example.invalid'));assert(decodeURIComponent(link).includes(preparationKey));assert(!link.includes(second));
   await page.locator('.person').nth(1).getByRole('button',{name:'Schlüssel per WhatsApp'}).click();await page.waitForFunction(()=>window.__links.length===2);link=await page.evaluate(()=>window.__links[1]);assert(decodeURIComponent(link).includes(second));assert(!link.includes(preparationKey));
-  const popupPromise=context.waitForEvent('page');await page.locator('#print-selected').click();const popup=await popupPromise;await popup.waitForFunction(()=>document.body.dataset.printReady==='true');assert.equal(await popup.locator('.page').count(),2);assert.equal(await popup.locator('.page').nth(0).locator('code').count(),1);assert.equal((await popup.locator('code').nth(0).textContent()).replace(/\s/g,''),preparationKey);assert.equal((await popup.locator('code').nth(1).textContent()).replace(/\s/g,''),second);assert((await popup.locator('img').first().getAttribute('src')).startsWith('data:image/png'));await popup.pdf({path:'/tmp/estate-keys-isolated.pdf',preferCSSPageSize:true});await popup.close();
+  // Both localized print documents must retain identical private keys and QR payloads.
+  const printEvidence={};
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-estate-locale="'+lang+'"]').click();
+   await page.waitForFunction(lang=>window.__toolyaEstateLocale===lang,lang);
+   const before=await page.evaluate(()=>localStorage.getItem('digital_estate_vault'));
+   const popupPromise=context.waitForEvent('page');await page.locator('#print-selected').click();const popup=await popupPromise;
+   await popup.waitForFunction(()=>document.body.dataset.printReady==='true');
+   await popup.waitForFunction(lang=>window.__toolyaEstateLocale===lang,lang);
+   assert.equal(await popup.locator('html').getAttribute('lang'),lang);
+   assert.equal(await popup.locator('#print-again').textContent(),lang==='en'?'Print / Save as PDF':'Drucken / Als PDF speichern');
+   assert.equal(await popup.locator('.page').count(),2);
+   assert.equal(await popup.locator('.page').nth(0).locator('code').count(),1);
+   assert.equal((await popup.locator('code').nth(0).textContent()).replace(/\s/g,''),preparationKey);
+   assert.equal((await popup.locator('code').nth(1).textContent()).replace(/\s/g,''),second);
+   assert.equal(await popup.locator('.page h1').first().textContent(),lang==='en'?'Your personal Toolya key':'Dein persönlicher Toolya-Schlüssel');
+   assert.equal(await popup.locator('.page h2').first().textContent(),(lang==='en'?'For ':'Nur für ')+'Existing person');
+   assert.equal(await popup.locator('.page h2').last().textContent(),(lang==='en'?'For ':'Nur für ')+'Second person');
+   assert.equal(await popup.locator('img').first().getAttribute('alt'),lang==='en'?'QR code for the vault page':'QR-Code zur Tresorseite');
+   const qr=await popup.locator('img').evaluateAll(nodes=>nodes.map(node=>node.src));
+   assert(qr.every(src=>src.startsWith('data:image/png')));
+   const urls=await popup.locator('.url').allTextContents();
+   if(printEvidence.qr){assert.deepEqual(qr,printEvidence.qr);assert.deepEqual(urls,printEvidence.urls)}else Object.assign(printEvidence,{qr,urls});
+   assert.equal(await popup.evaluate(()=>window.opener),null);
+   const pdf=await popup.pdf({preferCSSPageSize:true});
+   assert.equal(pdf.subarray(0,5).toString(),'%PDF-');
+   await popup.close();
+   assert.equal(await page.evaluate(()=>localStorage.getItem('digital_estate_vault')),before);
+  }
   // Real browser -> actual Edge handler -> PostgreSQL gate -> browser AES-GCM.
   const trustee=await context.newPage();
   await trustee.goto(origin+'/tools/estate/heirs.html');

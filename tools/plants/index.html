@@ -479,9 +479,9 @@
         async function supabaseLogout() {
             try {
                 const { error } = await supabaseClient.auth.signOut();
-                if (error) return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error.message || 'Unbekannter Fehler'));
+                if (error) return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             } catch (error) {
-                return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error?.message || 'Unbekannter Fehler'));
+                return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             }
             checkUserSession();
             alert(window.__toolyaUILocale === 'en' ? 'Signed out.' : 'Abgemeldet.');
@@ -1165,7 +1165,7 @@
             const { loadQrGenerator } = await import('../../shared/toolya/qr-generator.mjs');
             const QRCode = await loadQrGenerator();
             if (!QRCode) {
-                alert("Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.");
+                alert(window.__toolyaUILocale === 'en' ? 'The QR code could not be loaded. Please try again.' : 'Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.');
                 return;
             }
             document.getElementById('qrTitle').innerText = name;
@@ -1175,6 +1175,20 @@
         }
         function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
 
+        function displayLegacyDate(value, english = window.__toolyaUILocale === 'en') {
+            if (typeof value !== 'string') return value;
+            if (/^\d{4}-\d{2}-\d{2}$/.test(value) && isValidCalendarDate(value)) {
+                const [year,month,day] = value.split('-');
+                return english ? day+'/'+month+'/'+year : day+'.'+month+'.'+year;
+            }
+            if (!english) return value;
+            const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})(.*)$/.exec(value);
+            if (!m) return value;
+            const [,day,month,year,suffix] = m;
+            const date = new Date(Number(year), Number(month)-1, Number(day));
+            if (date.getFullYear() !== Number(year) || date.getMonth() !== Number(month)-1 || date.getDate() !== Number(day)) return value;
+            return day.padStart(2,'0')+'/'+month.padStart(2,'0')+'/'+year+suffix;
+        }
         function escapeHtml(value) {
             return String(value ?? '').replace(/[&<>"']/g, char => ({
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -1240,7 +1254,7 @@
                         const propagationLabels = { 'Steckling im Wurzeln': 'Rooting cutting', 'Bereit zum Tauschen': 'Ready to swap' };
                         const propagationDisplay = window.__toolyaUILocale === 'en' && Object.hasOwn(propagationLabels, p.propagation)
                             ? propagationLabels[p.propagation] : p.propagation;
-                        propBadge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">✂️ ${escapeHtml(propagationDisplay)} ${p.propDate ? '('+escapeHtml(p.propDate)+')' : ''}</span>`;
+                        propBadge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">✂️ ${escapeHtml(propagationDisplay)} ${p.propDate ? '('+escapeHtml(displayLegacyDate(p.propDate))+')' : ''}</span>`;
                     }
 
                     const harvestSum = Array.isArray(p.harvestLog) ? p.harvestLog.reduce((sum, entry) => {
@@ -1250,7 +1264,7 @@
                     let harvestBadge = harvestSum > 0 ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full">🍅 ${harvestSum >= 1000 ? (harvestSum/1000).toFixed(1)+'kg' : harvestSum+'g'}</span>` : '';
 
                     let diaryHtml = Array.isArray(p.diary) && p.diary.length > 0 ? `<div class="mt-2 bg-amber-50 border p-2 rounded-xl text-[11px] text-amber-900 space-y-1"><span class="font-bold">📖 ${window.__toolyaUILocale === 'en' ? 'Diary' : 'Tagebuch'}:</span>` + 
-                        p.diary.filter(d => d && typeof d === 'object').map(d => `<div class="text-[10px] text-gray-600"><span class="font-semibold">${escapeHtml(d.date)}:</span> ${escapeHtml(d.text)}</div>`).join('') + `</div>` : '';
+                        p.diary.filter(d => d && typeof d === 'object').map(d => `<div class="text-[10px] text-gray-600"><span class="font-semibold">${escapeHtml(displayLegacyDate(d.date))}:</span> ${escapeHtml(d.text)}</div>`).join('') + `</div>` : '';
 
                     return `
                         <div class="b3-plant-card p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
@@ -1266,7 +1280,7 @@
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1">
                                         ${p.location ? '📍 ' + escapeHtml(p.location) + ' | ' : ''}
-                                        ${window.__toolyaUILocale === 'en' ? 'Water every' : 'Gießen: alle'} ${escapeHtml(p.interval)}${window.__toolyaUILocale === 'en' ? 'd' : 'T'} (~${getMlForPot(p.potSize)} ml)${connectWateringDue?.(p) && p.connectDue ? ' · 📅 Toolya Connect: ' + escapeHtml(p.connectDue) : ''}
+                                        ${window.__toolyaUILocale === 'en' ? 'Water every' : 'Gießen: alle'} ${escapeHtml(p.interval)}${window.__toolyaUILocale === 'en' ? 'd' : 'T'} (~${getMlForPot(p.potSize)} ml)${connectWateringDue?.(p) && p.connectDue ? ' · 📅 Toolya Connect: ' + escapeHtml(displayLegacyDate(p.connectDue)) : ''}
                                     </p>
                                     ${p.note ? `<p class="text-[11px] text-gray-400 mt-0.5">${escapeHtml(p.note)}</p>` : ''}
                                     ${diaryHtml}

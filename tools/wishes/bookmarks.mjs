@@ -16,14 +16,14 @@ function render(){
   if(item.cover_url){try{const u=new URL(item.cover_url);if(u.protocol==='https:'){const img=document.createElement('img');img.src=u.href;img.alt='Titelbild der Sammlung: '+(item.title||'Sammlung');img.loading='lazy';img.referrerPolicy='no-referrer';cover.replaceChildren(img)}}catch{}}
   const body=document.createElement('div');body.className='card-body';
   const badge=document.createElement('span');badge.className='badge';badge.textContent='❤️ '+(counts.get(item.id)||0)+' Likes';
-  const title=document.createElement('h2');title.textContent=item.title;body.append(badge,title);
+  const title=document.createElement('h2');title.setAttribute('data-user-content','');title.textContent=item.title;body.append(badge,title);
   if(item.description){const p=document.createElement('p');p.textContent=item.description;body.append(p)}
-  const a=document.createElement('a');a.className='primary';a.href=new URL('./collection.html?id='+encodeURIComponent(item.id),location.href).href;a.textContent='Sammlung öffnen ↗';body.append(a);
+  const a=document.createElement('a');a.className='primary';a.href=new URL('./collection.html?id='+encodeURIComponent(item.id),location.href).href;a.setAttribute('data-wish-owned-copy','');a.textContent='Sammlung öffnen ↗';body.append(a);
   body.append(reactionButtons({db,listId:item.id,user:viewer,likes:reactions.likes,bookmarks:reactions.bookmarks,counts,notify:msg=>{$('actionStatus').textContent=msg;render()}}));
   card.append(cover,body);grid.append(card);
  }
  $('status').textContent=rows.length+' gemerkte öffentliche Sammlungen.';
- if(!rows.length){const p=document.createElement('p');p.className='empty';p.textContent='Noch keine passenden gespeicherten Sammlungen. Entdecke öffentliche Wunschwelten und tippe auf „Merken“.';grid.append(p)}
+ if(!rows.length){const p=document.createElement('p');p.className='empty';p.setAttribute('data-wish-owned-copy','');p.textContent='Noch keine passenden gespeicherten Sammlungen. Entdecke öffentliche Wunschwelten und tippe auf „Merken“.';grid.append(p)}
 }
 async function load(){
  viewer=await currentUser(db);

@@ -1,43 +1,27 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { runInNewContext } from 'node:vm';
-
-const source = readFileSync(new URL('../../tools/parking/index.html', import.meta.url), 'utf8');
-
-test('parking GPS status localises in both directions without persistence or changing coordinates', () => {
- const matched = source.match(/        function refreshParkingGpsLocale\(\) \{[\s\S]*?\n        \}\n\n        async function stopTimer/);
- assert.ok(matched, 'GPS locale handler must exist');
- const status = { textContent: 'Nicht gespeichert' };
- const gps = { lat: 48.8566, lng: 2.3522 };
- const originalGps = JSON.stringify(gps);
- const calls = [];
- const context = {
-  window: { __toolyaUILocale: 'en' },
-  document: { getElementById(id) { calls.push(id); return id === 'statGps' ? status : null; } }
- };
- const refresh = runInNewContext(matched[0].replace(/\n\n        async function stopTimer$/, '') + '\nrefreshParkingGpsLocale', context);
- refresh();
- assert.equal(status.textContent, 'Not saved');
- status.textContent = 'Gespeichert ✓';
- refresh();
- assert.equal(status.textContent, 'Saved ✓');
- context.window.__toolyaUILocale = 'de';
- refresh();
- assert.equal(status.textContent, 'Gespeichert ✓');
- status.textContent = 'Not saved';
- refresh();
- assert.equal(status.textContent, 'Nicht gespeichert');
- status.textContent = 'Custom user text';
- context.window.__toolyaUILocale = 'en';
- refresh();
- assert.equal(status.textContent, 'Custom user text');
- assert.deepEqual(calls, Array(5).fill('statGps'));
- assert.equal(JSON.stringify(gps), originalGps);
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
+const source=readFileSync(new URL('../../tools/parking/index.html',import.meta.url),'utf8');
+test('new GPS handler preserves private fields and deadline when required location fails in both locales',async()=>{
+ const start=source.indexOf('let parkingSaveInProgress=false;');
+ const end=source.indexOf('async function processPhotoAndSave',start);
+ assert.ok(start>=0&&end>start,'actual GPS handler exists');
+ for(const lang of ['de','en']){
+  for(const mode of ['denied','missing','success']){
+   const fields={parkDesc:{value:'Private Löschen'},parkSector:{value:'Private Zone'},parkCost:{value:'0'},parkPhotoInput:{files:[]},saveParkingGpsBtn:{disabled:false},parkingGpsFeedback:{textContent:''}};
+   const deadline=Date.now()+60000,original={lat:12.34,lng:56.78},writes=[];
+   const ctx={window:{__toolyaUILocale:lang},document:{getElementById:id=>fields[id],querySelector:()=>null},navigator:{geolocation:mode==='missing'?undefined:{getCurrentPosition(ok,fail){mode==='success'?ok({coords:{latitude:original.lat,longitude:original.lng}}):fail({code:1})}}},activeEndTime:deadline,currentGps:null,processPhotoAndSave:async(...args)=>writes.push(args),console,alert:()=>assert.fail('Unexpected alert')};
+   const save=runInNewContext(source.slice(start,end)+'\nsaveParkingSession',ctx);
+   save(true);await new Promise(resolve=>setImmediate(resolve));
+   assert.equal(ctx.activeEndTime,deadline);
+   assert.equal(fields.parkDesc.value,'Private Löschen');assert.equal(fields.parkSector.value,'Private Zone');assert.equal(fields.saveParkingGpsBtn.disabled,false);
+   if(mode==='success'){assert.equal(writes.length,1);assert.equal(JSON.stringify(writes[0][3]),JSON.stringify(original));}
+   else{assert.equal(writes.length,0);assert.equal(fields.parkingGpsFeedback.textContent,lang==='en'?'GPS location unavailable. Allow location access and try again.':'GPS-Standort nicht verfügbar. Bitte Standortzugriff erlauben und erneut versuchen.');}
+  }
+ }
 });
-
-test('parking geolocation callback and locale event consistently refresh the status', () => {
- assert.match(source, /id="statGps"[^>]*data-tool-en="Not saved"/);
- assert.match(source, /getElementById\('statGps'\)\.innerText=window\.__toolyaUILocale === 'en' \? 'Saved ✓' : 'Gespeichert ✓'/);
- assert.match(source, /document\.addEventListener\('toolya:locale-change', \(\) => \{\s*refreshParkingTimerLocale\(\);\s*refreshParkingGpsLocale\(\);/);
+test('GPS feedback is accessible and locale changes refresh countdown and history',()=>{
+ assert.match(source,/id="parkingGpsFeedback"[^>]*role="status"[^>]*aria-live="polite"/);
+ assert.match(source,/refreshParkingTimerLocale\(\);\s*if \(parkingCloudReady\) renderParkingList\(\)/);
 });

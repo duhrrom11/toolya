@@ -48,14 +48,22 @@ function openSettings(){
  $('accountSettings').open=true;
  ($('signedOutControls').hidden?$('accountSettings').querySelector('summary'):$('loginEmail')).focus({preventScroll:true});
 }
-function closeSettings(){
- $('settingsModal').close();
-}
-$('settingsModal').addEventListener('close',()=>{
+function finishSettingsClose(){
  if($('settingsModal').open)return;
  document.body.classList.remove('dashboard-modal-open');
- (lastFocus?.isConnected?lastFocus:$('settingsBtn')).focus();
-});
+ const target=lastFocus;
+ lastFocus=null;
+ // Native dialog.close() restores focus synchronously. A queued close event
+ // must not steal focus from a control the user has subsequently selected.
+ if(document.activeElement===document.body||$('settingsModal').contains(document.activeElement)){
+  (target?.isConnected?target:$('settingsBtn')).focus();
+ }
+}
+function closeSettings(){
+ $('settingsModal').close();
+ finishSettingsClose();
+}
+$('settingsModal').addEventListener('close',finishSettingsClose);
 window.openSettings=openSettings;
 window.closeSettings=closeSettings;
 function credentials(){

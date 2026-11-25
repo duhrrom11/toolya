@@ -552,7 +552,7 @@
             if(gpsButton)gpsButton.disabled=true;
             const release=()=>{parkingSaveInProgress=false;if(button)button.disabled=false;if(gpsButton)gpsButton.disabled=false;};
             feedback.textContent='';
-            const unavailable=()=>{if(requireGps){message('GPS-Standort nicht verfügbar. Bitte Standortzugriff erlauben und erneut versuchen.','GPS location unavailable. Allow location access and try again.');release();}else unavailable();};
+            const unavailable=()=>{if(requireGps){message('GPS-Standort nicht verfügbar. Bitte Standortzugriff erlauben und erneut versuchen.','GPS location unavailable. Allow location access and try again.');release();}else void finish(null);};
             const finish=async gps=>{
                 try{await processPhotoAndSave(desc,sector,cost,gps,photoInput,connectRequested);}
                 catch(error){console.error('Parkvorgang nicht bestätigt',error);alert('Speichern nicht bestätigt. Cloud-Datenstand prüfen.');}
@@ -569,7 +569,7 @@
                     unavailable,
                     {timeout:12000,maximumAge:requireGps?0:30000,enableHighAccuracy:requireGps}
                 );
-            }else void finish(null);
+            }else unavailable();
         }
 
         async function processPhotoAndSave(desc,sector,cost,gps,photoInput,connectRequested=false) {
@@ -673,7 +673,7 @@
                     : typeof rawTime==='string' && /^\d{4}-\d{2}-\d{2}T/.test(rawTime)
                         ? new Date(rawTime) : null;
                 const displayDate=english && parsedTime && Number.isFinite(parsedTime.getTime())
-                    ? parsedTime.toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}) : s.date;
+                    ? parsedTime.toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}) : displayLegacyDate(s.date, english);
                 return `
                 <div class="b3-park-card p-4 bg-gray-50 border rounded-2xl flex items-center justify-between shadow-sm gap-3">
                     <div class="b3-park-card-identity flex items-center space-x-3">
@@ -753,6 +753,16 @@
         }
         function closeImageModal() { document.getElementById('imageModal').close(); }
 
+        function displayLegacyDate(value, english = window.__toolyaUILocale === 'en') {
+            if (!english || typeof value !== 'string') return value;
+            const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})(.*)$/.exec(value);
+            if (!m) return value;
+            const [,day,month,year,suffix] = m;
+            const date = new Date(Number(year), Number(month)-1, Number(day));
+            if (date.getFullYear() !== Number(year) || date.getMonth() !== Number(month)-1 || date.getDate() !== Number(day)) return value;
+            return day.padStart(2,'0')+'/'+month.padStart(2,'0')+'/'+year+suffix;
+        }
+
         // PDF Report Export via jsPDF
         async function exportPDF() {
             const pdfEn = window.__toolyaUILocale === 'en';
@@ -790,7 +800,7 @@
             sessions.forEach((s, idx) => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let sectorText = s.sector ? ` [${pdfLabel("Sektor: ","Sector: ")}${s.sector}]` : "";
-                const lines = doc.splitTextToSize(`${idx + 1}. ${pdfLabel("Standort: ","Location: ")}${s.desc}${sectorText} | ${s.date} | ${formatCost(Number(s.cost || 0))} EUR`, 180);
+                const lines = doc.splitTextToSize(`${idx + 1}. ${pdfLabel("Standort: ","Location: ")}${s.desc}${sectorText} | ${displayLegacyDate(s.date, pdfEn)} | ${formatCost(Number(s.cost || 0))} EUR`, 180);
                 lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 

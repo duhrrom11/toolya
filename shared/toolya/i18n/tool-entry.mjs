@@ -257,7 +257,8 @@ function mountToolLanguage(){
    localizeVisibleAccountStatus(lang);
    localizeRuntimeStatus();
    document.dispatchEvent(new document.defaultView.Event('toolya:locale-change'));
-   // Keep html[lang]=de while the main application is not fully translated.
+   // Set the primary interface language; remaining untranslated content needs review.
+   document.documentElement.lang=lang;
  }
  // The B3 editor re-creates its controls whenever sections are reordered/reset.
  // Translate the new controls without reloading or touching stored layout choices.

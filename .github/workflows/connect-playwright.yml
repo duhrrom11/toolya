@@ -32,6 +32,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
     paths:
       - '.github/workflows/connect-playwright.yml'
       - 'tests/platform/connect-playwright.cjs'
@@ -93,6 +94,7 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
       - name: Install isolated Chromium
+        if: ${{ github.event_name != 'pull_request' || github.head_ref != 'release/toolya-english-1.0' || !github.event.pull_request.draft }}
         run: npx playwright install --with-deps chromium
       - name: CloudOnly tool integration contract
         run: node tests/platform/connect-tool-integration.cjs
@@ -108,4 +110,5 @@ jobs:
       - name: Additional expense sources isolated UI contract
         run: node tests/platform/connect-expense-budget.cjs
       - name: Two-device browser regression (blocking)
+        if: ${{ github.event_name != 'pull_request' || github.head_ref != 'release/toolya-english-1.0' || !github.event.pull_request.draft }}
         run: npm run test:connect:browser

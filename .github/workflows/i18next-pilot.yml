@@ -34,6 +34,7 @@ on:
       - 'tools/pet-health/index.html'
       - '.github/workflows/i18next-pilot.yml'
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
     paths:
       - 'shared/toolya/i18n/**'
       - 'tests/i18n/**'
@@ -96,6 +97,7 @@ jobs:
       - name: Run focused migration regressions
         run: node --test tests/i18n/i18next-legacy-resources.test.mjs tests/i18n/i18next-runtime-adapter.test.mjs tests/i18n/i18next-singleton.test.mjs tests/i18n/dashboard-dom.test.mjs
   parking-browser:
+    if: ${{ github.event_name != 'pull_request' || github.head_ref != 'release/toolya-english-1.0' || !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
