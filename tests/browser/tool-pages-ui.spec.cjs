@@ -3100,3 +3100,40 @@ test('i18n runtime: gift dashboard template overwrite cancellation preserves pri
   expect(await page.locator('#homeLayoutSlot').inputValue()).toBe('compact');
  }
 });
+
+test('i18n runtime: B3 layout storage failure keeps draft open and cancel restores original layout in DE and EN',async({page})=>{
+ await isolated(page,true,true);
+ await page.goto(origin+'/tools/car/index.html?lang=de');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+ const key=await page.evaluate(()=> 'helferlein_ui_layout_'+window.HELFERLEIN_B3.key+'_v1');
+ const original=await page.evaluate(key=>({stored:localStorage.getItem(key),panels:[...document.querySelectorAll('[data-b3-panel]')].map(p=>[p.dataset.b3Panel,p.dataset.b3Size,p.dataset.b3Hidden,p.style.getPropertyValue('--b3-order')])}),key);
+ for(const lang of ['en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await page.locator('#settingsBtn').click();
+  await revealToolSetting(page.locator('#b3-edit-open'));
+  await page.locator('#b3-edit-open').click();
+  const editor=page.locator('#b3-editor');
+  await expect(editor).toBeVisible();
+  const size=editor.locator('select').first();
+  const previous=await size.inputValue();
+  await size.selectOption(previous==='s'?'l':'s');
+  await page.evaluate(key=>{
+   const set=Storage.prototype.setItem;
+   window.__restoreLayoutStorage=()=>{Storage.prototype.setItem=set};
+   Storage.prototype.setItem=function(k,v){if(this===localStorage&&k===key)throw new DOMException('Isolated layout storage failure','QuotaExceededError');return set.call(this,k,v)};
+  },key);
+  try{
+   await editor.locator('.b3-action:not(.b3-outline)').first().click();
+   const notice=page.getByRole('alertdialog',{name:'Toolya'});
+   await expect(notice.locator('#hl-alert-message')).toHaveText(lang==='en'?'Could not save the dashboard layout.':'Layout konnte nicht gespeichert werden.');
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   await expect(editor).toBeVisible();
+   expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe(original.stored);
+   await editor.getByRole('button',{name:lang==='en'?'Cancel':'Abbrechen',exact:true}).click();
+   await expect(editor).toBeHidden();
+   expect(await page.evaluate(key=>({stored:localStorage.getItem(key),panels:[...document.querySelectorAll('[data-b3-panel]')].map(p=>[p.dataset.b3Panel,p.dataset.b3Size,p.dataset.b3Hidden,p.style.getPropertyValue('--b3-order')])}),key)).toEqual(original);
+  }finally{await page.evaluate(()=>window.__restoreLayoutStorage())}
+  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ }
+});

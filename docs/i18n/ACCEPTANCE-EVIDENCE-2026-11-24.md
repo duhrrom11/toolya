@@ -75,3 +75,19 @@ Six of ten newly triggered workflows succeeded; strict gate failed and the isola
 - Twelve of thirteen workflows succeeded. [Strict audit job 139008170001](https://github.com/duhrrom11/toolya/actions/runs/45556029921/job/139008170001) failed: 34 opt-in views, 33 source candidate files (187 catalogue matches, 19 shared-context, 6 composite), 16 English noindex pages, zero missing routes and public German heuristic candidates.
 
 Scope: verified responsive shell regression and isolated functional tests, not exhaustive visual, accessibility, export or translation acceptance. No production test data, release approval, merge or deployment. All strict conditions and noindex retained. Evidence refers specifically to 77def38, not future commits.
+
+
+## Full CI and composite runtime evidence at 6c967b8
+
+All 16 workflows completed: 15 successful, strict release gate failed. [Isolated Chromium job 139221703928](https://github.com/duhrrom11/toolya/actions/runs/45618912412/job/139221703928): 197 passed, zero failed (4.9 minutes). [Browser artifact](https://github.com/duhrrom11/toolya/actions/runs/45618912412/artifacts/15023958243).
+
+| Composite occurrence | Verified isolated runtime evidence |
+| --- | --- |
+| Budget duplicate confirmation | Actual saveReceipt handler; DE/EN exact multiline confirmation, cancellation, unchanged snapshot and no additional mock write. |
+| Wishes assigned count | Actual mountListsDashboard with seven assigned wishes; DE/EN counters. |
+| Wishes unassigned count | Three unassigned wishes; actual selection action, translated count and status, unchanged fixture and zero writes. |
+| Gift layout template overwrite | Actual gift-start module; DE/EN/DE confirmation, private slot label preserved, cancellation, unchanged preferences and zero writes. |
+| Wishes cloud insert network failure | Actual extracted app.mjs handler with injected dependencies; rejected mock insert, uncertainty wording and literal diagnostic suffix preserved in DE/EN/DE. |
+| Wishes cloud update network failure | Actual extracted app.mjs handler with injected dependencies; rejected mock update, owner/wish/version filters preserved, no success report, unchanged fixture. |
+
+Same run passed homepage login/registration validation, shared cloud replacement cancellation before backup/write, and budget PDF retry after cloud readiness. [Translation quality job 139221530779](https://github.com/duhrrom11/toolya/actions/runs/45618912114/job/139221530779): 406/406 tests, 72/72 anonymous and 57/57 authenticated shell checks. [Strict job 139221530749](https://github.com/duhrrom11/toolya/actions/runs/45618912216/job/139221530749): 187 catalogue matches runtime-unverified, 19 shared-context occurrences, 6 composite occurrences, 33 source files, 34 partial views, 16 English noindex pages. Static counts are retained; isolated runtime evidence does not establish exhaustive authenticated, accessibility, export, SEO or live release acceptance. No production test data, merge, deployment or release approval.
