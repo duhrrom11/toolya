@@ -30,6 +30,7 @@
         panels:[
           {id:'stats',name:'Parkstatistiken',size:'l'},
           {id:'timer',name:'Parkschein-Timer & Parkplatz erfassen',size:'l',locked:true},
+          {id:'nearby',name:'In der Nähe',size:'l'},
           {id:'history',name:'Gespeicherte Parkplätze und Gebühren',size:'l'},
           {id:'recommendations',name:'Parkzubehör',size:'m'}
         ],
@@ -38,6 +39,7 @@
           ['📊','Statistiken','#b3-stats'],
           ['⏱️','Parkschein-Timer','#b3-timer'],
           ['📍','Parkplatz merken','#b3-timer'],
+          ['🧭','In der Nähe','#b3-nearby'],
           ['📋','Parkhistorie','#b3-history']
         ],
         extra:[
@@ -72,7 +74,7 @@
 <link rel="stylesheet" href="../../assets/helferlein-unified-settings.css"><script defer src="../../assets/helferlein-unified-settings.js"></script><link rel="stylesheet" href="../../shared/toolya/alpha.css?v=20261115-alpha">
 <script type="module" src="../../shared/toolya/platform.mjs"></script><link rel="stylesheet" href="../../shared/toolya/amazon-affiliate.css"><script defer src="../../shared/toolya/amazon-affiliate.js"></script><link rel="stylesheet" href="../../shared/toolya/i18n/tool-entry.css">
 <script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script>
-<script type="module" src="../../shared/toolya/i18n/tool-entry.mjs"></script>
+<script type="module" src="../../shared/toolya/i18n/tool-entry.mjs?v=20261125-nearby"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
   <section class="toolya-auth-status" aria-labelledby="toolya-auth-title">
@@ -167,7 +169,7 @@
     <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-5xl space-y-6 mt-2">
                 
         <!-- Dashboard Statistiken -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-b3-panel="stats" id="b3-stats">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-amber-50 text-amber-700 rounded-xl font-bold">🅿️</div>
                 <div><p class="text-xs text-gray-500" data-tool-en="Saved parking sessions">Gespeicherte Parkvorgänge</p><h3 id="statCount" class="text-lg font-bold">0</h3></div>
@@ -175,10 +177,6 @@
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
                 <div><p class="text-xs text-gray-500" data-tool-en="Fees (filtered)">Gebühren (Gefiltert)</p><h3 id="statCost" class="text-lg font-bold">0,00 €</h3></div>
-            </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">📍</div>
-                <div><p class="text-xs text-gray-500" data-tool-en="GPS location">GPS-Standort</p><h3 id="statGps" class="text-xs font-bold text-blue-600" data-tool-en="Not saved">Nicht gespeichert</h3></div>
             </div>
         </div>
 
@@ -220,13 +218,32 @@
 
                 <div class="grid grid-cols-2 gap-2">
                     <label class="helferlein-field" for="parkCost"><span class="helferlein-field-label" data-tool-en="Fee in €">Gebühr in €</span><input type="text" id="parkCost" placeholder="Gebühr in € (z.B. 2.50)" class="p-2.5 border rounded-xl text-sm" aria-label="Gebühr in € (z.B. 2.50)" data-tool-en-placeholder="Fee in € (e.g. 2.50)" data-tool-en-aria-label="Fee in € (e.g. 2.50)"></label>
-                    <label class="helferlein-field" for="parkPhotoInput"><span class="helferlein-field-label" data-tool-en="Choose a parking photo">Parkplatzfoto auswählen</span><input type="file" id="parkPhotoInput" accept="image/*" capture="environment" class="text-xs p-1.5 border rounded-xl file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Parkplatzfoto auswählen" data-tool-en-aria-label="Choose a parking photo"></label>
+                    <label class="helferlein-field" for="parkPhotoInput"><span class="helferlein-field-label" data-tool-en="Parking photo">Parkplatzfoto</span><input type="file" id="parkPhotoInput" accept="image/*" capture="environment" class="text-xs p-1.5 border rounded-xl file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Parkplatzfoto" data-tool-en-aria-label="Parking photo"></label>
                 </div>
                 <button type="button" id="saveParkingGpsBtn" onclick="saveParkingSession(true)" class="b3-action b3-outline w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2.5 rounded-xl text-sm" data-tool-en="📍 Save GPS location">📍 GPS-Standort speichern</button>
                 <p id="parkingGpsFeedback" class="text-xs text-gray-600" role="status" aria-live="polite"></p>
                 <button onclick="saveParkingSession()" class="b3-action w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Parkplatz speichern</button>
             </div>
         </div>
+
+        <!-- Nearby places -->
+        <section class="bg-white p-6 rounded-2xl shadow-sm border space-y-3" data-b3-panel="nearby" id="b3-nearby" aria-labelledby="nearby-title">
+            <h2 id="nearby-title" class="text-lg font-bold" data-tool-en="Nearby">In der Nähe</h2>
+            <p class="text-sm text-gray-500" data-tool-en="Quickly find useful places nearby.">Finde schnell wichtige Orte in deiner Nähe.</p>
+            <p id="nearby-status" class="text-xs font-semibold text-gray-600" role="status"></p>
+            <div class="grid grid-cols-2 gap-2" id="nearby-actions">
+                <button type="button" data-poi="toilet" class="b3-action b3-outline rounded-xl border p-3 min-h-[44px]" data-tool-en="🚻 Restroom">🚻 Toilette</button>
+                <button type="button" data-poi="fuel" class="b3-action b3-outline rounded-xl border p-3 min-h-[44px]" data-tool-en="⚡ Charge / Refuel">⚡ Laden / Tanken</button>
+                <button type="button" data-poi="transit" class="b3-action b3-outline rounded-xl border p-3 min-h-[44px]" data-tool-en="🚆 Public Transport">🚆 ÖPNV / Halt</button>
+                <button type="button" data-poi="atm" class="b3-action b3-outline rounded-xl border p-3 min-h-[44px]" data-tool-en="💶 ATM">💶 Geldautomat</button>
+            </div>
+            <form id="nearby-form" class="flex flex-wrap gap-2">
+                <input id="nearby-query" type="search" required maxlength="250" class="flex-1 min-w-0 p-2.5 border rounded-xl text-sm" placeholder="Eigenen Ort suchen (z. B. Bäcker, Apotheke, Café)…" data-tool-en-placeholder="Search for a place (e.g. bakery, pharmacy, café)…" aria-label="Eigenen Ort suchen" data-tool-en-aria-label="Search for a place">
+                <button type="submit" class="b3-action bg-amber-600 text-white rounded-xl px-4 min-h-[44px]" data-tool-en="Search">Suchen</button>
+            </form>
+            <a id="nearby-fallback" hidden target="_blank" rel="noopener noreferrer" class="underline text-sm" data-tool-en="Open search in Google Maps">Suche in Google Maps öffnen</a>
+            <p class="text-xs text-gray-500" data-tool-en="Searches open Google Maps. Your search location may be shared with Google.">Die Suche öffnet Google Maps. Dabei kann dein Suchstandort an Google übermittelt werden.</p>
+        </section>
 
         <!-- Historie mit Filter -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="history" id="b3-history">
@@ -477,21 +494,6 @@
             }
         }
 
-        function refreshParkingGpsLocale() {
-            const status = document.getElementById('statGps');
-            if (!status) return;
-            const known = {
-                'Gespeichert ✓': 'Saved ✓',
-                'Nicht gespeichert': 'Not saved'
-            };
-            const reverse = Object.fromEntries(Object.entries(known).map(([de, en]) => [en, de]));
-            const current = status.textContent.trim();
-            if (Object.hasOwn(known, current) || Object.hasOwn(reverse, current)) {
-                const german = Object.hasOwn(reverse, current) ? reverse[current] : current;
-                status.textContent = window.__toolyaUILocale === 'en' ? known[german] : german;
-            }
-        }
-
         async function stopTimer() {
             clearInterval(timerInterval);
             activeEndTime = null;
@@ -593,7 +595,6 @@
                 date:now.toLocaleDateString('de-DE')+' '+now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})
             });
             if(!await saveData(data))return;
-            if(gps)document.getElementById('statGps').innerText=window.__toolyaUILocale === 'en' ? 'Saved ✓' : 'Gespeichert ✓';
             document.getElementById('parkDesc').value='';
             document.getElementById('parkSector').value='';
             document.getElementById('parkCost').value='';
@@ -629,6 +630,7 @@
         }
 
         function renderParkingList() {
+            resetNearby();
             let data = getData();
             const list = document.getElementById('parkingList');
             const filter = document.getElementById('timeFilter').value;
@@ -694,9 +696,56 @@
 
         document.addEventListener('toolya:locale-change', () => {
             refreshParkingTimerLocale();
-            refreshParkingGpsLocale();
             if (parkingCloudReady) renderParkingList();
         });
+
+        const nearbyQueries = {toilet:['Öffentliche Toilette','Public restroom'],fuel:['E-Ladesäule oder Tankstelle','EV charging station or gas station'],transit:['Bahnhof oder Bushaltestelle','Train station or bus stop'],atm:['Geldautomat','ATM']};
+        let nearbyState='idle', nearbyBusy=false;
+        function nearbyParkingGps(){
+            const latest=getData().sessions.reduce((a,b)=>!a||Number(b.id)>Number(a.id)?b:a,null);
+            return safeParkingGps(latest?.gps);
+        }
+        function refreshNearby(){
+            const status=document.getElementById('nearby-status');
+            if(!status)return;
+            const copy={idle:nearbyParkingGps()?['Rund um deinen Parkplatz','Near your parked car']:['Aktuellen Standort verwenden','Use current location'],loading:['Standort wird ermittelt…','Finding your location…'],current:['Rund um deinen Standort','Near your current location'],none:['Suche ohne Standort','Search without location'],saved:['Rund um deinen Parkplatz','Near your parked car']};
+            status.textContent=copy[nearbyState][window.__toolyaUILocale==='en'?1:0];
+        }
+        function resetNearby(){if(!nearbyBusy){nearbyState='idle';refreshNearby();}}
+        function searchNearby(query){
+            query=query.trim();if(!query||nearbyBusy)return;
+            nearbyBusy=true;
+            const fallback=document.getElementById('nearby-fallback');
+            fallback.hidden=true;
+            let tab=null;
+            try{tab=window.open('about:blank','_blank');if(tab)tab.opener=null;}catch(_){}
+            const finish=(gps,state)=>{
+                nearbyState=state;nearbyBusy=false;refreshNearby();
+                const encoded=encodeURIComponent(query);
+                const url=gps?'https://www.google.com/maps/search/'+encoded+'/@'+gps.lat+','+gps.lng+',16z':'https://www.google.com/maps/search/?api=1&query='+encoded;
+                fallback.href=url;
+                try{if(tab&&!tab.closed){tab.location.replace(url);return;}}catch(_){}
+                fallback.hidden=false;
+            };
+            const gps=nearbyParkingGps();
+            if(gps){finish(gps,'saved');return;}
+            if(!navigator.geolocation){finish(null,'none');return;}
+            nearbyState='loading';refreshNearby();
+            try{navigator.geolocation.getCurrentPosition(p=>{const point=safeParkingGps({lat:p.coords.latitude,lng:p.coords.longitude});finish(point,point?'current':'none');},()=>finish(null,'none'),{timeout:5000,maximumAge:30000});}catch(_){finish(null,'none');}
+        }
+        document.getElementById('nearby-actions').addEventListener('click',event=>{
+            const button=event.target.closest('[data-poi]');
+            if(button)searchNearby(nearbyQueries[button.dataset.poi][window.__toolyaUILocale==='en'?1:0]);
+        });
+        document.getElementById('nearby-form').addEventListener('submit',event=>{event.preventDefault();searchNearby(document.getElementById('nearby-query').value);});
+        function refreshNearbyNavigation(){
+            const link=document.querySelector('.b3-nav-links a[href="#b3-nearby"]');
+            if(link)link.textContent=window.__toolyaUILocale==='en'?'🧭 Nearby':'🧭 In der Nähe';
+        }
+        document.addEventListener('toolya:locale-change',()=>{refreshNearby();refreshNearbyNavigation();});
+        document.addEventListener('DOMContentLoaded',()=>requestAnimationFrame(refreshNearbyNavigation));
+        window.addEventListener('pageshow',refreshNearbyNavigation);
+        refreshNearby();
 
         function zoomImage(src) {
             document.getElementById('zoomedImage').src = src;
