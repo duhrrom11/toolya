@@ -121,6 +121,15 @@ for(const f of scriptSources){
   sightings.push({line,kind:m[0].slice(0,m[0].indexOf('(')>=0?m[0].indexOf('('):m[0].indexOf('=' )).trim(),
    sample:text,literal:m[2],...reviewRuntimeLiteral(f,m[2],m[0],content.slice(m.index+m[0].length,m.index+m[0].length+30))});
  }
+ // Explicit bilingual branches are separate source occurrences, not catalogue guesses.
+ const conditional=/\b(alert|confirm|prompt)\s*\(\s*window\.__toolyaUILocale\s*===\s*['"]en['"]\s*\?\s*(['"])([^\n'"\\]+)\2\s*:\s*(['"])([^\n'"\\]+)\4\s*(?=[,)])/g;
+ for(const branch of content.matchAll(conditional)){
+  if(!german.test(branch[5]))continue;
+  const line=content.slice(0,branch.index).split('\n').length;
+  const sample=small(branch[5]);examples.push(sample);
+  sightings.push({line,kind:branch[1],sample,literal:branch[5],english:branch[3],catalogueState:'explicit-branch-runtime-unverified'});
+ }
+ sightings.sort((a,b)=>a.line-b.line);
  if(examples.length)dynamic.push({file:f,total:examples.length,
   samples:[...new Set(examples)].slice(0,4),sightings});
 }

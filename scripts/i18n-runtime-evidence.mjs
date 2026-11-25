@@ -18,7 +18,7 @@ export function attachRuntimeEvidence(dynamic,report,read){
  for(const item of dynamic){
   const source=read(item.file).split('\n');
   for(const occurrence of item.sightings){
-   if(occurrence.catalogueState!=='catalogue-match-runtime-unverified'||occurrence.kind!=='alert')continue;
+   if(!['catalogue-match-runtime-unverified','explicit-branch-runtime-unverified'].includes(occurrence.catalogueState)||occurrence.kind!=='alert')continue;
    const matches=claims.filter(c=>c.file===item.file&&c.de===occurrence.literal&&c.en===occurrence.english&&(!c.line||c.line===occurrence.line));
    if(matches.length!==1)continue;
    const claim=matches[0];
