@@ -642,6 +642,7 @@ export const DASHBOARD_COPY=Object.freeze(Object.fromEntries([
   "Cake pan calculator"
  ]
 ]));
+const fixedStatusMessages=Object.freeze([["Einkaufslisten nicht vollständig verfügbar: Bitte später erneut laden.","Shopping lists not fully available: Try loading again later."],["Änderung nicht bestätigt: Speicherkonflikt.","Change not confirmed: Save conflict."],["Entfernen nicht bestätigt: Bitte neu laden.","Removal not confirmed: Please refresh."],["Gießvorgang nicht bestätigt: Bitte Gießplan neu laden.","Watering not confirmed: Reload the watering plan."],["Gießplan nicht verfügbar: Bitte später erneut öffnen.","Watering plan unavailable: Try opening it again later."]]);
 const reverse=Object.freeze(Object.fromEntries(Object.entries(DASHBOARD_COPY).map(([de,en])=>[en,de])));
 const prefixes=[
  ["Cloud-Datenstand ist unverändert (Revision neu).","Cloud state unchanged (revision new)."],
@@ -730,6 +731,8 @@ export function dashboardLocale(){
 }
 export function dashboardText(value,lang=dashboardLocale()){
  if(typeof value!=='string')return value;
+ const fixed=fixedStatusMessages.find(pair=>pair[lang==='en'?0:1]===value);
+ if(fixed)return fixed[lang==='en'?1:0];
  const table=lang==='en'?DASHBOARD_COPY:reverse;
  if(Object.hasOwn(table,value))return table[value];
  const pairs=lang==='en'?prefixes:prefixes.map(([de,en])=>[en,de]);
