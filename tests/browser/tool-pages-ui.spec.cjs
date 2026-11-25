@@ -3362,3 +3362,128 @@ for(const mode of ['saved','denied','missing','current']){
   expect(outbound.filter(url=>/google\.com\/maps/.test(url))).toEqual([]);
  });
 }
+
+/* Real validation branches, isolated account and snapshot; no save RPC expected. */
+for(const fixture of [
+ {
+  "tool": "loans",
+  "handler": "saveContact",
+  "fields": {
+   "contactName": "",
+   "contactPhone": "123456"
+  },
+  "de": "Bitte einen Namen eingeben!",
+  "en": "Please enter a name!",
+  "line": 490
+ },
+ {
+  "tool": "loans",
+  "handler": "saveInventoryItem",
+  "fields": {
+   "invTitle": "",
+   "invSerial": "Private Löschen 42"
+  },
+  "de": "Bitte eine Bezeichnung für den Gegenstand angeben!",
+  "en": "Please enter an item description!",
+  "line": 509
+ },
+ {
+  "tool": "loans",
+  "handler": "updateItem",
+  "fields": {
+   "editTitle": "Private Löschen",
+   "editPerson": "Private Person",
+   "editDate": "",
+   "editNote": "Private Notiz"
+  },
+  "de": "Bitte Gegenstand, Person und Ausleihdatum angeben!",
+  "en": "Please enter an item, person and loan date!",
+  "line": 767
+ },
+ {
+  "tool": "moving",
+  "handler": "saveBox",
+  "fields": {
+   "boxName": "",
+   "boxDesc": "Private Löschen",
+   "boxBarcode": "PRIVATE-42"
+  },
+  "de": "Bitte Standort und Kisten-Name angeben!",
+  "en": "Please enter a location and box name!",
+  "line": 719
+ },
+ {
+  "tool": "moving",
+  "handler": "addSubItem",
+  "fields": {
+   "newSubItemName": "",
+   "newSubItemVal": "12.5"
+  },
+  "de": "Bitte Artikel-Name eingeben!",
+  "en": "Please enter an item name!",
+  "line": 808
+ },
+ {
+  "tool": "moving",
+  "handler": "updateBox",
+  "fields": {
+   "editBoxName": "",
+   "editBoxDesc": "Private Löschen",
+   "editBoxBarcode": "PRIVATE-42"
+  },
+  "de": "Bitte Standort und Kisten-Name angeben!",
+  "en": "Please enter a location and box name!",
+  "line": 831
+ },
+ {
+  "tool": "pet-health",
+  "handler": "savePet",
+  "fields": {
+   "petName": "",
+   "petChip": "PRIVATE-42",
+   "petAllergies": "Private Löschen"
+  },
+  "de": "Bitte einen Namen für das Haustier eingeben!",
+  "en": "Please enter a pet name!",
+  "line": 554
+ },
+ {
+  "tool": "pet-health",
+  "handler": "saveMedication",
+  "fields": {
+   "medName": "",
+   "medStock": "12"
+  },
+  "de": "Bitte Medikamenten-Namen angeben!",
+  "en": "Please enter a medication name!",
+  "line": 634
+ }
+]){
+ test('i18n runtime catalogue: '+fixture.tool+' '+fixture.handler+' preserves draft on validation in DE and EN',async({page})=>{
+  await isolated(page,true);
+  await page.goto(origin+'/tools/'+fixture.tool+'/index.html');
+  const state=()=>page.evaluate(tool=>{
+   const controller=tool==='loans'?loansCloudController:tool==='moving'?movingCloudController:petCloudController;
+   const ready=tool==='loans'?loansCloudReady:tool==='moving'?movingCloudReady:petCloudReady;
+   return {ready:!!(ready&&controller?.ready),snapshot:controller?.ready?JSON.stringify(controller.snapshot()):null,writes:window.__toolyaMock?.writes.length};
+  },fixture.tool);
+  await expect.poll(async()=>(await state()).ready).toBe(true);
+  await page.evaluate(fields=>{for(const [id,value] of Object.entries(fields)){const node=document.getElementById(id);if(!node)throw Error('Missing fixture input '+id);node.value=value;}},fixture.fields);
+  const draft=()=>page.evaluate(ids=>Object.fromEntries(ids.map(id=>[id,document.getElementById(id).value])),Object.keys(fixture.fields));
+  expect(await draft()).toEqual(fixture.fields);
+  const before=await state();
+  expect(before.writes).toBe(0);
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   expect(await draft()).toEqual(fixture.fields);
+   await page.evaluate(handler=>window[handler](),fixture.handler);
+   const notice=page.getByRole('alertdialog',{name:'Toolya'});
+   await expect(notice.locator('#hl-alert-message')).toHaveText(fixture[lang]);
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   await expect(notice).toBeHidden();
+   expect(await draft()).toEqual(fixture.fields);
+   expect(await state()).toEqual(before);
+  }
+ });
+}

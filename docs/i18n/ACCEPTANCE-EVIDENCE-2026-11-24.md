@@ -114,3 +114,15 @@ All 15 regular workflows passed; strict alone failed. [Quality job](https://gith
 
 ## Parking nearby acceptance additions
 At 9d71359, 14 regular workflows succeeded, the full isolated browser run was cancelled and strict failed. Head subsequently advanced to 11a6c157 (CSV/social status changes), with CI still running at inspection. Added four isolated real-page browser cases for nearby searches with saved synthetic coordinates, denied/missing geolocation and successful current location; DE/EN/DE labels and status, encoded custom query, blocked and successful simulated popup, noopener/noreferrer fallback, no automatic location query, unchanged cloud snapshot and zero mock writes, no actual Maps requests. These map to language switching, dynamic states, privacy and data preservation. Pending CI; no exhaustive acceptance claim or strict waiver.
+
+## Confirmed d9a8dd6 and next validation batch
+15/15 regular workflows passed. [Browser job 139291018469](https://github.com/duhrrom11/toolya/actions/runs/45638642467/job/139291018469): 214/214, all four nearby cases passed. [Quality job 139291031872](https://github.com/duhrrom11/toolya/actions/runs/45638642600/job/139291031872): 407/407, 72/72 anonymous and 57/57 authenticated shells. [Strict job 139290833478](https://github.com/duhrrom11/toolya/actions/runs/45638642726/job/139290833478): 34 partial views, 16 noindex, 212 candidates. Added eight isolated validation paths from d9a8dd6: 
+- `tools/loans/index.html:490` saveContact: Bitte einen Namen eingeben! / Please enter a name!
+- `tools/loans/index.html:509` saveInventoryItem: Bitte eine Bezeichnung für den Gegenstand angeben! / Please enter an item description!
+- `tools/loans/index.html:767` updateItem: Bitte Gegenstand, Person und Ausleihdatum angeben! / Please enter an item, person and loan date!
+- `tools/moving/index.html:719` saveBox: Bitte Standort und Kisten-Name angeben! / Please enter a location and box name!
+- `tools/moving/index.html:808` addSubItem: Bitte Artikel-Name eingeben! / Please enter an item name!
+- `tools/moving/index.html:831` updateBox: Bitte Standort und Kisten-Name angeben! / Please enter a location and box name!
+- `tools/pet-health/index.html:554` savePet: Bitte einen Namen für das Haustier eingeben! / Please enter a pet name!
+- `tools/pet-health/index.html:634` saveMedication: Bitte Medikamenten-Namen angeben! / Please enter a medication name!
+Each invokes the real handler, asserts exact DE/EN/DE alert, HTML lang, retained private draft and unchanged isolated snapshot with zero mock writes. Syntax and input/source checks passed; new browser execution pending CI. No waiver, no production test data.
