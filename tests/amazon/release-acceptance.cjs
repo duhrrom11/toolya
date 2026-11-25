@@ -11,7 +11,14 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
    const user={id:'offline-user',email:'offline@example.invalid'};let loggedIn=false;window.__authCalls=[];
    const rows=[{user_id:'11111111-1111-4111-8111-111111111111',display_name:'Ada Muster',country:'Schweiz',city:'Zürich',bio:'Bücher und Garten',interests:['Bücher'],lists:[{name:'Meine Wünsche',url:'https://www.amazon.de/hz/wishlist/ls/ABC123?tag=duhrrom-21',occasion:'Geburtstag'}]}];
    const db={auth:{getUser:async()=>({data:{user:loggedIn?user:null}}),onAuthStateChange:callback=>{queueMicrotask(()=>callback('INITIAL_SESSION',null));return {data:{subscription:{unsubscribe(){}}}}},signInWithPassword:async()=>{loggedIn=true;window.__authCalls.push('login');return {data:{user,session:{user,access_token:'offline-token'}},error:null}},signUp:async()=>{window.__authCalls.push('signup');return {data:{session:null},error:null}},signOut:async()=>{loggedIn=false;window.__authCalls.push('logout');return {error:null}}},rpc:async(name)=>({data:name==='wishlist_profile_filters'?{countries:['Schweiz'],interests:['Bücher'],occasions:['Geburtstag']}:rows,error:null}),from:table=>{let q;q=new Proxy({}, {get(_t,k){if(k==='then')return resolve=>Promise.resolve({data:table==='wishlist_directory'?rows:table==='wishlist_amazon_publication_products'?[{publication_id:'offline-list',title:'Beispielprodukt',description:'Produktbeschreibung',image_url:'https://m.media-amazon.com/fixture.jpg',product_url:'https://www.amazon.de/dp/B012345678'}]:[],count:table==='wishlist_directory'?rows.length:0,error:null}).then(resolve);if(k==='maybeSingle')return ()=>Promise.resolve({data:null,error:null});return ()=>q}});return q}};
-   window.supabase={createClient:()=>db};
+   window.__publicClientCount=0;
+   window.supabase={createClient:(_url,_key,options)=>{
+    if(options?.accessToken){
+     window.__publicClientCount++;
+     return {from:db.from,rpc:db.rpc,get auth(){throw Error('Public client must not access account auth')}};
+    }
+    return db;
+   }};
   });
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(origin+'/tools/wishes/public.html');await page.locator('#wishPublicTrack .wish-public-card').waitFor();
   assert.equal(await page.locator('#homeNewWish,#homeNewList,#createList').count(),0);
@@ -19,6 +26,8 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   assert.equal(await page.locator('#countryFilter').count(),1);
   assert.equal(await page.locator('#bio,#interests,#interestFilter').count(),0,'old biography and interest controls removed');
   assert.equal(await page.locator('#wishPublicTrack .wish-public-card').count(),1,'published profile carousel renders');
+  assert.equal(await page.evaluate(()=>window.__publicClientCount),1,'public directory uses independent lock-free read client');
+  assert.equal(await page.locator('#settingsModal details[data-settings-section="account"]').count(),1,'no duplicate account accordion even before platform initializes');
   assert.equal(await page.locator('#results .profile-card').count(),0);
   assert.equal(await page.locator('#favorites').isVisible(),false,'empty favorites stay compact');
   assert.equal(await page.locator('#wishCreateSection .wish-creation-tile').count(),3,'three creation cards');
