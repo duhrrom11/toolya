@@ -58,12 +58,14 @@
    <div class="ty-settings-actions"><button type="button" id="registerUser">👤 Registrieren</button><button type="button" id="loginSubmit">🔑 Anmelden</button></div>
    </div>
    <div id="passwordRecoveryPanel" hidden>
+    <p data-wishes-copy data-wish-copy>Neues Passwort festlegen</p>
     <label for="recoveryPassword">Neues Passwort (mindestens 8 Zeichen)<input type="password" id="recoveryPassword" minlength="8" autocomplete="new-password"></label>
     <label for="recoveryPasswordConfirm">Passwort wiederholen<input type="password" id="recoveryPasswordConfirm" minlength="8" autocomplete="new-password"></label>
     <button type="button" id="saveRecovery">Neues Passwort speichern</button>
    </div>
    <p id="loginMessage" role="status" aria-live="polite"></p>
    <button type="button" id="logoutUser" hidden>🚪 Abmelden</button>
+   <a href="#profile" id="settingsToProfile" class="wishlist-profile-jump" data-wish-copy>Eigene Wunschliste verwalten ↗</a>
    </div>
   </details>
     <section class="wishlist-settings-section" aria-labelledby="settingsBackupTitle">
