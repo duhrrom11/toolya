@@ -1,5 +1,5 @@
 import {wishesText} from './wishes-copy.mjs?v=20261126-account-locale';
-import {applyWishLocale} from './wishes-dom.mjs';
+import {applyWishLocale} from './wishes-dom.mjs?v=20261126-account-locale';
 const key='toolya-locale-v1';
 function storedLocale(){
  const query=new URLSearchParams(location.search).get('lang');
