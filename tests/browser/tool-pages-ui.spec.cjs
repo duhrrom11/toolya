@@ -3831,3 +3831,51 @@ test('Budget CSV DE/EN: real all and tax downloads preserve private records and 
   }
  }
 });
+
+
+test('Budget PDF DE/EN: signed totals, missing values, chronological private entries and immutable data',async({page})=>{
+ const entries=[
+  {id:91,date:'2026-11-20',entryType:'ausgabe',title:'Private Rückerstattung Öl',store:'Privater Laden',category:'Lebensmittel',price:-12.5,paymentMethod:'Bar',photos:[]},
+  {id:92,date:'2026-11-10',entryType:'einnahme',title:'Privates Einkommen',category:'Einnahme',price:100,photos:[]},
+  {id:93,date:'2026-11-15',entryType:'ausgabe',title:'Betrag fehlt',category:'Sonstiges',price:null,photos:[]},
+  {id:94,date:'2026-11-12',entryType:'ausgabe',title:'Private Ausgabe',category:'Sonstiges',price:40,photos:[]},
+  {id:95,date:'2026-11-13',entryType:'einnahme',title:'Einnahmekorrektur',category:'Einnahme',price:-5,photos:[]}
+ ];
+ await isolated(page,true,true,{entries,budgets:{},goals:[]});
+ await page.goto(origin+'/tools/budget/index.html?lang=en');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ const before=await page.evaluate(()=>JSON.stringify(getData()));
+ await page.evaluate(()=>{
+  window.__budgetPdf={texts:[],files:[]};
+  window.jspdf={jsPDF:class{
+   setFontSize(){return this}
+   text(v){window.__budgetPdf.texts.push(String(v));return this}
+   splitTextToSize(v){return [String(v)]}
+   addPage(){return this}
+   save(v){window.__budgetPdf.files.push(v)}
+  }};
+ });
+ for(const lang of ['en','de']){
+  const choice=page.locator('[data-tool-locale="'+lang+'"]');
+  await choice.click();await expect(choice).toHaveAttribute('aria-pressed','true');
+  await page.evaluate(()=>{window.__budgetPdf.texts=[];window.__budgetPdf.files=[];return exportPDF()});
+  const result=await page.evaluate(()=>window.__budgetPdf);
+  const en=lang==='en';
+  expect(result.files).toHaveLength(1);
+  expect(result.files[0]).toMatch(en?/^financial-report-\d{4}-\d{2}-\d{2}\.pdf$/:/^finanz-bericht-\d{4}-\d{2}-\d{2}\.pdf$/);
+  const text=result.texts;
+  expect(text).toContain(en?'Household finances and receipts overview':'Haushalts-, Finanz- & Kassenbon-Übersicht');
+  expect(text).toContain(en?'Transactions: 4':'Buchungen: 4');
+  expect(text).toContain(en?'Income: 95.00 EUR':'Einnahmen: 95,00 EUR');
+  expect(text).toContain(en?'Expenses: 27.50 EUR':'Ausgaben: 27,50 EUR');
+  expect(text).toContain(en?'Balance: 67.50 EUR':'Saldo: 67,50 EUR');
+  expect(text).toContain(en?'Period: 10/11/2026 to 20/11/2026':'Zeitraum: 10.11.2026 bis 20.11.2026');
+  const rows=text.filter(v=>/^\d{4}-\d{2}-\d{2} \|/.test(v));
+  expect(rows.map(v=>v.slice(0,10))).toEqual(['2026-11-10','2026-11-12','2026-11-13','2026-11-15','2026-11-20']);
+  for(const [index,title,amount] of [[0,'Privates Einkommen',en?'+100.00':'+100,00'],[1,'Private Ausgabe',en?'-40.00':'-40,00'],[2,'Einnahmekorrektur',en?'-5.00':'-5,00'],[3,'Betrag fehlt',en?'n/a':'k.A.'],[4,'Private Rückerstattung Öl',en?'+12.50':'+12,50']]){
+   expect(rows[index]).toContain(title);expect(rows[index]).toContain(': '+amount+' €');
+  }
+  expect(await page.evaluate(()=>JSON.stringify(getData()))).toBe(before);
+  expect(await page.evaluate(()=>window.__toolyaMock.writes)).toEqual([]);
+ }
+});
