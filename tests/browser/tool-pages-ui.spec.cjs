@@ -1728,7 +1728,7 @@ test('meter handover prints only the blank form on one A4 page', async ({ page }
   await testInfo.attach('zaehlerprotokoll-a4', { body: pdf, contentType: 'application/pdf' });
 });
 
-test('moving boxes guide prints the sample QR label without the instructions', async ({ page }) => {
+test('moving boxes guide prints the sample QR label without the instructions', async ({ page }, testInfo) => {
   await isolated(page, false);
   await page.goto('/umzugskisten/');
   await expect(page.locator('#etiketten').getByRole('link', { name: 'öffentliche Musteretikett' }))
@@ -1742,6 +1742,11 @@ test('moving boxes guide prints the sample QR label without the instructions', a
   const qr = label.getByRole('img', { name: 'QR-Code zum öffentlichen Musteretikett' });
   await expect(qr).toBeVisible();
   await expect(qr).toHaveJSProperty('naturalWidth', 328);
+  const pdf = await page.pdf({format:'A4',displayHeaderFooter:false,printBackground:true});
+  expect(pdf.subarray(0,5).toString('ascii')).toBe('%PDF-');
+  expect(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
+  expect(pdf.toString('latin1')).toMatch(/%%EOF\s*$/);
+  await testInfo.attach('moving-sample-qr-print-a4',{body:pdf,contentType:'application/pdf'});
 });
 
 for (const path of ['/backform-rechner/', '/toolya-dashboard/', '/amazon-wunschliste-veroeffentlichen/']) {
