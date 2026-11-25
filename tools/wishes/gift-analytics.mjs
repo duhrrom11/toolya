@@ -153,10 +153,17 @@ function renderReview(){
  if(d.tasks===null)root.append(el('p',ui("Dieser ältere Jahresabschluss enthält keinen historischen Aufgaben-Snapshot."),'note'));
 }
 $('reviewYear').addEventListener('change',renderReview);
-$('exportYearJson').addEventListener('click',()=>{
- const c=closings.find(c=>c.closing_year===Number($('reviewYear').value));if(!c)return;
+$('exportYearJson').addEventListener('click',async()=>{
+ const owner=userId,year=Number($('reviewYear').value);
+ if(!owner)return;
+ const c=closings.find(c=>c.closing_year===year);if(!c)return;
+ const button=$('exportYearJson');button.disabled=true;
+ try{
+  const {data,error}=await db.auth.getUser();
+  if(error||data?.user?.id!==owner||userId!==owner||Number($('reviewYear').value)!==year){$('reviewStatus').textContent=ui('Sitzung hat sich geändert. Export abgebrochen.');return;}
  const payload={schema_version:1,exported_at:new Date().toISOString(),report:reviewData(c)};
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='helferlein-geschenk-jahresrueckblick-'+c.closing_year+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);$('reviewStatus').textContent=ui('Privater JSON-Bericht lokal erstellt. Bewahre die Datei sicher auf.');
+ }catch{$('reviewStatus').textContent=ui('Export fehlgeschlagen. Bitte erneut versuchen.');}finally{button.disabled=!closings.some(item=>item.closing_year===Number($('reviewYear').value));}
 });
 $('printYearReview').addEventListener('click',()=>{if(closings.some(c=>c.closing_year===Number($('reviewYear').value)))window.print()});
 function renderChronicle(){
