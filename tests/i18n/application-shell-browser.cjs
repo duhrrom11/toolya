@@ -92,22 +92,31 @@ async function run(){
 
  for(const width of [320,375,768]){
   const context=await browser.newContext({viewport:{width,height:850},reducedMotion:'reduce',serviceWorkers:'block'});
+  let adminReads=0;
   await context.route('**/*',route=>{
    const request=route.request(),target=new URL(request.url());
    if(authenticated&&target.origin===origin&&target.pathname==='/assets/vendor/supabase-2.57.0.js')return route.fulfill({status:200,contentType:'text/javascript',body:mock});
+   if(authenticated&&target.pathname==='/functions/v1/admin-stats'&&target.hostname==='yheogmeaosuigyaxkwth.supabase.co'&&request.method()==='GET'){
+    adminReads++;
+    return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({sources:[],metrics:[],seoTrends:[{source:'google',points:[{date:'2026-11-24',clicks:1234,impressions:2345}]}]})});
+   }
+   if(authenticated&&target.pathname==='/functions/v1/admin-stats'&&target.hostname==='yheogmeaosuigyaxkwth.supabase.co'&&request.method()==='OPTIONS')return route.fulfill({status:204,headers:{'access-control-allow-origin':'*','access-control-allow-methods':'GET','access-control-allow-headers':'authorization,apikey'}});
    return target.origin===origin&&['GET','HEAD'].includes(request.method())?route.continue():route.abort();
   });
-  for(const entry of cases.filter(entry=>!authenticated||entry.family==='wishes'||entry.family==='dashboard')){
+  for(const entry of cases.filter(entry=>!authenticated||entry.family==='wishes'||entry.family==='dashboard'||entry.path==='/admin-stats-dashboard/index.html')){
    const page=await context.newPage();
    const row={path:entry.path,width,checks:[],errors:[],pageErrors:[]};
    results.push(row);
    page.on('pageerror',e=>row.pageErrors.push(e.message.slice(0,300)));
    try{
     await page.addInitScript(()=>{localStorage.setItem('synthetic-private-note','Meine private Notiz');});
+    const admin=authenticated&&entry.path==='/admin-stats-dashboard/index.html';
     const collection=authenticated&&entry.path==='/tools/wishes/collection.html';
     const profile=authenticated&&entry.path==='/tools/wishes/profile.html';
     const query=collection?'&id=22222222-2222-4222-8222-222222222222':profile?'&handle=fixture_profile':'';
     await page.goto(origin+entry.path+'?lang=de'+query,{waitUntil:'domcontentloaded',timeout:15000});
+    if(admin)await page.waitForFunction(()=>!document.getElementById('panel')?.hidden&&!!document.querySelector('#seo-google svg'),null,{timeout:6000});
+    const adminReadsBefore=adminReads;
     if(collection)await page.waitForFunction(()=>!document.getElementById('collection')?.hidden&&document.getElementById('title')?.textContent==='Meine synthetische Sammlung',null,{timeout:6000});
     if(profile)await page.waitForFunction(()=>!document.getElementById('profile')?.hidden&&document.getElementById('name')?.textContent==='Synthetisches Profil',null,{timeout:6000});
     if(authenticated&&entry.path==='/tools/wishes/dashboard.html')await page.waitForFunction(()=>!document.getElementById('content')?.hidden&&!!document.querySelector('#taskReminders .empty')&&!!document.querySelector('#tasks .empty'),null,{timeout:6000});
@@ -131,6 +140,16 @@ async function run(){
       assert.equal(await page.evaluate(()=>localStorage.getItem('synthetic-private-note')),'Meine private Notiz');
       if(collection){assert.equal(await page.locator('#title').textContent(),'Meine synthetische Sammlung');assert.equal(await page.locator('#description').textContent(),'Private Testbeschreibung bleibt unverändert');}
       if(profile){assert.equal(await page.locator('#name').textContent(),'Synthetisches Profil');assert.equal(await page.locator('#bio').textContent(),'Meine Testbiografie bleibt unverändert');}
+      if(admin){
+       const en=lang==='en';
+       await page.waitForFunction(({en})=>document.querySelector('#seo-google h4')?.textContent===(en?'Clicks':'Klicks'),{en});
+       assert.equal(await page.locator('#seo-google .seo-legend').textContent(),en?'Clicks and impressions · separate scales':'Klicks und Impressionen · getrennte Skalen');
+       assert.equal(await page.locator('#seo-google svg').first().getAttribute('aria-label'),en?'Clicks from 24/11/2026 to 24/11/2026':'Klicks vom 24.11.2026 bis 24.11.2026');
+       assert.match(await page.locator('#seo-google svg title').first().textContent(),en?/1,234 Clicks/:/1\.234 Klicks/);
+       assert.equal(await page.locator('#pages').textContent(),en?'No recorded data for this period yet.':'Noch keine erfassten Daten für diesen Zeitraum.');
+       assert.equal(await page.locator('#trend').textContent(),en?'No daily values available yet.':'Noch keine Tageswerte verfügbar.');
+       assert.equal(adminReads,adminReadsBefore,'locale switch must not refetch statistics');
+      }
       const layout=await page.evaluate(()=>({lang:document.documentElement.lang,overflow:Math.max(0,document.documentElement.scrollWidth-innerWidth)}));
       assert.equal(layout.lang,lang,'document language must follow selected language');
       assert.ok(layout.overflow<=1,'horizontal overflow: '+layout.overflow+'px');
