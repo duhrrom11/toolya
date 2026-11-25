@@ -35,7 +35,7 @@ function mount(){
    const target=b.dataset.adminLocale;
    b.setAttribute('aria-pressed',String(target===lang));
    const label=target==='de'?(lang==='en'?'Switch to German':'Deutsch auswählen'):(lang==='en'?'English selected':'Englisch auswählen');
-   b.setAttribute('aria-label',label);b.setAttribute('title',label);
+   b.lang=lang;b.setAttribute('aria-label',label);b.setAttribute('title',label);
   }
   notice.hidden=lang!=='en';document.documentElement.lang=lang;document.dispatchEvent(new Event('toolya:admin-locale-change'));
  }

@@ -67,7 +67,7 @@ function mount(){
    const target=b.dataset.estateLocale;
    b.setAttribute('aria-pressed',String(target===lang));
    const label=target==='de'?(lang==='en'?'Switch to German':'Deutsch auswählen'):(lang==='en'?'English selected':'Englisch auswählen');
-   b.setAttribute('aria-label',label);b.setAttribute('title',label);
+   b.lang=lang;b.setAttribute('aria-label',label);b.setAttribute('title',label);
   }
   if(notice)notice.hidden=lang!=='en';
   document.dispatchEvent(new Event('toolya:estate-locale-change'));

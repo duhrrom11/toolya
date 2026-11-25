@@ -159,7 +159,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
     'dashboard navigation fits on one row at '+width+': '+JSON.stringify(header));
    if (width === 320) {
     const languageControl = dashboard.locator('.b3-hub-nav .ty-dashboard-locale');
-    assert.equal(await languageControl.getAttribute('aria-label'), 'Sprache der Oberfläche wählen');
+    assert.equal(await languageControl.getAttribute('aria-label'),(await dashboard.locator('html').getAttribute('lang'))==='en'?'Choose interface language':'Sprache der Oberfläche wählen');
     const language = await languageControl.evaluate(node => {
      const r=node.getBoundingClientRect();
      const style=getComputedStyle(node);

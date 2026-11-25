@@ -63,7 +63,7 @@ function mount(){
    const target=b.dataset.dashboardLocale;
    b.setAttribute('aria-pressed',String(target===lang));
    const label=target==='de'?(lang==='en'?'Switch to German':'Deutsch auswählen'):(lang==='en'?'English selected':'Englisch auswählen');
-   b.setAttribute('aria-label',label);b.setAttribute('title',label);
+   b.lang=lang;b.setAttribute('aria-label',label);b.setAttribute('title',label);
   }
   if(guide){
    guide.href=lang==='en'?'/en/toolya-dashboard/':'/toolya-dashboard/';

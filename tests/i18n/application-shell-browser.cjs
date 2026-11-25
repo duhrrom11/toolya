@@ -152,6 +152,8 @@ async function run(){
       const deButton=page.locator(selector('de')).first(),enButton=page.locator(selector('en')).first();
       assert.equal(await deButton.getAttribute('aria-label'),lang==='en'?'Switch to German':'Deutsch auswählen');
       assert.equal(await enButton.getAttribute('aria-label'),lang==='en'?'English selected':'Englisch auswählen');
+      assert.equal(await deButton.getAttribute('lang'),lang);
+      assert.equal(await enButton.getAttribute('lang'),lang);
       await deButton.focus();
       await page.keyboard.press('Tab');
       assert.equal(await enButton.evaluate(el=>el===document.activeElement),true,'Tab reaches adjacent EN control');
@@ -187,6 +189,16 @@ async function run(){
       }
       if(collection){assert.equal(await page.locator('#title').textContent(),'Meine synthetische Sammlung');assert.equal(await page.locator('#description').textContent(),'Private Testbeschreibung bleibt unverändert');}
       if(profile){assert.equal(await page.locator('#name').textContent(),'Synthetisches Profil');assert.equal(await page.locator('#bio').textContent(),'Meine Testbiografie bleibt unverändert');}
+      if(entry.path==='/tools/estate/handover.html'){
+       const status=page.locator('#exportStatus');
+       assert.equal(await status.getAttribute('role'),'status');
+       assert.equal(await status.getAttribute('aria-live'),'polite');
+       await page.locator('#exportEstate').press('Enter');
+       const expected=lang==='en'?'Explicitly confirm the irreversible handover.':'Bitte die unwiderrufliche Übergabe ausdrücklich bestätigen.';
+       await page.waitForFunction(expected=>document.getElementById('exportStatus').textContent===expected,expected);
+       assert.equal(await page.locator('#confirmRelease').isChecked(),false);
+       row.checks.push({lang,handoverRejection:true});
+      }
       if(occasion){
        const en=lang==='en';
        const status=page.locator('#status');
@@ -195,11 +207,13 @@ async function run(){
        await page.waitForFunction(({en})=>document.getElementById('status')?.textContent===(en?'Your private occasions are up to date.':'Deine privaten Anlässe sind aktuell.'),{en});
        // Verify the actual destructive-action prompt, always cancel before any write.
        const pending=page.waitForEvent('dialog',{timeout:4000});
-       const click=page.locator('#events article button').last().click({timeout:4000});
+       const remove=page.locator('#events article button').last();
+       const click=remove.press('Enter',{timeout:4000});
        const dialog=await pending;
        const actual={type:dialog.type(),message:dialog.message()};
        await dialog.dismiss();
        await click;
+       assert.equal(await remove.evaluate(el=>el===document.activeElement),true);
        assert.equal(actual.type,'confirm');
        assert.equal(actual.message,en?'Permanently delete this occasion?':'Diesen Anlass dauerhaft löschen?');
        assert.equal(await page.locator('#events article').count(),1);
