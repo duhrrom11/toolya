@@ -97,7 +97,7 @@ async function run(){
   let adminReads=0;
   await context.route('**/*',route=>{
    const request=route.request(),target=new URL(request.url());
-   if(authenticated&&target.origin===origin&&target.pathname==='/assets/vendor/supabase-2.57.0.js')return route.fulfill({status:200,contentType:'text/javascript',body:mock});
+   if(authenticated&&target.origin===origin&&/^\/assets\/vendor\/supabase-2\.(?:57\.0|119\.2)\.js$/.test(target.pathname))return route.fulfill({status:200,contentType:'text/javascript',body:mock});
    if(authenticated&&target.pathname==='/functions/v1/admin-stats'&&target.hostname==='yheogmeaosuigyaxkwth.supabase.co'&&request.method()==='GET'){
     adminReads++;
     return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({sources:[],metrics:[],seoTrends:[{source:'google',points:[{date:'2026-11-24',clicks:1234,impressions:2345}]}]})});

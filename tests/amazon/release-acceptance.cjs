@@ -6,7 +6,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
  try{
   const origin='http://127.0.0.1:'+server.address().port,context=await browser.newContext({viewport:{width:375,height:812}});
-  await context.route('**/*',route=>{const url=route.request().url();if(url.startsWith(origin)&&url.endsWith('/assets/vendor/supabase-2.57.0.js'))return route.fulfill({body:'',contentType:'text/javascript'});return url.startsWith(origin)?route.continue():route.fulfill({body:'',contentType:'text/javascript'});});
+  await context.route('**/*',route=>{const url=route.request().url();if(url.startsWith(origin)&&url.endsWith('/assets/vendor/supabase-2.119.2.js'))return route.fulfill({body:'',contentType:'text/javascript'});return url.startsWith(origin)?route.continue():route.fulfill({body:'',contentType:'text/javascript'});});
   await context.addInitScript(()=>{
    const user={id:'offline-user',email:'offline@example.invalid'};let loggedIn=false;window.__authCalls=[];
    const rows=[{user_id:'11111111-1111-4111-8111-111111111111',display_name:'Ada Muster',country:'Schweiz',city:'Zürich',bio:'Bücher und Garten',interests:['Bücher'],lists:[{name:'Meine Wünsche',url:'https://www.amazon.de/hz/wishlist/ls/ABC123?tag=duhrrom-21',occasion:'Geburtstag'}]}];
@@ -124,5 +124,61 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   await page.locator('#link-kopieren').waitFor();
   assert.equal(await page.locator('a[href="/tools/wishes/public.html#wishCreateSection"]').count(),1);
   console.log('PASS Amazon-only public UI, safe image integration, mobile widths, auth controls; no production data');
+
+  // Real, locally vendored Supabase SDK against intercepted HTTP only.
+  // A separate tab holds the old SDK's Web Lock indefinitely: this reproduces
+  // the blocked startup case without creating users or touching production.
+  const real=await browser.newContext({viewport:{width:375,height:812},serviceWorkers:'block'});
+  real.setDefaultTimeout(15000);
+  const owner={id:'11111111-1111-4111-8111-111111111111',aud:'authenticated',role:'authenticated',email:'sdk-fixture@example.invalid',app_metadata:{provider:'email',providers:['email']},user_metadata:{},created_at:'2026-01-01T00:00:00Z',is_anonymous:false};
+  const enc=value=>Buffer.from(JSON.stringify(value)).toString('base64url');
+  const token=enc({alg:'HS256',typ:'JWT'})+'.'+enc({sub:owner.id,aud:'authenticated',role:'authenticated',exp:Math.floor(Date.now()/1000)+3600})+'.'+Buffer.from('offline-fixture').toString('base64url');
+  const fixtureSession={access_token:token,refresh_token:'offline-refresh-token',token_type:'bearer',expires_in:3600,user:owner};
+  let passwordRequests=0,privateReads=0;
+  const unexpected=[];
+  await real.route('**/*',async route=>{
+   const req=route.request(),u=new URL(req.url()),method=req.method();
+   if(u.origin===origin&&u.pathname==='/__lock_fixture__')return route.fulfill({contentType:'text/html',body:'<!doctype html><title>Isolated legacy lock holder</title>'});
+   if(u.origin===origin)return route.continue();
+   if(u.hostname!=='yheogmeaosuigyaxkwth.supabase.co')return route.abort();
+   const headers={'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'*','content-type':'application/json'};
+   const json=(body,status=200)=>route.fulfill({status,headers,body:JSON.stringify(body)});
+   if(method==='OPTIONS')return route.fulfill({status:204,headers});
+   if(method==='POST'&&u.pathname==='/auth/v1/token'&&u.searchParams.get('grant_type')==='password'){passwordRequests++;return json(fixtureSession)}
+   if(method==='GET'&&u.pathname==='/auth/v1/user'){const h=await req.allHeaders();return h.authorization==='Bearer '+token?json(owner):json({message:'Unauthorized'},401)}
+   if(method==='POST'&&u.pathname==='/auth/v1/logout')return route.fulfill({status:204,headers});
+   if(method==='GET'&&u.pathname==='/rest/v1/wishlist_public_profiles'){const h=await req.allHeaders();if(h.authorization!=='Bearer '+token){unexpected.push('unauthorized private read');return json({message:'Unauthorized'},401)}privateReads++;return json([])}
+   if(method==='GET'&&u.pathname==='/rest/v1/wishlist_directory')return json([]);
+   if(method==='POST'&&u.pathname==='/rest/v1/rpc/wishlist_directory_filters')return json({countries:[],occasions:[]});
+   if(method==='POST'&&u.pathname==='/rest/v1/rpc/search_wishlist_directory')return json([]);
+   unexpected.push(method+' '+u.pathname);return json({message:'Blocked by isolated fixture'},403);
+  });
+  const holder=await real.newPage();
+  await holder.goto(origin+'/__lock_fixture__');
+  await holder.evaluate(()=>{void navigator.locks.request('lock:sb-yheogmeaosuigyaxkwth-auth-token',()=>new Promise(resolve=>{window.releaseLegacyLock=resolve;window.legacyLockHeld=true}))});
+  await holder.waitForFunction(()=>window.legacyLockHeld===true);
+  const actual=await real.newPage();
+  await actual.goto(origin+'/tools/wishes/public.html?lang=de');
+  await actual.waitForFunction(()=>document.querySelector('#cloudStatus')?.textContent==='Nicht angemeldet');
+  await actual.locator('#settingsBtn').click();
+  await actual.locator('#loginEmail').fill(owner.email);
+  await actual.locator('#loginPassword').fill('offline-password');
+  await actual.locator('#loginSubmit').click();
+  await actual.locator('#profileForm').waitFor({state:'visible'});
+  assert.equal(passwordRequests,1,'real SDK completes exactly one password exchange despite old Web Lock');
+  assert.ok(privateReads>0,'verified token reaches private profile');
+  await actual.reload();
+  await actual.locator('#profileForm').waitFor({state:'visible'});
+  assert.equal(passwordRequests,1,'shared session survives reload without another login');
+  await actual.locator('#settingsBtn').click();
+  await actual.locator('#logoutUser').click();
+  await actual.locator('#profileForm').waitFor({state:'hidden'});
+  await actual.waitForFunction(()=>document.querySelector('#cloudStatus')?.textContent==='Nicht angemeldet');
+  assert.deepEqual(unexpected,[],'no unexpected requests or private mutations');
+  assert.equal(await holder.evaluate(()=>window.legacyLockHeld),true,'legacy lock remained held during the test');
+  await holder.evaluate(()=>window.releaseLegacyLock());
+  await real.close();
+  console.log('PASS real vendored SDK: startup, password login, session restore, sign-out under legacy Web Lock; all network mocked');
+
  }finally{await browser.close();await new Promise(r=>server.close(r))}
 })().catch(e=>{console.error(e);process.exitCode=1});

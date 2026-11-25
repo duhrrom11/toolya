@@ -12,7 +12,7 @@ async function isolated(page,authenticated,displayCss=false,initialSnapshot=null
   await page.route('**/*',async route=>{
     const url=route.request().url();
     if(url.startsWith('http://127.0.0.1:4173/')){
-      if(new URL(url).pathname==='/assets/vendor/supabase-2.57.0.js'){
+      if(/^\/assets\/vendor\/supabase-2\.(?:57\.0|119\.2)\.js$/.test(new URL(url).pathname)){
         return route.fulfill({status:200,contentType:'text/javascript',body:`
           window.__toolyaMock={writes:[],signedIn:${authenticated},fixture:${JSON.stringify(initialSnapshot)}};
           window.supabase={createClient(){
@@ -507,8 +507,8 @@ test('backform-umrechner: save and delete recipe await cloud confirmation',async
 async function isolatedWishlist(page,authenticated,profiles=[],detailError=false){
  await page.route('**/*',async route=>{
   const url=route.request().url();
-  if(url.startsWith(origin)&&!url.endsWith('/assets/vendor/supabase-2.57.0.js'))return route.continue();
-  if(url.includes('supabase.min.js')||url.endsWith('/assets/vendor/supabase-2.57.0.js'))return route.fulfill({status:200,contentType:'text/javascript',body:`
+  if(url.startsWith(origin)&&!/\/assets\/vendor\/supabase-2\.(?:57\.0|119\.2)\.js$/.test(url))return route.continue();
+  if(url.includes('supabase.min.js')||/\/assets\/vendor\/supabase-2\.(?:57\.0|119\.2)\.js$/.test(url))return route.fulfill({status:200,contentType:'text/javascript',body:`
    window.__wishlistMock={user:${authenticated?"{id:'owner',email:'owner@example.invalid',is_anonymous:false}":"null"},writes:[],reads:0,searchError:false,detailError:${detailError},empty:false};
    window.supabase={createClient(){const m=window.__wishlistMock;return {
     auth:{
@@ -630,7 +630,7 @@ async function isolatedEstate(page,authenticated){
  await page.route('**/*',async route=>{
   const url=route.request().url();
   if(url.startsWith(origin)){
-   if(new URL(url).pathname==='/assets/vendor/supabase-2.57.0.js')
+   if(/^\/assets\/vendor\/supabase-2\.(?:57\.0|119\.2)\.js$/.test(new URL(url).pathname))
     return route.fulfill({status:200,contentType:'text/javascript',body:`
      window.__estateMock={user:${authenticated?"{id:'owner',email:'owner@example.invalid',is_anonymous:false}":"null"},writes:[],conflict:false};
      window.supabase={createClient(){const m=window.__estateMock;return {

@@ -99,7 +99,7 @@ const {chromium}=require('playwright');
   await page.route('**/*',route=>{
    const requestUrl=new URL(route.request().url());
    if(requestUrl.origin!==origin)return route.abort();
-   if(requestUrl.pathname==='/assets/vendor/supabase-2.57.0.js')
+   if(/^\/assets\/vendor\/supabase-2\.(?:57\.0|119\.2)\.js$/.test(requestUrl.pathname))
      return route.fulfill({status:200,contentType:'text/javascript',body:''});
    return route.continue();
   });
