@@ -4,7 +4,7 @@ const ui=value=>wishesText(value,globalThis.__toolyaWishesLocale==='en'?'en':'de
 const locale=()=>globalThis.__toolyaWishesLocale==='en'?'en-GB':'de-DE';
 const taskStatusLabel=value=>value==='open'?ui('Offen'):value==='in_progress'?ui('In Arbeit'):value==='done'?ui('Erledigt'):value||'—';
 const $=id=>document.getElementById(id);
-const day=86400000;let exportRows=null;
+const day=86400000;let exportRows=null,exportOwner=null;
 function el(tag,value,cls){const node=document.createElement(tag);node.textContent=String(value);if(cls)node.className=cls;return node}
 function dateOnly(value){if(!value)return null;const [y,m,d]=value.slice(0,10).split('-').map(Number);return Date.UTC(y,m-1,d)}
 function number(n,digits=0){return new Intl.NumberFormat(locale(),{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(n)}
@@ -31,11 +31,16 @@ function renderSuccess(rows){
  else{const series=[...byMonth].sort((a,b)=>a[0].localeCompare(b[0]));const latest=series.at(-1),prior=series.at(-2);addRecommendation(ui('Monate vergleichen'),latest[0]+': '+latest[1].done+ui(' Erledigungen; ')+prior[0]+': '+prior[1].done+ui('. Der Vergleich beschreibt Aktivität, keine Erfolgsquote aller Aufgaben.'))}
  function addRecommendation(title,body){const box=el('article','','card');box.append(el('h3',title),el('p',body));recommendations.append(box)}
 }
-$('exportEvents').addEventListener('click',()=>{
- if(!exportRows)return;
+$('exportEvents').addEventListener('click',async()=>{
+ if(!exportRows||!exportOwner)return;
  if(!window.confirm(ui('Eigene protokollierte Aufgabenereignisse als JSON-Datei auf diesem Gerät speichern? Die Datei enthält private Aufgabentitel und Zeitpunkte.')))return;
+ const button=$('exportEvents');button.disabled=true;
+ try{
+ const {data,error}=await db.auth.getUser();
+ if(error||data?.user?.id!==exportOwner){$('status').textContent=ui('Sitzung hat sich geändert. Export abgebrochen.');return;}
  const payload={format:'helferlein-wishes-task-events-v1',exported_at:new Date().toISOString(),event_count:exportRows.length,events:exportRows};
  const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='helferlein-private-aufgabenereignisse-'+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ }catch{$('status').textContent=ui('Export fehlgeschlagen. Bitte erneut versuchen.');}finally{button.disabled=false;}
 });
 function render(rows){
  for(const id of ['kpis','moves','weeks','events'])$(id).replaceChildren();
@@ -54,7 +59,7 @@ function render(rows){
  $('report').hidden=false;$('status').textContent=ui('Privater Bericht bereit. Keine Produktivdaten geändert.');
 }
 $('printReport').addEventListener('click',()=>{if(!$('report').hidden)window.print()});
-async function main(){const {data,error}=await db.auth.getUser();if(error||!data?.user){$('login').hidden=false;$('status').textContent='Bitte anmelden.';return}render(await load(data.user.id))}
+async function main(){const {data,error}=await db.auth.getUser();if(error||!data?.user){$('login').hidden=false;$('status').textContent='Bitte anmelden.';return}const rows=await load(data.user.id);exportOwner=data.user.id;render(rows)}
 main().catch(()=>{$('status').textContent=ui('Bericht konnte nicht vollständig geladen werden. Bitte später erneut versuchen.')});
 
 // Re-render presentation copy only; the report's private event snapshot stays unchanged.
