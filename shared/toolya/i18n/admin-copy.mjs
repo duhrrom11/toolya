@@ -1,7 +1,7 @@
 /* Administrator interface translations. No role or publishing logic changes. */
 export const ADMIN_COPY=Object.freeze({
 "Gezählt werden ausschließlich erfasste":"Only recorded",
-"-Ereignisse nach Analytics-Einwilligung. Voraussetzung: GA4-Ereignisdimension":"events after analytics consent are counted. The GA4 event dimension",
+"-Ereignisse nach Analytics-Einwilligung. Voraussetzung: GA4-Ereignisdimension":" events after analytics consent are counted. The GA4 event dimension",
 "ist registriert.":"must be registered.",
 "Benötigt:":"Required:",
 ". E-Mail-Adressen bleiben ausschließlich im Adminbereich.":". Email addresses remain exclusively in the admin area.",
