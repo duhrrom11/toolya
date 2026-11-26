@@ -179,6 +179,59 @@ const assert = require('node:assert/strict');
     await page.getByText('Zugriff verweigert.', { exact: true }).waitFor();
     assert.equal(await page.locator('#finder').isVisible(), false);
     console.log('Isolated admin UI: responsive navigation, denied access, empty state and publication fixture passed.');
+
+    // Public settings and dashboard share the real browser presentation. No external
+    // requests are allowed in this separate fresh context, including service workers.
+    const settingsContext=await browser.newContext({serviceWorkers:'block'});
+    try{
+      await settingsContext.route('**/*', route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+      const settingsPage=await settingsContext.newPage();
+      const readStyle=locator=>locator.evaluate(node=>{
+        const s=getComputedStyle(node);
+        return Object.fromEntries(['display','paddingTop','paddingRight','paddingBottom','paddingLeft','borderTopWidth','borderTopColor','borderRadius','backgroundColor','color','fontSize','fontWeight','minHeight','lineHeight'].map(k=>[k,s[k]]));
+      });
+      for(const width of [320,768,1440]){
+        await settingsPage.setViewportSize({width,height:900});
+        let reference;
+        for(const [url,trigger,backupId] of [
+          ['/dashboard/index.html','#settingsBtn',null],
+          ['/tools/wishes/public.html','#wishlistSettingsBtn','#wishlistBackupSettings']
+        ]){
+          await settingsPage.goto(origin+url);
+          const modal=settingsPage.locator('#settingsModal');
+          await modal.locator('.ty-pwa-settings').waitFor({state:'attached'});
+          await settingsPage.locator(trigger).click();
+          await modal.waitFor({state:'visible'});
+          const backup=backupId?modal.locator(backupId):modal.locator('details[data-settings-section=backup]');
+          const summary=backup.locator(':scope > summary');
+          const content=backup.locator(':scope > .ty-unified-settings-content');
+          assert.equal(await backup.count(),1,'exactly one backup accordion');
+          assert.equal(await backup.getAttribute('open'),null);
+          assert.equal(await content.isVisible(),false);
+          assert.equal(await summary.innerText(),'Datensicherung');
+          const styles={group:await readStyle(backup),summary:await readStyle(summary)};
+          if(!reference)reference=styles;
+          else assert.deepEqual(styles,reference,'shared backup presentation at '+width+'px');
+          assert.ok((await summary.boundingBox()).height>=44,'backup target at least 44px');
+          await summary.focus();
+          await summary.press('Enter');
+          assert.equal(await content.isVisible(),true,'keyboard opens backup');
+          assert.equal(await content.locator('a[href="/?settings=1#datensicherung"]').count(),1);
+          const fits=await modal.locator('.ty-unified-settings-panel').evaluate(p=>p.scrollWidth<=p.clientWidth+1 && p.getBoundingClientRect().width<=innerWidth);
+          assert.equal(fits,true,'settings fit viewport '+width);
+          await summary.click();
+          assert.equal(await content.isVisible(),false,'pointer closes backup');
+          for(const id of ['loginEmail','loginPassword','forgotPassword','registerUser','loginSubmit','logoutUser','passwordRecoveryPanel'])assert.equal(await modal.locator('#'+id).count(),1,'preserve '+id);
+          assert.equal(await modal.locator('details.toolya-appearance').count(),1);
+          assert.equal(await modal.locator('.ty-pwa-settings').count(),1);
+          await settingsPage.screenshot({path:'test-results/settings-'+(backupId?'wishlist':'dashboard')+'-'+width+'.png'});
+          await modal.locator('#closeSettingsBtn').click();
+          assert.equal(await modal.isVisible(),false);
+        }
+      }
+      console.log('PASS: real dashboard and Wishlist settings, shared styles, 320/768/1440px, keyboard/pointer backup accordion and preserved account controls; no external requests');
+    }finally{await settingsContext.close();}
+
   } finally {
     await browser?.close();
     server.close();
