@@ -26,9 +26,32 @@ export function refreshSettingsSections(surface,locale){
 }
 // Reuse the home page's accessible <details> accordion across legacy tool dialogs.
 // Move existing nodes instead of recreating them: IDs, listeners and each tool's data stay intact.
+const mountedSurfaces=new WeakSet();
+function normalizeExistingSections(surface){
+ for(const details of surface.children){
+  if(!details.matches('details.ty-settings-group')||details.matches('.ty-pwa-settings'))continue;
+  details.classList.add('ty-unified-settings-group');
+  const body=Array.from(details.children).find(node=>node.matches('.ty-settings-content'));
+  body?.classList.add('ty-unified-settings-content');
+  const summary=Array.from(details.children).find(node=>node.matches('summary'));
+  if(!details.dataset.settingsSection&&summary){
+   const kind=Object.keys(SETTINGS_SECTIONS).find(key=>Object.values(SETTINGS_SECTIONS[key]).includes(summary.textContent.trim()));
+   if(kind)details.dataset.settingsSection=kind;
+  }
+ }
+ surface.classList.add('ty-unified-settings-panel');
+}
 export function unifyToolSettings(modal) {
  if(!modal || document.body.classList.contains('b3-home'))return false;
  const surface=modal.firstElementChild?.matches?.('div') ? modal.firstElementChild : modal;
+ const isEnglish=()=>{const active=globalThis.__toolyaUILocale||globalThis.__toolyaWishesLocale||globalThis.__toolyaEstateLocale||globalThis.__toolyaDashboardLocale;if(active)return active==='en';return readAppLocale()==='en'};
+ normalizeExistingSections(surface);
+ const refresh=()=>refreshSettingsSections(surface,isEnglish()?'en':'de');
+ if(!mountedSurfaces.has(surface)){
+  for(const event of ['toolya:locale-change','toolya:wishes-locale-change','toolya:estate-locale-change','toolya:dashboard-locale-change'])document.addEventListener?.(event,refresh);
+  mountedSurfaces.add(surface);
+ }
+ refresh();
  if(surface.dataset.toolyaAccordion==='1')return true;
  const children=[...surface.children];
  const isAppearance=node=>node.matches?.('.toolya-appearance,details.toolya-appearance');
@@ -47,7 +70,7 @@ export function unifyToolSettings(modal) {
  const candidates=children.filter(node=>
    !isAppearance(node)&&!isSupport(node)&&!isHeader(node)&&!isFooter(node) &&
    !node.matches?.('script,style,details.ty-settings-group') && !node.classList?.contains('toolya-settings-accordion'));
- if(!candidates.length){surface.dataset.toolyaAccordion='1';return false}
+ if(!candidates.length){surface.dataset.toolyaAccordion='1';return true}
  const contentText=node=>(node.querySelector?.('h2,h3,h4,legend,summary')?.textContent||node.textContent||'').slice(0,180).toLowerCase();
  function identify(node){
   if(node.querySelector?.('.b3-backup-actions,[id*="backupActions"],[id="settingsBackupTitle"]'))return 'backup';
@@ -64,7 +87,7 @@ export function unifyToolSettings(modal) {
  // The account form is usually the first block; loose following blocks inherit its group.
  let current='account';
  for(const item of items){if(item.kind)current=item.kind;else item.kind=current}
- const isEnglish=()=>{const active=globalThis.__toolyaUILocale||globalThis.__toolyaWishesLocale||globalThis.__toolyaEstateLocale||globalThis.__toolyaDashboardLocale;if(active)return active==='en';return readAppLocale()==='en'};
+
  const groups=new Map(),order=[];
  for(const {node,kind} of items){
   if(!groups.has(kind)){
@@ -75,9 +98,8 @@ export function unifyToolSettings(modal) {
  }
  const anchor=children.find(node=>isAppearance(node)||isFooter(node)||isSupport(node));
  for(const kind of order)surface.insertBefore(groups.get(kind).details,anchor||null);
- const refresh=()=>refreshSettingsSections(surface,isEnglish()?'en':'de');
- for(const event of ['toolya:locale-change','toolya:wishes-locale-change','toolya:estate-locale-change','toolya:dashboard-locale-change'])document.addEventListener?.(event,refresh);
- surface.classList.add('ty-unified-settings-panel');
+ normalizeExistingSections(surface);
+ refresh();
  surface.dataset.toolyaAccordion='1';
  return true;
 }
