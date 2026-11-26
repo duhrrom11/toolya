@@ -19,6 +19,8 @@
    return account;
   }
   account=root.supabase.createClient(url,key);
+  // Preserve the raw SDK client for database operations; account adapters are opt-in.
+  if(account?.auth)root.toolyaAccountService=forClient(account);
   identity={url,key};
   return account;
  }
