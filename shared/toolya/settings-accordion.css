@@ -13,11 +13,13 @@ body:not(.b3-home) :is(#settingsModal,#settings-modal,.toolya-settings-dialog) .
 body:not(.b3-home) :is(#settingsModal,#settings-modal,.toolya-settings-dialog) .ty-unified-settings-group,
 body:not(.b3-home) :is(#settingsModal,#settings-modal,.toolya-settings-dialog) .ty-unified-settings-panel>details.toolya-appearance{
  display:block;
+ padding:0;
  margin:12px 0;
  border:1px solid #cadee8;
  border-radius:14px;
  background:#f6fbfd;
  color:#143a49;
+ font:400 1rem/1.6 system-ui,sans-serif;
  overflow:visible;
  box-shadow:none;
 }
@@ -85,6 +87,7 @@ body:not(.b3-home) :is(#settingsModal,#settings-modal,.toolya-settings-dialog) .
 :is(#settingsModal,#settings-modal,.toolya-settings-dialog) .ty-pwa-settings {
   box-sizing:border-box;
   display:block;
+  padding:0;
   margin:12px 0;
   overflow:hidden;
   border:1px solid #cadddf;
@@ -193,4 +196,78 @@ body:not(.b3-home) :is(#settingsModal,#settings-modal,.toolya-settings-dialog) .
 @media(max-width:420px){
   .ty-pwa-lead {padding:12px;gap:11px}
   .ty-pwa-icon {width:48px;height:48px;flex-basis:48px}
+}
+
+/* Native settings shells share the dashboard layout, irrespective of the tool's page theme. */
+body:not(.b3-home) #settingsModal.ty-native-settings{
+ position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;
+ margin:0;border:0;background:transparent;padding:16px;overflow:auto;
+ box-sizing:border-box;
+}
+body:not(.b3-home) #settingsModal.ty-native-settings:not([open]){display:none}
+body:not(.b3-home) #settingsModal.ty-native-settings[open]{display:flex;align-items:center;justify-content:center}
+body:not(.b3-home) #settingsModal.ty-native-settings::backdrop{background:#071f2c99}
+body:not(.b3-home) #settingsModal.ty-native-settings .ty-unified-settings-panel{
+ width:min(100%,520px);max-height:min(88dvh,900px);
+ box-shadow:0 18px 65px #0004;
+}
+#settingsModal.ty-native-settings .ty-settings-heading{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ border-bottom:1px solid #d8e8ee;padding-bottom:10px;
+}
+#settingsModal.ty-native-settings .ty-settings-heading h2{font-size:20px;margin:0;min-width:0}
+#settingsModal.ty-native-settings .ty-settings-heading button{
+ min-width:44px;min-height:44px;flex-shrink:0;
+ background:transparent;border:0;color:#526975;font-size:26px;padding:2px 10px;box-shadow:none;
+}
+#settingsModal.ty-native-settings .ty-unified-settings-content label:not(.toolya-preferences label){
+ display:grid;gap:5px;font-size:13px;font-weight:700;margin:10px 0;
+}
+#settingsModal.ty-native-settings .ty-unified-settings-content label input:not([type=checkbox]){font-weight:400}
+#settingsModal.ty-native-settings #cloudStatus{padding:12px;background:#f2f7f9;border-radius:10px;font-size:13px}
+#settingsModal.ty-native-settings #loginMessage{min-height:1.5em;font-size:13px}
+#settingsModal.ty-native-settings .settings-text-button{
+ padding:5px 0;background:none;border:0;color:#08727c;text-decoration:underline;font-size:13px;box-shadow:none;
+}
+#settingsModal.ty-native-settings .ty-settings-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:12px;padding-top:16px}
+#settingsModal.ty-native-settings .ty-settings-footer button{background:#e9f2f4;color:#20515b}
+#settingsModal.ty-native-settings .toolya-preferences input[type=checkbox]{
+ width:auto;min-height:0;display:inline-block;margin:0 8px 0 0;
+}
+#settingsModal.ty-native-settings .toolya-preferences select{width:auto;max-width:100%}
+#settingsModal.ty-native-settings .ty-unified-settings-content>.wishlist-settings-section{
+ padding:0;margin:0;border:0;background:transparent;box-shadow:none;
+}
+@media(max-width:540px){
+ body:not(.b3-home) #settingsModal.ty-native-settings{padding:10px}
+ body:not(.b3-home) #settingsModal.ty-native-settings .ty-unified-settings-panel{max-height:calc(100dvh - 20px)}
+}
+
+/* Account controls must not inherit different button/input styles from each tool. */
+#settingsModal.ty-native-settings .ty-unified-settings-panel{
+ font:400 1rem/1.6 system-ui,sans-serif;
+}
+#settingsModal.ty-native-settings .ty-unified-settings-content input:not([type=checkbox],[type=radio],[type=file]){
+ display:block;width:100%;margin:0;padding:11px 12px;border:1px solid #bccfd4;
+ border-radius:12px;background:#fff;color:#17334a;font:400 1rem/1.4 system-ui,sans-serif;
+}
+#settingsModal.ty-native-settings .ty-unified-settings-content button:not(.settings-text-button,.ty-pwa-action){
+ display:inline-flex;align-items:center;justify-content:center;min-height:44px;
+ padding:11px 15px;border:0;border-radius:10px;background:#087b85;color:#fff;
+ font:700 .9rem/1.4 system-ui,sans-serif;
+}
+#settingsModal.ty-native-settings .ty-unified-settings-content button:not(.settings-text-button,.ty-pwa-action):hover{background:#075d65}
+#settingsModal.ty-native-settings .ty-settings-content .toolya-preferences{
+ border:1px solid #d0e2ed;border-radius:12px;padding:7px 10px;margin:0;
+}
+#settingsModal.ty-native-settings .ty-settings-content .toolya-preferences label{
+ display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0;
+ font:600 .875rem/1.4 system-ui,sans-serif;
+}
+#settingsModal.ty-native-settings .ty-settings-content .toolya-preferences select{
+ display:inline-block;width:auto;max-width:100%;min-height:44px;padding:8px;
+ border:1px solid #bccfd4;border-radius:10px;background:white;color:#17334a;font:inherit;
+}
+#settingsModal.ty-native-settings .ty-settings-footer button{
+ border:0;border-radius:10px;min-height:44px;padding:11px 15px;font:700 .9rem/1.4 system-ui,sans-serif;
 }
