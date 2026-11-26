@@ -367,7 +367,7 @@
                 return;
             }
 
-            const { error } = await window.supabaseClient.auth.signUp({ email, password });
+            const { error } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signUp({ email, password });
             if (error) {
                 alert(error.message);
                 return;
@@ -387,7 +387,7 @@
                 return;
             }
 
-            const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+            const { error } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signInWithPassword({ email, password });
             if (error) {
                 alert(error.message);
                 return;
@@ -398,12 +398,12 @@
         }
 
         async function logoutUser() {
-            await window.supabaseClient.auth.signOut();
+            await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signOut();
             updateUserDisplay();
         }
 
         async function updateUserDisplay() {
-            const { data } = await window.supabaseClient.auth.getUser();
+            const { data } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser();
             const user = data?.user;
 
             const headerInfo = document.getElementById("userInfo");
@@ -439,7 +439,7 @@
             void petCloudBoot();
         });
 
-        supabaseClient.auth.onAuthStateChange((event,session) => {
+        (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).onAuthStateChange((event,session) => {
             if(petCloudReady&&(!session?.user?.id||session.user.id!==petCloudUserId||session.user.is_anonymous))
                 petCloudBlock('account-changed');
             // Auth callbacks run while the SDK holds its session lock.
@@ -467,7 +467,7 @@
             petCloudBlock('loading');
             try{
                 const {prepareCloudTool}=await import('../../shared/toolya/cloud-tool-adapters.mjs');
-                const {data:auth,error}=await supabaseClient.auth.getUser();
+                const {data:auth,error}=await (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).getUser();
                 if(error||!auth?.user?.id||auth.user.is_anonymous)throw Error('Registrierte Anmeldung erforderlich.');
                 const uid=auth.user.id;
                 const prepared=await prepareCloudTool({
@@ -482,7 +482,7 @@
                         return confirm(window.__toolyaUILocale === 'en' ? 'Please confirm that you downloaded the backup.' : 'Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
                     }
                 });
-                const {data:again,error:againError}=await supabaseClient.auth.getUser();
+                const {data:again,error:againError}=await (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).getUser();
                 if(againError||again?.user?.id!==uid||again.user.is_anonymous)throw Error('Konto gewechselt.');
                 petCloudController=prepared.controller;petCloudUserId=uid;petCloudReady=true;
                 document.getElementById('toolya-cloud-gate')?.remove();
@@ -505,7 +505,7 @@
         async function saveData(data){
             if(!petCloudReady||!petCloudController?.ready){petCloudBlock('load-failed');return false;}
             try{
-                const {data:auth,error}=await supabaseClient.auth.getUser();
+                const {data:auth,error}=await (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).getUser();
                 if(error||auth?.user?.id!==petCloudUserId||auth.user.is_anonymous)throw Error('Anmeldung nicht gültig.');
                 await petCloudController.replace(data);
                 window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Saved to Toolya Cloud.' : 'In Toolya Cloud gespeichert.');return true;

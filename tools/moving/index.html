@@ -394,7 +394,7 @@
 
             let data, error;
             try {
-                ({ data, error } = await window.supabaseClient.auth.signUp({ email, password }));
+                ({ data, error } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signUp({ email, password }));
             } catch (err) {
                 return alert((window.__toolyaUILocale === 'en' ? 'Registration failed: ' : 'Registrierung fehlgeschlagen: ') + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             }
@@ -426,7 +426,7 @@
 
             let error;
             try {
-                ({ error } = await window.supabaseClient.auth.signInWithPassword({ email, password }));
+                ({ error } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signInWithPassword({ email, password }));
             } catch (err) {
                 return alert((window.__toolyaUILocale === 'en' ? 'Sign-in failed: ' : 'Anmeldung fehlgeschlagen: ') + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             }
@@ -441,7 +441,7 @@
 
         async function logoutUser() {
             try {
-                const { error } = await window.supabaseClient.auth.signOut();
+                const { error } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signOut();
                 if (error) return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             } catch (error) {
                 return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
@@ -456,7 +456,7 @@
             let user = null;
             let sessionError = null;
             try {
-                const result = await window.supabaseClient.auth.getUser();
+                const result = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser();
                 sessionError = result?.error?.name === 'AuthSessionMissingError' ? null : (result?.error ?? null);
                 user = sessionError ? null : (result?.data?.user ?? null);
             } catch (error) {
@@ -506,7 +506,7 @@
             try { updateUserDisplay(); } catch(e){}
         });
 
-        supabaseClient.auth.onAuthStateChange((event,session) => {
+        (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).onAuthStateChange((event,session) => {
             // Invalidate immediately: a previous user's in-memory snapshot must
             // never remain usable across logout or account changes.
             if (movingCloudReady &&
@@ -548,7 +548,7 @@
             movingCloudBlock('loading');
             try {
                 const {prepareCloudTool} = await import('../../shared/toolya/cloud-tool-adapters.mjs');
-                const {data:auth,error} = await window.supabaseClient.auth.getUser();
+                const {data:auth,error} = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser();
                 if (error || !auth?.user?.id || auth.user.is_anonymous)
                     throw Error('Registrierte Anmeldung erforderlich.');
                 const uid = auth.user.id;
@@ -564,7 +564,7 @@
                         return confirm(window.__toolyaUILocale === 'en' ? 'Please confirm that the backup was downloaded successfully.' : 'Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.');
                     }
                 });
-                const {data:again,error:againError}=await window.supabaseClient.auth.getUser();
+                const {data:again,error:againError}=await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser();
                 if (againError || again?.user?.id!==uid || again.user.is_anonymous)
                     throw Error('Konto während des Ladens gewechselt.');
                 movingCloudController=prepared.controller;
@@ -594,7 +594,7 @@
                 return false;
             }
             try {
-                const {data:auth,error}=await window.supabaseClient.auth.getUser();
+                const {data:auth,error}=await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser();
                 if (error || !auth?.user?.id || auth.user.id!==movingCloudUserId || auth.user.is_anonymous)
                     throw Error('Anmeldung nicht mehr gültig.');
                 await movingCloudController.replace(data);

@@ -1,4 +1,29 @@
 import {readAppLocale} from './i18n/locale.mjs';
+export const SETTINGS_SECTIONS=Object.freeze({
+ account:Object.freeze({de:'Toolya-Konto',en:'Toolya account'}),
+ backup:Object.freeze({de:'Datensicherung',en:'Backup'}),
+ extra:Object.freeze({de:'Weitere Einstellungen',en:'More settings'}),
+ help:Object.freeze({de:'Hilfe und Anleitung',en:'Help and guide'})
+});
+export function settingsLabel(kind,locale){return SETTINGS_SECTIONS[kind]?.[locale==='en'?'en':'de']||''}
+export function createSettingsSection(doc,kind,locale='de'){
+ if(!Object.hasOwn(SETTINGS_SECTIONS,kind))throw new Error('Unknown settings section');
+ const details=doc.createElement('details');
+ details.className='ty-settings-group ty-unified-settings-group';
+ details.dataset.settingsSection=kind;
+ const summary=doc.createElement('summary');summary.textContent=settingsLabel(kind,locale);
+ const body=doc.createElement('div');body.className='ty-settings-content ty-unified-settings-content';
+ details.append(summary,body);
+ return {details,summary,body};
+}
+export function refreshSettingsSections(surface,locale){
+ for(const details of surface.querySelectorAll('details[data-settings-section]')){
+  const label=settingsLabel(details.dataset.settingsSection,locale);
+  const summary=details.querySelector('summary');
+  // Preserve any icons, nested controls and custom headings.
+  if(label&&summary&&!summary.children.length&&Object.values(SETTINGS_SECTIONS[details.dataset.settingsSection]).includes(summary.textContent.trim()))summary.textContent=label;
+ }
+}
 // Reuse the home page's accessible <details> accordion across legacy tool dialogs.
 // Move existing nodes instead of recreating them: IDs, listeners and each tool's data stay intact.
 export function unifyToolSettings(modal) {
@@ -39,24 +64,18 @@ export function unifyToolSettings(modal) {
  // The account form is usually the first block; loose following blocks inherit its group.
  let current='account';
  for(const item of items){if(item.kind)current=item.kind;else item.kind=current}
- const labels={account:'Toolya-Konto',backup:'Datensicherung',extra:'Weitere Einstellungen',help:'Hilfe und Anleitung'};
- const enLabels={account:'Toolya account',backup:'Backup',extra:'More settings',help:'Help and guide'};
  const isEnglish=()=>{const active=globalThis.__toolyaUILocale||globalThis.__toolyaWishesLocale||globalThis.__toolyaEstateLocale||globalThis.__toolyaDashboardLocale;if(active)return active==='en';return readAppLocale()==='en'};
  const groups=new Map(),order=[];
  for(const {node,kind} of items){
   if(!groups.has(kind)){
-   const details=document.createElement('details');
-   details.className='ty-settings-group ty-unified-settings-group';
-   details.dataset.settingsSection=kind;
-   const summary=document.createElement('summary');summary.textContent=(isEnglish()?enLabels:labels)[kind];
-   const body=document.createElement('div');body.className='ty-settings-content ty-unified-settings-content';
-   details.append(summary,body);groups.set(kind,{details,body});order.push(kind);
+   const group=createSettingsSection(document,kind,isEnglish()?'en':'de');
+   groups.set(kind,group);order.push(kind);
   }
   groups.get(kind).body.append(node);
  }
  const anchor=children.find(node=>isAppearance(node)||isFooter(node)||isSupport(node));
  for(const kind of order)surface.insertBefore(groups.get(kind).details,anchor||null);
- const refresh=()=>{for(const [kind,{details}] of groups){const summary=details.querySelector('summary');if(summary)summary.textContent=(isEnglish()?enLabels:labels)[kind]}};
+ const refresh=()=>refreshSettingsSections(surface,isEnglish()?'en':'de');
  for(const event of ['toolya:locale-change','toolya:wishes-locale-change','toolya:estate-locale-change','toolya:dashboard-locale-change'])document.addEventListener?.(event,refresh);
  surface.classList.add('ty-unified-settings-panel');
  surface.dataset.toolyaAccordion='1';

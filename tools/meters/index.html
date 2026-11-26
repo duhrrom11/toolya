@@ -432,7 +432,7 @@
                 return;
             }
 
-            const { error } = await window.supabaseClient.auth.signUp({ email, password });
+            const { error } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signUp({ email, password });
             if (error) {
                 alert(error.message);
                 return;
@@ -452,7 +452,7 @@
                 return;
             }
 
-            const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+            const { error } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signInWithPassword({ email, password });
             if (error) {
                 alert(error.message);
                 return;
@@ -463,12 +463,12 @@
         }
 
         async function logoutUser() {
-            await window.supabaseClient.auth.signOut();
+            await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signOut();
             updateUserDisplay();
         }
 
         async function updateUserDisplay() {
-            const { data } = await window.supabaseClient.auth.getUser();
+            const { data } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser();
             const user = data?.user;
 
             const headerInfo = document.getElementById("userInfo");
@@ -505,7 +505,7 @@
         });
 
         // Auth State Listener
-        supabaseClient.auth.onAuthStateChange((event,session) => {
+        (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).onAuthStateChange((event,session) => {
             if(metersCloudReady && (!session?.user?.id || session.user.id!==metersCloudUserId || session.user.is_anonymous))
                 metersCloudBlock('account-changed');
             // Auth callbacks run while the SDK holds its session lock.
@@ -558,7 +558,7 @@
             metersCloudBlock('loading');
             try {
                 const {prepareCloudTool}=await import('../../shared/toolya/cloud-tool-adapters.mjs');
-                const {data:auth,error}=await supabaseClient.auth.getUser();
+                const {data:auth,error}=await (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).getUser();
                 if(error||!auth?.user?.id||auth.user.is_anonymous)throw Error('Registrierte Anmeldung erforderlich.');
                 const uid=auth.user.id;
                 const prepared=await prepareCloudTool({
@@ -573,7 +573,7 @@
                         return confirm('Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
                     }
                 });
-                const {data:again,error:againError}=await supabaseClient.auth.getUser();
+                const {data:again,error:againError}=await (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).getUser();
                 if(againError||again?.user?.id!==uid||again.user.is_anonymous)throw Error('Konto während des Ladens gewechselt.');
                 metersCloudController=prepared.controller;metersCloudUserId=uid;metersCloudReady=true;
                 document.getElementById('toolya-cloud-gate')?.remove();
@@ -590,7 +590,7 @@
                 metersCloudBlock('load-failed');return false;
             }
             try {
-                const {data:auth,error}=await supabaseClient.auth.getUser();
+                const {data:auth,error}=await (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).getUser();
                 if(error||auth?.user?.id!==metersCloudUserId||auth.user.is_anonymous)
                     throw Error('Anmeldung nicht mehr gültig.');
                 await metersCloudController.replace(data);

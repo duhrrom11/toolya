@@ -56,7 +56,7 @@ async function refresh(token,request=++authRequest){
  if(request!==authRequest)return;
  if(!client){renderUser(null,true);return}
  try{
-  const {data,error}=await withAccountDeadline(()=>client.auth.getUser(token));
+  const {data,error}=await withAccountDeadline(()=>(globalThis.toolyaAuth?.forClient(client) || client.auth).getUser(token));
   if(request!==authRequest)return;
   renderUser(error?null:data?.user,error&&error.name!=='AuthSessionMissingError');
  }catch{if(request===authRequest)renderUser(null,true)}
@@ -99,7 +99,7 @@ async function login(){
  const button=$('loginSubmit');if(button.disabled)return;
  button.disabled=true;button.textContent='Wird angemeldet …';message('Anmeldung wird geprüft …');
  try{
-  const {data,error}=await withAccountDeadline(()=>client.auth.signInWithPassword(values),15000);
+  const {data,error}=await withAccountDeadline(()=>(globalThis.toolyaAuth?.forClient(client) || client.auth).signInWithPassword(values),15000);
   if(error)throw error;
   if(!data?.user||!data?.session?.access_token){message('Keine bestätigte Anmeldung erhalten.');return}
   ++authRequest;renderUser(data.user);message('Erfolgreich angemeldet.');closeSettings();
@@ -109,7 +109,7 @@ async function login(){
 async function register(){
  const values=credentials();if(!values||!client)return;
  try{
-  const {data,error}=await client.auth.signUp(values);
+  const {data,error}=await (globalThis.toolyaAuth?.forClient(client) || client.auth).signUp(values);
   if(error)throw error;
   message(data?.session?'Registrierung erfolgreich.':'Registrierung eingereicht. Bitte prüfe deine E-Mails zur Bestätigung.');
   await refresh(data?.session?.access_token);
@@ -118,7 +118,7 @@ async function register(){
 }
 async function logout(){
  if(!client)return;
- try{const {error}=await client.auth.signOut();if(error)throw error;++authRequest;renderUser(null);$('loginPassword').value='';message('Abgemeldet.');if($('settingsModal').open)$('loginEmail').focus({preventScroll:true})}
+ try{const {error}=await (globalThis.toolyaAuth?.forClient(client) || client.auth).signOut();if(error)throw error;++authRequest;renderUser(null);$('loginPassword').value='';message('Abgemeldet.');if($('settingsModal').open)$('loginEmail').focus({preventScroll:true})}
  catch(error){message(accountErrorMessage(error,'Abmeldung fehlgeschlagen. Bitte versuche es erneut.'))}
 }
 async function reset(){
@@ -129,7 +129,7 @@ async function reset(){
    const active=window.__toolyaWishesLocale||window.__toolyaDashboardLocale||new URLSearchParams(location.search).get('lang')||localStorage.getItem('toolya-locale-v1');
    localStorage.setItem('toolya-recovery-locale-v1',active==='en'?'en':'de');
   }catch{}
-  const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:'https://toolya.app/index.html'});
+  const {error}=await (globalThis.toolyaAuth?.forClient(client) || client.auth).resetPasswordForEmail(email,{redirectTo:'https://toolya.app/index.html'});
   if(error)throw error;
   message('Falls ein Konto für diese E-Mail-Adresse existiert, erhältst du einen Link zum Zurücksetzen des Passworts.');
  }catch(error){message(accountErrorMessage(error,'Die Anfrage konnte gerade nicht verarbeitet werden. Bitte versuche es später erneut.'))}
@@ -145,13 +145,13 @@ async function saveRecovery(){
  saveButton.disabled=true;
  try{
   try{
-   const {error}=await client.auth.updateUser({password:a.value});if(error)throw error;
+   const {error}=await (globalThis.toolyaAuth?.forClient(client) || client.auth).updateUser({password:a.value});if(error)throw error;
   }catch{message('Passwort konnte nicht geändert werden. Bitte fordere einen neuen Link an.');return}
   // A successful update must not be reported as a failed password change if
   // the subsequent sign-out fails. Never display a false signed-out state.
   a.value='';b.value='';recoveryActive=false;$('passwordRecoveryPanel').hidden=true;
   try{
-   const {error}=await client.auth.signOut();if(error)throw error;
+   const {error}=await (globalThis.toolyaAuth?.forClient(client) || client.auth).signOut();if(error)throw error;
    ++authRequest;renderUser(null);message('Passwort geändert. Bitte erneut anmelden.');
   }catch{
    void refresh();
@@ -182,7 +182,7 @@ if(params.has('auth')||params.has('settings')){
 }
 initialAccountTimer=setTimeout(()=>{++authRequest;renderUser(null,true)},10000);
  if(client){
- client.auth.onAuthStateChange((event,session)=>{
+ (globalThis.toolyaAuth?.forClient(client) || client.auth).onAuthStateChange((event,session)=>{
   if(event==='PASSWORD_RECOVERY'){++authRequest;showRecovery();renderUser(null);return}
   if(!session){++authRequest;renderUser(null);return}
   if(recoveryActive)return;

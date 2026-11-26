@@ -40,7 +40,7 @@ async function load(){
  if(!client){show('Die Anmeldung konnte nicht geladen werden.');return}
  show('Administratorzugriff wird geprüft …');
  try{
-  const {data:{session},error}=await client.auth.getSession();
+  const {data:{session},error}=await (globalThis.toolyaAuth?.forClient(client) || client.auth).getSession();
   if(error||!session){show('Bitte zuerst im Toolya-Dashboard anmelden.');return}
   const response=await fetch(endpoint+'?days='+encodeURIComponent($('period').value),{headers:{Authorization:'Bearer '+session.access_token,apikey:KEY},cache:'no-store'});
   if(response.status===401||response.status===403){show('Zugriff verweigert: Dieses Konto ist nicht als Statistik-Administrator freigeschaltet.');return}

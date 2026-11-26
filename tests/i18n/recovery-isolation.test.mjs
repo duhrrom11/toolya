@@ -75,8 +75,8 @@ test('successful recovery signs out after update and retains central token-only 
  assert.deepEqual(fixture.calls.map(([name])=>name),['update','signOut']);
  assert.equal(fixture.node('loginMessage').textContent,'Passwort geändert. Bitte erneut anmelden.');
  const home=await readFile(new URL('../../index.html',import.meta.url),'utf8');
- assert.match(home,/auth\.resetPasswordForEmail\(email,/);
- assert.match(home,/auth\.updateUser\(\{ password: newPassword \}\)/);
+ assert.match(home,/toolyaAuth\?\.forClient\(window\.supabaseClient\) \|\| window\.supabaseClient\.auth\)\.resetPasswordForEmail\(email,/);
+ assert.match(home,/toolyaAuth\?\.forClient\(window\.supabaseClient\) \|\| window\.supabaseClient\.auth\)\.updateUser\(\{ password: newPassword \}\)/);
  assert.match(home,/Passwort geändert, aber Abmelden fehlgeschlagen/);
  assert.match(home,/if \(error\) throw error;\s*updateUserDisplay\(\)/);
  assert.equal(dashboardText('user@example.org','en'),'user@example.org');

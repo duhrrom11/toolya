@@ -17,7 +17,7 @@ export function createDashboardCloud(onState) {
   }));
   const requireUser = async () => {
     if (!currentUser || active !== 'cloud') throw Error('Die Cloud ist noch nicht bereit.');
-    const { data, error } = await client.auth.getUser();
+    const { data, error } = await (globalThis.toolyaAuth?.forClient(client) || client.auth).getUser();
     if (error || !data?.user || data.user.is_anonymous || data.user.id !== currentUser.id) {
       throw Error('Anmeldung nicht mehr gültig. Bitte erneut anmelden.');
     }
@@ -44,7 +44,7 @@ export function createDashboardCloud(onState) {
     if (!client) { currentUser = null; signal('local'); return; }
     signal('loading', 'Kontostatus wird geprüft …');
     try {
-      const { data, error } = await client.auth.getUser();
+      const { data, error } = await (globalThis.toolyaAuth?.forClient(client) || client.auth).getUser();
       if (seq !== generation) return;
       if (error) {
         if (error.name === 'AuthSessionMissingError' || /Auth session missing/i.test(error.message || '')) {
@@ -140,7 +140,7 @@ export function createDashboardCloud(onState) {
     if (started) { void syncAuth(); return; }
     started = true;
     if (client) {
-      client.auth.onAuthStateChange(() => {
+      (globalThis.toolyaAuth?.forClient(client) || client.auth).onAuthStateChange(() => {
         // Avoid invoking auth APIs within the Supabase auth callback.
         queueMicrotask(() => { void syncAuth(); });
       });
