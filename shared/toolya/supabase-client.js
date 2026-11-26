@@ -48,5 +48,7 @@
   services.set(client,service);
   return service;
  }
- root.toolyaAuth=Object.freeze({get,deadline,forClient});
+ // Compatibility adapter for existing UI and isolated test clients.
+ function accountApi(client){return forClient(client);}
+ root.toolyaAuth=Object.freeze({get,deadline,forClient,accountApi});
 })(typeof window==='undefined'?globalThis:window);
