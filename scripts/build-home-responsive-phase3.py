@@ -40,22 +40,16 @@ def image(src,maxdim,name,limit):
     row={'source':src,'output':dest,'width':ref.width,'height':ref.height,'bytes':size,'comparedBytes':limit,'psnr':round(score,2),'quality':q,'alphaExact':True}
     rows.append(row)
     return row
-hero960=next(x for x in manifest['images'] if x['source'].endswith('/hero-duo-960.webp'))
-hero=image(hero960['source'],768,'hero-duo-768',hero960['bytes'])
+# Keep the existing hero unchanged: the 768px variant failed mobile screenshot quality.
 cards={}
 for item in manifest['images']:
     if '/hero-duo' in item['source']:continue
     stem=pathlib.Path(item['source']).stem
     variants=[v for n in (112,160) if (v:=image(item['source'],n,stem+'-'+str(n),item['bytes']))]
     if variants:cards[item['output']]=(item,variants)
-assert hero or cards,'No derivative passed visual quality and size gates'
+assert cards,'No derivative passed visual quality and size gates'
 for p in ['index.html','en/index.html']:
     file=root/p; old=file.read_text(); html=old
-    if hero:
-        # Keep high-DPR originals; preload and IMG use the identical candidate list.
-        target='/'+hero960['output']+' 960w'
-        assert html.count(target)==2
-        html=html.replace(target,'/'+hero['output']+' '+str(hero['width'])+'w, '+target)
     def patch(m):
         tag=m.group()
         src=re.search(r'\bsrc="/([^"]+)"',tag)
@@ -94,13 +88,15 @@ sw.write_text(source)
 # require dedicated visual tests before it can replace the existing asset.
 atlas=root/'assets/toolya/outfits.webp'
 with Image.open(atlas) as im: a=im.convert('RGBA')
-assert a.width%8==0 and a.height%4==0
+assert a.width>=8 and a.height>=4
+# CSS uses fractional cell boundaries; rounded boundaries cover every source pixel.
+xs=[round(i*a.width/8) for i in range(9)]
+ys=[round(i*a.height/4) for i in range(5)]
 atlas_results=[]
 for q in [85,80,75,70]:
     buf=io.BytesIO();a.save(buf,'WEBP',quality=q,method=6,exact=True)
     data=buf.getvalue()
     with Image.open(io.BytesIO(data)) as im:b=im.convert('RGBA')
-    w,h=a.width//8,a.height//4
-    cell_scores=[psnr(a.crop((x*w,y*h,(x+1)*w,(y+1)*h)),b.crop((x*w,y*h,(x+1)*w,(y+1)*h))) for y in range(4) for x in range(8)]
-    atlas_results.append({'quality':q,'bytes':len(data),'minCellPSNR':round(min(cell_scores),2),'alphaExact':ImageChops.difference(a.getchannel('A'),b.getchannel('A')).getbbox() is None})
+    cell_scores=[psnr(a.crop((xs[x],ys[y],xs[x+1],ys[y+1])),b.crop((xs[x],ys[y],xs[x+1],ys[y+1]))) for y in range(4) for x in range(8)]
+    atlas_results.append({'quality':q,'bytes':len(data),'minCellPSNR':round(min(cell_scores),2),'cells':len(cell_scores),'alphaExact':ImageChops.difference(a.getchannel('A'),b.getchannel('A')).getbbox() is None})
 print(json.dumps({'variants':rows,'atlasExperiment':{'originalBytes':atlas.stat().st_size,'dimensions':a.size,'candidates':atlas_results}},indent=2))
