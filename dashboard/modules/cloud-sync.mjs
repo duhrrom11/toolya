@@ -8,7 +8,7 @@ const own = (row, userId) => row?.user_id === userId && !row.deleted_at;
 const legacyKey = (kind, id) => kind + ':' + id;
 
 export function createDashboardCloud(onState) {
-  const client = globalThis.toolyaDashboardAuthClient || globalThis.supabase?.createClient(URL, KEY);
+  const client = globalThis.toolyaDashboardAuthClient || (globalThis.toolyaAuth ? globalThis.toolyaAuth.get(URL, KEY) : globalThis.supabase?.createClient(URL, KEY));
   let generation = 0, currentUser = null, active = 'local', busy = false;
   const rows = { tasks: [], reminders: [] };
   const signal = (status, message = '') => { active = status; onState({ status, message, userId: currentUser?.id || null }); };
