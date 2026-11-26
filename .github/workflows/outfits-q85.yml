@@ -8,6 +8,7 @@ on:
       - 'scripts/outfits-lighthouse.cjs'
       - 'tests/performance/outfits-q85.cjs'
       - 'tests/platform/browser.cjs'
+      - 'tests/amazon/release-acceptance.cjs'
       - 'shared/toolya/platform.mjs'
       - 'assets/toolya/optimized/**'
 permissions:
@@ -46,6 +47,7 @@ jobs:
           cmp "$RUNNER_TEMP/sprite-snapshots/phase2/assets/toolya/outfits.webp" "$RUNNER_TEMP/sprite-snapshots/sprite/assets/toolya/outfits.webp"
           (cd "$RUNNER_TEMP/sprite-snapshots/sprite/assets/toolya/originals" && sha256sum -c SHA256SUMS)
           cp tests/platform/browser.cjs "$RUNNER_TEMP/sprite-snapshots/sprite/tests/platform/browser.cjs"
+          cp tests/amazon/release-acceptance.cjs "$RUNNER_TEMP/sprite-snapshots/sprite/tests/amazon/release-acceptance.cjs"
           if test -f assets/toolya/optimized/outfits-q85.json; then
             cmp shared/toolya/platform.mjs "$RUNNER_TEMP/sprite-snapshots/sprite/shared/toolya/platform.mjs"
             diff -r assets/toolya/optimized "$RUNNER_TEMP/sprite-snapshots/sprite/assets/toolya/optimized"
