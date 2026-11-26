@@ -71,7 +71,19 @@ test('German pages have exact matching English navigation and no auto-redirects'
     const html=read(path);
     assert.ok(html.includes('href="'+en+'" lang="en" hreflang="en" data-set-locale="en"'),path);
     assert.ok(html.includes(path==='index.html' ? '/shared/toolya/i18n/public-home.mjs' : '/shared/toolya/i18n/switcher.mjs'),path);
-    assert.ok(html.includes('/shared/toolya/i18n/switcher.css'),path);
+    if(path==='index.html' && !html.includes('/shared/toolya/i18n/switcher.css')){
+      // The optimized homepage includes the complete switcher rules in its content-addressed CSS bundle.
+      // Other pages must still link the original shared stylesheet.
+      for(const home of ['index.html','en/index.html']){
+        const page=read(home);
+        const bundle=page.match(/<link\b[^>]*\brel="stylesheet"[^>]*\bhref="\/(assets\/perf\/home-styles\.[a-f0-9]{64}\.css)"[^>]*>/);
+        assert.ok(bundle,home+' must load the hashed stylesheet');
+        const css=read(bundle[1]);
+        const originalRules=read('shared/toolya/i18n/switcher.css').replace(/\/\*[\s\S]*?\*\//g,'').trim().split(/\r?\n/).filter(Boolean);
+        assert.ok(originalRules.length>=3,'expected existing language switcher styles');
+        for(const rule of originalRules)assert.ok(css.includes(rule.trim()),home+' missing switcher rule '+rule);
+      }
+    }else assert.ok(html.includes('/shared/toolya/i18n/switcher.css'),path);
     assert.ok(!html.includes('location.replace("/en/")'),path);
   }
 });
