@@ -6,9 +6,11 @@
  const URL='https://yheogmeaosuigyaxkwth.supabase.co';
  const KEY='sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
  let account=null,identity=null;
- function get(url=URL,key=KEY){
+ function get(url,key){
   const config=root.HELPERLEIN_SUPABASE_CONFIG;
-  const production=url===URL&&key===KEY&&(!config||config.mode==='production');
+  if(url===undefined)url=config?.url||URL;
+  if(key===undefined)key=config?.publishableKey||KEY;
+  const production=url===URL&&key===KEY&&(!config||(config.mode==='production'&&config.url===URL&&config.publishableKey===KEY));
   const preview=config?.mode==='preview'&&url===config.url&&key===config.publishableKey&&url!==URL&&key!==KEY&&/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(url)&&typeof key==='string'&&key.startsWith('sb_publishable_');
   if(!production&&!preview)throw new Error('Invalid Toolya account configuration');
   if(!root.supabase?.createClient)return null;
