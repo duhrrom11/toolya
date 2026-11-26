@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const home=fs.readFileSync('index.html','utf8');
 assert.match(home,/\.ty-tool-link/);
-assert.match(home,/supabaseClient\.auth\.getUser\(\)/);
+assert.match(home,/toolyaAuth\?\.forClient\(window\.supabaseClient\) \|\| window\.supabaseClient\.auth\)\.getUser\(\)/);
 assert.match(home,/openSettings\(\)/);
 for(const [tool,controller] of [['car','toolyaCloudController'],['budget','toolyaCloudController'],['moving','movingCloudController'],['loans','loansCloudController']]){
  const html=fs.readFileSync('tools/'+tool+'/index.html','utf8');
@@ -15,7 +15,7 @@ for(const [tool,controller] of [['car','toolyaCloudController'],['budget','tooly
 console.log('PASS: account-gated home links and four CloudOnly tools without Connect panel');
 
 const gate=fs.readFileSync('shared/toolya/auth-page-gate.js','utf8');
-assert.match(gate,/auth\.getUser\(\)/);
+assert.match(gate,/toolyaAuth\?\.forClient\(client\) \|\| client\.auth\)\.getUser\(\)/);
 assert.match(gate,/is_anonymous/);
 assert.match(gate,/SIGNED_OUT/);
 for(const tool of ['moving','plants','housemates','pet-health','parking','loans','meters','baking','car','budget']){
