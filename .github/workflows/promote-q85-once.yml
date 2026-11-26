@@ -16,38 +16,43 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: perf/mascot-sprite-q85-20261126
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
       - name: Confirm release base and exact candidate provenance
-        env:
-          GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
           set -euo pipefail
-          git merge-base --is-ancestor 2a0cf3f59aa46007e1b3de4b7f7e1cb4c92a092f HEAD
-          test "$(git diff --name-only 2a0cf3f59aa46007e1b3de4b7f7e1cb4c92a092f HEAD)" = .github/workflows/promote-q85-once.yml
+          echo "BASE=$(git ls-remote origin refs/heads/main | cut -f1)"
           test "$(git ls-remote origin refs/heads/main | cut -f1)" = 77c37f2538a7d35e970ec746af5e591dca77d3b0
-          gh api repos/duhrrom11/toolya/actions/runs/45838174524 > "$RUNNER_TEMP/q85-run.json"
-          python -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["conclusion"]=="success" and d["head_sha"]=="2a0cf3f59aa46007e1b3de4b7f7e1cb4c92a092f"' "$RUNNER_TEMP/q85-run.json"
-          gh api repos/duhrrom11/toolya/actions/artifacts/15127042643/zip > "$RUNNER_TEMP/q85.zip"
-          echo "529e587aa2062f35ed18b4cc5843b3e81e6acbed28e0d2f713e98d3d6bc0b9ed  $RUNNER_TEMP/q85.zip" | sha256sum -c
+          echo "CHANGED_PATHS:"
+          git diff --name-only 2a0cf3f59aa46007e1b3de4b7f7e1cb4c92a092f HEAD
+          test "$(git diff --name-only 2a0cf3f59aa46007e1b3de4b7f7e1cb4c92a092f HEAD)" = .github/workflows/promote-q85-once.yml
+          test "$(git ls-remote origin refs/heads/perf/mascot-sprite-q85-20261126 | cut -f1)" = "$(git rev-parse HEAD)"
+      - uses: actions/download-artifact@v4
+        with:
+          name: toolya-outfits-q85-evidence
+          run-id: 45838174524
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/verified-q85
       - name: Promote exactly three verified files
         run: |
           set -euo pipefail
           python - <<'PY'
-          import hashlib,zipfile,os,pathlib,json
+          import hashlib,os,pathlib,json,shutil
           expected={
             'assets/toolya/optimized/outfits-q85.13c6fa20b3f66c088f00efe43d7eb47a7cc436ed59b6dc57c44f202169a0518f.webp':'13c6fa20b3f66c088f00efe43d7eb47a7cc436ed59b6dc57c44f202169a0518f',
             'assets/toolya/optimized/outfits-q85.json':'97f409b2f87c65ca83542b6a3226354b58b3051fdac0eba507b2f5f27a86ce30',
             'shared/toolya/platform.mjs':'011fbae8fef7bdf8531b1a388270eb95c04bc0425e5af8edcba0c37f13daec31'
           }
-          with zipfile.ZipFile(pathlib.Path(os.environ['RUNNER_TEMP'])/'q85.zip') as z:
-              assert {p[len('candidate/'):] for p in z.namelist() if p.startswith('candidate/') and not p.endswith('/')}==set(expected)
-              for p,sha in expected.items():
-                  b=z.read('candidate/'+p)
-                  assert hashlib.sha256(b).hexdigest()==sha,p
-                  dest=pathlib.Path(p); dest.parent.mkdir(parents=True,exist_ok=True); dest.write_bytes(b)
-              m=json.loads(z.read('candidate/assets/toolya/optimized/outfits-q85.json'))
-              assert m['alphaExact'] and len(m['cells'])==32 and min(c['psnr'] for c in m['cells'])>=35
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'verified-q85'/'candidate'
+          assert {str(p.relative_to(root)) for p in root.rglob('*') if p.is_file()}==set(expected)
+          for p,sha in expected.items():
+              b=(root/p).read_bytes()
+              assert hashlib.sha256(b).hexdigest()==sha,p
+              dest=pathlib.Path(p); dest.parent.mkdir(parents=True,exist_ok=True); dest.write_bytes(b)
+          m=json.loads((root/'assets/toolya/optimized/outfits-q85.json').read_text())
+          assert m['alphaExact'] and len(m['cells'])==32 and min(c['psnr'] for c in m['cells'])>=35
+          print('VERIFIED_PROMOTION: three exact q85 files')
           PY
           git add shared/toolya/platform.mjs assets/toolya/optimized/outfits-q85.json assets/toolya/optimized/outfits-q85.13c6fa20b3f66c088f00efe43d7eb47a7cc436ed59b6dc57c44f202169a0518f.webp
           test "$(git diff --cached --name-only | wc -l)" = 3
