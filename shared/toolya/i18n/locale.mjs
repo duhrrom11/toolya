@@ -83,7 +83,7 @@ export function persistAppLocale(value,scope=globalThis){
   try{scope.localStorage?.setItem(APP_LOCALE_KEY,lang)}catch{}
   if(scope.location?.href&&scope.history?.replaceState){
     const url=new URL(scope.location.href);url.searchParams.set('lang',lang);
-    scope.history.replaceState(scope.history.state,'',url.pathname+url.search+url.hash);
+    scope.history.replaceState(scope.history.state,'',url);
   }
   return lang;
 }
