@@ -1,36 +1,164 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://toolya.app/</loc></url>
-  <url><loc>https://toolya.app/amazon-wunschliste-veroeffentlichen/</loc></url>
-  <url><loc>https://toolya.app/autokosten/</loc></url>
-  <url><loc>https://toolya.app/backform-rechner/</loc><lastmod>2026-11-21</lastmod></url>
-  <url><loc>https://toolya.app/digitaler-nachlass/</loc></url>
-  <url><loc>https://toolya.app/haushaltsbuch/</loc></url>
-  <url><loc>https://toolya.app/parkplatz-merker/</loc></url>
-  <url><loc>https://toolya.app/pflanzenpflege/</loc></url>
-  <url><loc>https://toolya.app/tiergesundheit/</loc></url>
-  <url><loc>https://toolya.app/toolya-dashboard/</loc><lastmod>2026-11-21</lastmod></url>
-  <url><loc>https://toolya.app/umzugskisten/</loc></url>
-  <url><loc>https://toolya.app/verliehene-dinge/</loc></url>
-  <url><loc>https://toolya.app/wg-organisator/</loc></url>
-  <url><loc>https://toolya.app/zaehlerstaende/</loc></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url><loc>https://toolya.app/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/"/>
+  </url>
+  <url><loc>https://toolya.app/amazon-wunschliste-veroeffentlichen/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/amazon-wunschliste-veroeffentlichen/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/publish-amazon-wishlist/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/amazon-wunschliste-veroeffentlichen/"/>
+  </url>
+  <url><loc>https://toolya.app/autokosten/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/autokosten/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/vehicle-costs/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/autokosten/"/>
+  </url>
+  <url><loc>https://toolya.app/backform-rechner/</loc><lastmod>2026-11-21</lastmod>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/backform-rechner/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/cake-pan-calculator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/backform-rechner/"/>
+  </url>
+  <url><loc>https://toolya.app/digitaler-nachlass/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/digitaler-nachlass/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/digital-estate/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/digitaler-nachlass/"/>
+  </url>
+  <url><loc>https://toolya.app/haushaltsbuch/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/haushaltsbuch/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/household-budget/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/haushaltsbuch/"/>
+  </url>
+  <url><loc>https://toolya.app/parkplatz-merker/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/parkplatz-merker/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/parking-spot/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/parkplatz-merker/"/>
+  </url>
+  <url><loc>https://toolya.app/pflanzenpflege/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/pflanzenpflege/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/plant-care/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/pflanzenpflege/"/>
+  </url>
+  <url><loc>https://toolya.app/tiergesundheit/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/tiergesundheit/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/pet-health/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/tiergesundheit/"/>
+  </url>
+  <url><loc>https://toolya.app/toolya-dashboard/</loc><lastmod>2026-11-21</lastmod>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/toolya-dashboard/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/toolya-dashboard/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/toolya-dashboard/"/>
+  </url>
+  <url><loc>https://toolya.app/umzugskisten/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/umzugskisten/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/moving-boxes/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/umzugskisten/"/>
+  </url>
+  <url><loc>https://toolya.app/verliehene-dinge/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/verliehene-dinge/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/lent-items/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/verliehene-dinge/"/>
+  </url>
+  <url><loc>https://toolya.app/wg-organisator/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/wg-organisator/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/roommate-organizer/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/wg-organisator/"/>
+  </url>
+  <url><loc>https://toolya.app/zaehlerstaende/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/zaehlerstaende/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/meter-readings/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/zaehlerstaende/"/>
+  </url>
   <url><loc>https://toolya.app/tools/wishes/public.html</loc></url>
-  <url><loc>https://toolya.app/legal.html</loc></url>
-  <url><loc>https://toolya.app/privacy.html</loc></url>
-  <url><loc>https://toolya.app/en/</loc></url>
-  <url><loc>https://toolya.app/en/moving-boxes/</loc></url>
-  <url><loc>https://toolya.app/en/roommate-organizer/</loc></url>
-  <url><loc>https://toolya.app/en/plant-care/</loc></url>
-  <url><loc>https://toolya.app/en/cake-pan-calculator/</loc></url>
-  <url><loc>https://toolya.app/en/vehicle-costs/</loc></url>
-  <url><loc>https://toolya.app/en/household-budget/</loc></url>
-  <url><loc>https://toolya.app/en/digital-estate/</loc></url>
-  <url><loc>https://toolya.app/en/parking-spot/</loc></url>
-  <url><loc>https://toolya.app/en/pet-health/</loc></url>
-  <url><loc>https://toolya.app/en/lent-items/</loc></url>
-  <url><loc>https://toolya.app/en/meter-readings/</loc></url>
-  <url><loc>https://toolya.app/en/publish-amazon-wishlist/</loc></url>
-  <url><loc>https://toolya.app/en/toolya-dashboard/</loc></url>
-  <url><loc>https://toolya.app/en/legal.html</loc></url>
-  <url><loc>https://toolya.app/en/privacy.html</loc></url>
+  <url><loc>https://toolya.app/legal.html</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/legal.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/legal.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/legal.html"/>
+  </url>
+  <url><loc>https://toolya.app/privacy.html</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/privacy.html"/>
+  </url>
+  <url><loc>https://toolya.app/en/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/"/>
+  </url>
+  <url><loc>https://toolya.app/en/moving-boxes/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/umzugskisten/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/moving-boxes/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/umzugskisten/"/>
+  </url>
+  <url><loc>https://toolya.app/en/roommate-organizer/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/wg-organisator/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/roommate-organizer/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/wg-organisator/"/>
+  </url>
+  <url><loc>https://toolya.app/en/plant-care/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/pflanzenpflege/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/plant-care/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/pflanzenpflege/"/>
+  </url>
+  <url><loc>https://toolya.app/en/cake-pan-calculator/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/backform-rechner/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/cake-pan-calculator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/backform-rechner/"/>
+  </url>
+  <url><loc>https://toolya.app/en/vehicle-costs/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/autokosten/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/vehicle-costs/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/autokosten/"/>
+  </url>
+  <url><loc>https://toolya.app/en/household-budget/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/haushaltsbuch/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/household-budget/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/haushaltsbuch/"/>
+  </url>
+  <url><loc>https://toolya.app/en/digital-estate/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/digitaler-nachlass/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/digital-estate/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/digitaler-nachlass/"/>
+  </url>
+  <url><loc>https://toolya.app/en/parking-spot/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/parkplatz-merker/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/parking-spot/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/parkplatz-merker/"/>
+  </url>
+  <url><loc>https://toolya.app/en/pet-health/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/tiergesundheit/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/pet-health/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/tiergesundheit/"/>
+  </url>
+  <url><loc>https://toolya.app/en/lent-items/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/verliehene-dinge/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/lent-items/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/verliehene-dinge/"/>
+  </url>
+  <url><loc>https://toolya.app/en/meter-readings/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/zaehlerstaende/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/meter-readings/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/zaehlerstaende/"/>
+  </url>
+  <url><loc>https://toolya.app/en/publish-amazon-wishlist/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/amazon-wunschliste-veroeffentlichen/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/publish-amazon-wishlist/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/amazon-wunschliste-veroeffentlichen/"/>
+  </url>
+  <url><loc>https://toolya.app/en/toolya-dashboard/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/toolya-dashboard/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/toolya-dashboard/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/toolya-dashboard/"/>
+  </url>
+  <url><loc>https://toolya.app/en/legal.html</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/legal.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/legal.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/legal.html"/>
+  </url>
+  <url><loc>https://toolya.app/en/privacy.html</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toolya.app/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toolya.app/en/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toolya.app/privacy.html"/>
+  </url>
 </urlset>
