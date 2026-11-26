@@ -54,12 +54,10 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/perf-base" "$RUNNER_TEMP/perf-candidate"
           if test -f assets/perf/manifest.json; then
-            # Rebuild from the pre-promotion source and compare against committed bytes.
+            # Reproduce the released phase-2 bundle with ALL original inputs, not
+            # current shared source CSS (which may have changed on other routes).
             git archive e53ee4d25a117d7a81e7df990fe051543806396c | tar -x -C "$RUNNER_TEMP/perf-base"
-            git archive HEAD | tar -x -C "$RUNNER_TEMP/perf-candidate"
-            cp "$RUNNER_TEMP/perf-base/index.html" "$RUNNER_TEMP/perf-base/sw.js" "$RUNNER_TEMP/perf-candidate/"
-            cp "$RUNNER_TEMP/perf-base/en/index.html" "$RUNNER_TEMP/perf-candidate/en/"
-            rm -rf "$RUNNER_TEMP/perf-candidate/assets/perf"
+            git archive e53ee4d25a117d7a81e7df990fe051543806396c | tar -x -C "$RUNNER_TEMP/perf-candidate"
           else
             git archive HEAD | tar -x -C "$RUNNER_TEMP/perf-base"
             git archive HEAD | tar -x -C "$RUNNER_TEMP/perf-candidate"
@@ -79,6 +77,11 @@ jobs:
             cmp sw.js "$RUNNER_TEMP/perf-candidate/sw.js"
             diff -r assets/perf "$RUNNER_TEMP/perf-candidate/assets/perf"
             echo "PROMOTED_FILES_BYTE_IDENTICAL"
+            # Run subsequent browser and auth tests on the actual current release,
+            # after separately proving the historical generated assets match.
+            rm -rf "$RUNNER_TEMP/perf-candidate"
+            mkdir -p "$RUNNER_TEMP/perf-candidate"
+            git archive HEAD | tar -x -C "$RUNNER_TEMP/perf-candidate"
           fi
           (cd "$RUNNER_TEMP/perf-candidate/assets/toolya/originals" && sha256sum -c SHA256SUMS)
       - name: Compare mobile and desktop design, behavior and cache privacy
