@@ -69,7 +69,7 @@ if(u.origin===origin&&r.request().method()==='GET')return r.continue();if(static
  await page.waitForFunction(()=>{const f=document.querySelector('.toolya-idle .ty-frame');return f&&!f.hidden});
  await page.waitForFunction(()=>{
   const frame=document.querySelector('.ty-tool-hero-inner>.ty-sprite-wrap>.ty-frame');
-  return frame&&!frame.hidden&&frame.style.backgroundImage.includes('outfits.webp');
+  return frame&&!frame.hidden&&/outfits(?:-q85\.[a-f0-9]{64})?\.webp/.test(frame.style.backgroundImage);
  });
  const themed=await page.evaluate(()=>{
   const hero=document.querySelector('.ty-tool-hero');

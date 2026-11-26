@@ -16,6 +16,12 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
   '/shared/toolya/i18n/estate-copy.mjs',
   '/shared/toolya/i18n/estate-dom.mjs'
  ]);
+ // The optimized outfit is a fixed, public, content-addressed asset, not a network exception.
+ const q85='/assets/toolya/optimized/outfits-q85.13c6fa20b3f66c088f00efe43d7eb47a7cc436ed59b6dc57c44f202169a0518f.webp';
+ if(fs.existsSync(path.join(root,q85.slice(1)))){
+  assert.equal(require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(root,q85.slice(1)))).digest('hex'),'13c6fa20b3f66c088f00efe43d7eb47a7cc436ed59b6dc57c44f202169a0518f','exact reviewed public outfit bytes');
+  allowed.add(q85);
+ }
  const marker='synthetic-private-content-marker',passphrase='Synthetic passphrase marker 1234';
  const traffic=[],unexpected=[],errors=[];let browser;
  try{

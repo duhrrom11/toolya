@@ -1,0 +1,156 @@
+name: Toolya q85 mascot sprite quality and performance
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, closed]
+    paths:
+      - '.github/workflows/outfits-q85.yml'
+      - 'scripts/build-outfits-q85.py'
+      - 'scripts/outfits-lighthouse.cjs'
+      - 'tests/performance/outfits-q85.cjs'
+      - 'tests/platform/browser.cjs'
+      - 'tests/amazon/release-acceptance.cjs'
+      - 'shared/toolya/platform.mjs'
+      - 'assets/toolya/optimized/**'
+permissions:
+  contents: read
+jobs:
+  compare:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install pinned isolated tools
+        run: |
+          npm ci --ignore-scripts
+          npm install --prefix "$RUNNER_TEMP/lh" --no-audit --no-fund --ignore-scripts lighthouse@12.8.0 i18next@23.16.8
+          python -m venv "$RUNNER_TEMP/sprite-python"
+          "$RUNNER_TEMP/sprite-python/bin/pip" install Pillow==11.3.0
+      - name: Generate exact candidate and verify unchanged originals
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/sprite-snapshots/phase2" "$RUNNER_TEMP/sprite-snapshots/sprite" "$RUNNER_TEMP/sprite-report"
+          git archive f31b1b4150485754c16a21c177c3aaef64521ca6 | tar -x -C "$RUNNER_TEMP/sprite-snapshots/phase2"
+          git archive f31b1b4150485754c16a21c177c3aaef64521ca6 | tar -x -C "$RUNNER_TEMP/sprite-snapshots/sprite"
+          touch "$RUNNER_TEMP/sprite-snapshots/sprite/.toolya-perf-candidate"
+          "$RUNNER_TEMP/sprite-python/bin/python" scripts/build-outfits-q85.py "$RUNNER_TEMP/sprite-snapshots/sprite" > "$RUNNER_TEMP/sprite-report/atlas.json"
+          "$RUNNER_TEMP/sprite-python/bin/python" -m json.tool "$RUNNER_TEMP/sprite-report/atlas.json"
+          node --check "$RUNNER_TEMP/sprite-snapshots/sprite/shared/toolya/platform.mjs"
+          cmp "$RUNNER_TEMP/sprite-snapshots/phase2/assets/toolya/outfits.webp" "$RUNNER_TEMP/sprite-snapshots/sprite/assets/toolya/outfits.webp"
+          (cd "$RUNNER_TEMP/sprite-snapshots/sprite/assets/toolya/originals" && sha256sum -c SHA256SUMS)
+          cp tests/platform/browser.cjs "$RUNNER_TEMP/sprite-snapshots/sprite/tests/platform/browser.cjs"
+          cp tests/amazon/release-acceptance.cjs "$RUNNER_TEMP/sprite-snapshots/sprite/tests/amazon/release-acceptance.cjs"
+          if test -f assets/toolya/optimized/outfits-q85.json; then
+            cmp shared/toolya/platform.mjs "$RUNNER_TEMP/sprite-snapshots/sprite/shared/toolya/platform.mjs"
+            diff -r assets/toolya/optimized "$RUNNER_TEMP/sprite-snapshots/sprite/assets/toolya/optimized"
+            echo "SPRITE_PROMOTED_BYTES_IDENTICAL"
+          fi
+      - name: Compare both characters on all platform routes and all 32 cells
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          node tests/performance/outfits-q85.cjs "$RUNNER_TEMP/sprite-snapshots/phase2" "$RUNNER_TEMP/sprite-snapshots/sprite" "$RUNNER_TEMP/sprite-report"
+          "$RUNNER_TEMP/sprite-python/bin/python" - <<'PY'
+          import os,pathlib,math,json
+          from PIL import Image,ImageChops,ImageStat
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'sprite-report'
+          scores={}
+          for bg in ['light','dark']:
+              a=Image.open(root/f'cells-{bg}-0.png').convert('RGB')
+              b=Image.open(root/f'cells-{bg}-1.png').convert('RGB')
+              assert a.size==b.size==(1280,640)
+              for k in range(32):
+                  x,y=(k%8)*160,(k//8)*160
+                  box=(x,y,x+160,y+160)
+                  mse=sum(v*v for v in ImageStat.Stat(ImageChops.difference(a.crop(box),b.crop(box))).rms)/3
+                  scores[f'{bg}-{k}']=round(99 if mse==0 else 10*math.log10(255**2/mse),2)
+          (root/'rendered-cell-scores.json').write_text(json.dumps(scores,indent=2))
+          print('CELL_VISUAL_GATE',len(scores),'min PSNR',min(scores.values()))
+          assert len(scores)==64 and min(scores.values())>=30
+          PY
+      - name: Existing platform, authentication and PWA regression tests against candidate
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          export NODE_PATH="$GITHUB_WORKSPACE/node_modules"
+          cd "$RUNNER_TEMP/sprite-snapshots/sprite"
+          # ESM resolution does not use NODE_PATH; expose the same locked test dependencies.
+          ln -s "$GITHUB_WORKSPACE/node_modules" node_modules
+          # Preserve the exact tracked-file inventory for sitemap and Git-based checks.
+          git init -q
+          git fetch -q --no-tags "$GITHUB_WORKSPACE" f31b1b4150485754c16a21c177c3aaef64521ca6
+          git read-tree FETCH_HEAD
+          node --test tests/mascot/*.test.mjs tests/platform/*.test.mjs tests/amazon/*.test.mjs
+          node tests/platform/home-auth.cjs
+          node tests/platform/browser.cjs
+          node tests/platform/design-foundation.cjs
+          node tests/amazon/release-acceptance.cjs
+      - name: Matched mobile Lighthouse performance gate
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          node scripts/outfits-lighthouse.cjs "$RUNNER_TEMP/sprite-snapshots" "$RUNNER_TEMP/sprite-report" "$RUNNER_TEMP/lh/node_modules"
+          node - <<'JS'
+          const fs=require('node:fs'),path=require('node:path');
+          const data=JSON.parse(fs.readFileSync(path.join(process.env.RUNNER_TEMP,'sprite-report','summary.json')));
+          const a=data.summary.phase2,b=data.summary.sprite;
+          const saving=a.bytes-b.bytes;
+          console.log('SPRITE_PERFORMANCE_GATE',JSON.stringify({bytesSaved:saving,requestsChange:b.requests-a.requests,lcpMsSaved:a.lcpMs-b.lcpMs,scoreChange:b.score-a.score}));
+          if(!(saving>=100000&&b.requests<=a.requests&&b.lcpMs<=a.lcpMs*1.03&&b.score>=a.score&&b.cls<=a.cls+0.01&&b.tbtMs<=a.tbtMs+50))throw Error('Insufficient performance improvement or regression');
+          JS
+      - name: Package verified files only
+        run: |
+          mkdir -p "$RUNNER_TEMP/sprite-report/candidate/shared/toolya" "$RUNNER_TEMP/sprite-report/candidate/assets/toolya"
+          cp "$RUNNER_TEMP/sprite-snapshots/sprite/shared/toolya/platform.mjs" "$RUNNER_TEMP/sprite-report/candidate/shared/toolya/"
+          cp -r "$RUNNER_TEMP/sprite-snapshots/sprite/assets/toolya/optimized" "$RUNNER_TEMP/sprite-report/candidate/assets/toolya/"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: toolya-outfits-q85-evidence
+          path: ${{ runner.temp }}/sprite-report/
+          retention-days: 14
+
+  live:
+    if: github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.number == 343 && github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Confirm exact live runtime and sprite with anonymous HTTPS GETs only
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib,time,urllib.request,urllib.parse
+          root=pathlib.Path('.')
+          m=json.loads((root/'assets/toolya/optimized/outfits-q85.json').read_text())
+          routes=['index.html','en/index.html','tools/wishes/public.html','shared/toolya/platform.mjs','shared/toolya/header.css','assets/toolya/outfits.webp',m['output'],'assets/toolya/optimized/outfits-q85.json']
+          expected={p:hashlib.sha256((root/p).read_bytes()).hexdigest() for p in routes}
+          assert expected[m['output']]==m['sha256']
+          assert expected['assets/toolya/outfits.webp']==m['sourceSHA256']
+          for i in range(24):
+              failures=[]
+              for p,sha in expected.items():
+                  try:
+                      url='https://toolya.app/'+{'index.html':'','en/index.html':'en/'}.get(p,p)
+                      req=urllib.request.Request(url,headers={'Cache-Control':'no-cache','User-Agent':'Toolya-release-verifier'})
+                      with urllib.request.urlopen(req,timeout=12) as r:
+                          assert r.status==200 and urllib.parse.urlsplit(r.geturl()).netloc=='toolya.app' and urllib.parse.urlsplit(r.geturl()).scheme=='https'
+                          assert hashlib.sha256(r.read()).hexdigest()==sha
+                  except Exception as e:
+                      failures.append((p,str(e)))
+              if not failures:
+                  print('LIVE_Q85_VERIFIED',len(expected),'exact HTTPS resources',m['sha256']);break
+              print('LIVE_RETRY',i+1,failures)
+              time.sleep(15)
+          else: raise SystemExit('Live release not yet verified')
+          PY
