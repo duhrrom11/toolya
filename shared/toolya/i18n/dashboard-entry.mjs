@@ -4,7 +4,7 @@ import {dashboardText,dashboardLocale} from './dashboard-copy.mjs';
 import {applyDashboardPageLocale} from './dashboard-dom.mjs';
 import {initializeToolyaI18next} from './i18next-singleton.mjs';
 import {createToolyaI18nextAdapter} from './i18next-runtime-adapter.mjs';
-const key='toolya-locale-v1';
+import {persistAppLocale} from './locale.mjs';
 const dynamicSelectors=['#userInfo','#cloudStatus','#loginMessage','#sync-status','#sync-detail','#shopping-status','#watering-connect-status','#notice'];
 function mount(){
  const runtime=initializeToolyaI18next(globalThis.i18next);
@@ -48,11 +48,7 @@ function mount(){
  }
  function apply(lang,persist){
   globalThis.__toolyaDashboardLocale=lang;
-  if(persist){
-   try{localStorage.setItem(key,lang)}catch{}
-   const url=new URL(location.href);url.searchParams.set('lang',lang);
-   history.replaceState(history.state,'',url.pathname+url.search+url.hash);
-  }
+  if(persist)persistAppLocale(lang);
   applyDashboardPageLocale(document,lang,translate);
   // Primary interface language; mixed-language content remains subject to audit.
   document.documentElement.lang=lang;
