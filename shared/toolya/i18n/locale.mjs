@@ -68,3 +68,22 @@ export function campaignUrl({locale = 'de', slug = '', source, campaign, medium 
   if (content) url.searchParams.set('utm_content', content);
   return url.toString();
 }
+
+// Shared application locale storage; public guide path semantics remain separate.
+export const APP_LOCALE_KEY='toolya-locale-v1';
+export function readAppLocale(scope=globalThis){
+  let explicit=null,saved=null;
+  try{explicit=new URLSearchParams(scope.location?.search||'').get('lang')}catch{}
+  try{saved=scope.localStorage?.getItem(APP_LOCALE_KEY)}catch{}
+  return normalizeLocale(explicit)||normalizeLocale(saved)||DEFAULT_LOCALE;
+}
+export function persistAppLocale(value,scope=globalThis){
+  const lang=normalizeLocale(value);
+  if(!lang)throw new Error('Unsupported Toolya language');
+  try{scope.localStorage?.setItem(APP_LOCALE_KEY,lang)}catch{}
+  if(scope.location?.href&&scope.history?.replaceState){
+    const url=new URL(scope.location.href);url.searchParams.set('lang',lang);
+    scope.history.replaceState(scope.history.state,'',url.pathname+url.search+url.hash);
+  }
+  return lang;
+}
