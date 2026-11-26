@@ -195,7 +195,7 @@ const assert = require('node:assert/strict');
         let reference;
         for(const [url,trigger,backupId] of [
           ['/dashboard/index.html','#settingsBtn',null],
-          ['/tools/wishes/public.html','#wishlistSettingsBtn','#wishlistBackupSettings']
+          ['/tools/wishes/public.html','#settingsBtn','#wishlistBackupSettings']
         ]){
           await settingsPage.goto(origin+url);
           const modal=settingsPage.locator('#settingsModal');
