@@ -52,10 +52,10 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   // Wishlist must use the same shared Toolya settings surface, not a minimal fallback.
   assert.equal(await page.locator('#toolya-display-settings').count(),0,'no standalone fallback settings');
   assert.equal(await page.locator('#settingsModal .toolya-preferences').count(),1,'shared appearance panel mounted once');
-  await page.locator('#settingsBtn').click();
+  await page.locator('.ty-tool-hero-actions #userInfo').click();
   assert.equal(await page.locator('#settingsModal').isVisible(),true,'real Wishlist settings open');
   assert.equal(await page.locator('#accountSettings > summary').textContent(),'Toolya-Konto');
-  assert.equal(await page.locator('#settingsBackupTitle').textContent(),'💾 Datensicherung');
+  assert.equal(await page.locator('#wishlistBackupSettings > summary').textContent(),'Datensicherung');
   assert.equal(await page.locator('#settingsModal .toolya-preferences').count(),1);
   assert.equal(await page.locator('#settingsModal details.toolya-appearance').count(),1,'one collapsible mascot section');
   assert.equal(await page.locator('#settingsModal details.toolya-appearance').evaluate(e=>e.open),false,'mascot section collapsed by default');
@@ -63,6 +63,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   assert.equal(await page.locator('#settingsModal .ty-settings-kofi-button').getAttribute('href'),'https://ko-fi.com/duhrrom');
   assert.equal(await page.locator('#signedOutControls').isVisible(),true);
   // Language changes must translate the same open account dialog without replacing its auth state.
+  assert.equal(await page.locator('#userInfo').textContent(),'Nicht angemeldet');
   const beforeAccount=await page.evaluate(()=>window.toolyaAccountState);
   await page.evaluate(()=>document.querySelector('[data-wishes-locale="en"]').click());
   await page.waitForFunction(()=>document.querySelector('#cloudStatus')?.textContent==='Not signed in');
@@ -71,6 +72,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   assert.equal(await page.locator('#loginEmail').getAttribute('placeholder'),'Email address');
   assert.equal(await page.locator('#signedOutControls').isVisible(),true);
   assert.deepEqual(await page.evaluate(()=>window.toolyaAccountState),beforeAccount);
+  assert.equal(await page.locator('#userInfo').textContent(),'Not signed in');
   await page.evaluate(()=>document.querySelector('[data-wishes-locale="de"]').click());
   await page.waitForFunction(()=>document.querySelector('#cloudStatus')?.textContent==='Nicht angemeldet');
   assert.equal(await page.locator('#settingsTitle').textContent(),'⚙️ Einstellungen');
@@ -82,7 +84,8 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   await page.locator('#loginSubmit').click();
   await page.locator('#profileForm').waitFor({state:'visible'});
   assert.equal(await page.locator('#settingsModal').isVisible(),false,'shared login closes settings');
-  await page.locator('#settingsBtn').click();
+  assert.equal(await page.locator('#userInfo').textContent(),'Angemeldet');
+  await page.locator('#userInfo').click();
   assert.equal(await page.locator('#signedOutControls').isVisible(),false,'account panel responds to sign-in');
   assert.equal(await page.locator('#logoutUser').isVisible(),true);
   await page.locator('#logoutUser').click();
@@ -112,17 +115,19 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   await page.locator('#resetFilters').click();await page.locator('#wishPublicTrack .wish-public-card').waitFor();
   assert.equal(await page.locator('#profile input[type=checkbox]').count(),0);
   assert.equal(await page.locator('#amazonDiscovery,#mainAmazonSearch').count(),0);
-  for(const width of [320,375,768]){await page.setViewportSize({width,height:900});const dims=await page.evaluate(()=>({w:innerWidth,s:document.documentElement.scrollWidth}));assert.ok(dims.s<=dims.w+1,'Public wishlist overflow '+JSON.stringify(dims))}
+  for(const width of [320,375,768,1440]){await page.setViewportSize({width,height:900});const dims=await page.evaluate(()=>({w:innerWidth,s:document.documentElement.scrollWidth}));assert.ok(dims.s<=dims.w+1,'Public wishlist overflow '+JSON.stringify(dims));const account=page.locator('.ty-tool-hero-actions #userInfo');assert.equal(await account.isVisible(),true);const b=await account.boundingBox();assert.ok(b.x>=0&&b.x+b.width<=width+1);fs.mkdirSync('test-results',{recursive:true});await page.locator('.ty-tool-hero').screenshot({path:`test-results/wishlist-header-${width}.png`});await account.click();const backup=page.locator('#wishlistBackupSettings');if(await backup.evaluate(e=>e.open))await backup.locator('summary').click();await backup.locator('summary').click();await backup.locator('.ty-unified-settings-content').waitFor({state:'visible'});assert.equal(await backup.evaluate(e=>e.open),true,'backup opens at '+width);await page.locator('#settingsModal').screenshot({path:`test-results/wishlist-settings-${width}.png`});await page.locator('#cancelSettingsBtn').click();}
   assert.equal(await page.locator('#email,#password,#login,#signup,#logoutPublic').count(),0);
   assert.equal(await page.locator('#loginEmail,#loginPassword,#loginSubmit,#registerUser,#logoutUser').count(),5);
   assert.equal(await page.locator('#profileAccountOpen').count(),1);
   await page.locator('#settingsBtn').click();
   const guide=page.getByRole('link',{name:'Wunschlisten-Anleitung',exact:true});
+  const help=page.locator('details[data-settings-section="help"]');if(!(await help.evaluate(e=>e.open)))await help.locator('summary').click();
   await guide.waitFor({state:'visible'});
   await guide.click();
   await page.waitForURL(origin+'/amazon-wunschliste-veroeffentlichen/');
   await page.locator('#link-kopieren').waitFor();
   assert.equal(await page.locator('a[href="/tools/wishes/public.html#wishCreateSection"]').count(),1);
+  assert.deepEqual(errors,[],'no JavaScript exceptions');
   console.log('PASS Amazon-only public UI, safe image integration, mobile widths, auth controls; no production data');
 
   // Real, locally vendored Supabase SDK against intercepted HTTP only.

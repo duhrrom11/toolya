@@ -1,5 +1,5 @@
-import {wishesText} from './wishes-copy.mjs?v=20261126-account-locale';
-import {applyWishLocale} from './wishes-dom.mjs?v=20261126-account-locale';
+import {wishesText} from './wishes-copy.mjs?v=20261126-account-header-v2';
+import {applyWishLocale} from './wishes-dom.mjs?v=20261126-account-header-v2';
 import {readAppLocale,persistAppLocale} from './locale.mjs';
 function storedLocale(){return readAppLocale()}
 function mount(){
