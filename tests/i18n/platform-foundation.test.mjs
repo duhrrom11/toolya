@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {readAppLocale,persistAppLocale,APP_LOCALE_KEY} from '../../shared/toolya/i18n/locale.mjs';
-const source=fs.readFileSync(new URL('../../shared/toolya/supabase-client.js',import.meta.url),'utf8');
+const source=fs.readFileSync(new globalThis.URL('../../shared/toolya/supabase-client.js',import.meta.url),'utf8');
 const URL='https://yheogmeaosuigyaxkwth.supabase.co';
 const KEY='sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
 function environment(config){
