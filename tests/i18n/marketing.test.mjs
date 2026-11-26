@@ -90,10 +90,11 @@ test('no Supabase or mascot preference changes introduced',()=>{
     const html=read(path);
     assert.doesNotMatch(html,/service_role|helferlein-toolya-preferences-v1/i);
     if(path==='en/index.html'){
-      assert.match(html,/supabaseClient\.auth\.signInWithPassword/);
+      assert.match(html,/toolyaAuth\?\.forClient\(window\.supabaseClient\) \|\| window\.supabaseClient\.auth\)\.signInWithPassword/);
       const de=read('index.html');
       for(const method of ['signInWithPassword','signUp','signOut','resetPasswordForEmail','updateUser','getUser']){
-        const calls=s=>[...s.matchAll(new RegExp('\\.auth\\.'+method+'\\(', 'g'))].length;
+        const calls=s=>[...s.matchAll(new RegExp('\\.auth\\)\\.'+method+'\\(', 'g'))].length;
+        assert.ok(calls(de)>0,method+' is integrated');
         assert.equal(calls(html),calls(de),method);
       }
     }else assert.doesNotMatch(html,/supabaseClient|signInWithPassword/i);
