@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="../assets/toolya-settings.css">
 <script src="../assets/vendor/supabase-2.119.2.js" defer></script><script src="../shared/toolya/supabase-client.js" defer></script>
 <script src="./account-settings.js" defer></script>
-<script type="module" src="../shared/toolya/platform.mjs"></script>
+<script type="module" src="../shared/toolya/platform.mjs?v=20261126-shared-settings"></script>
 <script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script>
 <script type="module" src="../shared/toolya/i18n/dashboard-entry.mjs"></script>
 <script type="module" src="./dashboard.js?v=20261121-favorites"></script>
@@ -91,9 +91,9 @@
 </section>
 <!-- Shared Toolya footer is mounted by platform.mjs after the main content. -->
 </main>
-<dialog id="settingsModal" class="dashboard-settings" aria-labelledby="settingsTitle">
+<dialog id="settingsModal" class="dashboard-settings ty-native-settings" aria-labelledby="settingsTitle">
  <div class="dashboard-settings-panel ty-settings-panel">
-  <div class="dashboard-settings-head"><h2 id="settingsTitle">⚙️ Einstellungen</h2><button type="button" id="closeSettingsBtn" aria-label="Einstellungen schließen">×</button></div>
+  <div class="dashboard-settings-head ty-settings-heading"><h2 id="settingsTitle">⚙️ Einstellungen</h2><button type="button" id="closeSettingsBtn" aria-label="Einstellungen schließen">×</button></div>
   <details id="accountSettings" class="ty-settings-group">
    <summary>Toolya-Konto</summary>
    <div class="ty-settings-content">
@@ -114,7 +114,7 @@
    </div>
   </details>
   <details class="ty-settings-group"><summary>Datensicherung</summary><div class="ty-settings-content"><p>Deine Backups findest du in den Einstellungen der Startseite.</p><a href="/?settings=1#datensicherung">Backup und Wiederherstellung öffnen</a></div></details>
-  <div class="dashboard-settings-close"><button type="button" id="cancelSettingsBtn">Schließen</button></div>
+  <div class="dashboard-settings-close ty-settings-footer"><button type="button" id="cancelSettingsBtn">Schließen</button></div>
  </div>
 </dialog>
 </body></html>
