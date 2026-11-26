@@ -376,7 +376,7 @@
             if (link.closest('.tool-card')?.dataset.id === 'wishlist' && new URL(link.href, location.href).pathname === '/tools/wishes/public.html') return;
             event.preventDefault();
             try {
-                const {data,error}=await withAccountDeadline(() => window.supabaseClient.auth.getUser());
+                const {data,error}=await withAccountDeadline(() => (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser());
                 if(!error && data?.user?.id && !data.user.is_anonymous){
                     window.location.assign(link.href);
                     return;
@@ -405,7 +405,7 @@
             }
 
             let data, error;
-            try { ({ data, error } = await window.supabaseClient.auth.signUp({ email, password })); }
+            try { ({ data, error } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signUp({ email, password })); }
             catch (_) { document.getElementById("loginPassword").value = ""; alert("Registration is currently unavailable."); return; }
             if (error) {
                 document.getElementById("loginPassword").value = "";
@@ -441,7 +441,7 @@
             status.textContent = "Checking sign-in …";
             const slow = setTimeout(() => { status.textContent = "Sign-in is taking longer than expected. Close older Toolya tabs and reload this page if it remains stuck."; }, 12000);
             try {
-                const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+                const { data, error } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signInWithPassword({ email, password });
                 if (error) throw error;
                 if (!data?.user || !data?.session?.access_token) throw new Error("No confirmed sign-in received.");
                 // This identity comes directly from the successful password response.
@@ -472,7 +472,7 @@
             try {
                 // Store presentation preference only; the recovery destination stays fixed.
                 try { localStorage.setItem('toolya-recovery-locale-v1', 'en'); } catch (_) {}
-                const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
+                const { error } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).resetPasswordForEmail(email, {
                     redirectTo: "https://toolya.app/index.html"
                 });
                 if (error) throw error;
@@ -508,7 +508,7 @@
             }
             const newPassword = first.value;
             try {
-                const { error } = await window.supabaseClient.auth.updateUser({ password: newPassword });
+                const { error } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).updateUser({ password: newPassword });
                 if (error) throw error;
                 first.value = "";
                 second.value = "";
@@ -523,7 +523,7 @@
             // The password update already succeeded. A later sign-out error
             // must not be mistaken for a failed password change.
             try {
-                const { error } = await window.supabaseClient.auth.signOut();
+                const { error } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signOut();
                 if (error) throw error;
                 updateUserDisplay();
             } catch (_) {
@@ -533,7 +533,7 @@
 
         async function logoutUser() {
             let error;
-            try { ({ error } = await window.supabaseClient.auth.signOut()); }
+            try { ({ error } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signOut()); }
             catch (_) { alert("Sign-out is currently unavailable."); return; }
             if (error) { alert("Sign-out failed: " + error.message); return; }
             const passwordField = document.getElementById("loginPassword");
@@ -560,7 +560,7 @@
             if (requestId !== authStatusRequestId) return;
             let data, error;
             try {
-                ({ data, error } = await withAccountDeadline(() => window.supabaseClient.auth.getUser(accessToken)));
+                ({ data, error } = await withAccountDeadline(() => (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser(accessToken)));
                 // No stored session is the normal guest state, not a network failure.
                 if (error?.name === "AuthSessionMissingError") error = null;
             } catch (_) {
@@ -1082,7 +1082,7 @@
         }, 10000);
         if (!window.supabaseClient) {
             renderUserDisplay(null, new Error("Auth client unavailable"));
-        } else window.supabaseClient.auth.onAuthStateChange((event, session) => {
+        } else (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).onAuthStateChange((event, session) => {
             if (event === "PASSWORD_RECOVERY") {
                 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", showPasswordRecovery, { once: true });
                 else showPasswordRecovery();
