@@ -1,0 +1,208 @@
+{
+  "source": "assets/toolya/outfits.webp",
+  "sourceSHA256": "f7ee1690ff2bf64c0f30ae358af4c854f93fcb49a1adc2d57ade58968f55b8f7",
+  "output": "assets/toolya/optimized/outfits-q85.13c6fa20b3f66c088f00efe43d7eb47a7cc436ed59b6dc57c44f202169a0518f.webp",
+  "sha256": "13c6fa20b3f66c088f00efe43d7eb47a7cc436ed59b6dc57c44f202169a0518f",
+  "originalBytes": 786124,
+  "bytes": 663360,
+  "dimensions": [
+    1774,
+    887
+  ],
+  "quality": 85,
+  "alphaExact": true,
+  "cells": [
+    {
+      "index": 0,
+      "role": 0,
+      "character": "turquoise",
+      "psnr": 36.4189
+    },
+    {
+      "index": 1,
+      "role": 0,
+      "character": "purple",
+      "psnr": 37.3447
+    },
+    {
+      "index": 2,
+      "role": 1,
+      "character": "turquoise",
+      "psnr": 37.1159
+    },
+    {
+      "index": 3,
+      "role": 1,
+      "character": "purple",
+      "psnr": 37.8218
+    },
+    {
+      "index": 4,
+      "role": 2,
+      "character": "turquoise",
+      "psnr": 36.7991
+    },
+    {
+      "index": 5,
+      "role": 2,
+      "character": "purple",
+      "psnr": 37.6052
+    },
+    {
+      "index": 6,
+      "role": 3,
+      "character": "turquoise",
+      "psnr": 36.863
+    },
+    {
+      "index": 7,
+      "role": 3,
+      "character": "purple",
+      "psnr": 37.9676
+    },
+    {
+      "index": 8,
+      "role": 4,
+      "character": "turquoise",
+      "psnr": 37.2814
+    },
+    {
+      "index": 9,
+      "role": 4,
+      "character": "purple",
+      "psnr": 38.1317
+    },
+    {
+      "index": 10,
+      "role": 5,
+      "character": "turquoise",
+      "psnr": 37.1
+    },
+    {
+      "index": 11,
+      "role": 5,
+      "character": "purple",
+      "psnr": 37.9033
+    },
+    {
+      "index": 12,
+      "role": 6,
+      "character": "turquoise",
+      "psnr": 36.9333
+    },
+    {
+      "index": 13,
+      "role": 6,
+      "character": "purple",
+      "psnr": 38.0091
+    },
+    {
+      "index": 14,
+      "role": 7,
+      "character": "turquoise",
+      "psnr": 36.3606
+    },
+    {
+      "index": 15,
+      "role": 7,
+      "character": "purple",
+      "psnr": 37.2531
+    },
+    {
+      "index": 16,
+      "role": 8,
+      "character": "turquoise",
+      "psnr": 37.0238
+    },
+    {
+      "index": 17,
+      "role": 8,
+      "character": "purple",
+      "psnr": 37.8964
+    },
+    {
+      "index": 18,
+      "role": 9,
+      "character": "turquoise",
+      "psnr": 37.3502
+    },
+    {
+      "index": 19,
+      "role": 9,
+      "character": "purple",
+      "psnr": 38.3291
+    },
+    {
+      "index": 20,
+      "role": 10,
+      "character": "turquoise",
+      "psnr": 36.2571
+    },
+    {
+      "index": 21,
+      "role": 10,
+      "character": "purple",
+      "psnr": 37.141
+    },
+    {
+      "index": 22,
+      "role": 11,
+      "character": "turquoise",
+      "psnr": 37.6322
+    },
+    {
+      "index": 23,
+      "role": 11,
+      "character": "purple",
+      "psnr": 38.4613
+    },
+    {
+      "index": 24,
+      "role": 12,
+      "character": "turquoise",
+      "psnr": 36.8193
+    },
+    {
+      "index": 25,
+      "role": 12,
+      "character": "purple",
+      "psnr": 37.8213
+    },
+    {
+      "index": 26,
+      "role": 13,
+      "character": "turquoise",
+      "psnr": 37.3753
+    },
+    {
+      "index": 27,
+      "role": 13,
+      "character": "purple",
+      "psnr": 38.2464
+    },
+    {
+      "index": 28,
+      "role": 14,
+      "character": "turquoise",
+      "psnr": 37.09
+    },
+    {
+      "index": 29,
+      "role": 14,
+      "character": "purple",
+      "psnr": 37.751
+    },
+    {
+      "index": 30,
+      "role": 15,
+      "character": "turquoise",
+      "psnr": 37.1362
+    },
+    {
+      "index": 31,
+      "role": 15,
+      "character": "purple",
+      "psnr": 38.0215
+    }
+  ]
+}
