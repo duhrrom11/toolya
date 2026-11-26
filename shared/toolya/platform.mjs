@@ -1,6 +1,7 @@
 import '../../assets/toolya-consent.js?v=20261116-local-debug';
 import {ToolyaBuddy} from './buddy.mjs';
 import {unifyToolSettings} from './settings-unify.mjs';
+import {readAppLocale} from './i18n/locale.mjs';
 const ASSETS=new URL('../../assets/toolya/',import.meta.url).href;
 const atlasURL=file=>ASSETS+file+'?v=20261115-alpha';
 for(const file of ['tokens.css','buddy.css','platform.css','footer.css','header.css','settings-accordion.css']){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL(file,import.meta.url).href+(file==='header.css'?'?v=20261121-thematic-hero-v1':file==='settings-accordion.css'?'?v=20261119-accordions-v1':'');document.head.append(l)}
@@ -12,9 +13,7 @@ function platformLocale(){
  if(!isAppRoute)return document.documentElement.lang==='en'?'en':'de';
  const active=window.__toolyaUILocale||window.__toolyaWishesLocale||window.__toolyaEstateLocale||window.__toolyaDashboardLocale||window.__toolyaAdminLocale;
  if(active==='en'||active==='de')return active;
- const requested=new URLSearchParams(location.search).get('lang');
- if(requested==='en'||requested==='de')return requested;
- try{return localStorage.getItem('toolya-locale-v1')==='en'?'en':'de'}catch{return 'de'}
+ return readAppLocale();
 }
 let englishHome=platformLocale()==='en';
 const englishRoles=Object.freeze({"wishes":["Gift expert","Room for wishes big and small."],"budget":["Budget companion","Keep track of your spending."],"housemates":["Roommate organizer","A good plan makes daily life easier."],"moving":["Moving companion","Keep everything accounted for during your move."],"estate":["Estate companion","Organize what matters at your own pace."],"car":["Mechanic","Keep your vehicle organized."],"pet-health":["Pet companion","Everything important for your animal friends."],"parking":["Parking companion","Keep track of your parking spot and time."],"loans":["Lending organizer","Keep track of lent items."],"plants":["Gardener","A good day for your green friends."],"meters":["Energy companion","Keep track of your meter readings."],"baking":["Baking companion","Find the right pan for your baking idea."],"home":["Everyday companion","What would you like to do today?"]});
