@@ -29,12 +29,16 @@ jobs:
           python -m venv "$RUNNER_TEMP/phase3-python"
           "$RUNNER_TEMP/phase3-python/bin/pip" install Pillow==11.3.0
       - name: Build responsive variants from current release (no deployment)
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p "$RUNNER_TEMP/phase3-snapshots/phase2" "$RUNNER_TEMP/phase3-snapshots/phase3" "$RUNNER_TEMP/phase3-report"
           git archive 77c37f2538a7d35e970ec746af5e591dca77d3b0 | tar -x -C "$RUNNER_TEMP/phase3-snapshots/phase2"
           git archive 77c37f2538a7d35e970ec746af5e591dca77d3b0 | tar -x -C "$RUNNER_TEMP/phase3-snapshots/phase3"
           touch "$RUNNER_TEMP/phase3-snapshots/phase3/.toolya-perf-candidate"
-          "$RUNNER_TEMP/phase3-python/bin/python" scripts/build-home-responsive-phase3.py "$RUNNER_TEMP/phase3-snapshots/phase3" | tee "$RUNNER_TEMP/phase3-report/image-variants.json"
+          "$RUNNER_TEMP/phase3-python/bin/python" scripts/build-home-responsive-phase3.py "$RUNNER_TEMP/phase3-snapshots/phase3" > "$RUNNER_TEMP/phase3-report/image-variants.json"
+          "$RUNNER_TEMP/phase3-python/bin/python" -m json.tool "$RUNNER_TEMP/phase3-report/image-variants.json"
+          "$RUNNER_TEMP/phase3-python/bin/python" -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["variants"] and len(d["atlasExperiment"]["candidates"])==4 and all(c["cells"]==32 for c in d["atlasExperiment"]["candidates"])' "$RUNNER_TEMP/phase3-report/image-variants.json"
           node --check "$RUNNER_TEMP/phase3-snapshots/phase3/sw.js"
           (cd "$RUNNER_TEMP/phase3-snapshots/phase3/assets/toolya/originals" && sha256sum -c SHA256SUMS)
       - name: Validate visual fidelity and cache privacy
@@ -54,10 +58,10 @@ jobs:
               mse=sum(x*x for x in ImageStat.Stat(ImageChops.difference(a,b)).rms)/3
               score=99 if mse==0 else 10*math.log10(255**2/mse)
               scores[source.name]=round(score,2)
-              assert score>=30,(source,score)
           assert len(scores)==52,len(scores)
           (root/'screenshot-scores.json').write_text(json.dumps(scores,indent=2))
           print('VISUAL_GATE',len(scores),'min PSNR',min(scores.values()))
+          assert all(v>=30 for v in scores.values()),{k:v for k,v in scores.items() if v<30}
           PY
       - name: Run existing isolated authentication and cache unit tests
         env:
@@ -76,7 +80,7 @@ jobs:
           const fs=require('node:fs'),path=require('node:path');
           const data=JSON.parse(fs.readFileSync(path.join(process.env.RUNNER_TEMP,'phase3-report','summary.json')));
           const a=data.summary.phase2,b=data.summary.phase3;
-          if(!(b.bytes<a.bytes&&b.lcpMs<=a.lcpMs*1.05&&b.score>=a.score-1&&b.cls<=0.1&&b.tbtMs<=a.tbtMs+50))throw Error('Candidate did not meet performance non-regression gate');
+          if(!(a.bytes-b.bytes>=10000&&b.lcpMs<=a.lcpMs*1.05&&b.score>=a.score-1&&b.cls<=0.1&&b.tbtMs<=a.tbtMs+50))throw Error('Candidate did not meet performance non-regression gate');
           console.log('PERFORMANCE_GATE',JSON.stringify({bytesSaved:a.bytes-b.bytes,lcpMsSaved:a.lcpMs-b.lcpMs,scoreChange:b.score-a.score}));
           JS
       - name: Package exact reviewed candidate for later promotion
