@@ -235,7 +235,17 @@ Deno.serve(async(req:Request)=>{
 
 
    must(await db.from('wishlist_discovery_queries').upsert(seeds,{onConflict:'query,country,lang',ignoreDuplicates:true}));
-   const q=must(await db.from('wishlist_discovery_queries').select('*').lt('page',10).order('page').order('query').limit(1))[0];if(!q)return reply(200,{done:true,message:'Suchplan abgeschlossen. Es besteht keine Vollständigkeitsgarantie.'});
+   const nextQuery=async()=>must(await db.from('wishlist_discovery_queries').select('*').lt('page',10).order('page').order('query').limit(1))[0];
+   let q=await nextQuery();
+   // Only a newly initiated admin run may restart an exhausted plan. Subsequent
+   // requests in the same run must stop, even with unused monthly credits.
+   if(!q&&body.restartCompleted===true){
+    const pending=must(await db.from('wishlist_discovery_pending').select('source_url').limit(1));
+    if(pending.length)return reply(200,{done:true,message:'Suchplan abgeschlossen. Ausstehende Quellseiten bitte zuerst prüfen.'});
+    must(await db.from('wishlist_discovery_queries').update({page:0}).gte('page',10));
+    q=await nextQuery();
+   }
+   if(!q)return reply(200,{done:true,message:'Suchplan abgeschlossen. Es besteht keine Vollständigkeitsgarantie.'});
    // Tavily does not expose Brave-style pagination: each seed is queried only once.
    const credit=must(await db.rpc('wishlist_tavily_quota',{claim:true}));
    if(!credit.allowed)return reply(200,{done:true,message:'Kostenloses Tavily-Monatslimit erreicht. Keine Anfrage versendet.',quota:credit});
