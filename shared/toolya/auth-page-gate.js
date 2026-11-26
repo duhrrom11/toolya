@@ -30,7 +30,7 @@
     unavailable();
   }, 8000);
 
-  client.auth.getUser().then(({ data, error }) => {
+  (globalThis.toolyaAuth?.forClient(client) || client.auth).getUser().then(({ data, error }) => {
     if (finished) return;
     finished = true;
     clearTimeout(timeout);
@@ -53,7 +53,7 @@
     unavailable();
   });
 
-  client.auth.onAuthStateChange((event) => {
+  (globalThis.toolyaAuth?.forClient(client) || client.auth).onAuthStateChange((event) => {
     if (event === 'SIGNED_OUT') {
       root.classList.add('toolya-auth-pending');
       reject();
