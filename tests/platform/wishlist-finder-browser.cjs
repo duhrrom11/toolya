@@ -31,6 +31,8 @@ const assert = require('node:assert/strict');
     const calls = [];
     let status = 'new';
     let allowAdmin = true;
+    let searchConfigured=false;
+    const searchRequests=[];
     const row = {
       id: '00000000-0000-4000-8000-000000000001',
       name: 'Isolierter Verein',
@@ -69,6 +71,11 @@ const assert = require('node:assert/strict');
       if (url.pathname.endsWith('/admin-stats')) return route.fulfill({ headers, json: { sources: [], metrics: [] } });
       const body = JSON.parse(route.request().postData() || '{}');
       calls.push(body);
+      if (body.action === 'next') return route.fulfill({headers,json:{results:[],pending:0}});
+      if (body.action === 'search') {
+        searchRequests.push(body.restartCompleted);
+        return route.fulfill({headers,json:body.restartCompleted===true?{query:'Isolierter Suchplan',found:0}:{done:true,message:'Suchplan abgeschlossen. Es besteht keine Vollständigkeitsgarantie.'}});
+      }
       if (body.action === 'dismiss') {
         status = 'dismissed';
         return route.fulfill({ headers, json: { ok: true, dismissed: 1 } });
@@ -81,7 +88,7 @@ const assert = require('node:assert/strict');
         status = 'published';
         return route.fulfill({ headers, json: { published: 1, duplicates: 0 } });
       }
-      return route.fulfill({ headers, json: { configured: false, rows: body.status === status || body.status === 'all' && status !== 'dismissed' ? [{ ...row, status }] : [], health: { total: 66, http_reachable: 4, review: 1, unknown: 2, not_checked: 59 }, healthReview: [{ profile_id: row.id, name: 'Isolierter Verein', http_status: 404 }] } });
+      return route.fulfill({ headers, json: { configured: searchConfigured, quota:{remaining:677}, rows: body.status === status || body.status === 'all' && status !== 'dismissed' ? [{ ...row, status }] : [], health: { total: 66, http_reachable: 4, review: 1, unknown: 2, not_checked: 59 }, healthReview: [{ profile_id: row.id, name: 'Isolierter Verein', http_status: 404 }] } });
     });
 
     const checkNavigation = async (linkName, evidence, extraLinkName) => {
@@ -171,7 +178,19 @@ const assert = require('node:assert/strict');
     await checkNavigation('← Mein Dashboard', 'stats-navigation');
     assert.match(await page.locator('#tool-ranking').innerText(), /Noch keine auswertbaren Tool-Starts/);
 
+    // A deliberate new start may restart an exhausted plan, never every request.
+    searchConfigured=true;
+    await page.goto(origin + '/admin-stats-dashboard/wishlist-finder.html');
+    await page.locator('#finder').waitFor({state:'visible'});
+    for(let run=0;run<2;run++){
+      await page.locator('#start').click();
+      await page.waitForFunction(()=>document.getElementById('progress').textContent.includes('Suchplan abgeschlossen'));
+      await page.waitForFunction(()=>!document.getElementById('start').disabled);
+    }
+    assert.deepEqual(searchRequests,[true,false,true,false]);
+    console.log('PASS: only a new manual finder run requests restart; exhausted plans stop.');
     allowAdmin = false;
+    await page.goto(origin + '/admin-stats-dashboard/index.html');
     await page.reload();
     await page.getByText('Zugriff verweigert:', { exact: false }).waitFor();
     assert.equal(await page.locator('#panel').isVisible(), false);
