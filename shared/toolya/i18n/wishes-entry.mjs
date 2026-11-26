@@ -1,11 +1,7 @@
 import {wishesText} from './wishes-copy.mjs?v=20261126-account-locale';
 import {applyWishLocale} from './wishes-dom.mjs?v=20261126-account-locale';
-const key='toolya-locale-v1';
-function storedLocale(){
- const query=new URLSearchParams(location.search).get('lang');
- if(query==='en'||query==='de')return query;
- try{return localStorage.getItem(key)==='en'?'en':'de'}catch{return 'de'}
-}
+import {readAppLocale,persistAppLocale} from './locale.mjs';
+function storedLocale(){return readAppLocale()}
 function mount(){
  if(document.querySelector('.ty-wishes-language'))return;
  const header=document.querySelector('body > header')||document.body;
@@ -69,11 +65,7 @@ function mount(){
  else{header.append(nav);header.after(notice)}
  function apply(lang,persist){
   active=lang;globalThis.__toolyaWishesLocale=lang;
-  if(persist){
-   try{localStorage.setItem(key,lang)}catch{}
-   const url=new URL(location.href);url.searchParams.set('lang',lang);
-   history.replaceState(history.state,'',url.pathname+url.search+url.hash);
-  }
+  if(persist)persistAppLocale(lang);
   updateVisibleCopy();
   const translatedTitle=wishesText(initialTitle,'en');
   const userTitle=document.querySelector('#title[data-user-content],#name[data-user-content]');
