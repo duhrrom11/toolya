@@ -1044,8 +1044,8 @@ test('global password recovery remains a single token-based flow; tool translati
  const {readFile}=await import('node:fs/promises');
  const homepage=await readFile(new URL('../../index.html',import.meta.url),'utf8');
  const authGate=await readFile(new URL('../../shared/toolya/auth-page-gate.js',import.meta.url),'utf8');
- assert.match(homepage,/auth\.resetPasswordForEmail\(email,/,'existing one-time recovery email flow is retained');
- assert.match(homepage,/auth\.updateUser\(\{ password: newPassword \}\)/,'password update remains in central account flow');
+ assert.match(homepage,/toolyaAuth\?\.forClient\(window\.supabaseClient\) \|\| window\.supabaseClient\.auth\)\.resetPasswordForEmail\(email,/,'existing one-time recovery email flow is retained');
+ assert.match(homepage,/toolyaAuth\?\.forClient\(window\.supabaseClient\) \|\| window\.supabaseClient\.auth\)\.updateUser\(\{ password: newPassword \}\)/,'password update remains in central account flow');
  assert.match(homepage,/if \(!passwordRecoveryActive\)/,'recovery panel requires active recovery state');
  assert.match(homepage,/first\.value\.length < 8 \|\| first\.value !== second\.value/,'password confirmation is required');
  assert.match(homepage,/redirectTo: "https:\/\/toolya\.app\/index\.html"/,'the recovery token targets the central account page');
