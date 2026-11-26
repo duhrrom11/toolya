@@ -1,0 +1,30 @@
+name: Stage platform foundation migration
+on:
+  push:
+    branches: [refactor/platform-foundation-20261126]
+    paths: ['.github/workflows/stage-platform-foundation.yml']
+permissions:
+  contents: write
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/platform-foundation-20261126
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Audit tracked files and stage scoped migration
+        run: |
+          set -eu
+          node scripts/platform-foundation-audit.cjs --apply
+          git diff --check
+          git diff --stat
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -u
+          git add platform-foundation-audit.json
+          git commit -m 'refactor(platform): align SDK references and audit remaining architecture differences'
+          git push origin HEAD:refactor/platform-foundation-20261126
