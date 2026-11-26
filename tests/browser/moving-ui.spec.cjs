@@ -4,7 +4,7 @@ test('moving planner creates project, room and box assignment with mocked cloud'
   await page.route('**/*',route=>{
     const url=route.request().url();
     if(url==='https://cdn.tailwindcss.com')return route.fulfill({status:200,contentType:'text/javascript',body:"document.head.insertAdjacentHTML('beforeend','<style>.hidden{display:none!important}</style>');"});
-    if(url===origin+'/assets/vendor/supabase-2.57.0.js')
+    if(url===origin+'/assets/vendor/supabase-2.119.2.js')
       return route.fulfill({status:200,contentType:'text/javascript',body:`
         window.__mvMock={writes:0,revision:1,snapshot:{locations:[{id:5,name:'Keller',icon:'📦'}],boxes:[{id:16,locId:5,name:'Gläser',desc:'Gläser',value:20,tag:'Zerbrechlich'}]}};
         window.supabase={createClient(){const m=window.__mvMock;const user={id:'mock-moving-user',is_anonymous:false,email:'mock@example.invalid'};
