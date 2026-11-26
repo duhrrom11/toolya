@@ -1,0 +1,64 @@
+name: One-shot promotion of verified PR 339 candidate
+on:
+  pull_request:
+    types: [synchronize]
+    paths:
+      - '.github/workflows/promote-home-candidate-once.yml'
+permissions: {}
+jobs:
+  promote:
+    if: github.repository == 'duhrrom11/toolya' && github.event.pull_request.number == 339 && github.event.pull_request.head.repo.full_name == 'duhrrom11/toolya' && github.head_ref == 'perf/home-assets-phase2-20261126' && github.base_ref == 'main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Confirm exact baseline and branch
+        run: |
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = e53ee4d25a117d7a81e7df990fe051543806396c
+          test "$(git diff --name-only 79b9b9425b5b2328111d9271184b81d6829b4fe6 HEAD)" = .github/workflows/promote-home-candidate-once.yml
+          test "$(git ls-remote origin refs/heads/perf/home-assets-phase2-20261126 | cut -f1)" = "$(git rev-parse HEAD)"
+      - uses: actions/download-artifact@v4
+        with:
+          name: toolya-public-home-performance-evidence
+          run-id: 45824122809
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/verified-perf
+      - name: Verify reviewed files, then commit only to isolated PR branch
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,json,os,pathlib,re,shutil
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'verified-perf'/'candidate'
+          pinned={
+              'index.html':'b8e85223b52b042cb10a6abfc6ebed073569170b485503a23d14d1ea2ed69d33',
+              'en/index.html':'eca5f84addc6ded1a66596c8de393657fc0c9ae34e7690332dc59533ab449657',
+              'sw.js':'39de7b69be941dd40fc4ec641f39a1767519c53b6d91c6f6d70456e576d0b29a',
+              'assets/perf/manifest.json':'8d663f347cd04671737cb29fd1cfdb30884ca24a44d4887011f5cce14bf6a431',
+          }
+          def digest(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+          for f,h in pinned.items():
+              assert digest(root/f)==h,f
+          manifest=json.loads((root/'assets/perf/manifest.json').read_text())
+          assert len(manifest['files'])==21
+          for f in manifest['files']:
+              match=re.fullmatch(r'assets/perf/[a-z0-9-]+\.([a-f0-9]{64})\.(css|js|webp)',f)
+              assert match and digest(root/f)==match[1],f
+          paths=set(pinned)|set(manifest['files'])
+          assert len(paths)==25
+          assert {str(p.relative_to(root)) for p in root.rglob('*') if p.is_file()}==paths
+          for f in sorted(paths):
+              target=pathlib.Path(f)
+              target.parent.mkdir(parents=True,exist_ok=True)
+              shutil.copyfile(root/f,target)
+          print('VERIFIED_PROMOTION: 25 files; 21 content-addressed assets')
+          PY
+          git add -- index.html en/index.html sw.js assets/perf
+          git diff --cached --stat
+          git -c user.name='Toolya CI' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'perf: promote exact verified homepage candidate from run 45824122809'
+          git push origin HEAD:refs/heads/perf/home-assets-phase2-20261126
