@@ -1,0 +1,93 @@
+name: Toolya phase 3 responsive image experiment
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/home-responsive-phase3.yml'
+      - 'scripts/build-home-responsive-phase3.py'
+      - 'scripts/home-responsive-lighthouse.cjs'
+      - 'tests/performance/home-responsive-phase3.cjs'
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install isolated measurement tools
+        run: |
+          npm ci --ignore-scripts
+          npm install --prefix "$RUNNER_TEMP/lh" --no-audit --no-fund --ignore-scripts lighthouse@12.8.0 i18next@23.16.8
+          python -m venv "$RUNNER_TEMP/phase3-python"
+          "$RUNNER_TEMP/phase3-python/bin/pip" install Pillow==11.3.0
+      - name: Build responsive variants from current release (no deployment)
+        run: |
+          mkdir -p "$RUNNER_TEMP/phase3-snapshots/phase2" "$RUNNER_TEMP/phase3-snapshots/phase3" "$RUNNER_TEMP/phase3-report"
+          git archive 77c37f2538a7d35e970ec746af5e591dca77d3b0 | tar -x -C "$RUNNER_TEMP/phase3-snapshots/phase2"
+          git archive 77c37f2538a7d35e970ec746af5e591dca77d3b0 | tar -x -C "$RUNNER_TEMP/phase3-snapshots/phase3"
+          touch "$RUNNER_TEMP/phase3-snapshots/phase3/.toolya-perf-candidate"
+          "$RUNNER_TEMP/phase3-python/bin/python" scripts/build-home-responsive-phase3.py "$RUNNER_TEMP/phase3-snapshots/phase3" | tee "$RUNNER_TEMP/phase3-report/image-variants.json"
+          node --check "$RUNNER_TEMP/phase3-snapshots/phase3/sw.js"
+          (cd "$RUNNER_TEMP/phase3-snapshots/phase3/assets/toolya/originals" && sha256sum -c SHA256SUMS)
+      - name: Validate visual fidelity and cache privacy
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          node tests/performance/home-responsive-phase3.cjs "$RUNNER_TEMP/phase3-snapshots/phase2" "$RUNNER_TEMP/phase3-snapshots/phase3" "$RUNNER_TEMP/phase3-report"
+          "$RUNNER_TEMP/phase3-python/bin/python" - <<'PY'
+          import os,pathlib,math,json
+          from PIL import Image,ImageChops,ImageStat
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'phase3-report'
+          scores={}
+          for source in root.glob('*-baseline-*.png'):
+              target=source.with_name(source.name.replace('-baseline-','-candidate-'))
+              a,b=Image.open(source).convert('RGB'),Image.open(target).convert('RGB')
+              assert a.size==b.size,(source,a.size,b.size)
+              mse=sum(x*x for x in ImageStat.Stat(ImageChops.difference(a,b)).rms)/3
+              score=99 if mse==0 else 10*math.log10(255**2/mse)
+              scores[source.name]=round(score,2)
+              assert score>=30,(source,score)
+          assert len(scores)==52,len(scores)
+          (root/'screenshot-scores.json').write_text(json.dumps(scores,indent=2))
+          print('VISUAL_GATE',len(scores),'min PSNR',min(scores.values()))
+          PY
+      - name: Run existing isolated authentication and cache unit tests
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          export NODE_PATH="$GITHUB_WORKSPACE/node_modules"
+          cd "$RUNNER_TEMP/phase3-snapshots/phase3"
+          node --test tests/platform/pwa-install.test.mjs tests/i18n/marketing.test.mjs tests/i18n/public-home-seo.test.mjs
+          node tests/platform/home-auth.cjs
+      - name: Measure matched mobile Lighthouse runs
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          node scripts/home-responsive-lighthouse.cjs "$RUNNER_TEMP/phase3-snapshots" "$RUNNER_TEMP/phase3-report" "$RUNNER_TEMP/lh/node_modules"
+          node - <<'JS'
+          const fs=require('node:fs'),path=require('node:path');
+          const data=JSON.parse(fs.readFileSync(path.join(process.env.RUNNER_TEMP,'phase3-report','summary.json')));
+          const a=data.summary.phase2,b=data.summary.phase3;
+          if(!(b.bytes<a.bytes&&b.lcpMs<=a.lcpMs*1.05&&b.score>=a.score-1&&b.cls<=0.1&&b.tbtMs<=a.tbtMs+50))throw Error('Candidate did not meet performance non-regression gate');
+          console.log('PERFORMANCE_GATE',JSON.stringify({bytesSaved:a.bytes-b.bytes,lcpMsSaved:a.lcpMs-b.lcpMs,scoreChange:b.score-a.score}));
+          JS
+      - name: Package exact reviewed candidate for later promotion
+        run: |
+          mkdir -p "$RUNNER_TEMP/phase3-report/candidate/en" "$RUNNER_TEMP/phase3-report/candidate/assets"
+          cp "$RUNNER_TEMP/phase3-snapshots/phase3/index.html" "$RUNNER_TEMP/phase3-snapshots/phase3/sw.js" "$RUNNER_TEMP/phase3-report/candidate/"
+          cp "$RUNNER_TEMP/phase3-snapshots/phase3/en/index.html" "$RUNNER_TEMP/phase3-report/candidate/en/"
+          cp -r "$RUNNER_TEMP/phase3-snapshots/phase3/assets/perf" "$RUNNER_TEMP/phase3-report/candidate/assets/"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: toolya-responsive-phase3-evidence
+          path: ${{ runner.temp }}/phase3-report/
+          retention-days: 14
