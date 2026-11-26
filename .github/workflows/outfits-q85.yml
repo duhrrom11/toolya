@@ -81,6 +81,10 @@ jobs:
           cd "$RUNNER_TEMP/sprite-snapshots/sprite"
           # ESM resolution does not use NODE_PATH; expose the same locked test dependencies.
           ln -s "$GITHUB_WORKSPACE/node_modules" node_modules
+          # Preserve the exact tracked-file inventory for sitemap and Git-based checks.
+          git init -q
+          git fetch -q --no-tags "$GITHUB_WORKSPACE" 77c37f2538a7d35e970ec746af5e591dca77d3b0
+          git read-tree FETCH_HEAD
           node --test tests/mascot/*.test.mjs tests/platform/*.test.mjs tests/amazon/*.test.mjs
           node tests/platform/home-auth.cjs
           node tests/platform/browser.cjs
