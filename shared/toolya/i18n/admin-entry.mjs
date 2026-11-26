@@ -1,11 +1,7 @@
 import {adminText} from './admin-copy.mjs';
 import {applyAdminLocale} from './admin-dom.mjs';
-const key='toolya-locale-v1';
-function locale(){
- const q=new URLSearchParams(location.search).get('lang');
- if(q==='de'||q==='en')return q;
- try{return localStorage.getItem(key)==='en'?'en':'de'}catch{return 'de'}
-}
+import {readAppLocale,persistAppLocale} from './locale.mjs';
+function locale(){return readAppLocale()}
 function mount(){
  const header=document.querySelector('body > header');if(!header)return;
  const bar=document.createElement('nav');bar.className='ty-admin-language';bar.setAttribute('aria-label','Language / Sprache');
@@ -24,10 +20,7 @@ function mount(){
  function updateStatus(){for(const el of nodes){if(el.children.length)continue;const old=el.textContent,previous=statusSources.get(el);const source=previous?.rendered===old?previous.source:old;const translated=adminText(source,selected);statusSources.set(el,{source,rendered:translated});if(old!==translated)el.textContent=translated}}
  function apply(lang,persist){
   selected=lang;globalThis.__toolyaAdminLocale=lang;
-  if(persist){
-   try{localStorage.setItem(key,lang)}catch{}
-   const url=new URL(location.href);url.searchParams.set('lang',lang);history.replaceState(history.state,'',url.pathname+url.search+url.hash);
-  }
+  if(persist)persistAppLocale(lang);
   updateStatus();applyAdminLocale(document,lang);
   document.title=lang==='en'?adminText(oldTitle.replace(' · Toolya Admin','').replace(' · Toolya',''),'en')+' · Toolya':oldTitle;
   bar.setAttribute('aria-label',lang==='en'?'Choose interface language':'Sprache der Oberfläche wählen');
