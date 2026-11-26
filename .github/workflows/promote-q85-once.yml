@@ -1,0 +1,58 @@
+name: Promote exact reviewed q85 release once
+on:
+  pull_request:
+    types: [synchronize]
+    branches: [main]
+    paths: ['.github/workflows/promote-q85-once.yml']
+permissions: {}
+jobs:
+  promote:
+    if: github.repository == 'duhrrom11/toolya' && github.event.pull_request.number == 343 && github.event.pull_request.head.repo.full_name == 'duhrrom11/toolya' && github.head_ref == 'perf/mascot-sprite-q85-20261126' && github.base_ref == 'main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Confirm unchanged reviewed baseline and branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = f31b1b4150485754c16a21c177c3aaef64521ca6
+          test "$(git diff --name-only ddbc7e60beebce75ba30a60ed6233121fc52afc5 HEAD)" = .github/workflows/promote-q85-once.yml
+          test "$(git ls-remote origin refs/heads/perf/mascot-sprite-q85-20261126 | cut -f1)" = "$(git rev-parse HEAD)"
+      - uses: actions/download-artifact@v4
+        with:
+          name: toolya-outfits-q85-evidence
+          run-id: 45840590688
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/verified-q85
+      - name: Verify all hashes and promote only reviewed files
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib,os,pathlib,json
+          expected={
+            'assets/toolya/optimized/outfits-q85.13c6fa20b3f66c088f00efe43d7eb47a7cc436ed59b6dc57c44f202169a0518f.webp':'13c6fa20b3f66c088f00efe43d7eb47a7cc436ed59b6dc57c44f202169a0518f',
+            'assets/toolya/optimized/outfits-q85.json':'97f409b2f87c65ca83542b6a3226354b58b3051fdac0eba507b2f5f27a86ce30',
+            'shared/toolya/platform.mjs':'4b3770c9519d9971ddb0d7efdd96910c68606c32c697982c138d2625c1dea2b7'
+          }
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'verified-q85'/'candidate'
+          assert {str(p.relative_to(root)) for p in root.rglob('*') if p.is_file()}==set(expected)
+          for p,sha in expected.items():
+              b=(root/p).read_bytes()
+              assert hashlib.sha256(b).hexdigest()==sha,p
+              dest=pathlib.Path(p);dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(b)
+          m=json.loads((root/'assets/toolya/optimized/outfits-q85.json').read_text())
+          assert m['alphaExact'] and len(m['cells'])==32 and min(c['psnr'] for c in m['cells'])>=35
+          print('VERIFIED_PROMOTION: three exact q85 files')
+          PY
+          git add -- shared/toolya/platform.mjs assets/toolya/optimized
+          test "$(git diff --cached --name-only | wc -l)" = 3
+          git -c user.name='Toolya CI' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'perf: promote exact verified sprite assets from run 45840590688'
+          git push origin HEAD:refs/heads/perf/mascot-sprite-q85-20261126
