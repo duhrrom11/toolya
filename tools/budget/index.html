@@ -588,7 +588,7 @@ async function toolyaCloudBoot(tool) {
   try {
     const {prepareCloudTool} = await import('../../shared/toolya/cloud-tool-adapters.mjs');
     const storage = localStorage;
-    const {data:initialAuth,error:initialAuthError}=await window.supabaseClient.auth.getUser();
+    const {data:initialAuth,error:initialAuthError}=await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser();
     const initialUserId=initialAuth?.user?.id;
     if(initialAuthError || !initialUserId || initialAuth.user.is_anonymous)
       throw Error('Registrierte Anmeldung erforderlich.');
@@ -604,7 +604,7 @@ async function toolyaCloudBoot(tool) {
         return confirm('Sicherung wurde zum Download angeboten. Bitte erst nach erfolgreichem Speichern bestätigen.');
       }
     });
-    const {data:finalAuth,error:finalAuthError}=await window.supabaseClient.auth.getUser();
+    const {data:finalAuth,error:finalAuthError}=await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser();
     if(finalAuthError || finalAuth?.user?.id!==initialUserId || finalAuth.user.is_anonymous)
       throw Error('Konto während des Cloud-Ladens gewechselt.');
     toolyaCloudController=prepared.controller;
@@ -638,7 +638,7 @@ async function toolyaCloudBoot(tool) {
                 return;
             }
 
-            const { error } = await window.supabaseClient.auth.signUp({ email, password });
+            const { error } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signUp({ email, password });
             if (error) {
                 alert(error.message);
                 return;
@@ -658,7 +658,7 @@ async function toolyaCloudBoot(tool) {
                 return;
             }
 
-            const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+            const { error } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signInWithPassword({ email, password });
             if (error) {
                 alert(error.message);
                 return;
@@ -669,12 +669,12 @@ async function toolyaCloudBoot(tool) {
         }
 
         async function logoutUser() {
-            await window.supabaseClient.auth.signOut();
+            await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).signOut();
             updateUserDisplay();
         }
 
         async function updateUserDisplay() {
-            const { data } = await window.supabaseClient.auth.getUser();
+            const { data } = await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser();
             const user = data?.user;
 
             const headerInfo = document.getElementById("userInfo");
@@ -828,7 +828,7 @@ async function toolyaCloudBoot(tool) {
             try { updateUserDisplay(); } catch(e){}
         });
 
-        supabaseClient.auth.onAuthStateChange((event) => {
+        (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).onAuthStateChange((event) => {
             if (event === 'SIGNED_OUT') {
                 toolyaCloudReady=false;toolyaCloudUserId=null;
                 toolyaCloudController?.invalidate();
@@ -837,7 +837,7 @@ async function toolyaCloudBoot(tool) {
                 // SIGNED_IN may also fire for a refreshed session of the same user.
                 setTimeout(async () => {
                     try {
-                        const {data,error}=await window.supabaseClient.auth.getUser();
+                        const {data,error}=await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser();
                         if(error || data?.user?.id!==toolyaCloudUserId) {
                             toolyaCloudReady=false;toolyaCloudController?.invalidate();
                             toolyaCloudBlock('account-changed');
