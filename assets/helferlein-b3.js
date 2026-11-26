@@ -175,7 +175,7 @@
     // Independent footer: Ko-fi first, then the discovery link as the last item.
     const footer=create('div',{class:'b3-settings-footer'});
     const support=create('a',{
-      href:'https://ko-fi.com/duhrrom',
+      href:'https://ko-fi.com/toolya',
       target:'_blank',
       rel:'noopener noreferrer',
       class:'b3-kofi-link',
