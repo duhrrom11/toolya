@@ -38,6 +38,8 @@ async function serve(root){
     });
     assert.equal(data.cards.length,12);
     assert.equal(data.lang,locale);
+    const selected=new URL(await page.locator('.ty-hero-art').evaluate(e=>e.currentSrc)).pathname;
+    data.heroSource=selected;
     await page.locator('.ty-hero-art').screenshot({path:path.join(report,locale+'-'+width+'-'+label+'-hero.png'),animations:'disabled'});
     for(let i=0;i<12;i++){
       const card=page.locator('.ty-tool-card').nth(i);
@@ -46,8 +48,6 @@ async function serve(root){
       await art.evaluate(e=>e.decode());
       await card.screenshot({path:path.join(report,locale+'-'+width+'-'+label+'-card-'+i+'.png'),animations:'disabled'});
     }
-    const selected=await page.locator('.ty-hero-art').evaluate(e=>e.currentSrc);
-    if(label==='candidate'&&width===390)assert.match(selected,/hero-duo-768\.|hero-duo-960\./,'preserve appropriate high-DPR hero source');
     await page.locator('#settingsBtn').click();await page.locator('#settingsModal').waitFor({state:'visible'});await page.keyboard.press('Escape');
     assert.equal(await page.locator('#settingsModal').isHidden(),true);
     if(label==='candidate'){
@@ -61,6 +61,7 @@ async function serve(root){
    assert.equal(shots[1].data.overflow,shots[0].data.overflow);
    const close=(x,y)=>assert.ok(x.every((v,i)=>Math.abs(v-y[i])<=2),JSON.stringify({x,y}));
    close(shots[1].data.hero,shots[0].data.hero);
+   assert.equal(shots[1].data.heroSource,shots[0].data.heroSource,'keep verified hero source at every tested size');
    shots[1].data.cards.forEach((x,i)=>close(x.rect,shots[0].data.cards[i].rect));
    result.push({locale,width,baseline:shots[0].data,candidate:shots[1].data});
   }
