@@ -32,17 +32,19 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   assert.equal(await page.locator('#favorites').isVisible(),false,'empty favorites stay compact');
   assert.equal(await page.locator('#wishCreateSection .wish-creation-tile').count(),3,'three creation cards');
   // Wishlist remains the only gift-themed role; header and Ko-fi share the selected outfit atlas.
+  const outfitManifest='assets/toolya/optimized/outfits-q85.json';
+  const expectedAtlas=fs.existsSync(outfitManifest)?'/'+JSON.parse(fs.readFileSync(outfitManifest,'utf8')).output:'/assets/toolya/outfits.webp';
   const verifyOutfit=async character=>{
-   await page.waitForFunction(character=>{
+   await page.waitForFunction(({character,expectedAtlas})=>{
     const hero=document.querySelector('.ty-tool-hero');
     const headerFrame=hero?.querySelector(':scope>.ty-tool-hero-inner>.ty-sprite-wrap>.ty-frame');
     const kofiFrame=document.querySelector('.ty-kofi-action>.ty-sprite-wrap>.ty-frame');
     const expected=character==='purple'?100/7:0;
     return hero?.dataset.character===character&&[headerFrame,kofiFrame].every(frame=>
-     frame&&!frame.hidden&&frame.style.backgroundImage.includes('outfits.webp')&&
+     frame&&!frame.hidden&&frame.style.backgroundImage.includes(expectedAtlas)&&
      Math.abs(parseFloat(frame.style.getPropertyValue('--ty-a'))-expected)<.01&&
      parseFloat(frame.style.getPropertyValue('--ty-y'))===0);
-   },character);
+   },{character,expectedAtlas});
    assert((await page.locator('.ty-tool-hero-mascot').getAttribute('src')).startsWith('data:image/gif;'),
     'the header avatar must not load a hard-coded gift image');
    assert((await page.locator('.ty-kofi-button-mascot').getAttribute('src')).startsWith('data:image/gif;'),
