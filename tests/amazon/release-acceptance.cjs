@@ -115,13 +115,13 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   await page.locator('#resetFilters').click();await page.locator('#wishPublicTrack .wish-public-card').waitFor();
   assert.equal(await page.locator('#profile input[type=checkbox]').count(),0);
   assert.equal(await page.locator('#amazonDiscovery,#mainAmazonSearch').count(),0);
-  for(const width of [320,375,768,1440]){await page.setViewportSize({width,height:900});const dims=await page.evaluate(()=>({w:innerWidth,s:document.documentElement.scrollWidth}));assert.ok(dims.s<=dims.w+1,'Public wishlist overflow '+JSON.stringify(dims));const account=page.locator('.ty-tool-hero-actions #userInfo');assert.equal(await account.isVisible(),true);const b=await account.boundingBox();assert.ok(b.x>=0&&b.x+b.width<=width+1);fs.mkdirSync('test-results',{recursive:true});await page.locator('.ty-tool-hero').screenshot({path:`test-results/wishlist-header-${width}.png`});await account.click();await page.locator('#wishlistBackupSettings > summary').click();assert.equal(await page.locator('#wishlistBackupSettings').evaluate(e=>e.open),true);await page.locator('#settingsModal').screenshot({path:`test-results/wishlist-settings-${width}.png`});await page.locator('#cancelSettingsBtn').click();}
+  for(const width of [320,375,768,1440]){await page.setViewportSize({width,height:900});const dims=await page.evaluate(()=>({w:innerWidth,s:document.documentElement.scrollWidth}));assert.ok(dims.s<=dims.w+1,'Public wishlist overflow '+JSON.stringify(dims));const account=page.locator('.ty-tool-hero-actions #userInfo');assert.equal(await account.isVisible(),true);const b=await account.boundingBox();assert.ok(b.x>=0&&b.x+b.width<=width+1);fs.mkdirSync('test-results',{recursive:true});await page.locator('.ty-tool-hero').screenshot({path:`test-results/wishlist-header-${width}.png`});await account.click();const backup=page.locator('#wishlistBackupSettings');if(await backup.evaluate(e=>e.open))await backup.locator('summary').click();await backup.locator('summary').click();await backup.locator('.ty-unified-settings-content').waitFor({state:'visible'});assert.equal(await backup.evaluate(e=>e.open),true,'backup opens at '+width);await page.locator('#settingsModal').screenshot({path:`test-results/wishlist-settings-${width}.png`});await page.locator('#cancelSettingsBtn').click();}
   assert.equal(await page.locator('#email,#password,#login,#signup,#logoutPublic').count(),0);
   assert.equal(await page.locator('#loginEmail,#loginPassword,#loginSubmit,#registerUser,#logoutUser').count(),5);
   assert.equal(await page.locator('#profileAccountOpen').count(),1);
   await page.locator('#settingsBtn').click();
   const guide=page.getByRole('link',{name:'Wunschlisten-Anleitung',exact:true});
-  await page.locator('details[data-settings-section="help"] > summary').click();
+  const help=page.locator('details[data-settings-section="help"]');if(!(await help.evaluate(e=>e.open)))await help.locator('summary').click();
   await guide.waitFor({state:'visible'});
   await guide.click();
   await page.waitForURL(origin+'/amazon-wunschliste-veroeffentlichen/');
