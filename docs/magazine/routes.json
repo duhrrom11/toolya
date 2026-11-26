@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "origin": "https://toolya.app",
+  "editions": {
+    "de": {
+      "hub": "/hautnah/",
+      "author": "/hautnah/autor/",
+      "reading": "/hautnah/lesefassung/",
+      "articles": [
+        "/hautnah/ueber-romi/",
+        "/hautnah/internet-der-90er/",
+        "/hautnah/entstehung-amazon-wunschlistensuche/",
+        "/hautnah/entstehungsgeschichte/",
+        "/hautnah/toolya-und-toolina/",
+        "/hautnah/warum-toolya-kostenlos-ist/",
+        "/hautnah/softwareentwicklung-mit-ki/",
+        "/hautnah/zurueck-in-die-80er/",
+        "/hautnah/zukunft/"
+      ]
+    },
+    "en": {
+      "hub": "/en/unplugged/",
+      "author": "/en/unplugged/author/",
+      "reading": "/en/unplugged/complete-story/",
+      "articles": [
+        "/en/unplugged/about-romi/",
+        "/en/unplugged/internet-in-the-90s/",
+        "/en/unplugged/origins-of-amazon-wish-list-search/",
+        "/en/unplugged/toolya-origin-story/",
+        "/en/unplugged/toolya-and-toolina/",
+        "/en/unplugged/why-toolya-is-free/",
+        "/en/unplugged/software-development-with-ai/",
+        "/en/unplugged/back-to-the-eighties/",
+        "/en/unplugged/future/"
+      ]
+    }
+  }
+}
