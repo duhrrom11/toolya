@@ -1,0 +1,107 @@
+name: Toolya public homepage performance candidate
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'scripts/build-home-*.cjs'
+      - 'scripts/build-home-images.py'
+      - 'scripts/public-static-cache-template.js'
+      - 'tests/performance/**'
+      - '.github/workflows/home-performance-candidate.yml'
+      - 'index.html'
+      - 'en/index.html'
+      - 'sw.js'
+      - 'assets/perf/**'
+permissions:
+  contents: read
+jobs:
+  candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify public phase-one deployment (read only)
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/perf-report"
+          for suffix in / /en/ /robots.txt; do
+            name=$(echo "$suffix" | tr / _)
+            if curl --proto '=https' --location --fail --silent --show-error --max-time 20 "https://toolya.app$suffix" -o "$RUNNER_TEMP/perf-report/live-$name.txt"; then
+              if [[ "$suffix" == "/robots.txt" ]]; then
+                grep -q 'User-agent: OAI-SearchBot' "$RUNNER_TEMP/perf-report/live-$name.txt" && echo "PHASE1 $suffix verified" || echo "PHASE1 $suffix not verified"
+              else
+                grep -q 'public-home.mjs?v=20261126' "$RUNNER_TEMP/perf-report/live-$name.txt" && grep -q 'hreflang="x-default"' "$RUNNER_TEMP/perf-report/live-$name.txt" && echo "PHASE1 $suffix verified" || echo "PHASE1 $suffix not verified"
+              fi
+            else
+              echo "PHASE1 $suffix network unavailable"
+            fi
+          done
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm}
+      - name: Install pinned isolated build tools
+        run: |
+          npm ci --ignore-scripts
+          npm install --prefix "$RUNNER_TEMP/perf-build" --no-audit --no-fund --ignore-scripts esbuild@0.25.12
+          python -m venv "$RUNNER_TEMP/perf-python"
+          "$RUNNER_TEMP/perf-python/bin/pip" install Pillow==11.3.0
+      - name: Generate independent baseline and candidate
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/perf-base" "$RUNNER_TEMP/perf-candidate"
+          git archive HEAD | tar -x -C "$RUNNER_TEMP/perf-base"
+          git archive HEAD | tar -x -C "$RUNNER_TEMP/perf-candidate"
+          touch "$RUNNER_TEMP/perf-candidate/.toolya-perf-candidate"
+          node --check scripts/build-home-perf.cjs
+          node --check scripts/build-home-cache.cjs
+          node --check tests/performance/home-candidate.cjs
+          "$RUNNER_TEMP/perf-python/bin/python" scripts/build-home-images.py "$RUNNER_TEMP/perf-candidate" > "$RUNNER_TEMP/perf-report/images.json"
+          ESBUILD_PATH="$RUNNER_TEMP/perf-build/node_modules/esbuild" node scripts/build-home-perf.cjs "$RUNNER_TEMP/perf-candidate" "$RUNNER_TEMP/perf-report/images.json"
+          node scripts/build-home-cache.cjs "$RUNNER_TEMP/perf-candidate"
+          node --check "$RUNNER_TEMP/perf-candidate/sw.js"
+          cp "$RUNNER_TEMP/perf-candidate/assets/perf/manifest.json" "$RUNNER_TEMP/perf-report/manifest.json"
+          (cd "$RUNNER_TEMP/perf-candidate/assets/toolya/originals" && sha256sum -c SHA256SUMS)
+      - name: Compare mobile and desktop design, behavior and cache privacy
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          node tests/performance/home-candidate.cjs "$RUNNER_TEMP/perf-base" "$RUNNER_TEMP/perf-candidate" "$RUNNER_TEMP/perf-report"
+          "$RUNNER_TEMP/perf-python/bin/python" - <<'PY'
+          import os,pathlib,math,json
+          from PIL import Image,ImageChops,ImageStat
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'perf-report'
+          scores={}
+          for source in root.glob('*-baseline-*.png'):
+              target=source.with_name(source.name.replace('-baseline-','-candidate-'))
+              a,b=Image.open(source).convert('RGB'),Image.open(target).convert('RGB')
+              assert a.size==b.size,(source,a.size,b.size)
+              mse=sum(x*x for x in ImageStat.Stat(ImageChops.difference(a,b)).rms)/3
+              psnr=99 if mse==0 else 10*math.log10(255**2/mse)
+              scores[source.name]=round(psnr,2)
+              assert psnr>=30,(source,psnr)
+          assert len(scores)==8,scores
+          (root/'screenshot-scores.json').write_text(json.dumps(scores,indent=2))
+          print('Visual screenshot comparison:',scores)
+          PY
+      - name: Test original authentication flow against optimized candidate
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          export NODE_PATH="$GITHUB_WORKSPACE/node_modules"
+          cd "$RUNNER_TEMP/perf-candidate"
+          node tests/platform/home-auth.cjs
+      - name: Package checked candidate files for review (no deployment)
+        run: |
+          mkdir -p "$RUNNER_TEMP/perf-report/candidate/en" "$RUNNER_TEMP/perf-report/candidate/assets"
+          cp "$RUNNER_TEMP/perf-candidate/index.html" "$RUNNER_TEMP/perf-candidate/sw.js" "$RUNNER_TEMP/perf-report/candidate/"
+          cp "$RUNNER_TEMP/perf-candidate/en/index.html" "$RUNNER_TEMP/perf-report/candidate/en/"
+          cp -r "$RUNNER_TEMP/perf-candidate/assets/perf" "$RUNNER_TEMP/perf-report/candidate/assets/"
+          echo "PERF_BASE_TREE $(git rev-parse HEAD^{tree})"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: toolya-public-home-performance-evidence
+          path: ${{ runner.temp }}/perf-report/
+          retention-days: 7
