@@ -34,6 +34,8 @@ jobs:
         run: node tests/platform/design-foundation.cjs
       - if: ${{ github.event_name != 'pull_request' || github.head_ref != 'release/toolya-english-1.0' || !github.event.pull_request.draft }}
         run: node tests/security/estate-handover-design.cjs
+      - name: Validate B3 release inventory before publishing
+        run: node scripts/verify-b3-release.cjs --check-local
       - name: Verify public B3 delivery after Pages release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: node scripts/verify-b3-release.cjs

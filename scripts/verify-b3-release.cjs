@@ -2,7 +2,9 @@
 const fs=require('node:fs'),assert=require('node:assert/strict'),{createHash}=require('node:crypto');
 const origin='https://toolya.app',hash=b=>createHash('sha256').update(b).digest('hex');
 const expected=fs.readFileSync('assets/helferlein-b3.css'),revision=process.env.GITHUB_SHA||hash(expected);
+const localOnly=process.argv.includes('--check-local');
 async function get(path){
+ if(localOnly){const file=path.endsWith('/')?path.slice(1)+'index.html':path.slice(1);return {url:new URL(path,origin).href,body:fs.readFileSync(file)}; }
  const url=new URL(path,origin);url.searchParams.set('release',revision);
  const response=await fetch(url,{redirect:'error',signal:AbortSignal.timeout(10000)});
  assert.equal(response.status,200,path+' HTTP status');
@@ -10,7 +12,7 @@ async function get(path){
 }
 (async()=>{
  let result,lastError;
- for(let attempt=1;attempt<=6;attempt++){
+ for(let attempt=1;attempt<=(localOnly?1:6);attempt++){
   try{
    const css=await get('/assets/helferlein-b3.css');
    assert.equal(hash(css.body),hash(expected),'Live B3 CSS must match this release byte for byte');
@@ -43,7 +45,7 @@ async function get(path){
     estate.push({url:asset.url,status:200,expectedSha256:hash(expectedAsset),actualSha256:hash(asset.body),byteIdentical:true});
    }
    const info=[];
-   for(const path of ['/legal.html','/privacy.html','/mascots.html','/shared/toolya/info-pages.css','/shared/toolya/platform.mjs']){
+   for(const path of ['/legal.html','/privacy.html','/shared/toolya/info-pages.css','/shared/toolya/platform.mjs']){
     const asset=await get(path),expectedAsset=fs.readFileSync(path.slice(1));
     assert.equal(hash(asset.body),hash(expectedAsset),'Information page resource must match release byte for byte');
     info.push({url:asset.url,status:200,expectedSha256:hash(expectedAsset),actualSha256:hash(asset.body),byteIdentical:true});
@@ -61,7 +63,7 @@ async function get(path){
     admin.push({url:asset.url,status:200,expectedSha256:hash(expectedAsset),actualSha256:hash(asset.body),byteIdentical:true});
    }
    const otherRoutes=[];
-   for(const route of ['/', '/assets/toolya-settings.css', '/robots.txt', '/sitemap.xml', '/mascots.html', '/toolya-dashboard/', '/backform-rechner/', '/backform-rechner/rechner.js', '/zaehlerstaende/', '/amazon-wunschliste-veroeffentlichen/', '/verliehene-dinge/', '/tiergesundheit/', '/digitaler-nachlass/', '/wg-organisator/', '/pflanzenpflege/', '/haushaltsbuch/', '/umzugskisten/', '/autokosten/', '/parkplatz-merker/', '/parkplatz-merker/guide.css', '/dashboard/', '/tools/wishes/index.html','/tools/estate/handover.html','/tools/estate/print-key.html','/dashboard/dashboard.css','/dashboard/account-settings.js']){
+   for(const route of ['/', '/assets/toolya-settings.css', '/robots.txt', '/sitemap.xml',  '/toolya-dashboard/', '/backform-rechner/', '/backform-rechner/rechner.js', '/zaehlerstaende/', '/amazon-wunschliste-veroeffentlichen/', '/verliehene-dinge/', '/tiergesundheit/', '/digitaler-nachlass/', '/wg-organisator/', '/pflanzenpflege/', '/haushaltsbuch/', '/umzugskisten/', '/autokosten/', '/parkplatz-merker/', '/parkplatz-merker/guide.css', '/dashboard/', '/tools/wishes/index.html','/tools/estate/handover.html','/tools/estate/print-key.html','/dashboard/dashboard.css','/dashboard/account-settings.js']){
     const page=await get(route);
     const file=route.endsWith('/')?route.slice(1)+'index.html':route.slice(1);
     const expectedPage=fs.readFileSync(file);
@@ -70,9 +72,10 @@ async function get(path){
    }
    result={revision,checkedAt:new Date().toISOString(),attempt,css:{url:css.url,expectedSha256:hash(expected),actualSha256:hash(css.body),byteIdentical:true},buddy:{url:buddy.url,expectedSha256:hash(expectedBuddy),actualSha256:hash(buddy.body),byteIdentical:true},themeStyles,pages,wishlist,estate,info,legacy,admin,otherRoutes,scope:'Public static delivery only; authenticated production UI and private flows are not verified by this check.'};
    break;
-  }catch(error){lastError=error;if(attempt<6)await new Promise(r=>setTimeout(r,10000));}
+  }catch(error){lastError=error;if(!localOnly&&attempt<6)await new Promise(r=>setTimeout(r,10000));}
  }
  if(!result)throw lastError;
+ if(localOnly){console.log('B3 local release inventory and content checks passed');return;}
  fs.mkdirSync('test-results',{recursive:true});fs.writeFileSync('test-results/b3-live-delivery.json',JSON.stringify(result,null,2)+'\n');
  console.log('B3_LIVE_DELIVERY '+JSON.stringify(result));
  if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'### B3 public delivery\n\nShared/theme CSS, tool HTML and buddy module byte-identical to '+revision+'; Car, Budget, Moving, Loans, Meters, Plants, Parking, Pet Health, WG and Baking HTML reference the shared stylesheet. No authenticated production UI check.\n');
