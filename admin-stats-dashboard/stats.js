@@ -9,7 +9,7 @@ document.addEventListener('toolya:admin-locale-change',()=>presentation.refresh(
 const URL='https://yheogmeaosuigyaxkwth.supabase.co', KEY='sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
 const endpoint=URL+'/functions/v1/admin-stats';
 const $=id=>document.getElementById(id);
-const client=window.supabase?.createClient(URL,KEY);
+const client=(window.toolyaAuth?window.toolyaAuth.get(URL,KEY):window.supabase?.createClient(URL,KEY));
 const state=$('state'),panel=$('panel');
 const show=(msg)=>{state.textContent=msg;state.hidden=false;panel.hidden=true};
 const tile=(title,value,detail)=>{const e=document.createElement('article');e.className='tile';const h=document.createElement('h3');h.textContent=title;const v=document.createElement('strong');v.textContent=value;const p=document.createElement('p');p.className='meta';p.textContent=detail;e.append(h,v,p);return e};
