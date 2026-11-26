@@ -86,7 +86,7 @@ function render(){
  if(!count)empty(warnings,ui("Aktuell keine Budgetüberschreitungen bei Anlässen mit festgelegtem Budget."));
 }
 async function main(){
- const {data,error}=await db.auth.getUser();user=data?.user;
+ const {data,error}=await (globalThis.toolyaAuth?.forClient(db) || db.auth).getUser();user=data?.user;
  if(error||!user){$('login').hidden=false;$('status').textContent=ui('Bitte anmelden.');return}
  const ownerId=user.id;
  const [o,g,r,t]=await Promise.all([
