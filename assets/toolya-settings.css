@@ -60,7 +60,7 @@
   outline: 3px solid #00738b;
   outline-offset: 2px;
 }
-body .b3-hub-nav button#userInfo.b3-auth-status {
+body :is(.b3-hub-nav,.ty-tool-hero-actions) button#userInfo.b3-auth-status {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -73,7 +73,7 @@ body .b3-hub-nav button#userInfo.b3-auth-status {
   border-radius: 999px;
   font-weight: 800;
 }
-body .b3-hub-nav button#userInfo.b3-auth-signed-in {
+body :is(.b3-hub-nav,.ty-tool-hero-actions) button#userInfo.b3-auth-signed-in {
   background: #d6f4fb !important;
   color: #093e50 !important;
   border-color: #16849f !important;
