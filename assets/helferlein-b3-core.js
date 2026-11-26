@@ -149,7 +149,7 @@ function init(){
  }
  if(surface)surface.append(prefs);
  const footer=el('div',{class:'b3-settings-footer'});
- footer.append(el('a',{href:'https://ko-fi.com/duhrrom',target:'_blank',rel:'noopener noreferrer',class:'b3-kofi-link'},'☕ Kaffee spendieren'));
+ footer.append(el('a',{href:'https://ko-fi.com/toolya',target:'_blank',rel:'noopener noreferrer',class:'b3-kofi-link'},'☕ Kaffee spendieren'));
  footer.append(el('a',{href:'../../index.html',class:'b3-home-link'},'↗ Entdecke mehr Toolya'));
  if(surface)surface.append(footer);
  main.prepend(editor);paint(layout);
