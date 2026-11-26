@@ -27,5 +27,26 @@
   try{return await Promise.race([Promise.resolve().then(operation),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Account check timed out')),ms)})]);}
   finally{clearTimeout(timer);}
  }
- root.toolyaAuth=Object.freeze({get,deadline});
+ // Account operations preserve SDK response shapes and caller-specific UI/security.
+ // No automatic retry of mutations: a timeout does not prove the server rejected a request.
+ const services=new WeakMap();
+ function forClient(client){
+  if(!client?.auth)throw new Error('Toolya account unavailable');
+  if(services.has(client))return services.get(client);
+  const call=(method,args)=>Promise.resolve().then(()=>client.auth[method](...args));
+  const service=Object.freeze({
+   signInWithPassword:(...args)=>call('signInWithPassword',args),
+   signUp:(...args)=>call('signUp',args),
+   signOut:(...args)=>call('signOut',args),
+   resetPasswordForEmail:(...args)=>call('resetPasswordForEmail',args),
+   updateUser:(...args)=>call('updateUser',args),
+   getUser:(...args)=>call('getUser',args),
+   getSession:(...args)=>call('getSession',args),
+   // Preserve synchronous notification semantics; adapters must defer SDK reentry.
+   onAuthStateChange:(...args)=>client.auth.onAuthStateChange(...args)
+  });
+  services.set(client,service);
+  return service;
+ }
+ root.toolyaAuth=Object.freeze({get,deadline,forClient});
 })(typeof window==='undefined'?globalThis:window);
