@@ -79,6 +79,8 @@ jobs:
         run: |
           export NODE_PATH="$GITHUB_WORKSPACE/node_modules"
           cd "$RUNNER_TEMP/sprite-snapshots/sprite"
+          # ESM resolution does not use NODE_PATH; expose the same locked test dependencies.
+          ln -s "$GITHUB_WORKSPACE/node_modules" node_modules
           node --test tests/mascot/*.test.mjs tests/platform/*.test.mjs tests/amazon/*.test.mjs
           node tests/platform/home-auth.cjs
           node tests/platform/browser.cjs
