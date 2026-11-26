@@ -676,7 +676,7 @@
         const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
         const supabaseClient = (window.toolyaAuth ? window.toolyaAuth.get(SUPABASE_URL, SUPABASE_ANON_KEY) : supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
-        supabaseClient.auth.onAuthStateChange((event,session) => {
+        (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).onAuthStateChange((event,session) => {
             if(bakingCloudReady&&(!session?.user?.id||session.user.id!==bakingCloudUserId||session.user.is_anonymous))
                 bakingCloudBlock('account-changed');
             setTimeout(() => { checkUserSession().catch(() => {}); }, 0);
@@ -688,7 +688,7 @@
             if(!email || !password) return alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
             let data, error;
             try {
-                ({ data, error } = await supabaseClient.auth.signUp({ email, password }));
+                ({ data, error } = await (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).signUp({ email, password }));
             } catch (err) {
                 return alert((window.__toolyaUILocale === 'en' ? 'Registration failed: ' : 'Registrierung fehlgeschlagen: ') + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             }
@@ -702,7 +702,7 @@
             if(!email || !password) return alert(window.__toolyaUILocale === 'en' ? 'Please enter your email and password.' : 'Bitte E-Mail und Passwort eingeben.');
             let error;
             try {
-                ({ error } = await supabaseClient.auth.signInWithPassword({ email, password }));
+                ({ error } = await (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).signInWithPassword({ email, password }));
             } catch (err) {
                 return alert((window.__toolyaUILocale === 'en' ? 'Sign-in failed: ' : 'Anmeldung fehlgeschlagen: ') + (err?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             }
@@ -712,7 +712,7 @@
 
         async function supabaseLogout() {
             try {
-                const { error } = await supabaseClient.auth.signOut();
+                const { error } = await (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).signOut();
                 if (error) return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
             } catch (error) {
                 return alert((window.__toolyaUILocale === 'en' ? 'Sign-out failed: ' : 'Abmeldung fehlgeschlagen: ') + (error?.message || (window.__toolyaUILocale === 'en' ? 'Unknown error' : 'Unbekannter Fehler')));
@@ -725,7 +725,7 @@
             let user = null;
             let sessionError = null;
             try {
-                const result = await supabaseClient.auth.getUser();
+                const result = await (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).getUser();
                 sessionError = result?.error?.name === 'AuthSessionMissingError' ? null : (result?.error ?? null);
                 user = sessionError ? null : (result?.data?.user ?? null);
             } catch (error) {
@@ -1000,7 +1000,7 @@
             bakingCloudBlock('loading');
             try{
                 const {prepareCloudTool}=await import('../../shared/toolya/cloud-tool-adapters.mjs');
-                const {data:auth,error}=await supabaseClient.auth.getUser();
+                const {data:auth,error}=await (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).getUser();
                 if(error||!auth?.user?.id||auth.user.is_anonymous)throw Error('Registrierte Anmeldung erforderlich.');
                 const uid=auth.user.id;
                 const prepared=await prepareCloudTool({
@@ -1015,7 +1015,7 @@
                         return confirm('Bitte bestätigen, dass die Sicherung heruntergeladen wurde.');
                     }
                 });
-                const {data:again,error:againError}=await supabaseClient.auth.getUser();
+                const {data:again,error:againError}=await (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).getUser();
                 if(againError||again?.user?.id!==uid||again.user.is_anonymous)throw Error('Konto gewechselt.');
                 bakingCloudController=prepared.controller;bakingCloudUserId=uid;bakingCloudReady=true;
                 document.getElementById('toolya-cloud-gate')?.remove();renderSavedRecipes();
@@ -1029,7 +1029,7 @@
         async function persistRecipes(recipes){
             if(!bakingCloudReady||!bakingCloudController?.ready){bakingCloudBlock('load-failed');return false;}
             try{
-                const {data:auth,error}=await supabaseClient.auth.getUser();
+                const {data:auth,error}=await (globalThis.toolyaAuth?.forClient(supabaseClient) || supabaseClient.auth).getUser();
                 if(error||auth?.user?.id!==bakingCloudUserId||auth.user.is_anonymous)throw Error('Anmeldung nicht gültig.');
                 await bakingCloudController.replace({recipes});
                 window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Saved to Toolya Cloud.' : 'In Toolya Cloud gespeichert.');return true;
