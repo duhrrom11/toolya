@@ -92,3 +92,9 @@
 @media(max-width:500px){
  .ty-tool-hero-inner>.ty-sprite-wrap{flex-basis:84px;width:84px;height:110px}
 }
+
+/* Shared account slot: keep the full status and language controls accessible at narrow widths. */
+.ty-tool-hero[data-has-account] .ty-tool-hero-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
+.ty-tool-hero[data-has-account] .ty-tool-hero-actions{flex-wrap:wrap;justify-content:flex-start;max-width:100%;gap:8px}
+.ty-tool-hero-actions #userInfo.b3-auth-status{padding:8px 12px;font:800 14px/1.2 system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere;max-width:100%;margin:0}
+@media(max-width:500px){.ty-tool-hero[data-has-account] .ty-tool-hero-top{align-items:flex-start}.ty-tool-hero[data-has-account] .ty-tool-hero-actions{width:100%}.ty-tool-hero-actions #userInfo.b3-auth-status{font-size:13px}}
