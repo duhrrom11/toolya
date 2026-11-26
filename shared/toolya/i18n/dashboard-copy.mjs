@@ -1,3 +1,4 @@
+import {readAppLocale} from './locale.mjs';
 /* Account and dashboard display catalogue; strictly presentation-only.
    Use source-exact keys so arbitrary user data and Supabase diagnostics stay intact. */
 export const DASHBOARD_COPY=Object.freeze(Object.fromEntries([
@@ -723,11 +724,7 @@ const prefixes=[
 export function dashboardLocale(){
  const value=globalThis.__toolyaDashboardLocale;
  if(value==='en'||value==='de')return value;
- try{const url=new URL(globalThis.location?.href||'https://toolya.app/dashboard/');
-   const requested=url.searchParams.get('lang');
-   if(requested==='en'||requested==='de')return requested;
-   return globalThis.localStorage?.getItem('toolya-locale-v1')==='en'?'en':'de';
- }catch{return 'de'}
+ return readAppLocale();
 }
 export function dashboardText(value,lang=dashboardLocale()){
  if(typeof value!=='string')return value;
