@@ -1,0 +1,324 @@
+{
+  "images": [
+    {
+      "source": "assets/toolya/home/wishlist.webp",
+      "originalBytes": 15596,
+      "originalSize": [
+        320,
+        320
+      ],
+      "output": "assets/perf/wishlist.ad492cebabf219685fdaf3d74960616675d569631d0ccd7965cbd925a38a40e9.webp",
+      "bytes": 7476,
+      "size": [
+        200,
+        200
+      ],
+      "quality": 75,
+      "psnr": 39.63,
+      "alphaExact": true
+    },
+    {
+      "source": "assets/toolya/home/budget.webp",
+      "originalBytes": 12806,
+      "originalSize": [
+        320,
+        314
+      ],
+      "output": "assets/perf/budget.d911cd5abbae235758a87d11310ede36f90e8ee64c1585d5918eea75d6a0814f.webp",
+      "bytes": 5574,
+      "size": [
+        200,
+        196
+      ],
+      "quality": 75,
+      "psnr": 37.08,
+      "alphaExact": true
+    },
+    {
+      "source": "assets/toolya/home/moving.webp",
+      "originalBytes": 10818,
+      "originalSize": [
+        320,
+        320
+      ],
+      "output": "assets/perf/moving.a29e8c38b0bf6c732a8ed73c00b0e45b53fce77e3e28c6eb30f48b20b82519a0.webp",
+      "bytes": 4860,
+      "size": [
+        200,
+        200
+      ],
+      "quality": 75,
+      "psnr": 39.91,
+      "alphaExact": true
+    },
+    {
+      "source": "assets/toolya/home/plants.webp",
+      "originalBytes": 19040,
+      "originalSize": [
+        320,
+        320
+      ],
+      "output": "assets/perf/plants.184bbdebd59d8d70f63f1b07a64dd0b032b2a0c408997019ccc3c0155bc9022b.webp",
+      "bytes": 8610,
+      "size": [
+        200,
+        200
+      ],
+      "quality": 75,
+      "psnr": 38.04,
+      "alphaExact": true
+    },
+    {
+      "source": "assets/toolya/home/wg-organisator.webp",
+      "originalBytes": 23632,
+      "originalSize": [
+        320,
+        280
+      ],
+      "output": "assets/perf/wg-organisator.e01b90f2b53ad46f446e6cc6a9ede0e3ad9f8d0d97e90dd3b135ec49c90c83e3.webp",
+      "bytes": 10332,
+      "size": [
+        200,
+        175
+      ],
+      "quality": 80,
+      "psnr": 35.68,
+      "alphaExact": true
+    },
+    {
+      "source": "assets/toolya/home/digitaler-nachlass.webp",
+      "originalBytes": 22596,
+      "originalSize": [
+        320,
+        311
+      ],
+      "output": "assets/perf/digitaler-nachlass.19cbc9f663af73cac36189fdb3faa5182ceaf116ec59a6e4afe19627167e2ad8.webp",
+      "bytes": 9522,
+      "size": [
+        200,
+        194
+      ],
+      "quality": 80,
+      "psnr": 35.31,
+      "alphaExact": true
+    },
+    {
+      "source": "assets/toolya/home/autokosten.webp",
+      "originalBytes": 23940,
+      "originalSize": [
+        320,
+        241
+      ],
+      "output": "assets/perf/autokosten.a3e3a5fda08bcba2cdd2fffcfc66956f7491583b94734c5d4024d0f1d7c983aa.webp",
+      "bytes": 11110,
+      "size": [
+        200,
+        151
+      ],
+      "quality": 85,
+      "psnr": 35.17,
+      "alphaExact": true
+    },
+    {
+      "source": "assets/toolya/home/tiergesundheit.webp",
+      "originalBytes": 33468,
+      "originalSize": [
+        320,
+        309
+      ],
+      "output": "assets/perf/tiergesundheit.f3d0bd2b68d1184d5c3261b16b117fdd593c0fcc54e86de86f5a97ccb7058e71.webp",
+      "bytes": 14092,
+      "size": [
+        200,
+        193
+      ],
+      "quality": 75,
+      "psnr": 37.98,
+      "alphaExact": true
+    },
+    {
+      "source": "assets/toolya/home/parkplatz-merker.webp",
+      "originalBytes": 26758,
+      "originalSize": [
+        315,
+        320
+      ],
+      "output": "assets/perf/parkplatz-merker.075eda5aafef65057504a7e36bee354494c5ff7040f768cf144787a3710ed438.webp",
+      "bytes": 11746,
+      "size": [
+        200,
+        203
+      ],
+      "quality": 75,
+      "psnr": 36.93,
+      "alphaExact": true
+    },
+    {
+      "source": "assets/toolya/home/verliehene-dinge.webp",
+      "originalBytes": 25418,
+      "originalSize": [
+        320,
+        297
+      ],
+      "output": "assets/perf/verliehene-dinge.81bf5cfc131c732baf7fa8ca1b33ac8fc9bb09deca147c44d2ddc402b2ba8ff2.webp",
+      "bytes": 11304,
+      "size": [
+        200,
+        186
+      ],
+      "quality": 75,
+      "psnr": 38.32,
+      "alphaExact": true
+    },
+    {
+      "source": "assets/toolya/home/zaehlerstaende.webp",
+      "originalBytes": 42696,
+      "originalSize": [
+        313,
+        320
+      ],
+      "output": "assets/perf/zaehlerstaende.76d965f10a150372ca710fd6a4bb6d48c5ce30d398eaef57a704a89dadb09a4a.webp",
+      "bytes": 18658,
+      "size": [
+        200,
+        204
+      ],
+      "quality": 75,
+      "psnr": 37.65,
+      "alphaExact": true
+    },
+    {
+      "source": "assets/toolya/home/backform-rechner.webp",
+      "originalBytes": 33730,
+      "originalSize": [
+        299,
+        320
+      ],
+      "output": "assets/perf/backform-rechner.7d31f1dd69b04236d96f3721b4fc150f3b0d81fa63061f09e17e4dc162c55485.webp",
+      "bytes": 15778,
+      "size": [
+        200,
+        214
+      ],
+      "quality": 75,
+      "psnr": 36.76,
+      "alphaExact": true
+    },
+    {
+      "source": "assets/toolya/home/hero-duo-480.webp",
+      "originalBytes": 54098,
+      "originalSize": [
+        480,
+        346
+      ],
+      "output": "assets/perf/hero-duo-480.85ad9571e45ed983e03e47d06062fe4f96093292500c0f41d36e77690fac4d7b.webp",
+      "bytes": 49376,
+      "size": [
+        480,
+        346
+      ],
+      "quality": 80,
+      "psnr": 37.61,
+      "alphaExact": true
+    },
+    {
+      "source": "assets/toolya/home/hero-duo-960.webp",
+      "originalBytes": 160204,
+      "originalSize": [
+        960,
+        693
+      ],
+      "output": "assets/perf/hero-duo-960.3c80d41aaef1aaf64baab98d459452a8771b943e8ff61708de8c08f061a7441a.webp",
+      "bytes": 130210,
+      "size": [
+        960,
+        693
+      ],
+      "quality": 75,
+      "psnr": 36.88,
+      "alphaExact": true
+    },
+    {
+      "source": "assets/toolya/home/hero-duo.webp",
+      "originalBytes": 379934,
+      "originalSize": [
+        1476,
+        1065
+      ],
+      "output": "assets/perf/hero-duo.3e5c026125ac2aa9f03494e2cb7358ad7a6d329e15aedf45f0ebe920ca2df2b8.webp",
+      "bytes": 240924,
+      "size": [
+        1476,
+        1065
+      ],
+      "quality": 75,
+      "psnr": 36.94,
+      "alphaExact": true
+    }
+  ],
+  "staticAssets": [
+    {
+      "name": "home-utilities",
+      "originalBytes": 15106,
+      "bytes": 15089,
+      "path": "assets/perf/home-utilities.de727db268f7b3c26a107ea38c25df9b26d43ef11e3bf1796c4d6e8cf4626853.css"
+    },
+    {
+      "name": "home-styles",
+      "originalBytes": 58545,
+      "bytes": 53824,
+      "path": "assets/perf/home-styles.6446e70faa0c117d3cfa6a3a5f684ffe8b28c4bf127f75ace73384647039bd1b.css"
+    },
+    {
+      "name": "helferlein-b3-startseite",
+      "originalBytes": 2497,
+      "bytes": 2231,
+      "path": "assets/perf/helferlein-b3-startseite.12c2a2917916c2823a18a725acf5e2d080703801202fb50bf8c6db569d8431e4.js"
+    },
+    {
+      "name": "helferlein-accessibility",
+      "originalBytes": 8879,
+      "bytes": 6581,
+      "path": "assets/perf/helferlein-accessibility.0ee1345222287a1c61b71504af4f688568ef9d1edb4e611463ff1f0017845d2a.js"
+    },
+    {
+      "name": "helferlein-dialogs",
+      "originalBytes": 4081,
+      "bytes": 3766,
+      "path": "assets/perf/helferlein-dialogs.4c1e8da5ec5a18264b53d209b44643f6ca90c210f2c1b0e81b4b174400007fbc.js"
+    },
+    {
+      "name": "toolya-pwa",
+      "originalBytes": 3800,
+      "bytes": 3126,
+      "path": "assets/perf/toolya-pwa.20e494ad417cd5354d6769c2f8b28f7a2dd251d753358133b0d1636bd4571c62.js"
+    }
+  ],
+  "files": [
+    "assets/perf/autokosten.a3e3a5fda08bcba2cdd2fffcfc66956f7491583b94734c5d4024d0f1d7c983aa.webp",
+    "assets/perf/backform-rechner.7d31f1dd69b04236d96f3721b4fc150f3b0d81fa63061f09e17e4dc162c55485.webp",
+    "assets/perf/budget.d911cd5abbae235758a87d11310ede36f90e8ee64c1585d5918eea75d6a0814f.webp",
+    "assets/perf/digitaler-nachlass.19cbc9f663af73cac36189fdb3faa5182ceaf116ec59a6e4afe19627167e2ad8.webp",
+    "assets/perf/helferlein-accessibility.0ee1345222287a1c61b71504af4f688568ef9d1edb4e611463ff1f0017845d2a.js",
+    "assets/perf/helferlein-b3-startseite.12c2a2917916c2823a18a725acf5e2d080703801202fb50bf8c6db569d8431e4.js",
+    "assets/perf/helferlein-dialogs.4c1e8da5ec5a18264b53d209b44643f6ca90c210f2c1b0e81b4b174400007fbc.js",
+    "assets/perf/hero-duo-480.85ad9571e45ed983e03e47d06062fe4f96093292500c0f41d36e77690fac4d7b.webp",
+    "assets/perf/hero-duo-960.3c80d41aaef1aaf64baab98d459452a8771b943e8ff61708de8c08f061a7441a.webp",
+    "assets/perf/hero-duo.3e5c026125ac2aa9f03494e2cb7358ad7a6d329e15aedf45f0ebe920ca2df2b8.webp",
+    "assets/perf/home-styles.6446e70faa0c117d3cfa6a3a5f684ffe8b28c4bf127f75ace73384647039bd1b.css",
+    "assets/perf/home-utilities.de727db268f7b3c26a107ea38c25df9b26d43ef11e3bf1796c4d6e8cf4626853.css",
+    "assets/perf/moving.a29e8c38b0bf6c732a8ed73c00b0e45b53fce77e3e28c6eb30f48b20b82519a0.webp",
+    "assets/perf/parkplatz-merker.075eda5aafef65057504a7e36bee354494c5ff7040f768cf144787a3710ed438.webp",
+    "assets/perf/plants.184bbdebd59d8d70f63f1b07a64dd0b032b2a0c408997019ccc3c0155bc9022b.webp",
+    "assets/perf/tiergesundheit.f3d0bd2b68d1184d5c3261b16b117fdd593c0fcc54e86de86f5a97ccb7058e71.webp",
+    "assets/perf/toolya-pwa.20e494ad417cd5354d6769c2f8b28f7a2dd251d753358133b0d1636bd4571c62.js",
+    "assets/perf/verliehene-dinge.81bf5cfc131c732baf7fa8ca1b33ac8fc9bb09deca147c44d2ddc402b2ba8ff2.webp",
+    "assets/perf/wg-organisator.e01b90f2b53ad46f446e6cc6a9ede0e3ad9f8d0d97e90dd3b135ec49c90c83e3.webp",
+    "assets/perf/wishlist.ad492cebabf219685fdaf3d74960616675d569631d0ccd7965cbd925a38a40e9.webp",
+    "assets/perf/zaehlerstaende.76d965f10a150372ca710fd6a4bb6d48c5ce30d398eaef57a704a89dadb09a4a.webp"
+  ],
+  "html": [
+    "index.html",
+    "en/index.html"
+  ]
+}
