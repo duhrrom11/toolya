@@ -1,0 +1,60 @@
+name: Toolya isolated mobile Lighthouse comparison
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/home-lighthouse-comparison.yml'
+      - 'scripts/home-lighthouse-comparison.cjs'
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned measurement-only dependencies
+        run: |
+          npm install --prefix "$RUNNER_TEMP/lh" --no-audit --no-fund --ignore-scripts lighthouse@12.8.0 i18next@23.16.8
+          google-chrome --version
+      - name: Prepare archived release snapshots
+        run: |
+          mkdir -p "$RUNNER_TEMP/lh-snapshots" "$RUNNER_TEMP/lh-report"
+          for entry in baseline:7860464d94d1786a739b20f3b79595fa7d698734 phase1:e53ee4d25a117d7a81e7df990fe051543806396c phase2:77c37f2538a7d35e970ec746af5e591dca77d3b0; do
+            name=$(echo "$entry" | cut -d: -f1)
+            sha=$(echo "$entry" | cut -d: -f2)
+            mkdir -p "$RUNNER_TEMP/lh-snapshots/$name"
+            git archive "$sha" | tar -x -C "$RUNNER_TEMP/lh-snapshots/$name"
+          done
+      - name: Compare exact public live release (read-only HTTP)
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib,urllib.request,os
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'lh-snapshots'/'phase2'
+          report={}
+          for f in ['index.html','en/index.html','sw.js']:
+              url='https://toolya.app/'+{'index.html':'','en/index.html':'en/'}.get(f,f)
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(url,headers={'Cache-Control':'no-cache'}),timeout=15) as r:
+                      report[f]={'status':r.status,'sameBytes':hashlib.sha256(r.read()).digest()==hashlib.sha256((root/f).read_bytes()).digest()}
+              except Exception as e:
+                  report[f]={'error':str(e)}
+          print('LIVE_RELEASE_CHECK',json.dumps(report))
+          PY
+      - name: Measure 3 cold mobile runs per release
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          node scripts/home-lighthouse-comparison.cjs "$RUNNER_TEMP/lh-snapshots" "$RUNNER_TEMP/lh-report" "$RUNNER_TEMP/lh/node_modules"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: toolya-mobile-lighthouse-comparison
+          path: ${{ runner.temp }}/lh-report/
+          retention-days: 14
