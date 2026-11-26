@@ -1,0 +1,3 @@
+TOOLYA HAUTNAH / TOOLYA UNPLUGGED – SEO-OFFLINE-VORSCHAU
+
+ZIP entpacken, index.html öffnen. 24 Magazinseiten plus Einstieg, zwei Sprachen, Original-Maskottchenbild und CSS. Interne Magazinlinks funktionieren lokal ohne Server. Links zu Tools, Impressum und Datenschutz führen zur bestehenden öffentlichen Website; RSS verweist auf vorgesehene Produktions-URLs. Offline-Seiten sind noindex, Canonical und hreflang wurden für die Vorschau entfernt; Produktionsmetadaten bleiben im PR unverändert. Basis: 323f264129401886fa9092ce4fb31a570f0f3728. Sechs CI-Workflows erfolgreich, internationales Release-Gate übersprungen. Kein Merge, Deployment oder Release. Keine kostenpflichtigen Abfragen.

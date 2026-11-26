@@ -1,4 +1,0 @@
-/* Isolated language choice styles; safe on legacy public pages. */
-.ty-language-choice{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;border:1px solid #16818b;border-radius:999px;padding:.36rem .8rem;margin-inline:.5rem;color:#075b65!important;background:#fff!important;font-size:.875rem;font-weight:700;text-decoration:none;line-height:1.5}
-.ty-language-choice:hover{background:#e5f7f5!important}
-.ty-language-choice:focus-visible{outline:3px solid #6241aa;outline-offset:3px}
