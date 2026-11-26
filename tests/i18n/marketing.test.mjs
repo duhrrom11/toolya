@@ -70,7 +70,7 @@ test('German pages have exact matching English navigation and no auto-redirects'
   for(const [path,en] of pairs){
     const html=read(path);
     assert.ok(html.includes('href="'+en+'" lang="en" hreflang="en" data-set-locale="en"'),path);
-    assert.ok(html.includes('/shared/toolya/i18n/switcher.mjs'),path);
+    assert.ok(html.includes(path==='index.html' ? '/shared/toolya/i18n/public-home.mjs' : '/shared/toolya/i18n/switcher.mjs'),path);
     assert.ok(html.includes('/shared/toolya/i18n/switcher.css'),path);
     assert.ok(!html.includes('location.replace("/en/")'),path);
   }
