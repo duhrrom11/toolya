@@ -1,7 +1,7 @@
 /* No hooks into encryption, authentication, export or clipboard logic. */
 import {estateText} from './estate-copy.mjs';
 import {applyEstateLocale} from './estate-dom.mjs';
-const key='toolya-locale-v1';
+import {readAppLocale,persistAppLocale} from './locale.mjs';
 const trustedStatusIds=['message','entry-file-status','mail-status','keyStatus','exportStatus',
  'openStatus','countdown','confirm-title','confirm-text','backup-state','alarm-state','checkin-state','review-state','entry-heading','person-heading','save-person'];
 const sources=new WeakMap();
@@ -20,9 +20,7 @@ function observeEstateStatuses(currentLanguage){
  observer.observe(document.body,{childList:true,characterData:true,subtree:true});
 }
 
-function saved(){const q=new URLSearchParams(location.search).get('lang');
-if(q==='de'||q==='en')return q;
-try{return localStorage.getItem(key)==='en'?'en':'de'}catch{return 'de'}}
+function saved(){return readAppLocale()}
 function mount(){
  const print=location.pathname.endsWith('/print-key.html');
  const originalTitle=document.title;
@@ -51,11 +49,7 @@ function mount(){
  }
  function apply(target,persist){
   lang=target;
-  if(persist){
-   try{localStorage.setItem(key,lang)}catch{}
-   const url=new URL(location.href);url.searchParams.set('lang',lang);
-   history.replaceState(history.state,'',url.pathname+url.search+url.hash);
-  }
+  if(persist)persistAppLocale(lang);
   translateEstateStatuses(lang);
   applyEstateLocale(document,lang);
   globalThis.__toolyaEstateLocale=lang;

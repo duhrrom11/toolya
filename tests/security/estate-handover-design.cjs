@@ -11,6 +11,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
    ...['welcome','error','tip','success'].map(p=>'/assets/toolya/originals/toolya_wishlist_'+c+'_'+p+'_1024.png')
  ]),
   '/shared/toolya/i18n/estate-choice.css',
+  '/shared/toolya/i18n/locale.mjs',
   '/shared/toolya/i18n/estate-entry.mjs',
   '/shared/toolya/i18n/estate-copy.mjs',
   '/shared/toolya/i18n/estate-dom.mjs'

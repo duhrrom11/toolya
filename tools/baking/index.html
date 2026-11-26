@@ -22,7 +22,7 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Supabase JS Client -->
-    <script src="../../assets/vendor/supabase-2.57.0.js"></script>
+    <script src="../../assets/vendor/supabase-2.119.2.js"></script><script src="../../shared/toolya/supabase-client.js"></script>
 <script src="../../shared/toolya/auth-page-gate.js"></script>
 <script src="../../shared/toolya/cloud-page-status.js"></script>
     <script>
@@ -675,7 +675,7 @@
         // Supabase Konfiguration & Instanz
         const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = (window.toolyaAuth ? window.toolyaAuth.get(SUPABASE_URL, SUPABASE_ANON_KEY) : supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
         supabaseClient.auth.onAuthStateChange((event,session) => {
             if(bakingCloudReady&&(!session?.user?.id||session.user.id!==bakingCloudUserId||session.user.is_anonymous))
                 bakingCloudBlock('account-changed');

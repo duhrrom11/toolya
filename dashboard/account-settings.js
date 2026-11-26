@@ -9,13 +9,14 @@ let client;
 try{const config=window.HELPERLEIN_SUPABASE_CONFIG;
  const url=config?.url||URL,key=config?.publishableKey||KEY;
  if(config&&!(config.mode==='production'&&url===URL&&key===KEY)&&!(config.mode==='preview'&&url!==URL&&key!==KEY&&/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(url)&&key.startsWith('sb_publishable_')))throw new Error('Invalid account configuration');
- client=window.supabase?.createClient(url,key)}catch(error){console.warn('Toolya Auth initialization failed',error)}
+ client=window.toolyaAuth?window.toolyaAuth.get(url,key):window.supabase?.createClient(url,key)}catch(error){console.warn('Toolya Auth initialization failed',error)}
 // Share the same GoTrue client with Dashboard cloud storage to avoid competing auth instances.
 window.toolyaDashboardAuthClient=client;
 window.toolyaAccountClient=client;
 let currentAccount=null;
 let authRequest=0,recoveryActive=false,recoverySaving=false,lastFocus=null,initialAccountTimer;
 async function withAccountDeadline(operation,ms=10000){
+ if(window.toolyaAuth)return window.toolyaAuth.deadline(operation,ms);
  let timer;
  try{return await Promise.race([Promise.resolve().then(operation),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Account check timed out')),ms)})])}
  finally{clearTimeout(timer)}

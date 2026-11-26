@@ -71,7 +71,7 @@
         .tool-card:hover::before { opacity: 1; }
     </style>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <script src="/assets/vendor/supabase-2.57.0.js"></script>
+    <script src="/assets/vendor/supabase-2.119.2.js"></script><script src="/shared/toolya/supabase-client.js"></script>
     <link rel="stylesheet" href="/assets/helferlein-b3-startseite.css">
     <script defer src="/assets/helferlein-b3-startseite.js"></script>
     <link rel="stylesheet" href="/assets/helferlein-accessibility.css?v=20261112-3">
@@ -350,7 +350,7 @@
         const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
 
         window.supabaseClient = null;
-        try { window.supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) ?? null; }
+        try { window.supabaseClient = window.toolyaAuth ? window.toolyaAuth.get(SUPABASE_URL, SUPABASE_ANON_KEY) : (window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) ?? null); }
         catch (error) { console.warn("Toolya Auth initialization failed", error); }
         // Client initialisiert; die tatsächliche Erreichbarkeit wird bei Auth-Anfragen geprüft.
         const settingsQuery = new URLSearchParams(location.search);
@@ -547,6 +547,7 @@
         let authStatusRequestId = 0;
         let initialAccountTimer;
         async function withAccountDeadline(operation) {
+            if(window.toolyaAuth)return window.toolyaAuth.deadline(operation);
             let timer;
             try {
                 return await Promise.race([

@@ -21,7 +21,9 @@
     return;
   }
 
-  const client=window.supabase.createClient('https://yheogmeaosuigyaxkwth.supabase.co','sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv');
+  let client;
+  try{client=window.toolyaAuth?window.toolyaAuth.get():window.supabase.createClient('https://yheogmeaosuigyaxkwth.supabase.co','sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv')}catch{unavailable();return}
+  if(!client){unavailable();return}
   let finished = false;
   const timeout = setTimeout(() => {
     finished = true;

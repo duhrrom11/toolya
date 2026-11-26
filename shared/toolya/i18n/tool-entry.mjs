@@ -1,11 +1,10 @@
 /* Opt-in language presentation for existing authenticated tools.
    Stays strictly outside business logic, data, auth gates and maskot state.
    Incomplete translation is explicitly disclosed; account and tool workflows still need end-to-end verification. */
-import {normalizeLocale} from './locale.mjs';
+import {normalizeLocale,readAppLocale,persistAppLocale} from './locale.mjs';
 import {createToolyaI18nextAdapter} from './i18next-runtime-adapter.mjs';
 import {initializeToolyaI18next} from './i18next-singleton.mjs';
 import {applyToolInterfaceLocale,translateToolDialog,translateAccountStatus,translateToolRuntimeStatus} from './interface.mjs';
-const key='toolya-locale-v1';
 const uiGlobal=typeof window === 'undefined' ? globalThis : window;
 const SUPPORTED=Object.freeze({
  moving:{heading:'Moving box organizer',subtitle:'Track your boxes, contents and locations',guide:'/en/moving-boxes/',german:'/umzugskisten/'},
@@ -24,10 +23,7 @@ const settings=SUPPORTED[name];
 function mountToolLanguage(){
  if(!settings)return;
  if(document.querySelector('.ty-tool-language'))return;
- let stored=null;
- try { stored=localStorage.getItem(key); } catch (_) { /* storage is optional */ }
- const query=new URLSearchParams(location.search);
- let selected=normalizeLocale(query.get('lang'))||normalizeLocale(stored)||'de';
+ let selected=readAppLocale(uiGlobal);
  // Pilot: use an existing i18next singleton only when it has been initialized.
  // Do not initialize a second runtime or change any tool/account data.
  let i18nextAdapter=null;
@@ -204,14 +200,7 @@ function mountToolLanguage(){
  function apply(lang,persist){
    selected=lang;
    uiGlobal.__toolyaUILocale=lang; // presentation only; never changes saved data or units
-   if(persist){
-     try{localStorage.setItem(key,lang)}catch(_){}
-     if(uiGlobal.history && location.href){
-       const url=new URL(location.href);
-       url.searchParams.set('lang',lang);
-       uiGlobal.history.replaceState(uiGlobal.history.state,'',url);
-     }
-   }
+   if(persist)persistAppLocale(lang,uiGlobal);
    syncHeader(lang);
    document.title=lang==='en'?settings.heading+' | Toolya':originalDocTitle;
    // Localize search/browser summaries without altering canonical URLs or stored content.

@@ -2,7 +2,7 @@
  'use strict';
  const C=EstateCrypto, STORE='digital_estate_vault';
  const API='https://yheogmeaosuigyaxkwth.supabase.co', PUB='sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
- const db=supabase.createClient(API,PUB);
+ const db=window.toolyaAuth?window.toolyaAuth.get(API,PUB):supabase.createClient(API,PUB);
  const $=id=>document.getElementById(id);
  const language=()=>{const active=window.__toolyaEstateLocale;if(active==='en'||active==='de')return active;try{return (new URLSearchParams(location.search).get('lang')||localStorage.getItem('toolya-locale-v1'))==='en'?'en':'de'}catch{return 'de'}};
  const ui=(de,en)=>language()==='en'?en:de;

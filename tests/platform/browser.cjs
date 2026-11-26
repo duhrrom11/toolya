@@ -10,7 +10,7 @@ const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript'
  const guard=r=>{const u=new URL(r.request().url());
  // Isolated registered user for the plant-page mascot interaction only.
  // No Supabase request is ever sent; all snapshot reads are in-memory.
- if(u.origin===origin&&u.pathname==='/assets/vendor/supabase-2.57.0.js'&&r.request().frame()?.url().includes('/tools/plants/')){
+ if(u.origin===origin&&u.pathname==='/assets/vendor/supabase-2.119.2.js'&&r.request().frame()?.url().includes('/tools/plants/')){
   return r.fulfill({status:200,contentType:'text/javascript',body:`
    window.supabase={createClient(){return {
     auth:{

@@ -24,7 +24,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- jsPDF für PDF-Berichte -->
     <!-- Supabase JS Client -->
-    <script src="../../assets/vendor/supabase-2.57.0.js"></script>
+    <script src="../../assets/vendor/supabase-2.119.2.js"></script><script src="../../shared/toolya/supabase-client.js"></script>
 <script src="../../shared/toolya/auth-page-gate.js"></script>
 <script src="../../shared/toolya/cloud-page-status.js"></script>
 
@@ -626,7 +626,7 @@ async function toolyaCloudBoot(tool) {
         const SUPABASE_URL = "https://yheogmeaosuigyaxkwth.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv";
 
-        window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window.supabaseClient = (window.toolyaAuth ? window.toolyaAuth.get(SUPABASE_URL, SUPABASE_ANON_KEY) : supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
         console.log("✅ Supabase verbunden");
 
         async function registerUser() {
