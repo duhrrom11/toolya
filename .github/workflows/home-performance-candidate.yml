@@ -1,0 +1,159 @@
+name: Toolya public homepage performance candidate
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, closed]
+    paths:
+      - 'scripts/build-home-*.cjs'
+      - 'scripts/build-home-images.py'
+      - 'scripts/public-static-cache-template.js'
+      - 'tests/performance/**'
+      - '.github/workflows/home-performance-candidate.yml'
+      - 'index.html'
+      - 'en/index.html'
+      - 'sw.js'
+      - 'assets/perf/**'
+permissions:
+  contents: read
+jobs:
+  candidate:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Verify public phase-one deployment (read only)
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/perf-report"
+          for suffix in / /en/ /robots.txt; do
+            name=$(echo "$suffix" | tr / _)
+            if curl --proto '=https' --location --fail --silent --show-error --max-time 20 "https://toolya.app$suffix" -o "$RUNNER_TEMP/perf-report/live-$name.txt"; then
+              if [[ "$suffix" == "/robots.txt" ]]; then
+                grep -q 'User-agent: OAI-SearchBot' "$RUNNER_TEMP/perf-report/live-$name.txt" && echo "PHASE1 $suffix verified" || echo "PHASE1 $suffix not verified"
+              else
+                grep -q 'public-home.mjs?v=20261126' "$RUNNER_TEMP/perf-report/live-$name.txt" && grep -q 'hreflang="x-default"' "$RUNNER_TEMP/perf-report/live-$name.txt" && echo "PHASE1 $suffix verified" || echo "PHASE1 $suffix not verified"
+              fi
+            else
+              echo "PHASE1 $suffix network unavailable"
+            fi
+          done
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm}
+      - name: Install pinned isolated build tools
+        run: |
+          npm ci --ignore-scripts
+          npm install --prefix "$RUNNER_TEMP/perf-build" --no-audit --no-fund --ignore-scripts esbuild@0.25.12
+          python -m venv "$RUNNER_TEMP/perf-python"
+          "$RUNNER_TEMP/perf-python/bin/pip" install Pillow==11.3.0
+      - name: Generate independent baseline and candidate
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/perf-base" "$RUNNER_TEMP/perf-candidate"
+          if test -f assets/perf/manifest.json; then
+            # Rebuild from the pre-promotion source and compare against committed bytes.
+            git archive e53ee4d25a117d7a81e7df990fe051543806396c | tar -x -C "$RUNNER_TEMP/perf-base"
+            git archive HEAD | tar -x -C "$RUNNER_TEMP/perf-candidate"
+            cp "$RUNNER_TEMP/perf-base/index.html" "$RUNNER_TEMP/perf-base/sw.js" "$RUNNER_TEMP/perf-candidate/"
+            cp "$RUNNER_TEMP/perf-base/en/index.html" "$RUNNER_TEMP/perf-candidate/en/"
+            rm -rf "$RUNNER_TEMP/perf-candidate/assets/perf"
+          else
+            git archive HEAD | tar -x -C "$RUNNER_TEMP/perf-base"
+            git archive HEAD | tar -x -C "$RUNNER_TEMP/perf-candidate"
+          fi
+          touch "$RUNNER_TEMP/perf-candidate/.toolya-perf-candidate"
+          node --check scripts/build-home-perf.cjs
+          node --check scripts/build-home-cache.cjs
+          node --check tests/performance/home-candidate.cjs
+          "$RUNNER_TEMP/perf-python/bin/python" scripts/build-home-images.py "$RUNNER_TEMP/perf-candidate" > "$RUNNER_TEMP/perf-report/images.json"
+          ESBUILD_PATH="$RUNNER_TEMP/perf-build/node_modules/esbuild" node scripts/build-home-perf.cjs "$RUNNER_TEMP/perf-candidate" "$RUNNER_TEMP/perf-report/images.json"
+          node scripts/build-home-cache.cjs "$RUNNER_TEMP/perf-candidate"
+          node --check "$RUNNER_TEMP/perf-candidate/sw.js"
+          cp "$RUNNER_TEMP/perf-candidate/assets/perf/manifest.json" "$RUNNER_TEMP/perf-report/manifest.json"
+          if test -f assets/perf/manifest.json; then
+            cmp index.html "$RUNNER_TEMP/perf-candidate/index.html"
+            cmp en/index.html "$RUNNER_TEMP/perf-candidate/en/index.html"
+            cmp sw.js "$RUNNER_TEMP/perf-candidate/sw.js"
+            diff -r assets/perf "$RUNNER_TEMP/perf-candidate/assets/perf"
+            echo "PROMOTED_FILES_BYTE_IDENTICAL"
+          fi
+          (cd "$RUNNER_TEMP/perf-candidate/assets/toolya/originals" && sha256sum -c SHA256SUMS)
+      - name: Compare mobile and desktop design, behavior and cache privacy
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          node tests/performance/home-candidate.cjs "$RUNNER_TEMP/perf-base" "$RUNNER_TEMP/perf-candidate" "$RUNNER_TEMP/perf-report"
+          "$RUNNER_TEMP/perf-python/bin/python" - <<'PY'
+          import os,pathlib,math,json
+          from PIL import Image,ImageChops,ImageStat
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'perf-report'
+          scores={}
+          for source in root.glob('*-baseline-*.png'):
+              target=source.with_name(source.name.replace('-baseline-','-candidate-'))
+              a,b=Image.open(source).convert('RGB'),Image.open(target).convert('RGB')
+              assert a.size==b.size,(source,a.size,b.size)
+              mse=sum(x*x for x in ImageStat.Stat(ImageChops.difference(a,b)).rms)/3
+              psnr=99 if mse==0 else 10*math.log10(255**2/mse)
+              scores[source.name]=round(psnr,2)
+              assert psnr>=30,(source,psnr)
+          assert len(scores)==8,scores
+          (root/'screenshot-scores.json').write_text(json.dumps(scores,indent=2))
+          print('Visual screenshot comparison:',scores)
+          PY
+      - name: Test original authentication flow against optimized candidate
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          export NODE_PATH="$GITHUB_WORKSPACE/node_modules"
+          cd "$RUNNER_TEMP/perf-candidate"
+          node tests/platform/home-auth.cjs
+      - name: Package checked candidate files for review (no deployment)
+        run: |
+          mkdir -p "$RUNNER_TEMP/perf-report/candidate/en" "$RUNNER_TEMP/perf-report/candidate/assets"
+          cp "$RUNNER_TEMP/perf-candidate/index.html" "$RUNNER_TEMP/perf-candidate/sw.js" "$RUNNER_TEMP/perf-report/candidate/"
+          cp "$RUNNER_TEMP/perf-candidate/en/index.html" "$RUNNER_TEMP/perf-report/candidate/en/"
+          cp -r "$RUNNER_TEMP/perf-candidate/assets/perf" "$RUNNER_TEMP/perf-report/candidate/assets/"
+          echo "PERF_BASE_TREE $(git rev-parse HEAD^{tree})"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: toolya-public-home-performance-evidence
+          path: ${{ runner.temp }}/perf-report/
+          retention-days: 7
+
+  live:
+    if: github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.number == 339
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify the exact deployed homepage, service worker and all immutable assets
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib,time,urllib.request,urllib.error
+          files=['index.html','en/index.html','sw.js']+json.loads(pathlib.Path('assets/perf/manifest.json').read_text())['files']
+          def read_live(p):
+              url='https://toolya.app/'+{'index.html':'','en/index.html':'en/'}.get(p,p)
+              req=urllib.request.Request(url,headers={'Cache-Control':'no-cache','User-Agent':'Toolya-release-verifier/1.0'})
+              with urllib.request.urlopen(req,timeout=10) as r:
+                  assert r.status==200 and r.geturl().startswith('https://toolya.app/'),(url,r.status,r.geturl())
+                  return hashlib.sha256(r.read()).hexdigest()
+          for attempt in range(24):
+              try:
+                  for f in files[:3]:
+                      assert read_live(f)==hashlib.sha256(pathlib.Path(f).read_bytes()).hexdigest(),f
+                  break
+              except (AssertionError,OSError) as exc:
+                  if attempt==23: raise
+                  print('Waiting for Pages publication:',str(exc),flush=True)
+                  time.sleep(15)
+          for f in files[3:]:
+              assert read_live(f)==hashlib.sha256(pathlib.Path(f).read_bytes()).hexdigest(),f
+          print('LIVE_RELEASE_VERIFIED',len(files),'exact HTTPS resources')
+          PY
