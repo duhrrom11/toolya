@@ -257,14 +257,14 @@ body:not(.b3-home) #settingsModal.ty-native-settings .ty-unified-settings-panel{
  font:700 .9rem/1.4 system-ui,sans-serif;
 }
 #settingsModal.ty-native-settings .ty-unified-settings-content button:not(.settings-text-button,.ty-pwa-action):hover{background:#075d65}
-#settingsModal.ty-native-settings .ty-unified-settings-content .toolya-preferences{
+#settingsModal.ty-native-settings .ty-settings-content .toolya-preferences{
  border:1px solid #d0e2ed;border-radius:12px;padding:7px 10px;margin:0;
 }
-#settingsModal.ty-native-settings .ty-unified-settings-content .toolya-preferences label{
+#settingsModal.ty-native-settings .ty-settings-content .toolya-preferences label{
  display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0;
  font:600 .875rem/1.4 system-ui,sans-serif;
 }
-#settingsModal.ty-native-settings .ty-unified-settings-content .toolya-preferences select{
+#settingsModal.ty-native-settings .ty-settings-content .toolya-preferences select{
  display:inline-block;width:auto;max-width:100%;min-height:44px;padding:8px;
  border:1px solid #bccfd4;border-radius:10px;background:white;color:#17334a;font:inherit;
 }
