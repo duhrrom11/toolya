@@ -1,3 +1,4 @@
+import {readAppLocale} from './i18n/locale.mjs';
 // Reuse the home page's accessible <details> accordion across legacy tool dialogs.
 // Move existing nodes instead of recreating them: IDs, listeners and each tool's data stay intact.
 export function unifyToolSettings(modal) {
@@ -40,7 +41,7 @@ export function unifyToolSettings(modal) {
  for(const item of items){if(item.kind)current=item.kind;else item.kind=current}
  const labels={account:'Toolya-Konto',backup:'Datensicherung',extra:'Weitere Einstellungen',help:'Hilfe und Anleitung'};
  const enLabels={account:'Toolya account',backup:'Backup',extra:'More settings',help:'Help and guide'};
- const isEnglish=()=>{const active=globalThis.__toolyaUILocale||globalThis.__toolyaWishesLocale||globalThis.__toolyaEstateLocale||globalThis.__toolyaDashboardLocale;if(active)return active==='en';try{return (new URLSearchParams(location.search).get('lang')||localStorage.getItem('toolya-locale-v1'))==='en'}catch{return document.documentElement?.lang==='en'}};
+ const isEnglish=()=>{const active=globalThis.__toolyaUILocale||globalThis.__toolyaWishesLocale||globalThis.__toolyaEstateLocale||globalThis.__toolyaDashboardLocale;if(active)return active==='en';return readAppLocale()==='en'};
  const groups=new Map(),order=[];
  for(const {node,kind} of items){
   if(!groups.has(kind)){
