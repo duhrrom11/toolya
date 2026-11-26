@@ -1,6 +1,0 @@
-.ty-estate-locale{display:inline-flex;gap:3px;padding:3px;margin:5px;border:1px solid #8bbac7;border-radius:999px;background:#fff}
-.ty-estate-locale button{min-height:34px;min-width:38px;border:0;border-radius:999px;background:transparent;color:#1c4b59;padding:3px 7px;font-weight:700}
-.ty-estate-locale button[aria-pressed=true]{background:#0c6f78;color:#fff}
-.ty-estate-locale-notice{padding:.5rem .85rem;margin:.5rem auto;max-width:1100px;background:#f8f3fc;border-left:3px solid #9c8ad8;color:#493a59;font-size:.875rem}
-.ty-estate-locale-notice[hidden]{display:none}
-.ty-estate-locale button:focus-visible{outline:3px solid #714ac2;outline-offset:3px}

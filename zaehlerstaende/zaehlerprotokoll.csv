@@ -1,7 +1,0 @@
-﻿Datum;Zählertyp;Zählernummer;Zählerstand;Einheit;Notiz
-2026-06-01;Strom;S-123;12520;kWh;Wohnungsübergabe
-2026-06-01;Gas;G-456;816;m³;Wohnungsübergabe
-2026-06-01;Kaltwasser;W-789;126;m³;Wohnungsübergabe
-2026-06-15;Strom;S-123;12580;kWh;Ausbau des alten Zählers
-2026-06-15;Strom;S-124;0;kWh;Einbau des neuen Zählers
-;;;;;
