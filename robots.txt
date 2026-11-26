@@ -1,5 +1,19 @@
-# Keep pages crawlable so crawlers can read canonical and noindex tags.
+# Keep public pages crawlable so search engines can read canonical and noindex tags.
+# robots.txt is not an access-control mechanism; private data requires authentication.
 User-agent: *
 Allow: /
+
+# Allow discovery in ChatGPT Search.
+User-agent: OAI-SearchBot
+Allow: /
+
+# Opt out of OpenAI model-training crawling.
+User-agent: GPTBot
+Disallow: /
+
+# Opt out of Google-Extended training and non-Search grounding.
+# Google Search and its AI search features remain governed by Googlebot.
+User-agent: Google-Extended
+Disallow: /
 
 Sitemap: https://toolya.app/sitemap.xml
