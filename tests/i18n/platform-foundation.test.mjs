@@ -43,11 +43,11 @@ test('shared timeout reports unavailable instead of hanging forever',async()=>{
 });
 test('app locale preserves explicit selection, existing storage key and unrelated URL parameters',()=>{
  const values=new Map([[APP_LOCALE_KEY,'de']]);let replaced;
- const scope={location:{search:'?lang=en&id=123',href:'https://toolya.app/tools/wishes/public.html?lang=en&id=123#profile'},localStorage:{getItem:k=>values.get(k),setItem:(k,v)=>values.set(k,v)},history:{state:{keep:1},replaceState:(state,_,url)=>replaced={state,url}}};
+ const scope={location:{search:'?lang=en&id=123',href:'https://toolya.app/tools/wishes/public.html?lang=en&id=123#profile'},localStorage:{getItem:k=>values.get(k),setItem:(k,v)=>values.set(k,v)},history:{state:{keep:1},replaceState:(state,_,url)=>replaced={state,url:String(url)}}};
  assert.equal(readAppLocale(scope),'en');
  assert.equal(persistAppLocale('de',scope),'de');
  assert.equal(values.get(APP_LOCALE_KEY),'de');
- assert.deepEqual(replaced,{state:{keep:1},url:'/tools/wishes/public.html?lang=de&id=123#profile'});
+ assert.deepEqual(replaced,{state:{keep:1},url:'https://toolya.app/tools/wishes/public.html?lang=de&id=123#profile'});
  assert.throws(()=>persistAppLocale('fr',scope),/Unsupported/);
  assert.equal(readAppLocale({}),'de');
 });
