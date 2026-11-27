@@ -697,3 +697,31 @@ test('gift planning cockpit and gift task navigation opt into bilingual copy',()
   assert.equal(el.textContent,de);
  }
 });
+
+
+test('public profile card labels, warnings and favourite actions have exact bilingual catalogue entries',()=>{
+ const pairs=[
+  ['Profil merken: ','Save profile: '],
+  ['Profil nicht mehr merken: ','Remove profile from favourites: '],
+  ['Öffentlich gefunden','Found publicly'],
+  ['Öffentliches Wunschprofil','Public wish profile'],
+  ['Name aus öffentlich verlinkter Quelle · Identität nicht von Toolya bestätigt.','Name from a publicly linked source · Identity not verified by Toolya.'],
+  ['Meine öffentlichen Wunschlisten','My public wish lists'],
+  ['Liste','List'],['Listen','Lists'],
+  ['öffentliche Wunschliste','public wish list'],['öffentliche Wunschlisten','public wish lists'],
+  ['Wunschprofil ansehen','View wish profile'],
+  ['Öffentliche Amazon-Wunschliste ansehen und Wünsche entdecken.','View the public Amazon wish list and discover wishes.'],
+  ['Noch keine veröffentlichten Wunschlisten vorhanden.','No published wish lists yet.']
+ ];
+ for(const [de,en] of pairs){
+  assert.equal(wishesText(de,'en'),en,de);
+  assert.equal(wishesText(en,'de'),de,en);
+ }
+ const source=readFileSync(new URL('../../tools/wishes/public-amazon.mjs',import.meta.url),'utf8');
+ assert.match(source,/const copyBindings=new WeakMap/);
+ assert.match(source,/document\.addEventListener\('toolya:wishes-locale-change',refreshPublicCopy\)/);
+ assert.match(source,/a\.setAttribute\('data-user-content',''\)/);
+ assert.match(source,/if\(p\.bio\)description\.textContent=p\.bio\.trim\(\)\.slice\(0,145\)/);
+ assert.match(source,/text\('strong',l\.name\)/);
+ assert.match(source,/amazonListUrl\(l\.url\)/);
+});
