@@ -1,4 +1,4 @@
-import '../../assets/toolya-consent.js?v=20261116-local-debug';
+import '../../assets/toolya-consent.js?v=20261127-metricool';
 import {ToolyaBuddy} from './buddy.mjs';
 import {unifyToolSettings} from './settings-unify.mjs?v=20261126-shared-settings';
 import {readAppLocale} from './i18n/locale.mjs';
