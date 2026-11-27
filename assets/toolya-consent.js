@@ -1,13 +1,13 @@
-// Toolya GA4 consent: no Google requests until explicit opt-in.
+// Toolya analytics consent: no GA4 or Metricool requests until explicit opt-in.
 // Localized presentation only: the same stored yes/no consent and GA policy
 // apply in either language. No additional i18n runtime or external request.
 const CONSENT_COPY=Object.freeze({
  de:{dialog:'Statistik-Einstellungen',heading:'Statistik bei Toolya',
-  message:'Dürfen wir mit Google Analytics Nutzungsstatistiken erstellen? Ohne Zustimmung wird Google Analytics nicht geladen. ',
+  message:'Dürfen wir mit Google Analytics und Metricool Nutzungsstatistiken erstellen? Ohne Zustimmung werden beide Dienste nicht geladen. ',
   privacy:'Datenschutz',privacyHref:'/privacy.html',reject:'Ablehnen',
   accept:'Akzeptieren',settings:'Cookie-Einstellungen'},
  en:{dialog:'Analytics settings',heading:'Analytics at Toolya',
-  message:'May we use Google Analytics to collect usage statistics? Without your consent, Google Analytics is not loaded. ',
+  message:'May we use Google Analytics and Metricool to collect usage statistics? Without your consent, neither service is loaded. ',
   privacy:'Privacy notice',privacyHref:'/en/privacy.html',reject:'Reject',
   accept:'Accept',settings:'Cookie settings'}
 });
@@ -39,9 +39,11 @@ function localizeConsentPanel(panel,settings){
  settings.lang=language;
  settings.textContent=copy.settings;
 }
-const KEY = 'toolya.analytics.consent.v1';
+const KEY = 'toolya.analytics.consent.v2';
 const GA_ID = 'G-11L9Y8YK7B';
 let choice = null;
+// Previous refusals remain valid; previous approvals do not cover Metricool.
+try { if (localStorage.getItem('toolya.analytics.consent.v1') === 'no' && localStorage.getItem(KEY) === null) localStorage.setItem(KEY, 'no'); } catch {}
 try { const v = localStorage.getItem(KEY); if (v === 'yes' || v === 'no') choice = v; } catch {}
 // Remove first-party GA identifiers when consent is withdrawn. This cannot erase data already sent.
 function clearAnalyticsCookies() {
@@ -106,6 +108,21 @@ function enableAnalytics() {
     tag.addEventListener('error', () => { status.textContent = status.textContent.replace('wird geladen', 'blockiert oder nicht erreichbar'); });
   }
   document.head.appendChild(tag);
+  enableMetricool();
+}
+function enableMetricool() {
+  // Avoid transmitting token-bearing URLs, sensitive areas or referrers.
+  if (choice !== 'yes' || location.search || location.hash || document.referrer && new URL(document.referrer).origin === location.origin && /[?#]/.test(document.referrer) || /^\/(?:admin|auth|tools\/estate)(?:\/|$)/.test(location.pathname)) return;
+  if (document.getElementById('toolya-metricool-tracker')) return;
+  const script = document.createElement('script');
+  script.id = 'toolya-metricool-tracker';
+  script.async = true;
+  script.referrerPolicy = 'no-referrer';
+  script.src = 'https://tracker.metricool.com/resources/be.js';
+  script.addEventListener('load', () => {
+    if (choice === 'yes' && typeof window.beTracker?.t === 'function') window.beTracker.t({hash:'c17030a8691ab8f36f0825a6c61cc118'});
+  }, {once:true});
+  document.head.appendChild(script);
 }
 // Record a tool opening on the destination page, not during navigation.
 // Only known tool paths; no URL, query string, user identifier or form content.
@@ -132,7 +149,7 @@ function init() {
   panel.id = 'toolya-consent-panel';
   panel.setAttribute('role', 'dialog');
   panel.setAttribute('aria-label', 'Statistik-Einstellungen');
-  panel.innerHTML = '<strong>Statistik bei Toolya</strong><p>Dürfen wir mit Google Analytics Nutzungsstatistiken erstellen? Ohne Zustimmung wird Google Analytics nicht geladen. <a href="/privacy.html">Datenschutz</a></p><div class="actions"><button type="button" class="reject">Ablehnen</button><button type="button" class="accept">Akzeptieren</button></div>';
+  panel.innerHTML = '<strong>Statistik bei Toolya</strong><p>Dürfen wir mit Google Analytics und Metricool Nutzungsstatistiken erstellen? Ohne Zustimmung werden beide Dienste nicht geladen. <a href="/privacy.html">Datenschutz</a></p><div class="actions"><button type="button" class="reject">Ablehnen</button><button type="button" class="accept">Akzeptieren</button></div>';
   panel.hidden = choice !== null;
   document.body.appendChild(panel);
   function decide(value) {
@@ -143,7 +160,7 @@ function init() {
     else if (loaded) {
       window.gtag?.('consent', 'update', { analytics_storage: 'denied' });
       clearAnalyticsCookies();
-      // Reload removes the loaded Google script and all active GA listeners.
+      // Reload removes both tracking scripts and active listeners.
       location.reload();
     }
   }
