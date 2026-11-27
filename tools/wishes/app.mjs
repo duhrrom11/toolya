@@ -1,5 +1,6 @@
 import {buddy,notify} from '../../shared/toolya/platform.mjs';
 import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
+import {bindDisplay,money,ui} from './display-format.mjs';
 const wishLanguage=()=>globalThis.__toolyaWishesLocale==='en'?'en':'de';
 const wishCopy=(de,en)=>wishLanguage()==='en'?en:de;
 const wishNotice=(type,message)=>notify(type,wishesText(message,wishLanguage()));
@@ -60,12 +61,13 @@ function updateWishExtrasPreview(){
  img.hidden=!valid;
  if(valid)img.src=url;else img.removeAttribute('src');
  const parts=[];
- if($('wishTargetPrice').value!=='')parts.push('Wunschpreis: '+$('wishTargetPrice').value+' €');
- parts.push('Menge: '+($('wishQuantity').value||1));
+ if($('wishTargetPrice').value!=='')parts.push(ui('Wunschpreis: ')+money($('wishTargetPrice').value));
+ parts.push(ui('Menge: ')+($('wishQuantity').value||1));
  const statuses={open:'Offen',planned:'Geplant',fulfilled:'Erfüllt'};
- parts.push(statuses[$('wishStatus').value]||'Offen');
- $('wishPreviewMeta').textContent=parts.join(' · ');
+ parts.push(ui(statuses[$('wishStatus').value]||'Offen'));
+ $('wishPreviewMeta').setAttribute('data-user-content','');$('wishPreviewMeta').textContent=parts.join(' · ');
 }
+document.addEventListener('toolya:wishes-locale-change',updateWishExtrasPreview);
 for(const id of ['wishImageUrl','wishTargetPrice','wishQuantity','wishStatus'])$(id).addEventListener('input',()=>{$(id).dataset.cloudEdited='true';updateWishExtrasPreview()});
 function appendWishExtras(card,wish,cloudExtras){
  if(wish.user_id!==user?.id)return;
@@ -75,11 +77,11 @@ function appendWishExtras(card,wish,cloudExtras){
  if(data.imageUrl){const img=document.createElement('img');img.className='wish-product-image';img.alt=wish.wishlist_products?.title||wish.title||'Zusätzlich gespeichertes Produktbild';img.loading='lazy';img.referrerPolicy='no-referrer';img.src=data.imageUrl;card.append(img)}
  const wrap=document.createElement('div');wrap.className='wish-product-extras';
  const labels=[];
- if(data.price!==null&&data.price!==undefined)labels.push('🎯 '+new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(data.price));
+ if(data.price!==null&&data.price!==undefined)labels.push(()=> '🎯 '+money(data.price));
  if(data.quantity>1)labels.push('× '+data.quantity);
  if(data.status==='planned')labels.push('📌 Geplant');
  if(data.status==='fulfilled')labels.push('✓ Erfüllt');
- for(const label of labels){const badge=document.createElement('span');badge.textContent=label;wrap.append(badge)}
+ for(const label of labels){const badge=document.createElement('span');bindDisplay(badge,typeof label==='function'?label:()=>ui(label));wrap.append(badge)}
  if(wrap.childElementCount)card.append(wrap);
 }
 
