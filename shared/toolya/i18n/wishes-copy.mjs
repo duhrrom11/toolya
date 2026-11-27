@@ -18,6 +18,7 @@ export const WISHES_COPY=Object.freeze({
 " Sicherungspunkte": " checkpoints",
 "Unbekannt": "Unknown",
 "Planungsbeginn empfohlen ab ": "Recommended planning start: ",
+"Speichern": "Save",
 "🎲 Zufällige Inspiration": "🎲 Random inspiration",
 "✨ Aus der Community": "✨ From the community",
 "🌟 Öffentlicher Wunsch vorhanden": "🌟 Public wish available",

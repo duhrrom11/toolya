@@ -1,4 +1,5 @@
 import {db} from './toolya-client.mjs';
+import {calendarDateLabel} from './calendar-copy.mjs';
 import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
 const ui=text=>wishesText(text,globalThis.__toolyaWishesLocale==='en'?'en':'de');
 const locale=()=>globalThis.__toolyaWishesLocale==='en'?'en-GB':'de-DE';
@@ -10,7 +11,7 @@ const dayMs=86400000;
 function today(){const d=new Date();return Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())}
 function days(date){const [y,m,d]=date.split('-').map(Number);return Math.round((Date.UTC(y,m-1,d)-today())/dayMs)}
 function option(el,value,label){const o=document.createElement('option');o.value=value;o.textContent=label;if(value)o.setAttribute('data-user-content','');el.append(o)}
-function refreshLocale(){if(!loaded)return;if(pendingWrites){localePending=true;return}paintDueHint();const occasion=$('occasion').value,gift=$('gift').value,selection=new Map([...$('rolloverSelection').querySelectorAll('input[type=checkbox]')].map(input=>[input.value,input.checked]));choices();$('occasion').value=occasion;refreshGifts();$('gift').value=gift;for(const template of document.querySelectorAll('[data-task-template]'))template.textContent=ui(templates.find(t=>t.title===template.dataset.taskTemplate)?.label||'');render();renderRolloverSelection();for(const input of $('rolloverSelection').querySelectorAll('input[type=checkbox]'))if(selection.has(input.value))input.checked=selection.get(input.value)}
+function refreshLocale(){if(!loaded)return;if(pendingWrites){localePending=true;return}paintDueHint();paintTemplateHint();const occasion=$('occasion').value,gift=$('gift').value,selection=new Map([...$('rolloverSelection').querySelectorAll('input[type=checkbox]')].map(input=>[input.value,input.checked]));choices();$('occasion').value=occasion;refreshGifts();$('gift').value=gift;for(const template of document.querySelectorAll('[data-task-template]'))template.textContent=ui(templates.find(t=>t.title===template.dataset.taskTemplate)?.label||'');render();renderRolloverSelection();for(const input of $('rolloverSelection').querySelectorAll('input[type=checkbox]'))if(selection.has(input.value))input.checked=selection.get(input.value)}
 function settleWrite(){pendingWrites--;if(!pendingWrites&&localePending){localePending=false;refreshLocale()}}
 function choices(){for(const id of ['occasion','gift'])$(id).replaceChildren();option($('occasion'),'',ui('Ohne Anlass'));option($('gift'),'',ui('Ohne Geschenk'));
  for(const o of occasions)option($('occasion'),o.id,o.title);
@@ -67,12 +68,14 @@ function occasionUTC(o){
  if(!o.repeats_yearly)return occurrence(y);
  const year=new Date(now).getUTCFullYear();let date=occurrence(year);if(date<now)date=occurrence(year+1);return date;
 }
-let dueSuggestion=null;
-function paintDueHint(){if(!dueSuggestion)return;const {suggestion,offset,title}=dueSuggestion;const en=globalThis.__toolyaWishesLocale==='en';$('dueHint').textContent=(en?'Suggestion: ':'Vorschlag: ')+new Date(suggestion+'T12:00:00').toLocaleDateString(locale())+(en?' (':' (')+offset+(en?' days before ':' Tage vor ')+title+(en?'). You can change the date.':'). Du kannst das Datum ändern.');}
+let dueSuggestion=null,missingDueDate=false,selectedTemplateLabel=null;
+function paintTemplateHint(){if(selectedTemplateLabel!==null)$('templateHint').textContent=ui('Vorlage ')+ui(selectedTemplateLabel)+ui(' übernommen. Prüfe die Angaben und speichere die Aufgabe selbst.')}
+function paintDueHint(){if(!dueSuggestion){if(missingDueDate)$('dueHint').textContent=ui('Bitte zuerst einen Anlass mit Datum auswählen.');return}const {suggestion,offset,title}=dueSuggestion;const en=globalThis.__toolyaWishesLocale==='en';$('dueHint').textContent=(en?'Suggestion: ':'Vorschlag: ')+new Date(suggestion+'T12:00:00').toLocaleDateString(locale())+(en?' (':' (')+offset+(en?' days before ':' Tage vor ')+title+(en?'). You can change the date.':'). Du kannst das Datum ändern.');}
 function suggestDate(offset=0){
  const gift=gifts.find(g=>g.id===$('gift').value),occasion=occasions.find(o=>o.id===($('occasion').value||gift?.occasion_id));
  const date=occasionUTC(occasion);
- if(date===null){dueSuggestion=null;$('dueHint').textContent=ui('Bitte zuerst einen Anlass mit Datum auswählen.');return false}
+ if(date===null){dueSuggestion=null;missingDueDate=true;paintDueHint();return false}
+ missingDueDate=false;
  const suggestion=localDate(date-offset*dayMs);
  $('due').value=suggestion;
  dueSuggestion={suggestion,offset,title:occasion.title};paintDueHint();
@@ -80,7 +83,7 @@ function suggestDate(offset=0){
 }
 for(const template of templates){
  const button=document.createElement('button');button.type='button';button.textContent=ui(template.label);button.dataset.taskTemplate=template.title;
- button.addEventListener('click',()=>{$('title').value=template.title;$('reminder').value=String(template.reminder);$('priority').value=String(template.priority);$('taskStatus').value='open';suggestDate(template.offset);$('templateHint').textContent=ui('Vorlage ')+ui(template.label)+ui(' übernommen. Prüfe die Angaben und speichere die Aufgabe selbst.');$('title').focus()});
+ button.addEventListener('click',()=>{$('title').value=template.title;$('reminder').value=String(template.reminder);$('priority').value=String(template.priority);$('taskStatus').value='open';suggestDate(template.offset);selectedTemplateLabel=template.label;paintTemplateHint();$('title').focus()});
  $('templates').append(button);
 }
 $('suggestDue').addEventListener('click',()=>suggestDate(0));
@@ -90,11 +93,11 @@ function weekStart(){
 }
 function renderWeek(){
  const root=$('weekGrid');root.replaceChildren();const start=weekStart();
- $('weekLabel').textContent=new Date(start).toLocaleDateString(locale(),{day:'2-digit',month:'short'})+' – '+new Date(start+6*dayMs).toLocaleDateString(locale(),{day:'2-digit',month:'short',year:'numeric'});
+ $('weekLabel').textContent=new Date(start).toLocaleDateString(locale(),{timeZone:'UTC',day:'2-digit',month:'short'})+' – '+new Date(start+6*dayMs).toLocaleDateString(locale(),{timeZone:'UTC',day:'2-digit',month:'short',year:'numeric'});
  const daysShort=locale()==='en-GB'?['Mon','Tue','Wed','Thu','Fri','Sat','Sun']:['Mo','Di','Mi','Do','Fr','Sa','So'];
  for(let i=0;i<7;i++){
   const utc=start+i*dayMs,iso=localDate(utc),card=document.createElement('article');card.className='week-day'+(utc===today()?' today':'');
-  const heading=document.createElement('strong');heading.textContent=daysShort[i]+' '+new Date(utc).toLocaleDateString(locale(),{day:'2-digit',month:'2-digit'});card.append(heading);
+  const heading=document.createElement('strong');heading.textContent=daysShort[i]+' '+new Date(utc).toLocaleDateString(locale(),{timeZone:'UTC',day:'2-digit',month:'2-digit'});card.append(heading);
   const matching=tasks.filter(t=>!t.archived_at&&t.status!=='done'&&t.due_date===iso).sort((a,b)=>a.priority-b.priority);
   if(!matching.length){const p=document.createElement('p');p.textContent='–';card.append(p)}
   for(const task of matching){const chip=document.createElement('span');chip.className='task-chip';chip.textContent=(task.priority===1?'🔴 ':'')+task.title;card.append(chip)}
@@ -164,7 +167,7 @@ function renderRolloverSelection(){
  if(!occasion?.repeats_yearly){const p=document.createElement('p');p.textContent=ui('Bitte einen jährlich wiederkehrenden Anlass wählen.');root.append(p);return}
  const candidates=tasks.filter(t=>t.occasion_id===id&&t.checklist_year===year&&t.checklist_key);
  if(!candidates.length){const p=document.createElement('p');p.textContent=ui('Keine Checklistenaufgaben aus ')+year+ui(' vorhanden.');root.append(p);return}
- for(const t of candidates){const label=document.createElement('label'),checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.value=t.id;checkbox.checked=true;const text=document.createElement('span');text.textContent=t.title+' · '+(t.due_date||ui('ohne Fälligkeit'))+' · '+ui(t.status==='done'?'erledigt':'offen');label.append(checkbox,text);root.append(label)}
+ for(const t of candidates){const label=document.createElement('label'),checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.value=t.id;checkbox.checked=true;const text=document.createElement('span');text.textContent=t.title+' · '+(t.due_date?calendarDateLabel(t.due_date,locale()):ui('ohne Fälligkeit'))+' · '+ui(t.status==='done'?'erledigt':'offen');label.append(checkbox,text);root.append(label)}
 }
 $('checklistOccasion').addEventListener('change',renderRolloverSelection);
 $('checklistYear').addEventListener('change',renderRolloverSelection);
