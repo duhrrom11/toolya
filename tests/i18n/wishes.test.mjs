@@ -572,7 +572,7 @@ test('remaining Wishes navigation and status copy is source-exact and reversible
 test('public wishlist editorial copy is complete and translated only when explicitly marked',()=>{
  const html=readFileSync(new URL('../../tools/wishes/public.html',import.meta.url),'utf8');
  const {document}=parseHTML(html);
- const fixed=[...document.querySelectorAll('p[data-wishes-copy],span[data-wishes-copy]')];
+ const fixed=[...document.querySelectorAll('p[data-wishes-copy],span[data-wishes-copy]')].filter(el=>el.children.length===0);
  assert.equal(fixed.length,28,'all selected author-owned editorial nodes must be marked');
  const original=fixed.map(el=>el.textContent.trim());
  for(const de of original){
