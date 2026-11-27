@@ -62,7 +62,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   assert.equal(await page.locator('#settingsModal details.toolya-appearance').count(),1,'one collapsible mascot section');
   assert.equal(await page.locator('#settingsModal details.toolya-appearance').evaluate(e=>e.open),false,'mascot section collapsed by default');
   assert.equal(await page.locator('#settingsModal .ty-settings-kofi-button').count(),1,'Ko-fi at end of settings');
-  assert.equal(await page.locator('#settingsModal .ty-settings-kofi-button').getAttribute('href'),'https://ko-fi.com/duhrrom');
+  assert.equal(await page.locator('#settingsModal .ty-settings-kofi-button').getAttribute('href'),'https://ko-fi.com/toolya');
   assert.equal(await page.locator('#signedOutControls').isVisible(),true);
   // Language changes must translate the same open account dialog without replacing its auth state.
   assert.equal(await page.locator('#userInfo').textContent(),'Nicht angemeldet');
