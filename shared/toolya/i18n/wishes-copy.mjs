@@ -1069,6 +1069,28 @@ const reverse=Object.freeze(Object.fromEntries(Object.entries(WISHES_COPY).map((
 /* Fixed runtime messages emitted by existing Wishes modules; only app-authored
    statuses and native dialogs qualify, never profile or gift content. */
 export const WISHES_RUNTIME_COPY=Object.freeze({
+"Nicht erlaubte Herkunft.": "Origin not allowed.",
+"POST erforderlich.": "POST required.",
+"Bitte mit einem Konto anmelden.": "Sign in with an account.",
+"Zu viele Abrufe. Bitte in einer Stunde erneut versuchen.": "Too many requests. Try again in one hour.",
+"Anfrage zu groß.": "Request too large.",
+"Link fehlt.": "Link is missing.",
+"Keine Produkte erkannt.": "No products found.",
+"Amazon-Vorschau konnte nicht erstellt werden.": "Could not create the Amazon preview.",
+"Bitte einen gültigen Amazon.de-Link eingeben.": "Enter a valid Amazon.de link.",
+"Nur vollständige HTTPS-Links von Amazon.de sind erlaubt.": "Only complete HTTPS links from Amazon.de are allowed.",
+"Bitte einen Produktlink oder einen freigegebenen Wunschlistenlink von Amazon.de eingeben.": "Enter a product link or a shared wish list link from Amazon.de.",
+"Ungültige Folgeseite.": "Invalid continuation page.",
+"Unsichere Folgeseite abgelehnt.": "Unsafe continuation page rejected.",
+"Folgeseite gehört nicht zu dieser Liste.": "The continuation page does not belong to this list.",
+"Amazon-Antwort ist zu groß.": "The Amazon response is too large.",
+"Amazon blockiert den Abruf oder verlangt eine Prüfung. Bitte später erneut versuchen.": "Amazon is blocking the request or requires verification. Try again later.",
+"Amazon hat ein anderes Produkt geliefert.": "Amazon returned a different product.",
+"Produktdaten konnten nicht eindeutig gelesen werden.": "Product details could not be read reliably.",
+"Keine Produkte gelesen. Die Liste ist leer, privat oder das Amazon-Format wird nicht unterstützt.": "No products could be read. The list is empty, private, or uses an unsupported Amazon format.",
+"Amazon verlangt eine Weiterleitung. Bitte den vollständigen direkten Listen- oder Produktlink verwenden.": "Amazon requires a redirect. Use the complete direct link to the wish list or product.",
+"Amazon hat keine Produktseite geliefert.": "Amazon did not return a product page.",
+"Die Liste konnte nicht vollständig gelesen werden. Es wird nichts importiert.": "The list could not be read in full. Nothing will be imported.",
  "Amazon-Wunschliste übernehmen": "Import Amazon wish list",
  "Amazon-Produkt übernehmen": "Import Amazon product",
  "Öffentlichen Amazon.de-Wunschlistenlink eingeben": "Enter a public Amazon.de wish list link",
@@ -1432,6 +1454,9 @@ export function wishesText(value,language){
  const live=language==='en'?WISHES_RUNTIME_COPY:runtimeReverse;
  if(Object.hasOwn(live,value))return live[value];
  // All patterns match complete app-owned status messages, never arbitrary notes.
+ // Only complete, known Amazon HTTP error frames; preserve the status code.
+ const httpError=language==='en'?/^Amazon-Abruf fehlgeschlagen \((\d{3})\)\.$/:/^Amazon request failed \((\d{3})\)\.$/;
+ if(httpError.test(value))return value.replace(httpError,language==='en'?'Amazon request failed ($1).':'Amazon-Abruf fehlgeschlagen ($1).');
  const budgetSuffix=' Dein Budget ist vorgemerkt, aber mangels verlässlicher Produktpreise nicht als Preisfilter anwendbar.';
  const budgetSuffixEn=' Your budget is noted, but cannot be used as a price filter because reliable product prices are unavailable.';
  const suffix=language==='en'?budgetSuffix:budgetSuffixEn;
