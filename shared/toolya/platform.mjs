@@ -41,7 +41,7 @@ const stockImage=buddy.image.bind(buddy);
 const pixel='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
 const cache=new Map(), frames=new Set();
 let previousItem=null, sequence=0, currentEmotion='happy';
-function preload(file){if(!cache.has(file)){const i=new Image();const record={ready:false,failed:false,promise:null};record.promise=new Promise(resolve=>{i.onload=()=>{record.ready=true;resolve(true)};i.onerror=()=>{record.failed=true;resolve(false)};i.src=atlasURL(file)});cache.set(file,record)}return cache.get(file)}
+function preload(file){if(!cache.has(file)){const i=new Image();if(file==='outfits.webp')i.fetchPriority='low';const record={ready:false,failed:false,promise:null};record.promise=new Promise(resolve=>{i.onload=()=>{record.ready=true;resolve(true)};i.onerror=()=>{record.failed=true;resolve(false)};i.src=atlasURL(file)});cache.set(file,record)}return cache.get(file)}
 function cell(index){return {x:(index%8)*100/7,y:Math.floor(index/8)*100/3}}
 function paint(record,file,index,alternate=index,animate=false){
  const a=cell(index),b=cell(alternate);record.frame.style.setProperty('--ty-a',a.x+'%');record.frame.style.setProperty('--ty-b',b.x+'%');record.frame.style.setProperty('--ty-y',a.y+'%');record.frame.style.backgroundPosition=a.x+'% '+a.y+'%';
