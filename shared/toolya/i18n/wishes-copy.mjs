@@ -1,5 +1,10 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+"Like entfernen": "Remove like",
+"Sammlung liken": "Like collection",
+"Aus Merkliste entfernen": "Remove from bookmarks",
+"Sammlung merken": "Bookmark collection",
+"🔖 Merken": "🔖 Bookmark",
 "Profil nicht mehr merken: ": "Remove profile from favourites: ",
 "Profil merken: ": "Save profile: ",
 "Symbol der importierten Wunschliste von ": "Icon for the imported wish list of ",

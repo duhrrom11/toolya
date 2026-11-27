@@ -1,4 +1,22 @@
 /** Collection reactions: public likes, private bookmarks. */
+import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs?v=20261127-social-copy';
+import {readAppLocale} from '../../shared/toolya/i18n/locale.mjs';
+const coverLabels=new WeakMap();
+export function collectionCoverLabel(title,lang){
+ return wishesText('Titelbild der Sammlung: ',lang)+(title||wishesText('Sammlung',lang));
+}
+function language(){return globalThis.__toolyaWishesLocale||readAppLocale()}
+export function bindCollectionCoverLabel(img,title){
+ coverLabels.set(img,title);
+ img.setAttribute('data-collection-cover-copy','');
+ img.alt=collectionCoverLabel(title,language());
+}
+if(typeof document!=='undefined')document.addEventListener('toolya:wishes-locale-change',()=>{
+ for(const img of document.querySelectorAll('[data-collection-cover-copy]')){
+  if(coverLabels.has(img))img.alt=collectionCoverLabel(coverLabels.get(img),language());
+ }
+});
+
 export async function currentUser(db){const {data,error}=await db.auth.getUser();if(error)return null;return data?.user||null}
 export async function likeCounts(db,ids){
  if(!ids.length)return new Map();
