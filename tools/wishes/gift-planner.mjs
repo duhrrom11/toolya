@@ -125,12 +125,12 @@ async function searchProducts(){
   if(ids.length){const result=await db.from('wishlist_wishes').select('id,product_id,priority').eq('visibility','public').in('product_id',ids).order('created_at',{ascending:false}).limit(200);if(result.error)throw result.error;wishes=result.data||[]}
   const wishByProduct=new Map();for(const w of wishes)if(!wishByProduct.has(String(w.product_id)))wishByProduct.set(String(w.product_id),w);
   $('productSearchStatus').textContent=(products||[]).length+' Produkte gefunden · '+wishByProduct.size+' mit öffentlichen Wünschen. Die Suche zeigt höchstens 40 Produkte.';
-  if(!products?.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine passenden Produkte gefunden.';root.append(p)}
+  if(!products?.length){const p=document.createElement('p');p.className='empty';p.setAttribute('data-wish-owned-copy','');p.textContent='Keine passenden Produkte gefunden.';root.append(p)}
   for(const product of products||[]){
    const wish=wishByProduct.get(String(product.id));
    const card=document.createElement('article');card.className='product-result';
-   const h=document.createElement('h3');h.textContent=product.title;
-   const info=document.createElement('p');info.textContent=wish?'🌟 Öffentlicher Wunsch vorhanden':'📦 Produkt aus dem Katalog';
+   const h=document.createElement('h3');h.setAttribute('data-user-content','');h.textContent=product.title;
+   const info=document.createElement('p');info.setAttribute('data-wish-owned-copy','');info.textContent=wish?'🌟 Öffentlicher Wunsch vorhanden':'📦 Produkt aus dem Katalog';
    const button=document.createElement('button');button.type='button';button.textContent='Als Geschenk übernehmen';
    button.addEventListener('click',()=>{
     if(!occasions.length){$('status').textContent='Bitte zuerst einen Anlass anlegen.';return}
@@ -139,7 +139,7 @@ async function searchProducts(){
     $('status').textContent='Produkt als Entwurf übernommen. Bitte Geschenk prüfen und speichern.';
    });
    card.append(h,info);
-   if(product.asin&&/^[A-Z0-9]{10}$/i.test(product.asin)){const a=document.createElement('a');a.href='https://www.amazon.de/dp/'+encodeURIComponent(product.asin);a.target='_blank';a.rel='noopener noreferrer';a.textContent='Produkt bei Amazon ansehen ↗';card.append(a)}
+   if(product.asin&&/^[A-Z0-9]{10}$/i.test(product.asin)){const a=document.createElement('a');a.href='https://www.amazon.de/dp/'+encodeURIComponent(product.asin);a.target='_blank';a.rel='noopener noreferrer';a.setAttribute('data-wish-owned-copy','');a.textContent='Produkt bei Amazon ansehen ↗';card.append(a)}
    card.append(button);root.append(card);
   }
  }catch{$('productSearchStatus').textContent='Suche fehlgeschlagen. Bitte erneut versuchen.'}
