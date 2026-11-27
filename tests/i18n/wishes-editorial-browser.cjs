@@ -46,9 +46,20 @@ async function run(){
  for(const width of [320,390]){
   const context=await browser.newContext({viewport:{width,height:850},reducedMotion:'reduce'});
   const external=[];
+  // Synthetic directory data only, returned entirely inside the browser mock.
+  const profile={user_id:'00000000-0000-4000-8000-000000000001',display_name:'Liste',bio:'Öffentliches Wunschprofil',city:'Berlin',country:'Deutschland',imported:true,source_url:'https://example.invalid/source',lists:[{name:'Öffentliche Wunschliste bei Amazon',url:'https://www.amazon.de/hz/wishlist/ls/ABC123'}]};
+  const other={...profile,user_id:'00000000-0000-4000-8000-000000000002',display_name:'Private sample',bio:'',city:'',country:''};
+  const third={...other,user_id:'00000000-0000-4000-8000-000000000003',display_name:'Another sample'};
   await context.route('**/*',route=>{
    const request=route.request();
    let target;try{target=new URL(request.url())}catch{return route.abort()}
+   // Fulfil only explicit read-only directory operations with synthetic records.
+   if(target.hostname.endsWith('.supabase.co')){
+    const json=data=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data),headers:{'access-control-allow-origin':'*'}});
+    if(request.method()==='GET'&&target.pathname==='/rest/v1/wishlist_directory')return json(target.searchParams.has('user_id')?profile:[profile,other,third]);
+    if(request.method()==='POST'&&target.pathname==='/rest/v1/rpc/search_wishlist_directory')return json([profile]);
+    if(request.method()==='POST'&&target.pathname==='/rest/v1/rpc/wishlist_directory_filters')return json({countries:[],occasions:[]});
+   }
    if(target.origin!==origin||!['GET','HEAD'].includes(request.method())){
     external.push({url:target.hostname,method:request.method()});
     return route.abort();
@@ -108,7 +119,42 @@ async function run(){
    assert.deepEqual(after,before,'switching language must not modify saved user/mascot data');
    assert.ok(external.every(x=>x.url!=='127.0.0.1'&&x.url!=='localhost'),
     'external API requests must be blocked before network access');
-   console.log('PASS: public Wishlist editorial English/German at '+width+'px, locally isolated');
+   // Cards must also update when already present during a language change.
+   const named=page.locator('.wish-public-card').filter({has:page.getByRole('heading',{name:'Liste',exact:true})});
+   await named.first().waitFor();
+   assert.equal(await named.first().locator('h3').textContent(),'Liste');
+   assert.equal(await named.first().locator('p').textContent(),'Öffentliches Wunschprofil');
+   assert.equal(await named.first().getAttribute('aria-label'),'View public wish profile of Liste');
+   const fallback=page.locator('.wish-public-card').filter({has:page.getByRole('heading',{name:'Private sample',exact:true})});
+   assert.equal(await fallback.first().locator('p').textContent(),'View the public Amazon wish list and discover wishes.');
+   await page.locator('[data-wishes-locale="de"]').click();
+   await page.waitForFunction(()=>document.documentElement.lang==='de');
+   assert.equal(await named.first().getAttribute('aria-label'),'Öffentliches Wunschprofil von Liste ansehen');
+   assert.equal(await fallback.first().locator('p').textContent(),'Öffentliche Amazon-Wunschliste ansehen und Wünsche entdecken.');
+   await page.locator('[data-wishes-locale="en"]').click();
+   await page.locator('#search').fill('Liste');
+   const result=page.locator('#results .profile-card');
+   await result.first().waitFor();
+   assert.equal(await result.locator('.profile-summary').textContent(),'1 public wish list');
+   assert.match(await result.locator('.profile-open-link').textContent(),/View wish profile/);
+   assert.equal(await result.locator('.favorite').getAttribute('aria-label'),'Save profile: Liste');
+   await result.locator('.favorite').click();
+   assert.equal(await result.locator('.favorite').getAttribute('aria-label'),'Remove profile from favourites: Liste');
+   await page.locator('[data-wishes-locale="de"]').click();
+   assert.equal(await result.locator('.favorite').getAttribute('aria-label'),'Profil nicht mehr merken: Liste');
+   assert.equal(await result.locator('.profile-summary').textContent(),'1 öffentliche Wunschliste');
+   await page.locator('[data-wishes-locale="en"]').click();
+   await page.goto(origin+'/tools/wishes/public.html?lang=en&profile='+profile.user_id+'#selectedProfile');
+   const detail=page.locator('#profileDetail .profile-card');
+   await detail.waitFor();
+   assert.equal(await detail.locator('.profile-source-note').textContent(),'Name from a publicly linked source · Identity not verified by Toolya.');
+   assert.equal(await detail.locator('.profile-wishlist-copy strong').textContent(),profile.lists[0].name);
+   assert.match(await detail.locator('.profile-wishlist-link').getAttribute('href'),/tag=duhrrom-21/);
+   assert.equal(await detail.locator('.profile-list-count').textContent(),'1 List');
+   await page.locator('[data-wishes-locale="de"]').click();
+   assert.equal(await detail.locator('.profile-list-count').textContent(),'1 Liste');
+   assert.equal(await detail.locator('.profile-wishlist-copy strong').textContent(),profile.lists[0].name);
+   console.log('PASS: synthetic public profile cards, favourites and editorial copy at '+width+'px');
   }finally{
    await context.close();
   }
