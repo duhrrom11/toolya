@@ -642,3 +642,58 @@ test('public FAQ translates marked mixed-content answers and preserves links and
  applyWishLocale(document,'de');
  assert.deepEqual(answers.map(p=>p.textContent),original);
 });
+
+
+test('public wish list privacy disclosure, navigation and affiliate labels are bilingual without changing destinations',()=>{
+ const html=readFileSync(new URL('../../tools/wishes/public.html',import.meta.url),'utf8');
+ const {document}=parseHTML(html);
+ const selectors=[
+  ['a.skip','Skip to content'],
+  ['.wish-showcase-search','Search for a specific wish list ↗'],
+  ['.wish-creation-footer span[data-wish-copy]','Already created a list? Publish it on Toolya'],
+  ['#profile a[href="/amazon-wunschliste-veroeffentlichen/"]','Guide to publishing an Amazon wish list'],
+  ['.public-notice strong','All details are publicly visible.'],
+  ['.public-notice','All details are publicly visible. Toolya is a public search directory for Amazon wish lists. Anyone can view and share your name and listed wish lists, and search engines may index them. Do not enter confidential information. There are no private profiles.'],
+  ['a[href="./public.html#discover"]',wishesText('← Alle Profile entdecken','en')]
+ ];
+ const nodes=selectors.map(([selector])=>{const el=document.querySelector(selector);assert.ok(el,selector);return el});
+ const originals=nodes.map(el=>el.textContent);
+ const links=[...document.querySelectorAll('a')],hrefs=links.map(el=>el.getAttribute('href'));
+ const buttons=[...document.querySelectorAll('.wish-creation-button')];
+ const labels=buttons.map(el=>el.getAttribute('aria-label'));
+ assert.equal(buttons.length,3);
+ applyWishLocale(document,'en');
+ for(let i=0;i<nodes.length;i++){
+  assert.equal(nodes[i].textContent.trim(),selectors[i][1],selectors[i][0]);
+  assert.notEqual(nodes[i].textContent,originals[i]);
+ }
+ for(const button of buttons){
+  assert.match(button.textContent,/Create one now/);
+  assert.match(button.getAttribute('aria-label'),/^Create a .* on Amazon \(affiliate link\)$/);
+  assert.match(button.getAttribute('href'),/tag=duhrrom-21/);
+  assert.equal(button.getAttribute('rel'),'sponsored noopener noreferrer');
+ }
+ assert.equal(document.querySelector('.public-wish-nav').getAttribute('aria-label'),'Wish lists');
+ assert.equal(document.querySelector('#wishPublicViewport').getAttribute('aria-label'),'Selection of public wish profiles');
+ assert.deepEqual(links.map(el=>el.getAttribute('href')),hrefs);
+ applyWishLocale(document,'de');
+ assert.deepEqual(nodes.map(el=>el.textContent),originals);
+ assert.deepEqual(buttons.map(el=>el.getAttribute('aria-label')),labels);
+ assert.deepEqual(links.map(el=>el.getAttribute('href')),hrefs);
+});
+
+test('gift planning cockpit and gift task navigation opt into bilingual copy',()=>{
+ for(const [file,selector,de,en] of [
+  ['cockpit.html','.eyebrow','Privat · Mein Überblick','Private · My overview'],
+  ['gift-tasks.html','header a[href="./index.html"]','← Wünsche','← Wishes']
+ ]){
+  const {document}=parseHTML(readFileSync(new URL('../../tools/wishes/'+file,import.meta.url),'utf8'));
+  const el=document.querySelector(selector);
+  assert.ok(el,file);
+  assert.equal(el.textContent,de);
+  applyWishLocale(document,'en');
+  assert.equal(el.textContent,en);
+  applyWishLocale(document,'de');
+  assert.equal(el.textContent,de);
+ }
+});
