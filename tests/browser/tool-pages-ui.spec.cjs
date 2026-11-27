@@ -3227,6 +3227,25 @@ test('i18n runtime: homepage backup rejects invalid format and decryption withou
 test('i18n runtime: cookie settings follow tool language without changing granted consent',async({page})=>{
  const outbound=await isolated(page,true);
  const key='toolya.analytics.consent.v1';
+ // Diagnose only the synthetic consent key, without collecting any private data.
+ await page.addInitScript(key=>{
+  const log=[];
+  Object.defineProperty(window,'__consentStorageTrace',{value:log});
+  for(const name of ['getItem','setItem','removeItem','clear']){
+   const native=Storage.prototype[name];
+   Storage.prototype[name]=function(...args){
+    const relevant=this===window.localStorage&&(name==='clear'||args[0]===key);
+    try{
+     const result=native.apply(this,args);
+     if(relevant)log.push({method:name,value:name==='setItem'?args[1]:name==='getItem'?result:null,at:location.pathname,stack:new Error().stack?.split('\n').slice(1,5)});
+     return result;
+    }catch(error){
+     if(relevant)log.push({method:name,error:error.name,message:error.message,at:location.pathname});
+     throw error;
+    }
+   };
+  }
+ },key);
  // Establish consent through the actual UI, then test the persisted opt-in
  // on a fresh document. Do not rely on an injected storage write at startup.
  await page.goto(origin+'/tools/car/index.html');
@@ -3237,7 +3256,9 @@ test('i18n runtime: cookie settings follow tool language without changing grante
  expect(outbound.some(url=>url.includes('www.googletagmanager.com/gtag/js'))).toBe(false);
  await panel.locator('.accept').click();
  await expect(panel).toBeHidden();
- expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('yes');
+ const consentAfterClick=await page.evaluate(key=>({stored:localStorage.getItem(key),trace:window.__consentStorageTrace,hidden:document.querySelector('#toolya-consent-panel')?.hidden,origin:location.origin}),key);
+ console.log('[consent storage diagnostic]',JSON.stringify(consentAfterClick));
+ expect(consentAfterClick.stored,JSON.stringify(consentAfterClick)).toBe('yes');
  await page.reload();
  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
  expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('yes');
