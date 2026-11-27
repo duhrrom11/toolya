@@ -1,4 +1,4 @@
-import {currentUser,likeCounts,myReactions,reactionButtons} from './collection-social.mjs';
+import {currentUser,likeCounts,myReactions,reactionButtons,bindCollectionCoverLabel} from './collection-social.mjs';
 import {db} from './toolya-client.mjs';
 const $=id=>document.getElementById(id);
 let all=[],viewer=null,reactions={likes:new Set(),bookmarks:new Set()},counts=new Map();
@@ -13,7 +13,7 @@ function render(){
  for(const item of rows){
   const card=document.createElement('article');card.className='card';
   const cover=document.createElement('div');cover.className='cover';cover.textContent=item.icon||'🎁';
-  if(item.cover_url){try{const u=new URL(item.cover_url);if(u.protocol==='https:'){const img=document.createElement('img');img.src=u.href;img.alt='Titelbild der Sammlung: '+(item.title||'Sammlung');img.loading='lazy';img.referrerPolicy='no-referrer';cover.replaceChildren(img)}}catch{}}
+  if(item.cover_url){try{const u=new URL(item.cover_url);if(u.protocol==='https:'){const img=document.createElement('img');img.src=u.href;bindCollectionCoverLabel(img,item.title);img.loading='lazy';img.referrerPolicy='no-referrer';cover.replaceChildren(img)}}catch{}}
   const body=document.createElement('div');body.className='card-body';
   const badge=document.createElement('span');badge.className='badge';badge.textContent='❤️ '+(counts.get(item.id)||0)+' Likes';
   const title=document.createElement('h2');title.setAttribute('data-user-content','');title.textContent=item.title;body.append(badge,title);
