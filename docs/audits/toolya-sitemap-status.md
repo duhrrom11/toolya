@@ -64,3 +64,15 @@ Damit sind die Ergänzungen zum Beschriften von [Umzugskisten](https://github.co
 Die 18 Sitemap-Adressen und ihre 14 zusätzlichen `index.html`-Varianten wurden am 20. November ohne Weiterleitungsverfolgung live abgerufen. Alle 32 Antworten lieferten HTTP 200. Jede enthielt genau einen Canonical. Dieser zeigte bei den Sitemap-Adressen auf die jeweils eigene URL und bei den `index.html`-Varianten auf die passende Verzeichnis-URL. Keine Antwort enthielt `noindex` im `X-Robots-Tag`.
 
 Die statisch im HTML hinterlegten Links auf toolya.app wurden für alle 18 Sitemap-Seiten gegen den Repository-Stand `85bd524` geprüft. Alle geprüften Pfade und HTML-Sprungmarken waren vorhanden. Dynamisch erzeugte Links waren außerhalb dieser Prüfung.
+
+## Google-URL-Prüfung vom 23. November 2026
+
+Die URL-Prüfung aller 18 Sitemap-Adressen bestätigt 14 indexierte Seiten. Für alle 14 entspricht Googles Canonical der Sitemap-Adresse. Neu bestätigt sind der Backform-Rechner, Zählerstände und Verliehene Dinge nach dem Crawl vom 22. November. Umzugskisten bleibt gecrawlt und derzeit nicht indexiert. Maskottchen, Impressum und Datenschutz sind laut URL-Prüfung weiterhin unbekannt. [Search Console](https://search.google.com/search-console?resource_id=sc-domain%3Atoolya.app)
+
+Die ältere Backstudio-App `/tools/baking/index.html` steht separat noch mit dem Crawl vom 17. November im Index. Die zuletzt live bestätigte Noindex-Anweisung wird nach dem nächsten Crawl erneut gegen den Google-Status abgeglichen.
+
+### Englische Beta
+
+Alle 17 geprüften öffentlichen englischen HTML-Seiten waren live erreichbar und lieferten einen auf sich selbst verweisenden Canonical sowie `noindex` im HTML. Keine steht in der Sitemap des geprüften Repository-Stands `a837e53`. Die Indexierungsfreigabe ist ein eigener Schritt nach Abschluss und Abnahme der Lokalisierung. [DE/EN-Releaseplan](../i18n-de-en-rollout.md)
+
+Als Nächstes stehen der erneute Google-Abgleich für Umzugskisten und die alte Backstudio-URL nach einem neuen Crawl sowie die bereits geplante 28-Tage-Wirkungsmessung an. Ein bestätigter Bing-Indexstatus und Felddaten zur Ladeleistung fehlen weiterhin.
