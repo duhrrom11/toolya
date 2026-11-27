@@ -3227,10 +3227,20 @@ test('i18n runtime: homepage backup rejects invalid format and decryption withou
 test('i18n runtime: cookie settings follow tool language without changing granted consent',async({page})=>{
  const outbound=await isolated(page,true);
  const key='toolya.analytics.consent.v1';
- await page.addInitScript(key=>localStorage.setItem(key,'yes'),key);
+ // Establish consent through the actual UI, then test the persisted opt-in
+ // on a fresh document. Do not rely on an injected storage write at startup.
  await page.goto(origin+'/tools/car/index.html');
  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
  const link=page.locator('#toolya-consent-settings'),panel=page.locator('#toolya-consent-panel');
+ await expect(panel).toBeVisible();
+ expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBeNull();
+ expect(outbound.some(url=>url.includes('www.googletagmanager.com/gtag/js'))).toBe(false);
+ await panel.locator('.accept').click();
+ await expect(panel).toBeHidden();
+ expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('yes');
+ await page.reload();
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('yes');
  await expect(panel).toBeHidden();
  for(const lang of ['de','en','de']){
   await page.locator('[data-tool-locale="'+lang+'"]').click();
