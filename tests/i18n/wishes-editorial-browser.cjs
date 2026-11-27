@@ -70,6 +70,14 @@ async function run(){
    assert.equal(await page.title(),'Find Amazon wish lists by name – no link needed | Toolya');
    assert.equal(await page.locator('p[data-wishes-copy]').first().textContent(),translation);
    assert.equal(await page.locator('.wish-creation-adnote').textContent(),legalEnglish);
+   assert.match(await page.locator('.public-notice').textContent(),/All details are publicly visible\. Toolya is a public search directory/);
+   assert.match(await page.locator('.public-notice').textContent(),/There are no private profiles\./);
+   assert.equal(await page.locator('.wish-showcase-search').textContent(),'Search for a specific wish list ↗');
+   for(const button of await page.locator('.wish-creation-button').all()){
+    assert.match(await button.textContent(),/Create one now/);
+    assert.match(await button.getAttribute('aria-label'),/affiliate link/);
+    assert.match(await button.getAttribute('href'),/tag=duhrrom-21/);
+   }
    // Some author-owned elements are removed or replaced when the wishlist app
    // initializes. The DOM unit test verifies 28 plain source nodes and three mixed FAQ answers.
    const activeEditorial=await page.locator('p[data-wishes-copy],span[data-wishes-copy]').count();
@@ -88,6 +96,8 @@ async function run(){
    await page.waitForFunction(()=>document.documentElement.lang==='de');
    assert.equal(await page.locator('p[data-wishes-copy]').first().textContent(),source);
    assert.equal(await page.locator('.wish-creation-adnote').textContent(),legalGerman);
+   assert.match(await page.locator('.public-notice').textContent(),/Alle Angaben sind öffentlich sichtbar\./);
+   assert.equal(await page.locator('.wish-showcase-search').textContent(),'Wunschliste gezielt suchen ↗');
    await page.locator('[data-wishes-locale="en"]').click();
    await page.waitForFunction(()=>document.documentElement.lang==='en');
    assert.equal(await page.locator('.wish-creation-adnote').textContent(),legalEnglish);

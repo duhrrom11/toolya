@@ -1,5 +1,10 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+"Wunschlisten": "Wish lists",
+"Auswahl öffentlicher Wunschprofile": "Selection of public wish profiles",
+"Babywunschliste bei Amazon erstellen (Werbelink)": "Create a baby wish list on Amazon (affiliate link)",
+"Hochzeitsliste bei Amazon erstellen (Werbelink)": "Create a wedding list on Amazon (affiliate link)",
+"Normale Wunschliste bei Amazon erstellen (Werbelink)": "Create a regular wish list on Amazon (affiliate link)",
 "⚙️ Einstellungen": "⚙️ Settings",
 "Toolya-Konto": "Toolya account",
 "Datensicherung": "Data backup",
