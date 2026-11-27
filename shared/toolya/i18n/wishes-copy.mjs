@@ -1,5 +1,6 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+"Speichern": "Save",
 "Like entfernen": "Remove like",
 "Sammlung liken": "Like collection",
 "Aus Merkliste entfernen": "Remove from bookmarks",
