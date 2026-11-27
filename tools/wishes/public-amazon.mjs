@@ -1,5 +1,7 @@
 import {guardedWishlistWrite} from './wishlist-auth.mjs';
 import {profileIdentity} from './profile-identity.mjs';
+import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs?v=20261127-public-profiles';
+import {readAppLocale} from '../../shared/toolya/i18n/locale.mjs';
 // Deployment must explicitly choose production or preview; never infer it from URL parameters.
 const PROD_PROJECT = 'yheogmeaosuigyaxkwth';
 const PROD_PUBLISHABLE_KEY = 'sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
@@ -31,6 +33,26 @@ async function deadline(operation,ms=10000){
 }
 const $=id=>document.getElementById(id), text=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value??'';if(cls)e.className=cls;return e};
 const status=(id,value)=>$(id).textContent=value;
+// Only app-authored fragments are translated; profile names, descriptions,
+// locations and list names are interpolated unchanged.
+const language=()=>window.__toolyaWishesLocale||readAppLocale();
+const ui=value=>wishesText(value,language());
+const copyBindings=new WeakMap();
+function localize(node,render){
+ copyBindings.set(node,render);
+ node.setAttribute('data-wish-public-copy','');
+ render();
+ return node;
+}
+function copyText(tag,value,cls){
+ const node=text(tag,'',cls);
+ return localize(node,()=>{node.textContent=ui(value)});
+}
+function refreshPublicCopy(){
+ for(const node of document.querySelectorAll('[data-wish-public-copy]'))copyBindings.get(node)?.();
+ renumberLists();
+}
+document.addEventListener('toolya:wishes-locale-change',refreshPublicCopy);
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 let user=null,own=null,page=0,generation=0,authGeneration=0;
 const key='toolya-public-profile-favorites-v1';
@@ -39,7 +61,7 @@ let favorites=readFavorites();
 const profileUrl=id=>new URL('./public.html?profile='+encodeURIComponent(id)+'#selectedProfile',location.href).href;
 function affiliateLink(label,url){const a=text('a',label,'button');a.href=url;a.target='_blank';a.rel='noopener noreferrer sponsored';return a}
 function renderFavorites(){const wrap=$('favoriteItems');wrap.replaceChildren();$('favorites').hidden=!favorites.length;$('favoriteCount').textContent=String(favorites.length);for(const p of favorites){const a=text('a',p.display_name);a.href=profileUrl(p.user_id);wrap.append(a)}}
-function favorite(p){const b=text('button','♡','secondary favorite');b.type='button';const sync=()=>{const on=favorites.some(x=>x.user_id===p.user_id);b.textContent=on?'♥':'♡';b.setAttribute('aria-label',(on?'Profil nicht mehr merken: ':'Profil merken: ')+p.display_name);b.setAttribute('aria-pressed',String(on))};sync();b.onclick=()=>{favorites=favorites.some(x=>x.user_id===p.user_id)?favorites.filter(x=>x.user_id!==p.user_id):[...favorites,{user_id:p.user_id,display_name:p.display_name}].slice(-100);try{localStorage.setItem(key,JSON.stringify(favorites))}catch{}document.querySelectorAll('[data-profile-favorite="'+p.user_id+'"]').forEach(x=>{x.textContent=favorites.some(y=>y.user_id===p.user_id)?'♥':'♡';x.setAttribute('aria-pressed',String(favorites.some(y=>y.user_id===p.user_id)));x.setAttribute('aria-label',(favorites.some(y=>y.user_id===p.user_id)?'Profil nicht mehr merken: ':'Profil merken: ')+p.display_name)});sync();renderFavorites()};b.dataset.profileFavorite=p.user_id;return b}
+function favorite(p){const b=text('button','♡','secondary favorite');b.type='button';const sync=()=>{const on=favorites.some(x=>x.user_id===p.user_id);b.textContent=on?'♥':'♡';b.setAttribute('aria-label',ui(on?'Profil nicht mehr merken: ':'Profil merken: ')+p.display_name);b.setAttribute('aria-pressed',String(on))};localize(b,sync);b.onclick=()=>{favorites=favorites.some(x=>x.user_id===p.user_id)?favorites.filter(x=>x.user_id!==p.user_id):[...favorites,{user_id:p.user_id,display_name:p.display_name}].slice(-100);try{localStorage.setItem(key,JSON.stringify(favorites))}catch{}document.querySelectorAll('[data-profile-favorite="'+p.user_id+'"]').forEach(x=>{x.textContent=favorites.some(y=>y.user_id===p.user_id)?'♥':'♡';x.setAttribute('aria-pressed',String(favorites.some(y=>y.user_id===p.user_id)));x.setAttribute('aria-label',ui(favorites.some(y=>y.user_id===p.user_id)?'Profil nicht mehr merken: ':'Profil merken: ')+p.display_name)});sync();renderFavorites()};b.dataset.profileFavorite=p.user_id;return b}
 function card(p,detail=false,preview=false){
  const full=detail||preview;
  const root=text('article','','profile-card'+(full?' profile-card--detail':' profile-card--compact'));
@@ -48,14 +70,14 @@ function card(p,detail=false,preview=false){
  const avatar=text('span',p.display_name.split(/\s+/).filter(Boolean).map(x=>x[0]).slice(0,2).join('').toUpperCase(),'avatar');
  avatar.setAttribute('aria-hidden','true');
  if(p.imported){
-  const img=document.createElement('img');img.alt='Symbol der importierten Wunschliste von '+p.display_name;img.loading='lazy';img.referrerPolicy='no-referrer';img.className='imported-logo';
+  const img=document.createElement('img');localize(img,()=>{img.alt=ui('Symbol der importierten Wunschliste von ')+p.display_name});img.loading='lazy';img.referrerPolicy='no-referrer';img.className='imported-logo';
   const fallback=()=>new URL('../../assets/toolya/headers/toolya_wishlist_'+(window.toolyaBuddy?.character==='purple'?'purple':'turquoise')+'_welcome_400.webp',import.meta.url).href;
   img.src=sourceFavicon(p.source_url)||fallback();
   img.onerror=()=>{img.onerror=null;img.src=fallback()};
   avatar.replaceChildren(img);
  }
  const info=text('div','','profile-identity');
- info.append(text('span',p.imported?'Öffentlich gefunden':'Öffentliches Wunschprofil','profile-eyebrow'));
+ info.append(copyText('span',p.imported?'Öffentlich gefunden':'Öffentliches Wunschprofil','profile-eyebrow'));
  info.append(text(full?'h2':'h3',p.display_name));
  const location=[p.city,p.country].filter(Boolean).join(' · ');
  if(location)info.append(text('p','📍 '+location,'location'));
@@ -64,9 +86,9 @@ function card(p,detail=false,preview=false){
  if(!preview)hero.append(favorite(p));
  root.append(hero);
  if(p.imported){
-  root.append(text('p','Name aus öffentlich verlinkter Quelle · Identität nicht von Toolya bestätigt.','profile-source-note'));
+  root.append(copyText('p','Name aus öffentlich verlinkter Quelle · Identität nicht von Toolya bestätigt.','profile-source-note'));
   if(p.source_url&&/^https:\/\//.test(p.source_url)){
-   const source=text('a','Quelle des Eintrags ansehen ↗','profile-source-link');
+   const source=copyText('a','Quelle des Eintrags ansehen ↗','profile-source-link');
    source.href=p.source_url;source.target='_blank';source.rel='noopener noreferrer';root.append(source);
   }
  }
@@ -74,8 +96,8 @@ function card(p,detail=false,preview=false){
  if(full){
   const section=text('div','','profile-lists');
   const heading=text('div','','profile-lists-heading');
-  heading.append(text('h3',p.imported?'Original-Wunschliste bei Amazon':'Meine öffentlichen Wunschlisten'));
-  heading.append(text('span',lists.length+' '+(lists.length===1?'Liste':'Listen'),'profile-list-count'));
+  heading.append(copyText('h3',p.imported?'Original-Wunschliste bei Amazon':'Meine öffentlichen Wunschlisten'));
+  const count=text('span','','profile-list-count');localize(count,()=>{count.textContent=lists.length+' '+ui(lists.length===1?'Liste':'Listen')});heading.append(count);
   section.append(heading);
   const links=text('div','','list-links');
   for(const l of lists){
@@ -85,34 +107,34 @@ function card(p,detail=false,preview=false){
    const copy=text('span','','profile-wishlist-copy');
    copy.append(text('strong',l.name));
    if(l.occasion)copy.append(text('span',l.occasion,'profile-wishlist-occasion'));
-   else copy.append(text('span','Öffentliche Wunschliste bei Amazon','profile-wishlist-occasion'));
+   else copy.append(copyText('span','Öffentliche Wunschliste bei Amazon','profile-wishlist-occasion'));
    a.append(copy,text('span','↗','profile-wishlist-arrow'));
    links.append(a);
   }
   section.append(links);root.append(section);
   if(!preview&&p.imported){
-   const report=text('a','Falschen Namen oder nicht mehr öffentliche Liste melden ↗','profile-report-link');
+   const report=copyText('a','Falschen Namen oder nicht mehr öffentliche Liste melden ↗','profile-report-link');
    const subject='Korrektur eines öffentlichen Amazon-Wunschlisten-Eintrags';
    const message='Bitte diesen Toolya-Eintrag prüfen:\n'+profileUrl(p.user_id)+'\n\nGrund der Meldung (bitte ergänzen):\n';
    report.href='mailto:info@toolya.app?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(message);
    root.append(report);
   }
  }else{
-  root.append(text('p',lists.length+' '+(lists.length===1?'öffentliche Wunschliste':'öffentliche Wunschlisten'),'profile-summary'));
-  const a=text('a','Wunschprofil ansehen','profile-open-link');a.href=profileUrl(p.user_id);a.append(text('span','→','profile-open-arrow'));root.append(a);
+  const summary=text('p','','profile-summary');localize(summary,()=>{summary.textContent=lists.length+' '+ui(lists.length===1?'öffentliche Wunschliste':'öffentliche Wunschlisten')});root.append(summary);
+  const a=text('a','','profile-open-link');a.href=profileUrl(p.user_id);a.append(copyText('span','Wunschprofil ansehen'),text('span','→','profile-open-arrow'));root.append(a);
  }
  return root;
 }
 function hasSearchCriteria(){return Boolean($('search').value.trim()||$('countryFilter').value||$('occasionFilter').value)}
 function makePublicCarouselCard(p){
- const a=document.createElement('a');a.className='wish-public-card';a.href=profileUrl(p.user_id);a.setAttribute('aria-label','Öffentliches Wunschprofil von '+p.display_name+' ansehen');
+ const a=document.createElement('a');a.className='wish-public-card';a.href=profileUrl(p.user_id);a.setAttribute('data-user-content','');localize(a,()=>{a.setAttribute('aria-label',ui('Öffentliches Wunschprofil von ')+p.display_name+(language()==='de'?' ansehen':''))});
  const media=document.createElement('div');media.className='wish-public-card-media';
  const icon=document.createElement('span');icon.className='wish-public-card-graphic';icon.textContent=/tier|pfoten|hund|katze|animal/i.test(p.display_name+' '+(p.bio||''))?'🐾':/baby|familie/i.test(p.display_name+' '+(p.bio||''))?'🧸':/hochzeit/i.test(p.display_name+' '+(p.bio||''))?'💍':/schule|bildung|buch/i.test(p.display_name+' '+(p.bio||''))?'📚':'🎁';media.append(icon);
- if(p.logo_url&&/^https:\/\//i.test(p.logo_url)){const img=document.createElement('img');img.src=p.logo_url;img.loading='lazy';img.alt='Logo von '+p.display_name;img.referrerPolicy='no-referrer';img.onerror=()=>img.remove();media.append(img)}
+ if(p.logo_url&&/^https:\/\//i.test(p.logo_url)){const img=document.createElement('img');img.src=p.logo_url;img.loading='lazy';localize(img,()=>{img.alt=ui('Logo von ')+p.display_name});img.referrerPolicy='no-referrer';img.onerror=()=>img.remove();media.append(img)}
  const body=document.createElement('div');body.className='wish-public-card-body';
  const name=document.createElement('h3');name.textContent=p.display_name;
- const description=document.createElement('p');description.textContent=(p.bio||'Öffentliche Amazon-Wunschliste ansehen und Wünsche entdecken.').trim().slice(0,145);
- const footer=document.createElement('span');footer.className='wish-public-card-footer';footer.textContent=([p.city,p.country].filter(Boolean).join(' · ')||'Öffentliches Wunschprofil')+'  ·  Profil ansehen ↗';body.append(name,description,footer);a.append(media,body);return a;
+ const description=document.createElement('p');if(p.bio)description.textContent=p.bio.trim().slice(0,145);else localize(description,()=>{description.textContent=ui('Öffentliche Amazon-Wunschliste ansehen und Wünsche entdecken.')});
+ const footer=document.createElement('span');footer.className='wish-public-card-footer';localize(footer,()=>{footer.textContent=([p.city,p.country].filter(Boolean).join(' · ')||ui('Öffentliches Wunschprofil'))+'  ·  '+ui('Profil ansehen ↗')});body.append(name,description,footer);a.append(media,body);return a;
 }
 const carouselViewport=$('wishPublicViewport');
 const carouselTrack=$('wishPublicTrack');
@@ -138,19 +160,19 @@ if(typeof reducedMotion.addEventListener==='function')reducedMotion.addEventList
 else reducedMotion.addListener?.(updateCarouselMotion);
 async function refreshCloud(currentGeneration){
  const track=carouselTrack;
- track.replaceChildren(text('p','Öffentliche Profile werden geladen …','wish-showcase-loading'));
+ track.replaceChildren(copyText('p','Öffentliche Profile werden geladen …','wish-showcase-loading'));
  updateCarouselMotion();
  let response;
  try{response=await deadline(()=>publicDb.from('wishlist_directory').select('user_id,display_name,city,country,bio,logo_url,lists').order('updated_at',{ascending:false}).limit(80))}catch{response={error:true}}
  if(currentGeneration!==generation)return;
- if(response.error){track.replaceChildren(text('p','Die veröffentlichten Profile konnten gerade nicht geladen werden. Verwende die Suche oben.','wish-showcase-loading'));return}
+ if(response.error){track.replaceChildren(copyText('p','Die veröffentlichten Profile konnten gerade nicht geladen werden. Verwende die Suche oben.','wish-showcase-loading'));return}
  const profiles=(response.data||[]).filter(p=>p&&p.user_id&&p.display_name&&Array.isArray(p.lists)&&p.lists.some(l=>l.url));
  for(let i=profiles.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[profiles[i],profiles[j]]=[profiles[j],profiles[i]]}
  const unique=[...new Map(profiles.map(p=>[p.user_id,p])).values()].slice(0,12);
- if(!unique.length){track.replaceChildren(text('p','Noch keine veröffentlichten Wunschlisten vorhanden.','wish-showcase-loading'));return}
+ if(!unique.length){track.replaceChildren(copyText('p','Noch keine veröffentlichten Wunschlisten vorhanden.','wish-showcase-loading'));return}
  const group=document.createElement('div');group.className='wish-public-group';for(const p of unique)group.append(makePublicCarouselCard(p));
  track.replaceChildren(group);
- if(unique.length>2){const cloned=group.cloneNode(true);cloned.setAttribute('aria-hidden','true');cloned.inert=true;for(const a of cloned.querySelectorAll('a'))a.tabIndex=-1;track.append(cloned);track.style.setProperty('--wish-scroll-seconds',Math.max(25,unique.length*5)+'s')}
+ if(unique.length>2){const cloned=document.createElement('div');cloned.className=group.className;for(const p of unique)cloned.append(makePublicCarouselCard(p));cloned.setAttribute('aria-hidden','true');cloned.inert=true;for(const a of cloned.querySelectorAll('a'))a.tabIndex=-1;track.append(cloned);track.style.setProperty('--wish-scroll-seconds',Math.max(25,unique.length*5)+'s')}
  updateCarouselMotion();
 }
 async function search(){
@@ -222,7 +244,7 @@ async function detail(){
  }
 }
 $('retryDetail').onclick=detail;
-function renumberLists(){const fields=$('listFields');[...fields.children].forEach((fs,index)=>{fs.querySelector('legend').textContent='Wunschliste '+(index+1);const input=fs.querySelector('[name=url]');if(index===0)input.id='amazonUrl';else input.removeAttribute('id')});$('addList').disabled=fields.children.length>=5}
+function renumberLists(){const fields=$('listFields');[...fields.children].forEach((fs,index)=>{fs.querySelector('legend').textContent=ui('Wunschliste ')+(index+1);const input=fs.querySelector('[name=url]');if(index===0)input.id='amazonUrl';else input.removeAttribute('id')});$('addList').disabled=fields.children.length>=5}
 function listField(value={}){const fields=$('listFields');if(fields.children.length>=5)return;const index=fields.children.length,fs=document.createElement('fieldset');fs.append(text('legend','Wunschliste '+(index+1)));for(const [name,label,type,max]of[['name','Name der Wunschliste *','text',100],['url','Amazon-Wunschlisten-Link *','url',2048],['occasion','Anlass (freiwillig)','text',80]]){const l=text('label',label),i=document.createElement('input');i.type=type;i.name=name;i.required=name!=='occasion';i.maxLength=max;i.value=value[name]||'';if(name==='url'&&index===0)i.id='amazonUrl';if(name==='occasion'){i.placeholder='Geburtstag, Hochzeit, Baby …';}l.append(i);fs.append(l)}const remove=text('button','Diese Liste entfernen','secondary');remove.type='button';remove.onclick=()=>{if(fields.children.length===1){status('profileStatus','Bitte mindestens eine Wunschliste eintragen.');return}const neighbor=fs.nextElementSibling||fs.previousElementSibling;fs.remove();renumberLists();neighbor.querySelector('[name=name]').focus()};fs.append(remove);fields.append(fs);renumberLists();return fs}
 function selectedProfileKind(){return document.querySelector('input[name="profileKind"]:checked')?.value||'person'}
 function updateProfileKind(){
