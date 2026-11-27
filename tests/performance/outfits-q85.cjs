@@ -61,9 +61,21 @@ fs.mkdirSync(report,{recursive:true});
      const page=await ctx.newPage();
      await page.addInitScript(()=>{
       window.__outfitPriorities=[];
+      window.__heroDecodeSettled=false;
+      window.__outfitBeforeHero=[];
+      const decode=HTMLImageElement.prototype.decode;
+      HTMLImageElement.prototype.decode=function(){
+       const isHero=this.matches('img.ty-hero-art');
+       const result=decode.call(this);
+       if(!isHero)return result;
+       return result.finally(()=>{window.__heroDecodeSettled=true;});
+      };
       const descriptor=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src');
       Object.defineProperty(HTMLImageElement.prototype,'src',{...descriptor,set(value){
-       if(String(value).includes('outfits'))window.__outfitPriorities.push(this.fetchPriority);
+       if(String(value).includes('outfits')){
+        window.__outfitPriorities.push(this.fetchPriority);
+        if(document.body?.classList.contains('b3-home')&&document.querySelector('img.ty-hero-art'))window.__outfitBeforeHero.push(!window.__heroDecodeSettled);
+       }
        return descriptor.set.call(this,value);
       }});
      });
@@ -86,6 +98,8 @@ fs.mkdirSync(report,{recursive:true});
      const priorities=await page.evaluate(()=>window.__outfitPriorities);
      assert.ok(priorities.length>0,route+' outfit preload observed');
      assert.ok(priorities.every(p=>p==='low'),route+' outfit priority set before src');
+     const order=await page.evaluate(()=>({hero:!!(document.body.classList.contains('b3-home')&&document.querySelector('img.ty-hero-art')),early:window.__outfitBeforeHero}));
+     if(order.hero){assert.ok(order.early.length>0,route+' hero sequence observed');assert.ok(order.early.every(v=>!v),route+' outfit request after hero decode');}
      if(i){
       assert.ok(state.frames.every(f=>f.url.includes(next)&&f.blend==='normal'),route+' '+JSON.stringify(state.frames));
       assert.ok(!requests.some(u=>new URL(u).pathname===('/'+manifest.source)),route+' duplicate legacy atlas transfer');
