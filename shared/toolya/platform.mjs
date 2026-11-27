@@ -41,14 +41,18 @@ const stockImage=buddy.image.bind(buddy);
 const pixel='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
 const cache=new Map(), frames=new Set();
 let previousItem=null, sequence=0, currentEmotion='happy';
-function preload(file){if(!cache.has(file)){const i=new Image();if(file==='outfits.webp')i.fetchPriority='low';const record={ready:false,failed:false,promise:null};record.promise=new Promise(resolve=>{i.onload=()=>{record.ready=true;resolve(true)};i.onerror=()=>{record.failed=true;resolve(false)};i.src=atlasURL(file)});cache.set(file,record)}return cache.get(file)}
+// The homepage hero is the LCP image. Keep the noncritical atlas out of its
+// fetch/decode path; tool routes still load their own mascot immediately.
+const homeHero=document.body.classList.contains('b3-home')&&document.querySelector('img.ty-hero-art');
+const heroReady=homeHero?homeHero.decode().catch(()=>{}):null;
+function preload(file){if(!cache.has(file)){const i=new Image();if(file==='outfits.webp')i.fetchPriority='low';const record={ready:false,failed:false,promise:null};record.promise=new Promise(resolve=>{i.onload=()=>{record.ready=true;resolve(true)};i.onerror=()=>{record.failed=true;resolve(false)};const start=()=>{i.src=atlasURL(file)};if(file==='outfits.webp'&&heroReady)heroReady.then(start);else start()});cache.set(file,record)}return cache.get(file)}
 function cell(index){return {x:(index%8)*100/7,y:Math.floor(index/8)*100/3}}
 function paint(record,file,index,alternate=index,animate=false){
  const a=cell(index),b=cell(alternate);record.frame.style.setProperty('--ty-a',a.x+'%');record.frame.style.setProperty('--ty-b',b.x+'%');record.frame.style.setProperty('--ty-y',a.y+'%');record.frame.style.backgroundPosition=a.x+'% '+a.y+'%';
  const loaded=preload(file);
  record.frame.hidden=!loaded.ready&&!loaded.failed;
  record.img.style.opacity=loaded.ready||loaded.failed?'0':'1';
- record.frame.style.backgroundImage=loaded.failed?'none':`url("${atlasURL(file)}")`;
+ record.frame.style.backgroundImage=loaded.ready?`url("${atlasURL(file)}")`:'none';
  if(file==='outfits.webp')record.frame.style.mixBlendMode='normal';else record.frame.style.removeProperty('mix-blend-mode');
  if(record.epoch!==buddy.noticeEpoch){record.frame.classList.remove('ty-animated');void record.frame.offsetWidth;record.epoch=buddy.noticeEpoch;}
  record.frame.classList.toggle('ty-animated',loaded.ready&&animate);
