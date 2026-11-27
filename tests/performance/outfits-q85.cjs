@@ -59,6 +59,14 @@ fs.mkdirSync(report,{recursive:true});
      await ctx.addInitScript(character=>localStorage.setItem('helferlein-toolya-preferences-v1',JSON.stringify({character,motion:'off'})),character);
      await ctx.route('**/*',r=>new URL(r.request().url()).origin===site.origin&&['GET','HEAD'].includes(r.request().method())?r.continue():r.abort());
      const page=await ctx.newPage();
+     await page.addInitScript(()=>{
+      window.__outfitPriorities=[];
+      const descriptor=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src');
+      Object.defineProperty(HTMLImageElement.prototype,'src',{...descriptor,set(value){
+       if(String(value).includes('outfits'))window.__outfitPriorities.push(this.fetchPriority);
+       return descriptor.set.call(this,value);
+      }});
+     });
      const failed=[],requests=[];page.on('response',r=>{if(r.url().includes('outfits')&&r.status()>=400)failed.push(r.url())});page.on('request',r=>{if(r.url().includes('outfits'))requests.push(r.url())});
      await page.goto(site.origin+'/'+route,{waitUntil:'domcontentloaded',timeout:20000});
      await page.waitForFunction(()=>window.toolyaBuddy&&document.querySelector('.toolya-signature-footer'),null,{timeout:15000});
@@ -75,6 +83,9 @@ fs.mkdirSync(report,{recursive:true});
      if(state.hero)assert.equal(state.hero,character,route+' hero');
      assert.ok(state.frames.length,route);
      assert.equal(failed.length,0,route);
+     const priorities=await page.evaluate(()=>window.__outfitPriorities);
+     assert.ok(priorities.length>0,route+' outfit preload observed');
+     assert.ok(priorities.every(p=>p==='low'),route+' outfit priority set before src');
      if(i){
       assert.ok(state.frames.every(f=>f.url.includes(next)&&f.blend==='normal'),route+' '+JSON.stringify(state.frames));
       assert.ok(!requests.some(u=>new URL(u).pathname===('/'+manifest.source)),route+' duplicate legacy atlas transfer');
