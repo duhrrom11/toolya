@@ -45,7 +45,7 @@ old="const atlasURL=file=>ASSETS+file+'?v=20261115-alpha';"
 new="const OPTIMIZED_OUTFITS=new URL('../../"+dest+"',import.meta.url).href;\nconst atlasURL=file=>file==='outfits.webp'?OPTIMIZED_OUTFITS:ASSETS+file+'?v=20261115-alpha';"
 assert source.count(old)==1
 source=source.replace(old,new)
-old=" record.frame.style.backgroundImage=loaded.failed?'none':\x60url(\"\x24{atlasURL(file)}\")\x60;"
+old=" record.frame.style.backgroundImage=loaded.ready?\x60url(\"\x24{atlasURL(file)}\")\x60:'none';"
 assert source.count(old)==1
 source=source.replace(old,old+"\n if(file==='outfits.webp')record.frame.style.mixBlendMode='normal';else record.frame.style.removeProperty('mix-blend-mode');")
 platform.write_text(source)

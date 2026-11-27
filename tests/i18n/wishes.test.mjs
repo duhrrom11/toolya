@@ -572,7 +572,7 @@ test('remaining Wishes navigation and status copy is source-exact and reversible
 test('public wishlist editorial copy is complete and translated only when explicitly marked',()=>{
  const html=readFileSync(new URL('../../tools/wishes/public.html',import.meta.url),'utf8');
  const {document}=parseHTML(html);
- const fixed=[...document.querySelectorAll('p[data-wishes-copy],span[data-wishes-copy]')];
+ const fixed=[...document.querySelectorAll('p[data-wishes-copy],span[data-wishes-copy]')].filter(el=>el.children.length===0);
  assert.equal(fixed.length,28,'all selected author-owned editorial nodes must be marked');
  const original=fixed.map(el=>el.textContent.trim());
  for(const de of original){
@@ -619,4 +619,26 @@ test('public wishlist title and privacy/affiliate statements have exact bilingua
   assert.equal(wishesText(target,'de'),source);
   assert.match(target,/Amazon|public|address|phone/i);
  }
+});
+
+test('public FAQ translates marked mixed-content answers and preserves links and affiliate ID',()=>{
+ const html=readFileSync(new URL('../../tools/wishes/public.html',import.meta.url),'utf8');
+ const {document}=parseHTML(html);
+ const faq=document.querySelector('.faq');
+ const answers=[...faq.querySelectorAll('details > p')];
+ const links=[...faq.querySelectorAll('a')];
+ const hrefs=links.map(a=>a.getAttribute('href'));
+ const original=answers.map(p=>p.textContent);
+ assert.equal(answers.length,5);
+ applyWishLocale(document,'en');
+ for(const i of [0,3,4]){
+  assert.notEqual(answers[i].textContent,original[i]);
+  for(const node of answers[i].childNodes){
+   if(node.nodeType===3&&node.nodeValue.trim())assert.notEqual(wishesText(node.nodeValue.trim(),'de'),node.nodeValue.trim());
+  }
+ }
+ assert.equal(faq.querySelector('strong').textContent,'duhrrom-21');
+ assert.deepEqual(links.map(a=>a.getAttribute('href')),hrefs);
+ applyWishLocale(document,'de');
+ assert.deepEqual(answers.map(p=>p.textContent),original);
 });

@@ -38,8 +38,31 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/sprite-snapshots/phase2" "$RUNNER_TEMP/sprite-snapshots/sprite" "$RUNNER_TEMP/sprite-report"
-          git archive f31b1b4150485754c16a21c177c3aaef64521ca6 | tar -x -C "$RUNNER_TEMP/sprite-snapshots/phase2"
-          git archive f31b1b4150485754c16a21c177c3aaef64521ca6 | tar -x -C "$RUNNER_TEMP/sprite-snapshots/sprite"
+          git archive HEAD | tar -x -C "$RUNNER_TEMP/sprite-snapshots/phase2"
+          git archive HEAD | tar -x -C "$RUNNER_TEMP/sprite-snapshots/sprite"
+          # Derive the unoptimized baseline from the same checked-out merge commit.
+          # Reverse only the two exact generator edits; fail closed on unexpected runtime changes.
+          "$RUNNER_TEMP/sprite-python/bin/python" - <<'PY'
+          import os,pathlib,json
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'sprite-snapshots'
+          for name in ['phase2','sprite']:
+              tree=root/name
+              manifest=tree/'assets/toolya/optimized/outfits-q85.json'
+              if not manifest.exists():
+                  continue
+              m=json.loads(manifest.read_text())
+              p=tree/'shared/toolya/platform.mjs'
+              s=p.read_text()
+              edits=[
+                  ("const OPTIMIZED_OUTFITS=new URL('../../"+m['output']+"',import.meta.url).href;\nconst atlasURL=file=>file==='outfits.webp'?OPTIMIZED_OUTFITS:ASSETS+file+'?v=20261115-alpha';",
+                   "const atlasURL=file=>ASSETS+file+'?v=20261115-alpha';"),
+                  ("\n if(file==='outfits.webp')record.frame.style.mixBlendMode='normal';else record.frame.style.removeProperty('mix-blend-mode');","")
+              ]
+              for old,new in edits:
+                  assert s.count(old)==1, 'Unexpected promoted sprite runtime'
+                  s=s.replace(old,new)
+              p.write_text(s)
+          PY
           touch "$RUNNER_TEMP/sprite-snapshots/sprite/.toolya-perf-candidate"
           "$RUNNER_TEMP/sprite-python/bin/python" scripts/build-outfits-q85.py "$RUNNER_TEMP/sprite-snapshots/sprite" > "$RUNNER_TEMP/sprite-report/atlas.json"
           "$RUNNER_TEMP/sprite-python/bin/python" -m json.tool "$RUNNER_TEMP/sprite-report/atlas.json"
@@ -86,7 +109,7 @@ jobs:
           ln -s "$GITHUB_WORKSPACE/node_modules" node_modules
           # Preserve the exact tracked-file inventory for sitemap and Git-based checks.
           git init -q
-          git fetch -q --no-tags "$GITHUB_WORKSPACE" f31b1b4150485754c16a21c177c3aaef64521ca6
+          git fetch -q --no-tags "$GITHUB_WORKSPACE" HEAD
           git read-tree FETCH_HEAD
           node --test tests/mascot/*.test.mjs tests/platform/*.test.mjs tests/amazon/*.test.mjs
           node tests/platform/home-auth.cjs

@@ -71,10 +71,15 @@ async function run(){
    assert.equal(await page.locator('p[data-wishes-copy]').first().textContent(),translation);
    assert.equal(await page.locator('.wish-creation-adnote').textContent(),legalEnglish);
    // Some author-owned elements are removed or replaced when the wishlist app
-   // initializes. The DOM unit test verifies all 28 source nodes and mappings.
+   // initializes. The DOM unit test verifies 28 plain source nodes and three mixed FAQ answers.
    const activeEditorial=await page.locator('p[data-wishes-copy],span[data-wishes-copy]').count();
-   assert.ok(activeEditorial>=24&&activeEditorial<=28,
+   assert.ok(activeEditorial>=27&&activeEditorial<=31,
     'Expected the majority of author-owned copy to remain visible, got '+activeEditorial);
+   const faq=page.locator('.faq');
+   for(const i of [0,3,4])await faq.locator('details').nth(i).locator('summary').click();
+   assert.match(await faq.locator('details').nth(0).locator('p').textContent(),/Yes\. All saved/);
+   assert.match(await faq.locator('details').nth(3).locator('p').textContent(),/automatically discovered/);
+   assert.match(await faq.locator('details').nth(4).locator('p').textContent(),/affiliate/);
    const before=await page.evaluate(()=>({
     private:localStorage.getItem('synthetic-private-wish'),
     mascot:localStorage.getItem('helferlein-toolya-preferences-v1')

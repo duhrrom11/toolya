@@ -3168,8 +3168,9 @@ test('i18n runtime: home backup password and wrong file type validation in DE an
 
 test('i18n runtime: cookie settings follow tool language without changing denied consent',async({page})=>{
  const outbound=await isolated(page,true);
- const key='toolya.analytics.consent.v1';
- await page.addInitScript(key=>localStorage.setItem(key,'no'),key);
+ const key='toolya.analytics.consent.v2';
+ // Legacy refusal must migrate, without enabling either analytics service.
+ await page.addInitScript(()=>localStorage.setItem('toolya.analytics.consent.v1','no'));
  await page.goto(origin+'/tools/car/index.html');
  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
  const link=page.locator('#toolya-consent-settings'),panel=page.locator('#toolya-consent-panel');
@@ -3192,7 +3193,7 @@ test('i18n runtime: cookie settings follow tool language without changing denied
   await expect(panel).toBeHidden();
   expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('no');
  }
- expect(outbound.filter(url=>/googletagmanager|google-analytics|analytics\.google/.test(url))).toEqual([]);
+ expect(outbound.filter(url=>/googletagmanager|google-analytics|analytics\.google|metricool\.com/.test(url))).toEqual([]);
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
 });
 
@@ -3226,11 +3227,23 @@ test('i18n runtime: homepage backup rejects invalid format and decryption withou
 
 test('i18n runtime: cookie settings follow tool language without changing granted consent',async({page})=>{
  const outbound=await isolated(page,true);
- const key='toolya.analytics.consent.v1';
- await page.addInitScript(key=>localStorage.setItem(key,'yes'),key);
+ const key='toolya.analytics.consent.v2';
+ // A previous GA-only approval must not authorize the additional Metricool service.
+ await page.addInitScript(()=>localStorage.setItem('toolya.analytics.consent.v1','yes'));
+ // Establish consent through the actual UI, then test the persisted opt-in
+ // on a fresh document. Do not rely on an injected storage write at startup.
  await page.goto(origin+'/tools/car/index.html');
  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
  const link=page.locator('#toolya-consent-settings'),panel=page.locator('#toolya-consent-panel');
+ await expect(panel).toBeVisible();
+ expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBeNull();
+ expect(outbound.some(url=>/googletagmanager|google-analytics|metricool\.com/.test(url))).toBe(false);
+ await panel.locator('.accept').click();
+ await expect(panel).toBeHidden();
+ expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('yes');
+ await page.reload();
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('yes');
  await expect(panel).toBeHidden();
  for(const lang of ['de','en','de']){
   await page.locator('[data-tool-locale="'+lang+'"]').click();
@@ -3251,6 +3264,7 @@ test('i18n runtime: cookie settings follow tool language without changing grante
   expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe('yes');
  }
  expect(outbound.some(url=>url.includes('www.googletagmanager.com/gtag/js'))).toBe(true);
+ expect(outbound.some(url=>url.includes('tracker.metricool.com/resources/be.js'))).toBe(true);
  // isolated() aborts every external analytics request, even after consent.
  expect(await page.evaluate(()=>window.dataLayer.filter(e=>e[0]==='consent'&&e[1]==='update'&&e[2].analytics_storage==='granted').length)).toBe(1);
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
