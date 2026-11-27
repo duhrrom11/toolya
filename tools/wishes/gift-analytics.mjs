@@ -1,4 +1,5 @@
 import {db} from './toolya-client.mjs';
+import {calendarDateLabel} from './calendar-copy.mjs';
 import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
 const ui=value=>wishesText(value,globalThis.__toolyaWishesLocale==='en'?'en':'de');
 const locale=()=>globalThis.__toolyaWishesLocale==='en'?'en-GB':'de-DE';
@@ -182,7 +183,7 @@ const historicalTaskLabels={open:'Offen',in_progress:'In Arbeit',done:'Erledigt'
 const closingHeading=c=>'🔒 '+c.closing_year+ui(' · abgeschlossen am ')+new Date(c.closed_at).toLocaleDateString(locale());
 const closingSummary=c=>c.gift_count+ui(' Geschenke · ')+c.gifted_count+ui(' verschenkt · Ausgaben: ')+money(c.actual_total)+ui(' · Geplant: ')+money(c.planned_total)+ui(' · Jahresbudgets: ')+money(c.budget_total)+(c.task_count===null?ui(' · Aufgabenhistorie nicht vorhanden'):ui(' · Aufgaben: ')+c.task_done_count+'/'+c.task_count);
 const historicalGiftLine=g=>g.title+' · '+(historicalGiftLabels[g.status]?ui(historicalGiftLabels[g.status]):g.status)+' · '+money(g.actual_amount)+ui(' erfasst');
-const historicalTaskLine=t=>t.title+' · '+(historicalTaskLabels[t.status]?ui(historicalTaskLabels[t.status]):t.status)+' · '+(t.due_date||ui('ohne Termin'));
+const historicalTaskLine=t=>t.title+' · '+(historicalTaskLabels[t.status]?ui(historicalTaskLabels[t.status]):t.status)+' · '+(t.due_date?calendarDateLabel(t.due_date,locale()):ui('ohne Termin'));
 function repaintClosedYearLabels(){
  // Read-only text updates keep details open/focus and never alter closing snapshots.
  const rows=[...$('closedYears').querySelectorAll('.year-summary.row')];

@@ -1,5 +1,6 @@
 /* Source-exact Toolya Wishes interface labels. No translation of user data. */
 export const WISHES_COPY=Object.freeze({
+"Speichern": "Save",
 "🎲 Zufällige Inspiration": "🎲 Random inspiration",
 "✨ Aus der Community": "✨ From the community",
 "🌟 Öffentlicher Wunsch vorhanden": "🌟 Public wish available",
