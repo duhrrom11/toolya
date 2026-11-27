@@ -62,6 +62,23 @@ jobs:
             git archive HEAD | tar -x -C "$RUNNER_TEMP/perf-base"
             git archive HEAD | tar -x -C "$RUNNER_TEMP/perf-candidate"
           fi
+          # Replay the approved editorial URL migration on both historical snapshots.
+          # Keep the byte-identical generated output checks below unchanged.
+          if test -f assets/perf/manifest.json; then
+            python - <<'PY'
+          import os,pathlib
+          for variant in ('perf-base','perf-candidate'):
+              root=pathlib.Path(os.environ['RUNNER_TEMP'])/variant
+              for name in ('index.html','en/index.html'):
+                  p=root/name
+                  data=p.read_bytes()
+                  old=b'https://ko-fi.com/duhrrom'
+                  new=b'https://ko-fi.com/toolya'
+                  assert data.count(old)==1,(variant,name,'unexpected historical link count')
+                  p.write_bytes(data.replace(old,new))
+                  assert old not in p.read_bytes()
+          PY
+          fi
           touch "$RUNNER_TEMP/perf-candidate/.toolya-perf-candidate"
           node --check scripts/build-home-perf.cjs
           node --check scripts/build-home-cache.cjs
