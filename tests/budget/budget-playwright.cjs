@@ -57,7 +57,7 @@ const server=http.createServer((req,res)=>{
  await page.getByText('receipt-one.png',{exact:false}).first().waitFor();
  const uploaded=await page.evaluate(()=>window.fixture.state().state.inbox);
  assert.equal(uploaded.length,2);
- assert(uploaded.every(r=>r.photo.startsWith('data:image/png;base64,'));
+ assert(uploaded.every(r=>r.photo.startsWith('data:image/png;base64,')));
  // Test production batch OCR orchestration with deterministic local recognition.
  await page.route('**/shared/toolya/receipt-ocr.mjs',route=>route.fulfill({contentType:'text/javascript',body:"export async function loadOcrLibrary(){return {async createWorker(language){window.testOcrLanguage=language;return {async recognize(){return {data:{text:'Total 12.50'}}},async terminate(){window.testOcrTerminated=true}}}}}"}));
  await page.getByRole('button',{name:'Review batch with OCR'}).click();
