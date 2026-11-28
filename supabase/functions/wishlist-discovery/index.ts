@@ -103,35 +103,7 @@ Deno.serve(async(req:Request)=>{
    }
    return reply(400,{error:'Unbekannte Admin-Aktion.'});
   }
-  if(body.action==='managed_list'){
-   const offset=Math.max(0,Math.min(100000,Math.floor(Number(body.offset)||0)));
-   const rows=must(await db.from('wishlist_imported_entries').select('id,display_name,country,logo_url,wishlist_url,source_url').order('display_name').order('id').range(offset,offset+99));
-   return reply(200,{rows});
-  }
-  if(body.action==='managed_save'){
-   const v=body.values||{};
-   const name=String(v.display_name||'').trim();
-   const list=canonicalList(String(v.wishlist_url||''));
-   const logo=String(v.logo_url||'').trim(),source=String(v.source_url||'').trim(),country=String(v.country||'').trim();
-   if(!name||name.length>160||!list||country.length>80||logo.length>2048||source.length>2048||(logo&&!publicUrl(logo))||(source&&!publicUrl(source)))return reply(400,{error:'Ungültige Profildaten.'});
-   const values={display_name:name,list_key:list.key,wishlist_url:list.url,logo_url:logo?publicUrl(logo):'',source_url:source?publicUrl(source):'',country};
-   if(body.id){
-    if(typeof body.id!=='string'||!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(body.id))return reply(400,{error:'Ungültige Profil-ID.'});
-    const result=must(await db.from('wishlist_imported_entries').update(values).eq('id',body.id).select('id'));
-    if(result.length!==1)return reply(404,{error:'Profil nicht gefunden.'});
-   }else{
-    const existing=must(await db.from('wishlist_directory_lists').select('id').ilike('url','%/ls/'+list.key+'?tag=duhrrom-21').limit(1));
-    if(existing.length)return reply(409,{error:'Wunschliste existiert bereits.'});
-    must(await db.from('wishlist_imported_entries').insert(values));
-   }
-   return reply(200,{ok:true});
-  }
-  if(body.action==='managed_delete'){
-   if(typeof body.id!=='string'||!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(body.id))return reply(400,{error:'Ungültige Profil-ID.'});
-   const result=must(await db.from('wishlist_imported_entries').delete().eq('id',body.id).select('id'));
-   if(result.length!==1)return reply(404,{error:'Profil nicht gefunden.'});
-   return reply(200,{ok:true});
-  }
+  if(['managed_list','managed_save','managed_delete'].includes(body.action))return reply(409,{error:'Bitte die neue Profilverwaltung verwenden.'});
   if(body.action==='configure'){must(await db.rpc('wishlist_tavily_key',{new_key:String(body.key||'').trim()}));return reply(200,{configured:true})}
   const key=must(await db.rpc('wishlist_tavily_key'));
   const quota=must(await db.rpc('wishlist_tavily_quota',{claim:false}));
@@ -159,29 +131,8 @@ Deno.serve(async(req:Request)=>{
    must(await db.from('wishlist_discovery_candidates').update(edited).eq('id',body.id).eq('status','new'));return reply(200,{ok:true});
   }
   if(body.action==='withdraw'){
-   // Fail closed: a matching list key alone does not establish that this row
-   // still represents the entry originally published by the finder.
    if(typeof body.id!=='string'||!/^[0-9a-f-]{36}$/i.test(body.id))return reply(400,{error:'Ungültige Auswahl.'});
-   const existing=must(await db.from('wishlist_discovery_candidates')
-    .select('id,list_key,name,logo_url,wishlist_url,source_url,country,found_at')
-    .eq('id',body.id).eq('status','published').single());
-   const matching=must(await db.from('wishlist_imported_entries')
-    .select('id,created_at').eq('list_key',existing.list_key)
-    .eq('display_name',existing.name).eq('logo_url',existing.logo_url)
-    .eq('wishlist_url',existing.wishlist_url).eq('source_url',existing.source_url)
-    .eq('country',existing.country).limit(2));
-   if(matching.length!==1||new Date(matching[0].created_at).getTime()<new Date(existing.found_at).getTime())
-    return reply(409,{error:'Veröffentlichung wurde zwischenzeitlich verändert oder stammt nicht eindeutig aus diesem Finder. Kein Eintrag gelöscht.'});
-   const removed=must(await db.from('wishlist_imported_entries')
-    .delete().eq('id',matching[0].id).eq('list_key',existing.list_key)
-    .eq('display_name',existing.name).eq('logo_url',existing.logo_url)
-    .eq('wishlist_url',existing.wishlist_url).eq('source_url',existing.source_url)
-    .eq('country',existing.country).select('id'));
-   if(removed.length!==1)return reply(409,{error:'Veröffentlichung nicht unverändert gefunden. Kein weiterer Eintrag gelöscht.'});
-   const updated=must(await db.from('wishlist_discovery_candidates')
-    .update({status:'new'}).eq('id',body.id).eq('status','published').select('id'));
-   if(updated.length!==1)return reply(409,{error:'Veröffentlichung entfernt; Finderstatus konnte nicht aktualisiert werden. Bitte Administrator prüfen lassen.'});
-   return reply(200,{ok:true});
+   return reply(200,must(await db.rpc('wishlist_admin_withdraw',{p_actor:data.user.id,p_candidate:body.id})));
   }
   if(body.action==='dismiss'){
    if(!Array.isArray(body.ids)||body.ids.length<1||body.ids.length>200||body.ids.some((id:any)=>typeof id!=='string'||!/^[0-9a-f-]{36}$/i.test(id)))return reply(400,{error:'Ungültige Auswahl.'});
