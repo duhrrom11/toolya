@@ -2647,6 +2647,7 @@ test('seven PDF export paths render EN and DE without mutating records (isolated
    const rows=JSON.parse(JSON.stringify(fixtures[tool])),before=JSON.stringify(rows),texts=[],filenames=[];
    const pdfStub={setFont(){},setFontSize(){},text(value){texts.push(String(value))},splitTextToSize(value){return [String(value)]},addPage(){},save(name){filenames.push(String(name))}};
    const context={window:{__toolyaUILocale:lang},getData:()=>rows,pdfStub,parseReceiptDate:date=>new Date(date)};
+   if(tool==='budget')context.window.toolyaBudgetMoney={...await import('../../tools/budget/budget-domain.mjs'),...await import('../../tools/budget/budget-relations.mjs')};
    const parkingDates=tool==='parking'?html.slice(html.indexOf('function displayLegacyDate('),html.indexOf('// PDF Report Export via jsPDF')):'';
    await runInNewContext(meterLabels+vehicleLabels+budgetLabels+parkingDates+code+';'+func+'()',context);
    assert.equal(JSON.stringify(rows),before,'source data mutated: '+tool);
