@@ -395,6 +395,7 @@
             </div>
             <div id="budgetBankImport"></div>
             <div id="budgetBulkEdit"></div>
+            <div id="budgetRelations"></div>
             <div id="receiptsList" class="space-y-3">
                 <p class="text-sm text-gray-400 text-center py-4">Noch keine Buchungen vorhanden.</p>
             </div>
@@ -865,7 +866,11 @@ async function toolyaCloudBoot(tool) {
         function householdCloudCanSave(){return toolyaCloudReady;}
         function householdCloudChanged(){}
 
-        async function saveData(data){return toolyaCloudSave({entries:data});}
+        async function saveData(data){
+            try{if(data.some(r=>r&&(r.transferId!=null||r.refundOf!=null||r.splits?.length)))window.toolyaBudgetMoney.validateRelations(data);}
+            catch{alert(window.__toolyaUILocale==='en'?'Invalid linked transaction. Review the split or unlink it first.':'Ungültige Buchungsverknüpfung. Aufteilung prüfen oder zuerst Verknüpfung lösen.');return false;}
+            return toolyaCloudSave({entries:data});
+        }
 
         function getBudgets(){return toolyaCloudSnapshot().budgets;}
 
@@ -1198,7 +1203,7 @@ async function toolyaCloudBoot(tool) {
             const entryType = document.querySelector('input[name="entryType"]:checked').value;
 
             if (!title || !date || !Number.isFinite(parseReceiptDate(date).getTime()) ||
-                !Number.isFinite(price) || price <= 0) {
+                !Number.isFinite(price) || price <= 0 || !Number.isSafeInteger(Math.round(price*100)) || Number(price.toFixed(2))!==price) {
                 return alert("Bitte Titel, gültiges Kaufdatum und einen positiven Betrag angeben!");
             }
             if (!Number.isSafeInteger(warrantyMonths) || warrantyMonths < 0 ||
@@ -1353,7 +1358,9 @@ async function toolyaCloudBoot(tool) {
 
         async function deleteReceipt(id) {
             if (!confirm("⚠️ Diese Buchung wirklich löschen?")) return;
-            let data = getData().filter(item => item.id !== id);
+            const existing=getData();
+            if(existing.some(r=>r&&(r.id===id&&(r.transferId!=null||r.refundOf!=null)||r.transferId===id||r.refundOf===id))){alert(window.__toolyaUILocale==='en'?'Unlink the transaction before deleting it.':'Vor dem Löschen die Buchungsverknüpfung lösen.');return;}
+            let data = existing.filter(item => item.id !== id);
             if (!await saveData(data)) return;
             if (editingReceiptId === id) cancelEdit();
             renderApp();
@@ -1398,33 +1405,17 @@ async function toolyaCloudBoot(tool) {
             const now = new Date();
             const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-            let totalIncome = 0;
-            let totalExpense = 0;
-            let fixExpense = 0;
+            const money=window.toolyaBudgetMoney;
+            const flow=money.cashflow(data,currentMonthStr+'-01',currentMonthStr+'-31');
+            const totalIncome=flow.income/100,totalExpense=flow.expense/100,fixExpense=flow.fixed/100;
             let totalZeitwert = 0;
             let activeWarrantyValue = 0;
             let taxValueTotal = 0;
-
-            const categoryExpenses = Object.create(null);
-            defaultCategories.forEach(cat => categoryExpenses[cat] = 0);
-
+            const categoryExpenses=Object.fromEntries(Object.entries(flow.byCategory).map(([k,v])=>[k,v/100]));
             data.forEach(r => {
-                if (!r || typeof r !== 'object') return;
-                const parsedPrice = Number(r.price);
-                const price = Number.isFinite(parsedPrice) ? parsedPrice : 0;
-                const isCurrentMonth = typeof r.date === 'string' && r.date.startsWith(currentMonthStr);
+                if (!r || typeof r !== 'object' || r.transferId!=null) return;
+                let price;try{price=money.legacyCents(r.price)/100;}catch{return;}
                 const isIncome = r.entryType === 'einnahme' || r.category === 'Einnahme';
-
-                if (isIncome) {
-                    if (isCurrentMonth) totalIncome += price;
-                } else {
-                    if (isCurrentMonth) {
-                        totalExpense += price;
-                        if (r.isFixkosten) fixExpense += price;
-                        const category = typeof r.category === 'string' && r.category.trim() ? r.category : 'Sonstiges';
-                        categoryExpenses[category] = (categoryExpenses[category] || 0) + price;
-                    }
-                }
 
                 if (r.isTax) taxValueTotal += price;
 
@@ -1449,7 +1440,7 @@ async function toolyaCloudBoot(tool) {
 
             document.getElementById('statIncome').innerText = totalIncome.toFixed(2) + " €";
             document.getElementById('statExpense').innerText = totalExpense.toFixed(2) + " €";
-            const balance = totalIncome - totalExpense;
+            const balance = flow.balance/100;
             const balanceEl = document.getElementById('statBalance');
             balanceEl.innerText = balance.toFixed(2) + " €";
             balanceEl.className = `text-base font-bold ${balance >= 0 ? 'text-emerald-600' : 'text-red-600'}`;
@@ -1507,6 +1498,7 @@ async function toolyaCloudBoot(tool) {
 
             renderSavingsGoals();
             renderTransactionList();
+            window.toolyaBudgetRelations?.render();
             window.dispatchEvent(new Event('toolya:budget-changed'));
         }
 
@@ -1581,7 +1573,7 @@ async function toolyaCloudBoot(tool) {
                 const expDate = addWarrantyMonths(buyDate, months);
                 return expDate !== null && expDate >= now;
             });
-            if (catFilter !== 'All') filtered = filtered.filter(r => r.category === catFilter);
+            if (catFilter !== 'All') filtered = filtered.filter(r => r.splits?.length?r.splits.some(p=>p.category===catFilter):r.category === catFilter);
 
             window.toolyaBudgetBulk?.render(filtered);
             if (filtered.length === 0) {
@@ -1631,6 +1623,9 @@ async function toolyaCloudBoot(tool) {
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="text-sm font-bold text-gray-900">${escapeHaushaltsHtml(r.title)}</span>
                                     <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-semibold">${escapeHaushaltsHtml(budgetCategoryLabel(r.category))}</span>
+                                    ${r.transferId!=null ? `<span class="text-xs font-semibold">${window.__toolyaUILocale === 'en' ? 'Transfer' : 'Umbuchung'}</span>` : ''}
+                                    ${r.refundOf!=null ? `<span class="text-xs font-semibold">${window.__toolyaUILocale === 'en' ? 'Refund' : 'Rückerstattung'}</span>` : ''}
+                                    ${r.splits?.length ? `<span class="text-xs">${r.splits.map(p=>escapeHaushaltsHtml(budgetCategoryLabel(p.category))+' '+escapeHaushaltsHtml(window.toolyaBudgetMoney.decimalCents(p.cents))+' €').join(' · ')}</span>` : ''}
                                     ${r.needsReview === true ? `<span class="text-xs font-semibold">${window.__toolyaUILocale === 'en' ? 'Needs review' : 'Noch prüfen'}</span>` : ''}
                                     ${r.isFixkosten ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '🔄 Recurring cost' : '🔄 Fixkosten'}</span>` : ''}
                                     ${r.isTax ? `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '💼 Tax' : '💼 Steuer'}</span>` : ''}
@@ -1946,9 +1941,9 @@ async function toolyaCloudBoot(tool) {
             if (data.length === 0) return alert('Keine Buchungen für den CSV-Export vorhanden.');
             const rows = [(english ? ['Date', 'Type', 'Title', 'Merchant', 'Category', 'Price_EUR',
                 'Payment_method', 'Recurring_cost', 'Tax_relevant', 'Warranty_months',
-                'Return_days', 'Lifespan_years', 'Serial_number', 'Storage_location', 'Note'] : ['Datum', 'Typ', 'Titel', 'Haendler', 'Kategorie', 'Preis_EUR',
+                'Return_days', 'Lifespan_years', 'Serial_number', 'Storage_location', 'Note','Booking_ID','Transfer_ID','Refund_of','Splits_JSON','Account','Cashflow_EUR'] : ['Datum', 'Typ', 'Titel', 'Haendler', 'Kategorie', 'Preis_EUR',
                 'Zahlungsart', 'Fixkosten', 'Steuerrelevant', 'Garantie_Monate',
-                'Rueckgabe_Tage', 'Lebensdauer_Jahre', 'Seriennummer', 'Lagerort', 'Notiz']).join(';')];
+                'Rueckgabe_Tage', 'Lebensdauer_Jahre', 'Seriennummer', 'Lagerort', 'Notiz','Buchungs_ID','Umbuchungs_ID','Erstattung_fuer','Aufteilung_JSON','Konto','Geldfluss_EUR']).join(';')];
             sortCsvBookings(data);
             for (const r of data) {
                 const price = r.price == null || String(r.price).trim() === '' ? NaN : Number(r.price);
@@ -1956,7 +1951,7 @@ async function toolyaCloudBoot(tool) {
                     Number.isFinite(price) ? price.toFixed(2) : '',
                     r.paymentMethod, r.isFixkosten === true ? (english ? 'Yes' : 'Ja') : (english ? 'No' : 'Nein'),
                     r.isTax === true ? (english ? 'Yes' : 'Ja') : (english ? 'No' : 'Nein'), r.warrantyMonths, r.returnDays,
-                    r.lifespan, r.sn, r.location, r.note];
+                    r.lifespan, r.sn, r.location, r.note,r.id,r.transferId??'',r.refundOf??'',JSON.stringify(r.splits||[]),r.accountLabel||'',r.transferId!=null?'0.00':(r.entryType==='einnahme'||r.category==='Einnahme'?'':'-')+(Number.isFinite(price)?price.toFixed(2):'')];
                 rows.push(fields.map((value,index) => index === 5 && value !== '' ? '"' + value + '"' : steuerCsvFeld(value)).join(';'));
             }
             const csv = '\uFEFF' + rows.join('\r\n') + '\r\n';
@@ -1971,7 +1966,7 @@ async function toolyaCloudBoot(tool) {
 
         function exportSteuerCSV() {
             const english = window.__toolyaUILocale === 'en';
-            const data = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r) && r.isTax === true);
+            const data = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r) && r.isTax === true && r.transferId==null);
             if (data.length === 0) return alert("Keine steuerrelevanten Buchungen gefunden!");
             const rows = [(english ? ["Date", "Type", "Title", "Merchant", "Category", "Price_EUR", "Payment_method", "Serial_number", "Note"] : ["Datum", "Typ", "Titel", "Haendler", "Kategorie", "Preis_EUR", "Zahlungsart", "Seriennummer", "Notiz"]).join(';')];
             sortCsvBookings(data);
@@ -2085,15 +2080,15 @@ async function toolyaCloudBoot(tool) {
             const doc = await createExportPdf();
             if (!doc) return;
             const data = getData();
-            const reportPrice = r => r.price == null || String(r.price).trim() === '' ? NaN : Number(r.price);
+            const reportPrice = r => {try{return window.toolyaBudgetMoney.legacyCents(r.price)/100;}catch{return NaN;}};
+            const flow=window.toolyaBudgetMoney.cashflow(data);
 
             doc.setFontSize(16);
             doc.text(pdfLabel("Haushalts-, Finanz- & Kassenbon-Übersicht","Household finances and receipts overview"), 14, 20);
             doc.setFontSize(10);
             doc.text(`${pdfLabel("Erstellt am: ","Created on: ")}${new Date().toLocaleDateString(pdfDateLocale)}`, 14, 28);
 
-            let totalIncome = 0;
-            let totalExpense = 0;
+            const totalIncome=flow.income/100,totalExpense=flow.expense/100;
             let validEntries = 0;
             let earliestDate = null;
             let latestDate = null;
@@ -2107,8 +2102,7 @@ async function toolyaCloudBoot(tool) {
                     if (earliestDate === null || r.date < earliestDate) earliestDate = r.date;
                     if (latestDate === null || r.date > latestDate) latestDate = r.date;
                 }
-                if (r.entryType === 'einnahme' || r.category === 'Einnahme') totalIncome += price;
-                else totalExpense += price;
+
             });
             const money = amount => (pdfEn ? amount.toFixed(2) : amount.toFixed(2).replace('.', ',')) + ' EUR';
             doc.setFontSize(11);
@@ -2117,7 +2111,7 @@ async function toolyaCloudBoot(tool) {
             doc.text(pdfLabel("Buchungen: ","Transactions: ") + validEntries, 14, 46);
             doc.text(pdfLabel("Einnahmen: ","Income: ") + money(totalIncome), 14, 52);
             doc.text(pdfLabel("Ausgaben: ","Expenses: ") + money(totalExpense), 14, 58);
-            doc.text(pdfLabel("Saldo: ","Balance: ") + money(totalIncome - totalExpense), 14, 64);
+            doc.text(pdfLabel("Saldo: ","Balance: ") + money(flow.balance/100), 14, 64);
             const formatDate = value => value.slice(8, 10) + (pdfEn ? '/' : '.') + value.slice(5, 7) + (pdfEn ? '/' : '.') + value.slice(0, 4);
             const period = earliestDate && latestDate ? formatDate(earliestDate) + pdfLabel(' bis ', ' to ') + formatDate(latestDate) : pdfLabel("Keine gültigen Buchungsdaten","No valid transaction dates");
             doc.text(pdfLabel("Zeitraum: ","Period: ") + period, 14, 70);
@@ -2143,7 +2137,8 @@ async function toolyaCloudBoot(tool) {
                 const signed = income ? price : -price;
                 const amount = Number.isFinite(price) ? (signed < 0 ? '-' : '+') + Math.abs(signed).toFixed(2).replace('.', pdfEn ? '.' : ',') : pdfLabel("k.A.","n/a");
                 const line = `${r.date || pdfLabel("k.A.","n/a")} | ${r.title || pdfLabel("Ohne Titel","Untitled")} (${budgetCategoryLabel(r.category, pdfEn ? "en" : "de") || pdfLabel("Sonstiges","Other")}): ${amount} € [${budgetPaymentLabel(r.paymentMethod, pdfEn ? "en" : "de") || pdfLabel("k.A.","n/a")}]`;
-                const lines = doc.splitTextToSize(line, 180);
+                const extra=r.transferId!=null?pdfLabel(' | Umbuchung (nicht im Saldo)',' | Transfer (excluded from balance)'):r.refundOf!=null?pdfLabel(' | Rückerstattung',' | Refund'):r.splits?.length?' | '+r.splits.map(p=>budgetCategoryLabel(p.category,pdfEn?'en':'de')+': '+money(p.cents/100)).join(', '):'';
+                const lines = doc.splitTextToSize(line+extra, 180);
                 for (const textLine of lines) {
                     if (y > 275) { doc.addPage(); y = 20; }
                     doc.text(textLine, 14, y);
@@ -2160,6 +2155,10 @@ async function toolyaCloudBoot(tool) {
 <script type="module">
 import {mountBankImport} from './bank-import-ui.mjs';
 import {mountBulkEdit} from './budget-bulk-ui.mjs';
+import {mountRelations} from './budget-relations-ui.mjs';
+import {cashflow,validateRelations} from './budget-relations.mjs';
+import {legacyCents,decimalCents,addCents} from './budget-domain.mjs';
+window.toolyaBudgetMoney=Object.freeze({cashflow,validateRelations,legacyCents,decimalCents,addCents});
 import {saveProfile,saveRule} from './budget-organization.mjs';
 const budgetOrganizationApi={
   context(){
@@ -2196,6 +2195,7 @@ const budgetOrganizationApi={
 };
 mountBankImport(document.getElementById('budgetBankImport'),budgetOrganizationApi);
 window.toolyaBudgetBulk=mountBulkEdit(document.getElementById('budgetBulkEdit'),budgetOrganizationApi);
+window.toolyaBudgetRelations=mountRelations(document.getElementById('budgetRelations'),budgetOrganizationApi);
 </script>
 <script defer src="./clever-core.js?v=20261121-v2"></script>
 <script defer src="./clever-ui.js?v=20261121-v2"></script>
