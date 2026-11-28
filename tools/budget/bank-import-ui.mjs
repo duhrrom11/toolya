@@ -1,4 +1,5 @@
-import {decodeBankFile,bankPreview,applyBankImport,undoBankImport} from './bank-import.mjs';
+import {categories,saveProfile,saveRule,removePreference} from './budget-organization.mjs';
+import {bankFileDigest,decodeBankFile,bankPreview,applyBankImport,undoBankImport} from './bank-import.mjs';
 import {parseCSV,decimalCents} from './budget-domain.mjs';
 // All private values are inserted as text nodes. The source file stays in this module.
 export function mountBankImport(root,api){
@@ -24,8 +25,8 @@ export function mountBankImport(root,api){
   const status=el('p');status.setAttribute('role','status');
   const preview=el('div');preview.className='space-y-2';
   const undo=el('div');undo.className='space-y-2';
-  let text='',columns={},busy=false,version=0,context=null;
-  function clear(){version++;text='';columns={};map.replaceChildren();preview.replaceChildren();}
+  let text='',digest='',columns={},busy=false,version=0,context=null,activeProfile=null;
+  function clear(){version++;text='';digest='';columns={};map.replaceChildren();preview.replaceChildren();}
   function report(de,english){status.textContent=t(de,english);}
   async function read(){
     if(busy)return;
@@ -33,16 +34,18 @@ export function mountBankImport(root,api){
     try{
       if(!file.files[0])throw Error();
       const session=api.context();
-      const decoded=await decodeBankFile(file.files[0],encoding.value);
+      const selectedFile=file.files[0];
+      const [decoded,fileDigest]=await Promise.all([decodeBankFile(selectedFile,encoding.value),bankFileDigest(selectedFile)]);
       if(token!==version)return;
       if(!api.sameContext(session))throw Error();
       const headers=parseCSV(decoded,delimiter.value)[0]||[];
       if(!headers.length||headers.length>200)throw Error();
-      text=decoded;context=session;
+      text=decoded;digest=fileDigest;context=session;
       for(const [key,de,english] of [['date','Datum','Date'],['title','Buchungstext','Description'],['amount','Betrag','Amount'],['debit','Soll','Debit'],['credit','Haben','Credit'],['transactionId','Transaktions-ID (optional)','Transaction ID (optional)']]){
         const n=el('select');const none=localized('option','Nicht zugeordnet','Not mapped');none.value='-1';n.append(none);
         headers.forEach((v,i)=>{const o=el('option',(i+1)+': '+v);o.value=String(i);n.append(o);});
         columns[key]=n;map.append(field(de,english,n));
+        if(activeProfile&&activeProfile.mapping[key]>=0&&activeProfile.mapping[key]<headers.length)n.value=String(activeProfile.mapping[key]);
         n.addEventListener('change',()=>preview.replaceChildren());
       }
       report('Spalten zuordnen und Vorschau öffnen.','Map the columns and open the preview.');
@@ -54,14 +57,23 @@ export function mountBankImport(root,api){
     preview.replaceChildren();
     try{
       if(!text||!api.sameContext(context))throw Error();
-      const config={source:source.value,delimiter:delimiter.value,locale:locale.value,dateFormat:dateFormat.value,mode:mode.value==='split'?'split':'signed',reverseSign:mode.value==='reverse',...Object.fromEntries(Object.entries(columns).map(([k,n])=>[k,Number(n.value)]))};
+      const config={fileDigest:digest,rules:api.preferences().rules,source:source.value,delimiter:delimiter.value,locale:locale.value,dateFormat:dateFormat.value,mode:mode.value==='split'?'split':'signed',reverseSign:mode.value==='reverse',...Object.fromEntries(Object.entries(columns).map(([k,n])=>[k,Number(n.value)]))};
       const rows=bankPreview(text,config,api.entries());
       const picks=[];const list=el('div');list.className='max-h-96 overflow-auto space-y-2';
       for(const row of rows){
         const line=el('label');line.className='flex gap-2 items-start break-all';
         const check=el('input');check.type='checkbox';check.checked=row.status==='ready';check.disabled=['duplicate','invalid'].includes(row.status);
         const label=el('span',t('Zeile ','Row ')+row.index+': '+(row.status==='invalid'?t('Ungültig','Invalid'):row.date+' · '+row.title+' · '+decimalCents(row.cents)+' €'+(row.status==='duplicate'?t(' – bereits vorhanden',' – already present'):row.status==='review'?t(' – mögliche Doppelbuchung',' – possible duplicate'):'')));
-        line.append(check,label);list.append(line);picks.push([row,check]);
+        line.append(check,label);
+        if(row.cents<0&&!check.disabled){
+          const cat=el('select');cat.setAttribute('aria-label',t('Kategorie für Zeile ','Category for row ')+row.index);
+          for(const key of categories){const o=el('option',api.categoryLabel(key));o.value=key;cat.append(o);}
+          cat.value=row.suggestedCategory||'Sonstiges';row.category=cat.value;
+          cat.addEventListener('change',()=>{row.category=cat.value;});
+          line.append(cat);
+          if(row.suggestedCategory)line.append(el('span',t('Regelvorschlag','Rule suggestion')));
+        }
+        list.append(line);picks.push([row,check]);
       }
       const batchId=crypto.randomUUID();
       const counts=el('p');
@@ -105,6 +117,42 @@ export function mountBankImport(root,api){
       }
     }catch{}
   }
+  const preferences=el('details');preferences.className='border rounded-lg p-2 space-y-2';
+  preferences.append(localized('summary','Bankprofile und Kategorienregeln','Bank profiles and category rules'));
+  const preferenceBody=el('div');preferences.append(preferenceBody);
+  function refreshPreferences(){
+    preferenceBody.replaceChildren();
+    try{
+      const ctx=api.context(),prefs=api.preferences();
+      const profileSelect=el('select'),none=localized('option','Freie Zuordnung','Manual mapping');none.value='';profileSelect.append(none);
+      for(const p of prefs.profiles){const o=el('option',p.name);o.value=p.id;profileSelect.append(o);}
+      profileSelect.value=activeProfile?.id||'';
+      const name=el('input');name.maxLength=120;name.value=activeProfile?.name||'';
+      profileSelect.addEventListener('change',()=>{
+        activeProfile=prefs.profiles.find(p=>p.id===profileSelect.value)||null;
+        clear();name.value=activeProfile?.name||'';
+        if(activeProfile){source.value=activeProfile.source;encoding.value=activeProfile.encoding;delimiter.value=activeProfile.delimiter;locale.value=activeProfile.locale;dateFormat.value=activeProfile.dateFormat;mode.value=activeProfile.mode;}
+      });
+      const mutate=async fn=>{if(busy)return;busy=true;try{await api.savePreferences(ctx,fn);preview.replaceChildren();refreshPreferences();report('Einstellungen gespeichert.','Settings saved.');}catch{report('Einstellungen nicht gespeichert. Bitte prüfen oder neu laden.','Settings not saved. Check or reload.');}finally{busy=false;}};
+      preferenceBody.append(field('Bankprofil','Bank profile',profileSelect),field('Profilname','Profile name',name),
+        button('Profil speichern','Save profile',()=>mutate(p=>{
+          if(!text)throw Error('mapping required');
+          const profile={id:activeProfile?.id||crypto.randomUUID(),name:name.value,source:source.value,encoding:encoding.value,delimiter:delimiter.value,locale:locale.value,dateFormat:dateFormat.value,mode:mode.value,mapping:Object.fromEntries(Object.entries(columns).map(([k,n])=>[k,Number(n.value)]))};
+          const profiles=saveProfile(p.profiles,profile);return {...p,profiles};
+        })),
+        button('Profil löschen','Delete profile',()=>{if(activeProfile&&confirm(t('Profil löschen?','Delete profile?'))){const id=activeProfile.id;activeProfile=null;mutate(p=>({...p,profiles:removePreference(p.profiles,id)}));}}));
+      const ruleSelect=el('select'),newRule=localized('option','Neue Regel','New rule');newRule.value='';ruleSelect.append(newRule);
+      for(const rule of prefs.rules){const o=el('option',rule.match+' → '+api.categoryLabel(rule.category));o.value=rule.id;ruleSelect.append(o);}
+      const match=el('input');match.maxLength=120;
+      const category=el('select');for(const key of categories){const o=el('option',api.categoryLabel(key));o.value=key;category.append(o);}
+      ruleSelect.addEventListener('change',()=>{const rule=prefs.rules.find(r=>r.id===ruleSelect.value);match.value=rule?.match||'';category.value=rule?.category||categories[0];});
+      preferenceBody.append(field('Kategorienregel','Category rule',ruleSelect),field('Buchungstext enthält','Description contains',match),field('Kategorie','Category',category),
+        button('Regel speichern','Save rule',()=>mutate(p=>({...p,rules:saveRule(p.rules,{id:ruleSelect.value||crypto.randomUUID(),match:match.value,category:category.value})}))),
+        button('Regel löschen','Delete rule',()=>{if(ruleSelect.value&&confirm(t('Regel löschen?','Delete rule?')))mutate(p=>({...p,rules:removePreference(p.rules,ruleSelect.value)}));}));
+    }catch{}
+  }
+  preferences.addEventListener('toggle',()=>{if(preferences.open)refreshPreferences();});
+  details.append(preferences);
   details.append(localized('p','Die Datei bleibt auf deinem Gerät. Erst die bestätigten Buchungen werden gespeichert.','The file stays on your device. Only confirmed transactions are saved.'),form,button('Datei lesen','Read file',read),map,button('Vorschau öffnen','Open preview',showPreview),status,preview,undo);
   details.addEventListener('toggle',()=>{if(details.open)refreshUndo();});
   root.append(details);
