@@ -375,6 +375,7 @@
                         <option value="ausgabe">🔻 Nur Ausgaben</option>
                         <option value="einnahme">🔺 Nur Einnahmen</option>
                         <option value="fixkosten">🔄 Nur Fixkosten/Abos</option>
+                        <option value="review" data-tool-en="Needs review">Noch prüfen</option>
                         <option value="garantie">🛡️ Nur mit Aktiver Garantie</option>
                     </select></label>
                     <label class="helferlein-field" for="filterCategory"><span class="helferlein-field-label">Nach Kategorie filtern</span><select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Nach Kategorie filtern">
@@ -393,6 +394,7 @@
                 </div>
             </div>
             <div id="budgetBankImport"></div>
+            <div id="budgetBulkEdit"></div>
             <div id="receiptsList" class="space-y-3">
                 <p class="text-sm text-gray-400 text-center py-4">Noch keine Buchungen vorhanden.</p>
             </div>
@@ -1571,6 +1573,7 @@ async function toolyaCloudBoot(tool) {
             if (typeFilter === 'ausgabe') filtered = filtered.filter(r => r.entryType !== 'einnahme');
             if (typeFilter === 'einnahme') filtered = filtered.filter(r => r.entryType === 'einnahme');
             if (typeFilter === 'fixkosten') filtered = filtered.filter(r => r.isFixkosten);
+            if (typeFilter === 'review') filtered = filtered.filter(r => r.needsReview === true);
             if (typeFilter === 'garantie') filtered = filtered.filter(r => {
                 const months = Number(r.warrantyMonths);
                 const buyDate = parseReceiptDate(r.date);
@@ -1580,6 +1583,7 @@ async function toolyaCloudBoot(tool) {
             });
             if (catFilter !== 'All') filtered = filtered.filter(r => r.category === catFilter);
 
+            window.toolyaBudgetBulk?.render(filtered);
             if (filtered.length === 0) {
                 container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${window.__toolyaUILocale === 'en' ? 'No matching transactions found.' : 'Keine passenden Buchungen gefunden.'}</p>`;
                 return;
@@ -1627,6 +1631,7 @@ async function toolyaCloudBoot(tool) {
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="text-sm font-bold text-gray-900">${escapeHaushaltsHtml(r.title)}</span>
                                     <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-semibold">${escapeHaushaltsHtml(budgetCategoryLabel(r.category))}</span>
+                                    ${r.needsReview === true ? `<span class="text-xs font-semibold">${window.__toolyaUILocale === 'en' ? 'Needs review' : 'Noch prüfen'}</span>` : ''}
                                     ${r.isFixkosten ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '🔄 Recurring cost' : '🔄 Fixkosten'}</span>` : ''}
                                     ${r.isTax ? `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? '💼 Tax' : '💼 Steuer'}</span>` : ''}
                                     ${hasWarranty ? (isWarrantyActive ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? 'Warranty active (' + diffDaysWarranty + ' d)' : 'Garantie aktiv (' + diffDaysWarranty + ' T)'}</span>` : `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">${window.__toolyaUILocale === 'en' ? 'Warranty expired' : 'Garantie abgelaufen'}</span>`) : ''}
@@ -1996,7 +2001,8 @@ async function toolyaCloudBoot(tool) {
                 data: getData(),
                 budgets: getBudgets(),
                 goals: getSavingsGoals(),
-                cleverSparen: toolyaCloudSnapshot().cleverSparen || {}
+                cleverSparen: toolyaCloudSnapshot().cleverSparen || {},
+                bankPreferences: toolyaCloudSnapshot().bankPreferences || {profiles:[],rules:[]}
             };
             const blob = new Blob([JSON.stringify(backupObj)], { type: 'application/json' });
             const a = document.createElement('a');
@@ -2022,7 +2028,8 @@ async function toolyaCloudBoot(tool) {
                 data: ['kassenbon_data', Array.isArray],
                 budgets: ['budgetbuch_budgets', value => value !== null && typeof value === 'object' && !Array.isArray(value)],
                 goals: ['budgetbuch_goals', Array.isArray],
-                cleverSparen: ['budgetbuch_clever_sparen', value => value !== null && typeof value === 'object' && !Array.isArray(value)]
+                cleverSparen: ['budgetbuch_clever_sparen', value => value !== null && typeof value === 'object' && !Array.isArray(value)],
+                bankPreferences: ['budgetbuch_bank_preferences', value => value !== null && typeof value === 'object' && Array.isArray(value.profiles) && Array.isArray(value.rules)]
             };
             const changes = [];
             for (const [key, [storageKey, check]] of Object.entries(sections)) {
@@ -2045,11 +2052,11 @@ async function toolyaCloudBoot(tool) {
      try {
        const changes=validateHaushaltsbuchBackup(JSON.parse(e.target.result));
        const snapshot=toolyaCloudSnapshot();
-       const map={kassenbon_data:'entries',budgetbuch_budgets:'budgets',budgetbuch_goals:'goals',budgetbuch_clever_sparen:'cleverSparen'};
+       const map={kassenbon_data:'entries',budgetbuch_budgets:'budgets',budgetbuch_goals:'goals',budgetbuch_clever_sparen:'cleverSparen',budgetbuch_bank_preferences:'bankPreferences'};
        const english=window.__toolyaUILocale==='en';
        const labels=english
-         ? {entries:'Transactions',budgets:'Budgets',goals:'Savings goals',cleverSparen:'Smart saving'}
-         : {entries:'Buchungen',budgets:'Budgets',goals:'Sparziele',cleverSparen:'Clever sparen'};
+         ? {entries:'Transactions',budgets:'Budgets',goals:'Savings goals',cleverSparen:'Smart saving',bankPreferences:'Bank profiles and rules'}
+         : {entries:'Buchungen',budgets:'Budgets',goals:'Sparziele',cleverSparen:'Clever sparen',bankPreferences:'Bankprofile und Regeln'};
        const preview=[];
        for(const [key,json] of changes){
          const next=JSON.parse(json),field=map[key];
@@ -2152,7 +2159,9 @@ async function toolyaCloudBoot(tool) {
 
 <script type="module">
 import {mountBankImport} from './bank-import-ui.mjs';
-mountBankImport(document.getElementById('budgetBankImport'),{
+import {mountBulkEdit} from './budget-bulk-ui.mjs';
+import {saveProfile,saveRule} from './budget-organization.mjs';
+const budgetOrganizationApi={
   context(){
     if(!toolyaCloudReady||!toolyaCloudController?.ready)throw Error('Cloud unavailable');
     return {user:toolyaCloudUserId,controller:toolyaCloudController,generation:toolyaCloudController.sessionGeneration};
@@ -2161,11 +2170,19 @@ mountBankImport(document.getElementById('budgetBankImport'),{
     return !!ctx&&toolyaCloudReady&&toolyaCloudController?.ready&&ctx.user===toolyaCloudUserId&&ctx.controller===toolyaCloudController&&ctx.generation===toolyaCloudController.sessionGeneration;
   },
   entries:()=>getData(),
+  categoryLabel:key=>budgetCategoryLabel(key),
+  preferences(){const p=toolyaCloudSnapshot().bankPreferences||{};return {profiles:Array.isArray(p.profiles)?p.profiles:[],rules:Array.isArray(p.rules)?p.rules:[]};},
+  async savePreferences(ctx,transform){
+    if(!this.sameContext(ctx))throw Error('Cloud session changed');
+    const p=transform(this.preferences());
+    const validated={profiles:p.profiles.reduce(saveProfile,[]),rules:p.rules.reduce(saveRule,[])};
+    if(!await toolyaCloudSave({bankPreferences:validated}))throw Error('Save not confirmed');
+  },
   async apply(ctx,transform){
     if(!this.sameContext(ctx))throw Error('Cloud session changed');
     const revision=toolyaCloudController.revision;
     const result=transform(getData());
-    if(!result.added&&!result.removable?.length)return result;
+    if(!result.added&&!result.removable?.length&&!result.changed)return result;
     const snapshot=toolyaCloudSnapshot();
     snapshot.entries=result.entries;
     try{
@@ -2176,7 +2193,9 @@ mountBankImport(document.getElementById('budgetBankImport'),{
     renderApp();
     return result;
   }
-});
+};
+mountBankImport(document.getElementById('budgetBankImport'),budgetOrganizationApi);
+window.toolyaBudgetBulk=mountBulkEdit(document.getElementById('budgetBulkEdit'),budgetOrganizationApi);
 </script>
 <script defer src="./clever-core.js?v=20261121-v2"></script>
 <script defer src="./clever-ui.js?v=20261121-v2"></script>
