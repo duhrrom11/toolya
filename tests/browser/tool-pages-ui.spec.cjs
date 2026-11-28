@@ -4082,3 +4082,33 @@ for(const change of ['revision','sessionGeneration']){
   }
  });
 }
+
+for(const fixture of [
+ {handler:'openQRModal',line:1827,de:'Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.',en:'The QR code could not be loaded. Try again.',qr:true,id:94},
+ {handler:'openGoogleCalendar',line:1866,de:'Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.',en:'This receipt lacks a valid purchase date or warranty duration.',id:94},
+ {handler:'downloadICS',line:1899,de:'Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.',en:'This receipt lacks a valid purchase date or warranty duration.',id:94},
+ {handler:'exportAllBookingsCSV',line:1974,de:'Keine Buchungen für den CSV-Export vorhanden.',en:'No transactions available for CSV export.'},
+ {handler:'exportSteuerCSV',line:2003,de:'Keine steuerrelevanten Buchungen gefunden!',en:'No tax-relevant transactions found.',id:94}
+]){
+ test('i18n runtime catalogue: budget '+fixture.handler+' rejects unavailable export in DE and EN',async({page},testInfo)=>{
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:fixture.handler,kind:'alert',line:fixture.line,de:fixture.de,en:fixture.en})});
+  await isolated(page,true,false,{entries:fixture.id?[{id:94,title:'Privater Beleg Öl',date:'2026-01-01',price:12,category:'Lebensmittel',warrantyMonths:0,photos:[]}]:[],budgets:{},goals:[]});
+  if(fixture.qr)await page.route('**/shared/toolya/qr-generator.mjs',route=>route.fulfill({contentType:'text/javascript',body:'export async function loadQrGenerator(){return null;}'}));
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  const state=()=>page.evaluate(()=>({snapshot:toolyaCloudController.snapshot(),writes:window.__toolyaMock.writes}));
+  const before=await state();
+  const exports=[];page.on('download',()=>exports.push('download'));page.on('popup',()=>exports.push('popup'));
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   await page.evaluate(({handler,id})=>window[handler](id),fixture);
+   const notice=page.getByRole('alertdialog',{name:'Toolya'});
+   await expect(notice.locator('#hl-alert-message')).toHaveText(fixture[lang]);
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   await expect(notice).toBeHidden();
+   expect(await state()).toEqual(before);
+   expect(exports).toEqual([]);
+  }
+ });
+}
