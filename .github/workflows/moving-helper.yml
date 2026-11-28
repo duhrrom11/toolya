@@ -7,6 +7,7 @@ on:
       - 'tools/moving/**'
       - 'supabase/migrations/*moving_control*'
       - 'supabase/migrations/*moving_incidents*'
+      - 'supabase/migrations/*moving_helper_assignment_scopes*'
       - 'supabase/functions/moving-helper/**'
       - 'tests/moving-*'
       - 'tests/browser/moving-*'
@@ -45,6 +46,8 @@ jobs:
       - run: psql -v ON_ERROR_STOP=1 -f tests/moving-helper-security.sql
       - run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261121093000_moving_incidents.sql
       - run: psql -v ON_ERROR_STOP=1 -f tests/moving-incidents-security.sql
+      - run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261128154349_moving_helper_assignment_scopes.sql
+      - run: psql -v ON_ERROR_STOP=1 -f tests/moving-helper-scope-security.sql
   edge-typecheck:
     runs-on: ubuntu-latest
     timeout-minutes: 10

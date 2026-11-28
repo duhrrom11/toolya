@@ -71,3 +71,6 @@ body.b3-umzugskisten #editBoxModal:not(.hidden){
  position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:1rem;
 }
 body.b3-umzugskisten #editBoxModal:not(.hidden)>div{max-height:90vh;overflow-y:auto}
+
+body.b3-umzugskisten .moving-label-grid{display:grid;gap:.25rem;padding:0;margin:0 0 .5rem;list-style:none}
+body.b3-umzugskisten .moving-label-grid li{min-width:0;padding:.32rem .4rem;border:1px solid #b8c5cb;border-radius:.25rem;font-size:.8rem;overflow-wrap:anywhere}

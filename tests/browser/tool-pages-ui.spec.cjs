@@ -1703,6 +1703,20 @@ test('moving boxes guide prints the sample QR label without the instructions', a
   await testInfo.attach('moving-sample-qr-print-a4',{body:pdf,contentType:'application/pdf'});
 });
 
+test('English moving boxes guide prints the sample and ships its localized CSV template',async({page})=>{
+ await isolated(page,false);
+ await page.goto('/en/moving-boxes/');
+ const section=page.locator('#sample-label');
+ await expect(section.getByRole('link',{name:'Download the box list template (CSV)'})).toHaveAttribute('href','./box-list.csv');
+ const image=section.getByRole('img',{name:'QR code for this public sample label'});
+ await expect(image).toHaveJSProperty('naturalWidth',328);
+ await page.emulateMedia({media:'print'});
+ await expect(section.getByRole('heading')).toBeHidden();
+ await expect(image).toBeVisible();
+ const pdf=await page.pdf({format:'A4'});
+ expect(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
+});
+
 for (const path of ['/backform-rechner/', '/toolya-dashboard/', '/amazon-wunschliste-veroeffentlichen/']) {
   test(`guide controls and screenshot fit a narrow screen at ${path}`, async ({ page }) => {
     await isolated(page, false);

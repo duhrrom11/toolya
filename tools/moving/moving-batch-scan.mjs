@@ -3,7 +3,8 @@ import {createMovingQrReader, inventoryBoxIdFromCode} from './moving-qr-reader.m
 export function createBatchScanner(dialog, copy, onBox) {
     const video = dialog.querySelector('video');
     const output = dialog.querySelector('output');
-    const target = dialog.querySelector('select');
+    const target = dialog.querySelector('#movingScanTarget');
+    const trip = dialog.querySelector('#movingScanTrip');
     const start = dialog.querySelector('[data-camera-start]');
     const enter = dialog.querySelector('input');
     const manual = dialog.querySelector('[data-manual-submit]');
@@ -19,10 +20,14 @@ export function createBatchScanner(dialog, copy, onBox) {
         summary = [key, label];
         render();
     }
+    const keyFor = () => JSON.stringify([target.value, trip.value]);
     function render() {
         const [key, label] = summary ?? ['ready', ''];
-        output.textContent = [message(key, label), message('count', completed.get(target.value)?.size || 0)].join(' · ');
+        if (trip.options.length) trip.options[0].textContent = message('allTrips');
+        output.textContent = [trip.value, message(key, label), message('count', completed.get(keyFor())?.size || 0)]
+            .filter(Boolean).join(' · ');
         target.disabled = busy;
+        trip.disabled = busy;
         manual.disabled = busy;
         start.disabled = opening || !!stream;
     }
@@ -41,14 +46,15 @@ export function createBatchScanner(dialog, copy, onBox) {
         if (busy || !dialog.open) return;
         if (id === null) { report('unknown'); return; }
         const mode = target.value;
-        let seen = completed.get(mode);
-        if (!seen) completed.set(mode, seen = new Set());
+        const key = keyFor();
+        let seen = completed.get(key);
+        if (!seen) completed.set(key, seen = new Set());
         if (seen.has(id)) { report('duplicate'); return; }
         const session = generation;
         busy = true;
         render();
         try {
-            const result = await onBox(id, mode);
+            const result = await onBox(id, mode, trip.value);
             if (session !== generation) return;
             if (result.status === 'saved' || result.status === 'already') seen.add(id);
             report(result.status, result.label);
@@ -107,7 +113,7 @@ export function createBatchScanner(dialog, copy, onBox) {
         }
     }
     start.addEventListener('click', () => void openCamera());
-    target.addEventListener('change', () => {
+    for (const field of [target, trip]) field.addEventListener('change', () => {
         lastCode = '';
         report('ready');
     });
@@ -127,8 +133,9 @@ export function createBatchScanner(dialog, copy, onBox) {
     dialog.addEventListener('close', close);
     window.addEventListener('pagehide', close);
     return {
-        open() {
+        open(trips) {
             if (dialog.open) return;
+            trip.replaceChildren(new Option(message('allTrips'), ''), ...trips.map(name => new Option(name, name)));
             enter.value = '';
             target.value = 'loaded';
             dialog.showModal();

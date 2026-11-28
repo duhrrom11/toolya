@@ -92,7 +92,7 @@ export function moveInventoryBoxes(data, boxIds, locationId) {
     return true;
 }
 
-export function repackInventoryItems(data, sourceId, targetId, indices, includeDescription) {
+export function repackInventoryItems(data, sourceId, targetId, indices, includeDescription, quantities = new Map()) {
     if (sourceId === targetId) return false;
     const source = data.boxes.find(box => box.id === sourceId);
     const target = data.boxes.find(box => box.id === targetId);
@@ -101,8 +101,27 @@ export function repackInventoryItems(data, sourceId, targetId, indices, includeD
     const selection = new Set(indices);
     if ([...selection].some(index => !Number.isInteger(index) || index < 0 || index >= items.length)) return false;
     if (!selection.size && !(includeDescription && source.desc)) return false;
-    target.subItems = [...(target.subItems ?? []), ...items.filter((_, index) => selection.has(index))];
-    source.subItems = items.filter((_, index) => !selection.has(index));
+    const remaining = [], moved = [];
+    for (const [index, item] of items.entries()) {
+        if (!selection.has(index)) {
+            remaining.push(item);
+            continue;
+        }
+        const total = Number.isInteger(item.quantity) && item.quantity > 0 ? item.quantity : 1;
+        const amount = quantities.get(index) ?? total;
+        if (!Number.isInteger(amount) || amount < 1 || amount > total) return false;
+        if (amount === total) {
+            moved.push(item);
+        } else {
+            const originalValue = Number(item.value || 0);
+            const cents = Number.isFinite(originalValue) ? Math.round(originalValue * 100) : 0;
+            const movedCents = Math.round(cents * amount / total);
+            moved.push({ ...item, quantity: amount, value: movedCents / 100 });
+            remaining.push({ ...item, quantity: total - amount, value: (cents - movedCents) / 100 });
+        }
+    }
+    target.subItems = [...(target.subItems ?? []), ...moved];
+    source.subItems = remaining;
     if (includeDescription && source.desc) {
         target.desc = [target.desc, source.desc].filter(Boolean).join(' · ');
         source.desc = '';

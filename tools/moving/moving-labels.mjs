@@ -1,3 +1,11 @@
+const roomColors = [[26, 103, 144], [106, 72, 147], [130, 71, 42], [157, 49, 91], [43, 91, 115]];
+
+export function movingRoomMarker(id) {
+    if (typeof id !== 'string' || !id) return null;
+    const hash = [...id].reduce((value, char) => (value * 31 + char.charCodeAt(0)) >>> 0, 0);
+    return { symbol: String.fromCharCode(65 + (hash % 26)), color: roomColors[hash % roomColors.length] };
+}
+
 export const labelLayouts = { '2x4': [2, 4], '2x5': [2, 5], '3x6': [3, 6] };
 
 export function labelSlots(count, layout, skip) {
@@ -18,7 +26,7 @@ function fit(doc, value, width, limit) {
 }
 
 export async function printMovingLabels(doc, boxes, options) {
-    const { english, layout, skip, includePrivate, qr, link, roomFor, amount, label } = options;
+    const { english, layout, skip, includePrivate, qr, link, roomFor, amount, label, markerFor } = options;
     const t = (de, en) => english ? en : de;
     const slots = labelSlots(boxes.length, layout, skip);
     let page = 0;
@@ -33,7 +41,8 @@ export async function printMovingLabels(doc, boxes, options) {
         const qrSize = Math.min(29, width * 0.37, height - 9);
         const png = await qr(link(box));
         if (!png) throw Error('QR generation failed');
-        doc.setDrawColor(170);
+        const marker = markerFor(box);
+        doc.setDrawColor(...(marker?.color ?? [170]));
         doc.rect(x + 1, y + 1, width - 2, height - 2);
         doc.addImage(png, 'PNG', x + 3, y + 4, qrSize, qrSize);
         const left = x + qrSize + 7, textWidth = width - qrSize - 11;
@@ -48,7 +57,7 @@ export async function printMovingLabels(doc, boxes, options) {
         line(box.name, 2, 11);
         doc.setFont('helvetica', 'normal');
         line(box.boxNumber || box.id, 1, 8);
-        line(t('Zielraum: ', 'Destination room: ') + roomFor(box), 2, 9);
+        line(t('Zielraum: ', 'Destination room: ') + (marker ? '[' + marker.symbol + '] ' : '') + roomFor(box), 2, 9);
         line(t('Kennzeichnung: ', 'Label: ') + label(box.tag), 1, 8);
         if (includePrivate) {
             line(t('Inhalt: ', 'Contents: ') + (box.desc || '–'), 2, 8);
@@ -77,11 +86,12 @@ export function printHandover(doc, boxes, roomFor, english) {
 export function printRoomSigns(doc, rooms, directions) {
     for (const [index, room] of rooms.entries()) {
         if (index) doc.addPage();
-        doc.setFillColor(25, 120, 137);
+        const marker = movingRoomMarker(room.id);
+        doc.setFillColor(...(marker?.color ?? [25, 120, 137]));
         doc.rect(15, 35, 180, 5, 'F');
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(42);
-        doc.text(fit(doc, room.name, 170, 4), 20, 78);
+        doc.text(fit(doc, (marker ? '[' + marker.symbol + '] ' : '') + room.name, 170, 4), 20, 78);
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(17);
         doc.text(fit(doc, directions(room), 170, 6), 20, 175);

@@ -87,3 +87,27 @@ test('part groups report missing parts from the current transport status', async
     const assignments = [{ boxId: 1, status: 'arrived' }, { boxId: 2, status: 'loaded' }];
     assert.deepEqual(movingPieceGroups(boxes, assignments, item => item.status), [{ name: 'Desk', total: 3, missing: [2, 3] }]);
 });
+
+test('split quantities preserve box identity, accessory links and total item value', async () => {
+    const { repackInventoryItems } = await import('../tools/moving/moving-inventory.mjs');
+    const data = { boxes: [{ id: 1, subItems: [{ name: 'Screws', quantity: 5, value: 2, relatedBoxId: 3 }] }, { id: 2 }] };
+    const before = structuredClone(data);
+    assert.equal(repackInventoryItems(data, 1, 2, [0], false, new Map([[0, 6]])), false);
+    assert.deepEqual(data, before);
+    assert.equal(repackInventoryItems(data, 1, 2, [0], false, new Map([[0, 2]])), true);
+    assert.deepEqual(data.boxes[0].subItems, [{ name: 'Screws', quantity: 3, value: 1.2, relatedBoxId: 3 }]);
+    assert.deepEqual(data.boxes[1].subItems, [{ name: 'Screws', quantity: 2, value: 0.8, relatedBoxId: 3 }]);
+});
+
+test('pending box drafts are owner-bound and expire after a day', async () => {
+    const { readBoxDraft, writeBoxDraft, clearBoxDraft } = await import('../tools/moving/moving-draft.mjs');
+    const map = new Map();
+    const storage = { setItem: (key, value) => map.set(key, value), getItem: key => map.get(key), removeItem: key => map.delete(key) };
+    const draft = { requestId: 'request-id', savedAt: 100, values: { boxName: 'Private box' } };
+    assert.equal(writeBoxDraft(storage, 'first', draft), true);
+    assert.deepEqual(readBoxDraft(storage, 'first', 120), draft);
+    assert.equal(readBoxDraft(storage, 'other', 120), null);
+    assert.equal(readBoxDraft(storage, 'first', 86_400_101), null);
+    clearBoxDraft(storage, 'first');
+    assert.equal(readBoxDraft(storage, 'first', 120), null);
+});

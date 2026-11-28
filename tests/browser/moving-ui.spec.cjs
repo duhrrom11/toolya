@@ -2,11 +2,15 @@ const {test,expect}=require('playwright/test');
 const origin='http://127.0.0.1:4173';
 test('moving planner creates project, room and box assignment with mocked cloud',async({page})=>{
   const transport={boxes:[],grants:[],incidents:[]};
-  let stateWrites=0;
+  let stateWrites=0,grantTarget;
   await page.route('**/*',route=>{
     const url=route.request().url();
     if(url.includes('/functions/v1/moving-helper')){
       const body=route.request().postDataJSON();
+      if(body.action==='create'){
+        grantTarget=body.target;
+        return route.fulfill({json:{token:'synthetic-test-token'}});
+      }
       if(body.action==='owner-transition'){
         const row=transport.boxes.find(box=>box.assignmentId===body.assignmentId);
         if(!row||row.version!==body.expectedVersion)return route.fulfill({status:409,json:{error:'stale'}});
@@ -42,6 +46,8 @@ test('moving planner creates project, room and box assignment with mocked cloud'
   const planner=page.locator('#toolya-moving-planner');
   const navigation=page.locator('#mv-journey');
   await expect(navigation).toBeVisible({timeout:15000});
+  const consent=page.locator('#toolya-consent-panel');
+  if(await consent.isVisible())await consent.getByRole('button',{name:'Ablehnen',exact:true}).click();
   await expect(page.locator('#b3-inventory')).toBeVisible();
   await expect(planner).toBeHidden();
   await navigation.getByRole('button',{name:/Mein Umzug/}).dispatchEvent('click');
@@ -146,6 +152,8 @@ test('moving planner creates project, room and box assignment with mocked cloud'
   await navigation.getByRole('button',{name:/My move/}).dispatchEvent('click');
   await navigation.getByRole('button',{name:/Moving day/}).dispatchEvent('click');
   const transportRoot=page.locator('#toolya-moving-transport');
+  const load=transportRoot.getByRole('button',{name:'Load transport mode'});
+  if(await load.isVisible())await load.click();
   await transportRoot.getByRole('button',{name:'Sync boxes and rooms'}).click();
   await transportRoot.getByRole('button',{name:'Scan several boxes'}).click();
   const batch=page.locator('#movingBatchScan');
@@ -159,6 +167,12 @@ test('moving planner creates project, room and box assignment with mocked cloud'
   await transportRoot.getByRole('button',{name:'Undo last status change'}).click();
   await expect.poll(()=>transport.boxes[0].status).toBe('packed');
   expect(stateWrites).toBe(2);
+  await transportRoot.locator('#mv-helper-name').fill('Kitchen team');
+  await transportRoot.locator('#mv-helper-target').selectOption({label:'Room: Küche'});
+  await transportRoot.getByRole('button',{name:'Create helper link'}).click();
+  await expect.poll(()=>grantTarget).toBe('room:'+db.snapshot.moving.rooms[0].id);
+  await expect(transportRoot.locator('#mv-helper-link')).toHaveValue(/synthetic-test-token/);
+
 
 
 });

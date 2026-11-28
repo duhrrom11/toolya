@@ -163,6 +163,13 @@
             <!-- Kiste hinzufügen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold" data-tool-en="📦 Add box">📦 Kiste hinzufügen</h2>
+                <div id="movingDraftNotice" hidden class="p-2 border rounded-xl">
+                    <p id="movingDraftText" role="status"></p>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" id="movingDraftRestore" class="b3-action b3-outline" data-tool-en="Restore draft">Entwurf übernehmen</button>
+                        <button type="button" id="movingDraftDiscard" class="b3-action b3-outline" data-tool-en="Discard draft">Entwurf verwerfen</button>
+                    </div>
+                </div>
                 <label class="helferlein-field" for="boxLocationSelect"><span class="helferlein-field-label">Standort der Kiste</span><select id="boxLocationSelect" class="w-full p-3 border rounded-xl text-sm bg-white" aria-label="Standort der Kiste">
                     <option value="" data-tool-en="-- Select location --">-- Standort wählen --</option>
                 </select></label>
@@ -185,6 +192,7 @@
                         <option value="Saison">❄️ Saison / Deko</option>
                     </select></label>
                     <label class="helferlein-field" for="boxPhotoInput"><span class="helferlein-field-label" data-tool-en="Choose box photo">Foto der Kiste auswählen</span><input type="file" id="boxPhotoInput" accept="image/*" capture="environment" class="text-xs p-2 border rounded-xl file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Foto der Kiste auswählen" data-tool-en-aria-label="Choose box photo"></label>
+                    <img id="movingPhotoPreview" hidden class="max-h-40 rounded-xl" alt="Vorschau des Kistenfotos" data-tool-en-alt="Box photo preview">
                 </div>
                 <details>
                     <summary data-tool-en="Packing options">Packoptionen</summary>
@@ -289,6 +297,7 @@
                 <div class="flex gap-2 pt-1 b3-moving-subitem-form">
                     <input type="text" id="newSubItemName" placeholder="Artikel-Name (z.B. Bohrhammer)" class="p-2 border rounded-xl text-xs flex-grow" data-tool-en-placeholder="Item name (e.g. hammer drill)">
                     <input type="text" id="newSubItemVal" placeholder="Wert €" class="p-2 border rounded-xl text-xs w-20" data-tool-en-placeholder="Value in €">
+                    <input type="number" id="newSubItemQuantity" min="1" max="999" value="1" class="p-2 border rounded-xl text-xs w-16" aria-label="Menge" data-tool-en-aria-label="Quantity">
                     <button onclick="addSubItem()" class="px-3 py-2 bg-gray-800 text-white rounded-xl text-xs font-bold b3-action">+ Hinzufügen</button>
                 </div>
             </div>
@@ -325,6 +334,7 @@
                     <option value="donation" data-tool-en="Donation">Spende</option>
                     <option value="pickup" data-tool-en="Pickup">Abholung</option>
                 </select>
+                <label><input id="movingEditPersonal" type="checkbox"> <span data-tool-en="Keep with me (private)">Bleibt bei mir (privat)</span></label>
                 <label for="movingEditGroup" data-tool-en="Name of the set (optional)">Name des Sets (optional)</label>
                 <input id="movingEditGroup" maxlength="80" class="block w-full p-2 border rounded-xl">
                 <label for="movingEditPart" data-tool-en="Part number">Nummer des Teils</label>
@@ -356,6 +366,8 @@
 
     <dialog id="movingBatchScan" class="rounded-2xl p-5 max-w-lg w-full" aria-labelledby="movingBatchScanTitle">
         <h2 id="movingBatchScanTitle" class="font-bold text-lg" data-tool-en="Scan several boxes">Mehrere Kisten scannen</h2>
+        <label for="movingScanTrip" data-tool-en="Trip">Fahrt</label>
+        <select id="movingScanTrip" class="block w-full p-2 border rounded-xl"></select>
         <label for="movingScanTarget" data-tool-en="Set status to">Status setzen auf</label>
         <select id="movingScanTarget" class="block w-full p-2 border rounded-xl">
             <option value="loaded" data-tool-en="Loaded">Verladen</option>
@@ -394,7 +406,15 @@
                 <div id="movingPrintChoice"></div>
             </fieldset>
         </div>
+        <div id="movingHandoverFilters" hidden class="space-y-2">
+            <label for="movingPrintRoom" data-tool-en="Destination room">Zielraum</label>
+            <select id="movingPrintRoom" class="block w-full p-2 border rounded-xl"></select>
+            <label for="movingPrintTrip" data-tool-en="Trip">Fahrt</label>
+            <select id="movingPrintTrip" class="block w-full p-2 border rounded-xl"></select>
+        </div>
         <p id="movingPrintPreview" class="my-2 break-words" role="status"></p>
+        <ol id="movingPrintGridPreview" class="moving-label-grid" aria-label="A4-Vorschau" data-tool-en-aria-label="A4 preview"></ol>
+
         <div class="flex flex-wrap gap-2">
             <form method="dialog"><button type="submit" class="b3-action b3-outline" data-tool-en="Close">Schließen</button></form>
             <button type="button" id="movingPrintSave" class="b3-action b3-outline" data-tool-en="Download PDF">PDF herunterladen</button>
@@ -640,6 +660,27 @@
         }
 
         const movingInventoryTools = import('./moving-inventory.mjs');
+        const movingDraftTools = import('./moving-draft.mjs');
+        let draftTools, boxDraft = null;
+        const draftFields = ['boxLocationSelect', 'boxName', 'boxDesc', 'boxValue', 'boxBarcode', 'boxExpiry', 'boxTag'];
+        function updateBoxDraftNotice() {
+            const panel = document.getElementById('movingDraftNotice');
+            panel.hidden = !movingCloudReady || !boxDraft;
+            document.getElementById('movingDraftText').textContent = boxFormText(
+                'Kistenentwurf auf diesem Gerät. Noch nicht in der Cloud gespeichert. Fotos bitte neu auswählen.',
+                'Box draft on this device. It has not been saved to the cloud. Select photos again.');
+        }
+        function stageBoxDraft(owner) {
+            if (!draftTools || !owner || !document.getElementById('boxName').value.trim()) return null;
+            const values = Object.fromEntries(draftFields.map(id => [id, document.getElementById(id).value]));
+            const draft = { requestId: boxDraft?.requestId ?? crypto.randomUUID(), savedAt: Date.now(),
+                values, unboxed: document.getElementById('movingNewUnboxed').checked };
+            boxDraft = draft;
+            draftTools.writeBoxDraft(sessionStorage, owner, draft);
+            updateBoxDraftNotice();
+            return draft;
+        }
+
         let movingSearchBoxes = null;
         let movingRepackItems = null;
         const boxFormText = (de, en) => window.__toolyaUILocale === 'en' ? en : de;
@@ -690,7 +731,12 @@
         let movingCloudReady = false;
         function movingCloudBlock(state) {
             movingCloudReady = false;
+            if (state === 'account-changed') {
+                draftTools?.clearBoxDraft(sessionStorage, movingCloudUserId);
+                boxDraft = null;
+            }
             window.movingCloudReady=false;
+            updateBoxDraftNotice();
             document.dispatchEvent(new Event("toolya:moving-ready"));
             movingCloudController?.invalidate();
             window.toolyaCloudPageStatus(state);
@@ -715,6 +761,7 @@
                         return confirm(window.__toolyaUILocale === 'en' ? 'Please confirm that the backup was downloaded successfully.' : 'Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.');
                     }
                 });
+                draftTools = await movingDraftTools;
                 const inventoryTools = await movingInventoryTools;
                 movingSearchBoxes = inventoryTools.searchMovingBoxes;
                 movingRepackItems = inventoryTools.repackInventoryItems;
@@ -728,6 +775,12 @@
                 document.dispatchEvent(new Event("toolya:moving-ready"));
                 document.getElementById('toolya-cloud-gate')?.remove();
                 loadLocationsDropdown();
+                boxDraft = draftTools.readBoxDraft(sessionStorage, uid);
+                if (boxDraft && getData().boxes.some(box => box.addRequestId === boxDraft.requestId)) {
+                    draftTools.clearBoxDraft(sessionStorage, uid);
+                    boxDraft = null;
+                }
+                updateBoxDraftNotice();
                 checkDeepLink();
                 renderInventory();
                 await updateUserDisplay();
@@ -886,7 +939,9 @@
             if (addingBox) return;
             addingBox = true;
             const accountId = movingCloudUserId;
+            const request = movingCloudReady ? stageBoxDraft(accountId) : null;
             try {
+                if (navigator.onLine === false) return;
                 let photo = '';
                 if (photoInput.files?.[0]) {
                     try {
@@ -898,14 +953,20 @@
                     }
                 }
                 if (!movingCloudReady || accountId !== movingCloudUserId) return;
-                await storeBoxData(locId, name, desc, value, tag, barcode, expiry, '', [], photo, unboxed);
+                await storeBoxData(locId, name, desc, value, tag, barcode, expiry, '', [], photo, unboxed, request?.requestId);
             } finally {
                 addingBox = false;
             }
         }
 
-        async function storeBoxData(locId, name, desc, value, tag, barcode, expiry, lentTo, subItems, photo, unboxed = false) {
+        async function storeBoxData(locId, name, desc, value, tag, barcode, expiry, lentTo, subItems, photo, unboxed = false, addRequestId) {
             let data = getData();
+            if (addRequestId && data.boxes.some(box => box.addRequestId === addRequestId)) {
+                draftTools.clearBoxDraft(sessionStorage, movingCloudUserId);
+                boxDraft = null;
+                updateBoxDraftNotice();
+                return;
+            }
             data.boxes.push({ 
                 id: Date.now(), 
                 locId: parseInt(locId), 
@@ -918,20 +979,66 @@
                 lentTo: lentTo || "", 
                 subItems: subItems || [],
                 photo,
-                ...(unboxed ? { unboxed: true } : {})
+                ...(unboxed ? { unboxed: true } : {}),
+                ...(addRequestId ? { addRequestId } : {})
             });
             if (!await saveData(data)) return;
+            draftTools?.clearBoxDraft(sessionStorage, movingCloudUserId);
+            boxDraft = null;
+            updateBoxDraftNotice();
             document.getElementById('boxName').value = "";
             document.getElementById('boxDesc').value = "";
             document.getElementById('boxValue').value = "";
             document.getElementById('boxBarcode').value = "";
             document.getElementById('boxExpiry').value = "";
             document.getElementById('boxPhotoInput').value = "";
+            updateMovingPhotoPreview();
             movingField('movingNewUnboxed').checked = false;
             renderInventory();
         }
 
         const movingField = id => document.getElementById(id);
+        let movingPhotoUrl = '';
+        function updateMovingPhotoPreview() {
+            if (movingPhotoUrl) URL.revokeObjectURL(movingPhotoUrl);
+            const file = movingField('boxPhotoInput').files?.[0];
+            const preview = movingField('movingPhotoPreview');
+            movingPhotoUrl = file ? URL.createObjectURL(file) : '';
+            preview.hidden = !movingPhotoUrl;
+            if (movingPhotoUrl) preview.src = movingPhotoUrl;
+            else preview.removeAttribute('src');
+        }
+        movingField('boxPhotoInput').addEventListener('change', updateMovingPhotoPreview);
+        document.addEventListener('toolya:moving-ready', () => {
+            if (movingCloudReady) return;
+            movingField('boxPhotoInput').value = '';
+            updateMovingPhotoPreview();
+        });
+
+        window.addEventListener('offline', () => {
+            if (movingCloudReady) stageBoxDraft(movingCloudUserId);
+        });
+        for (const id of [...draftFields, 'movingNewUnboxed']) {
+            movingField(id).addEventListener('input', () => {
+                if (movingCloudReady && navigator.onLine === false) stageBoxDraft(movingCloudUserId);
+            });
+        }
+        movingField('movingDraftRestore').addEventListener('click', () => {
+            if (!movingCloudReady || !boxDraft) return;
+            for (const id of draftFields) {
+                const value = boxDraft.values[id];
+                if (typeof value === 'string') movingField(id).value = value;
+            }
+            movingField('movingNewUnboxed').checked = !!boxDraft.unboxed;
+            movingField('boxName').focus();
+        });
+        movingField('movingDraftDiscard').addEventListener('click', () => {
+            draftTools?.clearBoxDraft(sessionStorage, movingCloudUserId);
+            boxDraft = null;
+            updateBoxDraftNotice();
+        });
+        document.addEventListener('toolya:locale-change', updateBoxDraftNotice);
+
         let boxBatchPlan = null;
         let boxItemPlan = null;
 
@@ -1179,7 +1286,19 @@
             if (!repackPanel.open) return;
             const selected = new Set(checkedInventoryChoices(repackItems));
             repackItems.replaceChildren();
-            activeSubItemsTemp.forEach((item, index) => inventoryChoice(repackItems, index, item.name, selected.has(index)));
+            activeSubItemsTemp.forEach((item, index) => {
+                inventoryChoice(repackItems, index, item.name, selected.has(index));
+                if (!Number.isInteger(item.quantity) || item.quantity < 2) return;
+                const field = document.createElement('input');
+                field.type = 'number';
+                field.min = '1';
+                field.max = String(item.quantity);
+                field.value = String(item.quantity);
+                field.dataset.repackQuantity = index;
+                field.className = 'p-1 border rounded w-16';
+                field.setAttribute('aria-label', boxFormText('Menge: ', 'Quantity: ') + item.name);
+                repackItems.append(field);
+            });
             const description = movingField('editBoxDesc').value.trim();
             if (description) inventoryChoice(repackItems, -1, boxFormText('Inhaltsbeschreibung', 'Contents description'), selected.has(-1));
             updateRepackSummary();
@@ -1244,6 +1363,7 @@
             movingField('movingBoxDetails').open = false;
             movingField('movingPackingDetails').open = false;
             movingField('movingEditUnboxed').checked = box.unboxed === true;
+            movingField('movingEditPersonal').checked = box.keepWithMe === true;
             movingField('movingEditDisposition').value = box.disposition || '';
             movingField('movingEditGroup').value = box.piece?.name || '';
             movingField('movingEditPart').value = box.piece?.part ?? '';
@@ -1279,7 +1399,7 @@
             }
             container.innerHTML = activeSubItemsTemp.map((item, idx) => `
                 <div class="flex justify-between items-center bg-gray-50 p-2 border rounded-xl text-xs">
-                    <span><b>${escapeInventoryText(item.name)}</b> (${movingAmountFormatter(window.__toolyaUILocale).format(Number(item.value || 0))} €)</span>
+                    <span><b>${escapeInventoryText(item.name)}</b>${item.quantity > 1 ? ' × ' + escapeInventoryText(item.quantity) : ''} (${movingAmountFormatter(window.__toolyaUILocale).format(Number(item.value || 0))} €)</span>
                     <button aria-label="${window.__toolyaUILocale === 'en' ? 'Remove item' : 'Inhalt entfernen'}" onclick="removeSubItem(${idx})" class="text-red-500 font-bold px-2 py-0.5 hover:bg-red-50 rounded-lg">✕</button>
                 </div>
             `).join('');
@@ -1292,7 +1412,14 @@
             const value = parseFloat(valInput.value.replace(',', '.')) || 0;
 
             if (!name) return alert(window.__toolyaUILocale === 'en' ? 'Please enter an item name!' : 'Bitte Artikel-Name eingeben!');
-            activeSubItemsTemp.push({ name, value });
+            const quantityField = movingField('newSubItemQuantity');
+            const quantity = quantityField.valueAsNumber;
+            if (!Number.isInteger(quantity) || quantity < 1 || quantity > 999) {
+                alert(boxFormText('Gib eine Menge von 1 bis 999 ein.', 'Enter a quantity from 1 to 999.'));
+                return;
+            }
+            activeSubItemsTemp.push({ name, value, ...(quantity > 1 ? { quantity } : {}) });
+            quantityField.value = '1';
             nameInput.value = "";
             valInput.value = "";
             renderSubItemsModal();
@@ -1332,6 +1459,8 @@
                 const disposition = movingField('movingEditDisposition').value;
                 if (disposition) box.disposition = disposition;
                 else delete box.disposition;
+                if (movingField('movingEditPersonal').checked) box.keepWithMe = true;
+                else delete box.keepWithMe;
                 if (movingField('movingEditUnboxed').checked) box.unboxed = true;
                 else delete box.unboxed;
                 const group = movingField('movingEditGroup').value.trim();
@@ -1356,9 +1485,11 @@
                 if (rental) box.rental = rental;
                 else delete box.rental;
                 const selected = repackPanel.open ? checkedInventoryChoices(repackItems) : [];
+                const quantities = new Map([...repackItems.querySelectorAll('[data-repack-quantity]')]
+                    .map(field => [Number(field.dataset.repackQuantity), field.valueAsNumber]));
                 if (selected.length && !movingRepackItems(data, boxId, Number(repackTarget.value),
-                    selected.filter(index => index >= 0), selected.includes(-1))) {
-                    alert(boxFormText('Wähle eine Zielkiste zum Umpacken.', 'Choose a destination box for repacking.'));
+                    selected.filter(index => index >= 0), selected.includes(-1), quantities)) {
+                    alert(boxFormText('Prüfe Zielkiste und Mengen zum Umpacken.', 'Check the destination box and quantities.'));
                     return;
                 }
                 if (!await saveData(data)) return;
@@ -1509,6 +1640,7 @@
                                                 <p class="text-xs text-gray-600 mt-0.5">${escapeInventoryText(b.desc || (window.__toolyaUILocale === 'en' ? 'No description' : 'Keine Beschreibung'))}</p>
                                                 ${hits?.get(b.id)?.match && hits.get(b.id).match !== b.name && hits.get(b.id).match !== b.desc ? `<p class="text-xs">${boxFormText('Treffer', 'Match')}: ${escapeInventoryText(hits.get(b.id).match)}</p>` : ''}
                                                 ${accessoryLinks.has(b.id) ? `<p class="text-xs">${boxFormText('Zubehör', 'Accessories')}: ${escapeInventoryText(accessoryLinks.get(b.id).join(' · '))}</p>` : ''}
+                                                ${b.keepWithMe ? `<p class="text-xs">${boxFormText('Bleibt bei mir', 'Keep with me')}</p>` : ''}
                                                 ${b.piece ? `<p class="text-xs">${escapeInventoryText(b.piece.name)} · ${boxFormText('Teil', 'Part')} ${escapeInventoryText(b.piece.part)}/${escapeInventoryText(b.piece.total)}</p>` : ''}
                                                 ${targets.get(b.id) ? `<p class="text-xs">${boxFormText('Zielraum', 'Destination room')}: ${escapeInventoryText(targets.get(b.id))}</p>` : ''}
                                                 ${b.placement ? `<p class="text-xs">${boxFormText('Steht gerade hier', 'Currently at')}: ${escapeInventoryText(b.placement)}</p>` : ''}
@@ -1638,40 +1770,60 @@
             const project = data.moving?.projects?.find(item => item.status === 'active');
             const rooms = data.moving?.rooms?.filter(room => room.projectId === project?.id && !room.archived) ?? [];
             const assignments = new Map((data.moving?.assignments ?? []).filter(item => item.projectId === project?.id)
-                .map(item => [item.boxId, item.targetRoomId]));
-            const roomFor = box => rooms.find(room => room.id === assignments.get(box.id))?.name ??
+                .map(item => [item.boxId, item]));
+            const roomIdFor = box => assignments.get(box.id)?.targetRoomId;
+            const tripFor = box => assignments.get(box.id)?.trip || '';
+            const roomFor = box => rooms.find(room => room.id === roomIdFor(box))?.name ??
                 data.locations.find(location => location.id === box.locId)?.name ??
                 (english ? 'No destination room' : 'Ohne Zielraum');
-            return { data, rooms, roomFor };
+            return { data, rooms, roomFor, roomIdFor, tripFor };
         }
 
-        function selectedPrintBoxes(data) {
+        function selectedPrintBoxes(printData) {
             const ids = new Set([...movingField('movingPrintChoice').querySelectorAll('input:checked')].map(input => Number(input.value)));
-            return data.boxes.filter(box => ids.has(box.id));
+            const handover = movingField('movingPrintKind').value === 'handover';
+            const room = movingField('movingPrintRoom').value;
+            const trip = movingField('movingPrintTrip').value;
+            return printData.data.boxes.filter(box => ids.has(box.id) && (!handover ||
+                (box.keepWithMe !== true && (!room || printData.roomIdFor(box) === room) &&
+                 (!trip || printData.tripFor(box) === trip))));
         }
 
         function updateMovingPrintPreview() {
             const dialog = movingField('movingPrintDialog');
             if (!dialog.open) return;
-            const { data, rooms } = movingPrintData();
+            const printData = movingPrintData();
+            const { rooms } = printData;
             const kind = movingField('movingPrintKind').value;
-            const boxes = selectedPrintBoxes(data);
+            const boxes = selectedPrintBoxes(printData);
             const signs = kind === 'signs';
             movingField('movingPrintLayoutFields').hidden = kind !== 'labels';
             movingField('movingPrintBoxFields').hidden = signs;
+            movingField('movingHandoverFilters').hidden = kind !== 'handover';
             const grid = movingField('movingPrintGrid').value;
             const [cols, rows] = grid.split('x').map(Number);
             const skip = movingField('movingPrintSkip');
             skip.max = cols * rows - 1;
             if (Number(skip.value) > Number(skip.max)) skip.value = skip.max;
             if (Number(skip.value) < 0) skip.value = 0;
+            const first = Math.trunc(Number(skip.value || 0));
             const count = signs ? rooms.length : boxes.length;
             const preview = movingField('movingPrintPreview');
             preview.textContent = signs ? boxFormText(`Türschilder: ${count}`, `Room signs: ${count}`) :
                 boxFormText(`Ausgewählte Kisten: ${count}`, `Selected boxes: ${count}`);
             if (kind === 'labels' && count) {
-                const pages = Math.ceil((count + Number(skip.value || 0)) / (cols * rows));
+                const pages = Math.ceil((count + first) / (cols * rows));
                 preview.textContent += boxFormText(` · A4-Seiten: ${pages}`, ` · A4 pages: ${pages}`);
+            }
+            const gridPreview = movingField('movingPrintGridPreview');
+            gridPreview.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+            gridPreview.replaceChildren();
+            if (kind === 'labels' && count) {
+                for (let index = 0; index < Math.min(cols * rows, first + count); index++) {
+                    const cell = document.createElement('li');
+                    cell.textContent = index < first ? boxFormText('Belegt', 'Used') : boxes[index - first].name;
+                    gridPreview.append(cell);
+                }
             }
             movingField('movingPrintSave').disabled = !count || movingPrintBusy;
         }
@@ -1679,7 +1831,13 @@
         function exportQrLabelsPDF(boxId = null) {
             if (!movingCloudReady) return;
             const dialog = movingField('movingPrintDialog');
-            const { data, roomFor } = movingPrintData();
+            const { data, roomFor, rooms, tripFor } = movingPrintData();
+            const room = movingField('movingPrintRoom');
+            const trip = movingField('movingPrintTrip');
+            room.replaceChildren(new Option(boxFormText('Alle Räume', 'All rooms'), ''),
+                ...rooms.map(item => new Option(item.name, item.id)));
+            trip.replaceChildren(new Option(boxFormText('Alle Fahrten', 'All trips'), ''),
+                ...[...new Set(data.boxes.map(tripFor).filter(Boolean))].map(value => new Option(value, value)));
             const single = Number.isSafeInteger(boxId);
             movingField('movingPrintKind').value = 'labels';
             movingField('movingPrintPrivate').checked = false;
@@ -1718,14 +1876,15 @@
             const exportLanguage = window.__toolyaUILocale === 'en' ? 'en' : 'de';
             const english = exportLanguage === 'en';
             try {
-                const { data, rooms, roomFor } = movingPrintData(english);
-                const boxes = selectedPrintBoxes(data);
+                const printData = movingPrintData(english);
+                const { rooms, roomFor, roomIdFor } = printData;
+                const boxes = selectedPrintBoxes(printData);
                 const kind = movingField('movingPrintKind').value;
                 const layout = movingField('movingPrintGrid').value;
                 const skip = Number(movingField('movingPrintSkip').value);
                 const includePrivate = movingField('movingPrintPrivate').checked;
                 const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
-                const { printMovingLabels, printHandover, printRoomSigns } = await import('./moving-labels.mjs');
+                const { printMovingLabels, printHandover, printRoomSigns, movingRoomMarker } = await import('./moving-labels.mjs');
                 const QRCode = kind === 'labels'
                     ? await (await import('../../shared/toolya/qr-generator.mjs')).loadQrGenerator() : null;
                 if (kind === 'labels' && !QRCode) {
@@ -1743,6 +1902,7 @@
                 if (kind === 'labels' && boxes.length) {
                     const amounts = movingAmountFormatter(exportLanguage);
                     await printMovingLabels(doc, boxes, { english, layout, skip, includePrivate, roomFor,
+                        markerFor: box => movingRoomMarker(roomIdFor(box)),
                         amount: value => amounts.format(value || 0),
                         label: value => formatMovingTagLabel(value || 'Standard', exportLanguage),
                         qr: link => generateQrDataUrl(QRCode, link),

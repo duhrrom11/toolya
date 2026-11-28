@@ -29,8 +29,8 @@ function renderLanguage(){
  document.getElementById('helper-heading').textContent=text('Umzugshelfer','Moving helper');
  document.getElementById('helper-intro').textContent=text('Gemeinsam Kisten sicher ans Ziel bringen.','Help get moving boxes to the right place.');
  document.getElementById('helper-privacy').textContent=text(
-  'Nur Kistennamen und Zielräume sind sichtbar. Private Inventarinhalte bleiben geschützt.',
-  'You can see box names and destination rooms. Private inventory details stay protected.'
+  'Du siehst freigegebene Kisten, Zielräume und Hinweise. Private Inventarinhalte bleiben geschützt.',
+  'You can see shared boxes, destination rooms and directions. Private inventory details stay protected.'
  );
  document.querySelector('.helper-languages').setAttribute('aria-label',text('Sprache','Language'));
  for(const button of languageButtons)button.setAttribute('aria-pressed',String(button.dataset.helperLocale===locale));
@@ -57,7 +57,8 @@ async function call(action,more={}){
 async function refresh(){
  if(!token){data=null;render();return;}
  busy=true;error='';render();
- try{data=await call('view');if(selected&&!data.boxes.some(b=>b.assignmentId===selected))selected='';}
+ try{data=await call('view');if(selected&&!data.boxes.some(b=>b.assignmentId===selected))selected='';
+  if(!selected&&data.boxes.length===1)selected=data.boxes[0].assignmentId;}
  catch{data=null;error=['Die Verbindung konnte nicht hergestellt werden.','Could not connect to Toolya.'];}
  finally{busy=false;render();}
 }
@@ -114,6 +115,7 @@ function render(){
   const issueText=incidents.map(incident=>incident.kind==='missing'?text('Fehlend','Missing'):text('Beschädigt','Damaged')).join(', ');
   return `<article class="box ${selected===box.assignmentId?'active':''}">
    <div class="box-top"><div><strong>${esc(box.label)}</strong><small>${text('Zielraum','Destination room')}: ${esc(box.room||text('Nicht zugewiesen','Unassigned'))} · ${text('Priorität','Priority')}: ${esc(priority)}</small></div><small>Version ${format(Number(box.version))}</small></div>
+   ${box.roomDirections?`<p class="muted">${text('Weg zum Zielraum','Room directions')}: ${esc(box.roomDirections)}</p>`:''}
    <div class="status">
     <button data-id="${esc(box.assignmentId)}" data-status="${esc(states[index-1]||'')}" ${index<=0||busy?'disabled':''} aria-label="${text('Vorheriger Status','Previous status')}">‹</button>
     <span>${esc(Object.hasOwn(names[locale],box.status)?names[locale][box.status]:text('Unbekannt','Unknown'))}</span>
