@@ -40,9 +40,20 @@ create policy budget_household_create on public.budget_households for insert to 
 with check(owner_id=(select auth.uid()) and (select auth.jwt()->>'is_anonymous')='false');
 create policy budget_household_delete on public.budget_households for delete to authenticated
 using(owner_id=(select auth.uid()) and (select auth.jwt()->>'is_anonymous')='false');
+-- Break the policy dependency cycle with a narrowly scoped ownership predicate.
+create schema if not exists budget_household_internal;
+revoke all on schema budget_household_internal from public,anon,authenticated;
+grant usage on schema budget_household_internal to authenticated;
+create function budget_household_internal.owns_household(p_id uuid) returns boolean
+language sql stable security definer set search_path='' as $$
+ select auth.uid() is not null and (auth.jwt()->>'is_anonymous')='false'
+ and exists(select 1 from public.budget_households h where h.id=p_id and h.owner_id=auth.uid())
+$$;
+revoke all on function budget_household_internal.owns_household(uuid) from public,anon,authenticated;
+grant execute on function budget_household_internal.owns_household(uuid) to authenticated;
 create policy budget_invite_create on public.budget_household_invites for insert to authenticated
 with check(owner_id=(select auth.uid()) and not accepted and (select auth.jwt()->>'is_anonymous')='false'
- and exists(select 1 from public.budget_households h where h.id=household_id and h.owner_id=(select auth.uid())));
+ and budget_household_internal.owns_household(household_id));
 create policy budget_invite_accept on public.budget_household_invites for update to authenticated
 using(invitee_id=(select auth.uid()) and not accepted and (select auth.jwt()->>'is_anonymous')='false')
 with check(invitee_id=(select auth.uid()) and accepted and (select auth.jwt()->>'is_anonymous')='false');
@@ -58,8 +69,6 @@ create policy budget_share_revoke on public.budget_household_shares for delete t
 using(author_id=(select auth.uid()) and (select auth.jwt()->>'is_anonymous')='false');
 -- Revoked members' shared copies must not reappear after reinvitation.
 -- Delete them in the same transaction, using an internal trigger with no client execute grant.
-create schema if not exists budget_household_internal;
-revoke all on schema budget_household_internal from public,anon,authenticated;
 create function budget_household_internal.cleanup_member() returns trigger
 language plpgsql security definer set search_path='' as $$
 begin
