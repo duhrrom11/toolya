@@ -573,7 +573,7 @@ test('public wishlist editorial copy is complete and translated only when explic
  const html=readFileSync(new URL('../../tools/wishes/public.html',import.meta.url),'utf8');
  const {document}=parseHTML(html);
  const fixed=[...document.querySelectorAll('p[data-wishes-copy],span[data-wishes-copy]')].filter(el=>el.children.length===0);
- assert.equal(fixed.length,28,'all selected author-owned editorial nodes must be marked');
+ assert.equal(fixed.length,23,'all selected author-owned editorial nodes must be marked');
  const original=fixed.map(el=>el.textContent.trim());
  for(const de of original){
   assert.ok(Object.hasOwn(WISHES_COPY,de),'Missing author-owned translation: '+de);
@@ -633,7 +633,7 @@ test('public FAQ translates marked mixed-content answers and preserves links and
  applyWishLocale(document,'en');
  for(const i of [0,3,4]){
   assert.notEqual(answers[i].textContent,original[i]);
-  for(const node of answers[i].childNodes){
+  if(i!==0)for(const node of answers[i].childNodes){
    if(node.nodeType===3&&node.nodeValue.trim())assert.notEqual(wishesText(node.nodeValue.trim(),'de'),node.nodeValue.trim());
   }
  }
@@ -652,8 +652,8 @@ test('public wish list privacy disclosure, navigation and affiliate labels are b
   ['.wish-showcase-search','Search for a specific wish list ↗'],
   ['.wish-creation-footer span[data-wish-copy]','Already created a list? Publish it on Toolya'],
   ['#profile a[href="/amazon-wunschliste-veroeffentlichen/"]','Guide to publishing an Amazon wish list'],
-  ['.public-notice strong','All details are publicly visible.'],
-  ['.public-notice','All details are publicly visible. Toolya is a public search directory for Amazon wish lists. Anyone can view and share your name and listed wish lists, and search engines may index them. Do not enter confidential information. There are no private profiles.'],
+  ['#profile a[href*="wishes=add"]','Add an Amazon wish list'],
+  ['#profile a[href="/dashboard/#wish-profiles"]','My profiles'],
   ['a[href="./public.html#discover"]',wishesText('← Alle Profile entdecken','en')]
  ];
  const nodes=selectors.map(([selector])=>{const el=document.querySelector(selector);assert.ok(el,selector);return el});

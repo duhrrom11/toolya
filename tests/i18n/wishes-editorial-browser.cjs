@@ -47,7 +47,7 @@ async function run(){
   const context=await browser.newContext({viewport:{width,height:850},reducedMotion:'reduce'});
   const external=[];
   // Synthetic directory data only, returned entirely inside the browser mock.
-  const profile={user_id:'00000000-0000-4000-8000-000000000001',display_name:'Liste',bio:'Öffentliches Wunschprofil',city:'Berlin',country:'Deutschland',imported:true,source_url:'https://example.invalid/source',lists:[{name:'Öffentliche Wunschliste bei Amazon',url:'https://www.amazon.de/hz/wishlist/ls/ABC123'}]};
+  const profile={user_id:'00000000-0000-4000-8000-000000000001',display_name:'Liste',bio:'Öffentliches Wunschprofil',city:'Berlin',country:'Deutschland',imported:true,source_url:'https://example.invalid/source',lists:[{id:'00000000-0000-4000-8000-000000000004',name:'Öffentliche Wunschliste bei Amazon',url:'https://www.amazon.de/hz/wishlist/ls/ABC123'}]};
   const other={...profile,user_id:'00000000-0000-4000-8000-000000000002',display_name:'Private sample',bio:'',city:'',country:''};
   const third={...other,user_id:'00000000-0000-4000-8000-000000000003',display_name:'Another sample'};
   await context.route('**/*',route=>{
@@ -57,6 +57,7 @@ async function run(){
    if(target.hostname.endsWith('.supabase.co')){
     const json=data=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data),headers:{'access-control-allow-origin':'*'}});
     if(request.method()==='GET'&&target.pathname==='/rest/v1/wishlist_directory')return json(target.searchParams.has('user_id')?profile:[profile,other,third]);
+    if(request.method()==='POST'&&target.pathname==='/rest/v1/rpc/get_wishlist_public_profile')return json(profile);
     if(request.method()==='POST'&&target.pathname==='/rest/v1/rpc/search_wishlist_directory')return json([profile]);
     if(request.method()==='POST'&&target.pathname==='/rest/v1/rpc/wishlist_directory_filters')return json({countries:[],occasions:[]});
    }
@@ -81,8 +82,7 @@ async function run(){
    assert.equal(await page.title(),'Find Amazon wish lists by name – no link needed | Toolya');
    assert.equal(await page.locator('p[data-wishes-copy]').first().textContent(),translation);
    assert.equal(await page.locator('.wish-creation-adnote').textContent(),legalEnglish);
-   assert.match(await page.locator('.public-notice').textContent(),/All details are publicly visible\. Toolya is a public search directory/);
-   assert.match(await page.locator('.public-notice').textContent(),/There are no private profiles\./);
+   assert.equal(await page.locator('#profile a[href*="wishes=add"]').textContent(),'Add an Amazon wish list');
    assert.equal(await page.locator('.wish-showcase-search').textContent(),'Search for a specific wish list ↗');
    for(const button of await page.locator('.wish-creation-button').all()){
     assert.match(await button.textContent(),/Create one now/);
@@ -92,11 +92,11 @@ async function run(){
    // Some author-owned elements are removed or replaced when the wishlist app
    // initializes. The DOM unit test verifies 28 plain source nodes and three mixed FAQ answers.
    const activeEditorial=await page.locator('p[data-wishes-copy],span[data-wishes-copy]').count();
-   assert.ok(activeEditorial>=27&&activeEditorial<=31,
+   assert.ok(activeEditorial===23,
     'Expected the majority of author-owned copy to remain visible, got '+activeEditorial);
    const faq=page.locator('.faq');
    for(const i of [0,3,4])await faq.locator('details').nth(i).locator('summary').click();
-   assert.match(await faq.locator('details').nth(0).locator('p').textContent(),/Yes\. All saved/);
+   assert.match(await faq.locator('details').nth(0).locator('p').textContent(),/In your dashboard, choose whether/);
    assert.match(await faq.locator('details').nth(3).locator('p').textContent(),/automatically discovered/);
    assert.match(await faq.locator('details').nth(4).locator('p').textContent(),/affiliate/);
    const before=await page.evaluate(()=>({
@@ -107,7 +107,7 @@ async function run(){
    await page.waitForFunction(()=>document.documentElement.lang==='de');
    assert.equal(await page.locator('p[data-wishes-copy]').first().textContent(),source);
    assert.equal(await page.locator('.wish-creation-adnote').textContent(),legalGerman);
-   assert.match(await page.locator('.public-notice').textContent(),/Alle Angaben sind öffentlich sichtbar\./);
+   assert.equal(await page.locator('#profile a[href*="wishes=add"]').textContent(),'Amazon-Wunschliste hinzufügen');
    assert.equal(await page.locator('.wish-showcase-search').textContent(),'Wunschliste gezielt suchen ↗');
    await page.locator('[data-wishes-locale="en"]').click();
    await page.waitForFunction(()=>document.documentElement.lang==='en');
@@ -149,7 +149,7 @@ async function run(){
    await detail.waitFor();
    assert.equal(await detail.locator('.profile-source-note').textContent(),'Name from a publicly linked source · Identity not verified by Toolya.');
    assert.equal(await detail.locator('.profile-wishlist-copy strong').textContent(),profile.lists[0].name);
-   assert.match(await detail.locator('.profile-wishlist-link').getAttribute('href'),/tag=duhrrom-21/);
+   assert.match(await detail.locator('.profile-wishlist-link').getAttribute('href'),/\?list=00000000-0000-4000-8000-000000000004/);
    assert.equal(await detail.locator('.profile-list-count').textContent(),'1 List');
    await page.locator('[data-wishes-locale="de"]').click();
    assert.equal(await detail.locator('.profile-list-count').textContent(),'1 Liste');

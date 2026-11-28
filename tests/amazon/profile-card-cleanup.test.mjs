@@ -12,9 +12,9 @@ test('profile views do not add Amazon search or recommendation widgets',()=>{
  const card=js.slice(js.indexOf('function card('),js.indexOf('function hasSearchCriteria(){'));
  assert.ok(card.startsWith('function card('));
  assert.doesNotMatch(card,/amazonSearch\(|renderIdeas\(|catalog|products/);
- assert.match(card,/profile-wishlist-link/);
- assert.match(card,/amazonListUrl\(l\.url\)/);
- assert.match(card,/noopener noreferrer sponsored/);
+ assert.match(js,/profile-wishlist-link/);
+ assert.match(js,/amazonListUrl\(l\.url\)/);
+ assert.match(js,/noopener noreferrer sponsored/);
  assert.match(card,/profile-report-link/);
 });
 

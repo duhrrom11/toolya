@@ -1,0 +1,13 @@
+.wish-edit-form {display:grid;gap:.85rem;max-width:42rem}
+.wish-edit-form label {display:grid;gap:.35rem}
+.wish-edit-form label:has(input[type=checkbox]) {display:flex;align-items:center}
+.wish-edit-form :is(input:not([type=checkbox]),select,textarea) {box-sizing:border-box;width:100%;min-width:0}
+.wish-edit-form .hint {white-space:pre-line}
+.wish-edit-actions {display:flex;flex-wrap:wrap;align-items:center;gap:.65rem}
+.wish-avatar-preview {object-fit:cover;border-radius:1rem}
+.wish-managed-profile {margin-block:1rem;padding-block-start:.8rem;border-top:1px solid #c7d9e2}
+.wish-managed-list {display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-block:.55rem}
+.wish-managed-list strong {overflow-wrap:anywhere}
+#favoriteItems > div {display:flex;align-items:center;gap:.5rem}
+#favoriteItems button {padding:.25rem .6rem}
+[hidden] {display:none!important}

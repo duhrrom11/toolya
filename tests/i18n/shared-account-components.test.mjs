@@ -39,5 +39,6 @@ test('shared settings sections preserve input state and custom headings across l
 test('advertised classic tools and shared account pages call the central adapter',()=>{
  const pages=['index.html','en/index.html','dashboard/account-settings.js','assets/estate-owner.js','shared/toolya/auth-page-gate.js',...['moving','housemates','plants','baking','budget','car','loans','meters','parking','pet-health'].map(x=>'tools/'+x+'/index.html')];
  for(const path of pages){assert.match(read(path),/toolyaAuth\?\.forClient\(/,path)}
- const wishes=read('tools/wishes/public-amazon.mjs');assert.match(wishes,/accessToken:async\(\)=>null/);assert.match(wishes,/toolyaAuth\?\.forClient\(/);
+ const wishes=read('tools/wishes/public-amazon.mjs');assert.match(wishes,/accessToken:async\(\)=>null/);assert.match(wishes,/window\.toolyaAccountClient/);
+ assert.match(read('tools/wishes/wishlist-auth.mjs'),/toolyaAuth\?\.forClient\(/);
 });
