@@ -582,7 +582,7 @@ async function toolyaSafeCloudImport(snapshot) {
     confirm:async message => window.confirm(message),
     exportBackup:async previous => {
       exportJsonBackup(previous,'toolya-cloud-vor-import-haushaltsbuch.json');
-      return window.confirm(window.__toolyaUILocale === 'en' ? 'Please confirm that the cloud backup has actually been downloaded and stored securely.' : 'Bitte bestätigen, dass die Cloud-Sicherung tatsächlich heruntergeladen und sicher gespeichert wurde.');
+      return window.confirm('Bitte bestätigen, dass die Cloud-Sicherung tatsächlich heruntergeladen und sicher gespeichert wurde.');
     }
   });
   return result.status==='confirmed';
@@ -604,14 +604,14 @@ async function toolyaCloudBoot(tool) {
       throw Error('Registrierte Anmeldung erforderlich.');
     const prepared = await prepareCloudTool({
       client:window.supabaseClient,tool,storage,
-      confirmMigration: async () => confirm(window.__toolyaUILocale === 'en' ? 'Transfer existing device data to your Toolya account? Cloud data will never be overwritten. On shared devices, check who owns the data first.' : 'Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden niemals überschrieben. Auf gemeinsam genutzten Geräten bitte zuerst die Zugehörigkeit der Daten prüfen.'),
-      reviewExistingCloud: async () => confirm(window.__toolyaUILocale === 'en' ? 'Both cloud and device data exist. Cloud data remains authoritative; local data will not be merged or deleted. Back up the local data now and use only cloud data?' : 'Es gibt sowohl Cloud-Daten als auch Gerätedaten. Die Cloud bleibt maßgeblich; lokale Daten werden nicht zusammengeführt oder gelöscht. Lokale Daten jetzt sichern und ausschließlich die Cloud-Daten verwenden?'),
+      confirmMigration: async () => confirm('Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden niemals überschrieben. Auf gemeinsam genutzten Geräten bitte zuerst die Zugehörigkeit der Daten prüfen.'),
+      reviewExistingCloud: async () => confirm('Es gibt sowohl Cloud-Daten als auch Gerätedaten. Die Cloud bleibt maßgeblich; lokale Daten werden nicht zusammengeführt oder gelöscht. Lokale Daten jetzt sichern und ausschließlich die Cloud-Daten verwenden?'),
       exportBackup: async (data) => {
         const blob = new Blob([JSON.stringify(data)],{type:'application/json'});
         const url = URL.createObjectURL(blob), link=document.createElement('a');
         link.href=url;link.download='toolya-bestand-vor-cloud.json';link.click();
         setTimeout(()=>URL.revokeObjectURL(url),60000);
-        return confirm(window.__toolyaUILocale === 'en' ? 'A backup download has been offered. Confirm only after saving it successfully.' : 'Sicherung wurde zum Download angeboten. Bitte erst nach erfolgreichem Speichern bestätigen.');
+        return confirm('Sicherung wurde zum Download angeboten. Bitte erst nach erfolgreichem Speichern bestätigen.');
       }
     });
     const {data:finalAuth,error:finalAuthError}=await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser();
@@ -926,7 +926,7 @@ async function toolyaCloudBoot(tool) {
             const selectedFiles = Array.from(files);
             if (selectedFiles.some(file => !['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type))) {
                 event.target.value = '';
-                alert(window.__toolyaUILocale === 'en' ? "Choose JPG, PNG, GIF or WebP images only. Existing receipt images will be retained." : "Bitte nur JPG-, PNG-, GIF- oder WebP-Bilder auswählen. Bereits vorhandene Belegbilder bleiben erhalten.");
+                alert('Bitte nur JPG-, PNG-, GIF- oder WebP-Bilder auswählen. Bereits vorhandene Belegbilder bleiben erhalten.');
                 return;
             }
             // Fotos werden als Base64 im begrenzten Gerätespeicher abgelegt.
@@ -935,7 +935,7 @@ async function toolyaCloudBoot(tool) {
             if (selectedFiles.some(file => !Number.isFinite(file.size) || file.size <= 0) ||
                 selectedFiles.reduce((total, file) => total + file.size, 0) > maxTotalPhotoBytes) {
                 event.target.value = '';
-                alert(window.__toolyaUILocale === 'en' ? "The selected receipt images exceed the combined 4 MB limit. Choose smaller images. Existing receipt images will be retained." : "Die ausgewählten Belegbilder sind zusammen zu groß (maximal 4 MB). Bitte kleinere Fotos auswählen. Bereits vorhandene Belegbilder bleiben erhalten.");
+                alert('Die ausgewählten Belegbilder sind zusammen zu groß (maximal 4 MB). Bitte kleinere Fotos auswählen. Bereits vorhandene Belegbilder bleiben erhalten.');
                 return;
             }
             const generation = ++photoReadGeneration;
@@ -957,7 +957,7 @@ async function toolyaCloudBoot(tool) {
                     pendingPhotoReads--;
                     photoReadFailed = true;
                     console.error('Bildleser konnte nicht gestartet werden:', error);
-                    alert(window.__toolyaUILocale === 'en' ? "The browser could not start the file reader. Please select the images again." : "Der Browser konnte den Bildleser nicht starten. Bitte die Bildauswahl erneut versuchen.");
+                    alert('Der Browser konnte den Bildleser nicht starten. Bitte die Bildauswahl erneut versuchen.');
                     return;
                 }
                 reader.onload = function(e) {
@@ -965,7 +965,7 @@ async function toolyaCloudBoot(tool) {
                     if (!safeReceiptPhoto(e.target.result)) {
                         pendingPhotoReads--;
                         photoReadFailed = true;
-                        alert(window.__toolyaUILocale === 'en' ? "A receipt image has an invalid format. Please select the images again." : "Ein Belegbild hat ein ungültiges Format. Bitte die Bildauswahl erneut versuchen.");
+                        alert('Ein Belegbild hat ein ungültiges Format. Bitte die Bildauswahl erneut versuchen.');
                         return;
                     }
                     currentUploadedPhotos[idx] = e.target.result;
@@ -989,7 +989,7 @@ async function toolyaCloudBoot(tool) {
                             } catch (error) {
                                 photoReadFailed = true;
                                 console.error('Belegbild konnte nicht verarbeitet werden:', error);
-                                alert(window.__toolyaUILocale === 'en' ? "The first receipt image could not be processed. Please select it again." : "Das erste Belegbild konnte nicht verarbeitet werden. Bitte erneut auswählen.");
+                                alert('Das erste Belegbild konnte nicht verarbeitet werden. Bitte erneut auswählen.');
                             } finally {
                                 pendingPhotoReads--;
                             }
@@ -998,7 +998,7 @@ async function toolyaCloudBoot(tool) {
                             if (generation !== photoReadGeneration) return;
                             pendingPhotoReads--;
                             photoReadFailed = true;
-                            alert(window.__toolyaUILocale === 'en' ? "The first receipt image could not be opened. Please select it again." : "Das erste Belegbild konnte nicht geöffnet werden. Bitte erneut auswählen.");
+                            alert('Das erste Belegbild konnte nicht geöffnet werden. Bitte erneut auswählen.');
                         };
                         try {
                             img.src = e.target.result;
@@ -1007,7 +1007,7 @@ async function toolyaCloudBoot(tool) {
                             pendingPhotoReads--;
                             photoReadFailed = true;
                             console.error('Belegbild konnte nicht geöffnet werden:', error);
-                            alert(window.__toolyaUILocale === 'en' ? "The first receipt image could not be opened. Please select it again." : "Das erste Belegbild konnte nicht geöffnet werden. Bitte erneut auswählen.");
+                            alert('Das erste Belegbild konnte nicht geöffnet werden. Bitte erneut auswählen.');
                         }
                     }
                 };
@@ -1015,7 +1015,7 @@ async function toolyaCloudBoot(tool) {
                     if (generation !== photoReadGeneration) return;
                     pendingPhotoReads--;
                     photoReadFailed = true;
-                    alert(window.__toolyaUILocale === 'en' ? "A receipt image could not be read. Please select the images again." : "Ein Belegbild konnte nicht gelesen werden. Bitte die Bildauswahl erneut versuchen.");
+                    alert('Ein Belegbild konnte nicht gelesen werden. Bitte die Bildauswahl erneut versuchen.');
                 };
                 try {
                     reader.readAsDataURL(file);
@@ -1024,7 +1024,7 @@ async function toolyaCloudBoot(tool) {
                     pendingPhotoReads--;
                     photoReadFailed = true;
                     console.error('Belegbild konnte nicht geöffnet werden:', error);
-                    alert(window.__toolyaUILocale === 'en' ? "A receipt image could not be opened. Please select the images again." : "Ein Belegbild konnte nicht geöffnet werden. Bitte die Bildauswahl erneut versuchen.");
+                    alert('Ein Belegbild konnte nicht geöffnet werden. Bitte die Bildauswahl erneut versuchen.');
                 }
             });
         }
@@ -1077,7 +1077,7 @@ async function toolyaCloudBoot(tool) {
             } catch (error) {
                 photoReadFailed = true;
                 console.error('Belegfoto-Filter fehlgeschlagen:', error);
-                alert(window.__toolyaUILocale === 'en' ? "Image adjustment failed. Please select the receipt photo again." : "Die Bildanpassung ist fehlgeschlagen. Bitte das Belegfoto erneut auswählen.");
+                alert('Die Bildanpassung ist fehlgeschlagen. Bitte das Belegfoto erneut auswählen.');
             }
         }
 
@@ -1131,7 +1131,7 @@ async function toolyaCloudBoot(tool) {
         /* --- Tesseract OCR --- */
         async function runOCR() {
             const input = document.getElementById('receiptPhotoInput');
-            if (!input.files || !input.files[0]) return alert(window.__toolyaUILocale === 'en' ? "Please select a receipt photo first." : "Bitte wähle zuerst ein Belegfoto aus!");
+            if (!input.files || !input.files[0]) return alert("Bitte wähle zuerst ein Belegfoto aus!");
             const generation = ++ocrGeneration;
             const files = Array.from(input.files);
             const statusEl = document.getElementById('ocrStatus');
@@ -1197,11 +1197,11 @@ async function toolyaCloudBoot(tool) {
         }
         async function saveReceiptInternal() {
             if (photoReadFailed) {
-                alert(window.__toolyaUILocale === 'en' ? "At least one receipt image could not be loaded. Please select the images again or remove them." : "Mindestens ein Belegbild konnte nicht geladen werden. Bitte Bilder erneut auswählen oder entfernen.");
+                alert('Mindestens ein Belegbild konnte nicht geladen werden. Bitte Bilder erneut auswählen oder entfernen.');
                 return;
             }
             if (pendingPhotoReads > 0) {
-                alert(window.__toolyaUILocale === 'en' ? "Receipt images are still loading. Please try saving again once loading finishes." : "Die Belegbilder werden noch geladen. Bitte kurz warten und erneut speichern.");
+                alert('Die Belegbilder werden noch geladen. Bitte kurz warten und erneut speichern.');
                 return;
             }
             const title = document.getElementById('receiptTitle').value.trim();
@@ -1222,12 +1222,12 @@ async function toolyaCloudBoot(tool) {
 
             if (!title || !date || !Number.isFinite(parseReceiptDate(date).getTime()) ||
                 !Number.isFinite(price) || price <= 0 || !Number.isSafeInteger(Math.round(price*100)) || Number(price.toFixed(2))!==price) {
-                return alert(window.__toolyaUILocale === 'en' ? "Please enter a title, valid purchase date and positive amount." : "Bitte Titel, gültiges Kaufdatum und einen positiven Betrag angeben!");
+                return alert("Bitte Titel, gültiges Kaufdatum und einen positiven Betrag angeben!");
             }
             if (!Number.isSafeInteger(warrantyMonths) || warrantyMonths < 0 ||
                 !Number.isSafeInteger(returnDays) || returnDays < 0 ||
                 !Number.isFinite(lifespan) || lifespan <= 0) {
-                return alert(window.__toolyaUILocale === 'en' ? "Please enter valid warranty, return period and useful life values." : "Bitte gültige Garantie-, Rückgabe- und Lebensdauerwerte angeben.");
+                return alert("Bitte gültige Garantie-, Rückgabe- und Lebensdauerwerte angeben.");
             }
 
             currentUploadedPhotos = currentUploadedPhotos.filter(src => safeReceiptPhoto(src));
@@ -1237,7 +1237,7 @@ async function toolyaCloudBoot(tool) {
             if (editingReceiptId !== null) {
                 const index = data.findIndex(r => r && r.id === editingReceiptId);
                 if (index === -1) {
-                    alert(window.__toolyaUILocale === 'en' ? "This transaction no longer exists. Changes were not saved." : "Diese Buchung ist nicht mehr vorhanden. Die Änderungen wurden nicht gespeichert.");
+                    alert("Diese Buchung ist nicht mehr vorhanden. Die Änderungen wurden nicht gespeichert.");
                     return;
                 }
                 {
@@ -1255,7 +1255,7 @@ async function toolyaCloudBoot(tool) {
                     Number(r.price) === price &&
                     (r.entryType === 'einnahme' || r.category === 'Einnahme' ? 'einnahme' : 'ausgabe') ===
                     (entryType === 'einnahme' ? 'einnahme' : 'ausgabe'));
-                if (duplicate && !confirm(window.__toolyaUILocale === 'en' ? 'A transaction with the same date, title, amount and type already exists.\n\nSave it again anyway?' : 'Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\n\nTrotzdem erneut speichern?')) return;
+                if (duplicate && !confirm('Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\n\nTrotzdem erneut speichern?')) return;
                 const newId = nextReceiptId(data);
                 newBookingId = newId;
                 data.push({
@@ -1386,7 +1386,7 @@ async function toolyaCloudBoot(tool) {
         }
 
         async function deleteReceipt(id) {
-            if (!confirm(window.__toolyaUILocale === 'en' ? "⚠️ Delete this transaction?" : "⚠️ Diese Buchung wirklich löschen?")) return;
+            if (!confirm("⚠️ Diese Buchung wirklich löschen?")) return;
             const existing=getData();
             if(existing.some(r=>r&&(r.id===id&&(r.transferId!=null||r.refundOf!=null)||r.transferId===id||r.refundOf===id))){alert(window.__toolyaUILocale==='en'?'Unlink the transaction before deleting it.':'Vor dem Löschen die Buchungsverknüpfung lösen.');return;}
             let data = existing.filter(item => item.id !== id);
@@ -1738,7 +1738,7 @@ async function toolyaCloudBoot(tool) {
             const target = Number(document.getElementById('goalTarget').value);
             const current = Number(document.getElementById('goalCurrent').value);
             if (!title || !Number.isFinite(target) || target <= 0 || !Number.isFinite(current) || current < 0)
-                return alert(window.__toolyaUILocale === 'en' ? "Please enter a valid title, a positive target amount and a starting amount of €0 or more." : "Bitte gültigen Titel, positiven Zielbetrag und Startbetrag ab 0 € eingeben!");
+                return alert("Bitte gültigen Titel, positiven Zielbetrag und Startbetrag ab 0 € eingeben!");
 
             const goals = getSavingsGoals();
             goals.push({ id: Date.now(), title, target, current });
@@ -1765,7 +1765,7 @@ async function toolyaCloudBoot(tool) {
         }
 
         async function deleteSavingsGoal(id) {
-            if (!confirm(window.__toolyaUILocale === 'en' ? "Delete savings goal?" : "Sparziel löschen?")) return;
+            if (!confirm("Sparziel löschen?")) return;
             if (!await saveSavingsGoals(getSavingsGoals().filter(g => g && g.id !== id))) return;
             renderApp();
         }
@@ -1824,7 +1824,7 @@ async function toolyaCloudBoot(tool) {
             const { loadQrGenerator } = await import('../../shared/toolya/qr-generator.mjs');
             const QRCode = await loadQrGenerator();
             if (!QRCode) {
-                alert(window.__toolyaUILocale === 'en' ? "The QR code could not be loaded. Please try again." : "Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.");
+                alert("Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.");
                 return;
             }
             const modal = document.getElementById('qrModal');
@@ -1863,7 +1863,7 @@ async function toolyaCloudBoot(tool) {
             const buyDate = parseReceiptDate(r.date);
             const months = Number(r.warrantyMonths);
             if (!Number.isFinite(buyDate.getTime()) || !Number.isFinite(months) || months <= 0) {
-                alert(window.__toolyaUILocale === 'en' ? "This receipt is missing a valid purchase date or warranty period." : "Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.");
+                alert('Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.');
                 return;
             }
             const correctedExpiry = addWarrantyMonths(buyDate, months);
@@ -1896,7 +1896,7 @@ async function toolyaCloudBoot(tool) {
             const buyDate = parseReceiptDate(r.date);
             const months = Number(r.warrantyMonths);
             if (!Number.isFinite(buyDate.getTime()) || !Number.isFinite(months) || months <= 0) {
-                alert(window.__toolyaUILocale === 'en' ? "This receipt is missing a valid purchase date or warranty period." : "Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.");
+                alert('Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.');
                 return;
             }
             const expDate = addWarrantyMonths(buyDate, months);
@@ -1971,7 +1971,7 @@ async function toolyaCloudBoot(tool) {
         function exportAllBookingsCSV() {
             const english = window.__toolyaUILocale === 'en';
             const data = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r));
-            if (data.length === 0) return alert(window.__toolyaUILocale === 'en' ? "No transactions available for CSV export." : "Keine Buchungen für den CSV-Export vorhanden.");
+            if (data.length === 0) return alert('Keine Buchungen für den CSV-Export vorhanden.');
             const rows = [(english ? ['Date', 'Type', 'Title', 'Merchant', 'Category', 'Price_EUR',
                 'Payment_method', 'Recurring_cost', 'Tax_relevant', 'Warranty_months',
                 'Return_days', 'Lifespan_years', 'Serial_number', 'Storage_location', 'Note','Booking_ID','Transfer_ID','Refund_of','Splits_JSON','Account','Cashflow_EUR'] : ['Datum', 'Typ', 'Titel', 'Haendler', 'Kategorie', 'Preis_EUR',
@@ -2000,7 +2000,7 @@ async function toolyaCloudBoot(tool) {
         function exportSteuerCSV() {
             const english = window.__toolyaUILocale === 'en';
             const data = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r) && r.isTax === true && r.transferId==null);
-            if (data.length === 0) return alert(window.__toolyaUILocale === 'en' ? "No tax-related transactions found." : "Keine steuerrelevanten Buchungen gefunden!");
+            if (data.length === 0) return alert("Keine steuerrelevanten Buchungen gefunden!");
             const rows = [(english ? ["Date", "Type", "Title", "Merchant", "Category", "Price_EUR", "Payment_method", "Serial_number", "Note"] : ["Datum", "Typ", "Titel", "Haendler", "Kategorie", "Preis_EUR", "Zahlungsart", "Seriennummer", "Notiz"]).join(';')];
             sortCsvBookings(data);
             for (const r of data) {
@@ -2078,7 +2078,7 @@ async function toolyaCloudBoot(tool) {
 
         function importBackup(event) {
    const input=event.target, file=input.files?.[0];if(!file)return;
-   if(file.size>20*1024*1024){alert(window.__toolyaUILocale === 'en' ? "Backup exceeds the 20 MB limit." : "Backup zu groß (maximal 20 MB).");input.value='';return;}
+   if(file.size>20*1024*1024){alert('Backup zu groß (maximal 20 MB).');input.value='';return;}
    const reader=new FileReader();
    reader.onload=async e=>{
      try {
@@ -2100,11 +2100,11 @@ async function toolyaCloudBoot(tool) {
        const warning=english?'Export a cloud backup first. Continue?':'Vorher Cloud-Backup exportieren. Fortsetzen?';
        if(!confirm([heading,...preview,warning].join('\n')))return;
        if(!await toolyaSafeCloudImport(snapshot))return;
-       renderApp();alert(window.__toolyaUILocale === 'en' ? "Backup saved to Toolya Cloud." : "Backup in Toolya Cloud gespeichert.");
-     }catch(error){console.error(error);alert((window.__toolyaUILocale === 'en' ? 'Cloud import failed: ' : 'Cloud-Import fehlgeschlagen: ')+error.message);}
+       renderApp();alert('Backup in Toolya Cloud gespeichert.');
+     }catch(error){console.error(error);alert('Cloud-Import fehlgeschlagen: '+error.message);}
      finally{input.value='';}
    };
-   reader.onerror=()=>{input.value='';alert(window.__toolyaUILocale === 'en' ? "The backup file could not be read." : "Backup-Datei konnte nicht gelesen werden.");};
+   reader.onerror=()=>{input.value='';alert('Backup-Datei konnte nicht gelesen werden.');};
    reader.readAsText(file);
  }
 
