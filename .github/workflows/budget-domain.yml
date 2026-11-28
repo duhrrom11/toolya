@@ -1,0 +1,20 @@
+name: Budget domain regression
+on:
+  pull_request:
+    paths:
+      - 'tools/budget/**'
+      - 'tests/budget/**'
+      - '.github/workflows/budget-domain.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  budget-domain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check tools/budget/budget-domain.mjs
+      - run: node --test tests/budget/*.test.mjs
