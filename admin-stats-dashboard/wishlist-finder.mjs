@@ -52,3 +52,35 @@ $('dismiss').onclick=()=>{if(selected.size===0){$('result').textContent='Bitte z
 function download(kind){const values=[...selected.values()];const fields=['name','type','logo_url','wishlist_url','email','source_url','country','found_at','status'];const clean=values.map(r=>Object.fromEntries(fields.map(f=>[f,r[f]||''])));const blob=new Blob([kind==='csv'?csv(clean):JSON.stringify(clean,null,2)],{type:kind==='csv'?'text/csv;charset=utf-8':'application/json'});const url=URL.createObjectURL(blob),a=el('a');a.href=url;a.download='toolya-wunschlisten.'+kind;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}$('csv').onclick=()=>download('csv');$('json').onclick=()=>download('json');
 try{await load();$('finder').hidden=false;$('state').hidden=true}catch(e){$('state').textContent=e.message}
 client?.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){running=false;rows=[];selected.clear();$('rows').replaceChildren();$('finder').hidden=true;$('state').hidden=false;$('state').textContent='Bitte mit dem Administratorkonto anmelden.'}});
+
+let directoryOffset=0;
+async function directoryAdmin(){
+ const host=$('managedProfiles');host.replaceChildren();
+ const {profiles}=await api('directory_admin_list',{offset:directoryOffset});
+ const action=(label,fn)=>{const b=el('button',label);b.type='button';b.onclick=()=>guarded('managedStatus',fn);return b};
+ const field=(form,key,label,value='',type='text')=>{const l=el('label',label),i=el('input');i.name=key;i.type=type;i.value=value??'';l.append(i);form.append(l);return i};
+ const visibility=(form,value='private')=>{const l=el('label','Sichtbarkeit'),s=el('select');s.name='visibility';for(const [v,t] of [['private','Privat / archiviert'],['link','Nur per Link'],['directory','Öffentlich']]){const o=el('option',t);o.value=v;s.append(o)}s.value=value;l.append(s);form.append(l)};
+ const submit=(form,label,handler)=>{form.append(el('button',label));form.onsubmit=e=>{e.preventDefault();const values=Object.fromEntries(new FormData(form));guarded('managedStatus',async()=>{await handler(values);await directoryAdmin();$('managedStatus').textContent='Gespeichert.'})}};
+ function profileEditor(p){
+  const form=el('form');field(form,'display_name','Profilname',p?.display_name).required=true;field(form,'country','Land',p?.country);field(form,'bio','Beschreibung',p?.bio);
+  const image=field(form,'image_url','Profilbild-Link (HTTPS)',p?.image_url,'url'),preview=el('img');preview.alt='Profilbild';preview.width=80;preview.referrerPolicy='no-referrer';const refresh=()=>{const url=publicUrl(image.value);preview.hidden=!url;if(url)preview.src=url;else preview.removeAttribute('src')};image.oninput=refresh;refresh();form.append(preview);visibility(form,p?.visibility);
+  submit(form,p?'Profil speichern':'Eigenständiges Profil erstellen',values=>api('directory_admin_save',{id:p?.id,values}));return form;
+ }
+ function listEditor(p,l){
+  const form=el('form');field(form,'name','Listenname',l?.name).required=true;field(form,'url','Amazon-Wunschlistenlink',l?.url,'url').required=true;field(form,'occasion','Anlass',l?.occasion);visibility(form,l?.visibility);
+  if(l)field(form,'profile_id','Zielprofil-ID (zum Verschieben)',p.id);
+  submit(form,l?'Liste speichern / verschieben':'Liste hinzufügen',values=>api('directory_admin_list_save',{id:l?.id,profile_id:p.id,values}));
+  if(l)form.append(action('Liste löschen',async()=>{if(!confirm('Diese Liste endgültig löschen?'))return;await api('directory_admin_list_delete',{id:l.id,profile_id:p.id});await directoryAdmin()}));return form;
+ }
+ host.append(el('h3','Eigenständige Profile und eigene Profile'),profileEditor(null));
+ for(const p of profiles){
+  const box=el('details');box.append(el('summary',p.display_name+' · '+(p.wishlist_directory_lists?.length||0)+' Listen'),el('p','Profil-ID: '+p.id),profileEditor(p));
+  const open=el('a','Öffentliches Profil ansehen');open.href=new URL('../tools/wishes/public.html?profile='+encodeURIComponent(p.id),import.meta.url).href;open.target='_blank';open.rel='noopener noreferrer';box.append(open);
+  for(const l of p.wishlist_directory_lists||[]){const d=el('details');d.append(el('summary',l.name),listEditor(p,l));box.append(d)}
+  const add=el('details');add.append(el('summary','Wunschliste hinzufügen'),listEditor(p,null));box.append(add);
+  const merge=el('form');field(merge,'target','Zielprofil-ID für Zusammenführung').required=true;submit(merge,'Profile zusammenführen',async values=>{if(!confirm('Alle Listen in das Zielprofil verschieben und Quellprofil archivieren?'))return;await api('directory_admin_merge',{id:p.id,target:values.target})});box.append(merge,action('Profil endgültig löschen',async()=>{if(!confirm('Profil samt Listen endgültig löschen?'))return;await api('directory_admin_delete',{id:p.id});await directoryAdmin()}));host.append(box);
+ }
+ host.append(action('Vorherige Profile',async()=>{directoryOffset=Math.max(0,directoryOffset-100);await directoryAdmin()}),action('Weitere Profile',async()=>{if(profiles.length===100){directoryOffset+=100;await directoryAdmin()}}));
+ host.append(action('Änderungsverlauf anzeigen',async()=>{const {rows}=await api('directory_admin_audit');const log=el('div');log.append(el('h3','Letzte 100 Admin-Aktionen'));for(const r of rows){const entry=el('p');log.append(presentation.bind(entry,lang=>{entry.textContent=adminDate(r.created_at,lang)+' · '+new Intl.DateTimeFormat(lang==='en'?'en-GB':'de-DE',{timeStyle:'short'}).format(new Date(r.created_at))+' · '+r.action+' · '+r.entity_id},currentAdminLocale()))}host.append(log)}));
+}
+$('openManaged').onclick=()=>guarded('managedStatus',directoryAdmin);

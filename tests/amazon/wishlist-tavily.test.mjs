@@ -35,8 +35,10 @@ test('encrypted Tavily key is never exposed to public users',()=>{
  assert.doesNotMatch(page,/tvly-/);
 });
 test('existing wishlist safety controls remain in place',()=>{
- assert.match(edge,/matching\.length!==1/);
- assert.match(edge,/delete\(\)\.eq\('id',matching\[0\]\.id\)/);
+ assert.match(edge,/db\.rpc\('wishlist_admin_withdraw',\{p_actor:data\.user\.id,p_candidate:body\.id\}\)/);
+ const managed=readFileSync(new URL('supabase/migrations/20261128153000_wishlist_admin_service_role_fix.sql',root),'utf8');
+ assert.match(managed,/select \* into strict i from public\.wishlist_imported_entries/);
+ assert.match(managed,/update public\.wishlist_directory_profiles set visibility='private' where id=p\.id/);
  assert.match(ui,/parseCsv\(text\)/);
  assert.match(ui,/JSON\.parse\(text\)/);
  assert.match(ui,/api\('publish'/);
