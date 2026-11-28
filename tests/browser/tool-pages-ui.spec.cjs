@@ -4150,3 +4150,82 @@ for(const switchAccount of [false,true]){
   }
  });
 }
+
+for(const fixture of [
+ {fault:'constructor',line:960,de:'Der Browser konnte den Bildleser nicht starten. Bitte die Bildauswahl erneut versuchen.',en:'The browser could not start the image reader. Select the images again.'},
+ {fault:'invalid',line:968,de:'Ein Belegbild hat ein ungültiges Format. Bitte die Bildauswahl erneut versuchen.',en:'A receipt image has an invalid format. Choose the images again.'},
+ {fault:'read-event',line:1018,de:'Ein Belegbild konnte nicht gelesen werden. Bitte die Bildauswahl erneut versuchen.',en:'A receipt image could not be read. Choose the images again.'},
+ {fault:'read-throw',line:1027,de:'Ein Belegbild konnte nicht geöffnet werden. Bitte die Bildauswahl erneut versuchen.',en:'A receipt image could not be opened. Choose the images again.'},
+ {fault:'image-event',line:1001,de:'Das erste Belegbild konnte nicht geöffnet werden. Bitte erneut auswählen.',en:'The first receipt image could not be opened. Select it again.'},
+ {fault:'image-throw',line:1010,de:'Das erste Belegbild konnte nicht geöffnet werden. Bitte erneut auswählen.',en:'The first receipt image could not be opened. Select it again.'},
+ {fault:'canvas',line:992,de:'Das erste Belegbild konnte nicht verarbeitet werden. Bitte erneut auswählen.',en:'The first receipt image could not be processed. Select it again.'}
+]){
+ test('i18n runtime catalogue: budget photo failure '+fixture.line+' in DE and EN',async({page},testInfo)=>{
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:'loadPhotosToCanvas',kind:'alert',line:fixture.line,de:fixture.de,en:fixture.en})});
+  await isolated(page,true,false,{entries:[],budgets:{},goals:[]});
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  const state=()=>page.evaluate(()=>({snapshot:toolyaCloudController.snapshot(),writes:window.__toolyaMock.writes}));
+  const before=await state();
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   await page.evaluate(fault=>{
+    clearReceiptPhotos();
+    const Reader=window.FileReader,Img=window.Image,filter=window.applyCanvasFilter;
+    window.__restorePhotoFixture=()=>{window.FileReader=Reader;window.Image=Img;window.applyCanvasFilter=filter;};
+    if(fault==='constructor')window.FileReader=function(){throw Error('fixture constructor');};
+    else window.FileReader=class{
+     readAsDataURL(){
+      if(fault==='read-throw')throw Error('fixture read');
+      queueMicrotask(()=>fault==='read-event'?this.onerror():this.onload({target:{result:fault==='invalid'?'invalid':'data:image/png;base64,iVBORw0KGgo='}}));
+     }
+    };
+    if(['image-event','image-throw','canvas'].includes(fault)){
+     window.Image=class{
+      set src(value){if(fault==='image-throw')throw Error('fixture image');queueMicrotask(()=>fault==='image-event'?this.onerror():this.onload());}
+     };
+     if(fault==='canvas')window.applyCanvasFilter=()=>{throw Error('fixture canvas');};
+    }
+   },fixture.fault);
+   try{
+    await page.locator('#receiptPhotoInput').setInputFiles({name:'fixture.png',mimeType:'image/png',buffer:Buffer.from([137,80,78,71,13,10,26,10])});
+    const notice=page.getByRole('alertdialog',{name:'Toolya'});
+    await expect(notice.locator('#hl-alert-message')).toHaveText(fixture[lang]);
+    await notice.getByRole('button',{name:'OK'}).press('Enter');
+    await expect(notice).toBeHidden();
+    expect(await page.evaluate(()=>({failed:photoReadFailed,pending:pendingPhotoReads}))).toEqual({failed:true,pending:0});
+    expect(await state()).toEqual(before);
+   }finally{await page.evaluate(()=>window.__restorePhotoFixture());}
+  }
+ });
+}
+for(const fixture of [
+ {line:1080,handler:'tryApplyCanvasFilter',fault:'filter',de:'Die Bildanpassung ist fehlgeschlagen. Bitte das Belegfoto erneut auswählen.',en:'Image adjustment failed. Select the receipt photo again.'},
+ {line:1200,handler:'saveReceiptInternal',fault:'failed',de:'Mindestens ein Belegbild konnte nicht geladen werden. Bitte Bilder erneut auswählen oder entfernen.',en:'At least one receipt image could not be loaded. Select or remove the images again.'},
+ {line:1204,handler:'saveReceiptInternal',fault:'pending',de:'Die Belegbilder werden noch geladen. Bitte kurz warten und erneut speichern.',en:'The receipt images are still loading. Try saving again.'}
+]){
+ test('i18n runtime catalogue: budget photo guard '+fixture.line+' in DE and EN',async({page},testInfo)=>{
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:fixture.handler,kind:'alert',line:fixture.line,de:fixture.de,en:fixture.en})});
+  await isolated(page,true,false,{entries:[],budgets:{},goals:[]});
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  const state=()=>page.evaluate(()=>({snapshot:toolyaCloudController.snapshot(),writes:window.__toolyaMock.writes,title:document.getElementById('receiptTitle').value}));
+  await page.evaluate(()=>{document.getElementById('receiptTitle').value='Private Buchung Öl';});
+  const before=await state();
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   await page.evaluate(async fault=>{
+    photoReadFailed=false;pendingPhotoReads=0;
+    if(fault==='filter'){const original=window.applyCanvasFilter;try{window.applyCanvasFilter=()=>{throw Error('fixture filter');};tryApplyCanvasFilter();}finally{window.applyCanvasFilter=original;}}
+    else{photoReadFailed=fault==='failed';pendingPhotoReads=fault==='pending'?1:0;await saveReceipt();}
+   },fixture.fault);
+   const notice=page.getByRole('alertdialog',{name:'Toolya'});
+   await expect(notice.locator('#hl-alert-message')).toHaveText(fixture[lang]);
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   await expect(notice).toBeHidden();
+   expect(await state()).toEqual(before);
+  }
+ });
+}
