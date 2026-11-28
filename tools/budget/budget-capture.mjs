@@ -41,3 +41,13 @@ export function consumeInbox(state,key){
  if(!state.inbox.some(r=>r.id===key))throw Error('missing receipt');
  return removeInbox(state,key);
 }
+
+ // A receipt and its booking must be persisted in the same cloud replacement.
+export function bookingCapturePatch(entries,state,key,bookingId){
+ const capture=validateCapture(state);
+ if(!capture.inbox.some(r=>r.id===key))throw Error('missing receipt');
+ const booking=entries.find(r=>r.id===bookingId);
+ if(!booking||!Array.isArray(booking.photos)||!booking.photos.length)throw Error('missing booking photo');
+ if(entries.some(r=>r.id!==bookingId&&r.inboxReceiptId===key))throw Error('duplicate receipt');
+ return {entries:entries.map(r=>r.id===bookingId?{...r,inboxReceiptId:key}:r),capture:consumeInbox(capture,key)};
+}
