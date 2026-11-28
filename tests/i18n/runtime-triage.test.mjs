@@ -29,3 +29,20 @@ test('confirm evidence requires passing exact-kind, exact-line, unique handler c
  assert.equal(verify({},'failed').count,0);
  assert.equal(verify({},'passed',[{...occurrence}]).count,0);
 });
+
+test('static escaped newlines decode without evaluating arbitrary source',()=>{
+ const de='Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\n\nTrotzdem erneut speichern?';
+ const result=reviewRuntimeLiteral('tools/budget/index.html',de.replace(/\n/g,'\\n'),'confirm(');
+ assert.equal(result.catalogueState,'catalogue-match-runtime-unverified');
+ assert.equal(result.decodedLiteral,de);
+ assert.equal(reviewRuntimeLiteral('tools/budget/index.html','Bitte \\u0041','alert(').catalogueState,'composite-source-review');
+});
+test('distinct fault labels and exact lines separate repeated dialog text',()=>{
+ const file='tools/budget/index.html',de='Bitte prüfen',en='Please check';
+ const source='function handle(){\n alert("Bitte prüfen");\n alert("Bitte prüfen");\n}';
+ const make=()=>[2,3].map(line=>({kind:'alert',line,literal:de,english:en,catalogueState:'catalogue-match-runtime-unverified'}));
+ const report=(faults)=>({suites:[{specs:faults.map((fault,i)=>({title:'i18n runtime catalogue: fault '+i,ok:true,tests:[{status:'expected',results:[{status:'passed'}],annotations:[{type:'toolya-runtime-message',description:JSON.stringify({file,handler:'handle',kind:'alert',line:i+2,de,en,fault})}]}]}))}]});
+ assert.equal(attachRuntimeEvidence([{file,sightings:make()}],report(['event','throw']),()=>source),2);
+ assert.equal(attachRuntimeEvidence([{file,sightings:make()}],report(['same','same']),()=>source),0);
+ assert.equal(attachRuntimeEvidence([{file,sightings:make()}],report([null,null]),()=>source),0);
+});
