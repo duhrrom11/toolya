@@ -4030,3 +4030,31 @@ for(const existing of [false,true]){
   }
  });
 }
+
+test('i18n runtime catalogue: budget backup download acknowledgement cancellation in DE and EN',async({page},testInfo)=>{
+ const de='Bitte bestätigen, dass die Cloud-Sicherung tatsächlich heruntergeladen und sicher gespeichert wurde.';
+ const en='Confirm that the cloud backup has been downloaded and stored safely.';
+ testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:'toolyaSafeCloudImport',kind:'confirm',line:585,de,en})});
+ await isolated(page,true,false,{entries:[],budgets:{},goals:[]});
+ await page.goto(origin+'/tools/budget/index.html?lang=de');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ const state=()=>page.evaluate(()=>({snapshot:toolyaCloudController.snapshot(),writes:window.__toolyaMock.writes}));
+ const before=await state();
+ for(const lang of ['de','en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await expect(page.locator('html')).toHaveAttribute('lang',lang);
+  const dialogs=[];
+  const onDialog=async dialog=>{dialogs.push({type:dialog.type(),message:dialog.message()});if(dialogs.length===1)await dialog.accept();else await dialog.dismiss();};
+  page.on('dialog',onDialog);
+  const downloaded=page.waitForEvent('download',{timeout:5000});
+  try{
+   const result=await page.evaluate(async()=>{try{await toolyaSafeCloudImport(toolyaCloudController.snapshot());return {rejected:false};}catch(e){return {rejected:true,message:e.message};}});
+   const download=await downloaded;
+   expect(download.suggestedFilename()).toBe('toolya-cloud-vor-import-haushaltsbuch.json');
+   expect(await download.failure()).toBeNull();
+   expect(result).toEqual({rejected:true,message:'Cloud-Sicherung nicht bestätigt. Import abgebrochen.'});
+   expect(dialogs).toEqual([{type:'confirm',message:lang==='en'?'Import replaces existing cloud data. Download a backup first?':'Import ersetzt vorhandene Cloud-Daten. Zuerst eine Sicherung herunterladen?'},{type:'confirm',message:lang==='en'?en:de}]);
+   expect(await state()).toEqual(before);
+  }finally{page.off('dialog',onDialog);}
+ }
+});
