@@ -14,15 +14,23 @@ const priorities={normal:['Normal','Normal'],important:['Wichtig','Important'],f
 const priorityLabel=key=>Object.hasOwn(priorities,key)?text(...priorities[key]):key;
 const formatDate=value=>new Date(value).toLocaleString(text('de-DE','en-GB'));
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let projectId='',data=null,busy=false,error='',share='',token='',qrLink='',initialised=false,undo=null;
+let projectId='',data=null,busy=false,error='',share='',token='',qrLink='',initialised=false,undo=null,generation=0;
 const current=()=>window.getData?.();
 const project=()=>current()?.moving?.projects?.find(p=>p.status==='active');
-async function api(action,more={},helper=false){
+async function api(action,more={}){
+  const activeGeneration=generation;
+  const activeProject=projectId;
   const headers={'Content-Type':'application/json','apikey':apikey};
-  if(!helper){const {data:{session},error}=await window.supabaseClient.auth.getSession();if(error||!session?.access_token)throw new TransportError('signIn');headers.Authorization='Bearer '+session.access_token;}
-  const res=await fetch(endpoint,{method:'POST',headers,body:JSON.stringify({action,projectId,...more}),cache:'no-store',referrerPolicy:'no-referrer'});
+  const {data:{session},error}=await window.supabaseClient.auth.getSession();
+  if(error||!session?.access_token||activeGeneration!==generation||!activeProject||project()?.id!==activeProject){
+   throw new TransportError('signIn');
+  }
+  headers.Authorization='Bearer '+session.access_token;
+  const res=await fetch(endpoint,{method:'POST',headers,body:JSON.stringify({action,projectId:activeProject,...more}),cache:'no-store',referrerPolicy:'no-referrer'});
   if(!res.ok)throw new TransportError(res.status===401?'signIn':'unavailable');
-  return res.json();
+  const result=await res.json();
+  if(activeGeneration!==generation||project()?.id!==activeProject)throw new TransportError('signIn');
+  return result;
 }
 const scanDialog=document.getElementById('movingBatchScan');
 const scanCopy={
@@ -212,7 +220,18 @@ root?.addEventListener('submit',async event=>{
  }catch(ex){error=transportError(ex,'issue');}
  finally{busy=false;render();}
 });
-document.addEventListener('toolya:moving-ready',()=>{if(!project()){scanner?.invalidate();undo=null;data=null;initialised=false;setTransport();root.hidden=true;return;}if(!initialised){initialised=true;void load();}else render();});
+document.addEventListener('toolya:moving-ready',()=>{
+ if(!project()){
+  generation++;
+  scanner?.invalidate();
+  undo=null;data=null;initialised=false;
+  projectId='';share='';token='';qrLink='';error='';
+  setTransport();
+  if(root){root.hidden=true;root.replaceChildren();}
+  return;
+ }
+ if(!initialised){initialised=true;void load();}else render();
+});
 document.addEventListener('toolya:moving-saved',()=>{render();});
 document.addEventListener('toolya:locale-change',()=>{
   scanner?.render();
