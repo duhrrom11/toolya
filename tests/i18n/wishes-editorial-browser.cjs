@@ -166,7 +166,7 @@ async function run(){
    assert.equal(await detail.locator('.profile-eyebrow').textContent(),'Von Toolya hinzugefügt');
    assert.equal(await claim.textContent(),'Profil beanspruchen – info@toolya.app');
    assert.equal(new URL(await claim.getAttribute('href')).searchParams.get('subject'),'Toolya-Wunschprofil beanspruchen');
-   await page.goto(origin+'/tools/wishes/public.html?profile='+other.user_id);
+   await page.goto(origin+'/tools/wishes/public.html?lang=de&profile='+other.user_id);
    await page.locator('#profileDetail h2').waitFor();
    assert.equal(await page.locator('#profileDetail .profile-eyebrow').textContent(),'Öffentliches Wunschprofil');
    assert.equal(await page.locator('#profileDetail a[href^="mailto:info@toolya.app"]').count(),0);
