@@ -228,21 +228,39 @@ test('umzugskisten-inventar: box photo waits for confirmed cloud write',async({p
     document.querySelector('#boxLocationSelect').value='1';
     document.querySelector('#boxName').value='Fotokiste';
   });
+  const photo=await page.evaluate(async()=>{
+    const canvas=document.createElement('canvas');canvas.width=1400;canvas.height=700;
+    const ctx=canvas.getContext('2d');ctx.fillStyle='#113355';ctx.fillRect(0,0,1400,700);
+    return canvas.toDataURL('image/png').split(',')[1];
+  });
   await page.locator('#boxPhotoInput').setInputFiles({
-    name:'kiste.png',mimeType:'image/png',buffer:Buffer.from([137,80,78,71,13,10,26,10])
+    name:'kiste.png',mimeType:'image/png',buffer:Buffer.from(photo,'base64')
   });
   const result=await page.evaluate(async()=>{
-    const OriginalReader=window.FileReader;
-    window.FileReader=class {
-      readAsDataURL(){setTimeout(()=>{this.result='data:image/png;base64,MOCK';this.onload?.()},15)}
+    const decode=window.createImageBitmap;
+    let resume,entered;
+    const waiting=new Promise(resolve=>{entered=resolve;});
+    window.createImageBitmap=async(...args)=>{
+      entered();
+      await new Promise(resolve=>{resume=resolve;});
+      return decode(...args);
     };
-    try {await saveBox()} finally {window.FileReader=OriginalReader}
-    return {writes:window.__toolyaMock.writes.length,
-      photo:window.__toolyaMock.writes.at(-1)?.p_data?.boxes?.[0]?.photo,
-      cleared:document.querySelector('#boxName').value===''};
+    try{
+      const saving=saveBox();
+      await waiting;
+      const before=window.__toolyaMock.writes.length;
+      resume();
+      await saving;
+      const photo=window.__toolyaMock.writes.at(-1)?.p_data?.boxes?.[0]?.photo;
+      const image=new Image();image.src=photo;await image.decode();
+      return {before,writes:window.__toolyaMock.writes.length,photo,width:image.width,height:image.height,
+        cleared:document.querySelector('#boxName').value===''};
+    }finally{window.createImageBitmap=decode;}
   });
+  expect(result.before).toBe(1);
   expect(result.writes).toBe(2);
-  expect(result.photo).toBe('data:image/png;base64,MOCK');
+  expect(result.photo).toMatch(/^data:image\/jpeg;base64,/);
+  expect([result.width,result.height]).toEqual([1200,600]);
   expect(result.cleared).toBe(true);
 });
 

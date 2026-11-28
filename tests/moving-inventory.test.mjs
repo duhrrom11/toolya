@@ -63,3 +63,27 @@ test('helper QR codes resolve only for the active grant and a visible box', asyn
     assert.equal(resolve('/tools/moving/helper/index.html#t=another&a=visible'), '');
     assert.equal(resolve('https://other.example/tools/moving/helper/index.html#t=grant&a=visible'), '');
 });
+
+test('physical placement and contents can change without replacing box identity', async () => {
+    const { moveInventoryBoxes, repackInventoryItems } = await import('../tools/moving/moving-inventory.mjs');
+    const data = structuredClone(inventory);
+    data.boxes[0].placement = 'Flur';
+    assert.equal(searchMovingBoxes(data, 'Flur').get(11).score, 1);
+    assert.equal(moveInventoryBoxes(data, [11, 13], 2), true);
+    assert.equal(data.boxes[0].locId, 2);
+    assert.equal(data.boxes[0].placement, undefined);
+    assert.equal(repackInventoryItems(data, 11, 13, [0], false), true);
+    assert.deepEqual(data.boxes[0].subItems, []);
+    assert.equal(data.boxes[2].subItems.at(-1).name, 'Wasserkocher');
+    assert.deepEqual(data.boxes.map(box => box.id), [11, 12, 13]);
+});
+
+test('part groups report missing parts from the current transport status', async () => {
+    const { movingPieceGroups } = await import('../tools/moving/moving-inventory.mjs');
+    const boxes = [
+        { id: 1, piece: { name: 'Desk', part: 1, total: 3 } },
+        { id: 2, piece: { name: 'Desk', part: 2, total: 3 } }
+    ];
+    const assignments = [{ boxId: 1, status: 'arrived' }, { boxId: 2, status: 'loaded' }];
+    assert.deepEqual(movingPieceGroups(boxes, assignments, item => item.status), [{ name: 'Desk', total: 3, missing: [2, 3] }]);
+});

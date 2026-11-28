@@ -1,4 +1,5 @@
 import {loadQrGenerator} from '../../shared/toolya/qr-generator.mjs';
+import {createBatchScanner} from './moving-batch-scan.mjs';
 const endpoint='https://yheogmeaosuigyaxkwth.supabase.co/functions/v1/moving-helper';
 const apikey='sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
 const root=document.getElementById('toolya-moving-transport');
@@ -13,7 +14,7 @@ const priorities={normal:['Normal','Normal'],important:['Wichtig','Important'],f
 const priorityLabel=key=>Object.hasOwn(priorities,key)?text(...priorities[key]):key;
 const formatDate=value=>new Date(value).toLocaleString(text('de-DE','en-GB'));
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let projectId='',data=null,busy=false,error='',share='',token='',qrLink='',initialised=false;
+let projectId='',data=null,busy=false,error='',share='',token='',qrLink='',initialised=false,undo=null;
 const current=()=>window.getData?.();
 const project=()=>current()?.moving?.projects?.find(p=>p.status==='active');
 async function api(action,more={},helper=false){
@@ -23,9 +24,53 @@ async function api(action,more={},helper=false){
   if(!res.ok)throw new TransportError(res.status===401?'signIn':'unavailable');
   return res.json();
 }
+const scanDialog=document.getElementById('movingBatchScan');
+const scanCopy={
+ ready:()=>text('Bereit zum Scannen.','Ready to scan.'),
+ count:count=>text(`Erfasst: ${count}`,`Recorded: ${count}`),
+ unknown:()=>text('Diese Kiste gehört nicht zum aktuellen Transport.','This box does not belong to the current move.'),
+ duplicate:()=>text('Diese Kiste wurde in dieser Runde bereits erfasst.','This box was already recorded in this session.'),
+ already:label=>text(`${label} hat diesen Status bereits.`,`${label} already has this status.`),
+ invalid:label=>text(`${label} kann diesen Status noch nicht erhalten.`,`${label} cannot move to this status yet.`),
+ saved:label=>text(`Status gespeichert: ${label}`,`Status saved: ${label}`),
+ failed:()=>text('Speicherung nicht bestätigt. Prüfe den aktuellen Status.','Save was not confirmed. Check the current status.'),
+ noCamera:()=>text('Kamera nicht verfügbar. Gib die Kisten-ID ein.','Camera unavailable. Enter the box ID.')
+};
+const scanner=scanDialog?createBatchScanner(scanDialog,scanCopy,recordScannedBox):null;
+async function transitionOwner(item,status,remember=true){
+ const previous=item.status;
+ const activeProject=project()?.id;
+ const response=await api('owner-transition',{assignmentId:item.assignmentId,expectedVersion:item.version,status,requestId:crypto.randomUUID()});
+ if(!activeProject||project()?.id!==activeProject||response.assignmentId!==item.assignmentId||
+    response.status!==status||!Number.isSafeInteger(response.version)||response.version!==item.version+1){
+  throw new TransportError('action');
+ }
+ item.status=response.status;
+ item.version=response.version;
+ undo=remember?{assignmentId:item.assignmentId,previous,version:item.version}:null;
+}
+async function recordScannedBox(id,status){
+ if(!window.movingCloudReady||busy||!project()||!data)return {status:'unknown'};
+ const assignment=current().moving.assignments.find(item=>item.projectId===project().id&&item.boxId===id);
+ const box=data.boxes.find(item=>item.assignmentId===assignment?.id);
+ if(!box)return {status:'unknown'};
+ if(box.status===status)return {status:'already',label:box.label};
+ if(steps.indexOf(status)!==steps.indexOf(box.status)+1)return {status:'invalid',label:box.label};
+ busy=true;
+ try{
+  await transitionOwner(box,status);
+  setTransport();
+  return {status:'saved',label:box.label};
+ }catch(error){
+  undo=null;
+  try{if(project()&&window.movingCloudReady){data=await api('state');setTransport();}}catch{}
+  throw error;
+ }finally{busy=false;render();}
+}
 function setTransport(){
   const enabled=Boolean(data?.boxes?.length||data?.grants?.length);
   window.movingTransportActive=enabled;
+  window.movingTransportMissing=new Set((data?.incidents??[]).filter(issue=>issue.kind==='missing'&&!issue.resolved).map(issue=>issue.assignmentId));
   window.movingTransportStatuses=Object.fromEntries((data?.boxes||[]).map(b=>[b.assignmentId,b]));
   document.dispatchEvent(new Event('toolya:moving-transport'));
 }
@@ -38,6 +83,14 @@ function render(){
   if(error)h+='<p role="alert" class="mv-error">'+esc(text(...errorMessages[error]))+'</p>';
   if(!data){root.innerHTML=h+'<button type="button" data-act="load" '+(busy?'disabled':'')+'>'+esc(text("Transportmodus laden","Load transport mode"))+'</button>';return;}
   h+='<div class="mv-r2-toolbar"><button type="button" data-act="sync" '+(busy?'disabled':'')+'>'+esc(text("Kisten & Räume abgleichen","Sync boxes and rooms"))+'</button><span class="mv-muted">'+new Intl.NumberFormat(text('de-DE','en-GB')).format(data.boxes.length)+esc(data.boxes.length===1?text(' Kiste im Transportmodus',' box in transport mode'):text(' Kisten im Transportmodus',' boxes in transport mode'))+'</span></div>';
+  if(data.boxes.length&&scanner)h+='<button type="button" data-act="batch-scan" '+(busy?'disabled':'')+'>'+esc(text('Mehrere Kisten scannen','Scan several boxes'))+'</button>';
+  if(undo)h+='<button type="button" data-act="undo" '+(busy?'disabled':'')+'>'+esc(text('Letzte Statusänderung rückgängig machen','Undo last status change'))+'</button>';
+  const outstanding=data.boxes.filter(box=>!['arrived','unpacked'].includes(box.status));
+  if(data.boxes.length){
+   const handled=data.boxes.length-outstanding.length;
+   const missing=window.movingTransportMissing;
+   h+=`<details class="mv-card"><summary>${text('Was fehlt noch?','What is still outstanding?')} · ${handled}/${data.boxes.length}</summary>${outstanding.map(box=>`<p>${esc(box.label)} · ${esc(box.room||'')} · ${esc(labels[language()][box.status])}${missing?.has(box.assignmentId)?' · '+text('Fehlend gemeldet','Reported missing'):''}</p>`).join('')||`<p>${text('Alle Kisten sind angekommen.','All boxes have arrived.')}</p>`}</details>`;
+  }
   h+='<h3>'+esc(text("Transportstatus","Transport status"))+'</h3>';
   h+='<div class="mv-r2-list">'+(data.boxes.length?data.boxes.map(b=>{
     const n=steps.indexOf(b.status);
@@ -66,6 +119,7 @@ async function drawQr(id,url){
 async function load(){const p=project();if(!p)return;projectId=p.id;busy=true;error='';render();try{data=await api('state');setTransport();}catch(e){error=transportError(e,'unavailable');}finally{busy=false;render();}}
 root?.addEventListener('click',async e=>{
  const b=e.target.closest('button');if(!b||busy)return;
+ if(b.dataset.act==='batch-scan'){scanner?.open();return;}
  if(b.dataset.act==='copy'){const v=document.getElementById('mv-helper-link')?.value;if(v){try{await navigator.clipboard.writeText(v);}catch{document.getElementById('mv-helper-link').select();}}return;}
  if(b.dataset.act==='show-qr'){await drawQr('mv-share-qr',share);return;}
  if(b.dataset.act==='close-qr'){qrLink='';render();return;}
@@ -85,9 +139,25 @@ root?.addEventListener('click',async e=>{
     const x=await api('create',{label,hours});token=x.token;const u=new URL('./helper/index.html',location.href);u.searchParams.set('lang',language());u.hash=new URLSearchParams({t:token}).toString();share=u.href;data=await api('state');
   }else if(b.dataset.resolve){await api('resolve-incident',{incidentId:b.dataset.resolve});data=await api('state');}
   else if(b.dataset.revoke){await api('revoke',{grantId:b.dataset.revoke});data=await api('state');share='';token='';qrLink='';}
-  else if(b.dataset.status){const item=data?.boxes?.find(x=>x.assignmentId===b.dataset.status);if(!item)return;await api('owner-transition',{assignmentId:item.assignmentId,expectedVersion:item.version,status:b.dataset.next,requestId:crypto.randomUUID()});data=await api('state');}
+  else if(act==='undo'){
+    const last=undo;
+    undo=null;
+    const item=last&&data?.boxes?.find(box=>box.assignmentId===last.assignmentId&&box.version===last.version);
+    if(!item)throw new TransportError('action');
+    await transitionOwner(item,last.previous,false);
+  }else if(b.dataset.status){
+    const item=data?.boxes?.find(x=>x.assignmentId===b.dataset.status);
+    if(!item)return;
+    await transitionOwner(item,b.dataset.next);
+  }
   setTransport();
- }catch(ex){error=transportError(ex,'action');}finally{busy=false;render();}
+ }catch(ex){
+  error=transportError(ex,'action');
+  if(act==='undo'||b.dataset.status){
+   undo=null;
+   try{if(project()&&window.movingCloudReady){data=await api('state');setTransport();}}catch{}
+  }
+ }finally{busy=false;render();}
 });
 root?.addEventListener('submit',async event=>{
  if(event.target.id!=='mv-owner-incident')return;
@@ -100,13 +170,14 @@ root?.addEventListener('submit',async event=>{
  projectId=project().id;busy=true;error='';render();
  try{
    await api('owner-report-incident',{assignmentId,kind,note,requestId:crypto.randomUUID()});
-   data=await api('state');
+   data=await api('state');setTransport();
  }catch(ex){error=transportError(ex,'issue');}
  finally{busy=false;render();}
 });
-document.addEventListener('toolya:moving-ready',()=>{if(!project()){data=null;root.hidden=true;return;}if(!initialised){initialised=true;void load();}else render();});
+document.addEventListener('toolya:moving-ready',()=>{if(!project()){scanner?.invalidate();undo=null;data=null;initialised=false;setTransport();root.hidden=true;return;}if(!initialised){initialised=true;void load();}else render();});
 document.addEventListener('toolya:moving-saved',()=>{render();});
 document.addEventListener('toolya:locale-change',()=>{
+  scanner?.render();
   if(!root||root.hidden)return;
   const ids=['mv-incident-assignment','mv-incident-kind','mv-incident-note','mv-helper-name','mv-helper-hours','mv-qr-assignment'];
   const values=ids.map(id=>[id,document.getElementById(id)?.value]);

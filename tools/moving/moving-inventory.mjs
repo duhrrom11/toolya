@@ -27,7 +27,7 @@ export function searchMovingBoxes(data, query) {
     const words = tokens(needle);
     for (const box of data.boxes) {
         const fields = [box.name, box.desc, ...(box.subItems ?? []).map(item => item.name),
-            box.tag, box.barcode, locations.get(box.locId)];
+            box.tag, box.barcode, box.placement, box.piece?.name, locations.get(box.locId)];
         const candidates = fields.map(normalize);
         const i = candidates.findIndex(field => field.includes(needle));
         if (i >= 0) {
@@ -78,4 +78,51 @@ export async function resizeMovingPhoto(file) {
     } finally {
         image.close();
     }
+}
+
+export function moveInventoryBoxes(data, boxIds, locationId) {
+    if (!data.locations.some(location => location.id === locationId)) return false;
+    const selected = new Set(boxIds);
+    const boxes = data.boxes.filter(box => selected.has(box.id));
+    if (!boxes.length || boxes.length !== selected.size) return false;
+    for (const box of boxes) {
+        box.locId = locationId;
+        delete box.placement;
+    }
+    return true;
+}
+
+export function repackInventoryItems(data, sourceId, targetId, indices, includeDescription) {
+    if (sourceId === targetId) return false;
+    const source = data.boxes.find(box => box.id === sourceId);
+    const target = data.boxes.find(box => box.id === targetId);
+    if (!source || !target) return false;
+    const items = source.subItems ?? [];
+    const selection = new Set(indices);
+    if ([...selection].some(index => !Number.isInteger(index) || index < 0 || index >= items.length)) return false;
+    if (!selection.size && !(includeDescription && source.desc)) return false;
+    target.subItems = [...(target.subItems ?? []), ...items.filter((_, index) => selection.has(index))];
+    source.subItems = items.filter((_, index) => !selection.has(index));
+    if (includeDescription && source.desc) {
+        target.desc = [target.desc, source.desc].filter(Boolean).join(' · ');
+        source.desc = '';
+    }
+    return true;
+}
+
+export function movingPieceGroups(boxes, assignments, liveStatus) {
+    const groups = new Map();
+    const byId = new Map(boxes.map(box => [box.id, box]));
+    for (const assignment of assignments) {
+        const piece = byId.get(assignment.boxId)?.piece;
+        if (!piece || typeof piece.name !== 'string' || !Number.isInteger(piece.total) ||
+            piece.total < 2 || piece.total > 99) continue;
+        const key = piece.name.trim().toLowerCase();
+        if (!groups.has(key)) groups.set(key, { name: piece.name, total: piece.total, arrived: new Set() });
+        if (['arrived', 'unpacked'].includes(liveStatus(assignment))) groups.get(key).arrived.add(piece.part);
+    }
+    return [...groups.values()].map(group => ({
+        name: group.name, total: group.total,
+        missing: Array.from({ length: group.total }, (_, index) => index + 1).filter(index => !group.arrived.has(index))
+    }));
 }

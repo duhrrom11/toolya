@@ -186,6 +186,10 @@
                     </select></label>
                     <label class="helferlein-field" for="boxPhotoInput"><span class="helferlein-field-label" data-tool-en="Choose box photo">Foto der Kiste auswählen</span><input type="file" id="boxPhotoInput" accept="image/*" capture="environment" class="text-xs p-2 border rounded-xl file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Foto der Kiste auswählen" data-tool-en-aria-label="Choose box photo"></label>
                 </div>
+                <details>
+                    <summary data-tool-en="Packing options">Packoptionen</summary>
+                    <label><input type="checkbox" id="movingNewUnboxed"> <span data-tool-en="Item without a box">Gegenstand ohne Kiste</span></label>
+                </details>
                 <button onclick="saveBox()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm b3-action">Kiste speichern & QR-Code</button>
                 <details class="space-y-2">
                     <summary data-tool-en="Create several boxes">Mehrere Kisten anlegen</summary>
@@ -229,6 +233,27 @@
                     <label class="helferlein-field" for="searchBox"><span class="helferlein-field-label">🔍 Suchen (Kiste, Artikel, Barcode)...</span><input type="text" id="searchBox" oninput="renderInventory()" placeholder="🔍 Suchen (Kiste, Artikel, Barcode)..." class="p-2 border rounded-xl text-sm flex-grow md:w-56" aria-label="🔍 Suchen (Kiste, Artikel, Barcode)..." data-tool-en-placeholder="🔍 Search (box, item, barcode)…" data-tool-en-aria-label="🔍 Search (box, item, barcode)…"></label>
                 </div>
             </div>
+            <details class="space-y-2">
+                <summary data-tool-en="More filters">Weitere Filter</summary>
+                <label for="movingDispositionFilter" data-tool-en="Filter by destination">Nach Verbleib filtern</label>
+                <select id="movingDispositionFilter" class="block w-full p-2 border rounded-xl" onchange="renderInventory()">
+                    <option value="" data-tool-en="All destinations">Alle Ziele</option>
+                    <option value="home" data-tool-en="New home">Neue Wohnung</option>
+                    <option value="storage" data-tool-en="Storage">Lager</option>
+                    <option value="donation" data-tool-en="Donation">Spende</option>
+                    <option value="pickup" data-tool-en="Pickup">Abholung</option>
+                </select>
+            </details>
+            <details id="movingBulkPanel" class="space-y-2">
+                <summary data-tool-en="Move boxes into storage">Kisten ins Lager verschieben</summary>
+                <fieldset class="max-h-40 overflow-auto">
+                    <legend data-tool-en="Select boxes">Kisten auswählen</legend>
+                    <div id="movingBulkBoxes"></div>
+                </fieldset>
+                <label for="movingBulkLocation" data-tool-en="New storage location">Neuer Lagerort</label>
+                <select id="movingBulkLocation" class="block w-full p-2 border rounded-xl"></select>
+                <button type="button" id="movingBulkSave" disabled class="b3-action b3-outline" data-tool-en="Move selected boxes">Ausgewählte Kisten verschieben</button>
+            </details>
             <div id="inventoryContainer" class="space-y-4">
                 <p class="text-sm text-gray-400 text-center py-4">Noch keine Standorte oder Kisten erfasst.</p>
             </div>
@@ -277,12 +302,73 @@
                 <button type="button" id="boxItemsApply" class="b3-action b3-outline" onclick="applyBoxItems()" disabled data-tool-en="Add items to this box">Gegenstände übernehmen</button>
             </details>
 
+            <details id="movingBoxDetails" class="space-y-2">
+                <summary data-tool-en="Placement and borrowed boxes">Abstellort und Leihkartons</summary>
+                <label for="movingEditPlacement" data-tool-en="Where is the box now?">Wo steht die Kiste gerade?</label>
+                <input id="movingEditPlacement" maxlength="120" class="block w-full p-2 border rounded-xl">
+                <label for="movingEditRental" data-tool-en="Borrowed box">Leihkarton</label>
+                <select id="movingEditRental" class="block w-full p-2 border rounded-xl">
+                    <option value="" data-tool-en="Own box">Eigene Kiste</option>
+                    <option value="borrowed" data-tool-en="Borrowed">Ausgeliehen</option>
+                    <option value="empty" data-tool-en="Empty">Leer</option>
+                    <option value="returned" data-tool-en="Returned">Zurückgegeben</option>
+                </select>
+            </details>
+            <details id="movingPackingDetails" class="space-y-2">
+                <summary data-tool-en="Packing options">Packoptionen</summary>
+                <label><input type="checkbox" id="movingEditUnboxed"> <span data-tool-en="Item without a box">Gegenstand ohne Kiste</span></label>
+                <label for="movingEditDisposition" data-tool-en="Where does it go?">Wohin kommt es?</label>
+                <select id="movingEditDisposition" class="block w-full p-2 border rounded-xl">
+                    <option value="" data-tool-en="Unspecified">Keine Angabe</option>
+                    <option value="home" data-tool-en="New home">Neue Wohnung</option>
+                    <option value="storage" data-tool-en="Storage">Lager</option>
+                    <option value="donation" data-tool-en="Donation">Spende</option>
+                    <option value="pickup" data-tool-en="Pickup">Abholung</option>
+                </select>
+                <label for="movingEditGroup" data-tool-en="Name of the set (optional)">Name des Sets (optional)</label>
+                <input id="movingEditGroup" maxlength="80" class="block w-full p-2 border rounded-xl">
+                <label for="movingEditPart" data-tool-en="Part number">Nummer des Teils</label>
+                <input id="movingEditPart" type="number" min="1" max="99" class="block w-full p-2 border rounded-xl">
+                <label for="movingEditTotal" data-tool-en="Total pieces">Teile insgesamt</label>
+                <input id="movingEditTotal" type="number" min="2" max="99" class="block w-full p-2 border rounded-xl">
+            </details>
+            <details id="movingAccessories" class="space-y-2">
+                <summary data-tool-en="Link accessories">Zubehör zuordnen</summary>
+                <p data-tool-en="Link an item in this box to its furniture or equipment entry.">Verknüpfe einen Gegenstand aus dieser Kiste mit dem passenden Möbel oder Gerät.</p>
+                <div id="movingAccessoryItems" class="space-y-2 max-h-48 overflow-auto"></div>
+            </details>
+            <details id="movingRepackPanel" class="space-y-2">
+                <summary data-tool-en="Move contents to another box">In andere Kiste umpacken</summary>
+                <label for="movingRepackTarget" data-tool-en="Target box">Zielkiste</label>
+                <select id="movingRepackTarget" class="block w-full p-2 border rounded-xl"></select>
+                <fieldset class="max-h-32 overflow-auto">
+                    <legend data-tool-en="Items to move">Gegenstände zum Umpacken</legend>
+                    <div id="movingRepackItems"></div>
+                </fieldset>
+                <p id="movingRepackSummary" role="status"></p>
+            </details>
             <div class="flex flex-wrap justify-end gap-2 pt-3 border-t b3-dialog-actions">
                 <button onclick="closeEditBoxModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm b3-action b3-outline">Abbrechen</button>
                 <button onclick="updateBox()" class="px-5 py-2 bg-amber-600 text-white rounded-xl text-sm font-bold b3-action">Speichern</button>
             </div>
         </div>
     </div>
+
+    <dialog id="movingBatchScan" class="rounded-2xl p-5 max-w-lg w-full" aria-labelledby="movingBatchScanTitle">
+        <h2 id="movingBatchScanTitle" class="font-bold text-lg" data-tool-en="Scan several boxes">Mehrere Kisten scannen</h2>
+        <label for="movingScanTarget" data-tool-en="Set status to">Status setzen auf</label>
+        <select id="movingScanTarget" class="block w-full p-2 border rounded-xl">
+            <option value="loaded" data-tool-en="Loaded">Verladen</option>
+            <option value="arrived" data-tool-en="Arrived">Angekommen</option>
+        </select>
+        <button type="button" data-camera-start class="b3-action b3-outline" data-tool-en="Open camera">Kamera öffnen</button>
+        <video autoplay muted playsinline class="block w-full max-h-56"></video>
+        <label for="movingScanManual" data-tool-en="QR link or box ID">QR-Link oder Kisten-ID</label>
+        <input id="movingScanManual" type="text" class="block w-full p-2 border rounded-xl">
+        <button type="button" data-manual-submit class="b3-action b3-outline" data-tool-en="Record box">Kiste erfassen</button>
+        <output class="block break-words" aria-live="polite"></output>
+        <form method="dialog"><button type="submit" class="b3-action b3-outline" data-tool-en="Close scanner">Scanner schließen</button></form>
+    </dialog>
 
     <dialog id="movingPrintDialog" class="rounded-2xl p-5 max-w-lg w-full" aria-labelledby="movingPrintTitle">
         <h2 id="movingPrintTitle" class="font-bold text-lg" data-tool-en="Print moving documents">Umzugsunterlagen drucken</h2>
@@ -316,7 +402,7 @@
     </dialog>
 
     <!-- MODAL: QR Code anzeigen & Deep-Link -->
-    <div id="qrModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeQrModal()">
+    <div id="qrModal" hidden class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeQrModal()">
         <div class="bg-white p-6 rounded-2xl text-center space-y-3 shadow-2xl" onclick="event.stopPropagation()">
             <h3 id="qrModalTitle" class="font-bold text-lg">QR-Code</h3>
             <div id="qrcode" class="flex justify-center p-2 bg-white border rounded-xl"></div>
@@ -328,7 +414,7 @@
     </div>
 
     <!-- MODAL: Live QR & Barcode Scanner -->
-    <div id="scannerModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50">
+    <div id="scannerModal" hidden class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-2xl space-y-4 text-center">
             <h3 class="font-bold text-lg">🔍 Live Scanner</h3>
             <div id="reader" class="w-full rounded-xl overflow-hidden border"></div>
@@ -555,6 +641,7 @@
 
         const movingInventoryTools = import('./moving-inventory.mjs');
         let movingSearchBoxes = null;
+        let movingRepackItems = null;
         const boxFormText = (de, en) => window.__toolyaUILocale === 'en' ? en : de;
         let addingBox = false;
         let html5QrCode = null;
@@ -628,7 +715,9 @@
                         return confirm(window.__toolyaUILocale === 'en' ? 'Please confirm that the backup was downloaded successfully.' : 'Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.');
                     }
                 });
-                movingSearchBoxes = (await movingInventoryTools).searchMovingBoxes;
+                const inventoryTools = await movingInventoryTools;
+                movingSearchBoxes = inventoryTools.searchMovingBoxes;
+                movingRepackItems = inventoryTools.repackInventoryItems;
                 const {data:again,error:againError}=await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser();
                 if (againError || again?.user?.id!==uid || again.user.is_anonymous)
                     throw Error('Konto während des Ladens gewechselt.');
@@ -790,6 +879,7 @@
             const barcode = document.getElementById('boxBarcode').value.trim();
             const expiry = document.getElementById('boxExpiry').value;
             const photoInput = document.getElementById('boxPhotoInput');
+            const unboxed = movingField('movingNewUnboxed').checked;
 
             if (!locId || !name) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a location and box name!' : 'Bitte Standort und Kisten-Name angeben!');
 
@@ -808,13 +898,13 @@
                     }
                 }
                 if (!movingCloudReady || accountId !== movingCloudUserId) return;
-                await storeBoxData(locId, name, desc, value, tag, barcode, expiry, '', [], photo);
+                await storeBoxData(locId, name, desc, value, tag, barcode, expiry, '', [], photo, unboxed);
             } finally {
                 addingBox = false;
             }
         }
 
-        async function storeBoxData(locId, name, desc, value, tag, barcode, expiry, lentTo, subItems, photo) {
+        async function storeBoxData(locId, name, desc, value, tag, barcode, expiry, lentTo, subItems, photo, unboxed = false) {
             let data = getData();
             data.boxes.push({ 
                 id: Date.now(), 
@@ -827,7 +917,8 @@
                 expiry, 
                 lentTo: lentTo || "", 
                 subItems: subItems || [],
-                photo 
+                photo,
+                ...(unboxed ? { unboxed: true } : {})
             });
             if (!await saveData(data)) return;
             document.getElementById('boxName').value = "";
@@ -836,6 +927,7 @@
             document.getElementById('boxBarcode').value = "";
             document.getElementById('boxExpiry').value = "";
             document.getElementById('boxPhotoInput').value = "";
+            movingField('movingNewUnboxed').checked = false;
             renderInventory();
         }
 
@@ -1021,6 +1113,116 @@
         });
         document.addEventListener('toolya:locale-change', renderCsvPreview);
 
+        const bulkPanel = movingField('movingBulkPanel');
+        const bulkLocation = movingField('movingBulkLocation');
+        const bulkChoices = movingField('movingBulkBoxes');
+        const bulkSave = movingField('movingBulkSave');
+        function inventoryOption(select, value, label) {
+            select.add(new Option(label, value));
+        }
+        function inventoryChoice(container, value, label, checked = false) {
+            const wrapper = document.createElement('label');
+            wrapper.className = 'block break-words';
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.value = value;
+            input.checked = checked;
+            wrapper.append(input, document.createTextNode(' ' + label));
+            container.append(wrapper);
+        }
+        function checkedInventoryChoices(container) {
+            return [...container.querySelectorAll('input:checked')].map(input => Number(input.value));
+        }
+        function updateBulkButton() {
+            bulkSave.disabled = !movingCloudReady || !bulkLocation.value ||
+                !bulkChoices.querySelector('input:checked');
+        }
+        function renderBulkPanel(keepSelection = false) {
+            if (!bulkPanel.open) return;
+            const selection = new Set(keepSelection ? checkedInventoryChoices(bulkChoices) : []);
+            const selectedLocation = keepSelection ? bulkLocation.value : '';
+            const data = getData();
+            bulkChoices.replaceChildren();
+            bulkLocation.replaceChildren();
+            inventoryOption(bulkLocation, '', boxFormText('Standort wählen', 'Choose location'));
+            for (const location of data.locations) inventoryOption(bulkLocation, location.id, location.name);
+            if (selectedLocation && data.locations.some(location => String(location.id) === selectedLocation)) {
+                bulkLocation.value = selectedLocation;
+            }
+            for (const box of data.boxes) inventoryChoice(bulkChoices, box.id, box.name, selection.has(box.id));
+            updateBulkButton();
+        }
+        bulkPanel.addEventListener('toggle', () => renderBulkPanel(true));
+        bulkPanel.addEventListener('input', updateBulkButton);
+        bulkSave.addEventListener('click', async () => {
+            if (movingSaveInProgress || !movingCloudReady) return;
+            const { moveInventoryBoxes } = await movingInventoryTools;
+            if (!movingCloudReady || movingSaveInProgress || bulkSave.disabled) return;
+            const data = getData();
+            if (!moveInventoryBoxes(data, checkedInventoryChoices(bulkChoices), Number(bulkLocation.value))) return;
+            if (!await saveData(data)) return;
+            renderBulkPanel();
+            renderInventory();
+        });
+        document.addEventListener('toolya:locale-change', () => renderBulkPanel(true));
+        document.addEventListener('toolya:moving-ready', () => {
+            if (movingCloudReady) return;
+            bulkPanel.open = false;
+            bulkChoices.replaceChildren();
+            bulkLocation.replaceChildren();
+        });
+
+        const repackTarget = movingField('movingRepackTarget');
+        const repackItems = movingField('movingRepackItems');
+        const repackPanel = movingField('movingRepackPanel');
+        function renderRepackChoices() {
+            if (!repackPanel.open) return;
+            const selected = new Set(checkedInventoryChoices(repackItems));
+            repackItems.replaceChildren();
+            activeSubItemsTemp.forEach((item, index) => inventoryChoice(repackItems, index, item.name, selected.has(index)));
+            const description = movingField('editBoxDesc').value.trim();
+            if (description) inventoryChoice(repackItems, -1, boxFormText('Inhaltsbeschreibung', 'Contents description'), selected.has(-1));
+            updateRepackSummary();
+        }
+        function updateRepackSummary() {
+            if (!repackPanel.open) return;
+            const count = checkedInventoryChoices(repackItems).length;
+            const name = repackTarget.selectedOptions[0]?.textContent;
+            movingField('movingRepackSummary').textContent = count && repackTarget.value ?
+                boxFormText(`Beim Speichern zu „${name}“ verschieben: ${count}`, `Move to “${name}” when saving: ${count}`) : '';
+        }
+        repackPanel.addEventListener('toggle', renderRepackChoices);
+        repackPanel.addEventListener('input', updateRepackSummary);
+        movingField('editBoxDesc').addEventListener('input', renderRepackChoices);
+
+        const accessories = movingField('movingAccessories');
+        const accessoryItems = movingField('movingAccessoryItems');
+        function renderAccessoryChoices() {
+            if (!accessories.open) return;
+            const currentId = Number(movingField('editBoxId').value);
+            const boxes = getData().boxes.filter(box => box.id !== currentId);
+            accessoryItems.replaceChildren(...activeSubItemsTemp.map((item, index) => {
+                const wrapper = document.createElement('label');
+                wrapper.className = 'block break-words';
+                wrapper.textContent = item.name;
+                const select = document.createElement('select');
+                select.className = 'block w-full p-2 border rounded-xl';
+                select.dataset.accessoryIndex = index;
+                inventoryOption(select, '', boxFormText('Keine Verknüpfung', 'No link'));
+                for (const box of boxes) inventoryOption(select, box.id, box.name);
+                select.value = boxes.some(box => box.id === item.relatedBoxId) ? item.relatedBoxId : '';
+                wrapper.append(select);
+                return wrapper;
+            }));
+        }
+        accessories.addEventListener('toggle', renderAccessoryChoices);
+        accessoryItems.addEventListener('change', event => {
+            const item = activeSubItemsTemp[Number(event.target.dataset.accessoryIndex)];
+            if (!item) return;
+            const id = Number(event.target.value);
+            if (id) item.relatedBoxId = id;
+            else delete item.relatedBoxId;
+        });
         function openEditBoxModal(boxId) {
             let data = getData();
             let box = data.boxes.find(b => b.id === boxId);
@@ -1037,6 +1239,25 @@
             document.getElementById('editBoxBarcode').value = box.barcode || "";
             document.getElementById('editBoxExpiry').value = box.expiry || "";
             document.getElementById('editBoxLentTo').value = box.lentTo || "";
+            movingField('movingEditPlacement').value = box.placement || '';
+            movingField('movingEditRental').value = box.rental || '';
+            movingField('movingBoxDetails').open = false;
+            movingField('movingPackingDetails').open = false;
+            movingField('movingEditUnboxed').checked = box.unboxed === true;
+            movingField('movingEditDisposition').value = box.disposition || '';
+            movingField('movingEditGroup').value = box.piece?.name || '';
+            movingField('movingEditPart').value = box.piece?.part ?? '';
+            movingField('movingEditTotal').value = box.piece?.total ?? '';
+            repackPanel.open = false;
+            accessories.open = false;
+            accessoryItems.replaceChildren();
+            repackItems.replaceChildren();
+            repackTarget.replaceChildren();
+            inventoryOption(repackTarget, '', boxFormText('Kiste wählen', 'Choose a box'));
+            for (const candidate of data.boxes) {
+                if (candidate.id !== box.id) inventoryOption(repackTarget, candidate.id, candidate.name);
+            }
+            movingField('movingRepackSummary').textContent = '';
             
             activeSubItemsTemp = JSON.parse(JSON.stringify(box.subItems || []));
             renderSubItemsModal();
@@ -1050,6 +1271,8 @@
 
         function renderSubItemsModal() {
             const container = document.getElementById('subItemsContainer');
+            renderRepackChoices();
+            renderAccessoryChoices();
             if (activeSubItemsTemp.length === 0) {
                 container.innerHTML = `<p class="text-[11px] text-gray-400 italic">${window.__toolyaUILocale === 'en' ? 'No items recorded.' : 'Keine Unterartikel erfasst.'}</p>`;
                 return;
@@ -1077,6 +1300,7 @@
 
         function removeSubItem(idx) {
             activeSubItemsTemp.splice(idx, 1);
+            repackItems.replaceChildren();
             renderSubItemsModal();
         }
 
@@ -1104,7 +1328,39 @@
                 box.barcode = barcode;
                 box.expiry = expiry;
                 box.lentTo = lentTo;
-                box.subItems = activeSubItemsTemp;
+                box.subItems = [...activeSubItemsTemp];
+                const disposition = movingField('movingEditDisposition').value;
+                if (disposition) box.disposition = disposition;
+                else delete box.disposition;
+                if (movingField('movingEditUnboxed').checked) box.unboxed = true;
+                else delete box.unboxed;
+                const group = movingField('movingEditGroup').value.trim();
+                if (group) {
+                    const part = movingField('movingEditPart').valueAsNumber;
+                    const total = movingField('movingEditTotal').valueAsNumber;
+                    const conflicts = data.boxes.some(candidate => candidate.id !== box.id &&
+                        candidate.piece?.name?.toLowerCase?.() === group.toLowerCase() &&
+                        (candidate.piece.part === part || candidate.piece.total !== total));
+                    if (!Number.isInteger(part) || !Number.isInteger(total) || part < 1 || total < 2 ||
+                        part > total || total > 99 || conflicts) {
+                        alert(boxFormText('Prüfe Teilenummer und Gesamtanzahl. Jede Nummer im Set darf nur einmal vorkommen.',
+                            'Check the part number and total. Each number may occur only once in a set.'));
+                        return;
+                    }
+                    box.piece = { name: group, part, total };
+                } else delete box.piece;
+                const placement = movingField('movingEditPlacement').value.trim();
+                const rental = movingField('movingEditRental').value;
+                if (placement) box.placement = placement;
+                else delete box.placement;
+                if (rental) box.rental = rental;
+                else delete box.rental;
+                const selected = repackPanel.open ? checkedInventoryChoices(repackItems) : [];
+                if (selected.length && !movingRepackItems(data, boxId, Number(repackTarget.value),
+                    selected.filter(index => index >= 0), selected.includes(-1))) {
+                    alert(boxFormText('Wähle eine Zielkiste zum Umpacken.', 'Choose a destination box for repacking.'));
+                    return;
+                }
                 if (!await saveData(data)) return;
             }
             closeEditBoxModal();
@@ -1170,6 +1426,25 @@
             }
 
             const today = new Date().toISOString().split('T')[0];
+            const projectId = data.moving?.projects?.find(project => project.status === 'active')?.id;
+            const targetRooms = new Map((data.moving?.rooms ?? []).map(room => [room.id, room.name]));
+            const targets = new Map((data.moving?.assignments ?? []).filter(item => item.projectId === projectId)
+                .map(item => [item.boxId, targetRooms.get(item.targetRoomId)]));
+
+            const accessoryLinks = new Map();
+            const boxesById = new Map(data.boxes.map(box => [box.id, box]));
+            function associate(boxId, item, linkedBox) {
+                if (!accessoryLinks.has(boxId)) accessoryLinks.set(boxId, []);
+                accessoryLinks.get(boxId).push(`${item.name} → ${linkedBox.name}`);
+            }
+            for (const source of data.boxes) {
+                for (const item of source.subItems ?? []) {
+                    const linked = boxesById.get(item.relatedBoxId);
+                    if (!linked) continue;
+                    associate(source.id, item, linked);
+                    associate(linked.id, item, source);
+                }
+            }
 
             const hits = search && movingSearchBoxes ? movingSearchBoxes(data, search) : null;
             const locations = [...data.locations];
@@ -1190,6 +1465,8 @@
                     locBoxes = locBoxes.filter(b => (b.tag || 'Standard') === tagFilter);
                 }
 
+                const disposition = document.getElementById('movingDispositionFilter')?.value;
+                if (disposition) locBoxes = locBoxes.filter(box => box.disposition === disposition);
                 if (hits) locBoxes = locBoxes.filter(box => hits.has(box.id));
 
                 locBoxes.sort((a, b) => {
@@ -1200,7 +1477,7 @@
                     return a.name.localeCompare(b.name);
                 });
 
-                if (locBoxes.length === 0 && hits) return '';
+                if (locBoxes.length === 0 && (hits || disposition)) return '';
 
                 return `
                     <div class="border rounded-2xl p-4 bg-gray-50 space-y-3">
@@ -1223,13 +1500,19 @@
                                             ${b.photo ? `<button type="button" class="b3-photo-trigger" aria-label="${window.__toolyaUILocale === 'en' ? 'Enlarge box photo' : 'Kistenfoto vergrößern'}" onclick="zoomImage(this.firstElementChild.src)"><img alt="${window.__toolyaUILocale === 'en' ? 'Photo of moving box' : 'Foto der Umzugskiste'}" src="${escapeInventoryText(b.photo)}" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80"></button>` : `<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">${window.__toolyaUILocale === 'en' ? 'No image' : 'Kein Bild'}</div>`}
                                             <div>
                                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
-                                                    <h5 class="font-bold text-sm">📦 ${escapeInventoryText(b.name)}</h5>
+                                                    <h5 class="font-bold text-sm">${b.unboxed ? '📍' : '📦'} ${escapeInventoryText(b.name)}</h5>
+                                                    ${b.unboxed ? `<span class="text-xs">${boxFormText('Ohne Kiste', 'Unboxed')}</span>` : ''}
                                                     <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">${escapeInventoryText(formatMovingTagLabel(b.tag || 'Standard'))}</span>
                                                     ${isLent ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold" title="${window.__toolyaUILocale === 'en' ? 'Lent to' : 'Ausgeliehen an'}: ${escapeInventoryText(b.lentTo)}">${window.__toolyaUILocale === 'en' ? '🤝 Lent' : '🤝 Ausgeliehen'} (${escapeInventoryText(b.lentTo)})</span>` : ''}
                                                     ${isExpired ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 font-bold" title="${window.__toolyaUILocale === 'en' ? 'Expired date!' : 'Ablaufdatum überschritten!'}">${window.__toolyaUILocale === 'en' ? '⚠️ Expired' : '⚠️ Ablauf'}</span>` : ''}
                                                 </div>
                                                 <p class="text-xs text-gray-600 mt-0.5">${escapeInventoryText(b.desc || (window.__toolyaUILocale === 'en' ? 'No description' : 'Keine Beschreibung'))}</p>
                                                 ${hits?.get(b.id)?.match && hits.get(b.id).match !== b.name && hits.get(b.id).match !== b.desc ? `<p class="text-xs">${boxFormText('Treffer', 'Match')}: ${escapeInventoryText(hits.get(b.id).match)}</p>` : ''}
+                                                ${accessoryLinks.has(b.id) ? `<p class="text-xs">${boxFormText('Zubehör', 'Accessories')}: ${escapeInventoryText(accessoryLinks.get(b.id).join(' · '))}</p>` : ''}
+                                                ${b.piece ? `<p class="text-xs">${escapeInventoryText(b.piece.name)} · ${boxFormText('Teil', 'Part')} ${escapeInventoryText(b.piece.part)}/${escapeInventoryText(b.piece.total)}</p>` : ''}
+                                                ${targets.get(b.id) ? `<p class="text-xs">${boxFormText('Zielraum', 'Destination room')}: ${escapeInventoryText(targets.get(b.id))}</p>` : ''}
+                                                ${b.placement ? `<p class="text-xs">${boxFormText('Steht gerade hier', 'Currently at')}: ${escapeInventoryText(b.placement)}</p>` : ''}
+                                                ${b.rental ? `<p class="text-xs">${boxFormText('Leihkarton', 'Borrowed box')} · ${b.rental === 'returned' ? boxFormText('Zurückgegeben', 'Returned') : b.rental === 'empty' ? boxFormText('Leer', 'Empty') : boxFormText('Offen', 'Outstanding')}</p>` : ''}
                                                 ${subItemsText ? `<p class="text-[11px] text-indigo-600 font-medium mt-0.5">${window.__toolyaUILocale === 'en' ? 'Contents' : 'Inhalt'}: ${subItemsText}</p>` : ''}
                                                 <div class="flex gap-3 text-[11px] text-gray-500 mt-0.5 b3-moving-box-meta">
                                                     <span class="font-semibold text-green-600">${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${movingAmountFormatter(window.__toolyaUILocale).format(Number(b.value || 0))} €</span>
@@ -1240,7 +1523,7 @@
                                         </div>
                                         <div class="flex items-center gap-1 b3-moving-box-actions">
                                             <button onclick="showQrCode(${Number(b.id)})" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100 b3-action b3-outline" title="${window.__toolyaUILocale === 'en' ? 'QR code and deep link' : 'QR-Code & Deep-Link'}">🖨️</button>
-                                            <button onclick="openEditBoxModal(${Number(b.id)})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 b3-action b3-outline" title="${window.__toolyaUILocale === 'en' ? 'Edit' : 'Bearbeiten'}">✏️</button>
+                                            <button onclick="openEditBoxModal(${Number(b.id)})" aria-label="${window.__toolyaUILocale === 'en' ? 'Edit' : 'Bearbeiten'}" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 b3-action b3-outline" title="${window.__toolyaUILocale === 'en' ? 'Edit' : 'Bearbeiten'}">✏️</button>
                                             <button aria-label="${window.__toolyaUILocale === 'en' ? 'Delete box' : 'Kiste löschen'}" onclick="deleteBox(${Number(b.id)})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="${window.__toolyaUILocale === 'en' ? 'Delete' : 'Löschen'}">✕</button>
                                         </div>
                                     </div>
@@ -1257,6 +1540,7 @@
             updateMovingHelpToggleLabel();
             refreshMovingSelectLabels();
             refreshMovingLocationPrompts();
+            if (repackTarget.options.length) repackTarget.options[0].textContent = boxFormText('Kiste wählen', 'Choose a box');
             // Repaint only the read-only subitem list of an already-open editor.
             // The box draft, item list and unsaved form inputs stay intact.
             if (!document.getElementById('editBoxModal')?.classList.contains('hidden')) renderSubItemsModal();
@@ -1506,10 +1790,15 @@
                 width: 128,
                 height: 128
             });
+            document.getElementById('qrModal').hidden = false;
             document.getElementById('qrModal').classList.remove('hidden');
         }
 
-        function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
+        function closeQrModal() {
+            const dialog = document.getElementById('qrModal');
+            dialog.hidden = true;
+            dialog.classList.add('hidden');
+        }
 
         function zoomImage(src) {
             document.getElementById('zoomedImage').src = src;
@@ -1593,6 +1882,7 @@
             } finally {
                 scannerOpening = false;
             }
+            document.getElementById('scannerModal').hidden = false;
             document.getElementById('scannerModal').classList.remove('hidden');
             const resBox = document.getElementById('scanResult');
             resBox.classList.add('hidden');
@@ -1626,6 +1916,7 @@
             if (html5QrCode) {
                 html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(err => {});
             }
+            document.getElementById('scannerModal').hidden = true;
             document.getElementById('scannerModal').classList.add('hidden');
         }
     </script>

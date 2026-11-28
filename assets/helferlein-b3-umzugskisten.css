@@ -64,3 +64,10 @@ body.b3-umzugskisten .b3-moving-filters .helferlein-field{display:grid;grid-temp
 @media(min-width:768px){
  body.b3-umzugskisten .b3-moving-filters{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+body.b3-umzugskisten :is(#qrModal,#scannerModal)[hidden]{display:none!important}
+
+body.b3-umzugskisten #editBoxModal:not(.hidden){
+ position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:1rem;
+}
+body.b3-umzugskisten #editBoxModal:not(.hidden)>div{max-height:90vh;overflow-y:auto}

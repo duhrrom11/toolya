@@ -48,3 +48,15 @@ export function helperBoxFromCode(value, origin, token, boxes) {
         return '';
     }
 }
+
+export function inventoryBoxIdFromCode(value, origin) {
+    try {
+        const url = new URL(value, origin);
+        if (url.origin !== origin || !['/tools/moving/', '/tools/moving/index.html'].includes(url.pathname)) return null;
+        const id = url.searchParams.get('box');
+        if (!id || !/^\d+$/.test(id) || !Number.isSafeInteger(Number(id))) return null;
+        return Number(id);
+    } catch {
+        return null;
+    }
+}

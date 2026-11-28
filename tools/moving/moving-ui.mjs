@@ -1,4 +1,5 @@
-import {readMoving,createProject,createRoom,assignBox,updateStatus,finishProject,priorityList,statuses} from './moving-state.mjs';
+import {movingPieceGroups} from './moving-inventory.mjs';
+import {readMoving,createProject,createRoom,assignBox,updateStatus,finishProject,priorityList,statuses,defaultFirstNight,updateFirstNight} from './moving-state.mjs';
 const text=(de,en)=>window.__toolyaUILocale==='en'?en:de;
 const labels={
  planned:['Geplant','Planned'],packed:['Gepackt','Packed'],loaded:['Verladen','Loaded'],
@@ -24,7 +25,8 @@ const errors=new Map([
  ['Ungültiges Inventar','Invalid inventory'],
  ['Ungültiges Projekt','Invalid move'],
  ['Bitte Datum im Format JJJJ-MM-TT eingeben','Enter the date as YYYY-MM-DD'],
- ['Keine passende Kiste gefunden','No matching box found']
+ ['Keine passende Kiste gefunden','No matching box found'],
+ ['Ungültiger Eintrag für den ersten Abend','Invalid first-night checklist item']
 ]);
 const displayError=message=>text(message,errors.get(message)??message);
 const displayLabel=(catalog,key)=>Object.hasOwn(catalog,key)?text(...catalog[key]):'';
@@ -38,6 +40,31 @@ function displayDate(value){
 }
 const boxCount=count=>number(count)+' '+(count===1?text('Kiste','box'):text('Kisten','boxes'));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const firstNightItems={
+ charger:['Ladegerät','Charger'], towels:['Handtücher','Towels'],
+ bedding:['Bettwäsche','Bedding'], toothbrush:['Zahnbürste','Toothbrush']
+};
+function firstNightList(project, boxes){
+ const list=Array.isArray(project.firstNight)?project.firstNight:defaultFirstNight();
+ const available=new Set(boxes.map(box=>box.id));
+ const ready=list.filter(row=>available.has(row.boxId)).length;
+ return `<details class="mv-card" data-first-night>
+  <summary>${text('Erste-Nacht-Kiste','First-night essentials')} · ${number(ready)}/${number(list.length)}</summary>
+  <ul class="mv-list">${list.map(row=>{
+   const name=row.title||displayLabel(firstNightItems,row.id);
+   return `<li class="mv-item"><label>${esc(name)}
+    <select data-night-box="${esc(row.id)}" ${saving?'disabled':''}>
+     <option value="">${text('Noch nicht eingepackt','Still to pack')}</option>
+     ${boxes.map(box=>`<option value="${esc(box.id)}" ${box.id===row.boxId?'selected':''}>${esc(box.name)}</option>`).join('')}
+    </select></label>
+    <button type="button" data-night-remove="${esc(row.id)}" aria-label="${esc(text('Entfernen: ','Remove: ')+name)}" ${saving?'disabled':''}>×</button>
+   </li>`;
+  }).join('')}</ul>
+  <form data-first-night-add class="mv-item"><label>${text('Eigener Gegenstand','Custom item')}
+   <input name="essential" maxlength="80" required></label>
+   <button type="submit" ${saving||list.length>=30?'disabled':''}>${text('Hinzufügen','Add')}</button></form>
+ </details>`;
+}
 const el=document.getElementById('toolya-moving-planner');
 let saving=false,activeTab='rooms',error='',navigationPhase='preparation';
 const snapshot=()=>window.getData();
@@ -124,10 +151,22 @@ function render(){
     `${number(inRoom.length-pending.length)} of ${boxCount(inRoom.length)} unpacked`
    )}</p><div class="mv-list">${pending.map(assignment=>{
     const box=data.boxes.find(item=>item.id===assignment.boxId);
-    return `<div class="mv-item"><strong>${esc(box?.name||String(assignment.boxId))}</strong><small>${displayLabel(importance,assignment.priority)} · ${displayLabel(labels,liveStatus(assignment))}</small></div>`;
+    const placement=box?.placement?` · ${text('Steht hier','Currently at')}: ${esc(box.placement)}`:'';
+    return `<div class="mv-item"><strong>${esc(box?.name||String(assignment.boxId))}</strong><small>${displayLabel(importance,assignment.priority)} · ${displayLabel(labels,liveStatus(assignment))}${placement}</small></div>`;
    }).join('')}</div></div>`;
   }).join('');
-  html+=`<div class="mv-list">${rows||`<p class="mv-muted">${text('Noch keine Kisten zugeordnet.','No boxes assigned yet.')}</p>`}</div>`;
+  const linkedIds=new Set(assigned.map(assignment=>assignment.boxId));
+  const assignedBoxes=data.boxes.filter(box=>linkedIds.has(box.id));
+  const rentals=assignedBoxes.filter(box=>box.rental);
+  const returned=rentals.filter(box=>box.rental==='returned').length;
+  html+=firstNightList(project,assignedBoxes);
+  const pieceGroups=movingPieceGroups(data.boxes,assigned,liveStatus);
+  if(pieceGroups.length)html+=`<details class="mv-card"><summary>${text('Zusammengehörige Teile','Matching pieces')}</summary>
+    ${pieceGroups.map(group=>`<p>${esc(group.name)} · ${number(group.total-group.missing.length)}/${number(group.total)}
+     · ${group.missing.length?text('Ausstehende Teile: ','Outstanding parts: ')+group.missing.map(number).join(', '):text('Vollständig','Complete')}</p>`).join('')}
+  </details>`;
+  html+=`<div class="mv-list">${rows||`<p class="mv-muted">${text('Noch keine Kisten zugeordnet.','No boxes assigned yet.')}</p>`}
+   ${rentals.length?`<p class="mv-muted">${text('Leihkartons','Borrowed boxes')} · ${number(returned)} ${text('zurückgegeben','returned')} · ${number(rentals.length-returned)} ${text('offen','outstanding')}</p>`:''}</div>`;
  }else{
   const available=data.boxes.some(box=>!assigned.some(assignment=>assignment.boxId===box.id));
   if(window.movingTransportActive)html+=`<p class="mv-muted">🚛 ${text(
@@ -163,9 +202,15 @@ function render(){
   <span class="mv-muted">${saving?text('Speichern …','Saving…'):text('Alle Änderungen werden in Toolya Cloud gespeichert','All changes are saved to Toolya Cloud')}</span>
  </div>`;
  const arrivalWasOpen=el.querySelector('[data-arrival-details]')?.open;
+ const nightWasOpen=el.querySelector('[data-first-night]')?.open;
+ const draft=el.querySelector('[data-first-night-add] input')?.value;
  el.innerHTML=html;
  const arrivalDetails=el.querySelector('[data-arrival-details]');
  if(arrivalDetails&&arrivalWasOpen)arrivalDetails.open=true;
+ const night=el.querySelector('[data-first-night]');
+ if(night&&nightWasOpen)night.open=true;
+ const field=night?.querySelector('input');
+ if(field&&draft)field.value=draft;
 }
 el?.addEventListener('click',async ev=>{
   const b=ev.target.closest('button');if(!b||saving)return;
@@ -178,6 +223,9 @@ el?.addEventListener('click',async ev=>{
     await commit(s=>createProject(s,name,date));return;
   }
   const data=snapshot(),m=readMoving(data),p=m.projects.find(x=>x.status==='active');if(!p)return;
+  if(b.dataset.nightRemove){
+    await commit(snapshot=>updateFirstNight(snapshot,p.id,{type:'remove',id:b.dataset.nightRemove}));return;
+  }
   if(a==='room'){
     const name=promptText(text('Name des Zielraums','Destination room name'));if(!name)return;
     const floor=promptText(text('Etage (optional)','Floor (optional)'))??'';
@@ -212,8 +260,27 @@ el?.addEventListener('click',async ev=>{
 });
 el?.addEventListener('change',async ev=>{
   const t=ev.target;if(saving)return;
+  if(t.dataset.nightBox){
+    const id=projectIdForChecklist();
+    if(id)await commit(snapshot=>updateFirstNight(snapshot,id,{type:'assign',id:t.dataset.nightBox,boxId:t.value?Number(t.value):null}));
+    return;
+  }
   if(t.dataset.room){const id=t.dataset.room,value=t.value||null;await commit(s=>{const m=s.moving,a=m.assignments.find(x=>x.id===id);if(a){a.targetRoomId=value;a.updatedAt=new Date().toISOString();}return s;});}
   else if(t.dataset.priority){const id=t.dataset.priority,value=t.value;await commit(s=>{const a=s.moving.assignments.find(x=>x.id===id);if(a){a.priority=value;a.updatedAt=new Date().toISOString();}return s;});}
+});
+function projectIdForChecklist(){
+ return snapshot().moving?.projects?.find(item=>item.status==='active')?.id;
+}
+el?.addEventListener('submit',async event=>{
+ const form=event.target;
+ if(!form.matches('[data-first-night-add]'))return;
+ event.preventDefault();
+ const id=projectIdForChecklist();
+ const field=form.elements.essential;
+ if(!id||saving||!field.value.trim())return;
+ const title=field.value;
+ field.value='';
+ await commit(snapshot=>updateFirstNight(snapshot,id,{type:'add',title}));
 });
 document.addEventListener('toolya:locale-change',render);
 document.addEventListener('toolya:moving-ready',render);

@@ -1,9 +1,23 @@
 const {test,expect}=require('playwright/test');
 const origin='http://127.0.0.1:4173';
 test('moving planner creates project, room and box assignment with mocked cloud',async({page})=>{
+  const transport={boxes:[],grants:[],incidents:[]};
+  let stateWrites=0;
   await page.route('**/*',route=>{
     const url=route.request().url();
-    if(url==='https://cdn.tailwindcss.com')return route.fulfill({status:200,contentType:'text/javascript',body:"document.head.insertAdjacentHTML('beforeend','<style>.hidden{display:none!important}</style>');"});
+    if(url.includes('/functions/v1/moving-helper')){
+      const body=route.request().postDataJSON();
+      if(body.action==='owner-transition'){
+        const row=transport.boxes.find(box=>box.assignmentId===body.assignmentId);
+        if(!row||row.version!==body.expectedVersion)return route.fulfill({status:409,json:{error:'stale'}});
+        row.status=body.status;
+        row.version++;
+        stateWrites++;
+        return route.fulfill({json:{assignmentId:row.assignmentId,status:row.status,version:row.version}});
+      }
+      return route.fulfill({json:transport});
+    }
+    if(url==='https://cdn.tailwindcss.com')return route.fulfill({status:200,contentType:'text/javascript',body:"document.head.insertAdjacentHTML('beforeend','<style>html body div.hidden{display:none!important}</style>');"});
     if(url===origin+'/assets/vendor/supabase-2.119.2.js')
       return route.fulfill({status:200,contentType:'text/javascript',body:`
         window.__mvMock={writes:0,revision:1,snapshot:{locations:[{id:5,name:'Keller',icon:'📦'}],boxes:[{id:16,locId:5,name:'Gläser',desc:'Gläser',value:20,tag:'Zerbrechlich'}]}};
@@ -108,4 +122,43 @@ test('moving planner creates project, room and box assignment with mocked cloud'
   await expect.poll(()=>page.evaluate(()=>window.__mvMock.writes)).toBe(6);
   const imported=await page.evaluate(()=>window.__mvMock.snapshot.boxes.at(-1));
   expect(imported).toMatchObject({name:'Hall 007',boxNumber:'007'});
+  await navigation.getByRole('button',{name:/My inventory/}).dispatchEvent('click');
+  await page.getByText('Move boxes into storage',{exact:true}).click();
+  await page.locator('#movingBulkBoxes').getByLabel('Hall 007').check();
+  await page.locator('#movingBulkLocation').selectOption('5');
+  await page.locator('#movingBulkSave').click();
+  await expect.poll(()=>page.evaluate(()=>window.__mvMock.snapshot.boxes.at(-1).locId)).toBe(5);
+
+  await page.locator('#inventoryContainer .b3-moving-box-card').filter({hasText:'Kitchen 01'}).getByRole('button',{name:'Edit'}).click();
+  await page.getByText('Placement and borrowed boxes',{exact:true}).click();
+  await page.locator('#movingEditPlacement').fill('Hallway');
+  await page.locator('#movingEditRental').selectOption('empty');
+  await page.getByText('Move contents to another box',{exact:true}).click();
+  await page.locator('#movingRepackTarget').selectOption({label:'Kitchen 02'});
+  await page.locator('#movingRepackItems').getByLabel('Coffee maker').check();
+  await page.locator('#editBoxModal').getByRole('button',{name:'Save',exact:true}).click();
+  await expect.poll(()=>page.evaluate(()=>window.__mvMock.snapshot.boxes.find(box=>box.name==='Kitchen 02').subItems))
+    .toEqual([{name:'Coffee maker',value:0}]);
+  const source=await page.evaluate(()=>window.__mvMock.snapshot.boxes.find(box=>box.name==='Kitchen 01'));
+  expect(source).toMatchObject({placement:'Hallway',rental:'empty',subItems:[{name:'Tea towels',value:0}]});
+  transport.boxes.push({assignmentId:db.snapshot.moving.assignments[0].id,label:'Gläser',room:'Küche',
+    priority:'normal',status:'packed',version:1});
+  await navigation.getByRole('button',{name:/My move/}).dispatchEvent('click');
+  await navigation.getByRole('button',{name:/Moving day/}).dispatchEvent('click');
+  const transportRoot=page.locator('#toolya-moving-transport');
+  await transportRoot.getByRole('button',{name:'Sync boxes and rooms'}).click();
+  await transportRoot.getByRole('button',{name:'Scan several boxes'}).click();
+  const batch=page.locator('#movingBatchScan');
+  await batch.locator('#movingScanManual').fill('16');
+  await batch.getByRole('button',{name:'Record box'}).click();
+  await expect(batch.locator('output')).toContainText('Status saved: Gläser');
+  await batch.getByRole('button',{name:'Record box'}).click();
+  await expect(batch.locator('output')).toContainText('already recorded');
+  expect(stateWrites).toBe(1);
+  await batch.getByRole('button',{name:'Close scanner'}).click();
+  await transportRoot.getByRole('button',{name:'Undo last status change'}).click();
+  await expect.poll(()=>transport.boxes[0].status).toBe('packed');
+  expect(stateWrites).toBe(2);
+
+
 });

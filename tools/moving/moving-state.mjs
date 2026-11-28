@@ -21,6 +21,12 @@ export function validateMoving(data){
   const projects=new Set(m.projects.map(p=>p.id)),rooms=new Map(m.rooms.map(r=>[r.id,r]));
   const boxIds=new Set(data.boxes.map(b=>b.id));
   if(!m.projects.every(p=>typeof p.name==='string'&&p.name.trim().length>0&&p.name.length<=100&&['draft','active','completed','archived'].includes(p.status)&&(!p.moveDate||/^\d{4}-\d{2}-\d{2}$/.test(p.moveDate))))throw Error('Ungültiges Projekt');
+  if(m.projects.some(project=>project.firstNight!==undefined&&(
+    !Array.isArray(project.firstNight)||project.firstNight.length>30||!unique(project.firstNight.filter(object),'id')||
+    !project.firstNight.every(row=>object(row)&&typeof row.id==='string'&&row.id.length<=36&&
+      (essentials.includes(row.id)||(typeof row.title==='string'&&row.title.trim()&&row.title.length<=80))&&
+      (row.boxId===null||Number.isSafeInteger(row.boxId)))
+  )))throw Error('Ungültiger Eintrag für den ersten Abend');
   if(m.projects.filter(p=>p.status==='active').length>1)throw Error('Nur ein aktiver Umzug erlaubt');
   if(!m.rooms.every(r=>projects.has(r.projectId)&&typeof r.name==='string'&&r.name.trim().length>0&&r.name.length<=80))throw Error('Ungültiger Zielraum');
   if(!m.assignments.every(a=>projects.has(a.projectId)&&(boxIds.has(a.boxId)||m.projects.find(p=>p.id===a.projectId)?.status!=='active')&&Number.isSafeInteger(a.boxId)&&(!a.targetRoomId||(rooms.has(a.targetRoomId)&&rooms.get(a.targetRoomId).projectId===a.projectId))&&statuses.includes(a.status)&&priorities.includes(a.priority)))throw Error('Ungültige Kistenzuordnung');
@@ -74,4 +80,29 @@ export function priorityList(snapshot,projectId,{includeUnpacked=false}={}){
   const ranking={first_day:0,important:1,normal:2};
   return m.assignments.filter(a=>a.projectId===projectId&&(includeUnpacked||a.status!=='unpacked'))
     .sort((a,b)=>ranking[a.priority]-ranking[b.priority]||(snapshot.boxes.find(x=>x.id===a.boxId)?.name||'').localeCompare(snapshot.boxes.find(x=>x.id===b.boxId)?.name||'','de'));
+}
+
+const essentials=['charger','towels','bedding','toothbrush'];
+export const defaultFirstNight=()=>essentials.map(id=>({id,boxId:null}));
+export function updateFirstNight(snapshot,projectId,change){
+  return editMoving(snapshot,(moving,data)=>{
+    const project=moving.projects.find(item=>item.id===projectId&&item.status==='active');
+    if(!project)throw Error('Projekt nicht aktiv');
+    const rows=project.firstNight??defaultFirstNight();
+    if(change.type==='add'){
+      const title=change.title?.trim();
+      if(!title||title.length>80||rows.length>=30)throw Error('Ungültiger Eintrag für den ersten Abend');
+      rows.push({id:uuid(),title,boxId:null});
+    }else{
+      const index=rows.findIndex(item=>item.id===change.id);
+      if(index<0)throw Error('Ungültiger Eintrag für den ersten Abend');
+      if(change.type==='remove')rows.splice(index,1);
+      else if(change.type==='assign'){
+        if(change.boxId!==null&&!data.boxes.some(box=>box.id===change.boxId&&moving.assignments.some(
+          item=>item.projectId===projectId&&item.boxId===box.id)))throw Error('Keine passende Kiste gefunden');
+        rows[index].boxId=change.boxId;
+      }else throw Error('Ungültiger Eintrag für den ersten Abend');
+    }
+    project.firstNight=rows;
+  });
 }
