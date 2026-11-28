@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
 
 const source = readFileSync(new URL('../../tools/moving/moving-transport.mjs', import.meta.url), 'utf8')
-  .replace(/^import[^\n]*\n/, '');
+  .replace(/^import[^\n]*\n/gm, '');
 
 function setup(fetch) {
   const listeners = new Map();

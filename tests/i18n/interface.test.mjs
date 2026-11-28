@@ -1594,15 +1594,16 @@ test('moving box form accessibility is reversible without mutating values or att
 test('moving inventory uses English display-only number and date formatting',async()=>{
  const {readFile}=await import('node:fs/promises');
  const html=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
- const englishFormat="toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })";
- assert.equal(html.split(englishFormat).length-1,5,'five inventory screen values use English formatting');
- for(const value of ['totalVal','locVal','tagVal','b.value || 0'])
-  assert.ok(html.includes('Number('+value+').'+englishFormat),'English formatting covers '+value);
- assert.ok(html.includes("b.expiry.split('-').reverse().join(window.__toolyaUILocale === 'en' ? '/' : '.')"),'expiry date uses the active language separator');
- assert.ok(html.includes("Number(item.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"),'English subitem preview uses locale formatting');
- assert.ok(html.includes(": Number(item.value || 0).toFixed(2)"),'German subitem preview keeps existing formatting');
- assert.equal((1234.5).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}),'1,234.50');
- assert.equal((1234.5).toFixed(2).replace('.',','),'1234,50','German legacy presentation remains unchanged');
+ const {runInNewContext}=await import('node:vm');
+ const formatter=html.slice(html.indexOf('function movingDisplayDate('),html.indexOf('async function exportInventoryPDF('));
+ for(const value of ['totalVal','locVal','tagVal','b.value || 0','item.value || 0'])
+  assert.ok(html.includes('movingAmountFormatter(window.__toolyaUILocale).format(Number('+value+'))'),'locale formatting covers '+value);
+ assert.ok(html.includes('movingDisplayDate(b.expiry)'));
+ for(const [lang, amount, date] of [['en','1,234.50','05/12/2026'],['de','1.234,50','05.12.2026']]){
+  const context={window:{__toolyaUILocale:lang}};
+  assert.equal(runInNewContext(formatter+'movingAmountFormatter(window.__toolyaUILocale).format(1234.5)',context),amount);
+  assert.equal(runInNewContext(formatter+"movingDisplayDate('2026-12-05')",context),date);
+ }
 });
 
 
@@ -2144,7 +2145,7 @@ test('Sprint A moving tags translate display labels and options but retain the o
  assert.equal(boxChosen.hasAttribute('selected'),true);
  assert.ok(html.includes('refreshMovingSelectLabels();'),'language event updates existing selectors');
  assert.ok(html.includes('refreshMovingLocationPrompts();'),'location prompt translation does not rebuild selected choices');
- assert.ok(!html.slice(html.indexOf("document.addEventListener('toolya:locale-change'"),html.indexOf('async function exportInventoryPDF()')).includes('loadLocationsDropdown()'),'locale refresh never resets unsaved location selections');
+ assert.ok(!html.slice(html.indexOf('// Rebuild the visible card list'),html.indexOf('async function exportInventoryPDF()')).includes('loadLocationsDropdown()'),'locale refresh never resets unsaved location selections');
 });
 
 test('Sprint A household note and receipt titles change language without resetting draft fields',async()=>{
@@ -2226,7 +2227,7 @@ test('Sprint A moving location prompts change in place without losing unsaved se
  assert.equal(document.querySelector('#boxLocationSelect option[value=""]').textContent,'-- Standort wählen --');
  assert.equal(document.querySelector('#boxLocationSelect option[value="11"]'),chosen,'selected option node is unchanged');
  assert.equal(input.value,'Edited but unsaved');
- const listener=html.slice(html.indexOf("document.addEventListener('toolya:locale-change'"),html.indexOf('async function exportInventoryPDF()'));
+ const listener=html.slice(html.indexOf('// Rebuild the visible card list'),html.indexOf('async function exportInventoryPDF()'));
  assert.ok(listener.includes('refreshMovingLocationPrompts();'),'language switch refreshes placeholder');
  assert.ok(!listener.includes('loadLocationsDropdown()'),'language switch does not rebuild selected location options');
  assert.ok(!listener.includes('saveData('),'language switch does not persist any boxes');
@@ -2400,8 +2401,8 @@ test('Sprint A member access and pending cloud backup warnings localize without 
 test('Sprint A QR export uses only locale-specific filenames, never rewrites backup payloads',async()=>{
  const {readFile}=await import('node:fs/promises');
  const src=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
- assert.match(src,/doc\.save\(exportLanguage === 'en' \? "moving-box-qr-labels\.pdf" : "kisten-qr-etiketten\.pdf"\)/);
- assert.match(src,/homebox-backup-\$\{new Date\(\)\.toISOString\(\)\.split\('T'\)\[0\]\}\.json/);
+ assert.match(src,/filename = english \? 'moving-box-qr-labels\.pdf' : 'kisten-qr-etiketten\.pdf'/);
+ assert.match(src,/'toolya-moving-boxes-backup' : 'toolya-umzugskisten-sicherung'/);
  assert.match(src,/if \(!confirm\(window\.__toolyaUILocale === 'en' \? 'Import backup\? Existing data will be replaced\.' : 'Backup importieren\? Vorhandene Daten werden ersetzt\.'\)\) return;/);
  const invalid=src.indexOf("return alert(window.__toolyaUILocale === 'en' ? 'Invalid backup format.' : 'Ungültiges Backup-Format.');");
  const confirmation=src.indexOf("if (!confirm(window.__toolyaUILocale === 'en' ? 'Import backup? Existing data will be replaced.' : 'Backup importieren? Vorhandene Daten werden ersetzt.'))");
@@ -2442,11 +2443,10 @@ test('Sprint A successful protected-household sync toast uses the active UI loca
 test('Sprint A QR labels translate known UI category only; custom tags and QR payload are intact',async()=>{
  const {readFile}=await import('node:fs/promises');
  const src=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
- const block=src.slice(src.indexOf('async function exportQrLabelsPDF()'),src.indexOf('async function showQrCode('));
- assert.match(block,/formatMovingTagLabel\(b\.tag, exportLanguage\)/);
- assert.match(block,/\? 'Unknown' : 'Unbekannt'/);
- assert.match(block,/const deepLinkUrl = `\$\{window\.location\.origin\}\$\{window\.location\.pathname\}\?box=\$\{b\.id\}`/);
- assert.match(block,/doc\.save\(exportLanguage === 'en' \? "moving-box-qr-labels\.pdf"/);
+ const block=src.slice(src.indexOf("movingField('movingPrintSave').addEventListener"),src.indexOf('async function showQrCode('));
+ assert.match(block,/formatMovingTagLabel\(value \|\| 'Standard', exportLanguage\)/);
+ assert.match(block,/\?box=\$\{box\.id\}/);
+ assert.match(block,/filename = english \? 'moving-box-qr-labels\.pdf'/);
  assert.match(src,/try \{ reader\.readAsText\(file\); \}/);
  assert.match(src,/catch \(error\) \{\s*input\.value = '';\s*alert\(window\.__toolyaUILocale === 'en' \? 'Backup file could not be read\.' : 'Backup-Datei konnte nicht gelesen werden\.'\)/);
 });
@@ -2484,12 +2484,12 @@ test('Sprint A PDF export error captures the request-time language before async 
 test('Sprint A QR export captures request locale before async loading and prints numeric backup values safely',async()=>{
  const {readFile}=await import('node:fs/promises');
  const src=await readFile(new URL('../../tools/moving/index.html',import.meta.url),'utf8');
- const qr=src.slice(src.indexOf('async function exportQrLabelsPDF()'),src.indexOf('async function showQrCode('));
+ const qr=src.slice(src.indexOf("movingField('movingPrintSave').addEventListener"),src.indexOf('async function showQrCode('));
  assert.match(qr,/const exportLanguage = window\.__toolyaUILocale === 'en' \? 'en' : 'de'/);
- assert.match(qr,/amounts\.format\(b\.value \|\| 0\)/);
- assert.ok(!qr.slice(qr.indexOf('const QRCode = await loadQrGenerator()')).includes('window.__toolyaUILocale'),'export labels must use request-time language');
- assert.match(qr,/formatMovingTagLabel\(b\.tag, exportLanguage\)/);
- assert.match(qr,/const deepLinkUrl = `\$\{window\.location\.origin\}\$\{window\.location\.pathname\}\?box=\$\{b\.id\}`/);
+ assert.match(qr,/amounts\.format\(value \|\| 0\)/);
+ assert.ok(!qr.slice(qr.indexOf('await import')).includes('window.__toolyaUILocale'),'export labels must use request-time language');
+ assert.match(qr,/formatMovingTagLabel\(value \|\| 'Standard', exportLanguage\)/);
+ assert.match(qr,/\?box=\$\{box\.id\}/);
 });
 
 
@@ -2714,7 +2714,8 @@ test('moving inventory renders literal names and labels the QR action in both la
  const source=[
   extract('function formatMovingTagLabel(', 'function refreshMovingSelectLabels('),
   extract('function escapeInventoryText(', 'async function saveBox('),
-  extract('function renderInventory()', '// Rebuild the visible card list')
+  extract('function renderInventory()', '// Rebuild the visible card list'),
+  extract('function movingDisplayDate(', 'async function exportInventoryPDF(')
  ].join('\n');
  const fields=['inventoryContainer','statBoxes','statLocs','statValue','locationValueStatsCard','locationValueStatsList','tagValueStatsCard','tagValueStatsList'];
  const {document}=parseHTML('<html><body>'+fields.map(id=>'<div id="'+id+'"></div>').join('')+
@@ -3444,11 +3445,9 @@ test('moving planner dynamic dialogs translate DE/EN while backup and deletion g
   ['Dieser Standort enthält Kisten aus einem aktiven Umzug. Bitte den Umzug erst abschließen.','This location contains boxes from an active move. Complete the move first.'],
   ['⚠️ Möchtest du diesen Standort und ALLE Kisten darin wirklich löschen?','⚠️ Really delete this location and ALL boxes inside it?'],
   ['Bitte Standort und Kisten-Name angeben!','Please enter a location and box name!'],
-  ['Bild konnte nicht gelesen werden. Nichts gespeichert.','Image could not be read. Nothing was saved.'],
   ['Bitte Artikel-Name eingeben!','Please enter an item name!'],
   ['Diese Kiste ist einem aktiven Umzug zugeordnet. Bitte den Umzug erst abschließen.','This box is assigned to an active move. Complete the move first.'],
   ['⚠️ Möchtest du diese Kiste wirklich löschen?','⚠️ Really delete this box?'],
-  ['Keine Kisten vorhanden.','No boxes available.'],
   ['Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.','The QR code could not be loaded. Please try again.'],
   ['Backup zu groß (maximal 20 MB).','Backup is too large (maximum 20 MB).'],
   ['Ungültiges Backup-Format.','Invalid backup format.'],

@@ -87,3 +87,24 @@ test('helper reports missing box without viewing private incident notes',async({
  expect(reports).toBe(1);
  expect(await page.locator('body').innerText()).not.toContain('Letzte Suche im Flur');
 });
+
+test('helper reads a photographed QR code with the local decoder and matches only the granted box',async({page})=>{
+ const assignmentId='00000000-0000-0000-0000-000000000021';
+ await page.addInitScript(()=>{Object.defineProperty(window,'BarcodeDetector',{value:undefined,configurable:true});});
+ await page.route('**/*',route=>{
+  const url=route.request().url();
+  if(url.includes('/functions/v1/moving-helper'))return route.fulfill({contentType:'application/json',body:JSON.stringify({
+   projectName:'Move',helperLabel:'Helfer',boxes:[{assignmentId,label:'Küche 07',room:'Küche',status:'packed',version:1,priority:'normal'}]
+  })});
+  return url.startsWith(origin+'/')?route.continue():route.abort();
+ });
+ await page.goto(origin+'/tools/moving/helper/index.html?lang=en#t='+token);
+ await expect(page.getByText('Küche 07',{exact:true})).toBeVisible();
+ await page.addScriptTag({url:origin+'/assets/vendor/estate-qrcode-1.5.4.js'});
+ const photo=await page.evaluate(async code=>(await EstateQR.toDataURL(code,{width:400})).split(',')[1],
+  origin+'/tools/moving/helper/index.html#t='+token+'&a='+assignmentId);
+ await page.getByText('Read a QR code from a photo').click();
+ await page.locator('#mv-code-file').setInputFiles({name:'label.png',mimeType:'image/png',buffer:Buffer.from(photo,'base64')});
+ await expect(page.getByRole('status')).toHaveText('Box detected');
+ await expect(page.locator('#mv-select')).toHaveValue(assignmentId);
+});

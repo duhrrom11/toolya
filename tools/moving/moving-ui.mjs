@@ -1,4 +1,5 @@
-import {readMoving,createProject,createRoom,assignBox,updateStatus,finishProject,priorityList,statuses} from './moving-state.mjs';
+import {movingPieceGroups} from './moving-inventory.mjs';
+import {readMoving,createProject,createRoom,assignBox,updateStatus,finishProject,priorityList,statuses,defaultFirstNight,updateFirstNight,editMoving} from './moving-state.mjs';
 const text=(de,en)=>window.__toolyaUILocale==='en'?en:de;
 const labels={
  planned:['Geplant','Planned'],packed:['Gepackt','Packed'],loaded:['Verladen','Loaded'],
@@ -24,7 +25,9 @@ const errors=new Map([
  ['Ungültiges Inventar','Invalid inventory'],
  ['Ungültiges Projekt','Invalid move'],
  ['Bitte Datum im Format JJJJ-MM-TT eingeben','Enter the date as YYYY-MM-DD'],
- ['Keine passende Kiste gefunden','No matching box found']
+ ['Keine passende Kiste gefunden','No matching box found'],
+ ['Ungültiger Eintrag für den ersten Abend','Invalid first-night checklist item'],
+ ['Raumzuordnung inzwischen geändert','The room assignment has changed since then']
 ]);
 const displayError=message=>text(message,errors.get(message)??message);
 const displayLabel=(catalog,key)=>Object.hasOwn(catalog,key)?text(...catalog[key]):'';
@@ -38,8 +41,33 @@ function displayDate(value){
 }
 const boxCount=count=>number(count)+' '+(count===1?text('Kiste','box'):text('Kisten','boxes'));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const firstNightItems={
+ charger:['Ladegerät','Charger'], towels:['Handtücher','Towels'],
+ bedding:['Bettwäsche','Bedding'], toothbrush:['Zahnbürste','Toothbrush']
+};
+function firstNightList(project, boxes){
+ const list=Array.isArray(project.firstNight)?project.firstNight:defaultFirstNight();
+ const available=new Set(boxes.map(box=>box.id));
+ const ready=list.filter(row=>available.has(row.boxId)).length;
+ return `<details class="mv-card" data-first-night>
+  <summary>${text('Erste-Nacht-Kiste','First-night essentials')} · ${number(ready)}/${number(list.length)}</summary>
+  <ul class="mv-list">${list.map(row=>{
+   const name=row.title||displayLabel(firstNightItems,row.id);
+   return `<li class="mv-item"><label>${esc(name)}
+    <select data-night-box="${esc(row.id)}" ${saving?'disabled':''}>
+     <option value="">${text('Noch nicht eingepackt','Still to pack')}</option>
+     ${boxes.map(box=>`<option value="${esc(box.id)}" ${box.id===row.boxId?'selected':''}>${esc(box.name)}</option>`).join('')}
+    </select></label>
+    <button type="button" data-night-remove="${esc(row.id)}" aria-label="${esc(text('Entfernen: ','Remove: ')+name)}" ${saving?'disabled':''}>×</button>
+   </li>`;
+  }).join('')}</ul>
+  <form data-first-night-add class="mv-item"><label>${text('Eigener Gegenstand','Custom item')}
+   <input name="essential" maxlength="80" required></label>
+   <button type="submit" ${saving||list.length>=30?'disabled':''}>${text('Hinzufügen','Add')}</button></form>
+ </details>`;
+}
 const el=document.getElementById('toolya-moving-planner');
-let saving=false,activeTab='rooms',error='',navigationPhase='preparation';
+let saving=false,activeTab='rooms',error='',navigationPhase='preparation',roomUndo=null;
 const snapshot=()=>window.getData();
 const promptText=(q,def='')=>window.prompt(q,def);
 async function commit(edit){
@@ -48,12 +76,13 @@ async function commit(edit){
   try{
     const next=edit(snapshot());
     if(!await window.saveData(next))throw Error('Cloud-Speicherung nicht bestätigt. Bitte neu laden.');
-  }catch(e){error=e.message||'Speichern fehlgeschlagen';}
+    return true;
+  }catch(e){error=e.message||'Speichern fehlgeschlagen';return false;}
   finally{saving=false;render();}
 }
 function render(){
  if(!el||typeof window.getData!=='function')return;
- if(!window.movingCloudReady){el.hidden=true;return;}
+ if(!window.movingCloudReady){roomUndo=null;el.hidden=true;return;}
  el.hidden=false;
  let data,m;
  try{data=snapshot();m=readMoving(data);}
@@ -77,8 +106,10 @@ function render(){
  const assigned=m.assignments.filter(x=>x.projectId===project.id);
  const rooms=m.rooms.filter(x=>x.projectId===project.id&&!x.archived);
  const liveStatus=assignment=>window.movingTransportStatuses?.[assignment.id]?.status||assignment.status;
- const arrived=assigned.filter(x=>['arrived','unpacked'].includes(liveStatus(x))).length;
+ const outstanding=assigned.filter(x=>!['arrived','unpacked'].includes(liveStatus(x)));
+ const arrived=assigned.length-outstanding.length;
  const unpacked=assigned.filter(x=>liveStatus(x)==='unpacked').length;
+ const personal=data.boxes.filter(box=>box.keepWithMe===true&&assigned.some(item=>item.boxId===box.id));
  const progress=text(
   `${number(arrived)} von ${boxCount(assigned.length)} angekommen`,
   `${number(arrived)} of ${boxCount(assigned.length)} arrived`
@@ -90,6 +121,14 @@ function render(){
    <div><strong>${number(unpacked)}</strong><small>${text('Ausgepackt','Unpacked')}</small></div>
   </div>
   <div class="mv-progress" aria-label="${progress}"><span style="width:${assigned.length?Math.round(arrived/assigned.length*100):0}%"></span></div>
+  ${navigationPhase!=='preparation'&&assigned.length?`<details class="mv-card" data-arrival-details>
+   <summary>${progress} · ${text('Was fehlt noch?', 'What is still outstanding?')}</summary>
+   <div class="mv-list">${outstanding.map(assignment=>{
+    const box=data.boxes.find(item=>item.id===assignment.boxId);
+    const room=rooms.find(item=>item.id===assignment.targetRoomId);
+    return `<div class="mv-item"><strong>${esc(box?.name||String(assignment.boxId))}</strong><small>${esc(room?.name||text('Ohne Zielraum','No destination room'))} · ${displayLabel(labels,liveStatus(assignment))}</small></div>`;
+   }).join('')||`<p>${text('Alle Kisten sind angekommen.','All boxes have arrived.')}</p>`}</div>
+  </details>`:''}
   <div class="mv-tabs" role="group" aria-label="${text('Umzugsansicht','Moving plan')}">
    <button data-tab="rooms" ${activeTab==='rooms'?'aria-current="true"':''}>1. ${text('Zielräume','Destination rooms')}</button>
    <button data-tab="boxes" ${activeTab==='boxes'?'aria-current="true"':''}>2. ${text('Kisten zuordnen','Assign boxes')}</button>
@@ -98,20 +137,43 @@ function render(){
  if(activeTab==='rooms'){
   const roomRows=rooms.map(room=>{
    const count=assigned.filter(x=>x.targetRoomId===room.id).length;
-   return `<div class="mv-item"><strong>${esc(room.name)}</strong><small>${esc(room.floor||'')} · ${boxCount(count)}</small></div>`;
+   return `<div class="mv-item"><strong>${esc(room.name)}</strong><small>${esc(room.floor||'')} · ${boxCount(count)}${room.helperDirections?' · '+esc(room.helperDirections):''}</small>
+    <button class="mv-secondary" type="button" data-room-directions="${esc(room.id)}" ${saving?'disabled':''}>${text('Hinweis für Helfer','Directions for helpers')}</button></div>`;
   }).join('');
   html+=`<button class="mv-secondary" data-act="room">+ ${text('Zielraum hinzufügen','Add destination room')}</button>
    <div class="mv-list">${roomRows||`<p class="mv-muted">${text('Noch keine Zielräume vorhanden.','No destination rooms yet.')}</p>`}</div>`;
  }else if(activeTab==='first'){
-  const ordered=priorityList(data,project.id).filter(assignment=>liveStatus(assignment)!=='unpacked');
-  const rows=ordered.map(assignment=>{
-   const box=data.boxes.find(x=>x.id===assignment.boxId);
-   return `<div class="mv-item"><strong>${esc(box?.name||text('Kiste','Box'))}</strong><small>${displayLabel(importance,assignment.priority)} · ${displayLabel(labels,liveStatus(assignment))}</small></div>`;
+  const ordered=priorityList(data,project.id,{includeUnpacked:true});
+  const groups=[...rooms, {id:null,name:text('Ohne Zielraum','No destination room')}];
+  const rows=groups.map(room=>{
+   const inRoom=ordered.filter(assignment=>rooms.some(entry=>entry.id===assignment.targetRoomId)
+    ? assignment.targetRoomId===room.id : room.id===null);
+   if(!inRoom.length)return '';
+   const pending=inRoom.filter(assignment=>liveStatus(assignment)!=='unpacked');
+   return `<div class="mv-card"><h3>${esc(room.name)}</h3><p>${text(
+    `${number(inRoom.length-pending.length)} von ${boxCount(inRoom.length)} ausgepackt`,
+    `${number(inRoom.length-pending.length)} of ${boxCount(inRoom.length)} unpacked`
+   )}</p><div class="mv-list">${pending.map(assignment=>{
+    const box=data.boxes.find(item=>item.id===assignment.boxId);
+    const placement=box?.placement?` · ${text('Steht hier','Currently at')}: ${esc(box.placement)}`:'';
+    return `<div class="mv-item"><strong>${esc(box?.name||String(assignment.boxId))}</strong><small>${displayLabel(importance,assignment.priority)} · ${displayLabel(labels,liveStatus(assignment))}${placement}</small></div>`;
+   }).join('')}</div></div>`;
   }).join('');
-  html+=`<p class="mv-muted">${text(
-   'Diese Reihenfolge ergibt sich aus der eingestellten Priorität. Du kannst sie bei jeder Kiste ändern.',
-   'This list follows the priority you set for each box. You can change a box’s priority at any time.'
-  )}</p><div class="mv-list">${rows||`<p class="mv-muted">${text('Noch keine offenen Kisten.','No boxes left to unpack.')}</p>`}</div>`;
+  const linkedIds=new Set(assigned.map(assignment=>assignment.boxId));
+  const assignedBoxes=data.boxes.filter(box=>linkedIds.has(box.id));
+  const rentals=assignedBoxes.filter(box=>box.rental);
+  const returned=rentals.filter(box=>box.rental==='returned').length;
+  html+=firstNightList(project,assignedBoxes);
+  if(personal.length)html+=`<details class="mv-card"><summary>${text('Bleibt bei mir','Keep with me')} · ${number(personal.length)}</summary>
+    <ul>${personal.map(box=>`<li>${esc(box.name)}</li>`).join('')}</ul></details>`;
+
+  const pieceGroups=movingPieceGroups(data.boxes,assigned,liveStatus);
+  if(pieceGroups.length)html+=`<details class="mv-card"><summary>${text('Zusammengehörige Teile','Matching pieces')}</summary>
+    ${pieceGroups.map(group=>`<p>${esc(group.name)} · ${number(group.total-group.missing.length)}/${number(group.total)}
+     · ${group.missing.length?text('Ausstehende Teile: ','Outstanding parts: ')+group.missing.map(number).join(', '):text('Vollständig','Complete')}</p>`).join('')}
+  </details>`;
+  html+=`<div class="mv-list">${rows||`<p class="mv-muted">${text('Noch keine Kisten zugeordnet.','No boxes assigned yet.')}</p>`}
+   ${rentals.length?`<p class="mv-muted">${text('Leihkartons','Borrowed boxes')} · ${number(returned)} ${text('zurückgegeben','returned')} · ${number(rentals.length-returned)} ${text('offen','outstanding')}</p>`:''}</div>`;
  }else{
   const available=data.boxes.some(box=>!assigned.some(assignment=>assignment.boxId===box.id));
   if(window.movingTransportActive)html+=`<p class="mv-muted">🚛 ${text(
@@ -129,6 +191,7 @@ function render(){
    return `<div class="mv-item">
     <div><strong>${esc(box?.name||text('Kiste #','Box #')+assignment.boxId)}</strong><small>${esc(room?.name||text('Noch kein Zielraum','No destination room yet'))} · ${displayLabel(importance,assignment.priority)}</small></div>
     <div class="mv-actions">
+     <button class="mv-secondary" type="button" data-trip="${id}" ${saving?'disabled':''}>${assignment.trip?esc(assignment.trip):text('Fahrt zuweisen','Assign trip')}</button>
      <select data-room="${id}" aria-label="${text('Zielraum','Destination room')}" ${saving?'disabled':''}><option value="">${text('Ohne Zielraum','No destination room')}</option>${roomOptions}</select>
      <select data-priority="${id}" aria-label="${text('Priorität','Priority')}" ${saving?'disabled':''}>${priorityOptions}</select>
      <div class="mv-status">
@@ -139,6 +202,7 @@ function render(){
     </div>
    </div>`;
   }).join('');
+  if(roomUndo?.projectId===project.id)html+=`<button class="mv-secondary" type="button" data-act="undo-room" ${saving?'disabled':''}>${text('Letzte Raumzuordnung rückgängig machen','Undo last room assignment')}</button>`;
   html+=`<button class="mv-primary" data-act="assign" ${!available?'disabled':''}>+ ${text('Vorhandene Kiste zuordnen','Assign an existing box')}</button>
    <div class="mv-list">${rows||`<p class="mv-muted">${text('Noch keine Kisten zugeordnet.','No boxes assigned yet.')}</p>`}</div>`;
  }
@@ -146,7 +210,16 @@ function render(){
   ${navigationPhase==='arrival'?`<button class="mv-secondary" data-act="finish" ${saving?'disabled':''}>${text('Umzug abschließen','Finish move')}</button>`:''}
   <span class="mv-muted">${saving?text('Speichern …','Saving…'):text('Alle Änderungen werden in Toolya Cloud gespeichert','All changes are saved to Toolya Cloud')}</span>
  </div>`;
+ const arrivalWasOpen=el.querySelector('[data-arrival-details]')?.open;
+ const nightWasOpen=el.querySelector('[data-first-night]')?.open;
+ const draft=el.querySelector('[data-first-night-add] input')?.value;
  el.innerHTML=html;
+ const arrivalDetails=el.querySelector('[data-arrival-details]');
+ if(arrivalDetails&&arrivalWasOpen)arrivalDetails.open=true;
+ const night=el.querySelector('[data-first-night]');
+ if(night&&nightWasOpen)night.open=true;
+ const field=night?.querySelector('input');
+ if(field&&draft)field.value=draft;
 }
 el?.addEventListener('click',async ev=>{
   const b=ev.target.closest('button');if(!b||saving)return;
@@ -159,6 +232,44 @@ el?.addEventListener('click',async ev=>{
     await commit(s=>createProject(s,name,date));return;
   }
   const data=snapshot(),m=readMoving(data),p=m.projects.find(x=>x.status==='active');if(!p)return;
+  if(b.dataset.roomDirections){
+    const room=m.rooms.find(item=>item.projectId===p.id&&item.id===b.dataset.roomDirections);
+    if(!room)return;
+    const value=promptText(text('Hinweis für Helfer (leer lassen zum Entfernen)','Directions for helpers (leave blank to remove)'),room.helperDirections||'');
+    if(value===null)return;
+    const directions=value.trim().slice(0,120);
+    if(directions&&!confirm(text('Diesen Hinweis im Helferzugang anzeigen?','Share these directions in helper view?')))return;
+    await commit(snapshot=>editMoving(snapshot,state=>{
+     const target=state.rooms.find(item=>item.projectId===p.id&&item.id===room.id);
+     if(target)target.helperDirections=directions;
+    }));
+    return;
+  }
+  if(b.dataset.nightRemove){
+    await commit(snapshot=>updateFirstNight(snapshot,p.id,{type:'remove',id:b.dataset.nightRemove}));return;
+  }
+  if(b.dataset.trip){
+    const assignment=m.assignments.find(item=>item.projectId===p.id&&item.id===b.dataset.trip);
+    if(!assignment)return;
+    const value=promptText(text('Name der Fahrt (leer lassen zum Entfernen)','Trip name (leave blank to remove)'),assignment.trip||'');
+    if(value===null)return;
+    await commit(snapshot=>editMoving(snapshot,state=>{
+      const target=state.assignments.find(item=>item.id===assignment.id);
+      if(target)target.trip=value.trim().slice(0,60);
+    }));
+    return;
+  }
+  if(a==='undo-room'){
+    const previous=roomUndo;
+    roomUndo=null;
+    if(previous)await commit(snapshot=>editMoving(snapshot,state=>{
+      const item=state.assignments.find(row=>row.id===previous.id&&row.projectId===p.id);
+      if(!item||item.updatedAt!==previous.updatedAt||item.targetRoomId!==previous.next)throw Error('Raumzuordnung inzwischen geändert');
+      item.targetRoomId=previous.before;
+      item.updatedAt=new Date().toISOString();
+    }));
+    return;
+  }
   if(a==='room'){
     const name=promptText(text('Name des Zielraums','Destination room name'));if(!name)return;
     const floor=promptText(text('Etage (optional)','Floor (optional)'))??'';
@@ -193,8 +304,41 @@ el?.addEventListener('click',async ev=>{
 });
 el?.addEventListener('change',async ev=>{
   const t=ev.target;if(saving)return;
-  if(t.dataset.room){const id=t.dataset.room,value=t.value||null;await commit(s=>{const m=s.moving,a=m.assignments.find(x=>x.id===id);if(a){a.targetRoomId=value;a.updatedAt=new Date().toISOString();}return s;});}
+  if(t.dataset.nightBox){
+    const id=projectIdForChecklist();
+    if(id)await commit(snapshot=>updateFirstNight(snapshot,id,{type:'assign',id:t.dataset.nightBox,boxId:t.value?Number(t.value):null}));
+    return;
+  }
+  if(t.dataset.room){
+    const id=t.dataset.room,next=t.value||null;
+    const before=snapshot().moving?.assignments?.find(item=>item.id===id);
+    if(!before||before.targetRoomId===next)return;
+    const updatedAt=new Date().toISOString();
+    if(await commit(snapshot=>editMoving(snapshot,state=>{
+      const item=state.assignments.find(row=>row.id===id);
+      if(!item||item.updatedAt!==before.updatedAt)throw Error('Raumzuordnung inzwischen geändert');
+      item.targetRoomId=next;
+      item.updatedAt=updatedAt;
+    }))){
+      roomUndo={id,projectId:before.projectId,before:before.targetRoomId,next,updatedAt};
+      render();
+    }
+  }
   else if(t.dataset.priority){const id=t.dataset.priority,value=t.value;await commit(s=>{const a=s.moving.assignments.find(x=>x.id===id);if(a){a.priority=value;a.updatedAt=new Date().toISOString();}return s;});}
+});
+function projectIdForChecklist(){
+ return snapshot().moving?.projects?.find(item=>item.status==='active')?.id;
+}
+el?.addEventListener('submit',async event=>{
+ const form=event.target;
+ if(!form.matches('[data-first-night-add]'))return;
+ event.preventDefault();
+ const id=projectIdForChecklist();
+ const field=form.elements.essential;
+ if(!id||saving||!field.value.trim())return;
+ const title=field.value;
+ field.value='';
+ await commit(snapshot=>updateFirstNight(snapshot,id,{type:'add',title}));
 });
 document.addEventListener('toolya:locale-change',render);
 document.addEventListener('toolya:moving-ready',render);

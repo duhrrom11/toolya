@@ -35,3 +35,16 @@ test('same box gets updated rather than duplicated',()=>{
   assert.equal(s.moving.assignments.length,1);
   assert.equal(s.moving.assignments[0].priority,'important');
 });
+
+test('first-night entries retain user titles and refer only to boxes in the move', async () => {
+  const {createProject,assignBox,updateFirstNight}=await import('../tools/moving/moving-state.mjs');
+  let data=createProject({locations:[],boxes:[{id:42,name:'Kitchen 01'}]},'Move');
+  const project=data.moving.projects[0].id;
+  assert.throws(()=>updateFirstNight(data,project,{type:'assign',id:'charger',boxId:42}));
+  data=assignBox(data,project,42);
+  const ready=updateFirstNight(data,project,{type:'assign',id:'charger',boxId:42});
+  assert.equal(ready.moving.projects[0].firstNight[0].boxId,42);
+  assert.equal(data.moving.projects[0].firstNight,undefined);
+  const custom=updateFirstNight(ready,project,{type:'add',title:'Lieblingsbecher'});
+  assert.equal(custom.moving.projects[0].firstNight.at(-1).title,'Lieblingsbecher');
+});

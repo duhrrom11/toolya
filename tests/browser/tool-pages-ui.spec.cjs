@@ -228,21 +228,39 @@ test('umzugskisten-inventar: box photo waits for confirmed cloud write',async({p
     document.querySelector('#boxLocationSelect').value='1';
     document.querySelector('#boxName').value='Fotokiste';
   });
+  const photo=await page.evaluate(async()=>{
+    const canvas=document.createElement('canvas');canvas.width=1400;canvas.height=700;
+    const ctx=canvas.getContext('2d');ctx.fillStyle='#113355';ctx.fillRect(0,0,1400,700);
+    return canvas.toDataURL('image/png').split(',')[1];
+  });
   await page.locator('#boxPhotoInput').setInputFiles({
-    name:'kiste.png',mimeType:'image/png',buffer:Buffer.from([137,80,78,71,13,10,26,10])
+    name:'kiste.png',mimeType:'image/png',buffer:Buffer.from(photo,'base64')
   });
   const result=await page.evaluate(async()=>{
-    const OriginalReader=window.FileReader;
-    window.FileReader=class {
-      readAsDataURL(){setTimeout(()=>{this.result='data:image/png;base64,MOCK';this.onload?.()},15)}
+    const decode=window.createImageBitmap;
+    let resume,entered;
+    const waiting=new Promise(resolve=>{entered=resolve;});
+    window.createImageBitmap=async(...args)=>{
+      entered();
+      await new Promise(resolve=>{resume=resolve;});
+      return decode(...args);
     };
-    try {await saveBox()} finally {window.FileReader=OriginalReader}
-    return {writes:window.__toolyaMock.writes.length,
-      photo:window.__toolyaMock.writes.at(-1)?.p_data?.boxes?.[0]?.photo,
-      cleared:document.querySelector('#boxName').value===''};
+    try{
+      const saving=saveBox();
+      await waiting;
+      const before=window.__toolyaMock.writes.length;
+      resume();
+      await saving;
+      const photo=window.__toolyaMock.writes.at(-1)?.p_data?.boxes?.[0]?.photo;
+      const image=new Image();image.src=photo;await image.decode();
+      return {before,writes:window.__toolyaMock.writes.length,photo,width:image.width,height:image.height,
+        cleared:document.querySelector('#boxName').value===''};
+    }finally{window.createImageBitmap=decode;}
   });
+  expect(result.before).toBe(1);
   expect(result.writes).toBe(2);
-  expect(result.photo).toBe('data:image/png;base64,MOCK');
+  expect(result.photo).toMatch(/^data:image\/jpeg;base64,/);
+  expect([result.width,result.height]).toEqual([1200,600]);
   expect(result.cleared).toBe(true);
 });
 
@@ -1685,6 +1703,20 @@ test('moving boxes guide prints the sample QR label without the instructions', a
   await testInfo.attach('moving-sample-qr-print-a4',{body:pdf,contentType:'application/pdf'});
 });
 
+test('English moving boxes guide prints the sample and ships its localized CSV template',async({page})=>{
+ await isolated(page,false);
+ await page.goto('/en/moving-boxes/');
+ const section=page.locator('#sample-label');
+ await expect(section.getByRole('link',{name:'Download the box list template (CSV)'})).toHaveAttribute('href','./box-list.csv');
+ const image=section.getByRole('img',{name:'QR code for this public sample label'});
+ await expect(image).toHaveJSProperty('naturalWidth',328);
+ await page.emulateMedia({media:'print'});
+ await expect(section.getByRole('heading')).toBeHidden();
+ await expect(image).toBeVisible();
+ const pdf=await page.pdf({format:'A4'});
+ expect(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
+});
+
 for (const path of ['/backform-rechner/', '/toolya-dashboard/', '/amazon-wunschliste-veroeffentlichen/']) {
   test(`guide controls and screenshot fit a narrow screen at ${path}`, async ({ page }) => {
     await isolated(page, false);
@@ -2321,9 +2353,12 @@ test('i18n Sprint A moving: malformed backup is rejected in isolated Chromium be
  await dialog.getByRole('button',{name:'OK'}).click();
  await expect(input).toHaveValue('');
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
+ await input.setInputFiles({name:'invalid-backup.json',mimeType:'application/json',buffer:Buffer.from('not json')});
+ await expect(dialog.locator('#hl-alert-message')).toHaveText('Backup file could not be read.');
+ await dialog.getByRole('button',{name:'OK'}).click();
  await page.locator('[data-tool-locale="de"]').click();
  await input.setInputFiles({name:'invalid-backup.json',mimeType:'application/json',buffer:Buffer.from('not json')});
- await expect(dialog.locator('#hl-alert-message')).toHaveText('Fehler beim Lesen der Datei.');
+ await expect(dialog.locator('#hl-alert-message')).toHaveText('Backup-Datei konnte nicht gelesen werden.');
  await dialog.getByRole('button',{name:'OK'}).click();
  expect(await page.evaluate(()=>window.__toolyaMock.writes.length)).toBe(0);
  expect(errors).toEqual([]);
@@ -2383,7 +2418,7 @@ test('i18n Sprint A moving: exported synthetic JSON matches stored snapshot byte
   const downloadPromise=page.waitForEvent('download');
   await page.evaluate(()=>exportBackup());
   const download=await downloadPromise;
-  expect(download.suggestedFilename()).toMatch(/^homebox-backup-\d{4}-\d{2}-\d{2}\.json$/);
+  expect(download.suggestedFilename()).toMatch(lang==='en'?/^toolya-moving-boxes-backup-\d{4}-\d{2}-\d{2}\.json$/:/^toolya-umzugskisten-sicherung-\d{4}-\d{2}-\d{2}\.json$/);
   const parts=[];for await(const chunk of await download.createReadStream())parts.push(chunk);
   const payload=JSON.parse(Buffer.concat(parts).toString('utf8'));
   expect(payload).toEqual(fixture);
@@ -2502,7 +2537,7 @@ test('i18n Sprint A moving: QR label export text and deep links stay stable acro
   window.QRCode=class{constructor(node,opts){window.__qrPdfSpy.urls.push(opts.text);const img=document.createElement('img');img.src='data:image/png;base64,iVBORw0KGgo=';node.append(img)}};
   window.jspdf={jsPDF:class{
    setFont(){return this}setFontSize(){return this}setDrawColor(){return this}
-   roundedRect(){return this}addPage(){return this}
+   rect(){return this}splitTextToSize(value){return [String(value)]}addPage(){return this}
    text(v){window.__qrPdfSpy.texts.push(String(v));return this}
    addImage(v){window.__qrPdfSpy.images.push(v);return this}
    save(v){window.__qrPdfSpy.files.push(v)}
@@ -2511,6 +2546,12 @@ test('i18n Sprint A moving: QR label export text and deep links stay stable acro
  for(const lang of ['en','de']){
   await page.locator('[data-tool-locale="'+lang+'"]').click();
   await page.evaluate(()=>{window.__qrPdfSpy.texts=[];window.__qrPdfSpy.images=[];window.__qrPdfSpy.urls=[];return exportQrLabelsPDF()});
+  const print=page.locator('#movingPrintDialog');
+  await expect(print.locator('#movingPrintPrivate')).not.toBeChecked();
+  await print.locator('#movingPrintPrivate').check();
+  await print.locator('#movingPrintSave').click();
+  await expect.poll(()=>page.evaluate(()=>window.__qrPdfSpy.files.length)).toBe(lang==='en'?1:2);
+  await print.locator('form button').click();
   const v=await page.evaluate(()=>({spy:window.__qrPdfSpy,snapshot:getData(),writes:window.__toolyaMock.writes.length}));
   expect(v.writes).toBe(0);
   expect(v.snapshot).toEqual(fixture);
@@ -2522,11 +2563,11 @@ test('i18n Sprint A moving: QR label export text and deep links stay stable acro
   if(lang==='en'){
    expect(v.spy.files.at(-1)).toBe('moving-box-qr-labels.pdf');
    expect(v.spy.texts.join(' ')).toContain('Fragile');
-   expect(v.spy.texts.join(' ')).toContain('Location');
+   expect(v.spy.texts.join(' ')).toContain('Destination room');
   }else{
    expect(v.spy.files.at(-1)).toBe('kisten-qr-etiketten.pdf');
    expect(v.spy.texts.join(' ')).toContain('Zerbrechlich');
-   expect(v.spy.texts.join(' ')).toContain('Ort');
+   expect(v.spy.texts.join(' ')).toContain('Zielraum');
   }
  }
 });
@@ -2539,6 +2580,7 @@ test('i18n Sprint A moving: missing QR library reports localized failure and doe
  for(const [lang,message] of [['en','The QR code could not be loaded. Please try again.'],['de','Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.']]){
   await page.locator('[data-tool-locale="'+lang+'"]').click();
   await page.evaluate(()=>{window.__movingQrExportForTest=exportQrLabelsPDF();});
+  await page.locator('#movingPrintSave').click();
   const dialog=page.getByRole('alertdialog',{name:'Toolya'});
   await expect(dialog.locator('#hl-alert-message')).toHaveText(message);
   await expect(dialog.getByRole('button',{name:'OK'})).toBeFocused();

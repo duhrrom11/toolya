@@ -1,4 +1,5 @@
 import {resolveLocale} from '../../../shared/toolya/i18n/locale.mjs';
+import {createMovingQrReader,helperBoxFromCode} from '../moving-qr-reader.mjs';
 
 const endpoint='https://yheogmeaosuigyaxkwth.supabase.co/functions/v1/moving-helper';
 const apikey='sb_publishable_PK20oOPzG3AB-bd95Ji9Tg_C-MIUgyv';
@@ -28,8 +29,8 @@ function renderLanguage(){
  document.getElementById('helper-heading').textContent=text('Umzugshelfer','Moving helper');
  document.getElementById('helper-intro').textContent=text('Gemeinsam Kisten sicher ans Ziel bringen.','Help get moving boxes to the right place.');
  document.getElementById('helper-privacy').textContent=text(
-  'Nur Kistennamen und Zielräume sind sichtbar. Private Inventarinhalte bleiben geschützt.',
-  'You can see box names and destination rooms. Private inventory details stay protected.'
+  'Du siehst freigegebene Kisten, Zielräume und Hinweise. Private Inventarinhalte bleiben geschützt.',
+  'You can see shared boxes, destination rooms and directions. Private inventory details stay protected.'
  );
  document.querySelector('.helper-languages').setAttribute('aria-label',text('Sprache','Language'));
  for(const button of languageButtons)button.setAttribute('aria-pressed',String(button.dataset.helperLocale===locale));
@@ -56,7 +57,8 @@ async function call(action,more={}){
 async function refresh(){
  if(!token){data=null;render();return;}
  busy=true;error='';render();
- try{data=await call('view');if(selected&&!data.boxes.some(b=>b.assignmentId===selected))selected='';}
+ try{data=await call('view');if(selected&&!data.boxes.some(b=>b.assignmentId===selected))selected='';
+  if(!selected&&data.boxes.length===1)selected=data.boxes[0].assignmentId;}
  catch{data=null;error=['Die Verbindung konnte nicht hergestellt werden.','Could not connect to Toolya.'];}
  finally{busy=false;render();}
 }
@@ -96,7 +98,10 @@ function render(){
   <div class="toolbar">
    <button data-act="refresh" class="secondary" ${disabled}>${text('↻ Aktualisieren','↻ Refresh')}</button>
    <button data-act="scan" ${disabled}>${text('QR-Code scannen','Scan QR code')}</button>
-  </div>`;
+  </div>
+  <details><summary>${text('QR-Code aus Foto lesen','Read a QR code from a photo')}</summary>
+   <label>${text('Foto auswählen','Choose a photo')} <input id="mv-code-file" type="file" accept="image/*" ${disabled}></label>
+  </details>`;
  const camera=document.getElementById('mv-camera');
  const cameraLabel=text('Kamera zum QR-Code scannen','Camera for scanning QR codes');
  if(scanner)html+=`<div class="scan"><video id="mv-camera" autoplay muted playsinline aria-label="${cameraLabel}"></video><button class="secondary" data-act="stop">${text('Scanner schließen','Close scanner')}</button></div>`;
@@ -110,6 +115,7 @@ function render(){
   const issueText=incidents.map(incident=>incident.kind==='missing'?text('Fehlend','Missing'):text('Beschädigt','Damaged')).join(', ');
   return `<article class="box ${selected===box.assignmentId?'active':''}">
    <div class="box-top"><div><strong>${esc(box.label)}</strong><small>${text('Zielraum','Destination room')}: ${esc(box.room||text('Nicht zugewiesen','Unassigned'))} · ${text('Priorität','Priority')}: ${esc(priority)}</small></div><small>Version ${format(Number(box.version))}</small></div>
+   ${box.roomDirections?`<p class="muted">${text('Weg zum Zielraum','Room directions')}: ${esc(box.roomDirections)}</p>`:''}
    <div class="status">
     <button data-id="${esc(box.assignmentId)}" data-status="${esc(states[index-1]||'')}" ${index<=0||busy?'disabled':''} aria-label="${text('Vorheriger Status','Previous status')}">‹</button>
     <span>${esc(Object.hasOwn(names[locale],box.status)?names[locale][box.status]:text('Unbekannt','Unknown'))}</span>
@@ -162,10 +168,11 @@ function stopCamera(){
 async function startCamera(){
  if(!scanner||media||openingCamera)return;
  const video=document.getElementById('mv-camera');if(!video)return;
- if(!('BarcodeDetector' in window)||!navigator.mediaDevices?.getUserMedia){error=['QR-Scanner in diesem Browser nicht unterstützt. Bitte die Kiste aus der Liste auswählen.','This browser does not support QR scanning. Choose the box from the list.'];scanner=false;render();return;}
+ if(!navigator.mediaDevices?.getUserMedia){cameraError();return;}
  openingCamera=true;
  try{
-  const detector=new BarcodeDetector({formats:['qr_code']});
+  const detect=await createMovingQrReader();
+  if(!scanner||document.getElementById('mv-camera')!==video)return;
   const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
   if(!scanner||document.getElementById('mv-camera')!==video){
    for(const track of stream.getTracks())track.stop();
@@ -174,23 +181,59 @@ async function startCamera(){
   media=stream;
   video.srcObject=stream;
   await video.play();
-  const scan=async()=>{if(!scanner||media!==stream)return;try{
-   const found=await detector.detect(video);
-   for(const v of found){const code=new URL(v.rawValue,location.href);if(code.origin!==location.origin||!code.pathname.endsWith('/tools/moving/helper/index.html'))continue;const h=new URLSearchParams(code.hash.slice(1));const a=h.get('a');if(h.get('t')===token&&data?.boxes.some(x=>x.assignmentId===a)){selected=a;notice=['Kiste erkannt','Box detected'];stopCamera();render();return;}}
-  }catch{}if(scanner)requestAnimationFrame(scan);};
-  requestAnimationFrame(scan);
+  const scan=async()=>{
+   if(!scanner||media!==stream)return;
+   try{
+    const found=await detect(video);
+    if(!scanner||media!==stream)return;
+    if(selectScannedBox(found))return;
+    setTimeout(scan,180);
+   }catch{if(scanner&&media===stream)cameraError();}
+  };
+  void scan();
  }catch{
-  if(document.getElementById('mv-camera')===video){
-   stopCamera();
-   error=['Kamera nicht verfügbar. Bitte eine Kiste auswählen.','Camera unavailable. Choose a box from the list.'];
-   render();
-  }
+  if(document.getElementById('mv-camera')===video)cameraError();
  }finally{
   openingCamera=false;
   if(scanner&&!media&&document.getElementById('mv-camera')!==video)void startCamera();
  }
 }
-app?.addEventListener('change',e=>{if(e.target.id==='mv-select'){selected=e.target.value;notice='';render();}});
+function cameraError(){
+ stopCamera();
+ error=['Kamera nicht verfügbar. Wähle ein Foto oder eine Kiste aus der Liste.',
+  'Camera unavailable. Choose a photo or a box from the list.'];
+ render();
+}
+function selectScannedBox(codes){
+ const match=codes.map(code=>helperBoxFromCode(code,location.origin,token,data?.boxes??[])).find(Boolean);
+ if(!match)return false;
+ selected=match;
+ error='';
+ notice=['Kiste erkannt','Box detected'];
+ stopCamera();
+ render();
+ return true;
+}
+async function readQrPhoto(file){
+ if(!file||busy)return;
+ stopCamera();
+ busy=true;error='';notice='';render();
+ let codes=[];
+ try{
+  if(file.size>20*1024*1024)throw Error('Image too large');
+  const image=await createImageBitmap(file,{imageOrientation:'from-image'});
+  try{codes=await (await createMovingQrReader())(image);}
+  finally{image.close();}
+ }catch{}
+ busy=false;
+ if(selectScannedBox(codes))return;
+ error=['Kein passender Helfer-QR-Code im Foto gefunden.','No matching helper QR code found in the photo.'];
+ render();
+}
+app?.addEventListener('change',e=>{
+ if(e.target.id==='mv-select'){selected=e.target.value;notice='';render();}
+ if(e.target.id==='mv-code-file')void readQrPhoto(e.target.files?.[0]);
+});
 app?.addEventListener('click',async e=>{
  const b=e.target.closest('button');if(!b)return;
  if(b.dataset.act==='refresh'){notice='';await refresh();return;}

@@ -16,7 +16,7 @@ function fail(status:number,message:string,origin:string|null){return result(sta
 async function digest(value:string){const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value));return Array.from(new Uint8Array(bytes)).map(x=>x.toString(16).padStart(2,'0')).join('');}
 async function owner(req:Request){const auth=req.headers.get('Authorization')||'';if(!auth.startsWith('Bearer '))return null;const token=auth.slice(7);if(!token||token.startsWith('sb_'))return null;const {data,error}=await db.auth.getUser(token);return error||!data?.user?.id||data.user.is_anonymous?null:data.user.id;}
 async function source(ownerId:string,projectId:string){const {data,error}=await db.from('user_data').select('data').eq('user_id',ownerId).eq('tool','umzugskisten-inventar').maybeSingle();if(error)throw Error('CLOUD_READ');const s=data?.data;if(!isObject(s)||!Array.isArray(s.boxes)||!isObject(s.moving))return null;const p=Array.isArray(s.moving.projects)?s.moving.projects.find((p:unknown)=>isObject(p)&&p.id===projectId&&p.status==='active'):null;if(!p)return null;const assignments=Array.isArray(s.moving.assignments)?s.moving.assignments.filter((a:unknown)=>isObject(a)&&a.projectId===projectId):[];const rooms=Array.isArray(s.moving.rooms)?s.moving.rooms.filter((r:unknown)=>isObject(r)&&r.projectId===projectId):[];return {p,assignments,rooms,boxes:s.boxes};}
-async function activeGrant(token:string){if(typeof token!=='string'||!/^[A-Za-z0-9_-]{40,100}$/.test(token))return null;const hashed=await digest(token);const {data,error}=await db.from('moving_helper_grants').select('id,owner_id,project_id,helper_label,scope,expires_at').eq('token_hash',hashed).is('revoked_at',null).gt('expires_at',new Date().toISOString()).maybeSingle();if(error)throw Error('GRANT_READ');if(!data)return null;const limit=await db.rpc('moving_helper_rate_limit',{p_token_hash:hashed});if(limit.error)throw Error('RATE_LIMIT_READ');if(!limit.data)throw Error('RATE_LIMIT');return {...data,hashed};}
+async function activeGrant(token:string){if(typeof token!=='string'||!/^[A-Za-z0-9_-]{40,100}$/.test(token))return null;const hashed=await digest(token);const {data,error}=await db.from('moving_helper_grants').select('id,owner_id,project_id,helper_label,scope,expires_at,allowed_assignment_ids').eq('token_hash',hashed).is('revoked_at',null).gt('expires_at',new Date().toISOString()).maybeSingle();if(error)throw Error('GRANT_READ');if(!data)return null;const limit=await db.rpc('moving_helper_rate_limit',{p_token_hash:hashed});if(limit.error)throw Error('RATE_LIMIT_READ');if(!limit.data)throw Error('RATE_LIMIT');return {...data,hashed};}
 async function list(ownerId:string,projectId:string){const [s,v,g]=await Promise.all([
  db.from('moving_transport_state').select('assignment_id,status,version').eq('owner_id',ownerId).eq('project_id',projectId),
  db.from('moving_public_box_views').select('assignment_id,display_label,room_label,priority').eq('owner_id',ownerId).eq('project_id',projectId),
@@ -54,14 +54,31 @@ Deno.serve(async(req:Request)=>{
   if(['view','transition','report-incident'].includes(String(action))){
     const grant=await activeGrant(String(payload.token||''));if(!grant)return fail(401,'Link invalid or expired',origin);
     const src=await source(grant.owner_id,grant.project_id);if(!src)return fail(403,'Project not active',origin);
-    if(action==='view'){const current=await list(grant.owner_id,grant.project_id);const allowed=new Set(src.assignments.filter(isObject).map(a=>a.id));return result(200,{helperLabel:grant.helper_label,projectName:String(src.p.name||'Umzug').slice(0,100),boxes:current.boxes.filter(b=>allowed.has(b.assignmentId)),incidents:(await incidents(grant.owner_id,grant.project_id,true)).filter(i=>allowed.has(i.assignmentId))},origin);}
+    const byBox=new Map(src.boxes.filter(isObject).map((box)=>[box.id,box]));
+    const scope=Array.isArray(grant.allowed_assignment_ids)?new Set(grant.allowed_assignment_ids):null;
+    const links=src.assignments.filter(isObject).filter(assignment=>{
+      const box=byBox.get(assignment.boxId);
+      return box && box.keepWithMe!==true && (!scope||scope.has(assignment.id));
+    });
+    const allowed=new Map(links.map(assignment=>[assignment.id,assignment]));
+    if(action==='view'){
+      const current=await list(grant.owner_id,grant.project_id);
+      const rooms=new Map(src.rooms.filter(isObject).map((room)=>[room.id,room]));
+      const boxes=current.boxes.filter(box=>allowed.has(box.assignmentId)).map(box=>{
+        const room=rooms.get(allowed.get(box.assignmentId)?.targetRoomId);
+        const roomDirections=typeof room?.helperDirections==='string'?room.helperDirections.trim().slice(0,120):'';
+        return {...box,...(roomDirections?{roomDirections}:{})};
+      });
+      return result(200,{helperLabel:grant.helper_label,projectName:String(src.p.name||'Umzug').slice(0,100),
+        boxes,incidents:(await incidents(grant.owner_id,grant.project_id,true)).filter(issue=>allowed.has(issue.assignmentId))},origin);
+    }
     if(action==='report-incident'){
-      if(!incidentInput(payload)||!src.assignments.some(a=>isObject(a)&&a.id===payload.assignmentId))return fail(400,'Invalid incident report',origin);
+      if(!incidentInput(payload)||!allowed.has(payload.assignmentId))return fail(400,'Invalid incident report',origin);
       const {data,error}=await db.rpc('moving_helper_report_incident',{p_token_hash:grant.hashed,p_assignment_id:payload.assignmentId,p_kind:payload.kind,p_note:String(payload.note||'').trim(),p_request_id:payload.requestId});
       if(error)return fail(error.code==='42501'?403:error.code==='23505'?409:400,'Incident not saved',origin);
       return result(200,data,origin);
     }
-    if(!isUuid(payload.assignmentId)||!isUuid(payload.requestId)||!Number.isSafeInteger(payload.expectedVersion)||!states.includes(String(payload.status))||!src.assignments.some(a=>isObject(a)&&a.id===payload.assignmentId))return fail(400,'Invalid change',origin);
+    if(!isUuid(payload.assignmentId)||!isUuid(payload.requestId)||!Number.isSafeInteger(payload.expectedVersion)||!states.includes(String(payload.status))||!allowed.has(payload.assignmentId))return fail(400,'Invalid change',origin);
     const {data,error}=await db.rpc('moving_helper_transition',{p_token_hash:grant.hashed,p_assignment_id:payload.assignmentId,p_expected_version:payload.expectedVersion,p_next_status:payload.status,p_request_id:payload.requestId});if(error)return fail(error.code==='40001'?409:error.code==='42501'?403:400,'Status not saved; reload before retrying',origin);return result(200,data,origin);
   }
   const userId=await owner(req);if(!userId)return fail(401,'Sign in required',origin);
@@ -73,12 +90,22 @@ Deno.serve(async(req:Request)=>{
   if(action==='create'){
     const label=String(payload.label||'').trim(),hours=Number(payload.hours);
     if(label.length<1||label.length>80||!Number.isInteger(hours)||hours<1||hours>72)return fail(400,'Invalid grant details',origin);
+    let assignmentIds:string[]|null=null;
+    if(payload.target!==undefined&&payload.target!==''){
+      const target=typeof payload.target==='string'?payload.target:'';
+      const [kind,id]=target.split(':');
+      if(!isUuid(id)||!['room','box'].includes(kind))return fail(400,'Invalid helper assignment',origin);
+      const personal=new Set(src.boxes.filter(isObject).filter(box=>box.keepWithMe===true).map(box=>box.id));
+      assignmentIds=src.assignments.filter(isObject).filter(assignment=>!personal.has(assignment.boxId)&&
+        (kind==='room'?assignment.targetRoomId===id:assignment.id===id)).map(assignment=>String(assignment.id));
+      if(!assignmentIds.length||assignmentIds.length>1500||!assignmentIds.every(isUuid))return fail(400,'No matching helper assignment',origin);
+    }
     await sync(userId,projectId);
     const {count:activeCount,error:countError}=await db.from('moving_helper_grants').select('id',{count:'exact',head:true}).eq('owner_id',userId).eq('project_id',projectId).is('revoked_at',null).gt('expires_at',new Date().toISOString());
     if(countError)throw Error('GRANT_LIMIT_READ');if((activeCount||0)>=20)return fail(429,'Maximum active helper links reached',origin);
     const secret=new Uint8Array(32);crypto.getRandomValues(secret);const token=btoa(String.fromCharCode(...secret)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
     const hash=await digest(token);const expires=new Date(Date.now()+hours*3600000).toISOString();
-    const {data,error}=await db.from('moving_helper_grants').insert({owner_id:userId,project_id:projectId,helper_label:label,token_hash:hash,expires_at:expires}).select('id,helper_label,expires_at').single();if(error)throw Error('GRANT_WRITE');
+    const {data,error}=await db.from('moving_helper_grants').insert({owner_id:userId,project_id:projectId,helper_label:label,token_hash:hash,expires_at:expires,allowed_assignment_ids:assignmentIds}).select('id,helper_label,expires_at').single();if(error)throw Error('GRANT_WRITE');
     return result(200,{grant:data,token},origin);
   }
   if(action==='revoke'){

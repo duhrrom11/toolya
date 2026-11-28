@@ -8,6 +8,7 @@ on:
       - 'tools/moving/**'
       - 'shared/toolya/cloud-controller.mjs'
       - 'tests/moving-model.test.mjs'
+      - 'tests/moving-inventory.test.mjs'
       - 'tests/cloud-moving.test.mjs'
       - 'tests/cloud-controller.test.mjs'
       - 'tests/cloud-repository.test.mjs'
@@ -17,6 +18,7 @@ on:
       - 'tools/moving/**'
       - 'shared/toolya/cloud-controller.mjs'
       - 'tests/moving-model.test.mjs'
+      - 'tests/moving-inventory.test.mjs'
       - '.github/workflows/moving-planner.yml'
   workflow_dispatch:
 concurrency:
@@ -32,7 +34,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test tests/moving-model.test.mjs tests/cloud-moving.test.mjs tests/cloud-controller.test.mjs tests/cloud-repository.test.mjs
+      - run: node --test tests/moving-model.test.mjs tests/moving-inventory.test.mjs tests/cloud-moving.test.mjs tests/cloud-controller.test.mjs tests/cloud-repository.test.mjs
       - run: node --check tools/moving/moving-state.mjs
       - run: node --check tools/moving/moving-ui.mjs
   browser-tests:
