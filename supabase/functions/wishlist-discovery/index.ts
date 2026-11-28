@@ -53,6 +53,36 @@ Deno.serve(async(req:Request)=>{
  try{
   if(Number(req.headers.get('content-length')||0)>1500000)return reply(413,{error:'Datei zu groß.'});
   const raw=await req.text();if(raw.length>1500000)return reply(413,{error:'Datei zu groß.'});const body=JSON.parse(raw);
+
+  if(body.action==='managed_list'){
+   const offset=Math.max(0,Math.min(100000,Math.floor(Number(body.offset)||0)));
+   const rows=must(await db.from('wishlist_imported_entries').select('id,display_name,country,logo_url,wishlist_url,source_url').order('display_name').order('id').range(offset,offset+99));
+   return reply(200,{rows});
+  }
+  if(body.action==='managed_save'){
+   const v=body.values||{};
+   const name=String(v.display_name||'').trim();
+   const list=canonicalList(String(v.wishlist_url||''));
+   const logo=String(v.logo_url||'').trim(),source=String(v.source_url||'').trim(),country=String(v.country||'').trim();
+   if(!name||name.length>160||!list||country.length>80||logo.length>2048||source.length>2048||(logo&&!publicUrl(logo))||(source&&!publicUrl(source)))return reply(400,{error:'Ungültige Profildaten.'});
+   const values={display_name:name,list_key:list.key,wishlist_url:list.url,logo_url:logo?publicUrl(logo):'',source_url:source?publicUrl(source):'',country};
+   if(body.id){
+    if(typeof body.id!=='string'||!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(body.id))return reply(400,{error:'Ungültige Profil-ID.'});
+    const result=must(await db.from('wishlist_imported_entries').update(values).eq('id',body.id).select('id'));
+    if(result.length!==1)return reply(404,{error:'Profil nicht gefunden.'});
+   }else{
+    const existing=must(await db.from('wishlist_directory_lists').select('id').ilike('url','%/ls/'+list.key+'?tag=duhrrom-21').limit(1));
+    if(existing.length)return reply(409,{error:'Wunschliste existiert bereits.'});
+    must(await db.from('wishlist_imported_entries').insert(values));
+   }
+   return reply(200,{ok:true});
+  }
+  if(body.action==='managed_delete'){
+   if(typeof body.id!=='string'||!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(body.id))return reply(400,{error:'Ungültige Profil-ID.'});
+   const result=must(await db.from('wishlist_imported_entries').delete().eq('id',body.id).select('id'));
+   if(result.length!==1)return reply(404,{error:'Profil nicht gefunden.'});
+   return reply(200,{ok:true});
+  }
   if(body.action==='configure'){must(await db.rpc('wishlist_tavily_key',{new_key:String(body.key||'').trim()}));return reply(200,{configured:true})}
   const key=must(await db.rpc('wishlist_tavily_key'));
   const quota=must(await db.rpc('wishlist_tavily_quota',{claim:false}));
