@@ -1,3 +1,4 @@
+import {suggestCategory,categories} from './budget-organization.mjs';
 import {parseCents,legacyCents,decimalCents,parseBankDate,parseCSV} from './budget-domain.mjs';
 const norm=v=>String(v??'').trim().normalize('NFC').toLowerCase();
 const canonical=v=>Array.isArray(v)?v.map(canonical):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])])):v;
@@ -19,6 +20,7 @@ export function bankPreview(text,config,entries=[]){
   if(!norm(config.source))throw Error('source');
   const known=new Set(entries.filter(r=>r?.bankImport?.transactionId).map(r=>sourceKey(r.bankImport.source,r.bankImport.transactionId)));
   const seen=new Set();
+  const replayKeys=new Set(entries.map(r=>r?.bankImport?.replayKey).filter(Boolean));
   const similar=(date,title,cents)=>entries.some(r=>{
     try{return r.date===date&&norm(r.title)===norm(title)&&income(r)===(cents>0)&&legacyCents(r.price)===Math.abs(cents);}catch{return false;}
   });
@@ -42,9 +44,11 @@ export function bankPreview(text,config,entries=[]){
       const key=transactionId?sourceKey(config.source,transactionId):null;
       const duplicate=key&&(known.has(key)||seen.has(key));
       const fingerprint=JSON.stringify([date,norm(title),cents]);
-      const warning=!duplicate&&(similar(date,title,cents)||seen.has(fingerprint));
+      const replayKey=config.fileDigest?JSON.stringify([norm(config.source),config.fileDigest,index+2]):null;
+      const replay=!!replayKey&&replayKeys.has(replayKey);
+      const warning=!duplicate&&!replay&&(similar(date,title,cents)||seen.has(fingerprint));
       if(key)seen.add(key);seen.add(fingerprint);
-      result.push({index:index+2,date,title,cents,transactionId,source:config.source.trim(),status:duplicate?'duplicate':warning?'review':'ready'});
+      result.push({index:index+2,date,title,cents,transactionId,source:config.source.trim(),replayKey,suggestedCategory:cents<0?suggestCategory(title,config.rules||[]):null,status:duplicate||replay?'duplicate':warning?'review':'ready'});
     }catch{result.push({index:index+2,status:'invalid'});}
   }
   return result;
@@ -54,20 +58,21 @@ export function applyBankImport(entries,rows,batchId,now=Date.now()){
   if(entries.some(r=>r?.bankImport?.batchId===batchId))return {entries,added:0};
   const next=entries.slice();
   const known=new Set(entries.filter(r=>r?.bankImport?.transactionId).map(r=>sourceKey(r.bankImport.source,r.bankImport.transactionId)));
+  const replayKeys=new Set(entries.map(r=>r?.bankImport?.replayKey).filter(Boolean));
   const ids=new Set(entries.map(r=>r?.id));let id=now,added=0;
   for(const row of rows){
     if(!['ready','review'].includes(row.status))throw Error('invalid-row');
     if(!Number.isSafeInteger(row.cents)||!row.cents||!norm(row.source)||!norm(row.title))throw Error('invalid-row');
     parseBankDate(row.date,'ISO');
     const key=row.transactionId?sourceKey(row.source,row.transactionId):null;
-    if(key&&known.has(key))continue;
+    if((key&&known.has(key))||(row.replayKey&&replayKeys.has(row.replayKey)))continue;
     while(ids.has(id))id++;
     const price=Number(decimalCents(Math.abs(row.cents)));
     if(legacyCents(price)!==Math.abs(row.cents))throw Error('amount');
-    const booking={id,date:row.date,title:row.title,store:'',price,category:row.cents>0?'Einnahme':'Sonstiges',paymentMethod:'Überweisung',warrantyMonths:0,returnDays:0,lifespan:5,sn:'',location:'',isFixkosten:false,isTax:false,note:'',entryType:row.cents>0?'einnahme':'ausgabe',photos:[],lineItems:[]};
+    const booking={id,date:row.date,title:row.title,store:'',price,category:row.cents>0?'Einnahme':categories.includes(row.category)?row.category:categories.includes(row.suggestedCategory)?row.suggestedCategory:'Sonstiges',paymentMethod:'Überweisung',warrantyMonths:0,returnDays:0,lifespan:5,sn:'',location:'',isFixkosten:false,isTax:false,note:'',entryType:row.cents>0?'einnahme':'ausgabe',photos:[],lineItems:[]};
     // Baseline includes every initial field, so any later addition or change protects the booking.
-    booking.bankImport={batchId,source:row.source,transactionId:row.transactionId||'',baseline:JSON.stringify(canonical(booking))};
-    next.push(booking);ids.add(id++);if(key)known.add(key);added++;
+    booking.bankImport={batchId,source:row.source,transactionId:row.transactionId||'',replayKey:row.replayKey||null,baseline:JSON.stringify(canonical(booking))};
+    next.push(booking);ids.add(id++);if(key)known.add(key);if(row.replayKey)replayKeys.add(row.replayKey);added++;
   }
   next.sort((a,b)=>String(b?.date||'').localeCompare(String(a?.date||'')));
   return {entries:next,added};
@@ -85,4 +90,10 @@ export function undoBankImport(entries,batchId){
   }
   const ids=new Set(removable);
   return {entries:entries.filter(r=>!ids.has(r?.id)),removable,protectedIds};
+}
+
+export async function bankFileDigest(file){
+  if(file.size>5*1024*1024)throw Error('file-size');
+  const hash=await globalThis.crypto.subtle.digest('SHA-256',await file.arrayBuffer());
+  return Array.from(new Uint8Array(hash),x=>x.toString(16).padStart(2,'0')).join('');
 }
