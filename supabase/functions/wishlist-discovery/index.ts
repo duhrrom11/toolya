@@ -54,6 +54,55 @@ Deno.serve(async(req:Request)=>{
   if(Number(req.headers.get('content-length')||0)>1500000)return reply(413,{error:'Datei zu groß.'});
   const raw=await req.text();if(raw.length>1500000)return reply(413,{error:'Datei zu groß.'});const body=JSON.parse(raw);
 
+
+  if(typeof body.action==='string'&&body.action.startsWith('directory_admin_')){
+   const actor=data.user.id;
+   const validId=(x:any)=>typeof x==='string'&&/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(x);
+   const audit=async(action:string,id:string,details:any={})=>must(await db.from('wishlist_admin_audit').insert({actor_id:actor,action,entity_id:id,details}));
+   const owned=async(id:any)=>{if(!validId(id))throw Error('Ungültige ID.');return must(await db.from('wishlist_directory_profiles').select('*').eq('id',id).eq('owner_id',actor).single())};
+   const v=body.values||{};
+   const visibility=(x:any)=>['private','link','directory'].includes(x)?x:'private';
+   if(body.action==='directory_admin_list'){
+    const offset=Math.max(0,Math.min(100000,Math.floor(Number(body.offset)||0)));
+    const profiles=must(await db.from('wishlist_directory_profiles').select('*,wishlist_directory_lists(*)').eq('owner_id',actor).order('display_name').order('id').range(offset,offset+99));
+    return reply(200,{profiles});
+   }
+   if(body.action==='directory_admin_audit'){
+    const rows=must(await db.from('wishlist_admin_audit').select('action,entity_id,details,created_at').eq('actor_id',actor).order('id',{ascending:false}).limit(100));return reply(200,{rows});
+   }
+   if(body.action==='directory_admin_save'){
+    const name=String(v.display_name||'').trim(),image=String(v.image_url||'').trim(),country=String(v.country||'').trim(),bio=String(v.bio||'').trim();
+    if(!name||name.length>161||country.length>80||bio.length>600||image.length>2048||(image&&!publicUrl(image)))return reply(400,{error:'Ungültige Profildaten.'});
+    let id=body.id;
+    const values={display_name:name,country,bio,image_url:image?publicUrl(image):'',visibility:visibility(v.visibility),show_other_lists:true};
+    if(id){const p=await owned(id);const changes:any={...values};if(!p.managed_by_finder){if(p.kind==='organization'){if(name.length>80)return reply(400,{error:'Name zu lang.'});changes.organization_name=name}else if(p.kind==='person'){changes.display_name=p.display_name}}must(await db.from('wishlist_directory_profiles').update(changes).eq('id',id).eq('owner_id',actor));}
+    else{id=must(await db.from('wishlist_directory_profiles').insert({...values,owner_id:actor,kind:'organization',managed_by_finder:true}).select('id').single()).id}
+    await audit('profile_save',id);return reply(200,{id});
+   }
+   if(body.action==='directory_admin_merge'){
+    await owned(body.id);await owned(body.target);must(await db.rpc('wishlist_admin_merge',{p_actor:actor,p_source:body.id,p_target:body.target}));return reply(200,{ok:true});
+   }
+   if(body.action==='directory_admin_delete'){
+    await owned(body.id);must(await db.from('wishlist_directory_profiles').delete().eq('id',body.id).eq('owner_id',actor));await audit('profile_delete',body.id);return reply(200,{ok:true});
+   }
+   if(body.action==='directory_admin_list_save'||body.action==='directory_admin_list_delete'){
+    await owned(body.profile_id);
+    if(body.id&&!validId(body.id))return reply(400,{error:'Ungültige Listen-ID.'});
+    if(body.action==='directory_admin_list_delete'){
+     if(!body.id)return reply(400,{error:'Listen-ID fehlt.'});
+     const rows=must(await db.from('wishlist_directory_lists').delete().eq('id',body.id).eq('profile_id',body.profile_id).select('id'));if(rows.length!==1)return reply(404,{error:'Liste nicht gefunden.'});await audit('list_delete',body.id);return reply(200,{ok:true});
+    }
+    const list=canonicalList(String(v.url||'')),name=String(v.name||'').trim(),occasion=String(v.occasion||'').trim();
+    if(!list||!name||name.length>100||occasion.length>80)return reply(400,{error:'Ungültige Wunschliste.'});
+    const target=v.profile_id||body.profile_id;await owned(target);
+    const values={profile_id:target,name,url:list.url,occasion,visibility:visibility(v.visibility)};
+    let id=body.id;
+    if(id){const rows=must(await db.from('wishlist_directory_lists').update(values).eq('id',id).eq('profile_id',body.profile_id).select('id'));if(rows.length!==1)return reply(404,{error:'Liste nicht gefunden.'})}
+    else{id=must(await db.from('wishlist_directory_lists').insert(values).select('id').single()).id}
+    await audit('list_save',id,{profile_id:target});return reply(200,{id});
+   }
+   return reply(400,{error:'Unbekannte Admin-Aktion.'});
+  }
   if(body.action==='managed_list'){
    const offset=Math.max(0,Math.min(100000,Math.floor(Number(body.offset)||0)));
    const rows=must(await db.from('wishlist_imported_entries').select('id,display_name,country,logo_url,wishlist_url,source_url').order('display_name').order('id').range(offset,offset+99));
