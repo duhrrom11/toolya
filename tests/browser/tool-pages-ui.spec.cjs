@@ -3417,18 +3417,18 @@ for(const fixture of [
  {"tool":"plants","handler":"updateCisternCapacity","fields":{"cisternMaxLiters":"0"},"de":"Bitte ein gültiges Fassungsvermögen größer als 0 eingeben.","en":"Enter a valid capacity greater than 0.","line":685},
  {"tool":"plants","handler":"addSeedItem","fields":{"seedName":"Private Löschen","seedYear":"1800"},"de":"Bitte ein gültiges Saatgutjahr eingeben.","en":"Enter a valid seed year.","line":741},
  {"tool":"plants","handler":"saveHarvest","fields":{"harvestPlantId":"1","harvestWeightGrams":"0"},"de":"Bitte eine gültige Erntemenge in ganzen Gramm eingeben.","en":"Enter a valid harvest amount in whole grams.","line":844},
- {"tool":"budget","handler":"saveReceipt","fields":{"receiptTitle":"Private Löschen","receiptDate":"2026-11-25","receiptPrice":"0","receiptNote":"Private Notiz"},"de":"Bitte Titel, gültiges Kaufdatum und einen positiven Betrag angeben!","en":"Enter a title, valid purchase date and positive amount.","line":1199},
- {"tool":"budget","handler":"saveSavingsGoal","fields":{"goalTitle":"Private Löschen","goalTarget":"0","goalCurrent":"2"},"de":"Bitte gültigen Titel, positiven Zielbetrag und Startbetrag ab 0 € eingeben!","en":"Enter a valid title, a positive target amount and a starting amount of at least €0.","line":1707},
+ {"tool":"budget","handler":"saveReceipt","fields":{"receiptTitle":"Private Löschen","receiptDate":"2026-11-25","receiptPrice":"0","receiptNote":"Private Notiz"},"de":"Bitte Titel, gültiges Kaufdatum und einen positiven Betrag angeben!","en":"Enter a title, valid purchase date and positive amount.","line":1225},
+ {"tool":"budget","handler":"saveSavingsGoal","fields":{"goalTitle":"Private Löschen","goalTarget":"0","goalCurrent":"2"},"de":"Bitte gültigen Titel, positiven Zielbetrag und Startbetrag ab 0 € eingeben!","en":"Enter a valid title, a positive target amount and a starting amount of at least €0.","line":1741},
  {"tool":"pet-health","handler":"saveEvent","fields":{"eventTitle":"Private Löschen","eventDate":"","eventCost":"12.5"},"de":"Bitte Haustier, Datum und Bezeichnung angeben!","en":"Please enter a pet, date and description!","line":664},
  {"tool":"plants","handler":"savePlant","fields":{"plantName":"","plantLastWatered":"2026-11-25","plantNote":"Private Löschen"},"de":"Bitte Name und gültiges Gießdatum angeben!","en":"Enter a name and valid watering date.","line":985},
  {"tool":"plants","handler":"savePlant","fields":{"plantName":"Private Löschen","plantLastWatered":"2026-11-25","plantInterval":"0","plantNote":"Private Notiz"},"de":"Bitte ein Gießintervall zwischen 1 und 3650 Tagen eingeben.","en":"Enter a watering interval between 1 and 3650 days.","line":986},
  {"tool":"plants","handler":"updatePlant","fields":{"editId":"invalid","editName":"Private Löschen"},"de":"Ungültige Pflanzen-ID. Die Änderungen wurden nicht gespeichert.","en":"Invalid plant ID. Changes were not saved.","line":1131},
  {"tool":"plants","handler":"saveDiaryEntry","fields":{"diaryPlantId":"invalid","diaryText":"Private Löschen"},"de":"Ungültige Pflanzen-ID.","en":"Invalid plant ID.","line":1088},
- {"tool":"budget","handler":"runOCR","fields":{"receiptTitle":"Private Löschen","receiptNote":"Private Notiz"},"de":"Bitte wähle zuerst ein Belegfoto aus!","en":"Select a receipt photo first.","line":1116},
- {"tool":"budget","handler":"saveReceipt","fields":{"receiptTitle":"Private Löschen","receiptDate":"2026-11-25","receiptPrice":"12.5","receiptWarranty":"-1","receiptReturnDays":"0","receiptLifespan":"5","receiptNote":"Private Notiz"},"de":"Bitte gültige Garantie-, Rückgabe- und Lebensdauerwerte angeben.","en":"Enter valid warranty, return period and useful-life values.","line":1204}
+ {"tool":"budget","handler":"runOCR","fields":{"receiptTitle":"Private Löschen","receiptNote":"Private Notiz"},"de":"Bitte wähle zuerst ein Belegfoto aus!","en":"Select a receipt photo first.","line":1134},
+ {"tool":"budget","handler":"saveReceipt","fields":{"receiptTitle":"Private Löschen","receiptDate":"2026-11-25","receiptPrice":"12.5","receiptWarranty":"-1","receiptReturnDays":"0","receiptLifespan":"5","receiptNote":"Private Notiz"},"de":"Bitte gültige Garantie-, Rückgabe- und Lebensdauerwerte angeben.","en":"Enter valid warranty, return period and useful-life values.","line":1230}
 ]){
  test('i18n runtime catalogue: '+fixture.tool+' '+fixture.handler+' line '+fixture.line+' preserves draft on validation in DE and EN',async({page},testInfo)=>{
-  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/'+fixture.tool+'/index.html',handler:fixture.handler,de:fixture.de,en:fixture.en,line:fixture.line||null})});
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/'+fixture.tool+'/index.html',handler:fixture.tool==='budget'&&fixture.handler==='saveReceipt'?'saveReceiptInternal':fixture.handler,de:fixture.de,en:fixture.en,line:fixture.line||null})});
   await isolated(page,true);
   await page.goto(origin+'/tools/'+fixture.tool+'/index.html');
   const state=()=>page.evaluate(tool=>{
@@ -3945,3 +3945,31 @@ for(const spec of qrCases)test(spec.tool+' QR DE/EN: stable private payload, can
  }
  expect(outbound.every(url=>!url.includes('Privat')&&!url.includes('Pass%'))).toBe(true);
 });
+
+for(const fixture of [
+ {handler:'deleteReceipt',id:82,de:'⚠️ Diese Buchung wirklich löschen?',en:'⚠️ Delete this transaction?',line:1389},
+ {handler:'deleteSavingsGoal',id:83,de:'Sparziel löschen?',en:'Delete this savings goal?',line:1768}
+]){
+ test('i18n runtime catalogue: budget '+fixture.handler+' cancels deletion in DE and EN',async({page},testInfo)=>{
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:fixture.handler,kind:'confirm',de:fixture.de,en:fixture.en,line:fixture.line})});
+  await isolated(page,true,false,{entries:[{id:82,title:'Private Buchung Öl',date:'2026-11-17',price:42,category:'Lebensmittel',photos:[]}],budgets:{},goals:[{id:83,title:'Privates Sparziel',target:100,current:20}]});
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  const state=()=>page.evaluate(()=>({snapshot:toolyaCloudController.snapshot(),writes:window.__toolyaMock.writes}));
+  const before=await state();
+  expect(before.writes).toEqual([]);
+  expect(before.snapshot.entries.some(r=>r.id===82)).toBe(true);
+  expect(before.snapshot.goals.some(r=>r.id===83)).toBe(true);
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   const pending=page.waitForEvent('dialog',{timeout:5000});
+   const action=page.evaluate(({handler,id})=>window[handler](id),fixture);
+   const dialog=await pending;
+   const actual={type:dialog.type(),message:dialog.message()};
+   await dialog.dismiss();await action;
+   expect(actual).toEqual({type:'confirm',message:fixture[lang]});
+   expect(await state()).toEqual(before);
+  }
+ });
+}
