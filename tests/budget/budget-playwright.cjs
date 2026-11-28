@@ -49,6 +49,22 @@ const server=http.createServer((req,res)=>{
  await page.getByRole('button',{name:'Assign',exact:true}).waitFor();
  await page.getByRole('button',{name:'Assign',exact:true}).click();
  await page.waitForFunction(()=>window.fixture.state().state.occasions[0]?.bookingIds.includes(1));
+ // Real browser file input and FileReader through the production capture panel.
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jR1sAAAAASUVORK5CYII=','base64');
+ await page.getByLabel('Receipt images',{exact:true}).setInputFiles([{name:'receipt-one.png',mimeType:'image/png',buffer:png},{name:'receipt-two.png',mimeType:'image/png',buffer:png}]);
+ await page.getByRole('button',{name:'Save images to inbox'}).click();
+ await page.waitForFunction(()=>window.fixture.state().state.inbox.length===2);
+ await page.getByText('receipt-one.png',{exact:false}).first().waitFor();
+ const uploaded=await page.evaluate(()=>window.fixture.state().state.inbox);
+ assert.equal(uploaded.length,2);
+ assert(uploaded.every(r=>r.photo.startsWith('data:image/png;base64,'));
+ // Test production batch OCR orchestration with deterministic local recognition.
+ await page.route('**/shared/toolya/receipt-ocr.mjs',route=>route.fulfill({contentType:'text/javascript',body:"export async function loadOcrLibrary(){return {async createWorker(language){window.testOcrLanguage=language;return {async recognize(){return {data:{text:'Total 12.50'}}},async terminate(){window.testOcrTerminated=true}}}}}"}));
+ await page.getByRole('button',{name:'Review batch with OCR'}).click();
+ await page.waitForFunction(()=>window.testOcrTerminated===true);
+ assert.equal(await page.evaluate(()=>window.testOcrLanguage),'deu');
+ assert.equal(await page.getByText('Total 12.50',{exact:true}).count(),2);
+ assert.equal((await page.evaluate(()=>window.fixture.state())).entries.length,1);
  await page.locator('#integrations summary').click();
  await page.getByRole('button',{name:'Load my meter readings'}).click();
  await page.getByText(/Meter A.*17.50/).waitFor();
