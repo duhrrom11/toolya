@@ -19,7 +19,7 @@ async function isolated(page,authenticated,displayCss=false,initialSnapshot=null
             const m=window.__toolyaMock;
             return {
               auth:{
-                async getUser(){return {data:{user:m.signedIn?{id:'ui-fixture-user',email:'mock@example.invalid',is_anonymous:false}:null},error:null}},
+                async getUser(){return {data:{user:m.signedIn?{id:m.userId||'ui-fixture-user',email:'mock@example.invalid',is_anonymous:false}:null},error:null}},
                 async getSession(){return {data:{session:null},error:null}},
                 onAuthStateChange(listener){
                   if(m.fixture?.__recovery)(m.authListeners??=[]).push(listener);
@@ -4109,6 +4109,44 @@ for(const fixture of [
    await expect(notice).toBeHidden();
    expect(await state()).toEqual(before);
    expect(exports).toEqual([]);
+  }
+ });
+}
+
+for(const switchAccount of [false,true]){
+ test('i18n runtime catalogue: budget migration backup '+(switchAccount?'account switch':'refusal')+' in DE and EN',async({page},testInfo)=>{
+  const de='Sicherung wurde zum Download angeboten. Bitte erst nach erfolgreichem Speichern bestätigen.';
+  const en='The backup download was offered. Confirm only after it has been saved successfully.';
+  if(!switchAccount)testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:'toolyaCloudBoot',kind:'confirm',line:614,de,en})});
+  await isolated(page,true,false,null);
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   const before=await page.evaluate(()=>{window.__toolyaMock.userId='ui-fixture-user';const local=JSON.stringify([{id:94,title:'Private Altbuchung',date:'2026-01-01',price:12,category:'Lebensmittel',photos:[]}]);localStorage.setItem('kassenbon_data',local);return {local,writes:window.__toolyaMock.writes.length};});
+   if(switchAccount)await page.evaluate(()=>{
+    const auth=window.supabaseClient.auth,original=auth.getUser.bind(auth);
+    auth.getUser=async()=>{if(window.__migrationSwitchPending){window.__toolyaMock.userId='ui-fixture-user-second';window.__migrationSwitchPending=false;}return original();};
+   });
+   const messages=[];
+   const onDialog=async dialog=>{messages.push({type:dialog.type(),message:dialog.message()});if(messages.length===1||switchAccount)await dialog.accept();else await dialog.dismiss();};
+   // Install a download hook before boot; change the mock identity only after the actual backup confirmation.
+   if(switchAccount)await page.evaluate(()=>{const original=window.confirm;window.confirm=function(message){const answer=original.call(window,message);if(answer&&(/Sicherung wurde zum Download angeboten|The backup download was offered/.test(message)))window.__migrationSwitchPending=true;return answer;};});
+   page.on('dialog',onDialog);
+   try{
+    const downloaded=page.waitForEvent('download',{timeout:5000});
+    await page.evaluate(()=>toolyaCloudBoot('haushaltsbuch-kassenbon'));
+    const download=await downloaded;
+    expect(download.suggestedFilename()).toBe('toolya-bestand-vor-cloud.json');
+    expect(await download.failure()).toBeNull();
+    expect(messages).toEqual([{type:'confirm',message:lang==='en'?'Import existing device data into your Toolya account? Cloud data will never be overwritten. On shared devices, first check who owns the data.':'Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden niemals überschrieben. Auf gemeinsam genutzten Geräten bitte zuerst die Zugehörigkeit der Daten prüfen.'},{type:'confirm',message:lang==='en'?en:de}]);
+    expect(await page.evaluate(()=>({local:localStorage.getItem('kassenbon_data'),writes:window.__toolyaMock.writes.length}))).toEqual(before);
+    expect(await page.evaluate(()=>toolyaCloudReady)).toBe(false);
+    if(switchAccount)expect(await page.evaluate(()=>window.__toolyaMock.userId)).toBe('ui-fixture-user-second');
+   }finally{page.off('dialog',onDialog);}
+   await page.evaluate(async()=>{window.__toolyaMock.userId='ui-fixture-user';localStorage.removeItem('kassenbon_data');await toolyaCloudBoot('haushaltsbuch-kassenbon');});
+   await expect.poll(()=>page.evaluate(()=>toolyaCloudReady)).toBe(true);
   }
  });
 }
