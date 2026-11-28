@@ -1,7 +1,9 @@
-import {legacyCents,addCents,validateSplit,parseBankDate} from './budget-domain.mjs';
+import {legacyCents,parseCents,addCents,validateSplit,parseBankDate} from './budget-domain.mjs';
 import {categories} from './budget-organization.mjs';
 export const isIncome=r=>r.entryType==='einnahme'||r.category==='Einnahme';
 export const centsOf=r=>legacyCents(r.price);
+// Historical corrections may be negative; new bookings still require positive amounts.
+export function signedBookingCents(r){const raw=String(r?.price??'').trim();if(!/^-?\d+(?:\.\d{1,2})?$/.test(raw))throw Error('invalid-amount');return parseCents(raw,'en');}
 const find=(entries,id)=>{const r=entries.find(x=>x?.id===id);if(!r)throw Error('missing-booking');return r;};
 const linked=r=>r.transferId!=null||r.refundOf!=null;
 export function validateRelations(entries){
@@ -68,7 +70,7 @@ export function cashflow(entries,from='0001-01-01',to='9999-12-31'){
   const byCategory=Object.create(null);
   for(const r of entries){
     if(!r||r.transferId!=null||typeof r.date!=='string'||r.date<from||r.date>to)continue;
-    let cents;try{cents=centsOf(r);parseBankDate(r.date,'ISO');}catch{invalid++;continue;}
+    let cents;try{cents=signedBookingCents(r);parseBankDate(r.date,'ISO');}catch{invalid++;continue;}
     if(isIncome(r)){income=addCents(income,cents);if(r.refundOf!=null)refunds=addCents(refunds,cents);continue;}
     expense=addCents(expense,cents);if(r.isFixkosten)fixed=addCents(fixed,cents);
     const parts=r.splits?.length?r.splits:[{category:r.category||'Sonstiges',cents}];
