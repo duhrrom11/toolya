@@ -1,3 +1,4 @@
+import {validateCapture} from '../../tools/budget/budget-capture.mjs';
 import {validatePlanning} from '../../tools/budget/budget-planning.mjs';
 import {validateRelations} from '../../tools/budget/budget-relations.mjs';
 import { validateMoving } from '../../tools/moving/moving-state.mjs';
@@ -135,6 +136,7 @@ export function validateBudgetSnapshot(data) {
       Array.isArray(data.budgets)) throw new Error('Ungültiger Haushaltsbuch-Datenstand.');
   if (data.entries.some(r=>r && (r.transferId!=null || r.refundOf!=null || r.splits?.length))) validateRelations(data.entries);
   if (Object.hasOwn(data,'planning')) validatePlanning(data.planning);
+  if (Object.hasOwn(data,'capture')) validateCapture(data.capture);
   return data;
 }
 export function createCarCloudController(repository) {
