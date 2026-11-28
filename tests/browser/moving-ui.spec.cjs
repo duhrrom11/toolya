@@ -167,6 +167,7 @@ test('moving planner creates project, room and box assignment with mocked cloud'
   await transportRoot.getByRole('button',{name:'Undo last status change'}).click();
   await expect.poll(()=>transport.boxes[0].status).toBe('packed');
   expect(stateWrites).toBe(2);
+  await expect(transportRoot.getByRole('button',{name:'Create helper link'})).toBeEnabled();
   await transportRoot.locator('#mv-helper-name').fill('Kitchen team');
   await transportRoot.locator('#mv-helper-target').selectOption({label:'Room: Küche'});
   await transportRoot.getByRole('button',{name:'Create helper link'}).click();

@@ -77,6 +77,8 @@ function setTransport(){
   window.movingTransportStatuses=Object.fromEntries((data?.boxes||[]).map(b=>[b.assignmentId,b]));
   document.dispatchEvent(new Event('toolya:moving-transport'));
 }
+const transportFormFields=['mv-incident-assignment','mv-incident-kind','mv-incident-note','mv-helper-name',
+  'mv-helper-hours','mv-helper-target','mv-qr-assignment'];
 function render(){
   if(!root)return;
   const p=project();
@@ -125,7 +127,16 @@ function render(){
   if(qrLink)h+='<div class="mv-r2-qr"><strong>'+esc(text("Kisten-QR-Code","Box QR code"))+'</strong><div id="mv-box-qr"></div><button type="button" data-act="close-qr">'+esc(text("Schließen","Close"))+'</button></div>';
   h+='<div class="mv-r2-list">'+(data.grants.length?data.grants.map(g=>'<div class="mv-r2-box"><div><strong>'+esc(g.helper_label)+'</strong><small>'+esc(text("Bis ","Until "))+esc(formatDate(g.expires_at))+(g.revoked_at?text(" · Widerrufen"," · Revoked"):'')+'</small></div><button type="button" data-revoke="'+esc(g.id)+'" '+(g.revoked_at||busy?'disabled':'')+'>'+esc(text("Widerrufen","Revoke"))+'</button></div>').join(''):'<p class="mv-muted">'+esc(text("Noch kein Helferzugang angelegt.","No helper access has been created yet."))+'</p>')+'</div></div>';
   if(token&&boxes.length){h+='<div class="mv-r2-qr-tools"><h3>'+esc(text("QR-Codes je Kiste","QR codes for individual boxes"))+'</h3><p class="mv-muted">'+esc(text("Die QR-Codes enthalten den aktuellen Helferlink. Nur während seiner Gültigkeit verwenden.","These codes contain the current helper link. Use them while the link is valid."))+'</p><select id="mv-qr-assignment" aria-label="'+esc(text('Kiste','Box'))+'">'+boxes.map(b=>'<option value="'+esc(b.assignmentId)+'">'+esc(b.label)+'</option>').join('')+'</select><button type="button" data-act="box-qr">'+esc(text("Kisten-QR erzeugen","Create box QR code"))+'</button></div>';}
+  const drafts=root.dataset.project===p.id ? transportFormFields.map(id=>[id,document.getElementById(id)?.value]) : [];
+  const focusedId=document.activeElement?.id;
+  root.dataset.project=p.id;
   root.innerHTML=h;
+  for(const [id,value] of drafts){
+    const field=document.getElementById(id);
+    if(!field||value===undefined)continue;
+    if(field.tagName!=='SELECT'||[...field.options].some(option=>option.value===value))field.value=value;
+    if(id===focusedId)field.focus();
+  }
   if(qrLink)void drawQr('mv-box-qr',qrLink);
 }
 async function drawQr(id,url){
@@ -206,15 +217,7 @@ document.addEventListener('toolya:moving-saved',()=>{render();});
 document.addEventListener('toolya:locale-change',()=>{
   scanner?.render();
   if(!root||root.hidden)return;
-  const ids=['mv-incident-assignment','mv-incident-kind','mv-incident-note','mv-helper-name','mv-helper-hours','mv-helper-target','mv-qr-assignment'];
-  const values=ids.map(id=>[id,document.getElementById(id)?.value]);
-  const focusedId=document.activeElement?.id;
   const shareQr=document.getElementById('mv-share-qr');
   render();
-  for(const [id,value] of values){
-    const field=document.getElementById(id);
-    if(field&&value!==undefined)field.value=value;
-    if(field&&id===focusedId)field.focus();
-  }
   if(shareQr?.childNodes.length)document.getElementById('mv-share-qr')?.replaceChildren(...shareQr.childNodes);
 });
