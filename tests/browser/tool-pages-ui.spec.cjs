@@ -19,7 +19,7 @@ async function isolated(page,authenticated,displayCss=false,initialSnapshot=null
             const m=window.__toolyaMock;
             return {
               auth:{
-                async getUser(){return {data:{user:m.signedIn?{id:'ui-fixture-user',email:'mock@example.invalid',is_anonymous:false}:null},error:null}},
+                async getUser(){return {data:{user:m.signedIn?{id:m.userId||'ui-fixture-user',email:'mock@example.invalid',is_anonymous:false}:null},error:null}},
                 async getSession(){return {data:{session:null},error:null}},
                 onAuthStateChange(listener){
                   if(m.fixture?.__recovery)(m.authListeners??=[]).push(listener);
@@ -3459,18 +3459,18 @@ for(const fixture of [
  {"tool":"plants","handler":"updateCisternCapacity","fields":{"cisternMaxLiters":"0"},"de":"Bitte ein gültiges Fassungsvermögen größer als 0 eingeben.","en":"Enter a valid capacity greater than 0.","line":685},
  {"tool":"plants","handler":"addSeedItem","fields":{"seedName":"Private Löschen","seedYear":"1800"},"de":"Bitte ein gültiges Saatgutjahr eingeben.","en":"Enter a valid seed year.","line":741},
  {"tool":"plants","handler":"saveHarvest","fields":{"harvestPlantId":"1","harvestWeightGrams":"0"},"de":"Bitte eine gültige Erntemenge in ganzen Gramm eingeben.","en":"Enter a valid harvest amount in whole grams.","line":844},
- {"tool":"budget","handler":"saveReceipt","fields":{"receiptTitle":"Private Löschen","receiptDate":"2026-11-25","receiptPrice":"0","receiptNote":"Private Notiz"},"de":"Bitte Titel, gültiges Kaufdatum und einen positiven Betrag angeben!","en":"Enter a title, valid purchase date and positive amount.","line":1199},
- {"tool":"budget","handler":"saveSavingsGoal","fields":{"goalTitle":"Private Löschen","goalTarget":"0","goalCurrent":"2"},"de":"Bitte gültigen Titel, positiven Zielbetrag und Startbetrag ab 0 € eingeben!","en":"Enter a valid title, a positive target amount and a starting amount of at least €0.","line":1707},
+ {"tool":"budget","handler":"saveReceipt","fields":{"receiptTitle":"Private Löschen","receiptDate":"2026-11-25","receiptPrice":"0","receiptNote":"Private Notiz"},"de":"Bitte Titel, gültiges Kaufdatum und einen positiven Betrag angeben!","en":"Enter a title, valid purchase date and positive amount.","line":1225},
+ {"tool":"budget","handler":"saveSavingsGoal","fields":{"goalTitle":"Private Löschen","goalTarget":"0","goalCurrent":"2"},"de":"Bitte gültigen Titel, positiven Zielbetrag und Startbetrag ab 0 € eingeben!","en":"Enter a valid title, a positive target amount and a starting amount of at least €0.","line":1741},
  {"tool":"pet-health","handler":"saveEvent","fields":{"eventTitle":"Private Löschen","eventDate":"","eventCost":"12.5"},"de":"Bitte Haustier, Datum und Bezeichnung angeben!","en":"Please enter a pet, date and description!","line":664},
  {"tool":"plants","handler":"savePlant","fields":{"plantName":"","plantLastWatered":"2026-11-25","plantNote":"Private Löschen"},"de":"Bitte Name und gültiges Gießdatum angeben!","en":"Enter a name and valid watering date.","line":985},
  {"tool":"plants","handler":"savePlant","fields":{"plantName":"Private Löschen","plantLastWatered":"2026-11-25","plantInterval":"0","plantNote":"Private Notiz"},"de":"Bitte ein Gießintervall zwischen 1 und 3650 Tagen eingeben.","en":"Enter a watering interval between 1 and 3650 days.","line":986},
  {"tool":"plants","handler":"updatePlant","fields":{"editId":"invalid","editName":"Private Löschen"},"de":"Ungültige Pflanzen-ID. Die Änderungen wurden nicht gespeichert.","en":"Invalid plant ID. Changes were not saved.","line":1131},
  {"tool":"plants","handler":"saveDiaryEntry","fields":{"diaryPlantId":"invalid","diaryText":"Private Löschen"},"de":"Ungültige Pflanzen-ID.","en":"Invalid plant ID.","line":1088},
- {"tool":"budget","handler":"runOCR","fields":{"receiptTitle":"Private Löschen","receiptNote":"Private Notiz"},"de":"Bitte wähle zuerst ein Belegfoto aus!","en":"Select a receipt photo first.","line":1116},
- {"tool":"budget","handler":"saveReceipt","fields":{"receiptTitle":"Private Löschen","receiptDate":"2026-11-25","receiptPrice":"12.5","receiptWarranty":"-1","receiptReturnDays":"0","receiptLifespan":"5","receiptNote":"Private Notiz"},"de":"Bitte gültige Garantie-, Rückgabe- und Lebensdauerwerte angeben.","en":"Enter valid warranty, return period and useful-life values.","line":1204}
+ {"tool":"budget","handler":"runOCR","fields":{"receiptTitle":"Private Löschen","receiptNote":"Private Notiz"},"de":"Bitte wähle zuerst ein Belegfoto aus!","en":"Select a receipt photo first.","line":1134},
+ {"tool":"budget","handler":"saveReceipt","fields":{"receiptTitle":"Private Löschen","receiptDate":"2026-11-25","receiptPrice":"12.5","receiptWarranty":"-1","receiptReturnDays":"0","receiptLifespan":"5","receiptNote":"Private Notiz"},"de":"Bitte gültige Garantie-, Rückgabe- und Lebensdauerwerte angeben.","en":"Enter valid warranty, return period and useful-life values.","line":1230}
 ]){
  test('i18n runtime catalogue: '+fixture.tool+' '+fixture.handler+' line '+fixture.line+' preserves draft on validation in DE and EN',async({page},testInfo)=>{
-  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/'+fixture.tool+'/index.html',handler:fixture.handler,de:fixture.de,en:fixture.en,line:fixture.line||null})});
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/'+fixture.tool+'/index.html',handler:fixture.tool==='budget'&&fixture.handler==='saveReceipt'?'saveReceiptInternal':fixture.handler,de:fixture.de,en:fixture.en,line:fixture.line||null})});
   await isolated(page,true);
   await page.goto(origin+'/tools/'+fixture.tool+'/index.html');
   const state=()=>page.evaluate(tool=>{
@@ -3987,3 +3987,287 @@ for(const spec of qrCases)test(spec.tool+' QR DE/EN: stable private payload, can
  }
  expect(outbound.every(url=>!url.includes('Privat')&&!url.includes('Pass%'))).toBe(true);
 });
+
+for(const fixture of [
+ {handler:'deleteReceipt',id:82,de:'⚠️ Diese Buchung wirklich löschen?',en:'⚠️ Delete this transaction?',line:1389},
+ {handler:'deleteSavingsGoal',id:83,de:'Sparziel löschen?',en:'Delete this savings goal?',line:1768}
+]){
+ test('i18n runtime catalogue: budget '+fixture.handler+' cancels deletion in DE and EN',async({page},testInfo)=>{
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:fixture.handler,kind:'confirm',de:fixture.de,en:fixture.en,line:fixture.line})});
+  await isolated(page,true,false,{entries:[{id:82,title:'Private Buchung Öl',date:'2026-11-17',price:42,category:'Lebensmittel',photos:[]}],budgets:{},goals:[{id:83,title:'Privates Sparziel',target:100,current:20}]});
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  const state=()=>page.evaluate(()=>({snapshot:toolyaCloudController.snapshot(),writes:window.__toolyaMock.writes}));
+  const before=await state();
+  expect(before.writes).toEqual([]);
+  expect(before.snapshot.entries.some(r=>r.id===82)).toBe(true);
+  expect(before.snapshot.goals.some(r=>r.id===83)).toBe(true);
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   const pending=page.waitForEvent('dialog',{timeout:5000});
+   const action=page.evaluate(({handler,id})=>window[handler](id),fixture);
+   const dialog=await pending;
+   const actual={type:dialog.type(),message:dialog.message()};
+   await dialog.dismiss();await action;
+   expect(actual).toEqual({type:'confirm',message:fixture[lang]});
+   expect(await state()).toEqual(before);
+  }
+ });
+}
+
+for(const fixture of [
+ {handler:'loadPhotosToCanvas',selector:'#receiptPhotoInput',name:'invalid.txt',mime:'text/plain',size:1,line:929,de:'Bitte nur JPG-, PNG-, GIF- oder WebP-Bilder auswählen. Bereits vorhandene Belegbilder bleiben erhalten.',en:'Select JPG, PNG, GIF or WebP images only. Existing receipt images will be kept.'},
+ {handler:'loadPhotosToCanvas',selector:'#receiptPhotoInput',name:'oversize.png',mime:'image/png',size:4*1024*1024+1,line:938,de:'Die ausgewählten Belegbilder sind zusammen zu groß (maximal 4 MB). Bitte kleinere Fotos auswählen. Bereits vorhandene Belegbilder bleiben erhalten.',en:'The selected receipt images are too large together (maximum 4 MB). Choose smaller photos. Existing receipt images will be kept.'},
+ {handler:'importBackup',selector:'.b3-backup-input',name:'oversize.json',mime:'application/json',size:20*1024*1024+1,line:2081,de:'Backup zu groß (maximal 20 MB).',en:'Backup too large (maximum 20 MB).'},
+ {handler:'importBackup',selector:'.b3-backup-input',name:'unreadable.json',mime:'application/json',size:1,line:2107,readError:true,de:'Backup-Datei konnte nicht gelesen werden.',en:'The backup file could not be read.'}
+]){
+ test('i18n runtime catalogue: budget '+fixture.handler+' line '+fixture.line+' rejects invalid files in DE and EN',async({page},testInfo)=>{
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:fixture.handler,kind:'alert',line:fixture.line,de:fixture.de,en:fixture.en})});
+  await isolated(page,true,false,{entries:[],budgets:{},goals:[]});
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  await page.evaluate(()=>{currentUploadedPhotos=['data:image/png;base64,iVBORw0KGgo='];document.getElementById('receiptTitle').value='Private Buchung Öl';});
+  const state=()=>page.evaluate(()=>({snapshot:toolyaCloudController.snapshot(),writes:window.__toolyaMock.writes,photos:[...currentUploadedPhotos],title:document.getElementById('receiptTitle').value}));
+  const before=await state();
+  expect(before.writes).toEqual([]);
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   if(fixture.readError)await page.evaluate(()=>{const original=FileReader.prototype.readAsText;FileReader.prototype.readAsText=function(){FileReader.prototype.readAsText=original;queueMicrotask(()=>this.dispatchEvent(new ProgressEvent('error')));};});
+   const input=page.locator(fixture.selector).first();
+   await input.setInputFiles({name:fixture.name,mimeType:fixture.mime,buffer:Buffer.alloc(fixture.size)});
+   const notice=page.getByRole('alertdialog',{name:'Toolya'});
+   await expect(notice.locator('#hl-alert-message')).toHaveText(fixture[lang]);
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   await expect(notice).toBeHidden();
+   await expect(input).toHaveValue('');
+   expect(await state()).toEqual(before);
+  }
+ });
+}
+
+for(const existing of [false,true]){
+ test('i18n runtime catalogue: budget cloud migration '+(existing?'existing cloud':'new cloud')+' cancellation in DE and EN',async({page},testInfo)=>{
+  const de=existing?'Es gibt sowohl Cloud-Daten als auch Gerätedaten. Die Cloud bleibt maßgeblich; lokale Daten werden nicht zusammengeführt oder gelöscht. Lokale Daten jetzt sichern und ausschließlich die Cloud-Daten verwenden?':'Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden niemals überschrieben. Auf gemeinsam genutzten Geräten bitte zuerst die Zugehörigkeit der Daten prüfen.';
+  const en=existing?'Both cloud and device data exist. Cloud data remains authoritative; local data will not be merged or deleted. Back up device data now and use cloud data only?':'Import existing device data into your Toolya account? Cloud data will never be overwritten. On shared devices, first check who owns the data.';
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:'toolyaCloudBoot',kind:'confirm',line:existing?608:607,de,en})});
+  await isolated(page,true,false,existing?{entries:[],budgets:{},goals:[]}:null);
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   const before=await page.evaluate(()=>{const local=JSON.stringify([{id:94,title:'Private Altbuchung',date:'2026-01-01',price:12,category:'Lebensmittel',photos:[]}]);localStorage.setItem('kassenbon_data',local);return {local,writes:window.__toolyaMock.writes.length};});
+   const pending=page.waitForEvent('dialog',{timeout:5000});
+   const action=page.evaluate(()=>toolyaCloudBoot('haushaltsbuch-kassenbon'));
+   const dialog=await pending;
+   const actual={type:dialog.type(),message:dialog.message()};
+   await dialog.dismiss();await action;
+   expect(actual).toEqual({type:'confirm',message:lang==='en'?en:de});
+   expect(await page.evaluate(()=>({local:localStorage.getItem('kassenbon_data'),writes:window.__toolyaMock.writes.length}))).toEqual(before);
+   expect(await page.evaluate(()=>toolyaCloudReady)).toBe(false);
+   await page.evaluate(async()=>{localStorage.removeItem('kassenbon_data');await toolyaCloudBoot('haushaltsbuch-kassenbon');});
+   await expect.poll(()=>page.evaluate(()=>toolyaCloudReady)).toBe(true);
+  }
+ });
+}
+
+test('i18n runtime catalogue: budget backup download acknowledgement cancellation in DE and EN',async({page},testInfo)=>{
+ const de='Bitte bestätigen, dass die Cloud-Sicherung tatsächlich heruntergeladen und sicher gespeichert wurde.';
+ const en='Confirm that the cloud backup has been downloaded and stored safely.';
+ testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:'toolyaSafeCloudImport',kind:'confirm',line:585,de,en})});
+ await isolated(page,true,false,{entries:[],budgets:{},goals:[]});
+ await page.goto(origin+'/tools/budget/index.html?lang=de');
+ await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+ const state=()=>page.evaluate(()=>({snapshot:toolyaCloudController.snapshot(),writes:window.__toolyaMock.writes}));
+ const before=await state();
+ for(const lang of ['de','en','de']){
+  await page.locator('[data-tool-locale="'+lang+'"]').click();
+  await expect(page.locator('html')).toHaveAttribute('lang',lang);
+  const dialogs=[];
+  const onDialog=async dialog=>{dialogs.push({type:dialog.type(),message:dialog.message()});if(dialogs.length===1)await dialog.accept();else await dialog.dismiss();};
+  page.on('dialog',onDialog);
+  const downloaded=page.waitForEvent('download',{timeout:5000});
+  try{
+   const result=await page.evaluate(async()=>{try{await toolyaSafeCloudImport(toolyaCloudController.snapshot());return {rejected:false};}catch(e){return {rejected:true,message:e.message};}});
+   const download=await downloaded;
+   expect(download.suggestedFilename()).toBe('toolya-cloud-vor-import-haushaltsbuch.json');
+   expect(await download.failure()).toBeNull();
+   expect(result).toEqual({rejected:true,message:'Cloud-Sicherung nicht bestätigt. Import abgebrochen.'});
+   expect(dialogs).toEqual([{type:'confirm',message:lang==='en'?'Import replaces existing cloud data. Download a backup first?':'Import ersetzt vorhandene Cloud-Daten. Zuerst eine Sicherung herunterladen?'},{type:'confirm',message:lang==='en'?en:de}]);
+   expect(await state()).toEqual(before);
+  }finally{page.off('dialog',onDialog);}
+ }
+});
+
+for(const change of ['revision','sessionGeneration']){
+ test('i18n runtime: budget cloud replacement rejects changed '+change+' after backup',async({page})=>{
+  await isolated(page,true,false,{entries:[],budgets:{},goals:[]});
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   const result=await page.evaluate(async change=>{
+    const {confirmCloudReplacement}=await import('/shared/toolya/cloud-backup.mjs');
+    const {validateBudgetSnapshot}=await import('/shared/toolya/cloud-controller.mjs');
+    const original=toolyaCloudController.snapshot(),before=JSON.stringify(original);
+    const controller={ready:true,revision:1,sessionGeneration:1,snapshot:()=>structuredClone(original),replace:async()=>{throw Error('Unexpected replacement');}};
+    const messages=[];let backupCount=0;
+    try{
+     await confirmCloudReplacement({controller,incoming:original,validate:validateBudgetSnapshot,confirm:async message=>{messages.push(message);return true;},exportBackup:async previous=>{if(JSON.stringify(previous)!==before)throw Error('Incorrect backup');backupCount++;controller[change]++;return true;}});
+     return {rejected:false};
+    }catch(error){return {rejected:true,message:error.message,messages,backupCount,unchanged:JSON.stringify(toolyaCloudController.snapshot())===before,writes:window.__toolyaMock.writes.length};}
+   },change);
+   expect(result).toEqual({rejected:true,message:'Cloud-Sitzung oder Datenstand hat sich geändert.',messages:['Import ersetzt vorhandene Cloud-Daten. Zuerst eine Sicherung herunterladen?','Sicherung kontrolliert? Vorhandene Cloud-Daten jetzt wirklich ersetzen?'],backupCount:1,unchanged:true,writes:0});
+  }
+ });
+}
+
+for(const fixture of [
+ {handler:'openQRModal',line:1827,de:'Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.',en:'The QR code could not be loaded. Try again.',qr:true,id:94},
+ {handler:'openGoogleCalendar',line:1866,de:'Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.',en:'This receipt lacks a valid purchase date or warranty duration.',id:94},
+ {handler:'downloadICS',line:1899,de:'Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.',en:'This receipt lacks a valid purchase date or warranty duration.',id:94},
+ {handler:'exportAllBookingsCSV',line:1974,de:'Keine Buchungen für den CSV-Export vorhanden.',en:'No transactions available for CSV export.'},
+ {handler:'exportSteuerCSV',line:2003,de:'Keine steuerrelevanten Buchungen gefunden!',en:'No tax-relevant transactions found.',id:94}
+]){
+ test('i18n runtime catalogue: budget '+fixture.handler+' rejects unavailable export in DE and EN',async({page},testInfo)=>{
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:fixture.handler,kind:'alert',line:fixture.line,de:fixture.de,en:fixture.en})});
+  await isolated(page,true,false,{entries:fixture.id?[{id:94,title:'Privater Beleg Öl',date:'2026-01-01',price:12,category:'Lebensmittel',warrantyMonths:0,photos:[]}]:[],budgets:{},goals:[]});
+  if(fixture.qr)await page.route('**/shared/toolya/qr-generator.mjs',route=>route.fulfill({contentType:'text/javascript',body:'export async function loadQrGenerator(){return null;}'}));
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  const state=()=>page.evaluate(()=>({snapshot:toolyaCloudController.snapshot(),writes:window.__toolyaMock.writes}));
+  const before=await state();
+  const exports=[];page.on('download',()=>exports.push('download'));page.on('popup',()=>exports.push('popup'));
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   await page.evaluate(({handler,id})=>window[handler](id),fixture);
+   const notice=page.getByRole('alertdialog',{name:'Toolya'});
+   await expect(notice.locator('#hl-alert-message')).toHaveText(fixture[lang]);
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   await expect(notice).toBeHidden();
+   expect(await state()).toEqual(before);
+   expect(exports).toEqual([]);
+  }
+ });
+}
+
+for(const switchAccount of [false,true]){
+ test('i18n runtime catalogue: budget migration backup '+(switchAccount?'account switch':'refusal')+' in DE and EN',async({page},testInfo)=>{
+  const de='Sicherung wurde zum Download angeboten. Bitte erst nach erfolgreichem Speichern bestätigen.';
+  const en='The backup download was offered. Confirm only after it has been saved successfully.';
+  if(!switchAccount)testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:'toolyaCloudBoot',kind:'confirm',line:614,de,en})});
+  await isolated(page,true,false,null);
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   const before=await page.evaluate(()=>{window.__toolyaMock.userId='ui-fixture-user';const local=JSON.stringify([{id:94,title:'Private Altbuchung',date:'2026-01-01',price:12,category:'Lebensmittel',photos:[]}]);localStorage.setItem('kassenbon_data',local);return {local,writes:window.__toolyaMock.writes.length};});
+   if(switchAccount)await page.evaluate(()=>{
+    const auth=window.supabaseClient.auth,original=auth.getUser.bind(auth);
+    auth.getUser=async()=>{if(window.__migrationSwitchPending){window.__toolyaMock.userId='ui-fixture-user-second';window.__migrationSwitchPending=false;}return original();};
+   });
+   const messages=[];
+   const onDialog=async dialog=>{messages.push({type:dialog.type(),message:dialog.message()});if(messages.length===1||switchAccount)await dialog.accept();else await dialog.dismiss();};
+   // Install a download hook before boot; change the mock identity only after the actual backup confirmation.
+   if(switchAccount)await page.evaluate(()=>{const original=window.confirm;window.confirm=function(message){const answer=original.call(window,message);if(answer&&(/Sicherung wurde zum Download angeboten|The backup download was offered/.test(message)))window.__migrationSwitchPending=true;return answer;};});
+   page.on('dialog',onDialog);
+   try{
+    const downloaded=page.waitForEvent('download',{timeout:5000});
+    await page.evaluate(()=>toolyaCloudBoot('haushaltsbuch-kassenbon'));
+    const download=await downloaded;
+    expect(download.suggestedFilename()).toBe('toolya-bestand-vor-cloud.json');
+    expect(await download.failure()).toBeNull();
+    expect(messages).toEqual([{type:'confirm',message:lang==='en'?'Import existing device data into your Toolya account? Cloud data will never be overwritten. On shared devices, first check who owns the data.':'Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden niemals überschrieben. Auf gemeinsam genutzten Geräten bitte zuerst die Zugehörigkeit der Daten prüfen.'},{type:'confirm',message:lang==='en'?en:de}]);
+    expect(await page.evaluate(()=>({local:localStorage.getItem('kassenbon_data'),writes:window.__toolyaMock.writes.length}))).toEqual(before);
+    expect(await page.evaluate(()=>toolyaCloudReady)).toBe(false);
+    if(switchAccount)expect(await page.evaluate(()=>window.__toolyaMock.userId)).toBe('ui-fixture-user-second');
+   }finally{page.off('dialog',onDialog);}
+   await page.evaluate(async()=>{window.__toolyaMock.userId='ui-fixture-user';localStorage.removeItem('kassenbon_data');await toolyaCloudBoot('haushaltsbuch-kassenbon');});
+   await expect.poll(()=>page.evaluate(()=>toolyaCloudReady)).toBe(true);
+  }
+ });
+}
+
+for(const fixture of [
+ {fault:'constructor',line:960,de:'Der Browser konnte den Bildleser nicht starten. Bitte die Bildauswahl erneut versuchen.',en:'The browser could not start the image reader. Select the images again.'},
+ {fault:'invalid',line:968,de:'Ein Belegbild hat ein ungültiges Format. Bitte die Bildauswahl erneut versuchen.',en:'A receipt image has an invalid format. Choose the images again.'},
+ {fault:'read-event',line:1018,de:'Ein Belegbild konnte nicht gelesen werden. Bitte die Bildauswahl erneut versuchen.',en:'A receipt image could not be read. Choose the images again.'},
+ {fault:'read-throw',line:1027,de:'Ein Belegbild konnte nicht geöffnet werden. Bitte die Bildauswahl erneut versuchen.',en:'A receipt image could not be opened. Choose the images again.'},
+ {fault:'image-event',line:1001,de:'Das erste Belegbild konnte nicht geöffnet werden. Bitte erneut auswählen.',en:'The first receipt image could not be opened. Select it again.'},
+ {fault:'image-throw',line:1010,de:'Das erste Belegbild konnte nicht geöffnet werden. Bitte erneut auswählen.',en:'The first receipt image could not be opened. Select it again.'},
+ {fault:'canvas',line:992,de:'Das erste Belegbild konnte nicht verarbeitet werden. Bitte erneut auswählen.',en:'The first receipt image could not be processed. Select it again.'}
+]){
+ test('i18n runtime catalogue: budget photo failure '+fixture.line+' in DE and EN',async({page},testInfo)=>{
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:'loadPhotosToCanvas',kind:'alert',line:fixture.line,de:fixture.de,en:fixture.en})});
+  await isolated(page,true,false,{entries:[],budgets:{},goals:[]});
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  const state=()=>page.evaluate(()=>({snapshot:toolyaCloudController.snapshot(),writes:window.__toolyaMock.writes}));
+  const before=await state();
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   await page.evaluate(fault=>{
+    clearReceiptPhotos();
+    const Reader=window.FileReader,Img=window.Image,filter=window.applyCanvasFilter;
+    window.__restorePhotoFixture=()=>{window.FileReader=Reader;window.Image=Img;window.applyCanvasFilter=filter;};
+    if(fault==='constructor')window.FileReader=function(){throw Error('fixture constructor');};
+    else window.FileReader=class{
+     readAsDataURL(){
+      if(fault==='read-throw')throw Error('fixture read');
+      queueMicrotask(()=>fault==='read-event'?this.onerror():this.onload({target:{result:fault==='invalid'?'invalid':'data:image/png;base64,iVBORw0KGgo='}}));
+     }
+    };
+    if(['image-event','image-throw','canvas'].includes(fault)){
+     window.Image=class{
+      set src(value){if(fault==='image-throw')throw Error('fixture image');queueMicrotask(()=>fault==='image-event'?this.onerror():this.onload());}
+     };
+     if(fault==='canvas')window.applyCanvasFilter=()=>{throw Error('fixture canvas');};
+    }
+   },fixture.fault);
+   try{
+    await page.locator('#receiptPhotoInput').setInputFiles({name:'fixture.png',mimeType:'image/png',buffer:Buffer.from([137,80,78,71,13,10,26,10])});
+    const notice=page.getByRole('alertdialog',{name:'Toolya'});
+    await expect(notice.locator('#hl-alert-message')).toHaveText(fixture[lang]);
+    await notice.getByRole('button',{name:'OK'}).press('Enter');
+    await expect(notice).toBeHidden();
+    expect(await page.evaluate(()=>({failed:photoReadFailed,pending:pendingPhotoReads}))).toEqual({failed:true,pending:0});
+    expect(await state()).toEqual(before);
+   }finally{await page.evaluate(()=>window.__restorePhotoFixture());}
+  }
+ });
+}
+for(const fixture of [
+ {line:1080,handler:'tryApplyCanvasFilter',fault:'filter',de:'Die Bildanpassung ist fehlgeschlagen. Bitte das Belegfoto erneut auswählen.',en:'Image adjustment failed. Select the receipt photo again.'},
+ {line:1200,handler:'saveReceiptInternal',fault:'failed',de:'Mindestens ein Belegbild konnte nicht geladen werden. Bitte Bilder erneut auswählen oder entfernen.',en:'At least one receipt image could not be loaded. Select or remove the images again.'},
+ {line:1204,handler:'saveReceiptInternal',fault:'pending',de:'Die Belegbilder werden noch geladen. Bitte kurz warten und erneut speichern.',en:'The receipt images are still loading. Try saving again.'}
+]){
+ test('i18n runtime catalogue: budget photo guard '+fixture.line+' in DE and EN',async({page},testInfo)=>{
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:fixture.handler,kind:'alert',line:fixture.line,de:fixture.de,en:fixture.en})});
+  await isolated(page,true,false,{entries:[],budgets:{},goals:[]});
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  const state=()=>page.evaluate(()=>({snapshot:toolyaCloudController.snapshot(),writes:window.__toolyaMock.writes,title:document.getElementById('receiptTitle').value}));
+  await page.evaluate(()=>{document.getElementById('receiptTitle').value='Private Buchung Öl';});
+  const before=await state();
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   await page.evaluate(async fault=>{
+    photoReadFailed=false;pendingPhotoReads=0;
+    if(fault==='filter'){const original=window.applyCanvasFilter;try{window.applyCanvasFilter=()=>{throw Error('fixture filter');};tryApplyCanvasFilter();}finally{window.applyCanvasFilter=original;}}
+    else{photoReadFailed=fault==='failed';pendingPhotoReads=fault==='pending'?1:0;await saveReceipt();}
+   },fixture.fault);
+   const notice=page.getByRole('alertdialog',{name:'Toolya'});
+   await expect(notice.locator('#hl-alert-message')).toHaveText(fixture[lang]);
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   await expect(notice).toBeHidden();
+   expect(await state()).toEqual(before);
+  }
+ });
+}

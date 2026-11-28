@@ -235,7 +235,7 @@ function renderPlanning(host,data,records){
  cost.addEventListener('input',()=>{
   const price=Number(cost.value);if(!Number.isFinite(price)||price<=0){display(output,'Bitte einen gültigen Preis eingeben.');return}
   const now=new Date(),start=C.monthStart(now),end=C.ISO(now);
-  const earned=C.validEntries(records).filter(x=>x.date>=start&&x.date<=end&&!C.expense(x)).reduce((a,x)=>a+Number(x.price),0);
+  const earned=C.incomePeriod(records,start,end);
   const spent=C.period(records,start,end),balance=C.round(earned-spent-price);
   display(output,()=>ui('Nach diesem Kauf blieben in deiner Monatsrechnung ','After this purchase, your monthly calculation would leave ')+money(balance)+'.'+(weekly.remaining!=null?ui(' Vom Wochenbudget blieben ',' Your weekly budget would have ')+money(weekly.remaining-price)+'.':'')+ui(' Kontostand und noch unbekannte Rechnungen sind nicht enthalten.',' Bank balance and as-yet unknown bills are not included.'));
  });

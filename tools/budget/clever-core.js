@@ -6,10 +6,13 @@
  const validDate=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&!Number.isNaN(Date.parse(s+'T12:00:00'));
  const ISO=date=>[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
  const normal=s=>String(s||'').toLocaleLowerCase('de-DE').normalize('NFKC').replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
- const amount=x=>{const n=Number(x);return Number.isFinite(n)&&n>=0?n:NaN};
- const validEntries=data=>(Array.isArray(data)?data:[]).filter(e=>e&&typeof e==='object'&&!Array.isArray(e)&&validDate(e.date)&&Number.isFinite(amount(e.price)));
+ const amount=x=>{if(x==null||String(x).trim()==='')return NaN;const n=Number(x);return Number.isFinite(n)&&n>=0?n:NaN};
+ const cents=x=>{const n=amount(x),v=Math.round(n*100);return Number.isSafeInteger(v)&&v/100===n?v:NaN};
+ const sumCents=values=>{let total=0n;for(const value of values){if(!Number.isSafeInteger(value))throw new RangeError('Invalid cents');total+=BigInt(value);}const n=Number(total);if(!Number.isSafeInteger(n))throw new RangeError('Cent overflow');return n;};
+ const validEntries=data=>(Array.isArray(data)?data:[]).filter(e=>e&&typeof e==='object'&&!Array.isArray(e)&&validDate(e.date)&&e.transferId==null&&Number.isFinite(cents(e.price)));
  const expense=e=>e.entryType!=='einnahme'&&e.category!=='Einnahme';
- const period=(entries,from,to,category=null)=>validEntries(entries).filter(e=>e.date>=from&&e.date<=to&&expense(e)&&(!category||e.category===category)).reduce((sum,e)=>sum+amount(e.price),0);
+ const period=(entries,from,to,category=null)=>sumCents(validEntries(entries).filter(e=>e.date>=from&&e.date<=to&&expense(e)).flatMap(e=>!category?[cents(e.price)]:e.splits?.length?e.splits.filter(p=>p.category===category).map(p=>p.cents):(e.category||'Sonstiges')===category?[cents(e.price)]:[]))/100;
+ const incomePeriod=(entries,from,to)=>sumCents(validEntries(entries).filter(e=>e.date>=from&&e.date<=to&&!expense(e)).map(e=>cents(e.price)))/100;
  const monthStart=date=>ISO(new Date(date.getFullYear(),date.getMonth(),1));
  const endMonth=date=>ISO(new Date(date.getFullYear(),date.getMonth()+1,0));
  const lastMonth=date=>new Date(date.getFullYear(),date.getMonth()-1,1);
@@ -17,7 +20,7 @@
   const thisMonth=monthStart(now),previous=lastMonth(now),day=now.getDate();
   const previousEnd=ISO(new Date(previous.getFullYear(),previous.getMonth(),Math.min(day,new Date(previous.getFullYear(),previous.getMonth()+1,0).getDate())));
   const current=period(entries,thisMonth,ISO(now)),prior=period(entries,monthStart(previous),previousEnd);
-  const categories=[...new Set(validEntries(entries).filter(expense).map(x=>x.category||'Sonstiges'))];
+  const categories=[...new Set(validEntries(entries).filter(expense).flatMap(x=>x.splits?.length?x.splits.map(p=>p.category):[x.category||'Sonstiges']))];
   const parts=categories.map(category=>({name:category,now:period(entries,thisMonth,ISO(now),category),previous:period(entries,monthStart(previous),previousEnd,category)})).filter(x=>x.now>0||x.previous>0).sort((a,b)=>(b.now-b.previous)-(a.now-a.previous));
   return {current:round(current),previous:round(prior),difference:round(current-prior),categories:parts,hasPrior:validEntries(entries).some(e=>expense(e)&&e.date>=monthStart(previous)&&e.date<=previousEnd)};
  };
@@ -40,7 +43,7 @@
  function weekly(entries,budget,now=new Date()){
   const {start,end}=weekBounds(now),spent=round(period(entries,start,end));
   const pending=upcomingFixed(entries,now,end);
-  const reserved=round(pending.reduce((s,x)=>s+x.price,0));
+  const reserved=sumCents(pending.map(x=>cents(x.price)))/100;
   const limit=amount(budget);
   return {start,end,spent,pending,reserved,limit,remaining:Number.isFinite(limit)&&limit>0?round(limit-spent-reserved):null};
  }
@@ -159,7 +162,7 @@
   date.setDate(Math.min(day,new Date(date.getFullYear(),date.getMonth()+1,0).getDate()));
   return{until:ISO(date),active:ISO(date)>=ISO(now)};
  }
- const core={round,euro,validDate,ISO,normal,amount,validEntries,expense,period,monthStart,endMonth,monthCompare,weekBounds,upcomingFixed,weekly,prices,priceSummary,findPrice,listEstimate,mealEstimate,duplicateAlerts,parser,annualDue,upcomingAnnual,warranty};
+ const core={round,euro,validDate,ISO,normal,amount,validEntries,expense,period,incomePeriod,monthStart,endMonth,monthCompare,weekBounds,upcomingFixed,weekly,prices,priceSummary,findPrice,listEstimate,mealEstimate,duplicateAlerts,parser,annualDue,upcomingAnnual,warranty};
  root.ToolyaBudgetCleverCore=Object.freeze(core);
  if(typeof module!=='undefined'&&module.exports)module.exports=core;
 })(typeof window!=='undefined'?window:globalThis);
