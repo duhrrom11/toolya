@@ -77,7 +77,8 @@ function render(){
  const assigned=m.assignments.filter(x=>x.projectId===project.id);
  const rooms=m.rooms.filter(x=>x.projectId===project.id&&!x.archived);
  const liveStatus=assignment=>window.movingTransportStatuses?.[assignment.id]?.status||assignment.status;
- const arrived=assigned.filter(x=>['arrived','unpacked'].includes(liveStatus(x))).length;
+ const outstanding=assigned.filter(x=>!['arrived','unpacked'].includes(liveStatus(x)));
+ const arrived=assigned.length-outstanding.length;
  const unpacked=assigned.filter(x=>liveStatus(x)==='unpacked').length;
  const progress=text(
   `${number(arrived)} von ${boxCount(assigned.length)} angekommen`,
@@ -90,6 +91,14 @@ function render(){
    <div><strong>${number(unpacked)}</strong><small>${text('Ausgepackt','Unpacked')}</small></div>
   </div>
   <div class="mv-progress" aria-label="${progress}"><span style="width:${assigned.length?Math.round(arrived/assigned.length*100):0}%"></span></div>
+  ${navigationPhase!=='preparation'&&assigned.length?`<details class="mv-card" data-arrival-details>
+   <summary>${progress} · ${text('Was fehlt noch?', 'What is still outstanding?')}</summary>
+   <div class="mv-list">${outstanding.map(assignment=>{
+    const box=data.boxes.find(item=>item.id===assignment.boxId);
+    const room=rooms.find(item=>item.id===assignment.targetRoomId);
+    return `<div class="mv-item"><strong>${esc(box?.name||String(assignment.boxId))}</strong><small>${esc(room?.name||text('Ohne Zielraum','No destination room'))} · ${displayLabel(labels,liveStatus(assignment))}</small></div>`;
+   }).join('')||`<p>${text('Alle Kisten sind angekommen.','All boxes have arrived.')}</p>`}</div>
+  </details>`:''}
   <div class="mv-tabs" role="group" aria-label="${text('Umzugsansicht','Moving plan')}">
    <button data-tab="rooms" ${activeTab==='rooms'?'aria-current="true"':''}>1. ${text('Zielräume','Destination rooms')}</button>
    <button data-tab="boxes" ${activeTab==='boxes'?'aria-current="true"':''}>2. ${text('Kisten zuordnen','Assign boxes')}</button>
@@ -103,15 +112,22 @@ function render(){
   html+=`<button class="mv-secondary" data-act="room">+ ${text('Zielraum hinzufügen','Add destination room')}</button>
    <div class="mv-list">${roomRows||`<p class="mv-muted">${text('Noch keine Zielräume vorhanden.','No destination rooms yet.')}</p>`}</div>`;
  }else if(activeTab==='first'){
-  const ordered=priorityList(data,project.id).filter(assignment=>liveStatus(assignment)!=='unpacked');
-  const rows=ordered.map(assignment=>{
-   const box=data.boxes.find(x=>x.id===assignment.boxId);
-   return `<div class="mv-item"><strong>${esc(box?.name||text('Kiste','Box'))}</strong><small>${displayLabel(importance,assignment.priority)} · ${displayLabel(labels,liveStatus(assignment))}</small></div>`;
+  const ordered=priorityList(data,project.id);
+  const groups=[...rooms, {id:null,name:text('Ohne Zielraum','No destination room')}];
+  const rows=groups.map(room=>{
+   const inRoom=ordered.filter(assignment=>rooms.some(entry=>entry.id===assignment.targetRoomId)
+    ? assignment.targetRoomId===room.id : room.id===null);
+   if(!inRoom.length)return '';
+   const pending=inRoom.filter(assignment=>liveStatus(assignment)!=='unpacked');
+   return `<div class="mv-card"><h3>${esc(room.name)}</h3><p>${text(
+    `${number(inRoom.length-pending.length)} von ${boxCount(inRoom.length)} ausgepackt`,
+    `${number(inRoom.length-pending.length)} of ${boxCount(inRoom.length)} unpacked`
+   )}</p><div class="mv-list">${pending.map(assignment=>{
+    const box=data.boxes.find(item=>item.id===assignment.boxId);
+    return `<div class="mv-item"><strong>${esc(box?.name||String(assignment.boxId))}</strong><small>${displayLabel(importance,assignment.priority)} · ${displayLabel(labels,liveStatus(assignment))}</small></div>`;
+   }).join('')}</div></div>`;
   }).join('');
-  html+=`<p class="mv-muted">${text(
-   'Diese Reihenfolge ergibt sich aus der eingestellten Priorität. Du kannst sie bei jeder Kiste ändern.',
-   'This list follows the priority you set for each box. You can change a box’s priority at any time.'
-  )}</p><div class="mv-list">${rows||`<p class="mv-muted">${text('Noch keine offenen Kisten.','No boxes left to unpack.')}</p>`}</div>`;
+  html+=`<div class="mv-list">${rows||`<p class="mv-muted">${text('Noch keine Kisten zugeordnet.','No boxes assigned yet.')}</p>`}</div>`;
  }else{
   const available=data.boxes.some(box=>!assigned.some(assignment=>assignment.boxId===box.id));
   if(window.movingTransportActive)html+=`<p class="mv-muted">🚛 ${text(
@@ -146,7 +162,10 @@ function render(){
   ${navigationPhase==='arrival'?`<button class="mv-secondary" data-act="finish" ${saving?'disabled':''}>${text('Umzug abschließen','Finish move')}</button>`:''}
   <span class="mv-muted">${saving?text('Speichern …','Saving…'):text('Alle Änderungen werden in Toolya Cloud gespeichert','All changes are saved to Toolya Cloud')}</span>
  </div>`;
+ const arrivalWasOpen=el.querySelector('[data-arrival-details]')?.open;
  el.innerHTML=html;
+ const arrivalDetails=el.querySelector('[data-arrival-details]');
+ if(arrivalDetails&&arrivalWasOpen)arrivalDetails.open=true;
 }
 el?.addEventListener('click',async ev=>{
   const b=ev.target.closest('button');if(!b||saving)return;

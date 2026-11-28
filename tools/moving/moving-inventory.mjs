@@ -1,0 +1,81 @@
+const normalize = value => String(value ?? '').toLowerCase().normalize('NFD')
+    .replace(/\p{M}/gu, '').replaceAll('ß', 'ss').trim();
+const tokens = value => value.match(/[\p{L}\p{N}]+/gu) ?? [];
+
+function withinOneEdit(first, second) {
+    if (Math.abs(first.length - second.length) > 1) return false;
+    const i = [...first].findIndex((letter, index) => letter !== second[index]);
+    if (i === -1) return second.length - first.length <= 1;
+    if (first.length < second.length) return first.slice(i) === second.slice(i + 1);
+    if (first.length > second.length) return first.slice(i + 1) === second.slice(i);
+    const suffix = first.slice(i + 1) === second.slice(i + 1);
+    const swapped = first[i] === second[i + 1] && first[i + 1] === second[i] &&
+        first.slice(i + 2) === second.slice(i + 2);
+    return suffix || swapped;
+}
+
+export function searchMovingBoxes(data, query) {
+    const needle = normalize(query);
+    const hits = new Map();
+    if (!needle) return hits;
+    const exactCodes = data.boxes.filter(box => String(box.id) === needle || normalize(box.barcode) === needle);
+    if (exactCodes.length) {
+        for (const box of exactCodes) hits.set(box.id, { score: 0 });
+        return hits;
+    }
+    const locations = new Map(data.locations.map(location => [location.id, location.name]));
+    const words = tokens(needle);
+    for (const box of data.boxes) {
+        const fields = [box.name, box.desc, ...(box.subItems ?? []).map(item => item.name),
+            box.tag, box.barcode, locations.get(box.locId)];
+        const candidates = fields.map(normalize);
+        const i = candidates.findIndex(field => field.includes(needle));
+        if (i >= 0) {
+            hits.set(box.id, { score: 1, match: fields[i] });
+        } else if (words.length && words.some(word => /\p{L}/u.test(word) && word.length >= 4)) {
+            const haystack = candidates.flatMap(tokens);
+            if (words.every(word => haystack.some(token => token.includes(word) ||
+                (word.length >= 4 && /\p{L}/u.test(word) && withinOneEdit(word, token))))) {
+                const match = fields.find((field, index) => tokens(candidates[index])
+                    .some(token => words.some(word => word.length >= 4 && withinOneEdit(word, token))));
+                hits.set(box.id, { score: 2, match });
+            }
+        }
+    }
+    return hits;
+}
+
+export function planBoxNames(boxes, prefix, quantity) {
+    const cleaned = prefix.trim();
+    if (!cleaned || cleaned.length > 70 || !Number.isInteger(quantity) || quantity < 2 || quantity > 50) return [];
+    const used = new Set(boxes.map(box => normalize(box.name)));
+    const names = [];
+    for (let number = 1; names.length < quantity; number++) {
+        const name = cleaned + ' ' + String(number).padStart(2, '0');
+        if (!used.has(normalize(name))) names.push(name);
+    }
+    return names;
+}
+
+export function parseMovingItems(value) {
+    return value.split(/[\n,;•]+/)
+        .map(item => item.replace(/^\s*(?:[-*]\s+|\d+[.)]\s+)/, '').trim()).filter(Boolean);
+}
+
+export async function resizeMovingPhoto(file) {
+    if (file.size > 30 * 1024 * 1024) throw Error('Photo too large');
+    const image = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    try {
+        const scale = Math.min(1, 1200 / Math.max(image.width, image.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        const context = canvas.getContext('2d', { alpha: false });
+        context.fillStyle = '#fff';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL('image/jpeg', 0.82);
+    } finally {
+        image.close();
+    }
+}

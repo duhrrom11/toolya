@@ -187,6 +187,16 @@
                     <label class="helferlein-field" for="boxPhotoInput"><span class="helferlein-field-label" data-tool-en="Choose box photo">Foto der Kiste auswählen</span><input type="file" id="boxPhotoInput" accept="image/*" capture="environment" class="text-xs p-2 border rounded-xl file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Foto der Kiste auswählen" data-tool-en-aria-label="Choose box photo"></label>
                 </div>
                 <button onclick="saveBox()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm b3-action">Kiste speichern & QR-Code</button>
+                <details class="space-y-2">
+                    <summary data-tool-en="Create several boxes">Mehrere Kisten anlegen</summary>
+                    <label for="boxBatchPrefix" data-tool-en="Name prefix">Namenspräfix</label>
+                    <input id="boxBatchPrefix" class="w-full p-2 border rounded-xl" maxlength="70">
+                    <label for="boxBatchCount" data-tool-en="Number of boxes (2 to 50)">Anzahl (2 bis 50)</label>
+                    <input id="boxBatchCount" class="w-full p-2 border rounded-xl" type="number" min="2" max="50" value="2">
+                    <button type="button" class="b3-action b3-outline" onclick="previewBoxBatch()" data-tool-en="Preview names">Namensvorschau</button>
+                    <output id="boxBatchPreview" class="block break-words" aria-live="polite"></output>
+                    <button type="button" id="boxBatchSave" class="b3-action b3-outline" onclick="saveBoxBatch()" disabled data-tool-en="Create boxes">Kisten anlegen</button>
+                </details>
             </div>
         </div>
 
@@ -248,6 +258,15 @@
                     <button onclick="addSubItem()" class="px-3 py-2 bg-gray-800 text-white rounded-xl text-xs font-bold b3-action">+ Hinzufügen</button>
                 </div>
             </div>
+
+            <details class="space-y-2">
+                <summary data-tool-en="Enter multiple items">Mehrere Gegenstände eingeben</summary>
+                <label for="boxItemsBatch" data-tool-en="One item per line or separated by commas">Ein Gegenstand pro Zeile oder mit Komma trennen</label>
+                <textarea id="boxItemsBatch" class="w-full p-2 border rounded-xl" rows="3" maxlength="4000"></textarea>
+                <button type="button" class="b3-action b3-outline" onclick="previewBoxItems()" data-tool-en="Preview items">Gegenstände ansehen</button>
+                <output id="boxItemsPreview" class="block whitespace-pre-line break-words" aria-live="polite"></output>
+                <button type="button" id="boxItemsApply" class="b3-action b3-outline" onclick="applyBoxItems()" disabled data-tool-en="Add items to this box">Gegenstände übernehmen</button>
+            </details>
 
             <div class="flex flex-wrap justify-end gap-2 pt-3 border-t b3-dialog-actions">
                 <button onclick="closeEditBoxModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm b3-action b3-outline">Abbrechen</button>
@@ -493,6 +512,10 @@
             }
         }
 
+        const movingInventoryTools = import('./moving-inventory.mjs');
+        let movingSearchBoxes = null;
+        const boxFormText = (de, en) => window.__toolyaUILocale === 'en' ? en : de;
+        let addingBox = false;
         let html5QrCode = null;
         let activeSubItemsTemp = [];
 
@@ -564,6 +587,7 @@
                         return confirm(window.__toolyaUILocale === 'en' ? 'Please confirm that the backup was downloaded successfully.' : 'Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.');
                     }
                 });
+                movingSearchBoxes = (await movingInventoryTools).searchMovingBoxes;
                 const {data:again,error:againError}=await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser();
                 if (againError || again?.user?.id!==uid || again.user.is_anonymous)
                     throw Error('Konto während des Ladens gewechselt.');
@@ -588,23 +612,33 @@
             return movingCloudController.snapshot();
         }
 
+        let movingSaveInProgress = false;
         async function saveData(data) {
+            if (movingSaveInProgress) return false;
             if (!movingCloudReady || !movingCloudController?.ready) {
                 movingCloudBlock('load-failed');
                 return false;
             }
+            const controller = movingCloudController;
+            const owner = movingCloudUserId;
+            const revision = controller.revision;
+            movingSaveInProgress = true;
             try {
                 const {data:auth,error}=await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser();
-                if (error || !auth?.user?.id || auth.user.id!==movingCloudUserId || auth.user.is_anonymous)
+                if (error || !auth?.user?.id || auth.user.id!==owner || auth.user.is_anonymous ||
+                    !movingCloudReady || movingCloudController !== controller)
                     throw Error('Anmeldung nicht mehr gültig.');
-                await movingCloudController.replace(data);
+                await controller.replace(data, { expectedRevision: revision });
+                if (!movingCloudReady || movingCloudController !== controller) return false;
                 window.toolyaNotice?.('success',window.__toolyaUILocale === 'en' ? 'Saved to Toolya Cloud.' : 'In Toolya Cloud gespeichert.');
                 document.dispatchEvent(new Event("toolya:moving-saved"));
                 return true;
             } catch(error) {
                 console.error(error);
-                movingCloudBlock('save-unconfirmed');
+                if (movingCloudController === controller) movingCloudBlock('save-unconfirmed');
                 return false;
+            } finally {
+                movingSaveInProgress = false;
             }
         }
 
@@ -718,21 +752,25 @@
 
             if (!locId || !name) return alert(window.__toolyaUILocale === 'en' ? 'Please enter a location and box name!' : 'Bitte Standort und Kisten-Name angeben!');
 
-            let photo = "";
-            if (photoInput.files && photoInput.files[0]) {
-                try {
-                    photo = await new Promise((resolve,reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result);
-                        reader.onerror = () => reject(reader.error || Error('Bild konnte nicht gelesen werden.'));
-                        reader.readAsDataURL(photoInput.files[0]);
-                    });
-                } catch(error) {
-                    alert(window.__toolyaUILocale === 'en' ? 'Image could not be read. Nothing was saved.' : 'Bild konnte nicht gelesen werden. Nichts gespeichert.');
-                    return;
+            if (addingBox) return;
+            addingBox = true;
+            const accountId = movingCloudUserId;
+            try {
+                let photo = '';
+                if (photoInput.files?.[0]) {
+                    try {
+                        photo = await (await movingInventoryTools).resizeMovingPhoto(photoInput.files[0]);
+                    } catch {
+                        alert(boxFormText('Das Foto konnte nicht geladen werden. Wähle ein anderes Bild bis 30 MB.',
+                            'Could not load the photo. Choose another image up to 30 MB.'));
+                        return;
+                    }
                 }
+                if (!movingCloudReady || accountId !== movingCloudUserId) return;
+                await storeBoxData(locId, name, desc, value, tag, barcode, expiry, '', [], photo);
+            } finally {
+                addingBox = false;
             }
-            await storeBoxData(locId, name, desc, value, tag, barcode, expiry, "", [], photo);
         }
 
         async function storeBoxData(locId, name, desc, value, tag, barcode, expiry, lentTo, subItems, photo) {
@@ -760,11 +798,109 @@
             renderInventory();
         }
 
+        const movingField = id => document.getElementById(id);
+        let boxBatchPlan = null;
+        let boxItemPlan = null;
+
+        function resetBoxBatch() {
+            boxBatchPlan = null;
+            movingField('boxBatchPreview').textContent = '';
+            movingField('boxBatchSave').disabled = true;
+        }
+
+        async function previewBoxBatch() {
+            resetBoxBatch();
+            const { planBoxNames } = await movingInventoryTools;
+            const locId = Number(movingField('boxLocationSelect').value);
+            const names = planBoxNames(getData().boxes, movingField('boxBatchPrefix').value,
+                movingField('boxBatchCount').valueAsNumber);
+            if (!getData().locations.some(location => location.id === locId) || !names.length) {
+                movingField('boxBatchPreview').textContent = boxFormText(
+                    'Wähle oben einen Standort und gib ein Namenspräfix und eine Anzahl von 2 bis 50 ein.',
+                    'Choose a location above and enter a name prefix and a quantity from 2 to 50.');
+                return;
+            }
+            boxBatchPlan = { locId, names };
+            movingField('boxBatchPreview').textContent = names.join(' · ');
+            movingField('boxBatchSave').disabled = false;
+        }
+
+        async function saveBoxBatch() {
+            if (!boxBatchPlan || addingBox || !movingCloudReady) return;
+            addingBox = true;
+            const plan = boxBatchPlan;
+            const data = getData();
+            resetBoxBatch();
+            try {
+                if (!data.locations.some(location => location.id === plan.locId) ||
+                    plan.names.some(name => data.boxes.some(box => box.name.toLowerCase() === name.toLowerCase()))) {
+                    await previewBoxBatch();
+                    return;
+                }
+                const occupied = new Set(data.boxes.map(box => box.id));
+                let id = Date.now();
+                const boxes = plan.names.map(name => {
+                    while (occupied.has(id)) id++;
+                    return { id: id++, locId: plan.locId, name, desc: '', value: 0, tag: 'Standard',
+                        barcode: '', expiry: '', lentTo: '', subItems: [], photo: '' };
+                });
+                data.boxes.push(...boxes);
+                if (!await saveData(data)) return;
+                renderInventory();
+                openEditBoxModal(boxes[0].id);
+            } finally {
+                addingBox = false;
+            }
+        }
+
+        function resetBoxItems() {
+            boxItemPlan = null;
+            movingField('boxItemsPreview').textContent = '';
+            movingField('boxItemsApply').disabled = true;
+        }
+
+        async function previewBoxItems() {
+            const { parseMovingItems } = await movingInventoryTools;
+            const names = parseMovingItems(movingField('boxItemsBatch').value);
+            if (!names.length || names.length > 50 || names.some(name => name.length > 120)) {
+                resetBoxItems();
+                movingField('boxItemsPreview').textContent = boxFormText(
+                    'Gib 1 bis 50 Gegenstände mit höchstens 120 Zeichen pro Eintrag ein.',
+                    'Enter 1 to 50 items with up to 120 characters each.');
+                return;
+            }
+            boxItemPlan = names;
+            movingField('boxItemsPreview').textContent = names.map(name => '• ' + name).join('\n');
+            movingField('boxItemsApply').disabled = false;
+        }
+
+        function applyBoxItems() {
+            if (!boxItemPlan) return;
+            activeSubItemsTemp.push(...boxItemPlan.map(name => ({ name, value: 0 })));
+            movingField('boxItemsBatch').value = '';
+            resetBoxItems();
+            renderSubItemsModal();
+        }
+
+        for (const id of ['boxBatchPrefix', 'boxBatchCount', 'boxLocationSelect']) {
+            movingField(id).addEventListener('input', resetBoxBatch);
+        }
+        movingField('boxItemsBatch').addEventListener('input', resetBoxItems);
+        document.addEventListener('toolya:moving-ready', () => {
+            if (!movingCloudReady) {
+                resetBoxBatch();
+                resetBoxItems();
+                movingField('boxItemsBatch').value = '';
+            }
+        });
+
         function openEditBoxModal(boxId) {
             let data = getData();
             let box = data.boxes.find(b => b.id === boxId);
             if (!box) return;
 
+            resetBoxItems();
+            movingField('boxItemsBatch').value = '';
             document.getElementById('editBoxId').value = box.id;
             document.getElementById('editBoxLocSelect').value = box.locId;
             document.getElementById('editBoxName').value = box.name;
@@ -863,7 +999,7 @@
 
         function renderInventory() {
             const container = document.getElementById('inventoryContainer');
-            const search = document.getElementById('searchBox').value.toLowerCase();
+            const search = document.getElementById('searchBox').value.trim();
             const tagFilter = document.getElementById('tagFilter').value;
             const sortFilter = document.getElementById('sortFilter').value;
             let data = getData();
@@ -908,31 +1044,36 @@
 
             const today = new Date().toISOString().split('T')[0];
 
-            container.innerHTML = data.locations.map(loc => {
+            const hits = search && movingSearchBoxes ? movingSearchBoxes(data, search) : null;
+            const locations = [...data.locations];
+            if (hits) {
+                const locationRanks = new Map();
+                for (const box of data.boxes) {
+                    const rank = hits.get(box.id)?.score ?? Infinity;
+                    locationRanks.set(box.locId, Math.min(locationRanks.get(box.locId) ?? Infinity, rank));
+                }
+                const rankFor = location => locationRanks.get(location.id) ?? Infinity;
+                locations.sort((a, b) => rankFor(a) - rankFor(b));
+            }
+
+            container.innerHTML = locations.map(loc => {
                 let locBoxes = data.boxes.filter(b => b.locId === loc.id);
                 
                 if (tagFilter) {
                     locBoxes = locBoxes.filter(b => (b.tag || 'Standard') === tagFilter);
                 }
 
-                if (search) {
-                    locBoxes = locBoxes.filter(b => 
-                        b.name.toLowerCase().includes(search) || 
-                        b.desc.toLowerCase().includes(search) || 
-                        (b.tag && b.tag.toLowerCase().includes(search)) ||
-                        (b.barcode && b.barcode.toLowerCase().includes(search)) ||
-                        (b.id.toString() === search) ||
-                        (b.subItems && b.subItems.some(sub => sub.name.toLowerCase().includes(search)))
-                    );
-                }
+                if (hits) locBoxes = locBoxes.filter(box => hits.has(box.id));
 
                 locBoxes.sort((a, b) => {
+                    const ranking = hits ? hits.get(a.id).score - hits.get(b.id).score : 0;
+                    if (ranking) return ranking;
                     if (sortFilter === 'value-desc') return (b.value || 0) - (a.value || 0);
                     if (sortFilter === 'value-asc') return (a.value || 0) - (b.value || 0);
                     return a.name.localeCompare(b.name);
                 });
 
-                if (locBoxes.length === 0 && search && !loc.name.toLowerCase().includes(search)) return '';
+                if (locBoxes.length === 0 && hits) return '';
 
                 return `
                     <div class="border rounded-2xl p-4 bg-gray-50 space-y-3">
@@ -961,6 +1102,7 @@
                                                     ${isExpired ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 font-bold" title="${window.__toolyaUILocale === 'en' ? 'Expired date!' : 'Ablaufdatum überschritten!'}">${window.__toolyaUILocale === 'en' ? '⚠️ Expired' : '⚠️ Ablauf'}</span>` : ''}
                                                 </div>
                                                 <p class="text-xs text-gray-600 mt-0.5">${escapeInventoryText(b.desc || (window.__toolyaUILocale === 'en' ? 'No description' : 'Keine Beschreibung'))}</p>
+                                                ${hits?.get(b.id)?.match && hits.get(b.id).match !== b.name && hits.get(b.id).match !== b.desc ? `<p class="text-xs">${boxFormText('Treffer', 'Match')}: ${escapeInventoryText(hits.get(b.id).match)}</p>` : ''}
                                                 ${subItemsText ? `<p class="text-[11px] text-indigo-600 font-medium mt-0.5">${window.__toolyaUILocale === 'en' ? 'Contents' : 'Inhalt'}: ${subItemsText}</p>` : ''}
                                                 <div class="flex gap-3 text-[11px] text-gray-500 mt-0.5 b3-moving-box-meta">
                                                     <span class="font-semibold text-green-600">${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${movingAmountFormatter(window.__toolyaUILocale).format(Number(b.value || 0))} €</span>
