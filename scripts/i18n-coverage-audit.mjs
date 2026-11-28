@@ -105,21 +105,22 @@ const languageEvidence=localeEntrypoints.map(file=>({file,setsDocumentLanguage:/
 const htmlLangNotSet=languageEvidence.some(item=>!item.setsDocumentLanguage);
 const scriptSources=[...html,...js];
 const dynamic=[];
-const callPattern=/\b(?:alert|confirm|prompt|textContent|innerHTML)\s*(?:\(|=)\s*(['"`])([^\n'"\`]{4,180})\1/g;
+const callPattern=/\b(alert|confirm|prompt|textContent|innerHTML)\s*(?:\(|=)\s*(['"\x60])((?:\\[^\n]|(?!\2)[^\\\n]){4,2000})\2/g;
 for(const f of scriptSources){
  if(f.startsWith('en/')||f.startsWith('shared/toolya/i18n/'))continue;
  const content=read(f);
  const examples=[],sightings=[];
  let m;
  while((m=callPattern.exec(content))!==null){
-  if(!german.test(m[2]))continue;
-  const text=small(m[2]);
+  const literal=m[3];
+  if(!german.test(literal)&&!(/[äöüß]/i.test(literal)||/\b(?:Buchungen|Beleg|Garantiedauer|Gerätedaten|Cloud-Daten|Sicherung|gefunden|vorhanden|geladen|gespeichert|konnte|wirklich|nicht)\b/i.test(literal)))continue;
+  const text=small(literal);
   const line=content.slice(0,m.index).split('\n').length;
   examples.push(text);
   // This is a source-only candidate. It might already be translated by an
   // exact runtime catalogue and is never treated as private user content.
   sightings.push({line,kind:m[0].slice(0,m[0].indexOf('(')>=0?m[0].indexOf('('):m[0].indexOf('=' )).trim(),
-   sample:text,literal:m[2],...reviewRuntimeLiteral(f,m[2],m[0],content.slice(m.index+m[0].length,m.index+m[0].length+30))});
+   sample:text,literal,...reviewRuntimeLiteral(f,literal,m[0],content.slice(m.index+m[0].length,m.index+m[0].length+30))});
  }
  // Explicit bilingual branches are separate source occurrences, not catalogue guesses.
  const conditional=/\b(alert|confirm|prompt)\s*\(\s*window\.__toolyaUILocale\s*===\s*['"]en['"]\s*\?\s*(['"])([^\n'"\\]+)\2\s*:\s*(['"])([^\n'"\\]+)\4\s*(?=[,)])/g;
