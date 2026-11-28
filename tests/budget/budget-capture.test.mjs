@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {emptyCapture,validateCapture,unitPrice,speechFields,occasionTotal,queueReceipts,consumeInbox,ocrLanguage,scanReceiptBatch} from '../../tools/budget/budget-capture.mjs';
+import {emptyCapture,validateCapture,unitPrice,speechFields,occasionTotal,queueReceipts,consumeInbox,ocrLanguage,scanReceiptBatch,bookingCapturePatch} from '../../tools/budget/budget-capture.mjs';
 import {validateBudgetSnapshot} from '../../shared/toolya/cloud-controller.mjs';
 const photo='data:image/png;base64,AAAA';
 const receipt={id:'a',name:'receipt.png',photo};
@@ -37,4 +37,19 @@ test('batch isolates individual failures and stops on session change',async()=>{
  assert.deepEqual(results.map(r=>[r.id,r.error]),[['a',false],['b',true],['c',false]]);
  let current=true;
  await assert.rejects(scanReceiptBatch(rows,'deu',async()=>{current=false;return 'text';},()=>current));
+});
+
+test('booking and inbox consumption form one immutable backup-compatible patch',()=>{
+ const state=queueReceipts(emptyCapture(),[receipt]);
+ const entries=[{id:1,title:'Receipt',price:12.50,photos:[photo]}];
+ const patch=bookingCapturePatch(entries,state,'a',1);
+ assert.equal(patch.entries[0].inboxReceiptId,'a');
+ assert.deepEqual(patch.capture.inbox,[]);
+ assert.equal(state.inbox.length,1);
+ assert.equal(entries[0].inboxReceiptId,undefined);
+ assert.throws(()=>bookingCapturePatch(entries,patch.capture,'a',1));
+ assert.throws(()=>bookingCapturePatch([{id:1,photos:[]}],state,'a',1));
+ assert.throws(()=>bookingCapturePatch([...entries,{id:2,inboxReceiptId:'a'}],state,'a',1));
+ const snapshot={...patch,budgets:{},goals:[]};
+ assert.deepEqual(validateBudgetSnapshot(JSON.parse(JSON.stringify(snapshot))),snapshot);
 });
