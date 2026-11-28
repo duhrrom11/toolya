@@ -559,7 +559,7 @@
                     exportBackup:async data=>{
                         const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
                         const url=URL.createObjectURL(blob),a=document.createElement('a');
-                        a.href=url;a.download='toolya-umzugskisten-vor-cloud.json';a.click();
+                        a.href=url;a.download=window.__toolyaUILocale === 'en' ? 'toolya-moving-boxes-before-cloud.json' : 'toolya-umzugskisten-vor-cloud.json';a.click();
                         setTimeout(()=>URL.revokeObjectURL(url),60000);
                         return confirm(window.__toolyaUILocale === 'en' ? 'Please confirm that the backup was downloaded successfully.' : 'Bitte bestätigen, dass die Sicherung tatsächlich heruntergeladen wurde.');
                     }
@@ -793,7 +793,7 @@
             }
             container.innerHTML = activeSubItemsTemp.map((item, idx) => `
                 <div class="flex justify-between items-center bg-gray-50 p-2 border rounded-xl text-xs">
-                    <span><b>${escapeInventoryText(item.name)}</b> (${window.__toolyaUILocale === 'en' ? Number(item.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.value || 0).toFixed(2)} €)</span>
+                    <span><b>${escapeInventoryText(item.name)}</b> (${movingAmountFormatter(window.__toolyaUILocale).format(Number(item.value || 0))} €)</span>
                     <button aria-label="${window.__toolyaUILocale === 'en' ? 'Remove item' : 'Inhalt entfernen'}" onclick="removeSubItem(${idx})" class="text-red-500 font-bold px-2 py-0.5 hover:bg-red-50 rounded-lg">✕</button>
                 </div>
             `).join('');
@@ -874,7 +874,7 @@
 
             document.getElementById('statBoxes').innerText = totalBoxes;
             document.getElementById('statLocs').innerText = totalLocs;
-            document.getElementById('statValue').innerText = (window.__toolyaUILocale === 'en' ? Number(totalVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : totalVal.toFixed(2).replace('.', ',')) + ' €';
+            document.getElementById('statValue').innerText = (movingAmountFormatter(window.__toolyaUILocale).format(Number(totalVal))) + ' €';
 
             const locStatsCard = document.getElementById('locationValueStatsCard');
             const locStatsList = document.getElementById('locationValueStatsList');
@@ -882,7 +882,7 @@
                 locStatsCard.classList.remove('hidden');
                 locStatsList.innerHTML = data.locations.map(loc => {
                     const locVal = data.boxes.filter(b => b.locId === loc.id).reduce((sum, b) => sum + Number(b.value || 0), 0);
-                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">${escapeInventoryText(loc.icon || '📍')} ${escapeInventoryText(loc.name)}</p><p class="text-sm font-bold text-amber-800">${window.__toolyaUILocale === 'en' ? Number(locVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : locVal.toFixed(2).replace('.', ',')} €</p></div>`;
+                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">${escapeInventoryText(loc.icon || '📍')} ${escapeInventoryText(loc.name)}</p><p class="text-sm font-bold text-amber-800">${movingAmountFormatter(window.__toolyaUILocale).format(Number(locVal))} €</p></div>`;
                 }).join('');
             } else {
                 locStatsCard.classList.add('hidden');
@@ -895,7 +895,7 @@
                 tagStatsCard.classList.remove('hidden');
                 tagStatsList.innerHTML = tags.map(t => {
                     const tagVal = data.boxes.filter(b => (b.tag || 'Standard') === t).reduce((sum, b) => sum + Number(b.value || 0), 0);
-                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">🏷️ ${formatMovingTagLabel(t)}</p><p class="text-sm font-bold text-amber-800">${window.__toolyaUILocale === 'en' ? Number(tagVal).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : tagVal.toFixed(2).replace('.', ',')} €</p></div>`;
+                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">🏷️ ${formatMovingTagLabel(t)}</p><p class="text-sm font-bold text-amber-800">${movingAmountFormatter(window.__toolyaUILocale).format(Number(tagVal))} €</p></div>`;
                 }).join('');
             } else {
                 tagStatsCard.classList.add('hidden');
@@ -963,9 +963,9 @@
                                                 <p class="text-xs text-gray-600 mt-0.5">${escapeInventoryText(b.desc || (window.__toolyaUILocale === 'en' ? 'No description' : 'Keine Beschreibung'))}</p>
                                                 ${subItemsText ? `<p class="text-[11px] text-indigo-600 font-medium mt-0.5">${window.__toolyaUILocale === 'en' ? 'Contents' : 'Inhalt'}: ${subItemsText}</p>` : ''}
                                                 <div class="flex gap-3 text-[11px] text-gray-500 mt-0.5 b3-moving-box-meta">
-                                                    <span class="font-semibold text-green-600">${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${window.__toolyaUILocale === 'en' ? Number(b.value || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(b.value || 0).toFixed(2).replace('.', ',')} €</span>
+                                                    <span class="font-semibold text-green-600">${window.__toolyaUILocale === 'en' ? 'Value' : 'Wert'}: ${movingAmountFormatter(window.__toolyaUILocale).format(Number(b.value || 0))} €</span>
                                                     ${b.barcode ? `<span class="font-mono text-gray-400">EAN: ${escapeInventoryText(b.barcode)}</span>` : ''}
-                                                    ${b.expiry ? `<span>${window.__toolyaUILocale === 'en' ? 'Expires' : 'Ablauf'}: ${escapeInventoryText(b.expiry.split('-').reverse().join(window.__toolyaUILocale === 'en' ? '/' : '.'))}</span>` : ''}
+                                                    ${b.expiry ? `<span>${window.__toolyaUILocale === 'en' ? 'Expires' : 'Ablauf'}: ${escapeInventoryText(movingDisplayDate(b.expiry))}</span>` : ''}
                                                 </div>
                                             </div>
                                         </div>
@@ -994,7 +994,15 @@
             if (movingCloudReady && document.getElementById('inventoryContainer')) renderInventory();
         });
 
-        function movingPdfAmounts(language) {
+        function movingDisplayDate(value) {
+            const date = new Date(value + 'T00:00:00Z');
+            if (!Number.isFinite(date.getTime())) return value;
+            return new Intl.DateTimeFormat(window.__toolyaUILocale === 'en' ? 'en-GB' : 'de-DE', {
+                day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC'
+            }).format(date);
+        }
+
+        function movingAmountFormatter(language) {
             return new Intl.NumberFormat(language === 'en' ? 'en-GB' : 'de-DE', {
                 minimumFractionDigits: 2, maximumFractionDigits: 2
             });
@@ -1002,14 +1010,14 @@
 
         async function exportInventoryPDF() {
             const exportLanguage = window.__toolyaUILocale === 'en' ? 'en' : 'de';
-            const amounts = movingPdfAmounts(exportLanguage);
+            const amounts = movingAmountFormatter(exportLanguage);
             const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
             const doc = await createExportPdf();
             if (!doc) return;
             const data = getData();
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text(exportLanguage === "en" ? "Mini-HomeBox Pro - Inventory Report" : "Mini-HomeBox Pro - Inventar-Report", 14, 20);
+            doc.text(exportLanguage === "en" ? "Toolya Moving Boxes - Inventory Report" : "Toolya Umzugskisten – Inventarbericht", 14, 20);
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
             doc.text(`${exportLanguage === 'en' ? 'Created on' : 'Erstellt am'}: ${new Date().toLocaleDateString(exportLanguage === 'en' ? 'en-GB' : 'de-DE')}`, 14, 27);
@@ -1074,7 +1082,7 @@
 
         async function exportQrLabelsPDF() {
             const exportLanguage = window.__toolyaUILocale === 'en' ? 'en' : 'de';
-            const amounts = movingPdfAmounts(exportLanguage);
+            const amounts = movingAmountFormatter(exportLanguage);
             let data = getData();
             if (data.boxes.length === 0) return alert(window.__toolyaUILocale === 'en' ? 'No boxes available.' : 'Keine Kisten vorhanden.');
 
@@ -1124,7 +1132,7 @@
                 doc.text(`${exportLanguage === 'en' ? 'Location' : 'Ort'}: ${cleanLocName}`, textX, y + 14);
                 doc.text(`${exportLanguage === 'en' ? 'Contents' : 'Inhalt'}: ${b.desc || '-'}`, textX, y + 20);
                 doc.text(`${exportLanguage === 'en' ? 'Value' : 'Wert'}: ${amounts.format(b.value || 0)} €`, textX, y + 26);
-                doc.text(`Tag: ${b.tag ? formatMovingTagLabel(b.tag, exportLanguage) : (exportLanguage === 'en' ? 'Default' : 'Standard')}`, textX, y + 32);
+                doc.text(`${exportLanguage === 'en' ? 'Label' : 'Kennzeichnung'}: ${formatMovingTagLabel(b.tag || 'Standard', exportLanguage)}`, textX, y + 32);
 
                 if (x === 14) { 
                     x = 110; 
@@ -1174,7 +1182,7 @@
             let url = URL.createObjectURL(blob);
             let a = document.createElement('a');
             a.href = url;
-            a.download = `homebox-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `${window.__toolyaUILocale === 'en' ? 'toolya-moving-boxes-backup' : 'toolya-umzugskisten-sicherung'}-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
             setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
@@ -1210,7 +1218,7 @@
                     renderInventory();
                     alert(window.__toolyaUILocale === 'en' ? 'Backup imported successfully!' : 'Backup erfolgreich importiert!');
                 } catch (err) {
-                    alert("Fehler beim Lesen der Datei.");
+                    alert(window.__toolyaUILocale === 'en' ? 'Backup file could not be read.' : 'Backup-Datei konnte nicht gelesen werden.');
                 }
             };
             reader.onerror = () => {
