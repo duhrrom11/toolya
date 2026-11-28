@@ -582,7 +582,7 @@ async function toolyaSafeCloudImport(snapshot) {
     confirm:async message => window.confirm(message),
     exportBackup:async previous => {
       exportJsonBackup(previous,'toolya-cloud-vor-import-haushaltsbuch.json');
-      return window.confirm('Bitte bestätigen, dass die Cloud-Sicherung tatsächlich heruntergeladen und sicher gespeichert wurde.');
+      return window.confirm(window.__toolyaUILocale === 'en' ? 'Please confirm that the cloud backup has actually been downloaded and stored securely.' : 'Bitte bestätigen, dass die Cloud-Sicherung tatsächlich heruntergeladen und sicher gespeichert wurde.');
     }
   });
   return result.status==='confirmed';
@@ -604,14 +604,14 @@ async function toolyaCloudBoot(tool) {
       throw Error('Registrierte Anmeldung erforderlich.');
     const prepared = await prepareCloudTool({
       client:window.supabaseClient,tool,storage,
-      confirmMigration: async () => confirm('Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden niemals überschrieben. Auf gemeinsam genutzten Geräten bitte zuerst die Zugehörigkeit der Daten prüfen.'),
-      reviewExistingCloud: async () => confirm('Es gibt sowohl Cloud-Daten als auch Gerätedaten. Die Cloud bleibt maßgeblich; lokale Daten werden nicht zusammengeführt oder gelöscht. Lokale Daten jetzt sichern und ausschließlich die Cloud-Daten verwenden?'),
+      confirmMigration: async () => confirm(window.__toolyaUILocale === 'en' ? 'Transfer existing device data to your Toolya account? Cloud data will never be overwritten. On shared devices, check who owns the data first.' : 'Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden niemals überschrieben. Auf gemeinsam genutzten Geräten bitte zuerst die Zugehörigkeit der Daten prüfen.'),
+      reviewExistingCloud: async () => confirm(window.__toolyaUILocale === 'en' ? 'Both cloud and device data exist. Cloud data remains authoritative; local data will not be merged or deleted. Back up the local data now and use only cloud data?' : 'Es gibt sowohl Cloud-Daten als auch Gerätedaten. Die Cloud bleibt maßgeblich; lokale Daten werden nicht zusammengeführt oder gelöscht. Lokale Daten jetzt sichern und ausschließlich die Cloud-Daten verwenden?'),
       exportBackup: async (data) => {
         const blob = new Blob([JSON.stringify(data)],{type:'application/json'});
         const url = URL.createObjectURL(blob), link=document.createElement('a');
         link.href=url;link.download='toolya-bestand-vor-cloud.json';link.click();
         setTimeout(()=>URL.revokeObjectURL(url),60000);
-        return confirm('Sicherung wurde zum Download angeboten. Bitte erst nach erfolgreichem Speichern bestätigen.');
+        return confirm(window.__toolyaUILocale === 'en' ? 'A backup download has been offered. Confirm only after saving it successfully.' : 'Sicherung wurde zum Download angeboten. Bitte erst nach erfolgreichem Speichern bestätigen.');
       }
     });
     const {data:finalAuth,error:finalAuthError}=await (globalThis.toolyaAuth?.forClient(window.supabaseClient) || window.supabaseClient.auth).getUser();
@@ -1255,7 +1255,7 @@ async function toolyaCloudBoot(tool) {
                     Number(r.price) === price &&
                     (r.entryType === 'einnahme' || r.category === 'Einnahme' ? 'einnahme' : 'ausgabe') ===
                     (entryType === 'einnahme' ? 'einnahme' : 'ausgabe'));
-                if (duplicate && !confirm('Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\n\nTrotzdem erneut speichern?')) return;
+                if (duplicate && !confirm(window.__toolyaUILocale === 'en' ? 'A transaction with the same date, title, amount and type already exists.\n\nSave it again anyway?' : 'Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\n\nTrotzdem erneut speichern?')) return;
                 const newId = nextReceiptId(data);
                 newBookingId = newId;
                 data.push({
@@ -2101,7 +2101,7 @@ async function toolyaCloudBoot(tool) {
        if(!confirm([heading,...preview,warning].join('\n')))return;
        if(!await toolyaSafeCloudImport(snapshot))return;
        renderApp();alert(window.__toolyaUILocale === 'en' ? "Backup saved to Toolya Cloud." : "Backup in Toolya Cloud gespeichert.");
-     }catch(error){console.error(error);alert('Cloud-Import fehlgeschlagen: '+error.message);}
+     }catch(error){console.error(error);alert((window.__toolyaUILocale === 'en' ? 'Cloud import failed: ' : 'Cloud-Import fehlgeschlagen: ')+error.message);}
      finally{input.value='';}
    };
    reader.onerror=()=>{input.value='';alert(window.__toolyaUILocale === 'en' ? "The backup file could not be read." : "Backup-Datei konnte nicht gelesen werden.");};
