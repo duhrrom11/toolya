@@ -67,26 +67,39 @@ create table public.wishlist_card_drafts (
 );
 create index wishlist_card_drafts_owner_idx on public.wishlist_card_drafts(owner_id, updated_at desc);
 
--- Existing profile UUIDs were public links and browser bookmark keys.
-insert into public.wishlist_directory_profiles
- (id,owner_id,kind,first_name,last_name,organization_name,display_name,country,city,bio,interests,visibility,created_at,updated_at)
-select user_id,user_id,profile_kind,first_name,last_name,organization_name,display_name,country,city,bio,interests,'directory',created_at,updated_at
-from public.wishlist_public_profiles;
+-- Retire legacy writes while copying their data so a concurrent save cannot fall
+-- between the backfill and the policy change.
+do $backfill$
+begin
+ lock table public.wishlist_public_profiles in share row exclusive mode;
+ lock table public.wishlist_amazon_publications in share row exclusive mode;
+ drop policy if exists "Owner public profile insert" on public.wishlist_public_profiles;
+ drop policy if exists "Owner public profile update" on public.wishlist_public_profiles;
+ drop policy if exists "Owner public profile delete" on public.wishlist_public_profiles;
+ drop policy if exists "Owner insert with complete profile" on public.wishlist_amazon_publications;
+ revoke insert on public.wishlist_amazon_publications from authenticated;
 
-insert into public.wishlist_directory_lists (profile_id,name,url,occasion,visibility,created_at,updated_at)
-select p.user_id,l->>'name',l->>'url',coalesce(l->>'occasion',''),'directory',p.created_at,p.updated_at
-from public.wishlist_public_profiles p cross join lateral jsonb_array_elements(p.lists) l;
+ -- Existing profile UUIDs were public links and browser bookmark keys.
+ insert into public.wishlist_directory_profiles
+  (id,owner_id,kind,first_name,last_name,organization_name,display_name,country,city,bio,interests,visibility,created_at,updated_at)
+ select user_id,user_id,profile_kind,first_name,last_name,organization_name,display_name,country,city,bio,interests,'directory',created_at,updated_at
+ from public.wishlist_public_profiles;
 
--- Earlier Amazon publications used ?list=<id>. Preserve URLs for the lists still published
--- in the directory, and retain a safe profile redirect hint for withdrawn older lists.
-insert into toolya_private.wishlist_list_aliases (id,list_id)
-select a.id,l.id
-from public.wishlist_amazon_publications a
-join lateral (
- select d.id from public.wishlist_directory_lists d where d.profile_id=a.user_id
- and public.wishlist_link_key(d.url)=public.wishlist_link_key(a.amazon_url)
- order by d.id limit 1
-) l on true;
+ insert into public.wishlist_directory_lists (profile_id,name,url,occasion,visibility,created_at,updated_at)
+ select p.user_id,l->>'name',l->>'url',coalesce(l->>'occasion',''),'directory',p.created_at,p.updated_at
+ from public.wishlist_public_profiles p cross join lateral jsonb_array_elements(p.lists) l;
+
+ -- Earlier Amazon publications used ?list=<id>. Preserve URLs for the lists still published
+ -- in the directory, and retain a safe profile redirect hint for withdrawn older lists.
+ insert into toolya_private.wishlist_list_aliases (id,list_id)
+ select a.id,l.id
+ from public.wishlist_amazon_publications a
+ join lateral (
+  select d.id from public.wishlist_directory_lists d where d.profile_id=a.user_id
+  and public.wishlist_link_key(d.url)=public.wishlist_link_key(a.amazon_url)
+  order by d.id limit 1
+ ) l on true;
+end $backfill$;
 
 alter table public.wishlist_directory_profiles enable row level security;
 alter table public.wishlist_directory_lists enable row level security;
@@ -165,9 +178,6 @@ revoke all on toolya_private.wishlist_health_directory from public,anon,authenti
 -- The legacy snapshots are kept for rollback and audit. They cannot bypass publication settings.
 drop policy if exists "Public directory read" on public.wishlist_public_profiles;
 create policy "Legacy profile owner read" on public.wishlist_public_profiles for select to authenticated using (user_id=(select auth.uid()));
-drop policy if exists "Owner public profile insert" on public.wishlist_public_profiles;
-drop policy if exists "Owner public profile update" on public.wishlist_public_profiles;
-drop policy if exists "Owner public profile delete" on public.wishlist_public_profiles;
 drop policy if exists "Public list read" on public.wishlist_amazon_publications;
 drop policy if exists "Successful public list or owner read" on public.wishlist_amazon_publications;
 create policy "Legacy publication owner read" on public.wishlist_amazon_publications for select to authenticated using (user_id=(select auth.uid()));
