@@ -70,6 +70,42 @@ test('moving planner creates project, room and box assignment with mocked cloud'
   await expect(planner.getByRole('button',{name:'Finish move'})).toBeVisible();
   await expect(planner.getByText('5 Dec 2026')).toBeVisible();
   await expect(planner.getByRole('button',{name:'3. First 72 hours'})).toHaveAttribute('aria-current','true');
-  await expect(planner.getByText('Gläser')).toBeVisible();
+  await expect(planner.getByRole('heading',{name:'Küche'})).toBeVisible();
+  await expect(planner.locator('[data-arrival-details]').getByText('Gläser')).toBeHidden();
+  await planner.locator('[data-arrival-details] summary').click();
+  await expect(planner.locator('[data-arrival-details]').getByText('Gläser')).toBeVisible();
   expect((await page.evaluate(()=>window.__mvMock)).writes).toBe(3);
+
+  await navigation.getByRole('button',{name:/My inventory/}).dispatchEvent('click');
+  await page.locator('#searchBox').fill('Glasser');
+  await expect(page.locator('#inventoryContainer').getByRole('heading',{name:/Gläser/})).toBeVisible();
+  await page.locator('#searchBox').clear();
+
+  await navigation.getByRole('button',{name:/My move/}).dispatchEvent('click');
+  await navigation.getByRole('button',{name:/Preparation/}).dispatchEvent('click');
+  await page.locator('#boxLocationSelect').selectOption('5');
+  await page.getByText('Create several boxes',{exact:true}).click();
+  await page.locator('#boxBatchPrefix').fill('Kitchen');
+  await page.getByRole('button',{name:'Preview names'}).click();
+  await expect(page.locator('#boxBatchPreview')).toHaveText('Kitchen 01 · Kitchen 02');
+  await page.locator('#boxBatchSave').click();
+  await expect(page.locator('#editBoxName')).toHaveValue('Kitchen 01');
+  await page.getByText('Enter multiple items',{exact:true}).click();
+  await page.locator('#boxItemsBatch').fill('Tea towels, Coffee maker');
+  await page.getByRole('button',{name:'Preview items'}).click();
+  await page.locator('#boxItemsApply').click();
+  await expect(page.locator('#subItemsContainer')).toContainText('Coffee maker');
+  await page.locator('#editBoxModal').getByRole('button',{name:'Save',exact:true}).click();
+
+  await page.getByText('Import a CSV list',{exact:true}).click();
+  await page.locator('#boxCsvFile').setInputFiles({
+    name:'boxes.csv',mimeType:'text/csv',
+    buffer:Buffer.from('Box number;Name;Destination room;Contents\n007;Hall;Hallway;Umbrella\n007;Hall;Hallway;Books')
+  });
+  await expect(page.locator('#boxCsvStatus')).toHaveText('Valid entries: 1 of 2.');
+  await expect(page.locator('#boxCsvRows')).toContainText('already exists');
+  await page.locator('#boxCsvSave').click();
+  await expect.poll(()=>page.evaluate(()=>window.__mvMock.writes)).toBe(6);
+  const imported=await page.evaluate(()=>window.__mvMock.snapshot.boxes.at(-1));
+  expect(imported).toMatchObject({name:'Hall 007',boxNumber:'007'});
 });

@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {runInNewContext} from 'node:vm';
 
 const tools=[
- {name:'moving',start:'async function saveData(data) {',end:'function checkDeepLink()',call:'saveData(payload)',ready:'movingCloudReady',controller:'movingCloudController',user:'movingCloudUserId',client:'window'},
+ {name:'moving',start:'let movingSaveInProgress = false;',end:'function checkDeepLink()',call:'saveData(payload)',ready:'movingCloudReady',controller:'movingCloudController',user:'movingCloudUserId',client:'window'},
  {name:'plants',start:'async function saveData(data){',end:'function loadLocationDropdown()',call:'saveData(payload)',ready:'plantsCloudReady',controller:'plantsCloudController',user:'plantsCloudUserId',client:'global'},
  {name:'baking',start:'async function persistRecipes(recipes){',end:'async function saveRecipeToStorage(',call:'persistRecipes(payload)',ready:'bakingCloudReady',controller:'bakingCloudController',user:'bakingCloudUserId',client:'global'}
 ];
@@ -29,7 +29,7 @@ for(const tool of tools){
     plantsCloudBlock:reason=>blocked.push(reason),
     bakingCloudBlock:reason=>blocked.push(reason)
    };
-   const ok=await runInNewContext(functionSource+';'+tool.call,context);
+   const ok=await runInNewContext('(async()=>{'+functionSource+'; return '+tool.call+';})()',context);
    assert.equal(ok,true);
    assert.equal(saved.length,1,'one and only one confirmed write');
    assert.equal(JSON.stringify(saved[0]),tool.name==='baking'?JSON.stringify({recipes:payload}):original,'cloud payload retains original schema');
@@ -40,7 +40,7 @@ for(const tool of tools){
    // Rejecting the write must not display an optimistic translated success.
    controller.replace=async()=>{throw Error('synthetic save rejection')};
    notices.length=0;saved.length=0;events.length=0;
-   assert.equal(await runInNewContext(functionSource+';'+tool.call,context),false);
+   assert.equal(await runInNewContext('(async()=>{'+functionSource+'; return '+tool.call+';})()',context),false);
    assert.deepEqual(notices,[]);
    assert.deepEqual(events,[]);
    assert.deepEqual(blocked,['save-unconfirmed']);

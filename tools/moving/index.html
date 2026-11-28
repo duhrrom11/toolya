@@ -197,6 +197,15 @@
                     <output id="boxBatchPreview" class="block break-words" aria-live="polite"></output>
                     <button type="button" id="boxBatchSave" class="b3-action b3-outline" onclick="saveBoxBatch()" disabled data-tool-en="Create boxes">Kisten anlegen</button>
                 </details>
+                <details class="space-y-2" id="boxCsvDetails">
+                    <summary data-tool-en="Import a CSV list">CSV-Kistenliste einlesen</summary>
+                    <p><a id="boxCsvTemplate" href="/umzugskisten/kistenliste.csv" download data-tool-en="Download CSV template">CSV-Vorlage herunterladen</a></p>
+                    <label for="boxCsvFile" data-tool-en="Choose a CSV file">CSV-Datei auswählen</label>
+                    <input type="file" id="boxCsvFile" accept=".csv,text/csv" class="block w-full">
+                    <p id="boxCsvStatus" role="status"></p>
+                    <ul id="boxCsvRows" class="space-y-1 max-h-52 overflow-auto break-words"></ul>
+                    <button type="button" id="boxCsvSave" class="b3-action b3-outline" disabled data-tool-en="Add valid rows">Gültige Zeilen hinzufügen</button>
+                </details>
             </div>
         </div>
 
@@ -275,6 +284,37 @@
         </div>
     </div>
 
+    <dialog id="movingPrintDialog" class="rounded-2xl p-5 max-w-lg w-full" aria-labelledby="movingPrintTitle">
+        <h2 id="movingPrintTitle" class="font-bold text-lg" data-tool-en="Print moving documents">Umzugsunterlagen drucken</h2>
+        <label for="movingPrintKind" data-tool-en="Document">Dokument</label>
+        <select id="movingPrintKind" class="block w-full p-2 border rounded-xl">
+            <option value="labels" data-tool-en="QR labels">QR-Etiketten</option>
+            <option value="handover" data-tool-en="Handover checklist">Übergabeliste</option>
+            <option value="signs" data-tool-en="Room signs">Türschilder</option>
+        </select>
+        <div id="movingPrintLayoutFields">
+            <label for="movingPrintGrid" data-tool-en="A4 layout">A4-Raster</label>
+            <select id="movingPrintGrid" class="p-2 border rounded-xl">
+                <option value="2x4">2 × 4</option><option value="2x5">2 × 5</option><option value="3x6">3 × 6</option>
+            </select>
+            <label for="movingPrintSkip" data-tool-en="Skip used slots on the first sheet">Benutzte Felder auf dem ersten Bogen überspringen</label>
+            <input type="number" id="movingPrintSkip" min="0" max="7" value="0" class="p-2 border rounded-xl">
+            <label class="block"><input id="movingPrintPrivate" type="checkbox"> <span data-tool-en="Print private contents and values">Private Inhalte und Werte drucken</span></label>
+        </div>
+        <div id="movingPrintBoxFields">
+            <button type="button" id="movingPrintSelectAll" class="b3-action b3-outline" data-tool-en="Select all boxes">Alle Kisten auswählen</button>
+            <fieldset class="max-h-40 overflow-auto">
+                <legend data-tool-en="Boxes to print">Kisten zum Drucken</legend>
+                <div id="movingPrintChoice"></div>
+            </fieldset>
+        </div>
+        <p id="movingPrintPreview" class="my-2 break-words" role="status"></p>
+        <div class="flex flex-wrap gap-2">
+            <form method="dialog"><button type="submit" class="b3-action b3-outline" data-tool-en="Close">Schließen</button></form>
+            <button type="button" id="movingPrintSave" class="b3-action b3-outline" data-tool-en="Download PDF">PDF herunterladen</button>
+        </div>
+    </dialog>
+
     <!-- MODAL: QR Code anzeigen & Deep-Link -->
     <div id="qrModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeQrModal()">
         <div class="bg-white p-6 rounded-2xl text-center space-y-3 shadow-2xl" onclick="event.stopPropagation()">
@@ -282,6 +322,7 @@
             <div id="qrcode" class="flex justify-center p-2 bg-white border rounded-xl"></div>
             <p id="qrLinkInfo" class="text-[11px] text-indigo-600 font-mono break-all"></p>
             <p class="text-xs text-gray-500" data-tool-en="Print this code. Scanning it opens the box directly in the app.">Drucke diesen Code aus. Beim Scannen öffnet sich die Kiste direkt in der App!</p>
+            <button type="button" id="printSingleMovingBox" class="b3-action b3-outline" data-tool-en="Print this label">Dieses Etikett drucken</button>
             <button onclick="closeQrModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold b3-action b3-outline">Schließen</button>
         </div>
     </div>
@@ -894,6 +935,92 @@
             }
         });
 
+        const csvInput = movingField('boxCsvFile');
+        const csvCopy = {
+            format: ['Die CSV-Datei ist beschädigt.', 'The CSV file could not be read.'],
+            size: ['Die Datei ist zu groß. Maximal 1 MB und 1.000 Zeilen.', 'The file is too large. Maximum: 1 MB and 1,000 rows.'],
+            headers: ['Spalten „Name“ und „Zielraum“ fehlen oder kommen doppelt vor.', 'The Name or Destination room column is missing or duplicated.'],
+            columns: ['Falsche Anzahl an Spalten', 'Incorrect number of columns'],
+            missing: ['Name oder Zielraum fehlt', 'Name or destination room missing'],
+            length: ['Ein Eintrag ist zu lang', 'An entry is too long'],
+            duplicate: ['Name oder Kistennummer bereits vorhanden', 'Box name or number already exists']
+        };
+        let csvDraft;
+        let csvPreview = [];
+        let csvError = '';
+        function renderCsvPreview() {
+            movingField('boxCsvTemplate').href = boxFormText('/umzugskisten/kistenliste.csv', '/en/moving-boxes/box-list.csv');
+            const valid = csvPreview.filter(row => !row.issue).length;
+            movingField('boxCsvSave').disabled = !valid;
+            const status = movingField('boxCsvStatus');
+            status.textContent = csvError ? boxFormText(...csvCopy[csvError]) : csvDraft ?
+                boxFormText(`Gültige Einträge: ${valid} von ${csvPreview.length}.`, `Valid entries: ${valid} of ${csvPreview.length}.`) : '';
+            movingField('boxCsvRows').replaceChildren(...csvPreview.map(row => {
+                const item = document.createElement('li');
+                const message = row.issue ? boxFormText(...csvCopy[row.issue]) : row.newLocation ?
+                    boxFormText('Neuer Standort', 'New location') : '';
+                item.textContent = [boxFormText('Zeile ', 'Row ') + row.row, row.name, row.room, message].filter(Boolean).join(' · ');
+                return item;
+            }));
+        }
+        csvInput.addEventListener('change', async () => {
+            const file = csvInput.files?.[0];
+            const owner = movingCloudUserId;
+            csvDraft = undefined;
+            csvError = '';
+            csvPreview = [];
+            renderCsvPreview();
+            if (!file || !movingCloudReady) return;
+            try {
+                if (file.size > 1_000_000) throw Error('size');
+                const raw = await file.text();
+                const { planMovingCsv } = await import('./moving-csv.mjs');
+                if (!movingCloudReady || owner !== movingCloudUserId || csvInput.files?.[0] !== file) return;
+                csvDraft = raw;
+                csvPreview = planMovingCsv(raw, getData());
+            } catch (error) {
+                if (csvInput.files?.[0] !== file) return;
+                csvError = Object.hasOwn(csvCopy, error.message) ? error.message : 'format';
+            }
+            renderCsvPreview();
+        });
+        movingField('boxCsvSave').addEventListener('click', async () => {
+            if (!csvDraft || addingBox || !movingCloudReady) return;
+            addingBox = true;
+            const owner = movingCloudUserId;
+            const draft = csvDraft;
+            try {
+                const { planMovingCsv, addMovingCsvRows } = await import('./moving-csv.mjs');
+                if (owner !== movingCloudUserId || draft !== csvDraft || !movingCloudReady) return;
+                const data = getData();
+                const current = planMovingCsv(draft, data);
+                if (JSON.stringify(current) !== JSON.stringify(csvPreview)) {
+                    csvPreview = current;
+                    renderCsvPreview();
+                    return;
+                }
+                addMovingCsvRows(data, current);
+                if (!await saveData(data)) return;
+                csvInput.value = '';
+                csvDraft = undefined;
+                csvPreview = [];
+                renderCsvPreview();
+                loadLocationsDropdown();
+                renderInventory();
+            } finally {
+                addingBox = false;
+            }
+        });
+        document.addEventListener('toolya:moving-ready', () => {
+            if (movingCloudReady) return;
+            csvInput.value = '';
+            csvDraft = undefined;
+            csvPreview = [];
+            csvError = '';
+            renderCsvPreview();
+        });
+        document.addEventListener('toolya:locale-change', renderCsvPreview);
+
         function openEditBoxModal(boxId) {
             let data = getData();
             let box = data.boxes.find(b => b.id === boxId);
@@ -1222,70 +1349,138 @@
             });
         }
 
-        async function exportQrLabelsPDF() {
-            const exportLanguage = window.__toolyaUILocale === 'en' ? 'en' : 'de';
-            const amounts = movingAmountFormatter(exportLanguage);
-            let data = getData();
-            if (data.boxes.length === 0) return alert(window.__toolyaUILocale === 'en' ? 'No boxes available.' : 'Keine Kisten vorhanden.');
-
-            const { loadQrGenerator } = await import('../../shared/toolya/qr-generator.mjs');
-            const QRCode = await loadQrGenerator();
-            if (!QRCode) {
-                alert(exportLanguage === 'en' ? 'The QR code could not be loaded. Please try again.' : 'Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.');
-                return;
-            }
-
-            const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
-            const doc = await createExportPdf();
-            if (!doc) return;
-            let x = 14, y = 20;
-            let colWidth = 90, rowHeight = 45;
-
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(16);
-            doc.text(exportLanguage === "en" ? "Toolya Moving Boxes - QR Labels" : "Toolya Umzugskisten – QR-Etiketten", 14, 12);
-
-            for (let i = 0; i < data.boxes.length; i++) {
-                let b = data.boxes[i];
-                if (y + rowHeight > 280) { 
-                    doc.addPage(); 
-                    y = 20; 
-                }
-
-                const loc = data.locations.find(l => l.id === b.locId);
-                const cleanLocName = loc ? loc.name.replace(/[\u{1F000}-\u{1F6FF}|[\u{1F900}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[📦🏠🚪🏡🚗🏢⛺📍]/gu, '').trim()  : (exportLanguage === 'en' ? 'Unknown' : 'Unbekannt');
-                const deepLinkUrl = `${window.location.origin}${window.location.pathname}?box=${b.id}`;
-
-                doc.setDrawColor(200);
-                doc.roundedRect(x, y, colWidth, rowHeight - 5, 3, 3);
-
-                const qrDataUrl = await generateQrDataUrl(QRCode, deepLinkUrl);
-                if (qrDataUrl) {
-                    doc.addImage(qrDataUrl, 'PNG', x + 5, y + 4, 32, 32);
-                }
-
-                let textX = x + 40;
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(10);
-                doc.text(`${exportLanguage === 'en' ? 'Box' : 'Kiste'}: ${b.name}`, textX, y + 8);
-
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(8);
-                doc.text(`${exportLanguage === 'en' ? 'Location' : 'Ort'}: ${cleanLocName}`, textX, y + 14);
-                doc.text(`${exportLanguage === 'en' ? 'Contents' : 'Inhalt'}: ${b.desc || '-'}`, textX, y + 20);
-                doc.text(`${exportLanguage === 'en' ? 'Value' : 'Wert'}: ${amounts.format(b.value || 0)} €`, textX, y + 26);
-                doc.text(`${exportLanguage === 'en' ? 'Label' : 'Kennzeichnung'}: ${formatMovingTagLabel(b.tag || 'Standard', exportLanguage)}`, textX, y + 32);
-
-                if (x === 14) { 
-                    x = 110; 
-                } else { 
-                    x = 14; 
-                    y += rowHeight; 
-                }
-            }
-
-            doc.save(exportLanguage === 'en' ? "moving-box-qr-labels.pdf" : "kisten-qr-etiketten.pdf");
+        function movingPrintData(english = window.__toolyaUILocale === 'en') {
+            const data = getData();
+            const project = data.moving?.projects?.find(item => item.status === 'active');
+            const rooms = data.moving?.rooms?.filter(room => room.projectId === project?.id && !room.archived) ?? [];
+            const assignments = new Map((data.moving?.assignments ?? []).filter(item => item.projectId === project?.id)
+                .map(item => [item.boxId, item.targetRoomId]));
+            const roomFor = box => rooms.find(room => room.id === assignments.get(box.id))?.name ??
+                data.locations.find(location => location.id === box.locId)?.name ??
+                (english ? 'No destination room' : 'Ohne Zielraum');
+            return { data, rooms, roomFor };
         }
+
+        function selectedPrintBoxes(data) {
+            const ids = new Set([...movingField('movingPrintChoice').querySelectorAll('input:checked')].map(input => Number(input.value)));
+            return data.boxes.filter(box => ids.has(box.id));
+        }
+
+        function updateMovingPrintPreview() {
+            const dialog = movingField('movingPrintDialog');
+            if (!dialog.open) return;
+            const { data, rooms } = movingPrintData();
+            const kind = movingField('movingPrintKind').value;
+            const boxes = selectedPrintBoxes(data);
+            const signs = kind === 'signs';
+            movingField('movingPrintLayoutFields').hidden = kind !== 'labels';
+            movingField('movingPrintBoxFields').hidden = signs;
+            const grid = movingField('movingPrintGrid').value;
+            const [cols, rows] = grid.split('x').map(Number);
+            const skip = movingField('movingPrintSkip');
+            skip.max = cols * rows - 1;
+            if (Number(skip.value) > Number(skip.max)) skip.value = skip.max;
+            if (Number(skip.value) < 0) skip.value = 0;
+            const count = signs ? rooms.length : boxes.length;
+            const preview = movingField('movingPrintPreview');
+            preview.textContent = signs ? boxFormText(`Türschilder: ${count}`, `Room signs: ${count}`) :
+                boxFormText(`Ausgewählte Kisten: ${count}`, `Selected boxes: ${count}`);
+            if (kind === 'labels' && count) {
+                const pages = Math.ceil((count + Number(skip.value || 0)) / (cols * rows));
+                preview.textContent += boxFormText(` · A4-Seiten: ${pages}`, ` · A4 pages: ${pages}`);
+            }
+            movingField('movingPrintSave').disabled = !count || movingPrintBusy;
+        }
+
+        function exportQrLabelsPDF(boxId = null) {
+            if (!movingCloudReady) return;
+            const dialog = movingField('movingPrintDialog');
+            const { data, roomFor } = movingPrintData();
+            const single = Number.isSafeInteger(boxId);
+            movingField('movingPrintKind').value = 'labels';
+            movingField('movingPrintPrivate').checked = false;
+            movingField('movingPrintChoice').replaceChildren(...data.boxes.map(box => {
+                const label = document.createElement('label');
+                label.className = 'block break-words';
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.value = box.id;
+                input.checked = !single || box.id === boxId;
+                label.append(input, document.createTextNode(' ' + box.name + ' · ' + roomFor(box)));
+                return label;
+            }));
+            if (!dialog.open) dialog.showModal();
+            updateMovingPrintPreview();
+        }
+
+        let movingPrintBusy = false;
+        movingField('movingPrintDialog').addEventListener('input', updateMovingPrintPreview);
+        movingField('movingPrintSelectAll').addEventListener('click', () => {
+            for (const input of movingField('movingPrintChoice').querySelectorAll('input')) input.checked = true;
+            updateMovingPrintPreview();
+        });
+        document.addEventListener('toolya:locale-change', updateMovingPrintPreview);
+        document.addEventListener('toolya:moving-ready', () => {
+            if (movingCloudReady) return;
+            movingField('movingPrintDialog').close();
+            movingField('movingPrintChoice').replaceChildren();
+            movingField('movingPrintPreview').textContent = '';
+        });
+        movingField('movingPrintSave').addEventListener('click', async () => {
+            if (movingPrintBusy || !movingCloudReady) return;
+            movingPrintBusy = true;
+            const controller = movingCloudController;
+            updateMovingPrintPreview();
+            const exportLanguage = window.__toolyaUILocale === 'en' ? 'en' : 'de';
+            const english = exportLanguage === 'en';
+            try {
+                const { data, rooms, roomFor } = movingPrintData(english);
+                const boxes = selectedPrintBoxes(data);
+                const kind = movingField('movingPrintKind').value;
+                const layout = movingField('movingPrintGrid').value;
+                const skip = Number(movingField('movingPrintSkip').value);
+                const includePrivate = movingField('movingPrintPrivate').checked;
+                const { createExportPdf } = await import('../../shared/toolya/pdf-export.mjs');
+                const { printMovingLabels, printHandover, printRoomSigns } = await import('./moving-labels.mjs');
+                const QRCode = kind === 'labels'
+                    ? await (await import('../../shared/toolya/qr-generator.mjs')).loadQrGenerator() : null;
+                if (kind === 'labels' && !QRCode) {
+                    movingField('movingPrintDialog').close();
+                    alert(english ? 'The QR code could not be loaded. Please try again.'
+                        : 'Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.');
+                    return;
+                }
+                const doc = await createExportPdf(exportLanguage);
+                if (!doc) {
+                    movingField('movingPrintDialog').close();
+                    return;
+                }
+                let filename;
+                if (kind === 'labels' && boxes.length) {
+                    const amounts = movingAmountFormatter(exportLanguage);
+                    await printMovingLabels(doc, boxes, { english, layout, skip, includePrivate, roomFor,
+                        amount: value => amounts.format(value || 0),
+                        label: value => formatMovingTagLabel(value || 'Standard', exportLanguage),
+                        qr: link => generateQrDataUrl(QRCode, link),
+                        link: box => `${window.location.origin}${window.location.pathname}?box=${box.id}` });
+                    filename = english ? 'moving-box-qr-labels.pdf' : 'kisten-qr-etiketten.pdf';
+                } else if (kind === 'signs' && rooms.length) {
+                    printRoomSigns(doc, rooms, room => room.floor || '');
+                    filename = english ? 'toolya-room-signs.pdf' : 'toolya-tuerschilder.pdf';
+                } else if (kind === 'handover' && boxes.length) {
+                    printHandover(doc, boxes, roomFor, english);
+                    filename = english ? 'toolya-handover.pdf' : 'toolya-uebergabeliste.pdf';
+                }
+                if (filename && movingCloudReady && controller === movingCloudController &&
+                    movingField('movingPrintDialog').open) doc.save(filename);
+            } catch {
+                movingField('movingPrintDialog').close();
+                alert(english ? 'The PDF could not be created.' : 'Das PDF konnte nicht erstellt werden.');
+            } finally {
+                movingPrintBusy = false;
+                updateMovingPrintPreview();
+            }
+        });
 
         async function showQrCode(boxId, name = getData().boxes.find(box => Number(box.id) === boxId)?.name) {
             if (name == null) return;
@@ -1295,6 +1490,10 @@
                 alert(window.__toolyaUILocale === 'en' ? 'The QR code could not be loaded. Please try again.' : 'Der QR-Code konnte nicht geladen werden. Bitte versuche es erneut.');
                 return;
             }
+            movingField('printSingleMovingBox').onclick = () => {
+                closeQrModal();
+                exportQrLabelsPDF(boxId);
+            };
             document.getElementById('qrModalTitle').innerText = `${window.__toolyaUILocale === 'en' ? 'QR code for: ' : 'QR-Code für: '}${name}`;
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = "";

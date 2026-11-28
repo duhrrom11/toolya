@@ -69,9 +69,9 @@ export const finishProject=(snapshot,id)=>editMoving(snapshot,m=>{
   if(!p)throw Error('Projekt nicht aktiv');
   p.status='completed';p.updatedAt=p.completedAt=new Date().toISOString();
 });
-export function priorityList(snapshot,projectId){
+export function priorityList(snapshot,projectId,{includeUnpacked=false}={}){
   const m=readMoving(snapshot);
   const ranking={first_day:0,important:1,normal:2};
-  return m.assignments.filter(a=>a.projectId===projectId&&a.status!=='unpacked')
+  return m.assignments.filter(a=>a.projectId===projectId&&(includeUnpacked||a.status!=='unpacked'))
     .sort((a,b)=>ranking[a.priority]-ranking[b.priority]||(snapshot.boxes.find(x=>x.id===a.boxId)?.name||'').localeCompare(snapshot.boxes.find(x=>x.id===b.boxId)?.name||'','de'));
 }

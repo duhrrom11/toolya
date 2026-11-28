@@ -6,10 +6,10 @@ const tool = async name => readFile(new URL(`../../tools/${name}/index.html`, im
 
 test('moving box editor refreshes translated subitem amounts without rebuilding draft inputs', async () => {
  const html = await tool('moving');
- const listener = html.slice(html.indexOf("document.addEventListener('toolya:locale-change'"));
+ const listener = html.slice(html.indexOf('// Rebuild the visible card list'));
  assert.match(listener, /if \(!document\.getElementById\('editBoxModal'\)\?\.classList\.contains\('hidden'\)\) renderSubItemsModal\(\)/);
  assert.match(html, /escapeInventoryText\(item\.name\)/);
- assert.match(html, /\(item\.value \|\| 0\)\.toFixed\(2\)/);
+ assert.match(html, /movingAmountFormatter\(window\.__toolyaUILocale\)\.format\(Number\(item\.value \|\| 0\)\)/);
  assert.doesNotMatch(listener.slice(0, listener.indexOf('async function exportInventoryPDF')), /saveData\(|updateBox\(|activeSubItemsTemp\s*=/);
 });
 

@@ -112,7 +112,7 @@ function render(){
   html+=`<button class="mv-secondary" data-act="room">+ ${text('Zielraum hinzufügen','Add destination room')}</button>
    <div class="mv-list">${roomRows||`<p class="mv-muted">${text('Noch keine Zielräume vorhanden.','No destination rooms yet.')}</p>`}</div>`;
  }else if(activeTab==='first'){
-  const ordered=priorityList(data,project.id);
+  const ordered=priorityList(data,project.id,{includeUnpacked:true});
   const groups=[...rooms, {id:null,name:text('Ohne Zielraum','No destination room')}];
   const rows=groups.map(room=>{
    const inRoom=ordered.filter(assignment=>rooms.some(entry=>entry.id===assignment.targetRoomId)

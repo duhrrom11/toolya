@@ -18,7 +18,7 @@ export function searchMovingBoxes(data, query) {
     const needle = normalize(query);
     const hits = new Map();
     if (!needle) return hits;
-    const exactCodes = data.boxes.filter(box => String(box.id) === needle || normalize(box.barcode) === needle);
+    const exactCodes = data.boxes.filter(box => String(box.id) === needle || normalize(box.barcode) === needle || normalize(box.boxNumber) === needle);
     if (exactCodes.length) {
         for (const box of exactCodes) hits.set(box.id, { score: 0 });
         return hits;
