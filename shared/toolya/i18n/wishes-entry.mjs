@@ -1,5 +1,5 @@
-import {wishesText} from './wishes-copy.mjs?v=20261126-account-header-v2';
-import {applyWishLocale} from './wishes-dom.mjs?v=20261126-account-header-v2';
+import {wishesText} from './wishes-copy.mjs?v=20261128-directory';
+import {applyWishLocale} from './wishes-dom.mjs?v=20261128-directory';
 import {readAppLocale,persistAppLocale} from './locale.mjs';
 function storedLocale(){return readAppLocale()}
 function mount(){
@@ -12,6 +12,8 @@ function mount(){
  notice.textContent='The English version is still being completed. Some dynamic and account messages may remain in German.';
  const initialTitle=document.title;
  let active=storedLocale();
+ const publicDirectory=document.body.classList.contains('wishlist-redesign');
+ const explicitLocale=new URLSearchParams(location.search).get('lang');
  // Only fixed, app-owned message containers. Content cards, private notes and
  // account identifiers must not be modified by the status translator.
  const statusSelectors=["#homeSettingsStatus","#homeLayoutStatus","#homeCompareStatus","#homeBackupStatus","#homeCheckpointViewStatus","#homeCheckpointFavoriteStatus","#homeCheckpointStatus","#homeCheckpointCompareStatus","#homeHistoryStatus","#homeGiftStatus","#bulkStatus","#bulkProgressText",'#listsStatus','#listWishCount','#editListFeedback','#status','#count','#taskStatus','#checklistStatus','#rolloverStatus',
@@ -81,7 +83,7 @@ function mount(){
    const label=target==='de'?(lang==='en'?'Switch to German':'Deutsch auswählen'):(lang==='en'?'English selected':'Englisch auswählen');
    b.lang=lang;b.setAttribute('aria-label',label);b.setAttribute('title',label);
   }
-  notice.hidden=lang!=='en';
+  notice.hidden=publicDirectory||lang!=='en';
   document.dispatchEvent(new Event('toolya:wishes-locale-change'));
  }
  for(const type of ['alert','confirm','prompt']){
@@ -89,7 +91,7 @@ function mount(){
   const native=original.bind(globalThis);
   globalThis[type]=(message,...args)=>native(wishesText(message,active),...args);
  }
- apply(active,false);
+ apply(active,publicDirectory&&['de','en'].includes(explicitLocale));
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});
 else mount();

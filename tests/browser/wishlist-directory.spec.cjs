@@ -241,4 +241,8 @@ test('all four PNG formats carry both QR targets, and language variants survive 
   await page.locator('[data-wishes-locale="en"]').click();
   await expect(editor.getByRole('heading',{name:'Design cards'})).toBeVisible();
   await expect(editor.getByLabel('Title',{exact:true})).toHaveValue('مرحبا بالعالم');
+  await page.evaluate(()=>localStorage.removeItem('toolya-locale-v1'));
+  await page.goto(publicPage+'?lang=en&list='+listId);
+  await page.getByRole('link',{name:'Share list'}).click();
+  await expect(editor.getByRole('heading',{name:'Design cards'})).toBeVisible();
 });
