@@ -286,8 +286,10 @@ begin
    where token<>'' and strpos(corpus,token)=0
      and (length(token)<3 or %2$I.word_similarity(token,name)<0.42)
  )
- order by case when q='' then 4 when name=q then 0 when strpos(name,q)=1 then 1
-   when strpos(name,q)>1 then 2 when strpos(corpus,q)>0 then 3 else 4 end,
+ order by case when q='' then 5 when name=q then 0
+   when strpos(' '||name||' ',' '||q||' ')>0 then 1
+   when strpos(name,q)=1 then 2 when strpos(name,q)>1 then 3
+   when strpos(corpus,q)>0 then 4 else 5 end,
    case when q<>'' then %2$I.word_similarity(q,name) end desc, (p).display_name,(p).user_id
  limit 25 offset least(greatest(coalesce(page_offset,0),0),100000)
  $body$

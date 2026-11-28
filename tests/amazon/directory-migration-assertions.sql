@@ -1,3 +1,6 @@
+insert into public.wishlist_imported_entries(list_key,display_name,wishlist_url)
+values('PREFIX789','Schrodermann e.V.','https://www.amazon.de/hz/wishlist/ls/PREFIX789');
+
 set role anon;
 do $$
 begin
@@ -10,6 +13,9 @@ begin
  end if;
  if (select display_name from public.search_wishlist_directory('Zoe Schroder','Osterreich','Hochzeit') limit 1) is distinct from 'Zoë Schröder' then
   raise exception 'Accent/country/occasion search failed';
+ end if;
+ if (select display_name from public.search_wishlist_directory('Schroder') limit 1) is distinct from 'Zoë Schröder' then
+  raise exception 'An exact last name must precede an inexact name prefix';
  end if;
  if (select display_name from public.search_wishlist_directory('Shroder') limit 1) is distinct from 'Zoë Schröder' then
   raise exception 'Typo-tolerant search failed';
