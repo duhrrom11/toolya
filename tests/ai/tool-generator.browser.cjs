@@ -9,6 +9,10 @@ const {generateTool} = require('../../scripts/create-tool.cjs');
 
 const root = path.resolve(__dirname, '../..');
 const slug = 'ci-ai-draft-smoke';
+const atlasManifest = path.join(root, 'assets/toolya/optimized/outfits-q85.json');
+const expectedAtlas = fs.existsSync(atlasManifest)
+  ? JSON.parse(fs.readFileSync(atlasManifest, 'utf8')).output
+  : 'assets/toolya/outfits.webp';
 const mime = {'.html':'text/html; charset=utf-8','.mjs':'text/javascript','.js':'text/javascript',
   '.css':'text/css','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml',
   '.json':'application/json','.woff2':'font/woff2'};
@@ -99,7 +103,7 @@ async function main() {
       assert.equal(result.heroWordmark.replace(/^✳\s*/, ''), result.footerWordmark);
       assert.equal(result.footerWordmark, 'Toolya');
       assert.equal(result.noIndex, 'noindex,nofollow');
-      assert.match(result.background, /outfits\.webp/);
+      assert.ok(result.background.includes('/' + expectedAtlas), 'sprite uses the current Toolya atlas');
       assert.ok(result.position.endsWith('%'), 'sprite position is resolved');
       spritePositions.push(result.position);
       await page.locator('#draft-action').click();
