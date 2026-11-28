@@ -19,10 +19,10 @@ test('public profile frontend uses production Supabase with bundled client', () 
 });
 
 test('public list page retains discovery, profile editing, and SEO entry points', () => {
-  for (const id of ['search','results','profileForm','saveProfile','deleteProfile']) {
+  for (const id of ['search','results','favorites','profile','wishCardEditor']) {
     assert.match(page, new RegExp('id="' + id + '"'));
   }
-  assert.match(page, /Alle Angaben sind öffentlich sichtbar/);
+  assert.match(page, /href="\/dashboard\/\?wishes=add#wish-profiles"/);
   assert.match(page, /rel="canonical"/);
   assert.match(page, /application\/ld\+json/);
 });

@@ -1,8 +1,7 @@
 const libraryUrl = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
 let pendingLibrary;
 
-export async function createExportPdf() {
-  const requestLanguage = window.__toolyaUILocale === 'en' ? 'en' : 'de';
+export async function createExportPdf(requestLanguage = window.__toolyaUILocale === 'en' ? 'en' : 'de') {
   if (!window.jspdf?.jsPDF) {
     pendingLibrary ??= new Promise((resolve, reject) => {
       const script = document.createElement('script');

@@ -1,0 +1,33 @@
+.wish-card-workspace {max-width:78rem;margin:1rem auto;background:#fff}
+.wish-card-workspace .wish-card-grid {display:grid;grid-template-columns:minmax(17rem,1fr) minmax(0,1.5fr);gap:1.25rem}
+.wish-card-controls {display:grid;gap:.85rem;align-content:start;min-width:0}
+.wish-card-controls label {display:grid;gap:.3rem}
+.wish-card-controls :is(input,textarea,select) {min-width:0;max-width:100%;box-sizing:border-box}
+.wish-card-controls :is(input:not([type=checkbox],[type=color]),textarea,select) {width:100%}
+.wish-card-controls .wish-card-check {display:flex;align-items:center}
+.wish-card-controls input[type=color] {width:4rem;min-height:2.5rem;padding:.1rem}
+.wish-card-controls fieldset {margin:0;display:grid;gap:.65rem;min-width:0}
+.wish-card-controls textarea {resize:vertical;min-height:3.2rem}
+.wish-card-palettes {display:flex;flex-wrap:wrap;gap:.45rem}
+.wish-card-palettes button {background:var(--swatch-paper);color:#172c35;border:.12rem solid var(--swatch-accent)}
+.wish-card-palettes button[aria-pressed=true] {outline:2px solid var(--swatch-accent);outline-offset:2px}
+.wish-card-preview-panel {min-width:0;align-self:start}
+.wish-card-preview {display:grid;justify-items:center;background:#edf5f8;border-radius:.85rem;padding:.6rem;margin-bottom:.8rem}
+.wish-card-preview canvas {display:block;max-width:100%;width:auto;height:auto;max-height:75vh;object-fit:contain}
+.wish-card-warning {background:#fff4d7;color:#4b2b00;padding:.65rem;border-radius:.4rem}
+.wish-card-mobile-switch,#wish-card-print {display:none}
+.wish-copy-fallback {max-width:100%;width:30rem}
+@media(max-width:680px) {
+  .wish-card-workspace .wish-card-grid {display:block}
+  .wish-card-mobile-switch {display:flex;gap:.5rem;margin-block:.5rem .85rem}
+  .wish-card-mobile-switch button[aria-pressed=true] {outline:2px solid currentColor;outline-offset:2px}
+  .wish-card-grid[data-mobile=edit] .wish-card-preview-panel,.wish-card-grid[data-mobile=preview] .wish-card-controls {display:none}
+}
+@media print {
+  @page {size:A4;margin:0}
+  body.wish-card-active {margin:0!important;padding:0!important;background:#fff!important}
+  body.wish-card-active > :not(#wish-card-print) {display:none!important}
+  #wish-card-print {display:block!important}
+  #wish-card-print > div {display:grid;place-items:center;width:210mm;height:296mm}
+  #wish-card-print img {display:block;width:auto;height:auto;max-width:210mm;max-height:296mm}
+}

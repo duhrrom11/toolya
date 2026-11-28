@@ -16,6 +16,8 @@
 <script type="module" src="../shared/toolya/i18n/dashboard-entry.mjs"></script>
 <script type="module" src="./dashboard.js?v=20261121-favorites"></script>
 <link rel="stylesheet" href="/shared/toolya/i18n/dashboard-choice.css">
+<link rel="stylesheet" href="/tools/wishes/directory-workspace.css">
+<script type="module" src="/tools/wishes/directory-dashboard.mjs"></script>
 </head>
 <body>
 <a class="skip" href="#main">Direkt zum Inhalt</a>
@@ -38,6 +40,7 @@
  <div class="sync-actions"><button id="import-local" type="button" hidden>Lokale Einträge übernehmen</button><button id="sync-retry" type="button" hidden>Erneut verbinden</button></div>
 </section>
 <p><a href="/toolya-dashboard/">Anleitung zum Toolya-Dashboard</a></p>
+<div class="columns"><section id="wish-profiles" class="panel"></section><section id="wish-cards" class="panel"></section></div>
 <section class="stats" aria-label="Deine Übersicht">
 <div class="stat"><span>★ Favoriten</span><strong id="fav-count">0</strong></div>
 <div class="stat"><span>Zuletzt verwendet</span><strong id="recent-count">0</strong></div>

@@ -10,6 +10,6 @@ test('wishlist entry redirects to public Amazon-only experience without legacy c
  assert.equal(destination,'https://toolya.app/tools/wishes/public.html?profile=fixture#discover');
  assert.match(page,/shared\/toolya\/platform\.mjs/);
  assert.doesNotMatch(entry,/id="homeNewWish"|id="homeNewList"|id="editor"/);
- for(const id of ['discover','profile','listFields','search','countryFilter','occasionFilter'])assert.match(page,new RegExp('id="'+id+'"'));
+ for(const id of ['discover','profile','wishCardEditor','search','countryFilter','occasionFilter'])assert.match(page,new RegExp('id="'+id+'"'));
  assert.match(page,/public-amazon\.mjs/);
 });

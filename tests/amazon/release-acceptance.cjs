@@ -22,14 +22,14 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   });
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(origin+'/tools/wishes/public.html');await page.locator('#wishPublicTrack .wish-public-card').waitFor();
   assert.equal(await page.locator('#homeNewWish,#homeNewList,#createList').count(),0);
-  assert.equal(await page.locator('#search').count(),1);assert.equal(await page.locator('#profileForm').count(),1);assert.doesNotMatch(fs.readFileSync('tools/wishes/public-amazon.mjs','utf8'),/renderIdeas|rankProducts|amazonSearchUrl/,'removed Amazon recommendations must stay removed');
+  assert.equal(await page.locator('#search').count(),1);assert.equal(await page.locator('#profile a[href*="wishes=add"]').count(),1);assert.doesNotMatch(fs.readFileSync('tools/wishes/public-amazon.mjs','utf8'),/renderIdeas|rankProducts|amazonSearchUrl/,'removed Amazon recommendations must stay removed');
   assert.equal(await page.locator('#countryFilter').count(),1);
   assert.equal(await page.locator('#bio,#interests,#interestFilter').count(),0,'old biography and interest controls removed');
   assert.equal(await page.locator('#wishPublicTrack .wish-public-card').count(),1,'published profile carousel renders');
   assert.equal(await page.evaluate(()=>window.__publicClientCount),1,'public directory uses independent lock-free read client');
   assert.equal(await page.locator('#settingsModal details[data-settings-section="account"]').count(),1,'no duplicate account accordion even before platform initializes');
   assert.equal(await page.locator('#results .profile-card').count(),0);
-  assert.equal(await page.locator('#favorites').isVisible(),false,'empty favorites stay compact');
+  assert.equal(await page.locator('#favoriteCount').textContent(),'0','empty favorites are clearly labeled');
   assert.equal(await page.locator('#wishCreateSection .wish-creation-tile').count(),3,'three creation cards');
   // Wishlist remains the only gift-themed role; header and Ko-fi share the selected outfit atlas.
   const outfitManifest='assets/toolya/optimized/outfits-q85.json';
@@ -84,7 +84,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   await page.locator('#loginEmail').fill('offline@example.invalid');
   await page.locator('#loginPassword').fill('offline-password');
   await page.locator('#loginSubmit').click();
-  await page.locator('#profileForm').waitFor({state:'visible'});
+  await page.waitForFunction(()=>!!window.toolyaAccountState?.user);
   assert.equal(await page.locator('#settingsModal').isVisible(),false,'shared login closes settings');
   assert.equal(await page.locator('#userInfo').textContent(),'Angemeldet');
   await page.locator('#userInfo').click();
@@ -92,7 +92,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   assert.equal(await page.locator('#logoutUser').isVisible(),true);
   await page.locator('#logoutUser').click();
   await page.waitForFunction(()=>document.querySelector('#cloudStatus')?.textContent?.includes('Nicht angemeldet'));
-  assert.equal(await page.locator('#profileForm').isVisible(),false);
+  assert.equal(await page.locator('#profileForm').count(),0);
   assert.equal(await page.locator('#wishPublicTrack .wish-public-card').count(),1,'carousel remains public after logout');
   await page.locator('details.toolya-appearance summary').click();
   await page.getByLabel('Begleiter',{exact:true}).selectOption('purple');
@@ -120,7 +120,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   for(const width of [320,375,768,1440]){await page.setViewportSize({width,height:900});const dims=await page.evaluate(()=>({w:innerWidth,s:document.documentElement.scrollWidth}));assert.ok(dims.s<=dims.w+1,'Public wishlist overflow '+JSON.stringify(dims));const account=page.locator('.ty-tool-hero-actions #userInfo');assert.equal(await account.isVisible(),true);const b=await account.boundingBox();assert.ok(b.x>=0&&b.x+b.width<=width+1);fs.mkdirSync('test-results',{recursive:true});await page.locator('.ty-tool-hero').screenshot({path:`test-results/wishlist-header-${width}.png`});await account.click();const backup=page.locator('#wishlistBackupSettings');if(await backup.evaluate(e=>e.open))await backup.locator('summary').click();await backup.locator('summary').click();await backup.locator('.ty-unified-settings-content').waitFor({state:'visible'});assert.equal(await backup.evaluate(e=>e.open),true,'backup opens at '+width);await page.locator('#settingsModal').screenshot({path:`test-results/wishlist-settings-${width}.png`});await page.locator('#cancelSettingsBtn').click();}
   assert.equal(await page.locator('#email,#password,#login,#signup,#logoutPublic').count(),0);
   assert.equal(await page.locator('#loginEmail,#loginPassword,#loginSubmit,#registerUser,#logoutUser').count(),5);
-  assert.equal(await page.locator('#profileAccountOpen').count(),1);
+  assert.equal(await page.locator('#profileForm').count(),0);
   await page.locator('#settingsBtn').click();
   const guide=page.getByRole('link',{name:'Wunschlisten-Anleitung',exact:true});
   const help=page.locator('details[data-settings-section="help"]');if(!(await help.evaluate(e=>e.open)))await help.locator('summary').click();
@@ -154,7 +154,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
    if(method==='POST'&&u.pathname==='/auth/v1/token'&&u.searchParams.get('grant_type')==='password'){passwordRequests++;return json(fixtureSession)}
    if(method==='GET'&&u.pathname==='/auth/v1/user'){const h=await req.allHeaders();return h.authorization==='Bearer '+token?json(owner):json({message:'Unauthorized'},401)}
    if(method==='POST'&&u.pathname==='/auth/v1/logout')return route.fulfill({status:204,headers});
-   if(method==='GET'&&u.pathname==='/rest/v1/wishlist_public_profiles'){const h=await req.allHeaders();if(h.authorization!=='Bearer '+token){unexpected.push('unauthorized private read');return json({message:'Unauthorized'},401)}privateReads++;return json([])}
+   if(method==='GET'&&u.pathname==='/rest/v1/wishlist_directory_favorites'){const h=await req.allHeaders();if(h.authorization!=='Bearer '+token){unexpected.push('unauthorized private read');return json({message:'Unauthorized'},401)}privateReads++;return json([])}
    if(method==='GET'&&u.pathname==='/rest/v1/wishlist_directory')return json([]);
    if(method==='POST'&&u.pathname==='/rest/v1/rpc/wishlist_directory_filters')return json({countries:[],occasions:[]});
    if(method==='POST'&&u.pathname==='/rest/v1/rpc/search_wishlist_directory')return json([]);
@@ -171,15 +171,17 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   await actual.locator('#loginEmail').fill(owner.email);
   await actual.locator('#loginPassword').fill('offline-password');
   await actual.locator('#loginSubmit').click();
-  await actual.locator('#profileForm').waitFor({state:'visible'});
+  await actual.waitForFunction(()=>!!window.toolyaAccountState?.user);
   assert.equal(passwordRequests,1,'real SDK completes exactly one password exchange despite old Web Lock');
-  assert.ok(privateReads>0,'verified token reaches private profile');
+  await actual.waitForFunction(()=>document.querySelector('#userInfo')?.textContent==='Angemeldet');
+  for(let i=0;i<50&&!privateReads;i++)await new Promise(resolve=>setTimeout(resolve,25));
+  assert.ok(privateReads>0,'verified token reaches private favorites');
   await actual.reload();
-  await actual.locator('#profileForm').waitFor({state:'visible'});
+  await actual.waitForFunction(()=>!!window.toolyaAccountState?.user);
   assert.equal(passwordRequests,1,'shared session survives reload without another login');
   await actual.locator('#settingsBtn').click();
   await actual.locator('#logoutUser').click();
-  await actual.locator('#profileForm').waitFor({state:'hidden'});
+  await actual.waitForFunction(()=>window.toolyaAccountState?.user===null);
   await actual.waitForFunction(()=>document.querySelector('#cloudStatus')?.textContent==='Nicht angemeldet');
   assert.deepEqual(unexpected,[],'no unexpected requests or private mutations');
   assert.equal(await holder.evaluate(()=>window.legacyLockHeld),true,'legacy lock remained held during the test');

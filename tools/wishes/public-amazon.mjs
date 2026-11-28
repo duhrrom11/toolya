@@ -1,6 +1,6 @@
-import {guardedWishlistWrite} from './wishlist-auth.mjs';
-import {profileIdentity} from './profile-identity.mjs';
-import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs?v=20261127-public-profiles';
+import {directoryFavorites} from './directory-favorites.mjs';
+import {directoryUrl, editorUrl, httpsUrl, identityId as uuid, mascotUrl, verifiedAccount} from './directory-links.mjs';
+import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
 import {readAppLocale} from '../../shared/toolya/i18n/locale.mjs';
 // Deployment must explicitly choose production or preview; never infer it from URL parameters.
 const PROD_PROJECT = 'yheogmeaosuigyaxkwth';
@@ -50,32 +50,76 @@ function copyText(tag,value,cls){
 }
 function refreshPublicCopy(){
  for(const node of document.querySelectorAll('[data-wish-public-copy]'))copyBindings.get(node)?.();
- renumberLists();
+
 }
 document.addEventListener('toolya:wishes-locale-change',refreshPublicCopy);
-const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-let user=null,own=null,page=0,generation=0,authGeneration=0;
-const key='toolya-public-profile-favorites-v1';
-function readFavorites(){try{const a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a.filter(p=>uuid.test(p.user_id)&&typeof p.display_name==='string').slice(0,100):[]}catch{return []}}
-let favorites=readFavorites();
-const profileUrl=id=>new URL('./public.html?profile='+encodeURIComponent(id)+'#selectedProfile',location.href).href;
-function affiliateLink(label,url){const a=text('a',label,'button');a.href=url;a.target='_blank';a.rel='noopener noreferrer sponsored';return a}
-function renderFavorites(){const wrap=$('favoriteItems');wrap.replaceChildren();$('favorites').hidden=!favorites.length;$('favoriteCount').textContent=String(favorites.length);for(const p of favorites){const a=text('a',p.display_name);a.href=profileUrl(p.user_id);wrap.append(a)}}
-function favorite(p){const b=text('button','♡','secondary favorite');b.type='button';const sync=()=>{const on=favorites.some(x=>x.user_id===p.user_id);b.textContent=on?'♥':'♡';b.setAttribute('aria-label',ui(on?'Profil nicht mehr merken: ':'Profil merken: ')+p.display_name);b.setAttribute('aria-pressed',String(on))};localize(b,sync);b.onclick=()=>{favorites=favorites.some(x=>x.user_id===p.user_id)?favorites.filter(x=>x.user_id!==p.user_id):[...favorites,{user_id:p.user_id,display_name:p.display_name}].slice(-100);try{localStorage.setItem(key,JSON.stringify(favorites))}catch{}document.querySelectorAll('[data-profile-favorite="'+p.user_id+'"]').forEach(x=>{x.textContent=favorites.some(y=>y.user_id===p.user_id)?'♥':'♡';x.setAttribute('aria-pressed',String(favorites.some(y=>y.user_id===p.user_id)));x.setAttribute('aria-label',ui(favorites.some(y=>y.user_id===p.user_id)?'Profil nicht mehr merken: ':'Profil merken: ')+p.display_name)});sync();renderFavorites()};b.dataset.profileFavorite=p.user_id;return b}
-function card(p,detail=false,preview=false){
- const full=detail||preview;
+let page=0,generation=0;
+const profileUrl=id=>directoryUrl('profile',id,location.origin).href;
+const listUrl=id=>directoryUrl('list',id,location.origin).href;
+const targetParams=new URLSearchParams(location.search);
+const editorMode=targetParams.get('card')==='1';
+const detailMode=targetParams.has('profile')||targetParams.has('list');
+if(editorMode||detailMode){
+ const robots=document.createElement('meta');robots.name='robots';robots.content='noindex,follow';document.head.append(robots);
+}
+let favoritesRevision=0;
+function favoriteError(){status('favoriteStatus',ui('Gemerkt konnte gerade nicht aktualisiert werden.'))}
+const favorites=directoryFavorites(db,()=>{refreshPublicCopy();void renderFavorites()},favoriteError);
+function favorite(p){
+ const b=text('button','♡','secondary favorite');b.type='button';b.dataset.profileFavorite=p.user_id;
+ localize(b,()=>{
+  const on=favorites.has(p.user_id);b.textContent=on?'♥':'♡';
+  b.setAttribute('aria-label',ui(on?'Profil nicht mehr merken: ':'Profil merken: ')+p.display_name);
+  b.setAttribute('aria-pressed',String(on));
+ });
+ b.onclick=()=>favorites.toggle(p.user_id);
+ return b;
+}
+async function renderFavorites(){
+ const revision=++favoritesRevision,ids=favorites.ids;
+ const wrap=$('favoriteItems');wrap.replaceChildren();status('favoriteStatus','');
+ $('favoriteCount').textContent=String(ids.length);
+ const results=await Promise.allSettled(ids.map(id=>publicDb.rpc('get_wishlist_public_profile',{profile_id:id})));
+ if(revision!==favoritesRevision)return;
+ for(const [i,result] of results.entries()){
+  const profile=result.status==='fulfilled'&&!result.value.error?result.value.data:null;
+  const row=text('div');
+  if(profile){
+   const a=text('a',profile.display_name);a.href=profileUrl(ids[i]);row.append(a);
+  }else row.append(copyText('span','Profil gerade nicht verfügbar'));
+  const remove=copyText('button','Entfernen','secondary');remove.type='button';remove.onclick=()=>favorites.toggle(ids[i]);
+  row.append(remove);wrap.append(row);
+ }
+ if(!ids.length)wrap.append(copyText('p','Du hast noch keine Profile gemerkt.'));
+}
+function shareLink(kind,id){
+ const a=copyText('a',kind==='profile'?'Profil teilen':'Liste teilen','button');
+ a.href=editorUrl(kind,id);return a;
+}
+function listSummary(l,direct=false){
+ const url=amazonListUrl(l.url);if(!url)return null;
+ const row=text('div','','list-links');
+ const target=direct?url:listUrl(l.id);
+ const a=text('a','','profile-wishlist-link');a.href=target;
+ if(direct){a.target='_blank';a.rel='noopener noreferrer sponsored';}
+ a.append(text('span','🎁','profile-wishlist-icon'));
+ const label=text('span','','profile-wishlist-copy');
+ label.append(direct?copyText('strong','Originalliste bei Amazon öffnen'):text('strong',l.name));
+ if(!direct&&l.occasion)label.append(text('span',l.occasion,'profile-wishlist-occasion'));
+ a.append(label,text('span','↗','profile-wishlist-arrow'));
+ row.append(a,shareLink('list',l.id));return row;
+}
+function card(p,detail=false){
+ const full=detail;
  const root=text('article','','profile-card'+(full?' profile-card--detail':' profile-card--compact'));
  const hero=text('div','','profile-hero');
  const person=text('div','','person');
- const avatar=text('span',p.display_name.split(/\s+/).filter(Boolean).map(x=>x[0]).slice(0,2).join('').toUpperCase(),'avatar');
+ const avatar=text('span','','avatar');
  avatar.setAttribute('aria-hidden','true');
- if(p.imported){
-  const img=document.createElement('img');localize(img,()=>{img.alt=ui('Symbol der importierten Wunschliste von ')+p.display_name});img.loading='lazy';img.referrerPolicy='no-referrer';img.className='imported-logo';
-  const fallback=()=>new URL('../../assets/toolya/headers/toolya_wishlist_'+(window.toolyaBuddy?.character==='purple'?'purple':'turquoise')+'_welcome_400.webp',import.meta.url).href;
-  img.src=sourceFavicon(p.source_url)||fallback();
-  img.onerror=()=>{img.onerror=null;img.src=fallback()};
-  avatar.replaceChildren(img);
- }
+ const img=document.createElement('img');img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';img.className='imported-logo';
+ img.src=httpsUrl(p.logo_url||'')||(p.imported&&sourceFavicon(p.source_url))||mascotUrl();
+ img.onerror=()=>{img.onerror=null;img.src=mascotUrl()};
+ avatar.append(img);
  const info=text('div','','profile-identity');
  info.append(copyText('span',p.imported?'Öffentlich gefunden':'Öffentliches Wunschprofil','profile-eyebrow'));
  info.append(text(full?'h2':'h3',p.display_name));
@@ -83,7 +127,7 @@ function card(p,detail=false,preview=false){
  if(location)info.append(text('p','📍 '+location,'location'));
  person.append(avatar,info);
  hero.append(person);
- if(!preview)hero.append(favorite(p));
+ hero.append(favorite(p));
  root.append(hero);
  if(p.imported){
   root.append(copyText('p','Name aus öffentlich verlinkter Quelle · Identität nicht von Toolya bestätigt.','profile-source-note'));
@@ -100,19 +144,12 @@ function card(p,detail=false,preview=false){
   const count=text('span','','profile-list-count');localize(count,()=>{count.textContent=lists.length+' '+ui(lists.length===1?'Liste':'Listen')});heading.append(count);
   section.append(heading);
   const links=text('div','','list-links');
-  for(const l of lists){
-   const url=amazonListUrl(l.url);if(!url)continue;
-   const a=text('a','','profile-wishlist-link');a.href=url;a.target='_blank';a.rel='noopener noreferrer sponsored';
-   a.append(text('span','🎁','profile-wishlist-icon'));
-   const copy=text('span','','profile-wishlist-copy');
-   copy.append(text('strong',l.name));
-   if(l.occasion)copy.append(text('span',l.occasion,'profile-wishlist-occasion'));
-   else copy.append(copyText('span','Öffentliche Wunschliste bei Amazon','profile-wishlist-occasion'));
-   a.append(copy,text('span','↗','profile-wishlist-arrow'));
-   links.append(a);
+  for(const l of lists){const row=listSummary(l);if(row)links.append(row);}
+  section.append(links);root.append(shareLink('profile',p.user_id),section);
+  if(httpsUrl(p.website||'')){
+   const website=copyText('a','Website des Vereins ↗');website.href=httpsUrl(p.website);website.rel='noopener noreferrer';root.append(website);
   }
-  section.append(links);root.append(section);
-  if(!preview&&p.imported){
+  if(p.imported){
    const report=copyText('a','Falschen Namen oder nicht mehr öffentliche Liste melden ↗','profile-report-link');
    const subject='Korrektur eines öffentlichen Amazon-Wunschlisten-Eintrags';
    const message='Bitte diesen Toolya-Eintrag prüfen:\n'+profileUrl(p.user_id)+'\n\nGrund der Meldung (bitte ergänzen):\n';
@@ -129,8 +166,8 @@ function hasSearchCriteria(){return Boolean($('search').value.trim()||$('country
 function makePublicCarouselCard(p){
  const a=document.createElement('a');a.className='wish-public-card';a.href=profileUrl(p.user_id);a.setAttribute('data-user-content','');localize(a,()=>{a.setAttribute('aria-label',ui('Öffentliches Wunschprofil von ')+p.display_name+(language()==='de'?' ansehen':''))});
  const media=document.createElement('div');media.className='wish-public-card-media';
- const icon=document.createElement('span');icon.className='wish-public-card-graphic';icon.textContent=/tier|pfoten|hund|katze|animal/i.test(p.display_name+' '+(p.bio||''))?'🐾':/baby|familie/i.test(p.display_name+' '+(p.bio||''))?'🧸':/hochzeit/i.test(p.display_name+' '+(p.bio||''))?'💍':/schule|bildung|buch/i.test(p.display_name+' '+(p.bio||''))?'📚':'🎁';media.append(icon);
- if(p.logo_url&&/^https:\/\//i.test(p.logo_url)){const img=document.createElement('img');img.src=p.logo_url;img.loading='lazy';localize(img,()=>{img.alt=ui('Logo von ')+p.display_name});img.referrerPolicy='no-referrer';img.onerror=()=>img.remove();media.append(img)}
+ const img=document.createElement('img');img.src=httpsUrl(p.logo_url||'')||mascotUrl();img.loading='lazy';img.alt='';img.referrerPolicy='no-referrer';
+ img.onerror=()=>{img.onerror=null;img.src=mascotUrl()};media.append(img);
  const body=document.createElement('div');body.className='wish-public-card-body';
  const name=document.createElement('h3');name.textContent=p.display_name;
  const description=document.createElement('p');if(p.bio)description.textContent=p.bio.trim().slice(0,145);else localize(description,()=>{description.textContent=ui('Öffentliche Amazon-Wunschliste ansehen und Wünsche entdecken.')});
@@ -218,94 +255,48 @@ async function detail(){
  if(document.activeElement===retry)$('selectedProfile').querySelector('a').focus();
  retry.hidden=true;
  $('profileDetail').replaceChildren();
- status('detailStatus','Wunschprofil wird geladen …');
+ status('detailStatus',ui('Wunschprofil wird geladen …'));
  try{
-  if(!id&&uuid.test(list||'')){
-   const legacy=await publicDb.from('wishlist_amazon_publications').select('user_id').eq('id',list).maybeSingle();
-   if(legacy.error)throw legacy.error;
-   id=legacy.data?.user_id;
+  if(params.has('list')){
+   const response=uuid.test(list||'')?await deadline(()=>publicDb.rpc('get_wishlist_public_list',{list_id:list})):{data:null};
+   if(g!==detailGeneration)return;
+   if(response.error)throw response.error;
+   const {list: item,profile_id,other_lists=[]}=response.data||{};
+   const root=text('article','','profile-card profile-card--detail');
+   if(item){
+    root.append(text('h2',item.name));
+    if(item.occasion)root.append(text('p',item.occasion));
+    const summary=listSummary(item,true);if(summary)root.append(summary);
+    if(other_lists.length){
+     root.append(copyText('h3','Weitere öffentliche Wunschlisten'));
+     for(const other of other_lists){const row=listSummary(other);if(row)root.append(row);}
+    }
+   }else root.append(copyText('p','Diese Wunschliste ist nicht mehr verfügbar.'));
+   if(profile_id){
+    const link=copyText('a','Zum Wunschprofil');link.href=profileUrl(profile_id);root.append(link);
+   }
+   $('profileDetail').replaceChildren(root);
+  }else{
+   const r=uuid.test(id||'')?await deadline(()=>publicDb.rpc('get_wishlist_public_profile',{profile_id:id})):{data:null};
+   if(g!==detailGeneration)return;
+   if(r.error)throw r.error;
+   if(!r.data){
+    status('detailStatus',ui('Dieses Wunschprofil ist nicht mehr verfügbar.'));
+    return;
+   }
+   document.title=r.data.display_name+' | Toolya';
+   $('profileDetail').replaceChildren(card(r.data,true));
   }
-  const r=uuid.test(id||'')?await publicDb.from('wishlist_directory').select('*').eq('user_id',id).maybeSingle():{data:null};
-  if(g!==detailGeneration)return;
-  if(r.error)throw r.error;
-  if(!r.data){
-   status('detailStatus','Dieses Wunschprofil ist nicht mehr verfügbar.');
-   return;
-  }
-  document.title=r.data.display_name+' – öffentliche Amazon-Wunschlisten | Toolya';
-  document.querySelector('meta[name="description"]').content='Entdecke die öffentlichen Amazon-Wunschlisten von '+r.data.display_name+'.';
-  $('profileDetail').replaceChildren(card(r.data,true));
   status('detailStatus','');
  }catch(error){
   if(g!==detailGeneration)return;
   console.error('Wunschprofil konnte nicht geladen werden:',error);
-  status('detailStatus','Das Wunschprofil konnte gerade nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.');
+  status('detailStatus',ui('Das Wunschprofil konnte gerade nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.'));
   retry.hidden=false;
  }
 }
 $('retryDetail').onclick=detail;
-function renumberLists(){const fields=$('listFields');[...fields.children].forEach((fs,index)=>{fs.querySelector('legend').textContent=ui('Wunschliste ')+(index+1);const input=fs.querySelector('[name=url]');if(index===0)input.id='amazonUrl';else input.removeAttribute('id')});$('addList').disabled=fields.children.length>=5}
-function listField(value={}){const fields=$('listFields');if(fields.children.length>=5)return;const index=fields.children.length,fs=document.createElement('fieldset');fs.append(text('legend','Wunschliste '+(index+1)));for(const [name,label,type,max]of[['name','Name der Wunschliste *','text',100],['url','Amazon-Wunschlisten-Link *','url',2048],['occasion','Anlass (freiwillig)','text',80]]){const l=text('label',label),i=document.createElement('input');i.type=type;i.name=name;i.required=name!=='occasion';i.maxLength=max;i.value=value[name]||'';if(name==='url'&&index===0)i.id='amazonUrl';if(name==='occasion'){i.placeholder='Geburtstag, Hochzeit, Baby …';}l.append(i);fs.append(l)}const remove=text('button','Diese Liste entfernen','secondary');remove.type='button';remove.onclick=()=>{if(fields.children.length===1){status('profileStatus','Bitte mindestens eine Wunschliste eintragen.');return}const neighbor=fs.nextElementSibling||fs.previousElementSibling;fs.remove();renumberLists();neighbor.querySelector('[name=name]').focus()};fs.append(remove);fields.append(fs);renumberLists();return fs}
-function selectedProfileKind(){return document.querySelector('input[name="profileKind"]:checked')?.value||'person'}
-function updateProfileKind(){
- const org=selectedProfileKind()==='organization';
- $('personNameFields').hidden=org;
- $('organizationNameFields').hidden=!org;
- $('firstName').required=!org;$('lastName').required=!org;$('organizationName').required=org;
-}
-for(const option of document.querySelectorAll('input[name="profileKind"]'))option.addEventListener('change',updateProfileKind);
-updateProfileKind();
-function payload(){
- updateProfileKind();
- const identity=profileIdentity(selectedProfileKind(),$('firstName').value,$('lastName').value,$('organizationName').value,$('country').value);
- if(!$('profileForm').reportValidity())return null;
- const lists=[...$('listFields').children].map(fs=>({name:fs.querySelector('[name=name]').value.trim(),url:amazonListUrl(fs.querySelector('[name=url]').value),occasion:fs.querySelector('[name=occasion]').value.trim()}));
- if(lists.some(l=>!l.url||!l.name))throw new Error('Bitte gültige Amazon-Wunschlisten-Links und Listennamen eingeben.');
- return {...identity,city:$('city').value.trim(),bio:own?.bio||'',interests:own?.interests||[],lists};
-}
-async function loadProfile(token,verifiedUser){const g=++authGeneration;let r;try{r=verifiedUser!==undefined?{data:{user:verifiedUser}}:await deadline(()=>(globalThis.toolyaAuth?.forClient(db) || db.auth).getUser(token))}catch(error){r={error}}if(g!==authGeneration)return;user=!r.error&&!r.data?.user?.is_anonymous?r.data?.user:null;$('auth').hidden=!!user;$('profileForm').hidden=true;own=null;$('listFields').replaceChildren();if(!user){listField();status('profileStatus',r.error&&r.error.name!=='AuthSessionMissingError'?'Anmeldestatus gerade nicht verfügbar. Bitte erneut anmelden.':'');return}let result;try{result=await deadline(()=>db.from('wishlist_public_profiles').select('*').eq('user_id',user.id).maybeSingle())}catch(error){result={error}}if(g!==authGeneration)return;if(result.error){status('profileStatus','Dein Profil konnte nicht geladen werden. Bitte lade die Seite erneut.');$('profileForm').hidden=true;return}own=result.data;
- $('profileForm').hidden=false;
- $('firstName').value=own?.first_name||'';
- $('lastName').value=own?.last_name||'';
- $('organizationName').value=own?.organization_name||'';
- let kind=own?own.profile_kind:'person';
- if(kind!=='person'&&kind!=='organization'){
-  // Legacy profiles only had one display name. Prefill as an organization
-  // to preserve the complete name without guessing a person's name parts.
-  kind='organization';$('organizationName').value=own?.display_name||'';
- }
- document.querySelector('input[name="profileKind"][value="'+kind+'"]').checked=true;
- updateProfileKind();
- for(const [id,prop]of[['country','country'],['city','city']])$(id).value=own?.[prop]||'';for(const l of own?.lists||[{}])listField(l);$('deleteProfile').hidden=!own;status('profileStatus',own?'Dein gespeichertes Profil ist öffentlich sichtbar.':'Dein Profil wird beim Speichern öffentlich sichtbar.')}
-$('profileForm').onsubmit=async e=>{
- e.preventDefault();
- if(!user)return;
- let p;
- try{p=payload()}catch(error){status('profileStatus',error.message);return}
- if(!p)return;
- const b=$('saveProfile'),writer=user.id;
- b.disabled=true;
- status('profileStatus','Dein Wunschprofil wird gespeichert …');
- try{
-  const r=await guardedWishlistWrite(db,writer,()=>db.from('wishlist_public_profiles').upsert({user_id:writer,...p},{onConflict:'user_id'}).select('user_id').single());
-  if(r.error)throw r.error;
-  own=p;
-  $('deleteProfile').hidden=false;
-  status('profileStatus','Gespeichert. Dein Wunschprofil ist jetzt öffentlich sichtbar.');
- }catch(error){
-  console.error('Wunschprofil konnte nicht bestätigt werden:',error);
-  status('profileStatus',error.message==='Anmeldung nicht gültig oder Konto gewechselt.'
-   ? 'Deine Anmeldung ist abgelaufen oder du hast das Konto gewechselt. Melde dich erneut an.'
-   : 'Toolya konnte die Speicherung deines Wunschprofils nicht bestätigen. Deine Eingaben bleiben im Formular. Prüfe dein öffentliches Profil, bevor du noch einmal speicherst.');
-  return;
- }finally{b.disabled=false}
- await Promise.allSettled([filters(),search(),detail()]);
-};
-$('deleteProfile').onclick=async()=>{if(!user||!confirm('Dein öffentliches Wunschprofil mit allen verlinkten Listen löschen? Die Original-Listen bei Amazon bleiben erhalten.'))return;const b=$('deleteProfile');b.disabled=true;try{const writer=user.id;const r=await guardedWishlistWrite(db,writer,()=>db.from('wishlist_public_profiles').delete().eq('user_id',writer).select('user_id'));if(r.error||r.data?.length!==1)throw new Error('Das Profil konnte nicht gelöscht werden.');await loadProfile();status('profileStatus','Dein öffentliches Profil wurde gelöscht.');$('profileDetail').replaceChildren();await filters();await search();await detail()}catch(e){status('profileStatus',e.message)}finally{b.disabled=false}};
-// The shared account controller owns all credentials and recovery actions.
-$('profileAccountOpen').onclick=()=>window.openSettings();
 $('settingsToProfile').onclick=()=>window.closeSettings();
-$('addList').onclick=()=>listField()?.querySelector('[name=name]').focus();$('previewProfile').onclick=()=>{try{const p=payload();if(!p)return;$('previewContent').replaceChildren(card(p,true,true));$('previewDialog').showModal()}catch(e){status('profileStatus',e.message)}};$('closePreview').onclick=()=>$('previewDialog').close();
 $('retrySearch').onclick=search;
 let debounce;
 $('search').oninput=()=>{
@@ -320,16 +311,17 @@ $('search').oninput=()=>{
 };
 $('submitSearch').onclick=()=>{page=0;search()};
 for(const id of['countryFilter','occasionFilter'])$(id).onchange=()=>{page=0;search()};$('resetFilters').onclick=()=>{$('search').value='';for(const id of['countryFilter','occasionFilter'])$(id).value='';page=0;search()};$('prevPage').onclick=()=>{page=Math.max(0,page-1);search()};$('nextPage').onclick=()=>{page++;search()};
-renderFavorites();
-let observedAccountId;
-function applyAccountState(state){
- const verified=db&&state&&!state.error&&!state.recovery?state.user:null;
- const id=verified?.id||null;
- if(id===observedAccountId)return;
- observedAccountId=id;
- void loadProfile(undefined,verified||null);
+refreshPublicCopy();
+if(editorMode){
+ for(const section of $('wishCardEditor').parentElement.children){
+  if(section!==$('wishCardEditor'))section.hidden=true;
+ }
+ $('wishCardEditor').hidden=false;
+ const {mountCardEditor}=await import('./directory-card-editor.mjs');
+ mountCardEditor($('wishCardEditor'),{db,publicDb,params:targetParams});
+}else{
+ document.addEventListener('toolya:account-state',event=>void favorites.account(verifiedAccount(event.detail)?.id||null));
+ if(window.toolyaAccountState)void favorites.account(verifiedAccount()?.id||null);
+ void renderFavorites();
+ await Promise.allSettled([filters(),search(),detail()]);
 }
-document.addEventListener('toolya:account-state',event=>applyAccountState(event.detail));
-if(window.toolyaAccountState)applyAccountState(window.toolyaAccountState);
-else {$('profileForm').hidden=true;$('auth').hidden=false;}
-window.addEventListener('storage',e=>{if(e.key===key){favorites=readFavorites();renderFavorites()}});await Promise.allSettled([filters(),search(),detail()]);

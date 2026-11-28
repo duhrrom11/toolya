@@ -8,3 +8,5 @@ grant usage on schema auth to anon,authenticated;
 grant execute on function auth.uid(),auth.jwt() to anon,authenticated;
 create table public.wishlist_profiles(user_id uuid primary key,first_name text,last_name text,country text);
 create table public.wishlist_amazon_publications(id uuid,user_id uuid,title text,amazon_url text,scrape_status text,published_at timestamptz);
+
+create table public.wishlist_amazon_publication_products(id uuid,publication_id uuid);

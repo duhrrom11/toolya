@@ -39,7 +39,7 @@ test('favicon URLs stay on source origin, ignore old logo metadata and allow mas
  assert.equal(record.logo_url,'https://example.org/favicon.ico');
  assert.match(edge,/const favicon=sourceFavicon\(source,iconHref\)/);
  assert.doesNotMatch(edge,/og:image|itemprop="logo"|header img\[alt\*="Logo"/);
- assert.match(frontend,/img\.src=sourceFavicon\(p\.source_url\)\|\|fallback\(\)/);
+ assert.match(frontend,/sourceFavicon\(p\.source_url\)\)\|\|mascotUrl\(\)/);
  assert.match(admin,/img\.src=sourceFavicon\(r\.source_url\)\|\|fallback\(\)/);
 });
 test('one-click dismiss and restore are admin-only and hide normal result pages',()=>{

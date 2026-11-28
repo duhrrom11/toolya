@@ -516,12 +516,12 @@ async function isolatedWishlist(page,authenticated,profiles=[],detailError=false
      onAuthStateChange(listener){queueMicrotask(()=>listener('INITIAL_SESSION',m.user?{access_token:'wishlist-fixture-token',user:m.user}:null));return {data:{subscription:{unsubscribe(){}}}}},
      async signOut(){m.user=null;return {error:null}}
     },
-    rpc(name){if(name==='search_wishlist_directory'&&m.searchError)return Promise.resolve({data:null,error:{message:'Isolated unavailable'}});if(name==='search_wishlist_directory'&&m.empty)return Promise.resolve({data:[],error:null});return Promise.resolve({data:['search_wishlist_profiles','search_wishlist_directory'].includes(name)?${JSON.stringify(profiles)}:(name==='wishlist_directory_filters'?{countries:[],occasions:[],interests:[]}:[]),error:null})},
+    rpc(name){if(name==='get_wishlist_public_profile')return Promise.resolve(m.detailError?{data:null,error:{message:'Synthetic detail outage'}}:{data:${JSON.stringify(profiles[0]||null)},error:null});if(name==='search_wishlist_directory'&&m.searchError)return Promise.resolve({data:null,error:{message:'Isolated unavailable'}});if(name==='search_wishlist_directory'&&m.empty)return Promise.resolve({data:[],error:null});return Promise.resolve({data:['search_wishlist_profiles','search_wishlist_directory'].includes(name)?${JSON.stringify(profiles)}:(name==='wishlist_directory_filters'?{countries:[],occasions:[],interests:[]}:[]),error:null})},
     from(table){return {
-     select(){return this},eq(){return this},order(){return this},limit(){return Promise.resolve({data:table==='wishlist_directory'?${JSON.stringify(profiles)}:[],error:null})},
+     select(){return this},eq(){return this},order(){return this},then(resolve){return Promise.resolve({data:[],error:null}).then(resolve)},limit(){return Promise.resolve({data:table==='wishlist_directory'?${JSON.stringify(profiles)}:[],error:null})},
      async maybeSingle(){if(table==='wishlist_directory'&&m.detailError)return {data:null,error:{message:'Synthetic detail outage'}};return {data:table==='wishlist_directory'?${JSON.stringify(profiles[0]||null)}:null,error:null}},
      upsert(payload){m.writes.push({table,payload});return {select(){return this},async single(){return {data:{user_id:'owner'},error:null}}}},
-     insert(payload){m.writes.push({table,payload});return {select(){return this},async single(){return {data:{id:'new-id'},error:null}}}}
+     insert(payload){m.writes.push({table,payload});return {select(){return this},async single(){return {data:{id:'11111111-1111-4111-8111-111111111111',...payload},error:null}}}}
     }},
     functions:{async invoke(){return {data:{status:'failed'},error:null}}}
    }}};
@@ -532,7 +532,7 @@ async function isolatedWishlist(page,authenticated,profiles=[],detailError=false
 test('wishlist: public discovery works without authentication and no private writes',async({page})=>{
  await isolatedWishlist(page,false);
  await page.goto(origin+'/tools/wishes/public.html');
- await expect(page.locator('#profileStatus')).toHaveText('');
+ await expect(page.locator('#profile a[href*="wishes=add"]')).toBeVisible();
  expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
 });
 test('wishlist: published profiles can be paused and scrolled on mobile',async({page})=>{
@@ -575,56 +575,32 @@ test('wishlist: public profile retry distinguishes connection failure from an un
 });
 test('wishlist: account switch blocks profile write before network mutation',async({page})=>{
  await isolatedWishlist(page,true);
- await page.goto(origin+'/tools/wishes/public.html');
- await expect(page.locator('#profileForm')).toBeVisible();
- await page.locator('#firstName').fill('Anna');
- await page.locator('#lastName').fill('Muster');
- await page.locator('#country').fill('Deutschland');
- await page.locator('#listFields [name=name]').fill('Meine Wünsche');
- await page.locator('#amazonUrl').fill('https://www.amazon.de/hz/wishlist/ls/ABC123');
+ await page.goto(origin+'/dashboard/?wishes=add#wish-profiles');
+ const panel=page.locator('#wish-profiles');
+ await panel.locator('[name=first]').fill('Anna');
+ await panel.locator('[name=last]').fill('Muster');
+ await panel.locator('[name=country]').fill('Deutschland');
  await page.evaluate(()=>{window.__wishlistMock.user={id:'other',email:'other@example.invalid'}});
- await page.locator('#saveProfile').click();
- await expect(page.locator('#profileStatus')).toContainText('Konto gewechselt');
+ await panel.getByRole('button',{name:'Speichern',exact:true}).click();
+ await expect(panel.getByRole('status')).toContainText('Konto gewechselt');
  expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
 });
-test('wishlist: verified profile write uses cloud and no localStorage',async({page})=>{
+test('wishlist: verified profile is saved independently before the list form',async({page})=>{
  await isolatedWishlist(page,true);
- await page.goto(origin+'/tools/wishes/public.html');
- await expect(page.locator('#profileForm')).toBeVisible();
- await page.locator('#firstName').fill('Anna');
- await page.locator('#lastName').fill('Muster');
- await page.locator('#country').fill('Deutschland');
- await page.locator('#listFields [name=name]').fill('Meine Wünsche');
- await page.locator('#amazonUrl').fill('https://www.amazon.de/hz/wishlist/ls/ABC123');
- await page.locator('#saveProfile').click();
- await expect(page.locator('#profileStatus')).toContainText('Gespeichert');
- const result=await page.evaluate(()=>({writes:window.__wishlistMock.writes,keys:Object.keys(localStorage)}));
- expect(result.writes).toHaveLength(1);
- expect(result.writes[0].table).toBe('wishlist_public_profiles');
- expect(result.keys).toEqual([]);
+ await page.goto(origin+'/dashboard/?wishes=add#wish-profiles');
+ const panel=page.locator('#wish-profiles');
+ await expect(panel.getByRole('heading',{name:'Profil anlegen'})).toBeVisible();
+ await panel.locator('[name=first]').fill('Anna');
+ await panel.locator('[name=last]').fill('Muster');
+ await panel.locator('[name=country]').fill('Deutschland');
+ await panel.getByRole('button',{name:'Speichern',exact:true}).click();
+ await expect(panel.getByRole('heading',{name:'Amazon-Wunschliste hinzufügen'})).toBeVisible();
+ await expect(panel.getByRole('status')).toContainText('Gespeichert');
+ const result=await page.evaluate(()=>window.__wishlistMock.writes);
+ expect(result).toHaveLength(1);
+ expect(result[0].table).toBe('wishlist_directory_profiles');
+ expect(result[0].payload).not.toHaveProperty('lists');
 });
-
-
-test('wishlist: public preview, five named lists and affiliate attribution',async({page})=>{
- await isolatedWishlist(page,true);
- await page.goto(origin+'/tools/wishes/public.html');
- await expect(page.locator('#profileForm')).toBeVisible();
- await expect(page.locator('#profile .public-notice')).toContainText('Alle Angaben sind öffentlich sichtbar');
- await page.locator('#firstName').fill('Anna');
- await page.locator('#lastName').fill('Muster');
- await page.locator('#country').fill('Schweiz');
- await page.locator('#listFields [name=name]').fill('Meine Wünsche');
- await page.locator('#amazonUrl').fill('https://www.amazon.de/hz/wishlist/ls/ABC123?tag=other-21');
- await page.locator('#previewProfile').click();
- await expect(page.locator('#previewDialog')).toBeVisible();
- await expect(page.locator('#previewContent a')).toHaveAttribute('href','https://www.amazon.de/hz/wishlist/ls/ABC123?tag=duhrrom-21');
- expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
- await page.locator('#closePreview').click();
- for(let n=0;n<4;n++)await page.locator('#addList').click();
- await expect(page.locator('#listFields fieldset')).toHaveCount(5);
- await expect(page.locator('#addList')).toBeDisabled();
-});
-
 
 async function isolatedEstate(page,authenticated){
  await page.route('**/*',async route=>{
@@ -1326,24 +1302,6 @@ for(const kind of ['housemates','baking']){
  });
 }
 
-test('wishlist: removing and adding lists keeps numbers and the first URL unique',async({page})=>{
- await isolatedWishlist(page,true);await page.goto(origin+'/tools/wishes/public.html');
- await expect(page.locator('#profileForm')).toBeVisible();
- for(let n=0;n<4;n++)await page.locator('#addList').click();
- await expect(page.locator('#listFields fieldset').last().locator('[name=name]')).toBeFocused();
- await page.locator('#listFields fieldset').nth(1).getByRole('button',{name:'Diese Liste entfernen',exact:true}).click();
- await expect(page.locator('#listFields fieldset').nth(1).locator('[name=name]')).toBeFocused();
- await page.locator('#addList').click();
- await expect(page.locator('#listFields legend')).toHaveText(['Wunschliste 1','Wunschliste 2','Wunschliste 3','Wunschliste 4','Wunschliste 5']);
- await page.locator('#listFields fieldset').first().getByRole('button',{name:'Diese Liste entfernen',exact:true}).click();
- await expect(page.locator('#amazonUrl')).toHaveCount(1);
- await expect(page.locator('#listFields fieldset').first().locator('[name=url]')).toHaveAttribute('id','amazonUrl');
- for(let n=0;n<3;n++)await page.locator('#listFields fieldset').last().getByRole('button',{name:'Diese Liste entfernen',exact:true}).click();
- await page.locator('#listFields fieldset').first().getByRole('button',{name:'Diese Liste entfernen',exact:true}).click();
- await expect(page.locator('#listFields fieldset')).toHaveCount(1);
- await expect(page.locator('#profileStatus')).toContainText('mindestens eine');
- expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
-});
 // Read-only account layout acceptance; no credential submission or production access.
 for(const kind of ["car","budget","moving","loans","meters","plants","parking","pet-health","housemates","baking"]){
  test(kind+': account actions are consistent and usable at three widths',async({page},testInfo)=>{
@@ -1371,11 +1329,11 @@ for(const kind of ["car","budget","moving","loans","meters","plants","parking","
  });
 }
 
-test('wishlist: public cards and five-list form remain usable at three widths',async({page},testInfo)=>{
+test('wishlist: public cards and navigation remain usable at three widths',async({page},testInfo)=>{
  const profile={user_id:'11111111-1111-4111-8111-111111111111',display_name:'Isoliertes Wunschprofil mit langem Anzeigenamen',country:'Schweiz',city:'Isolierter Ort',bio:'Synthetische Prüfansicht für Bücher, Garten und gemeinsame Geschenkideen.',interests:['Bücher','Garten'],lists:[{name:'Geburtstagswünsche',url:'https://www.amazon.de/hz/wishlist/ls/ABC123',occasion:'Geburtstag'}]};
  await isolatedWishlist(page,true,[profile]);await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto(origin+'/tools/wishes/public.html');
- await expect(page.locator('#profileForm')).toBeVisible();await page.locator('#search').fill('Isoliertes');await expect(page.locator('#results .profile-card')).toHaveCount(1);
+ await expect(page.locator('#profile a[href*="wishes=add"]')).toBeVisible();await page.locator('#search').fill('Isoliertes');await expect(page.locator('#results .profile-card')).toHaveCount(1);
  await page.locator('.toolya-signature-footer').waitFor();await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
  const navigation=page.getByRole('navigation',{name:'Wunschlisten',exact:true});
  const discoverLink=navigation.locator('a[href="#discover"]');
@@ -1397,42 +1355,19 @@ test('wishlist: public cards and five-list form remain usable at three widths',a
  await expect(page).toHaveURL(/#profile$/);
  await discoverLink.click();
  await expect(page).toHaveURL(/#discover$/);
- await page.getByRole('radio',{name:'Organisation'}).check();
- await page.locator('#organizationName').fill(profile.display_name);await page.locator('#country').fill(profile.country);
- for(let i=0;i<4;i++)await page.locator('#addList').click();
- for(const [i,fs]of (await page.locator('#listFields fieldset').all()).entries()){
-  await fs.locator('[name=name]').fill('Isolierte Wunschliste '+(i+1));await fs.locator('[name=url]').fill('https://www.amazon.de/hz/wishlist/ls/ABC'+i);
- }
  for(const width of [320,768,1440]){
   await page.setViewportSize({width,height:1000});
   if(width<=600)expect(await page.locator('#results .profile-identity').evaluate(e=>{
    const hero=e.closest('.profile-hero'),style=getComputedStyle(hero);
    return e.getBoundingClientRect().width>=hero.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-1;
   })).toBe(true);
-  for(const [name,selector]of [['card','#results'],['form','#profileForm'],['actions','#profileForm .actions']]){
+  for(const [name,selector]of [['card','#results'],['actions','#profile .actions']]){
    const panel=page.locator(selector);await panel.evaluate(e=>e.scrollIntoView({block:'start'}));
    expect(await panel.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
    await page.screenshot({path:testInfo.outputPath('wishlist-'+name+'-'+width+'.png')});await reviewImage(page,'wishlist-'+name+'-'+width);
   }
  }
- await page.locator('#previewProfile').press('Enter');
- await expect(page.getByRole('dialog',{name:'Profilvorschau',exact:true})).toBeVisible();
- await expect(page.locator('#closePreview')).toBeFocused();
- await expect(page.locator('#previewContent .list-links a')).toHaveCount(5);
- for(const a of await page.locator('#previewContent .list-links a').all())expect(new URL(await a.getAttribute('href')).searchParams.get('tag')).toBe('duhrrom-21');
- for(const width of [320,768,1440]){
-  await page.setViewportSize({width,height:1000});const dialog=page.locator('#previewDialog');
-  expect(await dialog.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
-  expect(await dialog.evaluate(e=>e.getBoundingClientRect().height<=innerHeight*.91)).toBe(true);
-  await dialog.evaluate(e=>e.scrollTop=0);await page.screenshot({path:testInfo.outputPath('wishlist-preview-'+width+'.png')});
-  await dialog.evaluate(e=>e.scrollTop=e.scrollHeight);await page.screenshot({path:testInfo.outputPath('wishlist-preview-bottom-'+width+'.png')});
- }
- await page.keyboard.press('Escape');
- await expect(page.locator('#previewDialog')).toBeHidden();
- await expect(page.locator('#previewProfile')).toBeFocused();
- await page.locator('#amazonUrl').fill('https://example.invalid/not-amazon');await page.locator('#previewProfile').click();
- await expect(page.locator('#profileStatus')).toContainText('gültige Amazon-Wunschlisten');await expect(page.locator('#previewDialog')).toBeHidden();
  expect(await page.evaluate(()=>window.__wishlistMock.writes.length)).toBe(0);
 });
 
@@ -1683,7 +1618,7 @@ for(const routeName of ['assistant','bookmarks','cockpit','collection','dashboar
 
 // Public detail, empty/error/recovery states; every backend request is intercepted.
 test('wishlist: public detail and search states stay usable without writes',async({page},testInfo)=>{
- const profile={user_id:'22222222-2222-4222-8222-222222222222',display_name:'Isoliertes öffentliches Wunschprofil mit langem Namen',country:'Schweiz',city:'Prüfort',bio:'Nur synthetische Browseransicht.',interests:['Bücher'],lists:[{name:'Isolierte Bücherwünsche',url:'https://www.amazon.de/hz/wishlist/ls/ABC123'}]};
+ const profile={user_id:'22222222-2222-4222-8222-222222222222',display_name:'Isoliertes öffentliches Wunschprofil mit langem Namen',country:'Schweiz',city:'Prüfort',bio:'Nur synthetische Browseransicht.',interests:['Bücher'],lists:[{id:'22222222-2222-4222-8222-222222222223',name:'Isolierte Bücherwünsche',url:'https://www.amazon.de/hz/wishlist/ls/ABC123'}]};
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await isolatedWishlist(page,false,[profile]);await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto(origin+'/tools/wishes/public.html?profile='+profile.user_id);await expect(page.locator('#profileDetail .profile-card')).toHaveCount(1);
  await page.locator('.toolya-signature-footer').waitFor();if(await page.locator('#toolya-consent-panel').isVisible())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
