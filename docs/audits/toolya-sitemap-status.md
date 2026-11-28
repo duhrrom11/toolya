@@ -64,3 +64,16 @@ Damit sind die Ergänzungen zum Beschriften von [Umzugskisten](https://github.co
 Die 18 Sitemap-Adressen und ihre 14 zusätzlichen `index.html`-Varianten wurden am 20. November ohne Weiterleitungsverfolgung live abgerufen. Alle 32 Antworten lieferten HTTP 200. Jede enthielt genau einen Canonical. Dieser zeigte bei den Sitemap-Adressen auf die jeweils eigene URL und bei den `index.html`-Varianten auf die passende Verzeichnis-URL. Keine Antwort enthielt `noindex` im `X-Robots-Tag`.
 
 Die statisch im HTML hinterlegten Links auf toolya.app wurden für alle 18 Sitemap-Seiten gegen den Repository-Stand `85bd524` geprüft. Alle geprüften Pfade und HTML-Sprungmarken waren vorhanden. Dynamisch erzeugte Links waren außerhalb dieser Prüfung.
+
+## Indexierungsstand nach dem DE/EN-Release am 27. November 2026
+
+Der Live-Abruf bestätigte für alle 33 Sitemap-URLs HTTP 200, die jeweils eigene Canonical-Adresse und die Freigabe zur Indexierung im HTML und HTTP-Header. Für die 16 Sprachpaare stimmten die DE-/EN-Ziele im HTML mit der Sitemap überein. Die Sitemap setzt zusätzlich den deutschen Rückfallwert `x-default`. Die ausgelieferte Sitemap entsprach bytegenau `d9db348`. [Live-Sitemap](https://toolya.app/sitemap.xml) · [DE/EN-Release](https://github.com/duhrrom11/toolya/pull/327)
+
+| URLs | Gespeicherter Status in der Google Search Console |
+| --- | --- |
+| 17 deutschsprachige Sitemap-Ziele | 16 bestätigt indexiert. Das Impressum ist Google laut URL-Prüfung unbekannt. |
+| 16 englischsprachige Sitemap-Ziele | 11 mit Noindex aus den letzten gespeicherten Crawls vom 24. November ausgeschlossen. Fünf erkannt und derzeit nicht indexiert. |
+
+Die Umzugskisten-Anleitung ist nach dem Crawl vom 24. November indexiert. Die alte Backstudio-App `/tools/baking/index.html` ist mit dem gespeicherten Crawl vom 17. November noch indexiert. Die App-URL steht außerhalb der Sitemap. [Search Console](https://search.google.com/search-console?resource_id=sc-domain%3Atoolya.app)
+
+Der nächste Abgleich prüft, ob Google die englischen Seiten nach einem Crawl der inzwischen indexierbaren Live-Version aufgenommen hat. Für Bing und reale Ladeleistungsdaten liegt in diesem Abgleich kein neuer Nachweis vor. Der 28-Tage-Vergleich ist separat vorgesehen.
