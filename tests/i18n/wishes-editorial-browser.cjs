@@ -48,7 +48,7 @@ async function run(){
   const external=[];
   // Synthetic directory data only, returned entirely inside the browser mock.
   const profile={user_id:'00000000-0000-4000-8000-000000000001',display_name:'Liste',bio:'Öffentliches Wunschprofil',city:'Berlin',country:'Deutschland',imported:true,source_url:'https://example.invalid/source',lists:[{id:'00000000-0000-4000-8000-000000000004',name:'Öffentliche Wunschliste bei Amazon',url:'https://www.amazon.de/hz/wishlist/ls/ABC123'}]};
-  const other={...profile,user_id:'00000000-0000-4000-8000-000000000002',display_name:'Private sample',bio:'',city:'',country:''};
+  const other={...profile,imported:false,user_id:'00000000-0000-4000-8000-000000000002',display_name:'Private sample',bio:'',city:'',country:''};
   const third={...other,user_id:'00000000-0000-4000-8000-000000000003',display_name:'Another sample'};
   await context.route('**/*',route=>{
    const request=route.request();
@@ -57,7 +57,7 @@ async function run(){
    if(target.hostname.endsWith('.supabase.co')){
     const json=data=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data),headers:{'access-control-allow-origin':'*'}});
     if(request.method()==='GET'&&target.pathname==='/rest/v1/wishlist_directory')return json(target.searchParams.has('user_id')?profile:[profile,other,third]);
-    if(request.method()==='POST'&&target.pathname==='/rest/v1/rpc/get_wishlist_public_profile')return json(profile);
+    if(request.method()==='POST'&&target.pathname==='/rest/v1/rpc/get_wishlist_public_profile')return json(request.postDataJSON().profile_id===profile.user_id?profile:other);
     if(request.method()==='POST'&&target.pathname==='/rest/v1/rpc/search_wishlist_directory')return json([profile]);
     if(request.method()==='POST'&&target.pathname==='/rest/v1/rpc/wishlist_directory_filters')return json({countries:[],occasions:[]});
    }
@@ -123,6 +123,7 @@ async function run(){
    const named=page.locator('.wish-public-card').filter({has:page.getByRole('heading',{name:'Liste',exact:true})});
    await named.first().waitFor();
    assert.equal(await named.first().locator('h3').textContent(),'Liste');
+   assert.match(await named.first().locator('.wish-public-card-footer').textContent(),/Added by Toolya/);
    assert.equal(await named.first().locator('p').textContent(),'Öffentliches Wunschprofil');
    assert.equal(await named.first().getAttribute('aria-label'),'View public wish profile of Liste');
    const fallback=page.locator('.wish-public-card').filter({has:page.getByRole('heading',{name:'Private sample',exact:true})});
@@ -147,13 +148,28 @@ async function run(){
    await page.goto(origin+'/tools/wishes/public.html?lang=en&profile='+profile.user_id+'#selectedProfile');
    const detail=page.locator('#profileDetail .profile-card');
    await detail.waitFor();
-   assert.equal(await detail.locator('.profile-source-note').textContent(),'Name from a publicly linked source · Identity not verified by Toolya.');
+   assert.equal(await detail.locator('.profile-source-note').first().textContent(),'Name from a publicly linked source · Identity not verified by Toolya.');
    assert.equal(await detail.locator('.profile-wishlist-copy strong').textContent(),profile.lists[0].name);
    assert.match(await detail.locator('.profile-wishlist-link').getAttribute('href'),/\?list=00000000-0000-4000-8000-000000000004/);
    assert.equal(await detail.locator('.profile-list-count').textContent(),'1 List');
+   assert.equal(await detail.locator('.profile-eyebrow').textContent(),'Added by Toolya');
+   const claim=detail.locator('a[href^="mailto:info@toolya.app"]').first();
+   assert.equal(await claim.textContent(),'Claim this profile – info@toolya.app');
+   const email=new URL(await claim.getAttribute('href'));
+   assert.equal(email.pathname,'info@toolya.app');
+   assert.equal(email.searchParams.get('subject'),'Claim a Toolya wish profile');
+   assert.ok(email.searchParams.get('body').includes('https://toolya.app/tools/wishes/public.html?profile='+profile.user_id));
+
    await page.locator('[data-wishes-locale="de"]').click();
    assert.equal(await detail.locator('.profile-list-count').textContent(),'1 Liste');
    assert.equal(await detail.locator('.profile-wishlist-copy strong').textContent(),profile.lists[0].name);
+   assert.equal(await detail.locator('.profile-eyebrow').textContent(),'Von Toolya hinzugefügt');
+   assert.equal(await claim.textContent(),'Profil beanspruchen – info@toolya.app');
+   assert.equal(new URL(await claim.getAttribute('href')).searchParams.get('subject'),'Toolya-Wunschprofil beanspruchen');
+   await page.goto(origin+'/tools/wishes/public.html?lang=de&profile='+other.user_id);
+   await page.locator('#profileDetail h2').waitFor();
+   assert.equal(await page.locator('#profileDetail .profile-eyebrow').textContent(),'Öffentliches Wunschprofil');
+   assert.equal(await page.locator('#profileDetail a[href^="mailto:info@toolya.app"]').count(),0);
    console.log('PASS: synthetic public profile cards, favourites and editorial copy at '+width+'px');
   }finally{
    await context.close();
