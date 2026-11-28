@@ -61,7 +61,7 @@ export function forecast(entries,planning,from,to,openingCents=0){
  const p=validatePlanning(planning);date(from);date(to);if(to<from)throw Error('invalid-range');
  if(!Number.isSafeInteger(openingCents))throw Error('invalid-opening');
  const actual=cashflow(entries,from,to);
- const fulfilled=new Set(entries.filter(r=>r?.planOccurrence&&r.transferId==null).map(r=>r.planOccurrence));
+ const fulfilled=new Set(entries.filter(r=>r?.planOccurrence&&r.transferId==null&&r.refundOf==null).map(r=>r.planOccurrence));
  const pending=p.plans.flatMap(plan=>occurrences(plan,from,to)).filter(o=>!fulfilled.has(o.key));
  for(const b of p.bills){
   if(b.due<from||b.due>to)continue;
@@ -79,4 +79,22 @@ export function openingCarryover(entries,planning,start){
  date(start);if(!validatePlanning(planning).carryover)return 0;
  const prior=new Date(start+'T00:00:00Z');prior.setUTCDate(prior.getUTCDate()-1);
  return cashflow(entries,'0001-01-01',prior.toISOString().slice(0,10)).balance;
+}
+
+export function assignOccurrence(entries,planning,key,bookingId){
+ const p=validatePlanning(planning);
+ const [planId,due]=String(key).split(':');
+ const plan=p.plans.find(x=>x.id===planId);
+ const occurrence=plan&&occurrences(plan,due,due).find(x=>x.key===key);
+ if(!occurrence)throw Error('unknown-occurrence');
+ const booking=entries.find(x=>x?.id===bookingId);
+ if(!booking||booking.transferId!=null||booking.refundOf!=null||legacyCents(booking.price)!==occurrence.cents||
+  (booking.entryType==='einnahme'||booking.category==='Einnahme')!==(occurrence.direction==='income'))throw Error('invalid-booking');
+ if(booking.planOccurrence&&booking.planOccurrence!==key||entries.some(x=>x?.id!==bookingId&&x?.planOccurrence===key)||p.bills.some(b=>b.paidBookingId===bookingId))throw Error('already-assigned');
+ return entries.map(x=>x?.id===bookingId?{...x,planOccurrence:key}:x);
+}
+export function assignBill(entries,planning,billId,bookingId){
+ const p=validatePlanning(planning),bill=p.bills.find(b=>b.id===billId),booking=entries.find(r=>r?.id===bookingId);
+ if(!bill||!booking||booking.transferId!=null||booking.refundOf!=null||booking.planOccurrence||booking.entryType==='einnahme'||booking.category==='Einnahme'||legacyCents(booking.price)!==bill.cents||p.bills.some(b=>b.id!==billId&&b.paidBookingId===bookingId))throw Error('invalid-payment');
+ return {...p,bills:p.bills.map(b=>b.id===billId?{...b,paidBookingId:bookingId}:b)};
 }
