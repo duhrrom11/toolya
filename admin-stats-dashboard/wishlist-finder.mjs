@@ -52,3 +52,16 @@ $('dismiss').onclick=()=>{if(selected.size===0){$('result').textContent='Bitte z
 function download(kind){const values=[...selected.values()];const fields=['name','type','logo_url','wishlist_url','email','source_url','country','found_at','status'];const clean=values.map(r=>Object.fromEntries(fields.map(f=>[f,r[f]||''])));const blob=new Blob([kind==='csv'?csv(clean):JSON.stringify(clean,null,2)],{type:kind==='csv'?'text/csv;charset=utf-8':'application/json'});const url=URL.createObjectURL(blob),a=el('a');a.href=url;a.download='toolya-wunschlisten.'+kind;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}$('csv').onclick=()=>download('csv');$('json').onclick=()=>download('json');
 try{await load();$('finder').hidden=false;$('state').hidden=true}catch(e){$('state').textContent=e.message}
 client?.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){running=false;rows=[];selected.clear();$('rows').replaceChildren();$('finder').hidden=true;$('state').hidden=false;$('state').textContent='Bitte mit dem Administratorkonto anmelden.'}});
+
+async function managedProfiles(){
+ const host=$('managedProfiles');host.replaceChildren();
+ const result=await api('managed_list',{offset:managedOffset});
+ const button=(label,fn)=>{const b=el('button',label);b.type='button';b.onclick=()=>guarded('managedStatus',fn);return b};
+ const field=(form,key,label,value='',type='text')=>{const l=el('label',label),i=el('input');i.name=key;i.type=type;i.value=value||'';l.append(i);form.append(l);return i};
+ const editor=(r)=>{const form=el('form');field(form,'display_name','Profilname',r?.display_name);field(form,'country','Land',r?.country);const image=field(form,'logo_url','Profilbild-Link (HTTPS)',r?.logo_url,'url');const preview=el('img');preview.alt='Profilbild';preview.width=80;preview.referrerPolicy='no-referrer';const refresh=()=>{preview.hidden=!image.value.startsWith('https://');if(!preview.hidden)preview.src=image.value;else preview.removeAttribute('src')};image.oninput=refresh;refresh();form.append(preview);field(form,'wishlist_url','Amazon-Wunschlistenlink',r?.wishlist_url,'url');field(form,'source_url','Quellseite',r?.source_url,'url');const save=el('button',r?'Speichern':'Eigenständiges Profil anlegen');form.append(save);form.onsubmit=e=>{e.preventDefault();guarded('managedStatus',async()=>{await api('managed_save',{id:r?.id,values:Object.fromEntries(new FormData(form))});await managedProfiles();$('managedStatus').textContent='Gespeichert.'})};return form};
+ host.append(editor(null));
+ for(const r of result.rows){const box=el('details');box.append(el('summary',r.display_name),editor(r),link('Öffentliches Profil ansehen',new URL('../tools/wishes/public.html?profile='+encodeURIComponent(r.id),import.meta.url).href),button('Löschen',async()=>{if(!confirm('Profil und zugehörigen Finder-Eintrag endgültig löschen?'))return;await api('managed_delete',{id:r.id});await managedProfiles()}));host.append(box)}
+ host.append(button('Zurück',async()=>{managedOffset=Math.max(0,managedOffset-100);await managedProfiles()}),button('Weitere Profile',async()=>{if(result.rows.length===100){managedOffset+=100;await managedProfiles()}}));
+}
+let managedOffset=0;
+$('openManaged').onclick=()=>guarded('managedStatus',managedProfiles);
