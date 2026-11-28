@@ -22,15 +22,20 @@ export function attachRuntimeEvidence(dynamic,report,read){
   const source=read(item.file).split('\n');
   for(const occurrence of item.sightings){
    if(!['catalogue-match-runtime-unverified','explicit-branch-runtime-unverified'].includes(occurrence.catalogueState)||!['alert','confirm'].includes(occurrence.kind))continue;
-   const matches=claims.filter(c=>c.file===item.file&&c.kind===occurrence.kind&&c.de===occurrence.literal&&c.en===occurrence.english&&(!c.line||c.line===occurrence.line));
+   const matches=claims.filter(c=>c.file===item.file&&c.kind===occurrence.kind&&c.de===(occurrence.decodedLiteral??occurrence.literal)&&c.en===occurrence.english&&(!c.line||c.line===occurrence.line));
    if(matches.length!==1)continue;
    const claim=matches[0];
    // Restrict to the nearest named function and reject duplicate matching literals in that function.
    const before=source.slice(0,occurrence.line).join('\n');
    const declarations=[...before.matchAll(/\bfunction\s+([\w$]+)\s*\(/g)];
    if(declarations.at(-1)?.[1]!==claim.handler)continue;
-   const duplicates=item.sightings.filter(o=>o.literal===claim.de&&o.kind===occurrence.kind&&[...source.slice(0,o.line).join('\n').matchAll(/\bfunction\s+([\w$]+)\s*\(/g)].at(-1)?.[1]===claim.handler);
-   if(duplicates.length!==1)continue;
+   const duplicates=item.sightings.filter(o=>(o.decodedLiteral??o.literal)===claim.de&&o.kind===occurrence.kind&&[...source.slice(0,o.line).join('\n').matchAll(/\bfunction\s+([\w$]+)\s*\(/g)].at(-1)?.[1]===claim.handler);
+   if(duplicates.length!==1){
+    // Identical text requires a distinct exact line and a distinct fault-path label.
+    if(!Number.isInteger(claim.line)||claim.line!==occurrence.line||typeof claim.fault!=='string'||!claim.fault.trim())continue;
+    if(duplicates.filter(o=>o.line===claim.line).length!==1)continue;
+    if(claims.some(c=>c!==claim&&c.file===claim.file&&c.handler===claim.handler&&c.kind===claim.kind&&c.de===claim.de&&c.fault===claim.fault))continue;
+   }
    occurrence.catalogueState='runtime-browser-verified';
    occurrence.evidence={test:claim.test,handler:claim.handler,de:claim.de,en:claim.en,revision:process.env.GITHUB_SHA||null,run:process.env.GITHUB_RUN_ID||null};
    verified++;
