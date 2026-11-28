@@ -4058,3 +4058,27 @@ test('i18n runtime catalogue: budget backup download acknowledgement cancellatio
   }finally{page.off('dialog',onDialog);}
  }
 });
+
+for(const change of ['revision','sessionGeneration']){
+ test('i18n runtime: budget cloud replacement rejects changed '+change+' after backup',async({page})=>{
+  await isolated(page,true,false,{entries:[],budgets:{},goals:[]});
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   const result=await page.evaluate(async change=>{
+    const {confirmCloudReplacement}=await import('/shared/toolya/cloud-backup.mjs');
+    const {validateBudgetSnapshot}=await import('/shared/toolya/cloud-controller.mjs');
+    const original=toolyaCloudController.snapshot(),before=JSON.stringify(original);
+    const controller={ready:true,revision:1,sessionGeneration:1,snapshot:()=>structuredClone(original),replace:async()=>{throw Error('Unexpected replacement');}};
+    const messages=[];let backupCount=0;
+    try{
+     await confirmCloudReplacement({controller,incoming:original,validate:validateBudgetSnapshot,confirm:async message=>{messages.push(message);return true;},exportBackup:async previous=>{if(JSON.stringify(previous)!==before)throw Error('Incorrect backup');backupCount++;controller[change]++;return true;}});
+     return {rejected:false};
+    }catch(error){return {rejected:true,message:error.message,messages,backupCount,unchanged:JSON.stringify(toolyaCloudController.snapshot())===before,writes:window.__toolyaMock.writes.length};}
+   },change);
+   expect(result).toEqual({rejected:true,message:'Cloud-Sitzung oder Datenstand hat sich geändert.',messages:['Import ersetzt vorhandene Cloud-Daten. Zuerst eine Sicherung herunterladen?','Sicherung kontrolliert? Vorhandene Cloud-Daten jetzt wirklich ersetzen?'],backupCount:1,unchanged:true,writes:0});
+  }
+ });
+}
