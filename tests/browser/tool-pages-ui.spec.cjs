@@ -4004,3 +4004,29 @@ for(const fixture of [
   }
  });
 }
+
+for(const existing of [false,true]){
+ test('i18n runtime catalogue: budget cloud migration '+(existing?'existing cloud':'new cloud')+' cancellation in DE and EN',async({page},testInfo)=>{
+  const de=existing?'Es gibt sowohl Cloud-Daten als auch Gerätedaten. Die Cloud bleibt maßgeblich; lokale Daten werden nicht zusammengeführt oder gelöscht. Lokale Daten jetzt sichern und ausschließlich die Cloud-Daten verwenden?':'Vorhandene Gerätedaten in dein Toolya-Konto übernehmen? Cloud-Daten werden niemals überschrieben. Auf gemeinsam genutzten Geräten bitte zuerst die Zugehörigkeit der Daten prüfen.';
+  const en=existing?'Both cloud and device data exist. Cloud data remains authoritative; local data will not be merged or deleted. Back up device data now and use cloud data only?':'Import existing device data into your Toolya account? Cloud data will never be overwritten. On shared devices, first check who owns the data.';
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:'toolyaCloudBoot',kind:'confirm',line:existing?608:607,de,en})});
+  await isolated(page,true,false,existing?{entries:[],budgets:{},goals:[]}:null);
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   const before=await page.evaluate(()=>{const local=JSON.stringify([{id:94,title:'Private Altbuchung',date:'2026-01-01',price:12,category:'Lebensmittel',photos:[]}]);localStorage.setItem('kassenbon_data',local);return {local,writes:window.__toolyaMock.writes.length};});
+   const pending=page.waitForEvent('dialog',{timeout:5000});
+   const action=page.evaluate(()=>toolyaCloudBoot('haushaltsbuch-kassenbon'));
+   const dialog=await pending;
+   const actual={type:dialog.type(),message:dialog.message()};
+   await dialog.dismiss();await action;
+   expect(actual).toEqual({type:'confirm',message:lang==='en'?en:de});
+   expect(await page.evaluate(()=>({local:localStorage.getItem('kassenbon_data'),writes:window.__toolyaMock.writes.length}))).toEqual(before);
+   expect(await page.evaluate(()=>toolyaCloudReady)).toBe(false);
+   await page.evaluate(async()=>{localStorage.removeItem('kassenbon_data');await toolyaCloudBoot('haushaltsbuch-kassenbon');});
+   await expect.poll(()=>page.evaluate(()=>toolyaCloudReady)).toBe(true);
+  }
+ });
+}
