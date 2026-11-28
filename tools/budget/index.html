@@ -399,6 +399,7 @@
             <div id="budgetBulkEdit"></div>
             <div id="budgetRelations"></div>
             <div id="budgetPlanning"></div>
+            <div id="budgetIntegrations"></div>
             <div id="receiptsList" class="space-y-3">
                 <p class="text-sm text-gray-400 text-center py-4">Noch keine Buchungen vorhanden.</p>
             </div>
@@ -1527,6 +1528,7 @@ async function toolyaCloudBoot(tool) {
             window.toolyaBudgetRelations?.render();
             window.toolyaBudgetPlanning?.render();
             window.toolyaBudgetCapture?.render();
+            window.toolyaBudgetIntegrations?.render();
             window.dispatchEvent(new Event('toolya:budget-changed'));
         }
 
@@ -2190,6 +2192,9 @@ import {mountBulkEdit} from './budget-bulk-ui.mjs';
 import {mountRelations} from './budget-relations-ui.mjs';
 import {mountPlanning} from './budget-planning-ui.mjs';
 import {mountCapture} from './budget-capture-ui.mjs';
+import {mountIntegrations} from './budget-integrations-ui.mjs';
+import {createCloudRepository} from '../../shared/toolya/cloud-repository.mjs';
+import {validateCarSnapshot,validateMetersSnapshot} from '../../shared/toolya/cloud-controller.mjs';
 import {validateCapture,ocrLanguage,bookingCapturePatch} from './budget-capture.mjs';
 window.toolyaBudgetBookingCapturePatch=bookingCapturePatch;
 window.toolyaBudgetValidateCapture=validateCapture;
@@ -2209,6 +2214,13 @@ const budgetOrganizationApi={
     return !!ctx&&toolyaCloudReady&&toolyaCloudController?.ready&&ctx.user===toolyaCloudUserId&&ctx.controller===toolyaCloudController&&ctx.generation===toolyaCloudController.sessionGeneration;
   },
   entries:()=>getData(),
+  async readSource(ctx,tool){
+    const validators={'zaehlerstaende-erfassen':validateMetersSnapshot,'autokosten-reifenwechsel':validateCarSnapshot};
+    if(!this.sameContext(ctx)||!Object.hasOwn(validators,tool))throw Error('session or source');
+    const result=await createCloudRepository(window.supabaseClient,tool).read();
+    if(!this.sameContext(ctx))throw Error('session');
+    return validators[tool](result.exists?result.data:tool==='zaehlerstaende-erfassen'?{readings:[],tarifs:{}}:{cars:[],events:[],tires:[]});
+  },
   capture:()=>validateCapture(toolyaCloudSnapshot().capture||{}),
   async openInbox(ctx,id){
     if(!this.sameContext(ctx)||receiptSaveBusy)throw Error('session');
@@ -2263,6 +2275,7 @@ window.toolyaBudgetBulk=mountBulkEdit(document.getElementById('budgetBulkEdit'),
 window.toolyaBudgetRelations=mountRelations(document.getElementById('budgetRelations'),budgetOrganizationApi);
 window.toolyaBudgetPlanning=mountPlanning(document.getElementById('budgetPlanning'),budgetOrganizationApi);
 window.toolyaBudgetCapture=mountCapture(document.getElementById('budgetCapture'),budgetOrganizationApi);
+window.toolyaBudgetIntegrations=mountIntegrations(document.getElementById('budgetIntegrations'),budgetOrganizationApi);
 </script>
 <script defer src="./clever-core.js?v=20261121-v2"></script>
 <script defer src="./clever-ui.js?v=20261121-v2"></script>
