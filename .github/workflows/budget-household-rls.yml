@@ -1,0 +1,35 @@
+name: Budget household isolated RLS
+on:
+  pull_request:
+  push:
+    branches: [main, feature/budget-full-release]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  household-rls:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: isolated-ci-only
+          POSTGRES_DB: household_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d household_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run isolated household authorization assertions
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: isolated-ci-only
+          PGDATABASE: household_test
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/budget/household-rls.sql
