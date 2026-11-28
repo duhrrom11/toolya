@@ -396,6 +396,7 @@
             <div id="budgetBankImport"></div>
             <div id="budgetBulkEdit"></div>
             <div id="budgetRelations"></div>
+            <div id="budgetPlanning"></div>
             <div id="receiptsList" class="space-y-3">
                 <p class="text-sm text-gray-400 text-center py-4">Noch keine Buchungen vorhanden.</p>
             </div>
@@ -1414,7 +1415,7 @@ async function toolyaCloudBoot(tool) {
             const categoryExpenses=Object.fromEntries(Object.entries(flow.byCategory).map(([k,v])=>[k,v/100]));
             data.forEach(r => {
                 if (!r || typeof r !== 'object' || r.transferId!=null) return;
-                let price;try{price=money.legacyCents(r.price)/100;}catch{return;}
+                let price;try{price=money.signedBookingCents(r)/100;}catch{return;}
                 const isIncome = r.entryType === 'einnahme' || r.category === 'Einnahme';
 
                 if (r.isTax) taxValueTotal += price;
@@ -1499,6 +1500,7 @@ async function toolyaCloudBoot(tool) {
             renderSavingsGoals();
             renderTransactionList();
             window.toolyaBudgetRelations?.render();
+            window.toolyaBudgetPlanning?.render();
             window.dispatchEvent(new Event('toolya:budget-changed'));
         }
 
@@ -1997,7 +1999,8 @@ async function toolyaCloudBoot(tool) {
                 budgets: getBudgets(),
                 goals: getSavingsGoals(),
                 cleverSparen: toolyaCloudSnapshot().cleverSparen || {},
-                bankPreferences: toolyaCloudSnapshot().bankPreferences || {profiles:[],rules:[]}
+                bankPreferences: toolyaCloudSnapshot().bankPreferences || {profiles:[],rules:[]},
+                planning: toolyaCloudSnapshot().planning || {plans:[],bills:[],reserves:[],payday:1,carryover:false}
             };
             const blob = new Blob([JSON.stringify(backupObj)], { type: 'application/json' });
             const a = document.createElement('a');
@@ -2024,7 +2027,8 @@ async function toolyaCloudBoot(tool) {
                 budgets: ['budgetbuch_budgets', value => value !== null && typeof value === 'object' && !Array.isArray(value)],
                 goals: ['budgetbuch_goals', Array.isArray],
                 cleverSparen: ['budgetbuch_clever_sparen', value => value !== null && typeof value === 'object' && !Array.isArray(value)],
-                bankPreferences: ['budgetbuch_bank_preferences', value => value !== null && typeof value === 'object' && Array.isArray(value.profiles) && Array.isArray(value.rules)]
+                bankPreferences: ['budgetbuch_bank_preferences', value => value !== null && typeof value === 'object' && Array.isArray(value.profiles) && Array.isArray(value.rules)],
+                planning: ['budgetbuch_planning', value => {try{window.toolyaBudgetValidatePlanning(value);return true;}catch{return false;}}]
             };
             const changes = [];
             for (const [key, [storageKey, check]] of Object.entries(sections)) {
@@ -2047,11 +2051,11 @@ async function toolyaCloudBoot(tool) {
      try {
        const changes=validateHaushaltsbuchBackup(JSON.parse(e.target.result));
        const snapshot=toolyaCloudSnapshot();
-       const map={kassenbon_data:'entries',budgetbuch_budgets:'budgets',budgetbuch_goals:'goals',budgetbuch_clever_sparen:'cleverSparen',budgetbuch_bank_preferences:'bankPreferences'};
+       const map={kassenbon_data:'entries',budgetbuch_budgets:'budgets',budgetbuch_goals:'goals',budgetbuch_clever_sparen:'cleverSparen',budgetbuch_bank_preferences:'bankPreferences',budgetbuch_planning:'planning'};
        const english=window.__toolyaUILocale==='en';
        const labels=english
-         ? {entries:'Transactions',budgets:'Budgets',goals:'Savings goals',cleverSparen:'Smart saving',bankPreferences:'Bank profiles and rules'}
-         : {entries:'Buchungen',budgets:'Budgets',goals:'Sparziele',cleverSparen:'Clever sparen',bankPreferences:'Bankprofile und Regeln'};
+         ? {entries:'Transactions',budgets:'Budgets',goals:'Savings goals',cleverSparen:'Smart saving',bankPreferences:'Bank profiles and rules',planning:'Financial planning'}
+         : {entries:'Buchungen',budgets:'Budgets',goals:'Sparziele',cleverSparen:'Clever sparen',bankPreferences:'Bankprofile und Regeln',planning:'Finanzplanung'};
        const preview=[];
        for(const [key,json] of changes){
          const next=JSON.parse(json),field=map[key];
@@ -2080,7 +2084,7 @@ async function toolyaCloudBoot(tool) {
             const doc = await createExportPdf();
             if (!doc) return;
             const data = getData();
-            const reportPrice = r => {try{return window.toolyaBudgetMoney.legacyCents(r.price)/100;}catch{return NaN;}};
+            const reportPrice = r => {try{return window.toolyaBudgetMoney.signedBookingCents(r)/100;}catch{return NaN;}};
             const flow=window.toolyaBudgetMoney.cashflow(data);
 
             doc.setFontSize(16);
@@ -2156,10 +2160,13 @@ async function toolyaCloudBoot(tool) {
 import {mountBankImport} from './bank-import-ui.mjs';
 import {mountBulkEdit} from './budget-bulk-ui.mjs';
 import {mountRelations} from './budget-relations-ui.mjs';
-import {cashflow,validateRelations} from './budget-relations.mjs';
+import {mountPlanning} from './budget-planning-ui.mjs';
+import {validatePlanning} from './budget-planning.mjs';
+import {cashflow,validateRelations,signedBookingCents} from './budget-relations.mjs';
 import {legacyCents,decimalCents,addCents} from './budget-domain.mjs';
-window.toolyaBudgetMoney=Object.freeze({cashflow,validateRelations,legacyCents,decimalCents,addCents});
+window.toolyaBudgetMoney=Object.freeze({cashflow,validateRelations,signedBookingCents,legacyCents,decimalCents,addCents});
 import {saveProfile,saveRule} from './budget-organization.mjs';
+window.toolyaBudgetValidatePlanning=validatePlanning;
 const budgetOrganizationApi={
   context(){
     if(!toolyaCloudReady||!toolyaCloudController?.ready)throw Error('Cloud unavailable');
@@ -2169,6 +2176,13 @@ const budgetOrganizationApi={
     return !!ctx&&toolyaCloudReady&&toolyaCloudController?.ready&&ctx.user===toolyaCloudUserId&&ctx.controller===toolyaCloudController&&ctx.generation===toolyaCloudController.sessionGeneration;
   },
   entries:()=>getData(),
+  planning:()=>validatePlanning(toolyaCloudSnapshot().planning||{}),
+  async savePlanning(ctx,transform){
+    if(!this.sameContext(ctx))throw Error('Cloud session changed');
+    const planning=validatePlanning(transform(this.planning()));
+    if(!await toolyaCloudSave({planning}))throw Error('Save not confirmed');
+    renderApp();
+  },
   categoryLabel:key=>budgetCategoryLabel(key),
   preferences(){const p=toolyaCloudSnapshot().bankPreferences||{};return {profiles:Array.isArray(p.profiles)?p.profiles:[],rules:Array.isArray(p.rules)?p.rules:[]};},
   async savePreferences(ctx,transform){
@@ -2196,6 +2210,7 @@ const budgetOrganizationApi={
 mountBankImport(document.getElementById('budgetBankImport'),budgetOrganizationApi);
 window.toolyaBudgetBulk=mountBulkEdit(document.getElementById('budgetBulkEdit'),budgetOrganizationApi);
 window.toolyaBudgetRelations=mountRelations(document.getElementById('budgetRelations'),budgetOrganizationApi);
+window.toolyaBudgetPlanning=mountPlanning(document.getElementById('budgetPlanning'),budgetOrganizationApi);
 </script>
 <script defer src="./clever-core.js?v=20261121-v2"></script>
 <script defer src="./clever-ui.js?v=20261121-v2"></script>
