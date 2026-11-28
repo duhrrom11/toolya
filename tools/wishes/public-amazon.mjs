@@ -1,6 +1,6 @@
 import {directoryFavorites} from './directory-favorites.mjs';
 import {directoryUrl, editorUrl, httpsUrl, identityId as uuid, mascotUrl, verifiedAccount} from './directory-links.mjs';
-import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs';
+import {wishesText} from '../../shared/toolya/i18n/wishes-copy.mjs?v=20261128-profile-claims';
 import {readAppLocale} from '../../shared/toolya/i18n/locale.mjs';
 // Deployment must explicitly choose production or preview; never infer it from URL parameters.
 const PROD_PROJECT = 'yheogmeaosuigyaxkwth';
@@ -109,6 +109,20 @@ function listSummary(l,direct=false){
  a.append(label,text('span','↗','profile-wishlist-arrow'));
  row.append(a,shareLink('list',l.id));return row;
 }
+function claimProfile(id){
+ const section=text('div');
+ section.append(copyText('p','Gehört dieses Profil dir oder deinem Verein? Schreib uns, wenn du es übernehmen möchtest.','profile-source-note'));
+ const link=text('a','','profile-source-link');
+ localize(link,()=>{
+  link.textContent=ui('Profil beanspruchen – info@toolya.app');
+  const subject=ui('Toolya-Wunschprofil beanspruchen');
+  const message=ui('Ich möchte dieses Toolya-Wunschprofil für mich oder meinen Verein beanspruchen.')+'\n\n'+directoryUrl('profile',id).href+'\n\n'+ui('Mein Bezug zum Profil:')+'\n';
+  link.href='mailto:info@toolya.app?'+new URLSearchParams({subject,body:message}).toString().replaceAll('+','%20');
+ });
+ section.append(link);
+ return section;
+}
+
 function card(p,detail=false){
  const full=detail;
  const root=text('article','','profile-card'+(full?' profile-card--detail':' profile-card--compact'));
@@ -121,7 +135,7 @@ function card(p,detail=false){
  img.onerror=()=>{img.onerror=null;img.src=mascotUrl()};
  avatar.append(img);
  const info=text('div','','profile-identity');
- info.append(copyText('span',p.imported?'Öffentlich gefunden':'Öffentliches Wunschprofil','profile-eyebrow'));
+ info.append(copyText('span',p.imported?'Von Toolya hinzugefügt':'Öffentliches Wunschprofil','profile-eyebrow'));
  info.append(text(full?'h2':'h3',p.display_name));
  const location=[p.city,p.country].filter(Boolean).join(' · ');
  if(location)info.append(text('p','📍 '+location,'location'));
@@ -150,6 +164,7 @@ function card(p,detail=false){
    const website=copyText('a','Website des Vereins ↗');website.href=httpsUrl(p.website);website.rel='noopener noreferrer';root.append(website);
   }
   if(p.imported){
+   root.append(claimProfile(p.user_id));
    const report=copyText('a','Falschen Namen oder nicht mehr öffentliche Liste melden ↗','profile-report-link');
    const subject='Korrektur eines öffentlichen Amazon-Wunschlisten-Eintrags';
    const message='Bitte diesen Toolya-Eintrag prüfen:\n'+profileUrl(p.user_id)+'\n\nGrund der Meldung (bitte ergänzen):\n';
@@ -171,7 +186,13 @@ function makePublicCarouselCard(p){
  const body=document.createElement('div');body.className='wish-public-card-body';
  const name=document.createElement('h3');name.textContent=p.display_name;
  const description=document.createElement('p');if(p.bio)description.textContent=p.bio.trim().slice(0,145);else localize(description,()=>{description.textContent=ui('Öffentliche Amazon-Wunschliste ansehen und Wünsche entdecken.')});
- const footer=document.createElement('span');footer.className='wish-public-card-footer';localize(footer,()=>{footer.textContent=([p.city,p.country].filter(Boolean).join(' · ')||ui('Öffentliches Wunschprofil'))+'  ·  '+ui('Profil ansehen ↗')});body.append(name,description,footer);a.append(media,body);return a;
+ const footer=document.createElement('span');footer.className='wish-public-card-footer';
+ localize(footer,()=>{
+  const location=[p.city,p.country].filter(Boolean).join(' · ');
+  const origin=p.imported?ui('Von Toolya hinzugefügt'):'';
+  footer.textContent=[location,origin||(!location?ui('Öffentliches Wunschprofil'):''),ui('Profil ansehen ↗')].filter(Boolean).join(' · ');
+ });
+ body.append(name,description,footer);a.append(media,body);return a;
 }
 const carouselViewport=$('wishPublicViewport');
 const carouselTrack=$('wishPublicTrack');
@@ -200,7 +221,7 @@ async function refreshCloud(currentGeneration){
  track.replaceChildren(copyText('p','Öffentliche Profile werden geladen …','wish-showcase-loading'));
  updateCarouselMotion();
  let response;
- try{response=await deadline(()=>publicDb.from('wishlist_directory').select('user_id,display_name,city,country,bio,logo_url,lists').order('updated_at',{ascending:false}).limit(80))}catch{response={error:true}}
+ try{response=await deadline(()=>publicDb.from('wishlist_directory').select('user_id,display_name,city,country,bio,logo_url,lists,imported').order('updated_at',{ascending:false}).limit(80))}catch{response={error:true}}
  if(currentGeneration!==generation)return;
  if(response.error){track.replaceChildren(copyText('p','Die veröffentlichten Profile konnten gerade nicht geladen werden. Verwende die Suche oben.','wish-showcase-loading'));return}
  const profiles=(response.data||[]).filter(p=>p&&p.user_id&&p.display_name&&Array.isArray(p.lists)&&p.lists.some(l=>l.url));
