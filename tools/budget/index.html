@@ -720,6 +720,8 @@ async function toolyaCloudBoot(tool) {
         let ocrGeneration = 0;
         let rawImage = null;
         let editingReceiptId = null;
+        let pendingInboxReceipt = null;
+        let receiptSaveBusy = false;
 
         let categoryChartInstance = null;
         let cashflowChartInstance = null;
@@ -915,6 +917,7 @@ async function toolyaCloudBoot(tool) {
 
         /* --- Mehrseiten Scan & Canvas --- */
         function loadPhotosToCanvas(event) {
+            pendingInboxReceipt = null;
             const files = event.target.files;
             if (!files || files.length === 0) return;
             const selectedFiles = Array.from(files);
@@ -1024,6 +1027,7 @@ async function toolyaCloudBoot(tool) {
         }
 
         function clearReceiptPhotos() {
+            pendingInboxReceipt = null;
             ocrGeneration++;
             photoReadGeneration++;
             pendingPhotoReads = 0;
@@ -1184,6 +1188,11 @@ async function toolyaCloudBoot(tool) {
 
         /* --- Buchung Speichern --- */
         async function saveReceipt() {
+            if(receiptSaveBusy)return;
+            receiptSaveBusy=true;
+            try { await saveReceiptInternal(); } finally {receiptSaveBusy=false;}
+        }
+        async function saveReceiptInternal() {
             if (photoReadFailed) {
                 alert('Mindestens ein Belegbild konnte nicht geladen werden. Bitte Bilder erneut auswählen oder entfernen.');
                 return;
@@ -1220,6 +1229,7 @@ async function toolyaCloudBoot(tool) {
 
             currentUploadedPhotos = currentUploadedPhotos.filter(src => safeReceiptPhoto(src));
             let data = getData();
+            let newBookingId = null;
 
             if (editingReceiptId !== null) {
                 const index = data.findIndex(r => r && r.id === editingReceiptId);
@@ -1244,6 +1254,7 @@ async function toolyaCloudBoot(tool) {
                     (entryType === 'einnahme' ? 'einnahme' : 'ausgabe'));
                 if (duplicate && !confirm('Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\n\nTrotzdem erneut speichern?')) return;
                 const newId = nextReceiptId(data);
+                newBookingId = newId;
                 data.push({
                     id: newId,
                     title, store, date, price, category, paymentMethod, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, note, entryType,
@@ -1259,13 +1270,21 @@ async function toolyaCloudBoot(tool) {
                 const second = Number.isFinite(secondDate.getTime()) ? secondDate.getTime() : 0;
                 return second - first;
             });
-            if (!await saveData(data)) return;
+            if(pendingInboxReceipt){
+                const pending=pendingInboxReceipt;
+                try{
+                    if(!window.toolyaBudgetCaptureContext(pending.ctx)||newBookingId===null)throw Error('session');
+                    const patch=window.toolyaBudgetBookingCapturePatch(data,toolyaCloudSnapshot().capture||{},pending.id,newBookingId);
+                    if(!await toolyaCloudSave(patch))return;
+                }catch{alert(window.__toolyaUILocale==='en'?'Receipt not saved. Reopen it from the inbox.':'Beleg nicht gespeichert. Bitte erneut aus dem Eingang öffnen.');return;}
+            }else if (!await saveData(data)) return;
 
             resetForm();
             renderApp();
         }
 
         function editReceipt(id) {
+            pendingInboxReceipt = null;
             const data = getData();
             const r = data.find(item => item && item.id === id);
             if (!r) return;
@@ -1327,6 +1346,7 @@ async function toolyaCloudBoot(tool) {
         function cancelEdit() { resetForm(); }
 
         function resetForm() {
+            pendingInboxReceipt = null;
             window.dispatchEvent(new Event('toolya:receipt-clear'));
             ocrGeneration++;
             photoReadGeneration++;
@@ -2170,7 +2190,8 @@ import {mountBulkEdit} from './budget-bulk-ui.mjs';
 import {mountRelations} from './budget-relations-ui.mjs';
 import {mountPlanning} from './budget-planning-ui.mjs';
 import {mountCapture} from './budget-capture-ui.mjs';
-import {validateCapture,ocrLanguage} from './budget-capture.mjs';
+import {validateCapture,ocrLanguage,bookingCapturePatch} from './budget-capture.mjs';
+window.toolyaBudgetBookingCapturePatch=bookingCapturePatch;
 window.toolyaBudgetValidateCapture=validateCapture;
 window.toolyaBudgetOcrLanguage=ocrLanguage;
 import {validatePlanning} from './budget-planning.mjs';
@@ -2189,6 +2210,16 @@ const budgetOrganizationApi={
   },
   entries:()=>getData(),
   capture:()=>validateCapture(toolyaCloudSnapshot().capture||{}),
+  async openInbox(ctx,id){
+    if(!this.sameContext(ctx)||receiptSaveBusy)throw Error('session');
+    const row=this.capture().inbox.find(r=>r.id===id);if(!row)throw Error('receipt');
+    const blob=await (await fetch(row.photo)).blob();
+    if(!this.sameContext(ctx)||receiptSaveBusy||!this.capture().inbox.some(r=>r.id===id))throw Error('session');
+    if((editingReceiptId!==null||document.getElementById('receiptTitle').value||currentUploadedPhotos.length)&&!confirm(window.__toolyaUILocale==='en'?'Discard unsaved form changes?':'Ungespeicherte Formulareingaben verwerfen?'))return;
+    resetForm();const dt=new DataTransfer();dt.items.add(new File([blob],row.name,{type:blob.type}));
+    const target=document.getElementById('receiptPhotoInput');target.files=dt.files;target.dispatchEvent(new Event('change'));
+    pendingInboxReceipt={id,ctx};target.scrollIntoView({block:'center'});
+  },
   async saveCapture(ctx,transform){
     if(!this.sameContext(ctx))throw Error('Cloud session changed');
     const capture=validateCapture(transform(this.capture()));
@@ -2226,6 +2257,7 @@ const budgetOrganizationApi={
     return result;
   }
 };
+window.toolyaBudgetCaptureContext=ctx=>budgetOrganizationApi.sameContext(ctx);
 mountBankImport(document.getElementById('budgetBankImport'),budgetOrganizationApi);
 window.toolyaBudgetBulk=mountBulkEdit(document.getElementById('budgetBulkEdit'),budgetOrganizationApi);
 window.toolyaBudgetRelations=mountRelations(document.getElementById('budgetRelations'),budgetOrganizationApi);
