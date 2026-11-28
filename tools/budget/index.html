@@ -400,6 +400,7 @@
             <div id="budgetRelations"></div>
             <div id="budgetPlanning"></div>
             <div id="budgetIntegrations"></div>
+            <div id="budgetHousehold"></div>
             <div id="receiptsList" class="space-y-3">
                 <p class="text-sm text-gray-400 text-center py-4">Noch keine Buchungen vorhanden.</p>
             </div>
@@ -588,6 +589,7 @@ async function toolyaSafeCloudImport(snapshot) {
 }
 
 function toolyaCloudBlock(state) {
+  window.toolyaBudgetHousehold?.clear();
   window.toolyaCloudPageStatus(state);
 }
 
@@ -1529,6 +1531,7 @@ async function toolyaCloudBoot(tool) {
             window.toolyaBudgetPlanning?.render();
             window.toolyaBudgetCapture?.render();
             window.toolyaBudgetIntegrations?.render();
+            window.toolyaBudgetHousehold?.render();
             window.dispatchEvent(new Event('toolya:budget-changed'));
         }
 
@@ -2193,6 +2196,7 @@ import {mountRelations} from './budget-relations-ui.mjs';
 import {mountPlanning} from './budget-planning-ui.mjs';
 import {mountCapture} from './budget-capture-ui.mjs';
 import {mountIntegrations} from './budget-integrations-ui.mjs';
+import {mountHousehold} from './budget-household-ui.mjs';
 import {createCloudRepository} from '../../shared/toolya/cloud-repository.mjs';
 import {validateCarSnapshot,validateMetersSnapshot} from '../../shared/toolya/cloud-controller.mjs';
 import {validateCapture,ocrLanguage,bookingCapturePatch} from './budget-capture.mjs';
@@ -2276,6 +2280,7 @@ window.toolyaBudgetRelations=mountRelations(document.getElementById('budgetRelat
 window.toolyaBudgetPlanning=mountPlanning(document.getElementById('budgetPlanning'),budgetOrganizationApi);
 window.toolyaBudgetCapture=mountCapture(document.getElementById('budgetCapture'),budgetOrganizationApi);
 window.toolyaBudgetIntegrations=mountIntegrations(document.getElementById('budgetIntegrations'),budgetOrganizationApi);
+window.toolyaBudgetHousehold=mountHousehold(document.getElementById('budgetHousehold'),budgetOrganizationApi,window.supabaseClient);
 </script>
 <script defer src="./clever-core.js?v=20261121-v2"></script>
 <script defer src="./clever-ui.js?v=20261121-v2"></script>
