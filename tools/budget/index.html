@@ -330,6 +330,7 @@
                 </div>
             </div>
 
+            <div id="budgetCapture"></div>
             <!-- Beleg-Scan / Foto / OCR / Thermopapier Filter -->
             <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 space-y-3">
                 <div class="flex justify-between items-center flex-wrap gap-2">
@@ -338,6 +339,7 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
                     <label class="helferlein-field" for="receiptPhotoInput"><span class="helferlein-field-label">Belegfoto auswählen</span><input type="file" id="receiptPhotoInput" accept="image/*" multiple onchange="loadPhotosToCanvas(event)" class="text-xs p-2 border rounded-xl bg-white w-full" aria-label="Belegfoto auswählen" data-tool-en-aria-label="Choose receipt photo"></label>
+                    <label for="receiptOcrLanguage" data-tool-en="OCR language">OCR-Sprache</label><select id="receiptOcrLanguage" class="border rounded p-2"><option value="deu" data-tool-en="German">Deutsch</option><option value="eng" data-tool-en="English">Englisch</option><option value="deu+eng" data-tool-en="German and English">Deutsch und Englisch</option></select>
                     <div id="ocrStatus" role="status" aria-live="polite" aria-atomic="true" class="text-xs text-emerald-800 font-semibold hidden">🔍 Scanne Kassenbon... Bitte warten.</div>
                 </div>
 
@@ -1124,7 +1126,7 @@ async function toolyaCloudBoot(tool) {
             const input = document.getElementById('receiptPhotoInput');
             if (!input.files || !input.files[0]) return alert("Bitte wähle zuerst ein Belegfoto aus!");
             const generation = ++ocrGeneration;
-            const file = input.files[0];
+            const files = Array.from(input.files);
             const statusEl = document.getElementById('ocrStatus');
             let worker = null;
             statusEl.innerText = "🔍 Scanne Kassenbon... Bitte warten.";
@@ -1134,12 +1136,15 @@ async function toolyaCloudBoot(tool) {
                 const { loadOcrLibrary } = await import('../../shared/toolya/receipt-ocr.mjs');
                 const library = await loadOcrLibrary();
                 if (generation !== ocrGeneration) return;
-                worker = await library.createWorker('deu');
+                worker = await library.createWorker(window.toolyaBudgetOcrLanguage(document.getElementById('receiptOcrLanguage').value));
                 if (generation !== ocrGeneration) return;
-                const ret = await worker.recognize(file);
-                if (generation !== ocrGeneration) return;
-
-                const text = ret.data.text;
+                const pages = [];
+                for (const file of files) {
+                    const ret = await worker.recognize(file);
+                    if (generation !== ocrGeneration) return;
+                    pages.push(ret.data.text);
+                }
+                const text = pages.join("\n");
                 window.dispatchEvent(new CustomEvent('toolya:receipt-ocr',{detail:{text}}));
                 const recognizedPrice = extractReceiptTotal(text);
                 const recognizedDate = extractReceiptDate(text);
@@ -1501,6 +1506,7 @@ async function toolyaCloudBoot(tool) {
             renderTransactionList();
             window.toolyaBudgetRelations?.render();
             window.toolyaBudgetPlanning?.render();
+            window.toolyaBudgetCapture?.render();
             window.dispatchEvent(new Event('toolya:budget-changed'));
         }
 
@@ -2000,7 +2006,8 @@ async function toolyaCloudBoot(tool) {
                 goals: getSavingsGoals(),
                 cleverSparen: toolyaCloudSnapshot().cleverSparen || {},
                 bankPreferences: toolyaCloudSnapshot().bankPreferences || {profiles:[],rules:[]},
-                planning: toolyaCloudSnapshot().planning || {plans:[],bills:[],reserves:[],payday:1,carryover:false}
+                planning: toolyaCloudSnapshot().planning || {plans:[],bills:[],reserves:[],payday:1,carryover:false},
+                capture: window.toolyaBudgetValidateCapture(toolyaCloudSnapshot().capture || {})
             };
             const blob = new Blob([JSON.stringify(backupObj)], { type: 'application/json' });
             const a = document.createElement('a');
@@ -2028,7 +2035,8 @@ async function toolyaCloudBoot(tool) {
                 goals: ['budgetbuch_goals', Array.isArray],
                 cleverSparen: ['budgetbuch_clever_sparen', value => value !== null && typeof value === 'object' && !Array.isArray(value)],
                 bankPreferences: ['budgetbuch_bank_preferences', value => value !== null && typeof value === 'object' && Array.isArray(value.profiles) && Array.isArray(value.rules)],
-                planning: ['budgetbuch_planning', value => {try{window.toolyaBudgetValidatePlanning(value);return true;}catch{return false;}}]
+                planning: ['budgetbuch_planning', value => {try{window.toolyaBudgetValidatePlanning(value);return true;}catch{return false;}}],
+                capture: ['budgetbuch_capture', value => {try{window.toolyaBudgetValidateCapture(value);return true;}catch{return false;}}]
             };
             const changes = [];
             for (const [key, [storageKey, check]] of Object.entries(sections)) {
@@ -2051,11 +2059,11 @@ async function toolyaCloudBoot(tool) {
      try {
        const changes=validateHaushaltsbuchBackup(JSON.parse(e.target.result));
        const snapshot=toolyaCloudSnapshot();
-       const map={kassenbon_data:'entries',budgetbuch_budgets:'budgets',budgetbuch_goals:'goals',budgetbuch_clever_sparen:'cleverSparen',budgetbuch_bank_preferences:'bankPreferences',budgetbuch_planning:'planning'};
+       const map={kassenbon_data:'entries',budgetbuch_budgets:'budgets',budgetbuch_goals:'goals',budgetbuch_clever_sparen:'cleverSparen',budgetbuch_bank_preferences:'bankPreferences',budgetbuch_planning:'planning',budgetbuch_capture:'capture'};
        const english=window.__toolyaUILocale==='en';
        const labels=english
-         ? {entries:'Transactions',budgets:'Budgets',goals:'Savings goals',cleverSparen:'Smart saving',bankPreferences:'Bank profiles and rules',planning:'Financial planning'}
-         : {entries:'Buchungen',budgets:'Budgets',goals:'Sparziele',cleverSparen:'Clever sparen',bankPreferences:'Bankprofile und Regeln',planning:'Finanzplanung'};
+         ? {entries:'Transactions',budgets:'Budgets',goals:'Savings goals',cleverSparen:'Smart saving',bankPreferences:'Bank profiles and rules',planning:'Financial planning',capture:'Receipt capture'}
+         : {entries:'Buchungen',budgets:'Budgets',goals:'Sparziele',cleverSparen:'Clever sparen',bankPreferences:'Bankprofile und Regeln',planning:'Finanzplanung',capture:'Belegerfassung'};
        const preview=[];
        for(const [key,json] of changes){
          const next=JSON.parse(json),field=map[key];
@@ -2161,6 +2169,10 @@ import {mountBankImport} from './bank-import-ui.mjs';
 import {mountBulkEdit} from './budget-bulk-ui.mjs';
 import {mountRelations} from './budget-relations-ui.mjs';
 import {mountPlanning} from './budget-planning-ui.mjs';
+import {mountCapture} from './budget-capture-ui.mjs';
+import {validateCapture,ocrLanguage} from './budget-capture.mjs';
+window.toolyaBudgetValidateCapture=validateCapture;
+window.toolyaBudgetOcrLanguage=ocrLanguage;
 import {validatePlanning} from './budget-planning.mjs';
 import {cashflow,validateRelations,signedBookingCents} from './budget-relations.mjs';
 import {legacyCents,decimalCents,addCents} from './budget-domain.mjs';
@@ -2176,6 +2188,13 @@ const budgetOrganizationApi={
     return !!ctx&&toolyaCloudReady&&toolyaCloudController?.ready&&ctx.user===toolyaCloudUserId&&ctx.controller===toolyaCloudController&&ctx.generation===toolyaCloudController.sessionGeneration;
   },
   entries:()=>getData(),
+  capture:()=>validateCapture(toolyaCloudSnapshot().capture||{}),
+  async saveCapture(ctx,transform){
+    if(!this.sameContext(ctx))throw Error('Cloud session changed');
+    const capture=validateCapture(transform(this.capture()));
+    if(!await toolyaCloudSave({capture}))throw Error('Save not confirmed');
+    renderApp();
+  },
   planning:()=>validatePlanning(toolyaCloudSnapshot().planning||{}),
   async savePlanning(ctx,transform){
     if(!this.sameContext(ctx))throw Error('Cloud session changed');
@@ -2211,6 +2230,7 @@ mountBankImport(document.getElementById('budgetBankImport'),budgetOrganizationAp
 window.toolyaBudgetBulk=mountBulkEdit(document.getElementById('budgetBulkEdit'),budgetOrganizationApi);
 window.toolyaBudgetRelations=mountRelations(document.getElementById('budgetRelations'),budgetOrganizationApi);
 window.toolyaBudgetPlanning=mountPlanning(document.getElementById('budgetPlanning'),budgetOrganizationApi);
+window.toolyaBudgetCapture=mountCapture(document.getElementById('budgetCapture'),budgetOrganizationApi);
 </script>
 <script defer src="./clever-core.js?v=20261121-v2"></script>
 <script defer src="./clever-ui.js?v=20261121-v2"></script>
