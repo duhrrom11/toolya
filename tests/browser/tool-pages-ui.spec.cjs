@@ -3973,3 +3973,34 @@ for(const fixture of [
   }
  });
 }
+
+for(const fixture of [
+ {handler:'loadPhotosToCanvas',selector:'#receiptPhotoInput',name:'invalid.txt',mime:'text/plain',size:1,line:929,de:'Bitte nur JPG-, PNG-, GIF- oder WebP-Bilder auswählen. Bereits vorhandene Belegbilder bleiben erhalten.',en:'Select JPG, PNG, GIF or WebP images only. Existing receipt images will be kept.'},
+ {handler:'loadPhotosToCanvas',selector:'#receiptPhotoInput',name:'oversize.png',mime:'image/png',size:4*1024*1024+1,line:938,de:'Die ausgewählten Belegbilder sind zusammen zu groß (maximal 4 MB). Bitte kleinere Fotos auswählen. Bereits vorhandene Belegbilder bleiben erhalten.',en:'The selected receipt images are too large together (maximum 4 MB). Choose smaller photos. Existing receipt images will be kept.'},
+ {handler:'importBackup',selector:'.b3-backup-input',name:'oversize.json',mime:'application/json',size:20*1024*1024+1,line:2081,de:'Backup zu groß (maximal 20 MB).',en:'Backup too large (maximum 20 MB).'},
+ {handler:'importBackup',selector:'.b3-backup-input',name:'unreadable.json',mime:'application/json',size:1,line:2107,readError:true,de:'Backup-Datei konnte nicht gelesen werden.',en:'The backup file could not be read.'}
+]){
+ test('i18n runtime catalogue: budget '+fixture.handler+' line '+fixture.line+' rejects invalid files in DE and EN',async({page},testInfo)=>{
+  testInfo.annotations.push({type:'toolya-runtime-message',description:JSON.stringify({file:'tools/budget/index.html',handler:fixture.handler,kind:'alert',line:fixture.line,de:fixture.de,en:fixture.en})});
+  await isolated(page,true,false,{entries:[],budgets:{},goals:[]});
+  await page.goto(origin+'/tools/budget/index.html?lang=de');
+  await expect.poll(()=>page.evaluate(()=>typeof toolyaCloudReady!=='undefined'&&toolyaCloudReady&&!!toolyaCloudController?.ready)).toBe(true);
+  await page.evaluate(()=>{currentUploadedPhotos=['data:image/png;base64,iVBORw0KGgo='];document.getElementById('receiptTitle').value='Private Buchung Öl';});
+  const state=()=>page.evaluate(()=>({snapshot:toolyaCloudController.snapshot(),writes:window.__toolyaMock.writes,photos:[...currentUploadedPhotos],title:document.getElementById('receiptTitle').value}));
+  const before=await state();
+  expect(before.writes).toEqual([]);
+  for(const lang of ['de','en','de']){
+   await page.locator('[data-tool-locale="'+lang+'"]').click();
+   await expect(page.locator('html')).toHaveAttribute('lang',lang);
+   if(fixture.readError)await page.evaluate(()=>{const original=FileReader.prototype.readAsText;FileReader.prototype.readAsText=function(){FileReader.prototype.readAsText=original;queueMicrotask(()=>this.dispatchEvent(new ProgressEvent('error')));};});
+   const input=page.locator(fixture.selector).first();
+   await input.setInputFiles({name:fixture.name,mimeType:fixture.mime,buffer:Buffer.alloc(fixture.size)});
+   const notice=page.getByRole('alertdialog',{name:'Toolya'});
+   await expect(notice.locator('#hl-alert-message')).toHaveText(fixture[lang]);
+   await notice.getByRole('button',{name:'OK'}).press('Enter');
+   await expect(notice).toBeHidden();
+   await expect(input).toHaveValue('');
+   expect(await state()).toEqual(before);
+  }
+ });
+}
