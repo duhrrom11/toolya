@@ -1,4 +1,4 @@
-import {parseCents,legacyCents,parseBankDate,addCents} from './budget-domain.mjs';
+import {parseCents,legacyCents,addCents} from './budget-domain.mjs';
 const clean=(v,max=200)=>{if(typeof v!=='string'||!v.trim()||v.length>max)throw Error('text');return v.trim();};
 const id=v=>clean(v,100);
 const amount=v=>{if(!Number.isSafeInteger(v)||v<=0)throw Error('amount');return v;};
@@ -27,3 +27,17 @@ export function occasionTotal(entries,occasion){return addCents(...entries.filte
 export function queueReceipts(state,rows){return validateCapture({...state,inbox:[...state.inbox,...rows]});}
 export function removeInbox(state,key){return validateCapture({...state,inbox:state.inbox.filter(r=>r.id!==key)});}
 export const ocrLanguage=(v)=>{if(!['deu','eng','deu+eng'].includes(v))throw Error('language');return v;};
+
+export async function scanReceiptBatch(rows,language,recognize,isCurrent=()=>true){
+ ocrLanguage(language);const results=[];
+ for(const row of rows){
+  if(!isCurrent())throw Error('session');
+  try{const text=await recognize(row.photo,language);if(!isCurrent())throw Error('session');results.push({id:row.id,text:String(text),error:false});}
+  catch(error){if(!isCurrent())throw error;results.push({id:row.id,text:'',error:true});}
+ }
+ return results;
+}
+export function consumeInbox(state,key){
+ if(!state.inbox.some(r=>r.id===key))throw Error('missing receipt');
+ return removeInbox(state,key);
+}
